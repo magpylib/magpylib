@@ -26,7 +26,7 @@ magpy.defaults.reset()
 
 def test_Cuboid_display():
     """testing display"""
-    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     src.move(np.linspace((0.1, 0.1, 0.1), (2, 2, 2), 20), start=-1)
     src.show(
         style_path_frames=5,
@@ -46,7 +46,7 @@ def test_Cylinder_display():
     """testing display"""
     # path should revert to True
     ax = plt.subplot(projection="3d")
-    src = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
+    src = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(1, 2))
     src.show(canvas=ax, style_path_frames=15, backend="matplotlib")
 
     # hide path
@@ -68,7 +68,9 @@ def test_Cylinder_display():
 def test_CylinderSegment_display():
     """testing display"""
     ax = plt.subplot(projection="3d")
-    src = magpy.magnet.CylinderSegment((1, 2, 3), (2, 4, 5, 30, 40))
+    src = magpy.magnet.CylinderSegment(
+        polarization=(1, 2, 3), dimension=(2, 4, 5, 30, 40)
+    )
     src.show(canvas=ax, style_path_frames=15, return_fig=True)
 
     src.move(np.linspace((0.4, 0.4, 0.4), (13.2, 13.2, 13.2), 33), start=-1)
@@ -79,7 +81,7 @@ def test_Sphere_display():
     """testing display"""
     # path should revert to True
     ax = plt.subplot(projection="3d")
-    src = magpy.magnet.Sphere((1, 2, 3), 2)
+    src = magpy.magnet.Sphere(polarization=(1, 2, 3), diameter=2)
     src.show(canvas=ax, style_path_frames=15, return_fig=True)
 
     src.move(np.linspace((0.4, 0.4, 0.4), (8, 8, 8), 20), start=-1)
@@ -94,7 +96,7 @@ def test_Sphere_display():
 def test_Tetrahedron_display():
     """testing Tetrahedron display"""
     verts = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
-    src = magpy.magnet.Tetrahedron(magnetization=(100, 200, 300), vertices=verts)
+    src = magpy.magnet.Tetrahedron(polarization=(0.1, 0.2, 0.3), vertices=verts)
     src.show(return_fig=True, style_magnetization_mode="color+arrow")
 
 
@@ -141,7 +143,7 @@ def test_Triangle_display():
     triangles = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
     src = magpy.Collection(
         [
-            magpy.misc.Triangle(magnetization=(1000, 1000, 0), vertices=v)
+            magpy.misc.Triangle(polarization=(1, 1, 0), vertices=v)
             for v in points[triangles]
         ]
     )
@@ -169,10 +171,7 @@ def test_Triangle_display_from_convexhull():
     points = np.array([v for k, v in mesh3d["kwargs"].items() if k in "xyz"]).T
     faces = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
     src = magpy.Collection(
-        [
-            magpy.misc.Triangle(magnetization=(1000, 0, 0), vertices=v)
-            for v in points[faces]
-        ]
+        [magpy.misc.Triangle(polarization=(1, 0, 0), vertices=v) for v in points[faces]]
     )
     magpy.show(
         *src,
@@ -186,13 +185,13 @@ def test_Triangle_display_from_convexhull():
     )
 
 
-def test_TringularMesh_display():
+def test_TriangularMesh_display():
     """testing display for TriangleMesh source built from vertices"""
     # test  classic trimesh display
     points = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
 
     src = magpy.magnet.TriangularMesh.from_ConvexHull(
-        magnetization=(1000, 0, 0), points=points
+        polarization=(1, 0, 0), points=points
     )
     src.show(
         backend="matplotlib",
@@ -211,9 +210,9 @@ def test_TringularMesh_display():
     faces = polydata.faces.reshape(-1, 4)[:, 1:]
     faces = faces[1:]  # open the mesh
     src = magpy.magnet.TriangularMesh(
-        (0, 0, 1000),
-        vertices,
-        faces,
+        polarization=(0, 0, 1000),
+        vertices=vertices,
+        faces=faces,
         check_open="ignore",
         check_disconnected="ignore",
         reorient_faces=False,
@@ -231,9 +230,9 @@ def test_TringularMesh_display():
 
     with pytest.warns(UserWarning) as record:
         magpy.magnet.TriangularMesh(
-            (0, 0, 1000),
-            vertices,
-            faces,
+            polarization=(0, 0, 1000),
+            vertices=vertices,
+            faces=faces,
             check_open="skip",
             check_disconnected="skip",
             reorient_faces=False,
@@ -267,7 +266,7 @@ def test_TringularMesh_display():
     faces = np.array([v for k, v in selfintersecting_mesh3d.items() if k in "ijk"]).T
     with pytest.warns(UserWarning) as record:
         magpy.magnet.TriangularMesh(
-            (0, 0, 1000),
+            polarization=(0, 0, 1000),
             vertices=vertices,
             faces=faces,
             check_open="warn",
@@ -293,7 +292,7 @@ def test_col_display():
     """testing display"""
     # pylint: disable=assignment-from-no-return
     ax = plt.subplot(projection="3d")
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     pm2 = pm1.copy(position=(2, 0, 0))
     pm3 = pm1.copy(position=(4, 0, 0))
     nested_col = (pm1 + pm2 + pm3).set_children_styles(color="magenta")
@@ -315,11 +314,11 @@ def test_circular_line_display():
     """testing display"""
     # pylint: disable=assignment-from-no-return
     ax2 = plt.subplot(projection="3d")
-    src1 = magpy.current.Circle(1, 2)
-    src2 = magpy.current.Circle(1, 2)
+    src1 = magpy.current.Circle(current=1, diameter=2)
+    src2 = magpy.current.Circle(current=1, diameter=2)
     src1.move(np.linspace((0.4, 0.4, 0.4), (2, 2, 2), 5), start=-1)
-    src3 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
-    src4 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
+    src3 = magpy.current.Polyline(current=1, vertices=[(0, 0, 0), (1, 1, 1), (2, 2, 2)])
+    src4 = magpy.current.Polyline(current=1, vertices=[(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src3.move([(0.4, 0.4, 0.4)] * 5, start=-1)
     src1.show(canvas=ax2, style_path_frames=2, style_arrow_size=0, return_fig=True)
     src2.show(canvas=ax2, style_arrow_sizemode="absolute", return_fig=True)
@@ -431,7 +430,7 @@ def test_empty_display():
 def test_graphics_model_mpl():
     """test base extra graphics with mpl"""
     ax = plt.subplot(projection="3d")
-    c = magpy.magnet.Cuboid((0, 1, 0), (1, 1, 1))
+    c = magpy.magnet.Cuboid(polarization=(0, 1, 0), dimension=(1, 1, 1))
     c.rotate_from_angax(33, "x", anchor=0)
     c.style.model3d.add_trace(**make_Cuboid("matplotlib", position=(2, 0, 0)))
     c.show(canvas=ax, style_path_frames=1, backend="matplotlib", return_fig=True)
@@ -439,7 +438,7 @@ def test_graphics_model_mpl():
 
 def test_graphics_model_generic_to_mpl():
     """test generic base extra graphics with mpl"""
-    c = magpy.magnet.Cuboid((0, 1, 0), (1, 1, 1))
+    c = magpy.magnet.Cuboid(polarization=(0, 1, 0), dimension=(1, 1, 1))
     c.move([[i, 0, 0] for i in range(2)])
     model3d = make_Cuboid(position=(2, 0, 0))
     model3d["kwargs"]["facecolor"] = np.array(["blue"] * 12)
@@ -450,7 +449,7 @@ def test_graphics_model_generic_to_mpl():
 
 def test_mpl_animation():
     """test animation with matplotib"""
-    c = magpy.magnet.Cuboid((0, 1, 0), (1, 1, 1))
+    c = magpy.magnet.Cuboid(polarization=(0, 1, 0), dimension=(1, 1, 1))
     c.move([[i, 0, 0] for i in range(2)])
     fig, anim = c.show(
         backend="matplotlib", animation=True, return_animation=True, return_fig=True
@@ -468,7 +467,7 @@ def test_subplots():
     )
     sensor.style.label = "Sensor1"
     cyl1 = magpy.magnet.Cylinder(
-        magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
+        polarization=(0.1, 0, 0), dimension=(1, 2), style_label="Cylinder1"
     )
 
     # define paths
@@ -497,7 +496,7 @@ def test_bad_show_inputs():
     """bad show inputs"""
 
     cyl1 = magpy.magnet.Cylinder(
-        magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
+        polarization=(0.1, 0, 0), dimension=(1, 2), style_label="Cylinder1"
     )
 
     # test bad canvas
@@ -521,7 +520,7 @@ def test_bad_show_inputs():
         pixel=np.linspace((0, 0, -0.2), (0, 0, 0.2), 2), style_size=1.5
     )
     cyl1 = magpy.magnet.Cylinder(
-        magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
+        polarization=(0.1, 0, 0), dimension=(1, 2), style_label="Cylinder1"
     )
     with pytest.raises(
         ValueError,

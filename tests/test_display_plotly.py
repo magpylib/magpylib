@@ -13,7 +13,7 @@ def test_Cylinder_display():
     """testing display"""
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    src = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
+    src = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(1, 2))
     x = src.show(canvas=fig, style_path_frames=15)
     assert x is None, "path should revert to True"
 
@@ -31,7 +31,9 @@ def test_CylinderSegment_display():
     """testing display"""
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    src = magpy.magnet.CylinderSegment((1, 2, 3), (2, 4, 5, 30, 40))
+    src = magpy.magnet.CylinderSegment(
+        polarization=(1, 2, 3), dimension=(2, 4, 5, 30, 40)
+    )
     x = src.show(canvas=fig, style_path_frames=15)
     assert x is None, "path should revert to True"
 
@@ -49,7 +51,7 @@ def test_Sphere_display():
     """testing display"""
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    src = magpy.magnet.Sphere((1, 2, 3), 2)
+    src = magpy.magnet.Sphere(polarization=(1, 2, 3), diameter=2)
     x = src.show(canvas=fig, style_path_frames=15)
     assert x is None, "path should revert to True"
 
@@ -61,7 +63,7 @@ def test_Sphere_display():
 def test_Cuboid_display():
     """testing display"""
     magpy.defaults.display.backend = "plotly"
-    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     src.move(np.linspace((0.1, 0.1, 0.1), (2, 2, 2), 20), start=-1)
     x = src.show(style_path_frames=5, style_magnetization_show=True, renderer="json")
     assert x is None, "display test fail"
@@ -106,7 +108,7 @@ def test_Triangle_display():
     # this test is necessary to cover the case where the backend can display mag arrows and
     # color gradient must be deactivated
     verts = [(0, 0, 0), (1, 0, 0), (0, 1, 0)]
-    src = magpy.misc.Triangle(magnetization=(100, 200, 300), vertices=verts)
+    src = magpy.misc.Triangle(polarization=(0.1, 0.2, 0.3), vertices=verts)
     src.show(style_magnetization_mode="arrow", return_fig=True)
 
 
@@ -115,7 +117,7 @@ def test_col_display():
     # pylint: disable=assignment-from-no-return
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     pm2 = pm1.copy(position=(2, 0, 0))
     pm3 = pm1.copy(position=(4, 0, 0))
     nested_col = (pm1 + pm2 + pm3).set_children_styles(color="magenta")
@@ -145,11 +147,11 @@ def test_circular_line_display():
     # pylint: disable=assignment-from-no-return
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    src1 = magpy.current.Circle(1, 2)
-    src2 = magpy.current.Circle(1, 2)
+    src1 = magpy.current.Circle(current=1, diameter=2)
+    src2 = magpy.current.Circle(current=1, diameter=2)
     src1.move(np.linspace((0.4, 0.4, 0.4), (2, 2, 2), 5), start=-1)
-    src3 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
-    src4 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
+    src3 = magpy.current.Polyline(current=1, vertices=[(0, 0, 0), (1, 1, 1), (2, 2, 2)])
+    src4 = magpy.current.Polyline(current=1, vertices=[(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src3.move([(0.4, 0.4, 0.4)] * 5, start=-1)
     x = src1.show(canvas=fig, style_path_frames=2, style_arrow_show=False)
     assert x is None, "display test fail"
@@ -172,7 +174,7 @@ def test_display_bad_style_kwargs():
 def test_extra_model3d():
     """test diplay when object has an extra model object attached"""
     magpy.defaults.display.backend = "plotly"
-    cuboid = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    cuboid = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     cuboid.move(np.linspace((0.4, 0.4, 0.4), (12.4, 12.4, 12.4), 33), start=-1)
     cuboid.style.model3d.showdefault = False
     cuboid.style.model3d.data = [
@@ -260,7 +262,7 @@ def test_display_warnings():
     magpy.defaults.display.backend = "plotly"
     magpy.defaults.display.animation.maxfps = 2
     magpy.defaults.display.animation.maxframes = 2
-    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     src.move(np.linspace((0.4, 0.4, 0.4), (4, 4, 4), 10), start=-1)
     fig = go.Figure()
 
@@ -268,7 +270,7 @@ def test_display_warnings():
         src.show(canvas=fig, animation=5, animation_fps=3)
     with pytest.warns(UserWarning):  # max frames surpassed
         src.show(canvas=fig, animation=True, animation_time=2, animation_fps=1)
-    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     with pytest.warns(UserWarning):  # no object path detected
         src.show(canvas=fig, style_path_frames=[], animation=True)
 
@@ -278,7 +280,7 @@ def test_bad_animation_value():
     magpy.defaults.display.backend = "plotly"
     magpy.defaults.display.animation.maxfps = 2
     magpy.defaults.display.animation.maxframes = 2
-    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     src.move(np.linspace((0.4, 0.4, 0.4), (4, 4, 4), 10), start=-1)
     fig = go.Figure()
 
@@ -296,7 +298,7 @@ def test_subplots():
             for x in np.linspace(0, 10, 11)
         ]
     )
-    cyl1 = magpy.magnet.Cylinder(magnetization=(100, 0, 0), dimension=(1, 2))
+    cyl1 = magpy.magnet.Cylinder(polarization=(0.1, 0, 0), dimension=(1, 2))
 
     # define paths
     sensors.position = np.linspace((0, 0, -3), (0, 0, 3), 100)
@@ -332,7 +334,9 @@ def test_legends():
         "constructor": "scatter3d",
         "kwargs": {"x": xs, "y": ys, "z": zs, "mode": "lines"},
     }
-    c = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1), style_label="Plotly extra trace")
+    c = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1), dimension=(1, 1, 1), style_label="Plotly extra trace"
+    )
     c.style.model3d.add_trace(trace_plotly)
 
     fig = magpy.show(
@@ -343,7 +347,7 @@ def test_legends():
         # style_model3d_showdefault=False,
         return_fig=True,
     )
-    assert [t.name for t in fig.data] == ["Plotly extra trace (1mm|1mm|1mm)"] * 2
+    assert [t.name for t in fig.data] == ["Plotly extra trace (1m|1m|1m)"] * 2
     assert [t.showlegend for t in fig.data] == [False, False]
 
     fig = magpy.show(
@@ -354,7 +358,7 @@ def test_legends():
         # style_model3d_showdefault=False,
         return_fig=True,
     )
-    assert [t.name for t in fig.data] == ["Plotly extra trace (1mm|1mm|1mm)"] * 2
+    assert [t.name for t in fig.data] == ["Plotly extra trace (1m|1m|1m)"] * 2
     assert [t.showlegend for t in fig.data] == [True, False]
 
     fig = magpy.show(
@@ -365,7 +369,7 @@ def test_legends():
         style_model3d_showdefault=False,
         return_fig=True,
     )
-    assert [t.name for t in fig.data] == ["Plotly extra trace (1mm|1mm|1mm)"]
+    assert [t.name for t in fig.data] == ["Plotly extra trace (1m|1m|1m)"]
     assert [t.showlegend for t in fig.data] == [True]
 
     c.rotate_from_angax([10 * i for i in range(N)], "y", start=0, anchor=(0, 0, 10))
@@ -377,5 +381,5 @@ def test_legends():
         # style_model3d_showdefault=False,
         return_fig=True,
     )
-    assert [t.name for t in fig.data] == ["Plotly extra trace (1mm|1mm|1mm)"] * 4
+    assert [t.name for t in fig.data] == ["Plotly extra trace (1m|1m|1m)"] * 4
     assert [t.showlegend for t in fig.data] == [True, False, False, False]

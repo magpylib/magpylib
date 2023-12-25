@@ -19,11 +19,6 @@ class Dipole(BaseSource):
 
     Parameters
     ----------
-    moment: array_like, shape (3,), unit T・m³, default=`None`
-        Magnetic dipole moment in units of T・m³ given in the local object coordinates.
-        For homogeneous magnets the relation moment=magnetization*volume holds. The dipole
-        moment of a Circle object is pi**2/10*diameter**2*current.
-
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of meter. For m>1, the
         `position` and `orientation` attributes together represent an object path.
@@ -32,6 +27,11 @@ class Dipole(BaseSource):
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    moment: array_like, shape (3,), unit A・m², default=`None`
+        Magnetic dipole moment in units of A・m² given in the local object coordinates.
+        For homogeneous magnets the relation moment=magnetization*volume holds. The dipole
+        moment of a Circle object is pi**2/10*diameter**2*current.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -47,7 +47,7 @@ class Dipole(BaseSource):
     Examples
     --------
     `Dipole` objects are magnetic field sources. In this example we compute the H-field A/m
-    of such a magnetic dipole with a moment of (100,100,100) in units of T・m³ at an
+    of such a magnetic dipole with a moment of (100,100,100) in units of A・m² at an
     observer position (.01,.01,.01) given in units of meter:
 
     >>> import magpylib as magpy
@@ -87,9 +87,9 @@ class Dipole(BaseSource):
 
     def __init__(
         self,
-        moment=None,
         position=(0, 0, 0),
         orientation=None,
+        moment=None,
         style=None,
         **kwargs,
     ):
@@ -102,12 +102,12 @@ class Dipole(BaseSource):
     # property getters and setters
     @property
     def moment(self):
-        """Magnetic dipole moment in units of T・m³ given in the local object coordinates."""
+        """Magnetic dipole moment in units of A・m² given in the local object coordinates."""
         return self._moment
 
     @moment.setter
     def moment(self, mom):
-        """Set dipole moment vector, shape (3,), unit T・m³."""
+        """Set dipole moment vector, shape (3,), unit A・m²."""
         self._moment = check_format_input_vector(
             mom,
             dims=(1,),
@@ -124,4 +124,4 @@ class Dipole(BaseSource):
         moment_mag = np.linalg.norm(moment)
         if moment_mag == 0:
             return "no moment"
-        return f"moment={unit_prefix(moment_mag)}T・m³"
+        return f"moment={unit_prefix(moment_mag)}A・m²"

@@ -121,4 +121,4 @@ class Cuboid(BaseMagnet):
         if self.dimension is None:
             return "no dimension"
         d = [unit_prefix(d) for d in self.dimension]
-        return f"{d[0]}|{d[1]}|{d[2]}"
+        return f"{d[0]}m|{d[1]}m|{d[2]}m"

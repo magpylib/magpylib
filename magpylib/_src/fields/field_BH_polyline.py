@@ -247,4 +247,4 @@ def current_line_field(*args, **kwargs):
         MagpylibDeprecationWarning,
         stacklevel=2,
     )
-    return None
+    return current_polyline_field(*args, **kwargs)

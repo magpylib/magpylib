@@ -159,5 +159,4 @@ def current_loop_field(*args, **kwargs):
         MagpylibDeprecationWarning,
         stacklevel=2,
     )
-    # return current_circle_field(*args, **kwargs)
-    return None
+    return current_circle_field(*args, **kwargs)

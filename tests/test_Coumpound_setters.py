@@ -58,7 +58,7 @@ def make_wheel(Ncubes=6, height=10, diameter=36, path_len=5, label=None):
 
     def cs_lambda():
         return magpy.magnet.Cuboid(
-            (1, 0, 0),
+            polarization=(1, 0, 0),
             dimension=[height] * 3,
             position=(diameter / 2, 0, 0),
         )

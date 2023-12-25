@@ -18,7 +18,7 @@ def getBHv_unknown_source_type():
     getBH_level2(
         sources="badName",
         observers=(0, 0, 0),
-        magnetization=(1, 0, 0),
+        polarization=(1, 0, 0),
         dimension=(0, 2, 1, 0, 360),
         position=(0, 0, -0.5),
         field="B",
@@ -28,7 +28,7 @@ def getBHv_unknown_source_type():
 
 def getBH_level2_bad_input1():
     """test BadUserInput error at getBH_level2"""
-    src = magpy.magnet.Cuboid((1, 1, 2), (1, 1, 1))
+    src = magpy.magnet.Cuboid(polarization=(1, 1, 2), dimension=(1, 1, 1))
     sens = magpy.Sensor()
     getBH_level2(
         [src, sens],
@@ -57,21 +57,21 @@ def getBHv_missing_input1():
     x = np.array([(1, 2, 3)])
     # pylint: disable=missing-kwoa
     getBH_level2(
-        sources="Cuboid", observers=x, magnetization=x, dimension=x, **GETBH_KWARGS
+        sources="Cuboid", observers=x, polarization=x, dimension=x, **GETBH_KWARGS
     )
 
 
 def getBHv_missing_input2():
     """missing source_type"""
     x = np.array([(1, 2, 3)])
-    getBH_level2(observers=x, field="B", magnetization=x, dimension=x, **GETBH_KWARGS)
+    getBH_level2(observers=x, field="B", polarization=x, dimension=x, **GETBH_KWARGS)
 
 
 def getBHv_missing_input3():
     """missing observer"""
     x = np.array([(1, 2, 3)])
     getBH_level2(
-        sources="Cuboid", field="B", magnetization=x, dimension=x, **GETBH_KWARGS
+        sources="Cuboid", field="B", polarization=x, dimension=x, **GETBH_KWARGS
     )
 
 
@@ -85,7 +85,7 @@ def getBHv_missing_input5_cuboid():
     """missing Cuboid dim"""
     x = np.array([(1, 2, 3)])
     getBH_level2(
-        sources="Cuboid", observers=x, field="B", magnetization=x, **GETBH_KWARGS
+        sources="Cuboid", observers=x, field="B", polarization=x, **GETBH_KWARGS
     )
 
 
@@ -102,7 +102,7 @@ def getBHv_missing_input5_cyl():
     """missing Cylinder dim"""
     x = np.array([(1, 2, 3)])
     getBH_level2(
-        sources="Cylinder", observers=x, field="B", magnetization=x, **GETBH_KWARGS
+        sources="Cylinder", observers=x, field="B", polarization=x, **GETBH_KWARGS
     )
 
 
@@ -116,7 +116,7 @@ def getBHv_missing_input5_sphere():
     """missing Sphere dim"""
     x = np.array([(1, 2, 3)])
     getBH_level2(
-        sources="Sphere", observers=x, field="B", magnetization=x, **GETBH_KWARGS
+        sources="Sphere", observers=x, field="B", polarization=x, **GETBH_KWARGS
     )
 
 
@@ -129,7 +129,7 @@ def getBHv_bad_input1():
         sources="Cuboid",
         observers=x,
         field="B",
-        magnetization=x2,
+        polarization=x2,
         dimension=x,
         **GETBH_KWARGS,
     )
@@ -142,7 +142,7 @@ def getBHv_bad_input2():
         sources="Cubooid",
         observers=x,
         field="B",
-        magnetization=x,
+        polarization=x,
         dimension=x,
         **GETBH_KWARGS,
     )
@@ -156,7 +156,7 @@ def getBHv_bad_input3():
         sources="Cuboid",
         observers=s,
         field="B",
-        magnetization=x,
+        polarization=x,
         dimension=x,
         **GETBH_KWARGS,
     )
@@ -164,15 +164,15 @@ def getBHv_bad_input3():
 
 def utility_format_obj_input():
     """bad input object"""
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    pm2 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
+    pm2 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     format_obj_input([pm1, pm2, 333])
 
 
 def utility_format_src_inputs():
     """bad src input"""
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    pm2 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
+    pm2 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     format_src_inputs([pm1, pm2, 1])
 
 
@@ -187,7 +187,7 @@ def utility_format_obs_inputs():
 def utility_test_path_format():
     """bad path format input"""
     # pylint: disable=protected-access
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     pm1._position = [(1, 2, 3), (1, 2, 3)]
     tpf(pm1)
 
@@ -209,7 +209,7 @@ def bad_input_shape_cuboid_dim():
 
 
 def bad_input_shape_cuboid_mag():
-    """bad cuboid magnetization shape"""
+    """bad cuboid polarization shape"""
     vec3 = (1, 2, 3)
     vec4 = (1, 2, 3, 4)
     magpy.magnet.Cuboid(vec4, vec3)
@@ -223,14 +223,14 @@ def bad_input_shape_cyl_dim():
 
 
 def bad_input_shape_cyl_mag():
-    """bad cylinder magnetization shape"""
+    """bad cylinder polarization shape"""
     vec3 = (1, 2, 3)
     vec4 = (1, 2, 3, 4)
     magpy.magnet.Cylinder(vec4, vec3)
 
 
 def bad_input_shape_sphere_mag():
-    """bad sphere magnetization shape"""
+    """bad sphere polarization shape"""
     vec4 = (1, 2, 3, 4)
     magpy.magnet.Sphere(vec4, 1)
 
@@ -243,7 +243,7 @@ def bad_input_shape_sensor_pix_pos():
 
 
 def bad_input_shape_dipole_mom():
-    """bad sphere magnetization shape"""
+    """bad sphere polarization shape"""
     vec4 = (1, 2, 3, 4)
     magpy.misc.Dipole(moment=vec4)
 

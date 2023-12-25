@@ -4,7 +4,6 @@ from numpy.testing import assert_allclose
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibDeprecationWarning
-from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 from magpylib._src.utility import MU0
@@ -12,9 +11,7 @@ from magpylib.core import current_circle_field
 from magpylib.core import current_line_field
 from magpylib.core import current_loop_field
 from magpylib.core import current_polyline_field
-from magpylib.core import dipole_field
 from magpylib.core import magnet_cuboid_field
-from magpylib.core import magnet_cylinder_field
 from magpylib.core import magnet_cylinder_segment_field
 from magpylib.core import magnet_sphere_field
 from magpylib.core import magnet_tetrahedron_field
@@ -583,13 +580,34 @@ def test_dipole_field_BH():
 
 
 def test_line_deprecation():
+    """test line deprecation"""
+    kw = {
+        "field": "B",
+        "observers": np.array([(0, 0, 1)]),
+        "segment_start": np.array([(0, 0, 1)]),
+        "segment_end": np.array([(0, 0, 1)]),
+        "current": np.array([1]),
+    }
+    B1 = current_polyline_field(**kw)
     with pytest.warns(MagpylibDeprecationWarning):
-        x = current_line_field("B", 1, 2, 3, 4)
+        B2 = current_line_field(**kw)
+
+    np.testing.assert_allclose(B1, B2)
 
 
 def test_loop_deprecation():
+    """test loop deprecation"""
+    kw = {
+        "field": "B",
+        "observers": np.array([(0, 0, 1)]),
+        "diameter": np.array([1]),
+        "current": np.array([1]),
+    }
+    B1 = current_circle_field(**kw)
     with pytest.warns(MagpylibDeprecationWarning):
-        x = current_loop_field("B", 1, 2, 3, 4)
+        B2 = current_loop_field(**kw)
+
+    np.testing.assert_allclose(B1, B2)
 
 
 def test_field_loop_specials():

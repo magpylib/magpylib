@@ -12,10 +12,10 @@ def test_getB_level2_input_simple():
     mag = (1, 2, 3)
     dim_cuboid = (1, 2, 3)
     dim_cyl = (1, 2)
-    pm1 = magpy.magnet.Cuboid(mag, dim_cuboid)
-    pm2 = magpy.magnet.Cuboid(mag, dim_cuboid)
-    pm3 = magpy.magnet.Cylinder(mag, dim_cyl)
-    pm4 = magpy.magnet.Cylinder(mag, dim_cyl)
+    pm1 = magpy.magnet.Cuboid(polarization=mag, dimension=dim_cuboid)
+    pm2 = magpy.magnet.Cuboid(polarization=mag, dimension=dim_cuboid)
+    pm3 = magpy.magnet.Cylinder(polarization=mag, dimension=dim_cyl)
+    pm4 = magpy.magnet.Cylinder(polarization=mag, dimension=dim_cyl)
     col1 = magpy.Collection(pm1.copy())
     col2 = magpy.Collection(pm1.copy(), pm2.copy())
     col3 = magpy.Collection(pm1.copy(), pm2.copy(), pm3.copy())
@@ -66,16 +66,16 @@ def test_getB_level2_input_shape22():
     dim_cyl = (1, 2)
 
     def pm1():
-        return magpy.magnet.Cuboid(mag, dim_cuboid)
+        return magpy.magnet.Cuboid(polarization=mag, dimension=dim_cuboid)
 
     def pm2():
-        return magpy.magnet.Cuboid(mag, dim_cuboid)
+        return magpy.magnet.Cuboid(polarization=mag, dimension=dim_cuboid)
 
     def pm3():
-        return magpy.magnet.Cylinder(mag, dim_cyl)
+        return magpy.magnet.Cylinder(polarization=mag, dimension=dim_cyl)
 
     def pm4():
-        return magpy.magnet.Cylinder(mag, dim_cyl)
+        return magpy.magnet.Cylinder(polarization=mag, dimension=dim_cyl)
 
     col1 = magpy.Collection(pm1())
     col2 = magpy.Collection(pm1(), pm2())
@@ -125,8 +125,8 @@ def test_getB_level2_input_path():
     """
     mag = (1, 2, 3)
     dim_cuboid = (1, 2, 3)
-    pm1 = magpy.magnet.Cuboid(mag, dim_cuboid)
-    pm2 = magpy.magnet.Cuboid(mag, dim_cuboid)
+    pm1 = magpy.magnet.Cuboid(polarization=mag, dimension=dim_cuboid)
+    pm2 = magpy.magnet.Cuboid(polarization=mag, dimension=dim_cuboid)
     sens1 = magpy.Sensor()
     sens2 = magpy.Sensor(pixel=[(0, 0, 0), (0, 0, 1), (0, 0, 2)])
 
@@ -168,8 +168,8 @@ def test_path_tile():
     """Test if auto-tiled paths of objects will properly be reset
     in getB_level2 before returning
     """
-    pm1 = magpy.magnet.Cuboid((11, 22, 33), (1, 2, 3))
-    pm2 = magpy.magnet.Cuboid((11, 22, 33), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid(polarization=(11, 22, 33), dimension=(1, 2, 3))
+    pm2 = magpy.magnet.Cuboid(polarization=(11, 22, 33), dimension=(1, 2, 3))
     poz = np.linspace((10 / 33, 10 / 33, 10 / 33), (10, 10, 10), 33)
     pm2.move(poz)
 
@@ -193,7 +193,7 @@ def test_path_tile():
 
 def test_sensor_rotation1():
     """Test simple sensor rotation using sin/cos"""
-    src = magpy.magnet.Cuboid((1000, 0, 0), (1, 1, 1))
+    src = magpy.magnet.Cuboid(polarization=(1, 0, 0), dimension=(1, 1, 1))
     sens = magpy.Sensor(position=(1, 0, 0))
     sens.rotate_from_angax(np.linspace(0, 360, 56)[1:], "z", start=1, anchor=None)
     B = src.getB(sens)
@@ -211,8 +211,12 @@ def test_sensor_rotation1():
 
 def test_sensor_rotation2():
     """test sensor rotations with different combinations of inputs mag/col + sens/pos"""
-    src = magpy.magnet.Cuboid((1000, 0, 0), (1, 1, 1), (0, 0, 2))
-    src2 = magpy.magnet.Cuboid((1000, 0, 0), (1, 1, 1), (0, 0, 2))
+    src = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(0, 0, 2)
+    )
+    src2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(0, 0, 2)
+    )
     col = magpy.Collection(src, src2)
 
     poss = (0, 0, 0)
@@ -222,25 +226,25 @@ def test_sensor_rotation2():
     sens2 = magpy.Sensor(pixel=poss)
     sens2.rotate_from_angax(-45, "z")
 
-    x1 = np.array([-9.82, 0, 0])
-    x2 = np.array([-6.94, 6.94, 0])
-    x3 = np.array([0, 9.82, 0])
-    x1b = np.array([-19.64, 0, 0])
-    x2b = np.array([-13.89, 13.89, 0])
-    x3b = np.array([0, 19.64, 0])
+    x1 = np.array([-9.82, 0, 0]) * 1e-3
+    x2 = np.array([-6.94, 6.94, 0]) * 1e-3
+    x3 = np.array([0, 9.82, 0]) * 1e-3
+    x1b = np.array([-19.64, 0, 0]) * 1e-3
+    x2b = np.array([-13.89, 13.89, 0]) * 1e-3
+    x3b = np.array([0, 19.64, 0]) * 1e-3
 
     B = magpy.getB(src, poss, squeeze=True)
     Btest = x1
-    assert np.allclose(np.around(B, decimals=2), Btest), "FAIL: mag  +  pos"
+    assert np.allclose(np.around(B, decimals=5), Btest), "FAIL: mag  +  pos"
 
     B = magpy.getB([src], [sens], squeeze=True)
     Btest = np.array([x1, x2, x3])
-    assert np.allclose(np.around(B, decimals=2), Btest), "FAIL: mag  +  sens_rot_path"
+    assert np.allclose(np.around(B, decimals=5), Btest), "FAIL: mag  +  sens_rot_path"
 
     B = magpy.getB([src], [sens, poss], squeeze=True)
     Btest = np.array([[x1, x1], [x2, x1], [x3, x1]])
     assert np.allclose(
-        np.around(B, decimals=2), Btest
+        np.around(B, decimals=5), Btest
     ), "FAIL: mag  +  sens_rot_path, pos"
 
     B = magpy.getB([src, col], [sens, poss], squeeze=True)
@@ -248,14 +252,14 @@ def test_sensor_rotation2():
         [[[x1, x1], [x2, x1], [x3, x1]], [[x1b, x1b], [x2b, x1b], [x3b, x1b]]]
     )
     assert np.allclose(
-        np.around(B, decimals=2), Btest
+        np.around(B, decimals=5), Btest
     ), "FAIL: mag,col  +  sens_rot_path, pos"
 
 
 def test_sensor_rotation3():
     """testing rotated static sensor path"""
     # case static sensor rot
-    src = magpy.magnet.Cuboid((1000, 0, 0), (1, 1, 1))
+    src = magpy.magnet.Cuboid(polarization=(1, 0, 0), dimension=(1, 1, 1))
     sens = magpy.Sensor()
     sens.rotate_from_angax(45, "z")
     B0 = magpy.getB(src, sens)
@@ -274,15 +278,15 @@ def test_object_tiling():
     src1.rotate_from_angax(np.linspace(1, 31, 31), "x", anchor=(0, 1, 0), start=-1)
 
     src2 = magpy.magnet.Cuboid(
-        magnetization=(1, 1, 1), dimension=(1, 1, 1), position=(1, 1, 1)
+        polarization=(1, 1, 1), dimension=(1, 1, 1), position=(1, 1, 1)
     )
     src2.move([(1, 1, 1)] * 21, start=-1)
 
     src3 = magpy.magnet.Cuboid(
-        magnetization=(1, 1, 1), dimension=(1, 1, 1), position=(1, 1, 1)
+        polarization=(1, 1, 1), dimension=(1, 1, 1), position=(1, 1, 1)
     )
     src4 = magpy.magnet.Cuboid(
-        magnetization=(1, 1, 1), dimension=(1, 1, 1), position=(1, 1, 1)
+        polarization=(1, 1, 1), dimension=(1, 1, 1), position=(1, 1, 1)
     )
 
     col = magpy.Collection(src3, src4)
@@ -327,12 +331,12 @@ def test_superposition_vs_tiling():
     loop.rotate_from_angax([45, 90], "x")
 
     sphere1 = magpy.magnet.Sphere(
-        magnetization=(0, 0, 1), diameter=1, position=(20, 10, 1)
+        polarization=(0, 0, 1), diameter=1, position=(20, 10, 1)
     )
     sphere1.rotate_from_angax([45, 90], "y")
 
     sphere2 = magpy.magnet.Sphere(
-        magnetization=(1, 0, 0), diameter=2, position=(10, 20, 1)
+        polarization=(1, 0, 0), diameter=2, position=(10, 20, 1)
     )
     sphere2.rotate_from_angax([45, 90], "y")
 
@@ -354,7 +358,7 @@ def test_squeeze_sumup():
     """make sure that sumup does not lead to false output shape"""
 
     s = magpy.Sensor(pixel=(1, 2, 3))
-    ss = magpy.magnet.Sphere((1, 2, 3), 1)
+    ss = magpy.magnet.Sphere(polarization=(1, 2, 3), diameter=1)
 
     B1 = magpy.getB(ss, s, squeeze=False)
     B2 = magpy.getB(ss, s, squeeze=False, sumup=True)
@@ -364,7 +368,9 @@ def test_squeeze_sumup():
 
 def test_pixel_agg():
     """test pixel aggregator"""
-    src1 = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1)).move([[1, 0, 0]])
+    src1 = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1)).move(
+        [[1, 0, 0]]
+    )
     sens1 = magpy.Sensor(
         position=(0, 0, 1), pixel=np.zeros((4, 5, 3)), style_label="sens1 pixel(4,5)"
     )
@@ -387,8 +393,8 @@ def test_pixel_agg():
 
 def test_pixel_agg_heterogeneous_pixel_shapes():
     """test pixel aggregator with heterogeneous pixel shapes"""
-    src1 = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
-    src2 = magpy.magnet.Sphere((0, 0, 1000), 1, position=(2, 0, 0))
+    src1 = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    src2 = magpy.magnet.Sphere(polarization=(0, 0, 1), diameter=1, position=(2, 0, 0))
     sens1 = magpy.Sensor(
         position=(0, 0, 1), pixel=[0, 0, 0], style_label="sens1, pixel.shape = (3,)"
     )
@@ -461,10 +467,10 @@ def test_pixel_agg3():
     e2 = [(1, 1, 1)] * 2
     e3 = [(1, 1, 1)] * 3
 
-    s0 = magpy.magnet.Cuboid(e0, e0)
+    s0 = magpy.magnet.Cuboid(polarization=e0, dimension=e0)
     c0 = magpy.Collection(s0)
-    s1 = magpy.magnet.Cuboid(e0, e0)
-    s2 = magpy.magnet.Cuboid(-e0, e0)
+    s1 = magpy.magnet.Cuboid(polarization=e0, dimension=e0)
+    s2 = magpy.magnet.Cuboid(polarization=-e0, dimension=e0)
     c1 = magpy.Collection(c0, s1, s2)
 
     x0 = magpy.Sensor(pixel=e0)

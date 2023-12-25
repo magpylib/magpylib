@@ -592,7 +592,7 @@ def check_dimensions(sources):
 def check_excitations(sources):
     """check if all sources have excitation initialized"""
     for src in sources:
-        for arg in ("magnetization", "current", "moment"):
+        for arg in ("polarization", "current", "moment"):
             if hasattr(src, arg):
                 if getattr(src, arg) is None:
                     raise MagpylibMissingInput(

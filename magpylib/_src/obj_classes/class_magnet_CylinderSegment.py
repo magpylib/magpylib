@@ -179,4 +179,4 @@ class CylinderSegment(BaseMagnet):
         if self.dimension is None:
             return "no dimension"
         d = [unit_prefix(d) for d in self.dimension]
-        return f"r={d[0]}|{d[1]}, h={d[2]}, φ={d[3]}°|{d[4]}°"
+        return f"r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°"

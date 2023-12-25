@@ -61,19 +61,19 @@ def test_Collection_basics():
     ):
         rot = R.from_rotvec(rv)
 
-        pm1b = magpy.magnet.Cuboid(mag[0], dim3[0])
-        pm2b = magpy.magnet.Cuboid(mag[1], dim3[1])
-        pm3b = magpy.magnet.Cuboid(mag[2], dim3[2])
-        pm4b = magpy.magnet.Cylinder(mag[3], dim2[0])
-        pm5b = magpy.magnet.Cylinder(mag[4], dim2[1])
-        pm6b = magpy.magnet.Cylinder(mag[5], dim2[2])
+        pm1b = magpy.magnet.Cuboid(polarization=mag[0], dimension=dim3[0])
+        pm2b = magpy.magnet.Cuboid(polarization=mag[1], dimension=dim3[1])
+        pm3b = magpy.magnet.Cuboid(polarization=mag[2], dimension=dim3[2])
+        pm4b = magpy.magnet.Cylinder(polarization=mag[3], dimension=dim2[0])
+        pm5b = magpy.magnet.Cylinder(polarization=mag[4], dimension=dim2[1])
+        pm6b = magpy.magnet.Cylinder(polarization=mag[5], dimension=dim2[2])
 
-        pm1 = magpy.magnet.Cuboid(mag[0], dim3[0])
-        pm2 = magpy.magnet.Cuboid(mag[1], dim3[1])
-        pm3 = magpy.magnet.Cuboid(mag[2], dim3[2])
-        pm4 = magpy.magnet.Cylinder(mag[3], dim2[0])
-        pm5 = magpy.magnet.Cylinder(mag[4], dim2[1])
-        pm6 = magpy.magnet.Cylinder(mag[5], dim2[2])
+        pm1 = magpy.magnet.Cuboid(polarization=mag[0], dimension=dim3[0])
+        pm2 = magpy.magnet.Cuboid(polarization=mag[1], dimension=dim3[1])
+        pm3 = magpy.magnet.Cuboid(polarization=mag[2], dimension=dim3[2])
+        pm4 = magpy.magnet.Cylinder(polarization=mag[3], dimension=dim2[0])
+        pm5 = magpy.magnet.Cylinder(polarization=mag[4], dimension=dim2[1])
+        pm6 = magpy.magnet.Cylinder(polarization=mag[5], dimension=dim2[2])
 
         col1 = magpy.Collection(pm1, pm2, pm3)
         col1.add(pm4, pm5, pm6)
@@ -121,10 +121,10 @@ def test_Collection_basics():
 def test_col_getB(test_input, expected):
     """testing some Collection stuff with getB"""
     src1 = magpy.magnet.Cuboid(
-        magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
+        polarization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
     )
     src2 = magpy.magnet.Cylinder(
-        magnetization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0)
+        polarization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0)
     )
     sens1 = magpy.Sensor(position=(0, 0, 6))
     sens2 = magpy.Sensor(position=(0, 0, 6))
@@ -195,11 +195,11 @@ def test_bad_col_getB_inputs(test_input):
     # pylint: disable=eval-used
 
     src1 = magpy.magnet.Cuboid(
-        magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
+        polarization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
     )
 
     src2 = magpy.magnet.Cylinder(
-        magnetization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0)
+        polarization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0)
     )
 
     sens1 = magpy.Sensor(position=(0, 0, 6))
@@ -228,9 +228,9 @@ def test_bad_col_getB_inputs(test_input):
 
 def test_col_get_item():
     """test get_item with collections"""
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    pm2 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    pm3 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
+    pm2 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
+    pm3 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
 
     col = magpy.Collection(pm1, pm2, pm3)
     assert col[1] == pm2, "get_item failed"
@@ -239,8 +239,8 @@ def test_col_get_item():
 
 def test_col_getH():
     """test collection getH"""
-    pm1 = magpy.magnet.Sphere((1, 2, 3), 3)
-    pm2 = magpy.magnet.Sphere((1, 2, 3), 3)
+    pm1 = magpy.magnet.Sphere(polarization=(1, 2, 3), diameter=3)
+    pm2 = magpy.magnet.Sphere(polarization=(1, 2, 3), diameter=3)
     col = magpy.Collection(pm1, pm2)
     H = col.getH((0, 0, 0))
     H1 = pm1.getH((0, 0, 0))
@@ -250,8 +250,8 @@ def test_col_getH():
 def test_col_reset_path():
     """testing display"""
     # pylint: disable=no-member
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    pm2 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
+    pm2 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     col = magpy.Collection(pm1, pm2)
     col.move([(1, 2, 3)] * 10)
     col.reset_path()
@@ -262,8 +262,8 @@ def test_col_reset_path():
 
 def test_Collection_squeeze():
     """testing squeeze output"""
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    pm2 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
+    pm2 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     col = magpy.Collection(pm1, pm2)
     sensor = magpy.Sensor(pixel=[(1, 2, 3), (1, 2, 3)])
     B = col.getB(sensor)
@@ -284,7 +284,7 @@ def test_Collection_with_Dipole():
     sens = magpy.Sensor()
 
     B = magpy.getB(col, sens)
-    Btest = np.array([0.00303828, 0.00607656, 0.00911485])
+    Btest = np.array([3.81801774e-09, 7.63603548e-09, 1.14540532e-08])
     assert np.allclose(B, Btest)
 
 
@@ -313,8 +313,8 @@ def test_adding_sources():
 
 def test_set_children_styles():
     """test if styles get applied"""
-    src1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    src2 = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
+    src1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
+    src2 = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(1, 2))
     col = src1 + src2
     col.set_children_styles(magnetization_show=False)
     assert (
@@ -332,7 +332,7 @@ def test_reprs():
     c = magpy.Collection()
     assert repr(c)[:10] == "Collection"
 
-    s1 = magpy.magnet.Sphere((1, 2, 3), 5)
+    s1 = magpy.magnet.Sphere(polarization=(1, 2, 3), diameter=5)
     c = magpy.Collection(s1)
     assert repr(c)[:10] == "Collection"
 
@@ -341,7 +341,7 @@ def test_reprs():
     assert repr(c)[:10] == "Collection"
 
     x1 = magpy.Sensor()
-    s1 = magpy.magnet.Sphere((1, 2, 3), 5)
+    s1 = magpy.magnet.Sphere(polarization=(1, 2, 3), diameter=5)
     c = magpy.Collection(s1, x1)
     assert repr(c)[:10] == "Collection"
 
@@ -431,18 +431,20 @@ def test_collection_describe():
     desc = cc.describe(format="label, properties", return_string=True).split("\n")
     test = [
         "Collection",
-        "│   • position: [0. 0. 0.] mm",
+        "│   • position: [0. 0. 0.] m",
         "│   • orientation: [0. 0. 0.] degrees",
         "├── x",
-        "│       • position: [0. 0. 0.] mm",
+        "│       • position: [0. 0. 0.] m",
         "│       • orientation: [0. 0. 0.] degrees",
-        "│       • dimension: None mm",
-        "│       • magnetization: None mT",
+        "│       • dimension: None m",
+        "│       • magnetization: None A/m",
+        "│       • polarization: None T",
         "└── y",
-        "        • position: [0. 0. 0.] mm",
+        "        • position: [0. 0. 0.] m",
         "        • orientation: [0. 0. 0.] degrees",
-        "        • dimension: None mm",
-        "        • magnetization: None mT",
+        "        • dimension: None m",
+        "        • magnetization: None A/m",
+        "        • polarization: None T",
     ]
     assert "".join(test) == re.sub("id=*[0-9]*[0-9]", "id=REGEX", "".join(desc))
 

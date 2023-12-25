@@ -35,7 +35,7 @@ except Exception:  # noqa: E722
 
 def test_Cuboid_display():
     "test simple display with path"
-    src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
+    src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
     src.move([[i, 0, 0] for i in range(2)], start=0)
     fig = src.show(return_fig=True, style_path_numbering=True, backend="pyvista")
     assert isinstance(fig, pv.Plotter)
@@ -44,14 +44,14 @@ def test_Cuboid_display():
 def test_animation():
     "animation not supported, should warn and display static"
     pl = pv.Plotter()
-    src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
+    src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
     with pytest.warns(UserWarning):
         src.show(canvas=pl, animation=True, backend="pyvista")
 
 
 def test_ipygany_jupyter_backend():
     """ipygany backend does not support custom colorscales"""
-    src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
+    src = magpy.magnet.Cuboid(polarization=(0, 0, 1000), dimension=(1, 1, 1))
     src.show(return_fig=True, backend="pyvista", jupyter_backend="ipygany")
 
 
@@ -90,7 +90,7 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
     )
     sensor.style.label = "Sensor1"
     cyl1 = magpy.magnet.Cylinder(
-        magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
+        polarization=(0.1, 0, 0), dimension=(1, 2), style_label="Cylinder1"
     )
 
     # define paths
@@ -119,7 +119,7 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
 
 def test_incompatible_jupyter_backend_for2d():
     """test_incompatible_pyvista_backend"""
-    src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
+    src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
     sens = magpy.Sensor()
     with pytest.warns(
         UserWarning,

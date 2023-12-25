@@ -13,7 +13,7 @@ def test_Triangle_repr():
 def test_triangle_input1():
     """test obj-oriented triangle vs cube"""
     obs = (1, 2, 3)
-    mag = (0, 0, 333)
+    pol = (0, 0, 333)
     vert = np.array(
         [
             [(-1, -1, 1), (1, -1, 1), (-1, 1, 1)],  # top1
@@ -24,8 +24,8 @@ def test_triangle_input1():
     )
     coll = magpy.Collection()
     for v in vert:
-        coll.add(magpy.misc.Triangle(mag, v))
-    cube = magpy.magnet.Cuboid(mag, (2, 2, 2))
+        coll.add(magpy.misc.Triangle(polarization=pol, vertices=v))
+    cube = magpy.magnet.Cuboid(polarization=pol, dimension=(2, 2, 2))
 
     b = coll.getB(obs)
     bb = cube.getB(obs)
@@ -37,7 +37,7 @@ def test_triangle_input3():
     """test core triangle vs objOriented triangle"""
 
     obs = np.array([(3, 4, 5)] * 4)
-    mag = np.array([(111, 222, 333)] * 4)
+    pol = np.array([(111, 222, 333)] * 4)
     vert = np.array(
         [
             [(0, 0, 0), (3, 0, 0), (0, 10, 0)],
@@ -46,13 +46,15 @@ def test_triangle_input3():
             [(6, 0, 0), (10, 0, 0), (0, 10, 0)],
         ]
     )
-    b = magpy.core.triangle_field("B", obs, mag, vert)
+    b = magpy.core.triangle_field(
+        field="B", observers=obs, polarization=pol, vertices=vert
+    )
     b = np.sum(b, axis=0)
 
-    tri1 = magpy.misc.Triangle(mag[0], vertices=vert[0])
-    tri2 = magpy.misc.Triangle(mag[0], vertices=vert[1])
-    tri3 = magpy.misc.Triangle(mag[0], vertices=vert[2])
-    tri4 = magpy.misc.Triangle(mag[0], vertices=vert[3])
+    tri1 = magpy.misc.Triangle(polarization=pol[0], vertices=vert[0])
+    tri2 = magpy.misc.Triangle(polarization=pol[0], vertices=vert[1])
+    tri3 = magpy.misc.Triangle(polarization=pol[0], vertices=vert[2])
+    tri4 = magpy.misc.Triangle(polarization=pol[0], vertices=vert[3])
 
     bb = magpy.getB([tri1, tri2, tri3, tri4], obs[0], sumup=True)
 
@@ -73,8 +75,8 @@ def test_empty_object_initialization():
 
 def test_Triangle_barycenter():
     """test Triangle barycenter"""
-    mag = (0, 0, 333)
+    pol = (0, 0, 0.333)
     vert = ((-1, -1, 0), (1, -1, 0), (0, 2, 0))
-    face = magpy.misc.Triangle(mag, vert)
+    face = magpy.misc.Triangle(polarization=pol, vertices=vert)
     bary = np.array([0, 0, 0])
     np.testing.assert_allclose(face.barycenter, bary)

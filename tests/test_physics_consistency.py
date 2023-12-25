@@ -5,27 +5,27 @@ import magpylib as magpy
 
 def test_dipole_approximation():
     """test if all source fields converge towards the correct dipole field at distance"""
-    mag = np.array([111, 222, 333])
+    pol = np.array([0.111, 0.222, 0.333])
     pos = (1234, -234, 345)
 
-    # cuboid with volume = 1 mm^3
-    src1 = magpy.magnet.Cuboid(mag, dimension=(1, 1, 1))
+    # cuboid with volume = 1 m^3
+    src1 = magpy.magnet.Cuboid(polarization=pol, dimension=(1, 1, 1))
     B1 = src1.getB(pos)
 
-    # Cylinder with volume = 1 mm^3
+    # Cylinder with volume = 1 m^3
     dia = np.sqrt(4 / np.pi)
-    src2 = magpy.magnet.Cylinder(mag, dimension=(dia, 1))
+    src2 = magpy.magnet.Cylinder(polarization=pol, dimension=(dia, 1))
     B2 = src2.getB(pos)
     assert np.allclose(B1, B2)
 
-    # Sphere with volume = 1 mm^3
+    # Sphere with volume = 1 m^3
     dia = (6 / np.pi) ** (1 / 3)
-    src3 = magpy.magnet.Sphere(mag, dia)
+    src3 = magpy.magnet.Sphere(polarization=pol, diameter=dia)
     B3 = src3.getB(pos)
     assert np.allclose(B1, B3)
 
-    #  Dipole with mom=mag
-    src4 = magpy.misc.Dipole(moment=mag)
+    #  Dipole with mom=pol
+    src4 = magpy.misc.Dipole(moment=pol)
     B4 = src4.getB(pos)
     assert np.allclose(B1, B4)
 
@@ -169,7 +169,7 @@ def test_Circle_vs_Cylinder_field():
     h0 = 1e-4
     i0 = 1
     src1 = magpy.magnet.Cylinder(
-        magnetization=(0, 0, i0 / h0 * 4 * np.pi / 10), dimension=(r0, h0)
+        polarization=(0, 0, i0 / h0 * 4 * np.pi / 10 * 1e-6), dimension=(r0, h0)
     )
     src2 = magpy.current.Circle(current=i0, diameter=r0)
 
@@ -227,6 +227,6 @@ def test_Polyline_vs_Infinite():
         Bls += [magpy.getB("Polyline", p, current=1, segment_start=ps, segment_end=pe)]
         Binfs += [Binf(1, p)]
     Bls = np.array(Bls)
-    Binfs = np.array(Binfs)
+    Binfs = np.array(Binfs) * 1e-6
 
     assert np.allclose(Bls, Binfs)

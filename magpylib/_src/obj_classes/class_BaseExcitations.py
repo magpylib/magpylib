@@ -202,14 +202,16 @@ class BaseMagnet(BaseSource):
     ):
         super().__init__(position, orientation, style=style, **kwargs)
 
-        if magnetization:
+        self._polarization = None
+        self._magnetization = None
+        if magnetization is not None:
             self.magnetization = magnetization
-            if polarization:
+            if polarization is not None:
                 raise ValueError(
                     "The attributes magnetization and polarization are dependent. "
                     "Only one can be provided at magnet initialization."
                 )
-        if polarization:
+        if polarization is not None:
             self.polarization = polarization
 
     @property

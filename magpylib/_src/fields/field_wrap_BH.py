@@ -622,9 +622,9 @@ def getB(
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
 
-    moment: array_like, shape (3) or (n,3), unit T・m³
+    moment: array_like, shape (3) or (n,3), unit A・m²
         Only source_type == `Dipole`!
-        Magnetic dipole moment(s) in units of T・m³ given in the local object coordinates
+        Magnetic dipole moment(s) in units of A・m² given in the local object coordinates
         (rotates with object). For homogeneous magnets the relation moment=magnetization*volume
         holds.
 
@@ -668,8 +668,8 @@ def getB(
 
     Examples
     --------
-    In this example we compute the B-field in units of tesla of a spherical magnet and a current loop
-    at the observer position (0.01,0.01,0.01) given in units of meter:
+    In this example we compute the B-field in units of tesla of a spherical magnet and a current
+    loop at the observer position (0.01,0.01,0.01) given in units of meter:
 
     >>> import magpylib as magpy
     >>> src1 = magpy.current.Circle(current=100, diameter=.002)
@@ -793,9 +793,9 @@ def getH(
         Magnetization vector(s) (mu0*M, remanence field) in units of A/m given in
         the local object coordinates (rotates with object).
 
-    moment: array_like, shape (3) or (n,3), unit T・m³
+    moment: array_like, shape (3) or (n,3), unit A・m²
         Only source_type == `Dipole`!
-        Magnetic dipole moment(s) in units of T・m³ given in the local object coordinates
+        Magnetic dipole moment(s) in units of A・m² given in the local object coordinates
         (rotates with object). For homogeneous magnets the relation moment=magnetization*volume
         holds.
 

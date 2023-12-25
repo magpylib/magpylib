@@ -48,7 +48,8 @@ class CustomSource(BaseSource):
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> funcBH = lambda field, observers: np.array([(.01 if field=='B' else .08,0,0)]*len(observers))
+    >>> def funcBH(field, observers):
+    ...     return np.array([(.01 if field=='B' else .08,0,0)]*len(observers))
     >>> src = magpy.misc.CustomSource(field_func=funcBH)
     >>> H = src.getH((.01,.01,.01))
     >>> print(H)

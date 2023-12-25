@@ -456,7 +456,10 @@ class BaseCollection(BaseDisplayRepr):
         >>> import magpylib as magpy
         >>>
         >>> col = magpy.Collection(
-        ...     [magpy.magnet.Sphere(position=(i, 0, 0), diameter=1, polarization=(0, 0, .1)) for i in range(3)]
+        ...     [
+        ...         magpy.magnet.Sphere(position=(i, 0, 0), diameter=1, polarization=(0, 0, 0.1))
+        ...         for i in range(3)
+        ...     ]
         ... )
         >>> # We apply styles using underscore magic for magnetization vector size and a style
         >>> # dictionary for the color.
