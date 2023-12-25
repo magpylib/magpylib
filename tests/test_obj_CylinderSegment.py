@@ -5,14 +5,16 @@ import magpylib as magpy
 
 def test_repr():
     """test __repr__"""
-    pm2 = magpy.magnet.CylinderSegment((1, 2, 3), (1, 2, 3, 0, 90))
+    pm2 = magpy.magnet.CylinderSegment(
+        polarization=(1, 2, 3), dimension=(1, 2, 3, 0, 90)
+    )
     assert repr(pm2)[:15] == "CylinderSegment", "CylinderSegment repr failed"
 
 
 def test_barycenter():
     """test if barycenter is computed correctly"""
     cs = magpy.magnet.CylinderSegment(
-        magnetization=(100, 0, 0), dimension=(1, 2, 1, 85, 170)
+        polarization=(100, 0, 0), dimension=(1, 2, 1, 85, 170)
     )
 
     expected_barycenter_squeezed = np.array([-0.86248133, 1.12400755, 0.0])
