@@ -135,7 +135,9 @@ def test_input_objects_orientation_bad(orientation_rotvec):
     """bad input: magpy.Sensor(orientation=orientation_rotvec)"""
 
     with pytest.raises(MagpylibBadUserInput):
-        magpy.Sensor((0, 0, 0), (0, 0, 0), orientation=orientation_rotvec)
+        magpy.Sensor(
+            position=(0, 0, 0), pixel=(0, 0, 0), orientation=orientation_rotvec
+        )
 
 
 @pytest.mark.parametrize(
@@ -154,7 +156,7 @@ def test_input_objects_orientation_bad(orientation_rotvec):
 def test_input_objects_current_good(current):
     """good input: magpy.current.Circle(current)"""
 
-    src = magpy.current.Circle(current)
+    src = magpy.current.Circle(current=current)
     if current is None:
         assert src.current is None
     else:
@@ -261,7 +263,7 @@ def test_input_objects_vertices_bad(vertices):
 
 
 @pytest.mark.parametrize(
-    "moment",
+    "pol_or_mom",
     [
         None,
         (1, 2, 3),
@@ -270,21 +272,21 @@ def test_input_objects_vertices_bad(vertices):
         np.array((1, 2, 3)),
     ],
 )
-def test_input_objects_magnetization_moment_good(moment):
+def test_input_objects_magnetization_moment_good(pol_or_mom):
     """
     good input:
         magpy.magnet.Cuboid(magnetization=moment),
         magpy.misc.Dipole(moment=moment)
     """
 
-    src = magpy.magnet.Cuboid(moment)
-    src2 = magpy.misc.Dipole(moment)
-    if moment is None:
-        assert src.magnetization is None
+    src = magpy.magnet.Cuboid(polarization=pol_or_mom)
+    src2 = magpy.misc.Dipole(moment=pol_or_mom)
+    if pol_or_mom is None:
+        assert src.polarization is None
         assert src2.moment is None
     else:
-        np.testing.assert_allclose(src.magnetization, moment)
-        np.testing.assert_allclose(src2.moment, moment)
+        np.testing.assert_allclose(src.polarization, pol_or_mom)
+        np.testing.assert_allclose(src2.moment, pol_or_mom)
 
 
 @pytest.mark.parametrize(
@@ -930,7 +932,7 @@ def test_input_getBH_field_good(field):
     """good getBH field inputs"""
     moms = np.array([[1, 2, 3]])
     obs = np.array([[1, 2, 3]])
-    B = magpy.core.dipole_field(field, obs, moms)
+    B = magpy.core.dipole_field(field=field, observers=obs, moment=moms)
     assert isinstance(B, np.ndarray)
 
 
@@ -954,4 +956,4 @@ def test_input_getBH_field_bad(field):
     moms = np.array([[1, 2, 3]])
     obs = np.array([[1, 2, 3]])
     with pytest.raises(MagpylibBadUserInput):
-        magpy.core.dipole_field(field, obs, moms)
+        magpy.core.dipole_field(field=field, observers=obs, moment=moms)
