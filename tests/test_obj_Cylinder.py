@@ -5,15 +5,15 @@ import magpylib as magpy
 
 def test_Cylinder_add():
     """testing __add__"""
-    src1 = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
-    src2 = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
+    src1 = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(1, 2))
+    src2 = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(1, 2))
     col = src1 + src2
     assert isinstance(col, magpy.Collection), "adding cylinder fail"
 
 
 def test_Cylinder_squeeze():
     """testing squeeze output"""
-    src1 = magpy.magnet.Cylinder((1, 1, 1), (1, 1))
+    src1 = magpy.magnet.Cylinder(polarization=(1, 1, 1), dimension=(1, 1))
     sensor = magpy.Sensor(pixel=[(1, 2, 3), (1, 2, 3)])
     B = src1.getB(sensor)
     assert B.shape == (2, 3)
@@ -28,13 +28,15 @@ def test_Cylinder_squeeze():
 
 def test_repr():
     """test __repr__"""
-    pm2 = magpy.magnet.Cylinder((1, 2, 3), (2, 3))
+    pm2 = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(2, 3))
     assert repr(pm2)[:8] == "Cylinder", "Cylinder repr failed"
 
 
 def test_repr2():
     """test __repr__"""
-    pm2 = magpy.magnet.CylinderSegment((1, 2, 3), (2, 3, 1, 0, 45))
+    pm2 = magpy.magnet.CylinderSegment(
+        polarization=(1, 2, 3), dimension=(2, 3, 1, 0, 45)
+    )
     assert repr(pm2)[:15] == "CylinderSegment", "CylinderSegment repr failed"
 
 
@@ -43,7 +45,7 @@ def test_Cylinder_getBH():
     test Cylinder getB and getH with different inputs
     vs the vectorized form
     """
-    mag = (22, 33, 44)
+    pol = (22, 33, 44)
     poso = [
         (0.123, 0.234, 0.345),
         (-0.123, 0.234, 0.345),
@@ -67,8 +69,8 @@ def test_Cylinder_getBH():
     dim5 = [(0, 0.5, 2, 0, 360), (0, 1, 3, 0, 360), (0.0000001, 1.5, 4, 0, 360)]
 
     for d2, d5 in zip(dim2, dim5):
-        src1 = magpy.magnet.Cylinder(mag, d2)
-        src2 = magpy.magnet.CylinderSegment(mag, d5)
+        src1 = magpy.magnet.Cylinder(polarization=pol, dimension=d2)
+        src2 = magpy.magnet.CylinderSegment(polarization=pol, dimension=d5)
         B0 = src1.getB(poso)
         H0 = src1.getH(poso)
 
@@ -78,26 +80,26 @@ def test_Cylinder_getBH():
         B2 = magpy.getB(
             "Cylinder",
             poso,
-            magnetization=mag,
+            polarization=pol,
             dimension=d2,
         )
         H2 = magpy.getH(
             "Cylinder",
             poso,
-            magnetization=mag,
+            polarization=pol,
             dimension=d2,
         )
 
         B3 = magpy.getB(
             "CylinderSegment",
             poso,
-            magnetization=mag,
+            polarization=pol,
             dimension=d5,
         )
         H3 = magpy.getH(
             "CylinderSegment",
             poso,
-            magnetization=mag,
+            polarization=pol,
             dimension=d5,
         )
 
