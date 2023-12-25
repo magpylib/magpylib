@@ -720,7 +720,7 @@ def test_input_rotate_axis_bad(axis):
 )
 def test_input_observers_good(observers):
     """good observers input"""
-    src = magpy.misc.Dipole((1, 2, 3))
+    src = magpy.misc.Dipole(moment=(1, 2, 3))
     B = src.getB(observers)
     assert isinstance(B, np.ndarray)
 
@@ -733,7 +733,7 @@ def test_input_observers_good(observers):
         [],
         ("a", "b", "c"),
         [("a", "b", "c")],
-        magpy.misc.Dipole((1, 2, 3)),
+        magpy.misc.Dipole(moment=(1, 2, 3)),
         [(1, 2, 3), [(1, 2, 3)] * 2],
         [magpy.Sensor(), [(1, 2, 3)] * 2],
         [[(1, 2, 3)] * 2, magpy.Collection(magpy.Sensor())],
@@ -742,7 +742,7 @@ def test_input_observers_good(observers):
 )
 def test_input_observers_bad(observers):
     """bad observers input"""
-    src = magpy.misc.Dipole((1, 2, 3))
+    src = magpy.misc.Dipole(moment=(1, 2, 3))
     with pytest.raises(MagpylibBadUserInput):
         src.getB(observers)
 

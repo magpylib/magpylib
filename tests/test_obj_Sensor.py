@@ -86,7 +86,7 @@ def test_pixel1():
     )
 
     # squeeze=False Bshape of [(1,2,3)] must then also be (1,1,1,1,3)
-    src = magpy.misc.Dipole((1, 2, 3))
+    src = magpy.misc.Dipole(moment=(1, 2, 3))
     np.testing.assert_allclose(
         src.getB(magpy.Sensor(pixel=[(1, 2, 3)]), squeeze=False).shape,
         (1, 1, 1, 1, 3),
@@ -121,7 +121,7 @@ def test_pixel3():
     There should be complete equivalence between pos_vec and
     Sensor(pixel=pos_vec) inputs
     """
-    src = magpy.misc.Dipole((1, 2, 3))
+    src = magpy.misc.Dipole(moment=(1, 2, 3))
 
     p0 = (1, 2, 3)
     p1 = [(1, 2, 3)]

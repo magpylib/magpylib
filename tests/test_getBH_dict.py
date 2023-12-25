@@ -130,11 +130,11 @@ def test_getB_dict4():
 def test_getBH_dipole():
     """test if Dipole implementation gives correct output"""
     B = magpy.getB("Dipole", (1, 1, 1), moment=(1, 2, 3))
-    Btest = np.array([0.07657346, 0.06125877, 0.04594407])
+    Btest = np.array([9.62250449e-08, 7.69800359e-08, 5.77350269e-08])
     assert np.allclose(B, Btest)
 
     H = magpy.getH("Dipole", (1, 1, 1), moment=(1, 2, 3))
-    Htest = np.array([0.06093522, 0.04874818, 0.03656113])
+    Htest = np.array([0.07657346, 0.06125877, 0.04594407])
     assert np.allclose(H, Htest)
 
 
