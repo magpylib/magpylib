@@ -5,7 +5,7 @@ import magpylib as magpy
 
 def test_sensor1():
     """self-consistent test of the sensor class"""
-    pm = magpy.magnet.Cuboid((11, 22, 33), (1, 2, 3))
+    pm = magpy.magnet.Cuboid(polarization=(11, 22, 33), dimension=(1, 2, 3))
     angs = np.linspace(0, 555, 44)
     possis = [
         (3 * np.cos(t / 180 * np.pi), 3 * np.sin(t / 180 * np.pi), 1) for t in angs
@@ -24,7 +24,7 @@ def test_sensor1():
 
 def test_sensor2():
     """self-consistent test of the sensor class"""
-    pm = magpy.magnet.Cuboid((11, 22, 33), (1, 2, 3))
+    pm = magpy.magnet.Cuboid(polarization=(11, 22, 33), dimension=(1, 2, 3))
     poz = np.linspace(0, 5, 33)
     poss1 = [(t, 0, 2) for t in poz]
     poss2 = [(t, 0, 3) for t in poz]
@@ -43,7 +43,7 @@ def test_sensor2():
 def test_Sensor_getB_specs():
     """test input of sens getB"""
     sens1 = magpy.Sensor(pixel=(4, 4, 4))
-    pm1 = magpy.magnet.Cylinder((111, 222, 333), (1, 2))
+    pm1 = magpy.magnet.Cylinder(polarization=(111, 222, 333), dimension=(1, 2))
 
     B1 = sens1.getB(pm1)
     B2 = magpy.getB(pm1, sens1)
@@ -52,7 +52,7 @@ def test_Sensor_getB_specs():
 
 def test_Sensor_squeeze():
     """testing squeeze output"""
-    src = magpy.magnet.Sphere((1, 1, 1), 1)
+    src = magpy.magnet.Sphere(polarization=(1, 1, 1), diameter=1)
     sensor = magpy.Sensor(pixel=[(1, 2, 3), (1, 2, 3)])
     B = sensor.getB(src)
     assert B.shape == (2, 3)
@@ -77,7 +77,7 @@ def test_pixel1():
     logic: single sensor, scalar path, single source all generate
     1 for squeeze=False Bshape. Bare pixel should do the same
     """
-    src = magpy.misc.Dipole((1, 2, 3))
+    src = magpy.misc.Dipole(moment=(1, 2, 3))
 
     # squeeze=False Bshape of nbare pixel must be (1,1,1,1,3)
     np.testing.assert_allclose(
