@@ -519,7 +519,9 @@ class BaseCollection(BaseDisplayRepr):
         return sources, sensors
 
     def getB(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
-        """Compute B-field in tesla for given sources and observers.
+        """Compute B-field for given sources and observers.
+
+        SI units are used for all inputs and outputs.
 
         Parameters
         ----------
@@ -546,10 +548,10 @@ class BaseCollection(BaseDisplayRepr):
         Returns
         -------
         B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
-            B-field at each path position (m) for each sensor (k) and each sensor pixel
-            position (n1,n2,...) in units of tesla. Sensor pixel positions are equivalent
-            to simple observer positions. Paths of objects that are shorter than m will be
-            considered as static beyond their end.
+            B-field at each path position ( index m) for each sensor (index k) and each
+            sensor pixel position (indices n1,n2,...) in units of T. Sensor pixel positions
+            are equivalent to simple observer positions. Paths of objects that are shorter
+            than index m are considered as static beyond their end.
 
         Examples
         --------
@@ -590,7 +592,9 @@ class BaseCollection(BaseDisplayRepr):
         )
 
     def getH(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
-        """Compute H-field in A/m for given sources and observers.
+        """Compute H-field for given sources and observers.
+
+        SI units are used for all inputs and outputs.
 
         Parameters
         ----------
@@ -617,10 +621,10 @@ class BaseCollection(BaseDisplayRepr):
         Returns
         -------
         H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
-            H-field at each path position (m) for each sensor (k) and each sensor pixel
-            position (n1,n2,...) in units of A/m. Sensor pixel positions are equivalent
-            to simple observer positions. Paths of objects that are shorter than m will be
-            considered as static beyond their end.
+            H-field at each path position (index m) for each sensor (index k) and each sensor
+            pixel position (indeices n1,n2,...) in units of A/m. Sensor pixel positions are
+            equivalent to simple observer positions. Paths of objects that are shorter than
+            index m are considered as static beyond their end.
 
         Examples
         --------
@@ -689,6 +693,8 @@ class Collection(BaseGeo, BaseCollection):
     computation. For magnetic field computation a collection that contains sources
     functions like a single source. When the collection contains sensors
     it functions like a list of all its sensors.
+
+    SI units are used for all inputs and outputs.
 
     Parameters
     ----------
