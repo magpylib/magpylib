@@ -2413,7 +2413,7 @@ def magnet_cylinder_segment_field(
     """
     check_field_input(field)
 
-    BHfinal = np.zeros((len(polarization), 3))
+    H_all = np.zeros((len(observers), 3))
 
     r1, r2, h, phi1, phi2 = dimension.T
     r1 = abs(r1)
@@ -2458,8 +2458,7 @@ def magnet_cylinder_segment_field(
             (close(r, r1) | close(r, r2)) & mask_phi_in & mask_z_in
         )  # in / out
         mask_surf_phi = (mask_phi1 | mask_phi2) & mask_r_in & mask_z_in  # in / out
-        mask_on_surface = mask_surf_z | mask_surf_r | mask_surf_phi
-        mask_not_on_surf = ~mask_on_surface
+        mask_not_on_surf = ~(mask_surf_z | mask_surf_r | mask_surf_phi)
 
         # inside
         mask_inside = mask_r_in & mask_phi_in & mask_z_in
@@ -2469,9 +2468,8 @@ def magnet_cylinder_segment_field(
 
     # return 0 when all points are on surface --------------------------------
     if not np.any(mask_not_on_surf):
-        return BHfinal
+        return H_all
 
-    H = None
     if field in "BH":
         # redefine input if there are some surface-points -------------------------
         pol = polarization[mask_not_on_surf]
@@ -2491,11 +2489,12 @@ def magnet_cylinder_segment_field(
         Hx = Hr * np.cos(phi) - Hphi * np.sin(phi)
         Hy = Hr * np.sin(phi) + Hphi * np.cos(phi)
         H = np.concatenate(((Hx,), (Hy,), (Hz,)), axis=0).T / MU0
+        H_all[mask_not_on_surf] = H
 
     return convert_HBMJ(
         output_field_type=field,
         polarization=polarization,
         input_field_type="H",
-        field_values=H,
+        field_values=H_all,
         mask_inside=mask_inside & mask_not_on_surf,
     )
