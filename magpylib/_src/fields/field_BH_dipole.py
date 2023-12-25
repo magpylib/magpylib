@@ -18,6 +18,8 @@ def dipole_field(
 
     The dipole moment lies in the origin of the coordinate system.
 
+    SI units are used for all inputs and outputs.
+
     Parameters
     ----------
     field: str, default=`'B'`
