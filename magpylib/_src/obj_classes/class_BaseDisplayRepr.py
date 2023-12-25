@@ -8,10 +8,10 @@ from magpylib._src.display.traces_core import make_DefaultTrace
 
 UNITS = {
     "parent": None,
-    "position": "arbitrary",
+    "position": "m",
     "orientation": "degrees",
-    "dimension": "arbitrary",
-    "diameter": "arbitrary",
+    "dimension": "m",
+    "diameter": "m",
     "current": "A",
     "magnetization": "A/m",
     "polarization": "T",
