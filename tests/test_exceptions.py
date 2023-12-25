@@ -28,7 +28,7 @@ def getBHv_unknown_source_type():
 
 def getBH_level2_bad_input1():
     """test BadUserInput error at getBH_level2"""
-    src = magpy.magnet.Cuboid((1, 1, 2), (1, 1, 1))
+    src = magpy.magnet.Cuboid(polarization=(1, 1, 2), dimension=(1, 1, 1))
     sens = magpy.Sensor()
     getBH_level2(
         [src, sens],
@@ -164,15 +164,15 @@ def getBHv_bad_input3():
 
 def utility_format_obj_input():
     """bad input object"""
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    pm2 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
+    pm2 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     format_obj_input([pm1, pm2, 333])
 
 
 def utility_format_src_inputs():
     """bad src input"""
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    pm2 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
+    pm2 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     format_src_inputs([pm1, pm2, 1])
 
 
@@ -187,7 +187,7 @@ def utility_format_obs_inputs():
 def utility_test_path_format():
     """bad path format input"""
     # pylint: disable=protected-access
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     pm1._position = [(1, 2, 3), (1, 2, 3)]
     tpf(pm1)
 

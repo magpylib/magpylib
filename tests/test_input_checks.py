@@ -93,7 +93,7 @@ def test_input_objects_pixel_bad(pixel):
     """bad input: magpy.Sensor(pixel=pixel)"""
 
     with pytest.raises(MagpylibBadUserInput):
-        magpy.Sensor((0, 0, 0), pixel=pixel)
+        magpy.Sensor(position=(0, 0, 0), pixel=pixel)
 
 
 @pytest.mark.parametrize(
