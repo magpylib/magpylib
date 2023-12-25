@@ -110,7 +110,10 @@ def test_Collection_setting_position(
 ):
     """Test position and orientation setters on Collection"""
     src = magpy.magnet.Cuboid(
-        (1, 0, 0), (1, 1, 1), src_pos_init, R.from_rotvec(src_ori_init)
+        polarization=(1, 0, 0),
+        dimension=(1, 1, 1),
+        position=src_pos_init,
+        orientation=R.from_rotvec(src_ori_init),
     )
     col = magpy.Collection(
         src, position=col_pos_init, orientation=R.from_rotvec(col_ori_init)
@@ -218,7 +221,10 @@ def test_Collection_setting_orientation(
 ):
     """test_Collection_setting_orientation"""
     src = magpy.magnet.Cuboid(
-        (1, 0, 0), (1, 1, 1), src_pos_init, R.from_rotvec(src_ori_init)
+        polarization=(1, 0, 0),
+        dimension=(1, 1, 1),
+        position=src_pos_init,
+        orientation=R.from_rotvec(src_ori_init),
     )
     col = magpy.Collection(
         src, position=col_pos_init, orientation=R.from_rotvec(col_ori_init)
@@ -240,7 +246,12 @@ def test_Collection_setter():
     #     ):
     #     col = magpy.Collection()
     #     for i,color in enumerate(['r', 'orange', 'gold', 'green', 'cyan']):
-    #         src = magpy.magnet.Cuboid((1,0,0), (.5,.5,.5), (1,0,0), style_color=color)
+    #         src = magpy.magnet.Cuboid(
+    #             polarization=(1,0,0),
+    #             dimension=(.5,.5,.5),
+    #             position=(1,0,0),
+    #             style_color=color
+    #         )
     #         src.rotate_from_angax(72*i, 'z', (0,0,0))
     #         col = col + src
     #     base = magpy.Sensor()
@@ -258,7 +269,9 @@ def test_Collection_setter():
     ):
         col = magpy.Collection()
         for i in range(5):
-            src = magpy.magnet.Cuboid((1, 0, 0), (0.5, 0.5, 0.5), (1, 0, 0))
+            src = magpy.magnet.Cuboid(
+                polarization=(1, 0, 0), dimension=(0.5, 0.5, 0.5), position=(1, 0, 0)
+            )
             src.rotate_from_angax(72 * i, "z", (0, 0, 0))
             col.add(src)
         col.position = poz
@@ -282,7 +295,9 @@ def test_Collection_setter():
 
 def test_compound_motion_00():
     """init Collection should not change source pos and ori"""
-    src = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(1, 2, 3), (2, 3, 4)])
+    src = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=[(1, 2, 3), (2, 3, 4)]
+    )
     validate_pos_orient(src, [(1, 2, 3), (2, 3, 4)], [(0, 0, 0)] * 2)
     col = magpy.Collection(src, position=[(1, 1, 1)])
     validate_pos_orient(src, [(1, 2, 3), (2, 3, 4)], [(0, 0, 0)] * 2)
@@ -291,8 +306,12 @@ def test_compound_motion_00():
 
 def test_compound_motion_01():
     """very sensible Compound behavior with rotation anchor"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 1, 1))
-    s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (-1, -1, -1))
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(1, 1, 1)
+    )
+    s2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(-1, -1, -1)
+    )
     col = magpy.Collection(s1, s2)
     col.move((0, 0, 1))
     validate_pos_orient(s1, (1, 1, 2), (0, 0, 0))
@@ -310,8 +329,12 @@ def test_compound_motion_01():
 
 def test_compound_motion_02():
     """very sensible Compound behavior with vector anchor"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 0, 1))
-    s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (-1, 0, -1))
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(1, 0, 1)
+    )
+    s2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(-1, 0, -1)
+    )
     col = magpy.Collection(s1, s2, position=(3, 0, 3))
     col.rotate_from_rotvec(
         (0, 0, np.pi / 2), anchor=[(1, 0, 0), (2, 0, 0)], degrees=False
@@ -335,12 +358,14 @@ def test_compound_motion_02():
 
 def test_compound_motion_03():
     """very sensible Compound behavior with vector path and anchor and start=0"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(3, 0, 0), (1, 0, 0)])
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=[(3, 0, 0), (1, 0, 0)]
+    )
     s2 = magpy.magnet.Cuboid(
-        (1, 0, 0),
-        (1, 1, 1),
-        [(2, 0, 2), (2, 0, 2)],
-        R.from_rotvec([(0, 0, -0.1), (0, 0, -0.2)]),
+        polarization=(1, 0, 0),
+        dimension=(1, 1, 1),
+        position=[(2, 0, 2), (2, 0, 2)],
+        orientation=R.from_rotvec([(0, 0, -0.1), (0, 0, -0.2)]),
     )
     col = magpy.Collection(s1, s2, position=[(3, 0, 2), (3, 0, 3)])
     col.rotate_from_rotvec(
@@ -363,9 +388,13 @@ def test_compound_motion_03():
 def test_compound_motion_04():
     """nonsensical but correct Collection behavior when col and children
     all have different path formats"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), position=(1, 1, 1))
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(1, 1, 1)
+    )
     s2 = magpy.magnet.Cuboid(
-        (1, 0, 0), (1, 1, 1), orientation=R.from_rotvec([(0, 0, -0.1), (0, 0, -0.2)])
+        polarization=(1, 0, 0),
+        dimension=(1, 1, 1),
+        orientation=R.from_rotvec([(0, 0, -0.1), (0, 0, -0.2)]),
     )
     col = magpy.Collection(s1, s2, position=[(1, 2, 3), (1, 3, 4)])
     col.rotate_from_angax(90, "z", anchor=(1, 0, 0))
@@ -378,9 +407,13 @@ def test_compound_motion_04():
 
 def test_compound_motion_05():
     """nonsensical but correct Collection behavior with vector anchor"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), position=(1, 0, 1))
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(1, 0, 1)
+    )
     s2 = magpy.magnet.Cuboid(
-        (1, 0, 0), (1, 1, 1), orientation=R.from_rotvec([(0, 0, -0.1), (0, 0, -0.2)])
+        polarization=(1, 0, 0),
+        dimension=(1, 1, 1),
+        orientation=R.from_rotvec([(0, 0, -0.1), (0, 0, -0.2)]),
     )
     col = magpy.Collection(s1, s2, position=[(3, 0, 3), (4, 0, 4)])
     col.rotate_from_angax(90, "z", anchor=[(1, 0, 0), (2, 0, 0)])
@@ -403,8 +436,12 @@ def test_compound_motion_05():
 
 def test_compound_motion_06():
     """Compound rotation (anchor=None), scalar input, scalar pos"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 0, 1))
-    s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (0, -1, -1))
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(1, 0, 1)
+    )
+    s2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(0, -1, -1)
+    )
     col = magpy.Collection(s1, s2)
     col.rotate_from_angax(90, "z")
     validate_pos_orient(s1, (0, 1, 1), (0, 0, np.pi / 2))
@@ -414,8 +451,12 @@ def test_compound_motion_06():
 
 def test_compound_motion_07():
     """Compound rotation (anchor=None), scalar input, vector pos, start=auto"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(1, 0, 0), (2, 0, 0)])
-    s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(-1, 0, 0), (-2, 0, 0)])
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=[(1, 0, 0), (2, 0, 0)]
+    )
+    s2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=[(-1, 0, 0), (-2, 0, 0)]
+    )
     col = magpy.Collection(s1, s2, position=((0, 0, 0), (1, 0, 0)))
     col.rotate_from_angax(90, "z")
     validate_pos_orient(
@@ -431,8 +472,12 @@ def test_compound_motion_07():
 
 def test_compound_motion_08():
     """Compound rotation (anchor=None), scalar input, vector pos, start=1"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(1, 0, 0), (2, 0, 0)])
-    s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(-1, 0, 0), (-2, 0, 0)])
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=[(1, 0, 0), (2, 0, 0)]
+    )
+    s2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=[(-1, 0, 0), (-2, 0, 0)]
+    )
     col = magpy.Collection(s1, s2, position=((0, 0, 0), (1, 0, 0)))
     col.rotate_from_angax(90, "z", start=1)
     validate_pos_orient(s1, [(1, 0, 0), (1, 1, 0)], [(0, 0, 0), (0, 0, np.pi / 2)])
@@ -442,8 +487,12 @@ def test_compound_motion_08():
 
 def test_compound_motion_09():
     """Compound rotation (anchor=None), scalar input, vector pos, start=-1"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(1, 0, 0), (2, 0, 0)])
-    s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(-1, 0, 0), (-2, 0, 0)])
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=[(1, 0, 0), (2, 0, 0)]
+    )
+    s2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=[(-1, 0, 0), (-2, 0, 0)]
+    )
     col = magpy.Collection(s1, s2, position=((0, 0, 0), (1, 0, 0)))
     col.rotate_from_angax(90, "z", start=-1)
     validate_pos_orient(s1, [(1, 0, 0), (1, 1, 0)], [(0, 0, 0), (0, 0, np.pi / 2)])
@@ -453,8 +502,12 @@ def test_compound_motion_09():
 
 def test_compound_motion_10():
     """Compound rotation (anchor=None), scalar input, vector pos, start->pad before"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(1, 0, 0), (2, 0, 0)])
-    s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(-1, 0, 0), (-2, 0, 0)])
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=[(1, 0, 0), (2, 0, 0)]
+    )
+    s2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=[(-1, 0, 0), (-2, 0, 0)]
+    )
     col = magpy.Collection(s1, s2, position=((2, 0, 0), (1, 0, 0)))
     col.rotate_from_angax(90, "z", start=-4)
     validate_pos_orient(
@@ -476,8 +529,12 @@ def test_compound_motion_10():
 
 def test_compound_motion_11():
     """Compound rotation (anchor=None), scalar input, vector pos, start->pad behind"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(1, 0, 0), (2, 0, 0)])
-    s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(-1, 0, 0), (-2, 0, 0)])
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=[(1, 0, 0), (2, 0, 0)]
+    )
+    s2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=[(-1, 0, 0), (-2, 0, 0)]
+    )
     col = magpy.Collection(s1, s2, position=((2, 0, 0), (1, 0, 0)))
     col.rotate_from_angax(90, "z", start=3)
     validate_pos_orient(
@@ -499,8 +556,12 @@ def test_compound_motion_11():
 
 def test_compound_motion_12():
     """Compound rotation (anchor=None), vector input, simple pos, start=auto"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 0, 1))
-    s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (0, -1, -1))
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(1, 0, 1)
+    )
+    s2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(0, -1, -1)
+    )
     col = magpy.Collection(s1, s2)
     col.rotate_from_angax([90, -90], "z")
     validate_pos_orient(
@@ -522,8 +583,12 @@ def test_compound_motion_12():
 
 def test_compound_motion_13():
     """Compound rotation (anchor=None), vector input, vector pos, start=1"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 0, 1))
-    s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (0, -1, -1))
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(1, 0, 1)
+    )
+    s2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(0, -1, -1)
+    )
     col = magpy.Collection(s1, s2)
     col.rotate_from_angax([90, -90], "z")
     col.rotate_from_angax([-90, 180], "z", start=1)
@@ -544,8 +609,12 @@ def test_compound_motion_13():
 
 def test_compound_motion_14():
     """Compound rotation (anchor=None), vector input, vector pos, start=1, pad_behind"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 0, 1))
-    s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (0, -1, -1))
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(1, 0, 1)
+    )
+    s2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(0, -1, -1)
+    )
     col = magpy.Collection(s1, s2)
     col.rotate_from_angax([90, -90], "z")
     col.rotate_from_angax([-90, 180], "z", start=1)
@@ -569,8 +638,12 @@ def test_compound_motion_14():
 
 def test_compound_motion_15():
     """Compound rotation (anchor=None), vector input, simple pos, start=-3, pad_before"""
-    s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 0, 1))
-    s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (-1, 0, -1))
+    s1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(1, 0, 1)
+    )
+    s2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(-1, 0, -1)
+    )
     col = magpy.Collection(s1, s2, position=(2, 0, 0))
     col.rotate_from_angax([90, -90], "z", start=-3)
     validate_pos_orient(
@@ -594,9 +667,13 @@ def test_compound_motion_16():
     """Compound rotation (anchor=None), vector input, vector pos, start=-3,
     pad_before AND pad_behind"""
     s1 = magpy.magnet.Cuboid(
-        (1, 0, 0), (1, 1, 1), orientation=R.from_rotvec([(0, 0, 0.1), (0, 0, 0.2)])
+        polarization=(1, 0, 0),
+        dimension=(1, 1, 1),
+        orientation=R.from_rotvec([(0, 0, 0.1), (0, 0, 0.2)]),
     )
-    s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), position=[(-1, 0, 0), (-2, 0, 0)])
+    s2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=[(-1, 0, 0), (-2, 0, 0)]
+    )
     col = magpy.Collection(s1, s2, position=[(1, 0, 0), (0, 0, 0)])
     col.rotate_from_angax([90, -90, 90, -90], "z", start=-3)
     validate_pos_orient(
@@ -624,9 +701,13 @@ def test_compound_motion_16():
 def test_compound_motion_17():
     """CRAZY Compound rotation (anchor=None) with messy path formats"""
     s1 = magpy.magnet.Cuboid(
-        (1, 0, 0), (1, 1, 1), orientation=R.from_rotvec([(0, 0, 0.1), (0, 0, 0.2)])
+        polarization=(1, 0, 0),
+        dimension=(1, 1, 1),
+        orientation=R.from_rotvec([(0, 0, 0.1), (0, 0, 0.2)]),
     )
-    s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), position=(-1, 0, 0))
+    s2 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(-1, 0, 0)
+    )
     col = magpy.Collection(s1, s2, position=[(1, 0, 0), (0, 0, 0), (3, 0, 3)])
     col.rotate_from_angax([90, -90], "z", start="auto")
     validate_pos_orient(
