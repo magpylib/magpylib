@@ -20,7 +20,7 @@ import magpylib as magpy
 
 # # B = []
 # # for mag,dim,ang,ax,anch,mov,poso in zip(mags,dims,angs,axs,anchs,movs,posos):
-# #     pm = magpy.magnet.Sphere(mag,dim)
+# #     pm = magpy.magnet.Sphere(polarization=mag, dimension=dim)
 
 # #     # 18 subsequent operations
 # #     for a,aa,aaa,mv in zip(ang,ax,anch,mov):
@@ -45,7 +45,7 @@ def test_Sphere_basics():
     for mag, dim, ang, ax, anch, mov, poso in zip(
         mags, dims, angs, axs, anchs, movs, posos
     ):
-        pm = magpy.magnet.Sphere(mag, dim)
+        pm = magpy.magnet.Sphere(polarization=mag, diameter=dim)
 
         # 18 subsequent operations
         for a, aa, aaa, mv in zip(ang, ax, anch, mov):
@@ -59,15 +59,15 @@ def test_Sphere_basics():
 
 def test_Sphere_add():
     """testing __add__"""
-    src1 = magpy.magnet.Sphere(magnetization=(1, 2, 3), diameter=11)
-    src2 = magpy.magnet.Sphere((1, 2, 3), 11)
+    src1 = magpy.magnet.Sphere(polarization=(1, 2, 3), diameter=11)
+    src2 = magpy.magnet.Sphere(polarization=(1, 2, 3), diameter=11)
     col = src1 + src2
     assert isinstance(col, magpy.Collection), "adding cuboids fail"
 
 
 def test_Sphere_squeeze():
     """testing squeeze output"""
-    src1 = magpy.magnet.Sphere((1, 1, 1), 1)
+    src1 = magpy.magnet.Sphere(polarization=(1, 1, 1), diameter=1)
     sensor = magpy.Sensor(pixel=[(1, 2, 3), (1, 2, 3)])
     B = src1.getB(sensor)
     assert B.shape == (2, 3)
@@ -82,7 +82,7 @@ def test_Sphere_squeeze():
 
 def test_repr():
     """test __repr__"""
-    pm3 = magpy.magnet.Sphere((1, 2, 3), 3)
+    pm3 = magpy.magnet.Sphere(polarization=(1, 2, 3), diameter=3)
     assert repr(pm3)[:6] == "Sphere", "Sphere repr failed"
 
 
@@ -91,12 +91,14 @@ def test_sphere_object_vs_lib():
     tests object vs lib computation
     this also checks if np.int (from array slice) is allowed as input
     """
-    mag = np.array([(10, 20, 30)])
+    pol = np.array([(10, 20, 30)])
     dia = np.array([1])
     pos = np.array([(2, 2, 2)])
-    B1 = magpy.core.magnet_sphere_field("B", pos, mag, dia)[0]
+    B1 = magpy.core.magnet_sphere_field(
+        field="B", observers=pos, polarization=pol, diameter=dia
+    )[0]
 
-    src = magpy.magnet.Sphere(mag[0], dia[0])
+    src = magpy.magnet.Sphere(polarization=pol[0], diameter=dia[0])
     B2 = src.getB(pos)
 
     np.testing.assert_allclose(B1, B2)
