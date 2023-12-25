@@ -11,7 +11,7 @@ def test_Polyline_basic1():
     sens = magpy.Sensor()
     B = src.getB(sens)
 
-    x = 5.77350269
+    x = 5.77350269 * 1e-6
     Btest = np.array([x, -x, 0])
 
     assert np.allclose(B, Btest)
@@ -38,7 +38,7 @@ def test_Polyline_basic3():
     sens = magpy.Sensor()
     B = magpy.getB([line1, line2], sens)
 
-    x = 5.77350269
+    x = 5.77350269 * 1e-6
     Btest = np.array([(x, -x, 0)] * 2)
 
     assert np.allclose(B, Btest)
