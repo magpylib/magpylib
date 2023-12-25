@@ -248,7 +248,7 @@ class BaseTransform:
     """Inherit this class to provide rotation() and move() methods."""
 
     def move(self, displacement, start="auto"):
-        """Move object by the displacement input.
+        """Move object by the displacement input. SI units are used for all inputs and outputs.
 
         Terminology for move/rotate methods:
 
@@ -271,7 +271,7 @@ class BaseTransform:
         Parameters
         ----------
         displacement: array_like, shape (3,) or (n,3)
-            Displacement vector in units of mm.
+            Displacement vector in units of m.
 
         start: int or str, default=`'auto'`
             Starting index when applying operations. See 'General move/rotate behavior' above
