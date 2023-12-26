@@ -652,13 +652,13 @@ def getB(
     Returns
     -------
     B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
-        B-field at each path position (m) for each sensor (k) and each sensor pixel
-        position (n1, n2, ...) in units of tesla. Sensor pixel positions are equivalent
-        to simple observer positions. Paths of objects that are shorter than m will be
+        B-field at each path position (index m) for each sensor (index k) and each sensor pixel
+        position (indices n1, n2, ...) in units of T. Sensor pixel positions are equivalent
+        to simple observer positions. Paths of objects that are shorter than index m are
         considered as static beyond their end.
 
     Functional interface: ndarray, shape (n,3)
-        B-field for every parameter set in units of tesla.
+        B-field for every parameter set in units of T.
 
     Notes
     -----
@@ -668,7 +668,7 @@ def getB(
 
     Examples
     --------
-    In this example we compute the B-field in units of tesla of a spherical magnet and a current
+    In this example we compute the B-field in T of a spherical magnet and a current
     loop at the observer position (0.01,0.01,0.01) given in units of meter:
 
     >>> import magpylib as magpy
@@ -735,7 +735,7 @@ def getH(
     output="ndarray",
     **kwargs,
 ):
-    """Compute H-field in A/m for given sources and observers.
+    """Compute H-field in units of A/m for given sources and observers.
 
     Field implementations can be directly accessed (avoiding the object oriented
     Magpylib interface) by providing a string input `sources=source_type`, array_like
@@ -823,9 +823,9 @@ def getH(
     Returns
     -------
     H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
-        H-field at each path position (m) for each sensor (k) and each sensor pixel
-        position (n1, n2, ...) in units of A/m. Sensor pixel positions are equivalent
-        to simple observer positions. Paths of objects that are shorter than m will be
+        H-field at each path position (index m) for each sensor (index k) and each sensor pixel
+        position (indices n1, n2, ...) in units of A/m. Sensor pixel positions are equivalent
+        to simple observer positions. Paths of objects that are shorter than index m are
         considered as static beyond their end.
 
     Functional interface: ndarray, shape (n,3)
@@ -839,7 +839,7 @@ def getH(
 
     Examples
     --------
-    In this example we compute the H-field A/m of a spherical magnet and a current loop
+    In this example we compute the H-field in A/m of a spherical magnet and a current loop
     at the observer position (0.01,0.01,0.01) given in units of meter:
 
     >>> import magpylib as magpy
