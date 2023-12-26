@@ -15,12 +15,12 @@ class Cuboid(BaseMagnet):
     to the global coordinate basis vectors and the geometric center of the Cuboid
     is located in the origin.
 
-    Units .... Min = Bout, Jin = Hout, length units arbitrary
+    SI units are used for all inputs and outputs.
 
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in meter.
+        Object position(s) in the global coordinates in units of meter.
         For m>1, the `position` and `orientation` attributes together
         represent an object path.
 
@@ -54,8 +54,8 @@ class Cuboid(BaseMagnet):
     Examples
     --------
     `Cuboid` magnets are magnetic field sources. Below we compute the H-field in A/m of a
-    cubical magnet with magnetic polarization of (0.5,0.6,0.7) in units of tesla and 0.01 m sides
-    at the observer position (0.01,0.01,0.01) given in units of meter:
+    cubical magnet with magnetic polarization of (0.5,0.6,0.7) in units of tesla and
+    0.01 meter sides at the observer position (0.01,0.01,0.01) given in units of meter:
 
     >>> import magpylib as magpy
     >>> src = magpy.magnet.Cuboid(polarization=(.5,.6,.7), dimension=(.01,.01,.01))

@@ -20,6 +20,8 @@ class CylinderSegment(BaseMagnet):
     the cylinder axis coincides with the global z-axis. Section angle 0
     corresponds to an x-z plane section of the cylinder.
 
+    SI units are used for all inputs and outputs.
+
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
@@ -65,8 +67,8 @@ class CylinderSegment(BaseMagnet):
     Examples
     --------
     `CylinderSegment` magnets are magnetic field sources. In this example we compute the
-    H-field A/m of such a cylinder segment magnet with polarization (.1,.2,.3)
-    in units of tesla, inner radius 0.01 meter, outer radius 0.02 m, height 0.01 meter, and
+    H-field in A/m of such a cylinder segment magnet with polarization (.1,.2,.3)
+    in units of tesla, inner radius 0.01 meter, outer radius 0.02 meter, height 0.01 meter, and
     section angles 0 and 45 deg at the observer position (0.02,0.02,0.02) in units of meter:
 
     >>> import magpylib as magpy

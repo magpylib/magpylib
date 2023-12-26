@@ -17,6 +17,8 @@ class Dipole(BaseSource):
     When `position=(0,0,0)` and `orientation=None` the dipole is located in the origin of
     global coordinate system.
 
+    SI units are used for all inputs and outputs.
+
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
@@ -30,8 +32,8 @@ class Dipole(BaseSource):
 
     moment: array_like, shape (3,), unit A・m², default=`None`
         Magnetic dipole moment in units of A・m² given in the local object coordinates.
-        For homogeneous magnets the relation moment=magnetization*volume holds. The dipole
-        moment of a Circle object is pi**2/10*diameter**2*current.
+        For homogeneous magnets the relation moment=magnetization*volume holds. For
+        current loops the relation moment = current*loop_surface holds.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -46,7 +48,7 @@ class Dipole(BaseSource):
 
     Examples
     --------
-    `Dipole` objects are magnetic field sources. In this example we compute the H-field A/m
+    `Dipole` objects are magnetic field sources. In this example we compute the H-field in A/m
     of such a magnetic dipole with a moment of (100,100,100) in units of A・m² at an
     observer position (.01,.01,.01) given in units of meter:
 

@@ -19,7 +19,10 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     When `position=(0,0,0)` and `orientation=None` local object coordinates
     coincide with the global coordinate system.
 
-    A sensor is made up of pixel (sensing elements) where the magnetic field is evaluated.
+    A sensor is made up of pixel (sensing elements / positions) where the magnetic
+    field is evaluated.
+
+    SI units are used for all inputs and outputs.
 
     Parameters
     ----------
@@ -140,7 +143,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     def getB(
         self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray"
     ):
-        """Compute the B-field in units of tesla as seen by the sensor.
+        """Compute the B-field in units of T as seen by the sensor.
 
         Parameters
         ----------
@@ -168,14 +171,14 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Returns
         -------
         B-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
-            B-field of each source (l) at each path position (m) and each sensor pixel
-            position (n1,n2,...) in units of tesla. Paths of objects that are shorter than
-            m will be considered as static beyond their end.
+            B-field of each source (index l) at each path position (index m) and each sensor pixel
+            position (indices n1,n2,...) in units of T. Paths of objects that are shorter than
+            index m are considered as static beyond their end.
 
         Examples
         --------
         Sensors are observers for magnetic field computation. In this example we compute the
-        B-field in units of tesla as seen by the sensor in the center of a circular current loop:
+        B-field in T as seen by the sensor in the center of a circular current loop:
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()
@@ -243,14 +246,14 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Returns
         -------
         H-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
-            H-field of each source (l) at each path position (m) and each sensor pixel
-            position (n1,n2,...) in units of A/m. Paths of objects that are shorter than
-            m will be considered as static beyond their end.
+            H-field of each source (index l) at each path position (index m) and each sensor pixel
+            position (indices n1,n2,...) in units of A/m. Paths of objects that are shorter than
+            index m are considered as static beyond their end.
 
         Examples
         --------
         Sensors are observers for magnetic field computation. In this example we compute the
-        B-field in units of tesla as seen by the sensor in the center of a circular current loop:
+        B-field in T as seen by the sensor in the center of a circular current loop:
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()

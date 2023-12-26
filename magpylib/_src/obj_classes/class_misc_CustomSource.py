@@ -10,12 +10,14 @@ class CustomSource(BaseSource):
     When `position=(0,0,0)` and `orientation=None` local object coordinates
     coincide with the global coordinate system.
 
+    SI units are used for all inputs and outputs.
+
     Parameters
     ----------
     field_func: callable, default=`None`
         The function for B- and H-field computation must have the two positional arguments
         `field` and `observers`. With `field='B'` or `field='H'` the B- or H-field in units
-        of  or A/m must be returned respectively. The `observers` argument must
+        of T or A/m must be returned respectively. The `observers` argument must
         accept numpy ndarray inputs of shape (n,3), in which case the returned fields must
         be numpy ndarrays of shape (n,3) themselves.
 
@@ -44,7 +46,7 @@ class CustomSource(BaseSource):
     With version 4 `CustomSource` objects enable users to define their own source
     objects, and to embedded them in the Magpylib object oriented interface. In this example
     we create a source that generates a constant field and evaluate the field at observer
-    position (0.01,0.01,0.01) given in meter:
+    position (0.01,0.01,0.01) given in meters:
 
     >>> import numpy as np
     >>> import magpylib as magpy

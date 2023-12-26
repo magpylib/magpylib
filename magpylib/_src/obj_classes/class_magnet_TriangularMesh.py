@@ -28,8 +28,11 @@ from magpylib._src.style import TriangularMeshStyle
 class TriangularMesh(BaseMagnet):
     """Magnet with homogeneous magnetization defined by triangular surface mesh.
     Can be used as `sources` input for magnetic field computation.
+
     When `position=(0,0,0)` and `orientation=None` the TriangularMesh vertices
     are the same as in the global coordinate system.
+
+    SI units are used for all inputs and outputs.
 
     Parameters
     ----------
@@ -99,8 +102,8 @@ class TriangularMesh(BaseMagnet):
 
     Examples
     --------
-    We compute the B-field in units of tesla of a triangular mesh (4 vertices, 4 faces)
-    with polarization (0.1,0.2,0.3) in units of tesla at the observer position
+    We compute the B-field in units of T of a triangular mesh (4 vertices, 4 faces)
+    with polarization (0.1,0.2,0.3) in units of T at the observer position
     (0.01,0.01,0.01) given in units of meter:
 
     >>> import magpylib as magpy
@@ -538,6 +541,8 @@ class TriangularMesh(BaseMagnet):
     ):
         """Create a TriangularMesh magnet from a point cloud via its convex hull.
 
+        SI units are used for all inputs and outputs.
+
         Parameters
         ----------
         position: array_like, shape (3,) or (m,3)
@@ -628,6 +633,8 @@ class TriangularMesh(BaseMagnet):
         **kwargs,
     ):
         """Create a TriangularMesh magnet from a pyvista PolyData mesh object.
+
+        SI units are used for all inputs and outputs.
 
         Parameters
         ----------
@@ -737,6 +744,8 @@ class TriangularMesh(BaseMagnet):
     ):
         """Create a TriangularMesh magnet from a list or Collection of Triangle objects.
 
+        SI units are used for all inputs and outputs.
+
         Parameters
         ----------
         position: array_like, shape (3,) or (m,3)
@@ -842,6 +851,8 @@ class TriangularMesh(BaseMagnet):
         **kwargs,
     ):
         """Create a TriangularMesh magnet from a mesh input.
+
+        SI units are used for all inputs and outputs.
 
         Parameters
         ----------

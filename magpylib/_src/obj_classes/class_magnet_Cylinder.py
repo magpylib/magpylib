@@ -15,6 +15,8 @@ class Cylinder(BaseMagnet):
     cylinder lies in the origin of the global coordinate system and
     the cylinder axis coincides with the global z-axis.
 
+    SI units are used for all inputs and outputs.
+
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`

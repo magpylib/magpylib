@@ -17,6 +17,8 @@ class Tetrahedron(BaseMagnet):
     is determined by its vertices and. It is not necessarily located in the origin an can
     be computed with the barycenter property.
 
+    SI units are used for all inputs and outputs.
+
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3)

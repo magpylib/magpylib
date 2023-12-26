@@ -14,6 +14,8 @@ class Sphere(BaseMagnet):
     When `position=(0,0,0)` and `orientation=None` the sphere center is located
     in the origin of the global coordinate system.
 
+    SI units are used for all inputs and outputs.
+
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
@@ -50,7 +52,7 @@ class Sphere(BaseMagnet):
 
     Examples
     --------
-    `Sphere` objects are magnetic field sources. In this example we compute the H-field A/m
+    `Sphere` objects are magnetic field sources. In this example we compute the H-field in A/m
     of a spherical magnet with polarization (0.1,0.2,0.3) in units of tesla and diameter
     of 0.01 meter at the observer position (0.01,0.01,0.01) given in units of meter:
 

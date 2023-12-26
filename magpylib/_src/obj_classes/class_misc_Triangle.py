@@ -18,6 +18,8 @@ class Triangle(BaseMagnet):
     Triangle vertices coincide with the global coordinate system. The geometric
     center of the Triangle is determined by its vertices.
 
+    SI units are used for all inputs and outputs.
+
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3)
