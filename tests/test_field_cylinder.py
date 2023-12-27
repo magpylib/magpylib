@@ -480,3 +480,26 @@ def test_cylinder_diametral_small_r():
     ddB = abs(ddB - np.mean(ddB, axis=0))
 
     assert np.all(ddB < 0.001)
+
+
+def test_cyl_vs_cylseg_axial_H_inside_mask():
+    """see https://github.com/magpylib/magpylib/issues/703"""
+    field = "H"
+    obs = np.array([(0.1, 0.2, 0.3)])
+    pols = np.array([(0, 0, 1)])
+    dims = np.array([(1, 1)])
+    dims_cs = np.array([(0, 0.5, 1, 0, 360)])
+
+    Bc = magpy.core.magnet_cylinder_field(
+        field=field,
+        observers=obs,
+        dimension=dims,
+        magnetization=pols,
+    )
+    Bcs = magpy.core.magnet_cylinder_segment_field(
+        field=field,
+        observers=obs,
+        dimension=dims_cs,
+        magnetization=pols,
+    )
+    np.testing.assert_allclose(Bc, Bcs)

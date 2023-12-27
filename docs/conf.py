@@ -131,7 +131,14 @@ html_logo = "./_static/images/magpylib_flag.png"
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
+
+announcement = """
+<p>⚠️ <b>Upcoming Soon: New Version 5 with breaking changes. We recommended to pin your dependencies to magpylib>=4.5<5 to avoid breaking changes!
+<a href="https://github.com/magpylib/magpylib/discussions/647">(see details)</a>
+⚠️</b></p>
+"""
 html_theme_options = {
+    "announcement": announcement,
     "repository_url": "https://github.com/magpylib/magpylib",
     "path_to_docs": "docs/",
     "repository_branch": release,
