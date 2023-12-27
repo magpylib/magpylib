@@ -389,5 +389,5 @@ def magnet_cylinder_field(
         return np.concatenate(((Bx,), (By,), (Bz,)), axis=0).T
 
     if any(mask_ax):  # ax computes B-field
-        Bz[mask_tv * mask_inside] -= magz[mask_tv * mask_inside]
+        Bz[mask_ax * mask_inside] -= magz[mask_ax * mask_inside]
     return np.concatenate(((Bx,), (By,), (Bz,)), axis=0).T / MU0
