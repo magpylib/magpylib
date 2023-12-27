@@ -47,59 +47,59 @@ Magpylib supports _Python3.8+_ and relies on common scientific computation libra
 
 # Quickstart
 
-Here is an example how to use Magpylib.
+Here is an example on how to use Magpylib.
 
 ```python3
 import magpylib as magpy
 
-# Create a Cuboid magnet with sides 1,2 and 3 mm respectively, and magnetization
-# (polarization) of 1000 mT pointing in x-direction.
+# Create a Cuboid magnet with sides 1,2 and 3 cm respectively, and polarization
+# 1000 mT pointing in x-direction.
 cube = magpy.magnet.Cuboid(
-  magnetization=(1000,0,0),
-  dimension=(1,2,3),
+    polarization=(1, 0, 0),  # in SI Units (T)
+    dimension=(0.01, 0.02, 0.03),  # in SI Units (m)
 )
 
 # By default, the magnet position is (0,0,0) and its orientation is the unit
 # rotation (given by a scipy rotation object), which corresponds to magnet sided
 # parallel to global coordinate axes.
-print(cube.position)                   # --> [0. 0. 0.]
-print(cube.orientation.as_rotvec())    # --> [0. 0. 0.]
+print(cube.position)  # --> [0. 0. 0.]
+print(cube.orientation.as_rotvec())  # --> [0. 0. 0.]
 
 # Manipulate object position and orientation through the respective attributes,
 # or by using the powerful `move` and `rotate` methods.
-cube.move((0,0,-2))
-cube.rotate_from_angax(angle=45, axis='z')
-print(cube.position)                            # --> [0. 0. -2.]
-print(cube.orientation.as_rotvec(degrees=True)) # --> [0. 0. 45.]
+cube.move((0, 0, -0.02))  # in SI Units (m)
+cube.rotate_from_angax(angle=45, axis="z")
+print(cube.position)  # --> [0. 0. -0.02]
+print(cube.orientation.as_rotvec(degrees=True))  # --> [0. 0. 45.]
 
 # Compute the magnetic field in units of mT at a set of observer positions. Magpylib
 # makes use of vectorized computation. Hand over all field computation instances,
 # e.g. different observer positions, at one funtion call. Avoid Python loops !!!
-observers = [(0,0,0), (1,0,0), (2,0,0)]
+observers = [(0, 0, 0), (0.01, 0, 0), (0.02, 0, 0)]  # in SI Units (m)
 B = magpy.getB(cube, observers)
-print(B.round()) # --> [[-91. -91.   0.]
-                 #      [  1. -38.  84.]
-                 #      [ 18. -14.  26.]]
+print(B.round())  # --> [[-91. -91.   0.]
+#      [  1. -38.  84.]
+#      [ 18. -14.  26.]]
 
 # Sensors are observer objects that can have their own position and orientation.
-# Compute the H-field in units of kA/m.
-sensor = magpy.Sensor(position=(0,0,0))
-sensor.rotate_from_angax(angle=45, axis=(1,1,1))
+# Compute the H-field in units of A/m.
+sensor = magpy.Sensor(position=(0, 0, 0))
+sensor.rotate_from_angax(angle=45, axis=(1, 1, 1))
 H = magpy.getH(cube, sensor)
-print(H.round()) # --> [-95. -36. -14.]
+print(H.round())  # --> [-95. -36. -14.]
 
 # Position and orientation attributes of Magpylib objects can be vectors of
 # multiple positions/orientations refered to as "paths". When computing the
 # magnetic field of an object with a path, it is computed at every path index.
-cube.position = [(0,0,-2), (1,0,-2), (2,0,-2)]
+cube.position = [(0, 0, -.02), (1, 0, -.02), (2, 0, -.02)]  # in SI Units (m)
 B = cube.getB(sensor)
-print(B.round()) # --> [[-119.  -45.  -18.]
-                 #      [   8.  -73.  -55.]
-                 #      [  15.  -30.   -8.]]
+print(B.round())  # --> [[-119.  -45.  -18.]
+#      [   8.  -73.  -55.]
+#      [  15.  -30.   -8.]]
 
 # When several objects are involved and things are getting complex, make use of
 # the `show` function to view your system through Matplotlib, Plotly or Pyvista backends.
-magpy.show(cube, sensor, backend='pyvista')
+magpy.show(cube, sensor, backend="pyvista")
 ```
 
 More details and other important features are described in detail in the **[Documentation](https://magpylib.readthedocs.io/en/latest)**. Key features are:
