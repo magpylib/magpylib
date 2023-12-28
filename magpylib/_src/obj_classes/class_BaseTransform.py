@@ -381,7 +381,7 @@ class BaseTransform:
             as unit rotation.
 
         anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of mm.
+            The axis of rotation passes through the anchor point given in units of m.
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin `(0,0,0)`.
 
@@ -466,7 +466,7 @@ class BaseTransform:
             or a string 'x', 'y' or 'z' to denote respective directions.
 
         anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of mm.
+            The axis of rotation passes through the anchor point given in units of m.
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin `(0,0,0)`.
 
@@ -567,7 +567,7 @@ class BaseTransform:
             the rotation angle in units of rad.
 
         anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of mm.
+            The axis of rotation passes through the anchor point given in units of m.
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin `(0,0,0)`.
 
@@ -655,7 +655,7 @@ class BaseTransform:
             rotations cannot be mixed in one function call.
 
         anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of mm.
+            The axis of rotation passes through the anchor point given in units of m.
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin `(0,0,0)`.
 
@@ -738,7 +738,7 @@ class BaseTransform:
             Rotation input. See scipy.spatial.transform.Rotation for details.
 
         anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of mm.
+            The axis of rotation passes through the anchor point given in units of m.
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin `(0,0,0)`.
 
@@ -803,7 +803,7 @@ class BaseTransform:
             Parameters (MRPs).
 
         anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of mm.
+            The axis of rotation passes through the anchor point given in units of m.
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin `(0,0,0)`.
 
@@ -867,7 +867,7 @@ class BaseTransform:
             Rotation input in quaternion form.
 
         anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of mm.
+            The axis of rotation passes through the anchor point given in units of m.
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin `(0,0,0)`.
 

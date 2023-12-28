@@ -22,7 +22,7 @@ class Dipole(BaseSource):
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of meter. For m>1, the
+        Object position(s) in the global coordinates in units of m. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -50,7 +50,7 @@ class Dipole(BaseSource):
     --------
     `Dipole` objects are magnetic field sources. In this example we compute the H-field in A/m
     of such a magnetic dipole with a moment of (100,100,100) in units of A・m² at an
-    observer position (.01,.01,.01) given in units of meter:
+    observer position (.01,.01,.01) given in units of m:
 
     >>> import magpylib as magpy
     >>> src = magpy.misc.Dipole(moment=(10,10,10))

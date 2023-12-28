@@ -19,7 +19,7 @@ class Sphere(BaseMagnet):
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of meter. For m>1, the
+        Object position(s) in the global coordinates in units of m. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -28,7 +28,7 @@ class Sphere(BaseMagnet):
         together represent an object path.
 
     diameter: float, default=`None`
-        Diameter of the sphere in units of meter.
+        Diameter of the sphere in units of m.
 
     polarization: array_like, shape (3,), default=`None`
         Magnetic polarization vector J = mu0*M in units of T,
@@ -53,8 +53,8 @@ class Sphere(BaseMagnet):
     Examples
     --------
     `Sphere` objects are magnetic field sources. In this example we compute the H-field in A/m
-    of a spherical magnet with polarization (0.1,0.2,0.3) in units of tesla and diameter
-    of 0.01 meter at the observer position (0.01,0.01,0.01) given in units of meter:
+    of a spherical magnet with polarization (0.1,0.2,0.3) in units of T and diameter
+    of 0.01 meter at the observer position (0.01,0.01,0.01) given in units of m:
 
     >>> import magpylib as magpy
     >>> src = magpy.magnet.Sphere(polarization=(.1,.2,.3), diameter=.01)
@@ -110,7 +110,7 @@ class Sphere(BaseMagnet):
     # property getters and setters
     @property
     def diameter(self):
-        """Diameter of the sphere in units of meter."""
+        """Diameter of the sphere in units of m."""
         return self._diameter
 
     @diameter.setter

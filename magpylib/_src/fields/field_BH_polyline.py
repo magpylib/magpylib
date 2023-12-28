@@ -28,10 +28,10 @@ def current_vertices_field(
     - bh (boolean): True=B, False=H
     - current (ndarray n): current on line in units of A
     - vertex_sets (list of len n): n vertex sets (each of shape (mi,3))
-    - pos_obs (ndarray nx3): n observer positions in units of mm
+    - pos_obs (ndarray nx3): n observer positions in units of m
 
     ### Returns:
-    - B-field (ndarray nx3): B-field vectors at pos_obs in units of mT
+    - B-field (ndarray nx3): B-field vectors at pos_obs in units of T
     """
     if vertices is None:
         return current_polyline_field(
@@ -220,7 +220,7 @@ def current_polyline_field(
     mask4 = ~mask2 * ~mask3
     deltaSin[mask4] = abs(sinTh1[mask4] + sinTh2[mask4])
 
-    field = (deltaSin / norm_o4 * eB.T / norm_12 * current * 1e-7).T  # m->mm, T->mT
+    field = (deltaSin / norm_o4 * eB.T / norm_12 * current * 1e-7).T
 
     # broadcast general case results into allocated vector
     mask0[~mask0] = mask1

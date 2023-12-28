@@ -25,14 +25,14 @@ def fieldB_cylinder_axial(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -> list:
     Parameters
     ----------
     dim: ndarray, shape (n,2)
-        dimension of cylinder (d, h), diameter and height, in units of mm
+        dimension of cylinder (d, h), diameter and height, in units of m
     pos_obs: ndarray, shape (n,2)
-        position of observer (r,z) in cylindrical coordinates in units of mm
+        position of observer (r,z) in cylindrical coordinates in units of m
 
     Returns
     -------
     B-field: ndarray
-        B-field array of shape (n,2) in cylindrical coordinates (Br,Bz) in units of mT.
+        B-field array of shape (n,2) in cylindrical coordinates (Br,Bz) in units of T.
     """
     n = len(z0)
 
@@ -86,16 +86,16 @@ def fieldH_cylinder_diametral(
     Parameters
     ----------
     dim: ndarray, shape (n,2)
-        dimension of cylinder (d, h), diameter and height, in units of mm
+        dimension of cylinder (d, h), diameter and height, in units of m
     tetta: ndarray, shape (n,)
         angle between magnetization vector and x-axis in [rad]. M = (cos(tetta), sin(tetta), 0)
     obs_pos: ndarray, shape (n,3)
-        position of observer (r,phi,z) in cylindrical coordinates in units of mm and rad
+        position of observer (r,phi,z) in cylindrical coordinates in units of m and rad
 
     Returns
     -------
     H-field: ndarray
-        H-field array of shape (n,3) in cylindrical coordinates (Hr, Hphi, Hz) in units of kA/m.
+        H-field array of shape (n,3) in cylindrical coordinates (Hr, Hphi, Hz) in units of A/m.
     """
     # pylint: disable=too-many-statements
 
