@@ -21,14 +21,6 @@ class Polyline(BaseCurrent):
 
     Parameters
     ----------
-    current: float, default=`None`
-        Electrical current in units of A.
-
-    vertices: array_like, shape (n,3), default=`None`
-        The current flows along the vertices which are given in units of m in the
-        local object coordinates (move/rotate with object). At least two vertices
-        must be given.
-
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of m. For m>1, the
         `position` and `orientation` attributes together represent an object path.
@@ -37,6 +29,14 @@ class Polyline(BaseCurrent):
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    vertices: array_like, shape (n,3), default=`None`
+        The current flows along the vertices which are given in units of m in the
+        local object coordinates (move/rotate with object). At least two vertices
+        must be given.
+
+    current: float, default=`None`
+        Electrical current in units of A.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.

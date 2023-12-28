@@ -22,12 +22,6 @@ class Circle(BaseCurrent):
 
     Parameters
     ----------
-    current: float, default=`None`
-        Electrical current in units of A.
-
-    diameter: float, default=`None`
-        Diameter of the loop in units of m.
-
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of m. For m>1, the
         `position` and `orientation` attributes together represent an object path.
@@ -36,6 +30,12 @@ class Circle(BaseCurrent):
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    diameter: float, default=`None`
+        Diameter of the loop in units of m.
+
+    current: float, default=`None`
+        Electrical current in units of A.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
