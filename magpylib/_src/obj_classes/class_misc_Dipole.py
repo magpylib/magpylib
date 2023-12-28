@@ -30,8 +30,8 @@ class Dipole(BaseSource):
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
 
-    moment: array_like, shape (3,), unit A・m², default=`None`
-        Magnetic dipole moment in units of A・m² given in the local object coordinates.
+    moment: array_like, shape (3,), unit A·m², default=`None`
+        Magnetic dipole moment in units of A·m² given in the local object coordinates.
         For homogeneous magnets the relation moment=magnetization*volume holds. For
         current loops the relation moment = current*loop_surface holds.
 
@@ -49,7 +49,7 @@ class Dipole(BaseSource):
     Examples
     --------
     `Dipole` objects are magnetic field sources. In this example we compute the H-field in A/m
-    of such a magnetic dipole with a moment of (100,100,100) in units of A・m² at an
+    of such a magnetic dipole with a moment of (100,100,100) in units of A·m² at an
     observer position (.01,.01,.01) given in units of m:
 
     >>> import magpylib as magpy
@@ -104,12 +104,12 @@ class Dipole(BaseSource):
     # property getters and setters
     @property
     def moment(self):
-        """Magnetic dipole moment in units of A・m² given in the local object coordinates."""
+        """Magnetic dipole moment in units of A·m² given in the local object coordinates."""
         return self._moment
 
     @moment.setter
     def moment(self, mom):
-        """Set dipole moment vector, shape (3,), unit A・m²."""
+        """Set dipole moment vector, shape (3,), unit A·m²."""
         self._moment = check_format_input_vector(
             mom,
             dims=(1,),
@@ -126,4 +126,4 @@ class Dipole(BaseSource):
         moment_mag = np.linalg.norm(moment)
         if moment_mag == 0:
             return "no moment"
-        return f"moment={unit_prefix(moment_mag)}A・m²"
+        return f"moment={unit_prefix(moment_mag)}A·m²"
