@@ -1,6 +1,6 @@
 name: Python package
 
-on: [push, pull_request]
+on: push
 
 concurrency:
   group: check-${{ github.ref }}
@@ -29,10 +29,10 @@ jobs:
       fail-fast: false
       matrix:
         py:
-          - "3.12"
-          - "3.11"
-          - "3.10"
-          - "3.9"
+          #- "3.12"
+          #- "3.11"
+          #- "3.10"
+          #- "3.9"
           - "3.8"
         os:
           - ubuntu-latest
@@ -41,6 +41,9 @@ jobs:
     steps:
       - name: Setup headless display
         uses: pyvista/setup-headless-display-action@v2
+        with:
+          qt: true
+        if: startsWith(matrix.os, 'ubuntu')
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0

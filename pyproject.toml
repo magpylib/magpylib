@@ -64,6 +64,7 @@ test = [
     "imageio[tifffile]",
     "kaleido",
     "jupyterlab",
+    "mayavi",
 ]
 binder = [
     "jupytext",
@@ -79,5 +80,5 @@ Changelog = "https://github.com/magpylib/magpylib/blob/master/CHANGELOG.md"
 
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules"
+addopts = "--doctest-modules -ra"
 testpaths = ["magpylib", "tests"]

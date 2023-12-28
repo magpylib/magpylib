@@ -295,6 +295,7 @@ def show(
         - with matplotlib: `matplotlib.figure.Figure`.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
         - with pyvista: `pyvista.Plotter`.
+        - with mayavi: `mayavi.core.scene.Scene`.
 
     row: int or None,
         If provided specifies the row in which the objects will be displayed.
@@ -508,4 +509,13 @@ RegisteredBackend(
     supports_subplots=True,
     supports_colorgradient=True,
     supports_animation_output=True,
+)
+
+RegisteredBackend(
+    name="mayavi",
+    show_func_getter=get_show_func("mayavi"),
+    supports_animation=True,
+    supports_subplots=False,
+    supports_colorgradient=True,
+    supports_animation_output=False,
 )

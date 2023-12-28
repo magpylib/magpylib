@@ -9,7 +9,8 @@ from matplotlib.colors import CSS4_COLORS as mcolors
 
 from magpylib._src.defaults.defaults_values import DEFAULTS
 
-SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly", "pyvista")
+
+SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly", "pyvista", "mayavi")
 
 
 ALLOWED_SYMBOLS = (".", "+", "D", "d", "s", "x", "o")
