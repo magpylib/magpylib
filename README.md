@@ -1,6 +1,6 @@
 
 > [!WARNING]
-> Version 5 introduces important breaking changes like **the move to SI units** among others. We recommended to pin your dependencies to magpylib>=4.5<5 until you are ready to migrate to the latest version! ([see details](https://github.com/magpylib/magpylib/discussions/647))
+> Version 5 introduces critical breaking changes with, among others, the _move to SI units_. We recommended to pin your dependencies to `magpylib>=4.5<5` until you are ready to migrate to the latest version! ([see details](https://github.com/magpylib/magpylib/discussions/647))
 
 <p align="left"><img align="center" src=docs/_static/images/magpylib_flag.png width=35%>
 </p>
@@ -52,11 +52,11 @@ Magpylib supports _Python3.8+_ and relies on common scientific computation libra
 
 Here is an example on how to use Magpylib.
 
-```python3
+```python
 import magpylib as magpy
 
-# Create a Cuboid magnet with sides 1,2 and 3 cm respectively, and polarization
-# 1000 mT pointing in x-direction.
+# Create a Cuboid magnet with sides 1,2 and 3 cm respectively, and a polarization
+# of 1000 mT pointing in x-direction.
 cube = magpy.magnet.Cuboid(
     polarization=(1, 0, 0),  # in SI Units (T)
     dimension=(0.01, 0.02, 0.03),  # in SI Units (m)
@@ -75,7 +75,7 @@ cube.rotate_from_angax(angle=45, axis="z")
 print(cube.position)  # --> [0. 0. -0.02]
 print(cube.orientation.as_rotvec(degrees=True))  # --> [0. 0. 45.]
 
-# Compute the magnetic field in units of T at a set of observer positions. Magpylib
+# Compute the magnetic B-field in units of T at a set of observer positions. Magpylib
 # makes use of vectorized computation. Hand over all field computation instances,
 # e.g. different observer positions, at one funtion call. Avoid Python loops !!!
 observers = [(0, 0, 0), (0.01, 0, 0), (0.02, 0, 0)]  # in SI Units (m)
