@@ -244,8 +244,8 @@ def test_core_physics_long_solenoid():
             dimension=np.array([(2 * R, L)]),
             polarization=pol,
         )[0, 2]
-        # if field=='H':  # UNCOMMENT THIS WHEN FIX #703 IS MERGED !!!!
-        #    BHz_cyl += Mz
+        if field == "H":
+            BHz_cyl += Mz
         np.testing.assert_allclose(BHz_long, BHz_cyl, rtol=1e-5)
 
         # cuboid

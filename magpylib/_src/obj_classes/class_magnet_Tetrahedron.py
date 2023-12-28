@@ -22,7 +22,7 @@ class Tetrahedron(BaseMagnet):
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3)
-        Object position(s) in the global coordinates in units of meter. For m>1, the
+        Object position(s) in the global coordinates in units of m. For m>1, the
         `position` and `orientation` attributes together represent an object path.
         When setting vertices, the initial position is set to the barycenter.
 
@@ -63,9 +63,9 @@ class Tetrahedron(BaseMagnet):
     Examples
     --------
     `Tetrahedron` magnets are magnetic field sources. Below we compute the H-field in A/m of a
-    tetrahedron magnet with polarization (0.1,0.2,0.3) in units of tesla dimensions defined
-    through the vertices (0,0,0), (.01,0,0), (0,.01,0) and (0,0,.01) in units of meter at the
-    observer position (0.01,0.01,0.01) given in units of meter:
+    tetrahedron magnet with polarization (0.1,0.2,0.3) in units of T dimensions defined
+    through the vertices (0,0,0), (.01,0,0), (0,.01,0) and (0,0,.01) in units of m at the
+    observer position (0.01,0.01,0.01) given in units of m:
 
     >>> import magpylib as magpy
     >>> verts = [(0,0,0), (.01,0,0), (0,.01,0), (0,0,.01)]
@@ -122,7 +122,7 @@ class Tetrahedron(BaseMagnet):
     # property getters and setters
     @property
     def vertices(self):
-        """Length of the Tetrahedron sides [a,b,c] in units of meter."""
+        """Length of the Tetrahedron sides [a,b,c] in units of m."""
         return self._vertices
 
     @vertices.setter

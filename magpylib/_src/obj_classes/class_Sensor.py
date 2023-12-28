@@ -28,12 +28,12 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     ----------
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of meter. For m>1, the
+        Object position(s) in the global coordinates in units of m. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     pixel: array_like, shape (3,) or (n1,n2,...,3), default=`(0,0,0)`
         Sensor pixel (=sensing elements) positions in the local object coordinates
-        (rotate with object), in units of meter.
+        (rotate with object), in units of m.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
@@ -57,7 +57,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     Examples
     --------
     `Sensor` objects are observers for magnetic field computation. In this example we compute the
-    B-field in units of tesla as seen by the sensor in the center of a circular current loop:
+    B-field in units of T as seen by the sensor in the center of a circular current loop:
 
     >>> import magpylib as magpy
     >>> sens = magpy.Sensor()
@@ -109,7 +109,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     @property
     def pixel(self):
         """Sensor pixel (=sensing elements) positions in the local object coordinates
-        (rotate with object), in units of meter.
+        (rotate with object), in units of m.
         """
         return self._pixel
 

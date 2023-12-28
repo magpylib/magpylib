@@ -23,7 +23,7 @@ class Triangle(BaseMagnet):
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3)
-        Object position(s) in the global coordinates in units of meter. For m>1, the
+        Object position(s) in the global coordinates in units of m. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -67,8 +67,8 @@ class Triangle(BaseMagnet):
     --------
     `Triangle` objects are magnetic field sources. Below we compute the H-field in A/m of a
     Triangle object with polarization (0.01,0.02,0.03) in units of T, dimensions defined
-    through the vertices (0,0,0), (0.01,0,0) and (0,0.01,0) in units of meter at the
-    observer position (0.01,0.01,0.01) given in units of meter:
+    through the vertices (0,0,0), (0.01,0,0) and (0,0.01,0) in units of m at the
+    observer position (0.01,0.01,0.01) given in units of m:
 
     >>> import magpylib as magpy
     >>> verts = [(0,0,0), (.01,0,0), (0,.01,0)]

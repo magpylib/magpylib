@@ -577,10 +577,10 @@ def getB(
         Can be array_like positions of shape (n1, n2, ..., 3) where the field
         should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
         of such sensor objects (must all have similar pixel shapes). All positions
-        are given in units of meter.
+        are given in units of m.
 
         Functional interface: Input must be array_like with shape (3,) or (n,3) corresponding
-        positions to observer positions in units of meter.
+        positions to observer positions in units of m.
 
     sumup: bool, default=`False`
         If `True`, the fields of all sources are summed up.
@@ -604,7 +604,7 @@ def getB(
     *Functional interface
 
     position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
-        Source position(s) in the global coordinates in units of meter.
+        Source position(s) in the global coordinates in units of m.
 
     orientation: scipy `Rotation` object with length 1 or n, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
@@ -634,20 +634,20 @@ def getB(
 
     dimension: array_like, shape (x,) or (n,x)
         Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`)!
-        Magnet dimension input in units of meter and deg. Dimension format x of sources is similar
+        Magnet dimension input in units of m and deg. Dimension format x of sources is similar
         as in object oriented interface.
 
     diameter: array_like, shape (n,)
         Only source_type == `Sphere` or `Circle`!
-        Diameter of source in units of meter.
+        Diameter of source in units of m.
 
     segment_start: array_like, shape (n,3)
         Only source_type == `Polyline`!
-        Start positions of line current segments in units of meter.
+        Start positions of line current segments in units of m.
 
     segment_end: array_like, shape (n,3)
         Only source_type == `Polyline`!
-        End positions of line current segments in units of meter.
+        End positions of line current segments in units of m.
 
     Returns
     -------
@@ -669,7 +669,7 @@ def getB(
     Examples
     --------
     In this example we compute the B-field in T of a spherical magnet and a current
-    loop at the observer position (0.01,0.01,0.01) given in units of meter:
+    loop at the observer position (0.01,0.01,0.01) given in units of m:
 
     >>> import magpylib as magpy
     >>> src1 = magpy.current.Circle(current=100, diameter=.002)
@@ -755,10 +755,10 @@ def getH(
         Can be array_like positions of shape (n1, n2, ..., 3) where the field
         should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
         of such sensor objects (must all have similar pixel shapes). All positions
-        are given in units of meter.
+        are given in units of m.
 
         Functional interface: Input must be array_like with shape (3,) or (n,3) corresponding
-        positions to observer positions in units of meter.
+        positions to observer positions in units of m.
 
     sumup: bool, default=`False`
         If `True`, the fields of all sources are summed up.
@@ -782,7 +782,7 @@ def getH(
     *Functional interface
 
     position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
-        Source position(s) in the global coordinates in units of meter.
+        Source position(s) in the global coordinates in units of m.
 
     orientation: scipy `Rotation` object with length 1 or n, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
@@ -805,20 +805,20 @@ def getH(
 
     dimension: array_like, shape (x,) or (n,x)
         Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`)!
-        Magnet dimension input in units of meter and deg. Dimension format x of sources is similar
+        Magnet dimension input in units of m and deg. Dimension format x of sources is similar
         as in object oriented interface.
 
     diameter: array_like, shape (n,)
         Only source_type == `Sphere` or `Circle`!
-        Diameter of source in units of meter.
+        Diameter of source in units of m.
 
     segment_start: array_like, shape (n,3)
         Only source_type == `Polyline`!
-        Start positions of line current segments in units of meter.
+        Start positions of line current segments in units of m.
 
     segment_end: array_like, shape (n,3)
         Only source_type == `Polyline`!
-        End positions of line current segments in units of meter.
+        End positions of line current segments in units of m.
 
     Returns
     -------
@@ -840,7 +840,7 @@ def getH(
     Examples
     --------
     In this example we compute the H-field in A/m of a spherical magnet and a current loop
-    at the observer position (0.01,0.01,0.01) given in units of meter:
+    at the observer position (0.01,0.01,0.01) given in units of m:
 
     >>> import magpylib as magpy
     >>> src1 = magpy.current.Circle(current=100, diameter=.002)

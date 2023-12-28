@@ -22,7 +22,7 @@ class CustomSource(BaseSource):
         be numpy ndarrays of shape (n,3) themselves.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of meter. For m>1, the
+        Object position(s) in the global coordinates in units of m. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`

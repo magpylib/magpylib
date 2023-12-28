@@ -494,12 +494,12 @@ def test_cyl_vs_cylseg_axial_H_inside_mask():
         field=field,
         observers=obs,
         dimension=dims,
-        magnetization=pols,
+        polarization=pols,
     )
     Bcs = magpy.core.magnet_cylinder_segment_field(
         field=field,
         observers=obs,
         dimension=dims_cs,
-        magnetization=pols,
+        polarization=pols,
     )
     np.testing.assert_allclose(Bc, Bcs)

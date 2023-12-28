@@ -20,7 +20,7 @@ class Cylinder(BaseMagnet):
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of meter. For m>1, the
+        Object position(s) in the global coordinates in units of m. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -29,7 +29,7 @@ class Cylinder(BaseMagnet):
         together represent an object path.
 
     dimension: array_like, shape (2,), default=`None`
-        Dimension (d,h) denote diameter and height of the cylinder in units of meter.
+        Dimension (d,h) denote diameter and height of the cylinder in units of m.
 
     polarization: array_like, shape (3,), default=`None`
         Magnetic polarization vector J = mu0*M in units of T,
@@ -53,8 +53,8 @@ class Cylinder(BaseMagnet):
     Examples
     --------
     `Cylinder` magnets are magnetic field sources. Below we compute the H-field in A/m of a
-    cylinder magnet with polarization (.1,.2,.3) in units of tesla and 0.01 meter diameter and
-    height at the observer position (0.01,0.01,0.01) given in units of meter:
+    cylinder magnet with polarization (.1,.2,.3) in units of T and 0.01 meter diameter and
+    height at the observer position (0.01,0.01,0.01) given in units of m:
 
     >>> import magpylib as magpy
     >>> src = magpy.magnet.Cylinder(polarization=(.1,.2,.3), dimension=(.01,.01))
@@ -110,12 +110,12 @@ class Cylinder(BaseMagnet):
     # property getters and setters
     @property
     def dimension(self):
-        """Dimension (d,h) denote diameter and height of the cylinder in units of meter."""
+        """Dimension (d,h) denote diameter and height of the cylinder in units of m."""
         return self._dimension
 
     @dimension.setter
     def dimension(self, dim):
-        """Set Cylinder dimension (d,h) in units of meter."""
+        """Set Cylinder dimension (d,h) in units of m."""
         self._dimension = check_format_input_vector(
             dim,
             dims=(1,),

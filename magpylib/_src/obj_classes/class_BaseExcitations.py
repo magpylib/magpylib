@@ -62,7 +62,7 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
             Can be array_like positions of shape (n1, n2, ..., 3) where the field
             should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
             of such sensor objects (must all have similar pixel shapes). All positions are given
-            in units of meters.
+            in units of m.
 
         squeeze: bool, default=`True`
             If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g.
@@ -131,7 +131,7 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
             Can be array_like positions of shape (n1, n2, ..., 3) where the field
             should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
             of such sensor objects (must all have similar pixel shapes). All positions
-            are given in units of meters.
+            are given in units of m.
 
         squeeze: bool, default=`True`
             If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g.
