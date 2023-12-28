@@ -40,7 +40,7 @@ auto_examples
 tempCodeRunnerFile.py
 
 #temp files
-__temp*.py
+__temp*
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
