@@ -253,7 +253,6 @@ cube = magpy.magnet.Cuboid(
     magnetization=(0,0,1), # in SI Units (T)
     dimension=(1,1,1), # in SI Units (m)
 )
-angles = 
 cube.rotate_from_angax(
     angle=np.linspace(10,360,18),
     axis='x'
@@ -274,7 +273,7 @@ Magpylib's object oriented interface is convenient to work with but is also slow
 ```python
 import magpylib as magpy
 
-# Compute the magnetic field via the direct interface.
+# Compute the magnetic field via the functional interface.
 B = magpy.getB(
     sources="Cuboid",
     observers=[(-.01, 0, .01), (0, 0, .01), (.01, 0, .01)],  # in SI Units (m)

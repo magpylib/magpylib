@@ -30,7 +30,7 @@ For historical reasons Magpylib is by default set up for the following units
 | electric current       | `current`                     | **A**       |
 | magnetic dipole moment | `moment`                      | **mT*mm^3** |
 | B-field                | `getB()`                      | **mT**      |
-| H-field                | `getH()`                      | **kA/m**    |
+| H-field                | `getH()`                      | **A/m**    |
 | length-inputs          | `position`, `dimension`, ...  | **mm**      |
 | angle-inputs           | `angle`, `dimension`, ...     | **deg**     |
 :::
@@ -43,7 +43,7 @@ Unfortunately Magpylib contributes to the naming confusion in magnetism that is 
 
 The analytical solutions are scale invariant - _"a magnet with 1 mm sides creates the same field at 1 mm distance as a magnet with 1 m sides at 1 m distance"_. The choice of length input unit is therefore not relevant.
 
-In addition, `getB` returns the same unit as given by the `magnetization` input. When the magnetization is given in mT, then `getH` returns kA/m which is simply related by factor of $\frac{10}{4\pi}$.
+In addition, `getB` returns the same unit as given by the `magnetization` input. When the magnetization is given in mT, then `getH` returns A/m which is simply related by factor of $\frac{10}{4\pi}$.
 
 In {ref}`phys-remanence` the connection between the `magnetization` input and the remanence field of a magnet is explained.
 
@@ -485,7 +485,7 @@ Position and orientation of all Magpylib objects are defined by the two attribut
 The position and orientation attributes can be either **scalar**, i.e. a single position or a single rotation, or **vector**, when they are arrays of such scalars. The two attributes together define the **path** of an object - Magpylib makes sure that they are always of the same length. When the field is computed, it is automatically computed for the whole path.
 
 ```{tip}
-To enable vectorized field computation, paths should always be used when modeling multiple object positions. Avoid using Python loops at all costs for that purpose! If your path is difficult to realize, consider using the [direct interface](docu-direct-interface) instead.
+To enable vectorized field computation, paths should always be used when modeling multiple object positions. Avoid using Python loops at all costs for that purpose! If your path is difficult to realize, consider using the [functional interface](docu-functional-interface) instead.
 ```
 
 Magpylib offers two powerful methods for object manipulation:
@@ -654,7 +654,7 @@ print(B)
 :::
 ::::
 
-The physical unit returned by `getB` and `getH` corresponds to the source excitation input units. For example, when magnet `magnetization` is given in mT, `getB` returns the B-field in units of mT and `getH` the H-field in units of kA/m. This is described in detail in {ref}`docu-units`.
+The physical unit returned by `getB` and `getH` corresponds to the source excitation input units. For example, when magnet `magnetization` is given in mT, `getB` returns the B-field in units of mT and `getH` the H-field in units of A/m. This is described in detail in {ref}`docu-units`.
 
 The output of a field computation `magpy.getB(sources, observers)` is by default a Numpy array of shape `(l, m, k, n1, n2, n3, ..., 3)` where `l` is the number of input sources, `m` the (maximal) object path length, `k` the number of observers, `n1,n2,n3,...` the sensor pixel shape or the shape of the observer position array input and `3` the three magnetic field components $(B_x, B_y, B_z)$.
 
@@ -674,7 +674,7 @@ Try to make all field computations with as few calls to `getB` and `getH` as pos
 The tutorial {ref}`gallery-tutorial-field-computation` shows good practices with Magpylib field computation.
 
 
-(docu-direct-interface)=
+(docu-functional-interface)=
 ## Direct interface
 
 Users can bypass the object oriented functionality of Magpylib and instead compute the field for n given parameter sets. This is done by providing the following inputs to the top level functions `getB` and `getH`,
@@ -683,7 +683,7 @@ Users can bypass the object oriented functionality of Magpylib and instead compu
 2. `observers`: array-like of shape (3,) or (n,3) giving the observer positions.
 3. `kwargs`: a dictionary with inputs of shape (x,) or (n,x). Must include all mandatory class-specific inputs. By default, `position=(0,0,0)` and `orientation=None`(=unit rotation).
 
-All "scalar" inputs of shape (x,) are automatically tiled up to shape (n,x) to create a set of n computation instances. The field is returned in the shape (n,3). The following code demonstrates the direct interface.
+All "scalar" inputs of shape (x,) are automatically tiled up to shape (n,x) to create a set of n computation instances. The field is returned in the shape (n,3). The following code demonstrates the functional interface.
 
 ::::{grid}
 :gutter: 5
@@ -714,7 +714,7 @@ print(B.round())
 ::::
 
 ```{note}
-The direct interface is potentially faster than the object oriented one if users know how to generate the input arrays efficiently with numpy (e.g. `np.arange`, `np.linspace`, `np.tile`, `np.repeat`, ...).
+The functional interface is potentially faster than the object oriented one if users know how to generate the input arrays efficiently with numpy (e.g. `np.arange`, `np.linspace`, `np.tile`, `np.repeat`, ...).
 ```
 
 

@@ -32,7 +32,7 @@ $$
 
 Here the monopole lies in the origin of the local coordinates, $Q_m$ is the monopole charge and ${\bf r}$ is the observer position.
 
-We create this field as a Python function and hand it over to a CustomSource `field_func` argument. The `field_func` input must be a callable with two positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must accept ndarrays of shape (n,3)), and return the respective fields in units of mT and kA/m in the same shape.
+We create this field as a Python function and hand it over to a CustomSource `field_func` argument. The `field_func` input must be a callable with two positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must accept ndarrays of shape (n,3)), and return the respective fields in units of mT and A/m in the same shape.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -41,21 +41,21 @@ import magpylib as magpy
 # Create monopole field
 def mono_field(field, observers):
     """
-    Monopole field 
+    Monopole field
 
     field: string, "B" or "H
         return B or H-field
 
     observers: array_like of shape (n,3)
         Observer positions
-    
+
     Returns: np.ndarray, shape (n,3)
         Magnetic monopole field
     """
     if field=="B":
         Qm = 1          # unit mT
     else:
-        Qm = 10/4/np.pi # unit kA/m
+        Qm = 10/4/np.pi # unit A/m
     obs = np.array(observers).T
     field = Qm * obs / np.linalg.norm(obs, axis=0)**3
     return field.T
@@ -122,7 +122,7 @@ magpy.show(mono1, mono2)
 
 ## Subclassing CustomSource
 
-In the above example it would be nice to make the CustomSource dynamic, so that it would have a property `charge` that can be changed at will, rather than having to redefine the `field_func` and initialize a new object every time. In the following example we show how to sub-class `CustomSource` to achieve this. The problem is reminiscent of {ref}`gallery-misc-compound`. 
+In the above example it would be nice to make the CustomSource dynamic, so that it would have a property `charge` that can be changed at will, rather than having to redefine the `field_func` and initialize a new object every time. In the following example we show how to sub-class `CustomSource` to achieve this. The problem is reminiscent of {ref}`gallery-misc-compound`.
 
 ```{code-cell} ipython3
 class Monopole(magpy.misc.CustomSource):
@@ -149,12 +149,12 @@ class Monopole(magpy.misc.CustomSource):
 
     def _update(self):
         """ Apply monopole field function """
-        
+
         def mono_field(field, observers):
             """ monopole field"""
             chg = self._charge
             if field=="H":
-                chg *= 10/4/np.pi  # unit kA/m
+                chg *= 10/4/np.pi  # unit A/m
             obs = np.array(observers).T
             BH = chg * obs / np.linalg.norm(obs, axis=0)**3
             return BH.T

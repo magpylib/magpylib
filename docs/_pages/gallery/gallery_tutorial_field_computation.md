@@ -181,16 +181,16 @@ fig = px.line(
 fig.show()
 ```
 
-(gallery-tutorial-field-computation-direct-interface)=
+(gallery-tutorial-field-computation-functional-interface)=
 
 ## Direct Interface
 
-All above computations demonstrate the convenient object oriented interface of Magpylib. However, there are instances when it is better to work with the direct interface instead.
+All above computations demonstrate the convenient object oriented interface of Magpylib. However, there are instances when it is better to work with the functional interface instead.
 
 1. Reduce overhead of Python objects
 2. Complex computation instances
 
-In the following example we show how complex instances are computed using the direct interface.
+In the following example we show how complex instances are computed using the functional interface.
 
 ```{important}
 Use numpy operations for input array creation as shown in the example !
@@ -220,7 +220,7 @@ POS = np.vstack((
     np.tile(pos2, (6,1)),
     ))
 
-# Compute all instances with the direct interface
+# Compute all instances with the functional interface
 B = magpy.getB(
     sources='Cuboid',
     observers=POS,

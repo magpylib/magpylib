@@ -70,7 +70,7 @@ plt.show()
 ```
 
 ```{note}
-Be aware that the above code is not very performant, but quite readable. The following example creates the grid with numpy commands only instead of Python loops, and uses the {ref}`gallery-tutorial-field-computation-direct-interface` for field computation.
+Be aware that the above code is not very performant, but quite readable. The following example creates the grid with numpy commands only instead of Python loops, and uses the {ref}`gallery-tutorial-field-computation-functional-interface` for field computation.
 ```
 
 ## Example 2 - Hollow Cylinder Magnet
@@ -89,7 +89,7 @@ fig, ax = plt.subplots()
 X, Y = np.mgrid[-5:5:100j, -5:5:100j].transpose((0, 2, 1))
 grid = np.stack([X, Y, np.zeros((100, 100))], axis=2)
 
-# Compute magnetic field on grid - using the direct interface
+# Compute magnetic field on grid - using the functional interface
 B = magpy.getB(
     "CylinderSegment",
     observers=grid.reshape(-1,3),

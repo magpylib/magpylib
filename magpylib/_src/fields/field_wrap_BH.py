@@ -488,7 +488,7 @@ def getBH_dict_level2(
     except KeyError as err:
         raise MagpylibBadUserInput(
             f"Input parameter `sources` must be one of {list(source_classes)}"
-            " when using the direct interface."
+            " when using the functional interface."
         ) from err
 
     kwargs["observers"] = observers
@@ -691,7 +691,7 @@ def getB(
      [[ 8.01875374e-07  8.01875374e-07  1.51582450e-22]
       [-8.01875374e-07 -8.01875374e-07  1.51582450e-22]]]
 
-    Through the direct interface we can compute the same fields for the loop as:
+    Through the functional interface we can compute the same fields for the loop as:
 
     >>> obs = [(.01,.01,.01), (.01,.01,-.01)]
     >>> B = magpy.getB('Circle', obs, current=100, diameter=.002)
@@ -862,7 +862,7 @@ def getH(
      [[ 6.38112147e-01  6.38112147e-01  1.20625481e-16]
       [-6.38112147e-01 -6.38112147e-01  1.20625481e-16]]]
 
-    Through the direct interface we can compute the same fields for the loop as:
+    Through the functional interface we can compute the same fields for the loop as:
 
     >>> obs = [(.01,.01,.01), (.01,.01,-.01)]
     >>> H = magpy.getH('Circle', obs, current=100, diameter=.002)
