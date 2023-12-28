@@ -14,12 +14,6 @@ class CustomSource(BaseSource):
 
     Parameters
     ----------
-    field_func: callable, default=`None`
-        The function for B- and H-field computation must have the two positional arguments
-        `field` and `observers`. With `field='B'` or `field='H'` the B- or H-field in units
-        of T or A/m must be returned respectively. The `observers` argument must
-        accept numpy ndarray inputs of shape (n,3), in which case the returned fields must
-        be numpy ndarrays of shape (n,3) themselves.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of m. For m>1, the
@@ -29,6 +23,13 @@ class CustomSource(BaseSource):
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    field_func: callable, default=`None`
+        The function for B- and H-field computation must have the two positional arguments
+        `field` and `observers`. With `field='B'` or `field='H'` the B- or H-field in units
+        of T or A/m must be returned respectively. The `observers` argument must
+        accept numpy ndarray inputs of shape (n,3), in which case the returned fields must
+        be numpy ndarrays of shape (n,3) themselves.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -84,9 +85,9 @@ class CustomSource(BaseSource):
 
     def __init__(
         self,
-        field_func=None,
         position=(0, 0, 0),
         orientation=None,
+        field_func=None,
         style=None,
         **kwargs,
     ):
