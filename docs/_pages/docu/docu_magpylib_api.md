@@ -24,26 +24,28 @@ For historical reasons Magpylib is by default set up for the following units
 
 :::{grid-item}
 :columns: 10
-| PHYSICAL QUANTITY | MAGPYLIB PARAMETER | UNIT |
-|:---:|:---:|:---:|
-| magnetic polarization  | `magnetization`               | **mT**      |
-| electric current       | `current`                     | **A**       |
-| magnetic dipole moment | `moment`                      | **mT*mm^3** |
-| B-field                | `getB()`                      | **mT**      |
-| H-field                | `getH()`                      | **A/m**    |
-| length-inputs          | `position`, `dimension`, ...  | **mm**      |
-| angle-inputs           | `angle`, `dimension`, ...     | **deg**     |
+| PHYSICAL QUANTITY | MAGPYLIB PARAMETER | UNIT (up to v4)| UNIT (from v5)|
+|:---:|:---:|:---:|:---:|
+| magnetic polarization  | `polarization`                | **T**      | -          |
+| magnetization          | `magnetization`               | **A/m**    | **mT**     |
+| electric current       | `current`                     | **A**      | **A**      |
+| magnetic dipole moment | `moment`                      | **A·m²**   | **mT·mm³** |
+| B-field                | `getB()`                      | **mT**     | **mT**     |
+| H-field                | `getH()`                      | **A/m**    | **kA/m**   |
+| length-inputs          | `position`, `dimension`, ...  | **m**      | **mm**     |
+| angle-inputs           | `angle`, `dimension`, ...     | **deg**    | **deg**    |
+
 :::
 
 ::::
 
 ```{warning}
-Unfortunately Magpylib contributes to the naming confusion in magnetism that is explained well [here](https://www.e-magnetica.pl/doku.php/confusion_between_b_and_h). The input `magnetization` in Magpylib refers to the magnetic polarization (and not the magnetization), the difference being only in the physical unit.
+Up to version 4, Magpylib was unfortunately contributing to the naming confusion in magnetism that is explained well [here](https://www.e-magnetica.pl/doku.php/confusion_between_b_and_h). The input `magnetization` in Magpylib was refering to the magnetic polarization (and not the magnetization), the difference being only in the physical unit. From version 5 onwards this has been addressed for all the magnet classes (see {ref}`docu-magnet-classes`)
 ```
 
 The analytical solutions are scale invariant - _"a magnet with 1 mm sides creates the same field at 1 mm distance as a magnet with 1 m sides at 1 m distance"_. The choice of length input unit is therefore not relevant.
 
-In addition, `getB` returns the same unit as given by the `magnetization` input. When the magnetization is given in mT, then `getH` returns A/m which is simply related by factor of $\frac{10}{4\pi}$.
+In addition, `getB` returns the same unit as given by the `polarization` input. When the polarization is given in T, then `getH` returns A/m which is simply related by factor of $\frac{1}{µ_0}=\frac{10^7}{4\pi}$.
 
 In {ref}`phys-remanence` the connection between the `magnetization` input and the remanence field of a magnet is explained.
 
@@ -109,16 +111,15 @@ Magpylib objects span a local reference frame, and all object properties are def
 
 
 ---------------------------------------------
-
-
+(docu-magnet-classes)=
 ## Magnet classes
 
-All magnets are sources. They have the <span style="color: orange">**magnetization**</span> attribute which is of the format $(m_x, m_y, m_z)$ and denotes a homogeneous magnetization/polarization vector in the local object coordinates in arbitrary units. Information how this is related to material properties from data sheets is found in the [Physics and Computation](phys-remanence) section.
+All magnets are sources. They have the <span style="color: orange">**polarization**</span> attribute ($J$) which is of the format $(p_x, p_y, p_z)$ and denotes a homogeneous magnetic polarization vector in the local object coordinates in units of **T**. The magnetization $M$ can also be set via the  <span style="color: orange">**magnetization**</span> attribute of the format $(m_x, m_y, m_z)$. This two parameters are codependent and Magpylib makes sures the parameter stay in sync via the $J=M\cdot\mu_0$ relation. Information on how this is related to material properties from data sheets is found in the [Physics and Computation](phys-remanence) section.
 
 
 ### Cuboid
 ```python
-magpy.magnet.Cuboid(magnetization, dimension, position, orientation, style)
+magpy.magnet.Cuboid(position, orientation, dimension, polarization, style)
 ```
 
 ::::{grid} 2
@@ -135,7 +136,7 @@ magpy.magnet.Cuboid(magnetization, dimension, position, orientation, style)
 
 ### Cylinder
 ```python
-magpy.magnet.Cylinder(magnetization, dimension, position, orientation, style)
+magpy.magnet.Cylinder(position, orientation, dimension, polarization, style)
 ```
 
 ::::{grid} 2
@@ -152,7 +153,7 @@ magpy.magnet.Cylinder(magnetization, dimension, position, orientation, style)
 
 ### CylinderSegment
 ```python
-magpy.magnet.CylinderSegment(magnetization, dimension, position, orientation, style)
+magpy.magnet.CylinderSegment(position, orientation, dimension, polarization, style)
 ```
 
 ::::{grid} 2
@@ -173,7 +174,7 @@ magpy.magnet.CylinderSegment(magnetization, dimension, position, orientation, st
 
 ### Sphere
 ```python
-magpy.magnet.Sphere(magnetization, diameter, position, orientation, style)
+magpy.magnet.Sphere(position, orientation, diameter, polarization, style)
 ```
 
 ::::{grid} 2
@@ -190,7 +191,7 @@ magpy.magnet.Sphere(magnetization, diameter, position, orientation, style)
 
 ### Tetrahedron
 ```python
-magpy.magnet.Tetrahedron(magnetization, vertices, position, orientation, style)
+magpy.magnet.Tetrahedron(position, orientation, vertices, polarization, style)
 ```
 
 ::::{grid} 2
@@ -212,7 +213,7 @@ magpy.magnet.Tetrahedron(magnetization, vertices, position, orientation, style)
 
 ### TriangularMesh
 ```python
-magpy.magnet.TriangularMesh(magnetization, vertices, faces, position, orientation, check_open, check_disconnected, check_selfintersecting, reorient_faces, style)
+magpy.magnet.TriangularMesh(position, orientation, vertices, faces, polarization, check_open, check_disconnected, check_selfintersecting, reorient_faces, style)
 ```
 
 ::::{grid} 2
@@ -243,7 +244,7 @@ The checks can also be performed after initialization using the methods
 * <span style="color: orange">**check_selfintersecting()**</span>
 * <span style="color: orange">**reorient_faces()**</span>
 
-The following class methods enable easy mesh loading and creating. They all take the mandatory <span style="color: orange">**magnetization**</span> argument, which overwrites possible magnetization from other inputs, as well as the optional mesh check parameters (see above).
+The following class methods enable easy mesh loading and creating. They all take the mandatory <span style="color: orange">**polarization**</span> argument, which overwrites possible polarization from other inputs, as well as the optional mesh check parameters (see above).
 
 * <span style="color: orange">**TriangularMesh.from_mesh()**</span> requires the input <span style="color: orange">**mesh**</span>, which is an array in the mesh format $[(P_1^1, P_2^1, P_3^1), (P_1^2, P_2^2, P_3^2), ...]$.
 * <span style="color: orange">**TriangularMesh.from_ConvexHull()**</span> requires the input <span style="color: orange">**points**</span>, which is an array of positions $(P_1, P_2, P_3, ...)$ from which the convex Hull is computed via the [Scipy ConvexHull](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html) implementation.
@@ -272,7 +273,7 @@ All currents are sources. Current objects have the <span style="color: orange">*
 
 ### Circle
 ```python
-magpy.current.Circle(current, diameter, position, orientation, style)
+magpy.current.Circle(position, orientation, current, diameter, style)
 ```
 
 ::::{grid} 2
@@ -288,7 +289,7 @@ magpy.current.Circle(current, diameter, position, orientation, style)
 
 ### Polyline
 ```python
-magpy.current.Polyline(current, vertices, position, orientation, style)
+magpy.current.Polyline(position, orientation, vertices, current, style)
 ```
 
 ::::{grid} 2
@@ -311,7 +312,7 @@ There are classes listed hereon that function as sources, but they do not repres
 
 ### Dipole
 ```python
-magpy.misc.Dipole(moment, position, orientation, style)
+magpy.misc.Dipole(position, orientation, moment, style)
 ```
 
 ::::{grid} 2
@@ -325,20 +326,20 @@ magpy.misc.Dipole(moment, position, orientation, style)
 :::
 :::{grid-item}
 :columns: 12
-**Info:** For homogeneous magnets the relation moment=magnetization$\times$volume holds.
+**Info:** For homogeneous magnets the relation moment=polarization$\times$volume holds.
 :::
 ::::
 
 
 ### Triangle
 ```python
-magpy.misc.Triangle(magnetization, vertices, position, orientation, style)
+magpy.misc.Triangle(position, orientation, vertices, polarization, style)
 ```
 
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Triangle` represents a triangular surface with a homogeneous charge density given by the projection of the magnetization vector onto the surface normal. The <span style="color: orange">**magnetization**</span> attribute stores the magnetization vector $(m_x,m_y,m_z)$  in arbitrary units. The <span style="color: orange">**vertices**</span> attribute is a set of the three triangle corners $(P_1, P_2, P_3)$ in arbitrary length units in the local coordinates.
+`Triangle` represents a triangular surface with a homogeneous charge density given by the projection of the polarization vector onto the surface normal. The <span style="color: orange">**polarization**</span> attribute stores the polarization vector $(m_x,m_y,m_z)$  in arbitrary units. The <span style="color: orange">**vertices**</span> attribute is a set of the three triangle corners $(P_1, P_2, P_3)$ in arbitrary length units in the local coordinates.
 :::
 :::{grid-item}
 :columns: 3
@@ -346,7 +347,7 @@ magpy.misc.Triangle(magnetization, vertices, position, orientation, style)
 :::
 :::{grid-item}
 :columns: 12
-**Info:** When multiple Triangles with similar magnetization vectors form a closed surface, and all their orientations (right-hand-rule) point outwards, their total H-field is equivalent to the field of a homogeneous magnet of the same shape. The B-field is only correct on the outside of the body. On the inside the magnetization must be added to the field. This is demonstrated in the tutorial {ref}`gallery-shapes-triangle`.
+**Info:** When multiple Triangles with similar polarization vectors form a closed surface, and all their orientations (right-hand-rule) point outwards, their total H-field is equivalent to the field of a homogeneous magnet of the same shape. The B-field is only correct on the outside of the body. On the inside the polarization must be added to the field. This is demonstrated in the tutorial {ref}`gallery-shapes-triangle`.
 :::
 ::::
 
@@ -510,6 +511,7 @@ The practical application of this formalism is best demonstrated by the followin
 
 ```python
 import magpylib as magpy
+# Note that all units are in SI
 
 sensor = magpy.Sensor()
 print(sensor.position)                                    # default value
@@ -640,21 +642,22 @@ that compute the magnetic field generated by `sources` as seen by the `observers
 :columns: 8
 ```python
 import magpylib as magpy
+# Note that all units are in SI
 
 # define source and observer objects
-loop = magpy.current.Circle(current=1, diameter=1)
+loop = magpy.current.Circle(current=1, diameter=.001)
 sens = magpy.Sensor()
 
 # compute field
 B = magpy.getB(loop, sens)
 
 print(B)
-#  --> [0.     0.     1.2566]
+#  --> [0.         0.         0.00125664]
 ```
 :::
 ::::
 
-The physical unit returned by `getB` and `getH` corresponds to the source excitation input units. For example, when magnet `magnetization` is given in mT, `getB` returns the B-field in units of mT and `getH` the H-field in units of A/m. This is described in detail in {ref}`docu-units`.
+The physical unit returned by `getB` and `getH` corresponds to the source excitation input units. For example, when magnet `polarization` is given in mT, `getB` returns the B-field in units of mT and `getH` the H-field in units of A/m. This is described in detail in {ref}`docu-units`.
 
 The output of a field computation `magpy.getB(sources, observers)` is by default a Numpy array of shape `(l, m, k, n1, n2, n3, ..., 3)` where `l` is the number of input sources, `m` the (maximal) object path length, `k` the number of observers, `n1,n2,n3,...` the sensor pixel shape or the shape of the observer position array input and `3` the three magnetic field components $(B_x, B_y, B_z)$.
 
@@ -695,20 +698,25 @@ All "scalar" inputs of shape (x,) are automatically tiled up to shape (n,x) to c
 :::{grid-item}
 :columns: 8
 ```python
+import numpy as np
 import magpylib as magpy
+# Note that all units are in SI
+# This example also nicely shows the scale invariance
+# by increasing the distance proportionally to the dimension.
 
 # compute the cuboid field for 3 input instances
+N = 3 # number of instances
 B = magpy.getB(
     sources='Cuboid',
-    observers=[(0,0,x) for x in range(3)],
-    dimension=[(d,d,d) for d in range(1,4)],
-    magnetization=(0,0,1000),
+    observers=np.linspace((0,0,1), (0,0,3), N),
+    dimension=np.linspace((1,1,1), (3,3,3),3, N),
+    polarization=(0,0,1),
 )
 
-print(B.round())
-#  --> [[  0.   0. 667.]
-#       [  0.   0. 436.]
-#       [  0.   0. 307.]]
+print(B)
+#  --> [[0.         0.         0.13478239]
+#       [0.         0.         0.13478239]
+#       [0.         0.         0.13478239]]
 ```
 :::
 ::::
@@ -733,25 +741,25 @@ At the heart of Magpylib lies a set of core functions that are our implementatio
 <span style="color: orange">**current_circle_field(**</span> `field`, `observers`, `current`, `diameter`<span style="color: orange">**)**</span>
 :::
 :::{grid-item}
-<span style="color: orange">**magnet_cuboid_field(**</span> `field`, `observers`, `magnetization`, `dimension`<span style="color: orange">**)**</span>
+<span style="color: orange">**magnet_cuboid_field(**</span> `field`, `observers`, `polarization`, `dimension`<span style="color: orange">**)**</span>
 :::
 :::{grid-item}
-<span style="color: orange">**magnet_cylinder_field(**</span> `field`, `observers`, `magnetization`, `dimension`<span style="color: orange">**)**</span>
+<span style="color: orange">**magnet_cylinder_field(**</span> `field`, `observers`, `polarization`, `dimension`<span style="color: orange">**)**</span>
 :::
 :::{grid-item}
-<span style="color: orange">**magnet_cylinder_segment_field(**</span> `field`, `observers`, `magnetization`, `dimension`<span style="color: orange">**)**</span>
+<span style="color: orange">**magnet_cylinder_segment_field(**</span> `field`, `observers`, `polarization`, `dimension`<span style="color: orange">**)**</span>
 :::
 :::{grid-item}
-<span style="color: orange">**magnet_sphere_field(**</span> `field`, `observers`, `magnetization`, `diameter`<span style="color: orange">**)**</span>
+<span style="color: orange">**magnet_sphere_field(**</span> `field`, `observers`, `polarization`, `diameter`<span style="color: orange">**)**</span>
 :::
 :::{grid-item}
-<span style="color: orange">**magnet_tetrahedron_field(**</span> `field`, `observers`, `magnetization`, `vertices`<span style="color: orange">**)**</span>
+<span style="color: orange">**magnet_tetrahedron_field(**</span> `field`, `observers`, `polarization`, `vertices`<span style="color: orange">**)**</span>
 :::
 :::{grid-item}
 <span style="color: orange">**dipole_field(**</span> `field`, `observers`, `moment`<span style="color: orange">**)**</span>
 :::
 :::{grid-item}
-<span style="color: orange">**triangle_field(**</span> `field`, `observers`, `magnetization`, `vertices`<span style="color: orange">**)**</span>
+<span style="color: orange">**triangle_field(**</span> `field`, `observers`, `polarization`, `vertices`<span style="color: orange">**)**</span>
 :::
 ::::
 
@@ -769,19 +777,20 @@ The input `field` is either `"B"` or `"H`. All other inputs must be Numpy ndarra
 ```python
 import numpy as np
 import magpylib as magpy
+# Note that all units are in SI
 
 # prepare input
-mag = np.array([(1000,0,0)]*3)
+pol = np.array([(1,0,0)]*3)
 dim = np.array([(1,2)]*3)
 obs = np.array([(0,0,0)]*3)
 
 # compute field with core functions
-B = magpy.core.magnet_cylinder_field('B', obs, mag, dim)
+B = magpy.core.magnet_cylinder_field(field='B', observers=obs, polarization=pol, dimension=dim)
 
-print(B.round())
-#  --> [[553.   0.   0.]
-#       [553.   0.   0.]
-#       [553.   0.   0.]]
+print(B)
+#  --> [[0.5527864 0.        0.       ]
+#       [0.5527864 0.        0.       ]
+#       [0.5527864 0.        0.       ]]
 ```
 :::
 ::::
