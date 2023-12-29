@@ -1,15 +1,15 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.7
+    jupytext_version: 1.16.0
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
+orphan: true
 ---
 
 (gallery-shapes-convex-hull)=
@@ -25,16 +25,22 @@ Magpylib offers construction of convex hull magnets by combining the `magpylib.m
 This is the fastest way to construct a pyramid magnet.
 
 ```{code-cell} ipython3
+import numpy as np
+
 import magpylib as magpy
 
 # Create pyramid magnet
-points = [(-2,-2,0), (-2,2,0), (2,-2,0), (2,2,0), (0,0,3)]
+points = np.array([(-2, -2, 0), (-2, 2, 0), (2, -2, 0), (2, 2, 0), (0, 0, 3)]) / 100
 tmesh_pyramid = magpy.magnet.TriangularMesh.from_ConvexHull(
-    magnetization=(0, 0, 1000),
+    polarization=(0, 0, 1),
     points=points,
     style_label="Pyramid Magnet",
 )
 
 # Display graphically
 tmesh_pyramid.show(backend="plotly")
+```
+
+```{code-cell} ipython3
+
 ```
