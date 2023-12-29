@@ -24,16 +24,16 @@ For historical reasons Magpylib is by default set up for the following units
 
 :::{grid-item}
 :columns: 10
-| PHYSICAL QUANTITY | MAGPYLIB PARAMETER | UNIT (up to v4)| UNIT (from v5)|
+| PHYSICAL QUANTITY | MAGPYLIB PARAMETER | UNIT (from v5)| UNIT (up to v4)|
 |:---:|:---:|:---:|:---:|
-| magnetic polarization  | `polarization`                | **T**      | -          |
-| magnetization          | `magnetization`               | **A/m**    | **mT**     |
-| electric current       | `current`                     | **A**      | **A**      |
-| magnetic dipole moment | `moment`                      | **A·m²**   | **mT·mm³** |
-| B-field                | `getB()`                      | **mT**     | **mT**     |
-| H-field                | `getH()`                      | **A/m**    | **kA/m**   |
-| length-inputs          | `position`, `dimension`, ...  | **m**      | **mm**     |
-| angle-inputs           | `angle`, `dimension`, ...     | **deg**    | **deg**    |
+| magnetic polarization  | `polarization`                | **T**      | -        |
+| magnetization          | `magnetization`               | **A/m**    | mT       |
+| electric current       | `current`                     | **A**      | A        |
+| magnetic dipole moment | `moment`                      | **A·m²**   | mT·mm³   |
+| B-field                | `getB()`                      | **mT**     | mT       |
+| H-field                | `getH()`                      | **A/m**    | kA/m     |
+| length-inputs          | `position`, `dimension`, ...  | **m**      | mm       |
+| angle-inputs           | `angle`, `dimension`, ...     | **deg**    | deg      |
 
 :::
 
