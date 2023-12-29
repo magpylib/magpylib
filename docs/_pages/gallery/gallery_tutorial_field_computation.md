@@ -54,8 +54,8 @@ H = cyl.getH(grid)
 
 # Display field with Pyplot
 ax1.streamplot(
-    grid[:, :, 0],
-    grid[:, :, 1],
+    grid[:, :, 0] * 1000,  # m -> mm
+    grid[:, :, 1] * 1000,  # m -> mm
     B[:, :, 0],
     B[:, :, 1],
     density=1.5,
@@ -65,8 +65,8 @@ ax1.streamplot(
 )
 
 ax2.streamplot(
-    grid[:, :, 0],
-    grid[:, :, 1],
+    grid[:, :, 0] * 1000,  # m -> mm
+    grid[:, :, 1] * 1000,  # m -> mm
     H[:, :, 0],
     H[:, :, 1],
     density=1.5,
@@ -75,10 +75,21 @@ ax2.streamplot(
     cmap="winter_r",
 )
 
+ax1.set(
+    title="B-Field",
+    xlabel="x-position (mm)",
+    ylabel="y-position (mm)",
+)
+ax2.set(
+    title="H-Field",
+    xlabel="x-position (mm)",
+    ylabel="y-position (mm)",
+    aspect=1,
+)
 # Outline magnet boundary
 for ax in [ax1, ax2]:
     ts = np.linspace(0, 2 * np.pi, 50)
-    ax.plot(0.02 * np.sin(ts), 0.02 * np.cos(ts), "k--")
+    ax.plot(20 * np.sin(ts), 20 * np.cos(ts), "k--")
 
 plt.tight_layout()
 plt.show()
