@@ -1,15 +1,15 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.7
+    jupytext_version: 1.16.0
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
+orphan: true
 ---
 
 (gallery-shapes-superpos)=
@@ -42,21 +42,23 @@ Geometric union by superposition is demonstrated in the following example where 
 
 ```{code-cell} ipython3
 import numpy as np
+
 import magpylib as magpy
 
-# Create three magnet parts with similar magnetization
+# Create three magnet parts with similar polarization
 pt1 = magpy.magnet.CylinderSegment(
-    magnetization=(500,0,0),
-    dimension=(0,4,2,90,270),
+    polarization=(0.5, 0, 0),
+    dimension=(0, 0.04, 0.02, 90, 270),
 )
 pt2 = magpy.magnet.Cuboid(
-    magnetization=(500,0,0),
-    dimension=(2,8,2),
-    position=(1,0,0)
+    polarization=(0.5, 0, 0), dimension=(0.02, 0.08, 0.02), position=(0.01, 0, 0)
 )
 pt3 = magpy.magnet.TriangularMesh.from_ConvexHull(
-    magnetization=(500,0,0),
-    points=[(2,4,-1),(2,4,1),(2,-4,-1),(2,-4,1),(6,0,1),(6,0,-1)]
+    polarization=(0.5, 0, 0),
+    points=np.array(
+        [(2, 4, -1), (2, 4, 1), (2, -4, -1), (2, -4, 1), (6, 0, 1), (6, 0, -1)]
+    )
+    / 100,
 )
 
 # Combine parts in a Collection
@@ -64,14 +66,13 @@ magnet = magpy.Collection(pt1, pt2, pt3)
 
 # Add a sensor with path
 sensor = magpy.Sensor()
-sensor.position = np.linspace((7,-10,0), (7,10,0), 100)
+sensor.position = np.linspace((7, -10, 0), (7, 10, 0), 100) / 100
 
 # Plot
-with magpy.show_context(magnet, sensor, backend='plotly', style_legend_show=False) as s:
+with magpy.show_context(magnet, sensor, backend="plotly", style_legend_show=False) as s:
     s.show(col=1)
-    s.show(output='B', col=2)
+    s.show(output="B", col=2)
 ```
-
 
 ## Cut-out operation
 
@@ -81,16 +82,16 @@ When two objects with opposing magnetization vectors of similar amplitude overla
 from magpylib.magnet import Cylinder, CylinderSegment
 
 # Create ring with CylinderSegment
-ring0 = CylinderSegment(magnetization=(0,0,100), dimension=(2,3,1,0,360))
+ring0 = CylinderSegment(polarization=(0, 0, .1), dimension=(.02, .03, .01, 0, 360))
 
 # Create ring with cut-out
-inner = Cylinder(magnetization=(0,0,-100), dimension=(4,1))
-outer = Cylinder(magnetization=(0,0, 100), dimension=(6,1))
+inner = Cylinder(polarization=(0, 0, -.1), dimension=(.04, .01))
+outer = Cylinder(polarization=(0, 0, .1), dimension=(.06, .01))
 ring1 = inner + outer
 
 # Print results
-print('CylinderSegment result:', ring0.getB((1,2,3)))
-print('Cut-out result:        ', ring1.getB((1,2,3)))
+print("CylinderSegment result:", ring0.getB((.01, .02, .03)))
+print("        Cut-out result:", ring1.getB((.01, .02, .03)))
 ```
 
 Note that, it is faster to compute the `Cylinder` field two times than computing the `CylinderSegment` field one time. This is why Magpylib automatically falls back to the `Cylinder` solution whenever `CylinderSegment` is called with 360 deg section angles. Unfortunately, cut-out operations cannot be displayed graphically at the moment, but {ref}`examples-own-3d-models` offer a solution here.
