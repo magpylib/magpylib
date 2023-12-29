@@ -1,15 +1,15 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.5
+    jupytext_version: 1.16.0
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
+orphan: true
 ---
 
 (gallery-tutorial-field-computation)=
@@ -21,11 +21,14 @@ kernelspec:
 The v2 slogan was *"The magnetic field is only three lines of code away"*, which is demonstrated by the most fundamental use of Magpylib.
 
 ```{code-cell} ipython3
-import magpylib as magpy                          # Import Magpylib
-loop = magpy.current.Circle(current=1, diameter=1)  # Create magnetic source
-B = magpy.getB(loop, observers=(0,0,0))           # Compute field
+import magpylib as magpy  # Import Magpylib
 
-print(B.round(decimals=3))
+loop = magpy.current.Circle(
+    current=1, diameter=0.01
+)  # Create magnetic source, units: A, m
+B = magpy.getB(loop, observers=(0, 0, 0))  # Compute field in units of T
+
+print(B)
 ```
 
 ## Field on a Grid
@@ -33,32 +36,49 @@ print(B.round(decimals=3))
 When handed multiple observer positions, `getB` and `getH` will return the field in the shape of the input. In the following example, B- and H-field of a diametrically magnetized cylinder magnet are computed on a position grid in the symmetry plane, and are then displayed using Matplotlib.
 
 ```{code-cell} ipython3
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 import magpylib as magpy
 
-fig, [ax1,ax2] = plt.subplots(1, 2, figsize=(10,5))
+fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(10, 5))
 
 # Create an observer grid in the xz-symmetry plane
-X, Y = np.mgrid[-5:5:100j, -5:5:100j].transpose((0, 2, 1))
+X, Y = np.mgrid[-0.05:0.05:100j, -0.05:0.05:100j].transpose((0, 2, 1))
 grid = np.stack([X, Y, np.zeros((100, 100))], axis=2)
 
 # Compute B- and H-fields of a cylinder magnet on the grid
-cyl = magpy.magnet.Cylinder(magnetization=(500,500,0), dimension=(4,2))
+cyl = magpy.magnet.Cylinder(polarization=(0.5, 0.5, 0), dimension=(0.04, 0.02))
 B = cyl.getB(grid)
 H = cyl.getH(grid)
 
 # Display field with Pyplot
-ax1.streamplot(grid[:,:,0], grid[:,:,1], B[:,:,0], B[:,:,1], density=1.5,
-    color=np.log(np.linalg.norm(B, axis=2)), linewidth=1, cmap='spring_r')
+ax1.streamplot(
+    grid[:, :, 0],
+    grid[:, :, 1],
+    B[:, :, 0],
+    B[:, :, 1],
+    density=1.5,
+    color=np.log(np.linalg.norm(B, axis=2)),
+    linewidth=1,
+    cmap="spring_r",
+)
 
-ax2.streamplot(grid[:,:,0], grid[:,:,1], H[:,:,0], H[:,:,1], density=1.5,
-    color=np.log(np.linalg.norm(B, axis=2)), linewidth=1, cmap='winter_r')
+ax2.streamplot(
+    grid[:, :, 0],
+    grid[:, :, 1],
+    H[:, :, 0],
+    H[:, :, 1],
+    density=1.5,
+    color=np.log(np.linalg.norm(B, axis=2)),
+    linewidth=1,
+    cmap="winter_r",
+)
 
 # Outline magnet boundary
-for ax in [ax1,ax2]:
-    ts = np.linspace(0, 2*np.pi, 50)
-    ax.plot(2*np.sin(ts), 2*np.cos(ts), 'k--')
+for ax in [ax1, ax2]:
+    ts = np.linspace(0, 2 * np.pi, 50)
+    ax.plot(0.02 * np.sin(ts), 0.02 * np.cos(ts), "k--")
 
 plt.tight_layout()
 plt.show()
@@ -74,6 +94,7 @@ The following example shows a moving and rotating sensor with two pixels. At the
 
 ```{code-cell} ipython3
 import numpy as np
+
 import magpylib as magpy
 
 # Reset defaults set in previous example
@@ -81,22 +102,24 @@ magpy.defaults.reset()
 
 
 # Define sensor with path
-sensor = magpy.Sensor(pixel=[(0,0,-.5), (0,0,.5)], style_size=1.5)
-sensor.position = np.linspace((0,0,-3), (0,0,3), 37)
+sensor = magpy.Sensor(pixel=[(0, 0, -0.0005), (0, 0, 0.0005)], style_size=1.5)
+sensor.position = np.linspace((0, 0, -0.003), (0, 0, 0.003), 37)
 
 angles = np.linspace(0, 360, 37)
-sensor.rotate_from_angax(angles, 'z', start=0)
+sensor.rotate_from_angax(angles, "z", start=0)
 
 # Define source with path
-cyl1 = magpy.magnet.Cylinder(magnetization=(100,0,0), dimension=(1,2), position=(3,0,0))
-cyl2 = cyl1.copy(position=(-3,0,0))
+cyl1 = magpy.magnet.Cylinder(
+    polarization=(0.1, 0, 0), dimension=(0.001, 0.002), position=(0.003, 0, 0)
+)
+cyl2 = cyl1.copy(position=(-0.003, 0, 0))
 coll = magpy.Collection(cyl1, cyl2)
-coll.rotate_from_angax(-angles, 'z', start=0)
+coll.rotate_from_angax(-angles, "z", start=0)
 
 # Display system and field at sensor
-with magpy.show_context(sensor, coll, animation=True, backend='plotly'):
+with magpy.show_context(sensor, coll, animation=True, backend="plotly"):
     magpy.show(col=1)
-    magpy.show(output='Bx', col=2, pixel_agg=None)
+    magpy.show(output="Bx", col=2, pixel_agg=None)
 ```
 
 ## Multiple Inputs
@@ -107,12 +130,12 @@ When `getB` and `getH` receive multiple inputs for sources and observers they wi
 import magpylib as magpy
 
 # Three sources
-cube1 = magpy.magnet.Cuboid(magnetization=(0,0,1000), dimension=(1,1,1))
+cube1 = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(0.1, 0.1, 0.1))
 cube2 = cube1.copy()
 cube3 = cube1.copy()
 
 # Two sensors with 4x5 pixel each
-pixel = [[[(i,j,0)] for i in range(4)] for j in range(5)]
+pixel = [[[(i / 1000, j / 1000, 0)] for i in range(4)] for j in range(5)]
 sens1 = magpy.Sensor(pixel=pixel)
 sens2 = sens1.copy()
 
@@ -137,29 +160,28 @@ Instead of a Numpy `ndarray`, the field computation can also return a [pandas](h
 
 ```{code-cell} ipython3
 import numpy as np
+
 import magpylib as magpy
 
 cube = magpy.magnet.Cuboid(
-    magnetization=(0, 0, 1000),
-    dimension=(1, 1, 1),
-    style_label='cube'
+    polarization=(0, 0, 1), dimension=(0.01, 0.01, 0.01), style_label="cube"
 )
 loop = magpy.current.Circle(
     current=200,
-    diameter=2,
-    style_label='loop',
+    diameter=0.02,
+    style_label="loop",
 )
 sens1 = magpy.Sensor(
-    pixel=[(0,0,0), (.5,0,0)],
-    position=np.linspace((-4, 0, 2), (4, 0, 2), 30),
-    style_label='sens1'
+    pixel=[(0, 0, 0), (0.005, 0, 0)],
+    position=np.linspace((-0.04, 0, 0.02), (0.04, 0, 0.02), 30),
+    style_label="sens1",
 )
-sens2 = sens1.copy(style_label='sens2').move((0,0,1))
+sens2 = sens1.copy(style_label="sens2").move((0, 0, 0.01))
 
 B = magpy.getB(
     [cube, loop],
     [sens1, sens2],
-    output='dataframe',
+    output="dataframe",
 )
 
 B
@@ -169,6 +191,7 @@ Plotting libraries such as [plotly](https://plotly.com/python/plotly-express/) o
 
 ```{code-cell} ipython3
 import plotly.express as px
+
 fig = px.line(
     B,
     x="path",
@@ -183,7 +206,7 @@ fig.show()
 
 (gallery-tutorial-field-computation-functional-interface)=
 
-## Direct Interface
+## Functional Interface
 
 All above computations demonstrate the convenient object oriented interface of Magpylib. However, there are instances when it is better to work with the functional interface instead.
 
@@ -198,33 +221,38 @@ Use numpy operations for input array creation as shown in the example !
 
 ```{code-cell} ipython3
 import numpy as np
+
 import magpylib as magpy
 
 # Two different magnet dimensions
-dim1 = (2,4,4)
-dim2 = (4,2,2)
-DIM = np.vstack((
-    np.tile(dim1, (6,1)),
-    np.tile(dim2, (6,1)),
-    ))
+dim1 = (0.02, 0.04, 0.04)
+dim2 = (0.04, 0.02, 0.02)
+DIM = np.vstack(
+    (
+        np.tile(dim1, (6, 1)),
+        np.tile(dim2, (6, 1)),
+    )
+)
 
-# Sweep through different magnetization for each magnet type
-mags = np.linspace((0,0,500), (0,0,1000), 6)
-MAG = np.tile(mags, (2,1))
+# Sweep through different polarizations for each magnet type
+pol = np.linspace((0, 0, 0.5), (0, 0, 1), 6)
+POL = np.tile(pol, (2, 1))
 
 # Airgap must stay the same
-pos1 = (0,0,3)
-pos2 = (0,0,2)
-POS = np.vstack((
-    np.tile(pos1, (6,1)),
-    np.tile(pos2, (6,1)),
-    ))
+pos1 = (0, 0, 0.03)
+pos2 = (0, 0, 0.02)
+POS = np.vstack(
+    (
+        np.tile(pos1, (6, 1)),
+        np.tile(pos2, (6, 1)),
+    )
+)
 
 # Compute all instances with the functional interface
 B = magpy.getB(
-    sources='Cuboid',
+    sources="Cuboid",
     observers=POS,
-    magnetization=MAG,
+    polarization=POL,
     dimension=DIM,
 )
 
