@@ -15,7 +15,7 @@ UNITS = {
     "current": "A",
     "magnetization": "A/m",
     "polarization": "T",
-    "moment": "A*m^2",
+    "moment": "A·m²",
 }
 
 

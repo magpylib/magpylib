@@ -708,7 +708,7 @@ with magpy.show_context():
 +++
 
 In addition the usual 3D models, it is also possible to draw 2D scatter plots of magnetic field data. This is achieved by assigning the `output` argument in the `show` function.
-By default `output='model3d'` displays the 3D representations of the objects. If output is a tuple of strings, it must be a combination of 'B' or 'H' and 'x', 'y' and/or 'z'. When having multiple coordinates, the field value is the combined vector length (e.g. `('Bx', 'Hxy', 'Byz')`). `'Bxy'` is equivalent to `sqrt(|Bx|^2 + |By|^2)`. A 2D line plot is then represented accordingly if the objects contain at least one source and one sensor.
+By default `output='model3d'` displays the 3D representations of the objects. If output is a tuple of strings, it must be a combination of 'B' or 'H' and 'x', 'y' and/or 'z'. When having multiple coordinates, the field value is the combined vector length (e.g. `('Bx', 'Hxy', 'Byz')`). `'Bxy'` is equivalent to `sqrt(|Bx|² + |By|²)`. A 2D line plot is then represented accordingly if the objects contain at least one source and one sensor.
 By default source outputs are summed up and sensor pixels, if any, are aggregated by mean (`pixel_agg="mean"`).
 
 ```{code-cell} ipython3

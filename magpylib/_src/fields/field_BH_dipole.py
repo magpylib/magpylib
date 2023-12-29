@@ -30,7 +30,7 @@ def dipole_field(
         Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
     moment: ndarray, shape (n,3)
-        Dipole moment vector in units of A*m^2.
+        Dipole moment vector in units of A·m².
 
     Returns
     -------
