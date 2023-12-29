@@ -2142,16 +2142,16 @@ def magnet_cylinder_segment_core(
     Parameters
     ----------
     mag: ndarray, shape (n,3)
-        magnetization vector (M, phi, th) in spherical CS, units: mT, rad
+        magnetization vector (M, phi, th) in spherical CS, units: T, rad
     obs_pos : ndarray, shape (n,3)
-        observer positions (r,phi,z) in cy CS, units: mm rad
+        observer positions (r,phi,z) in cy CS, units: m, rad
     dim: ndarray, shape (n,6)
-        segment dimension (r1,r2,phi1,phi2,z1,z2) in cy CS , units: mm, rad
+        segment dimension (r1,r2,phi1,phi2,z1,z2) in cy CS , units: m, rad
 
     Returns
     -------
     H-field: ndarray
-        H-field in cylindrical coordinates (Hr, Hphi, Hz), shape (n,3) in units of kA/m.
+        H-field in cylindrical coordinates (Hr, Hphi, Hz), shape (n,3) in units of A/m.
 
     Notes
     -----

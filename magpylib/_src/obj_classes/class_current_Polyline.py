@@ -10,31 +10,33 @@ from magpylib._src.utility import unit_prefix
 
 
 class Polyline(BaseCurrent):
-    """Current flowing in straight lines from vertex to vertex.
+    """Line current flowing in straight paths from vertex to vertex.
 
     Can be used as `sources` input for magnetic field computation.
 
     The vertex positions are defined in the local object coordinates (rotate with object).
     When `position=(0,0,0)` and `orientation=None` global and local coordinates coincide.
 
+    SI units are used for all inputs and outputs.
+
     Parameters
     ----------
-    current: float, default=`None`
-        Electrical current in units of A.
-
-    vertices: array_like, shape (n,3), default=`None`
-        The current flows along the vertices which are given in units of meter in the
-        local object coordinates (move/rotate with object). At least two vertices
-        must be given.
-
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of meter. For m>1, the
+        Object position(s) in the global coordinates in units of m. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    vertices: array_like, shape (n,3), default=`None`
+        The current flows along the vertices which are given in units of m in the
+        local object coordinates (move/rotate with object). At least two vertices
+        must be given.
+
+    current: float, default=`None`
+        Electrical current in units of A.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -49,9 +51,9 @@ class Polyline(BaseCurrent):
 
     Examples
     --------
-    `Polyline` objects are magnetic field sources. In this example we compute the H-field A/m
+    `Polyline` objects are magnetic field sources. In this example we compute the H-field in A/m
     of a square-shaped line-current with 1 A current at the observer position (1,1,1) given in
-    units of meter:
+    units of m:
 
     >>> import magpylib as magpy
     >>> src = magpy.current.Polyline(
@@ -114,7 +116,7 @@ class Polyline(BaseCurrent):
     @property
     def vertices(self):
         """
-        The current flows along the vertices which are given in units of meter in the
+        The current flows along the vertices which are given in units of m in the
         local object coordinates (move/rotate with object). At least two vertices
         must be given.
         """

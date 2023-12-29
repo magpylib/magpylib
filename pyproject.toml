@@ -50,7 +50,7 @@ docs = [
     "myst-nb",
     "pandas",
     "numpy-stl",
-    "pyvista==0.37",
+    "pyvista",
     "panel",
 ]
 test = [

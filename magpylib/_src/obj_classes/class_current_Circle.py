@@ -16,24 +16,26 @@ class Circle(BaseCurrent):
 
     When `position=(0,0,0)` and `orientation=None` the current loop lies
     in the x-y plane of the global coordinate system, with its center in
-    the origin. The Circle class has a dipole moment of pi**2/10*diameter**2*current.
+    the origin.
+
+    SI units are used for all inputs and outputs.
 
     Parameters
     ----------
-    current: float, default=`None`
-        Electrical current in units of A.
-
-    diameter: float, default=`None`
-        Diameter of the loop in units of meter.
-
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of meter. For m>1, the
+        Object position(s) in the global coordinates in units of m. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    diameter: float, default=`None`
+        Diameter of the loop in units of m.
+
+    current: float, default=`None`
+        Electrical current in units of A.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -48,9 +50,9 @@ class Circle(BaseCurrent):
 
     Examples
     --------
-    `Circle` objects are magnetic field sources. In this example we compute the H-field A/m
-    of such a current loop with 100 A current and a diameter of 2 meter at the observer position
-    (0.01,0.01,0.01) given in units of meter:
+    `Circle` objects are magnetic field sources. In this example we compute the H-field in A/m
+    of such a current loop with 100 A current and a diameter of 2 meters at the observer position
+    (0.01,0.01,0.01) given in units of m:
 
     >>> import magpylib as magpy
     >>> src = magpy.current.Circle(current=100, diameter=2)
@@ -104,7 +106,7 @@ class Circle(BaseCurrent):
     # property getters and setters
     @property
     def diameter(self):
-        """Diameter of the loop in units of meter."""
+        """Diameter of the loop in units of m."""
         return self._diameter
 
     @diameter.setter

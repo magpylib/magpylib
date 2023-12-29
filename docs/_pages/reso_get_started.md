@@ -4,9 +4,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.7
+    jupytext_version: 1.16.0
 kernelspec:
-  display_name: Python 3 (ipykernel)
+  display_name: Python 3
   language: python
   name: python3
 ---
@@ -47,9 +47,9 @@ import magpylib as magpy
 
 # Create a Cuboid magnet with magnetic polarization
 # of 1000 mT pointing in x-direction and sides of
-# 1,2 and 3 mm respectively.
+# 1,2 and 3 cm respectively (notice the use of SI units).
 
-cube = magpy.magnet.Cuboid(magnetization=(1000,0,0), dimension=(1,2,3))
+cube = magpy.magnet.Cuboid(polarization=(1,0,0), dimension=(0.01,0.02,0.03))
 
 # Create a Sensor for measuring the field
 
@@ -67,21 +67,21 @@ print(cube.position)                   # -> [0. 0. 0.]
 print(cube.orientation.as_rotvec())    # -> [0. 0. 0.]
 
 # Manipulate object position and orientation through
-# the respective attributes:
+# the respective attributes (move 10mm and rotate 45 deg):
 
 from scipy.spatial.transform import Rotation as R
-cube.position = (1,0,0)
+cube.position = (0.01,0,0) # in SI Units (m)
 cube.orientation = R.from_rotvec((0,0,45), degrees=True)
 
-print(cube.position)                            # -> [1. 0.  0.]
+print(cube.position)                            # -> [0.01 0.   0.  ]
 print(cube.orientation.as_rotvec(degrees=True)) # -> [0. 0. 45.]
 
 # Apply relative motion with the powerful `move`
 # and `rotate` methods.
-sensor.move((-1,0,0))
+sensor.move((-0.01,0,0))
 sensor.rotate_from_angax(angle=-45, axis='z')
 
-print(sensor.position)                            # -> [-1.  0.  0.]
+print(sensor.position)                            # -> [-0.01  0.    0.  ]
 print(sensor.orientation.as_rotvec(degrees=True)) # -> [ 0.  0. -45.]
 ```
 
@@ -99,20 +99,20 @@ magpy.show(cube, sensor, backend='plotly')
 ### Step 4: Compute the magnetic field
 
 ```python
-# Compute the B-field in units of mT for some points.
+# Compute the B-field in units of T for some points.
 
-points = [(0,0,-1), (0,0,0), (0,0,1)]
+points = [(0,0,-.01), (0,0,0), (0,0,.01)] # in SI Units (m)
 B = magpy.getB(cube, points)
 
-print(B.round()) # -> [[263.  68.  81.]
-                 #     [276.  52.   0.]
-                 #     [263.  68. -81.]]
+print(B.round(2)) # -> [[ 0.26  0.07  0.08]
+                     # [ 0.28  0.05  0.  ]
+                     # [ 0.26  0.07 -0.08]] # in SI Units (T)
 
-# Compute the H-field in units of kA/m at the sensor.
+# Compute the H-field in units of A/m at the sensor.
 
 H = magpy.getH(cube, sensor)
 
-print(H.round()) # -> [220.  41.   0.]
+print(H.round()) # -> [51017. 24210.     0.] # in SI Units (A/m)
 ```
 
 ```{warning}
@@ -129,20 +129,23 @@ import numpy as np
 import magpylib as magpy
 
 # Create magnet
-sphere = magpy.magnet.Sphere(diameter=1, magnetization=(0,0,1000))
+sphere = magpy.magnet.Sphere(
+    diameter=.01, # in SI Units (m)
+    polarization=(0,0,1) #  in SI Units (T)
+)
 
 # Assign a path
-sphere.position = np.linspace((-2,0,0), (2,0,0), 7)
+sphere.position = np.linspace((-.02,0,0), (.02,0,0), 7)
 
 # The field is automatically computed for every path position
-B = sphere.getB((0,0,1))
-print(B.round())  # ->[[  4.   0.  -1.]
-                  #    [ 13.   0.   1.]
-                  #    [ 33.   0.  26.]
-                  #    [  0.   0.  83.]
-                  #    [-33.   0.  26.]
-                  #    [-13.   0.   1.]
-                  #    [ -4.   0.  -1.]]
+B = sphere.getB((0,0,.01)) # in SI Units (m)
+print(B.round(3))  # ->[[ 0.004  0.    -0.001]
+                      # [ 0.013  0.     0.001]
+                      # [ 0.033  0.     0.026]
+                      # [ 0.     0.     0.083]
+                      # [-0.033  0.     0.026]
+                      # [-0.013  0.     0.001]
+                      # [-0.004  0.    -0.001]] # in SI Units (T)
 ```
 :::
 
@@ -156,16 +159,18 @@ import magpylib as magpy
 
 # Create objects
 obj1 = magpy.Sensor()
-obj2 = magpy.magnet.Cuboid(magnetization=(0,0,1000), dimension=(1,2,3))
+obj2 = magpy.magnet.Cuboid(
+    polarization=(0,0,1), # in SI Units (T)
+    dimension=(.01,.02,.03)) # in SI Units (m)
 
 # Group objects
 coll = magpy.Collection(obj1, obj2)
 
 # Manipulate Collection
-coll.move((1,2,3))
+coll.move((.001,.002,.003)) # in SI Units (m)
 
-print(obj1.position.round()) # -> [1. 2. 3.]
-print(obj2.position.round()) # -> [1. 2. 3.]
+print(obj1.position) # -> [0.001 0.002 0.003] # in SI Units (m)
+print(obj2.position) # -> [0.001 0.002 0.003] # in SI Units (m)
 ```
 :::
 
@@ -175,19 +180,26 @@ print(obj2.position.round()) # -> [1. 2. 3.]
 There most convenient way to create a magnet with complex shape is by using the ConvexHull of a point cloud (= simplest form that includes all given points).
 
 ```python
+import numpy as np
+
 import magpylib as magpy
 
 # Create a Pyramid magnet
-points = [
-    (-1,-1, 0),
-    (-1, 1, 0),
-    ( 1,-1, 0),
-    ( 1, 1, 0),
-    ( 0, 0, 2),
-]
+points = (
+    np.array(
+        [
+            (-1, -1, 0),
+            (-1, 1, 0),
+            (1, -1, 0),
+            (1, 1, 0),
+            (0, 0, 2),
+        ]
+    )
+    / 1000
+)  # mm to m
 pyramid = magpy.magnet.TriangularMesh.from_ConvexHull(
-    magnetization=(0,0,1000),
-    points=points
+    polarization=(0, 0, 1), # in SI Units (T)
+    points=points, # in SI Units (m)
 )
 
 # Display the magnet graphically
@@ -206,17 +218,17 @@ import magpylib as magpy
 
 # create Cuboid magnet with custom style
 cube = magpy.magnet.Cuboid(
-    magnetization=(0,0,1000),
-    dimension=(1,1,1),
+    polarization=(0,0,1), # in SI Units (T)
+    dimension=(.01,.01,.01), # in SI Units (m)
     style_color='r',
     style_magnetization_mode='arrow'
 )
 
 # create Cylinder magnet with custom style
 cyl = magpy.magnet.Cylinder(
-    magnetization=(0,0,1000),
-    dimension=(1,1),
-    position=(2,0,0),
+    polarization=(0,0,1), # in SI Units (T)
+    dimension=(.01,.01), # in SI Units (m)
+    position=(.02,0,0), # in SI Units (m)
     style_magnetization_color_mode='bicolor',
     style_magnetization_color_north='m',
     style_magnetization_color_south='c',
@@ -237,8 +249,15 @@ import magpylib as magpy
 
 
 # Create magnet with path
-cube = magpy.magnet.Cuboid(magnetization=(0,0,1000), dimension=(1,1,1))
-cube.rotate_from_angax(angle=np.linspace(10,360,18), axis='x')
+cube = magpy.magnet.Cuboid(
+    magnetization=(0,0,1), # in SI Units (T)
+    dimension=(1,1,1), # in SI Units (m)
+)
+cube.rotate_from_angax(
+    angle=np.linspace(10,360,18),
+    axis='x'
+    degrees=True # default, can be omitted
+)
 
 # Generate an animation with `show`
 cube.show(animation=True, backend="plotly")
@@ -248,22 +267,26 @@ cube.show(animation=True, backend="plotly")
 
 
 
-:::{dropdown} Direct interface
-Magpylib's object oriented interface is convenient to work with but is also slowed down by object initialization and handling. The direct interface bypasses this load and enables field computation for a set of input parameters.
+:::{dropdown} Functional interface
+Magpylib's object oriented interface is convenient to work with but is also slowed down by object initialization and handling. The functional interface bypasses this load and enables field computation for a set of input parameters.
 
 ```python
 import magpylib as magpy
 
-# Compute the magnetic field via the direct interface.
+# Compute the magnetic field via the functional interface.
 B = magpy.getB(
     sources="Cuboid",
-    observers=[(-1,0,1), (0,0,1), (1,0,1)],
-    dimension=(1,1,1),
-    magnetization=(0,0,1000)
+    observers=[(-.01, 0, .01), (0, 0, .01), (.01, 0, .01)],  # in SI Units (m)
+    dimension=(.01, .01, .01), # in SI Units (m)
+    polarization=(0, 0, 1), # in SI Units (T)
 )
 
-print(B.round()) # -> [[-43.   0.  14.]
-                 #     [  0.   0. 135.]
-                 #     [ 43.   0.  14.]]
+print(B.round(3))  # -> [[-0.043  0.     0.014]
+                       # [ 0.     0.     0.135]
+                       # [ 0.043  0.     0.014]] # in SI Units (T)
 ```
 :::
+
+```{code-cell} ipython3
+
+```

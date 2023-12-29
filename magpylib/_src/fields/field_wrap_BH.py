@@ -488,7 +488,7 @@ def getBH_dict_level2(
     except KeyError as err:
         raise MagpylibBadUserInput(
             f"Input parameter `sources` must be one of {list(source_classes)}"
-            " when using the direct interface."
+            " when using the functional interface."
         ) from err
 
     kwargs["observers"] = observers
@@ -577,10 +577,10 @@ def getB(
         Can be array_like positions of shape (n1, n2, ..., 3) where the field
         should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
         of such sensor objects (must all have similar pixel shapes). All positions
-        are given in units of meter.
+        are given in units of m.
 
         Functional interface: Input must be array_like with shape (3,) or (n,3) corresponding
-        positions to observer positions in units of meter.
+        positions to observer positions in units of m.
 
     sumup: bool, default=`False`
         If `True`, the fields of all sources are summed up.
@@ -604,7 +604,7 @@ def getB(
     *Functional interface
 
     position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
-        Source position(s) in the global coordinates in units of meter.
+        Source position(s) in the global coordinates in units of m.
 
     orientation: scipy `Rotation` object with length 1 or n, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
@@ -622,9 +622,9 @@ def getB(
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
 
-    moment: array_like, shape (3) or (n,3), unit A・m²
+    moment: array_like, shape (3) or (n,3), unit A·m²
         Only source_type == `Dipole`!
-        Magnetic dipole moment(s) in units of A・m² given in the local object coordinates
+        Magnetic dipole moment(s) in units of A·m² given in the local object coordinates
         (rotates with object). For homogeneous magnets the relation moment=magnetization*volume
         holds.
 
@@ -634,31 +634,31 @@ def getB(
 
     dimension: array_like, shape (x,) or (n,x)
         Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`)!
-        Magnet dimension input in units of meter and deg. Dimension format x of sources is similar
+        Magnet dimension input in units of m and deg. Dimension format x of sources is similar
         as in object oriented interface.
 
     diameter: array_like, shape (n,)
         Only source_type == `Sphere` or `Circle`!
-        Diameter of source in units of meter.
+        Diameter of source in units of m.
 
     segment_start: array_like, shape (n,3)
         Only source_type == `Polyline`!
-        Start positions of line current segments in units of meter.
+        Start positions of line current segments in units of m.
 
     segment_end: array_like, shape (n,3)
         Only source_type == `Polyline`!
-        End positions of line current segments in units of meter.
+        End positions of line current segments in units of m.
 
     Returns
     -------
     B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
-        B-field at each path position (m) for each sensor (k) and each sensor pixel
-        position (n1, n2, ...) in units of tesla. Sensor pixel positions are equivalent
-        to simple observer positions. Paths of objects that are shorter than m will be
+        B-field at each path position (index m) for each sensor (index k) and each sensor pixel
+        position (indices n1, n2, ...) in units of T. Sensor pixel positions are equivalent
+        to simple observer positions. Paths of objects that are shorter than index m are
         considered as static beyond their end.
 
     Functional interface: ndarray, shape (n,3)
-        B-field for every parameter set in units of tesla.
+        B-field for every parameter set in units of T.
 
     Notes
     -----
@@ -668,8 +668,8 @@ def getB(
 
     Examples
     --------
-    In this example we compute the B-field in units of tesla of a spherical magnet and a current
-    loop at the observer position (0.01,0.01,0.01) given in units of meter:
+    In this example we compute the B-field in T of a spherical magnet and a current
+    loop at the observer position (0.01,0.01,0.01) given in units of m:
 
     >>> import magpylib as magpy
     >>> src1 = magpy.current.Circle(current=100, diameter=.002)
@@ -691,7 +691,7 @@ def getB(
      [[ 8.01875374e-07  8.01875374e-07  1.51582450e-22]
       [-8.01875374e-07 -8.01875374e-07  1.51582450e-22]]]
 
-    Through the direct interface we can compute the same fields for the loop as:
+    Through the functional interface we can compute the same fields for the loop as:
 
     >>> obs = [(.01,.01,.01), (.01,.01,-.01)]
     >>> B = magpy.getB('Circle', obs, current=100, diameter=.002)
@@ -735,7 +735,7 @@ def getH(
     output="ndarray",
     **kwargs,
 ):
-    """Compute H-field in A/m for given sources and observers.
+    """Compute H-field in units of A/m for given sources and observers.
 
     Field implementations can be directly accessed (avoiding the object oriented
     Magpylib interface) by providing a string input `sources=source_type`, array_like
@@ -755,10 +755,10 @@ def getH(
         Can be array_like positions of shape (n1, n2, ..., 3) where the field
         should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
         of such sensor objects (must all have similar pixel shapes). All positions
-        are given in units of meter.
+        are given in units of m.
 
         Functional interface: Input must be array_like with shape (3,) or (n,3) corresponding
-        positions to observer positions in units of meter.
+        positions to observer positions in units of m.
 
     sumup: bool, default=`False`
         If `True`, the fields of all sources are summed up.
@@ -782,7 +782,7 @@ def getH(
     *Functional interface
 
     position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
-        Source position(s) in the global coordinates in units of meter.
+        Source position(s) in the global coordinates in units of m.
 
     orientation: scipy `Rotation` object with length 1 or n, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
@@ -793,9 +793,9 @@ def getH(
         Magnetization vector(s) (mu0*M, remanence field) in units of A/m given in
         the local object coordinates (rotates with object).
 
-    moment: array_like, shape (3) or (n,3), unit A・m²
+    moment: array_like, shape (3) or (n,3), unit A·m²
         Only source_type == `Dipole`!
-        Magnetic dipole moment(s) in units of A・m² given in the local object coordinates
+        Magnetic dipole moment(s) in units of A·m² given in the local object coordinates
         (rotates with object). For homogeneous magnets the relation moment=magnetization*volume
         holds.
 
@@ -805,27 +805,27 @@ def getH(
 
     dimension: array_like, shape (x,) or (n,x)
         Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`)!
-        Magnet dimension input in units of meter and deg. Dimension format x of sources is similar
+        Magnet dimension input in units of m and deg. Dimension format x of sources is similar
         as in object oriented interface.
 
     diameter: array_like, shape (n,)
         Only source_type == `Sphere` or `Circle`!
-        Diameter of source in units of meter.
+        Diameter of source in units of m.
 
     segment_start: array_like, shape (n,3)
         Only source_type == `Polyline`!
-        Start positions of line current segments in units of meter.
+        Start positions of line current segments in units of m.
 
     segment_end: array_like, shape (n,3)
         Only source_type == `Polyline`!
-        End positions of line current segments in units of meter.
+        End positions of line current segments in units of m.
 
     Returns
     -------
     H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
-        H-field at each path position (m) for each sensor (k) and each sensor pixel
-        position (n1, n2, ...) in units of A/m. Sensor pixel positions are equivalent
-        to simple observer positions. Paths of objects that are shorter than m will be
+        H-field at each path position (index m) for each sensor (index k) and each sensor pixel
+        position (indices n1, n2, ...) in units of A/m. Sensor pixel positions are equivalent
+        to simple observer positions. Paths of objects that are shorter than index m are
         considered as static beyond their end.
 
     Functional interface: ndarray, shape (n,3)
@@ -839,8 +839,8 @@ def getH(
 
     Examples
     --------
-    In this example we compute the H-field A/m of a spherical magnet and a current loop
-    at the observer position (0.01,0.01,0.01) given in units of meter:
+    In this example we compute the H-field in A/m of a spherical magnet and a current loop
+    at the observer position (0.01,0.01,0.01) given in units of m:
 
     >>> import magpylib as magpy
     >>> src1 = magpy.current.Circle(current=100, diameter=.002)
@@ -862,7 +862,7 @@ def getH(
      [[ 6.38112147e-01  6.38112147e-01  1.20625481e-16]
       [-6.38112147e-01 -6.38112147e-01  1.20625481e-16]]]
 
-    Through the direct interface we can compute the same fields for the loop as:
+    Through the functional interface we can compute the same fields for the loop as:
 
     >>> obs = [(.01,.01,.01), (.01,.01,-.01)]
     >>> H = magpy.getH('Circle', obs, current=100, diameter=.002)

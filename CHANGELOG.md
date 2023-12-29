@@ -3,7 +3,10 @@ All notable changes to magpylib are documented here.
 
 # Changelog
 
-## [UNRELEASED]
+## [5.0.0dev]
+
+## [4.5.1]
+- Fixed a field computatio issue where H-field resulting from axial magnetization is computed incorrectly inside of Cylinders ([#703](https://github.com/magpylib/magpylib/issues/703))
 
 ## [4.5.0]
 - Add optional handedness parameter for Sensors ([#687](https://github.com/magpylib/magpylib/pull/687))
@@ -438,7 +441,8 @@ The first official release of the magpylib library.
 
 ---
 
-[UNRELEASED]:https://github.com/magpylib/magpylib/compare/4.5.0...HEAD
+[5.0.0dev]:https://github.com/magpylib/magpylib/compare/4.5.1...HEAD
+[4.5.1]:https://github.com/magpylib/magpylib/compare/4.5.0...4.5.1
 [4.5.0]:https://github.com/magpylib/magpylib/compare/4.4.0...4.5.0
 [4.4.1]:https://github.com/magpylib/magpylib/compare/4.4.0...4.4.1
 [4.4.0]:https://github.com/magpylib/magpylib/compare/4.3.0...4.4.0

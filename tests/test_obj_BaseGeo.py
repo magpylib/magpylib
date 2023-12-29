@@ -424,7 +424,7 @@ def test_describe():
 
     test = (
         "<pre>Cuboid(id=REGEX, label='x1')<br>  • parent: None <br>  • "
-        "position: [0. 0. 0.] m<br>  • orientation: [0. 0. 0.] degrees<br>  • "
+        "position: [0. 0. 0.] m<br>  • orientation: [0. 0. 0.] deg<br>  • "
         "dimension: None m<br>  • magnetization: None A/m<br>  • polarization: None T</pre>"
     )
     rep = x1._repr_html_()
@@ -436,7 +436,7 @@ def test_describe():
         "Cuboid(id=REGEX, label='x1')",
         "  • parent: Collection(id=REGEX) ",  # INVISIBLE SPACE
         "  • position: [0. 0. 0.] m",
-        "  • orientation: [0. 0. 0.] degrees",
+        "  • orientation: [0. 0. 0.] deg",
         "  • dimension: None m",
         "  • magnetization: None A/m",
         "  • polarization: None T",
@@ -449,7 +449,7 @@ def test_describe():
         "Cylinder(id=REGEX, label='x2')",
         "  • parent: Collection(id=REGEX) ",  # INVISIBLE SPACE
         "  • position: [0. 0. 0.] m",
-        "  • orientation: [0. 0. 0.] degrees",
+        "  • orientation: [0. 0. 0.] deg",
         "  • dimension: [1. 3.] m",
         "  • magnetization: [1591549.43091895 2387324.14637843 3183098.86183791] A/m",
         "  • polarization: [2. 3. 4.] T",
@@ -463,7 +463,7 @@ def test_describe():
         "  • parent: None ",  # INVISIBLE SPACE
         "  • path length: 3",
         "  • position (last): [1. 2. 3.] m",
-        "  • orientation (last): [0. 0. 0.] degrees",
+        "  • orientation (last): [0. 0. 0.] deg",
         "  • handedness: right ",
         "  • pixel: 15 ",  # INVISIBLE SPACE
     ]
@@ -478,7 +478,7 @@ def test_describe():
         "Sensor(id=REGEX)\n"
         + "  • parent: None \n"
         + "  • position: [0. 0. 0.] m\n"
-        + "  • orientation: [0. 0. 0.] degrees\n"
+        + "  • orientation: [0. 0. 0.] deg\n"
         + "  • handedness: right \n"
         + "  • pixel: 1 \n"
         + "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), "
@@ -500,7 +500,7 @@ def test_describe():
         "Sensor(id=REGEX)\n"
         + "  • parent: None \n"
         + "  • position: [0. 0. 0.] m\n"
-        + "  • orientation: [0. 0. 0.] degrees\n"
+        + "  • orientation: [0. 0. 0.] deg\n"
         + "  • handedness: left \n"
         + "  • pixel: 75 (3x5x5) "
     )
@@ -525,7 +525,7 @@ def test_describe():
         "TriangularMesh(id=REGEX)\n"
         "  • parent: None \n"
         "  • position: [0. 0. 0.] m\n"
-        "  • orientation: [0. 0. 0.] degrees\n"
+        "  • orientation: [0. 0. 0.] deg\n"
         "  • magnetization: [     0.              0.         795774.71545948] A/m\n"
         "  • polarization: [0. 0. 1.] T\n"
         "  • barycenter: [0.         0.         0.46065534] \n"

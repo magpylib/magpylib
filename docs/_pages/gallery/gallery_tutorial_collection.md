@@ -1,17 +1,16 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.7
+    jupytext_version: 1.16.0
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
+orphan: true
 ---
-
 
 (gallery-tutorial-collection)=
 
@@ -46,7 +45,6 @@ print(f"collections: {coll.collections}")
 New additions are always added at the end. Use the **`add`** method or the parameters.
 
 ```{code-cell} ipython3
-
 # Copy adjusts object label automatically
 x2 = x1.copy()
 s2 = s1.copy()
@@ -170,30 +168,31 @@ The following example demonstrates how collections enable user-friendly manipula
 
 ```{code-cell} ipython3
 import numpy as np
+
 import magpylib as magpy
 
 # Construct two coils from windings
 coil1 = magpy.Collection(style_label="coil1")
-for z in np.linspace(-.5, .5, 5):
-    coil1.add(magpy.current.Circle(current=1, diameter=20, position=(0,0,z)))
-coil1.position = (0,0,-5)
-coil2 = coil1.copy(position=(0,0,5))
+for z in np.linspace(-0.0005, 0.0005, 5):
+    coil1.add(magpy.current.Circle(current=1, diameter=0.02, position=(0, 0, z)))
+coil1.position = (0, 0, -0.005)
+coil2 = coil1.copy(position=(0, 0, 0.005))
 
 # Helmholtz consists of two coils
 helmholtz = coil1 + coil2
 
 # Move the helmholtz
-helmholtz.position = np.linspace((0,0,0), (10,0,0), 15)
-helmholtz.rotate_from_angax(np.linspace(0,180,15), "x", start=0)
+helmholtz.position = np.linspace((0, 0, 0), (0.01, 0, 0), 15)
+helmholtz.rotate_from_angax(np.linspace(0, 180, 15), "x", start=0)
 
 # Move the coils
-coil1.move(np.linspace((0,0,0), ( 5,0,0), 15))
-coil2.move(np.linspace((0,0,0), (-5,0,0), 15))
+coil1.move(np.linspace((0, 0, 0), (0.005, 0, 0), 15))
+coil2.move(np.linspace((0, 0, 0), (-0.005, 0, 0), 15))
 
 # Move the windings
 for coil in [coil1, coil2]:
-    for i,wind in enumerate(coil):
-        wind.move(np.linspace((0,0,0), (0,0,2-i), 15))
+    for i, wind in enumerate(coil):
+        wind.move(np.linspace((0, 0, 0), (0, 0, (2 - i) * 0.001), 15))
 
 # Display as animation
 magpy.show(*helmholtz, animation=True, style_path_show=False)
@@ -204,12 +203,14 @@ For magnetic field computation, a collection with source children behaves like a
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
 
-B = magpy.getB(helmholtz, (10,0,0))
-plt.plot(B, label=["Bx", "By", "Bz"])
+B = magpy.getB(helmholtz, (0.01, 0, 0))
+plt.plot(
+    B * 1000,  # T -> mT
+    label=["Bx", "By", "Bz"],
+)
 
 plt.gca().set(
-    title="B-field (mT) at position (10,0,0)",
-    xlabel="helmholtz path position index"
+    title="B-field (mT) at position x=10mm", xlabel="helmholtz path position index"
 )
 plt.gca().grid(color=".9")
 plt.gca().legend()
@@ -227,21 +228,21 @@ import magpylib as magpy
 coll = magpy.Collection()
 for index in range(10):
     cuboid = magpy.magnet.Cuboid(
-        magnetization=(0, 0, 1000 * (index%2-.5)),
-        dimension=(10,10,10),
-        position=(index*10,0,0),
+        polarization=(0, 0, (index % 2 - 0.5)),
+        dimension=(0.01, 0.01, 0.01),
+        position=(index * 0.01, 0, 0),
     )
     coll.add(cuboid)
 
 # Add an encompassing 3D-trace
 trace = magpy.graphics.model3d.make_Cuboid(
-    dimension=(104, 12, 12),
-    position=(45, 0, 0),
+    dimension=(0.104, 0.012, 0.012),
+    position=(0.045, 0, 0),
     opacity=0.5,
 )
 coll.style.model3d.add_trace(trace)
 
-coll.style.label="Collection with visible children"
+coll.style.label = "Collection with visible children"
 coll.show()
 
 # Hide the children default 3D representation
@@ -253,6 +254,3 @@ coll.show()
 ## Compound Objects
 
 Collections can be subclassed to form dynamic groups that seamlessly integrate into Magpylib. Such classes are referred to as **compounds**. An example how this is done is shown in {ref}`gallery-misc-compound`.
-
-
-

@@ -28,13 +28,16 @@ from magpylib._src.style import TriangularMeshStyle
 class TriangularMesh(BaseMagnet):
     """Magnet with homogeneous magnetization defined by triangular surface mesh.
     Can be used as `sources` input for magnetic field computation.
+
     When `position=(0,0,0)` and `orientation=None` the TriangularMesh vertices
     are the same as in the global coordinate system.
+
+    SI units are used for all inputs and outputs.
 
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of meter. For m>1, the
+        Object position(s) in the global coordinates in units of m. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -43,7 +46,7 @@ class TriangularMesh(BaseMagnet):
         together represent an object path.
 
     vertices: ndarray, shape (n,3)
-        A set of points in units of meter in the local object coordinates from which the
+        A set of points in units of m in the local object coordinates from which the
         triangular faces of the mesh are constructed by the additional `faces`input.
 
     faces: ndarray, shape (n,3)
@@ -99,9 +102,9 @@ class TriangularMesh(BaseMagnet):
 
     Examples
     --------
-    We compute the B-field in units of tesla of a triangular mesh (4 vertices, 4 faces)
-    with polarization (0.1,0.2,0.3) in units of tesla at the observer position
-    (0.01,0.01,0.01) given in units of meter:
+    We compute the B-field in units of T of a triangular mesh (4 vertices, 4 faces)
+    with polarization (0.1,0.2,0.3) in units of T at the observer position
+    (0.01,0.01,0.01) given in units of m:
 
     >>> import magpylib as magpy
     >>> vv = ((0,0,0), (.01,0,0), (0,.01,0), (0,0,.01))
@@ -538,10 +541,12 @@ class TriangularMesh(BaseMagnet):
     ):
         """Create a TriangularMesh magnet from a point cloud via its convex hull.
 
+        SI units are used for all inputs and outputs.
+
         Parameters
         ----------
         position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of meter. For m>1, the
+            Object position(s) in the global coordinates in units of m. For m>1, the
             `position` and `orientation` attributes together represent an object path.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -629,10 +634,12 @@ class TriangularMesh(BaseMagnet):
     ):
         """Create a TriangularMesh magnet from a pyvista PolyData mesh object.
 
+        SI units are used for all inputs and outputs.
+
         Parameters
         ----------
         position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of meter. For m>1, the
+            Object position(s) in the global coordinates in units of m. For m>1, the
             `position` and `orientation` attributes together represent an object path.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -737,10 +744,12 @@ class TriangularMesh(BaseMagnet):
     ):
         """Create a TriangularMesh magnet from a list or Collection of Triangle objects.
 
+        SI units are used for all inputs and outputs.
+
         Parameters
         ----------
         position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of meter. For m>1, the
+            Object position(s) in the global coordinates in units of m. For m>1, the
             `position` and `orientation` attributes together represent an object path.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -843,10 +852,12 @@ class TriangularMesh(BaseMagnet):
     ):
         """Create a TriangularMesh magnet from a mesh input.
 
+        SI units are used for all inputs and outputs.
+
         Parameters
         ----------
         position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of meter. For m>1, the
+            Object position(s) in the global coordinates in units of m. For m>1, the
             `position` and `orientation` attributes together represent an object path.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`

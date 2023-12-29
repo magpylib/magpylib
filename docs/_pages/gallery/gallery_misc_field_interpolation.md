@@ -1,15 +1,15 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.6
+    jupytext_version: 1.16.0
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
+orphan: true
 ---
 
 (gallery-misc-field-interpolation)=
@@ -88,8 +88,8 @@ In the second step we create a custom source with an interpolated field `field_f
 
 ```{code-cell} ipython3
 # Create data for interpolation
-cube = magpy.magnet.Cuboid(magnetization=(0,0,1000), dimension=(2,2,2))
-ts = np.linspace(-7, 7, 21)
+cube = magpy.magnet.Cuboid(polarization=(0,0,1), dimension=(.02,.02,.02))
+ts = np.linspace(-.07, .07, 21)
 grid = np.array([(x,y,z) for x in ts for y in ts for z in ts])
 data = cube.getB(grid)
 
@@ -100,9 +100,9 @@ custom = magpy.misc.CustomSource(
 )
 
 # Add nice 3D model (dashed outline) to custom source
-xs = 1.1*np.array([-1, -1,  1,  1, -1, -1, -1, -1, -1,  1,  1,  1,  1, 1,  1, -1])
-ys = 1.1*np.array([-1,  1,  1, -1, -1, -1,  1,  1,  1,  1,  1,  1, -1, -1, -1, -1])
-zs = 1.1*np.array([-1, -1, -1, -1, -1,  1,  1, -1,  1,  1, -1,  1,  1, -1,  1,  1])
+xs = 0.011*np.array([-1, -1,  1,  1, -1, -1, -1, -1, -1,  1,  1,  1,  1, 1,  1, -1])
+ys = 0.011*np.array([-1,  1,  1, -1, -1, -1,  1,  1,  1,  1,  1,  1, -1, -1, -1, -1])
+zs = 0.011*np.array([-1, -1, -1, -1, -1,  1,  1, -1,  1,  1, -1,  1,  1, -1,  1,  1])
 trace = dict(
     backend='matplotlib',
     constructor='plot',
@@ -128,7 +128,7 @@ for src in [cube, custom]:
     src.rotate_from_angax(angle=45, axis=(1,1,1))
 
 # Add a sensor for testing
-sensor = magpy.Sensor(position=(-5,0,0))
+sensor = magpy.Sensor(position=(-.05,0,0))
 angs = np.linspace(3,150,49)
 sensor.rotate_from_angax(angle=angs, axis="y", anchor=0)
 
@@ -151,8 +151,12 @@ ax.grid(color=".9")
 ax.set(
     title="Field at sensor - real (solid), interpolated (dashed)",
     xlabel="sensor rotation angle (deg)",
-    ylabel="(mT)",
+    ylabel="(T)",
 )
 
 plt.show()
+```
+
+```{code-cell} ipython3
+
 ```

@@ -42,8 +42,8 @@ def test_dipole_approximation():
 
 def test_Circle_vs_Cylinder_field():
     """
-    The H-field of a loop with radius r0 (mm) and current i0 (A) is the same
-    as the H-field of a cylinder with radius r0 (mm), height h0 (mm) and
+    The H-field of a loop with radius r0 (m) and current i0 (A) is the same
+    as the H-field of a cylinder with radius r0 (m), height h0 (m) and
     magnetization (0, 0, 4pi/10*i0/h0) !!!
     """
 
@@ -218,7 +218,7 @@ def test_Polyline_vs_Infinite():
         e_phi = np.array([-y, x, 0])
         e_phi = e_phi / np.linalg.norm(e_phi)
         mu0 = 4 * np.pi * 1e-7
-        return i0 * mu0 / 2 / np.pi / r * e_phi * 1000 * 1000  # mT mm
+        return i0 * mu0 / 2 / np.pi / r * e_phi * 1000 * 1000
 
     ps = (0, 0, -1000000)
     pe = (0, 0, 1000000)

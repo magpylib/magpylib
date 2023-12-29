@@ -20,10 +20,12 @@ class CylinderSegment(BaseMagnet):
     the cylinder axis coincides with the global z-axis. Section angle 0
     corresponds to an x-z plane section of the cylinder.
 
+    SI units are used for all inputs and outputs.
+
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of meter. For m>1, the
+        Object position(s) in the global coordinates in units of m. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -33,9 +35,9 @@ class CylinderSegment(BaseMagnet):
 
     dimension: array_like, shape (5,), default=`None`
         Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
-        where r1<r2 denote inner and outer radii in units of meter, phi1<phi2 denote
+        where r1<r2 denote inner and outer radii in units of m, phi1<phi2 denote
         the cylinder section angles in units of deg and h is the cylinder height
-        in units of meter.
+        in units of m.
 
     polarization: array_like, shape (3,), default=`None`
         Magnetic polarization vector J = mu0*M in units of T,
@@ -65,9 +67,9 @@ class CylinderSegment(BaseMagnet):
     Examples
     --------
     `CylinderSegment` magnets are magnetic field sources. In this example we compute the
-    H-field A/m of such a cylinder segment magnet with polarization (.1,.2,.3)
-    in units of tesla, inner radius 0.01 meter, outer radius 0.02 m, height 0.01 meter, and
-    section angles 0 and 45 deg at the observer position (0.02,0.02,0.02) in units of meter:
+    H-field in A/m of such a cylinder segment magnet with polarization (.1,.2,.3)
+    in units of T, inner radius 0.01 meter, outer radius 0.02 meter, height 0.01 meter, and
+    section angles 0 and 45 deg at the observer position (0.02,0.02,0.02) in units of m:
 
     >>> import magpylib as magpy
     >>> src = magpy.magnet.CylinderSegment(polarization=(.1,.2,.3), dimension=(.01,.02,.01,0,45))
@@ -125,9 +127,9 @@ class CylinderSegment(BaseMagnet):
     def dimension(self):
         """
         Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
-        where r1<r2 denote inner and outer radii in units of meter, phi1<phi2 denote
+        where r1<r2 denote inner and outer radii in units of m, phi1<phi2 denote
         the cylinder section angles in units of deg and h is the cylinder height
-        in units of meter.
+        in units of m.
         """
         return self._dimension
 

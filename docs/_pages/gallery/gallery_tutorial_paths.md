@@ -1,15 +1,15 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.0
+    jupytext_version: 1.16.0
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
+orphan: true
 ---
 
 (gallery-tutorial-paths)=
@@ -31,24 +31,24 @@ Absolute object paths are assigned at initialization or through the object prope
 ```{code-cell} ipython3
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+
 import magpylib as magpy
 
 # Create paths
 ts = np.linspace(0, 10, 31)
-pos = np.array([(t, 0, np.sin(t)) for t in ts])
-ori = R.from_rotvec(np.array([(0, -np.cos(t)*0.785, 0) for t in ts]))
+pos = np.array([(0.1 * t, 0, 0.1 * np.sin(t)) for t in ts])
+ori = R.from_rotvec(np.array([(0, -0.1 * np.cos(t) * 0.785, 0) for t in ts]))
 
 # Set path at initialization
 sensor = magpy.Sensor(position=pos, orientation=ori)
 
 # Set path through properties
-cube = magpy.magnet.Cuboid(magnetization=(0,0,1), dimension=(1,1,1))
-cube.position = pos + np.array((0,0,3))
+cube = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(0.01, 0.01, 0.01))
+cube.position = pos + np.array((0, 0, 0.3))
 cube.orientation = ori
 
 # Display as animation
-magpy.show(sensor, cube, animation=True, backend='plotly')
-
+magpy.show(sensor, cube, animation=True, backend="plotly")
 ```
 
 ## Relative Paths
@@ -58,23 +58,24 @@ magpy.show(sensor, cube, animation=True, backend='plotly')
 ```{code-cell} ipython3
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+
 import magpylib as magpy
 
 # Create paths
 ts = np.linspace(0, 10, 21)
-pos = np.array([(t, 0, np.sin(t)) for t in ts])
-ori = R.from_rotvec(np.array([(0, -np.cos(t)*0.785, 0) for t in ts]))
+pos = np.array([(0.1 * t, 0, 0.1 * np.sin(t)) for t in ts])
+ori = R.from_rotvec(np.array([(0, -0.1 * np.cos(t) * 0.785, 0) for t in ts]))
 
 # Set path at initialization
-sens1 = magpy.Sensor(position=pos, orientation=ori, style_label='sens1')
+sens1 = magpy.Sensor(position=pos, orientation=ori, style_label="sens1")
 
 # Apply move operation to whole path with scalar input
-sens2 = sens1.copy(style_label='sens2')
-sens2.move((0,0,2))
+sens2 = sens1.copy(style_label="sens2")
+sens2.move((0, 0, 0.05))
 
 # Apply rotate operation to whole path with scalar input
-sens3 = sens1.copy(style_label='sens3')
-sens3.rotate_from_angax(angle=90, axis='y', anchor=0)
+sens3 = sens1.copy(style_label="sens3")
+sens3.rotate_from_angax(angle=90, axis="y", anchor=0)
 
 # Display paths
 magpy.show(sens1, sens2, sens3)
@@ -84,14 +85,15 @@ When the input is a vector, the path is by default appended.
 
 ```{code-cell} ipython3
 import numpy as np
+
 from magpylib.magnet import Sphere
 
 # Create paths
-x_path = np.linspace((0,0,0), (10,0,0), 10)[1:]
-z_path = np.linspace((0,0,0), (0,0,10), 10)[1:]
+x_path = np.linspace((0, 0, 0), (0.1, 0, 0), 10)[1:]
+z_path = np.linspace((0, 0, 0), (0, 0, 0.1), 10)[1:]
 
 # Create sphere object
-sphere = Sphere(magnetization=(0,0,1), diameter=3)
+sphere = Sphere(polarization=(0, 0, 1), diameter=0.03)
 
 # Apply paths subsequently
 for _ in range(3):
@@ -107,20 +109,21 @@ Complex paths can be created by merging multiple path operations. This is done w
 
 ```{code-cell} ipython3
 import numpy as np
+
 from magpylib.magnet import Cuboid
 
 # Create cube and set linear path
-cube =  Cuboid(magnetization=(0,0,100), dimension=(2,2,2))
-cube.position = np.linspace((0,0,0), (10,0,0), 60)
+cube = Cuboid(polarization=(0, 0, 0.1), dimension=(0.02, 0.02, 0.02))
+cube.position = np.linspace((0, 0, 0), (0.1, 0, 0), 60)
 
 # Apply rotation about self - starting at index 0
-cube.rotate_from_rotvec(np.linspace((0,0,0), (0,0,360), 30), start=0)
+cube.rotate_from_rotvec(np.linspace((0, 0, 0), (0, 0, 360), 30), start=0)
 
 # Apply rotation about origin - starting at index 30
-cube.rotate_from_rotvec(np.linspace((0,0,0), (0,0,360), 30), anchor=0, start=30)
+cube.rotate_from_rotvec(np.linspace((0, 0, 0), (0, 0, 360), 30), anchor=0, start=30)
 
 # Display paths as animation
-cube.show(backend='plotly', animation=True)
+cube.show(backend="plotly", animation=True)
 ```
 
 ## Reset path
@@ -131,7 +134,9 @@ The `reset_path()` method allows users to reset an object path to `position=(0,0
 import magpylib as magpy
 
 # Create sensor object with complex path
-sensor=magpy.Sensor().rotate_from_angax([1,2,3,4], (1,2,3), anchor=(0,3,5))
+sensor = magpy.Sensor().rotate_from_angax(
+    [1, 2, 3, 4], (1, 2, 3), anchor=(0, 0.03, 0.05)
+)
 
 # Reset path
 sensor.reset_path()
@@ -152,13 +157,14 @@ In the following example the orientation attribute is padded by its edge value `
 
 ```{code-cell} ipython3
 from scipy.spatial.transform import Rotation as R
+
 import magpylib as magpy
 
 sensor = magpy.Sensor(
-    position=[(0,0,0), (1,1,1)],
-    orientation=R.from_rotvec([(0,0,.1), (0,0,.2)]),
+    position=[(0, 0, 0), (0.01, 0.01, 0.01)],
+    orientation=R.from_rotvec([(0, 0, 0.1), (0, 0, 0.2)]),
 )
-sensor.position=[(i,i,i) for i in range(4)]
+sensor.position = [(i / 100, i / 100, i / 100) for i in range(4)]
 print(sensor.position)
 print(sensor.orientation.as_rotvec())
 ```
@@ -168,10 +174,10 @@ When the field is computed of `loop1` with path length 4 and `loop2` with path l
 ```{code-cell} ipython3
 from magpylib.current import Circle
 
-loop1 = Circle(current=1, diameter=1, position=[(0,0,i) for i in range(4)])
-loop2 = Circle(current=1, diameter=1, position=[(0,0,i) for i in range(2)])
+loop1 = Circle(current=1, diameter=1, position=[(0, 0, i) for i in range(4)])
+loop2 = Circle(current=1, diameter=1, position=[(0, 0, i) for i in range(2)])
 
-B = magpy.getB([loop1,loop2], (0,0,0))
+B = magpy.getB([loop1, loop2], (0, 0, 0))
 print(B)
 ```
 
@@ -179,13 +185,18 @@ The idea behind **end-slicing** is that, whenever a path is automatically reduce
 
 ```{code-cell} ipython3
 from scipy.spatial.transform import Rotation as R
+
 from magpylib import Sensor
 
 sensor = Sensor(
-    position=[(0,0,0), (1,1,1), (2,2,2), (3,3,3)],
-    orientation=R.from_rotvec([(0,0,.1), (0,0,.2), (0,0,.3), (0,0,.4)]),
+    position=[(0, 0, 0), (0.01, 0.01, 0.01), (0.02, 0.02, 2), (0.03, 0.03, 0.03)],
+    orientation=R.from_rotvec([(0, 0, 0.1), (0, 0, 0.2), (0, 0, 0.3), (0, 0, 0.4)]),
 )
-sensor.position=[(1,2,3), (2,3,4)]
+sensor.position = [(0.01, 0.02, 0.03), (0.02, 0.03, 0.04)]
 print(sensor.position)
 print(sensor.orientation.as_rotvec())
+```
+
+```{code-cell} ipython3
+
 ```

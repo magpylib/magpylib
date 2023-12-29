@@ -9,12 +9,13 @@ from magpylib._src.display.traces_core import make_DefaultTrace
 UNITS = {
     "parent": None,
     "position": "m",
-    "orientation": "degrees",
+    "orientation": "deg",
     "dimension": "m",
     "diameter": "m",
     "current": "A",
     "magnetization": "A/m",
     "polarization": "T",
+    "moment": "A·m²",
 }
 
 

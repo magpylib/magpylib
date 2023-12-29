@@ -10,23 +10,26 @@ class CustomSource(BaseSource):
     When `position=(0,0,0)` and `orientation=None` local object coordinates
     coincide with the global coordinate system.
 
+    SI units are used for all inputs and outputs.
+
     Parameters
     ----------
-    field_func: callable, default=`None`
-        The function for B- and H-field computation must have the two positional arguments
-        `field` and `observers`. With `field='B'` or `field='H'` the B- or H-field in units
-        of  or A/m must be returned respectively. The `observers` argument must
-        accept numpy ndarray inputs of shape (n,3), in which case the returned fields must
-        be numpy ndarrays of shape (n,3) themselves.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of meter. For m>1, the
+        Object position(s) in the global coordinates in units of m. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    field_func: callable, default=`None`
+        The function for B- and H-field computation must have the two positional arguments
+        `field` and `observers`. With `field='B'` or `field='H'` the B- or H-field in units
+        of T or A/m must be returned respectively. The `observers` argument must
+        accept numpy ndarray inputs of shape (n,3), in which case the returned fields must
+        be numpy ndarrays of shape (n,3) themselves.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -44,7 +47,7 @@ class CustomSource(BaseSource):
     With version 4 `CustomSource` objects enable users to define their own source
     objects, and to embedded them in the Magpylib object oriented interface. In this example
     we create a source that generates a constant field and evaluate the field at observer
-    position (0.01,0.01,0.01) given in meter:
+    position (0.01,0.01,0.01) given in meters:
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -82,9 +85,9 @@ class CustomSource(BaseSource):
 
     def __init__(
         self,
-        field_func=None,
         position=(0, 0, 0),
         orientation=None,
+        field_func=None,
         style=None,
         **kwargs,
     ):
