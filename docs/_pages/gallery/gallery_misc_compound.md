@@ -1,15 +1,15 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.7
+    jupytext_version: 1.16.0
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
+orphan: true
 ---
 
 (gallery-misc-compound)=
@@ -51,7 +51,7 @@ class MagnetRing(magpy.Collection):
     def _update(self, cubes):
         """Update MagnetRing instance"""
         self._cubes = cubes
-        ring_radius = cubes/3
+        ring_radius = cubes/300
 
         # Store existing path
         pos_temp = self.position
@@ -65,8 +65,8 @@ class MagnetRing(magpy.Collection):
         # Add children
         for i in range(cubes):
             child = magpy.magnet.Cuboid(
-                magnetization=(0,0,1000),
-                dimension=(1,1,1),
+                polarization=(0,0,1),
+                dimension=(.01,.01,.01),
                 position=(ring_radius,0,0)
             )
             child.rotate_from_angax(360/cubes*i, 'z', anchor=0)
@@ -78,7 +78,7 @@ class MagnetRing(magpy.Collection):
 
         # Add parameter-dependent 3d trace
         trace = magpy.graphics.model3d.make_CylinderSegment(
-            dimension=(cubes/3-.6, cubes/3+0.6, 1.1, 0, 360),
+            dimension=(ring_radius-.006, ring_radius+.006, 0.011, 0, 360),
             vert=150,
             opacity=0.2,
         )
@@ -109,12 +109,11 @@ magpy.show(ring, sensor, backend='plotly')
 The `MagnetRing` parameter `cubes` can be modified dynamically:
 
 ```{code-cell} ipython3
-
-print(f"B-field at sensor for modified ring → {ring.getB(sensor).round(2)}")
+print(f"B-field at sensor for modified ring → {ring.getB(sensor).round(3)}")
 
 ring.cubes = 10
 
-print(f"B-field at sensor for modified ring → {ring.getB(sensor).round(2)}")
+print(f"B-field at sensor for modified ring → {ring.getB(sensor).round(3)}")
 
 magpy.show(ring, sensor, backend='plotly')
 ```
@@ -155,7 +154,7 @@ class MagnetRingAdv(magpy.Collection):
     def _update(self, cubes):
         """Update MagnetRing instance"""
         self._cubes = cubes
-        ring_radius = cubes/3
+        ring_radius = cubes/300
 
         # Store existing path and reset
         pos_temp = self.position
@@ -165,8 +164,8 @@ class MagnetRingAdv(magpy.Collection):
         # Add children
         for i in range(cubes):
             child = magpy.magnet.Cuboid(
-                magnetization=(0,0,1000),
-                dimension=(1,1,1),
+                polarization=(0,0,1),
+                dimension=(.01,.01,.01),
                 position=(ring_radius,0,0)
             )
             child.rotate_from_angax(360/cubes*i, 'z', anchor=0)
@@ -181,7 +180,7 @@ class MagnetRingAdv(magpy.Collection):
     def _custom_trace3d(self):
         """ creates a parameter-dependent 3d model"""
         trace = magpy.graphics.model3d.make_CylinderSegment(
-            dimension=(self.cubes/3-.6, self.cubes/3+0.6, 1.1, 0, 360),
+            dimension=(self.cubes/300-.006, self.cubes/300+0.006, 0.011, 0, 360),
             vert=150,
             opacity=0.2,
         )
@@ -192,10 +191,10 @@ We have removed the trace construction from the `_update` method, and instead pr
 
 ```{code-cell} ipython3
 ring0 = MagnetRing()
-%time for _ in range(100): ring0.cubes=10
+%time for _ in range(10): ring0.cubes=10
 
 ring1 = MagnetRingAdv()
-%time for _ in range(100): ring1.cubes=10
+%time for _ in range(10): ring1.cubes=10
 ```
 
 This example is not very impressive because the provided trace is not very heavy.
