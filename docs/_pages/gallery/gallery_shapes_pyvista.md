@@ -1,15 +1,15 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.7
+    jupytext_version: 1.16.0
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
+orphan: true
 ---
 
 (gallery-shapes-pyvista)=
@@ -32,21 +32,20 @@ import pyvista as pv
 import magpylib as magpy
 
 # Create a simple pyvista PolyData object
-dodec_mesh = pv.Dodecahedron()
+dodec_mesh = pv.Dodecahedron(radius=.01)
 
 dodec = magpy.magnet.TriangularMesh.from_pyvista(
-    magnetization=(0, 0, 100),
+    polarization=(0, 0, .1),
     polydata=dodec_mesh,
 )
 
 # Add a sensor with path
-sens = magpy.Sensor(position=np.linspace((-2,0,1), (2,0,1), 100))
+sens = magpy.Sensor(position=np.linspace((-2,0,1), (2,0,1), 100)/100)
 
 # Show system and field
 with magpy.show_context(dodec, sens, backend='plotly') as s:
     s.show(col=1)
     s.show(col=2, output=['Bx', 'Bz'])
-
 ```
 
 ## Boolean operations with Pyvista
@@ -58,13 +57,13 @@ import pyvista as pv
 import magpylib as magpy
 
 # Create a complex pyvista PolyData object using a boolean operation
-sphere = pv.Sphere(radius=0.6)
-cube = pv.Cube().triangulate()
+sphere = pv.Sphere(radius=0.006)
+cube = pv.Cube(x_length=.01, y_length=.01, z_length=.01).triangulate()
 obj = cube.boolean_difference(sphere)
 
 # Construct magnet from PolyData object and ignore check results
 magnet = magpy.magnet.TriangularMesh.from_pyvista(
-    magnetization=(0, 0, 100),
+    polarization=(0, 0, .1),
     polydata=obj,
     check_disconnected="ignore",
     check_open="ignore",
@@ -101,10 +100,11 @@ sphere = pv.Sphere(radius=0.6)
 cube = pv.Cube().triangulate().subdivide(2)
 obj = cube.boolean_difference(sphere)
 obj = obj.clean()
+obj = obj.scale([1e-2]*3)
 
 # Construct magnet from PolyData object
 magnet = magpy.magnet.TriangularMesh.from_pyvista(
-    magnetization=(0, 0, 100),
+    polarization=(0, 0, .1),
     polydata=obj,
     style_label="magnet",
 )
@@ -115,4 +115,12 @@ print(f"mesh status self-intersecting: {magnet.status_selfintersecting}")
 print(f'mesh status reoriented: {magnet.status_reoriented}')
 
 magnet.show(backend="plotly")
+```
+
+```{code-cell} ipython3
+
+```
+
+```{code-cell} ipython3
+
 ```
