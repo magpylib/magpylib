@@ -32,7 +32,7 @@ $$
 
 Here the monopole lies in the origin of the local coordinates, $Q_m$ is the monopole charge and ${\bf r}$ is the observer position.
 
-We create this field as a Python function and hand it over to a CustomSource `field_func` argument. The `field_func` input must be a callable with two positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must accept ndarrays of shape (n,3)), and return the respective fields in units of mT and A/m in the same shape.
+We create this field as a Python function and hand it over to a CustomSource `field_func` argument. The `field_func` input must be a callable with two positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must accept ndarrays of shape (n,3)), and return the respective fields in units of T and A/m in the same shape.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -130,7 +130,7 @@ class Monopole(magpy.misc.CustomSource):
     Parameters
     ----------
     charge: float
-        Monopole charge in units of mT
+        Monopole charge in units of T·m²
     """
 
     def __init__(self, charge, **kwargs):

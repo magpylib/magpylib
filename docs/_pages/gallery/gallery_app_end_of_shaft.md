@@ -82,7 +82,7 @@ fig2 = px.line(
     x="angle (deg)",
     y=["Bx", "By"],
     line_dash="pixel",
-    labels={"value": "Field (mT)"},
+    labels={"value": "Field (T)"},
 )
 fig2.show()
 ```
