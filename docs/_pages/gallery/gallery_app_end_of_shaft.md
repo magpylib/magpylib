@@ -1,15 +1,15 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.7
+    jupytext_version: 1.16.0
 kernelspec:
-  display_name: Python 3 (ipykernel)
+  display_name: Python 3
   language: python
   name: python3
+orphan: true
 ---
 
 (gallery-app-end-of-shaft)=
@@ -28,40 +28,40 @@ import plotly.graph_objects as go
 
 # create magnet
 magnet = magpy.magnet.Cylinder(
-    magnetization=(1000, 0, 0),
-    dimension=(6, 2),
-    position=(0, 0, 1.5),
+    polarization=(1, 0, 0),
+    dimension=(.06, .02),
+    position=(0, 0, .015),
     style_label="Magnet",
     style_color=".7",
 )
 
 # create shaft dummy with 3D model
 shaft = magpy.misc.CustomSource(
-    position=(0, 0, 7),
+    position=(0, 0, .07),
     style_color=".7",
     style_model3d_showdefault=False,
     style_label="Shaft",
 )
 shaft_trace = magpy.graphics.model3d.make_Prism(
     base=20,
-    diameter=10,
-    height=10,
+    diameter=.1,
+    height=.1,
     opacity=0.3,
 )
 shaft.style.model3d.add_trace(shaft_trace)
 
 # shaft rotation / magnet wobble motion
-displacement = 1
+displacement = .01
 angles = np.linspace(0, 360, 72)
 coll = magnet + shaft
 magnet.move((displacement, 0, 0))
 coll.rotate_from_angax(angles, "z", anchor=0, start=0)
 
 # create sensor
-gap = 3
+gap = .03
 sens = magpy.Sensor(
     position=(0, 0, -gap),
-    pixel=[(1, 0, 0), (-1, 0, 0)],
+    pixel=[(.01, 0, 0), (-.01, 0, 0)],
     style_pixel_size=0.5,
     style_size=1.5,
 )
@@ -85,4 +85,8 @@ fig2 = px.line(
     labels={"value": "Field (mT)"},
 )
 fig2.show()
+```
+
+```{code-cell} ipython3
+
 ```
