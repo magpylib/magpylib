@@ -8,7 +8,6 @@ import numpy as np
 import scipy.spatial
 
 from magpylib._src.fields.field_BH_triangle import triangle_field
-from magpylib._src.utility import convert_HBMJ
 from magpylib._src.utility import MU0
 
 
