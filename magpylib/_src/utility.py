@@ -410,8 +410,7 @@ def convert_HBMJ(
             J[~mask_inside] *= 0
         if output_field_type == "J":
             return J
-        if output_field_type == "M":
-            return J / MU0
+        return J / MU0
     if output_field_type == input_field_type:
         return field_values
     if input_field_type == "B":
@@ -422,3 +421,7 @@ def convert_HBMJ(
         B = field_values * MU0
         B[mask_inside] += polarization[mask_inside]
         return B
+    raise ValueError(  # pragma: no cover
+        "`output_field_type` must be one of ('B', 'H', 'M', 'J'), "
+        f"got {output_field_type!r}"
+    )

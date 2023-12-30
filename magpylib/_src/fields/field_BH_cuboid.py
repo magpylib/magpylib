@@ -7,6 +7,8 @@ import numpy as np
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import convert_HBMJ
 
+# pylint: disable=too-many-statements
+
 RTOL_SURFACE = 1e-15  # relative distance tolerance to be considered on surface
 
 
@@ -217,7 +219,6 @@ def magnet_cuboid_field(
 
     Cichon: IEEE Sensors Journal, vol. 19, no. 7, April 1, 2019, p.2509
     """
-    # pylint: disable=too-many-statements
 
     check_field_input(field)
 
