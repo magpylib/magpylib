@@ -133,7 +133,7 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
             squeeze=squeeze,
             pixel_agg=pixel_agg,
             output=output,
-            in_out="auto",
+            in_out=in_out,
         )
 
     def getH(self, *observers, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"):
