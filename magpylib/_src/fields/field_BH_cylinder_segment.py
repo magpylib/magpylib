@@ -2380,6 +2380,18 @@ def magnet_cylinder_segment_field(
     polarization: ndarray, shape (n,3)
         Magnetic polarization vectors in units of T.
 
+    in_out: {'auto', 'inside', 'outside'}
+        Specify the location of the observers relative to the magnet body, affecting the calculation
+        of the magnetic field. The options are:
+        - 'auto': The location (inside or outside the cuboid) is determined automatically for each
+          observer.
+        - 'inside': All observers are considered to be inside the cuboid; use this for performance
+          optimization if applicable.
+        - 'outside': All observers are considered to be outside the cuboid; use this for performance
+          optimization if applicable.
+        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
+        locations is unknown.
+
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)

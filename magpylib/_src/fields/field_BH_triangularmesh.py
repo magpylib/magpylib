@@ -528,12 +528,16 @@ def magnet_trimesh_field(
         Magnetic polarization vectors in units of T.
 
     in_out: {'auto', 'inside', 'outside'}
-        Tells if the points are inside or outside the enclosing mesh for the correct B/H-field
-        calculation. By default `in_out='auto'` and the inside/outside mask is automatically
-        generated using a ray tracing algorithm to determine which observers are inside and which
-        are outside the closed body. For performance reasons, one can define `in_out='outside'`
-        or `in_out='inside'` if it is known in advance that all observers satisfy the same
-        condition.
+        Specify the location of the observers relative to the magnet body, affecting the calculation
+        of the magnetic field. The options are:
+        - 'auto': The location (inside or outside the cuboid) is determined automatically for each
+          observer.
+        - 'inside': All observers are considered to be inside the cuboid; use this for performance
+          optimization if applicable.
+        - 'outside': All observers are considered to be outside the cuboid; use this for performance
+          optimization if applicable.
+        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
+        locations is unknown.
 
     Returns
     -------

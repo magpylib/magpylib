@@ -141,7 +141,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         self._handedness = val
 
     def getB(
-        self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray"
+        self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
     ):
         """Compute the B-field in units of T as seen by the sensor.
 
@@ -167,6 +167,19 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             Output type, which must be one of `('ndarray', 'dataframe')`. By default a
             `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
             object is returned (the Pandas library must be installed).
+
+        in_out: {'auto', 'inside', 'outside'}
+            This parameter only applies for magnet bodies. It specifies the location of the
+            observers relative to the magnet body, affecting the calculation of the magnetic field.
+            The options are:
+            - 'auto': The location (inside or outside the cuboid) is determined automatically for
+            each observer.
+            - 'inside': All observers are considered to be inside the cuboid; use this for
+              performance optimization if applicable.
+            - 'outside': All observers are considered to be outside the cuboid; use this for
+              performance optimization if applicable.
+            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
+            locations is unknown.
 
         Returns
         -------
@@ -208,15 +221,16 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         return getBH_level2(
             sources,
             self,
+            field="B",
             sumup=sumup,
             squeeze=squeeze,
             pixel_agg=pixel_agg,
             output=output,
-            field="B",
+            in_out=in_out,
         )
 
     def getH(
-        self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray"
+        self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
     ):
         """Compute the H-field in units of A/m as seen by the sensor.
 
@@ -242,6 +256,19 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             Output type, which must be one of `('ndarray', 'dataframe')`. By default a
             `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
             object is returned (the Pandas library must be installed).
+
+        in_out: {'auto', 'inside', 'outside'}
+            This parameter only applies for magnet bodies. It specifies the location of the
+            observers relative to the magnet body, affecting the calculation of the magnetic field.
+            The options are:
+            - 'auto': The location (inside or outside the cuboid) is determined automatically for
+            each observer.
+            - 'inside': All observers are considered to be inside the cuboid; use this for
+              performance optimization if applicable.
+            - 'outside': All observers are considered to be outside the cuboid; use this for
+              performance optimization if applicable.
+            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
+            locations is unknown.
 
         Returns
         -------
@@ -283,11 +310,12 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         return getBH_level2(
             sources,
             self,
+            field="H",
             sumup=sumup,
             squeeze=squeeze,
             pixel_agg=pixel_agg,
             output=output,
-            field="H",
+            in_out=in_out,
         )
 
     @property

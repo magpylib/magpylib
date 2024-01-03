@@ -149,38 +149,9 @@ def getBH_level1(
 
 
 def getBH_level2(
-    sources, observers, *, field, sumup, squeeze, pixel_agg, output, **kwargs
+    sources, observers, *, field, sumup, squeeze, pixel_agg, output, in_out, **kwargs
 ) -> np.ndarray:
     """Compute field for given sources and observers.
-
-    Parameters
-    ----------
-    sources : src_obj or list
-        source object or 1D list of L sources/collections with similar
-        pathlength M and/or 1.
-    observers : sens_obj or list or pos_obs
-        pos_obs or sensor object or 1D list of K sensors with similar pathlength M
-        and/or 1 and sensor pixel of shape (N1,N2,...,3).
-    sumup : bool, default=False
-        returns [B1,B2,...] for every source, True returns sum(Bi) sfor all sources.
-    squeeze : bool, default=True:
-        If True output is squeezed (axes of length 1 are eliminated)
-    pixel_agg : str
-        A compatible numpy aggregator string (e.g. `'min'`, `'max'`, `'mean'`)
-        which applies on pixel output values.
-    field : {'B', 'H'}
-        'B' computes B field, 'H' computes H-field
-    output: str, default='ndarray'
-        Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
-        dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
-        returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
-        installed).
-
-    Returns
-    -------
-    field: ndarray, shape squeeze((L,M,K,N1,N2,...,3)), field of L sources, M path
-    positions, K sensors and N1xN2x.. observer positions and 3 field components.
-
     Info:
     -----
     - generates a 1D list of sources (collections flattened) and a 1D list of sensors from input
@@ -205,6 +176,7 @@ def getBH_level2(
             observers=observers,
             field=field,
             squeeze=squeeze,
+            in_out=in_out,
             **kwargs,
         )
 
@@ -334,7 +306,7 @@ def getBH_level2(
         gr = group["sources"]
         src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
         B_group = getBH_level1(
-            field_func=field_func, field=field, **src_dict
+            field_func=field_func, field=field, **src_dict, in_out=in_out,
         )  # compute field
         if B_group is None:
             raise MagpylibMissingInput(
@@ -555,6 +527,7 @@ def getB(
     squeeze=True,
     pixel_agg=None,
     output="ndarray",
+    in_out="auto",
     **kwargs,
 ):
     """Compute B-field in units of T for given sources and observers.
@@ -598,6 +571,19 @@ def getB(
         Output type, which must be one of (`'ndarray'`, `'dataframe'`). By default a
         `numpy.ndarray` object is returned. If `'dataframe'` is chosen, a `pandas.DataFrame`
         object is returned (the Pandas library must be installed).
+
+    in_out: {'auto', 'inside', 'outside'}
+        This parameter only applies for magnet bodies. It specifies the location of the
+        observers relative to the magnet body, affecting the calculation of the magnetic field.
+        The options are:
+        - 'auto': The location (inside or outside the cuboid) is determined automatically for
+        each observer.
+        - 'inside': All observers are considered to be inside the cuboid; use this for
+            performance optimization if applicable.
+        - 'outside': All observers are considered to be outside the cuboid; use this for
+            performance optimization if applicable.
+        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
+        locations is unknown.
 
     See Also
     --------
@@ -717,11 +703,12 @@ def getB(
     return getBH_level2(
         sources,
         observers,
+        field="B",
         sumup=sumup,
         squeeze=squeeze,
         pixel_agg=pixel_agg,
         output=output,
-        field="B",
+        in_out=in_out,
         **kwargs,
     )
 
@@ -733,6 +720,7 @@ def getH(
     squeeze=True,
     pixel_agg=None,
     output="ndarray",
+    in_out="auto",
     **kwargs,
 ):
     """Compute H-field in units of A/m for given sources and observers.
@@ -776,6 +764,19 @@ def getH(
         Output type, which must be one of (`'ndarray'`, `'dataframe'`). By default a
         `numpy.ndarray` object is returned. If `'dataframe'` is chosen, a `pandas.DataFrame`
         object is returned (the Pandas library must be installed).
+
+    in_out: {'auto', 'inside', 'outside'}
+        This parameter only applies for magnet bodies. It specifies the location of the
+        observers relative to the magnet body, affecting the calculation of the magnetic field.
+        The options are:
+        - 'auto': The location (inside or outside the cuboid) is determined automatically for
+        each observer.
+        - 'inside': All observers are considered to be inside the cuboid; use this for
+            performance optimization if applicable.
+        - 'outside': All observers are considered to be outside the cuboid; use this for
+            performance optimization if applicable.
+        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
+        locations is unknown.
 
     See Also
     --------
@@ -888,10 +889,11 @@ def getH(
     return getBH_level2(
         sources,
         observers,
+        field="H",
         sumup=sumup,
         squeeze=squeeze,
         pixel_agg=pixel_agg,
         output=output,
-        field="H",
+        in_out=in_out,
         **kwargs,
     )

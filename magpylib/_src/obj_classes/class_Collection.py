@@ -518,7 +518,7 @@ class BaseCollection(BaseDisplayRepr):
             sources, sensors = self, inputs
         return sources, sensors
 
-    def getB(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
+    def getB(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"):
         """Compute B-field for given sources and observers.
 
         SI units are used for all inputs and outputs.
@@ -544,6 +544,19 @@ class BaseCollection(BaseDisplayRepr):
             Output type, which must be one of `('ndarray', 'dataframe')`. By default a
             `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
             object is returned (the Pandas library must be installed).
+
+        in_out: {'auto', 'inside', 'outside'}
+            This parameter only applies for magnet bodies. It specifies the location of the
+            observers relative to the magnet body, affecting the calculation of the magnetic field.
+            The options are:
+            - 'auto': The location (inside or outside the cuboid) is determined automatically for
+            each observer.
+            - 'inside': All observers are considered to be inside the cuboid; use this for
+              performance optimization if applicable.
+            - 'outside': All observers are considered to be outside the cuboid; use this for
+              performance optimization if applicable.
+            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
+            locations is unknown.
 
         Returns
         -------
@@ -584,14 +597,15 @@ class BaseCollection(BaseDisplayRepr):
         return getBH_level2(
             sources,
             sensors,
+            field="B",
             sumup=False,
             squeeze=squeeze,
             pixel_agg=pixel_agg,
             output=output,
-            field="B",
+            in_out=in_out,
         )
 
-    def getH(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
+    def getH(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"):
         """Compute H-field for given sources and observers.
 
         SI units are used for all inputs and outputs.
@@ -626,6 +640,19 @@ class BaseCollection(BaseDisplayRepr):
             equivalent to simple observer positions. Paths of objects that are shorter than
             index m are considered as static beyond their end.
 
+        in_out: {'auto', 'inside', 'outside'}
+            This parameter only applies for magnet bodies. It specifies the location of the
+            observers relative to the magnet body, affecting the calculation of the magnetic field.
+            The options are:
+            - 'auto': The location (inside or outside the cuboid) is determined automatically for
+            each observer.
+            - 'inside': All observers are considered to be inside the cuboid; use this for
+              performance optimization if applicable.
+            - 'outside': All observers are considered to be outside the cuboid; use this for
+              performance optimization if applicable.
+            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
+            locations is unknown.
+
         Examples
         --------
         In this example we create a collection from two sources and two sensors:
@@ -657,11 +684,12 @@ class BaseCollection(BaseDisplayRepr):
         return getBH_level2(
             sources,
             sensors,
+            field="H",
             sumup=False,
             squeeze=squeeze,
             pixel_agg=pixel_agg,
             output=output,
-            field="H",
+            in_out=in_out,
         )
 
     @property
