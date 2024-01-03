@@ -5,6 +5,9 @@
 from math import log10
 from typing import Optional
 from typing import Sequence
+from typing import Callable
+from inspect import signature
+from functools import lru_cache
 
 import numpy as np
 
@@ -425,3 +428,9 @@ def convert_HBMJ(
         "`output_field_type` must be one of ('B', 'H', 'M', 'J'), "
         f"got {output_field_type!r}"
     )
+
+@lru_cache(maxsize=None)
+def has_parameter(func: Callable, param_name:str)-> bool:
+    """Check if input function has a specific parameter"""
+    sig = signature(func)
+    return param_name in sig.parameters

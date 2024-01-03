@@ -45,7 +45,6 @@ import numbers
 import warnings
 from itertools import product
 from typing import Callable
-
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
@@ -60,6 +59,7 @@ from magpylib._src.utility import check_static_sensor_orient
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
 from magpylib._src.utility import get_registered_sources
+from magpylib._src.utility import has_parameter
 
 
 def tile_group_property(group: list, n_pp: int, prop_name: str):
@@ -305,9 +305,10 @@ def getBH_level2(
         lg = len(group["sources"])
         gr = group["sources"]
         src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
-        B_group = getBH_level1(
-            field_func=field_func, field=field, **src_dict, in_out=in_out,
-        )  # compute field
+        if has_parameter(field_func, "in_out"):  # in_out passed only to magnets
+            src_dict["in_out"] = in_out
+        # compute field
+        B_group = getBH_level1(field_func=field_func, field=field, **src_dict)
         if B_group is None:
             raise MagpylibMissingInput(
                 f"Cannot compute {field}-field because "
