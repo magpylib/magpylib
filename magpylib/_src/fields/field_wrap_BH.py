@@ -138,6 +138,10 @@ def getBH_level1(
     # transform obs_pos into source CS
     pos_rel_rot = orientation.apply(observers - position, inverse=True)
 
+    # filter arguments
+    if not has_parameter(field_func, "in_out"):  # in_out passed only to magnets
+        kwargs.pop("in_out", None)
+
     # compute field
     BH = field_func(field=field, observers=pos_rel_rot, **kwargs)
 
@@ -305,10 +309,8 @@ def getBH_level2(
         lg = len(group["sources"])
         gr = group["sources"]
         src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
-        if has_parameter(field_func, "in_out"):  # in_out passed only to magnets
-            src_dict["in_out"] = in_out
         # compute field
-        B_group = getBH_level1(field_func=field_func, field=field, **src_dict)
+        B_group = getBH_level1(field_func=field_func, field=field, in_out=in_out, **src_dict)
         if B_group is None:
             raise MagpylibMissingInput(
                 f"Cannot compute {field}-field because "
@@ -418,6 +420,7 @@ def getBH_dict_level2(
     position=(0, 0, 0),
     orientation=R.identity(),
     squeeze=True,
+    in_out="auto",
     **kwargs: dict,
 ) -> np.ndarray:
     """Functional interface access to vectorized computation
@@ -514,7 +517,7 @@ def getBH_dict_level2(
     kwargs["orientation"] = R.from_quat(kwargs["orientation"])
 
     # compute and return B
-    B = getBH_level1(field=field, field_func=field_func, **kwargs)
+    B = getBH_level1(field=field, field_func=field_func, in_out=in_out, **kwargs)
 
     if B is not None and squeeze:
         return np.squeeze(B)

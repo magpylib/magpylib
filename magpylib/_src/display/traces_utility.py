@@ -574,6 +574,7 @@ def process_show_input_objs(objs, **kwargs):
         "output": "model3d",
         "sumup": True,
         "pixel_agg": "mean",
+        "in_out": "auto",
     }
     max_rows = max_cols = 1
     flat_objs = []

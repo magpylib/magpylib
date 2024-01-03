@@ -253,6 +253,7 @@ def get_generic_traces_2D(
     col=None,
     sumup=True,
     pixel_agg=None,
+    in_out="auto",
     style_path_frames=None,
 ):
     """draws and animates sensor values over a path in a subplot"""
@@ -298,6 +299,7 @@ def get_generic_traces_2D(
         field=field_str,
         pixel_agg=pixel_agg,
         output="ndarray",
+        in_out=in_out,
     )
     BH_array = BH_array.swapaxes(1, 2)  # swap axes to have sensors first, path second
 
