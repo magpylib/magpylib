@@ -141,7 +141,13 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         self._handedness = val
 
     def getB(
-        self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
+        self,
+        *sources,
+        sumup=False,
+        squeeze=True,
+        pixel_agg=None,
+        output="ndarray",
+        in_out="auto",
     ):
         """Compute the B-field in units of T as seen by the sensor.
 
@@ -230,7 +236,13 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         )
 
     def getH(
-        self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
+        self,
+        *sources,
+        sumup=False,
+        squeeze=True,
+        pixel_agg=None,
+        output="ndarray",
+        in_out="auto",
     ):
         """Compute the H-field in units of A/m as seen by the sensor.
 
@@ -319,7 +331,13 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         )
 
     def getM(
-        self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
+        self,
+        *sources,
+        sumup=False,
+        squeeze=True,
+        pixel_agg=None,
+        output="ndarray",
+        in_out="auto",
     ):
         """Compute the M-field in units of A/m as seen by the sensor.
 
@@ -379,7 +397,13 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         )
 
     def getJ(
-        self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
+        self,
+        *sources,
+        sumup=False,
+        squeeze=True,
+        pixel_agg=None,
+        output="ndarray",
+        in_out="auto",
     ):
         """Compute the J-field in units of T as seen by the sensor.
 

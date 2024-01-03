@@ -2,12 +2,12 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
 # import numbers
+from functools import lru_cache
+from inspect import signature
 from math import log10
+from typing import Callable
 from typing import Optional
 from typing import Sequence
-from typing import Callable
-from inspect import signature
-from functools import lru_cache
 
 import numpy as np
 
@@ -429,8 +429,9 @@ def convert_HBMJ(
         f"got {output_field_type!r}"
     )
 
+
 @lru_cache(maxsize=None)
-def has_parameter(func: Callable, param_name:str)-> bool:
+def has_parameter(func: Callable, param_name: str) -> bool:
     """Check if input function has a specific parameter"""
     sig = signature(func)
     return param_name in sig.parameters

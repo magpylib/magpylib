@@ -362,14 +362,15 @@ def test_getB_on_missing_excitations(module, class_, missing_arg, kwargs):
     ):
         getattr(getattr(magpy, module), class_)(**kwargs).getB([0, 0, 0])
 
-@pytest.mark.parametrize("field", ("H","B", "M", "J"))
+
+@pytest.mark.parametrize("field", ("H", "B", "M", "J"))
 @pytest.mark.parametrize("in_out", ("auto", "inside", "outside"))
 def test_getHBMJ_self_consistency(field, in_out):
     sources = [
-        magpy.magnet.Cuboid(dimension=(1,1,1), polarization=(0,0,1)),
+        magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1)),
         magpy.current.Circle(diameter=1, current=1),
     ]
-    sens = magpy.Sensor(position=np.linspace((-1,0,0),(1,0,0), 10))
+    sens = magpy.Sensor(position=np.linspace((-1, 0, 0), (1, 0, 0), 10))
     src = sources[0]
 
     F1 = getattr(magpy, f"get{field}")(src, sens, in_out=in_out)

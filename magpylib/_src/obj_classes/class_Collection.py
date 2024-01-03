@@ -518,7 +518,9 @@ class BaseCollection(BaseDisplayRepr):
             sources, sensors = self, inputs
         return sources, sensors
 
-    def getB(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"):
+    def getB(
+        self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
+    ):
         """Compute B-field for given sources and observers.
 
         SI units are used for all inputs and outputs.
@@ -605,7 +607,9 @@ class BaseCollection(BaseDisplayRepr):
             in_out=in_out,
         )
 
-    def getH(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"):
+    def getH(
+        self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
+    ):
         """Compute H-field for given sources and observers.
 
         SI units are used for all inputs and outputs.
@@ -692,7 +696,9 @@ class BaseCollection(BaseDisplayRepr):
             in_out=in_out,
         )
 
-    def getM(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"):
+    def getM(
+        self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
+    ):
         """Compute M-field for given sources and observers.
 
         SI units are used for all inputs and outputs.
@@ -754,7 +760,9 @@ class BaseCollection(BaseDisplayRepr):
             in_out=in_out,
         )
 
-    def getJ(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"):
+    def getJ(
+        self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
+    ):
         """Compute J-field for given sources and observers.
 
         SI units are used for all inputs and outputs.

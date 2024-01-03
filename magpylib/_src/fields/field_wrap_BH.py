@@ -45,6 +45,7 @@ import numbers
 import warnings
 from itertools import product
 from typing import Callable
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
@@ -310,7 +311,9 @@ def getBH_level2(
         gr = group["sources"]
         src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
         # compute field
-        B_group = getBH_level1(field_func=field_func, field=field, in_out=in_out, **src_dict)
+        B_group = getBH_level1(
+            field_func=field_func, field=field, in_out=in_out, **src_dict
+        )
         if B_group is None:
             raise MagpylibMissingInput(
                 f"Cannot compute {field}-field because "
@@ -902,6 +905,7 @@ def getH(
         **kwargs,
     )
 
+
 def getM(
     sources=None,
     observers=None,
@@ -1038,6 +1042,7 @@ def getM(
         in_out=in_out,
         **kwargs,
     )
+
 
 def getJ(
     sources=None,
