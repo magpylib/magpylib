@@ -410,6 +410,7 @@ def convert_HBMJ(
     if output_field_type in "MJ":
         J = polarization.copy()
         if mask_inside is not None:
+            # pylint: disable=invalid-unary-operand-type
             J[~mask_inside] *= 0
         if output_field_type == "J":
             return J

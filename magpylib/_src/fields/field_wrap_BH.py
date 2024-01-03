@@ -1,3 +1,5 @@
+# pylint: disable=cyclic-import
+# pylint: disable=too-many-lines
 """Field computation structure:
 
 level0:(field_BH_XXX.py files)
@@ -40,7 +42,6 @@ level4(getB_from_sensor, getH_from_sensor): <--- USER INTERFACE
 
 level5(sens.getB, sens.getH): <--- USER INTERFACE
 """
-# pylint: disable=cyclic-import
 import numbers
 import warnings
 from itertools import product
