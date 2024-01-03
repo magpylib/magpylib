@@ -366,6 +366,7 @@ def test_getB_on_missing_excitations(module, class_, missing_arg, kwargs):
 @pytest.mark.parametrize("field", ("H", "B", "M", "J"))
 @pytest.mark.parametrize("in_out", ("auto", "inside", "outside"))
 def test_getHBMJ_self_consistency(field, in_out):
+    """test getHBMJ self consistency"""
     sources = [
         magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1)),
         magpy.current.Circle(diameter=1, current=1),
