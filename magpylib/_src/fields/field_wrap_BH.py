@@ -279,7 +279,12 @@ def getBH_level2(
     #   allows sensors with different pixel shapes <- relevant?
     poso = [
         [
-            r.apply(sens.pixel.reshape(-1, 3)) + p
+            (
+                np.array([[0, 0, 0]])
+                if sens.pixel is None
+                else r.apply(sens.pixel.reshape(-1, 3))
+            )
+            + p
             for r, p in zip(sens._orientation, sens._position)
         ]
         for sens in sensors

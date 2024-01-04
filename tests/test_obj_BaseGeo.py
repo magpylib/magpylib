@@ -480,7 +480,7 @@ def test_describe():
         + "  • position: [0. 0. 0.] m\n"
         + "  • orientation: [0. 0. 0.] deg\n"
         + "  • handedness: right \n"
-        + "  • pixel: 1 \n"
+        + "  • pixel: None \n"
         + "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), "
         + "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True)),"
         + " color=None, description=Description(show=None, text=None), label=None, "
