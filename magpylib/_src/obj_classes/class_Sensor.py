@@ -92,7 +92,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         self,
         position=(0, 0, 0),
         orientation=None,
-        pixel=(0, 0, 0),
+        pixel=None,
         handedness="right",
         style=None,
         **kwargs,
@@ -123,7 +123,8 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             dims=range(1, 20),
             shape_m1=3,
             sig_name="pixel",
-            sig_type="array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3)",
+            sig_type="array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3) or None",
+            allow_None=True,
         )
 
     @property
@@ -293,13 +294,12 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     @property
     def _default_style_description(self):
         """Default style description text"""
-        pixel = np.array(self.pixel).reshape((-1, 3))
-        pix_uniq = np.unique(pixel, axis=0)
-        one_pix = pix_uniq.shape[0] == 1 and not (pix_uniq == 0).all()
-        return (
-            f" ({'x'.join(str(p) for p in self.pixel.shape[:-1])} pixels)"
-            if self.pixel.ndim != 1
-            else f" ({pixel[1:].shape[0]} pixel)"
-            if one_pix
-            else ""
-        )
+        pix = self.pixel
+        desc = ""
+        if pix is not None:
+            px_shape = pix.shape[:-1]
+            nop = int(np.prod(px_shape))
+            if pix.ndim > 2:
+                desc += f"{'x'.join(str(p) for p in px_shape)}="
+            desc += f"{nop} pixel{'s'[:nop^1]}"
+        return desc

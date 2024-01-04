@@ -545,7 +545,10 @@ def make_Sensor(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     style = obj.style
     dimension = getattr(obj, "dimension", style.size)
     pixel = obj.pixel
-    pixel = np.unique(np.array(pixel).reshape((-1, 3)), axis=0)
+    no_pix = pixel is None
+    if not no_pix:
+        pixel = np.unique(np.array(pixel).reshape((-1, 3)), axis=0)
+    one_pix = not no_pix and pixel.shape[0] == 1
     style_arrows = style.arrows.as_dict(flatten=True, separator="_")
     sensor = get_sensor_mesh(
         **style_arrows, center_color=style.color, handedness=obj.handedness
@@ -557,8 +560,6 @@ def make_Sensor(obj, autosize=None, **kwargs) -> Dict[str, Any]:
         [dimension] * 3 if isinstance(dimension, (float, int)) else dimension[:3],
         dtype=float,
     )
-    no_pix = pixel.shape[0] == 1 and (pixel == 0).all()
-    one_pix = pixel.shape[0] == 1 and not (pixel == 0).all()
     if autosize is not None and style.sizemode == "scaled":
         dim *= autosize
     if no_pix:

@@ -63,11 +63,12 @@ class BaseDisplayRepr:
                     val = f"{val[-1]}"
                 elif k == "pixel":
                     val = getattr(self, "pixel")
-                    px_shape = val.shape[:-1]
-                    val_str = f"{int(np.prod(px_shape))}"
-                    if val.ndim > 2:
-                        val_str += f" ({'x'.join(str(p) for p in px_shape)})"
-                    val = val_str
+                    if val is not None:
+                        px_shape = val.shape[:-1]
+                        val_str = f"{int(np.prod(px_shape))}"
+                        if val.ndim > 2:
+                            val_str += f" ({'x'.join(str(p) for p in px_shape)})"
+                        val = val_str
                 elif k == "status_disconnected_data":
                     val = getattr(self, k)
                     if val is not None:
