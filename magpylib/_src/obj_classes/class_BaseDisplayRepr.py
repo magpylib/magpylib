@@ -71,7 +71,7 @@ class BaseDisplayRepr:
                 elif k == "status_disconnected_data":
                     val_str = f"{len(val)} part{'s'[:len(val)^1]}"
                 elif isinstance(val, (list, tuple, np.ndarray)):
-                    v = np.array(getattr(self, k))
+                    v = np.array(val)
                     if np.prod(v.shape) > 4:
                         val_str = f"shape{v.shape}"
                 unit = UNITS.get(k, None)
