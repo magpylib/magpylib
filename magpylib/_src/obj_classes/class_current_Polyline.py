@@ -89,12 +89,13 @@ class Polyline(BaseCurrent):
 
     # pylint: disable=dangerous-default-value
     _field_func = staticmethod(current_vertices_field)
-    _field_func_kwargs_ndim = {
-        "current": 1,
-        "vertices": 3,
-        "segment_start": 2,
-        "segment_end": 2,
+    _field_func_kwargs = {
+        "current": {"ndim": 1, "unit": "A"},
+        "vertices": {"ndim": 3, "unit": "m"},
+        "segment_start": {"ndim": 2, "unit": "m"},
+        "segment_end": {"ndim": 2, "unit": "m"},
     }
+
     get_trace = make_Polyline
 
     def __init__(

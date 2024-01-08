@@ -8,6 +8,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 from magpylib import _src
+from magpylib import ureg
 from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.exceptions import MagpylibBadUserInput
@@ -315,6 +316,7 @@ def check_format_input_vector(
     reshape=False,
     allow_None=False,
     forbid_negative0=False,
+    unit=None,
 ):
     """checks vector input and returns in formatted form
     - inp must be array_like
@@ -329,6 +331,19 @@ def check_format_input_vector(
         if inp is None:
             return None
 
+    has_units = False
+    if ureg is not None:
+        if isinstance(inp, (str, ureg.Quantity)):
+            inp_wu = ureg.Quantity(inp)
+            if unit is not None and not inp_wu.check(unit):
+                raise MagpylibBadUserInput(
+                    f"Input parameter `{sig_name}` must be in compatible units of {unit!r}. "
+                    f"Instead received {inp_wu.units!r}."
+                )
+            has_units = True
+            inp = inp_wu.m
+
+    print(sig_name, inp)
     is_array_like(
         inp,
         f"Input parameter `{sig_name}` must be {sig_type}.\n"
@@ -349,13 +364,15 @@ def check_format_input_vector(
         ),
     )
     if isinstance(reshape, tuple):
-        return np.reshape(inp, reshape)
+        inp = np.reshape(inp, reshape)
 
-    if forbid_negative0:
+    elif forbid_negative0:
         if np.any(inp <= 0):
             raise MagpylibBadUserInput(
                 f"Input parameter `{sig_name}` cannot have values <= 0."
             )
+    if has_units:
+        return ureg.Quantity(inp, inp_wu.units)
     return inp
 
 

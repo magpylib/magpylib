@@ -82,7 +82,7 @@ class Dipole(BaseSource):
     """
 
     _field_func = staticmethod(dipole_field)
-    _field_func_kwargs_ndim = {"moment": 2}
+    _field_func_kwargs = {"moment": {"ndim": 2, "unit": "A*m^2"}}
     _style_class = DipoleStyle
     get_trace = make_Dipole
     _autosize = True

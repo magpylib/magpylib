@@ -50,6 +50,7 @@ from typing import Callable
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
+from magpylib import ureg
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.input_checks import check_dimensions
@@ -63,10 +64,28 @@ from magpylib._src.utility import format_src_inputs
 from magpylib._src.utility import get_registered_sources
 from magpylib._src.utility import has_parameter
 
+FIELD_UNITS = {
+    "B": "T",
+    "H": "A/M",
+    "M": "A/m",
+    "J": "T",
+}
 
-def tile_group_property(group: list, n_pp: int, prop_name: str):
+
+def convert_to_SI(inp, unit):
+    """convert to SI units if obj is a Quantity"""
+    if ureg is not None and isinstance(inp, ureg.Quantity):
+        convert_to_SI.used_units = True
+        return inp.to(unit).m
+    return inp
+
+
+convert_to_SI.used_units = False
+
+
+def tile_group_property(group: list, n_pp: int, prop_name: str, unit):
     """tile up group property"""
-    out = [getattr(src, prop_name) for src in group]
+    out = [convert_to_SI(getattr(src, prop_name), unit) for src in group]
     if not np.isscalar(out[0]) and any(o.shape != out[0].shape for o in out):
         out = np.asarray(out, dtype="object")
     else:
@@ -81,7 +100,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     # tile up basic attributes that all sources have
     # position
-    poss = np.array([src._position for src in group])
+    poss = np.array([convert_to_SI(src._position, "m") for src in group])
     posv = np.tile(poss, n_pix).reshape((-1, 3))
 
     # orientation
@@ -100,15 +119,17 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         "orientation": rotobj,
     }
 
-    src_props = group[0]._field_func_kwargs_ndim
+    src_props = group[0]._field_func_kwargs
 
-    for prop in src_props:
+    for prop, args in src_props.items():
         if hasattr(group[0], prop) and prop not in (
             "position",
             "orientation",
             "observers",
         ):
-            kwargs[prop] = tile_group_property(group, n_pp, prop)
+            kwargs[prop] = tile_group_property(
+                group, n_pp, prop, unit=args.get("unit", None)
+            )
 
     return kwargs
 
@@ -174,6 +195,8 @@ def getBH_level2(
 
     from magpylib._src.obj_classes.class_Collection import Collection
     from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
+
+    convert_to_SI.used_units = False
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
@@ -417,7 +440,8 @@ def getBH_level2(
         # add missing dimension since `pixel_agg` reduces pixel
         # dimensions to zero. Only needed if `squeeze is False``
         B = np.expand_dims(B, axis=-2)
-
+    if convert_to_SI.used_units:
+        B = ureg.Quantity(B, FIELD_UNITS[field])
     return B
 
 
@@ -466,10 +490,12 @@ def getBH_dict_level2(
     try:
         source_classes = get_registered_sources()
         field_func = source_classes[source_type]._field_func
-        field_func_kwargs_ndim = {"position": 2, "orientation": 2, "observers": 2}
-        field_func_kwargs_ndim.update(
-            source_classes[source_type]._field_func_kwargs_ndim
-        )
+        field_func_kwargs = {
+            "position": {"ndim": 2, "unit": "m"},
+            "orientation": {"ndim": 2, "unit": None},
+            "observers": {"ndim": 2, "unit": "m"},
+        }
+        field_func_kwargs.update(source_classes[source_type]._field_func_kwargs)
     except KeyError as err:
         raise MagpylibBadUserInput(
             f"Input parameter `sources` must be one of {list(source_classes)}"
@@ -501,7 +527,7 @@ def getBH_dict_level2(
             raise MagpylibBadUserInput(
                 f"{key} input must be array-like.\n" f"Instead received {val}"
             ) from err
-        expected_dim = field_func_kwargs_ndim.get(key, 1)
+        expected_dim = field_func_kwargs.get(key, 1)
         if val.ndim == expected_dim or ragged_seq[key]:
             if len(val) == 1:
                 val = np.squeeze(val)
@@ -518,7 +544,8 @@ def getBH_dict_level2(
     vec_len = max(vec_lengths.values(), default=1)
     # tile 1D inputs and replace original values in kwargs
     for key, val in kwargs.items():
-        expected_dim = field_func_kwargs_ndim.get(key, 1)
+        args = field_func_kwargs.get(key, {})
+        expected_dim = args.get("ndim", 1)
         if val.ndim < expected_dim and not ragged_seq[key]:
             kwargs[key] = np.tile(val, (vec_len, *[1] * (expected_dim - 1)))
 

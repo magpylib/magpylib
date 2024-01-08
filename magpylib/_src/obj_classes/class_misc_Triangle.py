@@ -101,7 +101,10 @@ class Triangle(BaseMagnet):
     """
 
     _field_func = staticmethod(triangle_field)
-    _field_func_kwargs_ndim = {"polarization": 2, "vertices": 2}
+    _field_func_kwargs = {
+        "polarization": {"ndim": 2, "unit": "T"},
+        "vertices": {"ndim": 2, "unit": "m"},
+    }
     get_trace = make_Triangle
     _style_class = TriangleStyle
 

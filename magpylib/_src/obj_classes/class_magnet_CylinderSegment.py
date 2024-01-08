@@ -101,7 +101,10 @@ class CylinderSegment(BaseMagnet):
     """
 
     _field_func = staticmethod(magnet_cylinder_segment_field_internal)
-    _field_func_kwargs_ndim = {"polarization": 2, "dimension": 2}
+    _field_func_kwargs = {
+        "polarization": {"ndim": 2, "unit": "T"},
+        "dimension": {"ndim": 2, "unit": ("m", "m", "m", "deg", "deg")},
+    }
     get_trace = make_CylinderSegment
 
     def __init__(

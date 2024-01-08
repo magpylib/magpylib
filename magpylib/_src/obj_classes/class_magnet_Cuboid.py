@@ -75,7 +75,10 @@ class Cuboid(BaseMagnet):
     """
 
     _field_func = staticmethod(magnet_cuboid_field)
-    _field_func_kwargs_ndim = {"polarization": 2, "dimension": 2}
+    _field_func_kwargs = {
+        "polarization": {"ndim": 2, "unit": "T"},
+        "dimension": {"ndim": 2, "unit": "m"},
+    }
     get_trace = make_Cuboid
 
     def __init__(
@@ -113,6 +116,7 @@ class Cuboid(BaseMagnet):
             sig_type="array_like (list, tuple, ndarray) of shape (3,) with positive values",
             allow_None=True,
             forbid_negative0=True,
+            unit="m",
         )
 
     @property

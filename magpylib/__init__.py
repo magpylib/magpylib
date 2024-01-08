@@ -32,6 +32,7 @@ __version__ = "5.0.0dev"
 __author__ = "Michael Ortner & Alexandre Boisselet"
 __credits__ = "The Magpylib community"
 __all__ = [
+    "ureg",
     "magnet",
     "current",
     "misc",
@@ -50,6 +51,18 @@ __all__ = [
     "core",
     "graphics",
 ]
+
+# Set pint unit registry. This needs to be unique through the library."
+try:
+    from pint import UnitRegistry
+
+    ureg = UnitRegistry()
+except ImportError as missing_module:
+    # raise ModuleNotFoundError(
+    #    "In order to use units in Magpylib, you need to install pint package, "
+    #    "see https://pint.readthedocs.io/en/stable/getting/index.html#installation"
+    # ) from missing_module
+    ureg = None
 
 # create interface to outside of package
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS

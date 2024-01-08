@@ -86,7 +86,10 @@ class Sphere(BaseMagnet):
     """
 
     _field_func = staticmethod(magnet_sphere_field)
-    _field_func_kwargs_ndim = {"polarization": 2, "diameter": 1}
+    _field_func_kwargs = {
+        "polarization": {"ndim": 2, "unit": "T"},
+        "diameter": {"ndim": 1, "unit": "m"},
+    }
     get_trace = make_Sphere
 
     def __init__(

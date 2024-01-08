@@ -4,6 +4,7 @@ import warnings
 
 import numpy as np
 
+from magpylib import ureg
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_scalar
@@ -21,7 +22,7 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
     and corresponding field function"""
 
     _field_func = None
-    _field_func_kwargs_ndim = {}
+    _field_func_kwargs = {}
     _editable_field_func = False
 
     def __init__(self, position, orientation, field_func=None, style=None, **kwargs):
@@ -387,9 +388,19 @@ class BaseMagnet(BaseSource):
             sig_name="magnetization",
             sig_type="array_like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
+            unit="A/m",
         )
-        self._polarization = self._magnetization * (4 * np.pi * 1e-7)
-        if np.linalg.norm(self._magnetization) < 2000:
+        mag = self._magnetization
+        if ureg is not None and isinstance(mag, ureg.Quantity):
+            mag = ureg.Quantity(np.array(mag.to("A/m").m), "T")
+        self._polarization = mag * (4 * np.pi * 1e-7)
+        # pint Quantity does not support linalg.norm??
+        if (
+            np.linalg.norm(
+                mag if isinstance(mag, np.ndarray) else self._magnetization.to("A/m").m
+            )
+            < 2000
+        ):
             _deprecation_warn()
 
     @property
@@ -407,8 +418,12 @@ class BaseMagnet(BaseSource):
             sig_name="polarization",
             sig_type="array_like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
+            unit="T",
         )
-        self._magnetization = self._polarization / (4 * np.pi * 1e-7)
+        pol = self._polarization
+        if ureg is not None and isinstance(pol, ureg.Quantity):
+            pol = ureg.Quantity(np.array(mag.to("T").m), "A/m")
+        self._magnetization = pol / (4 * np.pi * 1e-7)
 
 
 class BaseCurrent(BaseSource):

@@ -84,7 +84,10 @@ class Circle(BaseCurrent):
     """
 
     _field_func = staticmethod(current_circle_field)
-    _field_func_kwargs_ndim = {"current": 1, "diameter": 1}
+    _field_func_kwargs = {
+        "current": {"ndim": 1, "unit": "A"},
+        "diameter": {"ndim": 1, "unit": "m"},
+    }
     get_trace = make_Circle
 
     def __init__(

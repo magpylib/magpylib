@@ -115,7 +115,10 @@ class TriangularMesh(BaseMagnet):
     """
 
     _field_func = staticmethod(magnet_trimesh_field)
-    _field_func_kwargs_ndim = {"polarization": 2, "mesh": 3}
+    _field_func_kwargs = {
+        "polarization": {"ndim": 2, "unit": "T"},
+        "mesh": {"ndim": 3, "unit": "m"},
+    }
     get_trace = make_TriangularMesh
     _style_class = TriangularMeshStyle
 
