@@ -449,6 +449,7 @@ class BaseCurrent(BaseSource):
             sig_name="current",
             sig_type="`None` or a number (int, float)",
             allow_None=True,
+            unit="A",
         )
 
 
