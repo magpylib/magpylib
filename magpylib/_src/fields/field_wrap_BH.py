@@ -527,7 +527,8 @@ def getBH_dict_level2(
             raise MagpylibBadUserInput(
                 f"{key} input must be array-like.\n" f"Instead received {val}"
             ) from err
-        expected_dim = field_func_kwargs.get(key, 1)
+        args = field_func_kwargs.get(key, {})
+        expected_dim = args.get("ndim", 1)
         if val.ndim == expected_dim or ragged_seq[key]:
             if len(val) == 1:
                 val = np.squeeze(val)
