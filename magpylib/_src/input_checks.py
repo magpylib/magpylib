@@ -343,7 +343,6 @@ def check_format_input_vector(
             has_units = True
             inp = inp_wu.m
 
-    print(sig_name, inp)
     is_array_like(
         inp,
         f"Input parameter `{sig_name}` must be {sig_type}.\n"
