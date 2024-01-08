@@ -127,6 +127,7 @@ class Cylinder(BaseMagnet):
             sig_type="array_like (list, tuple, ndarray) with shape (2,) with positive values",
             allow_None=True,
             forbid_negative0=True,
+            unit="m",
         )
 
     @property
