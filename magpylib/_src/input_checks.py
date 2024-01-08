@@ -462,6 +462,7 @@ def check_format_input_vertices(inp):
         sig_name="vertices",
         sig_type="`None` or array_like (list, tuple, ndarray) with shape (n,3)",
         allow_None=True,
+        unit="m",
     )
 
     if inp is not None:
