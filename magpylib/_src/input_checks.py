@@ -3,6 +3,7 @@
 # pylint: disable=cyclic-import
 import inspect
 import numbers
+from functools import wraps
 
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -15,6 +16,50 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import wrong_obj_msg
+
+
+def unit_checker():
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            inp = args[0]
+            sig_name = kwargs.get("sig_name", "")
+            has_units = False
+            unit = kwargs.pop("unit", None)
+            if ureg is not None:
+                inp_unit = None
+                if (
+                    isinstance(inp, (list, tuple))
+                    and len(inp) == 2
+                    and isinstance(inp[-1], str)
+                ):
+                    inp, inp_unit = inp
+                if isinstance(inp, (str, ureg.Quantity)) or inp_unit is not None:
+                    from pint.errors import PintError
+
+                    sig_str = f" `{sig_name}`" if sig_name else ""
+                    try:
+                        inp_wu = ureg.Quantity(inp, inp_unit)
+                    except PintError as msg:
+                        raise MagpylibBadUserInput(
+                            f"{msg}\nInput parameter{sig_str} must be in compatible units "
+                            f"of {unit!r}."
+                        )
+                    if unit is not None and not inp_wu.check(unit):
+                        raise MagpylibBadUserInput(
+                            f"Input parameter{sig_str} must be in compatible units of {unit!r}."
+                            f" Instead received {inp_wu.units!r}."
+                        )
+                    has_units = True
+                    args = (inp_wu.m, *args[1:])
+            res = func(*args, **kwargs)
+            if has_units:
+                res = ureg.Quantity(res, inp_wu.units)
+            return res
+
+        return wrapper
+
+    return decorator
 
 
 # pylint: disable=no-member
@@ -278,8 +323,14 @@ def check_format_input_angle(inp):
     )
 
 
+@unit_checker()
 def check_format_input_scalar(
-    inp, sig_name, sig_type, allow_None=False, forbid_negative=False
+    inp,
+    *,
+    sig_name,
+    sig_type,
+    allow_None=False,
+    forbid_negative=False,
 ):
     """check scalar input and return in formatted form
     - must be scalar or None (if allowed)
@@ -306,8 +357,10 @@ def check_format_input_scalar(
     return inp
 
 
+@unit_checker()
 def check_format_input_vector(
     inp,
+    *,
     dims,
     shape_m1,
     sig_name,
@@ -316,7 +369,6 @@ def check_format_input_vector(
     reshape=False,
     allow_None=False,
     forbid_negative0=False,
-    unit=None,
 ):
     """checks vector input and returns in formatted form
     - inp must be array_like
@@ -330,18 +382,6 @@ def check_format_input_vector(
     if allow_None:
         if inp is None:
             return None
-
-    has_units = False
-    if ureg is not None:
-        if isinstance(inp, (str, ureg.Quantity)):
-            inp_wu = ureg.Quantity(inp)
-            if unit is not None and not inp_wu.check(unit):
-                raise MagpylibBadUserInput(
-                    f"Input parameter `{sig_name}` must be in compatible units of {unit!r}. "
-                    f"Instead received {inp_wu.units!r}."
-                )
-            has_units = True
-            inp = inp_wu.m
 
     is_array_like(
         inp,
@@ -370,8 +410,6 @@ def check_format_input_vector(
             raise MagpylibBadUserInput(
                 f"Input parameter `{sig_name}` cannot have values <= 0."
             )
-    if has_units:
-        return ureg.Quantity(inp, inp_wu.units)
     return inp
 
 
