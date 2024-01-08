@@ -422,7 +422,7 @@ class BaseMagnet(BaseSource):
         )
         pol = self._polarization
         if ureg is not None and isinstance(pol, ureg.Quantity):
-            pol = ureg.Quantity(np.array(mag.to("T").m), "A/m")
+            pol = ureg.Quantity(np.array(pol.to("T").m), "A/m")
         self._magnetization = pol / (4 * np.pi * 1e-7)
 
 
