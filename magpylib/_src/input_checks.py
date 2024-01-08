@@ -19,6 +19,8 @@ from magpylib._src.utility import wrong_obj_msg
 
 
 def unit_checker():
+    """Decorator to add unit checks via pint"""
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -26,32 +28,42 @@ def unit_checker():
             sig_name = kwargs.get("sig_name", "")
             has_units = False
             unit = kwargs.pop("unit", None)
-            if ureg is not None:
-                inp_unit = None
-                if (
-                    isinstance(inp, (list, tuple))
-                    and len(inp) == 2
-                    and isinstance(inp[-1], str)
-                ):
-                    inp, inp_unit = inp
-                if isinstance(inp, (str, ureg.Quantity)) or inp_unit is not None:
-                    from pint.errors import PintError
+            inp_unit = None
+            if (
+                isinstance(inp, (list, tuple))
+                and len(inp) == 2
+                and isinstance(inp[-1], str)
+            ):
+                inp, inp_unit = inp
+            if ureg is None and (isinstance(inp, str) or inp_unit is not None):
+                raise ModuleNotFoundError(
+                    "In order to use units in Magpylib, you need to install the `pint` package, "
+                    "see https://pint.readthedocs.io/en/stable/getting/index.html#installation"
+                )
+            if ureg is not None and (
+                isinstance(inp, (str, ureg.Quantity)) or inp_unit is not None
+            ):
+                # pylint: disable=import-outside-toplevel
+                from pint.errors import PintError
 
-                    sig_str = f" `{sig_name}`" if sig_name else ""
+                sig_str = f" `{sig_name}`" if sig_name else ""
+                if isinstance(inp, ureg.Quantity):
+                    inp_wu = inp
+                else:
                     try:
                         inp_wu = ureg.Quantity(inp, inp_unit)
                     except PintError as msg:
                         raise MagpylibBadUserInput(
                             f"{msg}\nInput parameter{sig_str} must be in compatible units "
                             f"of {unit!r}."
-                        )
-                    if unit is not None and not inp_wu.check(unit):
-                        raise MagpylibBadUserInput(
-                            f"Input parameter{sig_str} must be in compatible units of {unit!r}."
-                            f" Instead received {inp_wu.units!r}."
-                        )
-                    has_units = True
-                    args = (inp_wu.m, *args[1:])
+                        ) from msg
+                if unit is not None and not inp_wu.check(unit):
+                    raise MagpylibBadUserInput(
+                        f"Input parameter{sig_str} must be in compatible units of {unit!r}."
+                        f" Instead received {inp_wu.units!r}."
+                    )
+                has_units = True
+                args = (inp_wu.m, *args[1:])
             res = func(*args, **kwargs)
             if has_units:
                 res = ureg.Quantity(res, inp_wu.units)

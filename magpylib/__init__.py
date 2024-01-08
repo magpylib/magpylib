@@ -58,10 +58,7 @@ try:
 
     ureg = _UnitRegistry()
 except ImportError as missing_module:
-    # raise ModuleNotFoundError(
-    #    "In order to use units in Magpylib, you need to install the `pint` package, "
-    #    "see https://pint.readthedocs.io/en/stable/getting/index.html#installation"
-    # ) from missing_module
+    # error only raised when ureg becomes necessary in the code
     ureg = None
 
 # create interface to outside of package
