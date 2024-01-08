@@ -117,6 +117,7 @@ class Dipole(BaseSource):
             sig_name="moment",
             sig_type="array_like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
+            unit="A*m^2",
         )
 
     @property
