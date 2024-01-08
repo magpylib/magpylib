@@ -49,12 +49,14 @@ class BaseDisplayRepr:
         for k in list(dict.fromkeys(list(UNITS) + list(params))):
             if not k.startswith("_") and k in params and k not in exclude:
                 val, val_str = getattr(self, k), None
-                if k == "position":
+                if val is None:
+                    val_str = None
+                elif k == "position":
                     v = getattr(self, "_position")
                     if v.shape[0] != 1:
                         lines.append(f"  • path length: {v.shape[0]}")
                         k = f"{k} (last)"
-                    val_str = f"{val[-1]}"
+                    val_str = f"{v[-1]}"
                 elif k == "orientation":
                     v = getattr(self, "_orientation")
                     v = v.as_rotvec(degrees=True)
@@ -62,14 +64,12 @@ class BaseDisplayRepr:
                         k = f"{k} (last)"
                     val_str = f"{v[-1]}"
                 elif k == "pixel":
-                    if val is not None:
-                        px_shape = val.shape[:-1]
-                        val_str = f"{int(np.prod(px_shape))}"
-                        if val.ndim > 2:
-                            val_str += f" ({'x'.join(str(p) for p in px_shape)})"
+                    px_shape = val.shape[:-1]
+                    val_str = f"{int(np.prod(px_shape))}"
+                    if val.ndim > 2:
+                        val_str += f" ({'x'.join(str(p) for p in px_shape)})"
                 elif k == "status_disconnected_data":
-                    if val is not None:
-                        val_str = f"{len(val)} part{'s'[:len(val)^1]}"
+                    val_str = f"{len(val)} part{'s'[:len(val)^1]}"
                 elif isinstance(val, (list, tuple, np.ndarray)):
                     v = np.array(getattr(self, k))
                     if np.prod(v.shape) > 4:
