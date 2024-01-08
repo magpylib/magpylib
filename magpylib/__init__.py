@@ -54,12 +54,12 @@ __all__ = [
 
 # Set pint unit registry. This needs to be unique through the library."
 try:
-    from pint import UnitRegistry
+    from pint import UnitRegistry as _UnitRegistry
 
-    ureg = UnitRegistry()
+    ureg = _UnitRegistry()
 except ImportError as missing_module:
     # raise ModuleNotFoundError(
-    #    "In order to use units in Magpylib, you need to install pint package, "
+    #    "In order to use units in Magpylib, you need to install the `pint` package, "
     #    "see https://pint.readthedocs.io/en/stable/getting/index.html#installation"
     # ) from missing_module
     ureg = None
