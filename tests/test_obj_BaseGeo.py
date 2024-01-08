@@ -439,7 +439,7 @@ def test_describe_with_label():
     match_string_up_to_id(test, x.describe(return_string=True))
 
     # describe html string
-    test_html = ("<pre>" + test + "</pre>").split("\n")
+    test_html = ("<pre>" + "\n".join(test) + "</pre>").split("\n")
     match_string_up_to_id(test_html, x._repr_html_().replace("<br>", "\n"))
 
 
