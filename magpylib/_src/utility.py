@@ -441,7 +441,21 @@ def has_parameter(func: Callable, param_name: str) -> bool:
 
 def convert_to_SI(inp, unit):
     """convert to SI units if obj is a Quantity"""
-    if ureg is not None and isinstance(inp, ureg.Quantity):
+    if is_Quantity(inp):
         convert_to_SI.used_units = True
-        return inp.to(unit).m
+        inp = inp.to(unit).magnitude
     return inp
+
+
+def is_Quantity(inp):
+    """Return True if value as a pint Quantity else False"""
+    return ureg is not None and isinstance(inp, ureg.Quantity)
+
+
+def convert_to_target_unit(inp, target, unit):
+    """Transform to target unit if any otherwise SI"""
+    if is_Quantity(target):
+        if not is_Quantity(inp):
+            inp = ureg.Quantity(inp, unit)
+        return inp.to(target.units)
+    return convert_to_SI(inp, unit)

@@ -276,6 +276,7 @@ def check_format_input_anchor(inp):
         sig_name="anchor",
         sig_type="`None` or `0` or array_like (list, tuple, ndarray) with shape (3,)",
         allow_None=True,
+        unit="m",
     )
 
 
