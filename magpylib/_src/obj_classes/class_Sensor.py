@@ -125,6 +125,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             sig_name="pixel",
             sig_type="array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3) or None",
             allow_None=True,
+            unit="m",
         )
 
     @property

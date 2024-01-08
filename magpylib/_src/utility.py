@@ -11,6 +11,7 @@ from typing import Sequence
 
 import numpy as np
 
+from magpylib import ureg
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 
@@ -436,3 +437,11 @@ def has_parameter(func: Callable, param_name: str) -> bool:
     """Check if input function has a specific parameter"""
     sig = signature(func)
     return param_name in sig.parameters
+
+
+def convert_to_SI(inp, unit):
+    """convert to SI units if obj is a Quantity"""
+    if ureg is not None and isinstance(inp, ureg.Quantity):
+        convert_to_SI.used_units = True
+        return inp.to(unit).m
+    return inp

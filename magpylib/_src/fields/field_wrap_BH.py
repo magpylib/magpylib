@@ -59,6 +59,7 @@ from magpylib._src.input_checks import check_format_input_observers
 from magpylib._src.input_checks import check_format_pixel_agg
 from magpylib._src.input_checks import check_getBH_output_type
 from magpylib._src.utility import check_static_sensor_orient
+from magpylib._src.utility import convert_to_SI
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
 from magpylib._src.utility import get_registered_sources
@@ -70,15 +71,6 @@ FIELD_UNITS = {
     "M": "A/m",
     "J": "T",
 }
-
-
-def convert_to_SI(inp, unit):
-    """convert to SI units if obj is a Quantity"""
-    if ureg is not None and isinstance(inp, ureg.Quantity):
-        convert_to_SI.used_units = True
-        return inp.to(unit).m
-    return inp
-
 
 convert_to_SI.used_units = False
 
@@ -305,7 +297,7 @@ def getBH_level2(
             (
                 np.array([[0, 0, 0]])
                 if sens.pixel is None
-                else r.apply(sens.pixel.reshape(-1, 3))
+                else r.apply(convert_to_SI(sens.pixel, "m").reshape(-1, 3))
             )
             + p
             for r, p in zip(sens._orientation, sens._position)
