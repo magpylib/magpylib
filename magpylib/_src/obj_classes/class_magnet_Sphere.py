@@ -125,6 +125,7 @@ class Sphere(BaseMagnet):
             sig_type="`None` or a positive number (int, float)",
             allow_None=True,
             forbid_negative=True,
+            unit="m",
         )
 
     @property
