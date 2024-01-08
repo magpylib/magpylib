@@ -59,6 +59,7 @@ test = [
     "pylint>3.0",
     "coverage",
     "pandas",
+    "pint",
     "pyvista",
     "ipygany",
     "imageio[tifffile]",
