@@ -300,7 +300,7 @@ def getBH_level2(
                 else r.apply(to_SI(sens.pixel, "m").reshape(-1, 3))
             )
             + p
-            for r, p in zip(sens._orientation, sens._position)
+            for r, p in zip(sens._orientation, to_SI(sens._position, "m"))
         ]
         for sens in sensors
     ]
