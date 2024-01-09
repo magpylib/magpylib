@@ -19,9 +19,8 @@ orphan: true
 Pyvista offers field-line computation and visualization in 3D. In addition to the field computation, Magpylib offers magnet visualization that seamlessly integrates into a Pyvista plotting scene.
 
 ```{code-cell} ipython3
-import pyvista as pv
-
 import magpylib as magpy
+import pyvista as pv
 
 # Create a magnet with Magpylib
 magnet = magpy.magnet.Cylinder(polarization=(0, 0, 1), dimension=(0.010, 0.004))
@@ -34,11 +33,17 @@ grid = pv.ImageData(
 )
 
 # Compute B-field and add as data to grid
-grid["B"] = magnet.getB(grid.points)*1000 # T -> mT
+grid["B"] = magnet.getB(grid.points) * 1000  # T -> mT
 
 # Compute the field lines
-seed = pv.Disc(inner=0.001, outer=0.003, r_res=1, c_res=6)
-strl = grid.streamlines_from_source(seed, vectors="B")
+seed = pv.Disc(inner=0.001, outer=0.003, r_res=1, c_res=9)
+strl = grid.streamlines_from_source(
+    seed,
+    vectors="B",
+    max_step_length=0.1,
+    max_time=.02,
+    integration_direction="both",
+)
 
 # Create a Pyvista plotting scene
 pl = pv.Plotter()
@@ -63,10 +68,6 @@ pl.add_mesh(
 )
 
 # Prepare and show scene
-pl.camera.position = (0.03, 0.03, 0.02)
+pl.camera.position = (0.03, 0.03, 0.03)
 pl.show()
-```
-
-```{code-cell} ipython3
-
 ```

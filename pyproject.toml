@@ -40,7 +40,7 @@ code_style = [
     "pre-commit",
 ]
 docs = [
-    "sphinx==5.3",
+    "sphinx==6.2",
     "sphinx-design",
     "sphinx-thebe",
     "sphinx-favicon",
@@ -51,7 +51,6 @@ docs = [
     "pandas",
     "numpy-stl",
     "pyvista",
-    "panel",
 ]
 test = [
     "tox>=4.11",
