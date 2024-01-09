@@ -5,6 +5,9 @@ from magpylib._src.display.traces_core import make_Tetrahedron
 from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.utility import is_Quantity
+from magpylib._src.utility import to_SI
+from magpylib._src.utility import ureg
 
 
 class Tetrahedron(BaseMagnet):
@@ -155,10 +158,12 @@ class Tetrahedron(BaseMagnet):
     @staticmethod
     def _get_barycenter(position, orientation, vertices):
         """Returns the barycenter of a tetrahedron."""
-        centroid = (
-            np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
-        )
-        barycenter = orientation.apply(centroid) + position
+        vert = to_SI(vertices, "m")
+        pos = to_SI(position, "m")
+        centroid = np.array([0.0, 0.0, 0.0]) if vert is None else np.mean(vert, axis=0)
+        barycenter = orientation.apply(centroid) + pos
+        if is_Quantity(position):
+            barycenter = ureg.Quantity(barycenter, "m").to(position.units)
         return barycenter
 
     @property
