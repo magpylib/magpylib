@@ -20,6 +20,9 @@ from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
 from magpylib._src.style import TriangularMeshStyle
+from magpylib._src.utility import is_Quantity
+from magpylib._src.utility import to_SI
+from magpylib._src.utility import ureg
 
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
@@ -396,7 +399,9 @@ class TriangularMesh(BaseMagnet):
                 elif mode == "raise":
                     raise ValueError(msg)
 
-            self._faces = fix_trimesh_orientation(self._vertices, self._faces)
+            self._faces = fix_trimesh_orientation(
+                to_SI(self._vertices, "m"), self._faces
+            )
             self._status_reoriented = True
 
     def get_faces_subsets(self):
@@ -439,7 +444,7 @@ class TriangularMesh(BaseMagnet):
         """
         if self._status_selfintersecting_data is None:
             self._status_selfintersecting_data = get_intersecting_triangles(
-                self._vertices, self._faces
+                to_SI(self._vertices, "m"), self._faces
             )
         return self._status_selfintersecting_data
 
@@ -478,12 +483,16 @@ class TriangularMesh(BaseMagnet):
     @staticmethod
     def _get_barycenter(position, orientation, vertices, faces):
         """Returns the barycenter of a tetrahedron."""
+        pos = to_SI(position, "m")
+        vert = to_SI(vertices, "m")
         centroid = (
             np.array([0.0, 0.0, 0.0])
-            if vertices is None
-            else calculate_centroid(vertices, faces)
+            if vert is None
+            else calculate_centroid(vert, faces)
         )
-        barycenter = orientation.apply(centroid) + position
+        barycenter = orientation.apply(centroid) + pos
+        if is_Quantity(position):
+            barycenter = ureg.Quantity(barycenter, "m").to(position.units)
         return barycenter
 
     def _input_check(self, vertices, faces):
@@ -502,6 +511,7 @@ class TriangularMesh(BaseMagnet):
             shape_m1=3,
             sig_name="TriangularMesh.vertices",
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
+            unit="m",
         )
         trias = check_format_input_vector(
             faces,
