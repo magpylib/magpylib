@@ -4,9 +4,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.0
+    jupytext_version: 1.15.2
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 orphan: true
@@ -30,12 +30,11 @@ It is very common to approximate the surface of bodies by triangular meshes, whi
 In this example `Triangle` is used to create a magnet with cuboctahedral shape. Notice that triangle orientation is displayed by default for convenience.
 
 ```{code-cell} ipython3
+import magpylib as magpy
 import numpy as np
 
-import magpylib as magpy
-
 # Create collection of triangles
-triangles_mm = [
+triangles_cm = [
     ([0, 1, -1], [-1, 1, 0], [1, 1, 0]),
     ([0, 1, 1], [1, 1, 0], [-1, 1, 0]),
     ([0, 1, 1], [-1, 0, 1], [0, -1, 1]),
@@ -57,7 +56,7 @@ triangles_mm = [
     ([0, -1, 1], [-1, 0, 1], [-1, -1, 0]),
     ([0, -1, 1], [1, -1, 0], [1, 0, 1]),
 ]
-triangles = np.array(triangles) / 100
+triangles = np.array(triangles_cm) / 100  # cm -> m
 cuboc = magpy.Collection()
 for t in triangles:
     cuboc.add(
@@ -113,52 +112,22 @@ Automatic face reorientation of `TriangularMesh` may fail when the mesh is open.
 In this example we revisit the cubeoctahedron, but generate it through the `TriangularMesh` class.
 
 ```{code-cell} ipython3
+import magpylib as magpy
 import numpy as np
 
-import magpylib as magpy
-
-# Create cubeoctahedron magnet
-vertices = (
-    np.array(
-        [
-            (0, 1, -1),
-            (-1, 1, 0),
-            (1, 1, 0),
-            (0, 1, 1),
-            (-1, 0, 1),
-            (0, -1, 1),
-            (1, 0, 1),
-            (1, 0, -1),
-            (0, -1, -1),
-            (-1, 0, -1),
-            (-1, -1, 0),
-            (1, -1, 0),
-        ]
-    )
-    / 100
-)
-faces = [
-    (0, 1, 2),
-    (3, 2, 1),
-    (3, 4, 5),
-    (3, 5, 6),
-    (0, 7, 8),
-    (0, 8, 9),
-    (5, 10, 11),
-    (8, 11, 10),
-    (1, 9, 4),
-    (10, 4, 9),
-    (2, 6, 7),
-    (11, 7, 6),
-    (3, 1, 4),
-    (3, 6, 2),
-    (0, 9, 1),
-    (0, 2, 7),
-    (8, 10, 9),
-    (8, 7, 11),
-    (5, 4, 10),
-    (5, 11, 6),
+# Create cubeoctahedron magnet (vertices and faces are transposed here for more compact display)
+vertices_cm = [
+    [0, -1, 1, 0, -1, 0, 1, 1, 0, -1, -1, 1],
+    [1, 1, 1, 1, 0, -1, 0, 0, -1, 0, -1, -1],
+    [-1, 0, 0, 1, 1, 1, 1, -1, -1, -1, 0, 0],
 ]
+vertices = np.array(vertices_cm).T / 100  # cm -> m
+faces = [
+    [0, 3, 3, 3, 0, 0, 5, 8, 1, 10, 2, 11, 3, 3, 0, 0, 8, 8, 5, 5],
+    [1, 2, 4, 5, 7, 8, 10, 11, 9, 4, 6, 7, 1, 6, 9, 2, 10, 7, 4, 11],
+    [2, 1, 5, 6, 8, 9, 11, 10, 4, 9, 7, 6, 4, 2, 1, 7, 9, 11, 10, 6],
+]
+faces = np.array(faces).T
 cuboc = magpy.magnet.TriangularMesh(
     polarization=(0.1, 0.2, 0.3), vertices=vertices, faces=faces
 )
@@ -186,9 +155,8 @@ The `TriangularMesh` class is extremely powerful as it enables almost arbitrary 
 In some cases it may be desirable to generate a `TriangularMesh` object from an open mesh (see Prism example above). In this case one has to be extremely careful because one cannot rely on the checks. Not to generate warnings or error messages, these checks can be disabled with `"skip"` or their outcome can be ignored with `"ignore"`. The `show` function can be used to view open edges and disconnected parts. In the following example we generate such an open mesh directly from `Triangle` objects.
 
 ```{code-cell} ipython3
-import numpy as np
-
 import magpylib as magpy
+import numpy as np
 
 # Create top and bottom faces of a prism magnet
 top = magpy.misc.Triangle(
@@ -208,7 +176,7 @@ prism = magpy.magnet.TriangularMesh.from_triangles(
     check_disconnected="ignore",  # check but ignore disconnected mesh
     reorient_faces="ignore",  # check but ignore non-orientable mesh
 )
-prism.style.label = ("Open Prism",)
+prism.style.label = "Open Prism"
 prism.style.magnetization.mode = "arrow"
 
 print("mesh status open:", prism.status_open)
