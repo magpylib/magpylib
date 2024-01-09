@@ -11,8 +11,8 @@ from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
 from magpylib._src.style import BaseStyle
 from magpylib._src.utility import add_iteration_suffix
-from magpylib._src.utility import convert_to_SI
 from magpylib._src.utility import convert_to_target_unit
+from magpylib._src.utility import to_SI
 
 
 def pad_slice_path(path1, path2):
@@ -21,7 +21,7 @@ def pad_slice_path(path1, path2):
     path2: shape (M,x)
     return: path2 with format (N,x)
     """
-    path1, path2 = convert_to_SI(path1, "m"), convert_to_SI(path2, "m")
+    path1, path2 = to_SI(path1, "m"), to_SI(path2, "m")
     delta_path = len(path1) - len(path2)
     if delta_path > 0:
         return np.pad(path2, ((0, delta_path), (0, 0)), "edge")
@@ -188,7 +188,7 @@ class BaseGeo(BaseTransform):
             reshape=(-1, 3),
             unit="m",
         )
-        parent_pos = convert_to_SI(self._position, "m")
+        parent_pos = to_SI(self._position, "m")
         # pad/slice and set orientation path to same length
         oriQ = self._orientation.as_quat()
         self._orientation = R.from_quat(pad_slice_path(parent_pos, oriQ))

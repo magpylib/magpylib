@@ -36,6 +36,7 @@ from magpylib._src.display.traces_utility import get_legend_label
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import triangles_area
+from magpylib._src.utility import to_SI
 
 
 def make_DefaultTrace(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
@@ -67,7 +68,7 @@ def make_Polyline(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     if obj.vertices is None:
         trace = create_null_dim_trace(color=style.color)
         return {**trace, **kwargs}
-
+    vertices = to_SI(obj.vertices, "m")
     traces = []
     for kind in ("arrow", "line"):
         kind_style = getattr(style, kind)
@@ -76,7 +77,7 @@ def make_Polyline(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
             if kind == "arrow":
                 current = 0 if obj.current is None else obj.current
                 x, y, z = draw_arrow_from_vertices(
-                    vertices=obj.vertices,
+                    vertices=vertices,
                     sign=np.sign(current),
                     arrow_size=kind_style.size,
                     arrow_pos=style.arrow.offset,
@@ -84,7 +85,7 @@ def make_Polyline(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
                     include_line=False,
                 ).T
             else:
-                x, y, z = obj.vertices.T
+                x, y, z = vertices.T
             trace = {
                 "type": "scatter3d",
                 "x": x,
@@ -108,6 +109,7 @@ def make_Circle(obj, base=72, **kwargs) -> Union[Dict[str, Any], List[Dict[str, 
     if obj.diameter is None:
         trace = create_null_dim_trace(color=style.color)
         return {**trace, **kwargs}
+    diameter = to_SI(obj.diameter, "m")
     traces = []
     for kind in ("arrow", "line"):
         kind_style = getattr(style, kind)
@@ -119,7 +121,7 @@ def make_Circle(obj, base=72, **kwargs) -> Union[Dict[str, Any], List[Dict[str, 
                 current = 0 if obj.current is None else obj.current
                 vertices = draw_arrow_on_circle(
                     sign=np.sign(current),
-                    diameter=obj.diameter,
+                    diameter=diameter,
                     arrow_size=style.arrow.size,
                     scaled=kind_style.sizemode == "scaled",
                     angle_pos_deg=angle_pos_deg,
@@ -151,6 +153,7 @@ def make_Dipole(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     """
     style = obj.style
     moment = np.array([0.0, 0.0, 0.0]) if obj.moment is None else obj.moment
+    moment = to_SI(moment, "A·m²")
     moment_mag = np.linalg.norm(moment)
     size = style.size
     if autosize is not None and style.sizemode == "scaled":
@@ -166,7 +169,7 @@ def make_Dipole(obj, autosize=None, **kwargs) -> Dict[str, Any]:
             pivot=style.pivot,
             color=style.color,
         )
-        nvec = np.array(moment) / moment_mag
+        nvec = moment / moment_mag
         zaxis = np.array([0, 0, 1])
         cross = np.cross(nvec, zaxis)
         n = np.linalg.norm(cross)
@@ -245,7 +248,7 @@ def make_Sphere(obj, vertices=15, **kwargs) -> Dict[str, Any]:
         trace = make_BaseEllipsoid(
             "plotly-dict",
             vert=vertices,
-            dimension=[obj.diameter] * 3,
+            dimension=[to_SI(obj.diameter, "m")] * 3,
             color=style.color,
         )
     return {**trace, **kwargs}
@@ -279,6 +282,7 @@ def make_triangle_orientations(obj, **kwargs) -> Dict[str, Any]:
     offset = orient.offset
     color = style.color if orient.color is None else orient.color
     vertices = obj.mesh if hasattr(obj, "mesh") else [obj.vertices]
+    vertices = to_SI(vertices, "m")
     traces = []
     for vert in vertices:
         vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
@@ -311,7 +315,7 @@ def make_triangle_orientations(obj, **kwargs) -> Dict[str, Any]:
         )
         traces.append(tr)
     trace = merge_mesh3d(*traces)
-    trace["ismagnet"] = False  # neede to avoid updating mag mesh
+    trace["ismagnet"] = False  # needed to avoid updating mag mesh
     return trace
 
 
@@ -349,7 +353,7 @@ def make_mesh_lines(obj, mode, **kwargs) -> Dict[str, Any]:
     style = obj.style
     mesh = getattr(style.mesh, mode)
     marker, line = mesh.marker, mesh.line
-    tr, vert = obj.faces, obj.vertices
+    tr, vert = obj.faces, to_SI(obj.vertices, "m")
     if mode == "disconnected":
         subsets = obj.get_faces_subsets()
         lines = get_closest_vertices(subsets, vert)
@@ -392,7 +396,7 @@ def make_Triangle(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     provided arguments.
     """
     style = obj.style
-    vert = obj.vertices
+    vert = to_SI(obj.vertices, "m")
 
     if vert is None:
         trace = create_null_dim_trace(color=style.color)
@@ -406,6 +410,7 @@ def make_Triangle(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
             if obj.magnetization is None
             else obj.magnetization
         )
+        magnetization = to_SI(magnetization, "A/m")
         if np.all(np.cross(magnetization, vec) == 0):
             epsilon = 1e-3 * vec
             vert = np.concatenate([vert - epsilon, vert + epsilon])
@@ -545,6 +550,7 @@ def make_Sensor(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     style = obj.style
     dimension = getattr(obj, "dimension", style.size)
     pixel = obj.pixel
+    pixel = to_SI(pixel, "m")
     no_pix = pixel is None
     if not no_pix:
         pixel = np.unique(np.array(pixel).reshape((-1, 3)), axis=0)

@@ -82,7 +82,7 @@ class Dipole(BaseSource):
     """
 
     _field_func = staticmethod(dipole_field)
-    _field_func_kwargs = {"moment": {"ndim": 2, "unit": "A*m^2"}}
+    _field_func_kwargs = {"moment": {"ndim": 2, "unit": "A·m²"}}
     _style_class = DipoleStyle
     get_trace = make_Dipole
     _autosize = True
@@ -117,7 +117,7 @@ class Dipole(BaseSource):
             sig_name="moment",
             sig_type="array_like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
-            unit="A*m^2",
+            unit="A·m²",
         )
 
     @property
@@ -127,4 +127,4 @@ class Dipole(BaseSource):
         moment_mag = np.linalg.norm(moment)
         if moment_mag == 0:
             return "no moment"
-        return f"moment={unit_prefix(moment_mag)}A·m²"
+        return f"moment={unit_prefix(moment_mag,'A·m²')}"

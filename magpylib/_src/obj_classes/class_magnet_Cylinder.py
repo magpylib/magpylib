@@ -135,5 +135,5 @@ class Cylinder(BaseMagnet):
         """Default style description text"""
         if self.dimension is None:
             return "no dimension"
-        d = [unit_prefix(d) for d in self.dimension]
-        return f"D={d[0]}m, H={d[1]}m"
+        d = [unit_prefix(d, "m") for d in self.dimension]
+        return f"D={d[0]}, H={d[1]}"

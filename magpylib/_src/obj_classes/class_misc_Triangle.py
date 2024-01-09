@@ -141,6 +141,7 @@ class Triangle(BaseMagnet):
             sig_name="Triangle.vertices",
             sig_type="array_like (list, tuple, ndarray) of shape (3,3)",
             allow_None=True,
+            unit="m",
         )
 
     @property

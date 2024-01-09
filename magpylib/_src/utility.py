@@ -261,6 +261,7 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     str
         returns formatted number as string
     """
+    number = to_SI(number, unit)
     digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
     prefix = _UNIT_PREFIX.get(digits, "")
 
@@ -439,10 +440,12 @@ def has_parameter(func: Callable, param_name: str) -> bool:
     return param_name in sig.parameters
 
 
-def convert_to_SI(inp, unit):
+def to_SI(inp, unit):
     """convert to SI units if obj is a Quantity"""
+    if isinstance(inp, (list, tuple)):
+        return type(inp)([to_SI(i, unit) for i in inp])
     if is_Quantity(inp):
-        convert_to_SI.used_units = True
+        to_SI.used_units = True
         inp = inp.to(unit).magnitude
     return inp
 
@@ -458,4 +461,4 @@ def convert_to_target_unit(inp, target, unit):
         if not is_Quantity(inp):
             inp = ureg.Quantity(inp, unit)
         return inp.to(target.units)
-    return convert_to_SI(inp, unit)
+    return to_SI(inp, unit)

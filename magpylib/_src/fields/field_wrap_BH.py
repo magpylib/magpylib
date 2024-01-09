@@ -59,11 +59,11 @@ from magpylib._src.input_checks import check_format_input_observers
 from magpylib._src.input_checks import check_format_pixel_agg
 from magpylib._src.input_checks import check_getBH_output_type
 from magpylib._src.utility import check_static_sensor_orient
-from magpylib._src.utility import convert_to_SI
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
 from magpylib._src.utility import get_registered_sources
 from magpylib._src.utility import has_parameter
+from magpylib._src.utility import to_SI
 
 FIELD_UNITS = {
     "B": "T",
@@ -72,12 +72,12 @@ FIELD_UNITS = {
     "J": "T",
 }
 
-convert_to_SI.used_units = False
+to_SI.used_units = False
 
 
 def tile_group_property(group: list, n_pp: int, prop_name: str, unit):
     """tile up group property"""
-    out = [convert_to_SI(getattr(src, prop_name), unit) for src in group]
+    out = [to_SI(getattr(src, prop_name), unit) for src in group]
     if not np.isscalar(out[0]) and any(o.shape != out[0].shape for o in out):
         out = np.asarray(out, dtype="object")
     else:
@@ -92,7 +92,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     # tile up basic attributes that all sources have
     # position
-    poss = np.array([convert_to_SI(src._position, "m") for src in group])
+    poss = np.array([to_SI(src._position, "m") for src in group])
     posv = np.tile(poss, n_pix).reshape((-1, 3))
 
     # orientation
@@ -188,7 +188,7 @@ def getBH_level2(
     from magpylib._src.obj_classes.class_Collection import Collection
     from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
 
-    convert_to_SI.used_units = False
+    to_SI.used_units = False
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
@@ -297,7 +297,7 @@ def getBH_level2(
             (
                 np.array([[0, 0, 0]])
                 if sens.pixel is None
-                else r.apply(convert_to_SI(sens.pixel, "m").reshape(-1, 3))
+                else r.apply(to_SI(sens.pixel, "m").reshape(-1, 3))
             )
             + p
             for r, p in zip(sens._orientation, sens._position)
@@ -432,7 +432,7 @@ def getBH_level2(
         # add missing dimension since `pixel_agg` reduces pixel
         # dimensions to zero. Only needed if `squeeze is False``
         B = np.expand_dims(B, axis=-2)
-    if convert_to_SI.used_units:
+    if to_SI.used_units:
         B = ureg.Quantity(B, FIELD_UNITS[field])
     return B
 
