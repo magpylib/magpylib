@@ -51,6 +51,7 @@ docs = [
     "pandas",
     "numpy-stl",
     "pyvista[all,trame]",
+    "trame_jupyter_extension",
 ]
 test = [
     "tox>=4.11",
