@@ -494,7 +494,8 @@ def test_describe_with_exclude_None():
             " legend=Legend(show=None), model3d=Model3d(data=[], showdefault=True), opacity=None,"
             " path=Path(frames=None, line=Line(color=None, style=None, width=None),"
             " marker=Marker(color=None, size=None, symbol=None), numbering=None, show=None),"
-            " pixel=Pixel(color=None, size=1, sizemode=None, symbol=None), size=None, sizemode=None)"
+            " pixel=Pixel(color=None, size=1, sizemode=None, symbol=None), size=None, "
+            " sizemode=None)"
         ),
     ]
     match_string_up_to_id(test, x.describe(exclude=None, return_string=True))
