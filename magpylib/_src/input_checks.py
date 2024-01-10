@@ -1,6 +1,7 @@
 """ input checks code"""
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
+# pylint: disable=too-many-branches
 import inspect
 import numbers
 from functools import wraps
@@ -18,35 +19,64 @@ from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import wrong_obj_msg
 
 
+_UNITS_MODE = {"value": "keep"}
+_ALLOWED_UNITS_MODES = ("downcast", "upcast", "keep", "base", "force", "forbid")
+
+
+def set_units_modes(mode):
+    """Set Magpylib's units mode.
+    options:
+        - "downcast" : convert to SI without units
+        - "upcast" : convert to SI with units
+        - "keep" : not convert but check if unit is correct (if units are used)
+        - "base" : convert to base SI units (if units are used)
+        - "force": force inputs to be units (raise if not)
+        - "forbid": forbid unit inputs
+    """
+    if mode not in _ALLOWED_UNITS_MODES:
+        raise ValueError(
+            f"Units mode must be one of {_ALLOWED_UNITS_MODES}."
+            f" Instead received {mode!r}"
+        )
+    _UNITS_MODE["value"] = mode
+
+
 def unit_checker():
     """Decorator to add unit checks via pint"""
 
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
+            units_mode = _UNITS_MODE["value"]
             inp = args[0]
             sig_name = kwargs.get("sig_name", "")
-            has_units = False
             unit = kwargs.pop("unit", None)
             inp_unit = None
-            if (
+            is_unit_like_as_list = (
                 isinstance(inp, (list, tuple))
                 and len(inp) == 2
                 and isinstance(inp[-1], str)
-            ):
-                inp, inp_unit = inp
-            if ureg is None and (isinstance(inp, str) or inp_unit is not None):
+            )
+            is_unit_like = isinstance(inp, str) or is_unit_like_as_list
+            if ureg is None and (is_unit_like or units_mode in ("upcast", "force")):
                 raise ModuleNotFoundError(
-                    "In order to use units in Magpylib, you need to install the `pint` package, "
+                    f"In order to use units in Magpylib with {units_mode!r} units mode, "
+                    "you need to install the `pint` package, "
                     "see https://pint.readthedocs.io/en/stable/getting/index.html#installation"
                 )
-            if ureg is not None and (
-                isinstance(inp, (str, ureg.Quantity)) or inp_unit is not None
-            ):
-                # pylint: disable=import-outside-toplevel
+            is_quantity = ureg is not None and isinstance(inp, (ureg.Quantity))
+            out_to_units = is_quantity or is_unit_like
+            if out_to_units:
+                if units_mode == "forbid":
+                    raise MagpylibBadUserInput(
+                        f"while the units mode is set to {units_mode!r},"
+                        f" input parameter {sig_name!r} is unit-like ({inp!r}) "
+                    )
+                if is_unit_like_as_list:
+                    inp, inp_unit = inp
                 from pint.errors import PintError
 
-                sig_str = f" `{sig_name}`" if sig_name else ""
+                sig_str = f" `{sig_name!r}`" if sig_name else ""
                 if isinstance(inp, ureg.Quantity):
                     inp_wu = inp
                 else:
@@ -72,11 +102,16 @@ def unit_checker():
                             f"Input parameter{sig_str} must be in compatible units of {unit!r}."
                             f" Instead received {inp_wu.units!r}."
                         )
-                has_units = True
                 args = (inp_wu.m, *args[1:])
             res = func(*args, **kwargs)
-            if has_units:
+            if out_to_units:
                 res = ureg.Quantity(res, inp_wu.units)
+                if units_mode == "base" and unit is not None:
+                    res = res.to(unit)
+                elif units_mode == "downcast":
+                    res = res.to(unit).m
+            elif units_mode == "upcast":
+                res = ureg.Quantity(res, unit)
             return res
 
         return wrapper
@@ -719,7 +754,6 @@ def check_getBH_output_type(output):
         )
     if output == "dataframe":
         try:
-            # pylint: disable=import-outside-toplevel
             # pylint: disable=unused-import
             import pandas
         except ImportError as missing_module:  # pragma: no cover

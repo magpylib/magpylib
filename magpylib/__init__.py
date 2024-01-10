@@ -33,6 +33,7 @@ __author__ = "Michael Ortner & Alexandre Boisselet"
 __credits__ = "The Magpylib community"
 __all__ = [
     "ureg",
+    "set_units_mode",
     "magnet",
     "current",
     "misc",
@@ -69,3 +70,4 @@ from magpylib._src.fields import getB, getH, getM, getJ
 from magpylib._src.obj_classes.class_Sensor import Sensor
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.display.display import show, show_context
+from magpylib._src.input_checks import set_units_modes
