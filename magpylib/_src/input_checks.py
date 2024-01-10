@@ -19,35 +19,13 @@ from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import wrong_obj_msg
 
 
-_UNITS_MODE = {"value": "keep"}
-_ALLOWED_UNITS_MODES = ("downcast", "upcast", "keep", "base", "force", "forbid")
-
-
-def set_units_mode(mode):
-    """Set Magpylib's units mode.
-    options:
-        - "downcast" : convert to SI without units
-        - "upcast" : convert to SI with units
-        - "keep" : not convert but check if unit is correct (if units are used)
-        - "base" : convert to base SI units (if units are used)
-        - "force": force inputs to be units (raise if not)
-        - "forbid": forbid unit inputs
-    """
-    if mode not in _ALLOWED_UNITS_MODES:
-        raise ValueError(
-            f"Units mode must be one of {_ALLOWED_UNITS_MODES}."
-            f" Instead received {mode!r}"
-        )
-    _UNITS_MODE["value"] = mode
-
-
 def unit_checker():
     """Decorator to add unit checks via pint"""
 
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            units_mode = _UNITS_MODE["value"]
+            units_mode = default_settings.units.mode
             inp = args[0]
             sig_name = kwargs.get("sig_name", "")
             unit = kwargs.pop("unit", None)
