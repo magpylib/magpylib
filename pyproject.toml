@@ -50,7 +50,7 @@ docs = [
     "myst-nb",
     "pandas",
     "numpy-stl",
-    "pyvista",
+    "pyvista[all,trame]",
 ]
 test = [
     "tox>=4.11",
