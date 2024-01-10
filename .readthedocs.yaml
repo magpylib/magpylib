@@ -18,6 +18,8 @@ build:
     # for pyvista
     - libgl1-mesa-dev
     - xvfb
+  env:
+    PYVISTA_TRAME_SERVER_PROXY_PREFIX: '/proxy/'
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
