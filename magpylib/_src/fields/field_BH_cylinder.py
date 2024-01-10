@@ -373,9 +373,7 @@ def magnet_cylinder_field(
     mask_pol_ax = pol_z != 0
 
     # special case: pol = 0
-    mask_pol_not_null = mask_pol_not_null = ~(
-        (pol_x == 0) * (pol_y == 0) * (pol_z == 0)
-    )
+    mask_pol_not_null = ~((pol_x == 0) * (pol_y == 0) * (pol_z == 0))
 
     # general case
     mask_gen = mask_pol_not_null & mask_not_on_edge
