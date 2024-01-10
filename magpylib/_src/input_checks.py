@@ -23,7 +23,7 @@ _UNITS_MODE = {"value": "keep"}
 _ALLOWED_UNITS_MODES = ("downcast", "upcast", "keep", "base", "force", "forbid")
 
 
-def set_units_modes(mode):
+def set_units_mode(mode):
     """Set Magpylib's units mode.
     options:
         - "downcast" : convert to SI without units
