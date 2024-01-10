@@ -57,11 +57,21 @@ def unit_checker():
                             f"{msg}\nInput parameter{sig_str} must be in compatible units "
                             f"of {unit!r}."
                         ) from msg
-                if unit is not None and not inp_wu.check(unit):
-                    raise MagpylibBadUserInput(
-                        f"Input parameter{sig_str} must be in compatible units of {unit!r}."
-                        f" Instead received {inp_wu.units!r}."
-                    )
+                if unit is not None:
+                    # pint unit check returns False even within context for A/m <-> T conversion
+                    unit_check = inp_wu.check(unit)
+                    if not unit_check:
+                        try:  # if in Gaussian context this will work
+                            inp_wu.to(unit)
+                            unit_check = True
+                        except PintError:
+                            # reraised after if unit_check is False
+                            pass
+                    if not unit_check:
+                        raise MagpylibBadUserInput(
+                            f"Input parameter{sig_str} must be in compatible units of {unit!r}."
+                            f" Instead received {inp_wu.units!r}."
+                        )
                 has_units = True
                 args = (inp_wu.m, *args[1:])
             res = func(*args, **kwargs)
