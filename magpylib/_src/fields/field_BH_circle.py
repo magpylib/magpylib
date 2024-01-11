@@ -9,9 +9,9 @@ import numpy as np
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.special_cel import cel_iter
 from magpylib._src.input_checks import check_field_input
+from magpylib._src.units import MU0
 from magpylib._src.utility import cart_to_cyl_coordinates
 from magpylib._src.utility import cyl_field_to_cart
-from magpylib._src.utility import MU0
 
 
 # CORE

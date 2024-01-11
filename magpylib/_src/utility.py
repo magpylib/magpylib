@@ -4,15 +4,14 @@
 # import numbers
 from functools import lru_cache
 from inspect import signature
-from math import log10
 from typing import Callable
 from typing import Optional
 from typing import Sequence
 
 import numpy as np
 
-from magpylib import ureg
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.units import MU0
 
 
 def get_allowed_sources_msg():
@@ -25,8 +24,6 @@ def get_allowed_sources_msg():
 - 1D list of the above
 - string {srcs}"""
 
-
-MU0 = 4 * np.pi * 1e-7
 
 ALLOWED_OBSERVER_MSG = """Observers must be either
 - array_like positions of shape (N1, N2, ..., 3)
@@ -220,57 +217,6 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
     return new_list
 
 
-_UNIT_PREFIX = {
-    -24: "y",  # yocto
-    -21: "z",  # zepto
-    -18: "a",  # atto
-    -15: "f",  # femto
-    -12: "p",  # pico
-    -9: "n",  # nano
-    -6: "µ",  # micro
-    -3: "m",  # milli
-    0: "",
-    3: "k",  # kilo
-    6: "M",  # mega
-    9: "G",  # giga
-    12: "T",  # tera
-    15: "P",  # peta
-    18: "E",  # exa
-    21: "Z",  # zetta
-    24: "Y",  # yotta
-}
-
-
-def unit_prefix(number, unit="", precision=3, char_between="") -> str:
-    """
-    displays a number with given unit and precision and uses unit prefixes for the exponents from
-    yotta (y) to Yocto (Y). If the exponent is smaller or bigger, falls back to scientific notation.
-    Parameters
-    ----------
-    number : int, float
-        can be any number
-    unit : str, optional
-        unit symbol can be any string, by default ""
-    precision : int, optional
-        gives the number of significant digits, by default 3
-    char_between : str, optional
-        character to insert between number of prefix. Can be " " or any string, if a space is wanted
-        before the unit symbol , by default ""
-    Returns
-    -------
-    str
-        returns formatted number as string
-    """
-    number = to_SI(number, unit)
-    digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
-    prefix = _UNIT_PREFIX.get(digits, "")
-
-    if prefix == "":
-        digits = 0
-    new_number_str = f"{number / 10 ** digits:.{precision}g}"
-    return f"{new_number_str}{char_between}{prefix}{unit}"
-
-
 def add_iteration_suffix(name):
     """
     adds iteration suffix. If name already ends with an integer it will continue iteration
@@ -438,27 +384,3 @@ def has_parameter(func: Callable, param_name: str) -> bool:
     """Check if input function has a specific parameter"""
     sig = signature(func)
     return param_name in sig.parameters
-
-
-def to_SI(inp, unit):
-    """convert to SI units if obj is a Quantity"""
-    if isinstance(inp, (list, tuple)):
-        return type(inp)([to_SI(i, unit) for i in inp])
-    if is_Quantity(inp):
-        to_SI.used_units = True
-        inp = inp.to(unit).magnitude
-    return inp
-
-
-def is_Quantity(inp):
-    """Return True if value as a pint Quantity else False"""
-    return ureg is not None and isinstance(inp, ureg.Quantity)
-
-
-def convert_to_target_unit(inp, target, unit):
-    """Transform to target unit if any otherwise SI"""
-    if is_Quantity(target):
-        if not is_Quantity(inp):
-            inp = ureg.Quantity(inp, unit)
-        return inp.to(target.units)
-    return to_SI(inp, unit)

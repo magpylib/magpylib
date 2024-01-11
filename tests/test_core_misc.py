@@ -6,7 +6,7 @@ import magpylib as magpy
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
-from magpylib._src.utility import MU0
+from magpylib._src.units import MU0
 from magpylib.core import current_circle_field
 from magpylib.core import current_line_field
 from magpylib.core import current_loop_field

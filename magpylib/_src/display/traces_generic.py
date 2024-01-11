@@ -29,8 +29,8 @@ from magpylib._src.display.traces_utility import group_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import slice_mesh_from_colorscale
 from magpylib._src.style import DefaultMarkers
+from magpylib._src.units import downcast
 from magpylib._src.utility import format_obj_input
-from magpylib._src.utility import to_SI
 
 
 class MagpyMarkers:
@@ -84,9 +84,9 @@ def update_magnet_mesh(
     mag_color = mag_style.color
     if magnetization is None:
         magnetization = np.array([0.0, 0.0, 0.0], dtype=float)
-    magnetization = to_SI(magnetization, "A/m")
+    magnetization = downcast(magnetization, "A/m")
     if mag_style.show:
-        vertices = np.array([to_SI(mesh_dict[k], "m") for k in "xyz"]).T
+        vertices = np.array([downcast(mesh_dict[k], "m") for k in "xyz"]).T
         color_middle = mag_color.middle
         if mag_color.mode == "tricycle":
             color_middle = mesh_dict["color"]
@@ -134,22 +134,22 @@ def make_mag_arrows(obj):
     color = style.color if arrow.color is None else arrow.color
     if arrow.sizemode == "scaled":
         if hasattr(obj, "diameter"):
-            length = to_SI(obj.diameter, "m")  # Sphere
+            length = downcast(obj.diameter, "m")  # Sphere
         elif isinstance(obj, magpy.misc.Triangle):
-            length = np.amax(to_SI(obj.vertices, "m")) - np.amin(
-                to_SI(obj.vertices, "m")
+            length = np.amax(downcast(obj.vertices, "m")) - np.amin(
+                downcast(obj.vertices, "m")
             )
         elif hasattr(obj, "mesh"):
             length = np.amax(np.ptp(obj.mesh.reshape(-1, 3), axis=0))
         elif hasattr(obj, "vertices"):
-            length = np.amax(np.ptp(to_SI(obj.vertices, "m"), axis=0))
+            length = np.amax(np.ptp(downcast(obj.vertices, "m"), axis=0))
         else:  # Cuboid, Cylinder, CylinderSegment
-            length = np.amax(to_SI(obj.dimension, "m")[:3])
+            length = np.amax(downcast(obj.dimension, "m")[:3])
         length *= 1.5
     length *= arrow.size
     mag = obj.magnetization
     # collect all draw positions and directions
-    pos = to_SI(obj._position, "m")
+    pos = downcast(obj._position, "m")
     center = getattr(obj, "_barycenter", pos)[0] - pos[0]
     direc = mag / (np.linalg.norm(mag) + 1e-6) * length
     x, y, z = draw_arrowed_line(
@@ -172,7 +172,7 @@ def make_mag_arrows(obj):
 def make_path(input_obj, label=None):
     """draw obj path based on path style properties"""
     style = input_obj.style
-    x, y, z = np.array(to_SI(input_obj.position, "m")).T
+    x, y, z = np.array(downcast(input_obj.position, "m")).T
     txt_kwargs = (
         {"mode": "markers+text+lines", "text": list(range(len(x)))}
         if style.path.numbering
@@ -541,7 +541,7 @@ def get_generic_traces(
             temp_rot_traces.append(tr1)
         path_traces_generic.extend(group_traces(*temp_rot_traces))
 
-    if np.array(to_SI(input_obj.position, "m")).ndim > 1 and style.path.show:
+    if np.array(downcast(input_obj.position, "m")).ndim > 1 and style.path.show:
         scatter_path = make_path(input_obj, legend_label)
         path_traces_generic.append(scatter_path)
 
@@ -781,7 +781,7 @@ def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kw
         if autosize is None and getattr(obj, "_autosize", False):
             traces_to_resize_dict[obj] = {**params}
             # temporary coordinates to be able to calculate ranges
-            x, y, z = to_SI(obj._position, "m").T
+            x, y, z = downcast(obj._position, "m").T
             traces_dict[obj] = [{"x": x, "y": y, "z": z}]
         else:
             traces_dict[obj] = []

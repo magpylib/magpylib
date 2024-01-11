@@ -36,7 +36,7 @@ from magpylib._src.display.traces_utility import get_legend_label
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import triangles_area
-from magpylib._src.utility import to_SI
+from magpylib._src.units import downcast
 
 
 def make_DefaultTrace(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
@@ -68,7 +68,7 @@ def make_Polyline(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     if obj.vertices is None:
         trace = create_null_dim_trace(color=style.color)
         return {**trace, **kwargs}
-    vertices = to_SI(obj.vertices, "m")
+    vertices = downcast(obj.vertices, "m")
     traces = []
     for kind in ("arrow", "line"):
         kind_style = getattr(style, kind)
@@ -109,7 +109,7 @@ def make_Circle(obj, base=72, **kwargs) -> Union[Dict[str, Any], List[Dict[str, 
     if obj.diameter is None:
         trace = create_null_dim_trace(color=style.color)
         return {**trace, **kwargs}
-    diameter = to_SI(obj.diameter, "m")
+    diameter = downcast(obj.diameter, "m")
     traces = []
     for kind in ("arrow", "line"):
         kind_style = getattr(style, kind)
@@ -153,7 +153,7 @@ def make_Dipole(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     """
     style = obj.style
     moment = np.array([0.0, 0.0, 0.0]) if obj.moment is None else obj.moment
-    moment = to_SI(moment, "A·m²")
+    moment = downcast(moment, "A·m²")
     moment_mag = np.linalg.norm(moment)
     size = style.size
     if autosize is not None and style.sizemode == "scaled":
@@ -248,7 +248,7 @@ def make_Sphere(obj, vertices=15, **kwargs) -> Dict[str, Any]:
         trace = make_BaseEllipsoid(
             "plotly-dict",
             vert=vertices,
-            dimension=[to_SI(obj.diameter, "m")] * 3,
+            dimension=[downcast(obj.diameter, "m")] * 3,
             color=style.color,
         )
     return {**trace, **kwargs}
@@ -282,7 +282,7 @@ def make_triangle_orientations(obj, **kwargs) -> Dict[str, Any]:
     offset = orient.offset
     color = style.color if orient.color is None else orient.color
     vertices = obj.mesh if hasattr(obj, "mesh") else [obj.vertices]
-    vertices = to_SI(vertices, "m")
+    vertices = downcast(vertices, "m")
     traces = []
     for vert in vertices:
         vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
@@ -353,7 +353,7 @@ def make_mesh_lines(obj, mode, **kwargs) -> Dict[str, Any]:
     style = obj.style
     mesh = getattr(style.mesh, mode)
     marker, line = mesh.marker, mesh.line
-    tr, vert = obj.faces, to_SI(obj.vertices, "m")
+    tr, vert = obj.faces, downcast(obj.vertices, "m")
     if mode == "disconnected":
         subsets = obj.get_faces_subsets()
         lines = get_closest_vertices(subsets, vert)
@@ -396,7 +396,7 @@ def make_Triangle(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     provided arguments.
     """
     style = obj.style
-    vert = to_SI(obj.vertices, "m")
+    vert = downcast(obj.vertices, "m")
 
     if vert is None:
         trace = create_null_dim_trace(color=style.color)
@@ -410,7 +410,7 @@ def make_Triangle(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
             if obj.magnetization is None
             else obj.magnetization
         )
-        magnetization = to_SI(magnetization, "A/m")
+        magnetization = downcast(magnetization, "A/m")
         if np.all(np.cross(magnetization, vec) == 0):
             epsilon = 1e-3 * vec
             vert = np.concatenate([vert - epsilon, vert + epsilon])
@@ -550,7 +550,7 @@ def make_Sensor(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     style = obj.style
     dimension = getattr(obj, "dimension", style.size)
     pixel = obj.pixel
-    pixel = to_SI(pixel, "m")
+    pixel = downcast(pixel, "m")
     no_pix = pixel is None
     if not no_pix:
         pixel = np.unique(np.array(pixel).reshape((-1, 3)), axis=0)

@@ -68,7 +68,7 @@ class Units(MagicProperties):
             - "upcast" : convert to SI with units
             - "keep" : not convert but check if unit is correct (if units are used)
             - "base" : convert to base SI units (if units are used)
-            - "force": force inputs to be units (raise if not)
+            - "coerce": coerce inputs to be units (raise if not)
             - "forbid": forbid unit inputs
     """
 
@@ -80,7 +80,7 @@ class Units(MagicProperties):
             - "upcast" : convert to SI with units
             - "keep" : not convert but check if unit is correct (if units are used)
             - "base" : convert to base SI units (if units are used)
-            - "force": force inputs to be units (raise if not)
+            - "coerce": coerce inputs to be units (raise if not)
             - "forbid": forbid unit inputs"""
         return self._mode
 

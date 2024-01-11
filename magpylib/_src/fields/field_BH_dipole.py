@@ -4,7 +4,7 @@ Core implementation of dipole field
 import numpy as np
 
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import MU0
+from magpylib._src.units import MU0
 
 
 # CORE

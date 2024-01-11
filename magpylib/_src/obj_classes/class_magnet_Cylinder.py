@@ -3,7 +3,7 @@ from magpylib._src.display.traces_core import make_Cylinder
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
-from magpylib._src.utility import unit_prefix
+from magpylib._src.units import unit_prefix
 
 
 class Cylinder(BaseMagnet):

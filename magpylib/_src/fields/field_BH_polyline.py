@@ -8,7 +8,7 @@ from numpy.linalg import norm
 
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import MU0
+from magpylib._src.units import MU0
 
 
 def current_vertices_field(

@@ -50,7 +50,6 @@ from typing import Callable
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from magpylib import ureg
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.input_checks import check_dimensions
@@ -58,12 +57,13 @@ from magpylib._src.input_checks import check_excitations
 from magpylib._src.input_checks import check_format_input_observers
 from magpylib._src.input_checks import check_format_pixel_agg
 from magpylib._src.input_checks import check_getBH_output_type
+from magpylib._src.units import downcast
+from magpylib._src.units import to_Quantity
 from magpylib._src.utility import check_static_sensor_orient
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
 from magpylib._src.utility import get_registered_sources
 from magpylib._src.utility import has_parameter
-from magpylib._src.utility import to_SI
 
 FIELD_UNITS = {
     "B": "T",
@@ -72,12 +72,12 @@ FIELD_UNITS = {
     "J": "T",
 }
 
-to_SI.used_units = False
+downcast.units_used = False
 
 
 def tile_group_property(group: list, n_pp: int, prop_name: str, unit):
     """tile up group property"""
-    out = [to_SI(getattr(src, prop_name), unit) for src in group]
+    out = [downcast(getattr(src, prop_name), unit) for src in group]
     if not np.isscalar(out[0]) and any(o.shape != out[0].shape for o in out):
         out = np.asarray(out, dtype="object")
     else:
@@ -92,7 +92,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     # tile up basic attributes that all sources have
     # position
-    poss = np.array([to_SI(src._position, "m") for src in group])
+    poss = np.array([downcast(src._position, "m") for src in group])
     posv = np.tile(poss, n_pix).reshape((-1, 3))
 
     # orientation
@@ -188,7 +188,7 @@ def getBH_level2(
     from magpylib._src.obj_classes.class_Collection import Collection
     from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
 
-    to_SI.used_units = False
+    downcast.units_used = False
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
@@ -297,10 +297,10 @@ def getBH_level2(
             (
                 np.array([[0, 0, 0]])
                 if sens.pixel is None
-                else r.apply(to_SI(sens.pixel, "m").reshape(-1, 3))
+                else r.apply(downcast(sens.pixel, "m").reshape(-1, 3))
             )
             + p
-            for r, p in zip(sens._orientation, to_SI(sens._position, "m"))
+            for r, p in zip(sens._orientation, downcast(sens._position, "m"))
         ]
         for sens in sensors
     ]
@@ -432,8 +432,8 @@ def getBH_level2(
         # add missing dimension since `pixel_agg` reduces pixel
         # dimensions to zero. Only needed if `squeeze is False``
         B = np.expand_dims(B, axis=-2)
-    if to_SI.used_units:
-        B = ureg.Quantity(B, FIELD_UNITS[field])
+    if downcast.units_used:
+        B = to_Quantity(B, FIELD_UNITS[field])
     return B
 
 

@@ -20,9 +20,8 @@ from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
 from magpylib._src.style import TriangularMeshStyle
-from magpylib._src.utility import is_Quantity
-from magpylib._src.utility import to_SI
-from magpylib._src.utility import ureg
+from magpylib._src.units import downcast
+from magpylib._src.units import to_unit_from_target
 
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
@@ -400,7 +399,7 @@ class TriangularMesh(BaseMagnet):
                     raise ValueError(msg)
 
             self._faces = fix_trimesh_orientation(
-                to_SI(self._vertices, "m"), self._faces
+                downcast(self._vertices, "m"), self._faces
             )
             self._status_reoriented = True
 
@@ -444,7 +443,7 @@ class TriangularMesh(BaseMagnet):
         """
         if self._status_selfintersecting_data is None:
             self._status_selfintersecting_data = get_intersecting_triangles(
-                to_SI(self._vertices, "m"), self._faces
+                downcast(self._vertices, "m"), self._faces
             )
         return self._status_selfintersecting_data
 
@@ -483,16 +482,15 @@ class TriangularMesh(BaseMagnet):
     @staticmethod
     def _get_barycenter(position, orientation, vertices, faces):
         """Returns the barycenter of a tetrahedron."""
-        pos = to_SI(position, "m")
-        vert = to_SI(vertices, "m")
+        pos = downcast(position, "m")
+        vert = downcast(vertices, "m")
         centroid = (
             np.array([0.0, 0.0, 0.0])
             if vert is None
             else calculate_centroid(vert, faces)
         )
         barycenter = orientation.apply(centroid) + pos
-        if is_Quantity(position):
-            barycenter = ureg.Quantity(barycenter, "m").to(position.units)
+        barycenter = to_unit_from_target(barycenter, target=position, default_unit="m")
         return barycenter
 
     def _input_check(self, vertices, faces):

@@ -1,4 +1,3 @@
-# pylint: disable=line-too-long
 """
 Welcome to Magpylib !
 ---------------------
@@ -27,11 +26,12 @@ The original software publication (version 2):
 https://www.sciencedirect.com/science/article/pii/S2352711020300170
 
 """
-# module level dunders
+
 __version__ = "5.0.0dev"
 __author__ = "Michael Ortner & Alexandre Boisselet"
 __credits__ = "The Magpylib community"
 __all__ = [
+    "SUPPORTED_PLOTTING_BACKENDS",
     "ureg",
     "magnet",
     "current",
@@ -52,17 +52,10 @@ __all__ = [
     "graphics",
 ]
 
-# Set pint unit registry. This needs to be unique through the library."
-try:
-    from pint import UnitRegistry as _UnitRegistry
-
-    ureg = _UnitRegistry()
-except ImportError as missing_module:
-    # error only raised when ureg becomes necessary in the code
-    ureg = None
 
 # create interface to outside of package
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
+from magpylib._src.units import ureg
 from magpylib import magnet, current, misc, core, graphics
 from magpylib._src.defaults.defaults_classes import default_settings as defaults
 from magpylib._src.fields import getB, getH, getM, getJ

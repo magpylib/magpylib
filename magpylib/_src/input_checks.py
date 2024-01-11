@@ -4,98 +4,18 @@
 # pylint: disable=too-many-branches
 import inspect
 import numbers
-from functools import wraps
 
 import numpy as np
 from scipy.spatial.transform import Rotation
 
 from magpylib import _src
-from magpylib import ureg
 from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibMissingInput
+from magpylib._src.units import unit_checker
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import wrong_obj_msg
-
-
-def unit_checker():
-    """Decorator to add unit checks via pint"""
-
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            units_mode = default_settings.units.mode
-            inp = args[0]
-            sig_name = kwargs.get("sig_name", "")
-            unit = kwargs.pop("unit", None)
-            inp_unit = None
-            is_unit_like_as_list = (
-                isinstance(inp, (list, tuple))
-                and len(inp) == 2
-                and isinstance(inp[-1], str)
-            )
-            is_unit_like = isinstance(inp, str) or is_unit_like_as_list
-            if ureg is None and (is_unit_like or units_mode in ("upcast", "force")):
-                raise ModuleNotFoundError(
-                    f"In order to use units in Magpylib with {units_mode!r} units mode, "
-                    "you need to install the `pint` package, "
-                    "see https://pint.readthedocs.io/en/stable/getting/index.html#installation"
-                )
-            is_quantity = ureg is not None and isinstance(inp, (ureg.Quantity))
-            out_to_units = is_quantity or is_unit_like
-            if out_to_units:
-                if units_mode == "forbid":
-                    raise MagpylibBadUserInput(
-                        f"while the units mode is set to {units_mode!r},"
-                        f" input parameter {sig_name!r} is unit-like ({inp!r}) "
-                    )
-                if is_unit_like_as_list:
-                    inp, inp_unit = inp
-                from pint.errors import PintError
-
-                sig_str = f" `{sig_name!r}`" if sig_name else ""
-                if isinstance(inp, ureg.Quantity):
-                    inp_wu = inp
-                else:
-                    try:
-                        inp_wu = ureg.Quantity(inp, inp_unit)
-                    except PintError as msg:
-                        raise MagpylibBadUserInput(
-                            f"{msg}\nInput parameter{sig_str} must be in compatible units "
-                            f"of {unit!r}."
-                        ) from msg
-                if unit is not None:
-                    # pint unit check returns False even within context for A/m <-> T conversion
-                    unit_check = inp_wu.check(unit)
-                    if not unit_check:
-                        try:  # if in Gaussian context this will work
-                            inp_wu.to(unit)
-                            unit_check = True
-                        except PintError:
-                            # reraised after if unit_check is False
-                            pass
-                    if not unit_check:
-                        raise MagpylibBadUserInput(
-                            f"Input parameter{sig_str} must be in compatible units of {unit!r}."
-                            f" Instead received {inp_wu.units!r}."
-                        )
-                args = (inp_wu.m, *args[1:])
-            res = func(*args, **kwargs)
-            if out_to_units:
-                res = ureg.Quantity(res, inp_wu.units)
-                if units_mode == "base" and unit is not None:
-                    res = res.to(unit)
-                elif units_mode == "downcast":
-                    res = res.to(unit).m
-            elif units_mode == "upcast":
-                res = ureg.Quantity(res, unit)
-            return res
-
-        return wrapper
-
-    return decorator
-
 
 # pylint: disable=no-member
 

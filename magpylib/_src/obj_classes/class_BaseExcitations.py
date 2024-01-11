@@ -4,7 +4,6 @@ import warnings
 
 import numpy as np
 
-from magpylib import ureg
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_scalar
@@ -14,6 +13,10 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.style import CurrentStyle
 from magpylib._src.style import MagnetStyle
+from magpylib._src.units import downcast
+from magpylib._src.units import is_Quantity
+from magpylib._src.units import MU0
+from magpylib._src.units import to_Quantity
 from magpylib._src.utility import format_star_input
 
 
@@ -391,16 +394,11 @@ class BaseMagnet(BaseSource):
             unit="A/m",
         )
         mag = self._magnetization
-        if ureg is not None and isinstance(mag, ureg.Quantity):
-            mag = ureg.Quantity(np.array(mag.to("A/m").m), "T")
-        self._polarization = mag * (4 * np.pi * 1e-7)
-        # pint Quantity does not support linalg.norm??
-        if (
-            np.linalg.norm(
-                mag if isinstance(mag, np.ndarray) else self._magnetization.to("A/m").m
-            )
-            < 2000
-        ):
+        mag_A_per_m = downcast(mag, "A/m")
+        if is_Quantity(mag):
+            mag = to_Quantity(mag_A_per_m, "T")
+        self._polarization = mag * MU0
+        if np.linalg.norm(mag_A_per_m) < 2000:
             _deprecation_warn()
 
     @property
@@ -421,9 +419,9 @@ class BaseMagnet(BaseSource):
             unit="T",
         )
         pol = self._polarization
-        if ureg is not None and isinstance(pol, ureg.Quantity):
-            pol = ureg.Quantity(np.array(pol.to("T").m), "A/m")
-        self._magnetization = pol / (4 * np.pi * 1e-7)
+        if is_Quantity(pol):
+            pol = to_Quantity(downcast(pol, "T"), "A/m")
+        self._magnetization = pol / MU0
 
 
 class BaseCurrent(BaseSource):

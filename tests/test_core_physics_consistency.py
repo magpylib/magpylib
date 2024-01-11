@@ -1,7 +1,7 @@
 import numpy as np
 
 import magpylib as magpy
-from magpylib._src.utility import MU0
+from magpylib._src.units import MU0
 
 # PHYSICS CONSISTENCY TESTING
 #

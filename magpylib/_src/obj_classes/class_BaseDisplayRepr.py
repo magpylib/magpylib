@@ -3,9 +3,9 @@
 # pylint: disable=too-many-branches
 import numpy as np
 
-from magpylib import ureg
 from magpylib._src.display.display import show
 from magpylib._src.display.traces_core import make_DefaultTrace
+from magpylib._src.units import is_Quantity
 
 UNITS = {
     "parent": None,
@@ -50,7 +50,7 @@ class BaseDisplayRepr:
             if not key.startswith("_") and key in params and key not in exclude:
                 val, val_str = getattr(self, key), None
                 unit = UNITS.get(key, None)
-                if ureg is not None and isinstance(val, ureg.Quantity):
+                if is_Quantity(val):
                     # let pint take care of displaying units if available
                     unit = None
                 if val is None:

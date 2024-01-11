@@ -9,10 +9,10 @@ from scipy.special import ellipk
 
 from magpylib._src.fields.special_cel import cel
 from magpylib._src.input_checks import check_field_input
+from magpylib._src.units import MU0
 from magpylib._src.utility import cart_to_cyl_coordinates
 from magpylib._src.utility import convert_HBMJ
 from magpylib._src.utility import cyl_field_to_cart
-from magpylib._src.utility import MU0
 
 
 def fieldB_cylinder_axial(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -> list:

@@ -11,7 +11,7 @@ from magpylib._src.defaults.defaults_values import DEFAULTS
 
 SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly", "pyvista")
 
-ALLOWED_UNITS_MODES = ("downcast", "upcast", "keep", "base", "force", "forbid")
+ALLOWED_UNITS_MODES = ("downcast", "upcast", "keep", "base", "coerce", "forbid")
 
 ALLOWED_SYMBOLS = (".", "+", "D", "d", "s", "x", "o")
 
