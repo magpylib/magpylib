@@ -40,7 +40,7 @@ code_style = [
     "pre-commit",
 ]
 docs = [
-    "sphinx==6.2",
+    "sphinx==7.2",
     "sphinx-design",
     "sphinx-thebe",
     "sphinx-favicon",
