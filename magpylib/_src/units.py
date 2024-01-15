@@ -77,18 +77,33 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
 class UnitHandler:
     pgk_link = ""
 
-    def __init__(self):
-        units_global._registry = self.ureg = self.get_registry()
+    def is_unit(self, inp):
+        ...
+
+    def to_quantity(self, inp, unit):
+        ...
+
+    def to_unit(self, inp, unit):
+        ...
+
+    def get_unit(self, inp):
+        ...
+
+    def check_unit(self, inp, unit):
+        ...
+
+    def get_magnitude(self, inp):
+        ...
 
 
 class PintHandler(UnitHandler):
     pgk_link = "https://pint.readthedocs.io/en/stable/getting/index.html#installation"
 
-    def get_registry(self):
+    def __init__(self):
         import pint
 
         # Set pint unit registry. This needs to be unique through the library."
-        return pint.UnitRegistry()
+        units_global._registry = self.ureg = pint.UnitRegistry()
 
     def is_unit(self, inp):
         return isinstance(inp, self.ureg.Quantity)
@@ -122,23 +137,36 @@ class PintHandler(UnitHandler):
 class UnytHandler(UnitHandler):
     pgk_link = "https://unyt.readthedocs.io/en/stable/installation.html"
 
-    def get_registry():
+    def __init__(self):
         import unyt
 
+        units_global._registry = self.ureg = unyt.UnitRegistry()
+        self.unyt = unyt
+
+    def get_registry():
+        return
+
     def is_unit(self, inp):
-        ...
+        return isinstance(inp, self.unyt.unyt_array)
+
+    def to_quantity(self, inp, unit):
+        return inp * self.unyt.unyt_quantity.from_string(str(unit))
 
     def to_unit(self, inp, unit):
-        ...
+        return inp.to(unit)
 
     def get_unit(self, inp):
-        ...
+        return inp.units
 
     def check_unit(self, inp, unit):
-        ...
+        try:
+            inp.to(unit)
+            return True
+        except self.unyt.UnitConversionError:
+            return False
 
     def get_magnitude(self, inp):
-        ...
+        return inp.value
 
 
 def get_units_handler(error="ignore"):
@@ -148,7 +176,7 @@ def get_units_handler(error="ignore"):
         try:
             handler = handlers[pkg]()
             handlers[pkg] = handler
-        except ImportError as msg:
+        except ImportError:
             # error only raised when it becomes necessary in the code
             handler = None
             if error == "raise":
@@ -225,12 +253,11 @@ def unit_checker():
     """Decorator to add unit checks"""
 
     def decorator(func):
-        units_mode = default_settings.units.mode
-        units_package_default = default_settings.units.package
-        units_handler = get_units_handler()
-
         @wraps(func)
         def wrapper(*args, **kwargs):
+            units_mode = default_settings.units.mode
+            units_package_default = default_settings.units.package
+            units_handler = get_units_handler()
             inp = args[0]
             sig_name = kwargs.get("sig_name", "")
             unit = kwargs.pop("unit", None)
@@ -267,9 +294,11 @@ def unit_checker():
                 args = (units_handler.get_magnitude(inp_wu), *args[1:])
             res = func(*args, **kwargs)
             if out_to_units:
-                res = to_Quantity(res, units_handler.get_unit(inp_wu))
+                res = to_Quantity(
+                    res, units_handler.get_unit(inp_wu), units_handler=units_handler
+                )
                 if units_mode == "base" and unit is not None:
-                    res = to_Quantity(unit)
+                    res = to_Quantity(unit, units_handler=units_handler)
                 elif units_mode == "downcast":
                     res = units_handler.get_magnitude(to_Quantity(unit))
             elif units_mode == "upcast":
