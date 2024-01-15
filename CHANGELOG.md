@@ -5,10 +5,10 @@ All notable changes to magpylib are documented here.
 
 ## [5.0.0dev]
 
-## [4.5.1]
+## [4.5.1] - 2023-12-28
 - Fixed a field computatio issue where H-field resulting from axial magnetization is computed incorrectly inside of Cylinders ([#703](https://github.com/magpylib/magpylib/issues/703))
 
-## [4.5.0]
+## [4.5.0] - 2023-12-13
 - Add optional handedness parameter for Sensors ([#687](https://github.com/magpylib/magpylib/pull/687))
 - Renaming classes: `Line`→`Polyline`, `Loop`→`Circle`. Old names are still valid but will issue a `DeprecationWarning` and will eventually be removed in the next major version ([#690](https://github.com/magpylib/magpylib/pull/690))
 - Rework CI/CD workflows ([#686](https://github.com/magpylib/magpylib/pull/686))
