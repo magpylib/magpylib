@@ -61,9 +61,6 @@ class UnitHandler(metaclass=abc.ABCMeta):
     get_unit(inp)
         Abstract method to retrieve the unit of the input quantity.
 
-    check_unit(inp, unit)
-        Abstract method to verify if the input quantity is compatible with the given unit.
-
     get_magnitude(inp)
         Abstract method to extract the magnitude from the input quantity.
 
@@ -102,10 +99,6 @@ class UnitHandler(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def get_unit(self, inp):
-        pass
-
-    @abc.abstractmethod
-    def check_unit(self, inp, unit):
         pass
 
     @abc.abstractmethod
@@ -163,11 +156,9 @@ class PintHandler(UnitHandler):
     def __init__(self):
         # pylint: disable=wrong-import-position
         from pint import UnitRegistry
-        from pint.errors import PintError
 
         # Set pint unit registry. This needs to be unique through the library."
         units_global._registry = self.ureg = UnitRegistry()
-        self.PintError = PintError
 
     def is_quantity(self, inp):
         return isinstance(inp, self.ureg.Quantity)
@@ -180,17 +171,6 @@ class PintHandler(UnitHandler):
 
     def get_unit(self, inp):
         return inp.units
-
-    def check_unit(self, inp, unit):
-        unit_check = inp.check(unit)
-        # pint unit check returns False even within context for A/m <-> T conversion
-        if not unit_check:
-            try:  # if in Gaussian context, this will work
-                inp.to(unit)
-                unit_check = True
-            except self.PintError:
-                pass
-        return unit_check
 
     def get_magnitude(self, inp):
         return inp.magnitude
@@ -217,12 +197,10 @@ class UnytHandler(UnitHandler):
     def __init__(self):
         # pylint: disable=wrong-import-position
         from unyt import UnitRegistry, unyt_quantity, unyt_array
-        from unyt.exceptions import UnitConversionError
 
         units_global._registry = self.ureg = UnitRegistry()
         self.unyt_quantity = unyt_quantity
         self.unyt_array = unyt_array
-        self.UnitConversionError = UnitConversionError
 
     def is_quantity(self, inp):
         return isinstance(inp, self.unyt_array)
@@ -235,13 +213,6 @@ class UnytHandler(UnitHandler):
 
     def get_unit(self, inp):
         return inp.units
-
-    def check_unit(self, inp, unit):
-        try:
-            inp.to(unit)
-            return True
-        except self.UnitConversionError:
-            return False
 
     def get_magnitude(self, inp):
         return inp.value
@@ -267,11 +238,10 @@ class AstropyHandler(UnitHandler):
 
     def __init__(self):
         # pylint: disable=wrong-import-position
-        from astropy.units import Quantity, Unit, UnitConversionError
+        from astropy.units import Quantity, Unit
 
         self.Quantity = Quantity
         self.Unit = Unit
-        self.UnitConversionError = UnitConversionError
 
     def is_quantity(self, inp):
         return isinstance(inp, self.Quantity)
@@ -284,13 +254,6 @@ class AstropyHandler(UnitHandler):
 
     def get_unit(self, inp):
         return inp.unit
-
-    def check_unit(self, inp, unit):
-        try:
-            inp.to(self.Unit(unit))
-            return True
-        except self.UnitConversionError:
-            return False
 
     def get_magnitude(self, inp):
         return inp.value
@@ -436,12 +399,15 @@ def unit_checker():
                     inp_wu = inp
                 else:
                     inp_wu = to_Quantity(inp, inp_unit, sig_name=sig_name)
-                if unit is not None and not units_handler.check_unit(inp_wu, unit):
-                    sig_str = f" `{sig_name!r}`" if sig_name else ""
-                    raise MagpylibBadUserInput(
-                        f"Input parameter{sig_str} must be in compatible units of {unit!r}."
-                        f" Instead received {units_handler.get_unit(inp_wu)!r}."
-                    )
+                if unit is not None:
+                    try:
+                        units_handler.to_unit(inp_wu, unit)
+                    except Exception as msg:
+                        sig_str = f" `{sig_name!r}`" if sig_name else ""
+                        raise MagpylibBadUserInput(
+                            f"Input parameter{sig_str} must be in compatible units of {unit!r}."
+                            f" Instead received {units_handler.get_unit(inp_wu)!r}."
+                        ) from msg
                 args = (units_handler.get_magnitude(inp_wu), *args[1:])
             res = func(*args, **kwargs)
             if out_to_units:
