@@ -32,7 +32,7 @@ __author__ = "Michael Ortner & Alexandre Boisselet"
 __credits__ = "The Magpylib community"
 __all__ = [
     "SUPPORTED_PLOTTING_BACKENDS",
-    "ureg",
+    "units",
     "magnet",
     "current",
     "misc",
@@ -55,7 +55,7 @@ __all__ = [
 
 # create interface to outside of package
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
-from magpylib._src.units import ureg
+from magpylib._src.units import units_global as units
 from magpylib import magnet, current, misc, core, graphics
 from magpylib._src.defaults.defaults_classes import default_settings as defaults
 from magpylib._src.fields import getB, getH, getM, getJ
