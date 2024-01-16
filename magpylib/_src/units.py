@@ -1,12 +1,12 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-branches
+# pylint: disable=cyclic-import
 import abc
 from functools import wraps
 from math import log10
 
 import numpy as np
 
-from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 
@@ -33,35 +33,6 @@ _UNIT_PREFIX = {
 }
 
 
-class Units:
-    """
-    A simple container for holding a unit registry.
-
-    Attributes
-    ----------
-    _registry : `pint.UnitRegistry` or `unyt.UnitRegistry` or None
-        The unit registry used for unit conversions and definitions.
-    """
-
-    def __init__(self):
-        self._registry = None
-
-    @property
-    def registry(self):
-        """
-        Accessor for the unit registry.
-
-        Returns
-        -------
-        `pint.UnitRegistry` or `unyt.UnitRegistry` or None
-            The current unit registry of the `Units` instance.
-        """
-        return self._registry
-
-
-units_global = Units()
-
-
 class UnitHandler(metaclass=abc.ABCMeta):
     """
     An abstract base class to create a consistent interface for unit conversion.
@@ -78,7 +49,7 @@ class UnitHandler(metaclass=abc.ABCMeta):
 
     Methods
     -------
-    is_unit(inp)
+    is_quantity(inp)
         Abstract method to check if the input is a unit-qualified quantity.
 
     to_quantity(inp, unit)
@@ -109,10 +80,16 @@ class UnitHandler(metaclass=abc.ABCMeta):
 
     # pylint: disable=missing-function-docstring
 
+    handlers = {}
+    pkg_name = ""
     pgk_link = ""
 
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls.handlers[str(cls.pkg_name)] = cls
+
     @abc.abstractmethod
-    def is_unit(self, inp):
+    def is_quantity(self, inp):
         pass
 
     @abc.abstractmethod
@@ -136,6 +113,37 @@ class UnitHandler(metaclass=abc.ABCMeta):
         pass
 
 
+class Units:
+    """
+    A simple container for holding a unit registry.
+
+    Attributes
+    ----------
+    _registry : `pint.UnitRegistry` or `unyt.UnitRegistry` or None
+        The unit registry used for unit conversions and definitions.
+    """
+
+    UnitHandler = UnitHandler
+
+    def __init__(self):
+        self._registry = None
+
+    @property
+    def registry(self):
+        """
+        Accessor for the unit registry.
+
+        Returns
+        -------
+        `pint.UnitRegistry` or `unyt.UnitRegistry` or None
+            The current unit registry of the `Units` instance.
+        """
+        return self._registry
+
+
+units_global = Units()
+
+
 class PintHandler(UnitHandler):
     """A concrete implementation of `UnitHandler` using the `pint` library.
 
@@ -149,6 +157,7 @@ class PintHandler(UnitHandler):
 
     # pylint: disable=missing-function-docstring
 
+    pkg_name = "pint"
     pgk_link = "https://pint.readthedocs.io/en/stable/getting/index.html#installation"
 
     def __init__(self):
@@ -160,7 +169,7 @@ class PintHandler(UnitHandler):
         units_global._registry = self.ureg = UnitRegistry()
         self.PintError = PintError
 
-    def is_unit(self, inp):
+    def is_quantity(self, inp):
         return isinstance(inp, self.ureg.Quantity)
 
     def to_quantity(self, inp, unit):
@@ -202,6 +211,7 @@ class UnytHandler(UnitHandler):
 
     # pylint: disable=missing-function-docstring
 
+    pkg_name = "unyt"
     pgk_link = "https://unyt.readthedocs.io/en/stable/installation.html"
 
     def __init__(self):
@@ -214,7 +224,7 @@ class UnytHandler(UnitHandler):
         self.unyt_array = unyt_array
         self.UnitConversionError = UnitConversionError
 
-    def is_unit(self, inp):
+    def is_quantity(self, inp):
         return isinstance(inp, self.unyt_array)
 
     def to_quantity(self, inp, unit):
@@ -256,7 +266,11 @@ def get_units_handler(error="ignore"):
     ModuleNotFoundError
         If error is 'raise' and the required unit package is not installed.
     """
+    # pylint: disable=wrong-import-position
+    from magpylib._src.defaults.defaults_classes import default_settings
+
     pkg = default_settings.units.package
+    handlers = UnitHandler.handlers
     handler = handlers[pkg]
     if not isinstance(handler, UnitHandler):
         try:
@@ -268,9 +282,6 @@ def get_units_handler(error="ignore"):
             if error == "raise":
                 raise_missing_unit_package(pkg)
     return handler
-
-
-handlers = {"pint": PintHandler, "unyt": UnytHandler}
 
 
 def downcast(inp, unit, units_handler=None):
@@ -290,7 +301,7 @@ def is_Quantity(inp, units_handler=None):
     """Return True if value as a pint Quantity else False"""
     if units_handler is None:
         units_handler = get_units_handler()
-    return units_handler is not None and units_handler.is_unit(inp)
+    return units_handler is not None and units_handler.is_quantity(inp)
 
 
 def to_Quantity(inp, unit, sig_name="", units_handler=None):
@@ -298,7 +309,7 @@ def to_Quantity(inp, unit, sig_name="", units_handler=None):
     if units_handler is None:
         units_handler = get_units_handler(error="raise")
     try:
-        if units_handler.is_unit(inp):
+        if units_handler.is_quantity(inp):
             inp = units_handler.to_unit(inp, unit)
         else:
             inp = units_handler.to_quantity(inp, unit)
@@ -324,12 +335,15 @@ def to_unit_from_target(inp, *, target, default_unit, units_handler=None):
 
 def raise_missing_unit_package(pkg):
     """Raise ModuleNotFoundError if no unit package is found"""
+    # pylint: disable=wrong-import-position
+    from magpylib._src.defaults.defaults_classes import default_settings
+
     units_mode = default_settings.units.mode
     msg = (
         f"In order to use units in Magpylib with {units_mode!r} units mode, "
         "you need to install the `pint` package."
     )
-    link = handlers[pkg].pgk_link
+    link = UnitHandler.handlers[pkg].pgk_link
     if link is not None:
         msg += f"see {link}"
     raise ModuleNotFoundError(msg)
@@ -337,6 +351,8 @@ def raise_missing_unit_package(pkg):
 
 def unit_checker():
     """Decorator to add unit checks"""
+    # pylint: disable=wrong-import-position
+    from magpylib._src.defaults.defaults_classes import default_settings
 
     def decorator(func):
         @wraps(func)
@@ -348,24 +364,24 @@ def unit_checker():
             sig_name = kwargs.get("sig_name", "")
             unit = kwargs.pop("unit", None)
             inp_unit = None
-            is_unit_like_as_list = (
+            is_quantity_like_as_list = (
                 isinstance(inp, (list, tuple))
                 and len(inp) == 2
                 and isinstance(inp[-1], str)
             )
-            is_unit_like = isinstance(inp, str) or is_unit_like_as_list
+            is_quantity_like = isinstance(inp, str) or is_quantity_like_as_list
             if units_handler is None and (
-                is_unit_like or units_mode in ("upcast", "coerce")
+                is_quantity_like or units_mode in ("upcast", "coerce")
             ):
                 raise_missing_unit_package(units_package_default)
-            out_to_units = is_Quantity(inp) or is_unit_like
+            out_to_units = is_Quantity(inp) or is_quantity_like
             if out_to_units:
                 if units_mode == "forbid":
                     raise MagpylibBadUserInput(
                         f"while the units mode is set to {units_mode!r},"
                         f" input parameter {sig_name!r} is unit-like ({inp!r}) "
                     )
-                if is_unit_like_as_list:
+                if is_quantity_like_as_list:
                     inp, inp_unit = inp
                 if is_Quantity(inp):
                     inp_wu = inp

@@ -3,9 +3,9 @@ from magpylib._src.defaults.defaults_utility import color_validator
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.defaults.defaults_utility import MagicProperties
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
-from magpylib._src.defaults.defaults_utility import SUPPORTED_UNITS_BACKENDS
 from magpylib._src.defaults.defaults_utility import validate_property_class
 from magpylib._src.style import DisplayStyle
+from magpylib._src.units import units_global
 
 
 class DefaultSettings(MagicProperties):
@@ -84,9 +84,10 @@ class Units(MagicProperties):
 
     @package.setter
     def package(self, val):
-        assert val is None or val in SUPPORTED_UNITS_BACKENDS, (
+        supported = tuple(units_global.UnitHandler.handlers)
+        assert val is None or val in supported, (
             f"the `package` property of {type(self).__name__} must be one of"
-            f"{SUPPORTED_UNITS_BACKENDS}"
+            f" {supported}"
             f" but received {repr(val)} instead"
         )
         self._package = val
