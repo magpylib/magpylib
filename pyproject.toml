@@ -61,6 +61,7 @@ test = [
     "pint",
     "unyt",
     "pyvista",
+    "ipywidgets", # for plotly FigureWidget
     "imageio[tifffile]",
     "jupyterlab",
 ]

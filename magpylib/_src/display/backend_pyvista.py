@@ -3,7 +3,6 @@
 # pylint: disable=too-many-statements
 import os
 import tempfile
-import warnings
 from functools import lru_cache
 
 import numpy as np
@@ -74,7 +73,7 @@ def colormap_from_colorscale(colorscale, name="plotly_to_mpl", N=256, gamma=1.0)
     return LinearSegmentedColormap(name, cdict, N, gamma)
 
 
-def generic_trace_to_pyvista(trace, jupyter_backend=None):
+def generic_trace_to_pyvista(trace):
     """Transform a generic trace into a pyvista trace"""
     traces_pv = []
     leg_title = trace.get("legendgrouptitle_text", None)
@@ -253,7 +252,7 @@ def display_pyvista(
         nonlocal count_with_labels, charts_max_ind
         frame = frames[frame_ind]
         for tr0 in frame["data"]:
-            for tr1 in generic_trace_to_pyvista(tr0, jupyter_backend=jupyter_backend):
+            for tr1 in generic_trace_to_pyvista(tr0):
                 row = tr1.pop("row", 1)
                 col = tr1.pop("col", 1)
                 typ = tr1.pop("type")
