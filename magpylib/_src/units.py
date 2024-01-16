@@ -247,6 +247,55 @@ class UnytHandler(UnitHandler):
         return inp.value
 
 
+class AstropyHandler(UnitHandler):
+    """
+    A concrete implementation of `UnitHandler` using the `astropy` library for handling units.
+
+    This class provides methods to perform unit conversions and checks using `astropy.units`.
+    It is designed to interact with `astropy.units.Quantity` objects.
+
+    Attributes
+    ----------
+    pgk_link : str
+        A URL link to the `astropy` documentation for getting started and installation.
+    """
+
+    # pylint: disable=missing-function-docstring
+
+    pgk_link = "https://docs.astropy.org/en/stable/install.html"
+    pkg_name = "astropy"
+
+    def __init__(self):
+        # pylint: disable=wrong-import-position
+        from astropy.units import Quantity, Unit, UnitConversionError
+
+        self.Quantity = Quantity
+        self.Unit = Unit
+        self.UnitConversionError = UnitConversionError
+
+    def is_quantity(self, inp):
+        return isinstance(inp, self.Quantity)
+
+    def to_quantity(self, inp, unit):
+        return inp * self.Unit(unit)
+
+    def to_unit(self, inp, unit):
+        return inp.to(self.Unit(unit))
+
+    def get_unit(self, inp):
+        return inp.unit
+
+    def check_unit(self, inp, unit):
+        try:
+            inp.to(self.Unit(unit))
+            return True
+        except self.UnitConversionError:
+            return False
+
+    def get_magnitude(self, inp):
+        return inp.value
+
+
 def get_units_handler(error="ignore"):
     """Retrieve the appropriate unit handler based on the default settings.
 
@@ -391,7 +440,7 @@ def unit_checker():
                     sig_str = f" `{sig_name!r}`" if sig_name else ""
                     raise MagpylibBadUserInput(
                         f"Input parameter{sig_str} must be in compatible units of {unit!r}."
-                        f" Instead received {inp_wu.units!r}."
+                        f" Instead received {units_handler.get_unit(inp_wu)!r}."
                     )
                 args = (units_handler.get_magnitude(inp_wu), *args[1:])
             res = func(*args, **kwargs)
