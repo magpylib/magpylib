@@ -1,5 +1,6 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-branches
+import abc
 from functools import wraps
 from math import log10
 
@@ -10,18 +11,6 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 
 
 MU0 = 4 * np.pi * 1e-7
-
-
-class Units:
-    def __init__(self):
-        self._registry = None
-
-    @property
-    def registry(self):
-        return self._registry
-
-
-units_global = Units()
 
 _UNIT_PREFIX = {
     -24: "y",  # yocto
@@ -44,66 +33,132 @@ _UNIT_PREFIX = {
 }
 
 
-def unit_prefix(number, unit="", precision=3, char_between="") -> str:
+class Units:
     """
-    displays a number with given unit and precision and uses unit prefixes for the exponents from
-    yotta (y) to Yocto (Y). If the exponent is smaller or bigger, falls back to scientific notation.
-    Parameters
+    A simple container for holding a unit registry.
+
+    Attributes
     ----------
-    number : int, float
-        can be any number
-    unit : str, optional
-        unit symbol can be any string, by default ""
-    precision : int, optional
-        gives the number of significant digits, by default 3
-    char_between : str, optional
-        character to insert between number of prefix. Can be " " or any string, if a space is wanted
-        before the unit symbol , by default ""
-    Returns
-    -------
-    str
-        returns formatted number as string
+    _registry : `pint.UnitRegistry` or `unyt.UnitRegistry` or None
+        The unit registry used for unit conversions and definitions.
     """
-    number = downcast(number, unit)
-    digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
-    prefix = _UNIT_PREFIX.get(digits, "")
 
-    if prefix == "":
-        digits = 0
-    new_number_str = f"{number / 10 ** digits:.{precision}g}"
-    return f"{new_number_str}{char_between}{prefix}{unit}"
+    def __init__(self):
+        self._registry = None
+
+    @property
+    def registry(self):
+        """
+        Accessor for the unit registry.
+
+        Returns
+        -------
+        `pint.UnitRegistry` or `unyt.UnitRegistry` or None
+            The current unit registry of the `Units` instance.
+        """
+        return self._registry
 
 
-class UnitHandler:
+units_global = Units()
+
+
+class UnitHandler(metaclass=abc.ABCMeta):
+    """
+    An abstract base class to create a consistent interface for unit conversion.
+
+    This base class ensures that all subclasses provide specific methods for
+    unit conversion processes. It cannot be instantiated directly and requires
+    subclassing with all abstract methods overridden.
+
+
+    Attributes
+    ----------
+    pgk_link : str
+        An URL pointing to the package documentation.
+
+    Methods
+    -------
+    is_unit(inp)
+        Abstract method to check if the input is a unit-qualified quantity.
+
+    to_quantity(inp, unit)
+        Abstract method to convert input to a quantity with the specified units.
+
+    to_unit(inp, unit)
+        Abstract method to convert a quantity to the specified units.
+
+    get_unit(inp)
+        Abstract method to retrieve the unit of the input quantity.
+
+    check_unit(inp, unit)
+        Abstract method to verify if the input quantity is compatible with the given unit.
+
+    get_magnitude(inp)
+        Abstract method to extract the magnitude from the input quantity.
+
+    See Also
+    --------
+    PintHandler : A concrete implementation using the pint library.
+    UnytHandler : A concrete implementation using the unyt library.
+
+    Notes
+    -----
+    Subclasses must provide concrete implementations of all abstract methods and
+    may require additional methods to handle specialized cases of unit conversions.
+    """
+
+    # pylint: disable=missing-function-docstring
+
     pgk_link = ""
 
+    @abc.abstractmethod
     def is_unit(self, inp):
         ...
 
+    @abc.abstractmethod
     def to_quantity(self, inp, unit):
         ...
 
+    @abc.abstractmethod
     def to_unit(self, inp, unit):
         ...
 
+    @abc.abstractmethod
     def get_unit(self, inp):
         ...
 
+    @abc.abstractmethod
     def check_unit(self, inp, unit):
         ...
 
+    @abc.abstractmethod
     def get_magnitude(self, inp):
         ...
 
 
 class PintHandler(UnitHandler):
+    """A concrete implementation of `UnitHandler` using the `pint` library.
+
+    Attributes
+    ----------
+    pgk_link : str
+        A URL link to the `pint` documentation for getting started and installation instructions.
+    ureg : `pint.UnitRegistry`
+        An instance of the `pint` UnitRegistry that manages definitions and conversions.
+    """
+
+    # pylint: disable=missing-function-docstring
+
     pgk_link = "https://pint.readthedocs.io/en/stable/getting/index.html#installation"
 
     def __init__(self):
-        import pint
+        # pylint: disable=wrong-import-position
+        from pint import UnitRegistry
+        from pint.errors import PintError
 
         # Set pint unit registry. This needs to be unique through the library."
-        units_global._registry = self.ureg = pint.UnitRegistry()
+        units_global._registry = self.ureg = UnitRegistry()
+        self.PintError = PintError
 
     def is_unit(self, inp):
         return isinstance(inp, self.ureg.Quantity)
@@ -121,12 +176,10 @@ class PintHandler(UnitHandler):
         unit_check = inp.check(unit)
         # pint unit check returns False even within context for A/m <-> T conversion
         if not unit_check:
-            from pint.errors import PintError
-
             try:  # if in Gaussian context, this will work
                 inp.to(unit)
                 unit_check = True
-            except PintError:
+            except self.PintError:
                 pass
         return unit_check
 
@@ -135,22 +188,37 @@ class PintHandler(UnitHandler):
 
 
 class UnytHandler(UnitHandler):
+    """A concrete implementation of `UnitHandler` using the `unyt` library.
+
+    Attributes
+    ----------
+    pgk_link : str
+        A URL link to the `unyt` documentation for getting started and installation instructions.
+    ureg : `unyt.UnitRegistry`
+        An instance of the `unyt` UnitRegistry that manages definitions and conversions.
+    unyt : `unyt.unyt_array`
+        The `unyt` module imported into the handler.
+    """
+
+    # pylint: disable=missing-function-docstring
+
     pgk_link = "https://unyt.readthedocs.io/en/stable/installation.html"
 
     def __init__(self):
-        import unyt
+        # pylint: disable=wrong-import-position
+        from unyt import UnitRegistry, unyt_quantity, unyt_array
+        from unyt.exceptions import UnitConversionError
 
-        units_global._registry = self.ureg = unyt.UnitRegistry()
-        self.unyt = unyt
-
-    def get_registry():
-        return
+        units_global._registry = self.ureg = UnitRegistry()
+        self.unyt_quantity = unyt_quantity
+        self.unyt_array = unyt_array
+        self.UnitConversionError = UnitConversionError
 
     def is_unit(self, inp):
-        return isinstance(inp, self.unyt.unyt_array)
+        return isinstance(inp, self.unyt_array)
 
     def to_quantity(self, inp, unit):
-        return inp * self.unyt.unyt_quantity.from_string(str(unit))
+        return inp * self.unyt_quantity.from_string(str(unit))
 
     def to_unit(self, inp, unit):
         return inp.to(unit)
@@ -162,7 +230,7 @@ class UnytHandler(UnitHandler):
         try:
             inp.to(unit)
             return True
-        except self.unyt.UnitConversionError:
+        except self.UnitConversionError:
             return False
 
     def get_magnitude(self, inp):
@@ -170,6 +238,24 @@ class UnytHandler(UnitHandler):
 
 
 def get_units_handler(error="ignore"):
+    """Retrieve the appropriate unit handler based on the default settings.
+
+    Parameters
+    ----------
+    error : str, optional
+        The error handling strategy when a unit package is missing. Defaults to 'ignore'.
+        If 'raise', it will raise an exception if the package is missing.
+
+    Returns
+    -------
+    UnitHandler
+        An instance of the subclass of `UnitHandler` corresponding to the unit package.
+
+    Raises
+    ------
+    ModuleNotFoundError
+        If error is 'raise' and the required unit package is not installed.
+    """
     pkg = default_settings.units.package
     handler = handlers[pkg]
     if not isinstance(handler, UnitHandler):
@@ -298,13 +384,44 @@ def unit_checker():
                     res, units_handler.get_unit(inp_wu), units_handler=units_handler
                 )
                 if units_mode == "base" and unit is not None:
-                    res = to_Quantity(unit, units_handler=units_handler)
+                    res = to_Quantity(res, unit, units_handler=units_handler)
                 elif units_mode == "downcast":
-                    res = units_handler.get_magnitude(to_Quantity(unit))
+                    res = to_Quantity(res, unit, units_handler=units_handler)
+                    res = units_handler.get_magnitude(res)
             elif units_mode == "upcast":
-                res = to_Quantity(res, unit)
+                res = to_Quantity(res, unit, units_handler=units_handler)
             return res
 
         return wrapper
 
     return decorator
+
+
+def unit_prefix(number, unit="", precision=3, char_between="") -> str:
+    """
+    displays a number with given unit and precision and uses unit prefixes for the exponents from
+    yotta (y) to Yocto (Y). If the exponent is smaller or bigger, falls back to scientific notation.
+    Parameters
+    ----------
+    number : int, float
+        can be any number
+    unit : str, optional
+        unit symbol can be any string, by default ""
+    precision : int, optional
+        gives the number of significant digits, by default 3
+    char_between : str, optional
+        character to insert between number of prefix. Can be " " or any string, if a space is wanted
+        before the unit symbol , by default ""
+    Returns
+    -------
+    str
+        returns formatted number as string
+    """
+    number = downcast(number, unit)
+    digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
+    prefix = _UNIT_PREFIX.get(digits, "")
+
+    if prefix == "":
+        digits = 0
+    new_number_str = f"{number / 10 ** digits:.{precision}g}"
+    return f"{new_number_str}{char_between}{prefix}{unit}"
