@@ -49,12 +49,6 @@ def test_animation():
         src.show(canvas=pl, animation=True, backend="pyvista")
 
 
-def test_ipygany_jupyter_backend():
-    """ipygany backend does not support custom colorscales"""
-    src = magpy.magnet.Cuboid(polarization=(0, 0, 1000), dimension=(1, 1, 1))
-    src.show(return_fig=True, backend="pyvista", jupyter_backend="ipygany")
-
-
 def test_extra_model3d():
     """test extra model 3d"""
     trace_mesh3d = {
@@ -115,21 +109,3 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
                     mp4_quality=1,
                     return_fig=True,
                 )
-
-
-def test_incompatible_jupyter_backend_for2d():
-    """test_incompatible_pyvista_backend"""
-    src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
-    sens = magpy.Sensor()
-    with pytest.warns(
-        UserWarning,
-        match=r"The set `jupyter_backend=ipygany` is incompatible with 2D plots.*",
-    ):
-        magpy.show(
-            src,
-            sens,
-            output="Bx",
-            return_fig=True,
-            backend="pyvista",
-            jupyter_backend="ipygany",
-        )

@@ -55,8 +55,6 @@ LINESTYLES_TO_PYVISTA = {
     "longdashdot": "-..",
 }
 
-INCOMPATIBLE_JUPYTER_BACKENDS_2D = {"panel", "ipygany", "pythreejs"}
-
 
 @lru_cache(maxsize=32)
 def colormap_from_colorscale(colorscale, name="plotly_to_mpl", N=256, gamma=1.0):
@@ -108,11 +106,7 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
             )
         traces_pv.append(trace_pv)
         if colorscale is not None:
-            # ipygany does not support custom colorsequences
-            if jupyter_backend == "ipygany":
-                trace_pv["cmap"] = "PiYG"
-            else:
-                trace_pv["cmap"] = colormap_from_colorscale(colorscale)
+            trace_pv["cmap"] = colormap_from_colorscale(colorscale)
     elif "scatter" in trace["type"]:
         line = trace.get("line", {})
         line_color = line.get("color", trace.get("line_color", None))
@@ -252,9 +246,6 @@ def display_pyvista(
     jupyter_backend = show_kwargs.pop("jupyter_backend", jupyter_backend)
     if jupyter_backend is None:
         jupyter_backend = pv.global_theme.jupyter_backend
-    jupyter_backend_2D_compatible = (
-        jupyter_backend not in INCOMPATIBLE_JUPYTER_BACKENDS_2D
-    )
     count_with_labels = {}
     charts_max_ind = 0
 
@@ -276,17 +267,11 @@ def display_pyvista(
                     getattr(canvas, f"add_{typ}")(**tr1)
                     canvas.show_axes()
                 else:
-                    if jupyter_backend_2D_compatible:
-                        if charts.get((row, col), None) is None:
-                            charts_max_ind += 1
-                            charts[(row, col)] = pv.Chart2D()
-                            canvas.add_chart(charts[(row, col)])
-                        getattr(charts[(row, col)], typ)(**tr1)
-                    else:
-                        warnings.warn(
-                            f"The set `jupyter_backend={jupyter_backend}` is incompatible with "
-                            "2D plots. Empty plots will be shown instead"
-                        )
+                    if charts.get((row, col), None) is None:
+                        charts_max_ind += 1
+                        charts[(row, col)] = pv.Chart2D()
+                        canvas.add_chart(charts[(row, col)])
+                    getattr(charts[(row, col)], typ)(**tr1)
         for rowcol, count in count_with_labels.items():
             if 0 < count <= legend_maxitems:
                 row, col = rowcol
