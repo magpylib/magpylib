@@ -113,27 +113,27 @@ class UnitHandler(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def is_unit(self, inp):
-        ...
+        pass
 
     @abc.abstractmethod
     def to_quantity(self, inp, unit):
-        ...
+        pass
 
     @abc.abstractmethod
     def to_unit(self, inp, unit):
-        ...
+        pass
 
     @abc.abstractmethod
     def get_unit(self, inp):
-        ...
+        pass
 
     @abc.abstractmethod
     def check_unit(self, inp, unit):
-        ...
+        pass
 
     @abc.abstractmethod
     def get_magnitude(self, inp):
-        ...
+        pass
 
 
 class PintHandler(UnitHandler):
