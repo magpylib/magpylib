@@ -59,6 +59,7 @@ test = [
     "coverage",
     "pandas",
     "pint",
+    "unyt",
     "pyvista",
     "ipygany",
     "imageio[tifffile]",
