@@ -60,9 +60,7 @@ test = [
     "pandas",
     "pint",
     "pyvista",
-    "ipygany",
     "imageio[tifffile]",
-    "kaleido",
     "jupyterlab",
 ]
 binder = [
