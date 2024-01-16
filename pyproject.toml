@@ -59,6 +59,7 @@ test = [
     "coverage",
     "pandas",
     "pyvista",
+    "ipywidgets", # for plotly FigureWidget
     "imageio[tifffile]",
     "jupyterlab",
 ]
