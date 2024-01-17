@@ -18,7 +18,7 @@ except ModuleNotFoundError:
 # pylint: disable=no-member
 
 # pylint: disable=broad-exception-caught
-ffmpeg_failed = False
+FFMPEG_FAILED = False
 try:
     try:
         import imageio_ffmpeg
@@ -31,7 +31,7 @@ try:
             raise err
 except Exception:  # noqa: E722
     # skip test if ffmpeg cannot be loaded
-    ffmpeg_failed = True
+    FFMPEG_FAILED = True
 
 
 def test_Cuboid_display():
@@ -103,11 +103,12 @@ def test_animation_warning():
 @pytest.mark.parametrize("is_notebook_result", (True, False))
 @pytest.mark.parametrize("extension", ("mp4", "gif"))
 @pytest.mark.parametrize("filename", (True, False))
-# @pytest.mark.skipif(not HAS_IMAGEIO, reason="Requires imageio")
 def test_pyvista_animation(is_notebook_result, extension, filename):
     """Test pyvista animation"""
     # define sensor and source
-    if ffmpeg_failed and extension == "mp4":
+    if not HAS_IMAGEIO and extension == "gif":
+        pytest.skip("Extension gif skipped because imageio failed to load")
+    if FFMPEG_FAILED and extension == "mp4":
         pytest.skip("Extension mp4 skipped because ffmpeg failed to load")
     sens = magpy.Sensor()
     src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
