@@ -60,6 +60,7 @@ test = [
     "pandas",
     "pint",
     "unyt",
+    "astropy",
     "pyvista",
     "ipywidgets", # for plotly FigureWidget
     "imageio[tifffile]",
