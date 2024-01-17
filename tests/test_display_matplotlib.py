@@ -605,3 +605,14 @@ def test_unset_objs():
         *objs,
         return_fig=True,
     )
+
+
+def test_show_legend():
+    """test legend (and multi shape pixel)"""
+    pixel = np.arange(27).reshape(3, 3, 3) * 1e-2
+    s1 = magpy.Sensor(pixel=pixel, style_label="s1")
+    s2 = s1.copy().move((1, 0, 0))
+    s3 = s2.copy().move((1, 0, 0))
+    s2.style.legend = "full legend replace"
+    s3.style.description = "description replace only"
+    magpy.show(s1, s2, s3, return_fig=True)

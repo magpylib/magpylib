@@ -48,11 +48,9 @@ def getBH_level2_bad_input1():
     )
 
 
-def getBH_level2_bad_input2():
+def getBH_different_pixel_shapes():
     """different pixel shapes"""
-    mag = (1, 2, 3)
-    dim_cuboid = (1, 2, 3)
-    pm1 = magpy.magnet.Cuboid(mag, dim_cuboid)
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     sens1 = magpy.Sensor()
     sens2 = magpy.Sensor(pixel=[(0, 0, 0), (0, 0, 1), (0, 0, 2)])
     magpy.getB(pm1, [sens1, sens2])
@@ -285,7 +283,7 @@ class TestExceptions(unittest.TestCase):
     def test_except_getBH_lev2(self):
         """getBH_level2 exception testing"""
         self.assertRaises(MagpylibBadUserInput, getBH_level2_bad_input1)
-        self.assertRaises(MagpylibBadUserInput, getBH_level2_bad_input2)
+        self.assertRaises(MagpylibBadUserInput, getBH_different_pixel_shapes)
 
     def test_except_bad_input_shape_basegeo(self):
         """BaseGeo bad input shapes"""

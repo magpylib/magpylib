@@ -399,7 +399,7 @@ class BaseMagnet(BaseSource):
             mag = to_Quantity(mag_A_per_m, "T")
         self._polarization = mag * MU0
         if np.linalg.norm(mag_A_per_m) < 2000:
-            _deprecation_warn()
+            self._magnetization_low_warning()
 
     @property
     def polarization(self):
@@ -422,6 +422,17 @@ class BaseMagnet(BaseSource):
         if is_Quantity(pol):
             pol = to_Quantity(downcast(pol, "T"), "A/m")
         self._magnetization = pol / MU0
+
+    def _magnetization_low_warning(self):
+        warnings.warn(
+            (
+                f"{self} received a very low magnetization. "
+                "In Magpylib v5 magnetization is given in units of A/m, "
+                "while polarization is given in units of T."
+            ),
+            MagpylibDeprecationWarning,
+            stacklevel=2,
+        )
 
 
 class BaseCurrent(BaseSource):
@@ -449,15 +460,3 @@ class BaseCurrent(BaseSource):
             allow_None=True,
             unit="A",
         )
-
-
-def _deprecation_warn():
-    warnings.warn(
-        (
-            "You have entered a very low magnetization."
-            "In Magpylib v5 magnetization is given in units of A/m, "
-            "while polarization is given in units of T."
-        ),
-        MagpylibDeprecationWarning,
-        stacklevel=2,
-    )

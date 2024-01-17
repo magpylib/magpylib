@@ -1,3 +1,5 @@
+import os
+import sys
 import tempfile
 from unittest.mock import patch
 
@@ -17,7 +19,7 @@ except ModuleNotFoundError:
 # pylint: disable=no-member
 
 # pylint: disable=broad-exception-caught
-ffmpeg_failed = False
+FFMPEG_FAILED = False
 try:
     try:
         import imageio_ffmpeg
@@ -30,7 +32,7 @@ try:
             raise err
 except Exception:  # noqa: E722
     # skip test if ffmpeg cannot be loaded
-    ffmpeg_failed = True
+    FFMPEG_FAILED = True
 
 
 def test_Cuboid_display():
@@ -39,14 +41,6 @@ def test_Cuboid_display():
     src.move([[i, 0, 0] for i in range(2)], start=0)
     fig = src.show(return_fig=True, style_path_numbering=True, backend="pyvista")
     assert isinstance(fig, pv.Plotter)
-
-
-def test_animation():
-    "animation not supported, should warn and display static"
-    pl = pv.Plotter()
-    src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
-    with pytest.warns(UserWarning):
-        src.show(canvas=pl, animation=True, backend="pyvista")
 
 
 def test_extra_model3d():
@@ -70,12 +64,7 @@ def test_extra_model3d():
     magpy.show(coll, return_fig=True, backend="pyvista")
 
 
-@pytest.mark.parametrize("is_notebook_result", (True, False))
-@pytest.mark.parametrize("extension", ("mp4", "gif"))
-@pytest.mark.parametrize("filename", (True, False))
-@pytest.mark.skipif(ffmpeg_failed, reason="Requires imageio-ffmpeg")
-@pytest.mark.skipif(not HAS_IMAGEIO, reason="Requires imageio")
-def test_pyvista_animation(is_notebook_result, extension, filename):
+def test_subplots():
     """Test pyvista animation"""
     # define sensor and source
     magpy.defaults.reset()
@@ -95,17 +84,59 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
     cyl2 = cyl1.copy().move((0, 0, 5))
     objs = cyl1, cyl2, sensor
 
+    magpy.show(
+        {"objects": objs, "col": 1, "output": ("Bx", "By", "Bz")},
+        {"objects": objs, "col": 2},
+        backend="pyvista",
+        sumup=True,
+        return_fig=True,
+    )
+
+
+def test_animation_warning():
+    "animation not supported, should warn and display static"
+    pl = pv.Plotter()
+    src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    with pytest.warns(UserWarning):
+        src.show(canvas=pl, animation=True, backend="pyvista")
+
+
+@pytest.mark.parametrize("is_notebook_result", (True, False))
+@pytest.mark.parametrize("extension", ("mp4", "gif"))
+@pytest.mark.parametrize("filename", (True, False))
+def test_pyvista_animation(is_notebook_result, extension, filename):
+    """Test pyvista animation"""
+    # define sensor and source
+    pv.OFF_SCREEN = True
+    if sys.platform == "linux":
+        pv.start_xvfb()  #  needed for unix systems or it will test will crash with fatal error
+    if not HAS_IMAGEIO and extension == "gif":
+        pytest.skip("Extension gif skipped because imageio failed to load")
+    if FFMPEG_FAILED and extension == "mp4":
+        pytest.skip("Extension mp4 skipped because ffmpeg failed to load")
+    sens = magpy.Sensor()
+    src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    src.move([[0, 0, 0], [0, 0, 1]], start=0)
+    objs = [src, sens]
+
     with patch("magpylib._src.utility.is_notebook", return_value=is_notebook_result):
         with patch("webbrowser.open"):
-            with tempfile.NamedTemporaryFile(suffix=f".{extension}") as temp:
-                animation_output = temp.name if filename else extension
+            try:
+                temp = os.path.join(tempfile.gettempdir(), os.urandom(24).hex())
+                temp += f".{extension}"
+                animation_output = temp if filename else extension
                 magpy.show(
                     {"objects": objs, "col": 1, "output": ("Bx", "By", "Bz")},
                     {"objects": objs, "col": 2},
                     backend="pyvista",
                     animation=True,
-                    sumup=True,
                     animation_output=animation_output,
                     mp4_quality=1,
                     return_fig=True,
                 )
+            finally:
+                try:
+                    os.unlink(temp)
+                except FileNotFoundError:
+                    # avoid exception if file is not found
+                    pass

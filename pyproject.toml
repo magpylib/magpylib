@@ -63,7 +63,7 @@ test = [
     "astropy",
     "pyvista",
     "ipywidgets", # for plotly FigureWidget
-    "imageio[tifffile]",
+    "imageio[tifffile, ffmpeg]",
     "jupyterlab",
 ]
 binder = [
