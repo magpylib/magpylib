@@ -6,9 +6,9 @@ import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_observers
+from magpylib._src.utility import check_path_format
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
-from magpylib._src.utility import test_path_format as tpf
 
 GETBH_KWARGS = {"sumup": False, "squeeze": True, "pixel_agg": None, "output": "ndarray"}
 
@@ -182,12 +182,12 @@ def utility_format_obs_inputs():
     check_format_input_observers([sens1, sens2, possis, "whatever"])
 
 
-def utility_test_path_format():
+def utility_check_path_format():
     """bad path format input"""
     # pylint: disable=protected-access
     pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     pm1._position = [(1, 2, 3), (1, 2, 3)]
-    tpf(pm1)
+    check_path_format(pm1)
 
 
 ###############################################################################
@@ -252,7 +252,7 @@ class TestExceptions(unittest.TestCase):
 
     def test_except_utility(self):
         """utility"""
-        self.assertRaises(MagpylibBadUserInput, utility_test_path_format)
+        self.assertRaises(MagpylibBadUserInput, utility_check_path_format)
         self.assertRaises(MagpylibBadUserInput, utility_format_obj_input)
         self.assertRaises(MagpylibBadUserInput, utility_format_src_inputs)
         self.assertRaises(MagpylibBadUserInput, utility_format_obs_inputs)
