@@ -959,3 +959,14 @@ def test_input_getBH_field_bad(field):
     obs = np.array([[1, 2, 3]])
     with pytest.raises(MagpylibBadUserInput):
         magpy.core.dipole_field(field=field, observers=obs, moment=moms)
+
+
+def test_sensor_handedness():
+    """Test if handedness input"""
+    magpy.Sensor(handedness="right")
+    magpy.Sensor(handedness="left")
+    with pytest.raises(
+        MagpylibBadUserInput,
+        match=r"Sensor `handedness` must be either `'right'` or `'left'`",
+    ):
+        magpy.Sensor(handedness="not_right_or_left")
