@@ -171,7 +171,7 @@ def check_duplicates(obj_list: Sequence) -> list:
     return obj_list_new
 
 
-def test_path_format(inp):
+def check_path_format(inp):
     """check if each object path has same length
     of obj.pos and obj.rot
     Parameters
