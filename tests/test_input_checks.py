@@ -516,8 +516,10 @@ def test_input_objects_field_func_good():
 )
 def test_input_objects_field_func_bad(func):
     """bad input: magpy.misc.CustomSource(field_func=f)"""
-    with pytest.raises(MagpylibBadUserInput):
-        magpy.misc.CustomSource(func)
+    with pytest.raises(
+        MagpylibBadUserInput, match=r"Input parameter `field_func` must .*."
+    ):
+        magpy.misc.CustomSource(field_func=func)
 
 
 def test_missing_input_triangular_mesh():
