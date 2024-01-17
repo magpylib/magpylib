@@ -134,4 +134,5 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
                 try:
                     os.unlink(temp)
                 except FileNotFoundError:
+                    # avoid exception if file is not found
                     pass

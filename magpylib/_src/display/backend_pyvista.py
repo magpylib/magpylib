@@ -326,6 +326,7 @@ def display_pyvista(
                 try:
                     os.unlink(temp)
                 except FileNotFoundError:  # pragma: no cover
+                    # avoid exception if file is not found
                     pass
         else:
             run_animation(animation_output, embed=True)
