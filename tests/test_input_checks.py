@@ -4,7 +4,9 @@ from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.exceptions import MagpylibMissingInput
+
 
 # pylint: disable=unnecessary-lambda-assignment
 
@@ -970,3 +972,27 @@ def test_sensor_handedness():
         match=r"Sensor `handedness` must be either `'right'` or `'left'`",
     ):
         magpy.Sensor(handedness="not_right_or_left")
+
+
+def test_magnet_polarization_magnetization_input():
+    # warning when magnetization is too low -> polarization confusion
+    mag = np.array([1, 2, 3]) * 1e6
+
+    with pytest.warns(
+        MagpylibDeprecationWarning,
+        match=r".* received a very low magnetization. .*",
+    ):
+        magpy.magnet.Cuboid(magnetization=[1, 2, 3])
+
+    # both polarization and magnetization at the same time
+    with pytest.raises(
+        ValueError,
+        match=r"The attributes magnetization and polarization are dependent. .*",
+    ):
+        magpy.magnet.Cuboid(polarization=[1, 2, 3], magnetization=mag)
+
+    # setting magnetization afterwards
+    c = magpy.magnet.Cuboid()
+    c.magnetization = mag
+    np.testing.assert_allclose(mag, c.magnetization)
+    np.testing.assert_allclose(mag * (4 * np.pi * 1e-7), c.polarization)
