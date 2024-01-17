@@ -107,6 +107,7 @@ def test_animation_warning():
 def test_pyvista_animation(is_notebook_result, extension, filename):
     """Test pyvista animation"""
     # define sensor and source
+    pv.OFF_SCREEN = True
     if sys.platform == "linux":
         pv.start_xvfb()  #  needed for unix systems or it will test will crash with fatal error
     if not HAS_IMAGEIO and extension == "gif":
