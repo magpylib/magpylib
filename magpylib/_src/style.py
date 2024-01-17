@@ -324,12 +324,28 @@ class Legend(MagicProperties):
 
     Parameters
     ----------
+    text: str, default=None
+        Object description text.
+
     show: bool, default=None
         If True, adds legend entry based on value.
     """
 
     def __init__(self, show=None, **kwargs):
         super().__init__(show=show, **kwargs)
+
+    @property
+    def text(self):
+        """Legend text."""
+        return self._text
+
+    @text.setter
+    def text(self, val):
+        assert val is None or isinstance(val, str), (
+            f"The `show` property of {type(self).__name__} must be a string,\n"
+            f"but received {repr(val)} instead."
+        )
+        self._text = val
 
     @property
     def show(self):
