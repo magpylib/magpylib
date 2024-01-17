@@ -15,7 +15,7 @@ from magpylib._src.input_checks import check_format_input_backend
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.input_checks import check_input_animation
 from magpylib._src.input_checks import check_input_zoom
-from magpylib._src.utility import test_path_format
+from magpylib._src.utility import check_path_format
 
 disp_args = get_defaults_dict("display").keys()
 
@@ -198,7 +198,7 @@ def _show(
     kwargs["subplot_specs"] = subplot_specs
 
     # test if every individual obj_path is good
-    test_path_format(obj_list_flat)
+    check_path_format(obj_list_flat)
 
     # input checks
     backend = check_format_input_backend(backend)
