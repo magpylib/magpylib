@@ -318,8 +318,15 @@ def display_pyvista(
         animation_output = data["input_kwargs"].get("animation_output", None)
         animation_output = "gif" if animation_output is None else animation_output
         if animation_output in ("gif", "mp4"):
-            with tempfile.NamedTemporaryFile(suffix=f".{animation_output}") as temp:
-                run_animation(temp.name, embed=True)
+            try:
+                temp = os.path.join(tempfile.gettempdir(), os.urandom(24).hex())
+                temp += f".{animation_output}"
+                run_animation(temp, embed=True)
+            finally:
+                try:
+                    os.unlink(temp)
+                except FileNotFoundError:  # pragma: no cover
+                    pass
         else:
             run_animation(animation_output, embed=True)
 
