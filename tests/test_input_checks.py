@@ -4,7 +4,9 @@ from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.exceptions import MagpylibMissingInput
+
 
 # pylint: disable=unnecessary-lambda-assignment
 
@@ -516,8 +518,10 @@ def test_input_objects_field_func_good():
 )
 def test_input_objects_field_func_bad(func):
     """bad input: magpy.misc.CustomSource(field_func=f)"""
-    with pytest.raises(MagpylibBadUserInput):
-        magpy.misc.CustomSource(func)
+    with pytest.raises(
+        MagpylibBadUserInput, match=r"Input parameter `field_func` must .*."
+    ):
+        magpy.misc.CustomSource(field_func=func)
 
 
 def test_missing_input_triangular_mesh():
@@ -957,3 +961,39 @@ def test_input_getBH_field_bad(field):
     obs = np.array([[1, 2, 3]])
     with pytest.raises(MagpylibBadUserInput):
         magpy.core.dipole_field(field=field, observers=obs, moment=moms)
+
+
+def test_sensor_handedness():
+    """Test if handedness input"""
+    magpy.Sensor(handedness="right")
+    magpy.Sensor(handedness="left")
+    with pytest.raises(
+        MagpylibBadUserInput,
+        match=r"Sensor `handedness` must be either `'right'` or `'left'`",
+    ):
+        magpy.Sensor(handedness="not_right_or_left")
+
+
+def test_magnet_polarization_magnetization_input():
+    """test codependency and magnetization polarization inputs"""
+    # warning when magnetization is too low -> polarization confusion
+    mag = np.array([1, 2, 3]) * 1e6
+
+    with pytest.warns(
+        MagpylibDeprecationWarning,
+        match=r".* received a very low magnetization. .*",
+    ):
+        magpy.magnet.Cuboid(magnetization=[1, 2, 3])
+
+    # both polarization and magnetization at the same time
+    with pytest.raises(
+        ValueError,
+        match=r"The attributes magnetization and polarization are dependent. .*",
+    ):
+        magpy.magnet.Cuboid(polarization=[1, 2, 3], magnetization=mag)
+
+    # setting magnetization afterwards
+    c = magpy.magnet.Cuboid()
+    c.magnetization = mag
+    np.testing.assert_allclose(mag, c.magnetization)
+    np.testing.assert_allclose(mag * (4 * np.pi * 1e-7), c.polarization)
