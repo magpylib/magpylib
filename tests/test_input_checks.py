@@ -975,6 +975,7 @@ def test_sensor_handedness():
 
 
 def test_magnet_polarization_magnetization_input():
+    """test codependency and magnetization polarization inputs"""
     # warning when magnetization is too low -> polarization confusion
     mag = np.array([1, 2, 3]) * 1e6
 
