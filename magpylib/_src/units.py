@@ -156,7 +156,7 @@ class UnitHandler(metaclass=abc.ABCMeta):
                 self._check_methods(inp)
 
 
-class PintHandler(UnitHandler, name="pint", validate_on_declaration=False):
+class PintHandler(UnitHandler, pkg_name="pint", validate_on_declaration=False):
     """A concrete implementation of `UnitHandler` using the `pint` library.
 
     Attributes
@@ -194,7 +194,7 @@ class PintHandler(UnitHandler, name="pint", validate_on_declaration=False):
         return inp.magnitude
 
 
-class UnytHandler(UnitHandler, name="unyt", validate_on_declaration=False):
+class UnytHandler(UnitHandler, pkg_name="unyt", validate_on_declaration=False):
     """A concrete implementation of `UnitHandler` using the `unyt` library.
 
     Attributes
@@ -235,7 +235,7 @@ class UnytHandler(UnitHandler, name="unyt", validate_on_declaration=False):
         return inp.value
 
 
-class AstropyHandler(UnitHandler, name="astropy", validate_on_declaration=False):
+class AstropyHandler(UnitHandler, pkg_name="astropy", validate_on_declaration=False):
     """
     A concrete implementation of `UnitHandler` using the `astropy` library for handling units.
 
