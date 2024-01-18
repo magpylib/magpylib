@@ -32,7 +32,7 @@ _UNIT_PREFIX = {
     24: "Y",  # yotta
 }
 
-# ---------------------------------------classes-----------------------------------------------------
+# ---------------------------------------classes----------------------------------------------------
 
 
 def check_call(func, *args, expected, verbose=False):
@@ -103,6 +103,7 @@ class UnitHandler(metaclass=abc.ABCMeta):
     def __init_subclass__(
         cls, *, pkg_name, validate_on_declaration=True, override=False, **kwargs
     ):
+        print(cls)
         # cannot use `name` parameter as it conflicts with ABCmeta
         super().__init_subclass__(**kwargs)
         pkg_name = str(pkg_name)
@@ -305,7 +306,7 @@ class Units:
 
 units_global = Units()
 
-# ---------------------------------------functions---------------------------------------------------
+# ---------------------------------------functions--------------------------------------------------
 
 
 def get_units_handler(error="ignore"):
