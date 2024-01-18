@@ -788,8 +788,8 @@ class Collection(BaseGeo, BaseCollection):
         *args,
         position=(0, 0, 0),
         orientation=None,
-        style=None,
         override_parent=False,
+        style=None,
         **kwargs,
     ):
         BaseGeo.__init__(
