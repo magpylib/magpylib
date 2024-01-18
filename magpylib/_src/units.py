@@ -32,6 +32,24 @@ _UNIT_PREFIX = {
     24: "Y",  # yotta
 }
 
+# ---------------------------------------classes-----------------------------------------------------
+
+
+def check_call(func, *args, expected, verbose=False):
+    """Call a function with the specified arguments and check against an expected value"""
+    result = func(*args)
+    eq = result == expected
+    if isinstance(eq, np.ndarray):
+        eq = eq.all()
+    if not eq or verbose:
+        args_repr = ", ".join(repr(arg) for arg in args)
+        call_str = f"{func.__self__.__class__.__name__}{func.__name__}({args_repr})"
+        res_str = f"{result!r}"
+        if not eq:
+            raise ValueError(f"{call_str} expected {expected!r}, got {res_str}.")
+        if verbose:
+            print(f"{call_str} -> {res_str}")
+
 
 class UnitHandler(metaclass=abc.ABCMeta):
     """
@@ -80,10 +98,24 @@ class UnitHandler(metaclass=abc.ABCMeta):
     handlers = {}
     pkg_name = ""
     pgk_link = ""
+    __validated = False
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(
+        cls, name, validate_on_declaration=True, override=False, **kwargs
+    ):
         super().__init_subclass__(**kwargs)
-        cls.handlers[str(cls.pkg_name)] = cls
+        name = str(name)
+        if name in cls.handlers and not override:
+            left_names = set(cls.handlers) - {name}
+            raise ValueError(
+                f"The UnitHandler name {name!r} is already in use, as well as {left_names}"
+            )
+        if validate_on_declaration:
+            # avoid validation on handlers that use packages that may not be installed
+            # wait for instantiation
+            cls().validate()
+        cls.pkg_name = name
+        cls.handlers[name] = cls
 
     @abc.abstractmethod
     def is_quantity(self, inp):
@@ -104,6 +136,142 @@ class UnitHandler(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def get_magnitude(self, inp):
         pass
+
+    def _check_methods(self, inp):
+        """Check all instance implemented methods against single value"""
+        q_cm = self.to_quantity(inp, "cm")
+        q_mm = self.to_unit(q_cm, "mm")
+        q_cm_unit = self.get_unit(q_cm)
+        check_call(self.is_quantity, inp, expected=False)
+        check_call(self.is_quantity, q_cm, expected=True)
+        check_call(self.get_unit, self.to_quantity(inp, q_cm_unit), expected=q_cm_unit)
+        check_call(self.get_magnitude, q_cm, expected=inp)
+        check_call(self.get_magnitude, q_mm / 10, expected=inp)
+
+    def validate(self):
+        """Validate new UnitHandler"""
+        if not self.__validated:
+            for inp in (1.23, [1, 2, 3], np.array([1.0, 1.2, 1.23])):
+                self._check_methods(inp)
+
+
+class PintHandler(UnitHandler, name="pint", validate_on_declaration=False):
+    """A concrete implementation of `UnitHandler` using the `pint` library.
+
+    Attributes
+    ----------
+    pgk_link : str
+        A URL link to the `pint` documentation for getting started and installation instructions.
+    ureg : `pint.UnitRegistry`
+        An instance of the `pint` UnitRegistry that manages definitions and conversions.
+    """
+
+    # pylint: disable=missing-function-docstring
+
+    pgk_link = "https://pint.readthedocs.io/en/stable/getting/index.html#installation"
+
+    def __init__(self):
+        # pylint: disable=wrong-import-position
+        from pint import UnitRegistry
+
+        # Set pint unit registry. This needs to be unique through the library."
+        units_global._registry = self.ureg = UnitRegistry()
+
+    def is_quantity(self, inp):
+        return isinstance(inp, self.ureg.Quantity)
+
+    def to_quantity(self, inp, unit):
+        return self.ureg.Quantity(inp, unit)
+
+    def to_unit(self, inp, unit):
+        return inp.to(unit)
+
+    def get_unit(self, inp):
+        return inp.units
+
+    def get_magnitude(self, inp):
+        return inp.magnitude
+
+
+class UnytHandler(UnitHandler, name="unyt", validate_on_declaration=False):
+    """A concrete implementation of `UnitHandler` using the `unyt` library.
+
+    Attributes
+    ----------
+    pgk_link : str
+        A URL link to the `unyt` documentation for getting started and installation instructions.
+    ureg : `unyt.UnitRegistry`
+        An instance of the `unyt` UnitRegistry that manages definitions and conversions.
+    unyt : `unyt.unyt_array`
+        The `unyt` module imported into the handler.
+    """
+
+    # pylint: disable=missing-function-docstring
+
+    pgk_link = "https://unyt.readthedocs.io/en/stable/installation.html"
+
+    def __init__(self):
+        # pylint: disable=wrong-import-position
+        from unyt import UnitRegistry, unyt_quantity, unyt_array
+
+        units_global._registry = self.ureg = UnitRegistry()
+        self.unyt_quantity = unyt_quantity
+        self.unyt_array = unyt_array
+
+    def is_quantity(self, inp):
+        return isinstance(inp, self.unyt_array)
+
+    def to_quantity(self, inp, unit):
+        return inp * self.unyt_quantity.from_string(str(unit))
+
+    def to_unit(self, inp, unit):
+        return inp.to(unit)
+
+    def get_unit(self, inp):
+        return inp.units
+
+    def get_magnitude(self, inp):
+        return inp.value
+
+
+class AstropyHandler(UnitHandler, name="astropy", validate_on_declaration=False):
+    """
+    A concrete implementation of `UnitHandler` using the `astropy` library for handling units.
+
+    This class provides methods to perform unit conversions and checks using `astropy.units`.
+    It is designed to interact with `astropy.units.Quantity` objects.
+
+    Attributes
+    ----------
+    pgk_link : str
+        A URL link to the `astropy` documentation for getting started and installation.
+    """
+
+    # pylint: disable=missing-function-docstring
+
+    pgk_link = "https://docs.astropy.org/en/stable/install.html"
+
+    def __init__(self):
+        # pylint: disable=wrong-import-position
+        from astropy.units import Quantity, Unit
+
+        self.Quantity = Quantity
+        self.Unit = Unit
+
+    def is_quantity(self, inp):
+        return isinstance(inp, self.Quantity)
+
+    def to_quantity(self, inp, unit):
+        return inp * self.Unit(unit)
+
+    def to_unit(self, inp, unit):
+        return inp.to(self.Unit(unit))
+
+    def get_unit(self, inp):
+        return inp.unit
+
+    def get_magnitude(self, inp):
+        return inp.value
 
 
 class Units:
@@ -136,127 +304,7 @@ class Units:
 
 units_global = Units()
 
-
-class PintHandler(UnitHandler):
-    """A concrete implementation of `UnitHandler` using the `pint` library.
-
-    Attributes
-    ----------
-    pgk_link : str
-        A URL link to the `pint` documentation for getting started and installation instructions.
-    ureg : `pint.UnitRegistry`
-        An instance of the `pint` UnitRegistry that manages definitions and conversions.
-    """
-
-    # pylint: disable=missing-function-docstring
-
-    pkg_name = "pint"
-    pgk_link = "https://pint.readthedocs.io/en/stable/getting/index.html#installation"
-
-    def __init__(self):
-        # pylint: disable=wrong-import-position
-        from pint import UnitRegistry
-
-        # Set pint unit registry. This needs to be unique through the library."
-        units_global._registry = self.ureg = UnitRegistry()
-
-    def is_quantity(self, inp):
-        return isinstance(inp, self.ureg.Quantity)
-
-    def to_quantity(self, inp, unit):
-        return self.ureg.Quantity(inp, unit)
-
-    def to_unit(self, inp, unit):
-        return inp.to(unit)
-
-    def get_unit(self, inp):
-        return inp.units
-
-    def get_magnitude(self, inp):
-        return inp.magnitude
-
-
-class UnytHandler(UnitHandler):
-    """A concrete implementation of `UnitHandler` using the `unyt` library.
-
-    Attributes
-    ----------
-    pgk_link : str
-        A URL link to the `unyt` documentation for getting started and installation instructions.
-    ureg : `unyt.UnitRegistry`
-        An instance of the `unyt` UnitRegistry that manages definitions and conversions.
-    unyt : `unyt.unyt_array`
-        The `unyt` module imported into the handler.
-    """
-
-    # pylint: disable=missing-function-docstring
-
-    pkg_name = "unyt"
-    pgk_link = "https://unyt.readthedocs.io/en/stable/installation.html"
-
-    def __init__(self):
-        # pylint: disable=wrong-import-position
-        from unyt import UnitRegistry, unyt_quantity, unyt_array
-
-        units_global._registry = self.ureg = UnitRegistry()
-        self.unyt_quantity = unyt_quantity
-        self.unyt_array = unyt_array
-
-    def is_quantity(self, inp):
-        return isinstance(inp, self.unyt_array)
-
-    def to_quantity(self, inp, unit):
-        return inp * self.unyt_quantity.from_string(str(unit))
-
-    def to_unit(self, inp, unit):
-        return inp.to(unit)
-
-    def get_unit(self, inp):
-        return inp.units
-
-    def get_magnitude(self, inp):
-        return inp.value
-
-
-class AstropyHandler(UnitHandler):
-    """
-    A concrete implementation of `UnitHandler` using the `astropy` library for handling units.
-
-    This class provides methods to perform unit conversions and checks using `astropy.units`.
-    It is designed to interact with `astropy.units.Quantity` objects.
-
-    Attributes
-    ----------
-    pgk_link : str
-        A URL link to the `astropy` documentation for getting started and installation.
-    """
-
-    # pylint: disable=missing-function-docstring
-
-    pgk_link = "https://docs.astropy.org/en/stable/install.html"
-    pkg_name = "astropy"
-
-    def __init__(self):
-        # pylint: disable=wrong-import-position
-        from astropy.units import Quantity, Unit
-
-        self.Quantity = Quantity
-        self.Unit = Unit
-
-    def is_quantity(self, inp):
-        return isinstance(inp, self.Quantity)
-
-    def to_quantity(self, inp, unit):
-        return inp * self.Unit(unit)
-
-    def to_unit(self, inp, unit):
-        return inp.to(self.Unit(unit))
-
-    def get_unit(self, inp):
-        return inp.unit
-
-    def get_magnitude(self, inp):
-        return inp.value
+# ---------------------------------------functions---------------------------------------------------
 
 
 def get_units_handler(error="ignore"):
