@@ -101,7 +101,7 @@ class UnitHandler(metaclass=abc.ABCMeta):
     __validated = False
 
     def __init_subclass__(
-        cls, name, validate_on_declaration=True, override=False, **kwargs
+        cls, *, name, validate_on_declaration=True, override=False, **kwargs
     ):
         super().__init_subclass__(**kwargs)
         name = str(name)
