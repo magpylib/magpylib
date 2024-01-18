@@ -101,21 +101,22 @@ class UnitHandler(metaclass=abc.ABCMeta):
     __validated = False
 
     def __init_subclass__(
-        cls, *, name, validate_on_declaration=True, override=False, **kwargs
+        cls, *, pkg_name, validate_on_declaration=True, override=False, **kwargs
     ):
+        # cannot use `name` parameter as it conflicts with ABCmeta
         super().__init_subclass__(**kwargs)
-        name = str(name)
-        if name in cls.handlers and not override:
-            left_names = set(cls.handlers) - {name}
+        pkg_name = str(pkg_name)
+        if pkg_name in cls.handlers and not override:
+            left_names = set(cls.handlers) - {pkg_name}
             raise ValueError(
-                f"The UnitHandler name {name!r} is already in use, as well as {left_names}"
+                f"The UnitHandler name {pkg_name!r} is already in use, as well as {left_names}"
             )
         if validate_on_declaration:
             # avoid validation on handlers that use packages that may not be installed
             # wait for instantiation
             cls().validate()
-        cls.pkg_name = name
-        cls.handlers[name] = cls
+        cls.pkg_name = pkg_name
+        cls.handlers[pkg_name] = cls
 
     @abc.abstractmethod
     def is_quantity(self, inp):
