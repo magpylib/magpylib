@@ -394,12 +394,13 @@ class BaseMagnet(BaseSource):
             unit="A/m",
         )
         mag = self._magnetization
-        mag_A_per_m = downcast(mag, "A/m")
-        if is_Quantity(mag):
-            mag = to_Quantity(mag_A_per_m, "T")
-        self._polarization = mag * MU0
-        if np.linalg.norm(mag_A_per_m) < 2000:
-            self._magnetization_low_warning()
+        if mag is not None:
+            mag_A_per_m = downcast(mag, "A/m")
+            if is_Quantity(mag):
+                mag = to_Quantity(mag_A_per_m, "T")
+            self._polarization = mag * MU0
+            if np.linalg.norm(mag_A_per_m) < 2000:
+                self._magnetization_low_warning()
 
     @property
     def polarization(self):
@@ -419,9 +420,10 @@ class BaseMagnet(BaseSource):
             unit="T",
         )
         pol = self._polarization
-        if is_Quantity(pol):
-            pol = to_Quantity(downcast(pol, "T"), "A/m")
-        self._magnetization = pol / MU0
+        if pol is not None:
+            if is_Quantity(pol):
+                pol = to_Quantity(downcast(pol, "T"), "A/m")
+            self._magnetization = pol / MU0
 
     def _magnetization_low_warning(self):
         warnings.warn(

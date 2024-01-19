@@ -419,10 +419,12 @@ def unit_checker():
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
+            inp = args[0]
+            if kwargs.get("allow_None", False) and inp is None:
+                return None
             units_mode = default_settings.units.mode
             units_package_default = default_settings.units.package
             units_handler = get_units_handler()
-            inp = args[0]
             sig_name = kwargs.get("sig_name", "")
             unit = kwargs.pop("unit", None)
             inp_unit = None
@@ -459,6 +461,11 @@ def unit_checker():
                             f" Instead received {units_handler.get_unit(inp_wu)!r}."
                         ) from msg
                 args = (units_handler.get_magnitude(inp_wu), *args[1:])
+            elif units_mode == "coerce":
+                raise MagpylibBadUserInput(
+                    f"while the units mode is set to {units_mode!r},"
+                    f" input parameter {sig_name!r} is not unit-like ({inp!r}) "
+                )
             res = func(*args, **kwargs)
             if out_to_units:
                 res = to_Quantity(
@@ -469,7 +476,7 @@ def unit_checker():
                 elif units_mode == "downcast":
                     res = to_Quantity(res, unit, units_handler=units_handler)
                     res = units_handler.get_magnitude(res)
-            elif units_mode == "upcast":
+            elif units_mode in ("upcast", "coerce"):
                 res = to_Quantity(res, unit, units_handler=units_handler)
             return res
 
