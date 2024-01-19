@@ -109,7 +109,8 @@ class UnitHandler(metaclass=abc.ABCMeta):
         if pkg_name in cls.handlers and not override:
             left_names = set(cls.handlers) - {pkg_name}
             raise ValueError(
-                f"The UnitHandler name {pkg_name!r} is already in use, as well as {left_names}"
+                f"The UnitHandler name {pkg_name!r} is already in use, as well as {left_names}."
+                " To replace an existing handler use `override=True` in the class declaration."
             )
         if validate_on_declaration:
             # avoid validation on handlers that use packages that may not be installed
