@@ -2310,7 +2310,6 @@ def magnet_cylinder_segment_field_internal(
     Falls back to magnet_cylinder_field whenever the section angles describe the full
     360° cylinder.
     """
-    n = len(polarization)
 
     BHfinal = np.zeros_like(observers, dtype=float)
 
