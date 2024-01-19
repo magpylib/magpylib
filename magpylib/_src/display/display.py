@@ -15,7 +15,7 @@ from magpylib._src.input_checks import check_format_input_backend
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.input_checks import check_input_animation
 from magpylib._src.input_checks import check_input_zoom
-from magpylib._src.utility import test_path_format
+from magpylib._src.utility import check_path_format
 
 disp_args = get_defaults_dict("display").keys()
 
@@ -198,7 +198,7 @@ def _show(
     kwargs["subplot_specs"] = subplot_specs
 
     # test if every individual obj_path is good
-    test_path_format(obj_list_flat)
+    check_path_format(obj_list_flat)
 
     # input checks
     backend = check_format_input_backend(backend)
@@ -333,7 +333,7 @@ def show(
     Display multiple objects, object paths, markers in 3D using Matplotlib or Plotly:
 
     >>> import magpylib as magpy
-    >>> src = magpy.magnet.Sphere(magnetization=(0,0,1), diameter=1)
+    >>> src = magpy.magnet.Sphere(polarization=(0,0,1), diameter=1)
     >>> src.move([(0.1*x,0,0) for x in range(50)])
     Sphere...
     >>> src.rotate_from_angax(angle=[*range(0,400,10)], axis='z', anchor=0, start=11)
@@ -349,7 +349,7 @@ def show(
     >>> import matplotlib.pyplot as plt
     >>> import magpylib as magpy
     >>> my_axis = plt.axes(projection='3d')
-    >>> magnet = magpy.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,2,3))
+    >>> magnet = magpy.magnet.Cuboid(polarization=(1,1,1), dimension=(1,2,3))
     >>> sens = magpy.Sensor(position=(0,0,3))
     >>> magpy.show(magnet, sens, canvas=my_axis, zoom=1)
     >>> plt.show() # doctest: +SKIP
@@ -359,8 +359,13 @@ def show(
     or as global style arguments in display.
 
     >>> import magpylib as magpy
-    >>> src1 = magpy.magnet.Sphere((1,1,1), 1, [(0,0,0), (0,0,3)])
-    >>> src2 = magpy.magnet.Sphere((1,1,1), 1, [(1,0,0), (1,0,3)], style_path_show=False)
+    >>> src1 = magpy.magnet.Sphere(position=[(0,0,0), (0,0,3)], diameter=1, polarization=(1,1,1))
+    >>> src2 = magpy.magnet.Sphere(
+    ...     position=[(1,0,0), (1,0,3)],
+    ...     diameter=1,
+    ...     polarization=(1,1,1),
+    ...     style_path_show=False
+    ... )
     >>> magpy.defaults.display.style.magnet.magnetization.size = 2
     >>> src1.style.magnetization.size = 1
     >>> magpy.show(src1, src2, style_color='r') # doctest: +SKIP
@@ -374,7 +379,7 @@ def show(
     >>> path_len = 40
     >>> sensor = magpy.Sensor()
     >>> cyl1 = magpy.magnet.Cylinder(
-    ...    magnetization=(100, 0, 0),
+    ...    polarization=(.1, 0, 0),
     ...    dimension=(1, 2),
     ...    position=(4, 0, 0),
     ...    style_label="Cylinder1",

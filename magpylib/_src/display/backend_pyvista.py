@@ -3,7 +3,6 @@
 # pylint: disable=too-many-statements
 import os
 import tempfile
-import warnings
 from functools import lru_cache
 
 import numpy as np
@@ -55,8 +54,6 @@ LINESTYLES_TO_PYVISTA = {
     "longdashdot": "-..",
 }
 
-INCOMPATIBLE_JUPYTER_BACKENDS_2D = {"panel", "ipygany", "pythreejs"}
-
 
 @lru_cache(maxsize=32)
 def colormap_from_colorscale(colorscale, name="plotly_to_mpl", N=256, gamma=1.0):
@@ -76,7 +73,7 @@ def colormap_from_colorscale(colorscale, name="plotly_to_mpl", N=256, gamma=1.0)
     return LinearSegmentedColormap(name, cdict, N, gamma)
 
 
-def generic_trace_to_pyvista(trace, jupyter_backend=None):
+def generic_trace_to_pyvista(trace):
     """Transform a generic trace into a pyvista trace"""
     traces_pv = []
     leg_title = trace.get("legendgrouptitle_text", None)
@@ -108,11 +105,7 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
             )
         traces_pv.append(trace_pv)
         if colorscale is not None:
-            # ipygany does not support custom colorsequences
-            if jupyter_backend == "ipygany":
-                trace_pv["cmap"] = "PiYG"
-            else:
-                trace_pv["cmap"] = colormap_from_colorscale(colorscale)
+            trace_pv["cmap"] = colormap_from_colorscale(colorscale)
     elif "scatter" in trace["type"]:
         line = trace.get("line", {})
         line_color = line.get("color", trace.get("line_color", None))
@@ -252,9 +245,6 @@ def display_pyvista(
     jupyter_backend = show_kwargs.pop("jupyter_backend", jupyter_backend)
     if jupyter_backend is None:
         jupyter_backend = pv.global_theme.jupyter_backend
-    jupyter_backend_2D_compatible = (
-        jupyter_backend not in INCOMPATIBLE_JUPYTER_BACKENDS_2D
-    )
     count_with_labels = {}
     charts_max_ind = 0
 
@@ -262,7 +252,7 @@ def display_pyvista(
         nonlocal count_with_labels, charts_max_ind
         frame = frames[frame_ind]
         for tr0 in frame["data"]:
-            for tr1 in generic_trace_to_pyvista(tr0, jupyter_backend=jupyter_backend):
+            for tr1 in generic_trace_to_pyvista(tr0):
                 row = tr1.pop("row", 1)
                 col = tr1.pop("col", 1)
                 typ = tr1.pop("type")
@@ -276,17 +266,11 @@ def display_pyvista(
                     getattr(canvas, f"add_{typ}")(**tr1)
                     canvas.show_axes()
                 else:
-                    if jupyter_backend_2D_compatible:
-                        if charts.get((row, col), None) is None:
-                            charts_max_ind += 1
-                            charts[(row, col)] = pv.Chart2D()
-                            canvas.add_chart(charts[(row, col)])
-                        getattr(charts[(row, col)], typ)(**tr1)
-                    else:
-                        warnings.warn(
-                            f"The set `jupyter_backend={jupyter_backend}` is incompatible with "
-                            "2D plots. Empty plots will be shown instead"
-                        )
+                    if charts.get((row, col), None) is None:
+                        charts_max_ind += 1
+                        charts[(row, col)] = pv.Chart2D()
+                        canvas.add_chart(charts[(row, col)])
+                    getattr(charts[(row, col)], typ)(**tr1)
         for rowcol, count in count_with_labels.items():
             if 0 < count <= legend_maxitems:
                 row, col = rowcol
@@ -334,8 +318,16 @@ def display_pyvista(
         animation_output = data["input_kwargs"].get("animation_output", None)
         animation_output = "gif" if animation_output is None else animation_output
         if animation_output in ("gif", "mp4"):
-            with tempfile.NamedTemporaryFile(suffix=f".{animation_output}") as temp:
-                run_animation(temp.name, embed=True)
+            try:
+                temp = os.path.join(tempfile.gettempdir(), os.urandom(24).hex())
+                temp += f".{animation_output}"
+                run_animation(temp, embed=True)
+            finally:
+                try:
+                    os.unlink(temp)
+                except FileNotFoundError:  # pragma: no cover
+                    # avoid exception if file is not found
+                    pass
         else:
             run_animation(animation_output, embed=True)
 

@@ -456,7 +456,10 @@ class BaseCollection(BaseDisplayRepr):
         >>> import magpylib as magpy
         >>>
         >>> col = magpy.Collection(
-        ...     [magpy.magnet.Sphere((0, 0, 1), 1, position=(i, 0, 0)) for i in range(3)]
+        ...     [
+        ...         magpy.magnet.Sphere(position=(i, 0, 0), diameter=1, polarization=(0, 0, 0.1))
+        ...         for i in range(3)
+        ...     ]
         ... )
         >>> # We apply styles using underscore magic for magnetization vector size and a style
         >>> # dictionary for the color.
@@ -469,7 +472,7 @@ class BaseCollection(BaseDisplayRepr):
         >>> # Finally we create a separate sphere magnet to demonstrate the default style
         >>> # the collection and the separate magnet with Matplotlib:
         >>>
-        >>> src = magpy.magnet.Sphere((0, 0, 1), 1, position=(3, 0, 0))
+        >>> src = magpy.magnet.Sphere(position=(3, 0, 0), diameter=1, polarization=(0, 0, .1))
         >>> magpy.show(col, src) # doctest: +SKIP
         >>> # graphic output
         """
@@ -516,7 +519,9 @@ class BaseCollection(BaseDisplayRepr):
         return sources, sensors
 
     def getB(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
-        """Compute B-field in mT for given sources and observers.
+        """Compute B-field for given sources and observers.
+
+        SI units are used for all inputs and outputs.
 
         Parameters
         ----------
@@ -543,17 +548,17 @@ class BaseCollection(BaseDisplayRepr):
         Returns
         -------
         B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
-            B-field at each path position (m) for each sensor (k) and each sensor pixel
-            position (n1,n2,...) in units of mT. Sensor pixel positions are equivalent
-            to simple observer positions. Paths of objects that are shorter than m will be
-            considered as static beyond their end.
+            B-field at each path position ( index m) for each sensor (index k) and each
+            sensor pixel position (indices n1,n2,...) in units of T. Sensor pixel positions
+            are equivalent to simple observer positions. Paths of objects that are shorter
+            than index m are considered as static beyond their end.
 
         Examples
         --------
         In this example we create a collection from two sources and two sensors:
 
         >>> import magpylib as magpy
-        >>> src1 = magpy.magnet.Sphere((0,0,1000), 1)
+        >>> src1 = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
         >>> src2 = src1.copy()
         >>> sens1 = magpy.Sensor(position=(0,0,1))
         >>> sens2 = sens1.copy()
@@ -567,11 +572,11 @@ class BaseCollection(BaseDisplayRepr):
         >>> B = magpy.getB([src1, src2], col)
         >>> B = magpy.getB([src1, src2], [sens1, sens2])
         >>> print(B)
-        [[[ 0.          0.         83.33333333]
-          [ 0.          0.         83.33333333]]
+        [[[0.         0.         0.08333333]
+          [0.         0.         0.08333333]]
         <BLANKLINE>
-         [[ 0.          0.         83.33333333]
-          [ 0.          0.         83.33333333]]]
+         [[0.         0.         0.08333333]
+          [0.         0.         0.08333333]]]
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
@@ -587,7 +592,9 @@ class BaseCollection(BaseDisplayRepr):
         )
 
     def getH(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
-        """Compute H-field in kA/m for given sources and observers.
+        """Compute H-field for given sources and observers.
+
+        SI units are used for all inputs and outputs.
 
         Parameters
         ----------
@@ -614,17 +621,17 @@ class BaseCollection(BaseDisplayRepr):
         Returns
         -------
         H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
-            H-field at each path position (m) for each sensor (k) and each sensor pixel
-            position (n1,n2,...) in units of kA/m. Sensor pixel positions are equivalent
-            to simple observer positions. Paths of objects that are shorter than m will be
-            considered as static beyond their end.
+            H-field at each path position (index m) for each sensor (index k) and each sensor
+            pixel position (indeices n1,n2,...) in units of A/m. Sensor pixel positions are
+            equivalent to simple observer positions. Paths of objects that are shorter than
+            index m are considered as static beyond their end.
 
         Examples
         --------
         In this example we create a collection from two sources and two sensors:
 
         >>> import magpylib as magpy
-        >>> src1 = magpy.magnet.Sphere((0,0,1000), 1)
+        >>> src1 = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
         >>> src2 = src1.copy()
         >>> sens1 = magpy.Sensor(position=(0,0,1))
         >>> sens2 = sens1.copy()
@@ -638,11 +645,11 @@ class BaseCollection(BaseDisplayRepr):
         >>> H = magpy.getH([src1, src2], col)
         >>> H = magpy.getH([src1, src2], [sens1, sens2])
         >>> print(H)
-        [[[ 0.          0.         66.31455962]
-          [ 0.          0.         66.31455962]]
+        [[[    0.             0.         66314.55962162]
+          [    0.             0.         66314.55962162]]
         <BLANKLINE>
-         [[ 0.          0.         66.31455962]
-          [ 0.          0.         66.31455962]]]
+         [[    0.             0.         66314.55962162]
+          [    0.             0.         66314.55962162]]]
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
@@ -687,10 +694,27 @@ class Collection(BaseGeo, BaseCollection):
     functions like a single source. When the collection contains sensors
     it functions like a list of all its sensors.
 
+    SI units are used for all inputs and outputs.
+
     Parameters
     ----------
     children: sources, `Sensor` or `Collection` objects
         An ordered list of all children in the collection.
+
+    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
+        Object position(s) in the global coordinates in units of m. For m>1, the
+        `position` and `orientation` attributes together represent an object path.
+
+    orientation: scipy `Rotation` object with length 1 or m, default=`None`
+        Object orientation(s) in the global coordinates. `None` corresponds to
+        a unit-rotation. For m>1, the `position` and `orientation` attributes
+        together represent an object path.
+
+    override_parent: bool, default=False
+        If False thrown an error when an attempt is made to add an object that
+        has already a parent to a Collection. If True, allow adding the object
+        and override the objects parent attribute thus removing it from its
+        previous collection.
 
     sensors: `Sensor` objects
         An ordered list of all sensor objects in the collection.
@@ -701,14 +725,6 @@ class Collection(BaseGeo, BaseCollection):
     collections: `Collection` objects
         An ordered list of all collection objects in the collection.
 
-    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of mm. For m>1, the
-        `position` and `orientation` attributes together represent an object path.
-
-    orientation: scipy `Rotation` object with length 1 or m, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation. For m>1, the `position` and `orientation` attributes
-        together represent an object path.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -727,8 +743,8 @@ class Collection(BaseGeo, BaseCollection):
     we create a collection with two sources and move the whole collection:
 
     >>> import magpylib as magpy
-    >>> src1 = magpy.magnet.Sphere((1,2,3), 1, position=(2,0,0))
-    >>> src2 = magpy.current.Circle(1, 1, position=(-2,0,0))
+    >>> src1 = magpy.magnet.Sphere(position=(2,0,0), diameter=1,polarization=(.1,.2,.3))
+    >>> src2 = magpy.current.Circle(position=(-2,0,0), diameter=1, current=1)
     >>> col = magpy.Collection(src1, src2)
     >>> col.move(((0,0,2)))
     Collection(id=...)
@@ -756,7 +772,7 @@ class Collection(BaseGeo, BaseCollection):
 
     >>> B = col.getB((0,0,0))
     >>> print(B)
-    [ 0.00126232 -0.00093169 -0.00034448]
+    [ 2.32922681e-04 -9.31694991e-05 -3.44484717e-10]
 
     We add a sensor at position (0,0,0) to the collection:
 
@@ -771,7 +787,7 @@ class Collection(BaseGeo, BaseCollection):
 
     >>> B = col.getB()
     >>> print(B)
-    [ 0.00126232 -0.00093169 -0.00034448]
+    [ 2.32922681e-04 -9.31694991e-05 -3.44484717e-10]
     """
 
     def __init__(
@@ -779,8 +795,8 @@ class Collection(BaseGeo, BaseCollection):
         *args,
         position=(0, 0, 0),
         orientation=None,
-        style=None,
         override_parent=False,
+        style=None,
         **kwargs,
     ):
         BaseGeo.__init__(

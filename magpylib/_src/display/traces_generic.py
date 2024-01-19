@@ -346,7 +346,9 @@ def get_generic_traces_2D(
                 label, color = label_sens, color_sens
             num_of_pix = (
                 len(sens.pixel.reshape(-1, 3))
-                if (not isinstance(sens, magpy.Collection)) and sens.pixel.ndim != 1
+                if (not isinstance(sens, magpy.Collection))
+                and sens.pixel is not None
+                and sens.pixel.ndim != 1
                 else 1
             )
             pix_suff = ""

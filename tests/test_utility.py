@@ -9,8 +9,8 @@ from magpylib._src.utility import filter_objects
 
 def test_duplicates():
     """test duplicate elimination and sorting"""
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    pm2 = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
+    pm2 = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(1, 2))
     src_list = [pm1, pm2, pm1]
     src_list_new = check_duplicates(src_list)
     assert src_list_new == [pm1, pm2], "duplicate elimination failed"
@@ -18,8 +18,8 @@ def test_duplicates():
 
 def test_filter_objects():
     """tests elimination of unwanted types"""
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    pm2 = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
+    pm2 = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(1, 2))
     sens = magpy.Sensor()
     src_list = [pm1, pm2, sens]
     list_new = filter_objects(src_list, allow="sources")
@@ -30,8 +30,8 @@ def test_format_getBH_class_inputs():
     """special case testing of different input formats"""
     possis = [3, 3, 3]
     sens = magpy.Sensor(position=(3, 3, 3))
-    pm1 = magpy.magnet.Cuboid((11, 22, 33), (1, 2, 3))
-    pm2 = magpy.magnet.Cuboid((11, 22, 33), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid(polarization=(11, 22, 33), dimension=(1, 2, 3))
+    pm2 = magpy.magnet.Cuboid(polarization=(11, 22, 33), dimension=(1, 2, 3))
     col = pm1 + pm2
 
     B1 = pm1.getB(possis)

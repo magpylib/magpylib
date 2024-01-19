@@ -1,15 +1,15 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.7
+    jupytext_version: 1.16.0
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
+orphan: true
 ---
 
 (gallery-tutorial-trimesh)=
@@ -47,12 +47,14 @@ The mesh status is set by the checks, and can be viewed via the properties `stat
 ## Example - Tetrahedron magnet
 
 ```{code-cell} ipython3
+import numpy as np
+
 import magpylib as magpy
 
 # create faceted tetrahedron from vertices and faces
 tmesh_tetra = magpy.magnet.TriangularMesh(
-    magnetization=(0, 0, 1000),
-    vertices=((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)),
+    polarization=(0, 0, 1),
+    vertices=np.array(((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))) / 100,
     faces=((2, 1, 0), (3, 0, 1), (3, 2, 0), (3, 1, 2)),
 )
 
@@ -70,25 +72,26 @@ tmesh_tetra.show()
 In some cases it may be desirable to generate a `TriangularMesh` object from an open mesh, as described in {ref}`gallery-shapes-triangle`. In this case one has to be extremely careful because one cannot rely on the checks. Not to generate warnings or error messages, these checks can be disabled with `"skip"` or their outcome can be ignored with `"ignore"`. The `show` function can be used to view open edges and disconnected parts. In the following example we generate such an open mesh directly from `Triangle` objects.
 
 ```{code-cell} ipython3
-import magpylib as magpy
 import numpy as np
 
+import magpylib as magpy
+
 top = magpy.misc.Triangle(
-    magnetization=(1000,0,0),
-    vertices= ((-1,-1,1), (1,-1,1), (0,2,1)),
+    polarization=(1, 0, 0),
+    vertices=np.array(((-1, -1, 1), (1, -1, 1), (0, 2, 1))) / 100,
 )
 bottom = magpy.misc.Triangle(
-    magnetization=(1000,0,0),
-    vertices= ((-1,-1,-1), (0,2,-1), (1,-1,-1)),
+    polarization=(1, 0, 0),
+    vertices=np.array(((-1, -1, -1), (0, 2, -1), (1, -1, -1))) / 100,
 )
 
 # create faceted prism with open edges
 prism = magpy.magnet.TriangularMesh.from_triangles(
-    magnetization=(0, 0, 1000),   # overrides triangles magnetization
+    polarization=(0, 0, 1),  # overrides triangles polarization
     triangles=[top, bottom],
-    check_open="ignore",        # check but ignore open mesh
-    check_disconnected="ignore",     # check but ignore disconnected mesh
-    reorient_faces="ignore",      # check but ignore non-orientable mesh
+    check_open="ignore",  # check but ignore open mesh
+    check_disconnected="ignore",  # check but ignore disconnected mesh
+    reorient_faces="ignore",  # check but ignore non-orientable mesh
     style_label="Open prism",
 )
 prism.style.magnetization.mode = "arrow"
@@ -104,4 +107,3 @@ prism.show(
     style_mesh_disconnected_show=True,
 )
 ```
-

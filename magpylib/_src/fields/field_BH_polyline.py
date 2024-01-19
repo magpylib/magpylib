@@ -8,6 +8,7 @@ from numpy.linalg import norm
 
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.input_checks import check_field_input
+from magpylib._src.utility import MU0
 
 
 def current_vertices_field(
@@ -27,14 +28,18 @@ def current_vertices_field(
     - bh (boolean): True=B, False=H
     - current (ndarray n): current on line in units of A
     - vertex_sets (list of len n): n vertex sets (each of shape (mi,3))
-    - pos_obs (ndarray nx3): n observer positions in units of mm
+    - pos_obs (ndarray nx3): n observer positions in units of m
 
     ### Returns:
-    - B-field (ndarray nx3): B-field vectors at pos_obs in units of mT
+    - B-field (ndarray nx3): B-field vectors at pos_obs in units of T
     """
     if vertices is None:
         return current_polyline_field(
-            field, observers, current, segment_start, segment_end
+            field=field,
+            observers=observers,
+            current=current,
+            segment_start=segment_start,
+            segment_end=segment_end,
         )
 
     nvs = np.array([f.shape[0] for f in vertices])  # lengths of vertices sets
@@ -65,39 +70,42 @@ def current_vertices_field(
 
 # CORE
 def current_polyline_field(
+    *,
     field: str,
     observers: np.ndarray,
-    current: np.ndarray,
     segment_start: np.ndarray,
     segment_end: np.ndarray,
+    current: np.ndarray,
 ) -> np.ndarray:
     """Magnetic field of line current segments.
 
     The current flows from start to end positions. The field is set to (0,0,0) on a
     line segment.
 
+    SI units are used for all inputs and outputs.
+
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
-        in units of kA/m.
+        If `field='B'` return B-field in units of T, if `field='H'` return H-field
+        in units of A/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
+        Observer positions (x,y,z) in Cartesian coordinates in units of m.
+
+    segment_start: ndarray, shape (n,3)
+        Polyline start positions (x,y,z) in Cartesian coordinates in units of m.
+
+    segment_end: ndarray, shape (n,3)
+        Polyline end positions (x,y,z) in Cartesian coordinates in units of m.
 
     current: ndarray, shape (n,)
         Electrical current in units of A.
 
-    start: ndarray, shape (n,3)
-        Polyline start positions (x,y,z) in Cartesian coordinates in units of mm.
-
-    end: ndarray, shape (n,3)
-        Polyline end positions (x,y,z) in Cartesian coordinates in units of mm.
-
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of current in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
+        B- or H-field of source in Cartesian coordinates in units of T or A/m.
 
     Examples
     --------
@@ -106,17 +114,25 @@ def current_polyline_field(
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> curr = np.array([1,2])
-    >>> start = np.array([(-1,0,0), (-1,0,0)])
-    >>> end   = np.array([( 1,0,0), ( 2,0,0)])
-    >>> obs   = np.array([( 0,0,1), ( 0,0,0)])
-    >>> B = magpy.core.current_polyline_field('B', obs, curr, start, end)
-    >>> print(B)
-    [[ 0.         -0.14142136  0.        ]
-     [ 0.          0.          0.        ]]
+    >>> H = magpy.core.current_polyline_field(
+    ...     field='H',
+    ...     observers=np.array([( 0,0,1)]*3),
+    ...     segment_start=np.array([(-.5,0,0), (.5,0,0), (1.5,0,0)]),
+    ...     segment_end=np.array([(-1.5,0,0), (-.5,0,0), (.5,0,0)]),
+    ...     current=np.array([1,1,1]),
+    ... )
+    >>> print(H)
+    [[ 0.          0.03062433 -0.        ]
+     [ 0.          0.07117625 -0.        ]
+     [ 0.          0.03062433 -0.        ]]
 
     Notes
     -----
+    Advanced unit use: The input unit of magnetization and polarization
+    gives the output unit of H and B. All results are independent of the
+    length input units. One must be careful, however, to use consistently
+    the same length unit throughout a script.
+
     Field computation via law of Biot Savart. See also countless online resources.
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
     """
@@ -204,18 +220,18 @@ def current_polyline_field(
     mask4 = ~mask2 * ~mask3
     deltaSin[mask4] = abs(sinTh1[mask4] + sinTh2[mask4])
 
-    field = (deltaSin / norm_o4 * eB.T / norm_12 * current / 10).T  # m->mm, T->mT
+    field = (deltaSin / norm_o4 * eB.T / norm_12 * current * 1e-7).T
 
     # broadcast general case results into allocated vector
     mask0[~mask0] = mask1
     field_all[~mask0] = field
 
-    # return B or H
+    # return B
     if bh:
         return field_all
 
-    # H: mT -> kA/m
-    return field_all * 10 / 4 / np.pi
+    # return H
+    return field_all / MU0
 
 
 def current_line_field(*args, **kwargs):

@@ -16,16 +16,18 @@ from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 
 def test_TriangularMesh_repr():
     """TriangularMesh repr test"""
-    trimesh = magpy.magnet.TriangularMesh.from_pyvista((0, 0, 1000), pv.Octahedron())
+    trimesh = magpy.magnet.TriangularMesh.from_pyvista(
+        polarization=(0, 0, 1), polydata=pv.Octahedron()
+    )
     assert repr(trimesh).startswith("TriangularMesh"), "TriangularMesh repr failed"
 
 
 def test_TriangularMesh_barycenter():
     """test TriangluarMesh barycenter"""
-    mag = (0, 0, 333)
-    trimesh = magpy.magnet.TriangularMesh.from_pyvista(mag, pv.Octahedron()).move(
-        (1, 2, 3)
-    )
+    pol = (0, 0, 333)
+    trimesh = magpy.magnet.TriangularMesh.from_pyvista(
+        polarization=pol, polydata=pv.Octahedron()
+    ).move((1, 2, 3))
     bary = np.array([1, 2, 3])
     np.testing.assert_allclose(trimesh.barycenter, bary)
 
@@ -33,21 +35,21 @@ def test_TriangularMesh_barycenter():
 def test_TriangularMesh_getBH():
     """Compare meshed cube to magpylib cube"""
     dimension = (1, 1, 1)
-    magnetization = (100, 200, 300)
+    polarization = (100, 200, 300)
     mesh3d = magpy.graphics.model3d.make_Cuboid()
     vertices = np.array([v for k, v in mesh3d["kwargs"].items() if k in "xyz"]).T
     faces = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
 
     faces[0] = faces[0][[0, 2, 1]]  # flip one triangle in wrong orientation
 
-    cube = magpy.magnet.Cuboid(magnetization=magnetization, dimension=dimension)
+    cube = magpy.magnet.Cuboid(polarization=polarization, dimension=dimension)
     cube.rotate_from_angax(19, (1, 2, 3))
     cube.move((1, 2, 3))
 
     cube_facet_reorient_true = magpy.magnet.TriangularMesh(
         position=cube.position,
         orientation=cube.orientation,
-        magnetization=magnetization,
+        polarization=polarization,
         vertices=vertices,
         faces=faces,
         reorient_faces=True,
@@ -56,7 +58,7 @@ def test_TriangularMesh_getBH():
     cube_facet_reorient_false = magpy.magnet.TriangularMesh(
         position=cube.position,
         orientation=cube.orientation,
-        magnetization=magnetization,
+        polarization=polarization,
         vertices=vertices,
         faces=faces,
         reorient_faces=False,
@@ -87,12 +89,14 @@ def test_TriangularMesh_getB_different_facet_shapes_mixed():
     shape (12,3,3) vs (4,3,3) for facet tetrahedron"""
     tetra_pv = pv.Tetrahedron()
     tetra = (
-        magpy.magnet.Tetrahedron((444, 555, 666), vertices=tetra_pv.points)
+        magpy.magnet.Tetrahedron(
+            polarization=(0.444, 0.555, 0.666), vertices=tetra_pv.points
+        )
         .move((-1, 1, 1))
         .rotate_from_angax([14, 65, 97], (4, 6, 9), anchor=0)
     )
     tetra_kwargs = {
-        "magnetization": tetra.magnetization,
+        "polarization": tetra.polarization,
         "position": tetra.position,
         "orientation": tetra.orientation,
     }
@@ -101,12 +105,12 @@ def test_TriangularMesh_getB_different_facet_shapes_mixed():
     )
     assert tmesh_tetra.status_reoriented is True
     cube = (
-        magpy.magnet.Cuboid((111, 222, 333), (1, 1, 1))
+        magpy.magnet.Cuboid(polarization=(0.111, 0.222, 0.333), dimension=(1, 1, 1))
         .move((1, 1, 1))
         .rotate_from_angax([14, 65, 97], (4, 6, 9), anchor=0)
     )
     cube_kwargs = {
-        "magnetization": cube.magnetization,
+        "polarization": cube.polarization,
         "position": cube.position,
         "orientation": cube.orientation,
     }
@@ -127,21 +131,21 @@ def test_TriangularMesh_getB_different_facet_shapes_mixed():
 
 def test_magnet_trimesh_func():
     """test on manual inside"""
-    mag = (111, 222, 333)
+    pol = (0.111, 0.222, 0.333)
     dim = (10, 10, 10)
-    cube = magpy.magnet.Cuboid(mag, dim)
+    cube = magpy.magnet.Cuboid(polarization=pol, dimension=dim)
     tmesh_cube = magpy.magnet.TriangularMesh.from_pyvista(
-        mag, pv.Cube(cube.position, *dim)
+        polarization=pol, polydata=pv.Cube(cube.position, *dim)
     )
 
     pts_inside = np.array([[0, 0, 1]])
     B0 = cube.getB(pts_inside)
     B1 = tmesh_cube.getB(pts_inside)
     B2 = magnet_trimesh_field(
-        "B",
-        pts_inside,
-        np.array([mag]),
-        np.array([tmesh_cube.mesh]),
+        field="B",
+        observers=pts_inside,
+        polarization=np.array([pol]),
+        mesh=np.array([tmesh_cube.mesh]),
         in_out="inside",
     )[0]
     np.testing.assert_allclose(B0, B1)
@@ -154,7 +158,7 @@ def test_bad_triangle_indices():
     faces = [[1, 2, 3]]  # index 3 >= len(vertices)
     with pytest.raises(IndexError):
         magpy.magnet.TriangularMesh(
-            magnetization=(0, 0, 1000),
+            polarization=(0, 0, 1),
             vertices=vertices,
             faces=faces,
         )
@@ -174,14 +178,14 @@ def test_open_mesh():
     faces = np.array([v for k, v in open_mesh.items() if k in "ijk"]).T
     with pytest.raises(ValueError, match=r"Open mesh detected in .*."):
         magpy.magnet.TriangularMesh(
-            magnetization=(0, 0, 1000),
+            polarization=(0, 0, 1),
             vertices=vertices,
             faces=faces,
             check_open="raise",
         )
     with pytest.raises(ValueError, match=r"Open mesh in .* detected."):
         magpy.magnet.TriangularMesh(
-            magnetization=(0, 0, 1000),
+            polarization=(0, 0, 1),
             vertices=vertices,
             faces=faces,
             check_open="ignore",
@@ -189,7 +193,7 @@ def test_open_mesh():
         )
     with pytest.warns(UserWarning) as record:
         magpy.magnet.TriangularMesh(
-            magnetization=(0, 0, 1000),
+            polarization=(0, 0, 1),
             vertices=vertices,
             faces=faces,
             check_open="warn",
@@ -200,7 +204,7 @@ def test_open_mesh():
 
     with pytest.warns(UserWarning) as record:
         magpy.magnet.TriangularMesh(
-            magnetization=(0, 0, 1000),
+            polarization=(0, 0, 1),
             vertices=vertices,
             faces=faces,
             check_open="skip",
@@ -217,7 +221,7 @@ def test_open_mesh():
     with warnings.catch_warnings():  # no warning should be issued!
         warnings.simplefilter("error")
         magpy.magnet.TriangularMesh(
-            magnetization=(0, 0, 1000),
+            polarization=(0, 0, 1),
             vertices=vertices,
             faces=faces,
             check_open="ignore",
@@ -229,7 +233,7 @@ def test_open_mesh():
         match=r"Open mesh of .* detected",
     ):
         mesh = magpy.magnet.TriangularMesh(
-            magnetization=(0, 0, 1000),
+            polarization=(0, 0, 1),
             vertices=vertices,
             faces=faces,
             check_open="ignore",
@@ -239,7 +243,7 @@ def test_open_mesh():
 
     with pytest.warns(UserWarning, match=r"Unchecked mesh status of .* detected"):
         mesh = magpy.magnet.TriangularMesh(
-            magnetization=(0, 0, 1000),
+            polarization=(0, 0, 1),
             vertices=vertices,
             faces=faces,
             check_open="skip",
@@ -253,7 +257,7 @@ def test_disconnected_mesh():
     #  Multiple Text3D letters are disconnected
     with pytest.raises(ValueError, match=r"Disconnected mesh detected in .*."):
         magpy.magnet.TriangularMesh.from_pyvista(
-            magnetization=(0, 0, 1000),
+            polarization=(0, 0, 1),
             polydata=pv.Text3D("AB"),
             check_disconnected="raise",
         )
@@ -274,14 +278,14 @@ def test_selfintersecting_triangular_mesh():
     faces = np.array([v for k, v in selfintersecting_mesh3d.items() if k in "ijk"]).T
     with pytest.raises(ValueError, match=r"Self-intersecting mesh detected in .*."):
         magpy.magnet.TriangularMesh(
-            magnetization=(0, 0, 1000),
+            polarization=(0, 0, 1),
             vertices=vertices,
             faces=faces,
             check_selfintersecting="raise",
         )
     with pytest.warns(UserWarning, match=r"Self-intersecting mesh detected in .*."):
         magpy.magnet.TriangularMesh(
-            magnetization=(0, 0, 1000),
+            polarization=(0, 0, 1),
             vertices=vertices,
             faces=faces,
             check_selfintersecting="warn",
@@ -292,7 +296,9 @@ def test_TriangularMesh_from_pyvista():
     """Test from_pyvista classmethod"""
 
     def get_tri_from_pv(obj):
-        return magpy.magnet.TriangularMesh.from_pyvista((0, 0, 1000), obj)
+        return magpy.magnet.TriangularMesh.from_pyvista(
+            polarization=(0, 0, 1), polydata=obj
+        )
 
     # shoud work
     get_tri_from_pv(pv.Cube())
@@ -309,12 +315,12 @@ def test_TriangularMesh_from_pyvista():
 
 def test_TriangularMesh_from_faces_bad_inputs():
     """Test from_faces classmethod bad inputs"""
-    mag = (0, 0, 1000)
+    pol = (0, 0, 1)
 
     def get_tri_from_triangles(trias):
         return magpy.magnet.TriangularMesh.from_triangles(
-            mag,
-            trias,
+            polarization=pol,
+            triangles=trias,
             check_open=False,
             check_disconnected=False,
             reorient_faces=False,
@@ -322,14 +328,16 @@ def test_TriangularMesh_from_faces_bad_inputs():
 
     def get_tri_from_mesh(mesh):
         return magpy.magnet.TriangularMesh.from_mesh(
-            mag,
-            mesh,
+            polarization=pol,
+            mesh=mesh,
             check_open=False,
             check_disconnected=False,
             reorient_faces=False,
         )
 
-    triangle = magpy.misc.Triangle(mag, [(0, 0, 0), (1, 0, 0), (0, 1, 0)])
+    triangle = magpy.misc.Triangle(
+        polarization=pol, vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)]
+    )
 
     # good element type but not array-like
     with pytest.raises(TypeError):
@@ -356,26 +364,38 @@ def test_TriangularMesh_from_faces_bad_inputs():
 
 def test_TriangularMesh_from_faces_good_inputs():
     """Test from_faces classmethod good inputs"""
-    mag = (0, 0, 1000)
+    pol = (0, 0, 1)
 
     # create Tetrahedron and move/orient randomly
-    tetra = magpy.magnet.Tetrahedron(mag, [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)])
+    tetra = magpy.magnet.Tetrahedron(
+        polarization=pol, vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
+    )
     tetra.move((3, 4, 5)).rotate_from_angax([13, 37], (1, 2, 3), anchor=0)
     pos_ori = {"orientation": tetra.orientation, "position": tetra.position}
 
-    tmesh1 = magpy.magnet.TriangularMesh.from_ConvexHull(mag, tetra.vertices, **pos_ori)
+    tmesh1 = magpy.magnet.TriangularMesh.from_ConvexHull(
+        polarization=pol, points=tetra.vertices, **pos_ori
+    )
 
     # from triangle list
-    trias = [magpy.misc.Triangle(mag, face) for face in tmesh1.mesh]
-    tmesh2 = magpy.magnet.TriangularMesh.from_triangles(mag, trias, **pos_ori)
+    trias = [
+        magpy.misc.Triangle(polarization=pol, vertices=face) for face in tmesh1.mesh
+    ]
+    tmesh2 = magpy.magnet.TriangularMesh.from_triangles(
+        polarization=pol, triangles=trias, **pos_ori
+    )
 
     # from collection
     coll = magpy.Collection(trias)
-    tmesh3 = magpy.magnet.TriangularMesh.from_triangles(mag, coll, **pos_ori)
+    tmesh3 = magpy.magnet.TriangularMesh.from_triangles(
+        polarization=pol, triangles=coll, **pos_ori
+    )
 
     # from mesh
     msh = [t.vertices for t in coll]
-    tmesh4 = magpy.magnet.TriangularMesh.from_mesh(mag, msh, **pos_ori)
+    tmesh4 = magpy.magnet.TriangularMesh.from_mesh(
+        polarization=pol, mesh=msh, **pos_ori
+    )
 
     points = [0, 0, 0]
     B0 = tetra.getB(points)
@@ -443,7 +463,7 @@ def test_bad_mode_input():
         match=r"The `check_open mode` argument .*, instead received 'badinput'.",
     ):
         magpy.magnet.TriangularMesh.from_pyvista(
-            magnetization=(0, 0, 1000), polydata=pv.Octahedron(), check_open="badinput"
+            polarization=(0, 0, 1), polydata=pv.Octahedron(), check_open="badinput"
         )
 
 
@@ -457,7 +477,11 @@ def test_orientation_edge_case():
         return [(r0 * np.cos(t), r0 * np.sin(t), 10) for t in ts] + [(0, 0, 0)]
 
     ts = np.linspace(0, 2 * np.pi, 5)
-    cone1 = magpy.magnet.TriangularMesh.from_ConvexHull((0, 0, 1), points(12))
-    cone2 = magpy.magnet.TriangularMesh.from_ConvexHull((0, 0, 1), points(13))
+    cone1 = magpy.magnet.TriangularMesh.from_ConvexHull(
+        polarization=(0, 0, 1), points=points(12)
+    )
+    cone2 = magpy.magnet.TriangularMesh.from_ConvexHull(
+        polarization=(0, 0, 1), points=points(13)
+    )
 
     np.testing.assert_array_equal(cone1.faces, cone2.faces)

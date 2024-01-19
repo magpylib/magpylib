@@ -206,14 +206,18 @@ def test_cylinder_field1():
     eins = np.ones(N)
     d, h, _ = dim.T
     dim5 = np.array([nulll, d / 2, h, nulll, eins * 360]).T
-    B1 = magnet_cylinder_segment_field("B", poso, magg, dim5)
+    B1 = magnet_cylinder_segment_field(
+        field="B", observers=poso, polarization=magg, dimension=dim5
+    )
 
     assert np.allclose(B1, B0)
 
 
 def test_cylinder_slanovc_field2():
     """testing B for all input combinations in/out/surface of Tile solution"""
-    src = magpy.magnet.CylinderSegment((22, 33, 44), (0.5, 1, 2, 0, 90))
+    src = magpy.magnet.CylinderSegment(
+        polarization=(22, 33, 44), dimension=(0.5, 1, 2, 0, 90)
+    )
 
     binn = (5.52525937, 13.04561569, 40.11111556)
     bout = (0.0177018, 0.1277188, 0.27323195)
@@ -264,10 +268,12 @@ def test_cylinder_slanovc_field2():
 
 def test_cylinder_slanovc_field3():
     """testing H for all input combinations in/out/surface of Tile solution"""
-    src = magpy.magnet.CylinderSegment((22, 33, 44), (0.5, 1, 2, 0, 90))
+    src = magpy.magnet.CylinderSegment(
+        polarization=(22, 33, 44), dimension=(0.5, 1, 2, 0, 90)
+    )
 
-    hinn = (-13.11018204, -15.87919449, -3.09467591)
-    hout = (0.01408664, 0.1016354, 0.21743108)
+    hinn = np.array((-13.11018204, -15.87919449, -3.09467591)) * 1e6
+    hout = np.array((0.01408664, 0.1016354, 0.21743108)) * 1e6
     nulll = (0, 0, 0)
 
     # only inside
@@ -317,7 +323,7 @@ def test_cylinder_rauber_field4():
     """
     test continuity across indefinite form in cylinder_rauber field when observer at r=r0
     """
-    src = magpy.magnet.Cylinder((22, 33, 0), (2, 2))
+    src = magpy.magnet.Cylinder(polarization=(22, 33, 0), dimension=(2, 2))
     es = list(10 ** -np.linspace(11, 15, 50))
     xs = np.r_[1 - np.array(es), 1, 1 + np.array(es)[::-1]]
     possis = [(x, 0, 1.5) for x in xs]
@@ -328,8 +334,12 @@ def test_cylinder_rauber_field4():
 
 def test_cylinder_tile_negative_phi():
     """same result for phi>0 and phi<0 inputs"""
-    src1 = magpy.magnet.CylinderSegment((11, 22, 33), (2, 4, 4, 0, 45))
-    src2 = magpy.magnet.CylinderSegment((11, 22, 33), (2, 4, 4, -360, -315))
+    src1 = magpy.magnet.CylinderSegment(
+        polarization=(11, 22, 33), dimension=(2, 4, 4, 0, 45)
+    )
+    src2 = magpy.magnet.CylinderSegment(
+        polarization=(11, 22, 33), dimension=(2, 4, 4, -360, -315)
+    )
     B1 = src1.getB((1, 0.5, 0.1))
     B2 = src2.getB((1, 0.5, 0.1))
     assert np.allclose(B1, B2)
@@ -345,9 +355,18 @@ def test_cylinder_tile_vs_fem():
     mag3 = np.array((0, 1, -1)) / np.sqrt(2) * 1000
 
     # Magpylib magnet collection
-    m1 = magpy.magnet.CylinderSegment(mag1, (1, 2, 1, -90, 0))
-    m2 = magpy.magnet.CylinderSegment(mag2, (1, 2.5, 1.5, 200, 250))
-    m3 = magpy.magnet.CylinderSegment(mag3, (0.75, 3, 0.5, 70, 180))
+    m1 = magpy.magnet.CylinderSegment(
+        polarization=mag1,
+        dimension=(1, 2, 1, -90, 0),
+    )
+    m2 = magpy.magnet.CylinderSegment(
+        polarization=mag2,
+        dimension=(1, 2.5, 1.5, 200, 250),
+    )
+    m3 = magpy.magnet.CylinderSegment(
+        polarization=mag3,
+        dimension=(0.75, 3, 0.5, 70, 180),
+    )
     col = m1 + m2 + m3
 
     # create observer circles (see FEM screen shot)
@@ -378,7 +397,7 @@ def test_cylinder_tile_vs_fem():
 def test_cylinder_corner():
     """test corner =0 behavior"""
     a = 1
-    s = magpy.magnet.Cylinder((10, 10, 1000), (2 * a, 2 * a))
+    s = magpy.magnet.Cylinder(polarization=(10, 10, 1000), dimension=(2 * a, 2 * a))
     B = s.getB(
         [
             [0, a, a],
@@ -398,7 +417,7 @@ def test_cylinder_corner_scaling():
     """test corner=0 scaling"""
     a = 1
     obs = [[a, 0, a + 1e-14], [a + 1e-14, 0, a]]
-    s = magpy.magnet.Cylinder((10, 10, 1000), (2 * a, 2 * a))
+    s = magpy.magnet.Cylinder(polarization=(10, 10, 1000), dimension=(2 * a, 2 * a))
     Btest = [
         [5.12553286e03, -2.26623480e00, 2.59910242e02],
         [5.12803286e03, -2.26623480e00, 9.91024238e00],
@@ -407,7 +426,7 @@ def test_cylinder_corner_scaling():
 
     a = 1000
     obs = [[a, 0, a + 1e-14], [a + 1e-14, 0, a]]
-    s = magpy.magnet.Cylinder((10, 10, 1000), (2 * a, 2 * a))
+    s = magpy.magnet.Cylinder(polarization=(10, 10, 1000), dimension=(2 * a, 2 * a))
     np.testing.assert_allclose(s.getB(obs), np.zeros((2, 3)))
 
 
@@ -429,15 +448,15 @@ def test_cylinder_scaling_invariance():
     )
 
     a = 1e-6
-    s1 = magpy.magnet.Cylinder((10, 10, 1000), (2 * a, 2 * a))
+    s1 = magpy.magnet.Cylinder(polarization=(10, 10, 1000), dimension=(2 * a, 2 * a))
     Btest1 = s1.getB(obs * a)
 
     a = 1
-    s2 = magpy.magnet.Cylinder((10, 10, 1000), (2 * a, 2 * a))
+    s2 = magpy.magnet.Cylinder(polarization=(10, 10, 1000), dimension=(2 * a, 2 * a))
     Btest2 = s2.getB(obs)
 
     a = 1e7
-    s3 = magpy.magnet.Cylinder((10, 10, 1000), (2 * a, 2 * a))
+    s3 = magpy.magnet.Cylinder(polarization=(10, 10, 1000), dimension=(2 * a, 2 * a))
     Btest3 = s3.getB(obs * a)
 
     np.testing.assert_allclose(Btest1, Btest2)
@@ -450,10 +469,10 @@ def test_cylinder_diametral_small_r():
     test if the gneral case fluctuations are small
     """
     B = magpy.core.magnet_cylinder_field(
-        "B",
-        np.array([(x, 0, 3) for x in np.logspace(-1.4, -1.2, 1000)]),
-        np.array([(1, 1, 0)] * 1000),
-        np.array([(2, 2)] * 1000),
+        field="B",
+        observers=np.array([(x, 0, 3) for x in np.logspace(-1.4, -1.2, 1000)]),
+        polarization=np.array([(1, 1, 0)] * 1000),
+        dimension=np.array([(2, 2)] * 1000),
     )
 
     dB = np.log(abs(B[1:] - B[:-1]))
@@ -475,12 +494,12 @@ def test_cyl_vs_cylseg_axial_H_inside_mask():
         field=field,
         observers=obs,
         dimension=dims,
-        magnetization=pols,
+        polarization=pols,
     )
     Bcs = magpy.core.magnet_cylinder_segment_field(
         field=field,
         observers=obs,
         dimension=dims_cs,
-        magnetization=pols,
+        polarization=pols,
     )
     np.testing.assert_allclose(Bc, Bcs)

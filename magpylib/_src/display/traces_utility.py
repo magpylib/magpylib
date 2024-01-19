@@ -18,8 +18,15 @@ def get_legend_label(obj, style=None, suffix=True):
     """provides legend entry based on name and suffix"""
     style = obj.style if style is None else style
     name = style.label if style.label else obj.__class__.__name__
-    desc = getattr(obj, "_default_style_description", "")
-    suff = f" ({desc})" if style.description.show and desc and suffix else ""
+    legend_txt = style.legend.text
+    if legend_txt:
+        return legend_txt
+    suff = ""
+    if suffix and style.description.show:
+        desc = style.description.text
+        if not desc:
+            desc = getattr(obj, "_default_style_description", "")
+        suff = f" ({desc})"
     return f"{name}{suff}"
 
 

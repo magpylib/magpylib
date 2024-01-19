@@ -90,8 +90,8 @@ def test_BaseGeo_init(
     if init_orientation_rotvec is None:
         init_orientation_rotvec = (0, 0, 0)
     src = magpy.magnet.Cuboid(
-        (1, 0, 0),
-        (1, 1, 1),
+        polarization=(1, 0, 0),
+        dimension=(1, 1, 1),
         position=init_position,
         orientation=R.from_rotvec(init_orientation_rotvec),
     )
@@ -168,7 +168,12 @@ def test_BaseGeo_setting_position(
     test_ori,
 ):
     """test position and orientation initialization"""
-    src = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), init_pos, R.from_rotvec(init_ori))
+    src = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0),
+        dimension=(1, 1, 1),
+        position=init_pos,
+        orientation=R.from_rotvec(init_ori),
+    )
     src.position = test_pos
     validate_pos_orient(src, test_pos, test_ori)
 
@@ -185,7 +190,12 @@ def test_BaseGeo_setting_orientation(
     test_ori,
 ):
     """test position and orientation initialization"""
-    src = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), init_pos, R.from_rotvec(init_ori))
+    src = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0),
+        dimension=(1, 1, 1),
+        position=init_pos,
+        orientation=R.from_rotvec(init_ori),
+    )
     src.orientation = R.from_rotvec(test_ori)
     validate_pos_orient(src, test_pos, test_ori)
 
@@ -355,8 +365,8 @@ def test_BaseGeo_multianchor_rotation(
     if init_orientation_rotvec is None:
         init_orientation_rotvec = (0, 0, 0)
     src = magpy.magnet.Cuboid(
-        (1, 0, 0),
-        (1, 1, 1),
+        polarization=(1, 0, 0),
+        dimension=(1, 1, 1),
         position=init_position,
         orientation=R.from_rotvec(init_orientation_rotvec),
     )

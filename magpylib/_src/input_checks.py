@@ -505,7 +505,8 @@ def check_format_input_observers(inp, pixel_agg=None):
 
         # all pixel shapes must be the same
         pix_shapes = [
-            (1, 3) if s.pixel.shape == (3,) else s.pixel.shape for s in sensors
+            (1, 3) if (s.pixel is None or s.pixel.shape == (3,)) else s.pixel.shape
+            for s in sensors
         ]
         if pixel_agg is None and not all_same(pix_shapes):
             raise MagpylibBadUserInput(
@@ -595,7 +596,7 @@ def check_dimensions(sources):
 def check_excitations(sources):
     """check if all sources have excitation initialized"""
     for src in sources:
-        for arg in ("magnetization", "current", "moment"):
+        for arg in ("polarization", "current", "moment"):
             if hasattr(src, arg):
                 if getattr(src, arg) is None:
                     raise MagpylibMissingInput(

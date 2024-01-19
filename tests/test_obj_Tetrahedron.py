@@ -14,7 +14,7 @@ def test_Tetrahedron_repr():
 def test_tetra_input():
     """test obj-oriented triangle vs cube"""
     obs = (1, 2, 3)
-    mag = (111, 222, 333)
+    pol = (111, 222, 333)
     vert_list = [
         [(1, 1, -1), (1, 1, 1), (-1, 1, 1), (1, -1, 1)],
         [(-1, -1, 1), (-1, 1, 1), (1, -1, 1), (1, -1, -1)],
@@ -26,9 +26,9 @@ def test_tetra_input():
 
     coll = magpy.Collection()
     for v in vert_list:
-        coll.add(magpy.magnet.Tetrahedron(mag, v))
+        coll.add(magpy.magnet.Tetrahedron(polarization=pol, vertices=v))
 
-    cube = magpy.magnet.Cuboid(mag, (2, 2, 2))
+    cube = magpy.magnet.Cuboid(polarization=pol, dimension=(2, 2, 2))
 
     b = coll.getB(obs)
     bb = cube.getB(obs)
@@ -52,12 +52,12 @@ def test_tetra_bad_inputs(vertices):
     """test obj-oriented triangle vs cube"""
 
     with pytest.raises(MagpylibBadUserInput):
-        magpy.magnet.Tetrahedron((111, 222, 333), vertices)
+        magpy.magnet.Tetrahedron(polarization=(0.111, 0.222, 0.333), vertices=vertices)
 
 
 def test_tetra_barycenter():
     """get barycenter"""
-    mag = (111, 222, 333)
+    pol = (0.111, 0.222, 0.333)
     vert = [(1, 1, -1), (1, 1, 1), (-1, 1, 1), (1, -1, 1)]
-    tetra = magpy.magnet.Tetrahedron(mag, vert)
+    tetra = magpy.magnet.Tetrahedron(polarization=pol, vertices=vert)
     np.testing.assert_allclose(tetra.barycenter, (0.5, 0.5, 0.5))

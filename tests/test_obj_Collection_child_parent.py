@@ -311,10 +311,10 @@ def test_collection_remove():
 
 def test_collection_nested_getBH():
     """test if getBH functionality is self-consistent with nesting"""
-    s1 = magpy.current.Circle(1, 1)
-    s2 = magpy.current.Circle(1, 1)
-    s3 = magpy.current.Circle(1, 1)
-    s4 = magpy.current.Circle(1, 1)
+    s1 = magpy.current.Circle(current=1, diameter=1)
+    s2 = magpy.current.Circle(current=1, diameter=1)
+    s3 = magpy.current.Circle(current=1, diameter=1)
+    s4 = magpy.current.Circle(current=1, diameter=1)
 
     obs = [(1, 2, 3), (-2, -3, 1), (2, 2, -4), (4, 2, -4)]
     coll = s1 + s2 + s3 + s4  # nasty nesting

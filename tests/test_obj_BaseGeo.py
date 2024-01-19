@@ -280,7 +280,7 @@ def test_scipy_from_methods():
     """test all rotation methods inspired from scipy implemented in BaseTransform"""
 
     def cube():
-        return magpy.magnet.Cuboid((11, 22, 33), (1, 1, 1))
+        return magpy.magnet.Cuboid(polarization=(11, 22, 33), dimension=(1, 1, 1))
 
     angs_deg = np.linspace(0, 360, 10)
     angs = np.deg2rad(angs_deg)
@@ -415,7 +415,7 @@ def test_describe():
     # pylint: disable=protected-access
     x1 = magpy.magnet.Cuboid(style_label="x1")
     x2 = magpy.magnet.Cylinder(
-        style_label="x2", dimension=(1, 3), magnetization=(2, 3, 4)
+        style_label="x2", dimension=(1, 3), polarization=(2, 3, 4)
     )
     s1 = magpy.Sensor(position=[(1, 2, 3)] * 3, pixel=[(1, 2, 3)] * 15)
 
@@ -424,8 +424,8 @@ def test_describe():
 
     test = (
         "<pre>Cuboid(id=REGEX, label='x1')<br>  • parent: None <br>  • "
-        "position: [0. 0. 0.] mm<br>  • orientation: [0. 0. 0.] degrees<br>  • "
-        "dimension: None mm<br>  • magnetization: None mT</pre>"
+        "position: [0. 0. 0.] m<br>  • orientation: [0. 0. 0.] deg<br>  • "
+        "dimension: None m<br>  • magnetization: None A/m<br>  • polarization: None T</pre>"
     )
     rep = x1._repr_html_()
     rep = re.sub("id=[0-9]*[0-9]", "id=REGEX", rep)
@@ -435,10 +435,11 @@ def test_describe():
     test = [
         "Cuboid(id=REGEX, label='x1')",
         "  • parent: Collection(id=REGEX) ",  # INVISIBLE SPACE
-        "  • position: [0. 0. 0.] mm",
-        "  • orientation: [0. 0. 0.] degrees",
-        "  • dimension: None mm",
-        "  • magnetization: None mT",
+        "  • position: [0. 0. 0.] m",
+        "  • orientation: [0. 0. 0.] deg",
+        "  • dimension: None m",
+        "  • magnetization: None A/m",
+        "  • polarization: None T",
     ]
     desc = x1.describe(return_string=True)
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
@@ -447,10 +448,11 @@ def test_describe():
     test = [
         "Cylinder(id=REGEX, label='x2')",
         "  • parent: Collection(id=REGEX) ",  # INVISIBLE SPACE
-        "  • position: [0. 0. 0.] mm",
-        "  • orientation: [0. 0. 0.] degrees",
-        "  • dimension: [1. 3.] mm",
-        "  • magnetization: [2. 3. 4.] mT",
+        "  • position: [0. 0. 0.] m",
+        "  • orientation: [0. 0. 0.] deg",
+        "  • dimension: [1. 3.] m",
+        "  • magnetization: [1591549.43091895 2387324.14637843 3183098.86183791] A/m",
+        "  • polarization: [2. 3. 4.] T",
     ]
     desc = x2.describe(return_string=True)
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
@@ -460,8 +462,8 @@ def test_describe():
         "Sensor(id=REGEX)",
         "  • parent: None ",  # INVISIBLE SPACE
         "  • path length: 3",
-        "  • position (last): [1. 2. 3.] mm",
-        "  • orientation (last): [0. 0. 0.] degrees",
+        "  • position (last): [1. 2. 3.] m",
+        "  • orientation (last): [0. 0. 0.] deg",
         "  • handedness: right ",
         "  • pixel: 15 ",  # INVISIBLE SPACE
     ]
@@ -475,14 +477,14 @@ def test_describe():
     test = (
         "Sensor(id=REGEX)\n"
         + "  • parent: None \n"
-        + "  • position: [0. 0. 0.] mm\n"
-        + "  • orientation: [0. 0. 0.] degrees\n"
+        + "  • position: [0. 0. 0.] m\n"
+        + "  • orientation: [0. 0. 0.] deg\n"
         + "  • handedness: right \n"
-        + "  • pixel: 1 \n"
+        + "  • pixel: None \n"
         + "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), "
         + "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True)),"
         + " color=None, description=Description(show=None, text=None), label=None, "
-        + "legend=Legend(show=None), "
+        + "legend=Legend(show=None, text=None), "
         + "model3d=Model3d(data=[], showdefault=True), opacity=None, path=Path(frames=None,"
         + " line=Line(color=None, style=None, width=None), marker=Marker(color=None,"
         + " size=None, symbol=None), numbering=None, show=None), pixel=Pixel(color=None,"
@@ -497,8 +499,8 @@ def test_describe():
     test = (
         "Sensor(id=REGEX)\n"
         + "  • parent: None \n"
-        + "  • position: [0. 0. 0.] mm\n"
-        + "  • orientation: [0. 0. 0.] degrees\n"
+        + "  • position: [0. 0. 0.] m\n"
+        + "  • orientation: [0. 0. 0.] deg\n"
         + "  • handedness: left \n"
         + "  • pixel: 75 (3x5x5) "
     )
@@ -514,7 +516,7 @@ def test_describe():
         (0, 0, 2),
     ]
     s = magpy.magnet.TriangularMesh.from_ConvexHull(
-        magnetization=(0, 0, 1000),
+        polarization=(0, 0, 1),
         points=points,
         check_selfintersecting="skip",
     )
@@ -522,9 +524,10 @@ def test_describe():
     test = (
         "TriangularMesh(id=REGEX)\n"
         "  • parent: None \n"
-        "  • position: [0. 0. 0.] mm\n"
-        "  • orientation: [0. 0. 0.] degrees\n"
-        "  • magnetization: [   0.    0. 1000.] mT\n"
+        "  • position: [0. 0. 0.] m\n"
+        "  • orientation: [0. 0. 0.] deg\n"
+        "  • magnetization: [     0.              0.         795774.71545948] A/m\n"
+        "  • polarization: [0. 0. 1.] T\n"
         "  • barycenter: [0.         0.         0.46065534] \n"
         "  • faces: shape(6, 3) \n"
         "  • mesh: shape(6, 3, 3) \n"

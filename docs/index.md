@@ -101,9 +101,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 
 ```{toctree}
 :maxdepth: 2
-:hidden:
 
-_pages/reso_news.md
 _pages/reso_get_started.md
 _pages/docu/docu_index.md
 _pages/gallery/gallery_index.md

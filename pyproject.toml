@@ -40,7 +40,7 @@ code_style = [
     "pre-commit",
 ]
 docs = [
-    "sphinx==5.3",
+    "sphinx==7.2",
     "sphinx-design",
     "sphinx-thebe",
     "sphinx-favicon",
@@ -50,8 +50,7 @@ docs = [
     "myst-nb",
     "pandas",
     "numpy-stl",
-    "pyvista==0.37",
-    "panel",
+    "pyvista",
 ]
 test = [
     "tox>=4.11",
@@ -60,9 +59,8 @@ test = [
     "coverage",
     "pandas",
     "pyvista",
-    "ipygany",
-    "imageio[tifffile]",
-    "kaleido",
+    "ipywidgets", # for plotly FigureWidget
+    "imageio[tifffile, ffmpeg]",
     "jupyterlab",
 ]
 binder = [
@@ -79,5 +77,7 @@ Changelog = "https://github.com/magpylib/magpylib/blob/master/CHANGELOG.md"
 
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules"
+# backend_pyvista.py file imports pyvista on top level which messes with the namespace when running
+# doctests with the missing_pyvista test
+addopts = ["--doctest-modules", "--ignore-glob=*backend_pyvista.py"]
 testpaths = ["magpylib", "tests"]

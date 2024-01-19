@@ -11,7 +11,7 @@ def test_loop_field():
     the field become instable. This is a result of small displacements from the axis
     where the field is evaluated due to floating-point errors. see paper Leitner2021.
     """
-    lop = magpy.current.Circle(1000, 1)
+    lop = magpy.current.Circle(current=1000, diameter=1)
 
     anch = (0, 0, 1)
     B = []

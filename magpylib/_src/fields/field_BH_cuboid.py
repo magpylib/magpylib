@@ -5,35 +5,43 @@ magnetized Cuboids. Computation details in function docstrings.
 import numpy as np
 
 from magpylib._src.input_checks import check_field_input
+from magpylib._src.utility import MU0
 
 
+# CORE
 def magnet_cuboid_field(
-    field: str, observers: np.ndarray, magnetization: np.ndarray, dimension: np.ndarray
+    *,
+    field: str,
+    observers: np.ndarray,
+    dimension: np.ndarray,
+    polarization: np.ndarray,
 ) -> np.ndarray:
-    """Magnetic field of a homogeneously magnetized cuboid.
+    """Magnetic field of homogeneously magnetized cuboids.
 
     The cuboid sides are parallel to the coordinate axes. The geometric center of the
     cuboid lies in the origin.
 
+    SI units are used for all inputs and outputs.
+
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
-        in units of kA/m.
+        If `field='B'` return B-field in units of T, if `field='H'` return H-field
+        in units of A/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
-
-    magnetization: ndarray, shape (n,3)
-        Homogeneous magnetization vector in units of mT.
+        Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
     dimension: ndarray, shape (n,3)
-        Cuboid side lengths in units of mm.
+        Length of Cuboid sides in units of m.
+
+    polarization: ndarray, shape (n,3)
+        Magnetic polarization vectors in units of T.
 
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
+        B- or H-field of source in Cartesian coordinates in units of T or A/m.
 
     Examples
     --------
@@ -41,17 +49,24 @@ def magnet_cuboid_field(
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> mag = np.array([(222,333,555), (33,44,55), (0,0,100)])
-    >>> dim = np.array([(1,1,1), (2,3,4), (1,2,3)])
-    >>> obs = np.array([(1,2,3), (2,3,4), (0,0,0)])
-    >>> B = magpy.core.magnet_cuboid_field('B', obs, mag, dim)
+    >>> B = magpy.core.magnet_cuboid_field(
+    ...     field='B',
+    ...     observers=np.array([(1,2,0), (2,3,4), (0,0,0)]),
+    ...     dimension=np.array([(2,2,2), (3,3,3), (4,4,4)]),
+    ...     polarization=np.array([(0,0,1), (1,0,0), (0,0,1)]),
+    ... )
     >>> print(B)
-    [[ 0.49343022  1.15608356  1.65109312]
-     [ 0.82221622  1.18511282  1.46945423]
-     [ 0.          0.         88.77487579]]
+    [[ 0.          0.         -0.05227894]
+     [-0.00820941  0.00849123  0.011429  ]
+     [ 0.          0.          0.66666667]]
 
     Notes
     -----
+    Advanced unit use: The input unit of magnetization and polarization
+    gives the output unit of H and B. All results are independent of the
+    length input units. One must be careful, however, to use consistently
+    the same length unit throughout a script.
+
     Field computations via magnetic surface charge density. Published
     several times with similar expressions:
 
@@ -59,7 +74,7 @@ def magnet_cuboid_field(
 
     Engel-Herbert: Journal of Applied Physics 97(7):074504 - 074504-4 (2005)
 
-    Camacho: Revista Mexicana de Fisica E 59 (2013) 8–17
+    Camacho: Revista Mexicana de Fisica E 59 (2013) 8-17
 
     Avoiding indeterminate forms:
 
@@ -78,7 +93,7 @@ def magnet_cuboid_field(
 
     bh = check_field_input(field, "magnet_cuboid_field()")
 
-    magx, magy, magz = magnetization.T
+    magx, magy, magz = polarization.T
     a, b, c = np.abs(dimension.T) / 2
     x, y, z = observers.T
 
@@ -120,7 +135,7 @@ def magnet_cuboid_field(
     mask_gen = ~mask1 & mask2 & ~mask3
 
     if np.any(mask_gen):
-        magx, magy, magz = magnetization[mask_gen].T
+        magx, magy, magz = polarization[mask_gen].T
         a, b, c = dimension[mask_gen].T / 2
         x, y, z = np.copy(observers[mask_gen]).T
 
@@ -215,17 +230,17 @@ def magnet_cuboid_field(
             - np.arctan2((xpa * ypb), (zpc * ppp))
         )
 
-        # contributions from x-magnetization
+        # contributions from x-polarization
         bx_magx = (
             magx * ff1x * qsigns[:, 0, 0]
         )  # the 'missing' third sign is hidden in ff1x
         by_magx = magx * ff2z * qsigns[:, 0, 1]
         bz_magx = magx * ff2y * qsigns[:, 0, 2]
-        # contributions from y-magnetization
+        # contributions from y-polarization
         bx_magy = magy * ff2z * qsigns[:, 1, 0]
         by_magy = magy * ff1y * qsigns[:, 1, 1]
         bz_magy = -magy * ff2x * qsigns[:, 1, 2]
-        # contributions from z-magnetization
+        # contributions from z-polarization
         bx_magz = magz * ff2y * qsigns[:, 2, 0]
         by_magz = -magz * ff2x * qsigns[:, 2, 1]
         bz_magz = magz * ff1z * qsigns[:, 2, 2]
@@ -247,8 +262,8 @@ def magnet_cuboid_field(
     if bh:
         return B
 
-    # if inside magnet subtract magnetization vector
+    # if inside magnet subtract polarization vector
     mask_inside = mx2 & my2 & mz2
-    B[mask_inside] -= magnetization[mask_inside]
-    H = B * 10 / 4 / np.pi  # mT -> kA/m
+    B[mask_inside] -= polarization[mask_inside]
+    H = B / MU0  # T -> A/m
     return H

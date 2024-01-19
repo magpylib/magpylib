@@ -21,6 +21,8 @@ def get_allowed_sources_msg():
 - string {srcs}"""
 
 
+MU0 = 4 * np.pi * 1e-7
+
 ALLOWED_OBSERVER_MSG = """Observers must be either
 - array_like positions of shape (N1, N2, ..., 3)
 - Sensor object
@@ -167,7 +169,7 @@ def check_duplicates(obj_list: Sequence) -> list:
     return obj_list_new
 
 
-def test_path_format(inp):
+def check_path_format(inp):
     """check if each object path has same length
     of obj.pos and obj.rot
     Parameters

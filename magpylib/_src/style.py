@@ -324,12 +324,28 @@ class Legend(MagicProperties):
 
     Parameters
     ----------
+    text: str, default=None
+        Object description text.
+
     show: bool, default=None
         If True, adds legend entry based on value.
     """
 
     def __init__(self, show=None, **kwargs):
         super().__init__(show=show, **kwargs)
+
+    @property
+    def text(self):
+        """Legend text."""
+        return self._text
+
+    @text.setter
+    def text(self, val):
+        assert val is None or isinstance(val, str), (
+            f"The `show` property of {type(self).__name__} must be a string,\n"
+            f"but received {repr(val)} instead."
+        )
+        self._text = val
 
     @property
     def show(self):
@@ -1497,7 +1513,7 @@ class SensorProperties:
 
     sizemode: {'scaled', 'absolute'}, default='scaled'
         Defines the scale reference for the sensor size. If 'absolute', the `size` parameters
-        becomes the sensor size in millimeters.
+        becomes the sensor size in meters.
 
     pixel: dict, Pixel, default=None
         `Pixel` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
@@ -1561,7 +1577,7 @@ class DefaultSensor(MagicProperties, SensorProperties):
 
     sizemode: {'scaled', 'absolute'}, default='scaled'
         Defines the scale reference for the sensor size. If 'absolute', the `size` parameters
-        becomes the sensor size in millimeters.
+        becomes the sensor size in meters.
 
     pixel: dict, Pixel, default=None
         `Pixel` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
@@ -1640,7 +1656,7 @@ class Pixel(MagicProperties):
 
     sizemode: {'scaled', 'absolute'}, default='scaled'
         Defines the scale reference for the pixel size. If 'absolute', the `size` parameters
-        becomes the pixel size in millimeters.
+        becomes the pixel size in meters.
 
     color: str, default=None
         Defines the pixel color@property.
@@ -1804,7 +1820,7 @@ class Arrow(Line):
 
     sizemode: {'scaled', 'absolute'}, default='scaled'
         Defines the scale reference for the arrow size. If 'absolute', the `size` parameters
-        becomes the arrow length in millimeters.
+        becomes the arrow length in meters.
 
     offset: float, default=0.5
         Defines the arrow offset. `offset=0` results in the arrow head to be coincident to start
@@ -2000,7 +2016,7 @@ class DipoleProperties:
 
     sizemode: {'scaled', 'absolute'}, default='scaled'
         Defines the scale reference for the dipole size. If 'absolute', the `size` parameters
-        becomes the dipole size in millimeters.
+        becomes the dipole size in meters.
 
     pivot: str
         The part of the arrow that is anchored to the X, Y grid.
@@ -2063,7 +2079,7 @@ class DefaultDipole(MagicProperties, DipoleProperties):
 
     sizemode: {'scaled', 'absolute'}, default='scaled'
         Defines the scale reference for the dipole size. If 'absolute', the `size` parameters
-        becomes the dipole size in millimeters.
+        becomes the dipole size in meters.
 
     pivot: str, default=None
         The part of the arrow that is anchored to the X, Y grid.

@@ -4,7 +4,9 @@ from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.exceptions import MagpylibMissingInput
+
 
 # pylint: disable=unnecessary-lambda-assignment
 
@@ -93,7 +95,7 @@ def test_input_objects_pixel_bad(pixel):
     """bad input: magpy.Sensor(pixel=pixel)"""
 
     with pytest.raises(MagpylibBadUserInput):
-        magpy.Sensor((0, 0, 0), pixel=pixel)
+        magpy.Sensor(position=(0, 0, 0), pixel=pixel)
 
 
 @pytest.mark.parametrize(
@@ -135,7 +137,9 @@ def test_input_objects_orientation_bad(orientation_rotvec):
     """bad input: magpy.Sensor(orientation=orientation_rotvec)"""
 
     with pytest.raises(MagpylibBadUserInput):
-        magpy.Sensor((0, 0, 0), (0, 0, 0), orientation=orientation_rotvec)
+        magpy.Sensor(
+            position=(0, 0, 0), pixel=(0, 0, 0), orientation=orientation_rotvec
+        )
 
 
 @pytest.mark.parametrize(
@@ -154,7 +158,7 @@ def test_input_objects_orientation_bad(orientation_rotvec):
 def test_input_objects_current_good(current):
     """good input: magpy.current.Circle(current)"""
 
-    src = magpy.current.Circle(current)
+    src = magpy.current.Circle(current=current)
     if current is None:
         assert src.current is None
     else:
@@ -261,7 +265,7 @@ def test_input_objects_vertices_bad(vertices):
 
 
 @pytest.mark.parametrize(
-    "moment",
+    "pol_or_mom",
     [
         None,
         (1, 2, 3),
@@ -270,21 +274,21 @@ def test_input_objects_vertices_bad(vertices):
         np.array((1, 2, 3)),
     ],
 )
-def test_input_objects_magnetization_moment_good(moment):
+def test_input_objects_magnetization_moment_good(pol_or_mom):
     """
     good input:
         magpy.magnet.Cuboid(magnetization=moment),
         magpy.misc.Dipole(moment=moment)
     """
 
-    src = magpy.magnet.Cuboid(moment)
-    src2 = magpy.misc.Dipole(moment)
-    if moment is None:
-        assert src.magnetization is None
+    src = magpy.magnet.Cuboid(polarization=pol_or_mom)
+    src2 = magpy.misc.Dipole(moment=pol_or_mom)
+    if pol_or_mom is None:
+        assert src.polarization is None
         assert src2.moment is None
     else:
-        np.testing.assert_allclose(src.magnetization, moment)
-        np.testing.assert_allclose(src2.moment, moment)
+        np.testing.assert_allclose(src.polarization, pol_or_mom)
+        np.testing.assert_allclose(src2.moment, pol_or_mom)
 
 
 @pytest.mark.parametrize(
@@ -514,8 +518,10 @@ def test_input_objects_field_func_good():
 )
 def test_input_objects_field_func_bad(func):
     """bad input: magpy.misc.CustomSource(field_func=f)"""
-    with pytest.raises(MagpylibBadUserInput):
-        magpy.misc.CustomSource(func)
+    with pytest.raises(
+        MagpylibBadUserInput, match=r"Input parameter `field_func` must .*."
+    ):
+        magpy.misc.CustomSource(field_func=func)
 
 
 def test_missing_input_triangular_mesh():
@@ -718,7 +724,7 @@ def test_input_rotate_axis_bad(axis):
 )
 def test_input_observers_good(observers):
     """good observers input"""
-    src = magpy.misc.Dipole((1, 2, 3))
+    src = magpy.misc.Dipole(moment=(1, 2, 3))
     B = src.getB(observers)
     assert isinstance(B, np.ndarray)
 
@@ -731,7 +737,7 @@ def test_input_observers_good(observers):
         [],
         ("a", "b", "c"),
         [("a", "b", "c")],
-        magpy.misc.Dipole((1, 2, 3)),
+        magpy.misc.Dipole(moment=(1, 2, 3)),
         [(1, 2, 3), [(1, 2, 3)] * 2],
         [magpy.Sensor(), [(1, 2, 3)] * 2],
         [[(1, 2, 3)] * 2, magpy.Collection(magpy.Sensor())],
@@ -740,7 +746,7 @@ def test_input_observers_good(observers):
 )
 def test_input_observers_bad(observers):
     """bad observers input"""
-    src = magpy.misc.Dipole((1, 2, 3))
+    src = magpy.misc.Dipole(moment=(1, 2, 3))
     with pytest.raises(MagpylibBadUserInput):
         src.getB(observers)
 
@@ -930,7 +936,7 @@ def test_input_getBH_field_good(field):
     """good getBH field inputs"""
     moms = np.array([[1, 2, 3]])
     obs = np.array([[1, 2, 3]])
-    B = magpy.core.dipole_field(field, obs, moms)
+    B = magpy.core.dipole_field(field=field, observers=obs, moment=moms)
     assert isinstance(B, np.ndarray)
 
 
@@ -954,4 +960,40 @@ def test_input_getBH_field_bad(field):
     moms = np.array([[1, 2, 3]])
     obs = np.array([[1, 2, 3]])
     with pytest.raises(MagpylibBadUserInput):
-        magpy.core.dipole_field(field, obs, moms)
+        magpy.core.dipole_field(field=field, observers=obs, moment=moms)
+
+
+def test_sensor_handedness():
+    """Test if handedness input"""
+    magpy.Sensor(handedness="right")
+    magpy.Sensor(handedness="left")
+    with pytest.raises(
+        MagpylibBadUserInput,
+        match=r"Sensor `handedness` must be either `'right'` or `'left'`",
+    ):
+        magpy.Sensor(handedness="not_right_or_left")
+
+
+def test_magnet_polarization_magnetization_input():
+    """test codependency and magnetization polarization inputs"""
+    # warning when magnetization is too low -> polarization confusion
+    mag = np.array([1, 2, 3]) * 1e6
+
+    with pytest.warns(
+        MagpylibDeprecationWarning,
+        match=r".* received a very low magnetization. .*",
+    ):
+        magpy.magnet.Cuboid(magnetization=[1, 2, 3])
+
+    # both polarization and magnetization at the same time
+    with pytest.raises(
+        ValueError,
+        match=r"The attributes magnetization and polarization are dependent. .*",
+    ):
+        magpy.magnet.Cuboid(polarization=[1, 2, 3], magnetization=mag)
+
+    # setting magnetization afterwards
+    c = magpy.magnet.Cuboid()
+    c.magnetization = mag
+    np.testing.assert_allclose(mag, c.magnetization)
+    np.testing.assert_allclose(mag * (4 * np.pi * 1e-7), c.polarization)

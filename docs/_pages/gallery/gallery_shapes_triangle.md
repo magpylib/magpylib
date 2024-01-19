@@ -1,15 +1,15 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.7
+    jupytext_version: 1.15.2
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
+orphan: true
 ---
 
 (gallery-shapes-triangle)=
@@ -31,35 +31,37 @@ In this example `Triangle` is used to create a magnet with cuboctahedral shape. 
 
 ```{code-cell} ipython3
 import magpylib as magpy
+import numpy as np
 
 # Create collection of triangles
-triangles = [
-    ([ 0, 1,-1], [-1, 1, 0], [ 1, 1, 0]),
-    ([ 0, 1, 1], [ 1, 1, 0], [-1, 1, 0]),
-    ([ 0, 1, 1], [-1, 0, 1], [ 0,-1, 1]),
-    ([ 0, 1, 1], [ 0,-1, 1], [ 1, 0, 1]),
-    ([ 0, 1,-1], [ 1, 0,-1], [ 0,-1,-1]),
-    ([ 0, 1,-1], [ 0,-1,-1], [-1, 0,-1]),
-    ([ 0,-1, 1], [-1,-1, 0], [ 1,-1, 0]),
-    ([ 0,-1,-1], [ 1,-1, 0], [-1,-1, 0]),
-    ([-1, 1, 0], [-1, 0,-1], [-1, 0, 1]),
-    ([-1,-1, 0], [-1, 0, 1], [-1, 0,-1]),
-    ([ 1, 1, 0], [ 1, 0, 1], [ 1, 0,-1]),
-    ([ 1,-1, 0], [ 1, 0,-1], [ 1, 0, 1]),
-    ([ 0, 1, 1], [-1, 1, 0], [-1, 0, 1]),
-    ([ 0, 1, 1], [ 1, 0, 1], [ 1, 1, 0]),
-    ([ 0, 1,-1], [-1, 0,-1], [-1, 1, 0]),
-    ([ 0, 1,-1], [ 1, 1, 0], [ 1, 0,-1]),
-    ([ 0,-1,-1], [-1,-1, 0], [-1, 0,-1]),
-    ([ 0,-1,-1], [ 1, 0,-1], [ 1,-1, 0]),
-    ([ 0,-1, 1], [-1, 0, 1], [-1,-1, 0]),
-    ([ 0,-1, 1], [ 1,-1, 0], [ 1, 0, 1]),
+triangles_cm = [
+    ([0, 1, -1], [-1, 1, 0], [1, 1, 0]),
+    ([0, 1, 1], [1, 1, 0], [-1, 1, 0]),
+    ([0, 1, 1], [-1, 0, 1], [0, -1, 1]),
+    ([0, 1, 1], [0, -1, 1], [1, 0, 1]),
+    ([0, 1, -1], [1, 0, -1], [0, -1, -1]),
+    ([0, 1, -1], [0, -1, -1], [-1, 0, -1]),
+    ([0, -1, 1], [-1, -1, 0], [1, -1, 0]),
+    ([0, -1, -1], [1, -1, 0], [-1, -1, 0]),
+    ([-1, 1, 0], [-1, 0, -1], [-1, 0, 1]),
+    ([-1, -1, 0], [-1, 0, 1], [-1, 0, -1]),
+    ([1, 1, 0], [1, 0, 1], [1, 0, -1]),
+    ([1, -1, 0], [1, 0, -1], [1, 0, 1]),
+    ([0, 1, 1], [-1, 1, 0], [-1, 0, 1]),
+    ([0, 1, 1], [1, 0, 1], [1, 1, 0]),
+    ([0, 1, -1], [-1, 0, -1], [-1, 1, 0]),
+    ([0, 1, -1], [1, 1, 0], [1, 0, -1]),
+    ([0, -1, -1], [-1, -1, 0], [-1, 0, -1]),
+    ([0, -1, -1], [1, 0, -1], [1, -1, 0]),
+    ([0, -1, 1], [-1, 0, 1], [-1, -1, 0]),
+    ([0, -1, 1], [1, -1, 0], [1, 0, 1]),
 ]
+triangles = np.array(triangles_cm) / 100  # cm -> m
 cuboc = magpy.Collection()
 for t in triangles:
     cuboc.add(
         magpy.misc.Triangle(
-            magnetization=(100, 200, 300),
+            polarization=(0.1, 0.2, 0.3),
             vertices=t,
         )
     )
@@ -67,10 +69,9 @@ for t in triangles:
 # Display collection of triangles
 magpy.show(
     cuboc,
-    backend='pyvista',
-    style_magnetization_mode='arrow',
-    style_orientation_color='yellow',
-    jupyter_backend="panel", # better pyvista rendering in a jupyter notebook
+    backend="pyvista",
+    style_magnetization_mode="arrow",
+    style_orientation_color="yellow",
 )
 ```
 
@@ -85,24 +86,19 @@ import magpylib as magpy
 
 # Create prism magnet as triangle collection
 top = magpy.misc.Triangle(
-    magnetization=(0,0,1000),
-    vertices=((-1,-1,1), (1,-1,1), (0,2,1)),
-    style_label="top"
+    polarization=(0, 0, 1),
+    vertices=((-0.01, -0.01, 0.01), (0.01, -0.01, 0.01), (0, 0.02, 0.01)),
+    style_label="top",
 )
 bott = magpy.misc.Triangle(
-    magnetization=(0,0,1000),
-    vertices=((-1,-1,-1), (0,2,-1), (1,-1,-1)),
-    style_label="bottom"
+    polarization=(0, 0, 1),
+    vertices=((-0.01, -0.01, -0.01), (0, 0.02, -0.01), (0.01, -0.01, -0.01)),
+    style_label="bottom",
 )
 prism = magpy.Collection(top, bott)
 
 # Display graphically
-magpy.show(
-    *prism,
-    backend='plotly',
-    style_opacity=0.5,
-    style_magnetization_show=False
-)
+magpy.show(*prism, backend="plotly", style_opacity=0.5, style_magnetization_show=False)
 ```
 
 ## TriangularMesh class
@@ -117,33 +113,28 @@ In this example we revisit the cubeoctahedron, but generate it through the `Tria
 
 ```{code-cell} ipython3
 import magpylib as magpy
+import numpy as np
 
-# Create cubeoctahedron magnet 
-vertices = [
-    ( 0, 1,-1), (-1, 1, 0), ( 1, 1, 0),
-    ( 0, 1, 1), (-1, 0, 1), ( 0,-1, 1),
-    ( 1, 0, 1), ( 1, 0,-1), ( 0,-1,-1),
-    (-1, 0,-1), (-1,-1, 0), ( 1,-1, 0),
+# Create cubeoctahedron magnet (vertices and faces are transposed here for more compact display)
+vertices_cm = [
+    [0, -1, 1, 0, -1, 0, 1, 1, 0, -1, -1, 1],
+    [1, 1, 1, 1, 0, -1, 0, 0, -1, 0, -1, -1],
+    [-1, 0, 0, 1, 1, 1, 1, -1, -1, -1, 0, 0],
 ]
+vertices = np.array(vertices_cm).T / 100  # cm -> m
 faces = [
-    (0,1,2),   (3,2,1),   (3,4,5),   (3,5,6),
-    (0,7,8),   (0,8,9), (5,10,11), (8,11,10),
-    (1,9,4),  (10,4,9),   (2,6,7),  (11,7,6),
-    (3,1,4),   (3,6,2),   (0,9,1),   (0,2,7),
-    (8,10,9), (8,7,11),  (5,4,10),  (5,11,6),
+    [0, 3, 3, 3, 0, 0, 5, 8, 1, 10, 2, 11, 3, 3, 0, 0, 8, 8, 5, 5],
+    [1, 2, 4, 5, 7, 8, 10, 11, 9, 4, 6, 7, 1, 6, 9, 2, 10, 7, 4, 11],
+    [2, 1, 5, 6, 8, 9, 11, 10, 4, 9, 7, 6, 4, 2, 1, 7, 9, 11, 10, 6],
 ]
+faces = np.array(faces).T
 cuboc = magpy.magnet.TriangularMesh(
-    magnetization=(100, 200, 300),
-    vertices=vertices,
-    faces=faces
+    polarization=(0.1, 0.2, 0.3), vertices=vertices, faces=faces
 )
 
 # Display TriangularMesh body
 magpy.show(
-    cuboc,
-    backend='plotly',
-    style_mesh_grid_show=True,
-    style_mesh_grid_line_width=4
+    cuboc, backend="plotly", style_mesh_grid_show=True, style_mesh_grid_line_width=4
 )
 ```
 
@@ -169,23 +160,23 @@ import numpy as np
 
 # Create top and bottom faces of a prism magnet
 top = magpy.misc.Triangle(
-    magnetization=(1000,0,0),
-    vertices= ((-1,-1,1), (1,-1,1), (0,2,1)),
+    polarization=(1, 0, 0),
+    vertices=((-0.01, -0.01, 0.01), (0.01, -0.01, 0.01), (0, 0.02, 0.01)),
 )
 bottom = magpy.misc.Triangle(
-    magnetization=(1000,0,0),
-    vertices= ((-1,-1,-1), (0,2,-1), (1,-1,-1)),
+    polarization=(1, 0, 0),
+    vertices=((-0.01, -0.01, -0.01), (0, 0.02, -0.01), (0.01, -0.01, -0.01)),
 )
 
 # Create prism with open edges
 prism = magpy.magnet.TriangularMesh.from_triangles(
-    magnetization=(0, 0, 1000),   # overrides triangles magnetization
+    polarization=(0, 0, 1),  # overrides triangles magnetization
     triangles=[top, bottom],
-    check_open="ignore",          # check but ignore open mesh
+    check_open="ignore",  # check but ignore open mesh
     check_disconnected="ignore",  # check but ignore disconnected mesh
-    reorient_faces="ignore",      # check but ignore non-orientable mesh
+    reorient_faces="ignore",  # check but ignore non-orientable mesh
 )
-prism.style.label = "Open Prism",
+prism.style.label = "Open Prism"
 prism.style.magnetization.mode = "arrow"
 
 print("mesh status open:", prism.status_open)

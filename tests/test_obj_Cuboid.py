@@ -47,7 +47,7 @@ def test_Cuboid_basics():
     for mag, dim, ang, ax, anch, mov, poso in zip(
         mags, dims, angs, axs, anchs, movs, posos
     ):
-        pm = magpy.magnet.Cuboid(mag, np.abs(dim))
+        pm = magpy.magnet.Cuboid(polarization=mag, dimension=np.abs(dim))
 
         # 18 subsequent operations
         for a, aa, aaa, mv in zip(ang, ax, anch, mov):
@@ -61,15 +61,15 @@ def test_Cuboid_basics():
 
 def test_Cuboid_add():
     """testing __add__"""
-    src1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    src2 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    src1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
+    src2 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     col = src1 + src2
     assert isinstance(col, magpy.Collection), "adding cuboides fail"
 
 
 def test_Cuboid_squeeze():
     """testing squeeze output"""
-    src1 = magpy.magnet.Cuboid((1, 1, 1), (1, 1, 1))
+    src1 = magpy.magnet.Cuboid(polarization=(1, 1, 1), dimension=(1, 1, 1))
     sensor = Sensor(pixel=[(1, 2, 3), (1, 2, 3)])
     B = src1.getB(sensor)
     assert B.shape == (2, 3)
@@ -84,7 +84,7 @@ def test_Cuboid_squeeze():
 
 def test_repr_cuboid():
     """test __repr__"""
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     pm1.style.label = "cuboid_01"
     assert repr(pm1)[:6] == "Cuboid", "Cuboid repr failed"
     assert "label='cuboid_01'" in repr(pm1), "Cuboid repr failed"
@@ -96,13 +96,17 @@ def test_cuboid_object_vs_lib():
     """
 
     a = 1
-    mag = np.array([(10, 20, 30)])
+    pol = np.array([(10, 20, 30)])
     dim = np.array([(a, a, a)])
     pos = np.array([(2 * a, 2 * a, 2 * a)])
-    B0 = magpy.core.magnet_cuboid_field("B", pos, mag, dim)
-    H0 = magpy.core.magnet_cuboid_field("H", pos, mag, dim)
+    B0 = magpy.core.magnet_cuboid_field(
+        field="B", observers=pos, polarization=pol, dimension=dim
+    )
+    H0 = magpy.core.magnet_cuboid_field(
+        field="H", observers=pos, polarization=pol, dimension=dim
+    )
 
-    src = magpy.magnet.Cuboid(mag[0], dim[0])
+    src = magpy.magnet.Cuboid(polarization=pol[0], dimension=dim[0])
     B1 = src.getB(pos)
     H1 = src.getH(pos)
 
