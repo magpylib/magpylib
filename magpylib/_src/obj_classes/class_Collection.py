@@ -861,6 +861,21 @@ class Collection(BaseGeo, BaseCollection):
     children: sources, `Sensor` or `Collection` objects
         An ordered list of all children in the collection.
 
+    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
+        Object position(s) in the global coordinates in units of m. For m>1, the
+        `position` and `orientation` attributes together represent an object path.
+
+    orientation: scipy `Rotation` object with length 1 or m, default=`None`
+        Object orientation(s) in the global coordinates. `None` corresponds to
+        a unit-rotation. For m>1, the `position` and `orientation` attributes
+        together represent an object path.
+
+    override_parent: bool, default=False
+        If False thrown an error when an attempt is made to add an object that
+        has already a parent to a Collection. If True, allow adding the object
+        and override the objects parent attribute thus removing it from its
+        previous collection.
+
     sensors: `Sensor` objects
         An ordered list of all sensor objects in the collection.
 
@@ -870,14 +885,6 @@ class Collection(BaseGeo, BaseCollection):
     collections: `Collection` objects
         An ordered list of all collection objects in the collection.
 
-    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of m. For m>1, the
-        `position` and `orientation` attributes together represent an object path.
-
-    orientation: scipy `Rotation` object with length 1 or m, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation. For m>1, the `position` and `orientation` attributes
-        together represent an object path.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -948,8 +955,8 @@ class Collection(BaseGeo, BaseCollection):
         *args,
         position=(0, 0, 0),
         orientation=None,
-        style=None,
         override_parent=False,
+        style=None,
         **kwargs,
     ):
         BaseGeo.__init__(
