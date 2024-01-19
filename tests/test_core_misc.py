@@ -28,6 +28,8 @@ from magpylib.core import triangle_field
 
 
 def helper_check_HBMJ_consistency(func, **kw):
+    """helper function to check H,B,M,J field consistencies
+    returns H, B, M, J"""
     B = func(field="B", **kw)
     H = func(field="H", **kw)
     M = func(field="M", **kw)
