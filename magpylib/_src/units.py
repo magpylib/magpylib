@@ -43,7 +43,7 @@ def check_call(func, *args, expected, verbose=False):
         eq = eq.all()
     if not eq or verbose:
         args_repr = ", ".join(repr(arg) for arg in args)
-        call_str = f"{func.__self__.__class__.__name__}{func.__name__}({args_repr})"
+        call_str = f"{func.__self__.__class__.__name__}.{func.__name__}({args_repr})"
         res_str = f"{result!r}"
         if not eq:
             raise ValueError(f"{call_str} expected {expected!r}, got {res_str}.")
