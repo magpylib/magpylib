@@ -139,7 +139,7 @@ def current_polyline_field(
     # pylint: disable=too-many-statements
     check_field_input(field)
     if field in "MJ":
-        return np.zeros_like(observers)
+        return np.zeros_like(observers, dtype=float)
 
     # allocate for special case treatment
     ntot = len(current)

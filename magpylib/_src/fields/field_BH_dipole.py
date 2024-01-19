@@ -63,7 +63,7 @@ def dipole_field(
     """
     check_field_input(field)
     if field in "MJ":
-        return np.zeros_like(observers)
+        return np.zeros_like(observers, dtype=float)
 
     x, y, z = observers.T
     r = np.sqrt(x**2 + y**2 + z**2)  # faster than np.linalg.norm

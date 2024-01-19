@@ -141,7 +141,7 @@ def triangle_field(
     # pylint: disable=too-many-statements
     check_field_input(field)
     if field in "MJ":
-        return np.zeros_like(observers)
+        return np.zeros_like(observers, dtype=float)
 
     n = norm_vector(vertices)
     sigma = np.einsum("ij, ij->i", n, polarization)  # vectorized inner product

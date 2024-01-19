@@ -78,7 +78,7 @@ def current_circle_field(
 
     check_field_input(field)
     if field in "MJ":
-        return np.zeros_like(observers)
+        return np.zeros_like(observers, dtype=float)
 
     r, phi, z = cart_to_cyl_coordinates(observers)
     r0 = np.abs(diameter / 2)
