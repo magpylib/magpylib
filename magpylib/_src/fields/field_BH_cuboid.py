@@ -244,7 +244,7 @@ def magnet_cuboid_field(
     # dealing with special cases -----------------------------------
 
     # allocate B with zeros
-    B = np.zeros((len(pol_x), 3))
+    B = np.zeros_like(observers, dtype=float)
 
     # SPECIAL CASE 1: polarization = (0,0,0)
     mask_pol_not_null = ~(

@@ -583,7 +583,7 @@ def magnet_trimesh_field(
             b_split = np.split(B, split_indices)
             B = np.array([np.sum(bh, axis=0) for bh in b_split])
     else:
-        B = np.zeros_like(observers)
+        B = np.zeros_like(observers, dtype=float)
 
     if field == "H":
         return B / MU0

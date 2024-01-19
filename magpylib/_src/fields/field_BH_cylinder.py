@@ -343,7 +343,7 @@ def magnet_cylinder_field(
     z0 = np.copy(z0 / r0)
 
     # allocate field vectors ----------------------------------------
-    Br, Bphi, Bz = np.zeros((3, len(r)))
+    Br, Bphi, Bz = np.zeros((3, len(r)), dtype=float)
 
     if in_out == "auto":
         # inside/outside

@@ -2312,7 +2312,7 @@ def magnet_cylinder_segment_field_internal(
     """
     n = len(polarization)
 
-    BHfinal = np.zeros((n, 3))
+    BHfinal = np.zeros_like(observers, dtype=float)
 
     r1, r2, h, phi1, phi2 = dimension.T
 
@@ -2425,7 +2425,7 @@ def magnet_cylinder_segment_field(
     """
     check_field_input(field)
 
-    H_all = np.zeros((len(observers), 3))
+    H_all = np.zeros_like(observers, dtype=float)
 
     r1, r2, h, phi1, phi2 = dimension.T
     r1 = abs(r1)
