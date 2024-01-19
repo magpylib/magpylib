@@ -62,15 +62,15 @@ class Units(MagicProperties):
 
     Properties
     ----------
-    package: {'pint', 'unyt'}
+    package: {'pint', 'unyt', 'astropy'}
         Set Magpylib'S default unit package.
 
     mode: str, default='keep'
         Set Magpylib's units mode.
         options:
+            - "keep" : not convert but check if unit is correct (if units are used)
             - "downcast" : convert to SI without units
             - "upcast" : convert to SI with units
-            - "keep" : not convert but check if unit is correct (if units are used)
             - "base" : convert to base SI units (if units are used)
             - "coerce": coerce inputs to be units (raise if not)
             - "forbid": forbid unit inputs
