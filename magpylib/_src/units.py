@@ -7,6 +7,7 @@ from math import log10
 
 import numpy as np
 
+from magpylib._src.defaults.defaults_utility import ALLOWED_UNITS_MODES
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 
@@ -278,17 +279,37 @@ class AstropyHandler(UnitHandler, pkg_name="astropy", validate_on_declaration=Fa
 
 class Units:
     """
-    A simple container for holding a unit registry.
+    A simple container for define units handling options.
 
     Attributes
     ----------
-    _registry : `pint.UnitRegistry` or `unyt.UnitRegistry` or None
+    package: {'pint', 'unyt', 'astropy'}
+        Set Magpylib'S default unit package.
+
+    mode: str, default='keep'
+        Set Magpylib's units mode. When an inputs is unit-like, a dimensionality check is always
+        performed. If it is only array-like or a scalar, it is assumed to be of base SI units.
+        The following `units_mode` are implemented to cover a wide range of possible behaviors
+        when dealing with units:
+          - "keep" :  keep input object type,  allow and store derived units.
+          - "downcast" : allow unit-like inputs but convert to base SI units, store the magnitude
+              only.
+          - "upcast" : convert to `quantity` object with units if input is unit-like, keep
+              otherwise
+          - "base" : convert to base SI units  if input is unit-like, keep if input is scalar or
+              array
+          - "coerce": force inputs to be units (raise if is not unit-like)
+          - "forbid": forbid unit-like inputs
+
+    registry : `pint.UnitRegistry` or `unyt.UnitRegistry` or None
         The unit registry used for unit conversions and definitions.
     """
 
     UnitHandler = UnitHandler
 
     def __init__(self):
+        self._mode = "keep"
+        self._package = "pint"
         self._registry = None
 
     @property
@@ -302,6 +323,45 @@ class Units:
             The current unit registry of the `Units` instance.
         """
         return self._registry
+
+    @property
+    def package(self):
+        """Set Magpylib's default units package. Must be one of `{'pint', 'unyt'}`."""
+        return self._package
+
+    @package.setter
+    def package(self, val):
+        supported = tuple(units_global.UnitHandler.handlers)
+        assert val is None or val in supported, (
+            f"the `package` property of {type(self).__name__} must be one of"
+            f" {supported}"
+            f" but received {repr(val)} instead"
+        )
+        self._package = val
+
+    @property
+    def mode(self):
+        """Set Magpylib's units mode.
+        - "keep" :  keep input object type,  allow and store derived units.
+        - "downcast" : allow unit-like inputs but convert to base SI units, store the magnitude
+          only.
+        - "upcast" : convert to `quantity` object with units if input is unit-like, keep
+          otherwise
+        - "base" : convert to base SI units  if input is unit-like, keep if input is scalar or
+          array
+        - "coerce": force inputs to be units (raise if is not unit-like)
+        - "forbid": forbid unit-like inputs
+        """
+        return self._mode
+
+    @mode.setter
+    def mode(self, val):
+        assert val is None or val in ALLOWED_UNITS_MODES, (
+            f"the `mode` property of {type(self).__name__} must be one of"
+            f" {ALLOWED_UNITS_MODES}"
+            f" but received {repr(val)} instead"
+        )
+        self._mode = val
 
 
 units_global = Units()
@@ -328,10 +388,8 @@ def get_units_handler(error="ignore"):
     ModuleNotFoundError
         If error is 'raise' and the required unit package is not installed.
     """
-    # pylint: disable=wrong-import-position
-    from magpylib._src.defaults.defaults_classes import default_settings
 
-    pkg = default_settings.units.package
+    pkg = units_global.package
     handlers = UnitHandler.handlers
     handler = handlers[pkg]
     if not isinstance(handler, UnitHandler):
@@ -397,10 +455,7 @@ def to_unit_from_target(inp, *, target, default_unit, units_handler=None):
 
 def raise_missing_unit_package(pkg):
     """Raise ModuleNotFoundError if no unit package is found"""
-    # pylint: disable=wrong-import-position
-    from magpylib._src.defaults.defaults_classes import default_settings
-
-    units_mode = default_settings.units.mode
+    units_mode = units_global.mode
     msg = (
         f"In order to use units in Magpylib with {units_mode!r} units mode, "
         "you need to install the `pint` package."
@@ -413,8 +468,6 @@ def raise_missing_unit_package(pkg):
 
 def unit_checker():
     """Decorator to add unit checks"""
-    # pylint: disable=wrong-import-position
-    from magpylib._src.defaults.defaults_classes import default_settings
 
     def decorator(func):
         @wraps(func)
@@ -422,8 +475,8 @@ def unit_checker():
             inp = args[0]
             if kwargs.get("allow_None", False) and inp is None:
                 return None
-            units_mode = default_settings.units.mode
-            units_package_default = default_settings.units.package
+            units_mode = units_global.mode
+            units_package_default = units_global.package
             units_handler = get_units_handler()
             sig_name = kwargs.get("sig_name", "")
             unit = kwargs.pop("unit", None)

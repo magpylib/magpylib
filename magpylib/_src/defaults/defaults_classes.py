@@ -1,11 +1,9 @@
-from magpylib._src.defaults.defaults_utility import ALLOWED_UNITS_MODES
 from magpylib._src.defaults.defaults_utility import color_validator
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.defaults.defaults_utility import MagicProperties
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.defaults.defaults_utility import validate_property_class
 from magpylib._src.style import DisplayStyle
-from magpylib._src.units import units_global
 
 
 class DefaultSettings(MagicProperties):
@@ -44,74 +42,6 @@ class DefaultSettings(MagicProperties):
     @display.setter
     def display(self, val):
         self._display = validate_property_class(val, "display", Display, self)
-
-    @property
-    def units(self):
-        """`Units` class containing units settings.
-        `('backend', 'animation', 'colorsequence')`"""
-        return self._units
-
-    @units.setter
-    def units(self, val):
-        self._units = validate_property_class(val, "units", Units, self)
-
-
-class Units(MagicProperties):
-    """
-    Defines the properties for the plotting features.
-
-    Properties
-    ----------
-    package: {'pint', 'unyt', 'astropy'}
-        Set Magpylib'S default unit package.
-
-    mode: str, default='keep'
-        Set Magpylib's units mode.
-        options:
-            - "keep" : not convert but check if unit is correct (if units are used)
-            - "downcast" : convert to SI without units
-            - "upcast" : convert to SI with units
-            - "base" : convert to base SI units (if units are used)
-            - "coerce": coerce inputs to be units (raise if not)
-            - "forbid": forbid unit inputs
-
-    """
-
-    @property
-    def package(self):
-        """Set Magpylib's default units package. Must be one of `{'pint', 'unyt'}`."""
-        return self._package
-
-    @package.setter
-    def package(self, val):
-        supported = tuple(units_global.UnitHandler.handlers)
-        assert val is None or val in supported, (
-            f"the `package` property of {type(self).__name__} must be one of"
-            f" {supported}"
-            f" but received {repr(val)} instead"
-        )
-        self._package = val
-
-    @property
-    def mode(self):
-        """Set Magpylib's units mode.
-        options:
-            - "downcast" : convert to SI without units
-            - "upcast" : convert to SI with units
-            - "keep" : not convert but check if unit is correct (if units are used)
-            - "base" : convert to base SI units (if units are used)
-            - "coerce": coerce inputs to be units (raise if not)
-            - "forbid": forbid unit inputs"""
-        return self._mode
-
-    @mode.setter
-    def mode(self, val):
-        assert val is None or val in ALLOWED_UNITS_MODES, (
-            f"the `mode` property of {type(self).__name__} must be one of"
-            f"{ALLOWED_UNITS_MODES}"
-            f" but received {repr(val)} instead"
-        )
-        self._mode = val
 
 
 class Display(MagicProperties):
