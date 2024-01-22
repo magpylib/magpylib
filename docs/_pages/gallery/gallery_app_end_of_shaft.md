@@ -20,6 +20,7 @@ End of shaft angle sensing is a classical example for a magnetic position system
 
 In the example below we show such a typical end-of-shaft system with a 2-pixel sensor, that is commonly used to eliminate external stray fields. In addition, we assume that the magnet is not perfectly mounted at the end of the shaft, but slightly displaced to the side, which results in a wobble motion. Such tolerances are easily implemented with Magpylib, they can be visualized and their influence on the sensor output signal can be tested quickly.
 
+
 ```{code-cell} ipython3
 import numpy as np
 import plotly.express as px
