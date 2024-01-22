@@ -1,6 +1,5 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-branches
-# pylint: disable=cyclic-import
 import abc
 from functools import wraps
 from math import log10
@@ -32,6 +31,7 @@ _UNIT_PREFIX = {
     21: "Z",  # zetta
     24: "Y",  # yotta
 }
+
 
 # ---------------------------------------classes----------------------------------------------------
 
@@ -175,6 +175,8 @@ class PintHandler(UnitHandler, pkg_name="pint", validate_on_declaration=False):
 
     def __init__(self):
         # pylint: disable=wrong-import-position
+        # pint may not be installed in the user environment
+        # should only trigger an ImportError when called for
         from pint import UnitRegistry
 
         # Set pint unit registry. This needs to be unique through the library."
@@ -215,6 +217,8 @@ class UnytHandler(UnitHandler, pkg_name="unyt", validate_on_declaration=False):
 
     def __init__(self):
         # pylint: disable=wrong-import-position
+        # unyt may not be installed in the user environment
+        # should only trigger an ImportError when called for
         from unyt import UnitRegistry, unyt_quantity, unyt_array
 
         units_global._registry = self.ureg = UnitRegistry()
@@ -256,6 +260,8 @@ class AstropyHandler(UnitHandler, pkg_name="astropy", validate_on_declaration=Fa
 
     def __init__(self):
         # pylint: disable=wrong-import-position
+        # astropy may not be installed in the user environment
+        # should only trigger an ImportError when called for
         from astropy.units import Quantity, Unit
 
         self.Quantity = Quantity
@@ -291,6 +297,7 @@ class Units:
         performed. If it is only array-like or a scalar, it is assumed to be of base SI units.
         The following `units_mode` are implemented to cover a wide range of possible behaviors
         when dealing with units:
+          - "consistent": either only units or none sould be used (first input determines the case)
           - "keep" :  keep input object type,  allow and store derived units.
           - "downcast" : allow unit-like inputs but convert to base SI units, store the magnitude
               only.
@@ -303,14 +310,27 @@ class Units:
 
     registry : `pint.UnitRegistry` or `unyt.UnitRegistry` or None
         The unit registry used for unit conversions and definitions.
+
+    in_use: bool or None, read only
+        Tells if units are in use or not. If it is None, it means that it is undetermined.
+        In mode='consistent', the first input is used to determine if units should be used
+        throughout or not.
     """
 
     UnitHandler = UnitHandler
 
     def __init__(self):
-        self._mode = "keep"
+        self._mode = "consistent"
         self._package = "pint"
         self._registry = None
+        self._in_use = None
+        self._first_param = None
+
+    @property
+    def in_use(self):
+        """Boolean or None. Tells if units are in use or not. If it is None,
+        it means that it is undetermined and yet to be set by first input."""
+        return self._in_use
 
     @property
     def registry(self):
@@ -342,6 +362,7 @@ class Units:
     @property
     def mode(self):
         """Set Magpylib's units mode.
+        - "consistent": either only units or none sould be used (first input determines the case).
         - "keep" :  keep input object type,  allow and store derived units.
         - "downcast" : allow unit-like inputs but convert to base SI units, store the magnitude
           only.
@@ -361,7 +382,13 @@ class Units:
             f" {ALLOWED_UNITS_MODES}"
             f" but received {repr(val)} instead"
         )
+        self._reset_mode_params()
         self._mode = val
+
+    def _reset_mode_params(self):
+        """Reset mode parameters"""
+        self._in_use = None
+        self._first_param = None
 
 
 units_global = Units()
@@ -394,6 +421,7 @@ def get_units_handler(error="ignore"):
     handler = handlers[pkg]
     if not isinstance(handler, UnitHandler):
         try:
+            # instantiate UnitHandler subclass on first use
             handler = handlers[pkg]()
             handlers[pkg] = handler
         except ImportError:
@@ -404,17 +432,17 @@ def get_units_handler(error="ignore"):
     return handler
 
 
-def downcast(inp, unit, units_handler=None):
-    """convert to SI units if obj is a Quantity"""
-    if isinstance(inp, (list, tuple)):
-        return type(inp)([downcast(i, unit, units_handler=units_handler) for i in inp])
-    if units_handler is None:
-        units_handler = get_units_handler()
-    if is_Quantity(inp, units_handler=units_handler):
-        downcast.units_used = True
-        inp = units_handler.to_unit(inp, unit)
-        inp = units_handler.get_magnitude(inp)
-    return inp
+def raise_missing_unit_package(pkg):
+    """Raise ModuleNotFoundError if no unit package is found"""
+    units_mode = units_global.mode
+    msg = (
+        f"In order to use units in Magpylib with {units_mode!r} units mode, "
+        "you need to install the `pint` package."
+    )
+    link = UnitHandler.handlers[pkg].pgk_link
+    if link is not None:
+        msg += f"see {link}"
+    raise ModuleNotFoundError(msg)
 
 
 def is_Quantity(inp, units_handler=None):
@@ -453,17 +481,17 @@ def to_unit_from_target(inp, *, target, default_unit, units_handler=None):
     return downcast(inp, default_unit, units_handler=units_handler)
 
 
-def raise_missing_unit_package(pkg):
-    """Raise ModuleNotFoundError if no unit package is found"""
-    units_mode = units_global.mode
-    msg = (
-        f"In order to use units in Magpylib with {units_mode!r} units mode, "
-        "you need to install the `pint` package."
-    )
-    link = UnitHandler.handlers[pkg].pgk_link
-    if link is not None:
-        msg += f"see {link}"
-    raise ModuleNotFoundError(msg)
+def downcast(inp, unit, units_handler=None):
+    """convert to SI units if obj is a Quantity"""
+    if isinstance(inp, (list, tuple)):
+        return type(inp)([downcast(i, unit, units_handler=units_handler) for i in inp])
+    if units_handler is None:
+        units_handler = get_units_handler()
+    if is_Quantity(inp, units_handler=units_handler):
+        downcast.units_used = True
+        inp = units_handler.to_unit(inp, unit)
+        inp = units_handler.get_magnitude(inp)
+    return inp
 
 
 def unit_checker():
@@ -472,6 +500,7 @@ def unit_checker():
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
+            # pylint: disable=protected-access
             inp = args[0]
             if kwargs.get("allow_None", False) and inp is None:
                 return None
@@ -492,10 +521,21 @@ def unit_checker():
             ):
                 raise_missing_unit_package(units_package_default)
             out_to_units = is_Quantity(inp) or is_quantity_like
+            if units_global.in_use is None:
+                units_global._in_use = out_to_units
+                units_global._first_param = (sig_name, inp)
+            if units_mode == "consistent" and units_global.in_use != out_to_units:
+                s = (" not", "") if out_to_units else ("", " not")
+                f = units_global._first_param
+                raise MagpylibBadUserInput(
+                    f"while magpylib.units.mode is set to {units_mode!r},"
+                    f" input parameter {f[0]} is{s[0]} unit-like ({f[1]})"
+                    f" but input parameter {sig_name!r} is{s[1]} ({inp!r}) "
+                )
             if out_to_units:
                 if units_mode == "forbid":
                     raise MagpylibBadUserInput(
-                        f"while the units mode is set to {units_mode!r},"
+                        f"while magpylib.units.mode is set to {units_mode!r},"
                         f" input parameter {sig_name!r} is unit-like ({inp!r}) "
                     )
                 if is_quantity_like_as_list:
@@ -516,7 +556,7 @@ def unit_checker():
                 args = (units_handler.get_magnitude(inp_wu), *args[1:])
             elif units_mode == "coerce":
                 raise MagpylibBadUserInput(
-                    f"while the units mode is set to {units_mode!r},"
+                    f"while magpylib.units.mode is set to {units_mode!r},"
                     f" input parameter {sig_name!r} is not unit-like ({inp!r}) "
                 )
             res = func(*args, **kwargs)
@@ -530,6 +570,7 @@ def unit_checker():
                     res = to_Quantity(res, unit, units_handler=units_handler)
                     res = units_handler.get_magnitude(res)
             elif units_mode in ("upcast", "coerce"):
+                units_global._in_use = True
                 res = to_Quantity(res, unit, units_handler=units_handler)
             return res
 

@@ -59,6 +59,7 @@ from magpylib._src.input_checks import check_format_pixel_agg
 from magpylib._src.input_checks import check_getBH_output_type
 from magpylib._src.units import downcast
 from magpylib._src.units import to_Quantity
+from magpylib._src.units import units_global
 from magpylib._src.utility import check_static_sensor_orient
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
@@ -71,8 +72,6 @@ FIELD_UNITS = {
     "M": "A/m",
     "J": "T",
 }
-
-downcast.units_used = False
 
 
 def tile_group_property(group: list, n_pp: int, prop_name: str, unit):
@@ -187,8 +186,6 @@ def getBH_level2(
 
     from magpylib._src.obj_classes.class_Collection import Collection
     from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
-
-    downcast.units_used = False
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
@@ -432,7 +429,7 @@ def getBH_level2(
         # add missing dimension since `pixel_agg` reduces pixel
         # dimensions to zero. Only needed if `squeeze is False``
         B = np.expand_dims(B, axis=-2)
-    if downcast.units_used:
+    if units_global.in_use:
         B = to_Quantity(B, FIELD_UNITS[field])
     return B
 

@@ -8,12 +8,13 @@ import numbers
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibMissingInput
+from magpylib._src.units import to_Quantity
 from magpylib._src.units import unit_checker
+from magpylib._src.units import units_global
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import wrong_obj_msg
 
@@ -491,10 +492,15 @@ def check_format_input_observers(inp, pixel_agg=None):
     # now inp can still be [pos_vec, sens, coll] or just a pos_vec
 
     try:  # try if input is just a pos_vec
-        inp = np.array(inp, dtype=float)
-        pix_shapes = [(1, 3) if inp.shape == (3,) else inp.shape]
-        return [_src.obj_classes.class_Sensor.Sensor(pixel=inp)], pix_shapes
-    except (TypeError, ValueError):  # if not, it must be [pos_vec, sens, coll]
+        pos = np.array([0.0, 0.0, 0.0], dtype=float)
+        if units_global.in_use is True:
+            pos = to_Quantity(pos, "m")
+        sensors = [Sensor(position=pos, pixel=inp)]
+    except (
+        TypeError,
+        ValueError,
+        MagpylibBadUserInput,
+    ):  # if not, it must be [pos_vec, sens, coll]
         sensors = []
         for obj in inp:
             if isinstance(obj, Sensor):
@@ -506,23 +512,22 @@ def check_format_input_observers(inp, pixel_agg=None):
                 sensors.extend(child_sensors)
             else:  # if its not a Sensor or a Collection it can only be a pos_vec
                 try:
-                    obj = np.array(obj, dtype=float)
-                    sensors.append(_src.obj_classes.class_Sensor.Sensor(pixel=obj))
+                    sensors.append(Sensor(pixel=obj))
                 except Exception:  # or some unwanted crap
                     raise MagpylibBadUserInput(wrong_obj_msg(obj, allow="observers"))
 
-        # all pixel shapes must be the same
-        pix_shapes = [
-            (1, 3) if (s.pixel is None or s.pixel.shape == (3,)) else s.pixel.shape
-            for s in sensors
-        ]
-        if pixel_agg is None and not all_same(pix_shapes):
-            raise MagpylibBadUserInput(
-                "Different observer input shape detected."
-                " All observer inputs must be of similar shape, unless a"
-                " numpy pixel aggregator is provided, e.g. `pixel_agg='mean'`!"
-            )
-        return sensors, pix_shapes
+    # all pixel shapes must be the same
+    pix_shapes = [
+        (1, 3) if (s.pixel is None or s.pixel.shape == (3,)) else s.pixel.shape
+        for s in sensors
+    ]
+    if pixel_agg is None and not all_same(pix_shapes):
+        raise MagpylibBadUserInput(
+            "Different observer input shape detected."
+            " All observer inputs must be of similar shape, unless a"
+            " numpy pixel aggregator is provided, e.g. `pixel_agg='mean'`!"
+        )
+    return sensors, pix_shapes
 
 
 def check_format_input_obj(
