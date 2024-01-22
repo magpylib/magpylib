@@ -121,7 +121,7 @@ class Sphere(BaseMagnet):
         """Set Sphere diameter, float, meter."""
         self._diameter = check_format_input_scalar(
             dia,
-            sig_name="diameter",
+            sig_name=f"{self.__class__.__name__}.diameter",
             sig_type="`None` or a positive number (int, float)",
             allow_None=True,
             forbid_negative=True,

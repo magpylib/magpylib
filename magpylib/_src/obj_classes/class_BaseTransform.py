@@ -155,7 +155,7 @@ def apply_move(target_object, displacement, start="auto"):
         displacement,
         dims=(1, 2),
         shape_m1=3,
-        sig_name="displacement",
+        sig_name=f"{target_object.__class__.__name__}.displacement",
         sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
         unit="m",
     )

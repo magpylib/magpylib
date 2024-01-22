@@ -507,7 +507,7 @@ class TriangularMesh(BaseMagnet):
             vertices,
             dims=(2,),
             shape_m1=3,
-            sig_name="TriangularMesh.vertices",
+            sig_name=f"{self.__class__.__name__}.vertices",
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
             unit="m",
         )
@@ -515,7 +515,7 @@ class TriangularMesh(BaseMagnet):
             faces,
             dims=(2,),
             shape_m1=3,
-            sig_name="TriangularMesh.faces",
+            sig_name=f"{self.__class__.__name__}.faces",
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
         ).astype(int)
         try:

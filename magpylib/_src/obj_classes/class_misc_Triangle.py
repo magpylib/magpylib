@@ -138,7 +138,7 @@ class Triangle(BaseMagnet):
             val,
             dims=(2,),
             shape_m1=3,
-            sig_name="Triangle.vertices",
+            sig_name=f"{self.__class__.__name__}.vertices",
             sig_type="array_like (list, tuple, ndarray) of shape (3,3)",
             allow_None=True,
             unit="m",

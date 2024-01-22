@@ -139,7 +139,7 @@ class Tetrahedron(BaseMagnet):
             dims=(2,),
             shape_m1=3,
             length=4,
-            sig_name="Tetrahedron.vertices",
+            sig_name=f"{self.__class__.__name__}.vertices",
             sig_type="array_like (list, tuple, ndarray) of shape (4,3)",
             allow_None=True,
         )

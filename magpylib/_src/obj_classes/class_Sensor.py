@@ -122,7 +122,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             pix,
             dims=range(1, 20),
             shape_m1=3,
-            sig_name="pixel",
+            sig_name=f"{self.__class__.__name__}.pixel",
             sig_type="array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3) or None",
             allow_None=True,
             unit="m",

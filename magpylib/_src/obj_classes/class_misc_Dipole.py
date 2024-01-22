@@ -114,7 +114,7 @@ class Dipole(BaseSource):
             mom,
             dims=(1,),
             shape_m1=3,
-            sig_name="moment",
+            sig_name=f"{self.__class__.__name__}.moment",
             sig_type="array_like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
             unit="A·m²",

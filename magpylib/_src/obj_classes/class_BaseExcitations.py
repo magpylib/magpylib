@@ -388,7 +388,7 @@ class BaseMagnet(BaseSource):
             mag,
             dims=(1,),
             shape_m1=3,
-            sig_name="magnetization",
+            sig_name=f"{self.__class__.__name__}.magnetization",
             sig_type="array_like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
             unit="A/m",
@@ -414,7 +414,7 @@ class BaseMagnet(BaseSource):
             mag,
             dims=(1,),
             shape_m1=3,
-            sig_name="polarization",
+            sig_name=f"{self.__class__.__name__}.polarization",
             sig_type="array_like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
             unit="T",
@@ -457,7 +457,7 @@ class BaseCurrent(BaseSource):
         # input type and init check
         self._current = check_format_input_scalar(
             current,
-            sig_name="current",
+            sig_name=f"{self.__class__.__name__}.current",
             sig_type="`None` or a number (int, float)",
             allow_None=True,
             unit="A",

@@ -123,7 +123,7 @@ class Cylinder(BaseMagnet):
             dim,
             dims=(1,),
             shape_m1=2,
-            sig_name="Cylinder.dimension",
+            sig_name=f"{self.__class__.__name__}.dimension",
             sig_type="array_like (list, tuple, ndarray) with shape (2,) with positive values",
             allow_None=True,
             forbid_negative0=True,
