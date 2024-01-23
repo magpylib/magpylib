@@ -1,10 +1,6 @@
 name: "CodeQL"
 
 on:
-  push:
-    branches: [ "main", "*code-ql*"]
-    paths-ignore:
-      - "docs/**"
   pull_request:
     branches: [ "main", "*code-ql*"]
     paths-ignore:
