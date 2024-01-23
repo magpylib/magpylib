@@ -39,7 +39,7 @@ def helper_check_HBMJ_consistency(func, **kw):
     return H, B, M, J
 
 
-def test_magnet_cuboid_field_BH():
+def test_magnet_cuboid_field_BHMJ():
     """test cuboid field"""
     pol = np.array(
         [
