@@ -1,7 +1,6 @@
 """Package level config defaults"""
 
 DEFAULTS = {
-    "units": {"package": "pint", "mode": "keep"},
     "display": {
         "autosizefactor": 10,
         "animation": {

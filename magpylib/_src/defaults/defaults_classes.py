@@ -11,8 +11,6 @@ class DefaultSettings(MagicProperties):
 
     Parameters
     ----------
-    units: dict or Units
-        `Units` class containing units settings. `('mode')`
     display: dict or Display
         `Display` class containing display settings. `('backend', 'animation', 'colorsequence' ...)`
     """
