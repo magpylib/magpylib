@@ -342,6 +342,8 @@ class Units:
         `pint.UnitRegistry` or `unyt.UnitRegistry` or None
             The current unit registry of the `Units` instance.
         """
+        if self._registry is None:
+            get_units_handler(error="raise")
         return self._registry
 
     @property
@@ -441,7 +443,7 @@ def raise_missing_unit_package(pkg):
     )
     link = UnitHandler.handlers[pkg].pgk_link
     if link is not None:
-        msg += f"see {link}"
+        msg += f" (see {link})"
     raise ModuleNotFoundError(msg)
 
 
