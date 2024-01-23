@@ -4,12 +4,15 @@ All notable changes to magpylib are documented here.
 # Changelog
 
 ## [5.0.0dev]
+- The Magpylib inputs and outputs are now in **SI Units**. The `magnetization` term has also been redefined and is now codependent with the `polarization` term ([#712](https://github.com/magpylib/magpylib/issues/712))
+- Added `getM` (magnetization) and `getJ` (polarization) top level functions. Also an `in_out` (inside/ouside) parameter is added to specify the location of the observers relative to the magnet body in order to increase performance ([#717](https://github.com/magpylib/magpylib/issues/717))
+-
 
 ## [4.5.1] - 2023-12-28
-- Fixed a field computatio issue where H-field resulting from axial magnetization is computed incorrectly inside of Cylinders ([#703](https://github.com/magpylib/magpylib/issues/703))
+- Fixed a field computation issue where H-field resulting from axial magnetization is computed incorrectly inside of Cylinders ([#703](https://github.com/magpylib/magpylib/issues/703))
 
 ## [4.5.0] - 2023-12-13
-- Add optional handedness parameter for Sensors ([#687](https://github.com/magpylib/magpylib/pull/687))
+- Added optional handedness parameter for Sensors ([#687](https://github.com/magpylib/magpylib/pull/687))
 - Renaming classes: `Line`→`Polyline`, `Loop`→`Circle`. Old names are still valid but will issue a `DeprecationWarning` and will eventually be removed in the next major version ([#690](https://github.com/magpylib/magpylib/pull/690))
 - Rework CI/CD workflows ([#686](https://github.com/magpylib/magpylib/pull/686))
 
@@ -29,7 +32,7 @@ All notable changes to magpylib are documented here.
 - Many minor graphic improvements ([#663](https://github.com/magpylib/magpylib/pull/663), [#649](https://github.com/magpylib/magpylib/issues/649), [#653](https://github.com/magpylib/magpylib/issues/653))
 - `legend` style option ([#650](https://github.com/magpylib/magpylib/issues/650))
 - Changed unit naming in text to comply with DIN Norm 641 ([#614](https://github.com/magpylib/magpylib/issues/614))
-- Improving the documentation now boasting a contribution guide, a news-blog, an example and tutorial gallery, a getting started section and many other improvements ([#621](https://github.com/magpylib/magpylib/issues/621), [#596](https://github.com/magpylib/magpylib/issues/596), [#580](https://github.com/magpylib/magpylib/issues/580))
+- Improved documentation now boasting a contribution guide, a news-blog, an example and tutorial gallery, a getting started section and many other improvements ([#621](https://github.com/magpylib/magpylib/issues/621), [#596](https://github.com/magpylib/magpylib/issues/596), [#580](https://github.com/magpylib/magpylib/issues/580))
 - Improved numerical stability of `CylinderSegement`, ([#648](https://github.com/magpylib/magpylib/issues/648), [#651](https://github.com/magpylib/magpylib/issues/651))
 
 
