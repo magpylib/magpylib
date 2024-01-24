@@ -100,11 +100,15 @@ def test_magnet_cuboid_field_BHMJ():
     ]
     np.testing.assert_allclose(H, Htest, rtol=1e-5)
 
-    Jtest = [(0, 0, 0)] * 5 + [(1, 2, 3)]
+    Jtest = np.array([(0, 0, 0)] * 5 + [(1, 2, 3)])
     np.testing.assert_allclose(J, Jtest, rtol=1e-5)
 
+    H_inout = magnet_cuboid_field(field="H", in_out="outside", **kw)
+    Htest_inout = Htest + Jtest / MU0
+    np.testing.assert_allclose(H_inout, Htest_inout, rtol=1e-5)
 
-def test_magnet_cylinder_field_BH():
+
+def test_magnet_cylinder_field_BHJM():
     """test cylinder field computation"""
     pol = np.array(
         [
@@ -154,8 +158,12 @@ def test_magnet_cylinder_field_BH():
     ]
     np.testing.assert_allclose(H, Htest)
 
-    Jtest = [(0, 0, 0), (0, 0, 0), (0, 0, 0), (1, 1, 1)]
+    Jtest = np.array([(0, 0, 0), (0, 0, 0), (0, 0, 0), (1, 1, 1)])
     np.testing.assert_allclose(J, Jtest)
+
+    H_inout = magnet_cylinder_field(field="H", in_out="outside", **kw)
+    Htest_inout = Htest - Jtest / MU0
+    np.testing.assert_allclose(H_inout, Htest_inout, rtol=1e-5)
 
 
 def test_magnet_sphere_field_BH():

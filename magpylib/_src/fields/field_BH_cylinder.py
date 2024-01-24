@@ -258,44 +258,40 @@ def magnet_cylinder_field(
     polarization: np.ndarray,
     in_out="auto",
 ) -> np.ndarray:
-    """Magnetic field of homogeneously magnetized cylinders.
+    """Field (B, H, J, or M) of homogeneously magnetized cylinders.
 
     The cylinder axis coincides with the z-axis and the geometric center of the
     cylinder lies in the origin.
 
-    SI units are used for all inputs and outputs.
+    SI units are used by default for all inputs and outputs.
 
     Parameters
     ----------
-    field: str, default=`'B'`
-        If `field='B'` return B-field in units of T, if `field='H'` return H-field
-        in units of A/m.
+    field: str, {'B', 'H', 'J', 'M'}
+        Select which field to compute: 'B' computes the B-field in units of tesla,
+        'H' computes the H-field in units of A/m, 'J' computes the magnetic
+        polarization in units of tesla, and 'M' the magnetization in units of A/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of m.
+        Observer positions (x,y,z) in Cartesian coordinates in units of meter.
 
     dimension: ndarray, shape (n,2)
-        Cylinder dimension (d,h) with diameter d and height h in units of m.
+        Cylinder dimension (d,h) with diameter d and height h in units of meter.
 
     polarization: ndarray, shape (n,3)
-        Magnetic polarization vectors in units of T.
+        Magnetic polarization vectors in units of tesla.
 
-    in_out: {'auto', 'inside', 'outside'}
-        Specify the location of the observers relative to the magnet body, affecting the calculation
-        of the magnetic field. The options are:
-        - 'auto': The location (inside or outside the cuboid) is determined automatically for each
-          observer.
-        - 'inside': All observers are considered to be inside the cuboid; use this for performance
-          optimization if applicable.
-        - 'outside': All observers are considered to be outside the cuboid; use this for performance
-          optimization if applicable.
-        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-        locations is unknown.
+    in_out: str, {'auto', 'inside', 'outside'}
+        Give additional information about observer position relative to the magnet body,
+        affecting the computation speed. With 'auto' (default) the inside-outside
+        evaluation is done by Magpylib which adds to the computation overhead.
+        With 'inside' all observers are assumed inside, with 'outside' all observers
+        are assumed outside.
 
     Returns
     -------
-    B-field or H-field: ndarray, shape (n,3)
-        B- or H-field of source in Cartesian coordinates in units of T or A/m.
+    Field (B, H, J, or M): ndarray, shape (n,3)
+        B-field in tesla, H-field in A/m, J-field in tesla, or M-field in A/m.
 
     Examples
     --------
