@@ -400,10 +400,10 @@ class Units:
             f" {ALLOWED_UNITS_MODES}"
             f" but received {repr(val)} instead"
         )
-        self._reset_mode_params()
+        self.reset()
         self._mode = val
 
-    def _reset_mode_params(self):
+    def reset(self):
         """Reset mode parameters"""
         self._in_use = None
         self._first_param = None
@@ -541,7 +541,7 @@ def unit_checker():
                 and not out_to_units
                 and isinstance(inp, (list, tuple, np.ndarray))
             ):
-                # in consistent mode position may come as default=(0,0,0)
+                # in consistent mode, position comes as default=(0,0,0)
                 # it has to adapt to the current expected mode, since it is not set
                 # explicitly by the user
                 inp = np.asarray(inp)

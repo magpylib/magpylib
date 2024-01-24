@@ -12,6 +12,7 @@ from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibMissingInput
+from magpylib._src.units import downcast
 from magpylib._src.units import to_Quantity
 from magpylib._src.units import unit_checker
 from magpylib._src.units import units_global
@@ -475,26 +476,23 @@ def check_format_input_observers(inp, pixel_agg=None):
     from magpylib._src.obj_classes.class_Collection import Collection
     from magpylib._src.obj_classes.class_Sensor import Sensor
 
-    # make bare Sensor, bare Collection into a list
-    if isinstance(inp, (Collection, Sensor)):
-        inp = (inp,)
-
     # note: bare pixel is automatically made into a list by Sensor
 
     # any good input must now be list/tuple/array
-    if not isinstance(inp, (list, tuple, np.ndarray)):
-        raise MagpylibBadUserInput(wrong_obj_msg(inp, allow="observers"))
+    array_like = isinstance(inp, (list, tuple, np.ndarray))
 
     # empty list
-    if len(inp) == 0:
+    if (array_like and len(inp) == 0) or inp is None:
         raise MagpylibBadUserInput(wrong_obj_msg(inp, allow="observers"))
 
     # now inp can still be [pos_vec, sens, coll] or just a pos_vec
 
-    try:  # try if input is just a pos_vec
+    try:  # try if input is just a pos_vec (or a quantity)
+        inp = downcast(inp, "m")  # is recursive
         pos = np.array([0.0, 0.0, 0.0], dtype=float)
         if units_global.in_use is True:
             pos = to_Quantity(pos, "m")
+            inp = to_Quantity(inp, "m")
         sensors = [Sensor(position=pos, pixel=inp)]
     except (
         TypeError,
@@ -502,6 +500,8 @@ def check_format_input_observers(inp, pixel_agg=None):
         MagpylibBadUserInput,
     ):  # if not, it must be [pos_vec, sens, coll]
         sensors = []
+        # make bare Sensor, bare Collection into a list
+        inp = [inp] if not array_like else inp
         for obj in inp:
             if isinstance(obj, Sensor):
                 sensors.append(obj)
