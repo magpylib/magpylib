@@ -1,11 +1,29 @@
-(gallery-tutorial-magnetmodel)=
+---
+orphan: true
+---
 
-# Modelling a real permanent magnet
-Whenever you wish to compare Magpylib simulations with experimental data obtained using a real permanent magnet, you might wonder how to properly set up the Magpylib magnet object to better reflect the physical permanent magnet in question. Your first trials may result in inaccurate comparisons between the simulated and experimental magnetic fields.
-The goal of this tutorial is to provide a better understanding of permanent magnets, how to extract the information you want from the respective datasheet and how to set up the correct attributes for the `magnet` instance.
+(gallery-tutorial-modelling-magnets)=
+
+# Modelling a real magnet
+
+Whenever you wish to compare Magpylib simulations with experimental data obtained using a real permanent magnet, you might wonder how to properly set up a Magpylib magnet object to reflect the physical permanent magnet in question.
+
+The goal of this tutorial is to provide a better understanding of permanent magnets, how to extract the information you want from the respective datasheet, and how to set up the correct attributes for the `magpylib.magnet` instances.
+
 ## Hysteresis Loop
+
 If you've worked with magnetism, chances are very high that you have seen a hysteresis loop. This curve presents the behavior of the permanent magnet's *magnetic polarization* **J** (or sometimes the *average magnetization* **M**, related through µ<sub>0</sub>) and the resulting *magnetic flux density* **B** according to an external applied *magnetic field strength* **H**. While **B** and **H** exist everywhere, **J** only exists inside the material. The relation between these quantities is **B = µ<sub>0</sub>H + J**. The curve that describes the relationship between **J** and **H** is known as the *intrinsic curve*, whereas the relationship between **B** and **H** is known as the *normal curve*, also called B-H curve. The normal curve represents the resulting **B**, considering contributions both by the magnet's magnetic polarization **J** and the external applied field **H** (wording can get confusing in Magnetism, but I am confident you can follow).
-![Alt text](../../_static/images/gallery_tutorial_magnet_hysteresis.png){height=600}
+
+::::{grid} 2
+:::{grid-item}
+:columns: 3
+:::
+:::{grid-item}
+:columns: 6
+![](../../_static/images/gallery_tutorial_magnet_hysteresis.png)
+:::
+::::
+
 With the increase of **H** starting in the first quadrant, the material's polarization will increase up to its maximum possible value, the saturation **J<sub>S</sub>**. Higher values of **H** will not affect **J**, while the resulting **B** will keep increasing. This is reflected in the flat line of the intrinsic curve and the continuing higher normal curve. As the external field drops to zero, the material will retain its magnetization saturation while resulting **B** decreases. The magnetic flux density value when **H = 0** is known as the *remanence field* **B<sub>r</sub>**, and its only contribution is **J<sub>S</sub>**. As the external field goes negative (that is, its amplitude increases with a direction opposite to the magnetic polarization), we move towards the second quadrant of the hysteresis loop. With negative **H** and unchanged **J**, **B** reduces and the normal curve drops. At the *coercive field* **H<sub>c</sub>**, the net magnetic flux density in the material will be zero, but it still is magnetized! The material will retain its magnetization until it quickly drops to zero as **H** reaches a given value known as *intrinsic coercive field* **H<sub>ci</sub>**. This value represents how strongly a material can maintain its magnetization. As **H** gets stronger past **H<sub>ci</sub>**, polarization quickly aligns with the external field and the material once again reaches magnetization saturation, but now in the opposite direction from the previous state. If the external applied field goes towards positive values, we have a mirrored behavior and the hysteresis loop is closed.
 Please keep in mind that a realistic hysteresis curve will not show a completely flat behavior for magnetic polarization **J**, as in reality its value slightly drops below **J<sub>S</sub>** with decreasing **H** even before the coercive field value.
 
@@ -14,9 +32,13 @@ When a magnetic field sensor is placed close to a permanent magnet, its output w
 
 ## Datasheet of a permanent magnet
 Let's imagine you are working with a sintered NdFeB permanent magnet from Bomatec (https://www.bomatec.com/en), as an example. You will easily find values of remanence, coercivity, operating temperature, density and others, usually presented by the magnet supplier in a table like this:
-![Alt text](../../_static/images/gallery_tutorial_magnet_table.png)
+
+![](../../_static/images/gallery_tutorial_magnet_table.png)
+
 After a quick glance, you would use the nominal **B<sub>r</sub>** value in tesla as the magnetic polarization of the Magpylib magnet. After all, we saw in the hysteresis loop that this coincides with **J** when the field **H** is zero. But inside the datasheet of the chosen magnet, there is an interesting figure:
-![Alt text](../../_static/images/gallery_tutorial_magnet_datasheet.png)
+
+![](../../_static/images/gallery_tutorial_magnet_datasheet.png)
+
 This figure shows a focus on the second quadrant of the hysteresis loop, where only negative values for **H** are present. For two magnet temperatures, the intrinsic and normal curves are shown, being intersected with additional straight lines. To obtain the correct magnetic polarization value **J** for the simulation, this figure has to be studied.
 ### When the external applied field is not really external
 Consider a permanent magnet surrounded by non-magnetic medium, such as a magnet in air. Outside of it, the only contribution to **B** measured by a sensor can be **H**, as **J = 0**. The source of this field is the magnetic polarization itself, and as it "leaks" outside the magnet it is also known as the *stray field*. But it also exists inside the magnet itself, in a direction opposite to that of the polarization! Because it acts as if trying to reduce the polarization of the magnet itself, another name for this field is the *demagnetizing field*. The figure below, obtained using Magpylib, (see the streamplot tutorial here[link]), shows the comparison between computed **H** and **B** for a rectangular magnet with homogeneous magnetization.
