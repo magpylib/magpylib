@@ -1,5 +1,6 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 import abc
 from functools import wraps
 from math import log10
@@ -100,6 +101,7 @@ class UnitHandler(metaclass=abc.ABCMeta):
     pkg_name = ""
     pgk_link = ""
     __validated = False
+    registry = None
 
     def __init_subclass__(
         cls, *, pkg_name, validate_on_declaration=True, override=False, **kwargs
@@ -186,19 +188,19 @@ class PintHandler(UnitHandler, pkg_name="pint", validate_on_declaration=False):
         from pint import UnitRegistry
 
         # Set pint unit registry. This needs to be unique through the library."
-        units_global._registry = self.ureg = UnitRegistry()
+        self.registry = UnitRegistry()
         super().__init__()
 
     def is_quantity(self, inp):
-        return isinstance(inp, self.ureg.Quantity)
+        return isinstance(inp, self.registry.Quantity)
 
     def to_quantity(self, inp, unit=None):
         if isinstance(inp, str):
-            res = self.ureg.Quantity(inp)
+            res = self.registry.Quantity(inp)
             if unit is not None:
                 return res.to(unit)
             return res
-        return self.ureg.Quantity(inp, unit)
+        return self.registry.Quantity(inp, unit)
 
     def to_unit(self, inp, unit):
         return inp.to(unit)
@@ -233,7 +235,7 @@ class UnytHandler(UnitHandler, pkg_name="unyt", validate_on_declaration=False):
         # should only trigger an ImportError when called for
         from unyt import UnitRegistry, unyt_quantity, unyt_array, Unit
 
-        units_global._registry = self.ureg = UnitRegistry()
+        self.registry = UnitRegistry()
         self.unyt_quantity = unyt_quantity
         self.unyt_array = unyt_array
         self.Unit = Unit
@@ -369,9 +371,7 @@ class Units:
         `pint.UnitRegistry` or `unyt.UnitRegistry` or None
             The current unit registry of the `Units` instance.
         """
-        if self._registry is None:
-            get_units_handler(error="raise")
-        return self._registry
+        return get_units_handler(error="raise").registry
 
     @property
     def package(self):
