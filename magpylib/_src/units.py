@@ -293,20 +293,24 @@ class Units:
         Set Magpylib'S default unit package.
 
     mode: str, default='keep'
-        Set Magpylib's units mode. When an inputs is unit-like, a dimensionality check is always
-        performed. If it is only array-like or a scalar, it is assumed to be of base SI units.
+        Set Magpylib's units mode. Classes input parameters can be:
+          - arrays or scalars
+          - quantity object from a `UnitHandler`
+          - unit-like inputs of the form (<value>, <units>) (e.g. [[1,2,3], 'meter'])
+        When inputs are quantity objects, a dimensionality check is always performed. If it is
+        only array-like or a scalar, it is assumed to be of base SI units. If it is unit-like it
+        gets transformed into a quantity object.
         The following `units_mode` are implemented to cover a wide range of possible behaviors
         when dealing with units:
-          - "consistent": either only units or none sould be used (first input determines the case)
-          - "keep" :  keep input object type,  allow and store derived units.
-          - "downcast" : allow unit-like inputs but convert to base SI units, store the magnitude
+          - "consistent": either only units or none sould be used (first input determines the case).
+          - "keep" : keep input object type.  Allows and stores derived units.
+          - "downcast" : allow unit-like inputs but converts to base SI units, stores the magnitude
               only.
-          - "upcast" : convert to `quantity` object with units if input is unit-like, keep
-              otherwise
-          - "base" : convert to base SI units  if input is unit-like, keep if input is scalar or
-              array
-          - "coerce": force inputs to be units (raise if is not unit-like)
-          - "forbid": forbid unit-like inputs
+          - "upcast" : converts to units quantity object if input is unit-like, keep
+              otherwise.
+          - "base" : converts to base SI units quantity object (e.g. 'mm' -> 'm').
+          - "coerce": forces inputs to be unit-like (raise if not).
+          - "forbid": forbids unit-like inputs.
 
     registry : `pint.UnitRegistry` or `unyt.UnitRegistry` or None
         The unit registry used for unit conversions and definitions.
@@ -363,18 +367,7 @@ class Units:
 
     @property
     def mode(self):
-        """Set Magpylib's units mode.
-        - "consistent": either only units or none sould be used (first input determines the case).
-        - "keep" :  keep input object type,  allow and store derived units.
-        - "downcast" : allow unit-like inputs but convert to base SI units, store the magnitude
-          only.
-        - "upcast" : convert to `quantity` object with units if input is unit-like, keep
-          otherwise
-        - "base" : convert to base SI units  if input is unit-like, keep if input is scalar or
-          array
-        - "coerce": force inputs to be units (raise if is not unit-like)
-        - "forbid": forbid unit-like inputs
-        """
+        """Set Magpylib's units mode"""
         return self._mode
 
     @mode.setter
@@ -511,29 +504,42 @@ def unit_checker():
             units_handler = get_units_handler()
             sig_name = kwargs.get("sig_name", "")
             unit = kwargs.pop("unit", None)
-            inp_unit = None
+            inp_unit = unit
             is_quantity_like_as_list = (
                 isinstance(inp, (list, tuple))
                 and len(inp) == 2
                 and isinstance(inp[-1], str)
             )
             is_quantity_like = isinstance(inp, str) or is_quantity_like_as_list
+            out_to_units = is_Quantity(inp) or is_quantity_like
+            if (
+                units_mode in ("consistent", "coerce")
+                and units_global.in_use
+                and not out_to_units
+                and isinstance(inp, (list, tuple, np.ndarray))
+            ):
+                # in consistent mode position may come as default=(0,0,0)
+                # it has to adapt to the current expected mode, since it is not set
+                # explicitly by the user
+                inp = np.asarray(inp)
+                if np.all(inp == 0):
+                    out_to_units = True
             if units_handler is None and (
-                is_quantity_like or units_mode in ("upcast", "coerce")
+                is_quantity_like or units_mode in ("upcast", "coerce", "base")
             ):
                 raise_missing_unit_package(units_package_default)
-            out_to_units = is_Quantity(inp) or is_quantity_like
             if units_global.in_use is None:
                 units_global._in_use = out_to_units
                 units_global._first_param = (sig_name, inp)
-            if units_mode == "consistent" and units_global.in_use != out_to_units:
-                s = (" not", "") if out_to_units else ("", " not")
-                f = units_global._first_param
-                raise MagpylibBadUserInput(
-                    f"while magpylib.units.mode is set to {units_mode!r},"
-                    f" input parameter {f[0]} is{s[0]} unit-like ({f[1]})"
-                    f" but input parameter {sig_name!r} is{s[1]} ({inp!r}) "
-                )
+            if units_mode == "consistent":
+                if units_global.in_use != out_to_units:
+                    s = (" not", "") if out_to_units else ("", " not")
+                    f = units_global._first_param
+                    raise MagpylibBadUserInput(
+                        f"while magpylib.units.mode is set to {units_mode!r},"
+                        f" input parameter {f[0]} is{s[0]} unit-like ({f[1]})"
+                        f" but input parameter {sig_name!r} is{s[1]} ({inp!r}) "
+                    )
             if out_to_units:
                 if units_mode == "forbid":
                     raise MagpylibBadUserInput(
@@ -566,12 +572,12 @@ def unit_checker():
                 res = to_Quantity(
                     res, units_handler.get_unit(inp_wu), units_handler=units_handler
                 )
-                if units_mode == "base" and unit is not None:
+                if units_mode == "base":
                     res = to_Quantity(res, unit, units_handler=units_handler)
                 elif units_mode == "downcast":
                     res = to_Quantity(res, unit, units_handler=units_handler)
                     res = units_handler.get_magnitude(res)
-            elif units_mode in ("upcast", "coerce"):
+            elif units_mode in ("upcast", "coerce", "base"):
                 units_global._in_use = True
                 res = to_Quantity(res, unit, units_handler=units_handler)
             return res

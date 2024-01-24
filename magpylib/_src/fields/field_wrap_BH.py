@@ -429,7 +429,7 @@ def getBH_level2(
         # add missing dimension since `pixel_agg` reduces pixel
         # dimensions to zero. Only needed if `squeeze is False``
         B = np.expand_dims(B, axis=-2)
-    if units_global.in_use:
+    if units_global.in_use and units_global.mode != "downcast":
         B = to_Quantity(B, FIELD_UNITS[field])
     return B
 

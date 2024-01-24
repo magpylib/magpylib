@@ -362,8 +362,6 @@ class BaseMagnet(BaseSource):
     def __init__(
         self, position, orientation, magnetization, polarization, style, **kwargs
     ):
-        super().__init__(position, orientation, style=style, **kwargs)
-
         self._polarization = None
         self._magnetization = None
         if magnetization is not None:
@@ -375,6 +373,7 @@ class BaseMagnet(BaseSource):
                 )
         if polarization is not None:
             self.polarization = polarization
+        super().__init__(position, orientation, style=style, **kwargs)
 
     @property
     def magnetization(self):
@@ -443,8 +442,8 @@ class BaseCurrent(BaseSource):
     _style_class = CurrentStyle
 
     def __init__(self, position, orientation, current, style, **kwargs):
-        super().__init__(position, orientation, style=style, **kwargs)
         self.current = current
+        super().__init__(position, orientation, style=style, **kwargs)
 
     @property
     def current(self):
