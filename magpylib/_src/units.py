@@ -120,12 +120,16 @@ class UnitHandler(metaclass=abc.ABCMeta):
         cls.pkg_name = pkg_name
         cls.handlers[pkg_name] = cls
 
+    def __init__(self):
+        if not self.__validated:
+            self.validate()
+
     @abc.abstractmethod
     def is_quantity(self, inp):
         pass
 
     @abc.abstractmethod
-    def to_quantity(self, inp, unit):
+    def to_quantity(self, inp, unit=None):
         pass
 
     @abc.abstractmethod
@@ -140,22 +144,24 @@ class UnitHandler(metaclass=abc.ABCMeta):
     def get_magnitude(self, inp):
         pass
 
-    def _check_methods(self, inp):
-        """Check all instance implemented methods against single value"""
-        q_cm = self.to_quantity(inp, "cm")
-        q_mm = self.to_unit(q_cm, "mm")
-        q_cm_unit = self.get_unit(q_cm)
-        check_call(self.is_quantity, inp, expected=False)
-        check_call(self.is_quantity, q_cm, expected=True)
-        check_call(self.get_unit, self.to_quantity(inp, q_cm_unit), expected=q_cm_unit)
-        check_call(self.get_magnitude, q_cm, expected=inp)
-        check_call(self.get_magnitude, q_mm / 10, expected=inp)
-
     def validate(self):
         """Validate new UnitHandler"""
-        if not self.__validated:
-            for inp in (1.23, [1, 2, 3], np.array([1.0, 1.2, 1.23])):
-                self._check_methods(inp)
+        for inp in (1.23, [1, 2, 3], np.array([1.0, 1.2, 1.23])):
+            q_cm = self.to_quantity(inp, "cm")
+            q_mm = self.to_unit(q_cm, "mm")
+            q_cm_unit = self.get_unit(q_cm)
+            check_call(self.is_quantity, inp, expected=False)
+            check_call(self.is_quantity, q_cm, expected=True)
+            check_call(
+                self.get_unit, self.to_quantity(inp, q_cm_unit), expected=q_cm_unit
+            )
+            check_call(self.get_magnitude, q_cm, expected=inp)
+            check_call(self.get_magnitude, q_mm / 10, expected=inp)
+
+        tq = self.to_quantity
+        check_call(tq, "1.23mm", expected=tq(1.23 * 1e-3, "m"))
+        check_call(tq, "1.23mm", "m", expected=tq("0.00123m"))
+        check_call(tq, 1.23, "A*m**2", expected=tq("1.23A*m**2"))
 
 
 class PintHandler(UnitHandler, pkg_name="pint", validate_on_declaration=False):
@@ -181,11 +187,17 @@ class PintHandler(UnitHandler, pkg_name="pint", validate_on_declaration=False):
 
         # Set pint unit registry. This needs to be unique through the library."
         units_global._registry = self.ureg = UnitRegistry()
+        super().__init__()
 
     def is_quantity(self, inp):
         return isinstance(inp, self.ureg.Quantity)
 
-    def to_quantity(self, inp, unit):
+    def to_quantity(self, inp, unit=None):
+        if isinstance(inp, str):
+            res = self.ureg.Quantity(inp)
+            if unit is not None:
+                return res.to(unit)
+            return res
         return self.ureg.Quantity(inp, unit)
 
     def to_unit(self, inp, unit):
@@ -219,17 +231,24 @@ class UnytHandler(UnitHandler, pkg_name="unyt", validate_on_declaration=False):
         # pylint: disable=wrong-import-position
         # unyt may not be installed in the user environment
         # should only trigger an ImportError when called for
-        from unyt import UnitRegistry, unyt_quantity, unyt_array
+        from unyt import UnitRegistry, unyt_quantity, unyt_array, Unit
 
         units_global._registry = self.ureg = UnitRegistry()
         self.unyt_quantity = unyt_quantity
         self.unyt_array = unyt_array
+        self.Unit = Unit
+        super().__init__()
 
     def is_quantity(self, inp):
         return isinstance(inp, self.unyt_array)
 
-    def to_quantity(self, inp, unit):
-        return inp * self.unyt_quantity.from_string(str(unit))
+    def to_quantity(self, inp, unit=None):
+        if isinstance(inp, str):
+            res = self.unyt_quantity.from_string(inp)
+            if unit is not None:
+                return res.to(unit)
+            return res
+        return inp * self.Unit(unit)
 
     def to_unit(self, inp, unit):
         return inp.to(unit)
@@ -238,7 +257,10 @@ class UnytHandler(UnitHandler, pkg_name="unyt", validate_on_declaration=False):
         return inp.units
 
     def get_magnitude(self, inp):
-        return inp.value
+        val = inp.value
+        if isinstance(val, np.ndarray) and val.ndim == 0:
+            return val.tolist()
+        return val
 
 
 class AstropyHandler(UnitHandler, pkg_name="astropy", validate_on_declaration=False):
@@ -266,15 +288,16 @@ class AstropyHandler(UnitHandler, pkg_name="astropy", validate_on_declaration=Fa
 
         self.Quantity = Quantity
         self.Unit = Unit
+        super().__init__()
 
     def is_quantity(self, inp):
         return isinstance(inp, self.Quantity)
 
-    def to_quantity(self, inp, unit):
-        return inp * self.Unit(unit)
+    def to_quantity(self, inp, unit=None):
+        return self.Quantity(inp, unit=unit)
 
     def to_unit(self, inp, unit):
-        return inp.to(self.Unit(unit))
+        return inp.to(unit)
 
     def get_unit(self, inp):
         return inp.unit
@@ -352,13 +375,13 @@ class Units:
 
     @property
     def package(self):
-        """Set Magpylib's default units package. Must be one of `{'pint', 'unyt'}`."""
+        """Set Magpylib's default units package."""
         return self._package
 
     @package.setter
     def package(self, val):
         supported = tuple(units_global.UnitHandler.handlers)
-        assert val is None or val in supported, (
+        assert val in supported, (
             f"the `package` property of {type(self).__name__} must be one of"
             f" {supported}"
             f" but received {repr(val)} instead"
@@ -447,7 +470,7 @@ def is_Quantity(inp, units_handler=None):
     return units_handler is not None and units_handler.is_quantity(inp)
 
 
-def to_Quantity(inp, unit, sig_name="", units_handler=None):
+def to_Quantity(inp, unit, *, sig_name="", default_unit=None, units_handler=None):
     """Convert to quantity"""
     if units_handler is None:
         units_handler = get_units_handler(error="raise")
@@ -458,9 +481,10 @@ def to_Quantity(inp, unit, sig_name="", units_handler=None):
             inp = units_handler.to_quantity(inp, unit)
     except Exception as msg:
         sig_str = f" `{sig_name!r}`" if sig_name else ""
+        expected = unit if default_unit is None else default_unit
         raise MagpylibBadUserInput(
-            f"{msg}\nInput parameter{sig_str} must be in compatible units "
-            f"of {unit!r}."
+            f"{msg}\nInput parameter{sig_str} cannot be converted to "
+            f"units of {expected!r}."
         ) from msg
     return inp
 
@@ -483,7 +507,6 @@ def downcast(inp, unit, units_handler=None):
     if units_handler is None:
         units_handler = get_units_handler()
     if is_Quantity(inp, units_handler=units_handler):
-        downcast.units_used = True
         inp = units_handler.to_unit(inp, unit)
         inp = units_handler.get_magnitude(inp)
     return inp
@@ -548,10 +571,14 @@ def unit_checker():
                     )
                 if is_quantity_like_as_list:
                     inp, inp_unit = inp
+                elif isinstance(inp, str):
+                    inp_unit = None
                 if is_Quantity(inp):
                     inp_wu = inp
                 else:
-                    inp_wu = to_Quantity(inp, inp_unit, sig_name=sig_name)
+                    inp_wu = to_Quantity(
+                        inp, inp_unit, default_unit=unit, sig_name=sig_name
+                    )
                 if unit is not None:
                     try:
                         units_handler.to_unit(inp_wu, unit)
