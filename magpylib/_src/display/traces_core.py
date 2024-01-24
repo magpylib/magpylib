@@ -153,7 +153,7 @@ def make_Dipole(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     """
     style = obj.style
     moment = np.array([0.0, 0.0, 0.0]) if obj.moment is None else obj.moment
-    moment = downcast(moment, "A·m²")
+    moment = downcast(moment, "A*m**2")
     moment_mag = np.linalg.norm(moment)
     size = style.size
     if autosize is not None and style.sizemode == "scaled":

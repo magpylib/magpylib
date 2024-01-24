@@ -133,7 +133,11 @@ class Polyline(BaseCurrent):
         """Default style description text"""
         if self.vertices is None:
             return "no vertices"
-        return f"{unit_prefix(self.current, 'A')}" if self.current else "no current"
+        return (
+            "no current"
+            if self.current is None
+            else f"{unit_prefix(self.current, 'A')}"
+        )
 
 
 class Line(Polyline):

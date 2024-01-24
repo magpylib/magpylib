@@ -129,7 +129,11 @@ class Circle(BaseCurrent):
         """Default style description text"""
         if self.diameter is None:
             return "no dimension"
-        return f"{unit_prefix(self.current, 'A')}" if self.current else "no current"
+        return (
+            "no current"
+            if self.current is None
+            else f"{unit_prefix(self.current, 'A')}"
+        )
 
 
 class Loop(Circle):
