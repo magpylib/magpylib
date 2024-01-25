@@ -1,6 +1,12 @@
 name: Python package
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - "docs/**"
+  pull_request:
+    paths-ignore:
+      - "docs/**"
 
 concurrency:
   group: check-${{ github.ref }}
