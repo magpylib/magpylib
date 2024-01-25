@@ -15,8 +15,6 @@ from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.units import downcast
 from magpylib._src.units import to_Quantity
 from magpylib._src.units import unit_checker
-from magpylib._src.units import units_global
-from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import wrong_obj_msg
 
 # pylint: disable=no-member
@@ -468,11 +466,35 @@ def check_format_input_backend(inp):
     )
 
 
-def check_format_input_observers(inp, pixel_agg=None):
+def check_format_array_observers(inp, sig_name="observers", **kwargs):
+    "checks if input is an observers array and returns a sensor"
+    from magpylib._src.obj_classes.class_Sensor import Sensor
+
+    inp, had_units = downcast(
+        inp, "m", return_had_units=True, sig_name=sig_name
+    )  # is recursive
+    inp = np.array(inp)
+    if had_units:
+        inp = to_Quantity(inp, "m", sig_name=sig_name)
+    defaults_kw = {
+        "dims": range(1, 20),
+        "shape_m1": 3,
+        "sig_type": "array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3) or None",
+        "allow_None": True,
+        "unit": "m",
+    }
+    inp = check_format_input_vector(inp, sig_name=sig_name, **{**defaults_kw, **kwargs})
+    sens = Sensor()
+    # this allows to have the right error message. Input is an observer not a pixel.
+    # pylint: disable=protected-access
+    sens._pixel = inp
+    return sens
+
+
+def check_format_input_observers(inp, pixel_agg=None, field=""):
     """
     checks observers input and returns a list of sensor objects
     """
-    # pylint: disable=raise-missing-from
     from magpylib._src.obj_classes.class_Collection import Collection
     from magpylib._src.obj_classes.class_Sensor import Sensor
 
@@ -486,35 +508,37 @@ def check_format_input_observers(inp, pixel_agg=None):
         raise MagpylibBadUserInput(wrong_obj_msg(inp, allow="observers"))
 
     # now inp can still be [pos_vec, sens, coll] or just a pos_vec
-
+    sensors = []
+    sig_name = f"`get{field}` observers"
     try:  # try if input is just a pos_vec (or a quantity)
-        inp = downcast(inp, "m")  # is recursive
-        pos = np.array([0.0, 0.0, 0.0], dtype=float)
-        if units_global.in_use is True:
-            pos = to_Quantity(pos, "m")
-            inp = to_Quantity(inp, "m")
-        sensors = [Sensor(position=pos, pixel=inp)]
+        sensors.append(check_format_array_observers(inp, sig_name=sig_name))
     except (
         TypeError,
         ValueError,
         MagpylibBadUserInput,
-    ):  # if not, it must be [pos_vec, sens, coll]
-        sensors = []
+    ) as msg:  # if not, it must be [pos_vec, sens, coll]
         # make bare Sensor, bare Collection into a list
-        inp = [inp] if not array_like else inp
-        for obj in inp:
-            if isinstance(obj, Sensor):
-                sensors.append(obj)
-            elif isinstance(obj, Collection):
-                child_sensors = format_obj_input(obj, allow="sensors")
-                if not child_sensors:
-                    raise MagpylibBadUserInput(wrong_obj_msg(obj, allow="observers"))
-                sensors.extend(child_sensors)
+        if array_like:
+            for child in inp:
+                s2, _ = check_format_input_observers(child, pixel_agg, field)
+                sensors.extend(s2)
+        else:
+            if isinstance(inp, Sensor):
+                sensors.append(inp)
+            elif isinstance(inp, Collection):
+                s2 = inp.sensors_all
+                if not s2:
+                    raise MagpylibBadUserInput(
+                        wrong_obj_msg(inp, allow="observers")
+                    ) from msg
+                sensors.extend(s2)
             else:  # if its not a Sensor or a Collection it can only be a pos_vec
                 try:
-                    sensors.append(Sensor(pixel=obj))
+                    sensors.append(check_format_array_observers(inp, sig_name=sig_name))
                 except Exception:  # or some unwanted crap
-                    raise MagpylibBadUserInput(wrong_obj_msg(obj, allow="observers"))
+                    raise MagpylibBadUserInput(
+                        wrong_obj_msg(inp, allow="observers")
+                    ) from msg
 
     # all pixel shapes must be the same
     pix_shapes = [

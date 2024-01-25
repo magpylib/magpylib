@@ -34,6 +34,7 @@ ALLOWED_OBSERVER_MSG = """Observers must be either
 ALLOWED_SENSORS_MSG = """Sensors must be either
 - Sensor object
 - Collection with at least one Sensor
+- A quantity object (if units are used)
 - 1D list of the above"""
 
 
@@ -41,7 +42,7 @@ def wrong_obj_msg(*objs, allow="sources"):
     """return error message for wrong object type provided"""
     assert len(objs) <= 1, "only max one obj allowed"
     allowed = allow.split("+")
-    prefix = "No" if len(allowed) == 1 else "Bad"
+    prefix = "No valid" if len(allowed) == 1 else "Bad"
     msg = f"{prefix} {'/'.join(allowed)} provided"
     if "sources" in allowed:
         msg += "\n" + get_allowed_sources_msg()

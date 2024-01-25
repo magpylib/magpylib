@@ -8,7 +8,7 @@ from math import log10
 import numpy as np
 
 from magpylib._src.defaults.defaults_utility import ALLOWED_UNITS_MODES
-from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.exceptions import MagpylibBadUnitsInput
 
 
 MU0 = 4 * np.pi * 1e-7
@@ -352,7 +352,7 @@ class Units:
         self._mode = "consistent"
         self._package = "pint"
         self._registry = None
-        self._in_use = None
+        self._in_use = False
         self._first_param = None
 
     @property
@@ -405,7 +405,7 @@ class Units:
 
     def reset(self):
         """Reset mode parameters"""
-        self._in_use = None
+        self._in_use = False
         self._first_param = None
 
 
@@ -482,7 +482,7 @@ def to_Quantity(inp, unit, *, sig_name="", default_unit=None, units_handler=None
     except Exception as msg:
         sig_str = f" `{sig_name!r}`" if sig_name else ""
         expected = unit if default_unit is None else default_unit
-        raise MagpylibBadUserInput(
+        raise MagpylibBadUnitsInput(
             f"{msg}\nInput parameter{sig_str} cannot be converted to "
             f"units of {expected!r}."
         ) from msg
@@ -500,15 +500,31 @@ def to_unit_from_target(inp, *, target, default_unit, units_handler=None):
     return downcast(inp, default_unit, units_handler=units_handler)
 
 
-def downcast(inp, unit, units_handler=None):
+def downcast(inp, unit, units_handler=None, return_had_units=False, sig_name=""):
     """convert to SI units if obj is a Quantity"""
+    had_units = False
     if isinstance(inp, (list, tuple)):
-        return type(inp)([downcast(i, unit, units_handler=units_handler) for i in inp])
-    if units_handler is None:
-        units_handler = get_units_handler()
-    if is_Quantity(inp, units_handler=units_handler):
-        inp = units_handler.to_unit(inp, unit)
-        inp = units_handler.get_magnitude(inp)
+        inp_list = []
+        for i in inp:
+            down, hu = downcast(
+                i,
+                unit,
+                units_handler=units_handler,
+                return_had_units=True,
+            )
+            if hu:
+                had_units = True
+            inp_list.append(down)
+        inp = type(inp)(inp_list)
+    else:
+        if units_handler is None:
+            units_handler = get_units_handler()
+        if is_Quantity(inp, units_handler=units_handler):
+            had_units = True
+            inp = to_Quantity(inp, unit, units_handler=units_handler, sig_name=sig_name)
+            inp = units_handler.get_magnitude(inp)
+    if return_had_units:
+        return inp, had_units
     return inp
 
 
@@ -522,6 +538,8 @@ def unit_checker():
             inp = args[0]
             if kwargs.get("allow_None", False) and inp is None:
                 return None
+            units_in_use = units_global._in_use
+            units_first_param = units_global._first_param
             units_mode = units_global.mode
             units_package_default = units_global.package
             units_handler = get_units_handler()
@@ -537,7 +555,7 @@ def unit_checker():
             out_to_units = is_Quantity(inp) or is_quantity_like
             if (
                 units_mode in ("consistent", "coerce")
-                and units_global.in_use
+                and units_in_use
                 and not out_to_units
                 and isinstance(inp, (list, tuple, np.ndarray))
             ):
@@ -551,21 +569,23 @@ def unit_checker():
                 is_quantity_like or units_mode in ("upcast", "coerce", "base")
             ):
                 raise_missing_unit_package(units_package_default)
-            if units_global.in_use is None:
-                units_global._in_use = out_to_units
-                units_global._first_param = (sig_name, inp)
             if units_mode == "consistent":
-                if units_global.in_use != out_to_units:
+                if units_first_param is None:
+                    units_first_param = (sig_name, inp)
+                    units_in_use = out_to_units
+                if units_in_use != out_to_units:
                     s = (" not", "") if out_to_units else ("", " not")
-                    f = units_global._first_param
-                    raise MagpylibBadUserInput(
+                    f = units_first_param
+                    raise MagpylibBadUnitsInput(
                         f"while magpylib.units.mode is set to {units_mode!r},"
                         f" input parameter {f[0]} is{s[0]} unit-like ({f[1]})"
                         f" but input parameter {sig_name!r} is{s[1]} ({inp!r}) "
                     )
+            elif out_to_units:
+                units_in_use = True
             if out_to_units:
                 if units_mode == "forbid":
-                    raise MagpylibBadUserInput(
+                    raise MagpylibBadUnitsInput(
                         f"while magpylib.units.mode is set to {units_mode!r},"
                         f" input parameter {sig_name!r} is unit-like ({inp!r}) "
                     )
@@ -584,13 +604,13 @@ def unit_checker():
                         units_handler.to_unit(inp_wu, unit)
                     except Exception as msg:
                         sig_str = f" `{sig_name!r}`" if sig_name else ""
-                        raise MagpylibBadUserInput(
+                        raise MagpylibBadUnitsInput(
                             f"Input parameter{sig_str} must be in compatible units of {unit!r}."
                             f" Instead received {units_handler.get_unit(inp_wu)!r}."
                         ) from msg
                 args = (units_handler.get_magnitude(inp_wu), *args[1:])
             elif units_mode == "coerce":
-                raise MagpylibBadUserInput(
+                raise MagpylibBadUnitsInput(
                     f"while magpylib.units.mode is set to {units_mode!r},"
                     f" input parameter {sig_name!r} is not unit-like ({inp!r}) "
                 )
@@ -605,8 +625,11 @@ def unit_checker():
                     res = to_Quantity(res, unit, units_handler=units_handler)
                     res = units_handler.get_magnitude(res)
             elif units_mode in ("upcast", "coerce", "base"):
-                units_global._in_use = True
+                units_in_use = True
                 res = to_Quantity(res, unit, units_handler=units_handler)
+            # if all checks passed we can now assign the parameters
+            units_global._in_use = units_in_use
+            units_global._first_param = units_first_param
             return res
 
         return wrapper

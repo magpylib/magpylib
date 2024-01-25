@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import magpylib as magpy
+from magpylib._src.exceptions import MagpylibBadUnitsInput
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 
@@ -51,7 +52,7 @@ def test_tetra_input():
 def test_tetra_bad_inputs(vertices):
     """test obj-oriented triangle vs cube"""
 
-    with pytest.raises(MagpylibBadUserInput):
+    with pytest.raises((MagpylibBadUserInput, MagpylibBadUnitsInput)):
         magpy.magnet.Tetrahedron(polarization=(0.111, 0.222, 0.333), vertices=vertices)
 
 

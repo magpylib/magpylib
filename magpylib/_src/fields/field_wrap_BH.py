@@ -236,7 +236,7 @@ def getBH_level2(
     #   transform input into an ordered list of sensors (pos_vec->pixel)
     #   check if all pixel shapes are similar - or else if pixel_agg is given
     pixel_agg_func = check_format_pixel_agg(pixel_agg)
-    sensors, pix_shapes = check_format_input_observers(observers, pixel_agg)
+    sensors, pix_shapes = check_format_input_observers(observers, pixel_agg, field)
     pix_nums = [
         int(np.prod(ps[:-1])) for ps in pix_shapes
     ]  # number of pixel for each sensor
