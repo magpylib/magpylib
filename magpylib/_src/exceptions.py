@@ -17,7 +17,7 @@ class MagpylibMissingInput(Exception):
     """catching missing user inputs"""
 
 
-class MagpylibBadUnitsInput(Exception):
+class MagpylibUnitsError(Exception):
     """catching missing units inputs"""
 
 

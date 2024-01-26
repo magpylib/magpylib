@@ -8,7 +8,7 @@ from math import log10
 import numpy as np
 
 from magpylib._src.defaults.defaults_utility import ALLOWED_UNITS_MODES
-from magpylib._src.exceptions import MagpylibBadUnitsInput
+from magpylib._src.exceptions import MagpylibUnitsError
 
 
 MU0 = 4 * np.pi * 1e-7
@@ -354,6 +354,7 @@ class Units:
         self._registry = None
         self._in_use = False
         self._first_param = None
+        self._first_param_defined = False
 
     @property
     def in_use(self):
@@ -380,6 +381,7 @@ class Units:
 
     @package.setter
     def package(self, val):
+        self._check_first_param_defined("package")
         supported = tuple(units_global.UnitHandler.handlers)
         assert val in supported, (
             f"the `package` property of {type(self).__name__} must be one of"
@@ -395,6 +397,7 @@ class Units:
 
     @mode.setter
     def mode(self, val):
+        self._check_first_param_defined("package")
         assert val is None or val in ALLOWED_UNITS_MODES, (
             f"the `mode` property of {type(self).__name__} must be one of"
             f" {ALLOWED_UNITS_MODES}"
@@ -407,6 +410,14 @@ class Units:
         """Reset mode parameters"""
         self._in_use = False
         self._first_param = None
+        self._first_param_defined = False
+
+    def _check_first_param_defined(self, origin):
+        if self._first_param_defined:
+            raise MagpylibUnitsError(
+                f"`magpylib.units.{origin}` can only be set before the first object creation."
+                " Use `magpylib.units.reset() to override this behavior."
+            )
 
 
 units_global = Units()
@@ -482,7 +493,7 @@ def to_Quantity(inp, unit, *, sig_name="", default_unit=None, units_handler=None
     except Exception as msg:
         sig_str = f" `{sig_name!r}`" if sig_name else ""
         expected = unit if default_unit is None else default_unit
-        raise MagpylibBadUnitsInput(
+        raise MagpylibUnitsError(
             f"{msg}\nInput parameter{sig_str} cannot be converted to "
             f"units of {expected!r}."
         ) from msg
@@ -576,7 +587,7 @@ def unit_checker():
                 if units_in_use != out_to_units:
                     s = (" not", "") if out_to_units else ("", " not")
                     f = units_first_param
-                    raise MagpylibBadUnitsInput(
+                    raise MagpylibUnitsError(
                         f"while magpylib.units.mode is set to {units_mode!r},"
                         f" input parameter {f[0]} is{s[0]} unit-like ({f[1]})"
                         f" but input parameter {sig_name!r} is{s[1]} ({inp!r}) "
@@ -585,7 +596,7 @@ def unit_checker():
                 units_in_use = True
             if out_to_units:
                 if units_mode == "forbid":
-                    raise MagpylibBadUnitsInput(
+                    raise MagpylibUnitsError(
                         f"while magpylib.units.mode is set to {units_mode!r},"
                         f" input parameter {sig_name!r} is unit-like ({inp!r}) "
                     )
@@ -604,13 +615,13 @@ def unit_checker():
                         units_handler.to_unit(inp_wu, unit)
                     except Exception as msg:
                         sig_str = f" `{sig_name!r}`" if sig_name else ""
-                        raise MagpylibBadUnitsInput(
+                        raise MagpylibUnitsError(
                             f"Input parameter{sig_str} must be in compatible units of {unit!r}."
                             f" Instead received {units_handler.get_unit(inp_wu)!r}."
                         ) from msg
                 args = (units_handler.get_magnitude(inp_wu), *args[1:])
             elif units_mode == "coerce":
-                raise MagpylibBadUnitsInput(
+                raise MagpylibUnitsError(
                     f"while magpylib.units.mode is set to {units_mode!r},"
                     f" input parameter {sig_name!r} is not unit-like ({inp!r}) "
                 )
@@ -630,6 +641,7 @@ def unit_checker():
             # if all checks passed we can now assign the parameters
             units_global._in_use = units_in_use
             units_global._first_param = units_first_param
+            units_global._first_param_defined = True
             return res
 
         return wrapper
