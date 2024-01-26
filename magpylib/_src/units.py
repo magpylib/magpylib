@@ -53,7 +53,7 @@ def check_call(func, *args, expected, verbose=False):
             print(f"{call_str} -> {res_str}")
 
 
-class UnitHandler(metaclass=abc.ABCMeta):
+class UnitsHandler(metaclass=abc.ABCMeta):
     """
     An abstract base class to create a consistent interface for unit conversion.
 
@@ -112,7 +112,7 @@ class UnitHandler(metaclass=abc.ABCMeta):
         if package in cls.handlers and not override:
             left_names = set(cls.handlers) - {package}
             raise ValueError(
-                f"The UnitHandler name {package!r} is already in use, as well as {left_names}."
+                f"The UnitsHandler name {package!r} is already in use, as well as {left_names}."
                 " To replace an existing handler use `override=True` in the class declaration."
             )
         if validate_on_declaration:
@@ -147,7 +147,7 @@ class UnitHandler(metaclass=abc.ABCMeta):
         pass
 
     def validate(self):
-        """Validate new UnitHandler"""
+        """Validate new UnitsHandler"""
         for inp in (1.23, [1, 2, 3], np.array([1.0, 1.2, 1.23])):
             q_cm = self.to_quantity(inp, "cm")
             q_mm = self.to_unit(q_cm, "mm")
@@ -166,8 +166,8 @@ class UnitHandler(metaclass=abc.ABCMeta):
         check_call(tq, 1.23, "A*m**2", expected=tq("1.23A*m**2"))
 
 
-class PintHandler(UnitHandler, package="pint", validate_on_declaration=False):
-    """A concrete implementation of `UnitHandler` using the `pint` library.
+class PintHandler(UnitsHandler, package="pint", validate_on_declaration=False):
+    """A concrete implementation of `UnitsHandler` using the `pint` library.
 
     Attributes
     ----------
@@ -212,8 +212,8 @@ class PintHandler(UnitHandler, package="pint", validate_on_declaration=False):
         return inp.magnitude
 
 
-class UnytHandler(UnitHandler, package="unyt", validate_on_declaration=False):
-    """A concrete implementation of `UnitHandler` using the `unyt` library.
+class UnytHandler(UnitsHandler, package="unyt", validate_on_declaration=False):
+    """A concrete implementation of `UnitsHandler` using the `unyt` library.
 
     Attributes
     ----------
@@ -265,9 +265,9 @@ class UnytHandler(UnitHandler, package="unyt", validate_on_declaration=False):
         return val
 
 
-class AstropyHandler(UnitHandler, package="astropy", validate_on_declaration=False):
+class AstropyHandler(UnitsHandler, package="astropy", validate_on_declaration=False):
     """
-    A concrete implementation of `UnitHandler` using the `astropy` library for handling units.
+    A concrete implementation of `UnitsHandler` using the `astropy` library for handling units.
 
     This class provides methods to perform unit conversions and checks using `astropy.units`.
     It is designed to interact with `astropy.units.Quantity` objects.
@@ -320,7 +320,7 @@ class Units:
     mode: str, default='keep'
         Set Magpylib's units mode. Classes input parameters can be:
           - arrays or scalars
-          - quantity object from a `UnitHandler`
+          - quantity object from a `UnitsHandler`
           - unit-like inputs of the form (<value>, <units>) (e.g. [[1,2,3], 'meter'])
         When inputs are quantity objects, a dimensionality check is always performed. If it is
         only array-like or a scalar, it is assumed to be of base SI units. If it is unit-like it
@@ -346,7 +346,7 @@ class Units:
         throughout or not.
     """
 
-    UnitHandler = UnitHandler
+    UnitsHandler = UnitsHandler
 
     def __init__(self):
         self._mode = "consistent"
@@ -382,7 +382,7 @@ class Units:
     @package.setter
     def package(self, val):
         self._check_first_param_defined("package")
-        supported = tuple(units_global.UnitHandler.handlers)
+        supported = tuple(units_global.UnitsHandler.handlers)
         assert val in supported, (
             f"the `package` property of {type(self).__name__} must be one of"
             f" {supported}"
@@ -436,8 +436,8 @@ def get_units_handler(error="ignore"):
 
     Returns
     -------
-    UnitHandler
-        An instance of the subclass of `UnitHandler` corresponding to the unit package.
+    UnitsHandler
+        An instance of the subclass of `UnitsHandler` corresponding to the unit package.
 
     Raises
     ------
@@ -446,11 +446,11 @@ def get_units_handler(error="ignore"):
     """
 
     pkg = units_global.package
-    handlers = UnitHandler.handlers
+    handlers = UnitsHandler.handlers
     handler = handlers[pkg]
-    if not isinstance(handler, UnitHandler):
+    if not isinstance(handler, UnitsHandler):
         try:
-            # instantiate UnitHandler subclass on first use
+            # instantiate UnitsHandler subclass on first use
             handler = handlers[pkg]()
             handlers[pkg] = handler
         except ImportError:
@@ -468,7 +468,7 @@ def raise_missing_unit_package(pkg):
         f"In order to use units in Magpylib with {units_mode!r} units mode, "
         "you need to install the `pint` package."
     )
-    link = UnitHandler.handlers[pkg].pgk_link
+    link = UnitsHandler.handlers[pkg].pgk_link
     if link is not None:
         msg += f" (see {link})"
     raise ModuleNotFoundError(msg)
