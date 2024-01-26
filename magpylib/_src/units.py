@@ -98,29 +98,29 @@ class UnitHandler(metaclass=abc.ABCMeta):
     # pylint: disable=missing-function-docstring
 
     handlers = {}
-    pkg_name = ""
+    package = ""
     pgk_link = ""
     __validated = False
     registry = None
 
     def __init_subclass__(
-        cls, *, pkg_name, validate_on_declaration=True, override=False, **kwargs
+        cls, *, package, validate_on_declaration=True, override=False, **kwargs
     ):
         # cannot use `name` parameter as it conflicts with ABCmeta
         super().__init_subclass__(**kwargs)
-        pkg_name = str(pkg_name)
-        if pkg_name in cls.handlers and not override:
-            left_names = set(cls.handlers) - {pkg_name}
+        package = str(package)
+        if package in cls.handlers and not override:
+            left_names = set(cls.handlers) - {package}
             raise ValueError(
-                f"The UnitHandler name {pkg_name!r} is already in use, as well as {left_names}."
+                f"The UnitHandler name {package!r} is already in use, as well as {left_names}."
                 " To replace an existing handler use `override=True` in the class declaration."
             )
         if validate_on_declaration:
             # avoid validation on handlers that use packages that may not be installed
             # wait for instantiation
             cls().validate()
-        cls.pkg_name = pkg_name
-        cls.handlers[pkg_name] = cls
+        cls.package = package
+        cls.handlers[package] = cls
 
     def __init__(self):
         if not self.__validated:
@@ -166,7 +166,7 @@ class UnitHandler(metaclass=abc.ABCMeta):
         check_call(tq, 1.23, "A*m**2", expected=tq("1.23A*m**2"))
 
 
-class PintHandler(UnitHandler, pkg_name="pint", validate_on_declaration=False):
+class PintHandler(UnitHandler, package="pint", validate_on_declaration=False):
     """A concrete implementation of `UnitHandler` using the `pint` library.
 
     Attributes
@@ -212,7 +212,7 @@ class PintHandler(UnitHandler, pkg_name="pint", validate_on_declaration=False):
         return inp.magnitude
 
 
-class UnytHandler(UnitHandler, pkg_name="unyt", validate_on_declaration=False):
+class UnytHandler(UnitHandler, package="unyt", validate_on_declaration=False):
     """A concrete implementation of `UnitHandler` using the `unyt` library.
 
     Attributes
@@ -265,7 +265,7 @@ class UnytHandler(UnitHandler, pkg_name="unyt", validate_on_declaration=False):
         return val
 
 
-class AstropyHandler(UnitHandler, pkg_name="astropy", validate_on_declaration=False):
+class AstropyHandler(UnitHandler, package="astropy", validate_on_declaration=False):
     """
     A concrete implementation of `UnitHandler` using the `astropy` library for handling units.
 
