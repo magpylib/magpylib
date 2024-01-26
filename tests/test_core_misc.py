@@ -28,8 +28,10 @@ from magpylib.core import triangle_field
 
 
 def helper_check_HBMJ_consistency(func, **kw):
-    """helper function to check H,B,M,J field consistencies
-    returns H, B, M, J"""
+    """
+    helper function to check H,B,M,J field consistencies
+    returns H, B, M, J
+    """
     B = func(field="B", **kw)
     H = func(field="H", **kw)
     M = func(field="M", **kw)
@@ -39,7 +41,7 @@ def helper_check_HBMJ_consistency(func, **kw):
     return H, B, M, J
 
 
-def test_magnet_cuboid_field_BH():
+def test_magnet_cuboid_field_BHMJ():
     """test cuboid field"""
     pol = np.array(
         [
@@ -68,7 +70,7 @@ def test_magnet_cuboid_field_BH():
             (1, -1, 0),
             (1, -1, 0),
             (1, 2, 3),
-            (0, 0, 0),
+            (0, 0, 0),  # inside
         ]
     )
     kw = {
@@ -76,7 +78,7 @@ def test_magnet_cuboid_field_BH():
         "polarization": pol,
         "dimension": dim,
     }
-    H, B, *_ = helper_check_HBMJ_consistency(magnet_cuboid_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(magnet_cuboid_field, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -98,8 +100,15 @@ def test_magnet_cuboid_field_BH():
     ]
     np.testing.assert_allclose(H, Htest, rtol=1e-5)
 
+    Jtest = np.array([(0, 0, 0)] * 5 + [(1, 2, 3)])
+    np.testing.assert_allclose(J, Jtest, rtol=1e-5)
 
-def test_magnet_cylinder_field_BH():
+    H_inout = magnet_cuboid_field(field="H", in_out="outside", **kw)
+    Htest_inout = Htest + Jtest / MU0
+    np.testing.assert_allclose(H_inout, Htest_inout, rtol=1e-5)
+
+
+def test_magnet_cylinder_field_BHJM():
     """test cylinder field computation"""
     pol = np.array(
         [
@@ -122,7 +131,7 @@ def test_magnet_cylinder_field_BH():
             (1, 2, 3),
             (1, -1, 0),
             (1, 1, 1),
-            (0, 0, 0),
+            (0, 0, 0),  # inside
         ]
     )
 
@@ -131,7 +140,7 @@ def test_magnet_cylinder_field_BH():
         "polarization": pol,
         "dimension": dim,
     }
-    H, B, *_ = helper_check_HBMJ_consistency(magnet_cylinder_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(magnet_cylinder_field, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -149,6 +158,13 @@ def test_magnet_cylinder_field_BH():
     ]
     np.testing.assert_allclose(H, Htest)
 
+    Jtest = np.array([(0, 0, 0), (0, 0, 0), (0, 0, 0), (1, 1, 1)])
+    np.testing.assert_allclose(J, Jtest)
+
+    H_inout = magnet_cylinder_field(field="H", in_out="outside", **kw)
+    Htest_inout = Htest - Jtest / MU0
+    np.testing.assert_allclose(H_inout, Htest_inout, rtol=1e-5)
+
 
 def test_magnet_sphere_field_BH():
     """test magnet_sphere_field"""
@@ -165,8 +181,8 @@ def test_magnet_sphere_field_BH():
         [
             (1, 2, 3),
             (1, -1, 0),
-            (0, -1, 0),
-            (1, -1, 0.5),
+            (0, -1, 0),  # inside
+            (1, -1, 0.5),  # inside
         ]
     )
 
@@ -175,7 +191,7 @@ def test_magnet_sphere_field_BH():
         "polarization": pol,
         "diameter": dia,
     }
-    H, B, *_ = helper_check_HBMJ_consistency(magnet_sphere_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(magnet_sphere_field, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -192,6 +208,9 @@ def test_magnet_sphere_field_BH():
         [-530516.47697298, -795774.71545948, 265258.23848649],
     ]
     np.testing.assert_allclose(H, Htest)
+
+    Jtest = [(0, 0, 0), (0, 0, 0), (2, 3, -1), (2, 3, -1)]
+    np.testing.assert_allclose(J, Jtest)
 
 
 def test_field_cylinder_segment_BH():
@@ -217,7 +236,7 @@ def test_field_cylinder_segment_BH():
             (1, 2, 3),
             (1, -1, 0),
             (0, -1, 0),
-            (1, -1, 0.5),
+            (1, -1, 0.5),  # inside
         ]
     )
 
@@ -226,7 +245,7 @@ def test_field_cylinder_segment_BH():
         "polarization": pol,
         "dimension": dim,
     }
-    H, B, *_ = helper_check_HBMJ_consistency(magnet_cylinder_segment_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(magnet_cylinder_segment_field, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -243,6 +262,9 @@ def test_field_cylinder_segment_BH():
         [-194374.5385654, -326700.15326755, 644372.62925584],
     ]
     np.testing.assert_allclose(H, Htest, rtol=1e-6)
+
+    Jtest = [(0, 0, 0), (0, 0, 0), (0, 0, 0), (2, 3, -1)]
+    np.testing.assert_allclose(J, Jtest)
 
 
 def test_triangle_field_BH():
@@ -277,7 +299,7 @@ def test_triangle_field_BH():
         "polarization": pol,
         "vertices": vert,
     }
-    H, B, *_ = helper_check_HBMJ_consistency(triangle_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(triangle_field, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -295,6 +317,9 @@ def test_triangle_field_BH():
     ]
     np.testing.assert_allclose(H, Htest, rtol=1e-06)
 
+    Jtest = [(0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0)]
+    np.testing.assert_allclose(J, Jtest)
+
 
 def test_magnet_tetrahedron_field_BH():
     """Test of tetrahedron field core function"""
@@ -302,8 +327,9 @@ def test_magnet_tetrahedron_field_BH():
         [
             (0, 0, 0),
             (1, 2, 3),
-            (-1, 0.5, 0.1),
+            (-1, 0.5, 0.1),  # inside
             (2, 2, -1),
+            (3, 2, 1),  # inside
         ]
     )
     vert = np.array(
@@ -312,6 +338,7 @@ def test_magnet_tetrahedron_field_BH():
             [(0, 0, 0), (0, 1, 0), (1, 0, 0), (0, 0, 1)],
             [(-1, 0, -1), (1, 1, -1), (1, -1, -1), (0, 0, 1)],
             [(-1, 0, -1), (1, 1, -1), (1, -1, -1), (0, 0, 1)],
+            [(-10, 0, -10), (10, 10, -10), (10, -10, -10), (0, 0, 10)],
         ]
     )
     obs = np.array(
@@ -320,6 +347,7 @@ def test_magnet_tetrahedron_field_BH():
             (1, 1, 1),
             (0, 0, 0),
             (2, 0, 0),
+            (1, 2, 3),
         ]
     )
     kw = {
@@ -327,13 +355,14 @@ def test_magnet_tetrahedron_field_BH():
         "polarization": pol,
         "vertices": vert,
     }
-    H, B, *_ = helper_check_HBMJ_consistency(magnet_tetrahedron_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(magnet_tetrahedron_field, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
         [0.02602367, 0.02081894, 0.0156142],
         [-0.69704332, 0.20326329, 0.11578416],
         [0.04004769, -0.03186713, 0.03854207],
+        [2.09887014, 1.42758632, 0.8611617],
     ]
     np.testing.assert_allclose(B, Btest, rtol=1e-06)
 
@@ -342,8 +371,12 @@ def test_magnet_tetrahedron_field_BH():
         [20708.97827326, 16567.1826186, 12425.38696395],
         [241085.26350642, -236135.56979233, 12560.63814427],
         [31868.94160192, -25359.05664996, 30670.80436549],
+        [-717096.35551784, -455512.33538799, -110484.00786285],
     ]
     np.testing.assert_allclose(H, Htest, rtol=1e-06)
+
+    Jtest = [(0, 0, 0), (0, 0, 0), (-1, 0.5, 0.1), (0, 0, 0), (3, 2, 1)]
+    np.testing.assert_allclose(J, Jtest, rtol=1e-06)
 
 
 def test_magnet_trimesh_field_BH():
@@ -371,7 +404,7 @@ def test_magnet_trimesh_field_BH():
             [-0.5703949332237244, -0.25462886691093445, 0.7809056639671326],
         ],
     ]
-    mesh2 = [
+    mesh2 = [  # inside
         [
             [0.9744000434875488, 0.15463787317276, 0.16319207847118378],
             [-0.12062954157590866, -0.8440634608268738, -0.522499144077301],
@@ -401,7 +434,7 @@ def test_magnet_trimesh_field_BH():
         "polarization": pol,
         "mesh": mesh,
     }
-    H, B, *_ = helper_check_HBMJ_consistency(magnet_trimesh_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(magnet_trimesh_field, **kw)
 
     Btest = [
         [1.54452002e-03, 3.11861149e-03, 4.68477835e-03],
@@ -415,6 +448,9 @@ def test_magnet_trimesh_field_BH():
     ]
     np.testing.assert_allclose(H, Htest)
 
+    Jtest = [(0, 0, 0), (3, 2, 1)]
+    np.testing.assert_allclose(J, Jtest, rtol=1e-06)
+
 
 def test_current_circle_field_BH():
     """Test of current circle field core function"""
@@ -423,7 +459,7 @@ def test_current_circle_field_BH():
         "current": np.array([1, 1, 2]) * 1e3,
         "diameter": np.array([2, 4, 6]),
     }
-    H, B, *_ = helper_check_HBMJ_consistency(current_circle_field, **kw)
+    H, B, M, _ = helper_check_HBMJ_consistency(current_circle_field, **kw)
 
     Btest = (
         np.array(
@@ -449,6 +485,9 @@ def test_current_circle_field_BH():
     )
     np.testing.assert_allclose(H, Htest)
 
+    Mtest = [(0, 0, 0)] * 3
+    np.testing.assert_allclose(M, Mtest, rtol=1e-06)
+
 
 def test_current_polyline_field_BH():
     """Test of current polyline field core function"""
@@ -460,7 +499,7 @@ def test_current_polyline_field_BH():
         "segment_start": vert[:-1],
         "segment_end": vert[1:],
     }
-    H, B, *_ = helper_check_HBMJ_consistency(current_polyline_field, **kw)
+    H, B, M, _ = helper_check_HBMJ_consistency(current_polyline_field, **kw)
 
     Btest = (
         np.array(
@@ -486,6 +525,9 @@ def test_current_polyline_field_BH():
     )
     np.testing.assert_allclose(H, Htest, rtol=0, atol=1e-7)
 
+    Mtest = [(0, 0, 0)] * 3
+    np.testing.assert_allclose(M, Mtest, rtol=1e-06)
+
 
 def test_dipole_field_BH():
     """Test of dipole field core function"""
@@ -495,7 +537,7 @@ def test_dipole_field_BH():
         "observers": np.array([(1, 2, 3), (-1, -2, -3), (3, 3, -1)]),
         "moment": pol * 4 * np.pi / 3 / MU0,
     }
-    H, B, *_ = helper_check_HBMJ_consistency(dipole_field, **kw)
+    H, B, M, _ = helper_check_HBMJ_consistency(dipole_field, **kw)
 
     Btest = [
         [4.09073329e-03, 8.18146659e-03, 5.90883698e-03],
@@ -510,6 +552,9 @@ def test_dipole_field_BH():
         [-74.17158426, -4305.1547508, 698.3928945],
     ]
     np.testing.assert_allclose(H, Htest)
+
+    Mtest = [(0, 0, 0)] * 3
+    np.testing.assert_allclose(M, Mtest, rtol=1e-06)
 
 
 #######################################################################################

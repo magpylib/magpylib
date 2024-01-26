@@ -111,9 +111,8 @@ def _magnet_cuboid_field_B(observers, dimension, polarization):
     )
 
     # contributions from x-polarization
-    bx_pol_x = (
-        pol_x * ff1x * qsigns[:, 0, 0]
-    )  # the 'missing' third sign is hidden in ff1x
+    #    the 'missing' third sign is hidden in ff1x
+    bx_pol_x = pol_x * ff1x * qsigns[:, 0, 0]
     by_pol_x = pol_x * ff2z * qsigns[:, 0, 1]
     bz_pol_x = pol_x * ff2y * qsigns[:, 0, 2]
     # contributions from y-polarization
@@ -146,48 +145,44 @@ def magnet_cuboid_field(
     polarization: np.ndarray,
     in_out="auto",
 ) -> np.ndarray:
-    """Magnetic field of homogeneously magnetized cuboids.
+    """Field (B, H, J, or M) of homogeneously magnetized cuboids.
 
     The cuboid sides are parallel to the coordinate axes. The geometric center of the
     cuboid lies in the origin.
 
-    SI units are used for all inputs and outputs.
+    SI units are used by default for all inputs and outputs.
 
     Parameters
     ----------
-    field: str, default=`'B'`
-        If `field='B'` return B-field in units of T, if `field='H'` return H-field
-        in units of A/m.
+    field: str, {'B', 'H', 'J', 'M'}
+        Select which field to compute: 'B' computes the B-field in units of tesla,
+        'H' computes the H-field in units of A/m, 'J' computes the magnetic
+        polarization in units of tesla, and 'M' the magnetization in units of A/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of m.
+        Observer positions (x,y,z) in Cartesian coordinates in units of meter.
 
     dimension: ndarray, shape (n,3)
-        Length of Cuboid sides in units of m.
+        Length of Cuboid sides in units of meter.
 
     polarization: ndarray, shape (n,3)
-        Magnetic polarization vectors in units of T.
+        Magnetic polarization vectors in units of tesla.
 
-    in_out: {'auto', 'inside', 'outside'}
-        Specify the location of the observers relative to the magnet body, affecting the calculation
-        of the magnetic field. The options are:
-        - 'auto': The location (inside or outside the cuboid) is determined automatically for each
-          observer.
-        - 'inside': All observers are considered to be inside the cuboid; use this for performance
-          optimization if applicable.
-        - 'outside': All observers are considered to be outside the cuboid; use this for performance
-          optimization if applicable.
-        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-        locations is unknown.
+    in_out: str, {'auto', 'inside', 'outside'}
+        Give additional information about observer position relative to the magnet body,
+        affecting the computation speed. With 'auto' (default) the inside-outside
+        evaluation is done by Magpylib which adds to the computation overhead.
+        With 'inside' all observers are assumed inside, with 'outside' all observers
+        are assumed outside.
 
     Returns
     -------
-    B-field or H-field: ndarray, shape (n,3)
-        B- or H-field of source in Cartesian coordinates in units of T or A/m.
+    Field (B, H, J, or M): ndarray, shape (n,3)
+        B-field in tesla, H-field in A/m, J-field in tesla, or M-field in A/m.
 
     Examples
     --------
-    Compute the field of three different instances.
+    Compute the B-field of three different instances.
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -258,6 +253,9 @@ def magnet_cuboid_field(
 
     mask_inside = None
     if in_out == "auto" and field != "B":
+        # generate in-out mask for auto-input. This is not needed when
+        # "B" is computed, because the explicit expressions compute B
+
         # SPECIAL CASE 3: observer lies on-edge/corner
         # -> EPSILON to account for numerical imprecision when e.g. rotating
         # -> /a /b /c to account for the "missing" scaling (EPSILON is large when
@@ -268,11 +266,13 @@ def magnet_cuboid_field(
         mask_surf_y = abs(y_dist := abs(y) - b) < RTOL_SURFACE * b  # on surface
         mask_surf_z = abs(z_dist := abs(z) - c) < RTOL_SURFACE * c  # on surface
 
-        mask_inside_x = x_dist < RTOL_SURFACE * a  # within cuboid dimension
-        mask_inside_y = y_dist < RTOL_SURFACE * b  # within cuboid dimension
-        mask_inside_z = z_dist < RTOL_SURFACE * c  # within cuboid dimension
+        # inside-outside
+        mask_inside_x = x_dist < RTOL_SURFACE * a
+        mask_inside_y = y_dist < RTOL_SURFACE * b
+        mask_inside_z = z_dist < RTOL_SURFACE * c
         mask_inside = mask_inside_x & mask_inside_y & mask_inside_z
 
+        # on edge
         mask_xedge = mask_surf_y & mask_surf_z & mask_inside_x
         mask_yedge = mask_surf_x & mask_surf_z & mask_inside_y
         mask_zedge = mask_surf_x & mask_surf_y & mask_inside_z
