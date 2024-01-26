@@ -26,7 +26,8 @@ def get_legend_label(obj, style=None, suffix=True):
         desc = style.description.text
         if not desc:
             desc = getattr(obj, "_default_style_description", "")
-        suff = f" ({desc})"
+        if desc:
+            suff = f" ({desc})"
     return f"{name}{suff}"
 
 

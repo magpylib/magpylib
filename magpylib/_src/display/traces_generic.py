@@ -280,9 +280,9 @@ def get_generic_traces_2D(
         field_str, *coords_str = out
         if not coords_str:
             coords_str = list("xyz")
-        if field_str not in ("B", "H") and set(coords_str).difference(set("xyz")):
+        if field_str not in "BHMJ" and set(coords_str).difference(set("xyz")):
             raise ValueError(
-                "The `output` parameter must start with 'B' or 'H' "
+                "The `output` parameter must start with 'B', 'H', 'M', 'J' "
                 "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Hz') )"
                 f"\nreceived {out!r} instead"
             )
@@ -319,8 +319,7 @@ def get_generic_traces_2D(
 
     def get_label_and_color(obj):
         style = obj.style
-        label = getattr(style, "label", None)
-        label = repr(obj) if not label else label
+        label = get_legend_label(obj, style=style)
         color = getattr(style, "color", None)
         return label, color
 
