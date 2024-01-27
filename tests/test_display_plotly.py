@@ -317,7 +317,7 @@ def test_subplots():
 
     # bad output value
     with pytest.raises(
-        ValueError, match=r"The `output` parameter must start with 'B' or 'H'.*"
+        ValueError, match=r"The `output` parameter must start with 'B', 'H', 'M', 'J'.*"
     ):
         magpy.show(*objs, canvas=fig, output="bad_output")
 
