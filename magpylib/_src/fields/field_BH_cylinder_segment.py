@@ -7,7 +7,7 @@ import numpy as np
 from scipy.special import ellipeinc
 from scipy.special import ellipkinc
 
-from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
+from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.special_el3 import el3_angle
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import convert_HBMJ
@@ -2327,7 +2327,7 @@ def magnet_cylinder_segment_field_internal(
 
     # case2: full cylinder
     mask1x = ~mask1
-    BHfinal[mask1x] = magnet_cylinder_field(
+    BHfinal[mask1x] = BHJM_magnet_cylinder(
         field=field,
         observers=observers[mask1x],
         polarization=polarization[mask1x],
@@ -2336,7 +2336,7 @@ def magnet_cylinder_segment_field_internal(
 
     # case2a: hollow cylinder <- should be vectorized together with above
     mask2 = (r1 != 0) & mask1x
-    BHfinal[mask2] -= magnet_cylinder_field(
+    BHfinal[mask2] -= BHJM_magnet_cylinder(
         field=field,
         observers=observers[mask2],
         polarization=polarization[mask2],

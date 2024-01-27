@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 
 import magpylib as magpy
+from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_core
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
 
@@ -468,7 +469,7 @@ def test_cylinder_diametral_small_r():
     test if the transition from Taylor series to general case is smooth
     test if the gneral case fluctuations are small
     """
-    B = magpy.core.magnet_cylinder_field(
+    B = BHJM_magnet_cylinder(
         field="B",
         observers=np.array([(x, 0, 3) for x in np.logspace(-1.4, -1.2, 1000)]),
         polarization=np.array([(1, 1, 0)] * 1000),
@@ -490,7 +491,7 @@ def test_cyl_vs_cylseg_axial_H_inside_mask():
     dims = np.array([(1, 1)])
     dims_cs = np.array([(0, 0.5, 1, 0, 360)])
 
-    Bc = magpy.core.magnet_cylinder_field(
+    Bc = BHJM_magnet_cylinder(
         field=field,
         observers=obs,
         dimension=dims,

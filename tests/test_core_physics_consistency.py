@@ -1,6 +1,9 @@
 import numpy as np
 
 import magpylib as magpy
+from magpylib._src.fields.field_BH_circle import current_circle_field
+from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
+from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.utility import MU0
 
 # PHYSICS CONSISTENCY TESTING
@@ -17,6 +20,8 @@ from magpylib._src.utility import MU0
 #
 # Geometric approximation testing should give similar results for different
 # implementations when one geometry is constructed from another
+#
+# Scaling invariance of solutions
 #
 # ----------> Circle          # webpage numbers
 # Circle   <> Dipole          # mom = I*A (far field approx)
@@ -221,7 +226,7 @@ def test_core_physics_long_solenoid():
             BHz_long *= MU0
 
         # SOLENOID TEST constructed from circle fields
-        BH = magpy.core.current_circle_field(
+        BH = current_circle_field(
             field=field,
             observers=np.linspace((0, 0, -L / 2), (0, 0, L / 2), N),
             diameter=np.array([2 * R] * N),
@@ -238,7 +243,7 @@ def test_core_physics_long_solenoid():
         obs = np.array([(0, 0, 0)])
 
         # cylinder
-        BHz_cyl = magpy.core.magnet_cylinder_field(
+        BHz_cyl = BHJM_magnet_cylinder(
             field=field,
             observers=obs,
             dimension=np.array([(2 * R, L)]),
@@ -249,7 +254,7 @@ def test_core_physics_long_solenoid():
         np.testing.assert_allclose(BHz_long, BHz_cyl, rtol=1e-5)
 
         # cuboid
-        BHz_cub = magpy.core.magnet_cuboid_field(
+        BHz_cub = BHJM_magnet_cuboid(
             field=field,
             observers=obs,
             dimension=np.array([(2 * R, 2 * R, L)]),
@@ -275,7 +280,7 @@ def test_core_physics_current_replacement():
     obs = np.array([(1.5, -2, -1.123)])
 
     Jz = 1
-    Hz_cyl = magpy.core.magnet_cylinder_field(
+    Hz_cyl = BHJM_magnet_cylinder(
         field="H",
         observers=obs,
         dimension=np.array([(2 * R, L)]),
@@ -284,7 +289,7 @@ def test_core_physics_current_replacement():
 
     N = 1000  # current discretization
     I = Jz / MU0 / N * L
-    H = magpy.core.current_circle_field(
+    H = current_circle_field(
         field="H",
         observers=np.linspace((0, 0, -L / 2), (0, 0, L / 2), N) + obs,
         diameter=np.array([2 * R] * N),
@@ -303,7 +308,7 @@ def test_core_physics_geometry_cylinder_from_segments():
     obs = np.array([(1, 2, 3), (0.23, 0.132, 0.123)])
     pol = np.array([(2, 0.123, 3), (-0.23, -1, 0.434)])
 
-    B_cyl = magpy.core.magnet_cylinder_field(
+    B_cyl = BHJM_magnet_cylinder(
         field="B",
         observers=obs,
         dimension=np.array([(2 * r, h)] * 2),
@@ -339,7 +344,7 @@ def test_core_physics_dipole_approximation_magnet_far_field():
     dim = np.array([(2, 2, 2)] * 2)
     vol = 8
     pol = mom / vol * MU0
-    Bcub = magpy.core.magnet_cuboid_field(
+    Bcub = BHJM_magnet_cuboid(
         field="H",
         observers=obs,
         dimension=dim,
@@ -350,7 +355,7 @@ def test_core_physics_dipole_approximation_magnet_far_field():
     dim = np.array([(0.5, 0.5)] * 2)
     vol = 0.25**2 * np.pi * 0.5
     pol = mom / vol * MU0
-    Bcyl = magpy.core.magnet_cylinder_field(
+    Bcyl = BHJM_magnet_cylinder(
         field="H",
         observers=obs,
         dimension=dim,
@@ -429,7 +434,7 @@ def test_core_physics_cube_current_replacement():
     Jz = 1.23
     dim = np.array([(2, 2, h)] * 2)
     pol = np.array([(0, 0, Jz)] * 2)
-    Hcub = magpy.core.magnet_cuboid_field(
+    Hcub = BHJM_magnet_cuboid(
         field="H",
         observers=obs,
         dimension=dim,
@@ -486,7 +491,7 @@ def test_core_physics_triangle_cube_geometry():
     obs = np.array([(3, 4, 5)])
     mag = np.array([(0, 0, 333)])
     dim = np.array([(2, 2, 2)])
-    bb = magpy.core.magnet_cuboid_field(
+    bb = BHJM_magnet_cuboid(
         field="B",
         observers=obs,
         dimension=dim,
@@ -595,13 +600,13 @@ def test_core_physics_Tetrahedron_VS_Cuboid():
             obs1 = np.reshape(obs, (1, 3))
             mag1 = np.reshape(mag, (1, 3))
             dim = np.array([(2, 2, 2)])
-            bb = magpy.core.magnet_cuboid_field(
+            bb = BHJM_magnet_cuboid(
                 field="B",
                 observers=obs1,
                 polarization=mag1,
                 dimension=dim,
             )[0]
-            hh = magpy.core.magnet_cuboid_field(
+            hh = BHJM_magnet_cuboid(
                 field="H",
                 observers=obs1,
                 polarization=mag1,
