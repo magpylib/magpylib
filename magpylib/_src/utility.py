@@ -10,6 +10,7 @@ from typing import Optional
 from typing import Sequence
 
 import numpy as np
+from scipy.constants import mu_0 as MU0
 
 from magpylib._src.exceptions import MagpylibBadUserInput
 
@@ -24,8 +25,6 @@ def get_allowed_sources_msg():
 - 1D list of the above
 - string {srcs}"""
 
-
-MU0 = 4 * np.pi * 1e-7
 
 ALLOWED_OBSERVER_MSG = """Observers must be either
 - array_like positions of shape (N1, N2, ..., 3)
