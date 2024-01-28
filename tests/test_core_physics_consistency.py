@@ -4,7 +4,7 @@ import magpylib as magpy
 from magpylib._src.fields.field_BH_circle import BHJM_circle
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
-from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
+from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 from magpylib._src.fields.field_BH_polyline import current_polyline_field
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
@@ -325,7 +325,7 @@ def test_core_physics_geometry_cylinder_from_segments():
 
     Bseg = np.zeros((2, 3))
     for phi1, phi2 in zip(sections[:-1], sections[1:]):
-        B_part = magnet_cylinder_segment_field(
+        B_part = BHJM_cylinder_segment(
             field="B",
             observers=obs,
             dimension=np.array([(0, r, h, phi1, phi2)] * 2),
@@ -384,7 +384,7 @@ def test_core_physics_dipole_approximation_magnet_far_field():
     dim = np.array([(0.1, 0.2, 0.1, -25, 25)] * 2)
     vol = 3 * np.pi * (50 / 360) * 1e-3
     pol = mom / vol * MU0
-    Bcys = magnet_cylinder_segment_field(
+    Bcys = BHJM_cylinder_segment(
         field="H",
         observers=obs + np.array((0.15, 0, 0)),
         dimension=dim,

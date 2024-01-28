@@ -7,7 +7,7 @@ from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_circle import BHJM_circle
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
-from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
+from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 from magpylib._src.fields.field_BH_polyline import current_line_field
 from magpylib._src.fields.field_BH_polyline import current_polyline_field
@@ -244,7 +244,7 @@ def test_field_cylinder_segment_BH():
         "polarization": pol,
         "dimension": dim,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(magnet_cylinder_segment_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(BHJM_cylinder_segment, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],

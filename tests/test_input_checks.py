@@ -960,7 +960,7 @@ def test_input_getBH_field_bad(field):
     moms = np.array([[1, 2, 3]])
     obs = np.array([[1, 2, 3]])
     with pytest.raises(MagpylibBadUserInput):
-        magpy.core.BHJM_dipole(field=field, observers=obs, moment=moms)
+        BHJM_dipole(field=field, observers=obs, moment=moms)
 
 
 def test_sensor_handedness():

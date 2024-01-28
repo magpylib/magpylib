@@ -6,8 +6,8 @@ import pytest
 
 import magpylib as magpy
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
+from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_core
-from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
 
 # pylint: disable="pointless-string-statement"
 # creating test data
@@ -207,7 +207,7 @@ def test_cylinder_field1():
     eins = np.ones(N)
     d, h, _ = dim.T
     dim5 = np.array([nulll, d / 2, h, nulll, eins * 360]).T
-    B1 = magnet_cylinder_segment_field(
+    B1 = BHJM_cylinder_segment(
         field="B", observers=poso, polarization=magg, dimension=dim5
     )
 
@@ -497,7 +497,7 @@ def test_cyl_vs_cylseg_axial_H_inside_mask():
         dimension=dims,
         polarization=pols,
     )
-    Bcs = magpy.core.magnet_cylinder_segment_field(
+    Bcs = BHJM_cylinder_segment(
         field=field,
         observers=obs,
         dimension=dims_cs,
