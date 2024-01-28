@@ -72,16 +72,16 @@ def BHJM_dipole(
     if field in "MJ":
         return np.zeros_like(observers, dtype=float)
 
-    H = dipole_Hfield(
+    BHJM = dipole_Hfield(
         observers=observers,
         moments=moment,
     )
 
     if field == "H":
-        return H
+        return BHJM
 
     if field == "B":
-        return H * MU0
+        return BHJM * MU0
 
     raise ValueError(  # pragma: no cover
         "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"

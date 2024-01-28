@@ -19,13 +19,14 @@ def current_circle_Bfield(
     r0: np.ndarray,
     r: np.ndarray,
     z: np.ndarray,
+    i0: np.ndarray,
 ) -> np.ndarray:
     """
     B-field of a circular line-current loops.
 
-    The loop lies in the z=0 plane with the coordinate origin at its center and carries
-    a unit current of 1A. The output is independent of the length units chosen for observers
-    and radius r0. Implementation based on "Numerically stable and computationally
+    The loop lies in the z=0 plane with the coordinate origin at its center. The
+    output is independent of the length units chosen for observers
+    and radius. Implementation based on "Numerically stable and computationally
     efficient expression for the magnetic field of a current loop.", M.Ortner et al,
     Magnetism 2023, 3(1), 11-31
 
@@ -60,7 +61,7 @@ def current_circle_Bfield(
     k = np.sqrt(k2)
     q = np.sqrt(q2)
     p = 1 + q
-    pf = k / np.sqrt(r) / q2 / 20 / r0 * 1e-6
+    pf = k / np.sqrt(r) / q2 / 20 / r0 * 1e-6 * i0
 
     # cel* part
     cc = k2 * k2
@@ -72,16 +73,8 @@ def current_circle_Bfield(
     ss = 2 * k2 * q * (k2 / p - p / r)
     Bz = -pf * cel_iter(q, p, np.ones(n5), cc, ss, p, q)
 
-    return Br, Bz
-
-
-print(
-    current_circle_Bfield(
-        r0=np.array([1]),
-        r=np.array([1e-10]),
-        z=np.array([0]),
-    )
-)
+    return np.row_stack((Br, np.zeros(n5), Bz))
+    # return Br, Bz
 
 
 def BHJM_circle(
@@ -94,20 +87,19 @@ def BHJM_circle(
     """
     Return BHMJ fields
     - treat special cases
-
-
     """
+
+    # allocate result - USE SINGLE BHJM ARRAY INSTEAD OF TUPLE (SEE CYLINDER)
+    # Br_tot, Bz_tot = np.zeros((2, n))
+    BHJM = np.zeros_like(observers, dtype=float)
 
     check_field_input(field)
     if field in "MJ":
-        return np.zeros_like(observers, dtype=float)
+        return BHJM
 
     r, phi, z = cart_to_cyl_coordinates(observers)
     r0 = np.abs(diameter / 2)
     n = len(r0)
-
-    # allocate result
-    Br_tot, Bz_tot = np.zeros((2, n))
 
     # Special cases:
     # case1: loop radius is 0 -> return (0,0,0)
@@ -118,27 +110,34 @@ def BHJM_circle(
     mask3 = r == 0
     if np.any(mask3):
         mask4 = mask3 * ~mask1  # only relevant if not also case1
-        Bz_tot[mask4] = (
+        BHJM[mask4, 2] = (
             0.6283185307179587e-6
             * r0[mask4] ** 2
             / (z[mask4] ** 2 + r0[mask4] ** 2) ** (3 / 2)
-        )
+        ) * current[mask4]
 
     # general case
     mask5 = ~np.logical_or(np.logical_or(mask1, mask2), mask3)
     if np.any(mask5):
-        Br_gen, Bz_gen = current_circle_Bfield(r0=r0[mask5], r=r[mask5], z=z[mask5])
-        Br_tot[mask5] = Br_gen
-        Bz_tot[mask5] = Bz_gen
+        BHJM[mask5] = current_circle_Bfield(
+            r0=r0[mask5],
+            r=r[mask5],
+            z=z[mask5],
+            i0=current[mask5],
+        ).T
+        # Br_gen, Bz_gen = current_circle_Bfield(r0=r0[mask5], r=r[mask5], z=z[mask5])
+        # Br_tot[mask5] = Br_gen
+        # Bz_tot[mask5] = Bz_gen
 
     # transform field to cartesian CS
-    Bx_tot, By_tot = cyl_field_to_cart(phi, Br_tot)
-    B_cart = (
-        np.concatenate(((Bx_tot,), (By_tot,), (Bz_tot,)), axis=0) * current
-    ).T  # ugly but fast
+    # Bx_tot, By_tot = cyl_field_to_cart(phi, Br_tot)
+    BHJM[:, 0], BHJM[:, 1] = cyl_field_to_cart(phi, BHJM[:, 0])
+    # B_cart = (
+    #    np.concatenate(((Bx_tot,), (By_tot,), (Bz_tot,)), axis=0) * current
+    # ).T  # ugly but fast
 
     # B or H field
     if field == "B":
-        return B_cart
+        return BHJM
 
-    return B_cart / MU0
+    return BHJM / MU0
