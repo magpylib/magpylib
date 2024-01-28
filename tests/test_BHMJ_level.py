@@ -9,7 +9,7 @@ from magpylib._src.fields.field_BH_circle import current_loop_field
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
-from magpylib._src.fields.field_BH_dipole import dipole_field
+from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 from magpylib._src.fields.field_BH_polyline import current_line_field
 from magpylib._src.fields.field_BH_polyline import current_polyline_field
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
@@ -529,7 +529,7 @@ def test_current_polyline_field_BH():
     np.testing.assert_allclose(M, Mtest, rtol=1e-06)
 
 
-def test_dipole_field_BH():
+def test_BHJM_dipole():
     """Test of dipole field core function"""
     pol = np.array([(0, 0, 1), (1, 0, 1), (-1, 0.321, 0.123)])
 
@@ -537,7 +537,7 @@ def test_dipole_field_BH():
         "observers": np.array([(1, 2, 3), (-1, -2, -3), (3, 3, -1)]),
         "moment": pol * 4 * np.pi / 3 / MU0,
     }
-    H, B, M, _ = helper_check_HBMJ_consistency(dipole_field, **kw)
+    H, B, M, _ = helper_check_HBMJ_consistency(BHMJ_dipole, **kw)
 
     Btest = [
         [4.09073329e-03, 8.18146659e-03, 5.90883698e-03],

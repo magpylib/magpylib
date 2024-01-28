@@ -4,6 +4,7 @@ import magpylib as magpy
 from magpylib._src.fields.field_BH_circle import current_circle_field
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
+from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 from magpylib._src.utility import MU0
 
 # PHYSICS CONSISTENCY TESTING
@@ -49,26 +50,26 @@ def test_core_phys_moment_of_current_circle():
     curr = np.array([1e3, 1e3])
     mom = ((dia / 2) ** 2 * np.pi * curr * np.array([(0, 0, 1)] * 2).T).T
 
-    B1 = magpy.core.current_circle_field(
+    B1 = current_circle_field(
         field="B",
         observers=obs,
         diameter=dia,
         current=curr,
     )
-    B2 = magpy.core.dipole_field(
+    B2 = BHJM_dipole(
         field="B",
         observers=obs,
         moment=mom,
     )
     np.testing.assert_allclose(B1, B2, rtol=1e-02)
 
-    H1 = magpy.core.current_circle_field(
+    H1 = current_circle_field(
         field="H",
         observers=obs,
         diameter=dia,
         current=curr,
     )
-    H2 = magpy.core.dipole_field(
+    H2 = BHJM_dipole(
         field="H",
         observers=obs,
         moment=mom,
@@ -97,7 +98,7 @@ def test_core_phys_moment_of_current_square():
         current=curr4,
     )
     B1 = np.sum(B1, axis=0)
-    B2 = magpy.core.dipole_field(
+    B2 = magpy.core.BHJM_dipole(
         field="B",
         observers=obs1,
         moment=mom,
@@ -112,7 +113,7 @@ def test_core_phys_moment_of_current_square():
         current=curr4,
     )
     H1 = np.sum(H1, axis=0)
-    H2 = magpy.core.dipole_field(
+    H2 = magpy.core.BHJM_dipole(
         field="H",
         observers=obs1,
         moment=mom,
@@ -182,7 +183,7 @@ def test_core_physics_dipole_sphere():
         diameter=dia,
         polarization=pol,
     )
-    B2 = magpy.core.dipole_field(
+    B2 = magpy.core.BHJM_dipole(
         field="B",
         observers=obs,
         moment=mom,
@@ -195,7 +196,7 @@ def test_core_physics_dipole_sphere():
         diameter=dia,
         polarization=pol,
     )
-    H2 = magpy.core.dipole_field(
+    H2 = magpy.core.BHJM_dipole(
         field="H",
         observers=obs,
         moment=mom,
@@ -335,7 +336,7 @@ def test_core_physics_dipole_approximation_magnet_far_field():
     obs = np.array([(100, 200, 300), (-200, -200, -200)])
 
     mom = np.array([(1e6, 2e6, 3e6)] * 2)
-    Bdip = magpy.core.dipole_field(
+    Bdip = magpy.core.BHJM_dipole(
         field="H",
         observers=obs,
         moment=mom,
