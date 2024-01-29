@@ -13,6 +13,7 @@ from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.units import downcast
+from magpylib._src.units import get_magnitude
 from magpylib._src.units import to_Quantity
 from magpylib._src.units import unit_checker
 from magpylib._src.utility import wrong_obj_msg
@@ -267,15 +268,19 @@ def check_format_input_angle(inp):
         - inp shape must be (n,)
         - return as ndarray
     """
-    if isinstance(inp, numbers.Number):
-        return float(inp)
+    kw = {
+        "sig_name": "angle",
+        "sig_type": "number (int, float) or array_like (list, tuple, ndarray) with shape (n,)",
+        "unit": "deg",
+    }
+    if isinstance(get_magnitude(inp), numbers.Number):
+        return check_format_input_scalar(inp, **kw)
 
     return check_format_input_vector(
         inp,
         dims=(1,),
         shape_m1="any",
-        sig_name="angle",
-        sig_type="int, float or array_like (list, tuple, ndarray) with shape (n,)",
+        **kw,
     )
 
 

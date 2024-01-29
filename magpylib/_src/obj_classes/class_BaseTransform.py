@@ -534,6 +534,9 @@ class BaseTransform:
         check_start_type(start)
         check_degree_type(degrees)
 
+        # downcast if necessary, quantity unit overrules degrees boolean
+        angle = downcast(angle, "deg" if degrees else "rad")
+
         # degree to rad
         if degrees:
             angle = angle / 180 * np.pi

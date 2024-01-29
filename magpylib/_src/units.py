@@ -539,6 +539,15 @@ def downcast(inp, unit, units_handler=None, return_had_units=False, sig_name="")
     return inp
 
 
+def get_magnitude(inp, units_handler=None):
+    """Return magnitude of object if it is a Quantity else return the object itself."""
+    if units_handler is None:
+        units_handler = get_units_handler()
+    if is_Quantity(inp, units_handler=units_handler):
+        return units_handler.get_magnitude(inp)
+    return inp
+
+
 def unit_checker():
     """Decorator to add unit checks"""
 
