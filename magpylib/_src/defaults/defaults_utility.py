@@ -5,6 +5,7 @@ import re
 from copy import deepcopy
 from functools import lru_cache
 
+import param
 from matplotlib.colors import CSS4_COLORS as mcolors
 
 from magpylib._src.defaults.defaults_values import DEFAULTS
@@ -64,20 +65,29 @@ class _DefaultType:
 _DefaultValue = _DefaultType()
 
 
-def get_defaults_dict(arg=None) -> dict:
-    """returns default dict or sub-dict based on `arg`.
-    (e.g. `get_defaults_dict('display.style')`)
+def get_defaults_dict(arg=None, flatten=False, separator=".") -> dict:
+    """Return default dict or sub-dict based on `arg` (e.g. get_default_dict('display.style')).
 
     Returns
     -------
     dict
         default sub dict
+
+    flatten: bool
+        If `True`, the nested dictionary gets flatten out with provided separator for the
+        dictionary keys
+
+    separator: str
+        the separator to be used when flattening the dictionary. Only applies if
+        `flatten=True`
     """
 
     dict_ = deepcopy(DEFAULTS)
     if arg is not None:
-        for v in arg.split("."):
+        for v in arg.split(separator):
             dict_ = dict_[v]
+    if flatten:
+        dict_ = linearize_dict(dict_, separator=separator)
     return dict_
 
 
@@ -317,83 +327,88 @@ def validate_style_keys(style_kwargs):
     return style_kwargs
 
 
-class MagicProperties:
-    """
-    Base Class to represent only the property attributes defined at initialization, after which the
-    class is frozen. This prevents user to create any attributes that are not defined as properties.
+def update_with_nested_dict(parameterized, nested_dict):
+    """updates parameterized object recursively via setters"""
+    # Using `batch_call_watchers` because it has the same underlying
+    # mechanism as with `param.update`
+    # See https://param.holoviz.org/user_guide/Dependencies_and_Watchers.html?highlight=batch_call
+    # #batch-call-watchers
+    with param.parameterized.batch_call_watchers(parameterized):
+        for pname, value in nested_dict.items():
+            if isinstance(value, dict):
+                if isinstance(getattr(parameterized, pname), param.Parameterized):
+                    update_with_nested_dict(getattr(parameterized, pname), value)
+                    continue
+            setattr(parameterized, pname, value)
 
-    Raises
-    ------
-    AttributeError
-        raises AttributeError if the object is not a property
-    """ """"""
+
+def get_current_values_from_dict(obj, kwargs, match_properties=True):
+    """
+    Returns the current nested dictionary of values from the given object based on the keys of the
+    the given kwargs.
+    Parameters
+    ----------
+        obj: MagicParameterized:
+            MagicParameterized class instance
+
+        kwargs, dict:
+            nested dictionary of values
+
+        same_keys_only:
+            if True only keys in found in the `obj` class are allowed.
+
+    """
+    new_dict = {}
+    for k, v in kwargs.items():
+        try:
+            if isinstance(v, dict):
+                v = get_current_values_from_dict(
+                    getattr(obj, k), v, match_properties=False
+                )
+            else:
+                v = getattr(obj, k)
+            new_dict[k] = v
+        except AttributeError as e:
+            if match_properties:
+                raise AttributeError(e) from e
+    return new_dict
+
+
+class MagicParameterized(param.Parameterized):
+    """Base Magic Parametrized class"""
 
     __isfrozen = False
 
-    def __init__(self, **kwargs):
-        input_dict = {k: None for k in self._property_names_generator()}
-        if kwargs:
-            magic_kwargs = magic_to_dict(kwargs)
-            diff = set(magic_kwargs.keys()).difference(set(input_dict.keys()))
-            for attr in diff:
-                raise AttributeError(
-                    f"{type(self).__name__} has no property '{attr}'"
-                    f"\n Available properties are: {list(self._property_names_generator())}"
-                )
-            input_dict.update(magic_kwargs)
-        for k, v in input_dict.items():
-            setattr(self, k, v)
+    def __init__(self, arg=None, **kwargs):
+        super().__init__()
         self._freeze()
+        self.update(arg=arg, **kwargs)
 
-    def __setattr__(self, key, value):
-        if self.__isfrozen and not hasattr(self, key):
+    def __setattr__(self, name, value):
+        if self.__isfrozen and not hasattr(self, name) and not name.startswith("_"):
             raise AttributeError(
-                f"{type(self).__name__} has no property '{key}'"
-                f"\n Available properties are: {list(self._property_names_generator())}"
+                f"{type(self).__name__} has no property '{name}'"
+                f"\n Available properties are: {list(self.as_dict().keys())}"
             )
-        object.__setattr__(self, key, value)
+        p = getattr(self.param, name, None)
+        if p is not None:
+            # pylint: disable=unidiomatic-typecheck
+            if isinstance(p, param.Color):
+                value = color_validator(value)
+            elif isinstance(p, param.List) and isinstance(value, tuple):
+                value = list(value)
+            elif isinstance(p, param.Tuple) and isinstance(value, list):
+                value = tuple(value)
+            if type(p) == param.ClassSelector:
+                if isinstance(value, dict):
+                    self.update({name: value})
+                    return
+                if value is None:
+                    value = type(getattr(self, name))()
+        super().__setattr__(name, value)
 
     def _freeze(self):
         self.__isfrozen = True
-
-    def _property_names_generator(self):
-        """returns a generator with class properties only"""
-        return (
-            attr
-            for attr in dir(self)
-            if isinstance(getattr(type(self), attr, None), property)
-        )
-
-    def __repr__(self):
-        params = self._property_names_generator()
-        dict_str = ", ".join(f"{k}={repr(getattr(self,k))}" for k in params)
-        return f"{type(self).__name__}({dict_str})"
-
-    def as_dict(self, flatten=False, separator="."):
-        """
-        returns recursively a nested dictionary with all properties objects of the class
-
-        Parameters
-        ----------
-        flatten: bool
-            If `True`, the nested dictionary gets flatten out with provided separator for the
-            dictionary keys
-
-        separator: str
-            the separator to be used when flattening the dictionary. Only applies if
-            `flatten=True`
-        """
-        params = self._property_names_generator()
-        dict_ = {}
-        for k in params:
-            val = getattr(self, k)
-            if hasattr(val, "as_dict"):
-                dict_[k] = val.as_dict()
-            else:
-                dict_[k] = val
-        if flatten:
-            dict_ = linearize_dict(dict_, separator=separator)
-        return dict_
 
     def update(
         self, arg=None, _match_properties=True, _replace_None_only=False, **kwargs
@@ -418,19 +433,52 @@ class MagicProperties:
         -------
         self
         """
-        arg = {} if arg is None else arg.copy()
-        arg = magic_to_dict({**arg, **kwargs})
-        current_dict = self.as_dict()
-        new_dict = update_nested_dict(
-            current_dict,
-            arg,
-            same_keys_only=not _match_properties,
-            replace_None_only=_replace_None_only,
-        )
-        for k, v in new_dict.items():
-            setattr(self, k, v)
+        if arg is None:
+            arg = {}
+        elif isinstance(arg, MagicParameterized):
+            arg = arg.as_dict()
+        if kwargs:
+            arg.update(kwargs)
+        if arg:
+            arg = magic_to_dict(arg)
+            current_dict = get_current_values_from_dict(
+                self, arg, match_properties=_match_properties
+            )
+            new_dict = update_nested_dict(
+                current_dict,
+                arg,
+                same_keys_only=not _match_properties,
+                replace_None_only=_replace_None_only,
+            )
+            update_with_nested_dict(self, new_dict)
         return self
+
+    def as_dict(self, flatten=False, separator="_"):
+        """
+        returns recursively a nested dictionary with all properties objects of the class
+
+        Parameters
+        ----------
+        flatten: bool
+            If `True`, the nested dictionary gets flatten out with provided separator for the
+            dictionary keys
+
+        separator: str
+            the separator to be used when flattening the dictionary. Only applies if
+            `flatten=True`
+        """
+        params = (v[0] for v in self.param.get_param_values() if v[0] != "name")
+        dict_ = {}
+        for k in params:
+            val = getattr(self, k)
+            if hasattr(val, "as_dict"):
+                dict_[k] = val.as_dict()
+            else:
+                dict_[k] = val
+        if flatten:
+            dict_ = linearize_dict(dict_, separator=separator)
+        return dict_
 
     def copy(self):
         """returns a copy of the current class instance"""
-        return deepcopy(self)
+        return type(self)(**self.as_dict())

@@ -10,6 +10,7 @@ dependencies = [
     "scipy>=1.7",
     "matplotlib>=3.3",
     "plotly>=5.3",
+    "param>2.0",
     ]
 requires-python = ">=3.8"
 authors = [
