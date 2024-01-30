@@ -296,21 +296,6 @@ def color_validator(color_input, allow_None=True, parent_name=""):
     return color_new
 
 
-def validate_property_class(val, name, class_, parent):
-    """validator for sub property"""
-    if isinstance(val, dict):
-        val = class_(**val)
-    elif val is None:
-        val = class_()
-    if not isinstance(val, class_):
-        raise ValueError(
-            f"the `{name}` property of `{type(parent).__name__}` must be an instance \n"
-            f"of `{class_}` or a dictionary with equivalent key/value pairs \n"
-            f"but received {repr(val)} instead"
-        )
-    return val
-
-
 def validate_style_keys(style_kwargs):
     """validates style kwargs based on key up to first underscore.
     checks in the defaults structures the generally available style keys"""

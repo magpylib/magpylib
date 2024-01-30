@@ -213,7 +213,7 @@ def draw_arrow_on_circle(sign, diameter, arrow_size, scaled=True, angle_pos_deg=
     return vertices
 
 
-def get_rot_pos_from_path(obj, show_path=None):
+def get_rot_pos_from_path(obj, frames):
     """
     subsets orientations and positions depending on `show_path` value.
     examples:
@@ -222,19 +222,13 @@ def get_rot_pos_from_path(obj, show_path=None):
     """
     # pylint: disable=protected-access
     # pylint: disable=invalid-unary-operand-type
-    if show_path is None:
-        show_path = True
     pos = obj._position
     orient = obj._orientation
     path_len = pos.shape[0]
-    if show_path is True or show_path is False or show_path == 0:
-        inds = np.array([-1])
-    elif isinstance(show_path, int):
-        inds = np.arange(path_len, dtype=int)[::-show_path]
-    elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
-        inds = np.array(show_path)
-    else:  # pragma: no cover
-        raise ValueError(f"Invalid show_path value ({show_path})")
+    if frames.mode == "indices":
+        inds = np.array(frames.indices)
+    else:
+        inds = np.arange(path_len, dtype=int)[:: -frames.step]
     inds[inds >= path_len] = path_len - 1
     inds = np.unique(inds)
     if inds.size == 0:

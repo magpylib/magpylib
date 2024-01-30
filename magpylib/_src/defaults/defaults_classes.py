@@ -48,7 +48,7 @@ class Animation(MagicParameterized):
     # either `mp4` or `gif` or ending with `.mp4` or `.gif`"
     output = param.String(
         doc="""Animation output type""",
-        regex=r"\b(?:mp4|gif|(?:\S*\.)(?:mp4|gif))\b",
+        regex=r"^(mp4|gif|(.*\.(mp4|gif))?)$",
     )
 
 
@@ -63,7 +63,7 @@ class Display(MagicParameterized):
 
     backend = param.Selector(
         default="matplotlib",
-        objects=list(SUPPORTED_PLOTTING_BACKENDS),
+        objects=["auto", *SUPPORTED_PLOTTING_BACKENDS],
         doc="""
         Plotting backend to be used by default, if not explicitly set in the `display`
         function (e.g. 'matplotlib', 'plotly').
@@ -133,7 +133,7 @@ class DefaultSettings(MagicParameterized):
     @staticmethod
     def _set_to_defaults(event):
         """Sets class defaults whenever magpylib defaults parameters instance are modifed."""
-        event.obj.param[event.name] = event.new
+        event.obj.param[event.name].default = event.new
 
     display = param.ClassSelector(
         class_=Display,

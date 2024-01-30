@@ -28,7 +28,7 @@ from magpylib._src.display.traces_utility import getIntensity
 from magpylib._src.display.traces_utility import group_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import slice_mesh_from_colorscale
-from magpylib._src.style import DefaultMarkers
+from magpylib._src.style import MarkersStyleSpecific
 from magpylib._src.utility import format_obj_input
 
 
@@ -36,7 +36,7 @@ class MagpyMarkers:
     """A class that stores markers 3D-coordinates."""
 
     def __init__(self, *markers):
-        self._style = DefaultMarkers()
+        self._style = MarkersStyleSpecific()
         self.markers = np.array(markers)
 
     @property
