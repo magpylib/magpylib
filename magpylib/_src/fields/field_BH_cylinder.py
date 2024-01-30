@@ -268,8 +268,7 @@ def BHJM_magnet_cylinder(
     in_out="auto",
 ) -> np.ndarray:
     """
-    Prepare BHJM returns
-    - Merge axial B with diametral H field
+    Translate cylinder fields to BHJM
     - special cases
     - inside-outside checks
     """

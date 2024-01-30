@@ -85,7 +85,7 @@ def BHJM_circle(
     current: np.ndarray,
 ) -> np.ndarray:
     """
-    Return BHMJ fields
+    translate circle fields to BHJM
     - treat special cases
     """
 

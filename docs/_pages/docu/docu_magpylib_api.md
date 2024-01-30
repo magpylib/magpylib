@@ -723,7 +723,7 @@ At the heart of Magpylib lies a set of core functions that are our implementatio
 :gutter: 1
 
 :::{grid-item}
-<span style="color: orange">**current_polyline_field(**</span> `field`, `observers`, `current`, `segment_start`, `segment_end`<span style="color: orange">**)**</span>
+<span style="color: orange">**BHJM_polyline(**</span> `field`, `observers`, `current`, `segment_start`, `segment_end`<span style="color: orange">**)**</span>
 :::
 :::{grid-item}
 <span style="color: orange">**BHJM_circle(**</span> `field`, `observers`, `current`, `diameter`<span style="color: orange">**)**</span>

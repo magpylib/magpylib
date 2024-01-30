@@ -6,7 +6,7 @@ from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
-from magpylib._src.fields.field_BH_polyline import current_polyline_field
+from magpylib._src.fields.field_BH_polyline import BHJM_polyline
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
 from magpylib._src.fields.field_BH_triangle import triangle_field
@@ -96,7 +96,7 @@ def test_core_phys_moment_of_current_square():
     curr4 = np.array([curr1] * 4)
     mom = (4 * curr1 * np.array([(0, 0, 1)]).T).T
 
-    B1 = current_polyline_field(
+    B1 = BHJM_polyline(
         field="B",
         observers=obs4,
         segment_start=vert[:-1],
@@ -111,7 +111,7 @@ def test_core_phys_moment_of_current_square():
     )[0]
     np.testing.assert_allclose(B1, -B2, rtol=1e-03)
 
-    H1 = current_polyline_field(
+    H1 = BHJM_polyline(
         field="H",
         observers=obs4,
         segment_start=vert[:-1],
@@ -144,7 +144,7 @@ def test_core_phys_circle_polyline():
         diameter=dia,
         current=curr,
     )[0]
-    H2 = current_polyline_field(
+    H2 = BHJM_polyline(
         field="H",
         observers=obs99,
         segment_start=vert[:-1],
@@ -160,7 +160,7 @@ def test_core_phys_circle_polyline():
         diameter=dia,
         current=curr,
     )[0]
-    B2 = current_polyline_field(
+    B2 = BHJM_polyline(
         field="B",
         observers=obs99,
         segment_start=vert[:-1],
@@ -463,7 +463,7 @@ def test_core_physics_cube_current_replacement():
 
     Hcurr = np.zeros((2, 3))
     for i, obss in enumerate([obs1, obs2]):
-        h = current_polyline_field(
+        h = BHJM_polyline(
             field="H",
             observers=obss,
             segment_start=start,

@@ -2357,12 +2357,8 @@ def BHJM_cylinder_segment(
     polarization: np.ndarray,
     in_out="auto",
 ) -> np.ndarray:
-    """Magnetic field of homogeneously magnetized cylinder segments.
-
-    The cylinder axis coincides with the z-axis of the global coordinate
-    system. The geometric center of the cylinder lies in the origin.
-
-    SI units are used for all inputs and outputs.
+    """
+    translate cylinder segment field to BHJM
 
     Parameters
     ----------

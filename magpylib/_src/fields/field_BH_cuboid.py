@@ -195,7 +195,7 @@ def BHJM_magnet_cuboid(
     in_out="auto",
 ) -> np.ndarray:
     """
-    Return BHMJ fields
+    translate cuboid field to BHJM
     - treat special cases
     - inside-outside checks
     """

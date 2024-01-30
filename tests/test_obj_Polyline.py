@@ -89,6 +89,7 @@ def test_line_position_bug():
 
 def test_discontinous_line():
     """test discontinuous line"""
+
     line_1 = magpy.current.Polyline(
         current=1,
         vertices=[
@@ -117,6 +118,7 @@ def test_discontinous_line():
 
     B1 = magpy.getB((line_1, line_2), (0, 0, 0), sumup=True)
     B2 = line_12.getB((0, 0, 0))
+
     np.testing.assert_allclose(B1, B2)
 
 
