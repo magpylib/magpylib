@@ -164,7 +164,7 @@ def magic_to_dict(kwargs, separator="_") -> dict:
                 new_kwargs[keys[0]] = val
     for k, v in new_kwargs.items():
         if isinstance(v, dict):
-            new_kwargs[k] = magic_to_dict(v)
+            new_kwargs[k] = magic_to_dict(v, separator=separator)
     return new_kwargs
 
 
