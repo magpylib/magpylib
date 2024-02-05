@@ -10,25 +10,6 @@ from matplotlib.colors import CSS4_COLORS as mcolors
 
 from magpylib._src.defaults.defaults_values import DEFAULTS
 
-SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly", "pyvista")
-
-
-ALLOWED_SYMBOLS = (".", "+", "D", "d", "s", "x", "o")
-
-ALLOWED_LINESTYLES = (
-    "solid",
-    "dashed",
-    "dotted",
-    "dashdot",
-    "loosely dotted",
-    "loosely dashdotted",
-    "-",
-    "--",
-    "-.",
-    ".",
-    ":",
-    (0, (1, 1)),
-)
 
 COLORS_SHORT_TO_LONG = {
     "r": "red",
@@ -82,7 +63,7 @@ def get_defaults_dict(arg=None, flatten=False, separator=".") -> dict:
         `flatten=True`
     """
 
-    dict_ = deepcopy(DEFAULTS)
+    dict_ = deepcopy(DEFAULTS_VALUES)
     if arg is not None:
         for v in arg.split(separator):
             dict_ = dict_[v]
@@ -312,6 +293,79 @@ def validate_style_keys(style_kwargs):
     return style_kwargs
 
 
+def get_families(obj):
+    """get obj families"""
+    # pylint: disable=import-outside-toplevel
+    # pylint: disable=possibly-unused-variable
+    # pylint: disable=redefined-outer-name
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet as Magnet
+    from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid
+    from magpylib._src.obj_classes.class_magnet_Cylinder import Cylinder
+    from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
+    from magpylib._src.obj_classes.class_magnet_CylinderSegment import CylinderSegment
+    from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
+    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent as Current
+    from magpylib._src.obj_classes.class_current_Circle import Circle
+    from magpylib._src.obj_classes.class_current_Polyline import Polyline
+    from magpylib._src.obj_classes.class_misc_Dipole import Dipole
+    from magpylib._src.obj_classes.class_misc_CustomSource import CustomSource
+    from magpylib._src.obj_classes.class_misc_Triangle import Triangle
+    from magpylib._src.obj_classes.class_Sensor import Sensor
+    from magpylib._src.display.traces_generic import MagpyMarkers as Markers
+
+    loc = locals()
+    obj_families = []
+    for item, val in loc.items():
+        if not item.startswith("_"):
+            try:
+                if isinstance(obj, val):
+                    obj_families.append(item.lower())
+            except TypeError:
+                pass
+    return obj_families
+
+
+def get_style(obj, default_settings, **kwargs):
+    """Returns default style based on increasing priority:
+    - style from defaults
+    - style from object
+    - style from kwargs arguments
+    """
+    obj_families = get_families(obj)
+    # parse kwargs into style an non-style arguments
+    style_kwargs = kwargs.get("style", {})
+    style_kwargs.update(
+        {k[6:]: v for k, v in kwargs.items() if k.startswith("style") and k != "style"}
+    )
+
+    # retrieve default style dictionary, local import to avoid circular import
+    # pylint: disable=import-outside-toplevel
+
+    default_style = default_settings.display.style
+    base_style_flat = default_style.base.as_dict(flatten=True, separator="_")
+
+    # construct object specific dictionary base on style family and default style
+    for obj_family in obj_families:
+        family_style = getattr(default_style, obj_family, {})
+        if family_style:
+            family_dict = family_style.as_dict(flatten=True, separator="_")
+            base_style_flat.update(
+                {k: v for k, v in family_dict.items() if v is not None}
+            )
+    style_kwargs = validate_style_keys(style_kwargs)
+
+    # create style class instance and update based on precedence
+    style = obj.style.copy()
+    style_kwargs_specific = {
+        k: v for k, v in style_kwargs.items() if k.split("_")[0] in style.as_dict()
+    }
+    style.update(**style_kwargs_specific, _match_properties=True)
+    style.update(**base_style_flat, _match_properties=False, _replace_None_only=True)
+
+    return style
+
+
 def update_with_nested_dict(parameterized, nested_dict):
     """updates parameterized object recursively via setters"""
     # Using `batch_call_watchers` because it has the same underlying
@@ -467,3 +521,8 @@ class MagicParameterized(param.Parameterized):
     def copy(self):
         """returns a copy of the current class instance"""
         return type(self)(**self.as_dict())
+
+
+DEFAULTS_VALUES = magic_to_dict(
+    {k: v["default"] for k, v in DEFAULTS.items()}, separator="."
+)

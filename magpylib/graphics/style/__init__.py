@@ -9,7 +9,7 @@ __all__ = [
     "SensorStyle",
 ]
 
-from magpylib._src.style import (
+from magpylib._src.defaults.defaults_classes import (
     MagnetStyle,
     CurrentStyle,
     DipoleStyle,

@@ -4,6 +4,7 @@ import warnings
 import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
+from magpylib._src.defaults.defaults_classes import TriangularmeshStyle
 from magpylib._src.display.traces_core import make_TriangularMesh
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_triangularmesh import calculate_centroid
@@ -19,7 +20,6 @@ from magpylib._src.input_checks import check_format_input_vector2
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
-from magpylib._src.style import TriangularMeshStyle
 
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
@@ -117,7 +117,7 @@ class TriangularMesh(BaseMagnet):
     _field_func = staticmethod(magnet_trimesh_field)
     _field_func_kwargs_ndim = {"polarization": 2, "mesh": 3}
     get_trace = make_TriangularMesh
-    _style_class = TriangularMeshStyle
+    _style_class = TriangularmeshStyle
 
     def __init__(
         self,

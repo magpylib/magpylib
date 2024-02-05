@@ -6,4 +6,4 @@ features for independent use.
 __all__ = ["model3d", "style", "Trace3d"]
 
 from magpylib.graphics import model3d, style
-from magpylib._src.style import Trace3d
+from magpylib._src.defaults.defaults_classes import Trace3d

@@ -9,7 +9,7 @@ from scipy.spatial.transform import Rotation
 
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings
-from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
+from magpylib._src.defaults.defaults_values import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.utility import format_obj_input

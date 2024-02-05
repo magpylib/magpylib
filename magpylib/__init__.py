@@ -50,7 +50,7 @@ __all__ = [
 ]
 
 # create interface to outside of package
-from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
+from magpylib._src.defaults.defaults_values import SUPPORTED_PLOTTING_BACKENDS
 from magpylib import magnet, current, misc, core, graphics
 from magpylib._src.defaults.defaults_classes import default_settings as defaults
 from magpylib._src.fields import getB, getH

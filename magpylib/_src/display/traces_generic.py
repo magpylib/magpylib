@@ -15,9 +15,10 @@ import numpy as np
 
 import magpylib as magpy
 from magpylib._src.defaults.defaults_classes import default_settings
-from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
-from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
+from magpylib._src.defaults.defaults_classes import MarkersStyle
 from magpylib._src.defaults.defaults_utility import linearize_dict
+from magpylib._src.defaults.defaults_values import ALLOWED_LINESTYLES
+from magpylib._src.defaults.defaults_values import ALLOWED_SYMBOLS
 from magpylib._src.display.traces_utility import draw_arrowed_line
 from magpylib._src.display.traces_utility import get_flatten_objects_properties
 from magpylib._src.display.traces_utility import get_legend_label
@@ -28,7 +29,6 @@ from magpylib._src.display.traces_utility import getIntensity
 from magpylib._src.display.traces_utility import group_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import slice_mesh_from_colorscale
-from magpylib._src.style import MarkersStyleSpecific
 from magpylib._src.utility import format_obj_input
 
 
@@ -36,7 +36,7 @@ class MagpyMarkers:
     """A class that stores markers 3D-coordinates."""
 
     def __init__(self, *markers):
-        self._style = MarkersStyleSpecific()
+        self._style = MarkersStyle()
         self.markers = np.array(markers)
 
     @property
