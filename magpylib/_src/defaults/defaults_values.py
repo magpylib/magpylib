@@ -805,7 +805,7 @@ DEFAULTS = {
     "display.style.triangularmesh.mesh.disconnected.colorsequence": {
         "$type": "List",
         "item_type": "Color",
-        "default": ["FF0000", "#0000FF", "008000", "00FFFF", "FF00FF", "FFFF00"],
+        "default": ["#FF0000", "#0000FF", "#008000", "#00FFFF", "#FF00FF", "#FFFF00"],
         "doc": """
         An iterable of color values used to cycle trough for every disconnected part to be
         displayed. A color may be specified by

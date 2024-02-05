@@ -1,6 +1,7 @@
 import param
 
 from magpylib._src.defaults.defaults_utility import color_validator
+from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.defaults.defaults_utility import magic_to_dict
 from magpylib._src.defaults.defaults_utility import MagicParameterized
 from magpylib._src.defaults.defaults_values import DEFAULTS
@@ -216,6 +217,12 @@ class ColorSequence(param.List):
         super().__set__(obj, val)
 
 
+class Color(param.Color):
+    def __set__(self, obj, val):
+        val = color_validator(val)
+        super().__set__(obj, val)
+
+
 class Model3dData(param.List):
     def __set__(self, obj, val):
         self._validate_value(val, self.allow_None)
@@ -252,8 +259,9 @@ def convert_to_param(dict_, parent=None):
             typ_str = str(val["$type"]).capitalize()
             args = {k: v for k, v in val.items() if k != "$type"}
             if typ_str == "Color":
-                typ = param.Color
+                typ = Color
             elif typ_str == "List":
+                typ = param.List
                 it_typ = str(args.get("item_type", None)).capitalize()
                 if it_typ == "Color":
                     args.pop("item_type", None)
@@ -273,9 +281,50 @@ def convert_to_param(dict_, parent=None):
     return class_
 
 
-default_settings = convert_to_param(
-    magic_to_dict(DEFAULTS, separator="."), parent="Settings"
+Display = convert_to_param(
+    magic_to_dict(DEFAULTS, separator=".")["display"], parent="display"
 )
+
+
+class DefaultSettings(MagicParameterized):
+    """Library default settings. All default values get reset at class instantiation."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._declare_watchers()
+        with param.parameterized.batch_call_watchers(self):
+            self.reset()
+
+    def reset(self):
+        """Resets all nested properties to their hard coded default values"""
+        self.update(get_defaults_dict(), _match_properties=False)
+        return self
+
+    def _declare_watchers(self):
+        props = get_defaults_dict(flatten=True, separator=".").keys()
+        for prop in props:
+            attrib_chain = prop.split(".")
+            child = attrib_chain[-1]
+            parent = self  # start with self to go through dot chain
+            for attrib in attrib_chain[:-1]:
+                parent = getattr(parent, attrib)
+            parent.param.watch(self._set_to_defaults, parameter_names=[child])
+
+    @staticmethod
+    def _set_to_defaults(event):
+        """Sets class defaults whenever magpylib defaults parameters instance are modifed."""
+        event.obj.__class__.param[event.name].default = event.new
+
+    display = param.ClassSelector(
+        class_=Display,
+        default=Display(),
+        doc="""
+        `Display` defaults-class containing display settings.
+        `(e.g. 'backend', 'animation', 'colorsequence', ...)`""",
+    )
+
+
+default_settings = DefaultSettings()
 
 default_style_classes = {
     k: v.__class__
