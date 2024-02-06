@@ -463,18 +463,32 @@ DEFAULTS = {
     "display.style.sensor.arrows.x.color": {
         "$type": "Color",
         "default": "#ff0000",
-        "allow_None": True,
         "doc": "Sensor x-arrow color.",
+    },
+    "display.style.sensor.arrows.x.show": {
+        "$type": "Boolean",
+        "default": True,
+        "doc": "Show/hide sensor x-arrow.",
     },
     "display.style.sensor.arrows.y.color": {
         "$type": "Color",
         "default": "#008000",
         "doc": "Sensor y-arrow color.",
     },
+    "display.style.sensor.arrows.y.show": {
+        "$type": "Boolean",
+        "default": True,
+        "doc": "Show/hide sensor y-arrow.",
+    },
     "display.style.sensor.arrows.z.color": {
         "$type": "Color",
         "default": "#0000FF",
         "doc": "Sensor z-arrow color.",
+    },
+    "display.style.sensor.arrows.z.show": {
+        "$type": "Boolean",
+        "default": True,
+        "doc": "Show/hide sensor z-arrow.",
     },
     "display.style.dipole.size": {
         "$type": "Number",
