@@ -1,3 +1,4 @@
+import numpy as np
 import param
 
 from magpylib._src.defaults.defaults_utility import color_validator
@@ -247,6 +248,52 @@ class Model3dData(param.List):
         return trace
 
 
+class PathLogic:
+    def __setattr__(self, name, value):
+        if name == "frames":
+            if isinstance(value, (tuple, list, np.ndarray)):
+                self.frames.indices = [int(v) for v in value]
+            elif (
+                isinstance(value, (int, np.integer))
+                and value is not False
+                and value is not True
+            ):
+                self.frames.step = value
+            else:
+                super().__setattr__(name, value)
+            return
+        super().__setattr__(name, value)
+
+
+class TextLogic:
+    def __setattr__(self, name, value):
+        try:
+            super().__setattr__(name, value)
+        except ValueError:
+            if isinstance(value, str) and not name.startswith("_"):
+                for key, typ in self.param.objects(instance=False).items():
+                    if isinstance(typ, param.ClassSelector):
+                        child_objs = self.param[key].class_.param.objects(
+                            instance=False
+                        )
+                        if "text" in child_objs:
+                            getattr(self, key).text = value
+            else:
+                raise
+
+
+def get_frames_logic():
+    @param.depends("indices", watch=True)
+    def _update_indices(self):
+        self.mode = "indices"
+
+    @param.depends("step", watch=True)
+    def _update_step(self):
+        self.mode = "step"
+
+    return locals()
+
+
 def convert_to_param(dict_, parent=None):
     """Convert nested defaults dict to nested MagicParameterized instances"""
     parent = "" if not parent else parent[0].upper() + parent[1:]
@@ -277,7 +324,11 @@ def convert_to_param(dict_, parent=None):
             name = parent + key[0].upper() + key[1:]
             val = convert_to_param(val, parent=name)
             params[key] = param.ClassSelector(class_=val, default=val())
-    class_ = type(parent, (MagicParameterized,), params)
+    if parent.endswith("PathFrames"):
+        params.update(get_frames_logic())
+    class_ = type(parent, (MagicParameterized, TextLogic), params)
+    if parent.endswith("Path"):
+        class_ = type(parent, (class_, PathLogic), {})
     return class_
 
 
