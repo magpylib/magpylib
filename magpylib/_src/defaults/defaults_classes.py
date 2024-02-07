@@ -223,16 +223,18 @@ class TextLogic:
         try:
             super().__setattr__(name, value)
         except ValueError:
-            if isinstance(value, str) and not name.startswith("_"):
-                for key, typ in self.param.objects(instance=False).items():
-                    if isinstance(typ, param.ClassSelector):
-                        child_objs = self.param[key].class_.param.objects(
-                            instance=False
-                        )
-                        if "text" in child_objs:
-                            getattr(self, key).text = value
-            else:
-                raise
+            # this allows to set a string value from parent class if there is a `text` child
+            # e.g. <parent>.description = "desc" -> <parent>.description.text = "desc"
+            if (
+                isinstance(value, str)
+                and not name.startswith("_")
+                and isinstance(self.param[name], param.ClassSelector)
+            ):
+                child = getattr(self, name)
+                if "text" in child.param.values():
+                    child.text = value
+                    return
+            raise
 
 
 def get_frames_logic():
@@ -338,10 +340,10 @@ default_style_classes = {
     for k, v in default_settings.display.style.param.values().items()
     if isinstance(v, param.Parameterized)
 }
-locals()["BaseStyle"] = base = default_style_classes.pop("base")
+BaseStyle = default_style_classes.pop("base")
 for fam, klass in default_style_classes.items():
     fam = fam.capitalize()
-    bases = (base, klass)
+    bases = (BaseStyle, klass)
     if fam == "Triangularmesh":
         bases += (default_style_classes["magnet"],)
     klass_name = f"{fam}Style"
