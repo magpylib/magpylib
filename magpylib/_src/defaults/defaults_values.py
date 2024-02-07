@@ -205,7 +205,7 @@ DEFAULTS = {
     },
     "display.style.base.path.frames.indices": {
         "$type": "List",
-        "default": [],
+        "default": [-1],
         "item_type": int,
         "doc": "Array_like shape (n,) of integers: describes certain path indices.",
     },
@@ -218,7 +218,7 @@ DEFAULTS = {
     },
     "display.style.base.path.frames.mode": {
         "$type": "Selector",
-        "default": "step",
+        "default": "indices",
         "objects": ("indices", "step"),
         "doc": """
         The object path frames mode.
@@ -635,9 +635,9 @@ DEFAULTS = {
     "display.style.triangle.orientation.offset": {
         "$type": "Number",
         "default": 0.9,
-        "bounds": (0, 1),
+        "bounds": (-2, 2),
         "inclusive_bounds": (True, True),
-        "softbounds": (0.1, 0.9),
+        "softbounds": (-0.9, 0.9),
         "doc": """
         Orientation symbol offset, normal to the triangle surface. `offset=0` results
         in the cone/arrow head to be coincident to the triangle surface and `offset=1` with the
@@ -672,9 +672,9 @@ DEFAULTS = {
     "display.style.triangularmesh.orientation.offset": {
         "$type": "Number",
         "default": 0.9,
-        "bounds": (0, 1),
+        "bounds": (-2, 2),
         "inclusive_bounds": (True, True),
-        "softbounds": (0.1, 0.9),
+        "softbounds": (-0.9, 0.9),
         "doc": """
         Orientation symbol offset, normal to the triangle surface. `offset=0` results
         in the cone/arrow head to be coincident to the triangle surface and `offset=1` with the
