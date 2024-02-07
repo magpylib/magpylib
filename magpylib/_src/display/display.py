@@ -366,8 +366,8 @@ def show(
     ...     polarization=(1,1,1),
     ...     style_path_show=False
     ... )
-    >>> magpy.defaults.display.style.magnet.magnetization.size = 2
-    >>> src1.style.magnetization.size = 1
+    >>> magpy.defaults.display.style.magnet.magnetization.arrow.size = 2
+    >>> src1.style.magnetization.arrow.size = 1
     >>> magpy.show(src1, src2, style_color='r') # doctest: +SKIP
     >>> # graphic output
 

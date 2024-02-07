@@ -508,7 +508,7 @@ def get_generic_traces(
                     tr_generic["color"] = tr_generic.get("color", style.color)
                 else:  # pragma: no cover
                     raise ValueError(
-                        f"{ttype} is not supported, only 'scatter3d' and 'mesh3d' are"
+                        f"{ttype!r} is not supported, only 'scatter3d' and 'mesh3d' are"
                     )
                 tr_generic.update(linearize_dict(obj_extr_trace, separator="_"))
                 traces_generic.append(tr_generic)

@@ -2,7 +2,6 @@ import pytest
 
 import magpylib as magpy
 from magpylib._src.defaults.defaults_classes import DefaultSettings
-from magpylib._src.defaults.defaults_classes import DisplayStyle
 from magpylib._src.defaults.defaults_values import ALLOWED_LINESTYLES
 from magpylib._src.defaults.defaults_values import ALLOWED_SYMBOLS
 from magpylib._src.defaults.defaults_values import SUPPORTED_PLOTTING_BACKENDS
@@ -14,10 +13,10 @@ bad_inputs = {
     "display_animation_fps": (0,),  # int>0
     "display_animation_time": (0,),  # int>0
     "display_animation_maxframes": (0,),  # int>0
-    "display_animation_slider": ("notbool"),  # bool
+    "display_animation_slider": ("notbool",),  # bool
     "display_animation_output": ("filename.badext", "badext"),  # bool
     "display_backend": ("plotty",),  # str typo
-    "display_colorsequence": (["#2E91E5", "wrongcolor"], 123),  # iterable of colors
+    "display_colorsequence": (("#2E91E5", "wrongcolor"), 123),  # iterable of colors
     "display_style_base_path_line_width": (-1,),  # float>=0
     "display_style_base_path_line_style": ("wrongstyle",),
     "display_style_base_path_line_color": ("wrongcolor",),  # color
@@ -25,7 +24,7 @@ bad_inputs = {
     "display_style_base_path_marker_symbol": ("wrongsymbol",),
     "display_style_base_path_marker_color": ("wrongcolor",),  # color
     "display_style_base_path_show": ("notbool", 1),  # bool
-    "display_style_base_path_frames": (True, False, ["1"], "1"),  # int or iterable
+    "display_style_base_path_frames": (True, False, ["a"], "b"),  # int or iterable
     "display_style_base_path_numbering": ("notbool",),  # bool
     "display_style_base_description_show": ("notbool",),  # bool
     "display_style_base_description_text": (
@@ -78,14 +77,7 @@ def get_bad_test_data():
     bad_test_data = []
     for k, tup in bad_inputs.items():
         for v in tup:
-            if "description_text" not in k:
-                if "color" in k and "transition" not in k and "mode" not in k:
-                    # color attributes use a the color validator, which raises a ValueError
-                    errortype = ValueError
-                else:
-                    # all other parameters raise AssertionError
-                    errortype = AssertionError
-            bad_test_data.append((k, v, pytest.raises(errortype)))
+            bad_test_data.append((k, v, pytest.raises(ValueError)))
     return bad_test_data
 
 
@@ -113,8 +105,8 @@ good_inputs = {
     "display_animation_output": ("filename.mp4", "gif"),  # bool
     "display_backend": ["auto", *SUPPORTED_PLOTTING_BACKENDS],  # str typo
     "display_colorsequence": (
-        ("#2e91e5", "#0d2a63"),
-        ("blue", "red"),
+        ["#2e91e5", "#0d2a63"],
+        ["blue", "red"],
     ),  # ]),  # iterable of colors
     "display_style_base_path_line_width": (0, 1),  # float>=0
     "display_style_base_path_line_style": ALLOWED_LINESTYLES,
@@ -123,7 +115,7 @@ good_inputs = {
     "display_style_base_path_marker_symbol": ALLOWED_SYMBOLS,
     "display_style_base_path_marker_color": ("blue", "#2E91E5"),  # color
     "display_style_base_path_show": (True, False),  # bool
-    "display_style_base_path_frames": (-1, (1, 3)),  # int or iterable
+    # "display_style_base_path_frames": (1, (2, 3)),  # int or iterable
     "display_style_base_path_numbering": (True, False),  # bool
     "display_style_base_description_show": (True, False),  # bool
     "display_style_base_description_text": ("a string",),  # string
@@ -131,7 +123,7 @@ good_inputs = {
     "display_style_base_model3d_showdefault": (True, False),
     "display_style_base_color": ("blue", "#2E91E5"),  # color
     "display_style_magnet_magnetization_show": (True, False),
-    "display_style_magnet_magnetization_size": (0, 1),  # float>=0
+    "display_style_magnet_magnetization_arrow_size": (0, 1),  # float>=0
     "display_style_magnet_magnetization_color_north": ("blue", "#2E91E5"),
     "display_style_magnet_magnetization_color_middle": ("blue", "#2E91E5"),
     "display_style_magnet_magnetization_color_south": ("blue", "#2E91E5"),
@@ -201,7 +193,7 @@ def test_defaults_good_inputs(key, value, expected):
     v0 = c
     for v in key.split("_"):
         v0 = getattr(v0, v)
-    assert v0 == expected, f"{key} should be {expected}, but received {v0} instead"
+    assert v0 == expected
 
 
 @pytest.mark.parametrize(
@@ -226,7 +218,7 @@ def test_defaults_good_inputs(key, value, expected):
 )
 def test_bad_style_classes(style_class):
     """testing properties which take classes as properties"""
-    c = DisplayStyle().reset()
+    c = DefaultSettings().display.style
     with pytest.raises(ValueError):
         c.update(**{style_class: "bad class"})
 

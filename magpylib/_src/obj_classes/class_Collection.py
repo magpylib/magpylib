@@ -464,7 +464,7 @@ class BaseCollection(BaseDisplayRepr):
         >>> # We apply styles using underscore magic for magnetization vector size and a style
         >>> # dictionary for the color.
         >>>
-        >>> col.set_children_styles(magnetization_size=0.5)
+        >>> col.set_children_styles(magnetization_arrow_size=0.5)
         Collection(id=...)
         >>> col.set_children_styles({"color": "g"})
         Collection(id=...)

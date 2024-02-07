@@ -405,20 +405,16 @@ def test_matplotlib_model3d_extra_updatefunc():
     obj.show(canvas=ax, return_fig=True)
 
     with pytest.raises(ValueError):
-        updatefunc = "not callable"
-        obj.style.model3d.add_trace(updatefunc)
+        obj.style.model3d.add_trace("not callable")
 
     with pytest.raises(AssertionError):
-        updatefunc = "not callable"
-        obj.style.model3d.add_trace(updatefunc=updatefunc)
+        obj.style.model3d.add_trace(updatefunc="not callable")
 
     with pytest.raises(AssertionError):
-        updatefunc = lambda: "bad output type"
-        obj.style.model3d.add_trace(updatefunc=updatefunc)
+        obj.style.model3d.add_trace(updatefunc=lambda: "bad output type")
 
     with pytest.raises(AssertionError):
-        updatefunc = lambda: {"bad_key": "some_value"}
-        obj.style.model3d.add_trace(updatefunc=updatefunc)
+        obj.style.model3d.add_trace(updatefunc=lambda: {"bad_key": "some_value"})
 
 
 def test_empty_display():

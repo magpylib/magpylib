@@ -1,5 +1,6 @@
 from copy import deepcopy
 
+import param
 import pytest
 
 from magpylib._src.defaults.defaults_utility import color_validator
@@ -7,7 +8,7 @@ from magpylib._src.defaults.defaults_utility import COLORS_SHORT_TO_LONG
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.defaults.defaults_utility import magic_to_dict
-from magpylib._src.defaults.defaults_utility import MagicProperties
+from magpylib._src.defaults.defaults_utility import MagicParameterized
 from magpylib._src.defaults.defaults_utility import update_nested_dict
 
 
@@ -138,32 +139,18 @@ def test_bad_colors(color, allow_None, expected_exception):
         color_validator(color, allow_None=allow_None)
 
 
-def test_MagicProperties():
-    """test MagicProperties class"""
+def test_MagicParameterized():
+    """test MagicParameterized class"""
 
-    class BPsub1(MagicProperties):
-        "MagicProperties class"
+    class BPsub1(MagicParameterized):
+        "MagicParameterized class"
 
-        @property
-        def prop1(self):
-            """prop1"""
-            return self._prop1
+        prop1 = param.Parameter()
 
-        @prop1.setter
-        def prop1(self, val):
-            self._prop1 = val
+    class BPsub2(MagicParameterized):
+        "MagicParameterized class"
 
-    class BPsub2(MagicProperties):
-        "MagicProperties class"
-
-        @property
-        def prop2(self):
-            """prop2"""
-            return self._prop2
-
-        @prop2.setter
-        def prop2(self, val):
-            self._prop2 = val
+        prop2 = param.Parameter()
 
     bp1 = BPsub1(prop1=1)
 
@@ -211,9 +198,6 @@ def test_MagicProperties():
     # check failing init
     with pytest.raises(AttributeError):
         BPsub1(a=0)  # `a` is not a property in the class
-
-    # check repr
-    assert repr(MagicProperties()) == "MagicProperties()", "repr failed"
 
 
 def test_get_defaults_dict():

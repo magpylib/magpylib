@@ -68,6 +68,7 @@ DEFAULTS = {
     "display.animation.output": {
         "$type": "String",
         "default": "",
+        "allow_None": True,
         "doc": "Animation output type (either `mp4` or `gif` or ending with `.mp4` or `.gif`)",
         "regex": r"^(mp4|gif|(.*\.(mp4|gif))?)$",
     },

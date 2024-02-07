@@ -122,7 +122,7 @@ def validate_trace3d(trace, **kwargs):
     updatefunc = None
     if trace is None:
         trace = Trace3d()
-    if not isinstance(trace, Trace3d) and callable(trace):
+    if not isinstance(trace, Trace3d) and trace is not Trace3d and callable(trace):
         updatefunc = trace
         trace = Trace3d()
     if isinstance(trace, dict):
@@ -136,6 +136,13 @@ def validate_trace3d(trace, **kwargs):
 
 
 class Model3dLogic:
+    def __setattr__(self, name, value):
+        if name == "data":
+            if not isinstance(value, (tuple, list)):
+                value = [value]
+            value = [validate_trace3d(v) for v in value]
+        super().__setattr__(name, value)
+
     def add_trace(self, trace=None, **kwargs):
         """Adds user-defined 3d model object which is positioned relatively to the main object to be
         displayed and moved automatically with it. This feature also allows the user to replace the
@@ -177,7 +184,7 @@ class Model3dLogic:
             depending on class attributes, and postpone the trace construction to when the object is
             displayed.
         """
-        self.data = [*self.data, validate_trace3d(trace, **kwargs)]
+        self.data = [*self.data, trace]
         return self
 
 
@@ -191,13 +198,6 @@ class ColorSequence(param.List):
 class Color(param.Color):
     def __set__(self, obj, val):
         val = color_validator(val)
-        super().__set__(obj, val)
-
-
-class Model3dData(param.List):
-    def __set__(self, obj, val):
-        self._validate_value(val, self.allow_None)
-        val = [validate_trace3d(v) for v in val]
         super().__set__(obj, val)
 
 
@@ -269,8 +269,7 @@ def convert_to_param(dict_, parent=None):
                     args.pop("item_type", None)
                     typ = ColorSequence
                 elif it_typ == "Trace3d":
-                    args.pop("item_type", None)
-                    typ = Model3dData
+                    args.pop("item_type", Trace3d)
             else:
                 typ = getattr(param, typ_str)
             if typ is not None:
