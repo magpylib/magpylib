@@ -68,8 +68,8 @@ DEFAULTS = {
     "display.animation.output": {
         "$type": "String",
         "default": "",
-        "doc": "Animation output type",
-        "regex": r"^(mp4|gif|(.*\.(mp4|gif))?)$",  # either `mp4` or `gif` or ending with `.mp4` or `.gif`"
+        "doc": "Animation output type (either `mp4` or `gif` or ending with `.mp4` or `.gif`)",
+        "regex": r"^(mp4|gif|(.*\.(mp4|gif))?)$",
     },
     "display.backend": {
         "$type": "Selector",
@@ -155,7 +155,8 @@ DEFAULTS = {
         "bounds": (0, 1),
         "inclusive_bounds": (True, True),
         "softbounds": (0, 1),
-        "doc": "Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.",
+        "doc": """
+        Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.""",
     },
     "display.style.base.path.line.width": {
         "$type": "Number",
@@ -788,13 +789,13 @@ DEFAULTS = {
     },
     "display.style.triangularmesh.mesh.disconnected.line.style": {
         "$type": "Selector",
-        "default": "solid",
+        "default": "dashed",
         "objects": ALLOWED_LINESTYLES,
         "doc": f"Mesh disconnected line style. Can be one of: {ALLOWED_LINESTYLES}.",
     },
     "display.style.triangularmesh.mesh.disconnected.line.color": {
         "$type": "Color",
-        "default": "#000000",
+        "default": "#FF00FF",
         "doc": "Explicit current line color. Takes object color by default.",
     },
     "display.style.triangularmesh.mesh.disconnected.marker.size": {
