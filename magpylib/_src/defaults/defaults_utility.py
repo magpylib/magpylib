@@ -506,14 +506,14 @@ class MagicParameterized(param.Parameterized):
             the separator to be used when flattening the dictionary. Only applies if
             `flatten=True`
         """
-        params = (v[0] for v in self.param.get_param_values() if v[0] != "name")
         dict_ = {}
-        for k in params:
-            val = getattr(self, k)
+        for key, val in self.param.values().items():
+            if key == "name":
+                continue
             if hasattr(val, "as_dict"):
-                dict_[k] = val.as_dict()
+                dict_[key] = val.as_dict()
             else:
-                dict_[k] = val
+                dict_[key] = val
         if flatten:
             dict_ = linearize_dict(dict_, separator=separator)
         return dict_

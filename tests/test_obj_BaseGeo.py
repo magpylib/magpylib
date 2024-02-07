@@ -372,7 +372,7 @@ def test_copy():
 
     # check if label suffix iterated correctly
     assert bg1c.style.label == "label2"
-    assert bg2c.style.label is None
+    assert bg2c.style.label == ""
     assert bg3c.style.label == "BaseGeo_01"
 
     # check if style is passed correctly

@@ -357,7 +357,7 @@ class BaseGeo(BaseTransform):
         ):
             # pylint: disable=no-member
             label = self.style.label
-            if label is None:
+            if not label:
                 label = f"{type(self).__name__}_01"
             else:
                 label = add_iteration_suffix(label)

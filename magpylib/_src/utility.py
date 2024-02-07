@@ -280,7 +280,7 @@ def add_iteration_suffix(name):
     m = re.search(r"\d+$", name)
     n = "00"
     endstr = None
-    midchar = "_" if name[-1] != "_" else ""
+    midchar = "" if name.endswith("_") else "_"
     if m is not None:
         midchar = ""
         n = m.group()
