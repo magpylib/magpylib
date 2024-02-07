@@ -118,54 +118,24 @@ class Trace3d(MagicParameterized):
         return val
 
 
-class Model3d(MagicParameterized):
-    def __setattr__(self, name, value):
-        if name == "data":
-            value = self._validate_data(value)
-        return super().__setattr__(name, value)
+def validate_trace3d(trace, **kwargs):
+    updatefunc = None
+    if trace is None:
+        trace = Trace3d()
+    if not isinstance(trace, Trace3d) and callable(trace):
+        updatefunc = trace
+        trace = Trace3d()
+    if isinstance(trace, dict):
+        trace = Trace3d(**trace)
+    if isinstance(trace, Trace3d):
+        trace.updatefunc = updatefunc
+        if kwargs:
+            trace.update(**kwargs)
+        trace.update(trace.updatefunc())
+    return trace
 
-    showdefault = param.Boolean(
-        default=True,
-        doc="""Show/hide default 3D-model.""",
-    )
 
-    data = param.List(
-        item_type=Trace3d,
-        doc="""
-        A trace or list of traces where each is an instance of `Trace3d` or dictionary of equivalent
-        key/value pairs. Defines properties for an additional user-defined model3d object which is
-        positioned relatively to the main object to be displayed and moved automatically with it.
-        This feature also allows the user to replace the original 3d representation of the object.
-        """,
-    )
-
-    @staticmethod
-    def _validate_trace(trace, **kwargs):
-        updatefunc = None
-        if trace is None:
-            trace = Trace3d()
-        if not isinstance(trace, Trace3d) and callable(trace):
-            updatefunc = trace
-            trace = Trace3d()
-        if isinstance(trace, dict):
-            trace = Trace3d(**trace)
-        if isinstance(trace, Trace3d):
-            trace.updatefunc = updatefunc
-            if kwargs:
-                trace.update(**kwargs)
-            trace.update(trace.updatefunc())
-        return trace
-
-    def _validate_data(self, traces):
-        if traces is None:
-            traces = []
-        elif not isinstance(traces, (list, tuple)):
-            traces = [traces]
-        new_traces = []
-        for trace in traces:
-            new_traces.append(self._validate_trace(trace))
-        return new_traces
-
+class Model3dLogic:
     def add_trace(self, trace=None, **kwargs):
         """Adds user-defined 3d model object which is positioned relatively to the main object to be
         displayed and moved automatically with it. This feature also allows the user to replace the
@@ -207,7 +177,7 @@ class Model3d(MagicParameterized):
             depending on class attributes, and postpone the trace construction to when the object is
             displayed.
         """
-        self.data = list(self.data) + [self._validate_trace(trace, **kwargs)]
+        self.data = [*self.data, validate_trace3d(trace, **kwargs)]
         return self
 
 
@@ -227,25 +197,8 @@ class Color(param.Color):
 class Model3dData(param.List):
     def __set__(self, obj, val):
         self._validate_value(val, self.allow_None)
-        val = [self._validate_trace(v) for v in val]
+        val = [validate_trace3d(v) for v in val]
         super().__set__(obj, val)
-
-    @staticmethod
-    def _validate_trace(trace, **kwargs):
-        updatefunc = None
-        if trace is None:
-            trace = Trace3d()
-        if not isinstance(trace, Trace3d) and callable(trace):
-            updatefunc = trace
-            trace = Trace3d()
-        if isinstance(trace, dict):
-            trace = Trace3d(**trace)
-        if isinstance(trace, Trace3d):
-            trace.updatefunc = updatefunc
-            if kwargs:
-                trace.update(**kwargs)
-            trace.update(trace.updatefunc())
-        return trace
 
 
 class PathLogic:
@@ -325,10 +278,13 @@ def convert_to_param(dict_, parent=None):
             val = convert_to_param(val, parent=name)
             params[key] = param.ClassSelector(class_=val, default=val())
     if parent.endswith("PathFrames"):
+        # param.depends does not work with adding a class to bases
         params.update(get_frames_logic())
     class_ = type(parent, (MagicParameterized, TextLogic), params)
     if parent.endswith("Path"):
         class_ = type(parent, (class_, PathLogic), {})
+    if parent.endswith("Model3d"):
+        class_ = type(parent, (class_, Model3dLogic), {})
     return class_
 
 
@@ -384,5 +340,9 @@ default_style_classes = {
 }
 locals()["BaseStyle"] = base = default_style_classes.pop("base")
 for fam, klass in default_style_classes.items():
-    klass_name = f"{fam.capitalize()}Style"
-    locals()[klass_name] = type(klass_name, (base, klass), {})
+    fam = fam.capitalize()
+    bases = (base, klass)
+    if fam == "Triangularmesh":
+        bases += (default_style_classes["magnet"],)
+    klass_name = f"{fam}Style"
+    locals()[klass_name] = type(klass_name, bases, {})
