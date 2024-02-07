@@ -375,8 +375,9 @@ def update_with_nested_dict(parameterized, nested_dict):
     with param.parameterized.batch_call_watchers(parameterized):
         for pname, value in nested_dict.items():
             if isinstance(value, dict):
-                if isinstance(getattr(parameterized, pname), param.Parameterized):
-                    update_with_nested_dict(getattr(parameterized, pname), value)
+                child = getattr(parameterized, pname)
+                if isinstance(child, param.Parameterized):
+                    update_with_nested_dict(child, value)
                     continue
             setattr(parameterized, pname, value)
 
@@ -426,15 +427,14 @@ class MagicParameterized(param.Parameterized):
     def __setattr__(self, name, value):
         if self.__isfrozen and not hasattr(self, name) and not name.startswith("_"):
             raise AttributeError(
-                f"{type(self).__name__} has no property '{name}'"
+                f"{type(self).__name__} has no parameter '{name}'"
                 f"\n Available properties are: {list(self.as_dict().keys())}"
             )
         p = getattr(self.param, name, None)
-        if p is not None:
+        if name in self.param:
+            p = self.param[name]
             # pylint: disable=unidiomatic-typecheck
-            if isinstance(p, param.Color):
-                value = color_validator(value)
-            elif isinstance(p, param.List) and isinstance(value, tuple):
+            if isinstance(p, param.List) and isinstance(value, tuple):
                 value = list(value)
             elif isinstance(p, param.Tuple) and isinstance(value, list):
                 value = tuple(value)
