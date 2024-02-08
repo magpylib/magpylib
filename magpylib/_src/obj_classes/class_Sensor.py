@@ -142,7 +142,13 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         self._handedness = val
 
     def getB(
-        self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray"
+        self,
+        *sources,
+        sumup=False,
+        squeeze=True,
+        pixel_agg=None,
+        output="ndarray",
+        in_out="auto",
     ):
         """Compute the B-field in units of T as seen by the sensor.
 
@@ -168,6 +174,19 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             Output type, which must be one of `('ndarray', 'dataframe')`. By default a
             `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
             object is returned (the Pandas library must be installed).
+
+        in_out: {'auto', 'inside', 'outside'}
+            This parameter only applies for magnet bodies. It specifies the location of the
+            observers relative to the magnet body, affecting the calculation of the magnetic field.
+            The options are:
+            - 'auto': The location (inside or outside the cuboid) is determined automatically for
+            each observer.
+            - 'inside': All observers are considered to be inside the cuboid; use this for
+              performance optimization if applicable.
+            - 'outside': All observers are considered to be outside the cuboid; use this for
+              performance optimization if applicable.
+            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
+            locations is unknown.
 
         Returns
         -------
@@ -209,15 +228,22 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         return getBH_level2(
             sources,
             self,
+            field="B",
             sumup=sumup,
             squeeze=squeeze,
             pixel_agg=pixel_agg,
             output=output,
-            field="B",
+            in_out=in_out,
         )
 
     def getH(
-        self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray"
+        self,
+        *sources,
+        sumup=False,
+        squeeze=True,
+        pixel_agg=None,
+        output="ndarray",
+        in_out="auto",
     ):
         """Compute the H-field in units of A/m as seen by the sensor.
 
@@ -243,6 +269,19 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             Output type, which must be one of `('ndarray', 'dataframe')`. By default a
             `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
             object is returned (the Pandas library must be installed).
+
+        in_out: {'auto', 'inside', 'outside'}
+            This parameter only applies for magnet bodies. It specifies the location of the
+            observers relative to the magnet body, affecting the calculation of the magnetic field.
+            The options are:
+            - 'auto': The location (inside or outside the cuboid) is determined automatically for
+            each observer.
+            - 'inside': All observers are considered to be inside the cuboid; use this for
+              performance optimization if applicable.
+            - 'outside': All observers are considered to be outside the cuboid; use this for
+              performance optimization if applicable.
+            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
+            locations is unknown.
 
         Returns
         -------
@@ -284,11 +323,144 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         return getBH_level2(
             sources,
             self,
+            field="H",
             sumup=sumup,
             squeeze=squeeze,
             pixel_agg=pixel_agg,
             output=output,
-            field="H",
+            in_out=in_out,
+        )
+
+    def getM(
+        self,
+        *sources,
+        sumup=False,
+        squeeze=True,
+        pixel_agg=None,
+        output="ndarray",
+        in_out="auto",
+    ):
+        """Compute the M-field in units of A/m as seen by the sensor.
+
+        Parameters
+        ----------
+        sources: source and collection objects or 1D list thereof
+            Sources that generate the magnetic field. Can be a single source (or collection)
+            or a 1D list of l source and/or collection objects.
+
+        sumup: bool, default=`False`
+            If `True`, the fields of all sources are summed up.
+
+        squeeze: bool, default=`True`
+            If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
+            a single sensor or only a single source) are eliminated.
+
+        pixel_agg: str, default=`None`
+            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
+            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
+            With this option, observers input with different (pixel) shapes is allowed.
+
+        output: str, default='ndarray'
+            Output type, which must be one of `('ndarray', 'dataframe')`. By default a
+            `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
+            object is returned (the Pandas library must be installed).
+
+        in_out: {'auto', 'inside', 'outside'}
+            This parameter only applies for magnet bodies. It specifies the location of the
+            observers relative to the magnet body, affecting the calculation of the magnetic field.
+            The options are:
+            - 'auto': The location (inside or outside the cuboid) is determined automatically for
+            each observer.
+            - 'inside': All observers are considered to be inside the cuboid; use this for
+              performance optimization if applicable.
+            - 'outside': All observers are considered to be outside the cuboid; use this for
+              performance optimization if applicable.
+            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
+            locations is unknown.
+
+        Returns
+        -------
+        M-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
+            M-field of each source (index l) at each path position (index m) and each sensor pixel
+            position (indices n1,n2,...) in units of A/m. Paths of objects that are shorter than
+            index m are considered as static beyond their end.
+        """
+        sources = format_star_input(sources)
+        return getBH_level2(
+            sources,
+            self,
+            field="M",
+            sumup=sumup,
+            squeeze=squeeze,
+            pixel_agg=pixel_agg,
+            output=output,
+            in_out=in_out,
+        )
+
+    def getJ(
+        self,
+        *sources,
+        sumup=False,
+        squeeze=True,
+        pixel_agg=None,
+        output="ndarray",
+        in_out="auto",
+    ):
+        """Compute the J-field in units of T as seen by the sensor.
+
+        Parameters
+        ----------
+        sources: source and collection objects or 1D list thereof
+            Sources that generate the magnetic field. Can be a single source (or collection)
+            or a 1D list of l source and/or collection objects.
+
+        sumup: bool, default=`False`
+            If `True`, the fields of all sources are summed up.
+
+        squeeze: bool, default=`True`
+            If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
+            a single sensor or only a single source) are eliminated.
+
+        pixel_agg: str, default=`None`
+            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
+            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
+            With this option, observers input with different (pixel) shapes is allowed.
+
+        output: str, default='ndarray'
+            Output type, which must be one of `('ndarray', 'dataframe')`. By default a
+            `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
+            object is returned (the Pandas library must be installed).
+
+        in_out: {'auto', 'inside', 'outside'}
+            This parameter only applies for magnet bodies. It specifies the location of the
+            observers relative to the magnet body, affecting the calculation of the magnetic field.
+            The options are:
+            - 'auto': The location (inside or outside the cuboid) is determined automatically for
+            each observer.
+            - 'inside': All observers are considered to be inside the cuboid; use this for
+              performance optimization if applicable.
+            - 'outside': All observers are considered to be outside the cuboid; use this for
+              performance optimization if applicable.
+            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
+            locations is unknown.
+
+        Returns
+        -------
+        J-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
+            J-field of each source (index l) at each path position (index m) and each sensor pixel
+            position (indices n1,n2,...) in units of T. Paths of objects that are shorter than
+            index m are considered as static beyond their end.
+        """
+        sources = format_star_input(sources)
+        return getBH_level2(
+            sources,
+            self,
+            field="J",
+            sumup=sumup,
+            squeeze=squeeze,
+            pixel_agg=pixel_agg,
+            output=output,
+            in_out=in_out,
         )
 
     @property

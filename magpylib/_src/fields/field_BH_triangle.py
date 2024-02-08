@@ -139,7 +139,9 @@ def triangle_field(
     Loss of precision with distance from the triangle as distance**3 :(
     """
     # pylint: disable=too-many-statements
-    bh = check_field_input(field, "triangle_field()")
+    check_field_input(field)
+    if field in "MJ":
+        return np.zeros_like(observers, dtype=float)
 
     n = norm_vector(vertices)
     sigma = np.einsum("ij, ij->i", n, polarization)  # vectorized inner product
@@ -186,10 +188,8 @@ def triangle_field(
         )
     PQR = np.einsum("ij, ijk -> jk", I, L)
     B = sigma * (n.T * solid_angle(R, r) - vcross3(n, PQR).T)
+    B = B.T / np.pi / 4.0
 
-    # return B or compute and return H -------------
-    if bh:
-        return B.T / np.pi / 4.0
-
-    H = B.T / 4 / np.pi / MU0
-    return H
+    if field == "B":
+        return B
+    return B / MU0

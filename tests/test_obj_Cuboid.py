@@ -4,8 +4,8 @@ import pickle
 import numpy as np
 
 import magpylib as magpy
+from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.obj_classes.class_Sensor import Sensor
-
 
 # # # """data generation for test_Cuboid()"""
 
@@ -99,12 +99,8 @@ def test_cuboid_object_vs_lib():
     pol = np.array([(10, 20, 30)])
     dim = np.array([(a, a, a)])
     pos = np.array([(2 * a, 2 * a, 2 * a)])
-    B0 = magpy.core.magnet_cuboid_field(
-        field="B", observers=pos, polarization=pol, dimension=dim
-    )
-    H0 = magpy.core.magnet_cuboid_field(
-        field="H", observers=pos, polarization=pol, dimension=dim
-    )
+    B0 = BHJM_magnet_cuboid(field="B", observers=pos, polarization=pol, dimension=dim)
+    H0 = BHJM_magnet_cuboid(field="H", observers=pos, polarization=pol, dimension=dim)
 
     src = magpy.magnet.Cuboid(polarization=pol[0], dimension=dim[0])
     B1 = src.getB(pos)

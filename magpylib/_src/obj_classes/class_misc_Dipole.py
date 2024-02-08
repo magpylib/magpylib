@@ -3,7 +3,7 @@ import numpy as np
 
 from magpylib._src.defaults.defaults_classes import DipoleStyle
 from magpylib._src.display.traces_core import make_Dipole
-from magpylib._src.fields.field_BH_dipole import dipole_field
+from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 from magpylib._src.utility import unit_prefix
@@ -81,7 +81,7 @@ class Dipole(BaseSource):
      [0.0100802  0.01720799 0.00712778]]
     """
 
-    _field_func = staticmethod(dipole_field)
+    _field_func = staticmethod(BHJM_dipole)
     _field_func_kwargs_ndim = {"moment": 2}
     _style_class = DipoleStyle
     get_trace = make_Dipole

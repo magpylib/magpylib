@@ -5,7 +5,7 @@ magnetized Spheres. Computation details in function docstrings.
 import numpy as np
 
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import MU0
+from magpylib._src.utility import convert_HBMJ
 
 
 # CORE
@@ -15,6 +15,7 @@ def magnet_sphere_field(
     observers: np.ndarray,
     diameter: np.ndarray,
     polarization: np.ndarray,
+    in_out="auto",
 ) -> np.ndarray:
     """Magnetic field of homogeneously magnetized spheres.
 
@@ -32,10 +33,22 @@ def magnet_sphere_field(
         Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
     diameter: ndarray, shape (n,)
-        Sphere diameters in units of m.
+        Sphere diameter in units of m.
 
     polarization: ndarray, shape (n,3)
         Magnetic polarization vectors in units of T.
+
+    in_out: {'auto', 'inside', 'outside'}
+        Specify the location of the observers relative to the magnet body, affecting the calculation
+        of the magnetic field. The options are:
+        - 'auto': The location (inside or outside the cuboid) is determined automatically for each
+          observer.
+        - 'inside': All observers are considered to be inside the cuboid; use this for performance
+          optimization if applicable.
+        - 'outside': All observers are considered to be outside the cuboid; use this for performance
+          optimization if applicable.
+        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
+        locations is unknown.
 
     Returns
     -------
@@ -70,36 +83,45 @@ def magnet_sphere_field(
     in the inside (see e.g. "Theoretical Physics, Bertelmann").
     """
 
-    bh = check_field_input(field, "magnet_sphere_field()")
+    check_field_input(field)
 
-    # all special cases r0=0 and mag=0 automatically covered
+    # all special cases r_obs=0 and pol=0 automatically covered
 
     x, y, z = np.copy(observers.T)
     r = np.sqrt(x**2 + y**2 + z**2)  # faster than np.linalg.norm
-    r0 = abs(diameter) / 2
+    r_obs = abs(diameter) / 2
 
     # inside field & allocate
     B = polarization * 2 / 3
 
+    if in_out == "auto":
+        mask_inside = r < r_obs
+    else:
+        val = in_out == "inside"
+        mask_inside = np.full(len(observers), val)
     # overwrite outside field entries
-    mask_out = r >= r0
 
-    mag1 = polarization[mask_out]
-    obs1 = observers[mask_out]
-    r1 = r[mask_out]
-    r01 = r0[mask_out]
+    mask_outside = ~mask_inside
+    if mask_outside.any() and field in "BH":
+        pol_out = polarization[mask_outside]
+        obs_out = observers[mask_outside]
+        r_out = r[mask_outside]
+        r_obs_out = r_obs[mask_outside]
 
-    field_out = (
-        (3 * (np.sum(mag1 * obs1, axis=1) * obs1.T) / r1**5 - mag1.T / r1**3)
-        * r01**3
-        / 3
+        field_out = (
+            (
+                3 * (np.sum(pol_out * obs_out, axis=1) * obs_out.T) / r_out**5
+                - pol_out.T / r_out**3
+            )
+            * r_obs_out**3
+            / 3
+        )
+        B[mask_outside] = field_out.T
+
+    return convert_HBMJ(
+        output_field_type=field,
+        polarization=polarization,
+        input_field_type="B",
+        field_values=B,
+        mask_inside=mask_inside,
     )
-    B[mask_out] = field_out.T
-
-    if bh:
-        return B
-
-    # adjust and return H
-    B[~mask_out] = -polarization[~mask_out] / 3
-    H = B / MU0
-    return H
