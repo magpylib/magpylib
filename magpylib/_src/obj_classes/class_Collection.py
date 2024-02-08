@@ -496,7 +496,7 @@ class BaseCollection(BaseDisplayRepr):
                 for k, v in style_kwargs.items()
                 if k.split("_")[0] in child.style.as_dict()
             }
-            child.style.update(**style_kwargs_specific, _match_properties=True)
+            child.style.update(**style_kwargs_specific, match_properties=True)
         return self
 
     def _validate_getBH_inputs(self, *inputs):

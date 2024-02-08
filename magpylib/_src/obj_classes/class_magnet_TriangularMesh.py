@@ -522,7 +522,7 @@ class TriangularMesh(BaseMagnet):
         coll.position = self.position
         coll.orientation = self.orientation
         # pylint: disable=no-member
-        coll.style.update(self.style.as_dict(), _match_properties=False)
+        coll.style.update(self.style.as_dict(), match_properties=False)
         return coll
 
     @classmethod

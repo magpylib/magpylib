@@ -3,6 +3,7 @@ from copy import deepcopy
 import param
 import pytest
 
+import magpylib as magpy
 from magpylib._src.defaults.defaults_utility import color_validator
 from magpylib._src.defaults.defaults_utility import COLORS_SHORT_TO_LONG
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
@@ -174,16 +175,11 @@ def test_MagicParameterized():
 
     with pytest.raises(AttributeError):
         bp1.update(prop1_prop2=10, prop3=4)
-    assert bp1.update(prop1_prop2=10, prop3=4, _match_properties=False).as_dict() == {
+    assert bp1.update(prop1_prop2=10, prop3=4, match_properties=False).as_dict() == {
         "prop1": {"prop2": 10}
     }, "magic property setting failed, should ignore `'prop3'`"
 
-    assert bp1.update(prop1_prop2=20, _replace_None_only=True).as_dict() == {
-        "prop1": {"prop2": 10}
-    }, "magic property setting failed, `prop2` should be remained unchanged `10`"
-
     # check copy method
-
     bp3 = bp2.copy()
     assert bp3 is not bp2, "failed copying, should return a different id"
     assert (
@@ -205,3 +201,29 @@ def test_get_defaults_dict():
     s0 = get_defaults_dict("display.style")
     s1 = get_defaults_dict()["display"]["style"]
     assert s0 == s1, "dicts don't match"
+
+
+def test_settings_precedence():
+    magpy.defaults.reset()
+    mag_col_default = magpy.defaults.display.style.magnet.magnetization.color
+    c1 = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+
+    # assigning a dict
+    c1.style.magnetization = {"color_north": "magenta", "color_south": "turquoise"}
+    assert c1.style.magnetization.color.north == "magenta"
+    assert c1.style.magnetization.color.south == "turquoise"
+
+    # assigning a dict, should fall back to defaults for unspecified values
+    c1.style.magnetization = {"color_south": "turquoise"}
+    assert c1.style.magnetization.color.north == mag_col_default.north
+    assert c1.style.magnetization.color.south == "turquoise"
+
+    # assigning None, all should fall back to defaults
+    c1.style.magnetization = None
+    assert c1.style.magnetization.color.north == mag_col_default.north
+    assert c1.style.magnetization.color.south == mag_col_default.south
+
+    # updating, updates specified only, other parameters remain
+    c1.style.magnetization.update(color_north="magenta")
+    assert c1.style.magnetization.color.north == "magenta"
+    assert c1.style.magnetization.color.south == mag_col_default.south

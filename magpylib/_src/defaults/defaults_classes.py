@@ -305,7 +305,7 @@ class DefaultSettings(MagicParameterized):
 
     def reset(self):
         """Resets all nested properties to their hard coded default values"""
-        self.update(get_defaults_dict(), _match_properties=False)
+        self.update(get_defaults_dict(), match_properties=False)
         return self
 
     def _declare_watchers(self):

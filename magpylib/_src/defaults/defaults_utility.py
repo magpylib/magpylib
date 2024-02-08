@@ -342,7 +342,7 @@ def get_style(obj, **kwargs):
     style = obj.style.copy()
     keys = style.as_dict().keys()
     style_kwargs = {k: v for k, v in style_kwargs.items() if k.split("_")[0] in keys}
-    style.update(**style_kwargs, _match_properties=True)
+    style.update(**style_kwargs, match_properties=True)
 
     return style
 
@@ -420,55 +420,51 @@ class MagicParameterized(param.Parameterized):
             elif isinstance(p, param.Tuple) and isinstance(value, list):
                 value = tuple(value)
             if type(p) == param.ClassSelector:
-                if isinstance(value, dict):
-                    self.update({name: value})
-                    return
-                if value is None:
-                    value = type(getattr(self, name))()
+                if value is None or isinstance(value, dict):
+                    value = type(getattr(self, name))().update(value)
         super().__setattr__(name, value)
 
     def _freeze(self):
         self.__isfrozen = True
 
-    def update(
-        self, arg=None, _match_properties=True, _replace_None_only=False, **kwargs
-    ):
+    def update(self, arg=None, match_properties=True, **kwargs):
         """
         Updates the class properties with provided arguments, supports magic underscore notation
 
         Parameters
         ----------
-
-        _match_properties: bool
+        arg : dict
+            Dictionary of properties to be updated
+        match_properties: bool
             If `True`, checks if provided properties over keyword arguments are matching the current
             object properties. An error is raised if a non-matching property is found.
             If `False`, the `update` method does not raise any error when an argument is not
             matching a property.
-
-        _replace_None_only:
-            updates matching properties that are equal to `None` (not already been set)
-
+        kwargs :
+            Keyword/value pair of properties to be updated
 
         Returns
         -------
-        self
+        ParameterizedType
+            Updated parameterized object
         """
         if arg is None:
             arg = {}
         elif isinstance(arg, MagicParameterized):
             arg = arg.as_dict()
-        if kwargs:
-            arg.update(kwargs)
+        else:
+            arg = arg.copy()
+        arg.update(kwargs)
         if arg:
             arg = magic_to_dict(arg)
             current_dict = get_current_values_from_dict(
-                self, arg, match_properties=_match_properties
+                self, arg, match_properties=match_properties
             )
             new_dict = update_nested_dict(
                 current_dict,
                 arg,
-                same_keys_only=not _match_properties,
-                replace_None_only=_replace_None_only,
+                same_keys_only=not match_properties,
+                replace_None_only=False,
             )
             update_with_nested_dict(self, new_dict)
         return self
