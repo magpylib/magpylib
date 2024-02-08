@@ -7,7 +7,8 @@ import pytest
 import magpylib as magpy
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
-from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_core
+
+# from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_core
 
 # pylint: disable="pointless-string-statement"
 # creating test data
