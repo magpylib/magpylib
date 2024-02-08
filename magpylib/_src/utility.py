@@ -9,9 +9,10 @@ from typing import Optional
 from typing import Sequence
 
 import numpy as np
+from scipy.constants import mu_0 as MU0
 
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.units import MU0
+from magpylib._src.utility import MU0
 
 
 def get_allowed_sources_msg():

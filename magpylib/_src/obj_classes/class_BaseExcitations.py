@@ -15,9 +15,9 @@ from magpylib._src.style import CurrentStyle
 from magpylib._src.style import MagnetStyle
 from magpylib._src.units import downcast
 from magpylib._src.units import is_Quantity
-from magpylib._src.units import MU0
 from magpylib._src.units import to_Quantity
 from magpylib._src.utility import format_star_input
+from magpylib._src.utility import MU0
 
 
 class BaseSource(BaseGeo, BaseDisplayRepr):

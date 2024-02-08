@@ -6,7 +6,7 @@ Computation details in function docstrings.
 import numpy as np
 
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.units import MU0
+from magpylib._src.utility import MU0
 
 
 def vcross3(a: np.ndarray, b: np.ndarray) -> np.ndarray:

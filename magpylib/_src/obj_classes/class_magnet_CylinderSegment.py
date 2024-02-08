@@ -3,7 +3,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_CylinderSegment
 from magpylib._src.fields.field_BH_cylinder_segment import (
-    magnet_cylinder_segment_field_internal,
+    BHJM_cylinder_segment_internal,
 )
 from magpylib._src.input_checks import check_format_input_cylinder_segment
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
@@ -100,7 +100,7 @@ class CylinderSegment(BaseMagnet):
      [ 0.00025439  0.00074332  0.00011683]]
     """
 
-    _field_func = staticmethod(magnet_cylinder_segment_field_internal)
+    _field_func = staticmethod(BHJM_cylinder_segment_internal)
     _field_func_kwargs = {
         "polarization": {"ndim": 2, "unit": "T"},
         "dimension": {"ndim": 2, "unit": ("m", "m", "m", "deg", "deg")},

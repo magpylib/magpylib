@@ -3,7 +3,7 @@ import warnings
 
 from magpylib._src.display.traces_core import make_Circle
 from magpylib._src.exceptions import MagpylibDeprecationWarning
-from magpylib._src.fields.field_BH_circle import current_circle_field
+from magpylib._src.fields.field_BH_circle import BHJM_circle
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.units import unit_prefix
@@ -83,7 +83,7 @@ class Circle(BaseCurrent):
      [-9.85948764e-24 -4.45190261e-05  4.45190261e-05]]
     """
 
-    _field_func = staticmethod(current_circle_field)
+    _field_func = staticmethod(BHJM_circle)
     _field_func_kwargs = {
         "current": {"ndim": 1, "unit": "A"},
         "diameter": {"ndim": 1, "unit": "m"},
@@ -144,7 +144,7 @@ class Loop(Circle):
     def _field_func(*args, **kwargs):
         """Catch Deprecation warning in getBH_dict"""
         _deprecation_warn()
-        return current_circle_field(*args, **kwargs)
+        return BHJM_circle(*args, **kwargs)
 
     def __init__(self, *args, **kwargs):
         _deprecation_warn()

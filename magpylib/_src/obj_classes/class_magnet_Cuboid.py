@@ -1,6 +1,6 @@
 """Magnet Cuboid class code"""
 from magpylib._src.display.traces_core import make_Cuboid
-from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
+from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.units import unit_prefix
@@ -74,7 +74,7 @@ class Cuboid(BaseMagnet):
      [-0.03557183  0.00646436  0.14943466]]
     """
 
-    _field_func = staticmethod(magnet_cuboid_field)
+    _field_func = staticmethod(BHJM_magnet_cuboid)
     _field_func_kwargs = {
         "polarization": {"ndim": 2, "unit": "T"},
         "dimension": {"ndim": 2, "unit": "m"},

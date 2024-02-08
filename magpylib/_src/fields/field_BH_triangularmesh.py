@@ -8,7 +8,7 @@ import numpy as np
 import scipy.spatial
 
 from magpylib._src.fields.field_BH_triangle import triangle_field
-from magpylib._src.units import MU0
+from magpylib._src.utility import MU0
 
 
 def calculate_centroid(vertices, faces):

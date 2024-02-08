@@ -11,8 +11,6 @@ from magpylib._src.defaults.defaults_utility import ALLOWED_UNITS_MODES
 from magpylib._src.exceptions import MagpylibUnitsError
 
 
-MU0 = 4 * np.pi * 1e-7
-
 _UNIT_PREFIX = {
     -24: "y",  # yocto
     -21: "z",  # zepto

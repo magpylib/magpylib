@@ -7,7 +7,7 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.exceptions import MagpylibUnitsError
-
+from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 
 # pylint: disable=unnecessary-lambda-assignment
 
@@ -937,7 +937,7 @@ def test_input_getBH_field_good(field):
     """good getBH field inputs"""
     moms = np.array([[1, 2, 3]])
     obs = np.array([[1, 2, 3]])
-    B = magpy.core.dipole_field(field=field, observers=obs, moment=moms)
+    B = BHJM_dipole(field=field, observers=obs, moment=moms)
     assert isinstance(B, np.ndarray)
 
 
@@ -961,7 +961,7 @@ def test_input_getBH_field_bad(field):
     moms = np.array([[1, 2, 3]])
     obs = np.array([[1, 2, 3]])
     with pytest.raises(MagpylibBadUserInput):
-        magpy.core.dipole_field(field=field, observers=obs, moment=moms)
+        BHJM_dipole(field=field, observers=obs, moment=moms)
 
 
 def test_sensor_handedness():

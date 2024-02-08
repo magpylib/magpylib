@@ -1,6 +1,6 @@
 """Magnet Cylinder class code"""
 from magpylib._src.display.traces_core import make_Cylinder
-from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_field
+from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.units import unit_prefix
@@ -85,7 +85,7 @@ class Cylinder(BaseMagnet):
      [1.25715233e-04 2.01445027e-04 1.31238931e-05]]
     """
 
-    _field_func = staticmethod(magnet_cylinder_field)
+    _field_func = staticmethod(BHJM_magnet_cylinder)
     _field_func_kwargs = {
         "polarization": {"ndim": 2, "unit": "T"},
         "dimension": {"ndim": 2, "unit": "m"},

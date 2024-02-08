@@ -50,10 +50,12 @@ __all__ = [
     "__credits__",
     "core",
     "graphics",
+    "mu_0",
 ]
 
 
 # create interface to outside of package
+from scipy.constants import mu_0
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.units import units_global as units
 from magpylib import magnet, current, misc, core, graphics
