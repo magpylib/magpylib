@@ -8,7 +8,6 @@ from typing import Tuple
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 
-from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import get_style
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.utility import format_obj_input
@@ -273,7 +272,7 @@ def get_flatten_objects_properties_recursive(
     flat_objs = {}
     for subobj in obj_list_semi_flat:
         isCollection = getattr(subobj, "children", None) is not None
-        style = get_style(subobj, default_settings, **kwargs)
+        style = get_style(subobj, **kwargs)
         if style.label is None:
             style.label = str(type(subobj).__name__)
         if parent_legendgroup is not None:

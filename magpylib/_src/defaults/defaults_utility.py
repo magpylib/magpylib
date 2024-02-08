@@ -326,42 +326,23 @@ def get_families(obj):
     return obj_families
 
 
-def get_style(obj, default_settings, **kwargs):
+def get_style(obj, **kwargs):
     """Returns default style based on increasing priority:
     - style from defaults
     - style from object
     - style from kwargs arguments
     """
-    obj_families = get_families(obj)
     # parse kwargs into style an non-style arguments
     style_kwargs = kwargs.get("style", {})
     style_kwargs.update(
         {k[6:]: v for k, v in kwargs.items() if k.startswith("style") and k != "style"}
     )
-
-    # retrieve default style dictionary, local import to avoid circular import
-    # pylint: disable=import-outside-toplevel
-
-    default_style = default_settings.display.style
-    base_style_flat = default_style.base.as_dict(flatten=True, separator="_")
-
-    # construct object specific dictionary base on style family and default style
-    for obj_family in obj_families:
-        family_style = getattr(default_style, obj_family, {})
-        if family_style:
-            family_dict = family_style.as_dict(flatten=True, separator="_")
-            base_style_flat.update(
-                {k: v for k, v in family_dict.items() if v is not None}
-            )
     style_kwargs = validate_style_keys(style_kwargs)
-
     # create style class instance and update based on precedence
     style = obj.style.copy()
-    style_kwargs_specific = {
-        k: v for k, v in style_kwargs.items() if k.split("_")[0] in style.as_dict()
-    }
-    style.update(**style_kwargs_specific, _match_properties=True)
-    style.update(**base_style_flat, _match_properties=False, _replace_None_only=True)
+    keys = style.as_dict().keys()
+    style_kwargs = {k: v for k, v in style_kwargs.items() if k.split("_")[0] in keys}
+    style.update(**style_kwargs, _match_properties=True)
 
     return style
 

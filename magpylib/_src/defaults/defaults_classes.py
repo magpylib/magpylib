@@ -184,7 +184,7 @@ class Model3dLogic:
             depending on class attributes, and postpone the trace construction to when the object is
             displayed.
         """
-        self.data = [*self.data, trace]
+        self.data = [*self.data, validate_trace3d(trace, **kwargs)]
         return self
 
 
