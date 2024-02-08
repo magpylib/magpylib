@@ -110,19 +110,22 @@ class Trace3d(MagicParameterized):
                 if bad_keys:
                     msg = f"but invalid output dictionary keys received: {bad_keys}."
 
-        assert msg == "", (
-            f"The `updatefunc` property of {type(self).__name__} must be a callable returning a "
-            f"dictionary with a subset of following keys: {list(valid_keys)}.\n"
-            f"{msg}"
-        )
+        if msg:
+            raise ValueError(
+                f"The `updatefunc` property of {type(self).__name__} must be a callable returning "
+                f"a dictionary with a subset of following keys: {list(valid_keys)}.\n"
+                f"{msg}"
+            )
         return val
 
 
 def validate_trace3d(trace, **kwargs):
+    """Validate and if necessary transform into Trace3d"""
     updatefunc = None
+    trace_orig = trace
     if trace is None:
         trace = Trace3d()
-    if not isinstance(trace, Trace3d) and trace is not Trace3d and callable(trace):
+    if not isinstance(trace, Trace3d) and callable(trace):
         updatefunc = trace
         trace = Trace3d()
     if isinstance(trace, dict):
@@ -132,6 +135,12 @@ def validate_trace3d(trace, **kwargs):
         if kwargs:
             trace.update(**kwargs)
         trace.update(trace.updatefunc())
+    else:
+        raise ValueError(
+            "A `Model3d` data element must be a `Trace3d` object or a dict with equivalent"
+            " parameters, or a callable returning a dict with equivalent parameters."
+            f" Instead received: {trace_orig!r}"
+        )
     return trace
 
 

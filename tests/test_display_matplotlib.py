@@ -407,13 +407,13 @@ def test_matplotlib_model3d_extra_updatefunc():
     with pytest.raises(ValueError):
         obj.style.model3d.add_trace("not callable")
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         obj.style.model3d.add_trace(updatefunc="not callable")
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         obj.style.model3d.add_trace(updatefunc=lambda: "bad output type")
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         obj.style.model3d.add_trace(updatefunc=lambda: {"bad_key": "some_value"})
 
 
