@@ -137,11 +137,13 @@ def current_polyline_field(
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
     """
     # pylint: disable=too-many-statements
-    bh = check_field_input(field, "current_polyline_field()")
+    check_field_input(field)
+    if field in "MJ":
+        return np.zeros_like(observers, dtype=float)
 
     # allocate for special case treatment
     ntot = len(current)
-    field_all = np.zeros((ntot, 3))
+    B_all = np.zeros((ntot, 3))
 
     # Check for zero-length segments (or discontinuous)
     mask_nan_start = np.isnan(segment_start).all(axis=1)
@@ -150,7 +152,7 @@ def current_polyline_field(
     mask0 = mask_equal | mask_nan_start | mask_nan_end
 
     if np.all(mask0):
-        return field_all
+        return B_all
 
     # continue only with non-zero segments
     if np.any(mask0):
@@ -180,7 +182,7 @@ def current_polyline_field(
     # separate on-line cases (-> B=0)
     mask1 = norm_o4 < 1e-15  # account for numerical issues
     if np.all(mask1):
-        return field_all
+        return B_all
 
     # continue only with general off-line cases
     if np.any(mask1):
@@ -220,18 +222,18 @@ def current_polyline_field(
     mask4 = ~mask2 * ~mask3
     deltaSin[mask4] = abs(sinTh1[mask4] + sinTh2[mask4])
 
-    field = (deltaSin / norm_o4 * eB.T / norm_12 * current * 1e-7).T
+    B = (deltaSin / norm_o4 * eB.T / norm_12 * current * 1e-7).T
 
     # broadcast general case results into allocated vector
     mask0[~mask0] = mask1
-    field_all[~mask0] = field
+    B_all[~mask0] = B
 
     # return B
-    if bh:
-        return field_all
+    if field == "B":
+        return B_all
 
     # return H
-    return field_all / MU0
+    return B_all / MU0
 
 
 def current_line_field(*args, **kwargs):
