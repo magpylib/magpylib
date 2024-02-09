@@ -5,6 +5,7 @@ import re
 from copy import deepcopy
 from functools import lru_cache
 
+import numpy as np
 import param
 from matplotlib.colors import CSS4_COLORS as mcolors
 
@@ -409,20 +410,26 @@ class MagicParameterized(param.Parameterized):
         if self.__isfrozen and not hasattr(self, name) and not name.startswith("_"):
             raise AttributeError(
                 f"{type(self).__name__} has no parameter '{name}'"
-                f"\n Available properties are: {list(self.as_dict().keys())}"
+                f"\n Available parameters are: {list(self.as_dict().keys())}"
             )
-        p = getattr(self.param, name, None)
-        if name in self.param:
-            p = self.param[name]
-            # pylint: disable=unidiomatic-typecheck
-            if isinstance(p, param.List) and isinstance(value, tuple):
-                value = list(value)
-            elif isinstance(p, param.Tuple) and isinstance(value, list):
-                value = tuple(value)
-            if type(p) == param.ClassSelector:
-                if value is None or isinstance(value, dict):
-                    value = type(getattr(self, name))().update(value)
-        super().__setattr__(name, value)
+        try:
+            super().__setattr__(name, value)
+        except ValueError:
+            if name in self.param:
+                p = self.param[name]
+                # pylint: disable=unidiomatic-typecheck
+                if type(p) == param.ClassSelector:
+                    value = {} if value is None else value
+                    if isinstance(value, dict):
+                        value = type(getattr(self, name))(**value)
+                        return
+                if isinstance(value, (list, tuple, np.ndarray)):
+                    if isinstance(p, param.List):
+                        super().__setattr__(name, list(value))
+                    elif isinstance(p, param.Tuple):
+                        super().__setattr__(name, tuple(value))
+                    return
+            raise
 
     def _freeze(self):
         self.__isfrozen = True

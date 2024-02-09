@@ -209,14 +209,14 @@ def test_settings_precedence():
     c1 = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
 
     # assigning a dict
-    c1.style.magnetization = {"color_north": "magenta", "color_south": "turquoise"}
-    assert c1.style.magnetization.color.north == "magenta"
-    assert c1.style.magnetization.color.south == "turquoise"
+    c1.style.magnetization = {"color_north": "#e71111", "color_south": "#00b050"}
+    assert c1.style.magnetization.color.north == "#e71111"
+    assert c1.style.magnetization.color.south == "#00b050"
 
     # assigning a dict, should fall back to defaults for unspecified values
-    c1.style.magnetization = {"color_south": "turquoise"}
+    c1.style.magnetization = {"color_south": "#00b050"}
     assert c1.style.magnetization.color.north == mag_col_default.north
-    assert c1.style.magnetization.color.south == "turquoise"
+    assert c1.style.magnetization.color.south == "#00b050"
 
     # assigning None, all should fall back to defaults
     c1.style.magnetization = None
@@ -224,6 +224,6 @@ def test_settings_precedence():
     assert c1.style.magnetization.color.south == mag_col_default.south
 
     # updating, updates specified only, other parameters remain
-    c1.style.magnetization.update(color_north="magenta")
-    assert c1.style.magnetization.color.north == "magenta"
+    c1.style.magnetization.update(color_north="#e71111")
+    assert c1.style.magnetization.color.north == "#e71111"
     assert c1.style.magnetization.color.south == mag_col_default.south
