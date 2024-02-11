@@ -86,7 +86,7 @@ def BHJM_magnet_sphere(
             - polarization[out].T * r[out] ** 2
         )
         / r[out] ** 5
-        * r_sphere**3
+        * r_sphere[out] ** 3
         / 3
     ).T
 
