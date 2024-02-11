@@ -5,17 +5,14 @@ magnetized Spheres. Computation details in function docstrings.
 import numpy as np
 
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import convert_HBMJ
+from magpylib._src.utility import MU0
 
 
-# CORE
-def magnet_sphere_field(
+def magnet_sphere_Bfield(
     *,
-    field: str,
     observers: np.ndarray,
-    diameter: np.ndarray,
-    polarization: np.ndarray,
-    in_out="auto",
+    diameters: np.ndarray,
+    polarizations: np.ndarray,
 ) -> np.ndarray:
     """Magnetic field of homogeneously magnetized spheres.
 
@@ -82,46 +79,66 @@ def magnet_sphere_field(
     The field corresponds to a dipole field on the outside and is 2/3*mag
     in the inside (see e.g. "Theoretical Physics, Bertelmann").
     """
+    return BHJM_magnet_sphere(
+        field="B",
+        observers=observers,
+        diameter=diameters,
+        polarization=polarizations,
+    )
 
+
+def BHJM_magnet_sphere(
+    *,
+    field: str,
+    observers: np.ndarray,
+    diameter: np.ndarray,
+    polarization: np.ndarray,
+    in_out="auto",
+) -> np.ndarray:
+    """
+    magnet sphere field, cannot be moved to core function, because
+    core computation requires inside-outside check, but BHJM translation also.
+    Would require 2 checks, or forwarding the masks ... both not ideal
+    """
     check_field_input(field)
-
-    # all special cases r_obs=0 and pol=0 automatically covered
 
     x, y, z = np.copy(observers.T)
     r = np.sqrt(x**2 + y**2 + z**2)  # faster than np.linalg.norm
-    r_obs = abs(diameter) / 2
+    r_sphere = abs(diameter) / 2
 
     # inside field & allocate
-    B = polarization * 2 / 3
+    BHJM = polarization.astype(float) * 2 / 3
+    mask_outside = r > r_sphere
 
-    if in_out == "auto":
-        mask_inside = r < r_obs
-    else:
-        val = in_out == "inside"
-        mask_inside = np.full(len(observers), val)
-    # overwrite outside field entries
+    if field == "J":
+        BHJM[mask_outside] = 0.0
+        return BHJM
 
-    mask_outside = ~mask_inside
-    if mask_outside.any() and field in "BH":
-        pol_out = polarization[mask_outside]
-        obs_out = observers[mask_outside]
-        r_out = r[mask_outside]
-        r_obs_out = r_obs[mask_outside]
+    if field == "M":
+        BHJM[mask_outside] = 0.0
+        return BHJM / MU0
 
-        field_out = (
-            (
-                3 * (np.sum(pol_out * obs_out, axis=1) * obs_out.T) / r_out**5
-                - pol_out.T / r_out**3
+    BHJM[mask_outside] = (
+        (
+            3
+            * (
+                np.sum(polarization[mask_outside] * observers[mask_outside], axis=1)
+                * observers[mask_outside].T
             )
-            * r_obs_out**3
-            / 3
+            / r[mask_outside] ** 5
+            - polarization[mask_outside].T / r[mask_outside] ** 3
         )
-        B[mask_outside] = field_out.T
+        * observers[mask_outside] ** 3
+        / 3
+    ).T
 
-    return convert_HBMJ(
-        output_field_type=field,
-        polarization=polarization,
-        input_field_type="B",
-        field_values=B,
-        mask_inside=mask_inside,
+    if field == "B":
+        return BHJM
+
+    if field == "H":
+        BHJM[~mask_outside] -= polarization[~mask_outside]
+        return BHJM / MU0
+
+    raise ValueError(  # pragma: no cover
+        "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"
     )
