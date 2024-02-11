@@ -2394,22 +2394,6 @@ def BHJM_cylinder_segment(
     B-field or H-field: ndarray, shape (n,3)
         B- or H-field of source in Cartesian coordinates in units of T or A/m.
 
-    Examples
-    --------
-    Compute the field of two different cylinder segment magnets at position (1,1,1).
-
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> B = magpy.core.BHJM_cylinder_segment(
-    ...     field='B',
-    ...     observers=np.array([(1,1,1), (1,1,1)]),
-    ...     dimension=np.array([(0,1,2,-90,90), (1,2,4,35,125)]),
-    ...     polarization=np.array([(0,0,1), (.5,.5,0)]),
-    ... )
-    >>> print(B)
-    [[ 0.07046526  0.08373724 -0.0198113 ]
-     [ 0.29846023  0.20757316  0.00349617]]
-
     Notes
     -----
     Advanced unit use: The input unit of magnetization and polarization
