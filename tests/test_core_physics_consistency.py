@@ -7,7 +7,7 @@ from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 from magpylib._src.fields.field_BH_polyline import BHJM_polyline
-from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
+from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
 from magpylib._src.fields.field_BH_triangle import triangle_field
 from magpylib._src.utility import MU0
@@ -183,7 +183,7 @@ def test_core_physics_dipole_sphere():
     pol = np.array([(1, 2, 3), (0, 0, 1), (-1, -2, 0), (1, -1, 0.1)])
     mom = np.array([4 * (d / 2) ** 3 * np.pi / 3 * p / MU0 for d, p in zip(dia, pol)])
 
-    B1 = magnet_sphere_field(
+    B1 = BHJM_magnet_sphere(
         field="B",
         observers=obs,
         diameter=dia,
@@ -196,7 +196,7 @@ def test_core_physics_dipole_sphere():
     )
     np.testing.assert_allclose(B1, B2, rtol=0, atol=1e-16)
 
-    H1 = magnet_sphere_field(
+    H1 = BHJM_magnet_sphere(
         field="H",
         observers=obs,
         diameter=dia,

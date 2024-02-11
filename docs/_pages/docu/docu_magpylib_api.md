@@ -738,7 +738,7 @@ At the heart of Magpylib lies a set of core functions that are our implementatio
 <span style="color: orange">**BHJM_cylinder_segment(**</span> `field`, `observers`, `polarization`, `dimension`<span style="color: orange">**)**</span>
 :::
 :::{grid-item}
-<span style="color: orange">**magnet_sphere_field(**</span> `field`, `observers`, `polarization`, `diameter`<span style="color: orange">**)**</span>
+<span style="color: orange">**BHJM_magnet_sphere(**</span> `field`, `observers`, `polarization`, `diameter`<span style="color: orange">**)**</span>
 :::
 :::{grid-item}
 <span style="color: orange">**magnet_tetrahedron_field(**</span> `field`, `observers`, `polarization`, `vertices`<span style="color: orange">**)**</span>

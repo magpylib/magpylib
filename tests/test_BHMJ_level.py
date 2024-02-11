@@ -11,7 +11,7 @@ from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 from magpylib._src.fields.field_BH_polyline import BHJM_polyline
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
-from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
+from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
 from magpylib._src.fields.field_BH_triangle import triangle_field
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
@@ -164,8 +164,8 @@ def test_BHJM_magnet_cylinder():
     # np.testing.assert_allclose(H_inout, Htest_inout, rtol=1e-5)
 
 
-def test_magnet_sphere_field_BH():
-    """test magnet_sphere_field"""
+def test_BHJM_magnet_sphere():
+    """test BHJM_magnet_sphere"""
     pol = np.array(
         [
             (0, 0, 0),
@@ -189,7 +189,7 @@ def test_magnet_sphere_field_BH():
         "polarization": pol,
         "diameter": dia,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(magnet_sphere_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(BHJM_magnet_sphere, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
