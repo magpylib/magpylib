@@ -60,7 +60,7 @@ class Sphere(BaseMagnet):
     >>> src = magpy.magnet.Sphere(polarization=(.1,.2,.3), diameter=.01)
     >>> H = src.getH((.01,.01,.01))
     >>> print(H)
-    [3190.56073739 2552.44858992 1914.33644244]
+    [3190.56073566 2552.44858853 1914.33644139]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 

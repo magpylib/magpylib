@@ -75,7 +75,7 @@ class Triangle(BaseMagnet):
     >>> src = magpy.misc.Triangle(polarization=(.1,.2,.3), vertices=verts)
     >>> H = src.getH((.1,.1,.1))
     >>> print(H)
-    [18.88869831 18.88869831 19.54560637]
+    [18.8886983  18.8886983  19.54560636]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 

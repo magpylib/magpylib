@@ -72,7 +72,7 @@ class Tetrahedron(BaseMagnet):
     >>> src = magpy.magnet.Tetrahedron(polarization=(.1,.2,.3), vertices=verts)
     >>> H = src.getH((.01,.01,.01))
     >>> print(H)
-    [2070.89782733 1656.71826186 1242.5386964 ]
+    [2070.8978262  1656.71826096 1242.53869572]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 

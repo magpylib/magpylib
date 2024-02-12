@@ -676,11 +676,11 @@ class BaseCollection(BaseDisplayRepr):
         >>> H = magpy.getH([src1, src2], col)
         >>> H = magpy.getH([src1, src2], [sens1, sens2])
         >>> print(H)
-        [[[    0.             0.         66314.55962162]
-          [    0.             0.         66314.55962162]]
+        [[[    0.             0.         66314.55958552]
+          [    0.             0.         66314.55958552]]
         <BLANKLINE>
-         [[    0.             0.         66314.55962162]
-          [    0.             0.         66314.55962162]]]
+         [[    0.             0.         66314.55958552]
+          [    0.             0.         66314.55958552]]]
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
