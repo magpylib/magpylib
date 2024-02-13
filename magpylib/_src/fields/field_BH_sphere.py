@@ -69,7 +69,7 @@ def BHJM_magnet_sphere(
     r_sphere = abs(diameter) / 2
 
     # inside field & allocate
-    BHJM = polarization.astype(float) * 2 / 3
+    BHJM = polarization.astype(float)
     out = r > r_sphere
 
     if field == "J":
@@ -79,6 +79,8 @@ def BHJM_magnet_sphere(
     if field == "M":
         BHJM[out] = 0.0
         return BHJM / MU0
+
+    BHJM *= 2 / 3
 
     BHJM[out] = (
         (
