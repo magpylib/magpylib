@@ -1,4 +1,5 @@
 """Magnet TriangularMesh class code"""
+
 import warnings
 
 import numpy as np

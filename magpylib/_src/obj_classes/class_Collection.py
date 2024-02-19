@@ -1,4 +1,5 @@
 """Collection class code"""
+
 # pylint: disable=redefined-builtin
 # pylint: disable=import-outside-toplevel
 from collections import Counter

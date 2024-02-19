@@ -1,6 +1,7 @@
 """
 Core implementation of dipole field
 """
+
 import numpy as np
 
 from magpylib._src.input_checks import check_field_input

@@ -1,4 +1,5 @@
 """Generic trace drawing functionalities"""
+
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements

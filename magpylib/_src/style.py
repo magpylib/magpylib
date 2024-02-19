@@ -1,4 +1,5 @@
 """Collection of classes for display styling."""
+
 # pylint: disable=C0302
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=cyclic-import

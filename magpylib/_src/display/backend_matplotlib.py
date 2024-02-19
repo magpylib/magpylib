@@ -1,4 +1,5 @@
 """matplotlib backend"""
+
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
 # pylint: disable=import-outside-toplevel

@@ -2,6 +2,7 @@
 Implementation for the magnetic field of homogeneously
 magnetized tetrahedra. Computation details in function docstrings.
 """
+
 import numpy as np
 
 from magpylib._src.fields.field_BH_triangle import triangle_field

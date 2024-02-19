@@ -1,4 +1,5 @@
 """Magnet Sphere class code"""
+
 from magpylib._src.display.traces_core import make_Sphere
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.input_checks import check_format_input_scalar

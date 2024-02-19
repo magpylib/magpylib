@@ -147,10 +147,7 @@ def Hz_ri_case115(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
     E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.abs(r_bar_i) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / r_bar_i**2)
     F_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
-        * (r**2 + r_i**2)
-        / (r * np.abs(r_bar_i))
+        -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (r * np.abs(r_bar_i))
     )
     return t1_coef * t1 + E_coef * E + F_coef * F
 
@@ -222,10 +219,7 @@ def Hz_ri_case125(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
     E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.abs(r_bar_i) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / r_bar_i**2)
     F_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
-        * (r**2 + r_i**2)
-        / (r * np.abs(r_bar_i))
+        -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (r * np.abs(r_bar_i))
     )
     return np.sin(theta_M) * np.sin(phi_bar_M) * (r + r_i) / r + E_coef * E + F_coef * F
 
@@ -349,9 +343,7 @@ def Hz_ri_case135(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / t)
     E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.sqrt(t) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / t)
-    F_coef = (
-        -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (r * np.sqrt(t))
-    )
+    F_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (r * np.sqrt(t))
     return t1_coef * t1 + E_coef * E + F_coef * F
 
 
@@ -508,9 +500,7 @@ def Hr_zk_case214(r, phi_bar_j, theta_M, z_bar_k):
     t = np.sqrt(r**2 + z_bar_k**2)
 
     def Pi1(sign):
-        return el3_angle(
-            phi_bar_j / 2, 2 * r / (r + sign * t), -4 * r**2 / z_bar_k**2
-        )
+        return el3_angle(phi_bar_j / 2, 2 * r / (r + sign * t), -4 * r**2 / z_bar_k**2)
 
     def Pi1_coef(sign):
         return (
@@ -603,9 +593,7 @@ def Hz_zk_case214(r, phi_bar_j, theta_M, z_bar_k):
     t = np.sqrt(r**2 + z_bar_k**2)
 
     def Pi(sign):
-        return el3_angle(
-            phi_bar_j / 2, 2 * r / (r + sign * t), -4 * r**2 / z_bar_k**2
-        )
+        return el3_angle(phi_bar_j / 2, 2 * r / (r + sign * t), -4 * r**2 / z_bar_k**2)
 
     Pi_coef = np.cos(theta_M) * np.sign(z_bar_k)
     return Pi_coef * Pi(1) + Pi_coef * Pi(-1)
@@ -728,9 +716,7 @@ def Hphi_ri_case215(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     t1 = np.sqrt(r_bar_i**2 + z_bar_k**2) * z_bar_k / (2.0 * r**2)
     t1_coef = -np.sin(theta_M) * np.cos(phi_bar_M)
     t2 = np.arctanh(z_bar_k / np.sqrt(r_bar_i**2 + z_bar_k**2))
-    t2_coef = (
-        -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
-    )
+    t2_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     E_coef = (
         np.sin(theta_M)
@@ -902,9 +888,7 @@ def Hz_phij_case223(r, phi_bar_M, theta_M, z_bar_k):
 
 
 def Hz_zk_case223(r, phi_bar_j, theta_M, z_bar_k):
-    t1 = arctan_k_tan_2(
-        np.sqrt(r**2 + z_bar_k**2) / np.abs(z_bar_k), 2.0 * phi_bar_j
-    )
+    t1 = arctan_k_tan_2(np.sqrt(r**2 + z_bar_k**2) / np.abs(z_bar_k), 2.0 * phi_bar_j)
     t1_coef = np.cos(theta_M) * np.sign(z_bar_k)
     return t1_coef * t1
 
@@ -1163,9 +1147,7 @@ def Hphi_ri_case225(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     t1 = np.sqrt((r + r_i) ** 2 + z_bar_k**2) * z_bar_k / (2.0 * r**2)
     t1_coef = -np.sin(theta_M) * np.cos(phi_bar_M)
     t2 = np.arctanh(z_bar_k / np.sqrt((r + r_i) ** 2 + z_bar_k**2))
-    t2_coef = (
-        -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
-    )
+    t2_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     E_coef = (
         np.sin(theta_M)
@@ -1400,9 +1382,7 @@ def Hz_phij_case233(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
 
 
 def Hz_zk_case233(r, phi_bar_j, theta_M, z_bar_k):
-    t1 = arctan_k_tan_2(
-        np.sqrt(r**2 + z_bar_k**2) / np.abs(z_bar_k), 2.0 * phi_bar_j
-    )
+    t1 = arctan_k_tan_2(np.sqrt(r**2 + z_bar_k**2) / np.abs(z_bar_k), 2.0 * phi_bar_j)
     t1_coef = np.cos(theta_M) * np.sign(z_bar_k)
     return t1_coef * t1
 
@@ -1480,9 +1460,7 @@ def Hr_zk_case234(r, phi_bar_j, theta_M, z_bar_k):
 
     def Pi2(sign):
         return el3_angle(
-            arctan_k_tan_2(
-                np.sqrt((4.0 * r**2 + z_bar_k**2) / z_bar_k**2), phi_bar_j
-            ),
+            arctan_k_tan_2(np.sqrt((4.0 * r**2 + z_bar_k**2) / z_bar_k**2), phi_bar_j),
             1.0 - z_bar_k**4 / ((4.0 * r**2 + z_bar_k**2) * (r + sign * t) ** 2),
             4.0 * r**2 / (4.0 * r**2 + z_bar_k**2),
         )
@@ -1647,9 +1625,7 @@ def Hr_phij_case235(r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
         / (
             r
             * np.sin(phi_bar_j)
-            * np.sqrt(
-                r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2
-            )
+            * np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2)
         )
     )
     t2_coef = np.sin(theta_M) * np.sin(phi_bar_Mj) * np.sin(phi_bar_j)
@@ -1695,9 +1671,7 @@ def Hr_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
     def Pi2(sign):
         return el3_angle(
             arctan_k_tan_2(
-                np.sqrt(
-                    ((r_i + r) ** 2 + z_bar_k**2) / (r_bar_i**2 + z_bar_k**2)
-                ),
+                np.sqrt(((r_i + r) ** 2 + z_bar_k**2) / (r_bar_i**2 + z_bar_k**2)),
                 phi_bar_j,
             ),
             1.0
@@ -1740,9 +1714,7 @@ def Hphi_ri_case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
         z_bar_k
         / np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2)
     )
-    t2_coef = (
-        -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
-    )
+    t2_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     E_coef = (
         np.sin(theta_M)

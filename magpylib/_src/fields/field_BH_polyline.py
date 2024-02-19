@@ -1,6 +1,7 @@
 """
 Implementations of analytical expressions of line current segments
 """
+
 import warnings
 
 import numpy as np

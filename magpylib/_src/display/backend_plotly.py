@@ -1,4 +1,5 @@
 """plotly backend"""
+
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
 import inspect

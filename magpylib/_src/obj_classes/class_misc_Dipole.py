@@ -1,4 +1,5 @@
 """Dipole class code"""
+
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Dipole

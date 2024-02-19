@@ -25,9 +25,9 @@ os.environ["MAGPYLIB_MPL_SVG"] = "true"
 
 # Location of Sphinx files
 sys.path.insert(0, os.path.abspath("./../"))  ##Add the folder one level above
-os.environ[
-    "SPHINX_APIDOC_OPTIONS"
-] = "members,show-inheritance"  ## Hide undocumented members
+os.environ["SPHINX_APIDOC_OPTIONS"] = (
+    "members,show-inheritance"  ## Hide undocumented members
+)
 import sphinx.ext.apidoc
 
 # from sphinx_gallery.sorting import FileNameSortKey

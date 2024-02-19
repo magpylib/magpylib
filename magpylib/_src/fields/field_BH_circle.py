@@ -2,6 +2,7 @@
 Implementations of analytical expressions for the magnetic field of
 a circular current loop. Computation details in function docstrings.
 """
+
 import warnings
 
 import numpy as np

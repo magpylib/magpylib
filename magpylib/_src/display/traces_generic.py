@@ -1,4 +1,5 @@
 """Generic trace drawing functionalities"""
+
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
@@ -559,9 +560,7 @@ def get_generic_traces(
         tr["showlegend"] = (
             showlegend
             if showlegend is not None
-            else tr_showleg
-            if style.legend.show
-            else False
+            else tr_showleg if style.legend.show else False
         )
     out = {"generic": path_traces_generic}
 
@@ -580,11 +579,11 @@ def get_generic_traces(
                             "opacity": style.opacity,
                             "color": style.color,
                             "legendgroup": legendgroup,
-                            "showlegend": showlegend
-                            if showlegend is not None
-                            else None
-                            if style.legend.show
-                            else False,
+                            "showlegend": (
+                                showlegend
+                                if showlegend is not None
+                                else None if style.legend.show else False
+                            ),
                             "name": legendtext if legendtext else legend_label,
                             "row": row,
                             "col": col,
