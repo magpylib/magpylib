@@ -2471,6 +2471,8 @@ def BHJM_cylinder_segment(
         BHJM[~mask_inside] *= 0
         return BHJM / MU0
 
+    BHJM *= 0
+
     # redefine input if there are some surface-points -------------------------
     pol = polarization[mask_not_on_surf]
     dim = dim[mask_not_on_surf]
@@ -2495,6 +2497,7 @@ def BHJM_cylinder_segment(
 
     if field == "B":
         BHJM[mask_inside] += polarization[mask_inside] / MU0
+        BHJM[~mask_not_on_surf] *= 0
         return BHJM * MU0
 
     raise ValueError(  # pragma: no cover

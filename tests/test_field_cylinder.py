@@ -222,50 +222,47 @@ def test_cylinder_slanovc_field2():
         polarization=(22, 33, 44), dimension=(0.5, 1, 2, 0, 90)
     )
 
-    binn = (5.52525937, 13.04561569, 40.11111556)
-    bout = (0.0177018, 0.1277188, 0.27323195)
-    nulll = (0, 0, 0)
+    r_in = (0.5, 0.6, 0.3)
+    r_out = (1, 2, 3)
+    r_corn = (1, 0, 0)
+
+    b_in = (5.52525937, 13.04561569, 40.11111556)
+    b_out = (0.0177018, 0.1277188, 0.27323195)
+    b_corn = (0, 0, 0)
 
     # only inside
-    btest = np.array([binn] * 3)
-    B = src.getB([[0.5, 0.6, 0.3]] * 3)
+    btest = np.array([b_in] * 3)
+    B = src.getB([r_in] * 3)
     assert np.allclose(B, btest)
 
-    # only surf
-    btest = np.array([nulll] * 3)
-    B = src.getB([[1, 0, 0]] * 3)
+    # only edge
+    btest = np.array([b_corn] * 3)
+    B = src.getB([r_corn] * 3)
     assert np.allclose(B, btest)
 
     # only outside
-    btest = np.array([bout] * 3)
-    B = src.getB([[1, 2, 3]] * 3)
+    btest = np.array([b_out] * 3)
+    B = src.getB([r_out] * 3)
     assert np.allclose(B, btest)
 
-    # surf + out
-    btest = np.array([nulll, nulll, bout])
-    B = src.getB([0.6, 0, 1], [1, 0, 0.5], [1, 2, 3])
+    # edge + out
+    btest = np.array([b_corn, b_corn, b_out])
+    B = src.getB([r_corn, r_corn, r_out])
     assert np.allclose(B, btest)
 
     # surf + in
-    btest = np.array([nulll, nulll, binn])
-    B = src.getB([0, 0.5, 1], [1, 0, 0.5], [0.5, 0.6, 0.3])
+    btest = np.array([b_corn, b_corn, b_in])
+    B = src.getB(r_corn, r_corn, r_in)
     assert np.allclose(B, btest)
 
     # in + out
-    btest = np.array([bout, binn])
-    B = src.getB([1, 2, 3], [0.5, 0.6, 0.3])
+    btest = np.array([b_out, b_in])
+    B = src.getB(r_out, r_in)
     assert np.allclose(B, btest)
 
     # in + out + surf
-    btest = np.array([nulll, nulll, binn, bout, nulll, nulll])
-    B = src.getB(
-        [0.5, 0.5, 1],
-        [0, 1, 0.5],
-        [0.5, 0.6, 0.3],
-        [1, 2, 3],
-        [0.5, 0.6, -1],
-        [0, 1, -0.3],
-    )
+    btest = np.array([b_corn, b_corn, b_in, b_out, b_corn, b_corn])
+    B = src.getB([r_corn, r_corn, r_in, r_out, r_corn, r_corn])
     assert np.allclose(B, btest)
 
 
