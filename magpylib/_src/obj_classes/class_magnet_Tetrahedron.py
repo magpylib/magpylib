@@ -2,7 +2,7 @@
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Tetrahedron
-from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
+from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 
@@ -97,7 +97,7 @@ class Tetrahedron(BaseMagnet):
      [ 2.90426931e-05  5.22556994e-05 -1.70596096e-06]]
     """
 
-    _field_func = staticmethod(magnet_tetrahedron_field)
+    _field_func = staticmethod(BHJM_magnet_tetrahedron)
     _field_func_kwargs_ndim = {"polarization": 1, "vertices": 3}
     get_trace = make_Tetrahedron
 

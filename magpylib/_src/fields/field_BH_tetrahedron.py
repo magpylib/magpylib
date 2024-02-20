@@ -4,6 +4,7 @@ magnetized tetrahedra. Computation details in function docstrings.
 """
 import numpy as np
 
+from magpylib import mu_0 as MU0
 from magpylib._src.fields.field_BH_triangle import triangle_field
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import convert_HBMJ
@@ -58,8 +59,7 @@ def point_inside(points: np.ndarray, vertices: np.ndarray) -> np.ndarray:
     return inside
 
 
-# CORE
-def magnet_tetrahedron_field(
+def BHJM_magnet_tetrahedron(
     *,
     field: str,
     observers: np.ndarray,
@@ -105,22 +105,6 @@ def magnet_tetrahedron_field(
     B-field or H-field: ndarray, shape (n,3)
         B- or H-field of source in Cartesian coordinates in units of T or A/m.
 
-    Examples
-    --------
-    Compute the B-field of two different tetrahedron-observer instances
-
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> B = magpy.core.magnet_tetrahedron_field(
-    ...     field='B',
-    ...     observers=np.array([(1,2,3), (2,3,4)]),
-    ...     vertices=np.array([((-1,0,0), (1,-1,0), (1,1,0), (0,0,1))]*2),
-    ...     polarization=np.array([(222,333,444), (111,112,113)]),
-    ... )
-    >>> print(B)
-    [[0.19075398 0.8240532  1.18170862]
-     [0.03125701 0.08445416 0.1178967 ]]
-
     Notes
     -----
     Advanced unit use: The input unit of magnetization and polarization
@@ -135,22 +119,20 @@ def magnet_tetrahedron_field(
 
     check_field_input(field)
 
-    n = len(observers)
+    # allocate for output
+    BHJM = polarization.astype(float)
+
+    if field == "J":
+        mask_inside = point_inside(observers, vertices)
+        BHJM[~mask_inside] *= 0
+        return BHJM
+
+    if field == "M":
+        mask_inside = point_inside(observers, vertices)
+        BHJM[~mask_inside] *= 0
+        return BHJM / MU0
 
     vertices = check_chirality(vertices)
-    mask_inside = None
-    if in_out == "auto" and field != "H":
-        mask_inside = point_inside(observers, vertices)
-    elif in_out != "auto":
-        val = in_out == "inside"
-        mask_inside = np.full(len(observers), val)
-
-    if field in "MJ":
-        return convert_HBMJ(
-            output_field_type=field,
-            polarization=polarization,
-            mask_inside=mask_inside,
-        )
 
     tri_vertices = np.concatenate(
         (
@@ -161,22 +143,45 @@ def magnet_tetrahedron_field(
         ),
         axis=0,
     )
-    tri_fields = triangle_field(
+    tri_field = triangle_field(
         field=field,
         observers=np.tile(observers, (4, 1)),
         vertices=tri_vertices,
         polarization=np.tile(polarization, (4, 1)),
     )
-    tetra_field = (  # slightly faster than reshape + sum
-        tri_fields[:n]
-        + tri_fields[n : 2 * n]
-        + tri_fields[2 * n : 3 * n]
-        + tri_fields[3 * n :]
+    n = len(observers)
+    BHJM = (  # slightly faster than reshape + sum
+        tri_field[:n]
+        + tri_field[n : 2 * n]
+        + tri_field[2 * n : 3 * n]
+        + tri_field[3 * n :]
     )
 
     if field == "H":
-        return tetra_field
+        return BHJM
 
-    # if B, and inside magnet add polarization vector
-    tetra_field[mask_inside] += polarization[mask_inside]
-    return tetra_field
+    if field == "B":
+        mask_inside = point_inside(observers, vertices)
+        BHJM[mask_inside] += polarization[mask_inside]
+        return BHJM
+
+    raise ValueError(  # pragma: no cover
+        "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"
+    )
+
+    # # if B, and inside magnet add polarization vector
+    # tetra_field[mask_inside] += polarization[mask_inside]
+
+    # # mask_inside = point_inside(observers, vertices)
+    # # if in_out == "auto" and field != "H":
+    # #     mask_inside = point_inside(observers, vertices)
+    # # elif in_out != "auto":
+    # #     val = in_out == "inside"
+    # #     mask_inside = np.full(len(observers), val)
+
+    # # if field in "MJ":
+    # #     return convert_HBMJ(
+    # #         output_field_type=field,
+    # #         polarization=polarization,
+    # #         mask_inside=mask_inside,
+    # #     )

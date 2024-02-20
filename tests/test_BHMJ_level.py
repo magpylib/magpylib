@@ -12,7 +12,7 @@ from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 from magpylib._src.fields.field_BH_polyline import BHJM_polyline
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
-from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
+from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import triangle_field
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 from magpylib._src.utility import MU0
@@ -353,7 +353,7 @@ def test_magnet_tetrahedron_field_BH():
         "polarization": pol,
         "vertices": vert,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(magnet_tetrahedron_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(BHJM_magnet_tetrahedron, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],

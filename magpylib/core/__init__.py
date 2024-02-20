@@ -6,10 +6,10 @@ __all__ = [
     "magnet_cuboid_Bfield",
     "magnet_cylinder_Bfield_axialM",
     "magnet_cylinder_Hfield_diametralM",
-    "dipole_Hfield",
-    "current_circle_Bfield",
     "magnet_cylinder_segment_Hfield",
     "magnet_sphere_Bfield",
+    "dipole_Hfield",
+    "current_circle_Bfield",
 ]
 
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_Bfield

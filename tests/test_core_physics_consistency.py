@@ -8,7 +8,7 @@ from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 from magpylib._src.fields.field_BH_polyline import BHJM_polyline
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
-from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
+from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import triangle_field
 from magpylib._src.utility import MU0
 
@@ -373,7 +373,7 @@ def test_core_physics_dipole_approximation_magnet_far_field():
     vert = np.array([[(0, 0, 0), (0, 0, 0.1), (0.1, 0, 0), (0, 0.1, 0)]] * 2)
     vol = 1 / 6 * 1e-3
     pol = mom / vol * MU0
-    Btetra = magnet_tetrahedron_field(
+    Btetra = BHJM_magnet_tetrahedron(
         field="H",
         observers=obs,
         vertices=vert,
@@ -589,13 +589,13 @@ def test_core_physics_Tetrahedron_VS_Cuboid():
         for obs in obss:
             obs6 = np.tile(obs, (6, 1))
             mag6 = np.tile(mag, (6, 1))
-            b = magnet_tetrahedron_field(
+            b = BHJM_magnet_tetrahedron(
                 field="B",
                 observers=obs6,
                 polarization=mag6,
                 vertices=ver,
             )
-            h = magnet_tetrahedron_field(
+            h = BHJM_magnet_tetrahedron(
                 field="H",
                 observers=obs6,
                 polarization=mag6,
