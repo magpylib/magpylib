@@ -13,7 +13,7 @@ from magpylib._src.fields.field_BH_polyline import BHJM_polyline
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
-from magpylib._src.fields.field_BH_triangle import triangle_field
+from magpylib._src.fields.field_BH_triangle import BHJM_triangle
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 from magpylib._src.utility import MU0
 
@@ -265,7 +265,7 @@ def test_field_cylinder_segment_BH():
     np.testing.assert_allclose(J, Jtest)
 
 
-def test_triangle_field_BH():
+def test_BHJM_triangle_BH():
     """Test of triangle field core function"""
     pol = np.array(
         [
@@ -297,7 +297,7 @@ def test_triangle_field_BH():
         "polarization": pol,
         "vertices": vert,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(triangle_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(BHJM_triangle, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -854,7 +854,7 @@ def test_triangle5():
     ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]] * n)
 
     b1 = (
-        triangle_field(
+        BHJM_triangle(
             field="H",
             observers=obs1,
             polarization=mag,
@@ -864,7 +864,7 @@ def test_triangle5():
     )
     np.testing.assert_allclose(btest1, b1)
     b2 = (
-        triangle_field(
+        BHJM_triangle(
             field="H",
             observers=obs2,
             polarization=mag,
@@ -882,19 +882,19 @@ def test_triangle6():
     obs3 = np.array([(5, 0, 0)])
     mag = np.array([(1, 2, 3)])
     ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]])
-    b1 = triangle_field(
+    b1 = BHJM_triangle(
         field="B",
         observers=obs1,
         polarization=mag,
         vertices=ver,
     )
-    b2 = triangle_field(
+    b2 = BHJM_triangle(
         field="B",
         observers=obs2,
         polarization=mag,
         vertices=ver,
     )
-    b3 = triangle_field(
+    b3 = BHJM_triangle(
         field="B",
         observers=obs3,
         polarization=mag,

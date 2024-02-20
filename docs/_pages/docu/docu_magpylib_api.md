@@ -747,7 +747,7 @@ At the heart of Magpylib lies a set of core functions that are our implementatio
 <span style="color: orange">**BHJM_dipole(**</span> `field`, `observers`, `moment`<span style="color: orange">**)**</span>
 :::
 :::{grid-item}
-<span style="color: orange">**triangle_field(**</span> `field`, `observers`, `polarization`, `vertices`<span style="color: orange">**)**</span>
+<span style="color: orange">**BHJM_triangle(**</span> `field`, `observers`, `polarization`, `vertices`<span style="color: orange">**)**</span>
 :::
 ::::
 

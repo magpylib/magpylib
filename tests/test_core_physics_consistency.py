@@ -9,7 +9,7 @@ from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 from magpylib._src.fields.field_BH_polyline import BHJM_polyline
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
-from magpylib._src.fields.field_BH_triangle import triangle_field
+from magpylib._src.fields.field_BH_triangle import BHJM_triangle
 from magpylib._src.utility import MU0
 
 
@@ -487,7 +487,7 @@ def test_core_physics_triangle_cube_geometry():
             [(1, 1, -1), (1, -1, -1), (-1, 1, -1)],  # bott2
         ]
     )
-    b = triangle_field(
+    b = BHJM_triangle(
         field="B",
         observers=obs,
         vertices=fac,
@@ -517,7 +517,7 @@ def test_core_physics_triangle_VS_itself():
             [(0, 0, 0), (10, 0, 0), (0, 10, 0)],
         ]
     )
-    b = triangle_field(
+    b = BHJM_triangle(
         field="B",
         observers=obs,
         polarization=mag,
@@ -535,7 +535,7 @@ def test_core_physics_triangle_VS_itself():
             [(6, 0, 0), (10, 0, 0), (0, 10, 0)],
         ]
     )
-    bb = triangle_field(
+    bb = BHJM_triangle(
         field="B",
         observers=obs,
         polarization=mag,

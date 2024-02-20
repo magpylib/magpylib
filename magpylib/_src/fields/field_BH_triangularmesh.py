@@ -7,7 +7,7 @@ Computation details in function docstrings.
 import numpy as np
 import scipy.spatial
 
-from magpylib._src.fields.field_BH_triangle import triangle_field
+from magpylib._src.fields.field_BH_triangle import BHJM_triangle
 from magpylib._src.utility import MU0
 
 
@@ -504,7 +504,7 @@ def magnet_trimesh_field(
     in_out="auto",
 ) -> np.ndarray:
     """
-    Core-like function that computes the field of triangular meshes using the triangle_field
+    Core-like function that computes the field of triangular meshes using the BHJM_triangle
 
     !!!Closed meshes are assumed (input comes only from TriangularMesh class)!!!
     This is the reasons that this is not a core function
@@ -560,7 +560,7 @@ def magnet_trimesh_field(
             vertices_tiled = mesh.reshape(-1, 3, 3)
             observers_tiled = np.repeat(observers, n1, axis=0)
             polarization_tiled = np.repeat(polarization, n1, axis=0)
-            B = triangle_field(
+            B = BHJM_triangle(
                 field="B",
                 observers=observers_tiled,
                 vertices=vertices_tiled,
@@ -574,7 +574,7 @@ def magnet_trimesh_field(
             vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in mesh])
             observers_tiled = np.repeat(observers, nvs, axis=0)
             polarization_tiled = np.repeat(polarization, nvs, axis=0)
-            B = triangle_field(
+            B = BHJM_triangle(
                 field="B",
                 observers=observers_tiled,
                 vertices=vertices_tiled,

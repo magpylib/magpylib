@@ -5,7 +5,7 @@ magnetized tetrahedra. Computation details in function docstrings.
 import numpy as np
 
 from magpylib import mu_0 as MU0
-from magpylib._src.fields.field_BH_triangle import triangle_field
+from magpylib._src.fields.field_BH_triangle import BHJM_triangle
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import convert_HBMJ
 
@@ -143,7 +143,7 @@ def BHJM_magnet_tetrahedron(
         ),
         axis=0,
     )
-    tri_field = triangle_field(
+    tri_field = BHJM_triangle(
         field=field,
         observers=np.tile(observers, (4, 1)),
         vertices=tri_vertices,

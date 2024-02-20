@@ -10,6 +10,7 @@ __all__ = [
     "magnet_sphere_Bfield",
     "dipole_Hfield",
     "current_circle_Bfield",
+    "triangle_Bfield",
 ]
 
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_Bfield
@@ -21,3 +22,4 @@ from magpylib._src.fields.field_BH_cylinder_segment import (
     magnet_cylinder_segment_Hfield,
 )
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_Bfield
+from magpylib._src.fields.field_BH_triangle import triangle_Bfield
