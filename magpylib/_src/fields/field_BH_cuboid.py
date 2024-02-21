@@ -189,9 +189,9 @@ def magnet_cuboid_Bfield(
 def BHJM_magnet_cuboid(
     *,
     field: str,
-    observers: np.ndarray[np.float64],
-    dimension: np.ndarray[np.float64],
-    polarization: np.ndarray[np.float64],
+    observers: np.ndarray,
+    dimension: np.ndarray,
+    polarization: np.ndarray,
     in_out="auto",
 ) -> np.ndarray:
     """
