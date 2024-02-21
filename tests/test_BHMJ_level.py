@@ -14,7 +14,7 @@ from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import BHJM_triangle
-from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
+from magpylib._src.fields.field_BH_triangularmesh import BHJM_magnet_trimesh
 from magpylib._src.utility import MU0
 
 
@@ -377,8 +377,8 @@ def test_magnet_tetrahedron_field_BH():
     np.testing.assert_allclose(J, Jtest, rtol=1e-06)
 
 
-def test_magnet_trimesh_field_BH():
-    """Test of magnet_trimesh_field core-like function"""
+def test_BHJM_magnet_trimesh_BH():
+    """Test of BHJM_magnet_trimesh core-like function"""
 
     mesh1 = [
         [
@@ -432,7 +432,7 @@ def test_magnet_trimesh_field_BH():
         "polarization": pol,
         "mesh": mesh,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(magnet_trimesh_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(BHJM_magnet_trimesh, **kw)
 
     Btest = [
         [1.54452002e-03, 3.11861149e-03, 4.68477835e-03],
