@@ -58,7 +58,7 @@ class Circle(BaseCurrent):
     >>> src = magpy.current.Circle(current=100, diameter=2)
     >>> H = src.getH((.01,.01,.01))
     >>> print(H)
-    [7.50093701e-03 7.50093701e-03 4.99999967e+01]
+    [7.50093700e-03 7.50093700e-03 4.99999967e+01]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 

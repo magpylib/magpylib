@@ -75,7 +75,7 @@ class CylinderSegment(BaseMagnet):
     >>> src = magpy.magnet.CylinderSegment(polarization=(.1,.2,.3), dimension=(.01,.02,.01,0,45))
     >>> H = src.getH((.02,.02,.02))
     >>> print(H)
-    [ 807.84692335 1934.22812967 2741.16804712]
+    [ 807.84692291 1934.22812862 2741.16804563]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 

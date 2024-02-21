@@ -200,9 +200,9 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
         >>> src = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
         >>> H = src.getH(((0,0,0), (1,0,0), (2,0,0)))
         >>> print(H)
-        [[      0.               0.         -265258.23848649]
-         [      0.               0.          -33157.27981081]
-         [      0.               0.           -4144.65997635]]
+        [[      0.               0.         -265258.23834209]
+         [      0.               0.          -33157.27979276]
+         [      0.               0.           -4144.6599741 ]]
 
         Compute the H-field at two sensors, each one with two pixels
 
@@ -210,11 +210,11 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
         >>> sens2 = sens1.copy(position=(2,0,0))
         >>> H = src.getH(sens1, sens2)
         >>> print(H)
-        [[[  9702.7918453       0.         -31695.78669464]
-          [ -9702.7918453       0.         -31695.78669464]]
+        [[[  9702.79184001      0.         -31695.78667738]
+          [ -9702.79184001      0.         -31695.78667738]]
         <BLANKLINE>
-         [[   617.83031378      0.          -4098.27441472]
-          [  -617.83031378      0.          -4098.27441472]]]
+         [[   617.83031344      0.          -4098.27441249]
+          [  -617.83031344      0.          -4098.27441249]]]
 
         """
         observers = format_star_input(observers)

@@ -2357,12 +2357,8 @@ def BHJM_cylinder_segment(
     polarization: np.ndarray,
     in_out="auto",
 ) -> np.ndarray:
-    """Magnetic field of homogeneously magnetized cylinder segments.
-
-    The cylinder axis coincides with the z-axis of the global coordinate
-    system. The geometric center of the cylinder lies in the origin.
-
-    SI units are used for all inputs and outputs.
+    """
+    translate cylinder segment field to BHJM
 
     Parameters
     ----------
@@ -2397,22 +2393,6 @@ def BHJM_cylinder_segment(
     -------
     B-field or H-field: ndarray, shape (n,3)
         B- or H-field of source in Cartesian coordinates in units of T or A/m.
-
-    Examples
-    --------
-    Compute the field of two different cylinder segment magnets at position (1,1,1).
-
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> B = magpy.core.BHJM_cylinder_segment(
-    ...     field='B',
-    ...     observers=np.array([(1,1,1), (1,1,1)]),
-    ...     dimension=np.array([(0,1,2,-90,90), (1,2,4,35,125)]),
-    ...     polarization=np.array([(0,0,1), (.5,.5,0)]),
-    ... )
-    >>> print(B)
-    [[ 0.07046526  0.08373724 -0.0198113 ]
-     [ 0.29846023  0.20757316  0.00349617]]
 
     Notes
     -----
@@ -2491,6 +2471,8 @@ def BHJM_cylinder_segment(
         BHJM[~mask_inside] *= 0
         return BHJM / MU0
 
+    BHJM *= 0
+
     # redefine input if there are some surface-points -------------------------
     pol = polarization[mask_not_on_surf]
     dim = dim[mask_not_on_surf]
@@ -2515,6 +2497,7 @@ def BHJM_cylinder_segment(
 
     if field == "B":
         BHJM[mask_inside] += polarization[mask_inside] / MU0
+        BHJM[~mask_not_on_surf] *= 0
         return BHJM * MU0
 
     raise ValueError(  # pragma: no cover

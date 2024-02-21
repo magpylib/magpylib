@@ -9,13 +9,12 @@ from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
-from magpylib._src.fields.field_BH_polyline import current_line_field
-from magpylib._src.fields.field_BH_polyline import current_polyline_field
+from magpylib._src.fields.field_BH_polyline import BHJM_current_polyline
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
-from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
-from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
-from magpylib._src.fields.field_BH_triangle import triangle_field
-from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
+from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
+from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
+from magpylib._src.fields.field_BH_triangle import BHJM_triangle
+from magpylib._src.fields.field_BH_triangularmesh import BHJM_magnet_trimesh
 from magpylib._src.utility import MU0
 
 
@@ -165,8 +164,8 @@ def test_BHJM_magnet_cylinder():
     # np.testing.assert_allclose(H_inout, Htest_inout, rtol=1e-5)
 
 
-def test_magnet_sphere_field_BH():
-    """test magnet_sphere_field"""
+def test_BHJM_magnet_sphere():
+    """test BHJM_magnet_sphere"""
     pol = np.array(
         [
             (0, 0, 0),
@@ -190,7 +189,7 @@ def test_magnet_sphere_field_BH():
         "polarization": pol,
         "diameter": dia,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(magnet_sphere_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(BHJM_magnet_sphere, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -266,7 +265,7 @@ def test_field_cylinder_segment_BH():
     np.testing.assert_allclose(J, Jtest)
 
 
-def test_triangle_field_BH():
+def test_BHJM_triangle_BH():
     """Test of triangle field core function"""
     pol = np.array(
         [
@@ -298,7 +297,7 @@ def test_triangle_field_BH():
         "polarization": pol,
         "vertices": vert,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(triangle_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(BHJM_triangle, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -354,7 +353,7 @@ def test_magnet_tetrahedron_field_BH():
         "polarization": pol,
         "vertices": vert,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(magnet_tetrahedron_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(BHJM_magnet_tetrahedron, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -378,8 +377,8 @@ def test_magnet_tetrahedron_field_BH():
     np.testing.assert_allclose(J, Jtest, rtol=1e-06)
 
 
-def test_magnet_trimesh_field_BH():
-    """Test of magnet_trimesh_field core-like function"""
+def test_BHJM_magnet_trimesh_BH():
+    """Test of BHJM_magnet_trimesh core-like function"""
 
     mesh1 = [
         [
@@ -433,7 +432,7 @@ def test_magnet_trimesh_field_BH():
         "polarization": pol,
         "mesh": mesh,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(magnet_trimesh_field, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(BHJM_magnet_trimesh, **kw)
 
     Btest = [
         [1.54452002e-03, 3.11861149e-03, 4.68477835e-03],
@@ -488,7 +487,7 @@ def test_BHJM_circle():
     np.testing.assert_allclose(M, Mtest, rtol=1e-06)
 
 
-def test_current_polyline_field_BH():
+def test_BHJM_current_polyline():
     """Test of current polyline field core function"""
     vert = np.array([(-1.5, 0, 0), (-0.5, 0, 0), (0.5, 0, 0), (1.5, 0, 0)])
 
@@ -498,7 +497,7 @@ def test_current_polyline_field_BH():
         "segment_start": vert[:-1],
         "segment_end": vert[1:],
     }
-    H, B, M, _ = helper_check_HBMJ_consistency(current_polyline_field, **kw)
+    H, B, M, _ = helper_check_HBMJ_consistency(BHJM_current_polyline, **kw)
 
     Btest = (
         np.array(
@@ -563,22 +562,6 @@ def test_BHJM_dipole():
 # OTHER TESTS AND V4 TESTS
 
 
-def test_line_deprecation():
-    """test line deprecation"""
-    kw = {
-        "field": "B",
-        "observers": np.array([(0, 0, 1)]),
-        "segment_start": np.array([(0, 0, 1)]),
-        "segment_end": np.array([(0, 0, 1)]),
-        "current": np.array([1]),
-    }
-    B1 = current_polyline_field(**kw)
-    with pytest.warns(MagpylibDeprecationWarning):
-        B2 = current_line_field(**kw)
-
-    np.testing.assert_allclose(B1, B2)
-
-
 def test_field_loop_specials():
     """test loop special cases"""
     cur = np.array([1, 1, 1, 1, 0, 2])
@@ -615,7 +598,7 @@ def test_field_line_special_cases():
 
     # only normal
     B1 = (
-        current_polyline_field(
+        BHJM_current_polyline(
             field="B",
             observers=po1,
             current=c1,
@@ -630,7 +613,7 @@ def test_field_line_special_cases():
     # only on_line
     po1b = np.array([(1, 1, 1)])
     B2 = (
-        current_polyline_field(
+        BHJM_current_polyline(
             field="B",
             observers=po1b,
             current=c1,
@@ -644,7 +627,7 @@ def test_field_line_special_cases():
 
     # only zero-segment
     B3 = (
-        current_polyline_field(
+        BHJM_current_polyline(
             field="B",
             observers=po1,
             current=c1,
@@ -662,7 +645,7 @@ def test_field_line_special_cases():
     pe2 = np.array([(0, 0, 0), (2, 2, 2)])
     po2 = np.array([(1, 2, 3), (1, 1, 1)])
     B4 = (
-        current_polyline_field(
+        BHJM_current_polyline(
             field="B",
             observers=po2,
             current=c2,
@@ -677,7 +660,7 @@ def test_field_line_special_cases():
     # normal + zero_segment
     po2b = np.array([(1, 2, 3), (1, 2, 3)])
     B5 = (
-        current_polyline_field(
+        BHJM_current_polyline(
             field="B",
             observers=po2b,
             current=c2,
@@ -692,7 +675,7 @@ def test_field_line_special_cases():
     # normal + on_line
     pe2b = np.array([(2, 2, 2)] * 2)
     B6 = (
-        current_polyline_field(
+        BHJM_current_polyline(
             field="B",
             observers=po2,
             current=c2,
@@ -710,7 +693,7 @@ def test_field_line_special_cases():
     pe4 = np.array([(0, 0, 0), (2, 2, 2), (2, 2, 2)])
     po4 = np.array([(1, 2, 3), (1, 2, 3), (1, 1, 1)])
     B7 = (
-        current_polyline_field(
+        BHJM_current_polyline(
             field="B",
             observers=po4,
             current=c4,
@@ -780,7 +763,7 @@ def test_field_line_from_vert():
         cu = np.array([curr] * (len(vert) - 1))
         B += [
             np.sum(
-                current_polyline_field(
+                BHJM_current_polyline(
                     field="B",
                     observers=po,
                     current=cu,
@@ -812,7 +795,7 @@ def test_field_line_v4():
         ]
     )
     B = (
-        current_polyline_field(
+        BHJM_current_polyline(
             field="B",
             observers=obs,
             current=cur,
@@ -871,7 +854,7 @@ def test_triangle5():
     ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]] * n)
 
     b1 = (
-        triangle_field(
+        BHJM_triangle(
             field="H",
             observers=obs1,
             polarization=mag,
@@ -881,7 +864,7 @@ def test_triangle5():
     )
     np.testing.assert_allclose(btest1, b1)
     b2 = (
-        triangle_field(
+        BHJM_triangle(
             field="H",
             observers=obs2,
             polarization=mag,
@@ -899,19 +882,19 @@ def test_triangle6():
     obs3 = np.array([(5, 0, 0)])
     mag = np.array([(1, 2, 3)])
     ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]])
-    b1 = triangle_field(
+    b1 = BHJM_triangle(
         field="B",
         observers=obs1,
         polarization=mag,
         vertices=ver,
     )
-    b2 = triangle_field(
+    b2 = BHJM_triangle(
         field="B",
         observers=obs2,
         polarization=mag,
         vertices=ver,
     )
-    b3 = triangle_field(
+    b3 = BHJM_triangle(
         field="B",
         observers=obs3,
         polarization=mag,

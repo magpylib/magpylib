@@ -7,7 +7,7 @@ Computation details in function docstrings.
 import numpy as np
 import scipy.spatial
 
-from magpylib._src.fields.field_BH_triangle import triangle_field
+from magpylib._src.fields.field_BH_triangle import BHJM_triangle
 from magpylib._src.utility import MU0
 
 
@@ -495,7 +495,7 @@ def mask_inside_trimesh(points: np.ndarray, faces: np.ndarray) -> np.ndarray:
 
 
 # CORE LIKE - but is not a core function!
-def magnet_trimesh_field(
+def BHJM_magnet_trimesh(
     *,
     field: str,
     observers: np.ndarray,
@@ -504,7 +504,7 @@ def magnet_trimesh_field(
     in_out="auto",
 ) -> np.ndarray:
     """
-    Core-like function that computes the field of triangular meshes using the triangle_field
+    Core-like function that computes the field of triangular meshes using the BHJM_triangle
 
     !!!Closed meshes are assumed (input comes only from TriangularMesh class)!!!
     This is the reasons that this is not a core function
@@ -560,55 +560,65 @@ def magnet_trimesh_field(
             vertices_tiled = mesh.reshape(-1, 3, 3)
             observers_tiled = np.repeat(observers, n1, axis=0)
             polarization_tiled = np.repeat(polarization, n1, axis=0)
-            B = triangle_field(
+            BHJM = BHJM_triangle(
                 field="B",
                 observers=observers_tiled,
                 vertices=vertices_tiled,
                 polarization=polarization_tiled,
             )
-            B = B.reshape((n0, n1, 3))
-            B = np.sum(B, axis=1)
+            BHJM = BHJM.reshape((n0, n1, 3))
+            BHJM = np.sum(BHJM, axis=1)
         else:
             nvs = [f.shape[0] for f in mesh]  # length of vertex set
             split_indices = np.cumsum(nvs)[:-1]  # remove last to avoid empty split
             vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in mesh])
             observers_tiled = np.repeat(observers, nvs, axis=0)
             polarization_tiled = np.repeat(polarization, nvs, axis=0)
-            B = triangle_field(
+            BHJM = BHJM_triangle(
                 field="B",
                 observers=observers_tiled,
                 vertices=vertices_tiled,
                 polarization=polarization_tiled,
             )
-            b_split = np.split(B, split_indices)
-            B = np.array([np.sum(bh, axis=0) for bh in b_split])
+            b_split = np.split(BHJM, split_indices)
+            BHJM = np.array([np.sum(bh, axis=0) for bh in b_split])
     else:
-        B = np.zeros_like(observers, dtype=float)
+        BHJM = np.zeros_like(observers, dtype=float)
 
     if field == "H":
-        return B / MU0
+        return BHJM / MU0
 
     if in_out == "auto":
         prev_ind = 0
         # group similar meshes for inside-outside evaluation and adding B
-        for new_ind, _ in enumerate(B):
+        for new_ind, _ in enumerate(BHJM):
             if (
-                new_ind == len(B) - 1
+                new_ind == len(BHJM) - 1
                 or mesh[new_ind].shape != mesh[prev_ind].shape
                 or not np.all(mesh[new_ind] == mesh[prev_ind])
             ):
-                if new_ind == len(B) - 1:
-                    new_ind = len(B)
+                if new_ind == len(BHJM) - 1:
+                    new_ind = len(BHJM)
                 mask_inside = mask_inside_trimesh(
                     observers[prev_ind:new_ind], mesh[prev_ind]
                 )
                 # if inside magnet add polarization vector
-                B[prev_ind:new_ind][mask_inside] += polarization[prev_ind:new_ind][
+                BHJM[prev_ind:new_ind][mask_inside] += polarization[prev_ind:new_ind][
                     mask_inside
                 ]
                 prev_ind = new_ind
     elif in_out == "inside":
-        B += polarization
+        BHJM += polarization
+
+    if field == "B":
+        return BHJM
+
+    if field == "J":
+        return BHJM
+
     if field == "M":
-        B /= MU0
-    return B
+        return BHJM / MU0
+
+    raise ValueError(  # pragma: no cover
+        "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"
+    )

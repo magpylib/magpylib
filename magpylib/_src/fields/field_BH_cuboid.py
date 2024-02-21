@@ -189,13 +189,13 @@ def magnet_cuboid_Bfield(
 def BHJM_magnet_cuboid(
     *,
     field: str,
-    observers: np.ndarray[np.float64],
-    dimension: np.ndarray[np.float64],
-    polarization: np.ndarray[np.float64],
+    observers: np.ndarray,
+    dimension: np.ndarray,
+    polarization: np.ndarray,
     in_out="auto",
 ) -> np.ndarray:
     """
-    Return BHMJ fields
+    translate cuboid field to BHJM
     - treat special cases
     - inside-outside checks
     """
@@ -253,6 +253,8 @@ def BHJM_magnet_cuboid(
     #    is happening from a physics point of view. The argument change once for all does
     #    not hold here - its many individual cases.
     # 4. This new layer is now called BHJM_whatever_whatever
+    # 5. Ich glaub in-out muss erstmals klar definiert werden in/surf/edge/corner/out
+    #    dazu gibt es einen issue
 
     if field == "J":
         BHJM[~mask_inside] *= 0
@@ -262,7 +264,7 @@ def BHJM_magnet_cuboid(
         BHJM[~mask_inside] *= 0
         return BHJM / MU0
 
-    BHJM *= 0.0  # return (0,0,0) for all special cases
+    BHJM *= 0  # return (0,0,0) for all special cases
     BHJM[mask_gen] = magnet_cuboid_Bfield(
         observers=observers[mask_gen],
         dimensions=dimension[mask_gen],

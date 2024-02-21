@@ -2,10 +2,15 @@
 # pylint: disable=too-many-lines
 """Field computation structure:
 
-level0:(field_BH_XXX.py files)
+level_core:(field_BH_XXX.py files)
     - pure vectorized field computations from literature
     - all computations in source CS
-    - distinguish B/H
+
+level0a:(BHJM_XX)
+    - distinguish between B, H, J and M
+
+level0b:(BHJM_internal_XX)
+    - connect BHJM-level to level1
 
 level1(getBH_level1):
     - apply transformation to global CS
@@ -692,8 +697,8 @@ def getB(
     >>> src2 = magpy.magnet.Sphere(polarization=(0,0,.1), diameter=.001)
     >>> B = magpy.getB([src1, src2], (.01,.01,.01))
     >>> print(B)
-    [[6.05434592e-06 6.05434592e-06 2.35680448e-08]
-     [8.01875374e-07 8.01875374e-07 1.51582450e-22]]
+    [[ 6.05434592e-06  6.05434592e-06  2.35680448e-08]
+     [ 8.01875374e-07  8.01875374e-07 -9.05619815e-23]]
 
     We can also use sensor objects as observers input:
 
@@ -704,8 +709,8 @@ def getB(
     [[[ 6.05434592e-06  6.05434592e-06  2.35680448e-08]
       [-6.05434592e-06 -6.05434592e-06  2.35680448e-08]]
     <BLANKLINE>
-     [[ 8.01875374e-07  8.01875374e-07  1.51582450e-22]
-      [-8.01875374e-07 -8.01875374e-07  1.51582450e-22]]]
+     [[ 8.01875374e-07  8.01875374e-07 -9.05619815e-23]
+      [-8.01875374e-07 -8.01875374e-07 -9.05619815e-23]]]
 
     Through the functional interface we can compute the same fields for the loop as:
 
@@ -878,8 +883,8 @@ def getH(
     >>> src2 = magpy.magnet.Sphere(polarization=(0,0,.1), diameter=.001)
     >>> H = magpy.getH([src1, src2], (.01,.01,.01))
     >>> print(H)
-    [[4.81789540e+00 4.81789540e+00 1.87548541e-02]
-     [6.38112147e-01 6.38112147e-01 1.20625481e-16]]
+    [[ 4.81789540e+00  4.81789540e+00  1.87548541e-02]
+     [ 6.38112147e-01  6.38112147e-01 -7.20669350e-17]]
 
     We can also use sensor objects as observers input:
 
@@ -890,8 +895,8 @@ def getH(
     [[[ 4.81789540e+00  4.81789540e+00  1.87548541e-02]
       [-4.81789540e+00 -4.81789540e+00  1.87548541e-02]]
     <BLANKLINE>
-     [[ 6.38112147e-01  6.38112147e-01  1.20625481e-16]
-      [-6.38112147e-01 -6.38112147e-01  1.20625481e-16]]]
+     [[ 6.38112147e-01  6.38112147e-01 -7.20669350e-17]
+      [-6.38112147e-01 -6.38112147e-01 -7.20669350e-17]]]
 
     Through the functional interface we can compute the same fields for the loop as:
 
@@ -912,9 +917,9 @@ def getH(
     ... )
     >>> print(H)
     [[ 1.32355310e-01  1.32355310e-01  1.28710691e-04]
-     [-3.73577711e-01 -3.73577711e-01  3.74563848e-01]
-     [ 6.34227026e-01  1.26845405e+00 -6.29663481e-01]
-     [-1.09315042e+00 -1.09315042e+00 -1.08666449e+00]]
+     [-3.73577711e-01 -3.73577711e-01  3.74563847e-01]
+     [ 6.34227025e-01  1.26845405e+00 -6.29663480e-01]
+     [-1.09315042e+00 -1.09315042e+00 -1.08666448e+00]]
     """
     return getBH_level2(
         sources,

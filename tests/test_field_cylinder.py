@@ -7,14 +7,15 @@ import pytest
 import magpylib as magpy
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
-
-# from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_core
+from magpylib._src.fields.field_BH_cylinder_segment import (
+    magnet_cylinder_segment_Hfield,
+)
 
 # pylint: disable="pointless-string-statement"
 # creating test data
 """ import os
 import numpy as np
-from magpylib._src.fields.field_BH_cylinder_tile import magnet_cylinder_segment_core
+from magpylib._src.fields.field_BH_cylinder_tile import magnet_cylinder_segment_Hfield
 
 N = 1111
 null = np.zeros(N)
@@ -40,7 +41,7 @@ phi1 = phi
 r = null
 obs_pos = np.array([r, phi, z]).T
 dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-H1 = magnet_cylinder_segment_core(mag=MAG, dim=dim, obs_pos=obs_pos)
+H1 = magnet_cylinder_segment_Hfield(mag=MAG, dim=dim, obs_pos=obs_pos)
 DATA["cases [112, 212, 132, 232]"] = {
     "inputs": {"mag": MAG, "dim": dim, "obs_pos": obs_pos},
     "H_expected": H1,
@@ -54,7 +55,7 @@ phi1 = phi + np.pi
 r = null
 obs_pos = np.array([r, phi, z]).T
 dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-H1 = magnet_cylinder_segment_core(mag=MAG, dim=dim, obs_pos=obs_pos)
+H1 = magnet_cylinder_segment_Hfield(mag=MAG, dim=dim, obs_pos=obs_pos)
 DATA["cases [122, 222, 132, 232]"] = {
     "inputs": {"mag": MAG, "dim": dim, "obs_pos": obs_pos},
     "H_expected": H1,
@@ -68,7 +69,7 @@ phi1 = phi
 r1 = null
 obs_pos = np.array([r, phi, z]).T
 dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-H1 = magnet_cylinder_segment_core(mag=MAG, dim=dim, obs_pos=obs_pos)
+H1 = magnet_cylinder_segment_Hfield(mag=MAG, dim=dim, obs_pos=obs_pos)
 DATA["cases [113, 213, 133, 233, 115, 215, 135, 235]"] = {
     "inputs": {"mag": MAG, "dim": dim, "obs_pos": obs_pos},
     "H_expected": H1,
@@ -83,7 +84,7 @@ phi1 = phi + np.pi
 r1 = null
 obs_pos = np.array([r, phi, z]).T
 dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-H1 = magnet_cylinder_segment_core(mag=MAG, dim=dim, obs_pos=obs_pos)
+H1 = magnet_cylinder_segment_Hfield(mag=MAG, dim=dim, obs_pos=obs_pos)
 DATA["cases [123, 223, 133, 233, 125, 225, 135, 235]"] = {
     "inputs": {"mag": MAG, "dim": dim, "obs_pos": obs_pos},
     "H_expected": H1,
@@ -97,7 +98,7 @@ phi1 = phi + np.pi
 r = r2
 obs_pos = np.array([r, phi, z]).T
 dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-H1 = magnet_cylinder_segment_core(mag=MAG, dim=dim, obs_pos=obs_pos)
+H1 = magnet_cylinder_segment_Hfield(mag=MAG, dim=dim, obs_pos=obs_pos)
 DATA["cases [125, 225, 135, 235, 124, 224, 134, 234]"] = {
     "inputs": {"mag": MAG, "dim": dim, "obs_pos": obs_pos},
     "H_expected": H1,
@@ -112,7 +113,7 @@ r = null
 r1 = null
 obs_pos = np.array([r, phi, z]).T
 dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-H1 = magnet_cylinder_segment_core(mag=MAG, dim=dim, obs_pos=obs_pos)
+H1 = magnet_cylinder_segment_Hfield(mag=MAG, dim=dim, obs_pos=obs_pos)
 DATA["cases [211, 221, 212, 222]"] = {
     "inputs": {"mag": MAG, "dim": dim, "obs_pos": obs_pos},
     "H_expected": H1,
@@ -126,7 +127,7 @@ phi2 = phi + np.pi
 r = r1
 obs_pos = np.array([r, phi, z]).T
 dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-H1 = magnet_cylinder_segment_core(mag=MAG, dim=dim, obs_pos=obs_pos)
+H1 = magnet_cylinder_segment_Hfield(mag=MAG, dim=dim, obs_pos=obs_pos)
 DATA["cases [214, 224, 215, 225]"] = {
     "inputs": {"mag": MAG, "dim": dim, "obs_pos": obs_pos},
     "H_expected": H1,
@@ -142,7 +143,7 @@ r = null
 r1 = null
 obs_pos = np.array([r, phi, z]).T
 dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-H1 = magnet_cylinder_segment_core(mag=MAG, dim=dim, obs_pos=obs_pos)
+H1 = magnet_cylinder_segment_Hfield(mag=MAG, dim=dim, obs_pos=obs_pos)
 DATA["cases [111, 211, 121, 221, 112, 212, 122, 222]"] = {
     "inputs": {"mag": MAG, "dim": dim, "obs_pos": obs_pos},
     "H_expected": H1,
@@ -157,7 +158,7 @@ r = null
 r1 = null
 obs_pos = np.array([r, phi, z]).T
 dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-H1 = magnet_cylinder_segment_core(mag=MAG, dim=dim, obs_pos=obs_pos)
+H1 = magnet_cylinder_segment_Hfield(mag=MAG, dim=dim, obs_pos=obs_pos)
 DATA["cases [111, 211, 131, 231, 112, 212, 132, 232]"] = {
     "inputs": {"mag": MAG, "dim": dim, "obs_pos": obs_pos},
     "H_expected": H1,
@@ -171,7 +172,7 @@ phi1 = phi
 r = r2
 obs_pos = np.array([r, phi, z]).T
 dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-H1 = magnet_cylinder_segment_core(mag=MAG, dim=dim, obs_pos=obs_pos)
+H1 = magnet_cylinder_segment_Hfield(mag=MAG, dim=dim, obs_pos=obs_pos)
 DATA["cases [115, 215, 135, 235, 114, 214, 134, 234]"] = {
     "inputs": {"mag": MAG, "dim": dim, "obs_pos": obs_pos},
     "H_expected": H1,
@@ -193,7 +194,7 @@ DATA = np.load("tests/testdata/testdata_cy_cases.npy", allow_pickle=True).item()
 )
 def test_cylinder_tile_slanovc(inputs, H_expected):
     "testing precomputed cylinder test cases"
-    H = magnet_cylinder_segment_core(**inputs)
+    H = magnet_cylinder_segment_Hfield(**inputs)
     assert np.allclose(np.nan_to_num(H), np.nan_to_num(H_expected))
 
 
@@ -221,50 +222,47 @@ def test_cylinder_slanovc_field2():
         polarization=(22, 33, 44), dimension=(0.5, 1, 2, 0, 90)
     )
 
-    binn = (5.52525937, 13.04561569, 40.11111556)
-    bout = (0.0177018, 0.1277188, 0.27323195)
-    nulll = (0, 0, 0)
+    r_in = (0.5, 0.6, 0.3)
+    r_out = (1, 2, 3)
+    r_corn = (1, 0, 0)
+
+    b_in = (5.52525937, 13.04561569, 40.11111556)
+    b_out = (0.0177018, 0.1277188, 0.27323195)
+    b_corn = (0, 0, 0)
 
     # only inside
-    btest = np.array([binn] * 3)
-    B = src.getB([[0.5, 0.6, 0.3]] * 3)
+    btest = np.array([b_in] * 3)
+    B = src.getB([r_in] * 3)
     assert np.allclose(B, btest)
 
-    # only surf
-    btest = np.array([nulll] * 3)
-    B = src.getB([[1, 0, 0]] * 3)
+    # only edge
+    btest = np.array([b_corn] * 3)
+    B = src.getB([r_corn] * 3)
     assert np.allclose(B, btest)
 
     # only outside
-    btest = np.array([bout] * 3)
-    B = src.getB([[1, 2, 3]] * 3)
+    btest = np.array([b_out] * 3)
+    B = src.getB([r_out] * 3)
     assert np.allclose(B, btest)
 
-    # surf + out
-    btest = np.array([nulll, nulll, bout])
-    B = src.getB([0.6, 0, 1], [1, 0, 0.5], [1, 2, 3])
+    # edge + out
+    btest = np.array([b_corn, b_corn, b_out])
+    B = src.getB([r_corn, r_corn, r_out])
     assert np.allclose(B, btest)
 
     # surf + in
-    btest = np.array([nulll, nulll, binn])
-    B = src.getB([0, 0.5, 1], [1, 0, 0.5], [0.5, 0.6, 0.3])
+    btest = np.array([b_corn, b_corn, b_in])
+    B = src.getB(r_corn, r_corn, r_in)
     assert np.allclose(B, btest)
 
     # in + out
-    btest = np.array([bout, binn])
-    B = src.getB([1, 2, 3], [0.5, 0.6, 0.3])
+    btest = np.array([b_out, b_in])
+    B = src.getB(r_out, r_in)
     assert np.allclose(B, btest)
 
     # in + out + surf
-    btest = np.array([nulll, nulll, binn, bout, nulll, nulll])
-    B = src.getB(
-        [0.5, 0.5, 1],
-        [0, 1, 0.5],
-        [0.5, 0.6, 0.3],
-        [1, 2, 3],
-        [0.5, 0.6, -1],
-        [0, 1, -0.3],
-    )
+    btest = np.array([b_corn, b_corn, b_in, b_out, b_corn, b_corn])
+    B = src.getB([r_corn, r_corn, r_in, r_out, r_corn, r_corn])
     assert np.allclose(B, btest)
 
 

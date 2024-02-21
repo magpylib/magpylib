@@ -2,7 +2,7 @@
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Tetrahedron
-from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
+from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.units import downcast
@@ -74,7 +74,7 @@ class Tetrahedron(BaseMagnet):
     >>> src = magpy.magnet.Tetrahedron(polarization=(.1,.2,.3), vertices=verts)
     >>> H = src.getH((.01,.01,.01))
     >>> print(H)
-    [2070.89782733 1656.71826186 1242.5386964 ]
+    [2070.8978262  1656.71826096 1242.53869572]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
@@ -99,7 +99,7 @@ class Tetrahedron(BaseMagnet):
      [ 2.90426931e-05  5.22556994e-05 -1.70596096e-06]]
     """
 
-    _field_func = staticmethod(magnet_tetrahedron_field)
+    _field_func = staticmethod(BHJM_magnet_tetrahedron)
     _field_func_kwargs = {
         "polarization": {"ndim": 2, "unit": "T"},
         "vertices": {"ndim": 3, "unit": "m"},
