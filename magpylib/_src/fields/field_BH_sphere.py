@@ -18,7 +18,7 @@ def magnet_sphere_Bfield(
 
     The center of the sphere lies in the origin of the coordinate system. The output
     is proportional to the polarization magnitude, and independent of the length
-    units chosen for observers and diameters
+    units chosen for observers and diameters.
 
     Parameters
     ----------
