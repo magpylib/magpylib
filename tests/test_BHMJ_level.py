@@ -9,7 +9,7 @@ from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
-from magpylib._src.fields.field_BH_polyline import BHJM_polyline
+from magpylib._src.fields.field_BH_polyline import BHJM_current_polyline
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
@@ -487,7 +487,7 @@ def test_BHJM_circle():
     np.testing.assert_allclose(M, Mtest, rtol=1e-06)
 
 
-def test_BHJM_polyline():
+def test_BHJM_current_polyline():
     """Test of current polyline field core function"""
     vert = np.array([(-1.5, 0, 0), (-0.5, 0, 0), (0.5, 0, 0), (1.5, 0, 0)])
 
@@ -497,7 +497,7 @@ def test_BHJM_polyline():
         "segment_start": vert[:-1],
         "segment_end": vert[1:],
     }
-    H, B, M, _ = helper_check_HBMJ_consistency(BHJM_polyline, **kw)
+    H, B, M, _ = helper_check_HBMJ_consistency(BHJM_current_polyline, **kw)
 
     Btest = (
         np.array(
@@ -598,7 +598,7 @@ def test_field_line_special_cases():
 
     # only normal
     B1 = (
-        BHJM_polyline(
+        BHJM_current_polyline(
             field="B",
             observers=po1,
             current=c1,
@@ -613,7 +613,7 @@ def test_field_line_special_cases():
     # only on_line
     po1b = np.array([(1, 1, 1)])
     B2 = (
-        BHJM_polyline(
+        BHJM_current_polyline(
             field="B",
             observers=po1b,
             current=c1,
@@ -627,7 +627,7 @@ def test_field_line_special_cases():
 
     # only zero-segment
     B3 = (
-        BHJM_polyline(
+        BHJM_current_polyline(
             field="B",
             observers=po1,
             current=c1,
@@ -645,7 +645,7 @@ def test_field_line_special_cases():
     pe2 = np.array([(0, 0, 0), (2, 2, 2)])
     po2 = np.array([(1, 2, 3), (1, 1, 1)])
     B4 = (
-        BHJM_polyline(
+        BHJM_current_polyline(
             field="B",
             observers=po2,
             current=c2,
@@ -660,7 +660,7 @@ def test_field_line_special_cases():
     # normal + zero_segment
     po2b = np.array([(1, 2, 3), (1, 2, 3)])
     B5 = (
-        BHJM_polyline(
+        BHJM_current_polyline(
             field="B",
             observers=po2b,
             current=c2,
@@ -675,7 +675,7 @@ def test_field_line_special_cases():
     # normal + on_line
     pe2b = np.array([(2, 2, 2)] * 2)
     B6 = (
-        BHJM_polyline(
+        BHJM_current_polyline(
             field="B",
             observers=po2,
             current=c2,
@@ -693,7 +693,7 @@ def test_field_line_special_cases():
     pe4 = np.array([(0, 0, 0), (2, 2, 2), (2, 2, 2)])
     po4 = np.array([(1, 2, 3), (1, 2, 3), (1, 1, 1)])
     B7 = (
-        BHJM_polyline(
+        BHJM_current_polyline(
             field="B",
             observers=po4,
             current=c4,
@@ -763,7 +763,7 @@ def test_field_line_from_vert():
         cu = np.array([curr] * (len(vert) - 1))
         B += [
             np.sum(
-                BHJM_polyline(
+                BHJM_current_polyline(
                     field="B",
                     observers=po,
                     current=cu,
@@ -795,7 +795,7 @@ def test_field_line_v4():
         ]
     )
     B = (
-        BHJM_polyline(
+        BHJM_current_polyline(
             field="B",
             observers=obs,
             current=cur,
