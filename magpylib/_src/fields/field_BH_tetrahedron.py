@@ -59,7 +59,6 @@ def point_inside(points: np.ndarray, vertices: np.ndarray) -> np.ndarray:
 
 
 def BHJM_magnet_tetrahedron(
-    *,
     field: str,
     observers: np.ndarray,
     vertices: np.ndarray,

@@ -81,7 +81,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     >>> print(B)
     [[0.00000000e+00 8.88576588e-05 8.88576588e-05]
      [0.00000000e+00 9.16274003e-05 9.16274003e-05]
-     [0.00000000e+00 1.01415383e-04 1.01415383e-04]]
+     [0.00000000e+00 1.01415384e-04 1.01415384e-04]]
     """
 
     _style_class = SensorStyle
@@ -222,7 +222,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         >>> print(B)
         [[0.00000000e+00 8.88576588e-05 8.88576588e-05]
          [0.00000000e+00 9.16274003e-05 9.16274003e-05]
-         [0.00000000e+00 1.01415383e-04 1.01415383e-04]]
+         [0.00000000e+00 1.01415384e-04 1.01415384e-04]]
         """
         sources = format_star_input(sources)
         return getBH_level2(
@@ -300,7 +300,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         >>> loop = magpy.current.Circle(current=1, diameter=.01)
         >>> H = sens.getH(loop)
         >>> print(H)
-        [ 0.          0.         99.99999995]
+        [  0.   0. 100.]
 
         Then we rotate the sensor by 45 degrees and compute the field again:
 
@@ -308,16 +308,16 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Sensor(id=...)
         >>> H = sens.getH(loop)
         >>> print(H)
-        [ 0.         70.71067808 70.71067808]
+        [ 0.         70.71067812 70.71067812]
 
         Finally we set some sensor pixels and compute the field again:
 
         >>> sens.pixel=((0,0,0), (.001,0,0), (.002,0,0))
         >>> H = sens.getH(loop)
         >>> print(H)
-        [[ 0.         70.71067808 70.71067808]
-         [ 0.         72.91476836 72.91476836]
-         [ 0.         80.70379786 80.70379786]]
+        [[ 0.         70.71067812 70.71067812]
+         [ 0.         72.9147684  72.9147684 ]
+         [ 0.         80.7037979  80.7037979 ]]
         """
         sources = format_star_input(sources)
         return getBH_level2(

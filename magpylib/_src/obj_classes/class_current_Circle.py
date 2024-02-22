@@ -58,7 +58,7 @@ class Circle(BaseCurrent):
     >>> src = magpy.current.Circle(current=100, diameter=2)
     >>> H = src.getH((.01,.01,.01))
     >>> print(H)
-    [7.50093700e-03 7.50093700e-03 4.99999967e+01]
+    [7.50093701e-03 7.50093701e-03 4.99999967e+01]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
@@ -68,7 +68,7 @@ class Circle(BaseCurrent):
     >>> print(B)
     [[-1.63585841e-24 -4.44388287e-05  4.44388287e-05]
      [-6.55449367e-24 -4.44688604e-05  4.44688604e-05]
-     [-9.85948764e-24 -4.45190261e-05  4.45190261e-05]]
+     [-9.85948765e-24 -4.45190261e-05  4.45190261e-05]]
 
     The same result is obtained when the rotated source moves along a path away from an
     observer at position (1,1,1). This time we use a `Sensor` object as observer.
@@ -80,7 +80,7 @@ class Circle(BaseCurrent):
     >>> print(B)
     [[-1.63585841e-24 -4.44388287e-05  4.44388287e-05]
      [-6.55449367e-24 -4.44688604e-05  4.44688604e-05]
-     [-9.85948764e-24 -4.45190261e-05  4.45190261e-05]]
+     [-9.85948765e-24 -4.45190261e-05  4.45190261e-05]]
     """
 
     _field_func = staticmethod(BHJM_circle)

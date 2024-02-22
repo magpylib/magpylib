@@ -41,9 +41,13 @@ phi1 = phi
 r = null
 obs_pos = np.array([r, phi, z]).T
 dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-H1 = magnet_cylinder_segment_Hfield(mag=MAG, dim=dim, obs_pos=obs_pos)
+H1 = magnet_cylinder_segment_Hfield(
+    magnetizations=MAG,
+    dimensions=dim,
+    observers=obs_pos,
+)
 DATA["cases [112, 212, 132, 232]"] = {
-    "inputs": {"mag": MAG, "dim": dim, "obs_pos": obs_pos},
+    "inputs": {"magnetizations": MAG, "dimensions": dim, "observers": obs_pos},
     "H_expected": H1,
 }
 
@@ -194,7 +198,14 @@ DATA = np.load("tests/testdata/testdata_cy_cases.npy", allow_pickle=True).item()
 )
 def test_cylinder_tile_slanovc(inputs, H_expected):
     "testing precomputed cylinder test cases"
-    H = magnet_cylinder_segment_Hfield(**inputs)
+    inputs_mod = dict(
+        magnetizations=inputs["mag"],
+        observers=inputs["obs_pos"],
+        dimensions=inputs["dim"],
+    )
+    H = (
+        magnet_cylinder_segment_Hfield(**inputs_mod) / 4 / np.pi * 1e7
+    )  # factors come from B <->H change
     assert np.allclose(np.nan_to_num(H), np.nan_to_num(H_expected))
 
 

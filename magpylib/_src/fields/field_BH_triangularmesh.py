@@ -496,7 +496,6 @@ def mask_inside_trimesh(points: np.ndarray, faces: np.ndarray) -> np.ndarray:
 
 # CORE LIKE - but is not a core function!
 def BHJM_magnet_trimesh(
-    *,
     field: str,
     observers: np.ndarray,
     mesh: np.ndarray,
