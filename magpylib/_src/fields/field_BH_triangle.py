@@ -4,9 +4,9 @@ Computation details in function docstrings.
 """
 # pylance: disable=Code is unreachable
 import numpy as np
+from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import MU0
 
 
 def vcross3(a: np.ndarray, b: np.ndarray) -> np.ndarray:

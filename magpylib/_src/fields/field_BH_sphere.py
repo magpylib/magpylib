@@ -3,9 +3,9 @@ Implementations of analytical expressions for the magnetic field of homogeneousl
 magnetized Spheres. Computation details in function docstrings.
 """
 import numpy as np
+from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import MU0
 
 
 # CORE
@@ -54,7 +54,6 @@ def BHJM_magnet_sphere(
     observers: np.ndarray,
     diameter: np.ndarray,
     polarization: np.ndarray,
-    in_out="auto",
 ) -> np.ndarray:
     """
     magnet sphere field, cannot be moved to a core function, because

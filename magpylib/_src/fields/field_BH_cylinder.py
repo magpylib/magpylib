@@ -4,6 +4,7 @@ homogeneously magnetized Cylinders. Computation details in function docstrings.
 """
 # pylint: disable = no-name-in-module
 import numpy as np
+from scipy.constants import mu_0 as MU0
 from scipy.special import ellipe
 from scipy.special import ellipk
 
@@ -11,7 +12,6 @@ from magpylib._src.fields.special_cel import cel
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates
 from magpylib._src.utility import cyl_field_to_cart
-from magpylib._src.utility import MU0
 
 
 # CORE
@@ -267,7 +267,6 @@ def BHJM_magnet_cylinder(
     observers: np.ndarray,
     dimension: np.ndarray,
     polarization: np.ndarray,
-    in_out="auto",
 ) -> np.ndarray:
     """
     Translate cylinder fields to BHJM

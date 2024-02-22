@@ -1,14 +1,11 @@
 """
 Implementations of analytical expressions of line current segments
 """
-import warnings
-
 import numpy as np
 from numpy.linalg import norm
+from scipy.constants import mu_0 as MU0
 
-from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import MU0
 
 
 def current_vertices_field(

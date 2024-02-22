@@ -3,9 +3,9 @@ Implementations of analytical expressions for the magnetic field of homogeneousl
 magnetized Cuboids. Computation details in function docstrings.
 """
 import numpy as np
+from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import MU0
 
 # pylint: disable=too-many-statements
 
@@ -188,7 +188,6 @@ def BHJM_magnet_cuboid(
     observers: np.ndarray,
     dimension: np.ndarray,
     polarization: np.ndarray,
-    in_out="auto",
 ) -> np.ndarray:
     """
     translate cuboid field to BHJM

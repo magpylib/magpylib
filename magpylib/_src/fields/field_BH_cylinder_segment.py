@@ -4,13 +4,13 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=too-many-statements
 import numpy as np
+from scipy.constants import mu_0 as MU0
 from scipy.special import ellipeinc
 from scipy.special import ellipkinc
 
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.special_el3 import el3_angle
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import MU0
 
 
 def arctan_k_tan_2(k, phi):
@@ -2365,7 +2365,6 @@ def BHJM_cylinder_segment(
     observers: np.ndarray,
     dimension: np.ndarray,
     polarization: np.ndarray,
-    in_out="auto",
 ) -> np.ndarray:
     """
     translate cylinder segment field to BHJM

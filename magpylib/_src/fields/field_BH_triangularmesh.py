@@ -3,12 +3,13 @@ Implementations of analytical expressions for the magnetic field of a triangular
 Computation details in function docstrings.
 """
 # pylint: disable=too-many-nested-blocks
+# pylint: disable=too-many-branches
 # pylance: disable=Code is unreachable
 import numpy as np
 import scipy.spatial
+from scipy.constants import mu_0 as MU0
 
 from magpylib._src.fields.field_BH_triangle import BHJM_triangle
-from magpylib._src.utility import MU0
 
 
 def calculate_centroid(vertices, faces):

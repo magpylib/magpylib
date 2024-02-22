@@ -6,11 +6,9 @@ from functools import lru_cache
 from inspect import signature
 from math import log10
 from typing import Callable
-from typing import Optional
 from typing import Sequence
 
 import numpy as np
-from scipy.constants import mu_0 as MU0
 
 from magpylib._src.exceptions import MagpylibBadUserInput
 

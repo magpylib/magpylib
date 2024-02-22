@@ -2,9 +2,9 @@
 Core implementation of dipole field
 """
 import numpy as np
+from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import MU0
 
 
 # CORE
