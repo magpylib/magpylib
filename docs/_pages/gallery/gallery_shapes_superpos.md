@@ -20,7 +20,8 @@ The [superposition principle](https://en.wikipedia.org/wiki/Superposition_princi
 
 When two magnets overlap geometrically, the magnetization in the overlap region is given by the vector sum of the two individual magnetizations. This enables two geometric operations,
 
-:::::{grid} 2
+:::::{grid} 1 2 2 2
+:gutter: 4
 
 ::::{grid-item-card} Union
 :img-bottom: ../../_static/images/docu_field_superpos_union.png
