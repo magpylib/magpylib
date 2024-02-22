@@ -2,8 +2,6 @@
 Implementations of analytical expressions for the magnetic field of
 a circular current loop. Computation details in function docstrings.
 """
-import warnings
-
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
@@ -28,16 +26,16 @@ def current_circle_Hfield(
 
     Parameters
     ----------
-    r0: ndarray, shape (n)
+    r0: ndarray, shape (n,)
         Radii of loops.
 
-    r: ndarray, shape (n)
+    r: ndarray, shape (n,)
         Radial positions of observers.
 
-    z: ndarray, shape (n)
+    z: ndarray, shape (n,)
         Axial positions of observers.
 
-    i0: ndarray, shape (n)
+    i0: ndarray, shape (n,)
         Electrical currents.
 
     Returns
