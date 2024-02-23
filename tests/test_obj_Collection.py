@@ -244,7 +244,7 @@ def test_col_getH():
     col = magpy.Collection(pm1, pm2)
     H = col.getH((0, 0, 0))
     H1 = pm1.getH((0, 0, 0))
-    assert np.all(H == 2 * H1), "col getH fail"
+    np.testing.assert_array_equal(H, 2 * H1, err_msg="col getH fail")
 
 
 def test_col_reset_path():

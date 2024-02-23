@@ -174,14 +174,26 @@ def test_path_tile():
 
     _ = magpy.getB([pm1, pm2], [0, 0, 0])
 
-    assert np.all(path1p == pm1.position), "FAILED: getB modified object path"
-    assert np.all(
-        path1r.as_quat() == pm1.orientation.as_quat()
-    ), "FAILED: getB modified object path"
-    assert np.all(path2p == pm2.position), "FAILED: getB modified object path"
-    assert np.all(
-        path2r.as_quat() == pm2.orientation.as_quat()
-    ), "FAILED: getB modified object path"
+    np.testing.assert_array_equal(
+        path1p,
+        pm1.position,
+        err_msg="FAILED: getB modified object path",
+    )
+    np.testing.assert_array_equal(
+        path1r.as_quat(),
+        pm1.orientation.as_quat(),
+        err_msg="FAILED: getB modified object path",
+    )
+    np.testing.assert_array_equal(
+        path2p,
+        pm2.position,
+        err_msg="FAILED: getB modified object path",
+    )
+    np.testing.assert_array_equal(
+        path2r.as_quat(),
+        pm2.orientation.as_quat(),
+        err_msg="FAILED: getB modified object path",
+    )
 
 
 def test_sensor_rotation1():
