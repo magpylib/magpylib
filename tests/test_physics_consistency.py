@@ -16,18 +16,18 @@ def test_dipole_approximation():
     dia = np.sqrt(4 / np.pi)
     src2 = magpy.magnet.Cylinder(polarization=pol, dimension=(dia, 1))
     B2 = src2.getB(pos)
-    assert np.allclose(B1, B2)
+    np.testing.assert_allclose(B1, B2, rtol=1e-05, atol=1e-08)
 
     # Sphere with volume = 1 m^3
     dia = (6 / np.pi) ** (1 / 3)
     src3 = magpy.magnet.Sphere(polarization=pol, diameter=dia)
     B3 = src3.getB(pos)
-    assert np.allclose(B1, B3)
+    np.testing.assert_allclose(B1, B3, rtol=1e-05, atol=1e-08)
 
     #  Dipole with mom=pol
     src4 = magpy.misc.Dipole(moment=pol)
     B4 = src4.getB(pos)
-    assert np.allclose(B1, B4)
+    np.testing.assert_allclose(B1, B4, rtol=1e-05, atol=1e-08)
 
     # Circle loop vs Dipole
     dia = 2
@@ -37,7 +37,7 @@ def test_dipole_approximation():
     src2 = magpy.misc.Dipole(moment=(0, 0, m0))
     H1 = src1.getH(pos)
     H2 = src2.getH(pos)
-    assert np.allclose(H1, H2)
+    np.testing.assert_allclose(H1, H2, rtol=1e-05, atol=1e-08)
 
 
 def test_Circle_vs_Cylinder_field():
@@ -176,7 +176,7 @@ def test_Circle_vs_Cylinder_field():
     H1 = src1.getH(pos_obs)
     H2 = src2.getH(pos_obs)
 
-    assert np.allclose(H1, H2)
+    np.testing.assert_allclose(H1, H2)
 
 
 def test_Polyline_vs_Circle():
@@ -203,7 +203,7 @@ def test_Polyline_vs_Circle():
     src = magpy.current.Circle(current=1, diameter=2)
     Bcs = src.getB(po)
 
-    assert np.allclose(Bls, Bcs)
+    np.testing.assert_allclose(Bls, Bcs, rtol=1e-05, atol=1e-08)
 
 
 def test_Polyline_vs_Infinite():
@@ -229,4 +229,4 @@ def test_Polyline_vs_Infinite():
     Bls = np.array(Bls)
     Binfs = np.array(Binfs) * 1e-6
 
-    assert np.allclose(Bls, Binfs)
+    np.testing.assert_allclose(Bls, Binfs)

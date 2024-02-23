@@ -255,7 +255,13 @@ def test_apply_rotation(
         position=old_position, orientation=R.from_rotvec(old_orientation_rotvec)
     )
     apply_rotation(s, R.from_rotvec(rotvec_to_apply), start=start, anchor=anchor)
-    assert np.allclose(s.position, np.array(new_position))
-    assert np.allclose(
-        s.orientation.as_matrix(), R.from_rotvec(new_orientation_rotvec).as_matrix()
+
+    np.testing.assert_allclose(
+        s.position, np.array(new_position), rtol=1e-05, atol=1e-08
+    )
+    np.testing.assert_allclose(
+        s.orientation.as_matrix(),
+        R.from_rotvec(new_orientation_rotvec).as_matrix(),
+        rtol=1e-05,
+        atol=1e-08,
     )

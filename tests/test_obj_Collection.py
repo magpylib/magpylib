@@ -285,7 +285,7 @@ def test_Collection_with_Dipole():
 
     B = magpy.getB(col, sens)
     Btest = np.array([3.81801774e-09, 7.63603548e-09, 1.14540532e-08])
-    assert np.allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest)
 
 
 def test_adding_sources():

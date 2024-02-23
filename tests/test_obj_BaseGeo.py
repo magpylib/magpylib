@@ -74,8 +74,8 @@ def test_BaseGeo_basics():
     poss = np.array(poss)
     rots = np.array(rots)
 
-    assert np.allclose(poss, ptest), "test_BaseGeo bad position"
-    assert np.allclose(rots, otest), "test_BaseGeo bad orientation"
+    np.testing.assert_allclose(poss, ptest, err_msg="test_BaseGeo bad position")
+    np.testing.assert_allclose(rots, otest, err_msg="test_BaseGeo bad orientation")
 
 
 def test_rotate_vs_rotate_from():
@@ -103,8 +103,8 @@ def test_rotate_vs_rotate_from():
     pos2 = bg2.position
     ori2 = bg2.orientation.as_quat()
 
-    assert np.allclose(pos1, pos2)
-    assert np.allclose(ori1, ori2)
+    np.testing.assert_allclose(pos1, pos2)
+    np.testing.assert_allclose(ori1, ori2)
 
 
 def test_BaseGeo_reset_path():
@@ -127,10 +127,16 @@ def test_BaseGeo_anchor_None():
 
     pos3 = np.array([pos] * 3)
     rot3 = np.array([(0, 0, 0), (0.1, 0.2, 0.3), (0.2, 0.4, 0.6)])
-    assert np.allclose(bg.position, pos3), "None rotation changed position"
-    assert np.allclose(
-        bg.orientation.as_rotvec(), rot3
-    ), "None rotation did not adjust rot"
+    np.testing.assert_allclose(
+        bg.position,
+        pos3,
+        err_msg="None rotation changed position",
+    )
+    np.testing.assert_allclose(
+        bg.orientation.as_rotvec(),
+        rot3,
+        err_msg="None rotation did not adjust rot",
+    )
 
 
 def evall(obj):
@@ -153,8 +159,16 @@ def test_attach():
     for _ in range(10):
         bg2.rotate(roto)
 
-    assert np.allclose(bg.position, bg2.position), "attach p"
-    assert np.allclose(bg.orientation.as_quat(), bg2.orientation.as_quat()), "attach o"
+    np.testing.assert_allclose(
+        bg.position,
+        bg2.position,
+        err_msg="attach p",
+    )
+    np.testing.assert_allclose(
+        bg.orientation.as_quat(),
+        bg2.orientation.as_quat(),
+        err_msg="attach o",
+    )
 
 
 def test_path_functionality1():
@@ -174,26 +188,26 @@ def test_path_functionality1():
     pos, ori = evall(BaseGeo(pos0, rot0))
     P = np.array([b1, b2, b3, b4, b5])
     Q = np.array([q1, q2, q3, q4, q5])
-    assert np.allclose(pos, P)
-    assert np.allclose(ori, Q)
+    np.testing.assert_allclose(pos, P)
+    np.testing.assert_allclose(ori, Q)
 
     pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=0))
     P = np.array([b1 + c1, b2 + c2, b3 + c3, b4, b5])
     Q = np.array([q1, q2, q3, q4, q5])
-    assert np.allclose(pos, P)
-    assert np.allclose(ori, Q)
+    np.testing.assert_allclose(pos, P)
+    np.testing.assert_allclose(ori, Q)
 
     pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=1))
     P = np.array([b1, b2 + c1, b3 + c2, b4 + c3, b5])
     Q = np.array([q1, q2, q3, q4, q5])
-    assert np.allclose(pos, P)
-    assert np.allclose(ori, Q)
+    np.testing.assert_allclose(pos, P)
+    np.testing.assert_allclose(ori, Q)
 
     pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=2))
     P = np.array([b1, b2, b3 + c1, b4 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5])
-    assert np.allclose(pos, P)
-    assert np.allclose(ori, Q)
+    np.testing.assert_allclose(pos, P)
+    np.testing.assert_allclose(ori, Q)
 
 
 def test_path_functionality2():
@@ -213,32 +227,32 @@ def test_path_functionality2():
     pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=3))
     P = np.array([b1, b2, b3, b4 + c1, b5 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5, q5])
-    assert np.allclose(pos, P)
-    assert np.allclose(ori, Q)
+    np.testing.assert_allclose(pos, P)
+    np.testing.assert_allclose(ori, Q)
 
     pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=4))
     P = np.array([b1, b2, b3, b4, b5 + c1, b5 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5, q5, q5])
-    assert np.allclose(pos, P)
-    assert np.allclose(ori, Q)
+    np.testing.assert_allclose(pos, P)
+    np.testing.assert_allclose(ori, Q)
 
     pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=5))
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
-    assert np.allclose(pos, P)
-    assert np.allclose(ori, Q)
+    np.testing.assert_allclose(pos, P)
+    np.testing.assert_allclose(ori, Q)
 
     pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=5))
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
-    assert np.allclose(pos, P)
-    assert np.allclose(ori, Q)
+    np.testing.assert_allclose(pos, P)
+    np.testing.assert_allclose(ori, Q)
 
     pos, ori = evall(BaseGeo(pos0, rot0).move(inpath))
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
-    assert np.allclose(pos, P)
-    assert np.allclose(ori, Q)
+    np.testing.assert_allclose(pos, P)
+    np.testing.assert_allclose(ori, Q)
 
 
 def test_path_functionality3():
@@ -251,28 +265,28 @@ def test_path_functionality3():
 
     pos1, ori1 = evall(BaseGeo(pos0, rot0).move(inpath, start=4))
     pos2, ori2 = evall(BaseGeo(pos0, rot0).move(inpath, start=-1))
-    assert np.allclose(pos1, pos2)
-    assert np.allclose(ori1, ori2)
+    np.testing.assert_allclose(pos1, pos2)
+    np.testing.assert_allclose(ori1, ori2)
 
     pos1, ori1 = evall(BaseGeo(pos0, rot0).move(inpath, start=3))
     pos2, ori2 = evall(BaseGeo(pos0, rot0).move(inpath, start=-2))
-    assert np.allclose(pos1, pos2)
-    assert np.allclose(ori1, ori2)
+    np.testing.assert_allclose(pos1, pos2)
+    np.testing.assert_allclose(ori1, ori2)
 
     pos1, ori1 = evall(BaseGeo(pos0, rot0).move(inpath, start=2))
     pos2, ori2 = evall(BaseGeo(pos0, rot0).move(inpath, start=-3))
-    assert np.allclose(pos1, pos2)
-    assert np.allclose(ori1, ori2)
+    np.testing.assert_allclose(pos1, pos2)
+    np.testing.assert_allclose(ori1, ori2)
 
     pos1, ori1 = evall(BaseGeo(pos0, rot0).move(inpath, start=1))
     pos2, ori2 = evall(BaseGeo(pos0, rot0).move(inpath, start=-4))
-    assert np.allclose(pos1, pos2)
-    assert np.allclose(ori1, ori2)
+    np.testing.assert_allclose(pos1, pos2)
+    np.testing.assert_allclose(ori1, ori2)
 
     pos1, ori1 = evall(BaseGeo(pos0, rot0).move(inpath, start=0))
     pos2, ori2 = evall(BaseGeo(pos0, rot0).move(inpath, start=-5))
-    assert np.allclose(pos1, pos2)
-    assert np.allclose(ori1, ori2)
+    np.testing.assert_allclose(pos1, pos2)
+    np.testing.assert_allclose(ori1, ori2)
 
 
 def test_scipy_from_methods():
@@ -290,50 +304,86 @@ def test_scipy_from_methods():
     from_rotvec = cube().rotate_from_rotvec(
         rot.as_rotvec(degrees=True), anchor=anchor, degrees=True
     )
-    assert np.allclose(
-        cube0.position, from_rotvec.position
-    ), "from_rotvec failed on position"
-    assert np.allclose(
-        cube0.orientation.as_rotvec(), from_rotvec.orientation.as_rotvec()
-    ), "from_rotvec failed on orientation"
+    np.testing.assert_allclose(
+        cube0.position,
+        from_rotvec.position,
+        rtol=1e-05,
+        atol=1e-08,
+        err_msg="from_rotvec failed on position",
+    )
+    np.testing.assert_allclose(
+        cube0.orientation.as_rotvec(),
+        from_rotvec.orientation.as_rotvec(),
+        err_msg="from_rotvec failed on orientation",
+    )
 
     from_angax = cube().rotate_from_angax(angs_deg, "z", anchor=anchor, degrees=True)
-    assert np.allclose(
-        cube0.position, from_angax.position
-    ), "from_angax failed on position"
-    assert np.allclose(
-        cube0.orientation.as_rotvec(), from_angax.orientation.as_rotvec()
-    ), "from_rotvec failed on orientation"
+    np.testing.assert_allclose(
+        cube0.position,
+        from_angax.position,
+        err_msg="from_angax failed on position",
+    )
+    np.testing.assert_allclose(
+        cube0.orientation.as_rotvec(),
+        from_angax.orientation.as_rotvec(),
+        err_msg="from_rotvec failed on orientation",
+    )
 
     from_euler = cube().rotate_from_euler(angs_deg, "z", anchor=anchor, degrees=True)
-    assert np.allclose(
-        cube0.position, from_euler.position
-    ), "from_euler failed on position"
-    assert np.allclose(
-        cube0.orientation.as_rotvec(), from_euler.orientation.as_rotvec()
-    ), "from_rotvec failed on orientation"
+    np.testing.assert_allclose(
+        cube0.position,
+        from_euler.position,
+        rtol=1e-05,
+        atol=1e-08,
+        err_msg="from_euler failed on position",
+    )
+    np.testing.assert_allclose(
+        cube0.orientation.as_rotvec(),
+        from_euler.orientation.as_rotvec(),
+        err_msg="from_rotvec failed on orientation",
+    )
 
     from_matrix = cube().rotate_from_matrix(rot.as_matrix(), anchor=anchor)
-    assert np.allclose(
-        cube0.position, from_matrix.position
-    ), "from_matrix failed on position"
-    assert np.allclose(
-        cube0.orientation.as_rotvec(), from_matrix.orientation.as_rotvec()
-    ), "from_rotvec failed on orientation"
+    np.testing.assert_allclose(
+        cube0.position,
+        from_matrix.position,
+        rtol=1e-05,
+        atol=1e-08,
+        err_msg="from_matrix failed on position",
+    )
+    np.testing.assert_allclose(
+        cube0.orientation.as_rotvec(),
+        from_matrix.orientation.as_rotvec(),
+        err_msg="from_rotvec failed on orientation",
+    )
 
     from_mrp = cube().rotate_from_mrp(rot.as_mrp(), anchor=anchor)
-    assert np.allclose(cube0.position, from_mrp.position), "from_mrp failed on position"
-    assert np.allclose(
-        cube0.orientation.as_rotvec(), from_mrp.orientation.as_rotvec()
-    ), "from_rotvec failed on orientation"
+    np.testing.assert_allclose(
+        cube0.position,
+        from_mrp.position,
+        rtol=1e-05,
+        atol=1e-08,
+        err_msg="from_mrp failed on position",
+    )
+    np.testing.assert_allclose(
+        cube0.orientation.as_rotvec(),
+        from_mrp.orientation.as_rotvec(),
+        err_msg="from_rotvec failed on orientation",
+    )
 
     from_quat = cube().rotate_from_quat(rot.as_quat(), anchor=anchor)
-    assert np.allclose(
-        cube0.position, from_quat.position
-    ), "from_quat failed on position"
-    assert np.allclose(
-        cube0.orientation.as_rotvec(), from_quat.orientation.as_rotvec()
-    ), "from_rotvec failed on orientation"
+    np.testing.assert_allclose(
+        cube0.position,
+        from_quat.position,
+        rtol=1e-05,
+        atol=1e-08,
+        err_msg="from_quat failed on position",
+    )
+    np.testing.assert_allclose(
+        cube0.orientation.as_rotvec(),
+        from_quat.orientation.as_rotvec(),
+        err_msg="from_rotvec failed on orientation",
+    )
 
 
 def test_style():

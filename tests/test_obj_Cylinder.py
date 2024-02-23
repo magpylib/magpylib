@@ -103,10 +103,10 @@ def test_Cylinder_getBH():
             dimension=d5,
         )
 
-        assert np.allclose(B1, B2)
-        assert np.allclose(B1, B3)
-        assert np.allclose(B1, B0)
+        np.testing.assert_allclose(B1, B2)
+        np.testing.assert_allclose(B1, B3)
+        np.testing.assert_allclose(B1, B0)
 
-        assert np.allclose(H1, H2)
-        assert np.allclose(H1, H3)
-        assert np.allclose(H1, H0)
+        np.testing.assert_allclose(H1, H2)
+        np.testing.assert_allclose(H1, H3)
+        np.testing.assert_allclose(H1, H0)

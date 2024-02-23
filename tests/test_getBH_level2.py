@@ -53,8 +53,7 @@ def test_getB_level2_input_simple():
             result = np.array(result)
 
             B = magpy.getB(sources, observers)
-            assert B.shape == result.shape, "FAILOR shape"
-            assert np.allclose(B, result), "FAILOR values"
+            np.testing.assert_allclose(B, result)
 
 
 def test_getB_level2_input_shape22():
@@ -115,8 +114,7 @@ def test_getB_level2_input_shape22():
             sources, observers, result = sor
             result = np.array(result)
             B = magpy.getB(sources, observers)
-            assert B.shape == result.shape, "FAILOR2 shape"
-            assert np.allclose(B, result), "FAILOR2 values"
+            np.testing.assert_allclose(B, result)
 
 
 def test_getB_level2_input_path():
@@ -136,32 +134,27 @@ def test_getB_level2_input_path():
     pm1.move(possis)
     B = magpy.getB(pm1, (0, 0, 0))
     result = fb
-    assert B.shape == result.shape, "FAILOR3a shape"
-    assert np.allclose(B, result), "FAILOR3a values"
+    np.testing.assert_allclose(B, result)
 
     B = magpy.getB(pm1, sens1)
     result = fb
-    assert B.shape == result.shape, "FAILOR3b shape"
-    assert np.allclose(B, result), "FAILOR3b values"
+    np.testing.assert_allclose(B, result)
 
     B = magpy.getB([pm1, pm1], sens1)
     result = np.array([fb, fb])
-    assert B.shape == result.shape, "FAILOR3c shape"
-    assert np.allclose(B, result), "FAILOR3c values"
+    np.testing.assert_allclose(B, result)
 
     fb = pm2.getB([[(x, 0, 0), (x, 0, 0)] for x in np.linspace(0, -1, 11)])
     B = magpy.getB([pm1, pm1], [sens1, sens1])
     result = np.array([fb, fb])
-    assert B.shape == result.shape, "FAILOR3d shape"
-    assert np.allclose(B, result), "FAILOR3d values"
+    np.testing.assert_allclose(B, result)
 
     fb = pm2.getB(
         [[[(x, 0, 0), (x, 0, 1), (x, 0, 2)]] * 2 for x in np.linspace(0, -1, 11)]
     )
     B = magpy.getB([pm1, pm1], [sens2, sens2])
     result = np.array([fb, fb])
-    assert B.shape == result.shape, "FAILOR3e shape"
-    assert np.allclose(B, result), "FAILOR3e values"
+    np.testing.assert_allclose(B, result)
 
 
 def test_path_tile():
@@ -206,7 +199,7 @@ def test_sensor_rotation1():
         ]
     )
 
-    assert np.allclose(B, Brot)
+    np.testing.assert_allclose(B, Brot, rtol=1e-05, atol=1e-08)
 
 
 def test_sensor_rotation2():
@@ -235,25 +228,37 @@ def test_sensor_rotation2():
 
     B = magpy.getB(src, poss, squeeze=True)
     Btest = x1
-    assert np.allclose(np.around(B, decimals=5), Btest), "FAIL: mag  +  pos"
+    np.testing.assert_allclose(
+        np.around(B, decimals=5),
+        Btest,
+        err_msg="FAIL: mag  +  pos",
+    )
 
     B = magpy.getB([src], [sens], squeeze=True)
     Btest = np.array([x1, x2, x3])
-    assert np.allclose(np.around(B, decimals=5), Btest), "FAIL: mag  +  sens_rot_path"
+    np.testing.assert_allclose(
+        np.around(B, decimals=5),
+        Btest,
+        err_msg="FAIL: mag  +  sens_rot_path",
+    )
 
     B = magpy.getB([src], [sens, poss], squeeze=True)
     Btest = np.array([[x1, x1], [x2, x1], [x3, x1]])
-    assert np.allclose(
-        np.around(B, decimals=5), Btest
-    ), "FAIL: mag  +  sens_rot_path, pos"
+    np.testing.assert_allclose(
+        np.around(B, decimals=5),
+        Btest,
+        err_msg="FAIL: mag  +  sens_rot_path, pos",
+    )
 
     B = magpy.getB([src, col], [sens, poss], squeeze=True)
     Btest = np.array(
         [[[x1, x1], [x2, x1], [x3, x1]], [[x1b, x1b], [x2b, x1b], [x3b, x1b]]]
     )
-    assert np.allclose(
-        np.around(B, decimals=5), Btest
-    ), "FAIL: mag,col  +  sens_rot_path, pos"
+    np.testing.assert_allclose(
+        np.around(B, decimals=5),
+        Btest,
+        err_msg="FAIL: mag,col  +  sens_rot_path, pos",
+    )
 
 
 def test_sensor_rotation3():
@@ -268,7 +273,7 @@ def test_sensor_rotation3():
     sens.move([(0, 0, 0)] * 12, start=-1)
     Bpath = magpy.getB(src, sens)
 
-    assert np.allclose(B0t, Bpath)
+    np.testing.assert_allclose(B0t, Bpath)
 
 
 def test_object_tiling():
