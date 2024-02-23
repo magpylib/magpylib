@@ -85,7 +85,7 @@ def test_apply_move(description, old_position, displacement, new_position, start
     print(description)
     s = magpy.Sensor(position=old_position)
     apply_move(s, displacement, start=start)
-    (s.position, np.array(new_position))
+    np.testing.assert_array_equal(s.position, np.array(new_position))
 
 
 @pytest.mark.parametrize(
