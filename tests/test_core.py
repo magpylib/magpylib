@@ -1,4 +1,4 @@
-# here all core functions should be tested properly
+# here all core functions should be tested properly - ideally against FEM
 import numpy as np
 
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_Bfield

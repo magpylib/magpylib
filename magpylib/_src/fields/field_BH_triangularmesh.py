@@ -528,16 +528,9 @@ def BHJM_magnet_trimesh(
         Magnetic polarization vectors in units of T.
 
     in_out: {'auto', 'inside', 'outside'}
-        Specify the location of the observers relative to the magnet body, affecting the calculation
-        of the magnetic field. The options are:
-        - 'auto': The location (inside or outside the cuboid) is determined automatically for each
-          observer.
-        - 'inside': All observers are considered to be inside the cuboid; use this for performance
-          optimization if applicable.
-        - 'outside': All observers are considered to be outside the cuboid; use this for performance
-          optimization if applicable.
-        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-        locations is unknown.
+        Specifify observer locations to improve performance. With 'auto' the inside-outside check is
+        performed for every observer (slow). With 'inside' and 'outside' it is assumed that all
+        observers are inside or outside the magnet (fast).
 
     Returns
     -------

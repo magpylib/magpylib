@@ -171,7 +171,6 @@ def current_polyline_Hfield(
 
 
 def BHJM_current_polyline(
-    *,
     field: str,
     observers: np.ndarray,
     segment_start: np.ndarray,
