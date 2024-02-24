@@ -294,11 +294,11 @@ def BHJM_magnet_cylinder(
     mask_inside = mask_between_bases & mask_inside_hull
 
     if field == "J":
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM
 
     if field == "M":
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM / MU0
 
     # SPECIAL CASE 1: on Cylinder edge

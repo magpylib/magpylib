@@ -239,11 +239,11 @@ def BHJM_magnet_cuboid(
     mask_gen = mask_pol_not_null & mask_dim_not_null & mask_not_edge
 
     if field == "J":
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM
 
     if field == "M":
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM / MU0
 
     BHJM *= 0  # return (0,0,0) for all special cases

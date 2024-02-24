@@ -2473,11 +2473,11 @@ def BHJM_cylinder_segment(
         return BHJM * 0
 
     if field == "J":
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM
 
     if field == "M":
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM / MU0
 
     BHJM *= 0

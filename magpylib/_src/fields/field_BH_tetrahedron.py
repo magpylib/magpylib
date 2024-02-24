@@ -121,12 +121,12 @@ def BHJM_magnet_tetrahedron(
 
     if field == "J":
         mask_inside = point_inside(observers, vertices, in_out)
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM
 
     if field == "M":
         mask_inside = point_inside(observers, vertices, in_out)
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM / MU0
 
     vertices = check_chirality(vertices)
