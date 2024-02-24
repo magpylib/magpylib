@@ -198,15 +198,15 @@ DATA = np.load("tests/testdata/testdata_cy_cases.npy", allow_pickle=True).item()
 )
 def test_cylinder_tile_slanovc(inputs, H_expected):
     "testing precomputed cylinder test cases"
-    inputs_mod = dict(
-        magnetizations=inputs["mag"],
-        observers=inputs["obs_pos"],
-        dimensions=inputs["dim"],
-    )
+    inputs_mod = {
+        "magnetizations": inputs["mag"],
+        "observers": inputs["obs_pos"],
+        "dimensions": inputs["dim"],
+    }
     H = (
         magnet_cylinder_segment_Hfield(**inputs_mod) / 4 / np.pi * 1e7
     )  # factors come from B <->H change
-    assert np.allclose(np.nan_to_num(H), np.nan_to_num(H_expected))
+    np.testing.assert_allclose(H, H_expected)
 
 
 def test_cylinder_field1():

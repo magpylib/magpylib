@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
-import magpylib as magpy
 from magpylib._src.fields.field_BH_circle import BHJM_circle
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
