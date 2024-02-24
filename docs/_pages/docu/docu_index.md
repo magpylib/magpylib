@@ -2,7 +2,8 @@
 
 # Documentation
 
-::::{grid} 3
+::::{grid} 1 1 3 3
+:margin: 4 4 0 0
 :gutter: 4
 
 :::{grid-item-card} {ref}`docu-magpylib`

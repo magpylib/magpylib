@@ -19,7 +19,10 @@ kernelspec:
 
 Magpylib supports *Python3.8+* and relies on common scientific computation libraries *Numpy*, *Scipy*, *Matplotlib* and *Plotly*. Optionally, *Pyvista* is recommended as graphical backend.
 
-::::{grid} 2
+::::{grid} 1 1 2 2
+:margin: 4 4 0 0
+:gutter: 4
+
 :::{grid-item-card} Install with pip:
 :text-align: center
 :shadow: none
@@ -94,7 +97,7 @@ print(sensor.orientation.as_rotvec(degrees=True)) # -> [ 0.  0. -45.]
 magpy.show(cube, sensor, backend='plotly')
 ```
 
-<img src="/_static/images/getting_started_fundamentals1.png" width=50%>
+<img src="/_static/images/getting_started_fundamentals1.png" width=50% align="center">
 
 ### Step 4: Compute the magnetic field
 
@@ -205,7 +208,7 @@ pyramid = magpy.magnet.TriangularMesh.from_ConvexHull(
 # Display the magnet graphically
 pyramid.show()
 ```
-<img src="../_static/images/getting_started_complex_shapes.png" width=50%>
+<img src="../_static/images/getting_started_complex_shapes.png" width=50% align="center">
 :::
 
 
@@ -235,7 +238,7 @@ cyl = magpy.magnet.Cylinder(
 )
 magpy.show(cube, cyl)
 ```
-<img src="../_static/images/getting_started_styles.png" width=50%>
+<img src="../_static/images/getting_started_styles.png" width=50% align="center">
 :::
 
 
@@ -262,7 +265,7 @@ cube.rotate_from_angax(
 # Generate an animation with `show`
 cube.show(animation=True, backend="plotly")
 ```
-<img src="../_static/images/getting_started_animation.png" width=50%>
+<img src="../_static/images/getting_started_animation.png" width=50% align="center">
 :::
 
 

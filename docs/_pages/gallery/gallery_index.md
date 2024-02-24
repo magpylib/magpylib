@@ -5,8 +5,8 @@
 Notice that most examples use  interactive notebooks via [sphinx-thebe](https://sphinx-thebe.readthedocs.io/en/latest/), see 🚀.
 ## Tutorials
 
-::::{grid} 3
-:gutter: 5
+::::{grid} 2 3 4 4
+:gutter: 4
 
 :::{grid-item-card} {ref}`gallery-tutorial-paths`
 :text-align: center
@@ -45,8 +45,8 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 
 ## Visualizations
 
-::::{grid} 3
-:gutter: 5
+::::{grid} 2 3 4 4
+:gutter: 4
 
 :::{grid-item-card} {ref}`gallery-vis-mpl-streamplot`
 :text-align: center
@@ -84,8 +84,8 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 
 ## Complex Magnet Shapes
 
-::::{grid} 3
-:gutter: 5
+::::{grid} 2 3 4 4
+:gutter: 4
 
 :::{grid-item-card} {ref}`gallery-shapes-superpos`
 :text-align: center
@@ -132,8 +132,8 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 
 ## Miscellaneous
 
-::::{grid} 3
-:gutter: 5
+::::{grid} 2 3 4 4
+:gutter: 4
 
 :::{grid-item-card} {ref}`gallery-misc-compound`
 :text-align: center
@@ -163,8 +163,8 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 
 ## Applications
 
-::::{grid} 3
-:gutter: 5
+::::{grid} 2 3 4 4
+:gutter: 4
 
 :::{grid-item-card} {ref}`gallery-app-end-of-shaft`
 :text-align: center
