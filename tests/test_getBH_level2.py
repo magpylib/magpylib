@@ -510,6 +510,7 @@ def test_pixel_agg3():
 
 
 def is_warning_of_type(warning, warning_type):
+    """used in following test"""
     return issubclass(warning.category, warning_type)
 
 
