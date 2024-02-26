@@ -66,7 +66,7 @@ To obtain the correct mean polarization of a magnet we only have to compute the 
 
 This datasheet snippet shows the second quadrant of the B-H and J-H loops. The working point is given by the intersection between the "permeance coefficient" lines (gray) and the B-H curve. The number at the end of these lines indicate the length/diameter (L/D) ratio of the magnet which is the critical geometric factor. Different lines are for different L/D ratios which allows one to select the correct working point for different magnets made from this specific material. Once the working point is found, the correct magnetic polarization, here denoted by $J_W$, can be read off, as indicated in the following figure.
 
-![finding the working point](../../_static/images/gallery_icon_WIP.png)
+![finding the working point](../../_static/images/gallery_tutorial_magnet_LDratio.png)
 
 ## Warning
 
