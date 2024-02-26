@@ -269,9 +269,8 @@ def BHJM_magnet_cylinder(
     polarization: np.ndarray,
 ) -> np.ndarray:
     """
-    Translate cylinder fields to BHJM
+    - Translate cylinder core fields to BHJM
     - special cases
-    - inside-outside checks
     """
 
     check_field_input(field)

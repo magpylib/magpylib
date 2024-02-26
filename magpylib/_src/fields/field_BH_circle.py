@@ -87,7 +87,7 @@ def BHJM_circle(
     current: np.ndarray,
 ) -> np.ndarray:
     """
-    translate circle fields to BHJM
+    - translate circle core to BHJM
     - treat special cases
     """
 

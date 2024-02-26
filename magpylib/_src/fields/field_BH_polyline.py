@@ -178,7 +178,7 @@ def BHJM_current_polyline(
     current: np.ndarray,
 ) -> np.ndarray:
     """
-    translate Polyline field to BHJM
+    - translate Polyline field to BHJM
     - treat some special cases
     """
     # pylint: disable=too-many-statements

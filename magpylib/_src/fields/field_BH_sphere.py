@@ -2,9 +2,14 @@
 Implementations of analytical expressions for the magnetic field of homogeneously
 magnetized Spheres. Computation details in function docstrings.
 """
+import unittest
+import warnings
+
 import numpy as np
+import pytest
 from scipy.constants import mu_0 as MU0
 
+import magpylib
 from magpylib._src.input_checks import check_field_input
 
 
@@ -56,7 +61,8 @@ def BHJM_magnet_sphere(
     polarization: np.ndarray,
 ) -> np.ndarray:
     """
-    magnet sphere field, cannot be moved to a core function, because
+    - compute sphere field and translate to BHJM
+    - magnet sphere field, cannot be moved to a core function, because
     core computation requires inside-outside check, but BHJM translation also.
     Would require 2 checks, or forwarding the masks ... both not ideal
     """

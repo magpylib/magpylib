@@ -495,7 +495,6 @@ def mask_inside_trimesh(points: np.ndarray, faces: np.ndarray) -> np.ndarray:
     return mask_inside
 
 
-# CORE LIKE - but is not a core function!
 def BHJM_magnet_trimesh(
     field: str,
     observers: np.ndarray,
@@ -504,48 +503,9 @@ def BHJM_magnet_trimesh(
     in_out="auto",
 ) -> np.ndarray:
     """
-    Core-like function that computes the field of triangular meshes using the BHJM_triangle
-
-    !!!Closed meshes are assumed (input comes only from TriangularMesh class)!!!
-    This is the reasons that this is not a core function
-
-    SI units are used for all inputs and outputs.
-
-    Parameters
-    ----------
-    field: str, default=`'B'`
-        If `field='B'` return B-field in units of T, if `field='H'` return H-field
-        in units of A/m.
-
-    observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of m.
-
-    mesh: ndarray, shape (n,n1,3,3) or ragged sequence
-        Triangular mesh of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
-        `mesh` can be a ragged sequence of mesh-children with different lengths.
-
-    polarization: ndarray, shape (n,3)
-        Magnetic polarization vectors in units of T.
-
-    in_out: {'auto', 'inside', 'outside'}
-        Specifify observer locations to improve performance. With 'auto' the inside-outside check is
-        performed for every observer (slow). With 'inside' and 'outside' it is assumed that all
-        observers are inside or outside the magnet (fast).
-
-    Returns
-    -------
-    B-field or H-field: ndarray, shape (n,3)
-        B- or H-field of source in Cartesian coordinates in units of T or A/m.
-
-    Notes
-    -----
-    Advanced unit use: The input unit of magnetization and polarization
-    gives the output unit of H and B. All results are independent of the
-    length input units. One must be careful, however, to use consistently
-    the same length unit throughout a script.
-
-    Field computations via publication:
-    Guptasarma: GEOPHYSICS 1999 64:1, 70-74
+    - Compute triangular mesh field from triangle fields.
+    - Closed meshes are assumed (input comes only from TriangularMesh class)
+    - Field computations via publication: Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
     if field in "BH":
         if mesh.ndim != 1:  # all vertices objects have same number of children

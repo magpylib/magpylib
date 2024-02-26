@@ -190,9 +190,8 @@ def BHJM_magnet_cuboid(
     polarization: np.ndarray,
 ) -> np.ndarray:
     """
-    translate cuboid field to BHJM
+    - translate cuboid core field to BHJM
     - treat special cases
-    - inside-outside checks
     """
 
     RTOL_SURFACE = 1e-15  # relative distance tolerance to be considered on surface
