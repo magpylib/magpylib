@@ -68,7 +68,7 @@ def BHJM_dipole(
     moment: np.ndarray,
 ) -> np.ndarray:
     """
-    translate dipole field to BHJM
+    - translate dipole field to BHJM
     """
     check_field_input(field)
 

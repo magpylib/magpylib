@@ -171,7 +171,6 @@ def current_polyline_Hfield(
 
 
 def BHJM_current_polyline(
-    *,
     field: str,
     observers: np.ndarray,
     segment_start: np.ndarray,
@@ -179,7 +178,7 @@ def BHJM_current_polyline(
     current: np.ndarray,
 ) -> np.ndarray:
     """
-    translate Polyline field to BHJM
+    - translate Polyline field to BHJM
     - treat some special cases
     """
     # pylint: disable=too-many-statements

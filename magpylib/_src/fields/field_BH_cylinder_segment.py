@@ -2367,51 +2367,8 @@ def BHJM_cylinder_segment(
     polarization: np.ndarray,
 ) -> np.ndarray:
     """
-    translate cylinder segment field to BHJM
-
-    Parameters
-    ----------
-    field: str, default=`'B'`
-        If `field='B'` return B-field in units of T, if `field='H'` return H-field
-        in units of A/m.
-
-    observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of m.
-
-    dimension: ndarray, shape (n,5)
-        Dimensions of CylinderSegments (r1,r2,h,phi1,phi2) with inner radius
-        r1, outer radius r2, height h in units of m and the two segment
-        angles phi1 < phi2 in units of deg.
-
-    polarization: ndarray, shape (n,3)
-        Magnetic polarization vectors in units of T.
-
-    in_out: {'auto', 'inside', 'outside'}
-        Specify the location of the observers relative to the magnet body, affecting the calculation
-        of the magnetic field. The options are:
-        - 'auto': The location (inside or outside the cuboid) is determined automatically for each
-          observer.
-        - 'inside': All observers are considered to be inside the cuboid; use this for performance
-          optimization if applicable.
-        - 'outside': All observers are considered to be outside the cuboid; use this for performance
-          optimization if applicable.
-        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-        locations is unknown.
-
-    Returns
-    -------
-    B-field or H-field: ndarray, shape (n,3)
-        B- or H-field of source in Cartesian coordinates in units of T or A/m.
-
-    Notes
-    -----
-    Advanced unit use: The input unit of magnetization and polarization
-    gives the output unit of H and B. All results are independent of the
-    length input units. One must be careful, however, to use consistently
-    the same length unit throughout a script.
-
-    Implementation based on F.Slanovc, Journal of Magnetism and Magnetic
-    Materials, Volume 559, 1 October 2022, 169482
+    - translate cylinder segment field to BHJM
+    - special cases catching
     """
     check_field_input(field)
 
@@ -2473,11 +2430,11 @@ def BHJM_cylinder_segment(
         return BHJM * 0
 
     if field == "J":
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM
 
     if field == "M":
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM / MU0
 
     BHJM *= 0

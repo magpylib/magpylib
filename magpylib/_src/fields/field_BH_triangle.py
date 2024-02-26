@@ -170,7 +170,7 @@ def BHJM_triangle(
     polarization: np.ndarray,
 ) -> np.ndarray:
     """
-    return BHJM from B-field calculation
+    - translate triangle core field to BHJM
     """
     check_field_input(field)
 

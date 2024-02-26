@@ -269,9 +269,8 @@ def BHJM_magnet_cylinder(
     polarization: np.ndarray,
 ) -> np.ndarray:
     """
-    Translate cylinder fields to BHJM
+    - Translate cylinder core fields to BHJM
     - special cases
-    - inside-outside checks
     """
 
     check_field_input(field)
@@ -294,11 +293,11 @@ def BHJM_magnet_cylinder(
     mask_inside = mask_between_bases & mask_inside_hull
 
     if field == "J":
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM
 
     if field == "M":
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM / MU0
 
     # SPECIAL CASE 1: on Cylinder edge

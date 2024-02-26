@@ -56,7 +56,8 @@ def BHJM_magnet_sphere(
     polarization: np.ndarray,
 ) -> np.ndarray:
     """
-    magnet sphere field, cannot be moved to a core function, because
+    - compute sphere field and translate to BHJM
+    - magnet sphere field, cannot be moved to a core function, because
     core computation requires inside-outside check, but BHJM translation also.
     Would require 2 checks, or forwarding the masks ... both not ideal
     """

@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pytest
 
@@ -522,3 +524,58 @@ def test_pixel_agg3():
                     rtol=1e-5,
                     atol=1e-8,
                 )
+
+
+def is_warning_of_type(warning, warning_type):
+    """used in following test"""
+    return issubclass(warning.category, warning_type)
+
+
+def test_in_out():
+    """test if in_out warning is thrown"""
+    sp = magpy.magnet.Sphere(
+        polarization=(1, 2, 3),
+        diameter=1,
+    )
+    tetra = magpy.magnet.Tetrahedron(
+        polarization=(1, 2, 3),
+        vertices=[(1, 2, 3), (0, 0, 0), (1, 0, 0), (0, 1, 0)],
+    )
+
+    def warnme1():
+        sp.getB((1, 1, 1), in_out="inside")
+
+    def warnme2():
+        magpy.getH([sp, sp], (1, 1, 1), in_out="inside")
+
+    with warnings.catch_warnings(record=True) as w:
+        # Make sure all warnings are caught
+        warnings.simplefilter("always")
+
+        # Call the function that might issue a warning
+        warnme1()
+        warnme2()
+
+        # Check if there was at least one DeprecationWarning
+        assert any(
+            is_warning_of_type(warning, UserWarning) for warning in w
+        ), "Expected UserWarning not raised"
+
+    def warnme3():
+        magpy.getH([sp, tetra], (1, 1, 1), in_out="inside")
+
+    def warnme4():
+        magpy.getH(tetra, (1, 1, 1), in_out="inside")
+
+    with warnings.catch_warnings(record=True) as w:
+        # Make sure all warnings are caught
+        warnings.simplefilter("always")
+
+        # Call the function that might issue a warning
+        warnme3()
+        warnme4()
+
+        # Check if there was at least one DeprecationWarning
+        assert not any(
+            is_warning_of_type(warning, UserWarning) for warning in w
+        ), "Unexpected UserWarning raised"
