@@ -211,8 +211,7 @@ def getBH_level2(
     # make sure that given in_out there is a Tetrahedron class or a TriangularMesh
     #   class in sources. Else throw a warning
     if in_out != "auto":
-        from magpylib.magnet import Tetrahedron
-        from magpylib.magnet import TriangularMesh
+        from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
 
         if not any(isinstance(src, (Tetrahedron, TriangularMesh)) for src in src_list):
             warnings.warn(

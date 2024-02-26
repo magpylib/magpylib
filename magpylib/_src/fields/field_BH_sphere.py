@@ -2,14 +2,9 @@
 Implementations of analytical expressions for the magnetic field of homogeneously
 magnetized Spheres. Computation details in function docstrings.
 """
-import unittest
-import warnings
-
 import numpy as np
-import pytest
 from scipy.constants import mu_0 as MU0
 
-import magpylib
 from magpylib._src.input_checks import check_field_input
 
 
