@@ -208,6 +208,20 @@ def getBH_level2(
     check_dimensions(src_list)
     check_excitations(src_list)
 
+    # make sure that given in_out there is a Tetrahedron class or a TriangularMesh
+    #   class in sources. Else throw a warning
+    if in_out != "auto":
+        from magpylib.magnet import Tetrahedron
+        from magpylib.magnet import TriangularMesh
+
+        if not any(isinstance(src, (Tetrahedron, TriangularMesh)) for src in src_list):
+            warnings.warn(
+                "Argument `in_out` for field computation was set, but is ignored"
+                " in the computation. `in_out` has an effect only for magnet classes"
+                " Tetrahedron and TriangularMesh.",
+                UserWarning,
+            )
+
     # make sure that TriangularMesh sources have a closed mesh when getB is called - warn if not
     if field == "B":
         for src in src_list:
