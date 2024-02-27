@@ -60,8 +60,7 @@ def mono_field(field, observers):
     if field == "B":
         return B  # unit T
     elif field == "H":
-        mu0 = 4 * np.pi * 1e-7
-        H = B / mu0  # unit A/m
+        H = B / magpy.mu_0  # unit A/m
         return H
     else:
         raise ValueError("Field Value must be either B or H")
@@ -158,8 +157,7 @@ class Monopole(magpy.misc.CustomSource):
             if field == "B":
                 return B  # unit T
             elif field == "H":
-                mu0 = 4 * np.pi * 1e-7
-                H = B / mu0  # unit A/m
+                H = B / magpy.mu_0  # unit A/m
                 return H
             else:
                 raise ValueError("Field Value must be either B or H")

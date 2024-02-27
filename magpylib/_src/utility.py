@@ -5,11 +5,9 @@
 from functools import lru_cache
 from inspect import signature
 from typing import Callable
-from typing import Optional
 from typing import Sequence
 
 import numpy as np
-from scipy.constants import mu_0 as MU0
 
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.utility import MU0
@@ -345,40 +343,40 @@ def open_animation(filepath, embed=True):
         webbrowser.open(filepath)
 
 
-def convert_HBMJ(
-    output_field_type: str,
-    polarization: np.ndarray,
-    input_field_type: Optional[str] = None,
-    field_values: Optional[np.ndarray] = None,
-    mask_inside: Optional[np.ndarray] = None,
-) -> np.ndarray:
-    """Convert between magnetic field inputs and outputs.
-    Notes
-    -----
-    `mask_inside` is only optional when output and input field types are the same.
-    """
-    if output_field_type in "MJ":
-        J = polarization.copy()
-        if mask_inside is not None:
-            # pylint: disable=invalid-unary-operand-type
-            J[~mask_inside] *= 0
-        if output_field_type == "J":
-            return J
-        return J / MU0
-    if output_field_type == input_field_type:
-        return field_values
-    if input_field_type == "B":
-        H = field_values.copy()
-        H[mask_inside] -= polarization[mask_inside]
-        return H / MU0
-    if input_field_type == "H":
-        B = field_values * MU0
-        B[mask_inside] += polarization[mask_inside]
-        return B
-    raise ValueError(  # pragma: no cover
-        "`output_field_type` must be one of ('B', 'H', 'M', 'J'), "
-        f"got {output_field_type!r}"
-    )
+# def convert_HBMJ(
+#     output_field_type: str,
+#     polarization: np.ndarray,
+#     input_field_type: Optional[str] = None,
+#     field_values: Optional[np.ndarray] = None,
+#     mask_inside: Optional[np.ndarray] = None,
+# ) -> np.ndarray:
+#     """Convert between magnetic field inputs and outputs.
+#     Notes
+#     -----
+#     `mask_inside` is only optional when output and input field types are the same.
+#     """
+#     if output_field_type in "MJ":
+#         J = polarization.copy()
+#         if mask_inside is not None:
+#             # pylint: disable=invalid-unary-operand-type
+#             J[~mask_inside] *= 0
+#         if output_field_type == "J":
+#             return J
+#         return J / MU0
+#     if output_field_type == input_field_type:
+#         return field_values
+#     if input_field_type == "B":
+#         H = field_values.copy()
+#         H[mask_inside] -= polarization[mask_inside]
+#         return H / MU0
+#     if input_field_type == "H":
+#         B = field_values * MU0
+#         B[mask_inside] += polarization[mask_inside]
+#         return B
+#     raise ValueError(  # pragma: no cover
+#         "`output_field_type` must be one of ('B', 'H', 'M', 'J'), "
+#         f"got {output_field_type!r}"
+#     )
 
 
 @lru_cache(maxsize=None)

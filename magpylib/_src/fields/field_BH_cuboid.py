@@ -3,24 +3,23 @@ Implementations of analytical expressions for the magnetic field of homogeneousl
 magnetized Cuboids. Computation details in function docstrings.
 """
 import numpy as np
+from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import MU0
 
 # pylint: disable=too-many-statements
 
 
 # CORE
 def magnet_cuboid_Bfield(
-    *,
     observers: np.ndarray,
     dimensions: np.ndarray,
     polarizations: np.ndarray,
 ):
-    """B-field of homogeneously magnetized cuboids
+    """B-field of homogeneously magnetized cuboids in Cartesian Coordinates.
 
-    The cuboid sides are parallel to the coordinate axes. The geometric center of the
-    cuboid lies in the origin. The output is proportional to the polarization magnitude
+    The cuboids sides are parallel to the coordinate axes. The geometric centers of the
+    cuboids lie in the origin. The output is proportional to the polarization magnitude
     and independent of the length units chosen for observers and dimensions.
 
     Parameters
@@ -29,7 +28,7 @@ def magnet_cuboid_Bfield(
         Observer positions (x,y,z) in Cartesian coordinates.
 
     dimensions: ndarray, shape (n,3)
-        Length of cuboid sides.
+        Length of cuboids sides.
 
     polarizations: ndarray, shape (n,3)
         Magnetic polarization vectors.
@@ -62,8 +61,6 @@ def magnet_cuboid_Bfield(
     positions to their bottQ4 counterparts. see also
 
     Cichon: IEEE Sensors Journal, vol. 19, no. 7, April 1, 2019, p.2509
-
-
     """
     pol_x, pol_y, pol_z = polarizations.T
     a, b, c = dimensions.T / 2
@@ -187,17 +184,14 @@ def magnet_cuboid_Bfield(
 
 
 def BHJM_magnet_cuboid(
-    *,
     field: str,
     observers: np.ndarray,
     dimension: np.ndarray,
     polarization: np.ndarray,
-    in_out="auto",
 ) -> np.ndarray:
     """
-    translate cuboid field to BHJM
+    - translate cuboid core field to BHJM
     - treat special cases
-    - inside-outside checks
     """
 
     RTOL_SURFACE = 1e-15  # relative distance tolerance to be considered on surface
@@ -243,25 +237,12 @@ def BHJM_magnet_cuboid(
 
     mask_gen = mask_pol_not_null & mask_dim_not_null & mask_not_edge
 
-    # @alex:
-    # 1. previous computation did not remove edge cases from general mask
-    #    --> mask inside must also be computed for B
-    # 2. Use already allocated array for outputs, no copy, I changed the name to BHJM
-    # 3. How the field is translates to BHMJ should be right here! It might be more code,
-    #    and even be repetitive with other core functions, but this computation
-    #    is slightly different for almost all classes, and it must be understood what
-    #    is happening from a physics point of view. The argument change once for all does
-    #    not hold here - its many individual cases.
-    # 4. This new layer is now called BHJM_whatever_whatever
-    # 5. Ich glaub in-out muss erstmals klar definiert werden in/surf/edge/corner/out
-    #    dazu gibt es einen issue
-
     if field == "J":
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM
 
     if field == "M":
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM / MU0
 
     BHJM *= 0  # return (0,0,0) for all special cases

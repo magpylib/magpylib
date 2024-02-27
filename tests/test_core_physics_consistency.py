@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.constants import mu_0 as MU0
 
 from magpylib._src.fields.field_BH_circle import BHJM_circle
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
@@ -9,7 +10,6 @@ from magpylib._src.fields.field_BH_polyline import BHJM_current_polyline
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import BHJM_triangle
-from magpylib._src.utility import MU0
 
 
 # PHYSICS CONSISTENCY TESTING

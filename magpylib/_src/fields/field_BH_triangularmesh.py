@@ -3,12 +3,13 @@ Implementations of analytical expressions for the magnetic field of a triangular
 Computation details in function docstrings.
 """
 # pylint: disable=too-many-nested-blocks
+# pylint: disable=too-many-branches
 # pylance: disable=Code is unreachable
 import numpy as np
 import scipy.spatial
+from scipy.constants import mu_0 as MU0
 
 from magpylib._src.fields.field_BH_triangle import BHJM_triangle
-from magpylib._src.utility import MU0
 
 
 def calculate_centroid(vertices, faces):
@@ -494,9 +495,7 @@ def mask_inside_trimesh(points: np.ndarray, faces: np.ndarray) -> np.ndarray:
     return mask_inside
 
 
-# CORE LIKE - but is not a core function!
 def BHJM_magnet_trimesh(
-    *,
     field: str,
     observers: np.ndarray,
     mesh: np.ndarray,
@@ -504,55 +503,9 @@ def BHJM_magnet_trimesh(
     in_out="auto",
 ) -> np.ndarray:
     """
-    Core-like function that computes the field of triangular meshes using the BHJM_triangle
-
-    !!!Closed meshes are assumed (input comes only from TriangularMesh class)!!!
-    This is the reasons that this is not a core function
-
-    SI units are used for all inputs and outputs.
-
-    Parameters
-    ----------
-    field: str, default=`'B'`
-        If `field='B'` return B-field in units of T, if `field='H'` return H-field
-        in units of A/m.
-
-    observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of m.
-
-    mesh: ndarray, shape (n,n1,3,3) or ragged sequence
-        Triangular mesh of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
-        `mesh` can be a ragged sequence of mesh-children with different lengths.
-
-    polarization: ndarray, shape (n,3)
-        Magnetic polarization vectors in units of T.
-
-    in_out: {'auto', 'inside', 'outside'}
-        Specify the location of the observers relative to the magnet body, affecting the calculation
-        of the magnetic field. The options are:
-        - 'auto': The location (inside or outside the cuboid) is determined automatically for each
-          observer.
-        - 'inside': All observers are considered to be inside the cuboid; use this for performance
-          optimization if applicable.
-        - 'outside': All observers are considered to be outside the cuboid; use this for performance
-          optimization if applicable.
-        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-        locations is unknown.
-
-    Returns
-    -------
-    B-field or H-field: ndarray, shape (n,3)
-        B- or H-field of source in Cartesian coordinates in units of T or A/m.
-
-    Notes
-    -----
-    Advanced unit use: The input unit of magnetization and polarization
-    gives the output unit of H and B. All results are independent of the
-    length input units. One must be careful, however, to use consistently
-    the same length unit throughout a script.
-
-    Field computations via publication:
-    Guptasarma: GEOPHYSICS 1999 64:1, 70-74
+    - Compute triangular mesh field from triangle fields.
+    - Closed meshes are assumed (input comes only from TriangularMesh class)
+    - Field computations via publication: Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
     if field in "BH":
         if mesh.ndim != 1:  # all vertices objects have same number of children

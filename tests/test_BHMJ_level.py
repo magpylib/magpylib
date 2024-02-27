@@ -1,9 +1,7 @@
 import numpy as np
-import pytest
 from numpy.testing import assert_allclose
+from scipy.constants import mu_0 as MU0
 
-import magpylib as magpy
-from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_circle import BHJM_circle
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
@@ -15,7 +13,6 @@ from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import BHJM_triangle
 from magpylib._src.fields.field_BH_triangularmesh import BHJM_magnet_trimesh
-from magpylib._src.utility import MU0
 
 
 #######################################################################################
