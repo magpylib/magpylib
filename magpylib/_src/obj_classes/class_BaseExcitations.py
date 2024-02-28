@@ -3,6 +3,7 @@
 import warnings
 
 import numpy as np
+from scipy.constants import mu_0
 
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_wrap_BH import getBH_level2
@@ -17,7 +18,6 @@ from magpylib._src.units import downcast
 from magpylib._src.units import is_Quantity
 from magpylib._src.units import to_Quantity
 from magpylib._src.utility import format_star_input
-from magpylib._src.utility import MU0
 
 
 class BaseSource(BaseGeo, BaseDisplayRepr):
@@ -397,7 +397,7 @@ class BaseMagnet(BaseSource):
             mag_A_per_m = downcast(mag, "A/m")
             if is_Quantity(mag):
                 mag = to_Quantity(mag_A_per_m, "T")
-            self._polarization = mag * MU0
+            self._polarization = mag * mu_0
             if np.linalg.norm(mag_A_per_m) < 2000:
                 self._magnetization_low_warning()
 
@@ -422,7 +422,7 @@ class BaseMagnet(BaseSource):
         if pol is not None:
             if is_Quantity(pol):
                 pol = to_Quantity(downcast(pol, "T"), "A/m")
-            self._magnetization = pol / MU0
+            self._magnetization = pol / mu_0
 
     def _magnetization_low_warning(self):
         warnings.warn(

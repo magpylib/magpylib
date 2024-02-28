@@ -10,7 +10,6 @@ from typing import Sequence
 import numpy as np
 
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.utility import MU0
 
 
 def get_allowed_sources_msg():
