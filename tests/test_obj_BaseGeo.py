@@ -536,7 +536,7 @@ def test_describe_with_triangularmesh():
         "  • parent: None",
         "  • position: [0. 0. 0.] m",
         "  • orientation: [0. 0. 0.] deg",
-        "  • magnetization: [     0.              0.         795774.71502628] A/m",
+        "  • magnetization: [     0.              0.         795774.71545948] A/m",
         "  • polarization: [0. 0. 1.] T",
         "  • barycenter: [0.         0.         0.46065534]",
         "  • faces: shape(6, 3)",

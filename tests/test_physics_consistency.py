@@ -1,7 +1,6 @@
 import numpy as np
 
 import magpylib as magpy
-from magpylib._src.utility import MU0
 
 
 def test_dipole_approximation():
@@ -218,7 +217,8 @@ def test_Polyline_vs_Infinite():
         r = np.sqrt(x**2 + y**2)
         e_phi = np.array([-y, x, 0])
         e_phi = e_phi / np.linalg.norm(e_phi)
-        return i0 * MU0 / 2 / np.pi / r * e_phi * 1000 * 1000
+        mu0 = 4 * np.pi * 1e-7
+        return i0 * mu0 / 2 / np.pi / r * e_phi * 1000 * 1000
 
     ps = (0, 0, -1000000)
     pe = (0, 0, 1000000)
