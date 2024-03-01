@@ -570,4 +570,4 @@ def test_do_not_warn():
         do_not_warnme1()
         do_not_warnme2()
         if len(w) > 0:
-            pytest.fail(f"WARNING SHOULD NOT HAVE BEEN RAISED")
+            pytest.fail("WARNING SHOULD NOT HAVE BEEN RAISED")
