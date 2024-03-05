@@ -26,7 +26,7 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
     Parameters
     ----------
     z0: ndarray, shape (n,)
-        Ratios of cylinder heights over cylinder radii.
+        Ratios of half cylinder heights over cylinder radii.
 
     r: ndarray, shape (n,)
         Ratios of radial observer positions over cylinder radii.
