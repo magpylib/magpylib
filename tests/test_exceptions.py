@@ -10,7 +10,13 @@ from magpylib._src.utility import check_path_format
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
 
-GETBH_KWARGS = {"sumup": False, "squeeze": True, "pixel_agg": None, "output": "ndarray"}
+GETBH_KWARGS = {
+    "sumup": False,
+    "squeeze": True,
+    "pixel_agg": None,
+    "output": "ndarray",
+    "in_out": "auto",
+}
 
 
 def getBHv_unknown_source_type():
@@ -36,6 +42,7 @@ def getBH_level2_bad_input1():
         sumup=False,
         squeeze=True,
         pixel_agg=None,
+        in_out="auto",
         field="B",
         output="ndarray",
     )

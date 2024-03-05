@@ -15,7 +15,7 @@ def test_Circle_basic_B():
     assert np.allclose(B, Btest)
 
 
-def test_current_circle_field():
+def test_BHJM_circle():
     """test explicit field output values"""
     s = magpy.current.Circle(current=1, diameter=1)
 

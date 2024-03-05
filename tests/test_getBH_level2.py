@@ -1,3 +1,6 @@
+import unittest
+import warnings
+
 import numpy as np
 import pytest
 
@@ -505,3 +508,66 @@ def test_pixel_agg3():
                     rtol=1e-5,
                     atol=1e-8,
                 )
+
+
+##############################################################
+def warnme1():
+    """test if in_out warning is thrown"""
+    sp = magpy.magnet.Sphere(
+        polarization=(1, 2, 3),
+        diameter=1,
+    )
+    sp.getB((1, 1, 1), in_out="inside")
+
+
+def warnme2():
+    """test if in_out warning is thrown"""
+    sp = magpy.magnet.Sphere(
+        polarization=(1, 2, 3),
+        diameter=1,
+    )
+    magpy.getH([sp, sp], (1, 1, 1), in_out="inside")
+
+
+class TestExceptions(unittest.TestCase):
+    """test class for exception testing"""
+
+    def test_warning(self):
+        """whatever"""
+        self.assertWarns(UserWarning, warnme1)
+        self.assertWarns(UserWarning, warnme2)
+
+
+##############################################################
+
+
+def do_not_warnme1():
+    """test if in_out warning is thrown"""
+    sp = magpy.magnet.Sphere(
+        polarization=(1, 2, 3),
+        diameter=1,
+    )
+    tetra = magpy.magnet.Tetrahedron(
+        polarization=(1, 2, 3),
+        vertices=[(1, 2, 3), (0, 0, 0), (1, 0, 0), (0, 1, 0)],
+    )
+    magpy.getH([sp, tetra], (1, 1, 1), in_out="inside")
+
+
+def do_not_warnme2():
+    """test if in_out warning is thrown"""
+    tetra = magpy.magnet.Tetrahedron(
+        polarization=(1, 2, 3),
+        vertices=[(1, 2, 3), (0, 0, 0), (1, 0, 0), (0, 1, 0)],
+    )
+    magpy.getH(tetra, (1, 1, 1), in_out="inside")
+
+
+def test_do_not_warn():
+    """do not warn"""
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        do_not_warnme1()
+        do_not_warnme2()
+        if len(w) > 0:
+            pytest.fail("WARNING SHOULD NOT HAVE BEEN RAISED")

@@ -2,7 +2,10 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
 # import numbers
+from functools import lru_cache
+from inspect import signature
 from math import log10
+from typing import Callable
 from typing import Sequence
 
 import numpy as np
@@ -20,8 +23,6 @@ def get_allowed_sources_msg():
 - 1D list of the above
 - string {srcs}"""
 
-
-MU0 = 4 * np.pi * 1e-7
 
 ALLOWED_OBSERVER_MSG = """Observers must be either
 - array_like positions of shape (N1, N2, ..., 3)
@@ -389,3 +390,10 @@ def open_animation(filepath, embed=True):
         import webbrowser
 
         webbrowser.open(filepath)
+
+
+@lru_cache(maxsize=None)
+def has_parameter(func: Callable, param_name: str) -> bool:
+    """Check if input function has a specific parameter"""
+    sig = signature(func)
+    return param_name in sig.parameters

@@ -3,7 +3,7 @@ import warnings
 
 from magpylib._src.display.traces_core import make_Circle
 from magpylib._src.exceptions import MagpylibDeprecationWarning
-from magpylib._src.fields.field_BH_circle import current_circle_field
+from magpylib._src.fields.field_BH_circle import BHJM_circle
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.utility import unit_prefix
@@ -68,7 +68,7 @@ class Circle(BaseCurrent):
     >>> print(B)
     [[-1.63585841e-24 -4.44388287e-05  4.44388287e-05]
      [-6.55449367e-24 -4.44688604e-05  4.44688604e-05]
-     [-9.85948764e-24 -4.45190261e-05  4.45190261e-05]]
+     [-9.85948765e-24 -4.45190261e-05  4.45190261e-05]]
 
     The same result is obtained when the rotated source moves along a path away from an
     observer at position (1,1,1). This time we use a `Sensor` object as observer.
@@ -80,10 +80,10 @@ class Circle(BaseCurrent):
     >>> print(B)
     [[-1.63585841e-24 -4.44388287e-05  4.44388287e-05]
      [-6.55449367e-24 -4.44688604e-05  4.44688604e-05]
-     [-9.85948764e-24 -4.45190261e-05  4.45190261e-05]]
+     [-9.85948765e-24 -4.45190261e-05  4.45190261e-05]]
     """
 
-    _field_func = staticmethod(current_circle_field)
+    _field_func = staticmethod(BHJM_circle)
     _field_func_kwargs_ndim = {"current": 1, "diameter": 1}
     get_trace = make_Circle
 
@@ -136,7 +136,7 @@ class Loop(Circle):
     def _field_func(*args, **kwargs):
         """Catch Deprecation warning in getBH_dict"""
         _deprecation_warn()
-        return current_circle_field(*args, **kwargs)
+        return BHJM_circle(*args, **kwargs)
 
     def __init__(self, *args, **kwargs):
         _deprecation_warn()

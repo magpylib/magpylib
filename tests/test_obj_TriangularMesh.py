@@ -9,9 +9,9 @@ import pyvista as pv
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.fields.field_BH_triangularmesh import BHJM_magnet_trimesh
 from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
 from magpylib._src.fields.field_BH_triangularmesh import lines_end_in_trimesh
-from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 
 
 def test_TriangularMesh_repr():
@@ -141,7 +141,7 @@ def test_magnet_trimesh_func():
     pts_inside = np.array([[0, 0, 1]])
     B0 = cube.getB(pts_inside)
     B1 = tmesh_cube.getB(pts_inside)
-    B2 = magnet_trimesh_field(
+    B2 = BHJM_magnet_trimesh(
         field="B",
         observers=pts_inside,
         polarization=np.array([pol]),

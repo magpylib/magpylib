@@ -6,6 +6,7 @@ from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
 from magpylib._src.display.traces_core import make_TriangularMesh
 from magpylib._src.exceptions import MagpylibMissingInput
+from magpylib._src.fields.field_BH_triangularmesh import BHJM_magnet_trimesh
 from magpylib._src.fields.field_BH_triangularmesh import calculate_centroid
 from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
 from magpylib._src.fields.field_BH_triangularmesh import (
@@ -13,7 +14,6 @@ from magpylib._src.fields.field_BH_triangularmesh import (
 )
 from magpylib._src.fields.field_BH_triangularmesh import get_intersecting_triangles
 from magpylib._src.fields.field_BH_triangularmesh import get_open_edges
-from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.input_checks import check_format_input_vector2
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
@@ -114,7 +114,7 @@ class TriangularMesh(BaseMagnet):
     [0.00260237 0.00208189 0.00156142]
     """
 
-    _field_func = staticmethod(magnet_trimesh_field)
+    _field_func = staticmethod(BHJM_magnet_trimesh)
     _field_func_kwargs_ndim = {"polarization": 2, "mesh": 3}
     get_trace = make_TriangularMesh
     _style_class = TriangularMeshStyle

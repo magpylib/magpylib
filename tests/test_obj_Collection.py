@@ -121,15 +121,15 @@ def test_Collection_basics():
 def test_col_getB(test_input, expected):
     """testing some Collection stuff with getB"""
     src1 = magpy.magnet.Cuboid(
-        polarization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
+        polarization=(1, 0, 1), dimension=(1, 1, 1), position=(0, 0, 0)
     )
     src2 = magpy.magnet.Cylinder(
-        polarization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0)
+        polarization=(0, 1, 0), dimension=(1, 1), position=(-1, 0, 0)
     )
-    sens1 = magpy.Sensor(position=(0, 0, 6))
-    sens2 = magpy.Sensor(position=(0, 0, 6))
-    sens3 = magpy.Sensor(position=(0, 0, 6))
-    sens4 = magpy.Sensor(position=(0, 0, 6))
+    sens1 = magpy.Sensor(position=(0, 0, 1))
+    sens2 = magpy.Sensor(position=(0, 0, 1))
+    sens3 = magpy.Sensor(position=(0, 0, 1))
+    sens4 = magpy.Sensor(position=(0, 0, 1))
 
     sens_col = sens1 + sens2 + sens3 + sens4
     src_col = src1 + src2

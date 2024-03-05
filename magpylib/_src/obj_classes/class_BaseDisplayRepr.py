@@ -48,7 +48,7 @@ class BaseDisplayRepr:
         for k in list(dict.fromkeys(list(UNITS) + list(params))):
             if not k.startswith("_") and k in params and k not in exclude:
                 unit = UNITS.get(k, None)
-                unit_str = f"{unit}" if unit else ""
+                unit_str = f" {unit}" if unit else ""
                 if k == "position":
                     val = getattr(self, "_position")
                     if val.shape[0] != 1:
@@ -79,7 +79,7 @@ class BaseDisplayRepr:
                         val = f"shape{val.shape}"
                 else:
                     val = getattr(self, k)
-                lines.append(f"  • {k}: {val} {unit_str}")
+                lines.append(f"  • {k}: {val}{unit_str}")
         return lines
 
     def describe(self, *, exclude=("style", "field_func"), return_string=False):
