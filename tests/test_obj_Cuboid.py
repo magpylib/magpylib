@@ -108,3 +108,52 @@ def test_cuboid_object_vs_lib():
 
     np.testing.assert_allclose(B0[0], B1)
     np.testing.assert_allclose(H0[0], H1)
+
+
+def test_getM():
+    """getM test"""
+    m0 = (0, 0, 0)
+    m1 = (10, 200, 3000)
+    cube = magpy.magnet.Cuboid(dimension=(2, 2, 2), magnetization=m1)
+    obs = [
+        (2, 2, 2),
+        (0, 0, 0),
+        (0.5, 0.5, 0.5),
+        (3, 0, 0),
+    ]
+    sens = magpy.Sensor(pixel=obs)
+
+    M1 = cube.getM(obs)
+    M2 = magpy.getM(cube, sens)
+    M3 = sens.getM(cube)
+    Mtest = np.array([m0, m1, m1, m0])
+
+    np.testing.assert_allclose(M1, Mtest)
+    np.testing.assert_allclose(M2, Mtest)
+    np.testing.assert_allclose(M3, Mtest)
+
+
+def test_getJ():
+    """getM test"""
+    j0 = (0, 0, 0)
+    j1 = (0.1, 0.2, 0.3)
+    cube = magpy.magnet.Cuboid(
+        dimension=(2, 2, 2),
+        polarization=j1,
+    )
+    obs = [
+        (-2, 2, -2),
+        (0, 0, 0),
+        (-0.5, -0.5, 0.5),
+        (-3, 0, 0),
+    ]
+    sens = magpy.Sensor(pixel=obs)
+
+    J1 = cube.getJ(obs)
+    J2 = magpy.getJ(cube, sens)
+    J3 = sens.getJ(cube)
+
+    Jtest = np.array([j0, j1, j1, j0])
+    np.testing.assert_allclose(J1, Jtest)
+    np.testing.assert_allclose(J2, Jtest)
+    np.testing.assert_allclose(J3, Jtest)
