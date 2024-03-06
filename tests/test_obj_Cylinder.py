@@ -110,3 +110,53 @@ def test_Cylinder_getBH():
         assert np.allclose(H1, H2)
         assert np.allclose(H1, H3)
         assert np.allclose(H1, H0)
+
+
+def test_getM():
+    """getM test"""
+    m0 = (0, 0, 0)
+    m1 = (10, 200, 3000)
+    cyl = magpy.magnet.Cylinder(dimension=(2, 2), magnetization=m1)
+    obs = [
+        (2, 2, 2),
+        (0, 0, 0),
+        (0.5, 0.5, 0.5),
+        (3, 0, 0),
+    ]
+    sens = magpy.Sensor(pixel=obs)
+
+    M1 = cyl.getM(obs)
+    M2 = magpy.getM(cyl, sens)
+    M3 = sens.getM(cyl)
+
+    Mtest = np.array([m0, m1, m1, m0])
+
+    np.testing.assert_allclose(M1, Mtest)
+    np.testing.assert_allclose(M2, Mtest)
+    np.testing.assert_allclose(M3, Mtest)
+
+
+def test_getJ():
+    """getM test"""
+    j0 = (0, 0, 0)
+    j1 = (0.1, 0.2, 0.3)
+    cyl = magpy.magnet.Cylinder(
+        dimension=(2, 2),
+        polarization=j1,
+    )
+    obs = [
+        (-2, 2, -2),
+        (0, 0, 0),
+        (-0.5, -0.5, 0.5),
+        (-3, 0, 0),
+    ]
+    sens = magpy.Sensor(pixel=obs)
+
+    J1 = cyl.getJ(obs)
+    J2 = magpy.getJ(cyl, sens)
+    J3 = sens.getJ(cyl)
+    Jtest = np.array([j0, j1, j1, j0])
+
+    np.testing.assert_allclose(J1, Jtest)
+    np.testing.assert_allclose(J2, Jtest)
+    np.testing.assert_allclose(J3, Jtest)
