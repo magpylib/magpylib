@@ -4,7 +4,6 @@
 # import numbers
 from functools import lru_cache
 from inspect import signature
-from math import log10
 from typing import Callable
 from typing import Sequence
 
