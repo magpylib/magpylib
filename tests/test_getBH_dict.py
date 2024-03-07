@@ -25,7 +25,7 @@ def test_getB_dict1():
     dic = {"polarization": mag, "dimension": dim, "position": pos, "orientation": rot}
     B1 = magpy.getB("Cylinder", pos_obs, **dic)
 
-    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
 def test_getB_dict2():
@@ -41,7 +41,7 @@ def test_getB_dict2():
     pm = magpy.magnet.Cylinder(polarization=mag, dimension=dim, position=pos)
     B2 = magpy.getB([pm], pos_obs)
 
-    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
 def test_getH_dict1():
@@ -56,7 +56,7 @@ def test_getH_dict1():
     pm = magpy.magnet.Cylinder(polarization=mag, dimension=dim)
     B2 = pm.getH(pos_obs)
 
-    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
 def test_getB_dict3():
@@ -81,7 +81,7 @@ def test_getB_dict3():
         B2 += [pm.getB(pos_obs)]
     B2 = np.array(B2)
     print(B1 - B2)
-    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
 def test_getH_dict3():
@@ -99,7 +99,7 @@ def test_getH_dict3():
         B2 += [magpy.getH([pm], pos_obs)]
     B2 = np.array(B2)
 
-    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
 def test_getB_dict4():
@@ -124,33 +124,33 @@ def test_getB_dict4():
         B2 += [pm.getB(pos_obs)]
     B2 = np.array(B2)
     print(B1 - B2)
-    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
 def test_getBH_dipole():
     """test if Dipole implementation gives correct output"""
     B = magpy.getB("Dipole", (1, 1, 1), moment=(1, 2, 3))
     Btest = np.array([9.62250449e-08, 7.69800359e-08, 5.77350269e-08])
-    assert np.allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest)
 
     H = magpy.getH("Dipole", (1, 1, 1), moment=(1, 2, 3))
     Htest = np.array([0.07657346, 0.06125877, 0.04594407])
-    assert np.allclose(H, Htest)
+    np.testing.assert_allclose(H, Htest, rtol=1e-05, atol=1e-08)
 
 
 def test_getBH_circle():
     """test if Circle implementation gives correct output"""
     B = magpy.getB("Circle", (0, 0, 0), current=1, diameter=2)
     Btest = np.array([0, 0, 0.6283185307179586 * 1e-6])
-    assert np.allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest)
 
     H = magpy.getH("Circle", (0, 0, 0), current=1, diameter=2)
     Htest = np.array([0, 0, 0.6283185307179586 * 10 / 4 / np.pi])
-    assert np.allclose(H, Htest)
+    np.testing.assert_allclose(H, Htest)
 
     with pytest.warns(MagpylibDeprecationWarning):
         B = magpy.getB("Loop", (0, 0, 0), current=1, diameter=2)
-    assert np.allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest)
 
 
 def test_getBH_squeeze():
@@ -181,7 +181,7 @@ def test_getBH_polyline():
         / 4
         / np.pi
     )
-    assert np.allclose(x, H)
+    np.testing.assert_allclose(x, H, rtol=1e-05, atol=1e-08)
 
 
 def test_getBH_polyline2():
@@ -200,11 +200,11 @@ def test_getBH_polyline2():
 
     B1 = getB_line("Polyline")
     expected = np.array([0, -x, 0])
-    assert np.allclose(B1, expected)
+    np.testing.assert_allclose(B1, expected, rtol=1e-05, atol=1e-08)
 
     with pytest.warns(MagpylibDeprecationWarning):
         B1 = getB_line("Line")
-    assert np.allclose(B1, expected)
+    np.testing.assert_allclose(B1, expected, rtol=1e-05, atol=1e-08)
 
     # move z-line to x=-1
     B2 = magpy.getB(
@@ -215,7 +215,7 @@ def test_getBH_polyline2():
         segment_start=(1, 0, -1),
         segment_end=(1, 0, 1),
     )
-    assert np.allclose(B2, np.array([0, x, 0]))
+    np.testing.assert_allclose(B2, np.array([0, x, 0]), rtol=1e-05, atol=1e-08)
 
     # rotate 1
     rot = R.from_euler("z", 90, degrees=True)
@@ -227,7 +227,7 @@ def test_getBH_polyline2():
         segment_start=(1, 0, -1),
         segment_end=(1, 0, 1),
     )
-    assert np.allclose(B3, np.array([x, 0, 0]))
+    np.testing.assert_allclose(B3, np.array([x, 0, 0]), rtol=1e-05, atol=1e-08)
 
     # rotate 2
     rot = R.from_euler("x", 90, degrees=True)
@@ -239,7 +239,7 @@ def test_getBH_polyline2():
         segment_start=(1, 0, -1),
         segment_end=(1, 0, 1),
     )
-    assert np.allclose(B4, np.array([0, 0, -x]))
+    np.testing.assert_allclose(B4, np.array([0, 0, -x]), rtol=1e-05, atol=1e-08)
 
     # rotate 3
     rot = R.from_euler("y", 90, degrees=True)
@@ -251,7 +251,7 @@ def test_getBH_polyline2():
         segment_start=(1, 0, -1),
         segment_end=(1, 0, 1),
     )
-    assert np.allclose(B5, np.array([0, -x, 0]))
+    np.testing.assert_allclose(B5, np.array([0, -x, 0]), rtol=1e-05, atol=1e-08)
 
     # "scalar" vertices tiling
     B = magpy.getB(
@@ -374,8 +374,8 @@ def test_getBH_solid_cylinder():
         polarization=(22, 33, 44),
     )
 
-    assert np.allclose(B1, B2)
-    assert np.allclose(B1, B3)
+    np.testing.assert_allclose(B1, B2)
+    np.testing.assert_allclose(B1, B3)
 
 
 def test_getB_dict_over_getB():
@@ -403,7 +403,7 @@ def test_getB_dict_over_getB():
     }
     B1 = magpy.getB(**dic)
 
-    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
     # test for kwargs if sources is not a string
     dic["sources"] = pm

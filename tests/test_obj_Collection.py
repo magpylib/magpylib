@@ -244,7 +244,7 @@ def test_col_getH():
     col = magpy.Collection(pm1, pm2)
     H = col.getH((0, 0, 0))
     H1 = pm1.getH((0, 0, 0))
-    assert np.all(H == 2 * H1), "col getH fail"
+    np.testing.assert_array_equal(H, 2 * H1, err_msg="col getH fail")
 
 
 def test_col_reset_path():
@@ -285,7 +285,7 @@ def test_Collection_with_Dipole():
 
     B = magpy.getB(col, sens)
     Btest = np.array([3.81801774e-09, 7.63603548e-09, 1.14540532e-08])
-    assert np.allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest)
 
 
 def test_adding_sources():

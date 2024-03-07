@@ -56,11 +56,11 @@ def test_el3_vs_original():
 
     # compare to vectorized
     resv = el3v(x11, kc11, p11)
-    assert np.allclose(res0, resv)
+    np.testing.assert_allclose(res0, resv)
 
     # compare to modified original
     res1 = np.array([el30(x, kc, p) for x, kc, p in zip(x11, kc11, p11)])
-    assert np.allclose(res0, res1)
+    np.testing.assert_allclose(res0, res1)
 
 
 def test_el3_angle_vs_original():
@@ -81,7 +81,7 @@ def test_el3_angle_vs_original():
 
     # compare to vectorized
     resv = el3_angle(phis, ns, ms)
-    assert np.allclose(res0, resv)
+    np.testing.assert_allclose(res0, resv)
 
 
 def test_el3s():
@@ -97,8 +97,8 @@ def test_el3s():
     res1 = el3v(xs, kcs, ps)
     res2 = el3(xs, kcs, ps)
 
-    assert np.allclose(res0, res1)
-    assert np.allclose(res1, res2)
+    np.testing.assert_allclose(res0, res1)
+    np.testing.assert_allclose(res1, res2)
 
 
 def test_cels():
@@ -116,5 +116,5 @@ def test_cels():
     res1 = celv(kcc, pp, cc, ss)
     res2 = cel(kcc, pp, cc, ss)
 
-    assert np.allclose(res0, res1)
-    assert np.allclose(res1, res2)
+    np.testing.assert_allclose(res0, res1)
+    np.testing.assert_allclose(res1, res2)
