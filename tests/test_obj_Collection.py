@@ -121,15 +121,15 @@ def test_Collection_basics():
 def test_col_getB(test_input, expected):
     """testing some Collection stuff with getB"""
     src1 = magpy.magnet.Cuboid(
-        polarization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
+        polarization=(1, 0, 1), dimension=(1, 1, 1), position=(0, 0, 0)
     )
     src2 = magpy.magnet.Cylinder(
-        polarization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0)
+        polarization=(0, 1, 0), dimension=(1, 1), position=(-1, 0, 0)
     )
-    sens1 = magpy.Sensor(position=(0, 0, 6))
-    sens2 = magpy.Sensor(position=(0, 0, 6))
-    sens3 = magpy.Sensor(position=(0, 0, 6))
-    sens4 = magpy.Sensor(position=(0, 0, 6))
+    sens1 = magpy.Sensor(position=(0, 0, 1))
+    sens2 = magpy.Sensor(position=(0, 0, 1))
+    sens3 = magpy.Sensor(position=(0, 0, 1))
+    sens4 = magpy.Sensor(position=(0, 0, 1))
 
     sens_col = sens1 + sens2 + sens3 + sens4
     src_col = src1 + src2
@@ -244,7 +244,7 @@ def test_col_getH():
     col = magpy.Collection(pm1, pm2)
     H = col.getH((0, 0, 0))
     H1 = pm1.getH((0, 0, 0))
-    assert np.all(H == 2 * H1), "col getH fail"
+    np.testing.assert_array_equal(H, 2 * H1, err_msg="col getH fail")
 
 
 def test_col_reset_path():
@@ -285,7 +285,7 @@ def test_Collection_with_Dipole():
 
     B = magpy.getB(col, sens)
     Btest = np.array([3.81801774e-09, 7.63603548e-09, 1.14540532e-08])
-    assert np.allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest)
 
 
 def test_adding_sources():

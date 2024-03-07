@@ -119,17 +119,14 @@ def check_degree_type(inp):
         )
 
 
-def check_field_input(inp, origin):
+def check_field_input(inp):
     """check field input"""
-    if isinstance(inp, str):
-        if inp == "B":
-            return True
-        if inp == "H":
-            return False
-    raise MagpylibBadUserInput(
-        f"{origin} input can only be `field='B'` or `field='H'`.\n"
-        f"Instead received {repr(inp)}."
-    )
+    allowed = tuple("BHMJ")
+    if not (isinstance(inp, str) and inp in allowed):
+        raise MagpylibBadUserInput(
+            f"`field` input can only be one of {allowed}.\n"
+            f"Instead received {repr(inp)}."
+        )
 
 
 def validate_field_func(val):

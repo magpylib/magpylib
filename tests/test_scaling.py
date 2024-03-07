@@ -17,6 +17,6 @@ def test_scaling_loop():
     c4 = magpy.current.Circle(current=123000, diameter=10000)
     B4 = c4.getB([1000, 2000, 3000])
 
-    assert np.allclose(B1, B2)
-    assert np.allclose(B1, B3)
-    assert np.allclose(B1, B4)
+    np.testing.assert_allclose(B1, B2)
+    np.testing.assert_allclose(B1, B3)
+    np.testing.assert_allclose(B1, B4)

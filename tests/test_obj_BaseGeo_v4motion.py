@@ -15,20 +15,22 @@ def validate_pos_orient(obj, ppath, opath_as_rotvec):
     so = obj.orientation
     ppath = np.array(ppath)
     opath = R.from_rotvec(opath_as_rotvec)
-    assert ppath.shape == sp.shape, (
-        "position shapes do not match"
-        f"\n object has {sp.shape} instead of {ppath.shape}"
+    np.testing.assert_allclose(
+        sp,
+        ppath,
+        rtol=1e-05,
+        atol=1e-08,
+        err_msg=f"position validation failed with ({sp})" f"\n expected {ppath}",
     )
-    assert opath.as_rotvec().shape == so.as_rotvec().shape, (
-        "orientation as_rotvec shapes do not match"
-        f"\n object has {so.as_rotvec().shape} instead of {opath.as_rotvec().shape}"
-    )
-    assert np.allclose(sp, ppath), (
-        f"position validation failed with ({sp})" f"\n expected {ppath}"
-    )
-    assert np.allclose(so.as_matrix(), opath.as_matrix()), (
-        f"orientation validation failed with ({so.as_rotvec()})"
-        f"\n expected {opath_as_rotvec}"
+    np.testing.assert_allclose(
+        so.as_matrix(),
+        opath.as_matrix(),
+        rtol=1e-05,
+        atol=1e-08,
+        err_msg=(
+            f"orientation validation failed with ({so.as_rotvec()})"
+            f"\n expected {opath_as_rotvec}"
+        ),
     )
 
 

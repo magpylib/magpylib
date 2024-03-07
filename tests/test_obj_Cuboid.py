@@ -4,8 +4,8 @@ import pickle
 import numpy as np
 
 import magpylib as magpy
+from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.obj_classes.class_Sensor import Sensor
-
 
 # # # """data generation for test_Cuboid()"""
 
@@ -99,12 +99,8 @@ def test_cuboid_object_vs_lib():
     pol = np.array([(10, 20, 30)])
     dim = np.array([(a, a, a)])
     pos = np.array([(2 * a, 2 * a, 2 * a)])
-    B0 = magpy.core.magnet_cuboid_field(
-        field="B", observers=pos, polarization=pol, dimension=dim
-    )
-    H0 = magpy.core.magnet_cuboid_field(
-        field="H", observers=pos, polarization=pol, dimension=dim
-    )
+    B0 = BHJM_magnet_cuboid(field="B", observers=pos, polarization=pol, dimension=dim)
+    H0 = BHJM_magnet_cuboid(field="H", observers=pos, polarization=pol, dimension=dim)
 
     src = magpy.magnet.Cuboid(polarization=pol[0], dimension=dim[0])
     B1 = src.getB(pos)
@@ -112,3 +108,52 @@ def test_cuboid_object_vs_lib():
 
     np.testing.assert_allclose(B0[0], B1)
     np.testing.assert_allclose(H0[0], H1)
+
+
+def test_getM():
+    """getM test"""
+    m0 = (0, 0, 0)
+    m1 = (10, 200, 3000)
+    cube = magpy.magnet.Cuboid(dimension=(2, 2, 2), magnetization=m1)
+    obs = [
+        (2, 2, 2),
+        (0, 0, 0),
+        (0.5, 0.5, 0.5),
+        (3, 0, 0),
+    ]
+    sens = magpy.Sensor(pixel=obs)
+
+    M1 = cube.getM(obs)
+    M2 = magpy.getM(cube, sens)
+    M3 = sens.getM(cube)
+    Mtest = np.array([m0, m1, m1, m0])
+
+    np.testing.assert_allclose(M1, Mtest)
+    np.testing.assert_allclose(M2, Mtest)
+    np.testing.assert_allclose(M3, Mtest)
+
+
+def test_getJ():
+    """getM test"""
+    j0 = (0, 0, 0)
+    j1 = (0.1, 0.2, 0.3)
+    cube = magpy.magnet.Cuboid(
+        dimension=(2, 2, 2),
+        polarization=j1,
+    )
+    obs = [
+        (-2, 2, -2),
+        (0, 0, 0),
+        (-0.5, -0.5, 0.5),
+        (-3, 0, 0),
+    ]
+    sens = magpy.Sensor(pixel=obs)
+
+    J1 = cube.getJ(obs)
+    J2 = magpy.getJ(cube, sens)
+    J3 = sens.getJ(cube)
+
+    Jtest = np.array([j0, j1, j1, j0])
+    np.testing.assert_allclose(J1, Jtest)
+    np.testing.assert_allclose(J2, Jtest)
+    np.testing.assert_allclose(J3, Jtest)

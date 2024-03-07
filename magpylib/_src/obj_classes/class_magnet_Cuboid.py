@@ -1,7 +1,7 @@
 """Magnet Cuboid class code"""
 
 from magpylib._src.display.traces_core import make_Cuboid
-from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
+from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.utility import unit_prefix
@@ -62,7 +62,7 @@ class Cuboid(BaseMagnet):
     >>> src = magpy.magnet.Cuboid(polarization=(.5,.6,.7), dimension=(.01,.01,.01))
     >>> H = src.getH((.01,.01,.01))
     >>> print(H)
-    [16149.04136518 14906.80741401 13664.57346284]
+    [16149.04135639 14906.8074059  13664.57345541]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
@@ -75,7 +75,7 @@ class Cuboid(BaseMagnet):
      [-0.03557183  0.00646436  0.14943466]]
     """
 
-    _field_func = staticmethod(magnet_cuboid_field)
+    _field_func = staticmethod(BHJM_magnet_cuboid)
     _field_func_kwargs_ndim = {"polarization": 2, "dimension": 2}
     get_trace = make_Cuboid
 

@@ -4,7 +4,7 @@
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Triangle
-from magpylib._src.fields.field_BH_triangle import triangle_field
+from magpylib._src.fields.field_BH_triangle import BHJM_triangle
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.style import TriangleStyle
@@ -76,7 +76,7 @@ class Triangle(BaseMagnet):
     >>> src = magpy.misc.Triangle(polarization=(.1,.2,.3), vertices=verts)
     >>> H = src.getH((.1,.1,.1))
     >>> print(H)
-    [18.88869831 18.88869831 19.54560637]
+    [18.8886983  18.8886983  19.54560636]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
@@ -101,7 +101,7 @@ class Triangle(BaseMagnet):
      [0.00030049 0.00031044 0.00031044]]
     """
 
-    _field_func = staticmethod(triangle_field)
+    _field_func = staticmethod(BHJM_triangle)
     _field_func_kwargs_ndim = {"polarization": 2, "vertices": 2}
     get_trace = make_Triangle
     _style_class = TriangleStyle

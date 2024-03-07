@@ -14,7 +14,7 @@ def test_Polyline_basic1():
     x = 5.77350269 * 1e-6
     Btest = np.array([x, -x, 0])
 
-    assert np.allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest)
 
 
 def test_Polyline_basic2():
@@ -26,7 +26,7 @@ def test_Polyline_basic2():
     x = 5.77350269 / 4 / np.pi * 10
     Htest = np.array([-x, x, 0])
 
-    assert np.allclose(H, Htest)
+    np.testing.assert_allclose(H, Htest)
 
 
 def test_Polyline_basic3():
@@ -41,7 +41,7 @@ def test_Polyline_basic3():
     x = 5.77350269 * 1e-6
     Btest = np.array([(x, -x, 0)] * 2)
 
-    assert np.allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest)
 
 
 def test_Polyline_repr():
@@ -54,15 +54,15 @@ def test_Polyline_specials():
     """Polyline specials tests"""
     line = magpy.current.Polyline(current=100, vertices=[(0, 0, 0), (1, 1, 1)])
     b = line.getB([0, 0, 0])
-    assert np.allclose(b, np.zeros(3))
+    np.testing.assert_allclose(b, np.zeros(3))
 
     line = magpy.current.Polyline(current=100, vertices=[(0, 0, 0), (0, 0, 0)])
     b = line.getB([1, 2, 3])
-    assert np.allclose(b, np.zeros(3))
+    np.testing.assert_allclose(b, np.zeros(3))
 
     line = magpy.current.Polyline(current=0, vertices=[(1, 2, 3), (3, 2, 1)])
     b = line.getB([0, 0, 0])
-    assert np.allclose(b, np.zeros(3))
+    np.testing.assert_allclose(b, np.zeros(3))
 
 
 def test_line_position_bug():
@@ -84,11 +84,12 @@ def test_line_position_bug():
     # B2 = col.getB([(0,.99,.5), (0,.99,-.5)])
     B2 = col.getB(poso)
 
-    assert np.allclose(B1, B2)
+    np.testing.assert_allclose(B1, B2)
 
 
 def test_discontinous_line():
     """test discontinuous line"""
+
     line_1 = magpy.current.Polyline(
         current=1,
         vertices=[
@@ -117,6 +118,7 @@ def test_discontinous_line():
 
     B1 = magpy.getB((line_1, line_2), (0, 0, 0), sumup=True)
     B2 = line_12.getB((0, 0, 0))
+
     np.testing.assert_allclose(B1, B2)
 
 

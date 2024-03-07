@@ -61,3 +61,21 @@ def test_tetra_barycenter():
     vert = [(1, 1, -1), (1, 1, 1), (-1, 1, 1), (1, -1, 1)]
     tetra = magpy.magnet.Tetrahedron(polarization=pol, vertices=vert)
     np.testing.assert_allclose(tetra.barycenter, (0.5, 0.5, 0.5))
+
+
+def test_tetra_in_out():
+    """test inside and outside"""
+    pol = (0.111, 0.222, 0.333)
+    vert = [(-1, -1, -1), (0, 1, -1), (1, 0, -1), (0, 0, 1)]
+    tetra = magpy.magnet.Tetrahedron(polarization=pol, vertices=vert)
+
+    obs_in = [(0, 0, 0), (0.1, 0.1, 0.1), (0.2, 0.2, 0.2)]
+    obs_out = [(2, 0, 0), (2, 2, 2), (0.2, 2, 0.2)]
+
+    Bauto = magpy.getB(tetra, obs_in)
+    Bin = magpy.getB(tetra, obs_in, in_out="inside")
+    np.testing.assert_allclose(Bauto, Bin)
+
+    Bauto = magpy.getB(tetra, obs_out)
+    Bout = magpy.getB(tetra, obs_out, in_out="outside")
+    np.testing.assert_allclose(Bauto, Bout)

@@ -4,12 +4,13 @@ Computation details in function docstrings.
 """
 
 # pylint: disable=too-many-nested-blocks
+# pylint: disable=too-many-branches
 # pylance: disable=Code is unreachable
 import numpy as np
 import scipy.spatial
+from scipy.constants import mu_0 as MU0
 
-from magpylib._src.fields.field_BH_triangle import triangle_field
-from magpylib._src.utility import MU0
+from magpylib._src.fields.field_BH_triangle import BHJM_triangle
 
 
 def calculate_centroid(vertices, faces):
@@ -495,9 +496,7 @@ def mask_inside_trimesh(points: np.ndarray, faces: np.ndarray) -> np.ndarray:
     return mask_inside
 
 
-# CORE LIKE - but is not a core function!
-def magnet_trimesh_field(
-    *,
+def BHJM_magnet_trimesh(
     field: str,
     observers: np.ndarray,
     mesh: np.ndarray,
@@ -505,103 +504,75 @@ def magnet_trimesh_field(
     in_out="auto",
 ) -> np.ndarray:
     """
-    Core-like function that computes the field of triangular meshes using the triangle_field
-
-    !!!Closed meshes are assumed (input comes only from TriangularMesh class)!!!
-    This is the reasons that this is not a core function
-
-    SI units are used for all inputs and outputs.
-
-    Parameters
-    ----------
-    field: str, default=`'B'`
-        If `field='B'` return B-field in units of T, if `field='H'` return H-field
-        in units of A/m.
-
-    observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of m.
-
-    mesh: ndarray, shape (n,n1,3,3) or ragged sequence
-        Triangular mesh of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
-        `mesh` can be a ragged sequence of mesh-children with different lengths.
-
-    polarization: ndarray, shape (n,3)
-        Magnetic polarization vectors in units of T.
-
-    in_out: {'auto', 'inside', 'outside'}
-        Tells if the points are inside or outside the enclosing mesh for the correct B/H-field
-        calculation. By default `in_out='auto'` and the inside/outside mask is automatically
-        generated using a ray tracing algorithm to determine which observers are inside and which
-        are outside the closed body. For performance reasons, one can define `in_out='outside'`
-        or `in_out='inside'` if it is known in advance that all observers satisfy the same
-        condition.
-
-    Returns
-    -------
-    B-field or H-field: ndarray, shape (n,3)
-        B- or H-field of source in Cartesian coordinates in units of T or A/m.
-
-    Notes
-    -----
-    Advanced unit use: The input unit of magnetization and polarization
-    gives the output unit of H and B. All results are independent of the
-    length input units. One must be careful, however, to use consistently
-    the same length unit throughout a script.
-
-    Field computations via publication:
-    Guptasarma: GEOPHYSICS 1999 64:1, 70-74
+    - Compute triangular mesh field from triangle fields.
+    - Closed meshes are assumed (input comes only from TriangularMesh class)
+    - Field computations via publication: Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
-    if mesh.ndim != 1:  # all vertices objects have same number of children
-        n0, n1, *_ = mesh.shape
-        vertices_tiled = mesh.reshape(-1, 3, 3)
-        observers_tiled = np.repeat(observers, n1, axis=0)
-        polarization_tiled = np.repeat(polarization, n1, axis=0)
-        B = triangle_field(
-            field="B",
-            observers=observers_tiled,
-            vertices=vertices_tiled,
-            polarization=polarization_tiled,
-        )
-        B = B.reshape((n0, n1, 3))
-        B = np.sum(B, axis=1)
+    if field in "BH":
+        if mesh.ndim != 1:  # all vertices objects have same number of children
+            n0, n1, *_ = mesh.shape
+            vertices_tiled = mesh.reshape(-1, 3, 3)
+            observers_tiled = np.repeat(observers, n1, axis=0)
+            polarization_tiled = np.repeat(polarization, n1, axis=0)
+            BHJM = BHJM_triangle(
+                field="B",
+                observers=observers_tiled,
+                vertices=vertices_tiled,
+                polarization=polarization_tiled,
+            )
+            BHJM = BHJM.reshape((n0, n1, 3))
+            BHJM = np.sum(BHJM, axis=1)
+        else:
+            nvs = [f.shape[0] for f in mesh]  # length of vertex set
+            split_indices = np.cumsum(nvs)[:-1]  # remove last to avoid empty split
+            vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in mesh])
+            observers_tiled = np.repeat(observers, nvs, axis=0)
+            polarization_tiled = np.repeat(polarization, nvs, axis=0)
+            BHJM = BHJM_triangle(
+                field="B",
+                observers=observers_tiled,
+                vertices=vertices_tiled,
+                polarization=polarization_tiled,
+            )
+            b_split = np.split(BHJM, split_indices)
+            BHJM = np.array([np.sum(bh, axis=0) for bh in b_split])
     else:
-        nvs = [f.shape[0] for f in mesh]  # length of vertex set
-        split_indices = np.cumsum(nvs)[:-1]  # remove last to avoid empty split
-        vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in mesh])
-        observers_tiled = np.repeat(observers, nvs, axis=0)
-        polarization_tiled = np.repeat(polarization, nvs, axis=0)
-        B = triangle_field(
-            field="B",
-            observers=observers_tiled,
-            vertices=vertices_tiled,
-            polarization=polarization_tiled,
-        )
-        b_split = np.split(B, split_indices)
-        B = np.array([np.sum(bh, axis=0) for bh in b_split])
+        BHJM = np.zeros_like(observers, dtype=float)
+
+    if field == "H":
+        return BHJM / MU0
+
+    if in_out == "auto":
+        prev_ind = 0
+        # group similar meshes for inside-outside evaluation and adding B
+        for new_ind, _ in enumerate(BHJM):
+            if (
+                new_ind == len(BHJM) - 1
+                or mesh[new_ind].shape != mesh[prev_ind].shape
+                or not np.all(mesh[new_ind] == mesh[prev_ind])
+            ):
+                if new_ind == len(BHJM) - 1:
+                    new_ind = len(BHJM)
+                mask_inside = mask_inside_trimesh(
+                    observers[prev_ind:new_ind], mesh[prev_ind]
+                )
+                # if inside magnet add polarization vector
+                BHJM[prev_ind:new_ind][mask_inside] += polarization[prev_ind:new_ind][
+                    mask_inside
+                ]
+                prev_ind = new_ind
+    elif in_out == "inside":
+        BHJM += polarization
 
     if field == "B":
-        if in_out == "auto":
-            prev_ind = 0
-            # group similar meshes for inside-outside evaluation and adding B
-            for new_ind, _ in enumerate(B):
-                if (
-                    new_ind == len(B) - 1
-                    or mesh[new_ind].shape != mesh[prev_ind].shape
-                    or not np.all(mesh[new_ind] == mesh[prev_ind])
-                ):
-                    if new_ind == len(B) - 1:
-                        new_ind = len(B)
-                    inside_mask = mask_inside_trimesh(
-                        observers[prev_ind:new_ind], mesh[prev_ind]
-                    )
-                    # if inside magnet add polarization vector
-                    B[prev_ind:new_ind][inside_mask] += polarization[prev_ind:new_ind][
-                        inside_mask
-                    ]
-                    prev_ind = new_ind
-        elif in_out == "inside":
-            B += polarization
-        return B
+        return BHJM
 
-    H = B / MU0
-    return H
+    if field == "J":
+        return BHJM
+
+    if field == "M":
+        return BHJM / MU0
+
+    raise ValueError(  # pragma: no cover
+        "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"
+    )

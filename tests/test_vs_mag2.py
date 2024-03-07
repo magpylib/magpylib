@@ -40,7 +40,7 @@ def test_vs_mag2_linear():
     pm = magpy.magnet.Cuboid(polarization=(111, 222, 333), dimension=(1, 2, 3))
 
     B = magpy.getB(pm, poso)
-    assert np.allclose(B, data), "vs mag2 - linear"
+    np.testing.assert_allclose(B, data, err_msg="vs mag2 - linear")
 
 
 def test_vs_mag2_rotation():
@@ -53,7 +53,7 @@ def test_vs_mag2_rotation():
         for t in np.linspace(0, 444, 100)
     ]
     B = pm.getB(possis)
-    assert np.allclose(B, data), "vs mag2 - rot"
+    np.testing.assert_allclose(B, data, err_msg="vs mag2 - rot")
 
 
 def test_vs_mag2_spiral():
@@ -69,7 +69,7 @@ def test_vs_mag2_spiral():
     possis = np.linspace((0, 0, 0.1), (0, 0, 9.9), 99)
     pm.move(possis, start=1)
     B = pm.getB((0, 0, 0))
-    assert np.allclose(B, data), "vs mag2 - rot"
+    np.testing.assert_allclose(B, data, err_msg="vs mag2 - rot")
 
 
 def test_vs_mag2_line():
@@ -82,4 +82,4 @@ def test_vs_mag2_line():
     )
     B = src.getB([1, 2, 3])
 
-    assert np.allclose(Btest, B)
+    np.testing.assert_allclose(Btest, B)

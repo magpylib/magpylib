@@ -4,6 +4,7 @@ import pickle
 import numpy as np
 
 import magpylib as magpy
+from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 
 # # """data generation for test_Sphere()"""
 
@@ -54,7 +55,7 @@ def test_Sphere_basics():
         btest += [pm.getB(poso)]
     btest = np.array(btest)
 
-    assert np.allclose(B, btest), "test_Sphere failed big time"
+    np.testing.assert_allclose(B, btest)
 
 
 def test_Sphere_add():
@@ -94,9 +95,7 @@ def test_sphere_object_vs_lib():
     pol = np.array([(10, 20, 30)])
     dia = np.array([1])
     pos = np.array([(2, 2, 2)])
-    B1 = magpy.core.magnet_sphere_field(
-        field="B", observers=pos, polarization=pol, diameter=dia
-    )[0]
+    B1 = BHJM_magnet_sphere(field="B", observers=pos, polarization=pol, diameter=dia)[0]
 
     src = magpy.magnet.Sphere(polarization=pol[0], diameter=dia[0])
     B2 = src.getB(pos)

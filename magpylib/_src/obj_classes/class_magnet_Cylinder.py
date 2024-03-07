@@ -1,7 +1,7 @@
 """Magnet Cylinder class code"""
 
 from magpylib._src.display.traces_core import make_Cylinder
-from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_field
+from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.utility import unit_prefix
@@ -61,7 +61,7 @@ class Cylinder(BaseMagnet):
     >>> src = magpy.magnet.Cylinder(polarization=(.1,.2,.3), dimension=(.01,.01))
     >>> H = src.getH((.01,.01,.01))
     >>> print(H)
-    [4849.91343385 3883.17815728 2739.73202386]
+    [4849.91343121 3883.17815517 2739.73202237]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
@@ -86,7 +86,7 @@ class Cylinder(BaseMagnet):
      [1.25715233e-04 2.01445027e-04 1.31238931e-05]]
     """
 
-    _field_func = staticmethod(magnet_cylinder_field)
+    _field_func = staticmethod(BHJM_magnet_cylinder)
     _field_func_kwargs_ndim = {"polarization": 2, "dimension": 2}
     get_trace = make_Cylinder
 

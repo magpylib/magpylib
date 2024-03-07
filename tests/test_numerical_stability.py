@@ -23,4 +23,4 @@ def test_loop_field():
     normB = np.linalg.norm(B, axis=1)
     norms = normB / normB[0]
 
-    assert np.allclose(norms, np.ones(1000))
+    np.testing.assert_allclose(norms, np.ones(1000))
