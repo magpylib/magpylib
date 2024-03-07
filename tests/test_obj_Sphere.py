@@ -55,7 +55,7 @@ def test_Sphere_basics():
         btest += [pm.getB(poso)]
     btest = np.array(btest)
 
-    assert np.allclose(B, btest), "test_Sphere failed big time"
+    np.testing.assert_allclose(B, btest)
 
 
 def test_Sphere_add():

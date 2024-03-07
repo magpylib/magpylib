@@ -10,7 +10,7 @@ def test_Dipole_basicB():
 
     B = src.getB(sens)
     Btest = np.array([3.81801774e-09, 7.63603548e-09, 1.14540532e-08])
-    assert np.allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest)
 
 
 def test_Dipole_basicH():
@@ -19,7 +19,7 @@ def test_Dipole_basicH():
     sens = magpy.Sensor()
     H = src.getH(sens)
     Htest = np.array([0.00303828, 0.00607656, 0.00911485])
-    assert np.allclose(H, Htest)
+    np.testing.assert_allclose(H, Htest, rtol=1e-05, atol=1e-08)
 
 
 def test_Dipole_zero_position():

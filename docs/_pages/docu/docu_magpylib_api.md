@@ -649,7 +649,7 @@ print(B)
 #  --> [0.         0.         0.00125664]
 ```
 
-By default, `getB` returns the B-field in units of T, `getH` the H-field in units of A/m, `getJ` the magnetic polarization in T and, `getM` the magnetization in A/m, assuming that all inputs are given in SI units. 
+By default, `getB` returns the B-field in units of T, `getH` the H-field in units of A/m, `getJ` the magnetic polarization in T and, `getM` the magnetization in A/m, assuming that all inputs are given in SI units.
 
 ```{note}
 In reality, `getB` returns the same unit as given by the `polarization` input. For example, with polarization input in mT, getB will return mT as well. At the same time when the `magnetization` input is kA/m, then `getH` returns kA/m as well. The B/H-field outputs are related to a M/J-inputs via a factor of $µ_0$.

@@ -12,7 +12,7 @@ def test_Circle_basic_B():
 
     B = src.getB(sens)
     Btest = np.array([0.44179833, 0.88359665, 0.71546231]) * 1e-6
-    assert np.allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest)
 
 
 def test_BHJM_circle():
@@ -44,7 +44,7 @@ def test_Circle_basic_H():
 
     H = src.getH(sens)
     Htest = np.array([0.44179833, 0.88359665, 0.71546231]) * 10 / 4 / np.pi
-    assert np.allclose(H, Htest)
+    np.testing.assert_allclose(H, Htest)
 
 
 # def test_Circular_problem_positions():
@@ -56,7 +56,7 @@ def test_Circle_basic_H():
 
 #     B = src.getB(sens)
 #     Btest = np.array([[0,0,0.6283185307179586], [0,0,0], [0,0,0]])
-#     assert np.allclose(B, Btest)
+#     np.testing.assert_allclose(B, Btest)
 
 
 def test_repr():

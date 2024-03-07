@@ -224,7 +224,7 @@ def test_cylinder_field1():
         field="B", observers=poso, polarization=magg, dimension=dim5
     )
 
-    assert np.allclose(B1, B0)
+    np.testing.assert_allclose(B1, B0)
 
 
 def test_cylinder_slanovc_field2():
@@ -244,37 +244,37 @@ def test_cylinder_slanovc_field2():
     # only inside
     btest = np.array([b_in] * 3)
     B = src.getB([r_in] * 3)
-    assert np.allclose(B, btest)
+    np.testing.assert_allclose(B, btest)
 
     # only edge
     btest = np.array([b_corn] * 3)
     B = src.getB([r_corn] * 3)
-    assert np.allclose(B, btest)
+    np.testing.assert_allclose(B, btest)
 
     # only outside
     btest = np.array([b_out] * 3)
     B = src.getB([r_out] * 3)
-    assert np.allclose(B, btest)
+    np.testing.assert_allclose(B, btest, rtol=1e-05, atol=1e-08)
 
     # edge + out
     btest = np.array([b_corn, b_corn, b_out])
     B = src.getB([r_corn, r_corn, r_out])
-    assert np.allclose(B, btest)
+    np.testing.assert_allclose(B, btest, rtol=1e-05, atol=1e-08)
 
     # surf + in
     btest = np.array([b_corn, b_corn, b_in])
     B = src.getB(r_corn, r_corn, r_in)
-    assert np.allclose(B, btest)
+    np.testing.assert_allclose(B, btest)
 
     # in + out
     btest = np.array([b_out, b_in])
     B = src.getB(r_out, r_in)
-    assert np.allclose(B, btest)
+    np.testing.assert_allclose(B, btest, rtol=1e-05, atol=1e-08)
 
     # in + out + surf
     btest = np.array([b_corn, b_corn, b_in, b_out, b_corn, b_corn])
     B = src.getB([r_corn, r_corn, r_in, r_out, r_corn, r_corn])
-    assert np.allclose(B, btest)
+    np.testing.assert_allclose(B, btest, rtol=1e-05, atol=1e-08)
 
 
 def test_cylinder_slanovc_field3():
@@ -290,32 +290,32 @@ def test_cylinder_slanovc_field3():
     # only inside
     htest = np.array([hinn] * 3)
     H = src.getH([[0.5, 0.6, 0.3]] * 3)
-    assert np.allclose(H, htest)
+    np.testing.assert_allclose(H, htest)
 
     # only surf
     htest = np.array([nulll] * 3)
     H = src.getH([[1, 0, 0]] * 3)
-    assert np.allclose(H, htest)
+    np.testing.assert_allclose(H, htest)
 
     # only outside
     htest = np.array([hout] * 3)
     H = src.getH([[1, 2, 3]] * 3)
-    assert np.allclose(H, htest)
+    np.testing.assert_allclose(H, htest)
 
     # surf + out
     htest = np.array([nulll, nulll, hout])
     H = src.getH([0.6, 0, 1], [1, 0, 0.5], [1, 2, 3])
-    assert np.allclose(H, htest)
+    np.testing.assert_allclose(H, htest)
 
     # surf + in
     htest = np.array([nulll, nulll, hinn])
     H = src.getH([0, 0.5, 1], [1, 0, 0.5], [0.5, 0.6, 0.3])
-    assert np.allclose(H, htest)
+    np.testing.assert_allclose(H, htest)
 
     # in + out
     htest = np.array([hout, hinn])
     H = src.getH([1, 2, 3], [0.5, 0.6, 0.3])
-    assert np.allclose(H, htest)
+    np.testing.assert_allclose(H, htest)
 
     # in + out + surf
     htest = np.array([nulll, nulll, hinn, hout, nulll, nulll])
@@ -327,7 +327,7 @@ def test_cylinder_slanovc_field3():
         [0.5, 0.6, -1],
         [0, 1, -0.3],
     )
-    assert np.allclose(H, htest)
+    np.testing.assert_allclose(H, htest)
 
 
 def test_cylinder_rauber_field4():
@@ -353,7 +353,7 @@ def test_cylinder_tile_negative_phi():
     )
     B1 = src1.getB((1, 0.5, 0.1))
     B2 = src2.getB((1, 0.5, 0.1))
-    assert np.allclose(B1, B2)
+    np.testing.assert_allclose(B1, B2)
 
 
 def test_cylinder_tile_vs_fem():
