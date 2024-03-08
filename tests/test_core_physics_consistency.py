@@ -11,7 +11,6 @@ from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import BHJM_triangle
 
-
 # PHYSICS CONSISTENCY TESTING
 #
 # Magnetic moment of a current loop with current I and surface A:

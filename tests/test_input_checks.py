@@ -506,15 +506,15 @@ def test_input_objects_field_func_good():
         1,  # non callable
         lambda fieldd, observers, whatever: None,  # bad arg names
         lambda field, observers: 1 if field == "B" else None,  # no ndarray return on B
-        lambda field, observers: 1
-        if field == "H"
-        else observers,  # no ndarray return on H
-        lambda field, observers: np.array([1, 2, 3])
-        if field == "B"
-        else None,  # bad return shape on B
-        lambda field, observers: np.array([1, 2, 3])
-        if field == "H"
-        else observers,  # bad return shape on H
+        lambda field, observers: (
+            1 if field == "H" else observers
+        ),  # no ndarray return on H
+        lambda field, observers: (
+            np.array([1, 2, 3]) if field == "B" else None
+        ),  # bad return shape on B
+        lambda field, observers: (
+            np.array([1, 2, 3]) if field == "H" else observers
+        ),  # bad return shape on H
     ],
 )
 def test_input_objects_field_func_bad(func):

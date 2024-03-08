@@ -7,7 +7,6 @@ from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.style import DisplayStyle
 
-
 bad_inputs = {
     "display_autosizefactor": (0,),  # float>0
     "display_animation_maxfps": (0,),  # int>0

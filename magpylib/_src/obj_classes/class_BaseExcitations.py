@@ -1,4 +1,5 @@
 """BaseHomMag class code"""
+
 # pylint: disable=cyclic-import
 import warnings
 

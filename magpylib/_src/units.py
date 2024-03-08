@@ -10,7 +10,6 @@ import numpy as np
 from magpylib._src.defaults.defaults_utility import ALLOWED_UNITS_MODES
 from magpylib._src.exceptions import MagpylibUnitsError
 
-
 _UNIT_PREFIX = {
     -24: "y",  # yocto
     -21: "z",  # zepto
@@ -231,7 +230,10 @@ class UnytHandler(UnitsHandler, package="unyt", validate_on_declaration=False):
         # pylint: disable=wrong-import-position
         # unyt may not be installed in the user environment
         # should only trigger an ImportError when called for
-        from unyt import UnitRegistry, unyt_quantity, unyt_array, Unit
+        from unyt import Unit
+        from unyt import UnitRegistry
+        from unyt import unyt_array
+        from unyt import unyt_quantity
 
         self.registry = UnitRegistry()
         self.unyt_quantity = unyt_quantity
@@ -284,7 +286,8 @@ class AstropyHandler(UnitsHandler, package="astropy", validate_on_declaration=Fa
         # pylint: disable=wrong-import-position
         # astropy may not be installed in the user environment
         # should only trigger an ImportError when called for
-        from astropy.units import Quantity, Unit
+        from astropy.units import Quantity
+        from astropy.units import Unit
 
         self.Quantity = Quantity
         self.Unit = Unit

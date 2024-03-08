@@ -1,5 +1,6 @@
 """Magnet Triangle class
 """
+
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Triangle

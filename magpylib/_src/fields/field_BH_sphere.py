@@ -2,6 +2,7 @@
 Implementations of analytical expressions for the magnetic field of homogeneously
 magnetized Spheres. Computation details in function docstrings.
 """
+
 import numpy as np
 from scipy.constants import mu_0 as MU0
 

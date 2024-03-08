@@ -1,7 +1,7 @@
+from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
+from magpylib._src.defaults.defaults_utility import MagicProperties
 from magpylib._src.defaults.defaults_utility import color_validator
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
-from magpylib._src.defaults.defaults_utility import MagicProperties
-from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.defaults.defaults_utility import validate_property_class
 from magpylib._src.style import DisplayStyle
 

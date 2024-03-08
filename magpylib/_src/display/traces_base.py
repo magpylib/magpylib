@@ -1,5 +1,7 @@
 """base traces building functions"""
+
 # pylint: disable=invalid-unary-operand-type
+
 from functools import partial
 
 import numpy as np

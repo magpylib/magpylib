@@ -1,4 +1,5 @@
 """ Display function codes"""
+
 # pylint: disable=too-many-branches
 from collections import defaultdict
 from functools import lru_cache
@@ -137,9 +138,7 @@ def draw_arrowed_line(
     anchor = (
         (0, -0.5, 0)
         if pivot == "tip"
-        else (0, 0.5, 0)
-        if pivot == "tail"
-        else (0, 0, 0)
+        else (0, 0.5, 0) if pivot == "tail" else (0, 0, 0)
     )
     arrow = [
         [0, arrow_shift, 0],

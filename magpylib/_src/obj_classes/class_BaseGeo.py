@@ -1,4 +1,5 @@
 """BaseGeo class code"""
+
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=protected-access

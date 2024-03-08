@@ -1,4 +1,5 @@
 """Magnet Cylinder class code"""
+
 import numpy as np
 
 from magpylib._src.display.traces_core import make_CylinderSegment
@@ -165,12 +166,7 @@ class CylinderSegment(BaseMagnet):
             phi = np.deg2rad((phi1 + phi2) / 2)
             # get centroid x for unrotated annular sector
             centroid_x = (
-                2
-                / 3
-                * np.sin(alpha)
-                / alpha
-                * (r2**3 - r1**3)
-                / (r2**2 - r1**2)
+                2 / 3 * np.sin(alpha) / alpha * (r2**3 - r1**3) / (r2**2 - r1**2)
             )
             # get centroid for rotated annular sector
             x, y, z = centroid_x * np.cos(phi), centroid_x * np.sin(phi), 0

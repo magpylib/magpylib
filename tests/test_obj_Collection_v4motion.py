@@ -4,7 +4,6 @@ from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 
-
 ###############################################################################
 ###############################################################################
 # NEW COLLECTION POS/ORI TESTS FROM v4

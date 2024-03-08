@@ -2,6 +2,7 @@
 Implementations of analytical expressions for the magnetic field of
 homogeneously magnetized Cylinders. Computation details in function docstrings.
 """
+
 # pylint: disable = no-name-in-module
 import numpy as np
 from scipy.constants import mu_0 as MU0
@@ -168,10 +169,7 @@ def magnet_cylinder_diametral_Hfield(
                 + 3
                 / 8
                 * r3X
-                * (
-                    (1 - 4 * zp2X) / zpp**3 / sqrt_p
-                    - (1 - 4 * zm2X) / zmm**3 / sqrt_m
-                )
+                * ((1 - 4 * zp2X) / zpp**3 / sqrt_p - (1 - 4 * zm2X) / zmm**3 / sqrt_m)
                 + 15
                 / 64
                 * r5X

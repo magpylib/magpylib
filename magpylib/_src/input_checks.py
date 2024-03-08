@@ -1,4 +1,5 @@
 """ input checks code"""
+
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-branches
@@ -504,7 +505,6 @@ def check_format_input_observers(inp, pixel_agg=None, field=""):
     from magpylib._src.obj_classes.class_Sensor import Sensor
 
     # note: bare pixel is automatically made into a list by Sensor
-
     # any good input must now be list/tuple/array
     array_like = isinstance(inp, (list, tuple, np.ndarray))
 
@@ -578,8 +578,8 @@ def check_format_input_obj(
         Flatten Collection objects
     """
     from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
-    from magpylib._src.obj_classes.class_Sensor import Sensor
     from magpylib._src.obj_classes.class_Collection import Collection
+    from magpylib._src.obj_classes.class_Sensor import Sensor
 
     # select wanted
     wanted_types = ()

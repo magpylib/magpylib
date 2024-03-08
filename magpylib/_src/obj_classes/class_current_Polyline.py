@@ -1,4 +1,5 @@
 """Polyline current class code"""
+
 import warnings
 
 from magpylib._src.display.traces_core import make_Polyline

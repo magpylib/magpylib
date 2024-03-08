@@ -1,4 +1,5 @@
 """Magnet TriangularMesh class code"""
+
 import warnings
 
 import numpy as np
@@ -9,9 +10,7 @@ from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_triangularmesh import BHJM_magnet_trimesh
 from magpylib._src.fields.field_BH_triangularmesh import calculate_centroid
 from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
-from magpylib._src.fields.field_BH_triangularmesh import (
-    get_disconnected_faces_subsets,
-)
+from magpylib._src.fields.field_BH_triangularmesh import get_disconnected_faces_subsets
 from magpylib._src.fields.field_BH_triangularmesh import get_intersecting_triangles
 from magpylib._src.fields.field_BH_triangularmesh import get_open_edges
 from magpylib._src.input_checks import check_format_input_vector
