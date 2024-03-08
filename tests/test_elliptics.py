@@ -6,9 +6,9 @@ from magpylib._src.fields.special_cel import cel
 from magpylib._src.fields.special_cel import cel0
 from magpylib._src.fields.special_cel import celv
 from magpylib._src.fields.special_el3 import el3
-from magpylib._src.fields.special_el3 import el30
 from magpylib._src.fields.special_el3 import el3_angle
 from magpylib._src.fields.special_el3 import el3v
+from magpylib._src.fields.special_el3 import el30
 
 
 class TestEllExceptions(unittest.TestCase):

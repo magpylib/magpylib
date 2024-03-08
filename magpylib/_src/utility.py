@@ -196,8 +196,8 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
     return only allowed objects - e.g. no sensors. Throw a warning when something is eliminated.
     """
     from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
-    from magpylib._src.obj_classes.class_Sensor import Sensor
     from magpylib._src.obj_classes.class_Collection import Collection
+    from magpylib._src.obj_classes.class_Sensor import Sensor
 
     # select wanted
     allowed_classes = ()
@@ -344,11 +344,9 @@ def get_subclasses(cls, recursive=False):
 def get_registered_sources():
     """Return all registered sources"""
     # pylint: disable=import-outside-toplevel
-    from magpylib._src.obj_classes.class_BaseExcitations import (
-        BaseCurrent,
-        BaseMagnet,
-        BaseSource,
-    )
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 
     return {
         k: v
@@ -378,11 +376,13 @@ def open_animation(filepath, embed=True):
     # pylint: disable=import-outside-toplevel
     if is_notebook():
         if filepath.endswith(".gif"):
-            from IPython.display import Image as IPyImage, display
+            from IPython.display import Image as IPyImage
+            from IPython.display import display
 
             display(IPyImage(data=filepath, embed=embed))
         elif filepath.endswith(".mp4"):
-            from IPython.display import Video, display
+            from IPython.display import Video
+            from IPython.display import display
 
             display(Video(data=filepath, embed=embed))
         else:  # pragma: no cover

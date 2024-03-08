@@ -14,7 +14,6 @@ from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import BHJM_triangle
 from magpylib._src.fields.field_BH_triangularmesh import BHJM_magnet_trimesh
 
-
 #######################################################################################
 #######################################################################################
 #######################################################################################

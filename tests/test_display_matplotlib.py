@@ -16,7 +16,6 @@ import magpylib as magpy
 from magpylib._src.display.display import ctx
 from magpylib.graphics.model3d import make_Cuboid
 
-
 # pylint: disable=assignment-from-no-return
 # pylint: disable=unnecessary-lambda-assignment
 # pylint: disable=no-member

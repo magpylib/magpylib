@@ -11,11 +11,11 @@ repos:
       - id: debug-statements
         language_version: python3
 
-  - repo: https://github.com/asottile/reorder-python-imports
-    rev: v3.12.0
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
     hooks:
-      - id: reorder-python-imports
-        args: [--py38-plus]
+      - id: isort
+        name: isort (python)
 
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.15.1

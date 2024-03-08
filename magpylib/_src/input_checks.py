@@ -16,7 +16,6 @@ from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import wrong_obj_msg
 
-
 # pylint: disable=no-member
 
 #################################################################
@@ -534,8 +533,8 @@ def check_format_input_obj(
         Flatten Collection objects
     """
     from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
-    from magpylib._src.obj_classes.class_Sensor import Sensor
     from magpylib._src.obj_classes.class_Collection import Collection
+    from magpylib._src.obj_classes.class_Sensor import Sensor
 
     # select wanted
     wanted_types = ()
