@@ -1,6 +1,7 @@
 """
 Implementations of analytical expressions of line current segments
 """
+
 import numpy as np
 from numpy.linalg import norm
 from scipy.constants import mu_0 as MU0

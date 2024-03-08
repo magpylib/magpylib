@@ -1,4 +1,5 @@
 """Magnet Cuboid class code"""
+
 from magpylib._src.display.traces_core import make_Cuboid
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.input_checks import check_format_input_vector

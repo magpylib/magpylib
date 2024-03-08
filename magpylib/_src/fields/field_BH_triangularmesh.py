@@ -2,6 +2,7 @@
 Implementations of analytical expressions for the magnetic field of a triangular surface.
 Computation details in function docstrings.
 """
+
 # pylint: disable=too-many-nested-blocks
 # pylint: disable=too-many-branches
 # pylance: disable=Code is unreachable

@@ -1,4 +1,5 @@
 """utilities for creating property classes"""
+
 # pylint: disable=too-many-branches
 import collections.abc
 import re

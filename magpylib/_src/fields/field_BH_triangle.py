@@ -2,6 +2,7 @@
 Implementations of analytical expressions for the magnetic field of a triangular surface.
 Computation details in function docstrings.
 """
+
 # pylance: disable=Code is unreachable
 import numpy as np
 from scipy.constants import mu_0 as MU0

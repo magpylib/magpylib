@@ -9,7 +9,6 @@ import pyvista as pv
 
 import magpylib as magpy
 
-
 HAS_IMAGEIO = True
 try:
     import imageio

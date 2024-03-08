@@ -1,4 +1,5 @@
 """base traces building functions"""
+
 from functools import partial
 
 import numpy as np

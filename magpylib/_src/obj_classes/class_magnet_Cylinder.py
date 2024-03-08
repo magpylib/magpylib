@@ -1,4 +1,5 @@
 """Magnet Cylinder class code"""
+
 from magpylib._src.display.traces_core import make_Cylinder
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.input_checks import check_format_input_vector

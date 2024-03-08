@@ -1,4 +1,5 @@
 """plotly backend"""
+
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
 import inspect
@@ -16,7 +17,6 @@ except ImportError as missing_module:  # pragma: no cover
 
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.display.traces_utility import get_scene_ranges
-
 
 SYMBOLS_TO_PLOTLY = {
     ".": "circle",

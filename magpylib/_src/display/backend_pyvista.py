@@ -1,4 +1,5 @@
 """pyvista backend"""
+
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
 import os
@@ -15,8 +16,9 @@ except ImportError as missing_module:  # pragma: no cover
         conda, see https://docs.pyvista.org/getting-started/installation.html"""
     ) from missing_module
 
-from pyvista.plotting.colors import Color  # pylint: disable=import-error
 from matplotlib.colors import LinearSegmentedColormap
+from pyvista.plotting.colors import Color  # pylint: disable=import-error
+
 from magpylib._src.utility import open_animation
 
 # from magpylib._src.utility import format_obj_input
