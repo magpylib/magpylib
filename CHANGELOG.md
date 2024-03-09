@@ -6,7 +6,10 @@ All notable changes to magpylib are documented here.
 ## [5.0.0dev]
 - The Magpylib inputs and outputs are now in **SI Units**. The `magnetization` term has also been redefined and is now codependent with the `polarization` term ([#712](https://github.com/magpylib/magpylib/issues/712))
 - Added `getM` (magnetization) and `getJ` (polarization) top level functions. Also an `in_out` (inside/ouside) parameter is added to specify the location of the observers relative to the magnet body in order to increase performance ([#717](https://github.com/magpylib/magpylib/issues/717))
--
+- Review of documentation and adding a few requested things ([#685](https://github.com/magpylib/magpylib/issues/685))
+- Added mu0 at top level as `magpylib.mu_0`. The value of mu0 is taken from scipy and follows the 2019 redefinition. All internal computations now include this new value. ([#714](https://github.com/magpylib/magpylib/issues/714, https://github.com/magpylib/magpylib/issues/731))
+- The core level now includes only the true bottom level implementations. ([#727](https://github.com/magpylib/magpylib/issues/727))
+- 
 
 ## [4.5.1] - 2023-12-28
 - Fixed a field computation issue where H-field resulting from axial magnetization is computed incorrectly inside of Cylinders ([#703](https://github.com/magpylib/magpylib/issues/703))

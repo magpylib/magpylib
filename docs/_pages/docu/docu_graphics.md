@@ -600,6 +600,8 @@ Even with some implemented failsafes, such as a maximum frame rate and frame cou
 
 +++
 
+(docu-graphics-subplots)=
+
 ## Subplots
 
 :::{versionadded} 4.4

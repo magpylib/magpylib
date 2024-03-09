@@ -14,15 +14,9 @@ kernelspec:
 
 (gallery-app-helmholtz)=
 
-# Helmholtz Coils
+# Coils
 
-- coil modeling
-- visualization of homogeneity
-
-
-
-<!--
-In this example we model the **magnetic field of a coil**, and show how to display it with spectacular **field line** representations.
+In this example we show how to model air-coils, then combine two coils into a Helmholtz-pair and vizualize the homogneity of the resulting magnetic field. A nice explanaition of coils and the magnetic field is given [here](https://www.nagwa.com/en/explainers/186157825721/#:~:text=The%20magnetic%20field%20strength%2C%20%F0%9D%90%B5,%EF%8A%AD%20T%E2%8B%85m%2FA.). With the code examples below you can easily compare Magpylib results to results presented in this tutorial.
 
 ## Coil models
 
@@ -50,7 +44,7 @@ coil1.show()
 import numpy as np
 import magpylib as magpy
 
-ts = np.linspace(-8, 8, 1000)
+ts = np.linspace(-8, 8, 300)
 vertices = np.c_[5*np.cos(ts*2*np.pi), 5*np.sin(ts*2*np.pi), ts]
 coil2 = magpy.current.Polyline(
     current=100,
@@ -60,25 +54,46 @@ coil2 = magpy.current.Polyline(
 coil2.show()
 ```
 
-## Matplotlib streamplot
+**Model 3:** A [Helmholtz coil](https://en.wikipedia.org/wiki/Helmholtz_coil) is a device for producing a region of nearly uniform magnetic field. It consists of two coils on the same axis, carrying an equal electric current in the same direction. In classical layouts, the distance between the coils is similar to the coil radius.
+
+```{code-cell} ipython3
+# create a finite sized Helmholtz coil-pair
+coil1 = magpy.Collection()
+for z in np.linspace(-1, 1, 5):
+    for r in np.linspace(4, 5, 5):
+        winding = magpy.current.Circle(
+            current=10,
+            diameter=2*r,
+            position=(0,0,z),
+        )
+        coil1.add(winding)
+
+coil1.position = (0,0,5)
+coil2 = coil1.copy(position=(0,0,-5))
+
+helmholtz = magpy.Collection(coil1, coil2)
+
+helmholtz.show()
+```
+
+## Plotting the field
 
 Streamplot from Matplotlib is a powerful tool to outline the field lines. However, it must be understood that streamplot shows only a projection of the field onto the observation plane. All field components that point out of the plane become invisible. In out example we choose symmetry planes, where the perpendicular component is negligible.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
-
-fig, [ax1,ax2] = plt.subplots(1, 2, figsize=(13,5))
+fig, ax = plt.subplots(1, 1, figsize=(6,5))
 
 # create grid
-ts = np.linspace(-20, 20, 20)
+ts = np.linspace(-13, 13, 20)
 grid = np.array([[(x,0,z) for x in ts] for z in ts])
 
-# compute and plot field of coil1
-B = magpy.getB(coil1, grid)
+# compute and plot field of Helmholtz
+B = magpy.getB(helmholtz, grid)
 Bamp = np.linalg.norm(B, axis=2)
 Bamp /= np.amax(Bamp)
 
-sp = ax1.streamplot(
+sp = ax.streamplot(
     grid[:,:,0], grid[:,:,2], B[:,:,0], B[:,:,2],
     density=2,
     color=Bamp,
@@ -86,107 +101,57 @@ sp = ax1.streamplot(
     cmap='coolwarm',
 )
 
-# compute and plot field of coil2
-B = magpy.getB(coil2, grid)
-Bamp = np.linalg.norm(B, axis=2)
-Bamp /= np.amax(Bamp)
-
-cp = ax2.contourf(
-    grid[:,:,0], grid[:,:,2], Bamp,
-    levels=100,
-    cmap='coolwarm',
-)
-ax2.streamplot(
-    grid[:,:,0], grid[:,:,2], B[:,:,0], B[:,:,2],
-    density=2,
-    color='black',
-)
+# plot coil outline
+from matplotlib.patches import Rectangle
+for loc in [(4,4), (4,-6), (-6,4), (-6,-6)]:
+    ax.add_patch(Rectangle(loc, 2, 2, color='k', zorder=10))
 
 # figure styling
-ax1.set(
-    title='Magnetic field of coil1',
+ax.set(
+    title='Magnetic field of Helmholtz',
     xlabel='x-position (mm)',
     ylabel='z-position (mm)',
     aspect=1,
 )
-ax2.set(
-    title='Magnetic field of coil2',
-    xlabel='x-position (mm)',
-    ylabel='z-position (mm)',
-    aspect=1,
-)
-
-plt.colorbar(sp.lines, ax=ax1, label='(mT)')
-plt.colorbar(cp, ax=ax2, label='(mT)')
+plt.colorbar(sp.lines, ax=ax, label='(mT)')
 
 plt.tight_layout()
 plt.show()
 ```
 
-## Pyvista streamlines
+## Helmholtz field homogeneity
 
-[Pyvista](https://docs.pyvista.org/) is an incredible VTK based tool for 3D plotting and mesh analysis.
-
-The following example shows how to compute and display 3D field lines of `coil1` with Pyvista. To run this example, the user must install Pyvista (`pip install pyvista`). By removing the command `jupyter_backend='static'` in `show`, the 3D figure becomes interactive.
+While the optimal solution is given by two current loops, real world applications must deal with finite sizes and limited construction space. Here Magpylib enables fast analysis of different possible geometries.
 
 ```{code-cell} ipython3
-import numpy as np
-import magpylib as magpy
-import pyvista as pv
+fig, ax = plt.subplots(1, 1, figsize=(6,5))
 
-pv.set_jupyter_backend('panel') # improve rending in a jupyter notebook
+# compute field of the coil pair on grid
+ts = np.linspace(-3, 3, 20)
+grid = np.array([[(x,0,z) for x in ts] for z in ts])
+B = helmholtz.getB(grid)
 
-coil1 = magpy.Collection()
-for z in np.linspace(-8, 8, 16):
-    winding = magpy.current.Circle(
-        current=100,
-        diameter=10,
-        position=(0,0,z),
-    )
-    coil1.add(winding)
+# field at center
+B0 = helmholtz.getB((0,0,0))
+B0amp = np.linalg.norm(B0)
 
-grid = pv.UniformGrid(
-    dimensions=(41, 41, 41),
-    spacing=(2, 2, 2),
-    origin=(-40, -40, -40),
+# homogeneity error
+err = np.linalg.norm((B-B0)/B0amp, axis=2)
+
+# plot error on grid
+sp = ax.contourf(grid[:,:,0], grid[:,:,2], err*100)
+
+# figure styling
+ax.set(
+    title='Helmholtz homogeneity error',
+    xlabel='x-position (mm)',
+    ylabel='z-position (mm)',
+    aspect=1,
 )
+plt.colorbar(sp, ax=ax, label='(% of B0)')
 
-# compute B-field and add as data to grid
-grid['B'] = coil1.getB(grid.points)
+plt.tight_layout()
+plt.show()
+```
 
-# compute field lines
-seed = pv.Disc(inner=1, outer=5.2, r_res=3, c_res=12)
-strl = grid.streamlines_from_source(
-    seed,
-    vectors='B',
-    max_time=180,
-    initial_step_length=0.01,
-    integration_direction='both',
-)
-
-# create plotting scene
-pl = pv.Plotter()
-
-# add field lines and legend to scene
-legend_args = {
-    'title': 'B (mT)',
-    'title_font_size': 20,
-    'color': 'black',
-    'position_y': 0.25,
-    'vertical': True,
-}
-
-# draw coils
-magpy.show(coil1, canvas=pl, backend='pyvista')
-
-# add streamlines
-pl.add_mesh(
-    strl.tube(radius=.2),
-    cmap="bwr",
-    scalar_bar_args=legend_args,
-)
-# display scene
-pl.camera.position=(160, 10, -10)
-pl.set_background("white")
-pl.show()
-``` -->
+Notice that in such finite sized arrangements the field is not very homogeneous.
