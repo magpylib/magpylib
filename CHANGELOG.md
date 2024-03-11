@@ -14,6 +14,7 @@ All notable changes to magpylib are documented here.
 - Review of documentation and adding a few requested things ([#685](https://github.com/magpylib/magpylib/issues/685), some of [#659](https://github.com/magpylib/magpylib/issues/659))
 - Added mu0 at top level as `magpylib.mu_0`. The value of mu0 is taken from scipy and follows the 2019 redefinition. All internal computations now include this new value. ([#714](https://github.com/magpylib/magpylib/issues/714), [#731](https://github.com/magpylib/magpylib/issues/731))
 - The core level now includes only the true bottom level implementations. ([#727](https://github.com/magpylib/magpylib/issues/727))
+- As Matplotlib graphic representation of 3D objects is terrible, we descided to go back to "arrow" graphic default mode when graphic backend is "Matplotlib".([#735](https://github.com/magpylib/magpylib/issues/735))
 
 ## [4.5.1] - 2023-12-28
 - Fixed a field computation issue where H-field resulting from axial magnetization is computed incorrectly inside of Cylinders ([#703](https://github.com/magpylib/magpylib/issues/703))
