@@ -16,6 +16,4 @@ kernelspec:
 
 # Subplots
 
-Fast plotting and combining 3D and 2D plots easily.
-
-Its quite annoying to do this by hand.
+It is very illustrative to combine 2D and 3D subplots, especially when doing animations. In this tutorial we will show how to create such plots with minimal syntax, using Magpylib built-ins. Until this example is ready, read up everything about subplots [here](docu-graphics-subplots).

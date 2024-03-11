@@ -43,7 +43,6 @@ Geometric union by superposition is demonstrated in the following example where 
 
 ```{code-cell} ipython3
 import numpy as np
-
 import magpylib as magpy
 
 # Create three magnet parts with similar polarization
@@ -79,20 +78,119 @@ with magpy.show_context(magnet, sensor, backend="plotly", style_legend_show=Fals
 
 When two objects with opposing magnetization vectors of similar amplitude overlap, they will just cancel in the overlap region. This enables geometric cut-out operations. In the following example we construct an exact hollow cylinder solution from two concentric cylinder shapes with opposite magnetizations, and compare the result to the `CylinderSegment` class solution.
 
+Here the `getM` and `getJ` functions come in handy. They allow us to see the magnetization distribution that is the result of the superposition.
+
+```{code-cell} ipython3
+import numpy as np
+import matplotlib.pyplot as plt
+import magpylib as magpy
+
+fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(12, 5))
+
+# Create an observer grid in the xy-symmetry plane
+X, Y = np.mgrid[-4:4:100j, -4:4:100j].transpose((0, 2, 1))
+grid_xy = np.stack([X, Y, np.zeros((100, 100))], axis=2)
+grid_xz = np.stack([X, np.zeros((100, 100)), Y], axis=2)
+
+# Create ring with cut-out
+inner = magpy.magnet.Cylinder(polarization=(0, 0, -1), dimension=(4, 5))
+outer = magpy.magnet.Cylinder(polarization=(0, 0, 1), dimension=(6, 5))
+ring0 = inner + outer
+
+# Compute J-field of ring
+M_xy = np.linalg.norm(ring0.getM(grid_xy), axis=2)
+M_xz = np.linalg.norm(ring0.getM(grid_xz), axis=2)
+
+# Display field with Pyplot
+ax1.contourf(grid_xy[:, :, 0], grid_xy[:, :, 1], M_xy, cmap=plt.cm.hot_r)
+ax2.contourf(grid_xz[:, :, 0], grid_xz[:, :, 2], M_xz, cmap=plt.cm.hot_r)
+
+# plot styling
+ax1.set(
+    title="|M| in xy-plane",
+    xlabel="x-position",
+    ylabel="y-position",
+    aspect=1,
+    xlim=(-4,4),
+    ylim=(-4,4),
+)
+ax2.set(
+    title="|M| in xz-plane",
+    xlabel="x-position",
+    ylabel="z-position",
+    aspect=1,
+    xlim=(-4,4),
+    ylim=(-4,4),
+)
+
+plt.tight_layout()
+plt.show()
+```
+
+The two figures show that the magnetization is zero outside of the cylinder, as well as in the overlap region where the two magnetizations cancel.
+
+Finally we want to show that the superposition gives the same result as a computation from the CylinderSegment solution.
+
 ```{code-cell} ipython3
 from magpylib.magnet import Cylinder, CylinderSegment
 
 # Create ring with CylinderSegment
-ring0 = CylinderSegment(polarization=(0, 0, .1), dimension=(.02, .03, .01, 0, 360))
-
-# Create ring with cut-out
-inner = Cylinder(polarization=(0, 0, -.1), dimension=(.04, .01))
-outer = Cylinder(polarization=(0, 0, .1), dimension=(.06, .01))
-ring1 = inner + outer
+ring1 = CylinderSegment(polarization=(0, 0, .1), dimension=(2, 3, 5, 0, 360))
 
 # Print results
-print("CylinderSegment result:", ring0.getB((.01, .02, .03)))
-print("        Cut-out result:", ring1.getB((.01, .02, .03)))
+print("CylinderSegment result:", ring1.getB((.01, .02, .03)))
+print("        Cut-out result:", ring0.getB((.01, .02, .03)))
 ```
 
-Note that, it is faster to compute the `Cylinder` field two times than computing the `CylinderSegment` field one time. This is why Magpylib automatically falls back to the `Cylinder` solution whenever `CylinderSegment` is called with 360 deg section angles. Unfortunately, cut-out operations cannot be displayed graphically at the moment, but {ref}`examples-own-3d-models` offer a solution here.
+Note that, it is faster to compute the `Cylinder` field two times than computing the `CylinderSegment` field one time. This is why Magpylib automatically falls back to the `Cylinder` solution whenever `CylinderSegment` is called with 360 deg section angles.
+
+Unfortunately, with respect to 3D-models, cut-out operations cannot be displayed graphically at the moment, but {ref}`examples-own-3d-models` offer custom solutions.
+
+## Nice example
+
+The following example combines union and cut-out to create a complex magnet shape which is then displayed by combining a streamplot with a contourplot in matplotlib.
+
+```{code-cell} ipython3
+import numpy as np
+import matplotlib.pyplot as plt
+import magpylib as magpy
+
+fig, ax = plt.subplots(1, 1, figsize=(6, 5))
+
+# Create a magnet with superposition and cut-out
+pt1 = magpy.magnet.Cuboid(
+    polarization=(1, 0, 0), dimension=(4, 8, 2), position=(-2, 0, 0)
+)
+pt2 = magpy.magnet.CylinderSegment(
+    polarization=(1, 0, 0), dimension=(0, 4, 2,-90,90)
+)
+pt3 = magpy.magnet.Cuboid(
+    polarization=(-1/np.sqrt(2), 1/np.sqrt(2), 0), dimension=(4, 4, 2),
+).rotate_from_angax(45, 'z')
+magnet = magpy.Collection(pt1, pt2, pt3)
+
+# Compute J on mesh and plot with streamplot
+X, Y = np.mgrid[-6:6:100j, -6:6:100j].transpose((0, 2, 1))
+grid = np.stack([X, Y, np.zeros((100, 100))], axis=2)
+
+J = magnet.getJ(grid)
+J[J<1e-12] = 0 # cut off numerically small values
+
+ax.contourf(grid[:, :, 0], grid[:, :, 1], np.linalg.norm(J,axis=2), cmap=plt.cm.cool)
+ax.streamplot(
+    grid[:, :, 0],
+    grid[:, :, 1],
+    J[:, :, 0],
+    J[:, :, 1], color='k', density=1.5,
+)
+
+# plot styling
+ax.set(
+    title="Polarization J in xy-plane",
+    xlabel="x-position",
+    ylabel="y-position",
+    aspect=1,
+)
+plt.tight_layout()
+plt.show()
+```

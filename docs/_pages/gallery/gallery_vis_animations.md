@@ -16,4 +16,4 @@ kernelspec:
 
 # Animations
 
-some really cool animation
+He we will show how to make nice animations. Until this is complete read up everything about animations [here](examples-animation).

@@ -16,8 +16,8 @@ kernelspec:
 
 # 3D Models
 
-cow - spider from pyvista examples
+In this example we will show how to make 
 
-CAD import
-
-...
+1. CAD imports
+2. Pyvista imports
+3. Inkscape xy to magnets

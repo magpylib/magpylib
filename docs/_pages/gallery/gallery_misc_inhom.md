@@ -16,4 +16,4 @@ kernelspec:
 
 # Inhomogeneous Magnetization
 
-WIP: din spec example
+In this tutorial we will show how to deal with inhomogeneous magnetization with discretization.

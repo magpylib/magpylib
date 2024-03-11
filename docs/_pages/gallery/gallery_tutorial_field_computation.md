@@ -18,22 +18,21 @@ orphan: true
 
 ## Most basic Example
 
-The v2 slogan was *"The magnetic field is only three lines of code away"*, which is demonstrated by the most fundamental use of Magpylib.
+The v2 slogan was *"The magnetic field is only three lines of code away"*, which is demonstrated by the following most fundamental and self-explanatory example,
 
 ```{code-cell} ipython3
-import magpylib as magpy  # Import Magpylib
-
-loop = magpy.current.Circle(
-    current=1, diameter=0.01
-)  # Create magnetic source, units: A, m
-B = magpy.getB(loop, observers=(0, 0, 0))  # Compute field in units of T
+import magpylib as magpy
+loop = magpy.current.Circle(current=1, diameter=1)
+B = loop.getB((0, 0, 0))
 
 print(B)
 ```
 
 ## Field on a Grid
 
-When handed multiple observer positions, `getB` and `getH` will return the field in the shape of the input. In the following example, B- and H-field of a diametrically magnetized cylinder magnet are computed on a position grid in the symmetry plane, and are then displayed using Matplotlib.
+There are four field computation functions: `getB` will compute the B-field in T. `getH` computes the H-field in A/m. `getJ` computes the magnetic polarization in units of T. `getM` computes the magnetization in units of A/m.
+
+All these functions will return the field in the shape of the input. In the following example, BHJM-fields of a diametrically magnetized cylinder magnet are computed on a position grid in the symmetry plane, and are then displayed using Matplotlib.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -41,21 +40,23 @@ import numpy as np
 
 import magpylib as magpy
 
-fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(10, 5))
+fig, [[ax1,ax2], [ax3,ax4]] = plt.subplots(2, 2, figsize=(10, 10))
 
 # Create an observer grid in the xz-symmetry plane
-X, Y = np.mgrid[-0.05:0.05:100j, -0.05:0.05:100j].transpose((0, 2, 1))
+X, Y = np.mgrid[-50:50:100j, -50:50:100j].transpose((0, 2, 1))
 grid = np.stack([X, Y, np.zeros((100, 100))], axis=2)
 
-# Compute B- and H-fields of a cylinder magnet on the grid
-cyl = magpy.magnet.Cylinder(polarization=(0.5, 0.5, 0), dimension=(0.04, 0.02))
+# Compute BHJM-fields of a cylinder magnet on the grid
+cyl = magpy.magnet.Cylinder(polarization=(0.5, 0.5, 0), dimension=(40, 20))
 B = cyl.getB(grid)
 H = cyl.getH(grid)
+J = cyl.getJ(grid)
+M = cyl.getM(grid)
 
 # Display field with Pyplot
 ax1.streamplot(
-    grid[:, :, 0] * 1000,  # m -> mm
-    grid[:, :, 1] * 1000,  # m -> mm
+    grid[:, :, 0],
+    grid[:, :, 1],
     B[:, :, 0],
     B[:, :, 1],
     density=1.5,
@@ -63,31 +64,51 @@ ax1.streamplot(
     linewidth=1,
     cmap="spring_r",
 )
-
 ax2.streamplot(
-    grid[:, :, 0] * 1000,  # m -> mm
-    grid[:, :, 1] * 1000,  # m -> mm
+    grid[:, :, 0],
+    grid[:, :, 1],
     H[:, :, 0],
     H[:, :, 1],
     density=1.5,
-    color=np.log(np.linalg.norm(B, axis=2)),
+    color=np.log(np.linalg.norm(H, axis=2)),
     linewidth=1,
     cmap="winter_r",
 )
+ax3.streamplot(
+    grid[:, :, 0],
+    grid[:, :, 1],
+    J[:, :, 0],
+    J[:, :, 1],
+    density=1.5,
+    color=np.linalg.norm(J, axis=2),
+    linewidth=1,
+    cmap="summer_r",
+)
+ax4.streamplot(
+    grid[:, :, 0],
+    grid[:, :, 1],
+    M[:, :, 0],
+    M[:, :, 1],
+    density=1.5,
+    color=np.linalg.norm(M, axis=2),
+    linewidth=1,
+    cmap="autumn_r",
+)
 
-ax1.set(
-    title="B-Field",
-    xlabel="x-position (mm)",
-    ylabel="y-position (mm)",
-)
-ax2.set(
-    title="H-Field",
-    xlabel="x-position (mm)",
-    ylabel="y-position (mm)",
-    aspect=1,
-)
-# Outline magnet boundary
-for ax in [ax1, ax2]:
+ax1.set_title("B-Field")
+ax2.set_title("H-Field")
+ax3.set_title("J-Field")
+ax4.set_title("M-Field")
+
+for ax in [ax1,ax2,ax3,ax4]:
+    ax.set(
+        xlabel="x-position",
+        ylabel="y-position",
+        aspect=1,
+        xlim=(-50,50),
+        ylim=(-50,50),
+    )
+    # Outline magnet boundary
     ts = np.linspace(0, 2 * np.pi, 50)
     ax.plot(20 * np.sin(ts), 20 * np.cos(ts), "k--")
 
@@ -135,7 +156,7 @@ with magpy.show_context(sensor, coll, animation=True, backend="plotly"):
 
 ## Multiple Inputs
 
-When `getB` and `getH` receive multiple inputs for sources and observers they will compute all possible combinations. It is still beneficial to call the field computation only a single time, because similar sources will be grouped and the computation will be vectorized automatically.
+When `getBHJM` receive multiple inputs for sources and observers they will compute all possible combinations. It is still beneficial to call the field computation only a single time, because similar sources will be grouped and the computation will be vectorized automatically.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -227,7 +248,7 @@ All above computations demonstrate the convenient object oriented interface of M
 In the following example we show how complex instances are computed using the functional interface.
 
 ```{important}
-Use numpy operations for input array creation as shown in the example !
+The functional interface will only outperform the object oriented interface if you use numpy operations for input array creation, such as `tile`, `repeat`, `reshape`, ... !
 ```
 
 ```{code-cell} ipython3
