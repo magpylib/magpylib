@@ -3,11 +3,16 @@ All notable changes to magpylib are documented here.
 
 # Changelog
 
-## [5.0.0dev]
-- The Magpylib inputs and outputs are now in **SI Units**. The `magnetization` parameter has also been redefined to reflect the true physical magnetization quantity. It is now codependent with the `polarization` parameter that is the physical magnetic polarization ([#712](https://github.com/magpylib/magpylib/issues/712))
-- Added `getM` (magnetization) and `getJ` (polarization) top level functions. Also an `in_out` (inside/ouside) parameter is added to specify the location of the observers relative to the magnet body in order to increase performance ([#717](https://github.com/magpylib/magpylib/issues/717), [#608](https://github.com/magpylib/magpylib/issues/608))
+## [5.0.0] - Bald
+### ⚠️ Breaking Changes ⚠️
+- ⚠️The Magpylib inputs and outputs are now in **SI Units**.
+- ⚠️The `magnetization` parameter has also been redefined to reflect the true physical magnetization quantity in units of A/m.
+### Other Improvements
+- The `magnetization` parameter is now codependent with the new `polarization` parameter that is the physical magnetic polarization ([#712](https://github.com/magpylib/magpylib/issues/712)) in units of Tesla.
+- Added `getM` (magnetization) and `getJ` (polarization) top level functions and class methods reminiscent of `getB` and `getH`.
+- The `in_out` (inside/ouside) parameter is added to all field functions (`getBHJM`) to specify the location of the observers relative to the magnet body in order to increase performance ([#717](https://github.com/magpylib/magpylib/issues/717), [#608](https://github.com/magpylib/magpylib/issues/608))
 - Review of documentation and adding a few requested things ([#685](https://github.com/magpylib/magpylib/issues/685), some of [#659](https://github.com/magpylib/magpylib/issues/659))
-- Added mu0 at top level as `magpylib.mu_0`. The value of mu0 is taken from scipy and follows the 2019 redefinition. All internal computations now include this new value. ([#714](https://github.com/magpylib/magpylib/issues/714, https://github.com/magpylib/magpylib/issues/731))
+- Added mu0 at top level as `magpylib.mu_0`. The value of mu0 is taken from scipy and follows the 2019 redefinition. All internal computations now include this new value. ([#714](https://github.com/magpylib/magpylib/issues/714), [#731](https://github.com/magpylib/magpylib/issues/731))
 - The core level now includes only the true bottom level implementations. ([#727](https://github.com/magpylib/magpylib/issues/727))
 
 ## [4.5.1] - 2023-12-28
