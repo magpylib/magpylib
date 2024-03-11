@@ -447,7 +447,7 @@ def get_generic_traces(
     if is_mag and style.magnetization.show:
         magstyl = style.magnetization
         if magstyl.mode == "auto":
-            magstyl.mode = "color"  # if mag_color_grad_apt else "arrow"
+            magstyl.mode = "color" if supports_colorgradient else "arrow"
         is_mag_arrows = "arrow" in magstyl.mode
         magstyl.show = "color" in magstyl.mode
 
