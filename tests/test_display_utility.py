@@ -85,7 +85,7 @@ def test_bad_backend():
     ],
 )
 def test_infer_backend(canvas, is_notebook_result, backend):
-    """test infering auto backend"""
+    """test inferring auto backend"""
     with patch("magpylib._src.utility.is_notebook", return_value=is_notebook_result):
         # pylint: disable=import-outside-toplevel
         from magpylib._src.display.display import infer_backend

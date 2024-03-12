@@ -294,7 +294,7 @@ def test_collection_remove():
     assert child_labels(c3) == ["q1", "c1"]
     assert child_labels(c2) == ["s1", "s2"]
 
-    # attempt remove non-existant child
+    # attempt remove non-existent child
     c3.remove(s1, errors="ignore")
     assert child_labels(c3) == ["q1", "c1"]
     assert child_labels(c1) == ["x1", "x2"]

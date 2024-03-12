@@ -18,4 +18,4 @@ class MagpylibMissingInput(Exception):
 
 
 class MagpylibDeprecationWarning(Warning):
-    """Non-supressed Deprecation Warning."""
+    """Non-suppressed Deprecation Warning."""
