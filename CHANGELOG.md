@@ -452,7 +452,7 @@ The first official release of the magpylib library.
 
 ---
 
-[5.0.0rc]:https://github.com/magpylib/magpylib/compare/4.5.1...HEAD
+[5.0.0rc0]:https://github.com/magpylib/magpylib/compare/4.5.1...HEAD
 [4.5.1]:https://github.com/magpylib/magpylib/compare/4.5.0...4.5.1
 [4.5.0]:https://github.com/magpylib/magpylib/compare/4.4.0...4.5.0
 [4.4.1]:https://github.com/magpylib/magpylib/compare/4.4.0...4.4.1
