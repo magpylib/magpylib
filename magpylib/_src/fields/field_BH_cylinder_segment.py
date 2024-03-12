@@ -2394,7 +2394,7 @@ def BHJM_cylinder_segment(
     # else:
     #     mask_inside = np.full(len(observers), in_out == "inside")
     #     mask_not_on_surf = np.full(len(observers), True)
-    # ACHTUNG @alex
+    # WARNING @alex
     #   1. inside and not_on_surface are not the same! Cant just put to true.
 
     # return 0 when all points are on surface

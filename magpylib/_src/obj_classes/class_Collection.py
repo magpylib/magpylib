@@ -641,7 +641,7 @@ class BaseCollection(BaseDisplayRepr):
         -------
         H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
             H-field at each path position (index m) for each sensor (index k) and each sensor
-            pixel position (indeices n1,n2,...) in units of A/m. Sensor pixel positions are
+            pixel position (indices n1,n2,...) in units of A/m. Sensor pixel positions are
             equivalent to simple observer positions. Paths of objects that are shorter than
             index m are considered as static beyond their end.
 
@@ -730,7 +730,7 @@ class BaseCollection(BaseDisplayRepr):
         -------
         M-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
             M-field at each path position (index m) for each sensor (index k) and each sensor
-            pixel position (indeices n1,n2,...) in units of A/m. Sensor pixel positions are
+            pixel position (indices n1,n2,...) in units of A/m. Sensor pixel positions are
             equivalent to simple observer positions. Paths of objects that are shorter than
             index m are considered as static beyond their end.
 

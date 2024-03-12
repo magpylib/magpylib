@@ -36,7 +36,7 @@ def el30(x, kc, p):
     r = np.abs(p)
     h = 1.0 + hh
     if e < 0.1 and z < 0.1 and t < 1 and r < 1:
-        for k in range(2, ND + 1):  # outch k ist auch eine variable !!!
+        for k in range(2, ND + 1):  # k is also a variable !!!
             km2 = int(k - 2)
             rb[km2] = 0.5 / k
             ra[km2] = 1.0 - rb[km2]
