@@ -40,12 +40,12 @@ conda install -c conda-forge magpylib
 ```
 Magpylib supports _Python3.8+_ and relies on common scientific computation libraries _Numpy_, _Scipy_, _Matplotlib_ and _Plotly_. Optionally, _Pyvista_ is recommended as graphical backend.
 
-# Ressources
+# Resources
 
  - Check out our **[Documentation](https://magpylib.readthedocs.io/en/latest)** for detailed information.
  - Please abide by our **[Code of Conduct](https://github.com/magpylib/magpylib/blob/main/CODE_OF_CONDUCT.md)**.
  - Contribute through **[Discussions](https://github.com/magpylib/magpylib/discussions)** and coding by following the **[Contribution Guide](https://github.com/magpylib/magpylib/blob/main/CONTRIBUTING.md)**. The Git project **[Issues](https://github.com/magpylib/magpylib/issues)** give an up-to-date list of potential enhancements and planned milestones. Propose new ones.
- - A **[Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs)** introdution to Magpylib v4.0.0 within the **[GSC network](https://www.internationalcollaboration.org/).**
+ - A **[Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs)** introduction to Magpylib v4.0.0 within the **[GSC network](https://www.internationalcollaboration.org/).**
 - An **[open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170)** from the year 2020 describes v2 of this library with most basic concepts still intact in later versions.
 
 # Quickstart
@@ -77,7 +77,7 @@ print(cube.orientation.as_rotvec(degrees=True))  # --> [0. 0. 45.]
 
 # Compute the magnetic B-field in units of T at a set of observer positions. Magpylib
 # makes use of vectorized computation. Hand over all field computation instances,
-# e.g. different observer positions, at one funtion call. Avoid Python loops !!!
+# e.g. different observer positions, at one function call. Avoid Python loops !!!
 observers = [(0, 0, 0), (0.01, 0, 0), (0.02, 0, 0)]  # in SI Units (m)
 B = magpy.getB(cube, observers)
 print(B.round(2))  # --> [[-0.09 -0.09  0.  ]
@@ -92,7 +92,7 @@ H = magpy.getH(cube, sensor)
 print(H.round())  # --> [-94537. -35642. -14085.]  # in SI Units (A/m)
 
 # Position and orientation attributes of Magpylib objects can be vectors of
-# multiple positions/orientations refered to as "paths". When computing the
+# multiple positions/orientations referred to as "paths". When computing the
 # magnetic field of an object with a path, it is computed at every path index.
 cube.position = [(0, 0, -.02), (1, 0, -.02), (2, 0, -.02)]  # in SI Units (m)
 B = cube.getB(sensor)
