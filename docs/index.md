@@ -3,9 +3,13 @@
 
 Magpylib is an **open-source Python package** for calculating static **magnetic fields** of magnets, currents and other sources. It uses **explicit expressions**, solutions to the macroscopic magnetostatic problems, implemented in **vectorized** form which makes the computation **extremely fast**. Make use of the open-source Python ecosystem for spectacular visualization.
 
+## How it works
+
 ![](_static/images/index_flowchart.png)
 
 In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, position grids, ...) are created as Python objects with position and orientation attributes. These objects can be **grouped** and **moved** around. The system can be **viewed** graphically through various backends. The **magnetic field** is computed in the observer reference frame. Magpylib collects all inputs, and vectorizes the computation for maximal performance.
+
+## Ressources
 
 ::::{grid} 2 3 3 6
 :margin: 4 4 0 0
@@ -65,8 +69,9 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 
 ::::
 
-<!-- ```{toctree}
+```{toctree}
 :maxdepth: 2
+:hidden:
 
 _pages/reso_get_started.md
 _pages/docu/docu_index.md
@@ -76,4 +81,4 @@ _pages/reso_code_of_conduct.md
 _pages/reso_license.md
 _pages/reso_changelog.md
 _pages/reso_site_notice.md
-``` -->
+```
