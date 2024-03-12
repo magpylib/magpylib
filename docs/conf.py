@@ -278,6 +278,7 @@ epub_exclude_files = ["search.html"]
 #    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
 # ]
 
+
 myst_enable_extensions = [
     "amsmath",
     "colon_fence",
@@ -295,9 +296,13 @@ myst_enable_extensions = [
 copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
 copybutton_prompt_is_regexp = True
 
+# html_js_files = [
+#     "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js",
+#     # "https://unpkg.com/thebe@latest/lib/index.js",
+# ]
 html_js_files = [
-    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js",
-    # "https://unpkg.com/thebe@latest/lib/index.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js",
+    "_static/flyout.js",
 ]
 
 suppress_warnings = [
