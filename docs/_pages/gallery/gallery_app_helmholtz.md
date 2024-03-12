@@ -16,7 +16,7 @@ kernelspec:
 
 # Coils
 
-In this example we show how to model air-coils, then combine two coils into a Helmholtz-pair and vizualize the homogneity of the resulting magnetic field. A nice explanaition of coils and the magnetic field is given [here](https://www.nagwa.com/en/explainers/186157825721/#:~:text=The%20magnetic%20field%20strength%2C%20%F0%9D%90%B5,%EF%8A%AD%20T%E2%8B%85m%2FA.). With the code examples below you can easily compare Magpylib results to results presented in this tutorial.
+In this example we show how to model air-coils, then combine two coils into a Helmholtz-pair and visualize the homogeneity of the resulting magnetic field. A nice explanation of coils and the magnetic field is given [here](https://www.nagwa.com/en/explainers/186157825721/#:~:text=The%20magnetic%20field%20strength%2C%20%F0%9D%90%B5,%EF%8A%AD%20T%E2%8B%85m%2FA.). With the code examples below you can easily compare Magpylib results to results presented in this tutorial.
 
 ## Coil models
 

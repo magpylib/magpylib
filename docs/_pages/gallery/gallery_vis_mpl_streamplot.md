@@ -18,7 +18,7 @@ orphan: true
 
 ## Example 1: Cuboid Magnet
 
-In this example we show the B-field of a cuboid magnet using Matplotlib streamlines. Streamlines are not magnetic field lines in the sense that the field amplitude cannot be derived from their density. However, Matplotlib streamlines can show the field amplitude via color and line thickness. One must be carefult that streamlines can only display two components of the field. In the following example the third field component is always zero - but this is generally not the case.
+In this example we show the B-field of a cuboid magnet using Matplotlib streamlines. Streamlines are not magnetic field lines in the sense that the field amplitude cannot be derived from their density. However, Matplotlib streamlines can show the field amplitude via color and line thickness. One must be careful that streamlines can only display two components of the field. In the following example the third field component is always zero - but this is generally not the case.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -81,7 +81,7 @@ Be aware that the above code is not very performant, but quite readable. The fol
 
 ## Example 2 - Hollow Cylinder Magnet
 
-A nice visualizaion is achieved by combining `streamplot` with `contourf`. In this example we show the B-field of a hollow Cylinder magnet with diametral polarization in the xy-symmetry plane.
+A nice visualization is achieved by combining `streamplot` with `contourf`. In this example we show the B-field of a hollow Cylinder magnet with diametral polarization in the xy-symmetry plane.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt

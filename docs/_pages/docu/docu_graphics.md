@@ -616,7 +616,7 @@ Magpylib also offers the possibility to display objects into separate subplots. 
 
 +++
 
-3D suplots can be directly defined in the `show` function by passing input objects as dictionaries with the arguments `objects`, `col` (column) and `row`, as in the example below. If now `row` or no `col` is specified, it defaults to 1.
+3D subplots can be directly defined in the `show` function by passing input objects as dictionaries with the arguments `objects`, `col` (column) and `row`, as in the example below. If now `row` or no `col` is specified, it defaults to 1.
 
 ```{code-cell} ipython3
 import numpy as np

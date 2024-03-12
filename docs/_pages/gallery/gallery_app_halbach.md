@@ -18,6 +18,6 @@ kernelspec:
 
 Magpylib is an excellent tool to create magnet assemblies. In this example we will show how to model Halbach magnets.
 
-Example 1: Halbach magnetization using CylinderSegmetns
+Example 1: Halbach magnetization using CylinderSegments
 
-Example 2: Discreete Halbach magnets
+Example 2: Discrete Halbach magnets
