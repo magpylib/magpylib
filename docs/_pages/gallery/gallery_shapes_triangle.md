@@ -16,7 +16,7 @@ orphan: true
 
 # Triangular Meshes
 
-The magnetic field of a homogenously magnetized body is equivalent to the field of a charged surface. The surface is the hull of the body and the charge density is proportional to the projection of the magnetization vector onto the surface normal.
+The magnetic field of a homogeneously magnetized body is equivalent to the field of a charged surface. The surface is the hull of the body and the charge density is proportional to the projection of the magnetization vector onto the surface normal.
 
 It is very common to approximate the surface of bodies by triangular meshes, which can then be transformed into magnets using the `Triangle` and the `TriangularMesh` classes. When using these classes one should abide by the following rules:
 
@@ -25,7 +25,7 @@ It is very common to approximate the surface of bodies by triangular meshes, whi
 3. The surface must not be self-intersecting.
 4. For the B-field the magnetic polarization must be added on the inside of the body.
 
-## Cubeoctahedron Magnet
+## Cuboctahedron Magnet
 
 In this example `Triangle` is used to create a magnet with cuboctahedral shape. Notice that triangle orientation is displayed by default for convenience.
 
@@ -109,13 +109,13 @@ While `Triangle` simply provides the field of a charged triangle and can be used
 Automatic face reorientation of `TriangularMesh` may fail when the mesh is open.
 ```
 
-In this example we revisit the cubeoctahedron, but generate it through the `TriangularMesh` class.
+In this example we revisit the cuboctahedron, but generate it through the `TriangularMesh` class.
 
 ```{code-cell} ipython3
 import magpylib as magpy
 import numpy as np
 
-# Create cubeoctahedron magnet (vertices and faces are transposed here for more compact display)
+# Create cuboctahedron magnet (vertices and faces are transposed here for more compact display)
 vertices_cm = [
     [0, -1, 1, 0, -1, 0, 1, 1, 0, -1, -1, 1],
     [1, 1, 1, 1, 0, -1, 0, 0, -1, 0, -1, -1],
