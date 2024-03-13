@@ -9,7 +9,7 @@ import magpylib as magpy
 # import pickle
 # import magpylib as magpy
 
-# # linear motionfrom (0,0,0) to (3,-3,3) in 100 steps
+# # linear motion from (0,0,0) to (3,-3,3) in 100 steps
 # pm = magpy.source.magnet.Cuboid(polarization=(111,222,333), dimension=(1,2,3))
 # B1 = np.array([pm.getB((i,-i,i)) for i in np.linspace(0,3,100)])
 

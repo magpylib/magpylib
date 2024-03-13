@@ -154,7 +154,7 @@ s1 = magpy.Sensor(style_label="s1")
 s2 = s1.copy()
 s3 = s2.copy()
 
-# this creates anested collection
+# this creates a nested collection
 coll = s1 + s2 + s3
 coll.describe(format="label")
 

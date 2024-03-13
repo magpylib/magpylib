@@ -23,7 +23,7 @@ def test_TriangularMesh_repr():
 
 
 def test_TriangularMesh_barycenter():
-    """test TriangluarMesh barycenter"""
+    """test TriangularMesh barycenter"""
     pol = (0, 0, 333)
     trimesh = magpy.magnet.TriangularMesh.from_pyvista(
         polarization=pol, polydata=pv.Octahedron()

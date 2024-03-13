@@ -489,7 +489,7 @@ def getBH_dict_level2(
     #  entries in this dict will be tested for input length, and then
     #  be automatically tiled up and stored back into kwargs for calling
     #  getBH_level1().
-    #  To allow different input dimensions, the tdim argument is also given
+    #  To allow different input dimensions, the ndim argument is also given
     #  which tells the program which dimension it should tile up.
 
     # pylint: disable=import-outside-toplevel

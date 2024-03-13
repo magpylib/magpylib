@@ -208,7 +208,7 @@ def test_BHJM_magnet_sphere():
 
 
 def test_field_cylinder_segment_BH():
-    """CylinderSegmetn field test"""
+    """CylinderSegment field test"""
     pol = np.array(
         [
             (0, 0, 0),

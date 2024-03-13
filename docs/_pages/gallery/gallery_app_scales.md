@@ -16,7 +16,8 @@ kernelspec:
 
 # Magnetic Scales
 
+In this example we will show how magnetic scales can be constructed with Magpylib for fast field computation.
+
 - model
 - experiment
-- 4-pol magnet with inhomogeneous magnetization ?
 - refer to DS 91411 and 91479

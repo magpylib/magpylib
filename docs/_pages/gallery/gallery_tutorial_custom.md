@@ -16,10 +16,10 @@ orphan: true
 
 # CustomSource
 
-The {ref}`docu-magpylib-api-custom` class was implemented to offer easy integration of user field implementations into Magpylibs object-oriented interface.
+The {ref}`docu-magpylib-api-custom` class was implemented to offer easy integration of user field implementations into Magpylib's object-oriented interface.
 
 ```{note}
-Obviously, any field implementation can be integrated. Specifically, fields where superposition holds and interactions do not disturb the sources (e.g. electric, gravitational, ...) can benefit from Magpylibs position and orientation interface.
+Obviously, any field implementation can be integrated. Specifically, fields where superposition holds and interactions do not disturb the sources (e.g. electric, gravitational, ...) can benefit from Magpylib's position and orientation interface.
 ```
 
 ## Magnetic Monopole

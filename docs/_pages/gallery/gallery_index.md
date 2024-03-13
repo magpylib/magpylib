@@ -195,7 +195,7 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :link: gallery-app-helmholtz
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:img-bottom: ../../_static/images/gallery_icon_app_helmholtz.png
 :::
 
 :::{grid-item-card} {ref}`gallery-app-scales`

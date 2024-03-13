@@ -15,7 +15,7 @@ Magpylib requires no special input format. All scalar types (`int`, `float`, ...
 (docu-units)=
 ## Units
 
-The important quantity <span style="color: orange">**mu_0**</span> lies at the top level. It's value is not $4 \pi 10^{-7}$ since [the redefinition of the SI base units](https://en.wikipedia.org/wiki/2019_redefinition_of_the_SI_base_units), but a value close to it.
+The important vacuum permeability $\mu_0$ is provided at the package top-level <span style="color: orange">**mu_0**</span>. It's value is not $4 \pi 10^{-7}$ since [the redefinition of the SI base units](https://en.wikipedia.org/wiki/2019_redefinition_of_the_SI_base_units), but a value close to it.
 
 For historical reasons Magpylib used non-SI units until Version 4. Starting with version 5 all inputs and outputs are SI-based.
 
@@ -41,7 +41,7 @@ For historical reasons Magpylib used non-SI units until Version 4. Starting with
 ::::
 
 ```{warning}
-Up to version 4, Magpylib was unfortunately contributing to the naming confusion in magnetism that is explained well [here](https://www.e-magnetica.pl/doku.php/confusion_between_b_and_h). The input `magnetization` in Magpylib < v5 was refering to the magnetic polarization (and not the magnetization), the difference being only in the physical unit. From version 5 onwards this is fixed.
+Up to version 4, Magpylib was unfortunately contributing to the naming confusion in magnetism that is explained well [here](https://www.e-magnetica.pl/doku.php/confusion_between_b_and_h). The input `magnetization` in Magpylib < v5 was referring to the magnetic polarization (and not the magnetization), the difference being only in the physical unit. From version 5 onwards this is fixed.
 ```
 
 ```{note}
@@ -51,7 +51,7 @@ In addition, `getB` returns the same unit as given by the `polarization` input. 
 ```
 
 ```{note}
-The connection between the magnetic polarization J, the magnetization M and the material parameters of a real permanent magnet are shown in {ref}`gallery-tutorial-magnetmodel`.
+The connection between the magnetic polarization J, the magnetization M and the material parameters of a real permanent magnet are shown in {ref}`gallery-tutorial-modelling-magnets`.
 ```
 
 <!-- ################################################################## -->
@@ -125,7 +125,7 @@ Magpylib objects span a local reference frame, and all object properties are def
 (docu-magnet-classes)=
 ## Magnet classes
 
-All magnets are sources. They have the <span style="color: orange">**polarization**</span> attribute which is of the format $\vec{J}=(J_x, J_y, J_z)$ and denotes a homogeneous magnetic polarization vector in the local object coordinates in units of T. Alternatively, the magnetization vector can be set via the  <span style="color: orange">**magnetization**</span> attribute of the format $\vec{M}=(M_x, M_y, M_z)$. These two parameters are codependent and Magpylib ensures that they stay in sync via the relatoin $\vec{J}=\mu_0\cdot\vec{M}$. Information on how this is related to material properties from data sheets is found in {ref}`gallery-tutorial-magnetmodel`.
+All magnets are sources. They have the <span style="color: orange">**polarization**</span> attribute which is of the format $\vec{J}=(J_x, J_y, J_z)$ and denotes a homogeneous magnetic polarization vector in the local object coordinates in units of T. Alternatively, the magnetization vector can be set via the  <span style="color: orange">**magnetization**</span> attribute of the format $\vec{M}=(M_x, M_y, M_z)$. These two parameters are codependent and Magpylib ensures that they stay in sync via the relation $\vec{J}=\mu_0\cdot\vec{M}$. Information on how this is related to material properties from data sheets is found in {ref}`gallery-tutorial-modelling-magnets`.
 
 
 ### Cuboid
@@ -306,7 +306,7 @@ magpylib.current.Polyline(position, orientation, vertices, current, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Polyline` objects represent line current segements where the electric current flows in straight lines from vertex to vertex. The <span style="color: orange">**vertices**</span> attribute is a vector of all vertices $(\vec{P}_1, \vec{P}_2, ...)$ given in the local coordinates in units of meter.
+`Polyline` objects represent line current segments where the electric current flows in straight lines from vertex to vertex. The <span style="color: orange">**vertices**</span> attribute is a vector of all vertices $(\vec{P}_1, \vec{P}_2, ...)$ given in the local coordinates in units of meter.
 :::
 :::{grid-item}
 :columns: 3
@@ -316,7 +316,7 @@ magpylib.current.Polyline(position, orientation, vertices, current, style)
 
 ---------------------------------------------
 
-## Miscellanous classes
+## Miscellaneous classes
 
 There are classes listed hereon that function as sources, but they do not represent physical magnets or current distributions.
 
@@ -612,27 +612,19 @@ The tutorial {ref}`gallery-tutorial-paths` shows intuitive good practice example
 
 <hr style="border:3px solid gray">
 
-Magnetic field computation in Magpylib is done via four top-level functions <span style="color: orange">**getB**</span>, <span style="color: orange">**getH**</span>, <span style="color: orange">**getJ**</span> and, <span style="color: orange">**getM**</span>.
+Magnetic field computation in Magpylib is done via four top-level functions <span style="color: orange">**getB**</span>, <span style="color: orange">**getH**</span>, <span style="color: orange">**getJ**</span> and, <span style="color: orange">**getM**</span>,
 
 
 ```python
 magpylib.getB(sources, observers, squeeze=True, pixel_agg=None, output="ndarray")
-```
-
-```python
 magpylib.getH(sources, observers, squeeze=True, pixel_agg=None, output="ndarray")
-```
-
-```python
 magpylib.getJ(sources, observers, squeeze=True, pixel_agg=None, output="ndarray")
-```
-
-```python
 magpylib.getM(sources, observers, squeeze=True, pixel_agg=None, output="ndarray")
 ```
 
-that compute the respective field generated by `sources` as seen by the `observers` in their local coordinates. `sources` can be any Magpylib source object (e.g. magnets) or a flat list thereof. `observers` can be an array of position vectors with shape `(n1,n2,n3,...,3)`, any Magpylib observer object (e.g. sensors), or a flat list thereof. The following code shows a minimal example for Magplyib field computation.
+that compute the respective field generated by `sources` as seen by the `observers` in their local coordinates. `sources` can be any Magpylib source object (e.g. magnets) or a flat list thereof. `observers` can be an array of position vectors with shape `(n1,n2,n3,...,3)`, any Magpylib observer object (e.g. sensors), or a flat list thereof. For quick-access, the functions `getBHJM` are also methods of all Magpylib objects, such that the `sources` or `observers` input is the object itself.
 
+The following code shows a minimal example for Magpylib field computation.
 
 ```python
 import magpylib as magpy
@@ -649,7 +641,7 @@ print(B)
 #  --> [0.         0.         0.00125664]
 ```
 
-By default, `getB` returns the B-field in units of T, `getH` the H-field in units of A/m, `getJ` the magnetic polarization in T and, `getM` the magnetization in A/m, assuming that all inputs are given in SI units.
+By default, `getB` returns the B-field in units of T, `getH` the H-field in units of A/m, `getJ` the magnetic polarization in T and, `getM` the magnetization in A/m, assuming that all inputs are given in SI units as described in the docstrings.
 
 ```{note}
 In reality, `getB` returns the same unit as given by the `polarization` input. For example, with polarization input in mT, getB will return mT as well. At the same time when the `magnetization` input is kA/m, then `getH` returns kA/m as well. The B/H-field outputs are related to a M/J-inputs via a factor of $µ_0$.
@@ -674,7 +666,7 @@ The tutorial {ref}`gallery-tutorial-field-computation` shows good practices with
 
 
 (docu-functional-interface)=
-## Direct interface
+## Functional interface
 
 Users can bypass the object oriented functionality of Magpylib and instead compute the field for n given parameter sets. This is done by providing the following inputs to the top level functions `getB`, `getH`, `getJ` and, `getM`.
 
@@ -688,7 +680,6 @@ All "scalar" inputs of shape (x,) are automatically tiled up to shape (n,x) to c
 import numpy as np
 import magpylib as magpy
 # All inputs and outputs in SI units
-# This example shows the scale invariance
 
 # compute the cuboid field for 3 input instances
 N = 3 # number of instances
@@ -699,6 +690,7 @@ B = magpy.getB(
     polarization=(0,0,1),
 )
 
+# This example demonstrates the scale invariance
 print(B)
 #  --> [[0.         0.         0.13478239]
 #       [0.         0.         0.13478239]
@@ -731,7 +723,7 @@ At the heart of Magpylib lies a set of core functions that are our implementatio
 :::
 
 :::{grid-item}
-<span style="color: orange">**magnet_cylinder_segmet_Hfield(**</span> `observers`, `dimensions`, `magnetizations`<span style="color: orange">**)**</span>
+<span style="color: orange">**magnet_cylinder_segment_Hfield(**</span> `observers`, `dimensions`, `magnetizations`<span style="color: orange">**)**</span>
 :::
 
 :::{grid-item}

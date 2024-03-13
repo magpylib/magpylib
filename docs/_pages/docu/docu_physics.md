@@ -15,7 +15,7 @@ kernelspec:
 
 # Physics
 
-## When can you use Magpylib ?
+## What is implemented ?
 
 The expressions used in Magpylib describe perfectly homogeneous magnets, surface charges, and line currents with natural boundary conditions. Magpylib is at its best when dealing with static air-coils (no eddy currents, no soft-magnetic cores) and high grade permanent magnets (Ferrite, NdFeB, SmCo or similar materials). When **magnet** permeabilities are below $\mu_r < 1.1$ the error typically undercuts few %. Demagnetization factors are not included. The line **current** solutions give the exact same field as outside of a wire that carries a homogeneous current.
 
@@ -67,6 +67,7 @@ Error estimation as a result of the material response is evaluated in more detai
 
 Demagnetization factors can be used to compensate a large part of the demagnetization effect. Analytical expressions for the demagnetization factors of cuboids can be found at [magpar.net](http://www.magpar.net/static/magpar/doc/html/demagcalc.html).
 
+
 (phys-remanence)=
 ### Modelling a datasheet magnet
 
@@ -74,11 +75,15 @@ The material remanence, often found in data sheets, simply corresponds to the ma
 
 For example, a cube with 1 mm sides has a demagnetization factor is 0.333, see [magpar.net](http://www.magpar.net/static/magpar/doc/html/demagcalc.html). When the remanence field of this cube is 1 T, and its susceptibility is 0.1, the magnetization resulting from self-interaction is reduced to 1 T - 0.3333*0.1 T = 0.9667 T, assuming linear material laws.
 
+A [tutorial](gallery-tutorial-modelling-magnets) explains how to deal with demagnetization effects and how real magnets can be modeled using datasheet values.
+
 It must be understood that the change in magnetization resulting from self-interaction has a homogeneous contribution which is approximated by the demagnetization factor, and an inhomogeneous contribution which cannot be modeled easily with analytical solutions. The inhomogeneous part, however, is typically an order of magnitude lower than the homogenous part. You can use the Magpylib extension [Magpylib material response](https://github.com/magpylib/magpylib-material-response) to model the self-interactions.
 
 ### Soft-Magnetic Materials
 
-Soft-magnetic materials like iron or steel with large permeabilities $\mu_r \sim 1000$ and low remanence fields are dominated by the material response. It is not possible to describe such bodies with analytical solutions. However, recent developments showed that the Magnetostatic Method of Moments can be a powerful tool in combination with Magpylib to compute such a material response. An integration into Magpylib is planned for the future.
+Soft-magnetic materials like iron or steel with large permeabilities $\mu_r \sim 1000$ and low remanence fields are dominated by the material response. It is not possible to describe such bodies with analytical solutions. However, recent developments showed that the **Magnetostatic Method of Moments** can be a powerful tool in combination with Magpylib to compute such a material response. An integration into Magpylib is planned in the future.
+
+When a magnet lies in front of a soft-magnetic plate, the contribution from the plate can be modeled with high accuracy using a **mirror**-approach, similar to the electrostatic "mirror charge".
 
 
 (docu-performance)=
@@ -92,7 +97,7 @@ Maximal performance is achieved when `.getB(sources, observers)` is called only 
 
 The object oriented interface comes with an overhead. If you want to achieve maximal performance this overhead can be avoided with {ref}`docu-functional-interface`.
 
-The analytical solutions provide extreme performance. Single field evaluations take of the order of `100 µs`. For large input arrays (e.g. many observer positions or many similar magnets) the computation time drops below `1 µs` per evaluation point on single state-of-the-art x86 mobile cores (tested on `Intel Core i5-8365U @ 1.60GHz`), depending on the source type.
+The analytical solutions provide extreme performance. Single field evaluations take of the order of `100 µs`. For large input arrays (e.g. many observer positions or many similar magnets) the computation time can drop below `1 µs` per evaluation point on single state-of-the-art x86 mobile cores (tested on `Intel Core i5-8365U @ 1.60GHz`), depending on the source type.
 
 ## Numerical stability
 
