@@ -3,7 +3,7 @@ All notable changes to magpylib are documented here.
 
 # Changelog
 
-## [5.0.0rc0] - 2024-03-13
+## [5.0.0] - 2024-03-13
 ### ⚠️ Breaking Changes ⚠️
 - The Magpylib inputs and outputs are now in **SI Units**.
 - The `magnetization` parameter has also been redefined to reflect the true physical magnetization quantity in units of A/m.
@@ -452,7 +452,7 @@ The first official release of the magpylib library.
 
 ---
 
-[5.0.0rc0]:https://github.com/magpylib/magpylib/compare/4.5.1...HEAD
+[5.0.0]:https://github.com/magpylib/magpylib/compare/4.5.1...HEAD
 [4.5.1]:https://github.com/magpylib/magpylib/compare/4.5.0...4.5.1
 [4.5.0]:https://github.com/magpylib/magpylib/compare/4.4.0...4.5.0
 [4.4.1]:https://github.com/magpylib/magpylib/compare/4.4.0...4.4.1
