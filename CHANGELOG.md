@@ -3,10 +3,10 @@ All notable changes to magpylib are documented here.
 
 # Changelog
 
-## [5.0.0] - Bald
+## [5.0.0rc0] - 2024-03-13
 ### ⚠️ Breaking Changes ⚠️
-- ⚠️The Magpylib inputs and outputs are now in **SI Units**.
-- ⚠️The `magnetization` parameter has also been redefined to reflect the true physical magnetization quantity in units of A/m.
+- The Magpylib inputs and outputs are now in **SI Units**.
+- The `magnetization` parameter has also been redefined to reflect the true physical magnetization quantity in units of A/m.
 ### Other Improvements
 - The `magnetization` parameter is now codependent with the new `polarization` parameter that is the physical magnetic polarization ([#712](https://github.com/magpylib/magpylib/issues/712)) in units of Tesla.
 - Added `getM` (magnetization) and `getJ` (polarization) top level functions and class methods reminiscent of `getB` and `getH`.
