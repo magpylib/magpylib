@@ -58,6 +58,9 @@ test = [
     "pylint>3.0",
     "coverage",
     "pandas",
+    "pint",
+    "unyt",
+    "astropy",
     "pyvista",
     "ipywidgets", # for plotly FigureWidget
     "imageio[tifffile, ffmpeg]",

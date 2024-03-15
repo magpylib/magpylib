@@ -6,6 +6,7 @@ import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.exceptions import MagpylibMissingInput
+from magpylib._src.exceptions import MagpylibUnitsError
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 
 # pylint: disable=unnecessary-lambda-assignment
@@ -52,7 +53,7 @@ def test_input_objects_position_good(position):
 def test_input_objects_position_bad(position):
     """bad input: magpy.Sensor(position=position)"""
 
-    with pytest.raises(MagpylibBadUserInput):
+    with pytest.raises((MagpylibBadUserInput, MagpylibUnitsError)):
         magpy.Sensor(position=position)
 
 
@@ -94,7 +95,7 @@ def test_input_objects_pixel_good(pixel):
 def test_input_objects_pixel_bad(pixel):
     """bad input: magpy.Sensor(pixel=pixel)"""
 
-    with pytest.raises(MagpylibBadUserInput):
+    with pytest.raises((MagpylibBadUserInput, MagpylibUnitsError)):
         magpy.Sensor(position=(0, 0, 0), pixel=pixel)
 
 
@@ -178,8 +179,8 @@ def test_input_objects_current_good(current):
 def test_input_objects_current_bad(current):
     """bad input: magpy.current.Circle(current)"""
 
-    with pytest.raises(MagpylibBadUserInput):
-        magpy.current.Circle(current)
+    with pytest.raises((MagpylibBadUserInput, MagpylibUnitsError)):
+        magpy.current.Circle(current=current)
 
 
 @pytest.mark.parametrize(
@@ -218,7 +219,7 @@ def test_input_objects_diameter_good(diameter):
 def test_input_objects_diameter_bad(diameter):
     """bad input: magpy.current.Circle(diameter=diameter)"""
 
-    with pytest.raises(MagpylibBadUserInput):
+    with pytest.raises((MagpylibBadUserInput, MagpylibUnitsError)):
         magpy.current.Circle(diameter=diameter)
 
 
@@ -260,7 +261,7 @@ def test_input_objects_vertices_good(vertices):
 def test_input_objects_vertices_bad(vertices):
     """bad input: magpy.current.Polyline(vertices=vertices)"""
 
-    with pytest.raises(MagpylibBadUserInput):
+    with pytest.raises((MagpylibBadUserInput, MagpylibUnitsError)):
         magpy.current.Polyline(vertices=vertices)
 
 
@@ -313,9 +314,9 @@ def test_input_objects_magnetization_moment_bad(moment):
         magpy.misc.Dipole(moment=moment)
     """
 
-    with pytest.raises(MagpylibBadUserInput):
+    with pytest.raises((MagpylibBadUserInput, MagpylibUnitsError)):
         magpy.magnet.Cuboid(magnetization=moment)
-    with pytest.raises(MagpylibBadUserInput):
+    with pytest.raises((MagpylibBadUserInput, MagpylibUnitsError)):
         magpy.misc.Dipole(moment=moment)
 
 
@@ -357,7 +358,7 @@ def test_input_objects_dimension_cuboid_good(dimension):
 def test_input_objects_dimension_cuboid_bad(dimension):
     """bad input: magpy.magnet.Cuboid(dimension=dimension)"""
 
-    with pytest.raises(MagpylibBadUserInput):
+    with pytest.raises((MagpylibBadUserInput, MagpylibUnitsError)):
         magpy.magnet.Cuboid(dimension=dimension)
 
 
@@ -399,7 +400,7 @@ def test_input_objects_dimension_cylinder_good(dimension):
 def test_input_objects_dimension_cylinder_bad(dimension):
     """bad input: magpy.magnet.Cylinder(dimension=dimension)"""
 
-    with pytest.raises(MagpylibBadUserInput):
+    with pytest.raises((MagpylibBadUserInput, MagpylibUnitsError)):
         magpy.magnet.Cylinder(dimension=dimension)
 
 
@@ -449,7 +450,7 @@ def test_input_objects_dimension_cylinderSegment_good(dimension):
 def test_input_objects_dimension_cylinderSegment_bad(dimension):
     """good input: magpy.magnet.CylinderSegment(dimension=dimension)"""
 
-    with pytest.raises(MagpylibBadUserInput):
+    with pytest.raises((MagpylibBadUserInput, MagpylibUnitsError)):
         magpy.magnet.CylinderSegment(dimension=dimension)
 
 

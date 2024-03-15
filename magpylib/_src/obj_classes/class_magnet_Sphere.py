@@ -4,7 +4,7 @@ from magpylib._src.display.traces_core import make_Sphere
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
-from magpylib._src.utility import unit_prefix
+from magpylib._src.units import unit_prefix
 
 
 class Sphere(BaseMagnet):
@@ -87,7 +87,10 @@ class Sphere(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_sphere)
-    _field_func_kwargs_ndim = {"polarization": 2, "diameter": 1}
+    _field_func_kwargs = {
+        "polarization": {"ndim": 2, "unit": "T"},
+        "diameter": {"ndim": 1, "unit": "m"},
+    }
     get_trace = make_Sphere
 
     def __init__(
@@ -119,10 +122,11 @@ class Sphere(BaseMagnet):
         """Set Sphere diameter, float, meter."""
         self._diameter = check_format_input_scalar(
             dia,
-            sig_name="diameter",
+            sig_name=f"{self.__class__.__name__}.diameter",
             sig_type="`None` or a positive number (int, float)",
             allow_None=True,
             forbid_negative=True,
+            unit="m",
         )
 
     @property
@@ -130,4 +134,4 @@ class Sphere(BaseMagnet):
         """Default style description text"""
         if self.diameter is None:
             return "no dimension"
-        return f"D={unit_prefix(self.diameter)}m"
+        return f"D={unit_prefix(self.diameter, 'm')}"

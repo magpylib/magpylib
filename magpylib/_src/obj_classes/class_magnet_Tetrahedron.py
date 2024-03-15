@@ -6,6 +6,8 @@ from magpylib._src.display.traces_core import make_Tetrahedron
 from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.units import downcast
+from magpylib._src.units import to_unit_from_target
 
 
 class Tetrahedron(BaseMagnet):
@@ -99,7 +101,11 @@ class Tetrahedron(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_tetrahedron)
-    _field_func_kwargs_ndim = {"polarization": 1, "vertices": 3}
+    _field_func_kwargs = {
+        "polarization": {"ndim": 2, "unit": "T"},
+        "vertices": {"ndim": 3, "unit": "m"},
+    }
+
     get_trace = make_Tetrahedron
 
     def __init__(
@@ -134,7 +140,7 @@ class Tetrahedron(BaseMagnet):
             dims=(2,),
             shape_m1=3,
             length=4,
-            sig_name="Tetrahedron.vertices",
+            sig_name=f"{self.__class__.__name__}.vertices",
             sig_type="array_like (list, tuple, ndarray) of shape (4,3)",
             allow_None=True,
         )
@@ -152,10 +158,11 @@ class Tetrahedron(BaseMagnet):
     @staticmethod
     def _get_barycenter(position, orientation, vertices):
         """Returns the barycenter of a tetrahedron."""
-        centroid = (
-            np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
-        )
-        barycenter = orientation.apply(centroid) + position
+        vert = downcast(vertices, "m")
+        pos = downcast(position, "m")
+        centroid = np.array([0.0, 0.0, 0.0]) if vert is None else np.mean(vert, axis=0)
+        barycenter = orientation.apply(centroid) + pos
+        barycenter = to_unit_from_target(barycenter, target=position, default_unit="m")
         return barycenter
 
     @property
