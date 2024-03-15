@@ -27,7 +27,8 @@ https://www.sciencedirect.com/science/article/pii/S2352711020300170
 
 """
 
-__version__ = "5.0.0rc0"
+# module level dunders
+__version__ = "5.0.0"
 __author__ = "Michael Ortner & Alexandre Boisselet"
 __credits__ = "The Magpylib community"
 __all__ = [
