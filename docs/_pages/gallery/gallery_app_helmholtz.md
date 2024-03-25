@@ -109,11 +109,11 @@ for loc in [(4,4), (4,-6), (-6,4), (-6,-6)]:
 # figure styling
 ax.set(
     title='Magnetic field of Helmholtz',
-    xlabel='x-position (mm)',
-    ylabel='z-position (mm)',
+    xlabel='x-position (m)',
+    ylabel='z-position (m)',
     aspect=1,
 )
-plt.colorbar(sp.lines, ax=ax, label='(mT)')
+plt.colorbar(sp.lines, ax=ax, label='(T)')
 
 plt.tight_layout()
 plt.show()
@@ -144,8 +144,8 @@ sp = ax.contourf(grid[:,:,0], grid[:,:,2], err*100)
 # figure styling
 ax.set(
     title='Helmholtz homogeneity error',
-    xlabel='x-position (mm)',
-    ylabel='z-position (mm)',
+    xlabel='x-position (m)',
+    ylabel='z-position (m)',
     aspect=1,
 )
 plt.colorbar(sp, ax=ax, label='(% of B0)')
