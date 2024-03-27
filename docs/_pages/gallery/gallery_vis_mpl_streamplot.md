@@ -20,6 +20,8 @@ orphan: true
 
 In this example we show the B-field of a cuboid magnet using Matplotlib streamlines. Streamlines are not magnetic field lines in the sense that the field amplitude cannot be derived from their density. However, Matplotlib streamlines can show the field amplitude via color and line thickness. One must be careful that streamlines can only display two components of the field. In the following example the third field component is always zero - but this is generally not the case.
 
+In the example we make use of the [scaling property](docu-api-scale-invariance). We assume that all length inputs are in units of mm, and that the polarization input is in units of millitesla. The resulting `getB` output will also be in millitesla. One must be careful with scaling.
+
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
 import numpy as np
@@ -30,24 +32,24 @@ import magpylib as magpy
 fig, ax = plt.subplots()
 
 # Create an observer grid in the xz-symmetry plane
-ts = np.linspace(-0.05, 0.05, 40)
+ts = np.linspace(-5, 5, 40)
 grid = np.array([[(x, 0, z) for x in ts] for z in ts])
 
 # Compute the B-field of a cube magnet on the grid
-cube = magpy.magnet.Cuboid(polarization=(0.5, 0, 0.5), dimension=(0.02, 0.02, 0.02))
+cube = magpy.magnet.Cuboid(polarization=(500,0,500), dimension=(2,2,2))
 B = cube.getB(grid)
 log10_norm_B = np.log10(np.linalg.norm(B, axis=2))
 
 # Display the B-field with streamplot using log10-scaled
 # color function and linewidth
 splt = ax.streamplot(
-    grid[:, :, 0]*1000, # m -> mm
-    grid[:, :, 2]*1000, # m -> mm
-    B[:, :, 0]*1000, # T -> mT
-    B[:, :, 2]*1000, # T -> mT
+    grid[:, :, 0],
+    grid[:, :, 2],
+    B[:, :, 0],
+    B[:, :, 2],
+    density=1.5,
     color=log10_norm_B,
-    density=1,
-    linewidth=log10_norm_B * 2,
+    linewidth=log10_norm_B,
     cmap="autumn",
 )
 
@@ -59,8 +61,8 @@ cb.set_ticklabels(ticks)
 
 # Outline magnet boundary
 ax.plot(
-    np.array([1, 1, -1, -1, 1]) * 10, # mm
-    np.array([1, -1, -1, 1, 1]) * 10, # mm
+    [1, 1, -1, -1, 1],
+    [1, -1, -1, 1, 1],
     "k--",
     lw=2,
 )
@@ -108,18 +110,18 @@ normB = np.linalg.norm(B, axis=2)
 
 # combine streamplot with contourf
 cp = ax.contourf(
-    X * 1000,  # m -> mm
-    Y * 1000,  # m -> mm
-    normB,
+    X,
+    Y,
+    normB*1000, #T->mT
     cmap="rainbow",
     levels=100,
     zorder=1,
 )
 splt = ax.streamplot(
-    X* 1000,  # m -> mm,
-    Y* 1000,  # m -> mm,
-    B[:, :, 0], # T -> mT
-    B[:, :, 1], # T -> mT
+    X,
+    Y,
+    B[:, :, 0],
+    B[:, :, 1],
     color="k",
     density=1.5,
     linewidth=1,
@@ -131,13 +133,13 @@ fig.colorbar(cp, ax=ax, label="|B| (mT)")
 
 # Outline magnet boundary
 ts = np.linspace(0, 2 * np.pi, 50)
-ax.plot(30 * np.cos(ts), 30 * np.sin(ts), "w-", lw=2, zorder=2)
-ax.plot(20 * np.cos(ts), 20 * np.sin(ts), "w-", lw=2, zorder=2)
+ax.plot(.03*np.cos(ts), .03*np.sin(ts), "w-", lw=2, zorder=2)
+ax.plot(.02*np.cos(ts), .02*np.sin(ts), "w-", lw=2, zorder=2)
 
 # Figure styling
 ax.set(
-    xlabel="x-position (mm)",
-    ylabel="z-position (mm)",
+    xlabel="x-position (m)",
+    ylabel="z-position (m)",
     aspect=1,
 )
 
