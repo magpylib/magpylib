@@ -19,12 +19,12 @@ kernelspec:
 Magpylib can display the motion of objects along paths in the form of animations. The following example shows how to set up such an animation.
 
 ```{hint}
-If your browser window opens, but you animation does not load, reload the page (ctrl+r in chrome).
+If your browser window opens, but your animation does not load, reload the page (ctrl+r in chrome).
 ```
 
 Detailed information about how to tune animations can be found in the [graphics documentation](examples-animation). Animations work best in the [plotly backend](examples-backends-canvas). Avoid rendering too many frames.
 
-```
+```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
 
