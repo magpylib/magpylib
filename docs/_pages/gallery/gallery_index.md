@@ -77,7 +77,7 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :link: gallery-vis-animations
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:img-bottom: ../../_static/images/gallery_icon_vis_animations.png
 :::
 
 :::{grid-item-card} {ref}`gallery-vis-subplots`
