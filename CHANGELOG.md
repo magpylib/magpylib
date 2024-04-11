@@ -4,8 +4,8 @@ All notable changes to magpylib are documented here.
 # Changelog
 
 ## [5.0.1] - 2024-04-12
-- Fixed a bug where `getBHJM` of a Collection would produce one dimension too much ([#753](https://github.com/magpylib/magpylib/issues/753))
-- Fixed a bug where the legend in a deeply nested Collection would be wrong
+- Fixed a bug where `getBHJM` of a Collection would produce one extra dimension ([#753](https://github.com/magpylib/magpylib/issues/753))
+- Fixed a bug where the legend of a deeply nested Collection would be wrong ([#756](https://github.com/magpylib/magpylib/issues/756))
 
 ## [5.0.0] - 2024-03-13
 ### ⚠️ Breaking Changes ⚠️
