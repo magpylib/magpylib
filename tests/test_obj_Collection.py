@@ -450,3 +450,20 @@ def test_collection_describe():
 
     desc = cc.describe()
     assert desc is None
+
+
+def test_col_getBH_input_format():
+    """
+    Collections should produce the same BHJM shapes as individual
+    sources.
+    """
+    cube = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1),
+        dimension=(2, 2, 2),
+    )
+    coll = magpy.Collection(cube)
+
+    for obs in [(0, 0, 0), [(0, 0, 0)], [[(0, 0, 0)]]]:
+        shape1 = cube.getB(obs, squeeze=False).shape
+        shape2 = coll.getB(obs, squeeze=False).shape
+        assert np.all(shape1 == shape2)
