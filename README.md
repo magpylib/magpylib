@@ -136,7 +136,7 @@ A valid software citation could be
     author = {{Michael-Ortner et al.}},
     title = {magpylib},
     url = {https://magpylib.readthedocs.io/en/latest/},
-    version = {5.0.0},
+    version = {5.0.1},
     date = {2023-06-25},
 }
 ```
