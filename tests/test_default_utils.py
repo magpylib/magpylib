@@ -4,7 +4,7 @@ import param
 import pytest
 
 from magpylib._src.defaults.defaults_utility import COLORS_SHORT_TO_LONG
-from magpylib._src.defaults.defaults_utility import MagicProperties
+from magpylib._src.defaults.defaults_utility import MagicParameterized
 from magpylib._src.defaults.defaults_utility import color_validator
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.defaults.defaults_utility import linearize_dict

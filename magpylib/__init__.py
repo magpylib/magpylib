@@ -61,7 +61,7 @@ from magpylib import graphics
 from magpylib import magnet
 from magpylib import misc
 from magpylib._src.defaults.defaults_classes import default_settings as defaults
-from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
+from magpylib._src.defaults.defaults_values import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.display.display import show
 from magpylib._src.display.display import show_context
 from magpylib._src.fields import getB

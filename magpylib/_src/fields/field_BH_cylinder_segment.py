@@ -2445,11 +2445,3 @@ def BHJM_cylinder_segment(
     raise ValueError(  # pragma: no cover
         "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"
     )
-
-    # return convert_HBMJ(
-    #     output_field_type=field,
-    #     polarization=polarization,
-    #     input_field_type="H",
-    #     field_values=H_all,
-    #     mask_inside=mask_inside & mask_not_on_surf,
-    # )

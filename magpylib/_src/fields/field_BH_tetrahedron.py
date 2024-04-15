@@ -8,7 +8,6 @@ from scipy.constants import mu_0 as MU0
 
 from magpylib._src.fields.field_BH_triangle import BHJM_triangle
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import convert_HBMJ
 
 
 def check_chirality(points: np.ndarray) -> np.ndarray:

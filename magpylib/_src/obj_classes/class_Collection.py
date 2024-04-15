@@ -713,54 +713,50 @@ class BaseCollection(BaseDisplayRepr):
     ):
         """Compute M-field for given sources and observers.
 
-                SI units are used for all inputs and outputs.
+        SI units are used for all inputs and outputs.
 
-                Parameters
-                ----------
-                inputs: source or observer objects
-                    Input can only be observers if the collection contains only sources. In this case the
-                    collection behaves like a single source.
-                    Input can only be sources if the collection contains sensors. In this case the
-                    collection behaves like a list of all its sensors.
+        Parameters
+        ----------
+        inputs: source or observer objects
+            Input can only be observers if the collection contains only sources. In this case the
+            collection behaves like a single source.
+            Input can only be sources if the collection contains sensors. In this case the
+            collection behaves like a list of all its sensors.
 
-                squeeze: bool, default=`True`
-                    If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g.
-                    only a single source) are eliminated.
+        squeeze: bool, default=`True`
+            If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g.
+            only a single source) are eliminated.
 
-                pixel_agg: str, default=`None`
-                    Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
-                    which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-                    With this option, observers input with different (pixel) shapes is allowed.
+        pixel_agg: str, default=`None`
+            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
+            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
+            With this option, observers input with different (pixel) shapes is allowed.
 
-                output: str, default='ndarray'
-                    Output type, which must be one of `('ndarray', 'dataframe')`. By default a
-                    `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
-                    object is returned (the Pandas library must be installed).
+        output: str, default='ndarray'
+            Output type, which must be one of `('ndarray', 'dataframe')`. By default a
+            `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
+            object is returned (the Pandas library must be installed).
 
-                Returns
-                -------
-                M-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
-                    M-field at each path position (index m) for each sensor (index k) and each sensor
-        <<<<<<< HEAD
-                    pixel position (indeices n1,n2,...) in units of A/m. Sensor pixel positions are
-        =======
-                    pixel position (indices n1,n2,...) in units of A/m. Sensor pixel positions are
-        >>>>>>> ccf11c357ac4225696b398801c6818b740b62985
-                    equivalent to simple observer positions. Paths of objects that are shorter than
-                    index m are considered as static beyond their end.
+        Returns
+        -------
+        M-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
+            M-field at each path position (index m) for each sensor (index k) and each sensor
+            pixel position (indices n1,n2,...) in units of A/m. Sensor pixel positions are
+            equivalent to simple observer positions. Paths of objects that are shorter than
+            index m are considered as static beyond their end.
 
-                in_out: {'auto', 'inside', 'outside'}
-                    This parameter only applies for magnet bodies. It specifies the location of the
-                    observers relative to the magnet body, affecting the calculation of the magnetic field.
-                    The options are:
-                    - 'auto': The location (inside or outside the cuboid) is determined automatically for
-                    each observer.
-                    - 'inside': All observers are considered to be inside the cuboid; use this for
-                      performance optimization if applicable.
-                    - 'outside': All observers are considered to be outside the cuboid; use this for
-                      performance optimization if applicable.
-                    Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-                    locations is unknown.
+        in_out: {'auto', 'inside', 'outside'}
+            This parameter only applies for magnet bodies. It specifies the location of the
+            observers relative to the magnet body, affecting the calculation of the magnetic field.
+            The options are:
+            - 'auto': The location (inside or outside the cuboid) is determined automatically for
+            each observer.
+            - 'inside': All observers are considered to be inside the cuboid; use this for
+              performance optimization if applicable.
+            - 'outside': All observers are considered to be outside the cuboid; use this for
+              performance optimization if applicable.
+            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
+            locations is unknown.
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
