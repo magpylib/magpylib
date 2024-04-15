@@ -4,14 +4,13 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=too-many-statements
 import numpy as np
+from scipy.constants import mu_0 as MU0
 from scipy.special import ellipeinc
 from scipy.special import ellipkinc
 
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.special_el3 import el3_angle
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import convert_HBMJ
-from magpylib._src.utility import MU0
 
 
 def arctan_k_tan_2(k, phi):
@@ -148,10 +147,7 @@ def Hz_ri_case115(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
     E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.abs(r_bar_i) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / r_bar_i**2)
     F_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
-        * (r**2 + r_i**2)
-        / (r * np.abs(r_bar_i))
+        -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (r * np.abs(r_bar_i))
     )
     return t1_coef * t1 + E_coef * E + F_coef * F
 
@@ -223,10 +219,7 @@ def Hz_ri_case125(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
     E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.abs(r_bar_i) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / r_bar_i**2)
     F_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
-        * (r**2 + r_i**2)
-        / (r * np.abs(r_bar_i))
+        -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (r * np.abs(r_bar_i))
     )
     return np.sin(theta_M) * np.sin(phi_bar_M) * (r + r_i) / r + E_coef * E + F_coef * F
 
@@ -350,9 +343,7 @@ def Hz_ri_case135(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / t)
     E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.sqrt(t) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / t)
-    F_coef = (
-        -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (r * np.sqrt(t))
-    )
+    F_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (r * np.sqrt(t))
     return t1_coef * t1 + E_coef * E + F_coef * F
 
 
@@ -509,9 +500,7 @@ def Hr_zk_case214(r, phi_bar_j, theta_M, z_bar_k):
     t = np.sqrt(r**2 + z_bar_k**2)
 
     def Pi1(sign):
-        return el3_angle(
-            phi_bar_j / 2, 2 * r / (r + sign * t), -4 * r**2 / z_bar_k**2
-        )
+        return el3_angle(phi_bar_j / 2, 2 * r / (r + sign * t), -4 * r**2 / z_bar_k**2)
 
     def Pi1_coef(sign):
         return (
@@ -604,9 +593,7 @@ def Hz_zk_case214(r, phi_bar_j, theta_M, z_bar_k):
     t = np.sqrt(r**2 + z_bar_k**2)
 
     def Pi(sign):
-        return el3_angle(
-            phi_bar_j / 2, 2 * r / (r + sign * t), -4 * r**2 / z_bar_k**2
-        )
+        return el3_angle(phi_bar_j / 2, 2 * r / (r + sign * t), -4 * r**2 / z_bar_k**2)
 
     Pi_coef = np.cos(theta_M) * np.sign(z_bar_k)
     return Pi_coef * Pi(1) + Pi_coef * Pi(-1)
@@ -729,9 +716,7 @@ def Hphi_ri_case215(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     t1 = np.sqrt(r_bar_i**2 + z_bar_k**2) * z_bar_k / (2.0 * r**2)
     t1_coef = -np.sin(theta_M) * np.cos(phi_bar_M)
     t2 = np.arctanh(z_bar_k / np.sqrt(r_bar_i**2 + z_bar_k**2))
-    t2_coef = (
-        -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
-    )
+    t2_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     E_coef = (
         np.sin(theta_M)
@@ -903,9 +888,7 @@ def Hz_phij_case223(r, phi_bar_M, theta_M, z_bar_k):
 
 
 def Hz_zk_case223(r, phi_bar_j, theta_M, z_bar_k):
-    t1 = arctan_k_tan_2(
-        np.sqrt(r**2 + z_bar_k**2) / np.abs(z_bar_k), 2.0 * phi_bar_j
-    )
+    t1 = arctan_k_tan_2(np.sqrt(r**2 + z_bar_k**2) / np.abs(z_bar_k), 2.0 * phi_bar_j)
     t1_coef = np.cos(theta_M) * np.sign(z_bar_k)
     return t1_coef * t1
 
@@ -1164,9 +1147,7 @@ def Hphi_ri_case225(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     t1 = np.sqrt((r + r_i) ** 2 + z_bar_k**2) * z_bar_k / (2.0 * r**2)
     t1_coef = -np.sin(theta_M) * np.cos(phi_bar_M)
     t2 = np.arctanh(z_bar_k / np.sqrt((r + r_i) ** 2 + z_bar_k**2))
-    t2_coef = (
-        -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
-    )
+    t2_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     E_coef = (
         np.sin(theta_M)
@@ -1401,9 +1382,7 @@ def Hz_phij_case233(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
 
 
 def Hz_zk_case233(r, phi_bar_j, theta_M, z_bar_k):
-    t1 = arctan_k_tan_2(
-        np.sqrt(r**2 + z_bar_k**2) / np.abs(z_bar_k), 2.0 * phi_bar_j
-    )
+    t1 = arctan_k_tan_2(np.sqrt(r**2 + z_bar_k**2) / np.abs(z_bar_k), 2.0 * phi_bar_j)
     t1_coef = np.cos(theta_M) * np.sign(z_bar_k)
     return t1_coef * t1
 
@@ -1481,9 +1460,7 @@ def Hr_zk_case234(r, phi_bar_j, theta_M, z_bar_k):
 
     def Pi2(sign):
         return el3_angle(
-            arctan_k_tan_2(
-                np.sqrt((4.0 * r**2 + z_bar_k**2) / z_bar_k**2), phi_bar_j
-            ),
+            arctan_k_tan_2(np.sqrt((4.0 * r**2 + z_bar_k**2) / z_bar_k**2), phi_bar_j),
             1.0 - z_bar_k**4 / ((4.0 * r**2 + z_bar_k**2) * (r + sign * t) ** 2),
             4.0 * r**2 / (4.0 * r**2 + z_bar_k**2),
         )
@@ -1648,9 +1625,7 @@ def Hr_phij_case235(r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
         / (
             r
             * np.sin(phi_bar_j)
-            * np.sqrt(
-                r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2
-            )
+            * np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2)
         )
     )
     t2_coef = np.sin(theta_M) * np.sin(phi_bar_Mj) * np.sin(phi_bar_j)
@@ -1696,9 +1671,7 @@ def Hr_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
     def Pi2(sign):
         return el3_angle(
             arctan_k_tan_2(
-                np.sqrt(
-                    ((r_i + r) ** 2 + z_bar_k**2) / (r_bar_i**2 + z_bar_k**2)
-                ),
+                np.sqrt(((r_i + r) ** 2 + z_bar_k**2) / (r_bar_i**2 + z_bar_k**2)),
                 phi_bar_j,
             ),
             1.0
@@ -1741,9 +1714,7 @@ def Hphi_ri_case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
         z_bar_k
         / np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2)
     )
-    t2_coef = (
-        -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
-    )
+    t2_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     E_coef = (
         np.sin(theta_M)
@@ -2133,41 +2104,53 @@ def case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k)
     return results
 
 
+# CORE
 def magnet_cylinder_segment_Hfield(
-    mag: np.ndarray, dim: np.ndarray, obs_pos: np.ndarray
+    observers: np.ndarray,
+    dimensions: np.ndarray,
+    magnetizations: np.ndarray,
 ) -> np.ndarray:
-    """
-    Magnetic field of homogeneously magnetized (in cartesian coordinates) cylinder
-    ring segments.
+    """Magnetic field of homogeneously magnetized cylinder ring segments
+    in Cartesian Coordinates.
 
-    The cylinder axis coincides with the z-axis of the global coordinate
-    system. The geometric center of the cylinder lies in the origin.
-    Implementation based on F.Slanovc, Journal of Magnetism and Magnetic
-    Materials, Volume 559, 1 October 2022, 169482
-
-    SI units are used for all inputs and outputs.
+    The cylinder axes coincide with the z-axis of the Cylindrical CS and the
+    geometric center of the cylinder lies in the origin. The result is
+    proportional to the magnetization magnitude, and independent of the
+    length units used for dimensions and observers.
 
     Parameters
     ----------
-    mag: ndarray, shape (n,3)
-        magnetization vector (M, phi, th) in spherical CS, units: T, rad
-    obs_pos : ndarray, shape (n,3)
-        observer positions (r,phi,z) in cy CS, units: m, rad
-    dim: ndarray, shape (n,6)
-        segment dimension (r1,r2,phi1,phi2,z1,z2) in cy CS , units: m, rad
+    observers : ndarray, shape (n,3)
+        Observer positions (r,phi,z) in Cylinder coordinates, where phi is
+        given in rad.
+
+    dimensions: ndarray, shape (n,6)
+        Segment dimension [(r1,r2,phi1,phi2,z1,z2), ...]. r1 and r2 are
+        inner and outer radii. phi1 and phi2 are azimuth section angles
+        in rad. z1 and z2 are z-values of bottom and top.
+
+    magnetizations: ndarray, shape (n,3)
+        Magnetization vectors [(M, phi, th), ...] in spherical CS. M is the
+        magnitude of magnetization, phi and th are azimuth and polar angles
+        in rad.
 
     Returns
     -------
-    H-field: ndarray
-        H-field in cylindrical coordinates (Hr, Hphi, Hz), shape (n,3) in units of A/m.
+    H-field: ndarray, shape (n,3)
+        H-field generated by Cylinder Segments at observer positions.
+
+    Notes
+    -----
+    Implementation based on F.Slanovc, Journal of Magnetism and Magnetic
+    Materials, Volume 559, 1 October 2022, 169482
     """
 
     # tile inputs into 8-stacks (boundary cases)
-    r, phi, z = np.repeat(obs_pos, 8, axis=0).T
-    r_i = np.repeat(dim[:, :2], 4)
-    phi_j = np.repeat(np.tile(dim[:, 2:4], 2), 2)
-    z_k = np.ravel(np.tile(dim[:, 4:6], 4))
-    _, phi_M, theta_M = np.repeat(mag, 8, axis=0).T
+    r, phi, z = np.repeat(observers, 8, axis=0).T
+    r_i = np.repeat(dimensions[:, :2], 4)
+    phi_j = np.repeat(np.tile(dimensions[:, 2:4], 2), 2)
+    z_k = np.ravel(np.tile(dimensions[:, 4:6], 4))
+    _, phi_M, theta_M = np.repeat(magnetizations, 8, axis=0).T
 
     # initialize results array with nan
     result = np.empty((len(r), 3, 3))
@@ -2296,7 +2279,7 @@ def magnet_cylinder_segment_Hfield(
     result = np.sum(result[:, (1, 2, 4, 7)] - result[:, (0, 3, 5, 6)], axis=(1, 3))
 
     # multiply with magnetization amplitude
-    result = result.T * mag[:, 0] / (4 * np.pi)
+    result = result.T * magnetizations[:, 0] * 1e-7
 
     return result.T
 
@@ -2350,79 +2333,15 @@ def BHJM_cylinder_segment_internal(
 
 
 def BHJM_cylinder_segment(
-    *,
     field: str,
     observers: np.ndarray,
     dimension: np.ndarray,
     polarization: np.ndarray,
     in_out="auto",
 ) -> np.ndarray:
-    """Magnetic field of homogeneously magnetized cylinder segments.
-
-    The cylinder axis coincides with the z-axis of the global coordinate
-    system. The geometric center of the cylinder lies in the origin.
-
-    SI units are used for all inputs and outputs.
-
-    Parameters
-    ----------
-    field: str, default=`'B'`
-        If `field='B'` return B-field in units of T, if `field='H'` return H-field
-        in units of A/m.
-
-    observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of m.
-
-    dimension: ndarray, shape (n,5)
-        Dimensions of CylinderSegments (r1,r2,h,phi1,phi2) with inner radius
-        r1, outer radius r2, height h in units of m and the two segment
-        angles phi1 < phi2 in units of deg.
-
-    polarization: ndarray, shape (n,3)
-        Magnetic polarization vectors in units of T.
-
-    in_out: {'auto', 'inside', 'outside'}
-        Specify the location of the observers relative to the magnet body, affecting the calculation
-        of the magnetic field. The options are:
-        - 'auto': The location (inside or outside the cuboid) is determined automatically for each
-          observer.
-        - 'inside': All observers are considered to be inside the cuboid; use this for performance
-          optimization if applicable.
-        - 'outside': All observers are considered to be outside the cuboid; use this for performance
-          optimization if applicable.
-        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-        locations is unknown.
-
-    Returns
-    -------
-    B-field or H-field: ndarray, shape (n,3)
-        B- or H-field of source in Cartesian coordinates in units of T or A/m.
-
-    Examples
-    --------
-    Compute the field of two different cylinder segment magnets at position (1,1,1).
-
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> B = magpy.core.BHJM_cylinder_segment(
-    ...     field='B',
-    ...     observers=np.array([(1,1,1), (1,1,1)]),
-    ...     dimension=np.array([(0,1,2,-90,90), (1,2,4,35,125)]),
-    ...     polarization=np.array([(0,0,1), (.5,.5,0)]),
-    ... )
-    >>> print(B)
-    [[ 0.07046526  0.08373724 -0.0198113 ]
-     [ 0.29846023  0.20757316  0.00349617]]
-
-    Notes
-    -----
-    Advanced unit use: The input unit of magnetization and polarization
-    gives the output unit of H and B. All results are independent of the
-    length input units. One must be careful, however, to use consistently
-    the same length unit throughout a script.
-
-    Implementation based on F.Slanovc, Journal of Magnetism and Magnetic
-    Materials, Volume 559, 1 October 2022, 169482
+    """
+    - translate cylinder segment field to BHJM
+    - special cases catching
     """
     check_field_input(field)
 
@@ -2476,20 +2395,22 @@ def BHJM_cylinder_segment(
     # else:
     #     mask_inside = np.full(len(observers), in_out == "inside")
     #     mask_not_on_surf = np.full(len(observers), True)
-    # ACHTUNG @alex
+    # WARNING @alex
     #   1. inside and not_on_surface are not the same! Cant just put to true.
 
-    # return 0 when all points are on surface --------------------------------
+    # return 0 when all points are on surface
     if not np.any(mask_not_on_surf):
         return BHJM * 0
 
     if field == "J":
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM
 
     if field == "M":
-        BHJM[~mask_inside] *= 0
+        BHJM[~mask_inside] = 0
         return BHJM / MU0
+
+    BHJM *= 0
 
     # redefine input if there are some surface-points -------------------------
     pol = polarization[mask_not_on_surf]
@@ -2498,13 +2419,15 @@ def BHJM_cylinder_segment(
     phi = phi[mask_not_on_surf]
 
     # transform mag to spherical CS -----------------------------------------
-    m = np.sqrt(pol[:, 0] ** 2 + pol[:, 1] ** 2 + pol[:, 2] ** 2)
+    m = np.sqrt(pol[:, 0] ** 2 + pol[:, 1] ** 2 + pol[:, 2] ** 2) / MU0  # J -> M
     phi_m = np.arctan2(pol[:, 1], pol[:, 0])
     th_m = np.arctan2(np.sqrt(pol[:, 0] ** 2 + pol[:, 1] ** 2), pol[:, 2])
     mag_sph = np.concatenate(((m,), (phi_m,), (th_m,)), axis=0).T
 
     # compute H and transform to cart CS -------------------------------------
-    H_cy = magnet_cylinder_segment_Hfield(mag_sph, dim, pos_obs_cy)
+    H_cy = magnet_cylinder_segment_Hfield(
+        magnetizations=mag_sph, dimensions=dim, observers=pos_obs_cy
+    )
     Hr, Hphi, Hz = H_cy.T
     Hx = Hr * np.cos(phi) - Hphi * np.sin(phi)
     Hy = Hr * np.sin(phi) + Hphi * np.cos(phi)
@@ -2514,8 +2437,10 @@ def BHJM_cylinder_segment(
         return BHJM
 
     if field == "B":
-        BHJM[mask_inside] += polarization[mask_inside] / MU0
-        return BHJM * MU0
+        BHJM *= MU0
+        BHJM[mask_inside] += polarization[mask_inside]
+        BHJM[~mask_not_on_surf] *= 0
+        return BHJM
 
     raise ValueError(  # pragma: no cover
         "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"

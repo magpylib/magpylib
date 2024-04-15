@@ -4,7 +4,6 @@ from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 
-
 ###############################################################################
 ###############################################################################
 # NEW COLLECTION POS/ORI TESTS FROM v4
@@ -24,12 +23,22 @@ def validate_pos_orient(obj, ppath, opath_as_rotvec):
         "orientation as_rotvec shapes do not match"
         f"\n object has {so.as_rotvec().shape} instead of {opath.as_rotvec().shape}"
     )
-    assert np.allclose(sp, ppath), (
-        f"position validation failed with ({sp})" f"\n expected {ppath}"
+    np.testing.assert_allclose(
+        sp,
+        ppath,
+        rtol=1e-05,
+        atol=1e-08,
+        err_msg=f"position validation failed with ({sp}) expected {ppath}",
     )
-    assert np.allclose(so.as_matrix(), opath.as_matrix()), (
-        f"orientation validation failed with ({so.as_rotvec()})"
-        f"\n expected {opath_as_rotvec}"
+    np.testing.assert_allclose(
+        so.as_matrix(),
+        opath.as_matrix(),
+        rtol=1e-05,
+        atol=1e-08,
+        err_msg=(
+            f"orientation validation failed with ({so.as_rotvec()})"
+            f"\n expected {opath_as_rotvec}"
+        ),
     )
 
 
@@ -282,8 +291,8 @@ def test_Collection_setter():
 
     test_POS, test_ORI = np.load("tests/testdata/testdata_Collection_setter.npy")
 
-    assert np.allclose(POS, test_POS)
-    assert np.allclose(ORI, test_ORI)
+    np.testing.assert_allclose(POS, test_POS)
+    np.testing.assert_allclose(ORI, test_ORI)
 
 
 ############################################################################

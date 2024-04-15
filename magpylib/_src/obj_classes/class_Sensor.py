@@ -1,4 +1,5 @@
 """Sensor class code"""
+
 import numpy as np
 
 from magpylib._src.defaults.defaults_classes import SensorStyle
@@ -81,7 +82,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     >>> print(B)
     [[0.00000000e+00 8.88576588e-05 8.88576588e-05]
      [0.00000000e+00 9.16274003e-05 9.16274003e-05]
-     [0.00000000e+00 1.01415383e-04 1.01415383e-04]]
+     [0.00000000e+00 1.01415384e-04 1.01415384e-04]]
     """
 
     _style_class = SensorStyle
@@ -222,7 +223,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         >>> print(B)
         [[0.00000000e+00 8.88576588e-05 8.88576588e-05]
          [0.00000000e+00 9.16274003e-05 9.16274003e-05]
-         [0.00000000e+00 1.01415383e-04 1.01415383e-04]]
+         [0.00000000e+00 1.01415384e-04 1.01415384e-04]]
         """
         sources = format_star_input(sources)
         return getBH_level2(

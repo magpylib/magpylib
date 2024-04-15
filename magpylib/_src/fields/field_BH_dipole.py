@@ -1,36 +1,38 @@
 """
 Core implementation of dipole field
 """
+
 import numpy as np
+from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import MU0
 
 
 # CORE
 def dipole_Hfield(
-    *,
     observers: np.ndarray,
     moments: np.ndarray,
 ) -> np.ndarray:
     """Magnetic field of a dipole moments.
 
-    The dipole moment lies in the origin of the coordinate system. SI units are used
-    for all inputs and outputs. Returns np.inf for all non-zero moment components
-    in the origin.
+    The dipole moment lies in the origin of the coordinate system.
+    The output is proportional to the moment input, and is independent
+    of length units used for observers (and moment) input considering
+    that the moment is proportional to [L]**2.
+    Returns np.inf for all non-zero moment components in the origin.
 
     Parameters
     ----------
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of m.
+        Observer positions (x,y,z) in Cartesian coordinates.
 
     moments: ndarray, shape (n,3)
-        Dipole moment vector in units of A·m².
+        Dipole moment vector.
 
     Returns
     -------
     H-field: ndarray, shape (n,3)
-        H-field of dipole in Cartesian coordinates in units of A/m.
+        H-field of Dipole in Cartesian coordinates.
 
     Notes
     -----
@@ -62,26 +64,28 @@ def dipole_Hfield(
 
 
 def BHJM_dipole(
-    *,
     field: str,
     observers: np.ndarray,
     moment: np.ndarray,
 ) -> np.ndarray:
+    """
+    - translate dipole field to BHJM
+    """
     check_field_input(field)
 
     if field in "MJ":
         return np.zeros_like(observers, dtype=float)
 
-    H = dipole_Hfield(
+    BHJM = dipole_Hfield(
         observers=observers,
         moments=moment,
     )
 
     if field == "H":
-        return H
+        return BHJM
 
     if field == "B":
-        return H * MU0
+        return BHJM * MU0
 
     raise ValueError(  # pragma: no cover
         "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"

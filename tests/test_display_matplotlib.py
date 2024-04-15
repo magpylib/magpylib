@@ -16,7 +16,6 @@ import magpylib as magpy
 from magpylib._src.display.display import ctx
 from magpylib.graphics.model3d import make_Cuboid
 
-
 # pylint: disable=assignment-from-no-return
 # pylint: disable=unnecessary-lambda-assignment
 # pylint: disable=no-member
@@ -167,7 +166,7 @@ def test_Triangle_display_from_convexhull():
 
     mesh3d = magpy.graphics.model3d.make_TriangularMesh(vertices=verts)
     # note: faces are built by scipy.Convexhull since faces=None
-    # ConvexHull DOES NOT GUARRANTY proper orientation of faces when building a body
+    # ConvexHull DOES NOT GUARANTY proper orientation of faces when building a body
     points = np.array([v for k, v in mesh3d["kwargs"].items() if k in "xyz"]).T
     faces = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
     src = magpy.Collection(

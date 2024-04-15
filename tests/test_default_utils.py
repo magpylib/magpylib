@@ -3,13 +3,12 @@ from copy import deepcopy
 import param
 import pytest
 
-import magpylib as magpy
-from magpylib._src.defaults.defaults_utility import color_validator
 from magpylib._src.defaults.defaults_utility import COLORS_SHORT_TO_LONG
+from magpylib._src.defaults.defaults_utility import MagicProperties
+from magpylib._src.defaults.defaults_utility import color_validator
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.defaults.defaults_utility import magic_to_dict
-from magpylib._src.defaults.defaults_utility import MagicParameterized
 from magpylib._src.defaults.defaults_utility import update_nested_dict
 
 
@@ -134,7 +133,7 @@ def test_good_colors(color, allow_None, color_expected):
     ],
 )
 def test_bad_colors(color, allow_None, expected_exception):
-    """test color validator based on matploblib validation"""
+    """test color validator based on matplotlib validation"""
 
     with pytest.raises(expected_exception):
         color_validator(color, allow_None=allow_None)

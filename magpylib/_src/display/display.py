@@ -1,4 +1,5 @@
 """ Display function codes"""
+
 import warnings
 from contextlib import contextmanager
 from importlib import import_module
@@ -8,8 +9,8 @@ from matplotlib.figure import Figure as mplFig
 
 from magpylib._src.defaults.defaults_utility import _DefaultValue
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
-from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.display.traces_generic import MagpyMarkers
+from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.display.traces_utility import process_show_input_objs
 from magpylib._src.input_checks import check_format_input_backend
 from magpylib._src.input_checks import check_format_input_vector
@@ -150,8 +151,9 @@ def infer_backend(canvas):
     in_notebook = False
     plotly_available = False
     try:
-        from magpylib._src.utility import is_notebook
         import plotly  # pylint: disable=unused-import
+
+        from magpylib._src.utility import is_notebook
 
         plotly_available = True
         in_notebook = is_notebook()

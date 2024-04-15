@@ -18,8 +18,7 @@ def test_sensor1():
     B1 = pm.getB(possis)
     B2 = sens.getB(pm)
 
-    assert B1.shape == B2.shape, "FAIL sensor shape"
-    assert np.allclose(B1, B2), "FAIL sensor values"
+    np.testing.assert_allclose(B1, B2)
 
 
 def test_sensor2():
@@ -36,8 +35,7 @@ def test_sensor2():
     sens.move([(t, 0, 0) for t in poz], start=0)
     B2 = sens.getB(pm)
 
-    assert B1.shape == B2.shape, "FAIL sensor shape"
-    assert np.allclose(B1, B2), "FAIL sensor values"
+    np.testing.assert_allclose(B1, B2)
 
 
 def test_Sensor_getB_specs():
@@ -47,7 +45,7 @@ def test_Sensor_getB_specs():
 
     B1 = sens1.getB(pm1)
     B2 = magpy.getB(pm1, sens1)
-    assert np.allclose(B1, B2), "should be same"
+    np.testing.assert_allclose(B1, B2)
 
 
 def test_Sensor_squeeze():

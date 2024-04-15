@@ -36,22 +36,42 @@ def test_format_getBH_class_inputs():
 
     B1 = pm1.getB(possis)
     B2 = pm1.getB(sens)
-    assert np.allclose(B1, B2), "pos_obs should give same as sens"
+    np.testing.assert_allclose(B1, B2, err_msg="pos_obs should give same as sens")
 
     B3 = pm1.getB(sens, sens)
     B4 = pm1.getB([sens, sens])
     B44 = pm1.getB((sens, sens))
-    assert np.allclose(B3, B4), "sens,sens should give same as [sens,sens]"
-    assert np.allclose(B3, B44), "sens,sens should give same as (sens,sens)"
+    np.testing.assert_allclose(
+        B3,
+        B4,
+        err_msg="sens,sens should give same as [sens,sens]",
+    )
+    np.testing.assert_allclose(
+        B3,
+        B44,
+        err_msg="sens,sens should give same as (sens,sens)",
+    )
 
     B1 = sens.getH(pm1) * 4
     B2 = sens.getH(pm1, pm2, col, sumup=True)
     B3 = sens.getH([col]) * 2
     B4 = sens.getH([col, pm1, pm2], sumup=True)
 
-    assert np.allclose(B1, B2), "src,src should give same as [src,src]"
-    assert np.allclose(B1, B3), "src should give same as [src]"
-    assert np.allclose(B1, B4), "src,src should give same as [src,src]"
+    np.testing.assert_allclose(
+        B1,
+        B2,
+        err_msg="src,src should give same as [src,src]",
+    )
+    np.testing.assert_allclose(
+        B1,
+        B3,
+        err_msg="src should give same as [src]",
+    )
+    np.testing.assert_allclose(
+        B1,
+        B4,
+        err_msg="src,src should give same as [src,src]",
+    )
 
 
 @pytest.mark.parametrize(

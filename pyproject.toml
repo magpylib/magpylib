@@ -82,3 +82,8 @@ Changelog = "https://github.com/magpylib/magpylib/blob/master/CHANGELOG.md"
 # doctests with the missing_pyvista test
 addopts = ["--doctest-modules", "--ignore-glob=*backend_pyvista.py"]
 testpaths = ["magpylib", "tests"]
+
+[tool.isort]
+# add_imports = ["from __future__ import annotations"]
+force_single_line = true
+profile = "black"

@@ -3,10 +3,22 @@ All notable changes to magpylib are documented here.
 
 # Changelog
 
-## [5.0.0dev]
-- The Magpylib inputs and outputs are now in **SI Units**. The `magnetization` term has also been redefined and is now codependent with the `polarization` term ([#712](https://github.com/magpylib/magpylib/issues/712))
-- Added `getM` (magnetization) and `getJ` (polarization) top level functions. Also an `in_out` (inside/ouside) parameter is added to specify the location of the observers relative to the magnet body in order to increase performance ([#717](https://github.com/magpylib/magpylib/issues/717))
--
+## [5.0.1] - 2024-04-12
+- Fixed a bug where `getBHJM` of a Collection would produce one extra dimension ([#753](https://github.com/magpylib/magpylib/issues/753))
+- Fixed a bug where the legend of a deeply nested Collection would be wrong ([#756](https://github.com/magpylib/magpylib/issues/756))
+
+## [5.0.0] - 2024-03-13
+### ⚠️ Breaking Changes ⚠️
+- The Magpylib inputs and outputs are now in **SI Units**.
+- The `magnetization` parameter has also been redefined to reflect the true physical magnetization quantity in units of A/m.
+### Other Improvements
+- The `magnetization` parameter is now codependent with the new `polarization` parameter that is the physical magnetic polarization ([#712](https://github.com/magpylib/magpylib/issues/712)) in units of Tesla.
+- Added `getM` (magnetization) and `getJ` (polarization) top level functions and class methods reminiscent of `getB` and `getH`.
+- The `in_out` (inside/outside) parameter is added to all field functions (`getBHJM`) to specify the location of the observers relative to the magnet body in order to increase performance ([#717](https://github.com/magpylib/magpylib/issues/717), [#608](https://github.com/magpylib/magpylib/issues/608))
+- Review of documentation and adding a few requested things ([#685](https://github.com/magpylib/magpylib/issues/685), some of [#659](https://github.com/magpylib/magpylib/issues/659))
+- Added mu0 at top level as `magpylib.mu_0`. The value of mu0 is taken from scipy and follows the 2019 redefinition. All internal computations now include this new value. ([#714](https://github.com/magpylib/magpylib/issues/714), [#731](https://github.com/magpylib/magpylib/issues/731))
+- The core level now includes only the true bottom level implementations. ([#727](https://github.com/magpylib/magpylib/issues/727))
+- As Matplotlib graphic representation of 3D objects is terrible, we decided to go back to "arrow" graphic default mode when graphic backend is "Matplotlib".([#735](https://github.com/magpylib/magpylib/issues/735))
 
 ## [4.5.1] - 2023-12-28
 - Fixed a field computation issue where H-field resulting from axial magnetization is computed incorrectly inside of Cylinders ([#703](https://github.com/magpylib/magpylib/issues/703))
@@ -28,12 +40,12 @@ All notable changes to magpylib are documented here.
 - Discontinuous segments in `current.Line` are now accepted and correctly treated as separate lines ([#632](https://github.com/magpylib/magpylib/pull/632), [#642](https://github.com/magpylib/magpylib/pull/642))
 - Objects can now be displayed with missing dimension and/or excitation ([#640](https://github.com/magpylib/magpylib/pull/640))
 - Added magnetization and current arrows `sizemode` styling option (absolute or scaled) ([#639](https://github.com/magpylib/magpylib/pull/639))
-- `Collection` objects now also have a default description when displayed (number of chidren) ([#634](https://github.com/magpylib/magpylib/pull/634))
+- `Collection` objects now also have a default description when displayed (number of children) ([#634](https://github.com/magpylib/magpylib/pull/634))
 - Many minor graphic improvements ([#663](https://github.com/magpylib/magpylib/pull/663), [#649](https://github.com/magpylib/magpylib/issues/649), [#653](https://github.com/magpylib/magpylib/issues/653))
 - `legend` style option ([#650](https://github.com/magpylib/magpylib/issues/650))
 - Changed unit naming in text to comply with DIN Norm 641 ([#614](https://github.com/magpylib/magpylib/issues/614))
 - Improved documentation now boasting a contribution guide, a news-blog, an example and tutorial gallery, a getting started section and many other improvements ([#621](https://github.com/magpylib/magpylib/issues/621), [#596](https://github.com/magpylib/magpylib/issues/596), [#580](https://github.com/magpylib/magpylib/issues/580))
-- Improved numerical stability of `CylinderSegement`, ([#648](https://github.com/magpylib/magpylib/issues/648), [#651](https://github.com/magpylib/magpylib/issues/651))
+- Improved numerical stability of `CylinderSegment`, ([#648](https://github.com/magpylib/magpylib/issues/648), [#651](https://github.com/magpylib/magpylib/issues/651))
 
 
 ## [4.3.0] - 2023-06-25
@@ -106,13 +118,13 @@ This is a major update that includes
 - All classes have the `describe` method which gives a quick object property overview.
 
 ### Field computation changes/fixes:
-- New computation core. Added top level subpackage `magpylib.core` where all field implementations can be accessed directly without the position/orienation interface. ([#376](https://github.com/magpylib/magpylib/issues/376))
-- Direct interface functions `getBdict` and `getHdict` (previously `getBv` and `getHv`) are now integrated into `getB` and `getH`. See docu for details ([#449](https://github.com/magpylib/magpylib/pull/449))
+- New computation core. Added top level subpackage `magpylib.core` where all field implementations can be accessed directly without the position/orientation interface. ([#376](https://github.com/magpylib/magpylib/issues/376))
+- Direct interface functions `getBdict` and `getHdict` (previously `getBv` and `getHv`) are now integrated into `getB` and `getH`. See docs for details ([#449](https://github.com/magpylib/magpylib/pull/449))
 - Generally improved field expressions: ([#374](https://github.com/magpylib/magpylib/issues/374))
   - Negative dimension input taken as absolute when only positive dimensions are allowed.
   - Scale invariant field evaluations.
   - Special cases caught within 1e-15 rtol and atol to account for numerical imprecision with positioning (e.g. object rotation).
-  - Supress numpy divide/invalid warnings. return `np.nan` as `(0,0,0)` (e.g. on magnet edges or on line currents) and allow return of `np.inf`.
+  - Suppress numpy divide/invalid warnings. return `np.nan` as `(0,0,0)` (e.g. on magnet edges or on line currents) and allow return of `np.inf`.
   - New closed form implementation for `Cylinder` with diametral magnetization is much faster (100-1000x) and numerically stable for small `r`. ([#404](https://github.com/magpylib/magpylib/issues/404), [#370](https://github.com/magpylib/magpylib/issues/370))
   - Improved numerical stability of current loop field. Now 12-14 correct digits everywhere. ([#374](https://github.com/magpylib/magpylib/issues/374))
   - Fixed `Collection` of `Lines` field computation error. ([#368](https://github.com/magpylib/magpylib/issues/368))
@@ -444,7 +456,8 @@ The first official release of the magpylib library.
 
 ---
 
-[5.0.0dev]:https://github.com/magpylib/magpylib/compare/4.5.1...HEAD
+[5.0.1]:https://github.com/magpylib/magpylib/compare/5.0.0...HEAD
+[5.0.0]:https://github.com/magpylib/magpylib/compare/4.5.1...5.0.0
 [4.5.1]:https://github.com/magpylib/magpylib/compare/4.5.0...4.5.1
 [4.5.0]:https://github.com/magpylib/magpylib/compare/4.4.0...4.5.0
 [4.4.1]:https://github.com/magpylib/magpylib/compare/4.4.0...4.4.1

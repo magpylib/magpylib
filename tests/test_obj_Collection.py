@@ -244,7 +244,7 @@ def test_col_getH():
     col = magpy.Collection(pm1, pm2)
     H = col.getH((0, 0, 0))
     H1 = pm1.getH((0, 0, 0))
-    assert np.all(H == 2 * H1), "col getH fail"
+    np.testing.assert_array_equal(H, 2 * H1, err_msg="col getH fail")
 
 
 def test_col_reset_path():
@@ -285,7 +285,7 @@ def test_Collection_with_Dipole():
 
     B = magpy.getB(col, sens)
     Btest = np.array([3.81801774e-09, 7.63603548e-09, 1.14540532e-08])
-    assert np.allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest)
 
 
 def test_adding_sources():
@@ -450,3 +450,20 @@ def test_collection_describe():
 
     desc = cc.describe()
     assert desc is None
+
+
+def test_col_getBH_input_format():
+    """
+    Collections should produce the same BHJM shapes as individual
+    sources.
+    """
+    cube = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1),
+        dimension=(2, 2, 2),
+    )
+    coll = magpy.Collection(cube)
+
+    for obs in [(0, 0, 0), [(0, 0, 0)], [[(0, 0, 0)]]]:
+        shape1 = cube.getB(obs, squeeze=False).shape
+        shape2 = coll.getB(obs, squeeze=False).shape
+        assert np.all(shape1 == shape2)

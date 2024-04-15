@@ -1,4 +1,5 @@
 """CircularCircle current class code"""
+
 import warnings
 
 from magpylib._src.display.traces_core import make_Circle
@@ -68,7 +69,7 @@ class Circle(BaseCurrent):
     >>> print(B)
     [[-1.63585841e-24 -4.44388287e-05  4.44388287e-05]
      [-6.55449367e-24 -4.44688604e-05  4.44688604e-05]
-     [-9.85948764e-24 -4.45190261e-05  4.45190261e-05]]
+     [-9.85948765e-24 -4.45190261e-05  4.45190261e-05]]
 
     The same result is obtained when the rotated source moves along a path away from an
     observer at position (1,1,1). This time we use a `Sensor` object as observer.
@@ -80,7 +81,7 @@ class Circle(BaseCurrent):
     >>> print(B)
     [[-1.63585841e-24 -4.44388287e-05  4.44388287e-05]
      [-6.55449367e-24 -4.44688604e-05  4.44688604e-05]
-     [-9.85948764e-24 -4.45190261e-05  4.45190261e-05]]
+     [-9.85948765e-24 -4.45190261e-05  4.45190261e-05]]
     """
 
     _field_func = staticmethod(BHJM_circle)

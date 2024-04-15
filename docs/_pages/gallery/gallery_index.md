@@ -5,8 +5,8 @@
 Notice that most examples use  interactive notebooks via [sphinx-thebe](https://sphinx-thebe.readthedocs.io/en/latest/), see 🚀.
 ## Tutorials
 
-::::{grid} 3
-:gutter: 5
+::::{grid} 2 3 4 4
+:gutter: 4
 
 :::{grid-item-card} {ref}`gallery-tutorial-paths`
 :text-align: center
@@ -40,13 +40,21 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_tutorial_custom.png
 :::
 
+:::{grid-item-card} {ref}`gallery-tutorial-modelling-magnets`
+:text-align: center
+:link: gallery-tutorial-modelling-magnets
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_tutorial_modelling_magnets.png
+:::
+
 ::::
 
 
 ## Visualizations
 
-::::{grid} 3
-:gutter: 5
+::::{grid} 2 3 4 4
+:gutter: 4
 
 :::{grid-item-card} {ref}`gallery-vis-mpl-streamplot`
 :text-align: center
@@ -69,7 +77,7 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :link: gallery-vis-animations
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:img-bottom: ../../_static/images/gallery_icon_viz_animations.png
 :::
 
 :::{grid-item-card} {ref}`gallery-vis-subplots`
@@ -84,8 +92,8 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 
 ## Complex Magnet Shapes
 
-::::{grid} 3
-:gutter: 5
+::::{grid} 2 3 4 4
+:gutter: 4
 
 :::{grid-item-card} {ref}`gallery-shapes-superpos`
 :text-align: center
@@ -132,8 +140,8 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 
 ## Miscellaneous
 
-::::{grid} 3
-:gutter: 5
+::::{grid} 2 3 4 4
+:gutter: 4
 
 :::{grid-item-card} {ref}`gallery-misc-compound`
 :text-align: center
@@ -163,8 +171,8 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 
 ## Applications
 
-::::{grid} 3
-:gutter: 5
+::::{grid} 2 3 4 4
+:gutter: 4
 
 :::{grid-item-card} {ref}`gallery-app-end-of-shaft`
 :text-align: center
@@ -187,7 +195,7 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :link: gallery-app-helmholtz
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:img-bottom: ../../_static/images/gallery_icon_app_helmholtz.png
 :::
 
 :::{grid-item-card} {ref}`gallery-app-scales`

@@ -1,6 +1,7 @@
 """Magnet Sphere class code"""
+
 from magpylib._src.display.traces_core import make_Sphere
-from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
+from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.utility import unit_prefix
@@ -60,7 +61,7 @@ class Sphere(BaseMagnet):
     >>> src = magpy.magnet.Sphere(polarization=(.1,.2,.3), diameter=.01)
     >>> H = src.getH((.01,.01,.01))
     >>> print(H)
-    [3190.56073739 2552.44858992 1914.33644244]
+    [3190.56073566 2552.44858853 1914.33644139]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
@@ -85,7 +86,7 @@ class Sphere(BaseMagnet):
      [8.40017059e-05 1.34701220e-04 8.69866146e-06]]
     """
 
-    _field_func = staticmethod(magnet_sphere_field)
+    _field_func = staticmethod(BHJM_magnet_sphere)
     _field_func_kwargs_ndim = {"polarization": 2, "diameter": 1}
     get_trace = make_Sphere
 

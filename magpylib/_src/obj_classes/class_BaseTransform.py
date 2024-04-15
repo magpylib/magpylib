@@ -1,4 +1,5 @@
 """BaseTransform class code"""
+
 # pylint: disable=protected-access
 import numbers
 

@@ -16,10 +16,10 @@ orphan: true
 
 # CustomSource
 
-The {ref}`docu-magpylib-api-custom` class was implemented to offer easy integration of user field implementations into Magpylibs object-oriented interface.
+The {ref}`docu-magpylib-api-custom` class was implemented to offer easy integration of user field implementations into Magpylib's object-oriented interface.
 
 ```{note}
-Obviously, any field implementation can be integrated. Specifically, fields where superposition holds and interactions do not disturb the sources (e.g. electric, gravitational, ...) can benefit from Magpylibs position and orientation interface.
+Obviously, any field implementation can be integrated. Specifically, fields where superposition holds and interactions do not disturb the sources (e.g. electric, gravitational, ...) can benefit from Magpylib's position and orientation interface.
 ```
 
 ## Magnetic Monopole
@@ -60,8 +60,7 @@ def mono_field(field, observers):
     if field == "B":
         return B  # unit T
     elif field == "H":
-        mu0 = 4 * np.pi * 1e-7
-        H = B / mu0  # unit A/m
+        H = B / magpy.mu_0  # unit A/m
         return H
     else:
         raise ValueError("Field Value must be either B or H")
@@ -158,8 +157,7 @@ class Monopole(magpy.misc.CustomSource):
             if field == "B":
                 return B  # unit T
             elif field == "H":
-                mu0 = 4 * np.pi * 1e-7
-                H = B / mu0  # unit A/m
+                H = B / magpy.mu_0  # unit A/m
                 return H
             else:
                 raise ValueError("Field Value must be either B or H")

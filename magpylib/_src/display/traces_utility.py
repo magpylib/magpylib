@@ -1,4 +1,5 @@
 """ Display function codes"""
+
 # pylint: disable=too-many-branches
 from collections import defaultdict
 from functools import lru_cache
@@ -136,9 +137,7 @@ def draw_arrowed_line(
     anchor = (
         (0, -0.5, 0)
         if pivot == "tip"
-        else (0, 0.5, 0)
-        if pivot == "tail"
-        else (0, 0, 0)
+        else (0, 0.5, 0) if pivot == "tail" else (0, 0, 0)
     )
     arrow = [
         [0, arrow_shift, 0],
@@ -276,10 +275,12 @@ def get_flatten_objects_properties_recursive(
         style = get_style(subobj, **kwargs)
         if style.label is None:
             style.label = str(type(subobj).__name__)
-        if parent_legendgroup is not None:
-            legendgroup = parent_legendgroup
-        else:
-            legendgroup = f"{subobj}"
+        legendgroup = f"{subobj}" if parent_legendgroup is None else parent_legendgroup
+        label = (
+            get_legend_label(subobj, style=style)
+            if parent_label is None
+            else parent_label
+        )
         if parent_color is not None and style.color is None:
             style.color = parent_color
         elif style.color is None:
@@ -287,11 +288,10 @@ def get_flatten_objects_properties_recursive(
         flat_objs[subobj] = {
             "legendgroup": legendgroup,
             "style": style,
-            "legendtext": parent_label,
+            "legendtext": label,
             "showlegend": parent_showlegend,
         }
         if isCollection:
-            label = get_legend_label(subobj, style=style)
             flat_objs.update(
                 get_flatten_objects_properties_recursive(
                     *subobj.children,

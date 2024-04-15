@@ -1,4 +1,5 @@
 """Generic trace drawing functionalities"""
+
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
@@ -14,8 +15,8 @@ from typing import Tuple
 import numpy as np
 
 import magpylib as magpy
-from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_classes import MarkersStyle
+from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.defaults.defaults_values import ALLOWED_LINESTYLES
 from magpylib._src.defaults.defaults_values import ALLOWED_SYMBOLS
@@ -446,7 +447,7 @@ def get_generic_traces(
     if is_mag and style.magnetization.show:
         magstyl = style.magnetization
         if magstyl.mode == "auto":
-            magstyl.mode = "color"  # if mag_color_grad_apt else "arrow"
+            magstyl.mode = "color" if supports_colorgradient else "arrow"
         is_mag_arrows = "arrow" in magstyl.mode
         magstyl.show = "color" in magstyl.mode
 
@@ -560,9 +561,7 @@ def get_generic_traces(
         tr["showlegend"] = (
             showlegend
             if showlegend is not None
-            else tr_showleg
-            if style.legend.show
-            else False
+            else tr_showleg if style.legend.show else False
         )
     out = {"generic": path_traces_generic}
 
@@ -581,11 +580,11 @@ def get_generic_traces(
                             "opacity": style.opacity,
                             "color": style.color,
                             "legendgroup": legendgroup,
-                            "showlegend": showlegend
-                            if showlegend is not None
-                            else None
-                            if style.legend.show
-                            else False,
+                            "showlegend": (
+                                showlegend
+                                if showlegend is not None
+                                else None if style.legend.show else False
+                            ),
                             "name": legendtext if legendtext else legend_label,
                             "row": row,
                             "col": col,

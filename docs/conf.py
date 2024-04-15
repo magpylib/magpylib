@@ -25,9 +25,9 @@ os.environ["MAGPYLIB_MPL_SVG"] = "true"
 
 # Location of Sphinx files
 sys.path.insert(0, os.path.abspath("./../"))  ##Add the folder one level above
-os.environ[
-    "SPHINX_APIDOC_OPTIONS"
-] = "members,show-inheritance"  ## Hide undocumented members
+os.environ["SPHINX_APIDOC_OPTIONS"] = (
+    "members,show-inheritance"  ## Hide undocumented members
+)
 import sphinx.ext.apidoc
 
 # from sphinx_gallery.sorting import FileNameSortKey
@@ -67,7 +67,6 @@ author = "The Magpylib Project <magpylib@gmail.com>"
 version = ""
 # The full version, including alpha/beta/rc tags
 from magpylib import __version__ as release
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -132,13 +131,13 @@ html_logo = "./_static/images/magpylib_flag.png"
 # documentation.
 #
 
-announcement = """
-<p>⚠️ <b>Upcoming Soon: New Version 5 with breaking changes. We recommended to pin your dependencies to magpylib>=4.5<5 to avoid breaking changes!
-<a href="https://github.com/magpylib/magpylib/discussions/647">(see details)</a>
-⚠️</b></p>
-"""
+# announcement = """
+# <p>⚠️ <b>Upcoming Soon: New Version 5 with breaking changes. We recommended to pin your dependencies to magpylib>=4.5<5 to avoid breaking changes!
+# <a href="https://github.com/magpylib/magpylib/discussions/647">(see details)</a>
+# ⚠️</b></p>
+# """
 html_theme_options = {
-    "announcement": announcement,
+    # "announcement": announcement,
     "repository_url": "https://github.com/magpylib/magpylib",
     "path_to_docs": "docs/",
     "repository_branch": release,

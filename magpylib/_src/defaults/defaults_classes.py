@@ -1,10 +1,10 @@
 import numpy as np
 import param
 
+from magpylib._src.defaults.defaults_utility import MagicParameterized
 from magpylib._src.defaults.defaults_utility import color_validator
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.defaults.defaults_utility import magic_to_dict
-from magpylib._src.defaults.defaults_utility import MagicParameterized
 from magpylib._src.defaults.defaults_values import DEFAULTS
 from magpylib._src.defaults.defaults_values import SUPPORTED_PLOTTING_BACKENDS
 

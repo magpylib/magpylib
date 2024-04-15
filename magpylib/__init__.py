@@ -28,7 +28,7 @@ https://www.sciencedirect.com/science/article/pii/S2352711020300170
 
 """
 # module level dunders
-__version__ = "5.0.0dev"
+__version__ = "5.0.1"
 __author__ = "Michael Ortner & Alexandre Boisselet"
 __credits__ = "The Magpylib community"
 __all__ = [
@@ -54,10 +54,19 @@ __all__ = [
 
 # create interface to outside of package
 from scipy.constants import mu_0
-from magpylib._src.defaults.defaults_values import SUPPORTED_PLOTTING_BACKENDS
-from magpylib import magnet, current, misc, core, graphics
+
+from magpylib import core
+from magpylib import current
+from magpylib import graphics
+from magpylib import magnet
+from magpylib import misc
 from magpylib._src.defaults.defaults_classes import default_settings as defaults
-from magpylib._src.fields import getB, getH, getM, getJ
-from magpylib._src.obj_classes.class_Sensor import Sensor
+from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
+from magpylib._src.display.display import show
+from magpylib._src.display.display import show_context
+from magpylib._src.fields import getB
+from magpylib._src.fields import getH
+from magpylib._src.fields import getJ
+from magpylib._src.fields import getM
 from magpylib._src.obj_classes.class_Collection import Collection
-from magpylib._src.display.display import show, show_context
+from magpylib._src.obj_classes.class_Sensor import Sensor

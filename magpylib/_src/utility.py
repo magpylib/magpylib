@@ -1,4 +1,5 @@
 """ some utility functions"""
+
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
 # import numbers
@@ -6,7 +7,6 @@ from functools import lru_cache
 from inspect import signature
 from math import log10
 from typing import Callable
-from typing import Optional
 from typing import Sequence
 
 import numpy as np
@@ -197,8 +197,8 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
     return only allowed objects - e.g. no sensors. Throw a warning when something is eliminated.
     """
     from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
-    from magpylib._src.obj_classes.class_Sensor import Sensor
     from magpylib._src.obj_classes.class_Collection import Collection
+    from magpylib._src.obj_classes.class_Sensor import Sensor
 
     # select wanted
     allowed_classes = ()
@@ -345,11 +345,9 @@ def get_subclasses(cls, recursive=False):
 def get_registered_sources():
     """Return all registered sources"""
     # pylint: disable=import-outside-toplevel
-    from magpylib._src.obj_classes.class_BaseExcitations import (
-        BaseCurrent,
-        BaseMagnet,
-        BaseSource,
-    )
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 
     return {
         k: v
@@ -379,11 +377,13 @@ def open_animation(filepath, embed=True):
     # pylint: disable=import-outside-toplevel
     if is_notebook():
         if filepath.endswith(".gif"):
-            from IPython.display import Image as IPyImage, display
+            from IPython.display import Image as IPyImage
+            from IPython.display import display
 
             display(IPyImage(data=filepath, embed=embed))
         elif filepath.endswith(".mp4"):
-            from IPython.display import Video, display
+            from IPython.display import Video
+            from IPython.display import display
 
             display(Video(data=filepath, embed=embed))
         else:  # pragma: no cover
@@ -392,42 +392,6 @@ def open_animation(filepath, embed=True):
         import webbrowser
 
         webbrowser.open(filepath)
-
-
-def convert_HBMJ(
-    output_field_type: str,
-    polarization: np.ndarray,
-    input_field_type: Optional[str] = None,
-    field_values: Optional[np.ndarray] = None,
-    mask_inside: Optional[np.ndarray] = None,
-) -> np.ndarray:
-    """Convert between magnetic field inputs and outputs.
-    Notes
-    -----
-    `mask_inside` is only optional when output and input field types are the same.
-    """
-    if output_field_type in "MJ":
-        J = polarization.copy()
-        if mask_inside is not None:
-            # pylint: disable=invalid-unary-operand-type
-            J[~mask_inside] *= 0
-        if output_field_type == "J":
-            return J
-        return J / MU0
-    if output_field_type == input_field_type:
-        return field_values
-    if input_field_type == "B":
-        H = field_values.copy()
-        H[mask_inside] -= polarization[mask_inside]
-        return H / MU0
-    if input_field_type == "H":
-        B = field_values * MU0
-        B[mask_inside] += polarization[mask_inside]
-        return B
-    raise ValueError(  # pragma: no cover
-        "`output_field_type` must be one of ('B', 'H', 'M', 'J'), "
-        f"got {output_field_type!r}"
-    )
 
 
 @lru_cache(maxsize=None)

@@ -1,4 +1,5 @@
 """Dipole class code"""
+
 import numpy as np
 
 from magpylib._src.defaults.defaults_classes import DipoleStyle

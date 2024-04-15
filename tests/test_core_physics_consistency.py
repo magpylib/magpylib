@@ -1,17 +1,15 @@
 import numpy as np
+from scipy.constants import mu_0 as MU0
 
-import magpylib as magpy
 from magpylib._src.fields.field_BH_circle import BHJM_circle
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
-from magpylib._src.fields.field_BH_polyline import current_polyline_field
-from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
-from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
-from magpylib._src.fields.field_BH_triangle import triangle_field
-from magpylib._src.utility import MU0
-
+from magpylib._src.fields.field_BH_polyline import BHJM_current_polyline
+from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
+from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
+from magpylib._src.fields.field_BH_triangle import BHJM_triangle
 
 # PHYSICS CONSISTENCY TESTING
 #
@@ -96,7 +94,7 @@ def test_core_phys_moment_of_current_square():
     curr4 = np.array([curr1] * 4)
     mom = (4 * curr1 * np.array([(0, 0, 1)]).T).T
 
-    B1 = current_polyline_field(
+    B1 = BHJM_current_polyline(
         field="B",
         observers=obs4,
         segment_start=vert[:-1],
@@ -111,7 +109,7 @@ def test_core_phys_moment_of_current_square():
     )[0]
     np.testing.assert_allclose(B1, -B2, rtol=1e-03)
 
-    H1 = current_polyline_field(
+    H1 = BHJM_current_polyline(
         field="H",
         observers=obs4,
         segment_start=vert[:-1],
@@ -144,7 +142,7 @@ def test_core_phys_circle_polyline():
         diameter=dia,
         current=curr,
     )[0]
-    H2 = current_polyline_field(
+    H2 = BHJM_current_polyline(
         field="H",
         observers=obs99,
         segment_start=vert[:-1],
@@ -160,7 +158,7 @@ def test_core_phys_circle_polyline():
         diameter=dia,
         current=curr,
     )[0]
-    B2 = current_polyline_field(
+    B2 = BHJM_current_polyline(
         field="B",
         observers=obs99,
         segment_start=vert[:-1],
@@ -183,7 +181,7 @@ def test_core_physics_dipole_sphere():
     pol = np.array([(1, 2, 3), (0, 0, 1), (-1, -2, 0), (1, -1, 0.1)])
     mom = np.array([4 * (d / 2) ** 3 * np.pi / 3 * p / MU0 for d, p in zip(dia, pol)])
 
-    B1 = magnet_sphere_field(
+    B1 = BHJM_magnet_sphere(
         field="B",
         observers=obs,
         diameter=dia,
@@ -196,7 +194,7 @@ def test_core_physics_dipole_sphere():
     )
     np.testing.assert_allclose(B1, B2, rtol=0, atol=1e-16)
 
-    H1 = magnet_sphere_field(
+    H1 = BHJM_magnet_sphere(
         field="H",
         observers=obs,
         diameter=dia,
@@ -373,7 +371,7 @@ def test_core_physics_dipole_approximation_magnet_far_field():
     vert = np.array([[(0, 0, 0), (0, 0, 0.1), (0.1, 0, 0), (0, 0.1, 0)]] * 2)
     vol = 1 / 6 * 1e-3
     pol = mom / vol * MU0
-    Btetra = magnet_tetrahedron_field(
+    Btetra = BHJM_magnet_tetrahedron(
         field="H",
         observers=obs,
         vertices=vert,
@@ -463,7 +461,7 @@ def test_core_physics_cube_current_replacement():
 
     Hcurr = np.zeros((2, 3))
     for i, obss in enumerate([obs1, obs2]):
-        h = current_polyline_field(
+        h = BHJM_current_polyline(
             field="H",
             observers=obss,
             segment_start=start,
@@ -487,7 +485,7 @@ def test_core_physics_triangle_cube_geometry():
             [(1, 1, -1), (1, -1, -1), (-1, 1, -1)],  # bott2
         ]
     )
-    b = triangle_field(
+    b = BHJM_triangle(
         field="B",
         observers=obs,
         vertices=fac,
@@ -517,7 +515,7 @@ def test_core_physics_triangle_VS_itself():
             [(0, 0, 0), (10, 0, 0), (0, 10, 0)],
         ]
     )
-    b = triangle_field(
+    b = BHJM_triangle(
         field="B",
         observers=obs,
         polarization=mag,
@@ -535,7 +533,7 @@ def test_core_physics_triangle_VS_itself():
             [(6, 0, 0), (10, 0, 0), (0, 10, 0)],
         ]
     )
-    bb = triangle_field(
+    bb = BHJM_triangle(
         field="B",
         observers=obs,
         polarization=mag,
@@ -589,13 +587,13 @@ def test_core_physics_Tetrahedron_VS_Cuboid():
         for obs in obss:
             obs6 = np.tile(obs, (6, 1))
             mag6 = np.tile(mag, (6, 1))
-            b = magnet_tetrahedron_field(
+            b = BHJM_magnet_tetrahedron(
                 field="B",
                 observers=obs6,
                 polarization=mag6,
                 vertices=ver,
             )
-            h = magnet_tetrahedron_field(
+            h = BHJM_magnet_tetrahedron(
                 field="H",
                 observers=obs6,
                 polarization=mag6,

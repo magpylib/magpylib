@@ -23,7 +23,7 @@ def test_path_old_new_move():
     possis = np.array([(t, 0, 0) for t in ts])
     B2 = pm2.getB(possis[::-1])
 
-    assert np.allclose(B1, B2), "path move problem"
+    np.testing.assert_allclose(B1, B2, err_msg="path move problem")
 
 
 def test_path_old_new_rotate():
@@ -55,4 +55,10 @@ def test_path_old_new_rotate():
         pm2.rotate_from_angax(60 / (n - 1), ax, anch)
     B2 = np.array(B2)
 
-    assert np.allclose(B1, B2), "path rotate problem"
+    np.testing.assert_allclose(
+        B1,
+        B2,
+        rtol=1e-05,
+        atol=1e-08,
+        err_msg="path rotate problem",
+    )

@@ -12,8 +12,9 @@ body:
       label: Magpylib version
       description: What version of Magpylib are you running?
       options:
+        - 5.x (Latest)
         - 5.x (Unreleased)
-        - 4.x (Latest)
+        - 4.x
         - 3.x
         - 2.x
         - 1.x

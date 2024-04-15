@@ -2,7 +2,7 @@ import numpy as np
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibMissingInput
-from magpylib._src.fields.field_BH_triangle import triangle_field
+from magpylib._src.fields.field_BH_triangle import BHJM_triangle
 
 
 def test_Triangle_repr():
@@ -47,7 +47,7 @@ def test_triangle_input3():
             [(6, 0, 0), (10, 0, 0), (0, 10, 0)],
         ]
     )
-    b = triangle_field(field="B", observers=obs, polarization=pol, vertices=vert)
+    b = BHJM_triangle(field="B", observers=obs, polarization=pol, vertices=vert)
     b = np.sum(b, axis=0)
 
     tri1 = magpy.misc.Triangle(polarization=pol[0], vertices=vert[0])

@@ -1,5 +1,5 @@
 """
-The `magpylib.display.style` sub-packge provides different object styles.
+The `magpylib.display.style` sub-package provides different object styles.
 """
 
 __all__ = [
@@ -9,9 +9,7 @@ __all__ = [
     "SensorStyle",
 ]
 
-from magpylib._src.defaults.defaults_classes import (
-    MagnetStyle,
-    CurrentStyle,
-    DipoleStyle,
-    SensorStyle,
-)
+from magpylib._src.style import CurrentStyle
+from magpylib._src.style import DipoleStyle
+from magpylib._src.style import MagnetStyle
+from magpylib._src.style import SensorStyle
