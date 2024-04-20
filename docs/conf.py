@@ -125,7 +125,7 @@ pygments_style = "sphinx"
 #
 html_theme = "pydata_sphinx_theme"
 
-html_logo = "./_static/images/magpylib_flag.png"
+html_logo = "./_static/images/magpylib_logo.png"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
@@ -154,10 +154,15 @@ elif version_match == "stable":
 
 html_theme_options = {
     # "announcement": announcement,
+    "logo": {
+        "text": "Magpylib",
+        "image_dark": "./_static/images/magpylib_logo.png",
+    },
     "use_edit_page_button": True,
     "header_links_before_dropdown": 4,
     "show_version_warning_banner": True,
-    "navbar_center": ["version-switcher", "navbar-nav"],
+    "navbar_start": ["navbar-logo", "version-switcher"],
+    # "navbar_center": ["navbar-nav"],
     "switcher": {
         "json_url": json_url,
         "version_match": version_match,
