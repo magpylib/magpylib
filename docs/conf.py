@@ -167,6 +167,7 @@ html_theme_options = {
         "json_url": json_url,
         "version_match": version_match,
     },
+    "check_switcher": True,
     "icon_links": [
         {
             "name": "Github",
@@ -175,6 +176,7 @@ html_theme_options = {
             "type": "url",
         },
     ],
+    "navigation_with_keys": False,
 }
 
 html_context = {
