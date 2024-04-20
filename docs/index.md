@@ -76,7 +76,7 @@ _pages/reso_get_started.md
 _pages/docu/docu_index.md
 _pages/gallery/gallery_index.md
 _pages/reso_contributing.md
-_pages/docu/docu_API.md
+_pages/docu/docu_API_reference.md
 _pages/reso_code_of_conduct.md
 _pages/reso_license.md
 _pages/reso_changelog.md

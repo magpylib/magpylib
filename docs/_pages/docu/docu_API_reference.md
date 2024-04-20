@@ -1,6 +1,6 @@
-(docu-API)=
+(docu-APIref)=
 
-# Magpylib API
+# API Reference
 
 ```{toctree}
 :maxdepth: 2

@@ -161,8 +161,8 @@ html_theme_options = {
     "use_edit_page_button": True,
     "header_links_before_dropdown": 4,
     "show_version_warning_banner": True,
-    "navbar_start": ["navbar-logo", "version-switcher"],
-    # "navbar_center": ["navbar-nav"],
+    "navbar_align": "left",  # [left, content, right] For testing that the navbar items align properly
+    "navbar_center": ["version-switcher", "navbar-nav"],
     "switcher": {
         "json_url": json_url,
         "version_match": version_match,
