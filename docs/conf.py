@@ -132,7 +132,7 @@ html_logo = "./_static/images/magpylib_logo.png"
 #
 
 # Define the json_url for our version switcher.
-json_url = "https://pydata-sphinx-theme.readthedocs.io/en/latest/_static/switcher.json"
+json_url = "https://magpylib.readthedocs.io/en/latest/_static/switcher.json"
 
 # Define the version we use for matching in the version switcher.
 version_match = os.environ.get("READTHEDOCS_VERSION")
@@ -148,9 +148,9 @@ if not version_match or version_match.isdigit() or version_match == "latest":
         # but we want the whole url if we are effectively in a released version
         json_url = "_static/switcher.json"
     else:
-        version_match = f"v{release}"
+        version_match = f"{release}"
 elif version_match == "stable":
-    version_match = f"v{release}"
+    version_match = f"{release}"
 
 html_theme_options = {
     # "announcement": announcement,

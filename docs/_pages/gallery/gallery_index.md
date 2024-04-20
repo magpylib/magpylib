@@ -2,7 +2,6 @@
 
 # Examples and Tutorials
 
-Notice that most examples use  interactive notebooks via [sphinx-thebe](https://sphinx-thebe.readthedocs.io/en/latest/), see 🚀.
 ## Tutorials
 
 ::::{grid} 2 3 4 4

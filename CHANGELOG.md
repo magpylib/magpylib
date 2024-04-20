@@ -3,6 +3,9 @@ All notable changes to magpylib are documented here.
 
 # Changelog
 
+## [5.0.2dev] - YYYY-MM-DD
+
+
 ## [5.0.1] - 2024-04-12
 - Fixed a bug where `getBHJM` of a Collection would produce one extra dimension ([#753](https://github.com/magpylib/magpylib/issues/753))
 - Fixed a bug where the legend of a deeply nested Collection would be wrong ([#756](https://github.com/magpylib/magpylib/issues/756))
@@ -456,7 +459,8 @@ The first official release of the magpylib library.
 
 ---
 
-[5.0.1]:https://github.com/magpylib/magpylib/compare/5.0.0...HEAD
+[5.0.2dev]:https://github.com/magpylib/magpylib/compare/5.0.1...HEAD
+[5.0.1]:https://github.com/magpylib/magpylib/compare/5.0.0...5.0.1
 [5.0.0]:https://github.com/magpylib/magpylib/compare/4.5.1...5.0.0
 [4.5.1]:https://github.com/magpylib/magpylib/compare/4.5.0...4.5.1
 [4.5.0]:https://github.com/magpylib/magpylib/compare/4.4.0...4.5.0
