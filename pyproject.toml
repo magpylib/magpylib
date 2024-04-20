@@ -40,13 +40,13 @@ code_style = [
     "pre-commit",
 ]
 docs = [
+    "pydata-sphinx-theme",
     "sphinx==7.2",
     "sphinx-design",
     "sphinx-thebe",
     "sphinx-favicon",
     "sphinx-gallery",
     "sphinx-copybutton",
-    "sphinx-book-theme",
     "myst-nb",
     "pandas",
     "numpy-stl",
