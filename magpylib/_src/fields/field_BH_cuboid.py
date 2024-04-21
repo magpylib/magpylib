@@ -44,7 +44,7 @@ def magnet_cuboid_Bfield(
     Field computations via magnetic surface charge density. Published
     several times with similar expressions:
 
-    Yang: Superconductor Science and Technology 3(12):591 (1999)
+    Yang: Superconductor Science and Technology 3(12):591 (1990)
 
     Engel-Herbert: Journal of Applied Physics 97(7):074504 - 074504-4 (2005)
 
