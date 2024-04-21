@@ -23,7 +23,7 @@ The expressions used in Magpylib describe perfectly homogeneous magnets, surface
 
 Magnetic field computations in Magpylib are based on known analytical solutions (closed form expressions) to permanent magnet and current problems. The Magpylib implementations are based on the following literature references:
 
-- Field of cuboid magnets: \[Yang1999, Engel-Herbert2005, Camacho2013, Cichon2019\]
+- Field of cuboid magnets: \[Yang1990, Engel-Herbert2005, Camacho2013, Cichon2019\]
 - Field of cylindrical magnets: \[Furlani1994, Derby2009, Caciagli2018, Slanovc2021\]
 - Field of triangular surfaces: \[Guptasarma1999, Janssen2009, Rubeck2013\]
 - Field of the current loop: \[Ortner2022\]
@@ -105,7 +105,7 @@ Many expressions provided in the literature have very questionable numerical sta
 
 **References**
 
-- \[Yang1999\] Z. J. Yang et al., "Potential and force between a magnet and a bulk Y1Ba2Cu3O7-d superconductor studied by a mechanical pendulum", Superconductor Science and Technology 3(12):591, 1999
+- \[Yang1990\] Z. J. Yang et al., "Potential and force between a magnet and a bulk Y1Ba2Cu3O7-d superconductor studied by a mechanical pendulum", Superconductor Science and Technology 3(12):591, 1990
 - \[Engel-Herbert2005\] R. Engel-Herbert et al., Journal of Applied Physics 97(7):074504 - 074504-4 (2005)
 - \[Camacho2013\] J.M. Camacho and V. Sosa, "Alternative method to calculate the magnetic field of permanent magnets with azimuthal symmetry", Revista Mexicana de Fisica E 59 8–17, 2013
 - \[Cichon2019\] D. Cichon, R. Psiuk and H. Brauer, "A Hall-Sensor-Based Localization Method With Six Degrees of Freedom Using Unscented Kalman Filter", IEEE Sensors Journal, Vol. 19, No. 7, April 1, 2019.
