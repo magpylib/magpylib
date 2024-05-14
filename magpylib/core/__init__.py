@@ -12,10 +12,12 @@ __all__ = [
     "current_polyline_Hfield",
     "dipole_Hfield",
     "triangle_Bfield",
+    "magnet_cuboid_scalar_potential",
 ]
 
 from magpylib._src.fields.field_BH_circle import current_circle_Hfield
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_Bfield
+from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_scalar_potential
 from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_axial_Bfield
 from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_diametral_Hfield
 from magpylib._src.fields.field_BH_cylinder_segment import (

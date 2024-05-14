@@ -120,7 +120,7 @@ def check_degree_type(inp):
 
 def check_field_input(inp):
     """check field input"""
-    allowed = tuple("BHMJ")
+    allowed = list("BHMJ") + ["phi"]
     if not (isinstance(inp, str) and inp in allowed):
         raise MagpylibBadUserInput(
             f"`field` input can only be one of {allowed}.\n"

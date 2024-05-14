@@ -199,10 +199,10 @@ def derivative(fun, x, args, eps=1e-6):
 
 if __name__ == "__main__":
 
-    # observers = (np.random.rand(1,3)-0.5)*10
+    # observers = np.array(((0.5,0.5,0.5), (0.5,0.5,0.5)))
     # #observers = np.array(((0,0,-1), (0,0,1)))
-    # dimensions = np.random.rand(1,3)
-    # magnetizations = np.array((1,))
+    # dimensions = np.array(((1,2,3), (1,2,3)))
+    # magnetizations = np.array((1,1))*1e5
 
     # scalar_potential = magnet_cuboid_scalar_potential_one_component(observers, dimensions, magnetizations)
 
@@ -231,35 +231,34 @@ if __name__ == "__main__":
 
     ##################
 
-    # observers = (np.random.rand(1,3)-0.5)*10
-    # #observers = np.array(((0,0,-1), (0,0,1)))
-    # dimensions = (np.random.rand(1,3))
-    # magnetizations = (np.random.rand(1,3)-0.5)
+    observers = np.array(((0,0,0), (1,0,0), (0,2,0), (0,0,3), (1,2,0), (0,2,3), (1,0,3), (1,2,3)))
+    dimensions = np.tile((2,4,6), (8,1))
+    magnetizations = np.tile((1,2,3), (8,1))
 
-    # scalar_potential = magnet_cuboid_scalar_potential(observers, dimensions, magnetizations)
+    scalar_potential = magnet_cuboid_scalar_potential(observers, dimensions, magnetizations)
 
-    # print(scalar_potential)
+    print(scalar_potential)
 
-    # eps = 1e-6
+    eps = 1e-6
 
-    # deltax = np.zeros(observers.shape)
-    # deltax[:,0] = eps
-    # deltay = np.zeros(observers.shape)
-    # deltay[:,1] = eps
-    # deltaz = np.zeros(observers.shape)
-    # deltaz[:,2] = eps
-    # Bx = -(magnet_cuboid_scalar_potential(observers+deltax, dimensions, magnetizations) - magnet_cuboid_scalar_potential(observers-deltax, dimensions, magnetizations)) / 2 / eps
-    # By = -(magnet_cuboid_scalar_potential(observers+deltay, dimensions, magnetizations) - magnet_cuboid_scalar_potential(observers-deltay, dimensions, magnetizations)) / 2 / eps
-    # Bz = -(magnet_cuboid_scalar_potential(observers+deltaz, dimensions, magnetizations) - magnet_cuboid_scalar_potential(observers-deltaz, dimensions, magnetizations)) / 2 / eps
+    deltax = np.zeros(observers.shape)
+    deltax[:,0] = eps
+    deltay = np.zeros(observers.shape)
+    deltay[:,1] = eps
+    deltaz = np.zeros(observers.shape)
+    deltaz[:,2] = eps
+    Bx = -(magnet_cuboid_scalar_potential(observers+deltax, dimensions, magnetizations) - magnet_cuboid_scalar_potential(observers-deltax, dimensions, magnetizations)) / 2 / eps
+    By = -(magnet_cuboid_scalar_potential(observers+deltay, dimensions, magnetizations) - magnet_cuboid_scalar_potential(observers-deltay, dimensions, magnetizations)) / 2 / eps
+    Bz = -(magnet_cuboid_scalar_potential(observers+deltaz, dimensions, magnetizations) - magnet_cuboid_scalar_potential(observers-deltaz, dimensions, magnetizations)) / 2 / eps
 
-    # print('Bx', Bx)
-    # print('By', By)
-    # print('Bz', Bz)
+    print('Bx', Bx)
+    print('By', By)
+    print('Bz', Bz)
 
 
-    # import magpylib as magpy
-    # magnet = magpy.magnet.Cuboid(magnetization=magnetizations[0], dimension=dimensions[0])
-    # print(magnet.getH(observers))
+    import magpylib as magpy
+    magnet = magpy.magnet.Cuboid(magnetization=magnetizations[0], dimension=dimensions[0])
+    print(magnet.getH(observers))
 
     #########################
 
@@ -304,49 +303,107 @@ if __name__ == "__main__":
     # magnetizations = np.array(((1,2,-3), (1,-4,-2)))
     # positions = np.array(((0,0,0), (-1,-0.5,-2)))
 
-    #observers = np.array(((-3,-3,-3),(3,-3,-3),(-3,3,-3),(3,3,-3),(-3,-3,3),(3,-3,3),(-3,3,3),(3,3,3)))*1e-3
-    observers = np.linspace((0,0,0), (1,0,0), 101)*1e-3
-    dimensions = np.array(((1,2,3)))*1e-3
-    magnetizations = np.array(((1,2,3)))*1e-3
-    positions = np.array(((0,0,0)))*1e-3
+    # #observers = np.array(((-3,-3,-3),(3,-3,-3),(-3,3,-3),(3,3,-3),(-3,-3,3),(3,-3,3),(-3,3,3),(3,3,3)))*1e-3
+    # observers = np.concatenate((np.linspace((0,0,0), (0.9,1.9,2.9), 1000), np.linspace((1.1,2.1,3.1), (2,2,2), 1000)))
+    # dimensions = np.array(((2,4,6)))
+    # magnetizations = np.array(((1,2,3)))
+    # positions = np.array(((0,0,0)))
 
-    scalar_potential = getPhi(observers, dimensions, magnetizations, positions)
+    # scalar_potential = getPhi(observers, dimensions, magnetizations, positions)
 
-    print(scalar_potential)
+    # print(scalar_potential)
 
-    import matplotlib.pyplot as plt
-    plt.plot(scalar_potential)
-    plt.show()
+    # import matplotlib.pyplot as plt
+    # plt.plot(scalar_potential, marker='.')
+    # plt.show()
 
-    res = derivative(getPhi, observers, (dimensions, magnetizations, positions), eps=1e-6)
-    Bx = -res[0]
-    By = -res[1]
-    Bz = -res[2]
+    # res = derivative(getPhi, observers, (dimensions, magnetizations, positions), eps=1e-6)
+    # Hx = -res[0]
+    # Hy = -res[1]
+    # Hz = -res[2]
 
-    print('Bx', Bx)
-    print('By', By)
-    print('Bz', Bz)
+    # print('Hx', Hx)
+    # print('Hy', Hy)
+    # print('Hz', Hz)
 
-    plt.plot(Bx)
-    plt.plot(By)
-    plt.plot(Bz)
-    plt.show()
 
-###############
+    # import magpylib as magpy
+    # from scipy.constants import mu_0
 
-    import magpylib as magpy
-    from scipy.constants import mu_0
+    # # check if arrays are only 1D - extend them if necessary
+    # if len(observers.shape) < 2:
+    #     observers = np.expand_dims(observers, axis=0)
 
-    #check if arrays are only 1D - extend them if necessary
-    if len(observers.shape) < 2:
-        observers = np.expand_dims(observers, axis=0)
+    # if len(dimensions.shape) < 2:
+    #     dimensions = np.expand_dims(dimensions, axis=0)
+    #     magnetizations = np.expand_dims(magnetizations, axis=0)
+    #     positions = np.expand_dims(positions, axis=0)
 
-    if len(dimensions.shape) < 2:
-        dimensions = np.expand_dims(dimensions, axis=0)
-        magnetizations = np.expand_dims(magnetizations, axis=0)
-        positions = np.expand_dims(positions, axis=0)
+    # for i in range(len(dimensions)):
+    #     magnet = magpy.magnet.Cuboid(magnetization=magnetizations[i], dimension=dimensions[i], position=positions[i])
+    #     H = magnet.getH(observers)
+    #     print(magnet.getH(observers))
 
-    for i in range(len(dimensions)):
-        magnet = magpy.magnet.Cuboid(magnetization=magnetizations[i], dimension=dimensions[i], position=positions[i])
-        H = magnet.getH(observers)
-        print(magnet.getH(observers))
+    # plt.plot(Hx, marker='.', label='Hx')
+    # plt.plot(Hy, marker='.', label='Hy')
+    # plt.plot(Hz, marker='.', label='Hz')
+    # plt.plot(H[:,0], marker='.', label='Hx')
+    # plt.plot(H[:,1], marker='.', label='Hy')
+    # plt.plot(H[:,2], marker='.', label='Hz')
+    # plt.show()
+
+    # print(np.max(np.abs(Hx-H[:,0])))
+    # print(np.max(np.abs(Hy-H[:,1])))
+    # print(np.max(np.abs(Hz-H[:,2])))
+
+
+#########################
+
+
+    # def derivative(fun, x, args, eps=1e-6):
+
+    #     if len(x.shape) < 2:
+    #         x = np.expand_dims(x, axis=0)
+
+    #     deltax = np.zeros(x.shape)
+    #     deltax[:,0] = eps
+    #     deltay = np.zeros(x.shape)
+    #     deltay[:,1] = eps
+    #     deltaz = np.zeros(x.shape)
+    #     deltaz[:,2] = eps
+    #     dfdx = (fun(x+deltax, *args) - fun(x-deltax, *args)) / 2 / eps
+    #     dfdy = (fun(x+deltay, *args) - fun(x-deltay, *args)) / 2 / eps
+    #     dfdz = (fun(x+deltaz, *args) - fun(x-deltaz, *args)) / 2 / eps
+
+    #     return (dfdx, dfdy, dfdz)
+
+
+    # def test_derivative():
+    #     """Comparison to field"""
+    #     observers = np.array(((0,0,0), (0.5,1,1.5), (1.5,3,4.5), (2,4,6)))
+    #     dimensions = np.array(((2,4,6), (2,4,6), (2,4,6), (2,4,6)))
+    #     magnetizations = np.array(((1,2,3), (1,2,3), (1,2,3), (1,2,3)))
+
+    #     res = derivative(magnet_cuboid_scalar_potential, observers, (dimensions, magnetizations), eps=1e-6)
+
+    #     H_potential = np.zeros(dimensions.shape)
+    #     H_potential[:,0] = -res[0]
+    #     H_potential[:,1] = -res[1]
+    #     H_potential[:,2] = -res[2]
+
+    #     import magpylib as magpy
+    #     from scipy.constants import mu_0
+    #     H_direct = magpy.getH(
+    #         sources='Cuboid',
+    #         observers=observers,
+    #         dimension=dimensions,
+    #         #magnetization=magnetizations
+    #         polarization=magnetizations*mu_0
+    #     )
+
+    #     print(H_potential)
+    #     print(H_direct)
+
+    #     np.testing.assert_allclose(H_potential, H_direct)
+
+    # test_derivative()
