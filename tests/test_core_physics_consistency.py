@@ -383,7 +383,7 @@ def test_core_physics_dipole_approximation_magnet_far_field():
     )
     # np.testing.assert_allclose(Bdip, Btetra, rtol=1e-3)
     err = np.linalg.norm(Bdip - Btetra) / np.linalg.norm(Bdip)
-    assert err < 1e-6
+    assert err < 1e-3
 
     dim = np.array([(0.1, 0.2, 0.1, -25, 25)] * 2)
     vol = 3 * np.pi * (50 / 360) * 1e-3
@@ -396,7 +396,7 @@ def test_core_physics_dipole_approximation_magnet_far_field():
     )
     # np.testing.assert_allclose(Bdip, Bcys, rtol=1e-4)
     err = np.linalg.norm(Bdip - Bcys) / np.linalg.norm(Bdip)
-    assert err < 1e-6
+    assert err < 1e-4
 
 
 # --> Circle

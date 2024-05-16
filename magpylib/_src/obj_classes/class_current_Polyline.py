@@ -68,12 +68,12 @@ class Polyline(BaseCurrent):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(90, 'x')
-    >>> Polyline(id=...)
+    Polyline(id=...)
     >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
     >>> print(B)
     [[-3.97177559e-06 -9.63684251e-07 -3.97177559e-06]
-    [-4.90331150e-07 -3.11039072e-08 -4.90331150e-07]
-    [-1.43908549e-07 -4.10438492e-09 -1.43908549e-07]]
+     [-4.90331150e-07 -3.11039072e-08 -4.90331150e-07]
+     [-1.43908549e-07 -4.10438492e-09 -1.43908549e-07]]
     """
 
     # pylint: disable=dangerous-default-value
