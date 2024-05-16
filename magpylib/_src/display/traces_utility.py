@@ -499,10 +499,12 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
                     for v, min_, max_ in zip(ranges.values(), *min_max):
                         v.extend([min_, max_])
         if trace3d_found:
+            # SET 3D PLOT BOUNDARIES
+            # collect min/max from all elements
             r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
             size = np.diff(r, axis=1)
-            size[size == 0] = 1
             m = size.max() / 2
+            m = 1 if m == 0 else m
             center = r.mean(axis=1)
             ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
     if not traces or not trace3d_found:
