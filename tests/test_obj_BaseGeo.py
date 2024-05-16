@@ -74,6 +74,12 @@ def test_BaseGeo_basics():
     poss = np.array(poss)
     rots = np.array(rots)
 
+    # avoid generating different zeros in macos
+    ptest = np.around(ptest, decimals=6)
+    otest = np.around(otest, decimals=6)
+    poss = np.around(poss, decimals=6)
+    rots = np.around(rots, decimals=6)
+
     np.testing.assert_allclose(poss, ptest, err_msg="test_BaseGeo bad position")
     np.testing.assert_allclose(rots, otest, err_msg="test_BaseGeo bad orientation")
 
