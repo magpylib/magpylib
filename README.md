@@ -38,7 +38,7 @@ Install from conda forge using **conda**
 ```
 conda install -c conda-forge magpylib
 ```
-Magpylib supports _Python3.8+_ and relies on common scientific computation libraries _Numpy_, _Scipy_, _Matplotlib_ and _Plotly_. Optionally, _Pyvista_ is recommended as graphical backend.
+Magpylib supports _Python3.10+_ and relies on common scientific computation libraries _Numpy_, _Scipy_, _Matplotlib_ and _Plotly_. Optionally, _Pyvista_ is recommended as graphical backend.
 
 # Resources
 

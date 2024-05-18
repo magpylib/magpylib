@@ -17,7 +17,7 @@ kernelspec:
 
 ## Installation and Dependencies
 
-Magpylib supports *Python3.8+* and relies on common scientific computation libraries *Numpy*, *Scipy*, *Matplotlib* and *Plotly*. Optionally, *Pyvista* is recommended as graphical backend.
+Magpylib supports *Python3.10+* and relies on common scientific computation libraries *Numpy*, *Scipy*, *Matplotlib* and *Plotly*. Optionally, *Pyvista* is recommended as graphical backend.
 
 ::::{grid} 1 1 2 2
 :margin: 4 4 0 0
