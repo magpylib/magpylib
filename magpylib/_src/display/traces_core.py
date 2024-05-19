@@ -318,6 +318,7 @@ def make_triangle_orientations(obj, **kwargs) -> Dict[str, Any]:
 
 def get_closest_vertices(faces_subsets, vertices):
     """Get closest pairs of points between disconnected subsets of faces indices"""
+    # pylint: disable=used-before-assignment
     nparts = len(faces_subsets)
     inds_subsets = [np.unique(v) for v in faces_subsets]
     closest_verts_list = []

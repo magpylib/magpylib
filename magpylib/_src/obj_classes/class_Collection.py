@@ -506,6 +506,7 @@ class BaseCollection(BaseDisplayRepr):
         """
         # pylint: disable=protected-access
         # pylint: disable=too-many-branches
+        # pylint: disable=possibly-used-before-assignment
         current_sources = format_obj_input(self, allow="sources")
         current_sensors = format_obj_input(self, allow="sensors")
 
