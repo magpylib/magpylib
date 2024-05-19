@@ -85,7 +85,7 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :link: gallery-vis-subplots
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:img-bottom: ../../_static/images/gallery_icon_viz_subplots.png
 :::
 
 ::::

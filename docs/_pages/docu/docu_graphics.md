@@ -643,6 +643,8 @@ magpy.show(
 )
 ```
 
+(docu-graphics-show_context)=
+
 ### Subplots via context manager `magpylib.show_context`
 
 In order to make the subplot syntax more convenient we introduced the new `show_context` native Python context manager. It allows to defer calls to the `show` function while passing additional arguments. This is necessary for Magpylib to know how many rows and columns are been demanded by the user, which single calls to the `show` would not keep track of.

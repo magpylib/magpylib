@@ -50,3 +50,5 @@ magnet = magpy.magnet.Cuboid(
 # display as animation - prefers plotly backend
 magpy.show(sensor, magnet, animation=True, backend='plotly')
 ```
+
+Combine 2D and 3D graphics in [animated subplots](gallery-vis-subplots).
