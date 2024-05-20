@@ -127,12 +127,12 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_shapes_pyvista.png
 :::
 
-:::{grid-item-card} {ref}`gallery-shapes-3d-models`
+:::{grid-item-card} {ref}`gallery-shapes-cad`
 :text-align: center
-:link: gallery-shapes-3d-models
+:link: gallery-shapes-cad
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:img-bottom: ../../_static/images/gallery_icon_shapes_cad.png
 :::
 
 ::::
