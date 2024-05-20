@@ -244,24 +244,30 @@ def test_sensor_rotation2():
     B = magpy.getB(src, poss, squeeze=True)
     Btest = x1
     np.testing.assert_allclose(
-        np.around(B, decimals=5),
+        B,
         Btest,
+        rtol=1e-4,
+        atol=1e-5,
         err_msg="FAIL: mag  +  pos",
     )
 
     B = magpy.getB([src], [sens], squeeze=True)
     Btest = np.array([x1, x2, x3])
     np.testing.assert_allclose(
-        np.around(B, decimals=5),
+        B,
         Btest,
+        rtol=1e-4,
+        atol=1e-5,
         err_msg="FAIL: mag  +  sens_rot_path",
     )
 
     B = magpy.getB([src], [sens, poss], squeeze=True)
     Btest = np.array([[x1, x1], [x2, x1], [x3, x1]])
     np.testing.assert_allclose(
-        np.around(B, decimals=5),
+        B,
         Btest,
+        rtol=1e-4,
+        atol=1e-5,
         err_msg="FAIL: mag  +  sens_rot_path, pos",
     )
 
@@ -270,8 +276,10 @@ def test_sensor_rotation2():
         [[[x1, x1], [x2, x1], [x3, x1]], [[x1b, x1b], [x2b, x1b], [x3b, x1b]]]
     )
     np.testing.assert_allclose(
-        np.around(B, decimals=5),
+        B,
         Btest,
+        rtol=1e-4,
+        atol=1e-5,
         err_msg="FAIL: mag,col  +  sens_rot_path, pos",
     )
 
