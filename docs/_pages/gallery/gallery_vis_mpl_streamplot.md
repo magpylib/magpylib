@@ -95,8 +95,7 @@ import magpylib as magpy
 fig, ax = plt.subplots()
 
 # Create an observer grid in the xy-symmetry plane - using pure numpy
-X, Y = np.mgrid[-0.05:0.05:100j, -0.05:0.05:100j].transpose((0, 2, 1))
-grid = np.stack([X, Y, np.zeros((100, 100))], axis=2)
+grid = np.mgrid[-.05:.05:100j, -.05:.05:100j, 0:0:1j].T[0]
 
 # Compute magnetic field on grid - using the functional interface
 B = magpy.getB(
@@ -110,16 +109,16 @@ normB = np.linalg.norm(B, axis=2)
 
 # combine streamplot with contourf
 cp = ax.contourf(
-    X,
-    Y,
+    grid[:,:,0],
+    grid[:,:,1],
     normB*1000, #T->mT
     cmap="rainbow",
     levels=100,
     zorder=1,
 )
 splt = ax.streamplot(
-    X,
-    Y,
+    grid[:,:,0],
+    grid[:,:,1],
     B[:, :, 0],
     B[:, :, 1],
     color="k",
