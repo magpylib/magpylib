@@ -18,6 +18,67 @@ kernelspec:
 
 Magpylib is an excellent tool to create magnet assemblies. In this example we will show how to model Halbach magnets.
 
-Example 1: Halbach magnetization using CylinderSegments
+```{note}
+In the following examples we make use of the [arbitrary unit convention](docu-api-scale-invariance).
+```
 
-Example 2: Discrete Halbach magnets
+The original Halbach-magnetization describes a hollow cylinder with a polarization direction that rotates twice while going around the cylinder once. In reality such polarizations are difficult to fabricate. What is commonly done instead are "Discreete Halbach Arrays", which are magnet assemblies that approximate a Halbach magnetization.
+
+The following code creates a Discreete Halbach Cylinder generated from Cuboids:
+
+```{code-cell} ipython3
+import numpy as np
+import magpylib as magpy
+
+N = 10
+angles = np.linspace(0, 360, N, endpoint=False)
+
+halbach = magpy.Collection()
+
+for a in angles:
+    cube = magpy.magnet.Cuboid(
+        dimension=(1,1,1),
+        polarization=(1,0,0),
+        position=(2.3,0,0)
+    )
+    cube.rotate_from_angax(a, 'z', anchor=0)
+    cube.rotate_from_angax(a, 'z')
+    halbach.add(cube)
+
+halbach.show(backend='plotly')
+```
+
+Next we compute and display the field on an xy-grid in the symmetry plane using the [matplotlib streamplot](gallery-vis-mpl-streamplot) example.
+
+```{code-cell} ipython3
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots()
+
+# compute and plot field on x-y grid
+grid = np.mgrid[-3.5:3.5:100j, -3.5:3.5:100j, 0:0:1j].T[0]
+
+B = halbach.getB(grid)
+Bamp = np.linalg.norm(B, axis=2)
+
+pc = ax.contourf(grid[:,:,0], grid[:,:,1], Bamp,
+                 levels=50, cmap="coolwarm")
+
+ax.streamplot(grid[:,:,0], grid[:,:,1], B[:, :, 0], B[:, :, 1],
+    color="k", density=1.5, linewidth=1)
+
+# Add colorbar
+fig.colorbar(pc, ax=ax, label="|B|")
+
+# Figure styling
+ax.set(
+    xlabel="x-position",
+    ylabel="z-position",
+    aspect=1,
+)
+
+plt.show()
+```
+
+```{warning}
+Magpylib models magnets with perfect polarization. However, such magnets do not exist in reality due to fabrication tolerances and material response. While fabrication tolerances can be estimated easily, our [tutorial](gallery-tutorial-modelling-magnets) explains how to deal with material response.
+```
