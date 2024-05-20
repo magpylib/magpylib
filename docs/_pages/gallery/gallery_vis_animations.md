@@ -16,39 +16,65 @@ kernelspec:
 
 # Animations
 
-Magpylib can display the motion of objects along paths in the form of animations. The following example shows how to set up such an animation.
+Magpylib can display the motion of objects along paths in the form of animations.
 
 ```{hint}
-If your browser window opens, but your animation does not load, reload the page (ctrl+r in chrome).
+1. Animations work best with the [plotly backend](examples-backends-canvas).
+
+2. If your browser window opens, but your animation does not load, reload the page (ctrl+r in chrome).
+
+3. Avoid rendering too many frames.
 ```
 
-Detailed information about how to tune animations can be found in the [graphics documentation](examples-animation). Animations work best in the [plotly backend](examples-backends-canvas). Avoid rendering too many frames.
+Detailed information about how to tune animations can be found in the [graphics documentation](examples-animation).
+
+## Simple Animations
+
+Animations are created with `show` by setting `animation=True`. It is also possible to hand over the animation time with this kwarg.
 
 ```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
 
-# create sensor with path
-sensor=magpy.Sensor().rotate_from_angax(
-    angle=35*np.sin(np.linspace(-4,4,36)),
-    axis='y',
-    anchor=(0,0,-.05),
-    start=0,
+# define sensor with path
+cyl = magpy.magnet.Cylinder(
+    polarization=(1, 0, 0),
+    dimension=(2, 1),
+    position=(4,0,0),
 )
+cyl.rotate_from_angax(angle=np.linspace(0, 300, 40), start=0, axis="z", anchor=0)
 
-# create magnet with path
-magnet = magpy.magnet.Cuboid(
-    dimension=(0.02,0.01,0.01),
-    polarization=(0.3,0,0),
-    position=(0,0,-.03)
-).rotate_from_angax(
-    angle=np.linspace(0,360,37),
-    axis='z',
-    start=0,
+# define magnet with path
+sens = magpy.Sensor(
+    pixel=[(-.2, 0, 0), (.2, 0, 0)],
+    position = np.linspace((0, 0, -3), (0, 0, 3), 40)
 )
 
 # display as animation - prefers plotly backend
-magpy.show(sensor, magnet, animation=True, backend='plotly')
+magpy.show(sens, cyl, animation=True, backend='plotly')
 ```
 
-Combine 2D and 3D graphics in [animated subplots](gallery-vis-subplots).
+(gallery-vis-animated-subplots)=
+
+## Animated Subplots
+
+[Subplots](gallery-vis-subplots) are a powerful tool to see the field along a path while viewing the 3D models at the same time. This is specifially illustrative as an animation where the field at the respective path position is indicated by a marker.
+
+```{code-cell} ipython3
+magpy.show(
+    dict(objects=[cyl, sens], output=["Bx", "By", "Bz"], col=1),
+    dict(objects=[cyl, sens], output="model3d", col=2),
+    backend='plotly',
+    animation=True,
+)
+```
+
+It is also possible to use the [show_context](docu-graphics-show_context) context manager.
+
+```{code-cell} ipython3
+with magpy.show_context([cyl, sens], backend='plotly', animation=True) as sc:
+    sc.show(output="Bx", col=1, row=1)
+    sc.show(output="By", col=1, row=2)
+    sc.show(output="Bz", col=2, row=1)
+    sc.show(output="model3d", col=2, row=2)
+```
