@@ -31,11 +31,11 @@ import requests
 url = "https://raw.githubusercontent.com/magpylib/magpylib-files/main/logo_3d.stl"
 response = requests.get(url)
 if response.status_code == 200:
-    with open('downloaded_file.stl', 'wb') as file:
+    with open('__temp.stl', 'wb') as file:
         file.write(response.content)
 
 # import *.stl file with Pyvista
-mesh = pv.read("downloaded_file.stl")
+mesh = pv.read("__temp.stl")
 
 # transform into Magpylib magnet
 magnet = magpy.magnet.TriangularMesh.from_pyvista(
