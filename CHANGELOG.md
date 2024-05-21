@@ -3,7 +3,7 @@ All notable changes to magpylib are documented here.
 
 # Changelog
 
-## [5.0.2] - 2024-05-20
+## [5.0.2] - 2024-05-21
 - Fixed a visualization bug where the viewbox boundaries would be computed badly ([#771](https://github.com/magpylib/magpylib/issues/771))
 - Improved documentation ([#770](https://github.com/magpylib/magpylib/issues/770), some of [#659](https://github.com/magpylib/magpylib/issues/659))
 
