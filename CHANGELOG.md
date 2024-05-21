@@ -8,7 +8,7 @@ All notable changes to magpylib are documented here.
 - Removed support for python 3.8 and 3.9 by now following the scientific-python.org support timelines ([#773](https://github.com/magpylib/magpylib/pull/773))
 - Fixed CI testing with newer backend versions ([#774](https://github.com/magpylib/magpylib/pull/774))
 - Updated site notice to mention the awarded "small development grant" by NumFocus. ([#758](https://github.com/magpylib/magpylib/pull/758))
-- Improved documentation ([#764](https://github.com/magpylib/magpylib/pull/764))
+- Fix inaccurate citation year for Yang publication ([#764](https://github.com/magpylib/magpylib/pull/764), with thanks to @feldnerd for the contribution!)
 
 ## [5.0.1] - 2024-04-12
 - Fixed a bug where `getBHJM` of a Collection would produce one extra dimension ([#753](https://github.com/magpylib/magpylib/issues/753))
