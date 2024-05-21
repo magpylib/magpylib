@@ -74,6 +74,7 @@ bad_inputs = {
 
 def get_bad_test_data():
     """create parametrized bad style test data"""
+    # pylint: disable=possibly-used-before-assignment
     bad_test_data = []
     for k, tup in bad_inputs.items():
         for v in tup:

@@ -305,6 +305,8 @@ pl.set_background("black", top="white")
 pl.show()
 ```
 
+(docu-graphics-return_fig)=
+
 ### Return figure
 
 Instead of forwarding a figure to an existing canvas, it is also possible to return the figure object for further manipulation using the `return_fig` command. In the following example this is demonstrated for the pyvista backend.
@@ -642,6 +644,8 @@ magpy.show(
     {"objects": [sensor], "col": 2},
 )
 ```
+
+(docu-graphics-show_context)=
 
 ### Subplots via context manager `magpylib.show_context`
 

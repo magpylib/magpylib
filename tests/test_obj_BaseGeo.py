@@ -74,8 +74,19 @@ def test_BaseGeo_basics():
     poss = np.array(poss)
     rots = np.array(rots)
 
-    np.testing.assert_allclose(poss, ptest, err_msg="test_BaseGeo bad position")
-    np.testing.assert_allclose(rots, otest, err_msg="test_BaseGeo bad orientation")
+    # avoid generating different zeros in macos CI tests (atol=1e-6)
+    np.testing.assert_allclose(
+        poss,
+        ptest,
+        atol=1e-6,
+        err_msg="test_BaseGeo bad position",
+    )
+    np.testing.assert_allclose(
+        rots,
+        otest,
+        atol=1e-6,
+        err_msg="test_BaseGeo bad orientation",
+    )
 
 
 def test_rotate_vs_rotate_from():
