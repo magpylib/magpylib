@@ -4,7 +4,7 @@
 (docu-magpylib)=
 (docu-io)=
 
-# Magpylib API
+# Field Computation
 
 <hr style="border:3px solid gray">
 

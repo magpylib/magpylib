@@ -13,7 +13,7 @@ kernelspec:
 
 (docu-physics)=
 
-# Physics
+# Physics & Computation
 
 ## What is implemented ?
 

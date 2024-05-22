@@ -13,7 +13,7 @@ kernelspec:
 
 (get-started)=
 
-# Get Started
+# Getting Started
 
 ## Installation and Dependencies
 

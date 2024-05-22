@@ -1,6 +1,6 @@
 (docu-APIref)=
 
-# API Reference
+# API reference
 
 ```{toctree}
 :maxdepth: 2

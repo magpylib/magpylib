@@ -60,7 +60,9 @@ def setup(app):
 # -- Project information -----------------------------------------------------
 
 project = "Magpylib"
-copyright = "2022, SAL - Silicon Austria Labs"
+copyright = (
+    "2024, Magpylib developers, License: BSD 2-clause, Built with Sphinx Pydata-Theme"
+)
 author = "The Magpylib Project <magpylib@gmail.com>"
 
 # The short X.Y version
@@ -152,13 +154,14 @@ if not version_match or version_match.isdigit() or version_match == "latest":
 elif version_match == "stable":
     version_match = f"{release}"
 
+
 html_theme_options = {
     # "announcement": announcement,
     "logo": {
         "text": "Magpylib",
         "image_dark": "./_static/images/magpylib_logo.png",
     },
-    "use_edit_page_button": True,
+    "use_edit_page_button": False,
     "header_links_before_dropdown": 4,
     "show_version_warning_banner": True,
     "navbar_align": "left",  # [left, content, right] For testing that the navbar items align properly
@@ -177,6 +180,8 @@ html_theme_options = {
         },
     ],
     "navigation_with_keys": False,
+    "footer_start": ["copyright"],
+    "footer_end": [],
 }
 
 html_context = {
@@ -201,7 +206,9 @@ html_css_files = ["custom.css"]
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
-# html_sidebars = {}
+# html_sidebars = {
+#     '**': ['sidebar-nav-bs.html'],
+# }
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
@@ -347,7 +354,8 @@ favicons = [
 # import pyvista
 # pyvista.BUILDING_GALLERY = True
 
-html_last_updated_fmt = ""
-html_show_copyright = False
-html_show_sphinx = False
-show_authors = False
+# html_last_updated_fmt = ""
+# html_show_copyright = False
+# html_show_sphinx = False
+# show_authors = False
+html_show_sourcelink = False

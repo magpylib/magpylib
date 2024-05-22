@@ -1,6 +1,6 @@
 (gallery)=
 
-# Examples and Tutorials
+# Example Gallery
 
 ## Tutorials
 
