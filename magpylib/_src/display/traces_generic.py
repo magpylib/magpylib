@@ -781,9 +781,13 @@ def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kw
             rco_obj = params.pop("row_cols")
             orig_style = getattr(obj, "_style", None)
             try:
-                # temporary replace style attribute
-                obj._style = params.pop("style", None)
+                style_temp = params.pop("style", None)
                 for rco in rco_obj:
+                    # temporary replace style attribute
+                    obj._style = style_temp
+                    if len(rco_obj) >= 2 and style_temp:
+                        # deepcopy style only if obj is in multiple subplots.
+                        obj._style = style_temp.copy()
                     params["row"], params["col"], output_typ = rco
                     if output_typ == "model3d":
                         out_traces = get_generic_traces(
