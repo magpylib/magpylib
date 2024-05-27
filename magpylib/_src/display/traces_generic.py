@@ -782,10 +782,9 @@ def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kw
             for rco in rco_obj:
                 params["row"], params["col"], output_typ = rco
                 if output_typ == "model3d":
-                    orig_style = None
+                    orig_style = getattr(obj, "_style", None)
                     try:
                         # temporary replace style attribute
-                        orig_style = obj.style
                         obj._style = params.pop("style", None)
                         out_traces = get_generic_traces(
                             obj,
