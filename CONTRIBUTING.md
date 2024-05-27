@@ -1,4 +1,4 @@
-# Contribute
+# Contribution Guide
 
 The success of Magpylib relies on its user-friendliness. Your feedback and participation in discussions is strongly encouraged. Ask questions about Magpylib. Tell us what you like and what you dislike. Start general discussions in our informal [Discussions](https://github.com/magpylib/magpylib/discussions) channel on GitHub.
 
@@ -6,7 +6,7 @@ We use GitHub [Issues and Milestones](https://github.com/magpylib/magpylib/issue
 
 Always feel free to reach out through the official email <magpylib@gmail.com>.
 
-## How to Contribute with Coding...
+## How to Contribute with Coding
 
 You are most welcome to become a project contributor by helping us with coding. This includes the implementation of new features, fixing bugs, code cleanup and restructuring as well as documentation improvements. Please abide by the following procedure to make things easy for us to review and to manage the project.
 

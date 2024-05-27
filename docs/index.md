@@ -10,12 +10,12 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 
 <h2> Ressources </h2>
 
-::::{grid} 2 3 3 3
+::::{grid} 1 2 3 3
 :margin: 4 4 0 0
 :gutter: 2
 
 :::{grid-item-card}
-:link: get-started
+:link: getting-started
 :link-type: ref
 :link-alt: link to Getting Started
 :img-top: _static/images/index_icon_get_started2.png
@@ -33,7 +33,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :::
 
 <!-- :::{grid-item-card}
-:link: docu-index
+:link: guide-index
 :link-type: ref
 :link-alt: link to User Guide
 :img-top: _static/images/index_icon_user_guide.png
@@ -64,7 +64,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :link-alt: link to Journal
 :img-top: _static/images/index_icon_academic2.png
 :text-align: center
-**Scientific Paper**
+**Scientific Reference**
 :::
 
 ::::
@@ -73,9 +73,9 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :maxdepth: 2
 :hidden:
 
-_pages/docu/docu_index.md
-_pages/docu/docu_API_reference.md
-_pages/reso_contributing.md
-_pages/reso_changelog.md
+_pages/user_guide/guide_index.md
+_pages/API_reference.md
+_pages/contributing/cont_index.md
+_pages/changelog_.md
 
 ```

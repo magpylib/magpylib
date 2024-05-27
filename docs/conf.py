@@ -20,7 +20,6 @@ os.system("/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
 os.environ["DISPLAY"] = ":99"
 os.environ["PYVISTA_OFF_SCREEN"] = "true"
 os.environ["PYVISTA_USE_IPYVTK"] = "true"
-
 os.environ["MAGPYLIB_MPL_SVG"] = "true"
 
 # Location of Sphinx files
@@ -60,9 +59,7 @@ def setup(app):
 # -- Project information -----------------------------------------------------
 
 project = "Magpylib"
-copyright = (
-    "2024, Magpylib developers, License: BSD 2-clause, Built with Sphinx Pydata-Theme"
-)
+copyright = "2019-2024, Magpylib developers, License: BSD 2-clause, Built with Sphinx Pydata-Theme"
 author = "The Magpylib Project <magpylib@gmail.com>"
 
 # The short X.Y version
@@ -161,11 +158,11 @@ html_theme_options = {
         "text": "Magpylib",
         "image_dark": "./_static/images/magpylib_logo.png",
     },
-    "use_edit_page_button": False,
     "header_links_before_dropdown": 4,
     "show_version_warning_banner": True,
-    "navbar_align": "left",  # [left, content, right] For testing that the navbar items align properly
-    "navbar_center": ["version-switcher", "navbar-nav"],
+    "navbar_align": "content",  # [left, content, right] For testing that the navbar items align properly
+    "navbar_center": ["navbar-nav"],
+    "navbar_persistent": ["version-switcher"],
     "switcher": {
         "json_url": json_url,
         "version_match": version_match,
@@ -182,7 +179,14 @@ html_theme_options = {
     "navigation_with_keys": False,
     "footer_start": ["copyright"],
     "footer_end": [],
+    "use_edit_page_button": True,
+    "navigation_depth": 3,
+    "collapse_navigation": False,
 }
+
+# "show_nav_level": 2,  # Show navigation up to the second level
+# "navigation_depth": 4,  # Adjust the depth as needed
+# "collapse_navigation": True,  # Option to collapse navigation sections
 
 html_context = {
     # "github_url": "https://github.com", # or your GitHub Enterprise site
@@ -206,10 +210,9 @@ html_css_files = ["custom.css"]
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
-# html_sidebars = {
-#     '**': ['sidebar-nav-bs.html'],
-# }
-
+html_sidebars = {
+    "**": ["search-field.html", "sidebar-nav-bs.html", "sidebar-ethical-ads.html"],
+}
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -358,4 +361,4 @@ favicons = [
 # html_show_copyright = False
 # html_show_sphinx = False
 # show_authors = False
-html_show_sourcelink = False
+# html_show_sourcelink = False

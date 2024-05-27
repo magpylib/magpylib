@@ -1,6 +1,3 @@
-All notable changes to magpylib are documented here.
-
-
 # Changelog
 
 ## [5.0.2] - 2024-05-21
