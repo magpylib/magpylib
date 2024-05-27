@@ -62,6 +62,22 @@
 :img-bottom: ../../../_static/images/gallery_icon_vis_magnet_colors.png
 :::
 
+:::{grid-item-card} {ref}`gallery-vis-animations`
+:text-align: center
+:link: gallery-vis-animations
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/gallery_icon_vis_animations.png
+:::
+
+:::{grid-item-card} {ref}`gallery-vis-subplots`
+:text-align: center
+:link: gallery-vis-subplots
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/gallery_icon_vis_subplots.png
+:::
+
 :::{grid-item-card} {ref}`gallery-vis-mpl-streamplot`
 :text-align: center
 :link: gallery-vis-mpl-streamplot
@@ -78,21 +94,7 @@
 :img-bottom: ../../../_static/images/gallery_icon_vis_pv_streamlines.png
 :::
 
-:::{grid-item-card} {ref}`gallery-vis-animations`
-:text-align: center
-:link: gallery-vis-animations
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../../_static/images/gallery_icon_vis_animations.png
-:::
 
-:::{grid-item-card} {ref}`gallery-vis-subplots`
-:text-align: center
-:link: gallery-vis-subplots
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../../_static/images/gallery_icon_vis_subplots.png
-:::
 
 ::::
 
@@ -227,10 +229,10 @@ gallery_tutorial_custom.md
 gallery_tutorial_modelling_magnets.md
 
 gallery_vis_magnet_colors.md
-gallery_vis_mpl_streamplot.md
-gallery_vis_pv_streamlines.md
 gallery_vis_animations.md
 gallery_vis_subplots.md
+gallery_vis_mpl_streamplot.md
+gallery_vis_pv_streamlines.md
 
 gallery_shapes_superpos.md
 gallery_shapes_convex_hull.md
