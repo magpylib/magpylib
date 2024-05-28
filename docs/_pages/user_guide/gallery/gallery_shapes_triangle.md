@@ -16,14 +16,14 @@ orphan: true
 
 # Triangular Meshes
 
-The magnetic field of a homogeneously magnetized body is equivalent to the field of a charged surface. The surface is the hull of the body and the charge density is proportional to the projection of the magnetization vector onto the surface normal.
+The magnetic field of a homogeneously magnetized body is equivalent to the field of a charged surface. The surface is the hull of the body, and the charge density is proportional to the projection of the magnetization vector onto the surface normal.
 
 It is very common to approximate the surface of bodies by triangular meshes, which can then be transformed into magnets using the `Triangle` and the `TriangularMesh` classes. When using these classes one should abide by the following rules:
 
-1. The surface must be closed, or, all missing faces must have zero charge (magnetization vector perpendicular to surface normal).
+1. The surface must be closed, or all missing faces must have zero charge (magnetization vector perpendicular to surface normal).
 2. All triangles are oriented outwards (right-hand-rule)
 3. The surface must not be self-intersecting.
-4. For the B-field the magnetic polarization must be added on the inside of the body.
+4. For the B-field magnetic polarization must be added on the inside of the body.
 
 ## Cuboctahedron Magnet
 
@@ -77,9 +77,9 @@ magpy.show(
 
 ## Triangular Prism Magnet
 
-Consider a prism with triangular base that is magnetized orthogonal to the base. All surface normals of the sides of the prism are orthogonal to the magnetization vector. As a result the sides do not contribute to the magnetic field because their charge density disappears. Only top and bottom surfaces contribute. One must be very careful when defining those surfaces in such a way that the surface normals point outwards.
+Consider a prism with triangular base that is magnetized orthogonal to the base. All surface normals of the sides of the prism are orthogonal to the magnetization vector. As a result, the sides do not contribute to the magnetic field because their charge density disappears. Only the top and bottom surfaces contribute. One must be very careful when defining those surfaces in such a way that the surface normals point outwards.
 
-Leaving out parts of the surface that do not contribute to the field is beneficial for the computation speed.
+Leaving out parts of the surface that do not contribute to the field is beneficial for computation speed.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -103,13 +103,13 @@ magpy.show(*prism, backend="plotly", style_opacity=0.5, style_magnetization_show
 
 ## TriangularMesh class
 
-While `Triangle` simply provides the field of a charged triangle and can be used to contruct complex forms, it is prone to error and tedious to work with when meshes become large. For this purpose the `TriangularMesh` class ensures proper and convenient magnet creation by automatically checking mesh integrity and by orienting the faces at initialization.
+While `Triangle` simply provides the field of a charged triangle and can be used to construct complex forms, it is prone to error and tedious to work with when meshes become large. For this purpose, the `TriangularMesh` class ensures proper and convenient magnet creation by automatically checking mesh integrity and by orienting the faces at initialization.
 
 ```{attention}
 Automatic face reorientation of `TriangularMesh` may fail when the mesh is open.
 ```
 
-In this example we revisit the cuboctahedron, but generate it through the `TriangularMesh` class.
+In this example we revisit the cuboctahedron but generate it through the `TriangularMesh` class.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -147,12 +147,12 @@ The `TriangularMesh` class is extremely powerful as it enables almost arbitrary 
 
 * Meshing tools such as the [Pyvista](https://docs.pyvista.org/) library can be very convenient for building complex shapes, but often do not guarantee that the mesh is properly closed or connected - see {ref}`gallery-shapes-pyvista`.
 
-* Meshing tools often create meshes with a lot of faces, especially when working with curved surfaces. Keep in mind that the field computation takes of the order of a few microseconds per observer position per face, and that RAM is a limited resource.
+* Meshing tools often create meshes with a lot of faces, especially when working with curved surfaces. Keep in mind that field computation takes of the order of a few microseconds per observer position per face, and that RAM is a limited resource.
 ```
 
 ## Open TriangularMesh
 
-In some cases it may be desirable to generate a `TriangularMesh` object from an open mesh (see Prism example above). In this case one has to be extremely careful because one cannot rely on the checks. Not to generate warnings or error messages, these checks can be disabled with `"skip"` or their outcome can be ignored with `"ignore"`. The `show` function can be used to view open edges and disconnected parts. In the following example we generate such an open mesh directly from `Triangle` objects.
+In some cases, it may be desirable to generate a `TriangularMesh` object from an open mesh (see Prism example above). In this case one must be extremely careful because one cannot rely on the checks. Not to generate warnings or error messages, these checks can be disabled with `"skip"` or their outcome can be ignored with `"ignore"`. The `show` function can be used to view open edges and disconnected parts. In the following example we generate such an open mesh directly from `Triangle` objects.
 
 ```{code-cell} ipython3
 import magpylib as magpy

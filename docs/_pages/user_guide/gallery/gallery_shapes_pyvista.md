@@ -94,7 +94,7 @@ The following code produces a clean magnet .
 import pyvista as pv
 import magpylib as magpy
 
-# Create a complex pyvista PolyData object using a boolean operation. Start with
+# Create a complex Pyvista PolyData object using a boolean operation. Start with
 # finer mesh and clean after operation
 sphere = pv.Sphere(radius=0.6)
 cube = pv.Cube().triangulate().subdivide(2)
@@ -115,12 +115,4 @@ print(f"mesh status self-intersecting: {magnet.status_selfintersecting}")
 print(f'mesh status reoriented: {magnet.status_reoriented}')
 
 magnet.show(backend="plotly")
-```
-
-```{code-cell} ipython3
-
-```
-
-```{code-cell} ipython3
-
 ```

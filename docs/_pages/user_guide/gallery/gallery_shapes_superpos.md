@@ -76,7 +76,7 @@ with magpy.show_context(magnet, sensor, backend="plotly", style_legend_show=Fals
 
 ## Cut-out operation
 
-When two objects with opposing magnetization vectors of similar amplitude overlap, they will just cancel in the overlap region. This enables geometric cut-out operations. In the following example we construct an exact hollow cylinder solution from two concentric cylinder shapes with opposite magnetizations, and compare the result to the `CylinderSegment` class solution.
+When two objects with opposing magnetization vectors of similar amplitude overlap, they will just cancel in the overlap region. This enables geometric cut-out operations. In the following example we construct an exact hollow cylinder solution from two concentric cylinder shapes with opposite magnetizations and compare the result to the `CylinderSegment` class solution.
 
 Here the `getM` and `getJ` functions come in handy. They allow us to see the magnetization distribution that is the result of the superposition.
 
@@ -129,7 +129,7 @@ plt.show()
 
 The two figures show that the magnetization is zero outside of the cylinder, as well as in the overlap region where the two magnetizations cancel.
 
-Finally we want to show that the superposition gives the same result as a computation from the CylinderSegment solution.
+Finally, we want to show that the superposition gives the same result as a computation from the CylinderSegment solution.
 
 ```{code-cell} ipython3
 from magpylib.magnet import Cylinder, CylinderSegment
@@ -142,9 +142,9 @@ print("CylinderSegment result:", ring1.getB((.01, .02, .03)))
 print("        Cut-out result:", ring0.getB((.01, .02, .03)))
 ```
 
-Note that, it is faster to compute the `Cylinder` field two times than computing the `CylinderSegment` field one time. This is why Magpylib automatically falls back to the `Cylinder` solution whenever `CylinderSegment` is called with 360 deg section angles.
+Note that it is faster to compute the `Cylinder` field two times than computing the `CylinderSegment` field one time. This is why Magpylib automatically falls back to the `Cylinder` solution whenever `CylinderSegment` is called with 360 deg section angles.
 
-Unfortunately, with respect to 3D-models, cut-out operations cannot be displayed graphically at the moment, but {ref}`examples-own-3d-models` offer custom solutions.
+Unfortunately, with respect to 3D-models, cut-out operations cannot be displayed graphically at this point in time, but {ref}`examples-own-3d-models` offer custom solutions.
 
 ## Nice example
 

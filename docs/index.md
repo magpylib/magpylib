@@ -1,6 +1,6 @@
 # Magpylib Documentation
 
-Magpylib is an **open-source Python package** for calculating static **magnetic fields** of magnets, currents and other sources. It uses **explicit expressions**, solutions to the macroscopic magnetostatic problems, implemented in **vectorized** form which makes the computation **extremely fast**. Make use of the open-source Python ecosystem for spectacular visualization.
+Magpylib is an **open-source Python package** for calculating static **magnetic fields** of magnets, currents, and other sources. It uses **explicit expressions**, solutions to macroscopic magnetostatic problems, implemented in **vectorized** form which makes the computation **extremely fast**. Make use of the open-source Python ecosystem for spectacular visualization.
 
 <h2> How it works</h2>
 
@@ -8,7 +8,7 @@ Magpylib is an **open-source Python package** for calculating static **magnetic 
 
 In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, position grids, ...) are created as Python objects with position and orientation attributes. These objects can be **grouped** and **moved** around. The system can be **viewed** graphically through various backends. The **magnetic field** is computed in the observer reference frame. Magpylib collects all inputs, and vectorizes the computation for maximal performance.
 
-<h2> Ressources </h2>
+<h2> Resources </h2>
 
 ::::{grid} 1 2 3 3
 :margin: 4 4 0 0
@@ -31,33 +31,6 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :text-align: center
 **Example Gallery**
 :::
-
-<!-- :::{grid-item-card}
-:link: guide-index
-:link-type: ref
-:link-alt: link to User Guide
-:img-top: _static/images/index_icon_user_guide.png
-:text-align: center
-**User Guide**
-::: -->
-
-<!-- :::{grid-item-card}
-:link: docu-APIref
-:link-type: ref
-:link-alt: link to API reference
-:img-top: _static/images/index_icon_api.png
-:text-align: center
-**API reference**
-::: -->
-
-<!-- :::{grid-item-card}
-:link: contributing
-:link-type: ref
-:link-alt: link to Contributing
-:img-top: _static/images/index_icon_contributing.png
-:text-align: center
-**Contribute**
-::: -->
 
 :::{grid-item-card}
 :link: https://www.sciencedirect.com/science/article/pii/S2352711020300170

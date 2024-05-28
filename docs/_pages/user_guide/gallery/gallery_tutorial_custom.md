@@ -99,7 +99,7 @@ plt.show()
 
 ## Adding a 3D model
 
-While the CustomSource is graphically represented by a simple marker by default, we can easily add a 3D model as described in {ref}`examples-own-3d-models`.
+While `CustomSource` is graphically represented by a simple marker by default, we can easily add a 3D model as described in {ref}`examples-own-3d-models`.
 
 ```{code-cell} ipython3
 # Load Sphere model
@@ -120,7 +120,7 @@ magpy.show(mono1, mono2)
 
 ## Subclassing CustomSource
 
-In the above example it would be nice to make the CustomSource dynamic, so that it would have a property `charge` that can be changed at will, rather than having to redefine the `field_func` and initialize a new object every time. In the following example we show how to sub-class `CustomSource` to achieve this. The problem is reminiscent of {ref}`gallery-misc-compound`.
+In the above example it would be nice to make the `CustomSource` dynamic, so that it would have a property `charge` that can be changed at will, rather than having to redefine the `field_func` and initialize a new object every time. In the following example we show how to sub-class `CustomSource` to achieve this. The problem is reminiscent of {ref}`gallery-misc-compound`.
 
 ```{code-cell} ipython3
 class Monopole(magpy.misc.CustomSource):
@@ -186,7 +186,7 @@ mono.charge = -1e-6
 print(mono.getB((0.001, 0, 0)))
 ```
 
-The new class seamlessly integrates into the Magpylib interface as we show in the following example where we have a look at the Quadrupole field
+The new class seamlessly integrates into the Magpylib interface as we show in the following example where we have a look at the Quadrupole field.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt

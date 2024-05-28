@@ -20,7 +20,7 @@ The `Collection` class is a powerful tool for grouping and tracking object assem
 
 ## Subclassing collections
 
-In the following example we design a compound class `MagnetRing` which represents a ring of cuboid magnets with the parameter `cubes` that should refer to the number of magnets on the ring. The ring will automatically adjust its size when `cubes` is modified. We also add an encompassing 3D model.
+In the following example we design a compound class `MagnetRing` which represents a ring of cuboid magnets with the parameter `cubes` that should refer to the number of magnets on the ring. The ring will automatically adjust its size when `cubes` is modified, including an additionally added encompassing 3D model that may, for example, represent a mechanical magnet holder.
 
 ```{code-cell} ipython3
 import magpylib as magpy

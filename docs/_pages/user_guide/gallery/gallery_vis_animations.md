@@ -60,7 +60,7 @@ magpy.show(sensor, magnet, animation=True, backend='plotly')
 
 ## Animated Subplots
 
-[Subplots](gallery-vis-subplots) are a powerful tool to see the field along a path while viewing the 3D models at the same time. This is specifially illustrative as an animation where the field at the respective path position is indicated by a marker.
+[Subplots](gallery-vis-subplots) are a powerful tool to see the field along a path while viewing the 3D models at the same time. This is specifically illustrative as an animation where the field at the respective path position is indicated by a marker.
 
 ```{code-cell} ipython3
 magpy.show(

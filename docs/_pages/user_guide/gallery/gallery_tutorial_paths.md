@@ -16,7 +16,7 @@ orphan: true
 
 # Working with Paths
 
-The position and orientation attributes are key elements of Magpylib. The documentation section {ref}`docs-position` describes how they work. However, these definitions can seem abstract, but the interface was constructed as intuitive as possible.
+The position and orientation attributes are key elements of Magpylib. The documentation section {ref}`docs-position` describes how they work. However, these definitions can seem abstract, but the interface was constructed as intuitively as possible.
 
 ```{important}
 Always make use of paths when computing with multiple Magpylib object position and orientation instances. This enables vectorized computation. Avoid Python loops at all costs!
@@ -105,7 +105,7 @@ sphere.show()
 
 ## Merging paths
 
-Complex paths can be created by merging multiple path operations. This is done with vector input for the `move` and `rotate` methods, and choosing values for `start` that will make the paths overlap. In the following example we combine a linear path with a rotation about self (`anchor=None`) until path index 30. Thereon, a second rotation about the origin is applied, creating a spiral.
+Complex paths can be created by merging multiple path operations. This is done with vector input for the `move` and `rotate` methods and choosing values for `start` that will make the paths overlap. In the following example we combine a linear path with a rotation about self (`anchor=None`) until path index 30. Thereon, a second rotation about the origin is applied, creating a spiral.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -151,7 +151,7 @@ print(sensor.orientation.as_quat())
 
 Magpylib will always make sure that object paths are in the right format, i.e., `position` and `orientation` attributes are of the same length. In addition, when objects with different path lengths are combined, e.g., when computing the field, the shorter paths are treated as static beyond their end to make the computation sensible. Internally, Magpylib follows a philosophy of edge-padding and end-slicing when adjusting paths.
 
-The idea behind **edge-padding** is that, whenever path entries beyond the existing path length are needed, the edge-entries of the existing path are returned. This means that the object is considered to be "static" beyond its existing path.
+The idea behind **edge-padding** is that, whenever path entries beyond the existing path length are needed, the edge-entries of the existing path are returned. This means that the object is static beyond its existing path.
 
 In the following example the orientation attribute is padded by its edge value `(0,0,.2)` as the position attribute length is increased.
 

@@ -21,3 +21,4 @@ In this example we will show how magnetic scales can be constructed with Magpyli
 - model
 - experiment
 - refer to DS 91411 and 91479
+- use compounds

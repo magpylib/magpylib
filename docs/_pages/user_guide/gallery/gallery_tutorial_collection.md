@@ -16,11 +16,11 @@ orphan: true
 
 # Working with Collections
 
-The top level class `Collection` allows users to group objects by reference for common manipulation. The idea is that
+The top-level class `Collection` allows users to group objects by reference for common manipulation. The following concepts apply to Magpylib Collections:
 
 1. A collection spans its own local frame of reference with position and orientation, to which the children are added. Thus, any operation applied to the collection is individually applied to all its children.
 2. The collection itself behaves like a single Magpylib object (can be source and/or observer).
-3. All children inside the collection can be individually addressed and manipulated at all times.
+3. All children inside the collection can be individually addressed and manipulated, which will automatically manipulate their state inside the parent collection.
 4. Collections have their own `style` attributes, their paths are displayed in `show`, and all children are automatically assigned their parent color.
 
 ## Constructing Collections
@@ -164,7 +164,7 @@ print([s.style.label for s in coll.sensors_all])
 
 ## Practical Example
 
-The following example demonstrates how collections enable user-friendly manipulation of groups, sub-groups and individual objects.
+The following example demonstrates how collections enable user-friendly manipulation of groups, sub-groups, and individual objects.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -219,7 +219,7 @@ plt.show()
 
 ## Efficient 3D Models
 
-The graphical backend libraries were not designed for complex 3D graphic output. As a result, it becomes often inconvenient and slow when attempting to display many 3D objects. One solution to this problem when dealing with large collections is to represent the latter by a single encompassing body, and to deactivate the individual 3D models of all children.
+The graphical backend libraries were not designed for complex 3D graphic output. As a result, it often becomes inconvenient and slow when attempting to display many 3D objects. One solution to this problem when dealing with large collections is to represent the latter by a single encompassing body, and to deactivate the individual 3D models of all children.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -253,4 +253,4 @@ coll.show()
 
 ## Compound Objects
 
-Collections can be subclassed to form dynamic groups that seamlessly integrate into Magpylib. Such classes are referred to as **compounds**. An example how this is done is shown in {ref}`gallery-misc-compound`.
+Collections can be subclassed to form dynamic groups that seamlessly integrate into Magpylib. Such classes are referred to as **compounds**. An example of how this is done is shown in {ref}`gallery-misc-compound`.

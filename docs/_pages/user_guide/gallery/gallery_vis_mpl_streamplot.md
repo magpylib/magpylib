@@ -20,7 +20,7 @@ orphan: true
 
 In this example we show the B-field of a cuboid magnet using Matplotlib streamlines. Streamlines are not magnetic field lines in the sense that the field amplitude cannot be derived from their density. However, Matplotlib streamlines can show the field amplitude via color and line thickness. One must be careful that streamlines can only display two components of the field. In the following example the third field component is always zero - but this is generally not the case.
 
-In the example we make use of the [scaling property](docu-api-scale-invariance). We assume that all length inputs are in units of mm, and that the polarization input is in units of millitesla. The resulting `getB` output will also be in millitesla. One must be careful with scaling - the conversion to H would ofc give units of mA/m.
+In the example we make use of the [scaling property](guide-docs-io-scale-invariance). We assume that all length inputs are in units of mm, and that the polarization input is in units of millitesla. The resulting `getB` output will also be in millitesla. One must be careful with scaling - the conversion to H would ofc give units of mA/m.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -78,7 +78,7 @@ plt.show()
 ```
 
 ```{note}
-Be aware that the above code is not very performant, but quite readable. The following example creates the grid with numpy commands only instead of Python loops, and uses the {ref}`gallery-tutorial-field-computation-functional-interface` for field computation.
+Be aware that the above code is not very performant, but quite readable. The following example creates the grid with NumPy commands only instead of Python loops and uses the {ref}`gallery-tutorial-field-computation-functional-interface` for field computation.
 ```
 
 ## Example 2 - Hollow Cylinder Magnet

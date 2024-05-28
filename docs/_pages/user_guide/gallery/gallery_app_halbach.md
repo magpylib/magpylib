@@ -19,7 +19,7 @@ kernelspec:
 Magpylib is an excellent tool to create magnet assemblies. In this example we will show how to model Halbach magnets.
 
 ```{note}
-In the following examples we make use of the [arbitrary unit convention](docu-api-scale-invariance).
+In the following examples we make use of the [arbitrary unit convention](guide-docs-io-scale-invariance).
 ```
 
 The original Halbach-magnetization describes a hollow cylinder with a polarization direction that rotates twice while going around the cylinder once. In reality such polarizations are difficult to fabricate. What is commonly done instead are "Discreete Halbach Arrays", which are magnet assemblies that approximate a Halbach magnetization.

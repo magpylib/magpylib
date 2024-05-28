@@ -2,7 +2,7 @@
 
 ## Dependencies and Synergies
 
-Magpylib supports *Python3.10+* and relies on common scientific computation libraries *Numpy* and *Scipy* for computation, and *Matplotlib* and *Plotly* for graphic outputs.
+Magpylib supports *Python3.10+* and relies on common scientific computation libraries *NumPy* and *Scipy* for computation, and *Matplotlib* and *Plotly* for graphic outputs.
 
 Optionally, *Pyvista* is supported as graphical backend, as well as *Pandas* for the field computation output.
 

@@ -118,7 +118,7 @@ magpy.show(custom, cube, zoom=1, backend="matplotlib")
 
 ## Testing Interpolation Accuracy
 
-Finally, we compare the "exact" field of the cuboid source with the interpolated field of the custom source. For this purpose a sensor is added and a generic rotation is applied to the sources. Naturally there is some error that can be reduced by increasing the interpolation grid finesse.
+Finally, we compare the "exact" field of the cuboid source with the interpolated field of the custom source. For this purpose, a sensor is added and a generic rotation is applied to the sources. Naturally there is some error that can be reduced by increasing the interpolation grid finesse.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt

@@ -32,7 +32,7 @@ print(B)
 
 There are four field computation functions: `getB` will compute the B-field in T. `getH` computes the H-field in A/m. `getJ` computes the magnetic polarization in units of T. `getM` computes the magnetization in units of A/m.
 
-All these functions will return the field in the shape of the input. In the following example, BHJM-fields of a diametrically magnetized cylinder magnet are computed on a position grid in the symmetry plane, and are then displayed using Matplotlib.
+All these functions will return the field in the shape of the input. In the following example, BHJM-fields of a diametrically magnetized cylinder magnet are computed on a position grid in the symmetry plane and are then displayed using Matplotlib.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -156,7 +156,7 @@ with magpy.show_context(sensor, coll, animation=True, backend="plotly"):
 
 ## Multiple Inputs
 
-When `getBHJM` receive multiple inputs for sources and observers they will compute all possible combinations. It is still beneficial to call the field computation only a single time, because similar sources will be grouped and the computation will be vectorized automatically.
+When `getBHJM` receive multiple inputs for sources and observers they will compute all possible combinations. It is still beneficial to call the field computation only a single time, because similar sources will be grouped, and the computation will be vectorized automatically.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -188,7 +188,7 @@ A path will add another index. Every higher pixel dimension will add another ind
 
 ## Field as Pandas Dataframe
 
-Instead of a Numpy `ndarray`, the field computation can also return a [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe) using the `output='dataframe'` kwarg.
+Instead of a NumPy `ndarray`, the field computation can also return a [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe) using the `output='dataframe'` kwarg.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -240,7 +240,7 @@ fig.show()
 
 ## Functional Interface
 
-All above computations demonstrate the convenient object oriented interface of Magpylib. However, there are instances when it is better to work with the functional interface instead.
+All above computations demonstrate the convenient object-oriented interface of Magpylib. However, there are instances when it is better to work with the functional interface instead.
 
 1. Reduce overhead of Python objects
 2. Complex computation instances
@@ -248,7 +248,7 @@ All above computations demonstrate the convenient object oriented interface of M
 In the following example we show how complex instances are computed using the functional interface.
 
 ```{important}
-The functional interface will only outperform the object oriented interface if you use numpy operations for input array creation, such as `tile`, `repeat`, `reshape`, ... !
+The functional interface will only outperform the object oriented interface if you use NumPy operations for input array creation, such as `tile`, `repeat`, `reshape`, ... !
 ```
 
 ```{code-cell} ipython3

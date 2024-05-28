@@ -3,7 +3,7 @@
 
 ## Object-oriented interface
 
-The object oriented interface relies on the idea that sources of the magnetic field and observers thereof are created as Python objects which can be manipulated at will, and called for field computation. This is done via four top-level functions <span style="color: orange">**getB**</span>, <span style="color: orange">**getH**</span>, <span style="color: orange">**getJ**</span> and, <span style="color: orange">**getM**</span>,
+The object-oriented interface relies on the idea that sources of the magnetic field and observers thereof are created as Python objects which can be manipulated at will, and called for field computation. This is done via four top-level functions <span style="color: orange">**getB**</span>, <span style="color: orange">**getH**</span>, <span style="color: orange">**getJ**</span> and, <span style="color: orange">**getM**</span>,
 
 ```python
 magpylib.getB(sources, observers, squeeze=True, pixel_agg=None, output="ndarray")
@@ -28,7 +28,7 @@ print(B)
 #  --> [0.         0.         0.00125664]
 ```
 
-For quick-access, the functions `getBHJM` are also methods of all Magpylib objects, such that the `sources` or `observers` input is the object itself. The above example can be continued as
+For quick access, the functions `getBHJM` are also methods of all Magpylib objects, such that the `sources` or `observers` input is the object itself. The above example can be continued as
 
 ```python
 # call getB as method of loop
@@ -43,16 +43,16 @@ with the same result for `B`.
 By default, `getB` returns the B-field in units of T, `getH` the H-field in units of A/m, `getJ` the magnetic polarization in T and, `getM` the magnetization in A/m, assuming that all inputs are given in SI units as described in the docstrings.
 
 ```{hint}
-In reality, `getB` is proportional to the `polarization` input and therefore returns the same unit. For example, with polarization input in mT, getB will return mT as well. At the same time when the `magnetization` input is kA/m, then `getH` returns kA/m as well. The B/H-field outputs are related to a M/J-inputs via a factor of $µ_0$.
+In reality, `getB` is proportional to the `polarization` input and therefore returns the same unit. For example, with polarization input in mT, `getB` will return mT as well. At the same time when the `magnetization` input is kA/m, then `getH` returns kA/m as well. The B/H-field outputs are related to a M/J-inputs via a factor of $µ_0$.
 ```
 
-The output of a field computation `magpy.getB(sources, observers)` is by default a Numpy array of shape `(l, m, k, n1, n2, n3, ..., 3)` where `l` is the number of input sources, `m` the (maximal) object path length, `k` the number of observers, `n1,n2,n3,...` the sensor pixel shape or the shape of the observer position array input and `3` the three magnetic field components $(B_x, B_y, B_z)$.
+The output of a field computation `magpy.getB(sources, observers)` is by default a NumPy array of shape `(l, m, k, n1, n2, n3, ..., 3)` where `l` is the number of input sources, `m` the (maximal) object path length, `k` the number of observers, `n1,n2,n3,...` the sensor pixel shape or the shape of the observer position array input and `3` the three magnetic field components $(B_x, B_y, B_z)$.
 
 * `squeeze`: If True (default) all axes of length 1 in the output (e.g. only a single source) are squeezed.
 
-* `pixel_agg`: Select a compatible numpy aggregator function (e.g. `"min"`, `"mean"`) that is applied to the output. For example, with `pixel_agg="mean"` the mean field of all observer points is returned. With this option it is possible to supply `getBHJM` with multiple observers that have different pixel shapes.
+* `pixel_agg`: Select a compatible NumPy aggregator function (e.g. `"min"`, `"mean"`) that is applied to the output. For example, with `pixel_agg="mean"` the mean field of all observer points is returned. With this option it is possible to supply `getBHJM` with multiple observers that have different pixel shapes.
 
-* `output`: Change the output format. Options are `"ndarray"` (default, returns a Numpy ndarray) and `"dataframe"` (returns a 2D-table Pandas DataFrame).
+* `output`: Change the output format. Options are `"ndarray"` (default, returns a NumPy ndarray) and `"dataframe"` (returns a 2D-table Pandas DataFrame).
 
 ```{note}
 Magpylib collects all inputs (object parameters), and vectorizes them for the computation which reduces the computation time dramatically for large inputs.
@@ -145,7 +145,7 @@ At the heart of Magpylib lies a set of core functions that are our implementatio
 
 ::::
 
-All inputs must be Numpy ndarrays of shape (n,x). Details can be found in the respective function docstrings. The following example demonstrates the core interface.
+All inputs must be NumPy ndarrays of shape (n,x). Details can be found in the respective function docstrings. The following example demonstrates the core interface.
 
 
 ```python

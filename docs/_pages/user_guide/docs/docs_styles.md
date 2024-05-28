@@ -23,7 +23,7 @@ Graphic styles can be defined in various ways:
 2. An **individual style** can be defined at object level. If the object is a [Collection](guide-docs-classes-collections) it will apply its color to all children.
 3. Finally, styles that are defined in the `show` function call will override all other settings. This is referred to as **local style override**.
 
-The following section describe these styling options and how to customize them.
+The following sections describe these styling options and how to customize them.
 
 (guide-graphic-styles-default)=
 ## Default style
@@ -145,7 +145,7 @@ Any Magpylib object can have its own individual style that will take precedence 
 Users should be aware that the individual object style is organized in classes that take much longer to initialize than bare Magpylib objects, i.e. objects without individual style. This can lead to a computational bottleneck when setting individual styles of many Magpylib objects. For this reason Magpylib automatically defers style initialization until it is needed the first time, e.g. when calling the `show` function, so that object creatin time is not affected. However, this works only if style properties are set at initialization (e.g.: `magpy.magnet.Cuboid(..., style_label="MyCuboid")`). While this effect may not be noticeable for a small number of objects, it is best to avoid setting styles until it is plotting time.
 ```
 
-In the following example `cube` has no individual style, so the default style is used. `cylinder` has an individual style set for `magnetization` which is a tricolor scheme that will display the object color in the middle. The individual style is set at object initialization (good practice), and it will be applied only when `show` is called at the end of the example. Finally, `sphere` is also given an individual style for `magnetization` that displays the latter using a 2-color scheme. In this case, however, the individual style is applied after object initialization (bad practice), which results in style initialization before it is actually needed.
+In the following example `cube` has no individual style, so the default style is used. `cylinder` has an individual style set for `magnetization` which is a tricolor scheme that will display the object color in the middle. The individual style is set at object initialization (good practice), and it will be applied only when `show` is called at the end of the example. Finally, `sphere` is also given an individual style for `magnetization` that displays the latter using a 2-color scheme. In this case, however, the individual style is applied after object initialization (bad practice), which results in style initialization before it is needed.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -181,7 +181,7 @@ magpy.show(cube, cylinder, sphere, backend="plotly")
 
 ## Collection style
 
-When displaying [Collection objects](guide-docs-classes-collections) their `color` property will be assigned to all its children override the default color cylcle. In the following example this is demonstrated. Therefore, we make use of the [Matplotlib backend](guide-graphic-backends) which displays magnet color by default and shows the magnetization as an arrow rather than a color sequence.
+When displaying [Collection objects](guide-docs-classes-collections) their `color` property will be assigned to all its children override the default color cycle. In the following example this is demonstrated. Therefore, we make use of the [Matplotlib backend](guide-graphic-backends) which displays magnet color by default and shows the magnetization as an arrow rather than a color sequence.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -211,13 +211,13 @@ coll.set_children_styles(magnetization_color_south="blue")
 magpy.show(coll, sphere, backend="plotly")
 ```
 
-These children styles are individual style properties of the collection object and are not set as individual styles on each child object. This means that when displayed individually with `show`, the above child-objects will have Magpylib default style.
+The child-styles are individual style properties of the collection object and are not set as individual styles on each child-object. This means that when displayed individually with `show`, the above child-objects will have Magpylib default style.
 
 ## Local style override
 
-Finally it is possible to hand style input to the `show` function directly and locally override all style properties for this specific `show` output. Default or individual style attributes will not be modified. Such inputs must start with the `style` prefix and the object family specifier must be omitted. Naturally underscore magic is supported.
+Finally, it is possible to hand style input to the `show` function directly and locally override all style properties for this specific `show` output. Default or individual style attributes will not be modified. Such inputs must start with the `style` prefix and the object family specifier must be omitted. Naturally underscore magic is supported.
 
-In the following example the default `style.magnetization.show=True` is overridden locally, so that object colors become visible instead of magnetization colors in the plotly backend.
+In the following example the default `style.magnetization.show=True` is overridden locally, so that object colors become visible instead of magnetization colors in the Plotly backend.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -249,13 +249,13 @@ magpy.defaults.display.style.as_dict(flatten=True, separator=".")
 
 Each Magpylib object has a default 3D representation that is displayed with `show`. It is possible to disable the default model and to provide Magpylib with a custom model.
 
-There are several reasons why this can be of interest. For example,  the integration of a [custom source](guide-docs-classes-custom-source) object that has its own geometry, to display a sensor in the form of a realistic package provided in CAD form, representation of a [Collection](guide-docs-classes-collections) as a parts holder, integration of environemntal parts to the Magpylib 3D plotting scene, or simply highlighting an object when colors do not suffice.
+There are several reasons why this can be of interest. For example,  the integration of a [custom source](guide-docs-classes-custom-source) object that has its own geometry, to display a sensor in the form of a realistic package provided in CAD form, representation of a [Collection](guide-docs-classes-collections) as a parts holder, integration of environmental parts to the Magpylib 3D plotting scene, or simply highlighting an object when colors do not suffice.
 
-The default trace of a Magpylib object `obj` can simply be turned off using the individual style command `obj.style.model3d.showdefault = False`. A custom 3D model can be added using the function `obj.style.model3d.add_trace()`. The new trace is then stored in the `obj.style.model3d.data` property. This property is a list and it is possible to store multiple custom traces there. The default style is not included in this property. It is instead inherently stored in the Magpylib classes to enable vizualization of the magnetization with a color scheme.
+The default trace of a Magpylib object `obj` can simply be turned off using the individual style command `obj.style.model3d.showdefault = False`. A custom 3D model can be added using the function `obj.style.model3d.add_trace()`. The new trace is then stored in the `obj.style.model3d.data` property. This property is a list and it is possible to store multiple custom traces there. The default style is not included in this property. It is instead inherently stored in the Magpylib classes to enable visualization of the magnetization with a color scheme.
 
 The input of `add_trace()` must be a `magpylib.graphics.Trace3d` object, or a dictionary that contains all necessary information for generating a 3D model. Because different plotting libraries require different directives, traces might be bound to specific [backends](guide-graphic-backends). For example, a trace dictionary might contain all information for Matplotlib to generate a 3D model using the [plot_surface]() function.
 
-To enable vizualization of custom objects with different graphic backends Magpylib implements a **generic backend**. Traces defined in the generic backend are translated to all other backends automatically. If a specific backend is used, the model will only appear when called with the corresponding backend.
+To enable visualization of custom objects with different graphic backends Magpylib implements a **generic backend**. Traces defined in the generic backend are translated to all other backends automatically. If a specific backend is used, the model will only appear when called with the corresponding backend.
 
 A trace-dictionary has the following keys:
 
@@ -266,7 +266,7 @@ A trace-dictionary has the following keys:
 5. `'coordsargs'`: tells Magpylib which input corresponds to which coordinate direction, so that geometric representation becomes possible. By default `{'x': 'x', 'y': 'y', 'z': 'z'}` for the `'generic'` backend and Plotly backend,  and `{'x': 'args[0]', 'y': 'args[1]', 'z': 'args[2]'}` for the Matplotlib backend.
 6. `'show'`: default `True`, toggle if this trace should be displayed
 7. `'scale'`: default 1, object geometric scaling factor
-8. `'updatefunc'`: default `None`, updates the trace parameters when `show` is called. Used to generate  dynamic traces.
+8. `'updatefunc'`: default `None`, updates the trace parameters when `show` is called. Used to generate dynamic traces.
 
 The following example shows how a trace is constructed using the generic backend with the `Mesh3d` constructor. We create a `Sensor` object and replace its default 3d model by a tetrahedron.
 
@@ -303,7 +303,7 @@ for backend in magpy.SUPPORTED_PLOTTING_BACKENDS:
     magpy.show(sensor, backend=backend)
 ```
 
-As note above, it is possible to have multiple user-defined traces that will be displayed at the same time. The following example continuation demonstrates this by adding two moretraces using the `Scatter3d` constructor in the generic backend. In addition, it is shown how to copy and manipulate `Trace3d` objects.
+As noted above, it is possible to have multiple user-defined traces that will be displayed at the same time. The following example continuation demonstrates this by adding two more traces using the `Scatter3d` constructor in the generic backend. In addition, it showns how to copy and manipulate `Trace3d` objects.
 
 ```{code-cell} ipython3
 import copy

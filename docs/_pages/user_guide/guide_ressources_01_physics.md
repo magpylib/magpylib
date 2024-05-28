@@ -3,7 +3,7 @@
 
 ## What is implemented ?
 
-The expressions used in Magpylib describe perfectly homogeneous magnets, surface charges, and line currents with natural boundary conditions. Magpylib is at its best when dealing with static air-coils (no eddy currents, no soft-magnetic cores) and high grade permanent magnets (Ferrite, NdFeB, SmCo or similar materials). When **magnet** permeabilities are below $\mu_r < 1.1$ the error typically undercuts few %. Demagnetization factors are not included. The line **current** solutions give the exact same field as outside of a wire that carries a homogeneous current.
+The expressions used in Magpylib describe perfectly homogeneous magnets, surface charges, and line currents with natural boundary conditions. Magpylib is at its best when dealing with static air-coils (no eddy currents, no soft-magnetic cores) and high-grade permanent magnets (Ferrite, NdFeB, SmCo or similar materials). When **magnet** permeabilities are below $\mu_r < 1.1$ the error typically undercuts few %. Demagnetization factors are not included. The line **current** solutions give the exact same field as outside of a wire that carries a homogeneous current.
 
 ## The analytical solutions
 
@@ -35,7 +35,7 @@ $$
 {\bf B}({\bf r}) = \frac{\mu_0}{4\pi}\int_{V'} {\bf J}({\bf r}')\times \frac{{\bf r}-{\bf r}'}{|{\bf r}-{\bf r}'|^3} dV'
 $$
 
-In some special cases (simple shapes, homogeneous magnetizations and current distributions) the above integrals can be worked out directly to give analytical formulas (or simple, fast converging series). The derivations can be found in the respective references. A noteworthy comparison between the Coulombian approach and the Amperian current model is given in \[Ravaud2009\].
+In some special cases (simple shapes, homogeneous magnetisations, and current distributions) the above integrals can be worked out directly to give analytical formulas (or simple, fast converging series). The derivations can be found in the respective references. A noteworthy comparison between the Coulombian approach and the Amperian current model is given in \[Ravaud2009\].
 
 ## Accuracy of the Solutions and Demagnetization
 
@@ -81,7 +81,7 @@ Magpylib code is fully [vectorized](https://en.wikipedia.org/wiki/Array_programm
 Maximal performance is achieved when `.getB(sources, observers)` is called only a single time in your program. Try not to use loops.
 ```
 
-The object oriented interface comes with an overhead. If you want to achieve maximal performance this overhead can be avoided with {ref}`docs-field-functional`.
+The object-oriented interface comes with an overhead. If you want to achieve maximal performance this overhead can be avoided with {ref}`docs-field-functional`.
 
 The analytical solutions provide extreme performance. Single field evaluations take of the order of `100 µs`. For large input arrays (e.g. many observer positions or many similar magnets) the computation time can drop below `1 µs` per evaluation point on single state-of-the-art x86 mobile cores (tested on `Intel Core i5-8365U @ 1.60GHz`), depending on the source type.
 

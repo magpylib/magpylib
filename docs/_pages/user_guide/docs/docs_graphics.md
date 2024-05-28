@@ -12,12 +12,8 @@ kernelspec:
 orphan: true
 ---
 
-
-
 (guide-graphics)=
 # Graphic output
-
-
 
 (guide-graphics-show)=
 ## 3D graphics with show
@@ -142,7 +138,7 @@ B = loop.getB(sens)
 
 The following examples demonstrate how to place the Magpylib `show` output in figures created with the three supported graphic backends.
 
-In **Matplotlib** we combine a 2D-field plot with the 3D show output, and modify the 3D show output with a line.
+In **Matplotlib** we combine a 2D-field plot with the 3D show output and modify the 3D show output with a line.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -166,7 +162,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-In **Plotly** we combine a 2D-field plot with the 3D show output, and modify the 3D show output with a line.
+In **Plotly** we combine a 2D-field plot with the 3D show output and modify the 3D show output with a line.
 
 ```{code-cell} ipython3
 import plotly.graph_objects as go
@@ -242,7 +238,7 @@ pl.show()
 (guide-graphic-animations)=
 ## Animation
 
-The Magpylib [object paths](docs-position-paths) vizualized with `show` can be animated by setting the kwarg `animation=True`. This synergize specifically well with the Plotly backend.
+The Magpylib [object paths](docs-position-paths) visualized with `show` can be animated by setting the kwarg `animation=True`. This synergize specifically well with the Plotly backend.
 
 The animations can be fine-tuned with the following kwargs of `show`:
 1. `animation_time` (default=3), must be a positive number that gives the animation time in seconds.
@@ -274,7 +270,7 @@ magpy.show(
 ```
 
 ```{warning}
-Even with some implemented failsafes, such as a maximum frame rate and frame count, there is no guarantee that the animation will be rendered properly. This is particularly relevant when the user tries to animate many objects and/or many path positions at the same time.
+Even with some implemented fail safes, such as a maximum frame rate and frame count, there is no guarantee that the animation will be rendered properly. This is particularly relevant when the user tries to animate many objects and/or many path positions at the same time.
 ```
 
 (guide-graphics-subplots)=
@@ -291,7 +287,7 @@ For this, Magpylib offers the possibility to show the sensor output along a path
 
 ### With show
 
-All of this is achieved via the `show` function by passing input objects as dictionaries with the arguments
+All of this is achieved via the `show` function by passing input objects as dictionaries with the arguments.
 
 1. `objects`: list of Magpylib objects
 2. `col`: int which selects the subplot column. Default is `col=1`.
@@ -349,7 +345,7 @@ magpy.show(
 (guide-graphics-show_context)=
 ### With show_context
 
-In order to make the subplot syntax more convenient we introduced the `show_context` native Python context manager. It allows to defer calls to the `show` function while passing additional arguments. This is necessary for Magpylib to know how many rows and columns are requested by the user, which single `show` calls do not keep track of. All kwargs, e.g. `backend` are handed directly to the context manager.
+To make the subplot syntax more convenient we introduced the `show_context` native Python context manager. It allows to defer calls to the `show` function while passing additional arguments. This is necessary for Magpylib to know how many rows and columns are requested by the user, which single `show` calls do not keep track of. All kwargs, e.g. `backend` are handed directly to the context manager.
 
 The above example becomes:
 
@@ -399,7 +395,7 @@ with magpy.show_context():
 
 ### Coupled 2D/3D Animation
 
-It is very helpful to combine 2D and 3D subplots in an animation that shows the motion of the 3D system, while displaying the field at the respective path instance at the same time. Unfortunately, it is quite tedius to create such animations. The most powerful feature and main reason behind built-in subplots is the ability to do just that with few lines of code.
+It is very helpful to combine 2D and 3D subplots in an animation that shows the motion of the 3D system, while displaying the field at the respective path instance at the same time. Unfortunately, it is quite tedious to create such animations. The most powerful feature and main reason behind built-in subplots is the ability to do just that with few lines of code.
 
 ```{code-cell} ipython3
 import numpy as np

@@ -14,7 +14,7 @@ The explicit magnetic field expressions found in the literature, implemented in 
 :::
 ::::
 
-Here Magpylib helps out. All Magpylib sources and observers lie in a global Cartesian coordinate system. Object position and orientation are defined by the attributes `position` and `orientation`, 😏. Objects can easily be moved around using the `move()` and `rotate()` methods. Eventually, the field is computed in the reference frame of the observers (e.g. Sensor objects). Positions are given in units of meter, and the default unit for orientation is °.
+Here Magpylib helps. All Magpylib sources and observers lie in a global Cartesian coordinate system. Object position and orientation are defined by the attributes `position` and `orientation`, 😏. Objects can easily be moved around using the `move()` and `rotate()` methods. Eventually, the field is computed in the reference frame of the observers (e.g. Sensor objects). Positions are given in units of meter, and the default unit for orientation is °.
 
 (docs-position-paths)=
 ## Position and orientation attributes
@@ -153,7 +153,7 @@ When objects with different path lengths are combined, e.g. when computing the f
 :::{grid-item-card}
 :columns: 12 7 7 7
 :shadow: none
-**Edge-padding:** whenever path entries beyond the existing path length are needed the edge-entries of the existing path are returned. This means that the object is considered to be “static” beyond its existing path.
+**Edge-padding:** whenever path entries beyond the existing path length are needed the edge-entries of the existing path are returned. This means that the object is “static” beyond its existing path.
 :::
 :::{grid-item-card}
 :columns: 12 5 5 5

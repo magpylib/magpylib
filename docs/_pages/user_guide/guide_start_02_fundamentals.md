@@ -5,10 +5,10 @@ In this section we present the most important Magpylib features, focussing on th
 
 ## Basic features
 
-Learn the Magpylib fundamentals (create magnets, view system, compute field) in 5 minutes. This requires a basic understanding of the Python programming language, the [Numpy array class](https://numpy.org/doc/stable/) and the [Scipy Rotation class](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html).
+Learn the Magpylib fundamentals (create magnets, view system, compute field) in 5 minutes. This requires a basic understanding of the Python programming language, the [NumPy array class](https://numpy.org/doc/stable/) and the [Scipy Rotation class](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html).
 
 ```{note}
-Since v5 all Magpylib inputs and ouputs are by default in SI-units. See [arbitrary unit convention](docu-api-scale-invariance) for convenient use.
+Since v5 all Magpylib inputs and ouputs are by default in SI-units. See [arbitrary unit convention](guide-docs-io-scale-invariance) for convenient use.
 ```
 
 ### Create sources and observers as Python objects

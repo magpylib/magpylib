@@ -17,3 +17,5 @@ kernelspec:
 # Inhomogeneous Magnetization
 
 In this tutorial we will show how to deal with inhomogeneous magnetization with discretization.
+
+<!-- quadrupol example  -->
