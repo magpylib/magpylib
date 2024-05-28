@@ -17,9 +17,12 @@ html[data-theme=dark] .bd-content img:not(.only-dark):not(.dark-light) {
 hide vertical scrollbar - it always appears unwanted when there
 is no content
 */
+
 .bd-sidebar {
-    overflow-y: hidden;  /* Change to auto to only show scrollbar when necessary */
+    overflow-y: auto;  /* Change to auto to only show scrollbar when necessary */
 }
+
+
 
 /* Adjust the height to ensure it fits within the viewport */
 /* .bd-sidebar {
