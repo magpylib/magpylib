@@ -87,36 +87,42 @@ The library default can be changed, e.g. with the command `magpy.defaults.displa
 
 There is a high level of **feature parity**, however, not all graphic features are supported by all backends, and not all graphic features work equally well, so that [default style settings](guide-graphic-styles-default) differ slightly. In addition, some common Matplotlib syntax (e.g. color `'r'`, linestyle `':'`) is automatically translated to other backends.
 
-|        Feature          | Matplotlib | Plotly | Pyvista |
-|:-----------------------:|:----------:|:------:|:-------:|
-| triangular mesh 3d      | ✔️         | ✔️    | ✔️      |
-| line 3d                 | ✔️         | ✔️    | ✔️      |
-| line style              | ✔️         | ✔️    | ❌      |
-| line color              | ✔️         | ✔️    | ✔️      |
-| line width              | ✔️         | ✔️    | ✔️      |
-| marker 3d               | ✔️         | ✔️    | ✔️      |
-| marker color            | ✔️         | ✔️    | ✔️      |
-| marker size             | ✔️         | ✔️    | ✔️      |
-| marker symbol           | ✔️         | ✔️    | ❌      |
-| marker numbering        | ✔️         | ✔️    | ❌      |
-| zoom level              | ✔️         | ✔️    | ❌(2)   |
-| magnetization color     | ✔️(7)      | ✔️    | ✔️      |
-| animation               | ✔️         | ✔️    | ✔️(5)   |
-| animation time          | ✔️         | ✔️    | ✔️(5)   |
-| animation fps           | ✔️         | ✔️    | ✔️(5)   |
-| animation slider        | ✔️(1)      | ✔️    | ❌      |
-| subplots 2D             | ✔️         | ✔️    | ✔️(6)   |
-| subplots 3D             | ✔️         | ✔️    | ✔️      |
-| user canvas             | ✔️         | ✔️    | ✔️      |
-| user extra 3d model (3) | ✔️         | ✔️    | ✔️ (4)  |
+|        Feature           | Matplotlib | Plotly | Pyvista |
+|:------------------------:|:----------:|:------:|:-------:|
+| triangular mesh 3d       | ✔️         | ✔️    | ✔️      |
+| line 3d                  | ✔️         | ✔️    | ✔️      |
+| line style               | ✔️         | ✔️    | ❌      |
+| line color               | ✔️         | ✔️    | ✔️      |
+| line width               | ✔️         | ✔️    | ✔️      |
+| marker 3d                | ✔️         | ✔️    | ✔️      |
+| marker color             | ✔️         | ✔️    | ✔️      |
+| marker size              | ✔️         | ✔️    | ✔️      |
+| marker symbol            | ✔️         | ✔️    | ❌      |
+| marker numbering         | ✔️         | ✔️    | ❌      |
+| zoom level               | ✔️         | ✔️    | ❌[2]   |
+| magnetization color      | ✔️[7]      | ✔️    | ✔️      |
+| animation                | ✔️         | ✔️    | ✔️[5]   |
+| animation time           | ✔️         | ✔️    | ✔️[5]   |
+| animation fps            | ✔️         | ✔️    | ✔️[5]   |
+| animation slider         | ✔️[1]      | ✔️    | ❌      |
+| subplots 2D              | ✔️         | ✔️    | ✔️[6]   |
+| subplots 3D              | ✔️         | ✔️    | ✔️      |
+| user canvas              | ✔️         | ✔️    | ✔️      |
+| user extra 3d model [3]  | ✔️         | ✔️    | ✔️[4]   |
 
-1. when returning animation object and exporting it as jshtml.
-2. possible but not implemented at the moment.
-3. only `"scatter3d"`, and `"mesh3d"`. Gets "translated" to every other backend.
-4. custom user defined trace constructors  allowed, which are specific to the backend.
-5. animation is only available through export as `gif` or `mp4`
-6. 2D plots are not supported for all jupyter_backends. As of pyvista>=0.38 these are deprecated and replaced by the [trame](https://docs.pyvista.org/api/plotting/trame.html) backend.
-7. Matplotlib does not support color gradient. Instead magnetization is shown through object slicing and coloring.
+[1]: when returning animation object and exporting it as jshtml.
+
+[2]: possible but not implemented at the moment.
+
+[3]: only `"scatter3d"`, and `"mesh3d"`. Gets "translated" to every other backend.
+
+[4]: custom user defined trace constructors  allowed, which are specific to the backend.
+
+[5]: animation is only available through export as `gif` or `mp4`
+
+[6]: 2D plots are not supported for all jupyter_backends. As of pyvista>=0.38 these are deprecated and replaced by the [trame](https://docs.pyvista.org/api/plotting/trame.html) backend.
+
+[7]: Matplotlib does not support color gradient. Instead magnetization is shown through object slicing and coloring.
 
 `show` will also pass on all kwargs to the respective plotting backends. For example, in the [animation sample code](guide-graphic-animations) the kwarg `show_legend` is forwarded to the Plotly backend.
 
