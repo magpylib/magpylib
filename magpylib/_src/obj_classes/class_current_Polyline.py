@@ -67,25 +67,13 @@ class Polyline(BaseCurrent):
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
-    >>> src.rotate_from_angax(45, 'x')
+    >>> src.rotate_from_angax(90, 'x')
     Polyline(id=...)
     >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
     >>> print(B)
-    [[-1.04529728e-21  3.50341393e-06 -3.50341393e-06]
-     [-9.28140349e-23  3.62181325e-07 -3.62181325e-07]
-     [-1.72744075e-23  1.03643004e-07 -1.03643004e-07]]
-
-    The same result is obtained when the rotated source moves along a path away from an
-    observer at position (1,1,1). This time we use a `Sensor` object as observer.
-
-    >>> src.move([(-.01,-.01,-.01), (-.02,-.02,-.02)])
-    Polyline(id=...)
-    >>> sens = magpy.Sensor(position=(.01,.01,.01))
-    >>> B = src.getB(sens)
-    >>> print(B)
-    [[-1.04529728e-21  3.50341393e-06 -3.50341393e-06]
-     [-9.28140349e-23  3.62181325e-07 -3.62181325e-07]
-     [-1.72744075e-23  1.03643004e-07 -1.03643004e-07]]
+    [[-3.97177559e-06 -9.63684251e-07 -3.97177559e-06]
+     [-4.90331150e-07 -3.11039072e-08 -4.90331150e-07]
+     [-1.43908549e-07 -4.10438492e-09 -1.43908549e-07]]
     """
 
     # pylint: disable=dangerous-default-value
