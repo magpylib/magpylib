@@ -50,6 +50,7 @@ docs = [
     "pandas",
     "numpy-stl",
     "pyvista",
+    "magpylib-material-response",
 ]
 test = [
     "tox>=4.11",

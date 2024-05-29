@@ -173,7 +173,7 @@
 :link: gallery-misc-inhom
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../../_static/images/gallery_icon_WIP.png
+:img-bottom: ../../../_static/images/gallery_icon_misc_inhom.png
 :::
 
 ::::
