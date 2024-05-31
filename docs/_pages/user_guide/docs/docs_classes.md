@@ -271,7 +271,7 @@ magpylib.misc.Dipole(position, orientation, moment, style)
 :::
 :::{grid-item}
 :columns: 12
-**Info:** The total dipole moment of a homogeneous magnet with body volume $V$ is given by $\vec{m}=\vec{J}\cdot V$.
+**Info:** The total dipole moment of a homogeneous magnet with body volume $V$ is given by $\vec{m}=\vec{M}\cdot V$.
 :::
 ::::
 
