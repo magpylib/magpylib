@@ -1,8 +1,4 @@
-# I/O
-
-## Types
-
-Magpylib requires no special input format. All scalar types (`int`, `float`, ...) and vector types (`list`, `tuple`, `np.ndarray`, ... ) are accepted. Magpylib returns everything as `np.ndarray`.
+# Units and Types
 
 (guide-docs-units)=
 ## Units
@@ -46,3 +42,7 @@ In addition, `getB` returns the same unit as given by the `polarization` input. 
 ```{note}
 The connection between the magnetic polarization J, the magnetization M and the material parameters of a real permanent magnet are shown in {ref}`examples-tutorial-modelling-magnets`.
 ```
+
+## Types
+
+Magpylib requires no special input format. All scalar types (`int`, `float`, ...) and vector types (`list`, `tuple`, `np.ndarray`, ... ) are accepted. Magpylib returns everything as `np.ndarray`.
