@@ -2,12 +2,6 @@
 
 Magpylib is an **open-source Python package** for calculating static **magnetic fields** of magnets, currents, and other sources. It uses **explicit expressions**, solutions to macroscopic magnetostatic problems, implemented in **vectorized** form which makes the computation **extremely fast**. Make use of the open-source Python ecosystem for spectacular visualization.
 
-<h2> How it works</h2>
-
-![](_static/images/index_flowchart.png)
-
-In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, position grids, ...) are created as Python objects with position and orientation attributes. These objects can be **grouped** and **moved** around. The system can be **viewed** graphically through various backends. The **magnetic field** is computed in the observer reference frame. Magpylib collects all inputs, and vectorizes the computation for maximal performance.
-
 <h2> Resources </h2>
 
 ::::{grid} 1 2 3 3
@@ -26,10 +20,10 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :::{grid-item-card}
 :link: gallery
 :link-type: ref
-:link-alt: link to Gallery
+:link-alt: link to Examples
 :img-top: _static/images/index_icon_gallery2.png
 :text-align: center
-**Example Gallery**
+**Examples**
 :::
 
 :::{grid-item-card}
@@ -41,6 +35,13 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :::
 
 ::::
+
+<h2> How it works</h2>
+
+![](_static/images/index_flowchart.png)
+
+In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, position grids, ...) are created as Python objects with position and orientation attributes. These objects can be **grouped** and **moved** around. The system can be **viewed** graphically through various backends. The **magnetic field** is computed in the observer reference frame. Magpylib collects all inputs, and vectorizes the computation for maximal performance.
+
 
 ```{toctree}
 :maxdepth: 2
