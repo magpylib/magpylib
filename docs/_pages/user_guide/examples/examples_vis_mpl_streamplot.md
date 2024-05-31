@@ -12,7 +12,7 @@ kernelspec:
 orphan: true
 ---
 
-(gallery-vis-mpl-streamplot)=
+(examples-vis-mpl-streamplot)=
 
 # Matplotlib Streamplot
 
@@ -78,7 +78,7 @@ plt.show()
 ```
 
 ```{note}
-Be aware that the above code is not very performant, but quite readable. The following example creates the grid with NumPy commands only instead of Python loops and uses the {ref}`gallery-tutorial-field-computation-functional-interface` for field computation.
+Be aware that the above code is not very performant, but quite readable. The following example creates the grid with NumPy commands only instead of Python loops and uses the {ref}`examples-tutorial-field-computation-functional-interface` for field computation.
 ```
 
 ## Example 2 - Hollow Cylinder Magnet

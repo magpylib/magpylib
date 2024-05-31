@@ -12,7 +12,7 @@ kernelspec:
 orphan: true
 ---
 
-(gallery-tutorial-field-computation)=
+(examples-tutorial-field-computation)=
 
 # Computing the Field
 
@@ -116,7 +116,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-(gallery-tutorial-field-computation-sensors)=
+(examples-tutorial-field-computation-sensors)=
 
 ## Using Sensors
 
@@ -236,7 +236,7 @@ fig = px.line(
 fig.show()
 ```
 
-(gallery-tutorial-field-computation-functional-interface)=
+(examples-tutorial-field-computation-functional-interface)=
 
 ## Functional Interface
 

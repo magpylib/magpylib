@@ -12,7 +12,7 @@ kernelspec:
 orphan: true
 ---
 
-(gallery-shapes-triangle)=
+(examples-shapes-triangle)=
 
 # Triangular Meshes
 
@@ -138,14 +138,14 @@ magpy.show(
 )
 ```
 
-The `TriangularMesh` class is extremely powerful as it enables almost arbitrary magnet shapes. It is described in detail in {ref}`docu-magpylib-api-trimesh`. There are many ways to generate such triangular meshes. An example thereof is shown in {ref}`gallery-shapes-pyvista`.
+The `TriangularMesh` class is extremely powerful as it enables almost arbitrary magnet shapes. It is described in detail in {ref}`docu-magpylib-api-trimesh`. There are many ways to generate such triangular meshes. An example thereof is shown in {ref}`examples-shapes-pyvista`.
 
 ```{caution}
 * `getB` and `getH` compute the fields correctly only if the mesh is closed, not self-intersecting, and all faces are properly oriented outwards.
 
 * Input checks and face reorientation can be computationally expensive. The checks can individually be deactivated by setting `reorient_faces="skip"`, `check_open="skip"`, `check_disconnected="skip"`, and `check_selfintersecting="skip"` at initialization of `TriangularMesh` objects. The checks can also be performed by hand after initialization.
 
-* Meshing tools such as the [Pyvista](https://docs.pyvista.org/) library can be very convenient for building complex shapes, but often do not guarantee that the mesh is properly closed or connected - see {ref}`gallery-shapes-pyvista`.
+* Meshing tools such as the [Pyvista](https://docs.pyvista.org/) library can be very convenient for building complex shapes, but often do not guarantee that the mesh is properly closed or connected - see {ref}`examples-shapes-pyvista`.
 
 * Meshing tools often create meshes with a lot of faces, especially when working with curved surfaces. Keep in mind that field computation takes of the order of a few microseconds per observer position per face, and that RAM is a limited resource.
 ```

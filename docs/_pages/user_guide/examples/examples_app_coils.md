@@ -12,7 +12,7 @@ kernelspec:
   name: python3
 ---
 
-(gallery-app-helmholtz)=
+(examples-app-helmholtz)=
 
 # Coils
 

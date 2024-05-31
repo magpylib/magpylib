@@ -44,5 +44,5 @@ In addition, `getB` returns the same unit as given by the `polarization` input. 
 ```
 
 ```{note}
-The connection between the magnetic polarization J, the magnetization M and the material parameters of a real permanent magnet are shown in {ref}`gallery-tutorial-modelling-magnets`.
+The connection between the magnetic polarization J, the magnetization M and the material parameters of a real permanent magnet are shown in {ref}`examples-tutorial-modelling-magnets`.
 ```

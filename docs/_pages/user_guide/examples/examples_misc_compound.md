@@ -12,7 +12,7 @@ kernelspec:
 orphan: true
 ---
 
-(gallery-misc-compound)=
+(examples-misc-compound)=
 
 # Compounds
 

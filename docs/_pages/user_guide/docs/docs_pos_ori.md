@@ -162,4 +162,4 @@ When objects with different path lengths are combined, e.g. when computing the f
 :::
 ::::
 
-The tutorial {ref}`gallery-tutorial-paths` shows intuitive good practice examples of the important functionality described in this section.
+The tutorial {ref}`examples-tutorial-paths` shows intuitive good practice examples of the important functionality described in this section.

@@ -12,7 +12,7 @@ kernelspec:
 orphan: true
 ---
 
-(gallery-tutorial-custom)=
+(examples-tutorial-custom)=
 
 # CustomSource
 
@@ -120,7 +120,7 @@ magpy.show(mono1, mono2)
 
 ## Subclassing CustomSource
 
-In the above example it would be nice to make the `CustomSource` dynamic, so that it would have a property `charge` that can be changed at will, rather than having to redefine the `field_func` and initialize a new object every time. In the following example we show how to sub-class `CustomSource` to achieve this. The problem is reminiscent of {ref}`gallery-misc-compound`.
+In the above example it would be nice to make the `CustomSource` dynamic, so that it would have a property `charge` that can be changed at will, rather than having to redefine the `field_func` and initialize a new object every time. In the following example we show how to sub-class `CustomSource` to achieve this. The problem is reminiscent of {ref}`examples-misc-compound`.
 
 ```{code-cell} ipython3
 class Monopole(magpy.misc.CustomSource):

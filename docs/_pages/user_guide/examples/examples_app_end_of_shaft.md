@@ -12,7 +12,7 @@ kernelspec:
 orphan: true
 ---
 
-(gallery-app-end-of-shaft)=
+(examples-app-end-of-shaft)=
 
 # Magnetic Angle Sensor
 

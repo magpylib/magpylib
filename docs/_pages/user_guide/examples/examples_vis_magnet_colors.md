@@ -12,17 +12,17 @@ kernelspec:
   name: python3
 ---
 
-(gallery-vis-magnet-colors)=
+(examples-vis-magnet-colors)=
 # Magnet colors
 
 The polarization direction of a permanent magnet is often graphically displayed with the help of colors. However, there is no unified color scheme that everyone agrees on. The following image shows some color-examples from the web.
 
-![](../../../_static/images/gallery_vis_magnet_colors.png)
+![](../../../_static/images/examples_vis_magnet_colors.png)
 
 Magpylib uses the DIN Specification 91411 (soon 91479) standard as default setting. The tri-color scheme has the advantage that for multi-pole elements it becomes clear which north is "connected" to which south.
 
 ```{hint}
-The color schemes often seem to represent homogeneous polarizations, referred to as "ideal typical" magnets in DIN Specification 91479. However, they often just represent general "pole patterns", i.e. rough sketches where the field goes in and where it comes out, that are not the result of homogeneous polarizations. On this topic review also the gallery example {ref}`gallery-misc-inhom`, and the tutorial {ref}`gallery-tutorial-modelling-magnets`.
+The color schemes often seem to represent homogeneous polarizations, referred to as "ideal typical" magnets in DIN Specification 91479. However, they often just represent general "pole patterns", i.e. rough sketches where the field goes in and where it comes out, that are not the result of homogeneous polarizations. On this topic review also the examples example {ref}`examples-misc-inhom`, and the tutorial {ref}`examples-tutorial-modelling-magnets`.
 ```
 
 With Magpylib users can easily tune the magnet color schemes. The `style` options are `tricolor` with north, middle and south colors, and `bicolor` with north and south colors.

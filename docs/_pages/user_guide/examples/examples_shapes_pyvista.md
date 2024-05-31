@@ -12,7 +12,7 @@ kernelspec:
 orphan: true
 ---
 
-(gallery-shapes-pyvista)=
+(examples-shapes-pyvista)=
 
 # Pyvista Bodies
 

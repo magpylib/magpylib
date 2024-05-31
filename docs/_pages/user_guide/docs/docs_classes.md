@@ -59,7 +59,7 @@ Magpylib objects span a local reference frame, and all object properties are def
 (docu-magnet-classes)=
 ## Magnet classes
 
-All magnets are sources. They have the <span style="color: orange">**polarization**</span> attribute which is of the format $\vec{J}=(J_x, J_y, J_z)$ and denotes a homogeneous magnetic polarization vector in the local object coordinates in units of T. Alternatively, the magnetization vector can be set via the  <span style="color: orange">**magnetization**</span> attribute of the format $\vec{M}=(M_x, M_y, M_z)$. These two parameters are codependent and Magpylib ensures that they stay in sync via the relation $\vec{J}=\mu_0\cdot\vec{M}$. Information on how this is related to material properties from data sheets is found in {ref}`gallery-tutorial-modelling-magnets`.
+All magnets are sources. They have the <span style="color: orange">**polarization**</span> attribute which is of the format $\vec{J}=(J_x, J_y, J_z)$ and denotes a homogeneous magnetic polarization vector in the local object coordinates in units of T. Alternatively, the magnetization vector can be set via the  <span style="color: orange">**magnetization**</span> attribute of the format $\vec{M}=(M_x, M_y, M_z)$. These two parameters are codependent and Magpylib ensures that they stay in sync via the relation $\vec{J}=\mu_0\cdot\vec{M}$. Information on how this is related to material properties from data sheets is found in {ref}`examples-tutorial-modelling-magnets`.
 
 
 ### Cuboid
@@ -204,7 +204,7 @@ The following class methods enable easy mesh creating and mesh loading.
 
 The method <span style="color: orange">**to_TriangleCollection()**</span> transforms a `TriangularMesh` object into a `Collection` of `Triangle` objects.
 
-**Info:** While the checks may be disabled, the field computation guarantees correct results only if the mesh is closed, connected, not self-intersecting and all faces are oriented outwards. Examples of working with the `TriangularMesh` class are found in {ref}`gallery-shapes-triangle` and in {ref}`gallery-shapes-pyvista`.
+**Info:** While the checks may be disabled, the field computation guarantees correct results only if the mesh is closed, connected, not self-intersecting and all faces are oriented outwards. Examples of working with the `TriangularMesh` class are found in {ref}`examples-shapes-triangle` and in {ref}`examples-shapes-pyvista`.
 :::
 ::::
 
@@ -292,7 +292,7 @@ magpylib.misc.Triangle(position, orientation, vertices, polarization, magnetizat
 :::
 :::{grid-item}
 :columns: 12
-**Info:** When multiple Triangles with similar magnetization/polarization vectors form a closed surface, and all their orientations (right-hand-rule) point outwards, their total H-field is equivalent to the field of a homogeneous magnet of the same shape. In this case, the B-field is only correct on the outside of the body. On the inside the polarization must be added to the field. This is demonstrated in the tutorial {ref}`gallery-shapes-triangle`.
+**Info:** When multiple Triangles with similar magnetization/polarization vectors form a closed surface, and all their orientations (right-hand-rule) point outwards, their total H-field is equivalent to the field of a homogeneous magnet of the same shape. In this case, the B-field is only correct on the outside of the body. On the inside the polarization must be added to the field. This is demonstrated in the tutorial {ref}`examples-shapes-triangle`.
 :::
 ::::
 
@@ -313,7 +313,7 @@ The `CustomSource` class is used to create user defined sources provided with wi
 :::
 :::{grid-item}
 :columns: 12
-**Info:** A tutorial {ref}`gallery-tutorial-custom` is found in the gallery.
+**Info:** A tutorial {ref}`examples-tutorial-custom` is found in the examples.
 :::
 ::::
 
@@ -337,7 +337,7 @@ magpylib.Sensor(position, orientation, pixel, handedness, style)
 :::
 :::{grid-item}
 :columns: 12
-**Info:** Sensors can have their own position and orientation and enable easy relative positioning between sources and observers. The field is always computed in the reference frame of the sensor, which might itself be moving in the global coordinate system. Magpylib sensors can be understood as perfect magnetic field sensors with infinitesimally sensitive elements. An example how to use sensors is given in {ref}`gallery-tutorial-field-computation-sensors`.
+**Info:** Sensors can have their own position and orientation and enable easy relative positioning between sources and observers. The field is always computed in the reference frame of the sensor, which might itself be moving in the global coordinate system. Magpylib sensors can be understood as perfect magnetic field sensors with infinitesimally sensitive elements. An example how to use sensors is given in {ref}`examples-tutorial-field-computation-sensors`.
 :::
 ::::
 
@@ -378,6 +378,6 @@ Additional methods for adding and removing children:
 
 Collections have **format** as an additional argument for **describe()** method. Default value is `format="type+id+label"`. Any combination of `"type"`, `"id"`, and `"label"` is allowed.
 
-A tutorial {ref}`gallery-tutorial-collection` is provided in the example gallery.
+A tutorial {ref}`examples-tutorial-collection` is provided in the example examples.
 :::
 ::::

@@ -12,7 +12,7 @@ kernelspec:
   name: python3
 ---
 
-(gallery-vis-subplots)=
+(examples-vis-subplots)=
 
 # Subplots
 
@@ -89,5 +89,5 @@ with magpy.show_context([cyl, sens], backend='plotly') as sc:
 ```
 
 ```{hint}
-A very powerful subplot-feature are the built-in [animated subplots](gallery-vis-animated-subplots).
+A very powerful subplot-feature are the built-in [animated subplots](examples-vis-animated-subplots).
 ```

@@ -60,7 +60,7 @@ Magpylib collects all inputs (object parameters), and vectorizes them for the co
 Try to make all field computations with as few calls to `getBHJM` as possible. Avoid Python loops at all costs!
 ```
 
-The tutorial {ref}`gallery-tutorial-field-computation` shows good practices with Magpylib field computation.
+The tutorial {ref}`examples-tutorial-field-computation` shows good practices with Magpylib field computation.
 
 (docs-field-functional)=
 ## Functional interface

@@ -12,7 +12,7 @@ kernelspec:
 orphan: true
 ---
 
-(gallery-vis-pv-streamlines)=
+(examples-vis-pv-streamlines)=
 
 # Pyvista 3D field lines
 

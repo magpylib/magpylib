@@ -194,7 +194,7 @@ pyramid.show()
 ```
 <img src="../../_static/images/getting_started_complex_shapes.png" width=50% align="center">
 
-There are several other possibilities to create complex magnet shapes. Some can be found in the [gallery](gallery-complex-magnet-shapes).
+There are several other possibilities to create complex magnet shapes. Some can be found in the [examples](examples-complex-magnet-shapes).
 
 
 ### Graphic Styles
@@ -249,7 +249,7 @@ cube.show(animation=True, backend="plotly")
 ```
 <img src="../../_static/images/getting_started_animation.png" width=50% align="center">
 
-Nice animation examples are shown [here](gallery-vis-animations), and a detailed discussion is provided [here](guide-graphic-animations).
+Nice animation examples are shown [here](examples-vis-animations), and a detailed discussion is provided [here](guide-graphic-animations).
 
 ### Functional interface
 Magpylib's object oriented interface is convenient to work with but is also slowed down by object initialization and handling. The functional interface bypasses this load and enables fast field computation for an arbitrary set of input parameters.

@@ -12,7 +12,7 @@ kernelspec:
 orphan: true
 ---
 
-(gallery-shapes-convex-hull)=
+(examples-shapes-convex-hull)=
 
 # Convex Hull
 

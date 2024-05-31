@@ -12,7 +12,7 @@ kernelspec:
   name: python3
 ---
 
-(gallery-shapes-cad)=
+(examples-shapes-cad)=
 
 # Magnets from CAD
 

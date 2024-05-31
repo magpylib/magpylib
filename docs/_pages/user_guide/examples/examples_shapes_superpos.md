@@ -12,7 +12,7 @@ kernelspec:
 orphan: true
 ---
 
-(gallery-shapes-superpos)=
+(examples-shapes-superpos)=
 
 # Superposition
 

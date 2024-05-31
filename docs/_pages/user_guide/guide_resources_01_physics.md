@@ -62,7 +62,7 @@ The material remanence, often found in data sheets, simply corresponds to the ma
 
 For example, a cube with 1 mm sides has a demagnetization factor is 0.333, see [magpar.net](http://www.magpar.net/static/magpar/doc/html/demagcalc.html). When the remanence field of this cube is 1 T, and its susceptibility is 0.1, the magnetization resulting from self-interaction is reduced to 1 T - 0.3333*0.1 T = 0.9667 T, assuming linear material laws.
 
-A [tutorial](gallery-tutorial-modelling-magnets) explains how to deal with demagnetization effects and how real magnets can be modeled using datasheet values.
+A [tutorial](examples-tutorial-modelling-magnets) explains how to deal with demagnetization effects and how real magnets can be modeled using datasheet values.
 
 It must be understood that the change in magnetization resulting from self-interaction has a homogeneous contribution which is approximated by the demagnetization factor, and an inhomogeneous contribution which cannot be modeled easily with analytical solutions. The inhomogeneous part, however, is typically an order of magnitude lower than the homogenous part. You can use the Magpylib extension [Magpylib material response](https://github.com/magpylib/magpylib-material-response) to model the self-interactions.
 

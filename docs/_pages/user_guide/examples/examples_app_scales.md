@@ -12,7 +12,7 @@ kernelspec:
   name: python3
 ---
 
-(gallery-app-scales)=
+(examples-app-scales)=
 
 # Magnetic Scales
 

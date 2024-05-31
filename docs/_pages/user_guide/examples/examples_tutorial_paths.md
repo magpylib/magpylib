@@ -12,7 +12,7 @@ kernelspec:
 orphan: true
 ---
 
-(gallery-tutorial-paths)=
+(examples-tutorial-paths)=
 
 # Working with Paths
 
@@ -145,7 +145,7 @@ print(sensor.position)
 print(sensor.orientation.as_quat())
 ```
 
-(gallery-tutorial-paths-edge-padding-end-slicing)=
+(examples-tutorial-paths-edge-padding-end-slicing)=
 
 ## Edge-padding and end-slicing
 

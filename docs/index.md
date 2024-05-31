@@ -12,16 +12,16 @@ Magpylib is an **open-source Python package** for calculating static **magnetic 
 :link: getting-started
 :link-type: ref
 :link-alt: link to Getting Started
-:img-top: _static/images/index_icon_get_started2.png
+:img-top: _static/images/index_icon_get_started.png
 :text-align: center
 **Getting Started**
 :::
 
 :::{grid-item-card}
-:link: gallery
+:link: examples
 :link-type: ref
 :link-alt: link to Examples
-:img-top: _static/images/index_icon_gallery2.png
+:img-top: _static/images/index_icon_examples.png
 :text-align: center
 **Examples**
 :::
@@ -29,7 +29,7 @@ Magpylib is an **open-source Python package** for calculating static **magnetic 
 :::{grid-item-card}
 :link: https://www.sciencedirect.com/science/article/pii/S2352711020300170
 :link-alt: link to Journal
-:img-top: _static/images/index_icon_academic2.png
+:img-top: _static/images/index_icon_academic.png
 :text-align: center
 **Scientific Reference**
 :::

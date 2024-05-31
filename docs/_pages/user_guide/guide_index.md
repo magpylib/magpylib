@@ -25,5 +25,5 @@ docs/docs_styles.md
 :maxdepth: 2
 :caption: Resources
 guide_resources_01_physics.md
-gallery/gallery_index.md
+examples/examples_index.md
 ```

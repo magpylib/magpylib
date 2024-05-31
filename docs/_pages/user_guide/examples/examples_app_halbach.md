@@ -12,7 +12,7 @@ kernelspec:
   name: python3
 ---
 
-(gallery-app-halbach)=
+(examples-app-halbach)=
 
 # Halbach Magnets
 
@@ -48,7 +48,7 @@ for a in angles:
 halbach.show(backend='plotly')
 ```
 
-Next we compute and display the field on an xy-grid in the symmetry plane using the [matplotlib streamplot](gallery-vis-mpl-streamplot) example.
+Next we compute and display the field on an xy-grid in the symmetry plane using the [matplotlib streamplot](examples-vis-mpl-streamplot) example.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -80,5 +80,5 @@ plt.show()
 ```
 
 ```{warning}
-Magpylib models magnets with perfect polarization. However, such magnets do not exist in reality due to fabrication tolerances and material response. While fabrication tolerances can be estimated easily, our [tutorial](gallery-tutorial-modelling-magnets) explains how to deal with material response.
+Magpylib models magnets with perfect polarization. However, such magnets do not exist in reality due to fabrication tolerances and material response. While fabrication tolerances can be estimated easily, our [tutorial](examples-tutorial-modelling-magnets) explains how to deal with material response.
 ```

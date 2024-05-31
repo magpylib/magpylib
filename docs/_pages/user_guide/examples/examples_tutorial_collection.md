@@ -12,7 +12,7 @@ kernelspec:
 orphan: true
 ---
 
-(gallery-tutorial-collection)=
+(examples-tutorial-collection)=
 
 # Working with Collections
 
@@ -253,4 +253,4 @@ coll.show()
 
 ## Compound Objects
 
-Collections can be subclassed to form dynamic groups that seamlessly integrate into Magpylib. Such classes are referred to as **compounds**. An example of how this is done is shown in {ref}`gallery-misc-compound`.
+Collections can be subclassed to form dynamic groups that seamlessly integrate into Magpylib. Such classes are referred to as **compounds**. An example of how this is done is shown in {ref}`examples-misc-compound`.
