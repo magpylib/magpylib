@@ -459,6 +459,7 @@ def get_generic_traces3D(
     extra_backend=False,
     row=1,
     col=1,
+    units_length="mm",
     **kwargs,
 ) -> list:
     """
