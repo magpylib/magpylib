@@ -419,6 +419,7 @@ def get_generic_traces(
     extra_backend=False,
     row=1,
     col=1,
+    units_length="mm",
     **kwargs,
 ) -> list:
     """
@@ -530,7 +531,9 @@ def get_generic_traces(
         name_suff = tr.pop("name_suffix", None)
         name = tr.get("name", "") if legendtext is None else legendtext
         for orient, pos in zip(orientations, positions):
-            tr1 = place_and_orient_model3d(tr, orientation=orient, position=pos)
+            tr1 = place_and_orient_model3d(
+                tr, orientation=orient, position=pos, units_length=units_length
+            )
             if name_suff is not None:
                 tr1["name"] = f"{name}{name_suff}"
             temp_rot_traces.append(tr1)
@@ -788,12 +791,13 @@ def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kw
                     if len(rco_obj) >= 2 and style_temp:
                         # deepcopy style only if obj is in multiple subplots.
                         obj._style = style_temp.copy()
-                    params["row"], params["col"], output_typ = rco
+                    params["row"], params["col"], output_typ, units_length = rco
                     if output_typ == "model3d":
                         out_traces = get_generic_traces(
                             obj,
                             extra_backend=extra_backend,
                             autosize=autosize,
+                            units_length=units_length,
                             **params,
                         )
                         if extra_backend:

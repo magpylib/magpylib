@@ -13,6 +13,17 @@ from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
+from magpylib._src.utility import get_unit_factor
+
+DEFAULT_ROW_COL_PARAMS = {
+    "row": 1,
+    "col": 1,
+    "output": "model3d",
+    "sumup": True,
+    "pixel_agg": "mean",
+    "in_out": "auto",
+    "units_length": "m",
+}
 
 
 def get_legend_label(obj, style=None, suffix=True):
@@ -34,17 +45,21 @@ def get_legend_label(obj, style=None, suffix=True):
 
 def place_and_orient_model3d(
     model_kwargs,
+    *,
     model_args=None,
     orientation=None,
     position=None,
     coordsargs=None,
     scale=1,
     return_model_args=False,
+    units_length="m",
     **kwargs,
 ):
     """places and orients mesh3d dict"""
-    if orientation is None and position is None:
+    if orientation is None and position is None and units_length == "m" and scale == 1:
         return {**model_kwargs, **kwargs}
+    unit_factor = get_unit_factor(units_length, target_unit="m")
+    scale_factor = scale / unit_factor
     position = (0.0, 0.0, 0.0) if position is None else position
     position = np.array(position, dtype=float)
     new_model_dict = {}
@@ -63,7 +78,7 @@ def place_and_orient_model3d(
 
     if orientation is not None:
         vertices = orientation.apply(vertices)
-    new_vertices = (vertices * scale + position).T
+    new_vertices = (vertices * scale_factor + position).T
     new_vertices = np.reshape(new_vertices, vert_shape)
     for i, k in enumerate("xyz"):
         key = coordsargs[k]
@@ -257,7 +272,9 @@ def get_flatten_objects_properties(*objs, colorsequence, **kwargs):
                 props["row_cols"] = flat_objs[subobj]["row_cols"]
             elif "row_cols" not in props:
                 props["row_cols"] = []
-            props["row_cols"].extend([(obj["row"], obj["col"], obj["output"])])
+            props["row_cols"].extend(
+                [(obj["row"], obj["col"], obj["output"], obj["units_length"])]
+            )
         flat_objs.update(flat_sub_objs)
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
     return flat_objs, kwargs
@@ -578,14 +595,7 @@ def subdivide_mesh_by_facecolor(trace):
 
 def process_show_input_objs(objs, **kwargs):
     """Extract max_rows and max_cols from obj list of dicts"""
-    defaults = {
-        "row": 1,
-        "col": 1,
-        "output": "model3d",
-        "sumup": True,
-        "pixel_agg": "mean",
-        "in_out": "auto",
-    }
+    defaults = DEFAULT_ROW_COL_PARAMS.copy()
     max_rows = max_cols = 1
     flat_objs = []
     new_objs = {}

@@ -237,6 +237,25 @@ _UNIT_PREFIX = {
     24: "Y",  # yotta
 }
 
+_UNIT_PREFIX_REVERSED = {v: k for k, v in _UNIT_PREFIX.items()}
+
+
+@lru_cache(maxsize=None)
+def get_unit_factor(unit_input, *, target_unit):
+    """return unit factor based on input and target unit"""
+    pref, factor_power = "", None
+    if unit_input:
+        if len(unit_input) == 2:
+            pref, *_ = unit_input
+        factor_power = _UNIT_PREFIX_REVERSED.get(pref, None)
+    if factor_power is None or len(unit_input) > 2:
+        valid_inputs = [f"{k}{target_unit}" for k in _UNIT_PREFIX_REVERSED]
+        raise ValueError(
+            f"Invalid unit input, must be one of {valid_inputs} got {unit_input!r}"
+        )
+    factor = 10**factor_power
+    return factor
+
 
 def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     """

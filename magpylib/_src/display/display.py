@@ -11,6 +11,7 @@ from magpylib._src.defaults.defaults_utility import _DefaultValue
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.display.traces_generic import get_frames
+from magpylib._src.display.traces_utility import DEFAULT_ROW_COL_PARAMS
 from magpylib._src.display.traces_utility import process_show_input_objs
 from magpylib._src.input_checks import check_format_input_backend
 from magpylib._src.input_checks import check_format_input_vector
@@ -141,9 +142,6 @@ def get_show_func(backend):
     )
 
 
-ROW_COL_SPECIFIC_NAMES = ("row", "col", "output", "sumup", "pixel_agg", "in_out")
-
-
 def infer_backend(canvas):
     """Infers the plotting backend from canvas and environment"""
     # pylint: disable=import-outside-toplevel
@@ -193,9 +191,10 @@ def _show(
 
     # process input objs
     objects, obj_list_flat, max_rows, max_cols, subplot_specs = process_show_input_objs(
-        objects, **{k: v for k, v in kwargs.items() if k in ROW_COL_SPECIFIC_NAMES}
+        objects,
+        **{k: v for k, v in kwargs.items() if k in DEFAULT_ROW_COL_PARAMS},
     )
-    kwargs = {k: v for k, v in kwargs.items() if k not in ROW_COL_SPECIFIC_NAMES}
+    kwargs = {k: v for k, v in kwargs.items() if k not in DEFAULT_ROW_COL_PARAMS}
     kwargs["max_rows"], kwargs["max_cols"] = max_rows, max_cols
     kwargs["subplot_specs"] = subplot_specs
 
@@ -407,9 +406,9 @@ def show(
         }
     )
     if ctx.isrunning:
-        rco = {k: v for k, v in kwargs.items() if k in ROW_COL_SPECIFIC_NAMES}
+        rco = {k: v for k, v in kwargs.items() if k in DEFAULT_ROW_COL_PARAMS}
         ctx.kwargs.update(
-            {k: v for k, v in kwargs.items() if k not in ROW_COL_SPECIFIC_NAMES}
+            {k: v for k, v in kwargs.items() if k not in DEFAULT_ROW_COL_PARAMS}
         )
         ctx_objects = tuple({**o, **rco} for o in ctx.objects_from_ctx)
         objects, *_ = process_show_input_objs(ctx_objects + objects, **rco)
@@ -452,11 +451,11 @@ def show_context(
     )
     try:
         ctx.isrunning = True
-        rco = {k: v for k, v in kwargs.items() if k in ROW_COL_SPECIFIC_NAMES}
+        rco = {k: v for k, v in kwargs.items() if k in DEFAULT_ROW_COL_PARAMS}
         objects, *_ = process_show_input_objs(objects, **rco)
         ctx.objects_from_ctx += tuple(objects)
         ctx.kwargs.update(
-            {k: v for k, v in kwargs.items() if k not in ROW_COL_SPECIFIC_NAMES}
+            {k: v for k, v in kwargs.items() if k not in DEFAULT_ROW_COL_PARAMS}
         )
         yield ctx
         ctx.show_return_value = _show(*ctx.objects, **ctx.kwargs)
