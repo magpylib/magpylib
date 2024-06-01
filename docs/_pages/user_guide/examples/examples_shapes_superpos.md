@@ -94,14 +94,14 @@ ring0 = inner + outer
 
 # compute and plot Magnetization in xy-plane
 grid = np.mgrid[-4:4:100j, -4:4:100j, 0:0:1j].T[0]
-X, Y, Z = np.moveaxis(grid, 2, 0)
+X, Y, _ = np.moveaxis(grid, 2, 0)
 
 M = np.linalg.norm(ring0.getM(grid), axis=2)
 ax1.contourf(X, Y, M, cmap=plt.cm.hot_r)
 
 # compute and plot Magnetization in xz-plane
 grid = np.mgrid[-4:4:100j, 0:0:1j, -4:4:100j].T[:,0]
-X, Y, Z = np.moveaxis(grid, 2, 0)
+X, _, Z = np.moveaxis(grid, 2, 0)
 
 M = np.linalg.norm(ring0.getM(grid), axis=2)
 ax2.contourf(X, Z, M, cmap=plt.cm.hot_r)

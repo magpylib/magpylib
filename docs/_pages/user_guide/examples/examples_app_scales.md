@@ -18,7 +18,6 @@ kernelspec:
 
 In this example we will show how magnetic scales can be constructed with Magpylib for fast field computation.
 
-- model
-- experiment
-- refer to DS 91411 and 91479
-- use compounds
+- reference to DS 91411 and 91479
+- ideal-typical scales
+- PWS experiment and PWS reference

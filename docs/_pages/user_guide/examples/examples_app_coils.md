@@ -84,32 +84,29 @@ Streamplot from Matplotlib is a powerful tool to outline the field lines. Howeve
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots(1, 1, figsize=(6,5))
 
-# create grid
-ts = np.linspace(-13, 13, 20)
-grid = np.array([[(x,0,z) for x in ts] for z in ts])
+# Compute field and plot the coil pair field on yz-grid
+grid = np.mgrid[0:0:1j, -13:13:20j, -13:13:20j].T[:,:,0]
+_, Y, Z = np.moveaxis(grid, 2, 0)
 
-# compute and plot field of Helmholtz
 B = magpy.getB(helmholtz, grid)
+_, By, Bz = np.moveaxis(B, 2, 0)
+
 Bamp = np.linalg.norm(B, axis=2)
 Bamp /= np.amax(Bamp)
 
-sp = ax.streamplot(
-    grid[:,:,0], grid[:,:,2], B[:,:,0], B[:,:,2],
-    density=2,
-    color=Bamp,
-    linewidth=np.sqrt(Bamp)*3,
-    cmap='coolwarm',
+sp = ax.streamplot(Y, Z, By, Bz, density=2, color=Bamp,
+    linewidth=np.sqrt(Bamp)*3, cmap='coolwarm',
 )
 
-# plot coil outline
+# Plot coil outline
 from matplotlib.patches import Rectangle
 for loc in [(4,4), (4,-6), (-6,4), (-6,-6)]:
     ax.add_patch(Rectangle(loc, 2, 2, color='k', zorder=10))
 
-# figure styling
+# Figure styling
 ax.set(
     title='Magnetic field of Helmholtz',
-    xlabel='x-position (m)',
+    xlabel='y-position (m)',
     ylabel='z-position (m)',
     aspect=1,
 )

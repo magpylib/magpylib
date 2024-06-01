@@ -59,7 +59,7 @@ grid = np.mgrid[-3.5:3.5:100j, -3.5:3.5:100j, 0:0:1j].T[0]
 X, Y, _ = np.moveaxis(grid, 2, 0)
 
 B = halbach.getB(grid)
-Bx, By, Bz = np.moveaxis(B, 2, 0)
+Bx, By, _ = np.moveaxis(B, 2, 0)
 Bamp = np.linalg.norm(B, axis=2)
 
 pc = ax.contourf(X, Y, Bamp, levels=50, cmap="coolwarm")
