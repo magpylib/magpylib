@@ -1,7 +1,7 @@
 (docs-classes)=
 # The Magpylib Classes
 
-In Magpylib's object oriented interface magnetic field **sources** (generate the field) and **observers** (read the field) are created as Python objects with various defining attributes and methods.
+In Magpylib's [object oriented interface](docs-fieldcomp-oo) magnetic field **sources** (generate the field) and **observers** (read the field) are created as Python objects with various defining attributes and methods.
 
 ## Base properties
 
