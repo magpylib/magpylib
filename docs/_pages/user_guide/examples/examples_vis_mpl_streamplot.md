@@ -34,19 +34,17 @@ fig, ax = plt.subplots()
 # Create an observer grid in the xz-symmetry plane
 ts = np.linspace(-5, 5, 40)
 grid = np.array([[(x, 0, z) for x in ts] for z in ts])
+X, _, Z = np.moveaxis(grid, 2, 0)
 
 # Compute the B-field of a cube magnet on the grid
 cube = magpy.magnet.Cuboid(polarization=(500,0,500), dimension=(2,2,2))
 B = cube.getB(grid)
+Bx, _, Bz = np.moveaxis(B, 2, 0)
 log10_norm_B = np.log10(np.linalg.norm(B, axis=2))
 
 # Display the B-field with streamplot using log10-scaled
 # color function and linewidth
-splt = ax.streamplot(
-    grid[:, :, 0],
-    grid[:, :, 2],
-    B[:, :, 0],
-    B[:, :, 2],
+splt = ax.streamplot(X, Z, Bx, Bz,
     density=1.5,
     color=log10_norm_B,
     linewidth=log10_norm_B,
@@ -96,6 +94,7 @@ fig, ax = plt.subplots()
 
 # Create an observer grid in the xy-symmetry plane - using pure numpy
 grid = np.mgrid[-.05:.05:100j, -.05:.05:100j, 0:0:1j].T[0]
+X, Y, _ = np.moveaxis(grid, 2, 0)
 
 # Compute magnetic field on grid - using the functional interface
 B = magpy.getB(
@@ -105,30 +104,15 @@ B = magpy.getB(
     polarization=(0.1, 0, 0),
 )
 B = B.reshape(grid.shape)
+Bx, By, _ = np.moveaxis(B, 2, 0)
 normB = np.linalg.norm(B, axis=2)
 
 # combine streamplot with contourf
-cp = ax.contourf(
-    grid[:,:,0],
-    grid[:,:,1],
-    normB*1000, #T->mT
-    cmap="rainbow",
-    levels=100,
-    zorder=1,
-)
-splt = ax.streamplot(
-    grid[:,:,0],
-    grid[:,:,1],
-    B[:, :, 0],
-    B[:, :, 1],
-    color="k",
-    density=1.5,
-    linewidth=1,
-    zorder=3,
-)
+cp = ax.contourf(X, Y, normB, cmap="rainbow", levels=100)
+splt = ax.streamplot(X, Y, Bx, By, color="k", density=1.5, linewidth=1)
 
 # Add colorbar
-fig.colorbar(cp, ax=ax, label="|B| (mT)")
+fig.colorbar(cp, ax=ax, label="|B| (T)")
 
 # Outline magnet boundary
 ts = np.linspace(0, 2 * np.pi, 50)

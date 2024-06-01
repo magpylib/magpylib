@@ -56,15 +56,14 @@ fig, ax = plt.subplots()
 
 # compute and plot field on x-y grid
 grid = np.mgrid[-3.5:3.5:100j, -3.5:3.5:100j, 0:0:1j].T[0]
+X, Y, _ = np.moveaxis(grid, 2, 0)
 
 B = halbach.getB(grid)
+Bx, By, Bz = np.moveaxis(B, 2, 0)
 Bamp = np.linalg.norm(B, axis=2)
 
-pc = ax.contourf(grid[:,:,0], grid[:,:,1], Bamp,
-                 levels=50, cmap="coolwarm")
-
-ax.streamplot(grid[:,:,0], grid[:,:,1], B[:, :, 0], B[:, :, 1],
-    color="k", density=1.5, linewidth=1)
+pc = ax.contourf(X, Y, Bamp, levels=50, cmap="coolwarm")
+ax.streamplot(X, Y, Bx, By, color="k", density=1.5, linewidth=1)
 
 # Add colorbar
 fig.colorbar(pc, ax=ax, label="|B|")

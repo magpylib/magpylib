@@ -37,63 +37,36 @@ All these functions will return the field in the shape of the input. In the foll
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.linalg import norm
 
 import magpylib as magpy
 
 fig, [[ax1,ax2], [ax3,ax4]] = plt.subplots(2, 2, figsize=(10, 10))
 
-# Create an observer grid in the xz-symmetry plane
-X, Y = np.mgrid[-50:50:100j, -50:50:100j].transpose((0, 2, 1))
-grid = np.stack([X, Y, np.zeros((100, 100))], axis=2)
+# Create an observer grid in the xy-symmetry plane
+grid = np.mgrid[-50:50:100j, -50:50:100j, 0:0:1j].T[0]
+X, Y, _ = np.moveaxis(grid, 2, 0)
 
 # Compute BHJM-fields of a cylinder magnet on the grid
 cyl = magpy.magnet.Cylinder(polarization=(0.5, 0.5, 0), dimension=(40, 20))
+
 B = cyl.getB(grid)
+Bx, By, _ = np.moveaxis(B, 2, 0)
+
 H = cyl.getH(grid)
+Hx, Hy, _ = np.moveaxis(H, 2, 0)
+
 J = cyl.getJ(grid)
+Jx, Jy, _ = np.moveaxis(J, 2, 0)
+
 M = cyl.getM(grid)
+Mx, My, _ = np.moveaxis(M, 2, 0)
 
 # Display field with Pyplot
-ax1.streamplot(
-    grid[:, :, 0],
-    grid[:, :, 1],
-    B[:, :, 0],
-    B[:, :, 1],
-    density=1.5,
-    color=np.log(np.linalg.norm(B, axis=2)),
-    linewidth=1,
-    cmap="spring_r",
-)
-ax2.streamplot(
-    grid[:, :, 0],
-    grid[:, :, 1],
-    H[:, :, 0],
-    H[:, :, 1],
-    density=1.5,
-    color=np.log(np.linalg.norm(H, axis=2)),
-    linewidth=1,
-    cmap="winter_r",
-)
-ax3.streamplot(
-    grid[:, :, 0],
-    grid[:, :, 1],
-    J[:, :, 0],
-    J[:, :, 1],
-    density=1.5,
-    color=np.linalg.norm(J, axis=2),
-    linewidth=1,
-    cmap="summer_r",
-)
-ax4.streamplot(
-    grid[:, :, 0],
-    grid[:, :, 1],
-    M[:, :, 0],
-    M[:, :, 1],
-    density=1.5,
-    color=np.linalg.norm(M, axis=2),
-    linewidth=1,
-    cmap="autumn_r",
-)
+ax1.streamplot(X, Y, Bx, By, color=np.log(norm(B, axis=2)), cmap="spring_r")
+ax2.streamplot(X, Y, Hx, Hy, color=np.log(norm(H, axis=2)), cmap="winter_r")
+ax3.streamplot(X, Y, Jx, Jy, color=norm(J, axis=2), cmap="summer_r")
+ax4.streamplot(X, Y, Mx, My, color=norm(M, axis=2), cmap="autumn_r")
 
 ax1.set_title("B-Field")
 ax2.set_title("H-Field")

@@ -87,23 +87,24 @@ import magpylib as magpy
 
 fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(12, 5))
 
-# Create an observer grid in the xy-symmetry plane
-X, Y = np.mgrid[-4:4:100j, -4:4:100j].transpose((0, 2, 1))
-grid_xy = np.stack([X, Y, np.zeros((100, 100))], axis=2)
-grid_xz = np.stack([X, np.zeros((100, 100)), Y], axis=2)
-
 # Create ring with cut-out
 inner = magpy.magnet.Cylinder(polarization=(0, 0, -1), dimension=(4, 5))
 outer = magpy.magnet.Cylinder(polarization=(0, 0, 1), dimension=(6, 5))
 ring0 = inner + outer
 
-# Compute J-field of ring
-M_xy = np.linalg.norm(ring0.getM(grid_xy), axis=2)
-M_xz = np.linalg.norm(ring0.getM(grid_xz), axis=2)
+# compute and plot Magnetization in xy-plane
+grid = np.mgrid[-4:4:100j, -4:4:100j, 0:0:1j].T[0]
+X, Y, Z = np.moveaxis(grid, 2, 0)
 
-# Display field with Pyplot
-ax1.contourf(grid_xy[:, :, 0], grid_xy[:, :, 1], M_xy, cmap=plt.cm.hot_r)
-ax2.contourf(grid_xz[:, :, 0], grid_xz[:, :, 2], M_xz, cmap=plt.cm.hot_r)
+M = np.linalg.norm(ring0.getM(grid), axis=2)
+ax1.contourf(X, Y, M, cmap=plt.cm.hot_r)
+
+# compute and plot Magnetization in xz-plane
+grid = np.mgrid[-4:4:100j, 0:0:1j, -4:4:100j].T[:,0]
+X, Y, Z = np.moveaxis(grid, 2, 0)
+
+M = np.linalg.norm(ring0.getM(grid), axis=2)
+ax2.contourf(X, Z, M, cmap=plt.cm.hot_r)
 
 # plot styling
 ax1.set(
@@ -170,19 +171,15 @@ pt3 = magpy.magnet.Cuboid(
 magnet = magpy.Collection(pt1, pt2, pt3)
 
 # Compute J on mesh and plot with streamplot
-X, Y = np.mgrid[-6:6:100j, -6:6:100j].transpose((0, 2, 1))
-grid = np.stack([X, Y, np.zeros((100, 100))], axis=2)
+grid = np.mgrid[-6:6:100j, -6:6:100j, 0:0:1j].T[0]
+X, Y, _ = np.moveaxis(grid, 2, 0)
 
 J = magnet.getJ(grid)
 J[J<1e-12] = 0 # cut off numerically small values
+Jx, Jy, _ = np.moveaxis(J, 2, 0)
 
-ax.contourf(grid[:, :, 0], grid[:, :, 1], np.linalg.norm(J,axis=2), cmap=plt.cm.cool)
-ax.streamplot(
-    grid[:, :, 0],
-    grid[:, :, 1],
-    J[:, :, 0],
-    J[:, :, 1], color='k', density=1.5,
-)
+ax.contourf(X, Y, np.linalg.norm(J,axis=2), cmap=plt.cm.cool)
+ax.streamplot(X, Y, Jx, Jy, color='k', density=1.5)
 
 # plot styling
 ax.set(

@@ -124,27 +124,29 @@ plt.show()
 While the optimal solution is given by two current loops, real world applications must deal with finite sizes and limited construction space. Here Magpylib enables fast analysis of different possible geometries.
 
 ```{code-cell} ipython3
+import matplotlib.pyplot as plt
 fig, ax = plt.subplots(1, 1, figsize=(6,5))
 
-# compute field of the coil pair on grid
-ts = np.linspace(-3, 3, 20)
-grid = np.array([[(x,0,z) for x in ts] for z in ts])
+# Compute field of the coil pair on yz-grid
+grid = np.mgrid[0:0:1j, -3:3:20j, -3:3:20j].T[:,:,0]
+_, Y, Z = np.moveaxis(grid, 2, 0)
+
 B = helmholtz.getB(grid)
 
-# field at center
+# Field at center
 B0 = helmholtz.getB((0,0,0))
 B0amp = np.linalg.norm(B0)
 
-# homogeneity error
+# Homogeneity error
 err = np.linalg.norm((B-B0)/B0amp, axis=2)
 
-# plot error on grid
-sp = ax.contourf(grid[:,:,0], grid[:,:,2], err*100)
+# Plot error on grid
+sp = ax.contourf(Y, Z, err*100)
 
-# figure styling
+# Figure styling
 ax.set(
     title='Helmholtz homogeneity error',
-    xlabel='x-position (m)',
+    xlabel='y-position (m)',
     ylabel='z-position (m)',
     aspect=1,
 )

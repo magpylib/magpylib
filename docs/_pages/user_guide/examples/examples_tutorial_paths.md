@@ -16,7 +16,7 @@ orphan: true
 
 # Working with Paths
 
-The position and orientation attributes are key elements of Magpylib. The documentation section {ref}`docs-position` describes how they work. However, these definitions can seem abstract, but the interface was constructed as intuitively as possible.
+The position and orientation attributes are key elements of Magpylib. The documentation section {ref}`docs-position` describes how they work in detail. Wile these definitions can seem abstract, the interface was constructed as intuitively as possible which is demonstrated in this tutorial.
 
 ```{important}
 Always make use of paths when computing with multiple Magpylib object position and orientation instances. This enables vectorized computation. Avoid Python loops at all costs!

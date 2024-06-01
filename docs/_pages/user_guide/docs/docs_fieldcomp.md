@@ -1,6 +1,9 @@
 (docs-fieldcomp)=
 # Field Computation
 
+The following is a detailed technical documentation of Magpylib field computation.
+The tutorial {ref}`examples-tutorial-field-computation` shows good practices and illustrative examples.
+
 ## Object-oriented interface
 
 The object-oriented interface relies on the idea that sources of the magnetic field and observers thereof are created as Python objects which can be manipulated at will, and called for field computation. This is done via four top-level functions <span style="color: orange">**getB**</span>, <span style="color: orange">**getH**</span>, <span style="color: orange">**getJ**</span> and, <span style="color: orange">**getM**</span>,
@@ -59,8 +62,6 @@ Magpylib collects all inputs (object parameters), and vectorizes them for the co
 
 Try to make all field computations with as few calls to `getBHJM` as possible. Avoid Python loops at all costs!
 ```
-
-The tutorial {ref}`examples-tutorial-field-computation` shows good practices with Magpylib field computation.
 
 (docs-field-functional)=
 ## Functional interface

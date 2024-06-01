@@ -38,9 +38,9 @@ ax2 = fig.add_subplot(122)
 
 # Model of magnetization tool
 tool1 = magpy.magnet.Cuboid(
-    dimension=(5,3,3),
-    polarization=(1,0,0),
-    position=(9,0,0)
+    dimension=(5, 3, 3),
+    polarization=(1, 0, 0),
+    position=(9, 0, 0)
 ).rotate_from_angax(50, 'z', anchor=0)
 tool2 = tool1.copy(polarization=(-1,0,0)).rotate_from_angax(-100, 'z', 0)
 tool3 = tool1.copy().rotate_from_angax(180, 'z', 0)
@@ -49,25 +49,27 @@ tool = magpy.Collection(tool1, tool2, tool3, tool4)
 
 # Model of Quadrupole Cylinder
 cyl = magpy.magnet.CylinderSegment(
-    dimension=(2,5,1,0,360),
-    polarization=(0,0,0),
+    dimension=(2, 5, 1, 0, 360),
+    polarization=(0, 0, 0),
     style_magnetization_show=False,
 )
 
-# Show
+# Plot 3D model on ax1
 magpy.show(cyl, tool, canvas=ax1, style_legend_show=False, style_magnetization_mode="color")
 ax1.view_init(90, -90)
 
 # Compute and plot tool-field on grid
 grid = np.mgrid[-6:6:50j, -6:6:50j, 0:0:1j].T[0]
+X, Y, _ = np.moveaxis(grid, 2, 0)
+
 B = tool.getB(grid)
-ax2.streamplot(
-    grid[:, :, 0],
-    grid[:, :, 1],
-    B[:, :, 0],
-    B[:, :, 1],
+Bx, By, Bz = np.moveaxis(B, 2, 0)
+
+ax2.streamplot(X, Y, Bx, By,
     color=np.linalg.norm(B, axis=2),
-    cmap='autumn', density=1.5,
+    cmap='autumn',
+    density=1.5,
+    linewidth=1,
 )
 
 # Outline magnet boundary
@@ -108,22 +110,13 @@ for m in mesh:
 
 # Compute and plot polarization
 J = mesh.getJ(grid)
-Jangle = np.arctan2(J[:,:,0], J[:,:,1])
+J[np.linalg.norm(J, axis=2) == 0] = np.nan # remove J=0 from plot
+Jx, Jy, _ = np.moveaxis(J, 2, 0)
 
-ax2.contourf(
-    grid[:, :, 0],
-    grid[:, :, 1],
-    Jangle,
-    cmap="rainbow",
-    levels=20
-)
-ax2.streamplot(
-    grid[:, :, 0],
-    grid[:, :, 1],
-    J[:, :, 0],
-    J[:, :, 1],
-    color='k',
-)
+Jangle = np.arctan2(Jx, Jy)
+
+ax2.contourf(X, Y, Jangle, cmap="rainbow", levels=30)
+ax2.streamplot(X, Y, Jx, Jy, color='k')
 
 # Outline magnet boundary
 ts = np.linspace(0,2*np.pi,200)
