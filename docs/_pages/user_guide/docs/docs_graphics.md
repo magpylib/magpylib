@@ -59,7 +59,7 @@ The graphic backend is set via the kwarg `backend` in the `show` function, which
 import numpy as np
 import magpylib as magpy
 
-# define sources and paths
+# Define sources and paths
 loop = magpy.current.Circle(
     current=1, diameter=1, position=np.linspace((0,0,-3), (0,0,3), 40)
 )
@@ -149,7 +149,7 @@ In **Matplotlib** we combine a 2D-field plot with the 3D show output and modify 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
 
-# create Matplotlib figure with subplots
+# Create Matplotlib figure with subplots
 fig = plt.figure(figsize=(10, 4))
 ax1 = fig.add_subplot(121)
 ax2 = fig.add_subplot(122, projection="3d")
@@ -157,13 +157,13 @@ ax2 = fig.add_subplot(122, projection="3d")
 # 2D Matplotlib plot
 ax1.plot(B)
 
-# place Magpylib show output in Matplotlib figure
+# Place Magpylib show output in Matplotlib figure
 magpy.show(loop, sens, canvas=ax2)
 
-# modify show output
+# Modify show output
 ax2.plot([-.1,.1], [0,0], [0,0], color='k')
 
-# generate figure
+# Generate figure
 plt.tight_layout()
 plt.show()
 ```
@@ -173,7 +173,7 @@ In **Plotly** we combine a 2D-field plot with the 3D show output and modify the 
 ```{code-cell} ipython3
 import plotly.graph_objects as go
 
-# create Plotly figure and subplots
+# Create Plotly figure and subplots
 fig = go.Figure().set_subplots(
     rows=1, cols=2, specs=[[{"type": "xy"}, {"type": "scene"}]]
 )
@@ -181,18 +181,18 @@ fig = go.Figure().set_subplots(
 # 2D Plotly plot
 fig.add_trace(go.Scatter(y=B[:,2], name="Bz"))
 
-# place Magpylib show output in a Plotly figure
+# Place Magpylib show output in a Plotly figure
 temp_fig = go.Figure()
 magpy.show(loop, sens, canvas=temp_fig)
 
-# modify show output
+# Modify show output
 temp_fig.add_trace(go.Scatter3d(x=(-.1,.1), y=(0,0), z=(0,0)))
 
-# add to main figure
+# Add to main figure
 fig.add_traces(temp_fig.data, rows=1, cols=2)
 fig.layout.scene.update(temp_fig.layout.scene)
 
-# generate figure
+# Generate figure
 fig.show()
 ```
 
@@ -201,17 +201,17 @@ fig.show()
 ```{code-cell} ipython3
 import pyvista as pv
 
-# create Pyvista scene
+# Create Pyvista scene
 pl = pv.Plotter()
 
-# place Magpylib show output in Pyvista scene
+# Place Magpylib show output in Pyvista scene
 magpy.show(loop, sens, canvas=pl)
 
-# add a Line to 3D scene
+# Add a Line to 3D scene
 line = np.array([(-.1,0,0), (.1,0,0)])
 pl.add_lines(line, color="black")
 
-# generate figure
+# Generate figure
 pl.show()
 ```
 
@@ -224,20 +224,20 @@ Instead of forwarding a figure to an existing canvas, it is also possible to ret
 import numpy as np
 import magpylib as magpy
 
-# create Magpylib objects with paths
+# Create Magpylib objects with paths
 loop = magpy.current.Circle(current=1, diameter=.1)
 sens = magpy.Sensor(position=np.linspace((0,0,-.1), (0,0,.1), 100))
 
-# return pyvista scene object with show
+# Return pyvista scene object with show
 pl = magpy.show(loop, sens, backend="pyvista", return_fig=True)
 
-# modify Pyvista scene
+# Modify Pyvista scene
 pl.add_lines(np.array([(-.1,0,0), (.1,0,0)]), color="black")
 pl.camera.position = (.5, .2, .1)
 pl.set_background("yellow", top="lightgreen")
 pl.enable_anti_aliasing("ssaa")
 
-# display scene
+# Display scene
 pl.show()
 ```
 
@@ -259,11 +259,11 @@ The following example demonstrates the animation feature,
 import numpy as np
 import magpylib as magpy
 
-# create Magpylib objects with paths
+# Create Magpylib objects with paths
 loop = magpy.current.Circle(current=1, diameter=.1)
 sens = magpy.Sensor(position=np.linspace((0,0,-.1), (0,0,.1), 100))
 
-# show animation
+# Show animation
 magpy.show(
     loop,
     sens,
@@ -309,11 +309,11 @@ The following code demonstrates these features.
 import numpy as np
 import magpylib as magpy
 
-# create Magpylib objects with paths
+# Create Magpylib objects with paths
 loop = magpy.current.Circle(current=1, diameter=.1, style_label="L")
 sens = magpy.Sensor(position=np.linspace((-.1,0,.1), (.1,0,.1), 50), style_label="S")
 
-# use built-in subplots
+# Use built-in subplots
 magpy.show(
     {"objects": [loop, sens]},
     {"objects": [loop, sens], "output": "Bx", "col": 2},
@@ -329,7 +329,7 @@ Each input dictionary can contain kwargs, like `pixel_agg=None` or `sumup=False`
 import numpy as np
 import magpylib as magpy
 
-# create Magpylib objects with paths
+# Create Magpylib objects with paths
 loop1 = magpy.current.Circle(current=1, diameter=.1, style_label="L1")
 loop2 = loop1.copy(diameter=.2, style_label="L2")
 sens = magpy.Sensor(
@@ -339,7 +339,7 @@ sens = magpy.Sensor(
 )
 obj = [loop1, loop2, sens]
 
-# use built-in subplots
+# Use built-in subplots
 magpy.show(
     {"objects": obj, "output": "Hx"},
     {"objects": obj, "output": "Hx", "pixel_agg": None, "col": 2},
@@ -359,11 +359,11 @@ The above example becomes:
 import numpy as np
 import magpylib as magpy
 
-# create Magpylib objects with paths
+# Create Magpylib objects with paths
 loop = magpy.current.Circle(current=1, diameter=.1, style_label="L")
 sens = magpy.Sensor(position=np.linspace((-.1,0,.1), (.1,0,.1), 50), style_label="S")
 
-# use built-in subplots via show_context
+# Use built-in subplots via show_context
 with magpy.show_context(loop, sens, backend='plotly') as sc:
     sc.show()
     sc.show(output="Bx", col=2)
@@ -407,11 +407,11 @@ It is very helpful to combine 2D and 3D subplots in an animation that shows the 
 import numpy as np
 import magpylib as magpy
 
-# create Magpylib objects with paths
+# Create Magpylib objects with paths
 loop = magpy.current.Circle(current=1, diameter=.1, style_label="L")
 sens = magpy.Sensor(position=np.linspace((-.1,0,.1), (.1,0,.1), 50), style_label="S")
 
-# use built-in subplots via show_context
+# Use built-in subplots via show_context
 with magpy.show_context(loop, sens, animation=True) as sc:
     sc.show()
     sc.show(output="Bx", col=2)

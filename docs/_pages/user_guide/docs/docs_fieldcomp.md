@@ -21,11 +21,11 @@ that compute the respective fields B (B-field), H (H-field), J (polarization) or
 ```python
 import magpylib as magpy
 
-# define source and observer objects
+# Define source and observer objects
 loop = magpy.current.Circle(current=1, diameter=.001)
 sens = magpy.Sensor()
 
-# compute field
+# Compute field
 B = magpy.getB(loop, sens)
 
 print(B)
@@ -35,10 +35,10 @@ print(B)
 For quick access, the functions `getBHJM` are also methods of all Magpylib objects, such that the `sources` or `observers` input is the object itself. The above example can be continued as
 
 ```python
-# call getB as method of loop
+# Call getB as method of loop
 B = loop.getB(sens)
 
-# call getB as method of loop
+# Call getB as method of loop
 B = sens.getB(loop)
 ```
 
@@ -80,7 +80,7 @@ import numpy as np
 import magpylib as magpy
 # All inputs and outputs in SI units
 
-# compute the cuboid field for 3 input instances
+# Compute the cuboid field for 3 input instances
 N = 3 # number of instances
 B = magpy.getB(
     sources='Cuboid',
@@ -155,12 +155,12 @@ import numpy as np
 import magpylib as magpy
 # All inputs and outputs in SI units
 
-# prepare input
+# Prepare input
 z0 = np.array([1,1])
 r  = np.array([1,1])
 z  = np.array([2,2])
 
-# compute field with core functions
+# Compute field with core functions
 B = magpy.core.magnet_cylinder_axial_Bfield(z0=z0, r=r, z=z).T
 
 print(B)

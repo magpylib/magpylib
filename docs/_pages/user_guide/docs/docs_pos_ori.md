@@ -73,22 +73,22 @@ import magpylib as magpy
 # Note that all units are in SI
 
 sensor = magpy.Sensor()
-print(sensor.position)                                    # default value
+print(sensor.position)                                    # Default value
 #   --> [0. 0. 0.]
 
-sensor.move((1,1,1))                                      # scalar input is by default applied
+sensor.move((1,1,1))                                      # Scalar input is by default applied
 print(sensor.position)                                    # to the whole path
 #   --> [1. 1. 1.]
 
-sensor.move([(1,1,1), (2,2,2)])                           # vector input is by default appended
+sensor.move([(1,1,1), (2,2,2)])                           # Vector input is by default appended
 print(sensor.position)                                    # to the existing path
 #   --> [[1. 1. 1.]  [2. 2. 2.]  [3. 3. 3.]]
 
-sensor.move((1,1,1), start=1)                             # scalar input and start=1 is applied
+sensor.move((1,1,1), start=1)                             # Scalar input and start=1 is applied
 print(sensor.position)                                    # to whole path starting at index 1
 #   --> [[1. 1. 1.]  [3. 3. 3.]  [4. 4. 4.]]
 
-sensor.move([(0,0,10), (0,0,20)], start=1)                # vector input and start=1 merges
+sensor.move([(0,0,10), (0,0,20)], start=1)                # Vector input and start=1 merges
 print(sensor.position)                                    # the input with the existing path
 #   --> [[ 1.  1.  1.]  [ 3.  3. 13.]  [ 4.  4. 24.]]     # starting at index 1.
 ```

@@ -57,7 +57,7 @@ coil2.show()
 **Model 3:** A [Helmholtz coil](https://en.wikipedia.org/wiki/Helmholtz_coil) is a device for producing a region of nearly uniform magnetic field. It consists of two coils on the same axis, carrying an equal electric current in the same direction. In classical layouts, the distance between the coils is similar to the coil radius.
 
 ```{code-cell} ipython3
-# create a finite sized Helmholtz coil-pair
+# Create a finite sized Helmholtz coil-pair
 coil1 = magpy.Collection()
 for z in np.linspace(-1, 1, 5):
     for r in np.linspace(4, 5, 5):

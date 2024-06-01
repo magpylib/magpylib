@@ -92,21 +92,21 @@ inner = magpy.magnet.Cylinder(polarization=(0, 0, -1), dimension=(4, 5))
 outer = magpy.magnet.Cylinder(polarization=(0, 0, 1), dimension=(6, 5))
 ring0 = inner + outer
 
-# compute and plot Magnetization in xy-plane
+# Compute and plot Magnetization in xy-plane
 grid = np.mgrid[-4:4:100j, -4:4:100j, 0:0:1j].T[0]
 X, Y, _ = np.moveaxis(grid, 2, 0)
 
 M = np.linalg.norm(ring0.getM(grid), axis=2)
 ax1.contourf(X, Y, M, cmap=plt.cm.hot_r)
 
-# compute and plot Magnetization in xz-plane
+# Compute and plot Magnetization in xz-plane
 grid = np.mgrid[-4:4:100j, 0:0:1j, -4:4:100j].T[:,0]
 X, _, Z = np.moveaxis(grid, 2, 0)
 
 M = np.linalg.norm(ring0.getM(grid), axis=2)
 ax2.contourf(X, Z, M, cmap=plt.cm.hot_r)
 
-# plot styling
+# Plot styling
 ax1.set(
     title="|M| in xy-plane",
     xlabel="x-position",
@@ -181,7 +181,7 @@ Jx, Jy, _ = np.moveaxis(J, 2, 0)
 ax.contourf(X, Y, np.linalg.norm(J,axis=2), cmap=plt.cm.cool)
 ax.streamplot(X, Y, Jx, Jy, color='k', density=1.5)
 
-# plot styling
+# Plot styling
 ax.set(
     title="Polarization J in xy-plane",
     xlabel="x-position",

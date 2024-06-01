@@ -203,7 +203,7 @@ Magpylib offers many ways to customize the graphic output.
 ```python
 import magpylib as magpy
 
-# create Cuboid magnet with custom style
+# Create Cuboid magnet with custom style
 cube = magpy.magnet.Cuboid(
     polarization=(0,0,1),
     dimension=(.01,.01,.01),
@@ -211,7 +211,7 @@ cube = magpy.magnet.Cuboid(
     style_magnetization_mode='arrow'
 )
 
-# create Cylinder magnet with custom style
+# Create Cylinder magnet with custom style
 cyl = magpy.magnet.Cylinder(
     polarization=(0,0,1),
     dimension=(.01,.01),

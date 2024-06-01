@@ -22,7 +22,7 @@ It is very illustrative to combine 2D and 3D subplots when viewing the field alo
 import numpy as np
 import magpylib as magpy
 
-# define sensor with path
+# Define sensor with path
 cyl = magpy.magnet.Cylinder(
     polarization=(1, 0, 0),
     dimension=(2, 1),
@@ -30,7 +30,7 @@ cyl = magpy.magnet.Cylinder(
 )
 cyl.rotate_from_angax(angle=np.linspace(0, 300, 40), start=0, axis="z", anchor=0)
 
-# define magnet with path
+# Define magnet with path
 sens = magpy.Sensor(
     pixel=[(-.2, 0, 0), (.2, 0, 0)],
     position = np.linspace((0, 0, -3), (0, 0, 3), 40)
@@ -49,11 +49,11 @@ fig = plt.figure()
 ax1 = fig.add_subplot(121)
 ax2 = fig.add_subplot(122, projection='3d')
 
-# show pixel1 field on ax1
+# Show pixel1 field on ax1
 B = sens.getB(cyl)
 ax1.plot(B[:,0])
 
-# place 3D plot on ax2
+# Place 3D plot on ax2
 magpy.show(sens, cyl, canvas=ax2)
 
 plt.show()

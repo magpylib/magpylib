@@ -36,7 +36,7 @@ Animations are created with `show` by setting `animation=True`. It is also possi
 import numpy as np
 import magpylib as magpy
 
-# define magnet with path
+# Define magnet with path
 magnet = magpy.magnet.Cylinder(
     polarization=(1, 0, 0),
     dimension=(2, 1),
@@ -45,14 +45,14 @@ magnet = magpy.magnet.Cylinder(
 )
 magnet.rotate_from_angax(angle=np.linspace(0, 300, 40), start=0, axis="z", anchor=0)
 
-# define sensor with path
+# Define sensor with path
 sensor = magpy.Sensor(
     pixel=[(-.2, 0, 0), (.2, 0, 0)],
     position = np.linspace((0, 0, -3), (0, 0, 3), 40),
     style_label="sensor",
 )
 
-# display as animation - prefers plotly backend
+# Display as animation - prefers plotly backend
 magpy.show(sensor, magnet, animation=True, backend='plotly')
 ```
 

@@ -26,10 +26,10 @@ CAD files might include many Triangles, especially when dealing with round sides
 import pyvista as pv
 from magpylib.magnet import TriangularMesh
 
-# import *.stl file with Pyvista
+# Import *.stl file with Pyvista
 mesh = pv.read("logo.stl")
 
-# transform into Magpylib magnet
+# Transform into Magpylib magnet
 magnet = TriangularMesh.from_pyvista(
     polydata=mesh,
     polarization=(1,-1,0),

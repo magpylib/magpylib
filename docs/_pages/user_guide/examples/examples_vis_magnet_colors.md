@@ -30,14 +30,14 @@ With Magpylib users can easily tune the magnet color schemes. The `style` option
 ```{code-cell} ipython
 import magpylib as magpy
 
-# create a magnetization style dictionary
+# Create a magnetization style dictionary
 mstyle = dict(
     mode="color+arrow",
     color=dict(north="magenta", middle="white", south="turquoise"),
     arrow=dict(width=2, color="k")
 )
 
-# create magnet and apply style
+# Create magnet and apply style
 sphere = magpy.magnet.Sphere(
     polarization=(1, 1, 1),
     diameter=1,
@@ -45,7 +45,7 @@ sphere = magpy.magnet.Sphere(
     style_magnetization=mstyle,
 )
 
-# create a second magnet with different style
+# Create a second magnet with different style
 cube = magpy.magnet.Cuboid(
     polarization=(1, 0, 0),
     dimension=(1, .2, .2),
@@ -56,7 +56,7 @@ cube = magpy.magnet.Cuboid(
     style_magnetization_color_transition=0,
 )
 
-# create a third magnet with different style
+# Create a third magnet with different style
 cyl = magpy.magnet.CylinderSegment(
     polarization=(1, 0, 0),
     dimension=(1.7, 2, .3, -145, -35),
@@ -64,7 +64,7 @@ cyl = magpy.magnet.CylinderSegment(
 cyl.style.magnetization.color.north = "cornflowerblue"
 cyl.style.magnetization.color.south = "orange"
 
-# show
+# Show all three
 magpy.show(sphere, cube, cyl, backend='plotly', style_legend_show=False)
 ```
 

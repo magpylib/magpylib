@@ -107,7 +107,7 @@ B = B.reshape(grid.shape)
 Bx, By, _ = np.moveaxis(B, 2, 0)
 normB = np.linalg.norm(B, axis=2)
 
-# combine streamplot with contourf
+# Combine streamplot with contourf
 cp = ax.contourf(X, Y, normB, cmap="rainbow", levels=100)
 splt = ax.streamplot(X, Y, Bx, By, color="k", density=1.5, linewidth=1)
 

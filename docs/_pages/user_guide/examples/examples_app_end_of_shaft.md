@@ -26,7 +26,7 @@ import plotly.express as px
 import magpylib as magpy
 import plotly.graph_objects as go
 
-# create magnet
+# Create magnet
 magnet = magpy.magnet.Cylinder(
     polarization=(1, 0, 0),
     dimension=(.06, .02),
@@ -35,7 +35,7 @@ magnet = magpy.magnet.Cylinder(
     style_color=".7",
 )
 
-# create shaft dummy with 3D model
+# Create shaft dummy with 3D model
 shaft = magpy.misc.CustomSource(
     position=(0, 0, .07),
     style_color=".7",
@@ -50,14 +50,14 @@ shaft_trace = magpy.graphics.model3d.make_Prism(
 )
 shaft.style.model3d.add_trace(shaft_trace)
 
-# shaft rotation / magnet wobble motion
+# Shaft rotation / magnet wobble motion
 displacement = .01
 angles = np.linspace(0, 360, 72)
 coll = magnet + shaft
 magnet.move((displacement, 0, 0))
 coll.rotate_from_angax(angles, "z", anchor=0, start=0)
 
-# create sensor
+# Create sensor
 gap = .03
 sens = magpy.Sensor(
     position=(0, 0, -gap),
@@ -66,13 +66,13 @@ sens = magpy.Sensor(
     style_size=1.5,
 )
 
-# show 3D animation of wobble motion
+# Show 3D animation of wobble motion
 fig1 = go.Figure()
 magpy.show(magnet, sens, shaft, animation=True, backend="plotly", canvas=fig1)
 fig1.update_layout(scene_camera_eye_z=-1.1)
 fig1.show()
 
-# show sensor output in plotly
+# Show sensor output in plotly
 fig2 = go.Figure()
 df = sens.getB(magnet, output="dataframe")
 df["angle (deg)"] = angles[df["path"]]

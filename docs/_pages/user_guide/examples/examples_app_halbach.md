@@ -54,7 +54,7 @@ Next we compute and display the field on an xy-grid in the symmetry plane using 
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots()
 
-# compute and plot field on x-y grid
+# Compute and plot field on x-y grid
 grid = np.mgrid[-3.5:3.5:100j, -3.5:3.5:100j, 0:0:1j].T[0]
 X, Y, _ = np.moveaxis(grid, 2, 0)
 

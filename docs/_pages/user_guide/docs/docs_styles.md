@@ -62,7 +62,7 @@ All three examples result in the same default style. Once modified, the library 
 ```{code-cell} ipython3
 import magpylib as magpy
 
-# define Magpylib magnet objects
+# Define Magpylib magnet objects
 cube = magpy.magnet.Cuboid(polarization=(1, 0, 0), dimension=(1, 1, 1))
 cylinder = magpy.magnet.Cylinder(
     polarization=(0, -1, 0), dimension=(1, 1), position=(2, 0, 0)
@@ -71,11 +71,11 @@ sphere = magpy.magnet.Sphere(
     polarization=(0, 1, 1), diameter=1, position=(4, 0, 0)
 )
 
-# show with Magpylib default style
+# Show with Magpylib default style
 print("Default magnetization style")
 magpy.show(cube, cylinder, sphere, backend="plotly")
 
-# create and set user-defined default style for magnetization
+# Create and set user-defined default style for magnetization
 user_magnetization_style = {
     "show": True,
     "mode": "arrow+color",
@@ -99,7 +99,7 @@ user_magnetization_style = {
 }
 magpy.defaults.display.style.magnet.magnetization = user_magnetization_style
 
-# show with new default style
+# Show with new default style
 print("Custom magnetization style")
 magpy.show(cube, cylinder, sphere, backend="plotly")
 ```
@@ -150,16 +150,16 @@ In the following example `cube` has no individual style, so the default style is
 ```{code-cell} ipython3
 import magpylib as magpy
 
-# reset defaults from previous example
+# Reset defaults from previous example
 magpy.defaults.reset()
 
-# default style
+# Default style
 cube = magpy.magnet.Cuboid(
     polarization=(1, 0, 0),
     dimension=(1, 1, 1),
 )
 
-# good practice: define individual style at object init
+# Good practice: define individual style at object init
 cylinder = magpy.magnet.Cylinder(
     polarization=(0, 1, 0),
     dimension=(1, 1),
@@ -167,7 +167,7 @@ cylinder = magpy.magnet.Cylinder(
     style_magnetization_color_mode="tricycle",
 )
 
-# bad practice: set individual style after object init
+# Bad practice: set individual style after object init
 sphere = magpy.magnet.Sphere(
     polarization=(0, 1, 1),
     diameter=1,
@@ -175,7 +175,7 @@ sphere = magpy.magnet.Sphere(
 )
 sphere.style.magnetization.color.mode = "bicolor"
 
-# show
+# Show styled objects
 magpy.show(cube, cylinder, sphere, backend="plotly")
 ```
 
@@ -186,7 +186,7 @@ When displaying [Collection objects](guide-docs-classes-collections) their `colo
 ```{code-cell} ipython3
 import magpylib as magpy
 
-# define 3 magnets
+# Define 3 magnets
 cube = magpy.magnet.Cuboid(
     polarization=(1,0,0), dimension=(1,1,1)
 )
@@ -197,10 +197,10 @@ sphere = magpy.magnet.Sphere(
     polarization=(0,1,1), diameter=1, position=(4,0,0)
 )
 
-# create collection from 2 magnets
+# Create collection from 2 magnets
 coll = cube + cylinder
 
-# show
+# Show styled objects
 magpy.show(coll, sphere, backend="matplotlib")
 ```
 
@@ -232,7 +232,7 @@ sphere = magpy.magnet.Sphere(
     polarization=(0, 1, 1), diameter=1, position=(4, 0, 0)
 )
 
-# show with local style override
+# Show with local style override
 magpy.show(cube, cylinder, sphere, backend="plotly", style_magnetization_show=False)
 ```
 
@@ -273,7 +273,7 @@ The following example shows how a trace is constructed using the generic backend
 ```{code-cell} ipython3
 import magpylib as magpy
 
-# create trace dictionary
+# Create trace dictionary
 trace_mesh3d = {
     "backend": "generic",
     "constructor": "Mesh3d",
@@ -288,16 +288,16 @@ trace_mesh3d = {
     },
 }
 
-# create sensor
+# Create sensor
 sensor = magpy.Sensor(style_label="sensor")
 
-# disable default model
+# Disable default model
 sensor.style.model3d.showdefault = False
 
-# apply custom model
+# Apply custom model
 sensor.style.model3d.add_trace(trace_mesh3d)
 
-# show the system using different backends
+# Show the system using different backends
 for backend in magpy.SUPPORTED_PLOTTING_BACKENDS:
     print(f"Plotting backend: {backend!r}")
     magpy.show(sensor, backend=backend)
@@ -309,7 +309,7 @@ As noted above, it is possible to have multiple user-defined traces that will be
 import copy
 import numpy as np
 
-# generate trace and add to sensor
+# Generate trace and add to sensor
 ts = np.linspace(0, 2 * np.pi, 30)
 trace_scatter3d = {
     "backend": "generic",
@@ -323,14 +323,14 @@ trace_scatter3d = {
 }
 sensor.style.model3d.add_trace(trace_scatter3d)
 
-# generate new trace from Trace3d object
+# Generate new trace from Trace3d object
 trace2 = copy.deepcopy(sensor.style.model3d.data[1])
 trace2.kwargs["x"] = np.zeros(30)
 trace2.kwargs["z"] = 1.2*np.cos(ts)
 
 sensor.style.model3d.add_trace(trace2)
 
-# show
+# Show
 magpy.show(sensor)
 ```
 
@@ -411,7 +411,7 @@ Automatic trace generators are provided for several basic 3D models in `magpylib
 from magpylib import Collection
 from magpylib.graphics import model3d
 
-# prism trace ###################################
+# Prism trace ###################################
 trace_prism = model3d.make_Prism(
     base=6,
     diameter=2,
@@ -421,7 +421,7 @@ trace_prism = model3d.make_Prism(
 obj0 = Collection(style_label="Prism")
 obj0.style.model3d.add_trace(trace_prism)
 
-# pyramid trace #################################
+# Pyramid trace #################################
 trace_pyramid = model3d.make_Pyramid(
     base=30,
     diameter=2,
@@ -431,7 +431,7 @@ trace_pyramid = model3d.make_Pyramid(
 obj1 = Collection(style_label="Pyramid")
 obj1.style.model3d.add_trace(trace_pyramid)
 
-# cuboid trace ##################################
+# Cuboid trace ##################################
 trace_cuboid = model3d.make_Cuboid(
     dimension=(2, 2, 2),
     position=(0, 3, 0),
@@ -439,7 +439,7 @@ trace_cuboid = model3d.make_Cuboid(
 obj2 = Collection(style_label="Cuboid")
 obj2.style.model3d.add_trace(trace_cuboid)
 
-# cylinder segment trace ########################
+# Cylinder segment trace ########################
 trace_cylinder_segment = model3d.make_CylinderSegment(
     dimension=(1, 2, 1, 140, 220),
     position=(1, 0, -3),
@@ -447,7 +447,7 @@ trace_cylinder_segment = model3d.make_CylinderSegment(
 obj3 = Collection(style_label="Cylinder Segment")
 obj3.style.model3d.add_trace(trace_cylinder_segment)
 
-# ellipsoid trace ###############################
+# Ellipsoid trace ###############################
 trace_ellipsoid = model3d.make_Ellipsoid(
     dimension=(2, 2, 2),
     position=(0, 0, 3),
@@ -455,7 +455,7 @@ trace_ellipsoid = model3d.make_Ellipsoid(
 obj4 = Collection(style_label="Ellipsoid")
 obj4.style.model3d.add_trace(trace_ellipsoid)
 
-# arrow trace ###################################
+# Arrow trace ###################################
 trace_arrow = model3d.make_Arrow(
     base=30,
     diameter=0.6,
@@ -503,10 +503,10 @@ def trace_from_stl(stl_file):
     Generates a Magpylib 3D model trace dictionary from an *.stl file.
     backend: 'matplotlib' or 'plotly'
     """
-    # load stl file
+    # Load stl file
     stl_mesh = mesh.Mesh.from_file(stl_file)
 
-    # extract vertices and triangulation
+    # Extract vertices and triangulation
     p, q, r = stl_mesh.vectors.shape
     vertices, ixr = np.unique(
         stl_mesh.vectors.reshape(p * q, r), return_inverse=True, axis=0
@@ -516,7 +516,7 @@ def trace_from_stl(stl_file):
     k = np.take(ixr, [3 * k + 2 for k in range(p)])
     x, y, z = vertices.T
 
-    # create a generic backend trace
+    # Create a generic backend trace
     colors = stl_mesh.attr.flatten()
     facecolor = np.array([bin_color_to_hex(c) for c in colors]).T
     x, y, z = x / 1000, y / 1000, z / 1000  # mm->m
@@ -528,7 +528,7 @@ def trace_from_stl(stl_file):
     return trace
 
 
-# load stl file from online resource
+# Load stl file from online resource
 url = "https://raw.githubusercontent.com/magpylib/magpylib-files/main/PG-SSO-3-2.stl"
 file = url.split("/")[-1]
 with tempfile.TemporaryDirectory() as temp:
@@ -537,19 +537,19 @@ with tempfile.TemporaryDirectory() as temp:
         response = requests.get(url)
         f.write(response.content)
 
-    # create traces for both backends
+    # Create traces for both backends
     trace = trace_from_stl(fn)
 
-# create sensor and add CAD model
+# Create sensor and add CAD model
 sensor = magpy.Sensor(style_label="PG-SSO-3 package")
 sensor.style.model3d.add_trace(trace)
 
-# create magnet and sensor path
+# Create magnet and sensor path
 magnet = magpy.magnet.Cylinder(polarization=(0, 0, 1), dimension=(0.015, 0.02))
 sensor.position = np.linspace((-0.015, 0, 0.008), (-0.015, 0, -0.004), 21)
 sensor.rotate_from_angax(np.linspace(0, 180, 21), "z", anchor=0, start=0)
 
-# display with matplotlib and plotly backends
+# Display with matplotlib and plotly backends
 args = (sensor, magnet)
 kwargs = dict(style_path_frames=5)
 magpy.show(args, **kwargs, backend="matplotlib")
