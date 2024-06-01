@@ -133,6 +133,8 @@ The two figures show that the magnetization is zero outside of the cylinder, as 
 Finally, we want to show that the superposition gives the same result as a computation from the CylinderSegment solution.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 from magpylib.magnet import Cylinder, CylinderSegment
 
 # Create ring with CylinderSegment

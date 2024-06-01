@@ -90,6 +90,8 @@ class MagnetRing(magpy.Collection):
 This new `MagnetRing` class seamlessly integrates into Magpylib and makes use of the position and orientation interface, field computation and graphic display.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 # Add a sensor
 sensor = magpy.Sensor(position=(0, 0, 0))
 
@@ -109,6 +111,8 @@ magpy.show(ring, sensor, backend='plotly')
 The `MagnetRing` parameter `cubes` can be modified dynamically:
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 print(f"B-field at sensor for modified ring → {ring.getB(sensor).round(3)}")
 
 ring.cubes = 10
@@ -190,6 +194,8 @@ class MagnetRingAdv(magpy.Collection):
 We have removed the trace construction from the `_update` method, and instead provided `_custom_trace3d` as a callable.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 ring0 = MagnetRing()
 %time for _ in range(10): ring0.cubes=10
 

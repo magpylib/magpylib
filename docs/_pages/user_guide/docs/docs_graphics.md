@@ -146,6 +146,8 @@ The following examples demonstrate how to place the Magpylib `show` output in fi
 In **Matplotlib** we combine a 2D-field plot with the 3D show output and modify the 3D show output with a line.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 import matplotlib.pyplot as plt
 
 # Create Matplotlib figure with subplots
@@ -170,6 +172,8 @@ plt.show()
 In **Plotly** we combine a 2D-field plot with the 3D show output and modify the 3D show output with a line.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 import plotly.graph_objects as go
 
 # Create Plotly figure and subplots
@@ -198,6 +202,8 @@ fig.show()
 **Pyvista** is not made for 2D plotting. Here we simply add a line to the 3D show output.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 import pyvista as pv
 
 # Create Pyvista scene
@@ -279,7 +285,6 @@ Even with some implemented fail safes, such as a maximum frame rate and frame co
 ```
 
 (guide-graphics-subplots)=
-
 ## Built-in Subplots
 
 :::{versionadded} 4.4

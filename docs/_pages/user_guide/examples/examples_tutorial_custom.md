@@ -74,6 +74,8 @@ print(mono.getH((1, 0, 0)))
 Multiple of these sources can now be combined, making use of the Magpylib position/orientation interface.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 import matplotlib.pyplot as plt
 
 # Create two monopole charges
@@ -105,6 +107,8 @@ plt.show()
 While `CustomSource` is graphically represented by a simple marker by default, we can easily add a 3D model as described in {ref}`examples-own-3d-models`.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 # Load Sphere model
 trace_pole = magpy.graphics.model3d.make_Ellipsoid(
     dimension=np.array([.3, .3, .3]),
@@ -194,6 +198,8 @@ print(mono.getB((1, 0, 0)))
 The new class seamlessly integrates into the Magpylib interface as we show in the following example where we have a look at the Quadrupole field.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 import matplotlib.pyplot as plt
 
 # Create a quadrupole from four monopoles

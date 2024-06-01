@@ -57,6 +57,8 @@ coil2.show()
 **Model 3:** A [Helmholtz coil](https://en.wikipedia.org/wiki/Helmholtz_coil) is a device for producing a region of nearly uniform magnetic field. It consists of two coils on the same axis, carrying an equal electric current in the same direction. In classical layouts, the distance between the coils is similar to the coil radius.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 # Create a finite sized Helmholtz coil-pair
 coil1 = magpy.Collection()
 for z in np.linspace(-1, 1, 5):
@@ -81,6 +83,8 @@ helmholtz.show()
 Streamplot from Matplotlib is a powerful tool to outline the field lines. However, it must be understood that streamplot shows only a projection of the field onto the observation plane. All field components that point out of the plane become invisible. In out example we choose symmetry planes, where the perpendicular component is negligible.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots(1, 1, figsize=(6,5))
 
@@ -121,6 +125,8 @@ plt.show()
 While the optimal solution is given by two current loops, real world applications must deal with finite sizes and limited construction space. Here Magpylib enables fast analysis of different possible geometries.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots(1, 1, figsize=(6,5))
 

@@ -51,6 +51,8 @@ halbach.show(backend='plotly')
 Next we compute and display the field on an xy-grid in the symmetry plane using the [matplotlib streamplot](examples-vis-mpl-streamplot) example.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots()
 

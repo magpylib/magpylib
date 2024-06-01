@@ -88,7 +88,7 @@ The result cannot be used for magnetic field computation. Even if all faces were
 1. giving Pyvista a finer mesh to work with from the start
 2. Pyvista mesh cleaning (merge duplicate points, remove unused points, remove degenerate faces)
 
-The following code produces a clean magnet .
+The following code produces a clean magnet.
 
 ```{code-cell} ipython3
 import pyvista as pv

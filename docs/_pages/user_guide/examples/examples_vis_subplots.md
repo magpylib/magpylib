@@ -44,6 +44,8 @@ In the following, we demonstrate various ways how to generate 2D/3D subplot comb
 Customization is best done by adding the [Magpylib 3D-model](guide-graphics-show) to your own figure using the `canvas` kwarg.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 import matplotlib.pyplot as plt
 fig = plt.figure()
 ax1 = fig.add_subplot(121)
@@ -67,6 +69,8 @@ How to add and modify subplots in all three supported backends is demonstrated i
 For maximal efficiency, Magpylib offers auto-generated subplots of 3D models and the field along paths by providing the `show` function with proper input dictionaries.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 magpy.show(
     {"objects": [cyl, sens], "output": "Bx", "col": 1},
     {"objects": [cyl, sens], "output": "model3d", "col": 2},
@@ -81,6 +85,8 @@ Detailed information on built-in subplots is provided in the [user guide](guide-
 With a built-in context manager this functionality can be accessed with maximal ease
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 with magpy.show_context([cyl, sens], backend='plotly') as sc:
     sc.show(output="Bx", col=1, row=1)
     sc.show(output="By", col=1, row=2)

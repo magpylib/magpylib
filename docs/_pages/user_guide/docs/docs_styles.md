@@ -306,6 +306,8 @@ for backend in magpy.SUPPORTED_PLOTTING_BACKENDS:
 As noted above, it is possible to have multiple user-defined traces that will be displayed at the same time. The following example continuation demonstrates this by adding two more traces using the `Scatter3d` constructor in the generic backend. In addition, it showns how to copy and manipulate `Trace3d` objects.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 import copy
 import numpy as np
 
@@ -342,7 +344,6 @@ The following examples show how to construct traces with `plot`, `plot_surface` 
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import numpy as np
-
 import magpylib as magpy
 
 # plot trace ###########################

@@ -26,7 +26,6 @@ This is the fastest way to construct a pyramid magnet.
 
 ```{code-cell} ipython3
 import numpy as np
-
 import magpylib as magpy
 
 # Create pyramid magnet

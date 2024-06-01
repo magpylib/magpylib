@@ -45,6 +45,8 @@ print(f"collections: {coll.collections}")
 New additions are always added at the end. Use the **`add`** method or the parameters.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 # Copy adjusts object label automatically
 x2 = x1.copy()
 s2 = s1.copy()
@@ -65,6 +67,8 @@ print(f"collections: {coll.collections}")
 The **`describe`** method is a very convenient way to view a Collection structure, especially when the collection is nested, i.e., when containing other collections.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 # Add more objects
 c1.add(x2.copy())
 c2.add(s2.copy())
@@ -142,6 +146,8 @@ for child in coll:
 and makes it possible to directly reference to a child object by index:
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 print(coll[0])
 ```
 
@@ -168,7 +174,6 @@ The following example demonstrates how collections enable user-friendly manipula
 
 ```{code-cell} ipython3
 import numpy as np
-
 import magpylib as magpy
 
 # Construct two coils from windings
@@ -201,6 +206,8 @@ magpy.show(*helmholtz, animation=True, style_path_show=False)
 For magnetic field computation, a collection with source children behaves like a single source object, and a collection with sensor children behaves like a flat list of its sensors when provided as `sources` and `observers` input respectively.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 import matplotlib.pyplot as plt
 
 B = magpy.getB(helmholtz, (0.01, 0, 0))

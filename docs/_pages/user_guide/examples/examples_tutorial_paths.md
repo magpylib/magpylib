@@ -31,7 +31,6 @@ Absolute object paths are assigned at initialization or through the object prope
 ```{code-cell} ipython3
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-
 import magpylib as magpy
 
 # Create paths
@@ -58,7 +57,6 @@ magpy.show(sensor, cube, animation=True, backend="plotly")
 ```{code-cell} ipython3
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-
 import magpylib as magpy
 
 # Create paths
@@ -85,7 +83,6 @@ When the input is a vector, the path is by default appended.
 
 ```{code-cell} ipython3
 import numpy as np
-
 from magpylib.magnet import Sphere
 
 # Create paths
@@ -109,7 +106,6 @@ Complex paths can be created by merging multiple path operations. This is done w
 
 ```{code-cell} ipython3
 import numpy as np
-
 from magpylib.magnet import Cuboid
 
 # Create cube and set linear path
@@ -146,7 +142,6 @@ print(sensor.orientation.as_quat())
 ```
 
 (examples-tutorial-paths-edge-padding-end-slicing)=
-
 ## Edge-padding and end-slicing
 
 Magpylib will always make sure that object paths are in the right format, i.e., `position` and `orientation` attributes are of the same length. In addition, when objects with different path lengths are combined, e.g., when computing the field, the shorter paths are treated as static beyond their end to make the computation sensible. Internally, Magpylib follows a philosophy of edge-padding and end-slicing when adjusting paths.
@@ -157,7 +152,6 @@ In the following example the orientation attribute is padded by its edge value `
 
 ```{code-cell} ipython3
 from scipy.spatial.transform import Rotation as R
-
 import magpylib as magpy
 
 sensor = magpy.Sensor(
@@ -185,7 +179,6 @@ The idea behind **end-slicing** is that, whenever a path is automatically reduce
 
 ```{code-cell} ipython3
 from scipy.spatial.transform import Rotation as R
-
 from magpylib import Sensor
 
 sensor = Sensor(

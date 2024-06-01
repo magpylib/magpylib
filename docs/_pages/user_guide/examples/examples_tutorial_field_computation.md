@@ -38,7 +38,6 @@ All these functions will return the field in the shape of the input. In the foll
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.linalg import norm
-
 import magpylib as magpy
 
 fig, [[ax1,ax2], [ax3,ax4]] = plt.subplots(2, 2, figsize=(10, 10))
@@ -99,7 +98,6 @@ The following example shows a moving and rotating sensor with two pixels. At the
 
 ```{code-cell} ipython3
 import numpy as np
-
 import magpylib as magpy
 
 # Reset defaults set in previous example
@@ -154,6 +152,8 @@ B.shape
 Select the second cube (first index), the first sensor (second index), pixel 3-4 (index three and four) and the Bz-component of the field (index five)
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 B[1, 0, 2, 3, 2]
 ```
 
@@ -165,7 +165,6 @@ Instead of a NumPy `ndarray`, the field computation can also return a [pandas](h
 
 ```{code-cell} ipython3
 import numpy as np
-
 import magpylib as magpy
 
 cube = magpy.magnet.Cuboid(
@@ -195,6 +194,8 @@ B
 Plotting libraries such as [plotly](https://plotly.com/python/plotly-express/) or [seaborn](https://seaborn.pydata.org/introduction.html) can take advantage of this feature, as they can deal with `dataframes` directly.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 import plotly.express as px
 
 fig = px.line(
@@ -226,7 +227,6 @@ The functional interface will only outperform the object oriented interface if y
 
 ```{code-cell} ipython3
 import numpy as np
-
 import magpylib as magpy
 
 # Two different magnet dimensions

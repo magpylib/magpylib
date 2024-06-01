@@ -63,6 +63,8 @@ magpy.show(sensor, magnet, animation=True, backend='plotly')
 [Subplots](examples-vis-subplots) are a powerful tool to see the field along a path while viewing the 3D models at the same time. This is specifically illustrative as an animation where the field at the respective path position is indicated by a marker.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 magpy.show(
     dict(objects=[magnet, sensor], output=["Bx", "By", "Bz"], col=1),
     dict(objects=[magnet, sensor], output="model3d", col=2),
@@ -74,6 +76,8 @@ magpy.show(
 It is also possible to use the [show_context](guide-graphics-show_context) context manager.
 
 ```{code-cell} ipython3
+# Continuation from above - ensure previous code is executed
+
 with magpy.show_context([magnet, sensor], backend='plotly', animation=True) as sc:
     sc.show(output="Bx", col=1, row=1)
     sc.show(output="By", col=1, row=2)
