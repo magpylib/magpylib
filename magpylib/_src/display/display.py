@@ -55,7 +55,6 @@ class RegisteredBackend:
         cls,
         *objs,
         backend,
-        zoom=0,
         title=None,
         max_rows=None,
         max_cols=None,
@@ -118,13 +117,11 @@ class RegisteredBackend:
             objs,
             supports_colorgradient=self.supports["colorgradient"],
             backend=backend,
-            zoom=zoom,
             title=title,
             **frame_kwargs,
         )
         return self.show_func_getter()(
             data,
-            zoom=zoom,
             max_rows=max_rows,
             max_cols=max_cols,
             subplot_specs=subplot_specs,
@@ -180,7 +177,6 @@ def _show(
     *objects,
     backend=None,
     animation=False,
-    zoom=0,
     markers=None,
     **kwargs,
 ):
@@ -203,7 +199,6 @@ def _show(
 
     # input checks
     backend = check_format_input_backend(backend)
-    check_input_zoom(zoom)
     check_input_animation(animation)
     check_format_input_vector(
         markers,
@@ -231,7 +226,6 @@ def _show(
     return RegisteredBackend.show(
         backend=backend,
         *objects,
-        zoom=zoom,
         animation=animation,
         **kwargs,
     )

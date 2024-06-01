@@ -22,6 +22,7 @@ DEFAULT_ROW_COL_PARAMS = {
     "sumup": True,
     "pixel_agg": "mean",
     "in_out": "auto",
+    "zoom": 0,
     "units_length": "m",
 }
 
@@ -58,8 +59,7 @@ def place_and_orient_model3d(
     """places and orients mesh3d dict"""
     if orientation is None and position is None and units_length == "m" and scale == 1:
         return {**model_kwargs, **kwargs}
-    unit_factor = get_unit_factor(units_length, target_unit="m")
-    scale_factor = scale / unit_factor
+    length_factor = get_unit_factor(units_length, target_unit="m")
     position = (0.0, 0.0, 0.0) if position is None else position
     position = np.array(position, dtype=float)
     new_model_dict = {}
@@ -78,7 +78,7 @@ def place_and_orient_model3d(
 
     if orientation is not None:
         vertices = orientation.apply(vertices)
-    new_vertices = (vertices * scale_factor + position).T
+    new_vertices = (vertices * scale + position).T / length_factor
     new_vertices = np.reshape(new_vertices, vert_shape)
     for i, k in enumerate("xyz"):
         key = coordsargs[k]
@@ -259,7 +259,7 @@ def get_rot_pos_from_path(obj, show_path=None):
     return rots, poss, inds
 
 
-def get_flatten_objects_properties(*objs, colorsequence, **kwargs):
+def get_objects_props_by_row_col(*objs, colorsequence, **kwargs):
     """Return flat dict with objs as keys object properties as values.
     Properties include: row_cols, style, legendgroup, legendtext"""
     flat_objs = {}
@@ -268,14 +268,14 @@ def get_flatten_objects_properties(*objs, colorsequence, **kwargs):
             *obj["objects"], colorsequence=colorsequence, **kwargs
         )
         for subobj, props in flat_sub_objs.items():
-            if subobj in flat_objs:
-                props["row_cols"] = flat_objs[subobj]["row_cols"]
-            elif "row_cols" not in props:
-                props["row_cols"] = []
-            props["row_cols"].extend(
-                [(obj["row"], obj["col"], obj["output"], obj["units_length"])]
-            )
-        flat_objs.update(flat_sub_objs)
+            rc = obj["row"], obj["col"]
+            if rc not in flat_objs:
+                flat_objs[rc] = {
+                    "objects": {},
+                    "rc_params": {k: v for k, v in obj.items() if k != "objects"},
+                }
+            flat_objs[rc]["objects"][subobj] = props
+
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
     return flat_objs, kwargs
 
@@ -484,38 +484,46 @@ def getColorscale(
     return colorscale
 
 
-def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
+def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
     """
     Returns 3x2 array of the min and max ranges in x,y,z directions of input traces. Traces can be
     any plotly trace object or a dict, with x,y,z numbered parameters.
     """
-    trace3d_found = False
-    if traces:
-        ranges = {k: [] for k in "xyz"}
-        for tr in traces:
-            coords = "xyz"
-            if "constructor" in tr:
-                verts, *_ = get_vertices_from_model(
-                    model_args=tr.get("args", None),
-                    model_kwargs=tr.get("kwargs", None),
-                    coordsargs=tr.get("coordsargs", None),
-                )
-                tr = dict(zip("xyz", verts))
-            if "z" in tr:  # only extend range for 3d traces
-                trace3d_found = True
-                pts = np.array([tr[k] for k in coords], dtype="float64").T
-                try:  # for mesh3d, use only vertices part of faces for range calculation
-                    inds = np.array([tr[k] for k in "ijk"], dtype="int64").T
-                    pts = pts[inds]
-                except KeyError:
-                    # for 2d meshes, nothing special needed
-                    pass
-                pts = pts.reshape(-1, 3)
-                if pts.size != 0:
-                    min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
-                    for v, min_, max_ in zip(ranges.values(), *min_max):
-                        v.extend([min_, max_])
-        if trace3d_found:
+    ranges_rc = {}
+    tr_dim_count = {}
+    for tr in traces:
+        rc = tr.get("row", 1), tr.get("col", 1)
+        if rc not in ranges_rc:
+            ranges_rc[rc] = {k: [] for k in "xyz"}
+            tr_dim_count[rc] = {"2D": 0, "3D": 0}
+        coords = "xyz"
+        if "constructor" in tr:
+            verts, *_ = get_vertices_from_model(
+                model_args=tr.get("args", None),
+                model_kwargs=tr.get("kwargs", None),
+                coordsargs=tr.get("coordsargs", None),
+            )
+            tr = dict(zip("xyz", verts))
+        if "z" not in tr:  # only extend range for 3d traces
+            tr_dim_count[rc]["2D"] += 1
+        else:
+            tr_dim_count[rc]["3D"] += 1
+            ranges_rc[rc]["trace3d_found"] = True
+            pts = np.array([tr[k] for k in coords], dtype="float64").T
+            try:  # for mesh3d, use only vertices part of faces for range calculation
+                inds = np.array([tr[k] for k in "ijk"], dtype="int64").T
+                pts = pts[inds]
+            except KeyError:
+                # for 2d meshes, nothing special needed
+                pass
+            pts = pts.reshape(-1, 3)
+            if pts.size != 0:
+                min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
+                for v, min_, max_ in zip(ranges_rc[rc].values(), *min_max):
+                    v.extend([min_, max_])
+    for rc, ranges in ranges_rc.items():
+        if tr_dim_count[rc]["3D"]:
+            zo = zoom[rc] if isinstance(zoom, dict) else zoom
             # SET 3D PLOT BOUNDARIES
             # collect min/max from all elements
             r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
@@ -523,10 +531,11 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
             m = size.max() / 2
             m = 1 if m == 0 else m
             center = r.mean(axis=1)
-            ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
-    if not traces or not trace3d_found:
-        ranges = np.array([[-1.0, 1.0]] * 3)
-    return ranges
+            ranges = np.array([center - m * (1 + zo), center + m * (1 + zo)]).T
+        else:
+            ranges = np.array([[-1.0, 1.0]] * 3)
+        ranges_rc[rc] = ranges
+    return ranges_rc
 
 
 def group_traces(*traces):

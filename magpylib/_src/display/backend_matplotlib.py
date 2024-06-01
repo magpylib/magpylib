@@ -249,6 +249,7 @@ def display_matplotlib(
     """Display objects and paths graphically using the matplotlib library."""
     frames = data["frames"]
     ranges = data["ranges"]
+    labels = data["labels"]
 
     fig_kwargs = {} if not fig_kwargs else fig_kwargs
     fig_kwargs = {"dpi": 80, **fig_kwargs}
@@ -353,8 +354,8 @@ def display_matplotlib(
             count = count_with_labels.get(row_col_num, 0)
             if ax.name == "3d":
                 ax.set(
-                    **{f"{k}label": f"{k} (m)" for k in "xyz"},
-                    **{f"{k}lim": r for k, r in zip("xyz", ranges)},
+                    **{f"{k}label": labels[row_col_num][k] for k in "xyz"},
+                    **{f"{k}lim": r for k, r in zip("xyz", ranges[row_col_num])},
                 )
                 ax.set_box_aspect(aspect=(1, 1, 1))
                 if 0 < count <= legend_maxitems:
