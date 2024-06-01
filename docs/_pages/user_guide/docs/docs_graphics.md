@@ -47,7 +47,6 @@ Notice that objects and their paths are automatically assigned different colors.
 
 How objects are represented graphically (color, line thickness, etc.) is defined by their [style properties](guide-graphic-styles).
 
-
 (guide-graphic-backends)=
 ## Graphic backends
 
