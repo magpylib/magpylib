@@ -1,11 +1,12 @@
 [
     {
+        "name": "dev",
         "version": "dev",
         "url": "https://magpylib.readthedocs.io/en/latest/"
     },
     {
-        "name": "5.0.1 (stable)",
-        "version": "5.0.1",
+        "name": "5.0.2 (stable)",
+        "version": "5.0.2",
         "url": "https://magpylib.readthedocs.io/en/stable",
         "preferred": true
     },
