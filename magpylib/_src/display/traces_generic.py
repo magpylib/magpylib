@@ -387,7 +387,7 @@ def get_traces_2D(
     return traces
 
 
-def process_extra_trace(model):
+def process_extra_trace(model, units_length):
     "process extra trace attached to some magpylib object"
     extr = model["model3d"]
     model_kwargs = {**(extr.kwargs() if callable(extr.kwargs) else extr.kwargs)}
@@ -405,6 +405,7 @@ def process_extra_trace(model):
         position=model["position"],
         coordsargs=extr.coordsargs,
         scale=extr.scale,
+        units_length=units_length,
         return_model_args=True,
     )
     trace3d["kwargs"].update(kwargs)
@@ -500,24 +501,24 @@ def get_generic_traces3D(
             extr.update(extr.updatefunc())  # update before checking backend
             if extr.backend == "generic":
                 extr.update(extr.updatefunc())
-                tr_generic = {"opacity": style.opacity}
+                tr_non_generic = {"opacity": style.opacity}
                 ttype = extr.constructor.lower()
                 obj_extr_trace = extr.kwargs() if callable(extr.kwargs) else extr.kwargs
                 obj_extr_trace = {"type": ttype, **obj_extr_trace}
                 if ttype == "scatter3d":
                     for k in ("marker", "line"):
-                        tr_generic[f"{k}_color"] = tr_generic.get(
+                        tr_non_generic[f"{k}_color"] = tr_non_generic.get(
                             f"{k}_color", style.color
                         )
                 elif ttype == "mesh3d":
-                    tr_generic["showscale"] = tr_generic.get("showscale", False)
-                    tr_generic["color"] = tr_generic.get("color", style.color)
+                    tr_non_generic["showscale"] = tr_non_generic.get("showscale", False)
+                    tr_non_generic["color"] = tr_non_generic.get("color", style.color)
                 else:  # pragma: no cover
                     raise ValueError(
                         f"{ttype} is not supported, only 'scatter3d' and 'mesh3d' are"
                     )
-                tr_generic.update(linearize_dict(obj_extr_trace, separator="_"))
-                traces_generic.append(tr_generic)
+                tr_non_generic.update(linearize_dict(obj_extr_trace, separator="_"))
+                traces_generic.append(tr_non_generic)
 
     if is_mag_arrows:
         mag = input_obj.magnetization
@@ -577,7 +578,7 @@ def get_generic_traces3D(
             extr.update(extr.updatefunc())  # update before checking backend
             if extr.backend == extra_backend:
                 for orient, pos in zip(orientations, positions):
-                    tr_generic = {
+                    tr_non_generic = {
                         "model3d": extr,
                         "position": pos,
                         "orientation": orient,
@@ -595,8 +596,8 @@ def get_generic_traces3D(
                             "col": col,
                         },
                     }
-                    tr_generic = process_extra_trace(tr_generic)
-                    path_traces_extra_non_generic_backend.append(tr_generic)
+                    tr_non_generic = process_extra_trace(tr_non_generic, units_length)
+                    path_traces_extra_non_generic_backend.append(tr_non_generic)
         out.update({extra_backend: path_traces_extra_non_generic_backend})
     return out
 
@@ -764,10 +765,10 @@ def draw_frame(objs, colorsequence=None, autosize=None, **kwargs) -> Tuple:
                 *traces, *extra_backend_traces_1, zoom=objs_props["rc_params"]["zoom"]
             )
             # pylint: disable=no-member
-            unit_factor = get_unit_factor(rc_params["units_length"], target_unit="m")
+            length_factor = get_unit_factor(rc_params["units_length"], target_unit="m")
             autosize_out[rc] = (
                 np.mean(np.diff(ranges[rc])) / default_settings.display.autosizefactor
-            ) * unit_factor
+            ) / length_factor
         else:
             autosize_out = autosize
         to_resize_keys = {

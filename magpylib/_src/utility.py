@@ -253,7 +253,7 @@ def get_unit_factor(unit_input, *, target_unit):
         raise ValueError(
             f"Invalid unit input, must be one of {valid_inputs} got {unit_input!r}"
         )
-    factor = 10**factor_power
+    factor = 1 / (10**factor_power)
     return factor
 
 

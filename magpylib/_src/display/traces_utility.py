@@ -79,7 +79,7 @@ def place_and_orient_model3d(
 
     if orientation is not None:
         vertices = orientation.apply(vertices)
-    new_vertices = (vertices * scale + position).T / length_factor
+    new_vertices = (vertices * scale + position).T * length_factor
     new_vertices = np.reshape(new_vertices, vert_shape)
     for i, k in enumerate("xyz"):
         key = coordsargs[k]
