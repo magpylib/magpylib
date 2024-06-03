@@ -745,7 +745,7 @@ def draw_frame(objs, colorsequence=None, autosize=None, **kwargs) -> Tuple:
     traces_dict = {}
     extra_backend_traces = []
     autosize_out = {}
-    labels = {}
+    labels = {(1, 1): {k: "" for k in "xyz"}}
     zoom = {}
     for rc, objs_props in objs_props_by_row_col.items():
         if objs_props["rc_params"]["output"] != "model3d":

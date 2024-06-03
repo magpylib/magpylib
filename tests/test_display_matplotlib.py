@@ -422,8 +422,7 @@ def test_matplotlib_model3d_extra_updatefunc():
 
 def test_empty_display():
     """should not fail if nothing to display"""
-    ax = plt.subplot(projection="3d")
-    magpy.show(canvas=ax, backend="matplotlib", return_fig=True)
+    magpy.show(backend="matplotlib", return_fig=True)
 
 
 def test_graphics_model_mpl():

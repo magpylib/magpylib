@@ -535,6 +535,8 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
         else:
             ranges = np.array([[-1.0, 1.0]] * 3)
         ranges_rc[rc] = ranges
+    if not ranges_rc:
+        ranges_rc[(1, 1)] = np.array([[-1.0, 1.0]] * 3)
     return ranges_rc
 
 
