@@ -256,9 +256,10 @@ def get_traces_2D(
     sumup=True,
     pixel_agg=None,
     in_out="auto",
+    style_path_frames=None,
+    # pylint: disable=unused-argument
     units_length="m",
     zoom=0,
-    style_path_frames=None,
 ):
     """draws and animates sensor values over a path in a subplot"""
     # pylint: disable=import-outside-toplevel
