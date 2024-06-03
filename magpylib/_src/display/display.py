@@ -16,7 +16,6 @@ from magpylib._src.display.traces_utility import process_show_input_objs
 from magpylib._src.input_checks import check_format_input_backend
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.input_checks import check_input_animation
-from magpylib._src.input_checks import check_input_zoom
 from magpylib._src.utility import check_path_format
 
 disp_args = get_defaults_dict("display").keys()

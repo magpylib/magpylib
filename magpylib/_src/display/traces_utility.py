@@ -11,6 +11,7 @@ from scipy.spatial.transform import Rotation as RotScipy
 
 from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import linearize_dict
+from magpylib._src.input_checks import check_input_zoom
 from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import get_unit_factor
@@ -616,7 +617,7 @@ def process_show_input_objs(objs, **kwargs):
             obj = {**defaults, **obj, **kwargs}
         else:
             obj = {**defaults, "objects": obj, **kwargs}
-
+        check_input_zoom(obj.get("zoom", None))
         obj["objects"] = format_obj_input(
             obj["objects"], allow="sources+sensors+collections"
         )
