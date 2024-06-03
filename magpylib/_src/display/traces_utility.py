@@ -493,18 +493,20 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
     ranges_rc = {}
     tr_dim_count = {}
     for tr in traces:
-        rc = tr.get("row", 1), tr.get("col", 1)
-        if rc not in ranges_rc:
-            ranges_rc[rc] = {k: [] for k in "xyz"}
-            tr_dim_count[rc] = {"2D": 0, "3D": 0}
         coords = "xyz"
+        rc = tr.get("row", 1), tr.get("col", 1)
         if "constructor" in tr:
             verts, *_ = get_vertices_from_model(
                 model_args=tr.get("args", None),
                 model_kwargs=tr.get("kwargs", None),
                 coordsargs=tr.get("coordsargs", None),
             )
+            kwex = tr["kwargs_extra"]
             tr = dict(zip("xyz", verts))
+            rc = kwex["row"], kwex["col"]
+        if rc not in ranges_rc:
+            ranges_rc[rc] = {k: [] for k in "xyz"}
+            tr_dim_count[rc] = {"2D": 0, "3D": 0}
         if "z" not in tr:  # only extend range for 3d traces
             tr_dim_count[rc]["2D"] += 1
         else:
