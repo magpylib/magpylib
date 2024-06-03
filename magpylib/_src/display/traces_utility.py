@@ -15,6 +15,7 @@ from magpylib._src.input_checks import check_input_zoom
 from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import get_unit_factor
+from magpylib._src.utility import merge_dicts_with_conflict_check
 
 DEFAULT_ROW_COL_PARAMS = {
     "row": 1,
@@ -610,49 +611,51 @@ def subdivide_mesh_by_facecolor(trace):
 def process_show_input_objs(objs, **kwargs):
     """Extract max_rows and max_cols from obj list of dicts"""
     defaults = DEFAULT_ROW_COL_PARAMS.copy()
-    max_rows = max_cols = 1
-    flat_objs = []
-    new_objs = {}
-    subplot_specs = {}
+    identifiers = ("row", "col")
+    unique_fields = tuple(k for k in defaults if k not in identifiers)
+    sources_and_sensors_only = []
+    new_objs = []
     for obj in objs:
+        # add missing kwargs
         if isinstance(obj, dict):
             obj = {**defaults, **obj, **kwargs}
         else:
             obj = {**defaults, "objects": obj, **kwargs}
-        check_input_zoom(obj.get("zoom", None))
+
+        # extend objects list
         obj["objects"] = format_obj_input(
             obj["objects"], allow="sources+sensors+collections"
         )
-        flat_objs.extend(format_obj_input(obj["objects"], allow="sources+sensors"))
-        if obj["row"] is not None:
-            max_rows = max(max_rows, obj["row"])
-        if obj["col"] is not None:
-            max_cols = max(max_cols, obj["col"])
-        out = obj["output"]
-        key = (obj["row"], obj["col"], out if isinstance(out, str) else tuple(out))
-        if key not in new_objs:
-            new_objs[key] = obj
-        else:
-            new_objs[key]["objects"] = list(
-                dict.fromkeys(new_objs[key]["objects"] + obj["objects"])
-            )
-        current_subplot_specs = subplot_specs.get(key[:2], obj["output"])
-        if current_subplot_specs != obj["output"]:
-            raise ValueError(
-                f"Row/Col {key[:2]}, received conflicting output types "
-                f"{current_subplot_specs!r} vs {obj['output']!r}"
-            )
-        subplot_specs[key[:2]] = obj["output"]
+        sources_and_sensors_only.extend(
+            format_obj_input(obj["objects"], allow="sources+sensors")
+        )
+        new_objs.append(obj)
 
+    row_col_dict = merge_dicts_with_conflict_check(
+        new_objs,
+        target="objects",
+        identifiers=identifiers,
+        unique_fields=unique_fields,
+    )
+
+    # create subplot specs grid
+    row_cols = [*row_col_dict]
+    max_rows, max_cols = np.max(row_cols, axis=0).astype(int) if row_cols else (1, 1)
+    # convert to int to avoid np.int32 type conflicting with plolty subplot specs
+    max_rows, max_cols = int(max_rows), int(max_cols)
     specs = np.array([[{"type": "scene"}] * max_cols] * max_rows)
-    for inds, out in subplot_specs.items():
-        if out != "model3d":
-            specs[inds[0] - 1, inds[1] - 1] = {"type": "xy"}
+    for rc, obj in row_col_dict.items():
+        if obj["output"] != "model3d":
+            specs[rc[0] - 1, rc[1] - 1] = {"type": "xy"}
     if max_rows == 1 and max_cols == 1:
         max_rows = max_cols = None
+
+    for obj in row_col_dict.values():
+        check_input_zoom(obj.get("zoom", None))
+
     return (
-        list(new_objs.values()),
-        list(dict.fromkeys(flat_objs)),
+        list(row_col_dict.values()),
+        list(dict.fromkeys(sources_and_sensors_only)),
         max_rows,
         max_cols,
         specs,

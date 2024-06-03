@@ -765,11 +765,10 @@ def draw_frame(objs, colorsequence=None, autosize=None, **kwargs) -> Tuple:
             ranges_rc = get_scene_ranges(
                 *traces, *extra_backend_traces_1, zoom=objs_props["rc_params"]["zoom"]
             )
-            ranges = ranges_rc.get(rc, ranges_rc[(1, 1)])
             length_factor = get_unit_factor(rc_params["units_length"], target_unit="m")
             # pylint: disable=no-member
             factor = default_settings.display.autosizefactor * length_factor
-            autosize_out[rc] = np.mean(np.diff(ranges)) / factor
+            autosize_out[rc] = np.mean(np.diff(ranges_rc[rc])) / factor
         else:
             autosize_out = autosize
         to_resize_keys = {

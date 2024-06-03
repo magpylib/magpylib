@@ -522,7 +522,10 @@ def test_bad_show_inputs():
     )
     with pytest.raises(
         ValueError,
-        match=r"Row/Col .* received conflicting output types.*",
+        match=(
+            r"Conflicting parameters detected for {'row': 1, 'col': 1}:"
+            r" 'output' first got 'model3d' then 'Bx'."
+        ),
     ):
         with magpy.show_context(animation=False, sumup=True, pixel_agg="mean") as s:
             s.show(cyl1, sensor, col=1, output="Bx")
