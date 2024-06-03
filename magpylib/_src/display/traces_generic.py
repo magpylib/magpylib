@@ -534,9 +534,7 @@ def get_generic_traces3D(
         name_suff = tr.pop("name_suffix", None)
         name = tr.get("name", "") if legendtext is None else legendtext
         for orient, pos in zip(orientations, positions):
-            tr1 = place_and_orient_model3d(
-                tr, orientation=orient, position=pos, units_length=units_length
-            )
+            tr1 = place_and_orient_model3d(tr, orientation=orient, position=pos)
             if name_suff is not None:
                 tr1["name"] = f"{name}{name_suff}"
             temp_rot_traces.append(tr1)
@@ -549,6 +547,7 @@ def get_generic_traces3D(
     path_traces_generic = group_traces(*path_traces_generic)
 
     for tr in path_traces_generic:
+        tr.update(place_and_orient_model3d(tr, units_length=units_length))
         tr.update(row=row, col=col)
         if tr.get("opacity", None) is None:
             tr["opacity"] = style.opacity
