@@ -99,7 +99,7 @@ def apply_fig_ranges(fig, ranges, labels, apply2d=True):
                 f"{k}axis": {
                     "range": ranges[i],
                     "autorange": False,
-                    "title": labels[rc][k],
+                    "title": labels.get(rc, {k: "" for k in "xyz"})[k],
                 }
                 for i, k in enumerate("xyz")
             },
