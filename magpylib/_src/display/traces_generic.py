@@ -256,6 +256,8 @@ def get_traces_2D(
     sumup=True,
     pixel_agg=None,
     in_out="auto",
+    units_length="m",
+    zoom=0,
     style_path_frames=None,
 ):
     """draws and animates sensor values over a path in a subplot"""
@@ -767,6 +769,8 @@ def draw_frame(objs, colorsequence=None, autosize=None, **kwargs) -> Tuple:
             autosize_out[rc] = (
                 np.mean(np.diff(ranges[rc])) / default_settings.display.autosizefactor
             ) * unit_factor
+        else:
+            autosize_out = autosize
         to_resize_keys = {
             k for k, v in traces_dict_1.items() if v and "_autosize" in v[0]
         }

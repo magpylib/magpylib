@@ -353,10 +353,11 @@ def display_matplotlib(
         for row_col_num, ax in axes.items():
             count = count_with_labels.get(row_col_num, 0)
             if ax.name == "3d":
-                ax.set(
-                    **{f"{k}label": labels[row_col_num][k] for k in "xyz"},
-                    **{f"{k}lim": r for k, r in zip("xyz", ranges[row_col_num])},
-                )
+                if row_col_num in ranges:
+                    ax.set(
+                        **{f"{k}label": labels[row_col_num][k] for k in "xyz"},
+                        **{f"{k}lim": r for k, r in zip("xyz", ranges[row_col_num])},
+                    )
                 ax.set_box_aspect(aspect=(1, 1, 1))
                 if 0 < count <= legend_maxitems:
                     lg_kw = {"bbox_to_anchor": (1.04, 1), "loc": "upper left"}
