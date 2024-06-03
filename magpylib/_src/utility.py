@@ -241,13 +241,17 @@ _UNIT_PREFIX_REVERSED = {v: k for k, v in _UNIT_PREFIX.items()}
 
 
 @lru_cache(maxsize=None)
-def get_unit_factor(unit_input, *, target_unit):
+def get_unit_factor(unit_input, *, target_unit, deci_centi=True):
     """return unit factor based on input and target unit"""
     pref, factor_power = "", None
     if unit_input:
         if len(unit_input) == 2:
             pref, *_ = unit_input
-        factor_power = _UNIT_PREFIX_REVERSED.get(pref, None)
+        prefs = _UNIT_PREFIX_REVERSED
+        if deci_centi:
+            prefs = {**_UNIT_PREFIX_REVERSED, "d": -1, "c": -2}
+        factor_power = prefs.get(pref, None)
+
     if factor_power is None or len(unit_input) > 2:
         valid_inputs = [f"{k}{target_unit}" for k in _UNIT_PREFIX_REVERSED]
         raise ValueError(
