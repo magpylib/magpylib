@@ -1,6 +1,5 @@
 [
     {
-        "name": "dev",
         "version": "dev",
         "url": "https://magpylib.readthedocs.io/en/latest/"
     },
