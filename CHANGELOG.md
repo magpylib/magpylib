@@ -1,5 +1,11 @@
 # Changelog
 
+## [5.0.3] - 2024-06-03
+
+- Fix subplot object properties propagation ([#780](https://github.com/magpylib/magpylib/pull/780))
+- Migrate to pydata-sphinx-theme and fix docs search function ([#762](https://github.com/magpylib/magpylib/pull/762))
+- Fix docs version-switcher ([#782](https://github.com/magpylib/magpylib/pull/782))
+
 ## [5.0.2] - 2024-05-21
 - Fixed a display issue causing incorrect calculation of view box limits ([#772](https://github.com/magpylib/magpylib/pull/772))
 - Removed support for python 3.8 and 3.9 by now following the scientific-python.org support timelines ([#773](https://github.com/magpylib/magpylib/pull/773))
@@ -460,7 +466,9 @@ The first official release of the Magpylib library.
 
 ---
 
-[5.0.2]:https://github.com/magpylib/magpylib/compare/5.0.1...HEAD
+[Unreleased]:https://github.com/magpylib/magpylib/compare/5.0.3...HEAD
+[5.0.3]:https://github.com/magpylib/magpylib/compare/5.0.2...5.0.3
+[5.0.2]:https://github.com/magpylib/magpylib/compare/5.0.1...5.0.2
 [5.0.1]:https://github.com/magpylib/magpylib/compare/5.0.0...5.0.1
 [5.0.0]:https://github.com/magpylib/magpylib/compare/4.5.1...5.0.0
 [4.5.1]:https://github.com/magpylib/magpylib/compare/4.5.0...4.5.1
