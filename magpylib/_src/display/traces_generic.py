@@ -63,6 +63,7 @@ class MagpyMarkers:
             "y": y,
             "z": z,
             "mode": "markers",
+            "showlegend": style.legend.show,
             **marker_kwargs,
             **kwargs,
         }
