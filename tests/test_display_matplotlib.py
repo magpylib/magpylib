@@ -626,4 +626,4 @@ def test_bad_units_length(units_length):
     c = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
 
     with pytest.raises(ValueError, match=r"Invalid unit input.*"):
-        c.show(units_length=units_length, return_fig=True, backend="matpotlib")
+        c.show(units_length=units_length, return_fig=True, backend="matplotlib")
