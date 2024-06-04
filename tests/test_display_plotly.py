@@ -404,7 +404,7 @@ def test_units_length():
     )
     for ind, inp in enumerate(inputs):
         scene = getattr(fig.layout, f"scene{'' if ind==0 else ind+1}")
-        for j, k in enumerate("xyz"):
+        for k in "xyz":
             ax = getattr(scene, f"{k}axis")
             assert ax.title.text == f"{k} ({inp['units_length']})"
             factor = get_unit_factor(inp["units_length"], target_unit="m")
