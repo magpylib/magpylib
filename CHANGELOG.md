@@ -1,5 +1,8 @@
 # Changelog
 
+## [Unreleased] - YYYY-MM-DD
+
+
 ## [5.0.3] - 2024-06-03
 
 - Fix subplot object properties propagation ([#780](https://github.com/magpylib/magpylib/pull/780))
