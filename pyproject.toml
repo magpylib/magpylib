@@ -39,17 +39,18 @@ code_style = [
     "pre-commit",
 ]
 docs = [
-    "sphinx==7.2",
+    "pydata-sphinx-theme",
+    "sphinx==7.3",
     "sphinx-design",
     "sphinx-thebe",
     "sphinx-favicon",
     "sphinx-gallery",
     "sphinx-copybutton",
-    "sphinx-book-theme",
     "myst-nb",
     "pandas",
     "numpy-stl",
     "pyvista",
+    "magpylib-material-response",
 ]
 test = [
     "tox>=4.11",

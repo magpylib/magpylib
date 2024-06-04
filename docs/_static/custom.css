@@ -11,3 +11,29 @@ html[data-theme=dark] .bd-content img:not(.only-dark):not(.dark-light) {
 .sectiontext {
     margin-top:-40px;
 }
+
+
+/*
+hide vertical scrollbar - it always appears unwanted when there
+is no content
+*/
+
+.bd-sidebar {
+    overflow-y: auto;  /* Change to auto to only show scrollbar when necessary */
+}
+
+
+
+/* Adjust the height to ensure it fits within the viewport */
+/* .bd-sidebar {
+    max-height: calc(100vh - var(--header-height, 0px));
+} */
+
+
+/*
+Target the logo text
+*/
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.6em;
+}
