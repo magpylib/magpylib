@@ -3,6 +3,7 @@ import plotly.graph_objects as go
 import pytest
 
 import magpylib as magpy
+from magpylib._src.display.traces_utility import get_unit_factor
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 # pylint: disable=assignment-from-no-return
@@ -383,3 +384,29 @@ def test_legends():
     )
     assert [t.name for t in fig.data] == ["Plotly extra trace (1m|1m|1m)"] * 4
     assert [t.showlegend for t in fig.data] == [True, False, False, False]
+
+
+def test_units_length():
+    """test units lenghts"""
+
+    dims = (1, 2, 3)
+    c1 = magpy.magnet.Cuboid(dimension=dims, polarization=(1, 2, 3))
+    inputs = [
+        {"objects": c1, "row": 1, "col": 1, "units_length": "m", "zoom": 3},
+        {"objects": c1, "row": 1, "col": 2, "units_length": "dm", "zoom": 2},
+        {"objects": c1, "row": 2, "col": 1, "units_length": "cm", "zoom": 1},
+        {"objects": c1, "row": 2, "col": 2, "units_length": "mm", "zoom": 0},
+    ]
+    fig = magpy.show(
+        *inputs,
+        backend="plotly",
+        return_fig=True,
+    )
+    for ind, inp in enumerate(inputs):
+        scene = getattr(fig.layout, f"scene{'' if ind==0 else ind+1}")
+        for j, k in enumerate("xyz"):
+            ax = getattr(scene, f"{k}axis")
+            assert ax.title.text == f"{k} ({inp['units_length']})"
+            factor = get_unit_factor(inp["units_length"], target_unit="m")
+            r = (inp["zoom"] + 1) / 2 * factor * max(dims)
+            assert ax.range == (-r, r)

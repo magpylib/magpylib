@@ -446,7 +446,6 @@ def get_generic_traces3D(
     # pylint: disable=too-many-nested-blocks
     # pylint: disable=protected-access
     # pylint: disable=import-outside-toplevel
-
     style = input_obj.style
     is_mag_arrows = False
     is_mag = hasattr(input_obj, "magnetization") and hasattr(style, "magnetization")
@@ -811,7 +810,7 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
             x, y, z = obj._position.T
             traces_dict[obj] = [{"x": x, "y": y, "z": z, "_autosize": True}]
         else:
-            params.update(kwargs)
+            params = {**params, **kwargs}
             traces_dict[obj] = []
             orig_style = getattr(obj, "_style", None)
             try:

@@ -243,19 +243,24 @@ _UNIT_PREFIX_REVERSED = {v: k for k, v in _UNIT_PREFIX.items()}
 @lru_cache(maxsize=None)
 def get_unit_factor(unit_input, *, target_unit, deci_centi=True):
     """return unit factor based on input and target unit"""
-    pref, factor_power = "", None
-    if unit_input:
-        if len(unit_input) == 2:
-            pref, *_ = unit_input
-        prefs = _UNIT_PREFIX_REVERSED
-        if deci_centi:
-            prefs = {**_UNIT_PREFIX_REVERSED, "d": -1, "c": -2}
-        factor_power = prefs.get(pref, None)
+    if unit_input == target_unit:
+        return 1
+    pref, suff, factor_power = "", "", None
+    prefs = _UNIT_PREFIX_REVERSED
+    if deci_centi:
+        prefs = {**_UNIT_PREFIX_REVERSED, "d": -1, "c": -2}
+    unit_input_str = str(unit_input)
+    if unit_input_str:
+        if len(unit_input_str) >= 2:
+            pref, *suff = unit_input_str
+            suff = "".join(suff)
+        if suff == target_unit:
+            factor_power = prefs.get(pref, None)
 
-    if factor_power is None or len(unit_input) > 2:
-        valid_inputs = [f"{k}{target_unit}" for k in _UNIT_PREFIX_REVERSED]
+    if factor_power is None or len(unit_input_str) > 2:
+        valid_inputs = [f"{k}{target_unit}" for k in prefs]
         raise ValueError(
-            f"Invalid unit input, must be one of {valid_inputs} got {unit_input!r}"
+            f"Invalid unit input ({unit_input!r}), must be one of {valid_inputs}"
         )
     factor = 1 / (10**factor_power)
     return factor

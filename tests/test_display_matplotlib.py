@@ -617,3 +617,13 @@ def test_show_legend():
     s2.style.legend = "full legend replace"
     s3.style.description = "description replace only"
     magpy.show(s1, s2, s3, return_fig=True)
+
+
+@pytest.mark.parametrize("units_length", ["mT", "inch", "dam", "e"])
+def test_bad_units_length(units_length):
+    """test units lenghts"""
+
+    c = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+
+    with pytest.raises(ValueError, match=r"Invalid unit input.*"):
+        c.show(units_length=units_length, return_fig=True, backend="matpotlib")
