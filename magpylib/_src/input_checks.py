@@ -590,9 +590,6 @@ def check_format_input_obj(
     if "collections" in allow.split("+"):
         wanted_types += (Collection,)
 
-    if typechecks:
-        all_types = (BaseSource, Sensor, Collection)
-
     obj_list = []
     for obj in inp:
         # add to list if wanted type
@@ -609,7 +606,8 @@ def check_format_input_obj(
             )
 
         # typechecks
-        if typechecks and not isinstance(obj, all_types):
+        # pylint disable possibly-used-before-assignment
+        if typechecks and not isinstance(obj, (BaseSource, Sensor, Collection)):
             raise MagpylibBadUserInput(
                 f"Input objects must be {allow} or a flat list thereof.\n"
                 f"Instead received {type(obj)}."

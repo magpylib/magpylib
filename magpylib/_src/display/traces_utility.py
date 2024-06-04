@@ -283,10 +283,12 @@ def get_flatten_objects_properties_recursive(
         style = get_style(subobj, default_settings, **kwargs)
         if style.label is None:
             style.label = str(type(subobj).__name__)
-        if parent_legendgroup is not None:
-            legendgroup = parent_legendgroup
-        else:
-            legendgroup = f"{subobj}"
+        legendgroup = f"{subobj}" if parent_legendgroup is None else parent_legendgroup
+        label = (
+            get_legend_label(subobj, style=style)
+            if parent_label is None
+            else parent_label
+        )
         if parent_color is not None and style.color is None:
             style.color = parent_color
         elif style.color is None:
@@ -294,11 +296,10 @@ def get_flatten_objects_properties_recursive(
         flat_objs[subobj] = {
             "legendgroup": legendgroup,
             "style": style,
-            "legendtext": parent_label,
+            "legendtext": label,
             "showlegend": parent_showlegend,
         }
         if isCollection:
-            label = get_legend_label(subobj, style=style)
             flat_objs.update(
                 get_flatten_objects_properties_recursive(
                     *subobj.children,
@@ -499,10 +500,12 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
                     for v, min_, max_ in zip(ranges.values(), *min_max):
                         v.extend([min_, max_])
         if trace3d_found:
+            # SET 3D PLOT BOUNDARIES
+            # collect min/max from all elements
             r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
             size = np.diff(r, axis=1)
-            size[size == 0] = 1
             m = size.max() / 2
+            m = 1 if m == 0 else m
             center = r.mean(axis=1)
             ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
     if not traces or not trace3d_found:

@@ -501,11 +501,17 @@ class BaseCollection(BaseDisplayRepr):
         return self
 
     def _validate_getBH_inputs(self, *inputs):
-        """validate Collection.getBH inputs"""
+        """
+        select correct sources and observers for getBHJM_level2
+        """
         # pylint: disable=protected-access
         # pylint: disable=too-many-branches
+        # pylint: disable=possibly-used-before-assignment
         current_sources = format_obj_input(self, allow="sources")
         current_sensors = format_obj_input(self, allow="sensors")
+
+        # if collection includes source and observer objects, select itself as
+        #   source and observer in gethBH
         if current_sensors and current_sources:
             sources, sensors = self, self
             if inputs:
@@ -513,10 +519,17 @@ class BaseCollection(BaseDisplayRepr):
                     "Collections with sensors and sources do not allow `collection.getB()` inputs."
                     "Consider using `magpy.getB()` instead."
                 )
+        # if collection has no sources, *inputs must be the sources
         elif not current_sources:
             sources, sensors = inputs, self
+
+        # if collection has no sensors, *inputs must be the observers
         elif not current_sensors:
-            sources, sensors = self, inputs
+            if len(inputs) == 1:
+                sources, sensors = self, inputs[0]
+            else:
+                sources, sensors = self, inputs
+
         return sources, sensors
 
     def getB(
@@ -596,7 +609,6 @@ class BaseCollection(BaseDisplayRepr):
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
-
         return getBH_level2(
             sources,
             sensors,

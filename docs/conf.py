@@ -20,7 +20,6 @@ os.system("/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
 os.environ["DISPLAY"] = ":99"
 os.environ["PYVISTA_OFF_SCREEN"] = "true"
 os.environ["PYVISTA_USE_IPYVTK"] = "true"
-
 os.environ["MAGPYLIB_MPL_SVG"] = "true"
 
 # Location of Sphinx files
@@ -60,7 +59,7 @@ def setup(app):
 # -- Project information -----------------------------------------------------
 
 project = "Magpylib"
-copyright = "2022, SAL - Silicon Austria Labs"
+copyright = "2019-2024, Magpylib developers, License: BSD 2-clause, Built with Sphinx Pydata-Theme"
 author = "The Magpylib Project <magpylib@gmail.com>"
 
 # The short X.Y version
@@ -123,34 +122,52 @@ pygments_style = "sphinx"
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_book_theme"
+html_theme = "pydata_sphinx_theme"
 
-html_logo = "./_static/images/magpylib_flag.png"
+html_logo = "./_static/images/magpylib_logo.png"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
 
-# announcement = """
-# <p>⚠️ <b>Upcoming Soon: New Version 5 with breaking changes. We recommended to pin your dependencies to magpylib>=4.5<5 to avoid breaking changes!
-# <a href="https://github.com/magpylib/magpylib/discussions/647">(see details)</a>
-# ⚠️</b></p>
-# """
+# Define the json_url for our version switcher.
+json_url = "https://magpylib.readthedocs.io/en/latest/_static/switcher.json"
+
+# Define the version we use for matching in the version switcher.
+version_match = os.environ.get("READTHEDOCS_VERSION")
+
+# If READTHEDOCS_VERSION doesn't exist, we're not on RTD
+# If it is an integer, we're in a PR build and the version isn't correct.
+# If it's "latest" → change to "dev" (that's what we want the switcher to call it)
+if not version_match or version_match.isdigit() or version_match == "latest":
+    # For local development, infer the version to match from the package.
+    if "dev" in release or "rc" in release:
+        version_match = "dev"
+        # We want to keep the relative reference if we are in dev mode
+        # but we want the whole url if we are effectively in a released version
+        json_url = "_static/switcher.json"
+    else:
+        version_match = f"{release}"
+elif version_match == "stable":
+    version_match = f"{release}"
+
+
 html_theme_options = {
     # "announcement": announcement,
-    "repository_url": "https://github.com/magpylib/magpylib",
-    "path_to_docs": "docs/",
-    "repository_branch": release,
-    "use_repository_button": True,
-    "use_download_button": True,
-    "use_source_button": True,
-    "use_edit_page_button": True,
-    "use_issues_button": True,
-    "launch_buttons": {
-        "binderhub_url": "https://mybinder.org",
-        "thebe": True,
-        "notebook_interface": "jupyterlab",
+    "logo": {
+        "text": "Magpylib",
+        "image_dark": "./_static/images/magpylib_logo.png",
     },
+    "header_links_before_dropdown": 4,
+    "show_version_warning_banner": True,
+    "navbar_align": "content",  # [left, content, right] For testing that the navbar items align properly
+    "navbar_center": ["navbar-nav"],
+    "navbar_persistent": ["version-switcher"],
+    "switcher": {
+        "json_url": json_url,
+        "version_match": version_match,
+    },
+    "check_switcher": True,
     "icon_links": [
         {
             "name": "Github",
@@ -158,19 +175,25 @@ html_theme_options = {
             "icon": "https://img.shields.io/github/stars/magpylib/magpylib?style=social",
             "type": "url",
         },
-        {
-            "name": "PyPI",
-            "url": "https://pypi.org/project/magpylib/",
-            "icon": "https://img.shields.io/pypi/v/magpylib",
-            "type": "url",
-        },
-        {
-            "name": "Conda",
-            "url": "https://anaconda.org/conda-forge/magpylib",
-            "icon": "https://img.shields.io/conda/vn/conda-forge/magpylib",
-            "type": "url",
-        },
     ],
+    "navigation_with_keys": False,
+    "footer_start": ["copyright"],
+    "footer_end": [],
+    "use_edit_page_button": True,
+    "navigation_depth": 3,
+    "collapse_navigation": False,
+}
+
+# "show_nav_level": 2,  # Show navigation up to the second level
+# "navigation_depth": 4,  # Adjust the depth as needed
+# "collapse_navigation": True,  # Option to collapse navigation sections
+
+html_context = {
+    # "github_url": "https://github.com", # or your GitHub Enterprise site
+    "github_user": "magpylib",
+    "github_repo": "magpylib",
+    "github_version": "main",
+    "doc_path": "docs/",
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -187,8 +210,9 @@ html_css_files = ["custom.css"]
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
-# html_sidebars = {}
-
+html_sidebars = {
+    "**": ["search-field.html", "sidebar-nav-bs.html", "sidebar-ethical-ads.html"],
+}
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -333,7 +357,8 @@ favicons = [
 # import pyvista
 # pyvista.BUILDING_GALLERY = True
 
-html_last_updated_fmt = ""
-html_show_copyright = False
-html_show_sphinx = False
-show_authors = False
+# html_last_updated_fmt = ""
+# html_show_copyright = False
+# html_show_sphinx = False
+# show_authors = False
+# html_show_sourcelink = False

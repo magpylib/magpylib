@@ -6,12 +6,12 @@ build-backend = "flit_core.buildapi"
 name = "magpylib"
 dynamic = ["version"]
 dependencies = [
-    "numpy>=1.20",
-    "scipy>=1.7",
-    "matplotlib>=3.3",
-    "plotly>=5.3",
+    "numpy>=1.23",
+    "scipy>=1.8",
+    "matplotlib>=3.6",
+    "plotly>=5.16",
     ]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 authors = [
     {name = "Michael Ortner", email = "magpylib@gmail.com"},
 ]
@@ -25,10 +25,9 @@ keywords = ["magnetism", "physics", "analytical", "electromagnetic", "magnetic-f
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Education",
@@ -40,17 +39,18 @@ code_style = [
     "pre-commit",
 ]
 docs = [
-    "sphinx==7.2",
+    "pydata-sphinx-theme",
+    "sphinx==7.3",
     "sphinx-design",
     "sphinx-thebe",
     "sphinx-favicon",
     "sphinx-gallery",
     "sphinx-copybutton",
-    "sphinx-book-theme",
     "myst-nb",
     "pandas",
     "numpy-stl",
     "pyvista",
+    "magpylib-material-response",
 ]
 test = [
     "tox>=4.11",

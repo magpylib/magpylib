@@ -784,25 +784,30 @@ def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kw
         else:
             traces_dict[obj] = []
             rco_obj = params.pop("row_cols")
-            for rco in rco_obj:
-                params["row"], params["col"], output_typ = rco
-                if output_typ == "model3d":
-                    orig_style = None
-                    try:
-                        # temporary replace style attribute
-                        orig_style = obj.style
-                        obj._style = params.pop("style", None)
+            orig_style = getattr(obj, "_style", None)
+            try:
+                style_temp = params.pop("style", None)
+                for rco in rco_obj:
+                    # temporary replace style attribute
+                    obj._style = style_temp
+                    if len(rco_obj) >= 2 and style_temp:
+                        # deepcopy style only if obj is in multiple subplots.
+                        obj._style = style_temp.copy()
+                    params["row"], params["col"], output_typ = rco
+                    if output_typ == "model3d":
                         out_traces = get_generic_traces(
                             obj,
                             extra_backend=extra_backend,
                             autosize=autosize,
                             **params,
                         )
-                    finally:
-                        obj._style = orig_style
-                    if extra_backend:
-                        extra_backend_traces.extend(out_traces.get(extra_backend, []))
-                    traces_dict[obj].extend(out_traces["generic"])
+                        if extra_backend:
+                            extra_backend_traces.extend(
+                                out_traces.get(extra_backend, [])
+                            )
+                        traces_dict[obj].extend(out_traces["generic"])
+            finally:
+                obj._style = orig_style
     return traces_dict, traces_to_resize_dict, extra_backend_traces
 
 

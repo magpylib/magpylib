@@ -63,25 +63,13 @@ class Circle(BaseCurrent):
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
-    >>> src.rotate_from_angax(45, 'x')
+    >>> src.rotate_from_angax(90, 'x')
     Circle(id=...)
     >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
     >>> print(B)
-    [[-1.63585841e-24 -4.44388287e-05  4.44388287e-05]
-     [-6.55449367e-24 -4.44688604e-05  4.44688604e-05]
-     [-9.85948765e-24 -4.45190261e-05  4.45190261e-05]]
-
-    The same result is obtained when the rotated source moves along a path away from an
-    observer at position (1,1,1). This time we use a `Sensor` object as observer.
-
-    >>> src.move([(-.01,-.01,-.01), (-.02,-.02,-.02)])
-    Circle(id=...)
-    >>> sens = magpy.Sensor(position=(.01,.01,.01))
-    >>> B = src.getB(sens)
-    >>> print(B)
-    [[-1.63585841e-24 -4.44388287e-05  4.44388287e-05]
-     [-6.55449367e-24 -4.44688604e-05  4.44688604e-05]
-     [-9.85948765e-24 -4.45190261e-05  4.45190261e-05]]
+    [[-9.42595544e-09 -6.28318490e-05 -9.42595544e-09]
+     [-3.77179218e-08 -6.28317871e-05 -3.77179218e-08]
+     [-8.49179752e-08 -6.28315185e-05 -8.49179752e-08]]
     """
 
     _field_func = staticmethod(BHJM_circle)
