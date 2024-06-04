@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - name: Set up testing tools and environment for pylint
@@ -49,7 +49,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup python for test ${{ matrix.py }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.py }}
       - name: Install tox
@@ -71,7 +71,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
       - name: Set up Python 3.10
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - name: Install flit
