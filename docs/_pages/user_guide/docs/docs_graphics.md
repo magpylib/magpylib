@@ -422,3 +422,23 @@ with magpy.show_context(loop, sens, animation=True) as sc:
     sc.show(output=["Hx", "Hy", "Hz"], row=2)
     sc.show(output="Hxyz", col=2, row=2)
 ```
+
+
+### Canvas length units
+
+When displaying very small Magpylib objects, the axes scaling in meters might be inadequate and you may want to use other units that fit the system dimensions more nicely. The example below shows how to display an object (in this case the same) with different length units and zoom levels.
+
+```{code-cell} ipython3
+import magpylib as magpy
+
+c1 = magpy.magnet.Cuboid(
+    dimension=(1, 1, 1),
+    polarization=(1, 2, 3),
+)
+
+with magpy.show_context(c1, backend="plotly", plotly_fig_layout_height=800) as s:
+    s.show(row=1, col=1, units_length="m", zoom=3)
+    s.show(row=1, col=2, units_length="dm", zoom=2)
+    s.show(row=2, col=1, units_length="cm", zoom=1)
+    s.show(row=2, col=2, units_length="mm", zoom=0)
+```
