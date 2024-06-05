@@ -262,22 +262,26 @@ def get_rot_pos_from_path(obj, show_path=None):
 def get_objects_props_by_row_col(*objs, colorsequence, **kwargs):
     """Return flat dict with objs as keys object properties as values.
     Properties include: row_cols, style, legendgroup, legendtext"""
-    flat_objs = {}
+    flat_objs_rc = {}
+    rc_params_by_obj = {}
     for obj in objs:
-        flat_sub_objs = get_flatten_objects_properties_recursive(
-            *obj["objects"], colorsequence=colorsequence, **kwargs
-        )
-        for subobj, props in flat_sub_objs.items():
-            rc = obj["row"], obj["col"]
-            if rc not in flat_objs:
-                flat_objs[rc] = {
-                    "objects": {},
-                    "rc_params": {k: v for k, v in obj.items() if k != "objects"},
-                }
-            flat_objs[rc]["objects"][subobj] = props
-
+        rc = obj["row"], obj["col"]
+        rc_params = {k: v for k, v in obj.items() if k != "objects"}
+        for subobj in obj["objects"]:
+            if subobj not in rc_params_by_obj:
+                rc_params_by_obj[subobj] = []
+            rc_params_by_obj[subobj].append(rc_params)
+    flat_sub_objs = get_flatten_objects_properties_recursive(
+        *rc_params_by_obj, colorsequence=colorsequence, **kwargs
+    )
+    for obj, rc_params_list in rc_params_by_obj.items():
+        for rc_params in rc_params_list:
+            rc = rc_params["row"], rc_params["col"]
+            if rc not in flat_objs_rc:
+                flat_objs_rc[rc] = {"objects": {}, "rc_params": rc_params}
+            flat_objs_rc[rc]["objects"][obj] = flat_sub_objs[obj]
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
-    return flat_objs, kwargs
+    return flat_objs_rc, kwargs
 
 
 def get_flatten_objects_properties_recursive(
