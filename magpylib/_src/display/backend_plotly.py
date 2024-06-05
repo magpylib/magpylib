@@ -75,15 +75,17 @@ def match_args(ttype: str):
     return set(named_args)
 
 
-def apply_fig_ranges(fig, ranges_rc, labels, apply2d=True):
+def apply_fig_ranges(fig, ranges_rc, labels_rc, apply2d=True):
     """This is a helper function which applies the ranges properties of the provided `fig` object
-    according to a provided ranges. All three space direction will be equal and match the
-    maximum of the ranges needed to display all objects, including their paths.
+    according to a provided ranges for each subplot. All three space direction will be equal and
+    match the maximum of the ranges needed to display all objects, including their paths.
 
     Parameters
     ----------
-    ranges: array of dimension=(3,2)
+    ranges_rc: dict of arrays of dimension=(3,2)
         min and max graph range
+    labels_rc: dict of dicts
+        contains a dict with 'x', 'y', 'z' keys and respective labels as strings for each subplot
 
     apply2d: bool, default = True
         applies fixed range also on 2d traces
@@ -94,12 +96,13 @@ def apply_fig_ranges(fig, ranges_rc, labels, apply2d=True):
     """
     for rc, ranges in ranges_rc.items():
         row, col = rc
+        labels = labels_rc.get(rc, {k: "" for k in "xyz"})
         kwargs = {
             **{
                 f"{k}axis": {
                     "range": ranges[i],
                     "autorange": False,
-                    "title": labels.get(rc, {k: "" for k in "xyz"})[k],
+                    "title": labels[k],
                 }
                 for i, k in enumerate("xyz")
             },
@@ -359,7 +362,9 @@ def display_plotly(
         if extra_data:
             ranges_rc = get_scene_ranges(*frames[0]["data"])
         if update_layout:
-            apply_fig_ranges(fig, ranges_rc, labels=data["labels"], apply2d=isanimation)
+            apply_fig_ranges(
+                fig, ranges_rc, labels_rc=data["labels"], apply2d=isanimation
+            )
             fig.update_layout(
                 legend_itemsizing="constant",
                 # legend_groupclick="toggleitem",
