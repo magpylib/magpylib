@@ -243,7 +243,7 @@ _UNIT_PREFIX_REVERSED = {v: k for k, v in _UNIT_PREFIX.items()}
 @lru_cache(maxsize=None)
 def get_unit_factor(unit_input, *, target_unit, deci_centi=True):
     """return unit factor based on input and target unit"""
-    if unit_input == target_unit:
+    if unit_input is None or unit_input == target_unit:
         return 1
     pref, suff, factor_power = "", "", None
     prefs = _UNIT_PREFIX_REVERSED

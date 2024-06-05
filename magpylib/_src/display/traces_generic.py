@@ -748,7 +748,7 @@ def draw_frame(objs, colorsequence=None, autosize=None, **kwargs) -> Tuple:
     traces_dict = {}
     extra_backend_traces = []
     autosize_out = {}
-    labels = {(1, 1): {k: "" for k in "xyz"}}
+    labels = {(1, 1): {k: k for k in "xyz"}}
     zoom = {}
     for rc, objs_props in objs_props_by_row_col.items():
         if objs_props["rc_params"]["output"] != "model3d":
@@ -759,11 +759,12 @@ def draw_frame(objs, colorsequence=None, autosize=None, **kwargs) -> Tuple:
             objs_props["objects"], **rc_params, **kwargs
         )
         if autosize is None or autosize == "return":
-            labels[rc] = {k: f"{k} ({rc_params['units_length']})" for k in "xyz"}
+            unit_str = "" if not (ul := rc_params["units_length"]) else f" {ul}"
+            labels[rc] = {k: f"{k}{unit_str}" for k in "xyz"}
             zoom[rc] = objs_props["rc_params"]["zoom"]
             traces = [t for tr in traces_dict_1.values() for t in tr]
             ranges_rc = get_scene_ranges(
-                *traces, *extra_backend_traces_1, zoom=objs_props["rc_params"]["zoom"]
+                *traces, *extra_backend_traces_1, zoom=zoom[rc]
             )
             length_factor = get_unit_factor(rc_params["units_length"], target_unit="m")
             # pylint: disable=no-member
