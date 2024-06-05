@@ -759,7 +759,7 @@ def draw_frame(objs, colorsequence=None, autosize=None, **kwargs) -> Tuple:
             objs_props["objects"], **rc_params, **kwargs
         )
         if autosize is None or autosize == "return":
-            unit_str = "" if not (ul := rc_params["units_length"]) else f" {ul}"
+            unit_str = "" if not (ul := rc_params["units_length"]) else f" ({ul})"
             labels[rc] = {k: f"{k}{unit_str}" for k in "xyz"}
             zoom[rc] = objs_props["rc_params"]["zoom"]
             traces = [t for tr in traces_dict_1.values() for t in tr]
