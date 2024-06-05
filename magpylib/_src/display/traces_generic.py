@@ -24,14 +24,16 @@ from magpylib._src.display.traces_utility import get_legend_label
 from magpylib._src.display.traces_utility import get_objects_props_by_row_col
 from magpylib._src.display.traces_utility import get_rot_pos_from_path
 from magpylib._src.display.traces_utility import get_scene_ranges
-from magpylib._src.display.traces_utility import get_unit_factor
 from magpylib._src.display.traces_utility import getColorscale
 from magpylib._src.display.traces_utility import getIntensity
 from magpylib._src.display.traces_utility import group_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
+from magpylib._src.display.traces_utility import rescale_traces
 from magpylib._src.display.traces_utility import slice_mesh_from_colorscale
 from magpylib._src.style import DefaultMarkers
 from magpylib._src.utility import format_obj_input
+from magpylib._src.utility import get_unit_factor
+from magpylib._src.utility import unit_prefix
 
 
 class MagpyMarkers:
@@ -389,7 +391,7 @@ def get_traces_2D(
     return traces
 
 
-def process_extra_trace(model, units_length):
+def process_extra_trace(model):
     "process extra trace attached to some magpylib object"
     extr = model["model3d"]
     model_kwargs = {**(extr.kwargs() if callable(extr.kwargs) else extr.kwargs)}
@@ -398,6 +400,7 @@ def process_extra_trace(model, units_length):
         "constructor": extr.constructor,
         "kwargs": model_kwargs,
         "args": model_args,
+        "coordsargs": extr.coordsargs,
         "kwargs_extra": model["kwargs_extra"],
     }
     kwargs, args = place_and_orient_model3d(
@@ -407,7 +410,6 @@ def process_extra_trace(model, units_length):
         position=model["position"],
         coordsargs=extr.coordsargs,
         scale=extr.scale,
-        units_length=units_length,
         return_model_args=True,
     )
     trace3d["kwargs"].update(kwargs)
@@ -425,7 +427,6 @@ def get_generic_traces3D(
     extra_backend=False,
     row=1,
     col=1,
-    units_length="mm",
     **kwargs,
 ) -> list:
     """
@@ -549,7 +550,7 @@ def get_generic_traces3D(
     path_traces_generic = group_traces(*path_traces_generic)
 
     for tr in path_traces_generic:
-        tr.update(place_and_orient_model3d(tr, units_length=units_length))
+        tr.update(place_and_orient_model3d(tr))
         tr.update(row=row, col=col)
         if tr.get("opacity", None) is None:
             tr["opacity"] = style.opacity
@@ -597,7 +598,7 @@ def get_generic_traces3D(
                             "col": col,
                         },
                     }
-                    tr_non_generic = process_extra_trace(tr_non_generic, units_length)
+                    tr_non_generic = process_extra_trace(tr_non_generic)
                     path_traces_extra_non_generic_backend.append(tr_non_generic)
         out.update({extra_backend: path_traces_extra_non_generic_backend})
     return out
@@ -723,7 +724,7 @@ def extract_animation_properties(
     return path_indices, exp, frame_duration
 
 
-def draw_frame(objs, colorsequence=None, autosize=None, **kwargs) -> Tuple:
+def draw_frame(objs, *, colorsequence, rc_params, **kwargs) -> Tuple:
     """
     Creates traces from input `objs` and provided parameters, updates the size of objects like
     Sensors and Dipoles in `kwargs` depending on the canvas size.
@@ -747,31 +748,27 @@ def draw_frame(objs, colorsequence=None, autosize=None, **kwargs) -> Tuple:
     )
     traces_dict = {}
     extra_backend_traces = []
-    autosize_out = {}
-    labels = {(1, 1): {k: k for k in "xyz"}}
-    zoom = {}
+    rc_params = {} if rc_params is None else rc_params
     for rc, objs_props in objs_props_by_row_col.items():
         if objs_props["rc_params"]["output"] != "model3d":
             continue
-        rc_keys = ("row", "col", "units_length")
-        rc_params = {k: v for k, v in objs_props["rc_params"].items() if k in rc_keys}
+        rc_params[rc] = rc_params.get(rc, {})
+        rc_params[rc]["units_length"] = objs_props["rc_params"]["units_length"]
+        rc_keys = ("row", "col")
+        rc_kwargs = {k: v for k, v in objs_props["rc_params"].items() if k in rc_keys}
         traces_dict_1, extra_backend_traces_1 = get_traces_3D(
-            objs_props["objects"], **rc_params, **kwargs
+            objs_props["objects"], **rc_kwargs, **kwargs
         )
-        if autosize is None or autosize == "return":
-            unit_str = "" if not (ul := rc_params["units_length"]) else f" ({ul})"
-            labels[rc] = {k: f"{k}{unit_str}" for k in "xyz"}
-            zoom[rc] = objs_props["rc_params"]["zoom"]
+        rc_params[rc]["autosize"] = rc_params.get(rc, {}).get("autosize", None)
+        if rc_params[rc]["autosize"] is None:
+            rc_params[rc]["zoom"] = objs_props["rc_params"]["zoom"]
             traces = [t for tr in traces_dict_1.values() for t in tr]
             ranges_rc = get_scene_ranges(
-                *traces, *extra_backend_traces_1, zoom=zoom[rc]
+                *traces, *extra_backend_traces_1, zoom=rc_params[rc]["zoom"]
             )
-            length_factor = get_unit_factor(rc_params["units_length"], target_unit="m")
             # pylint: disable=no-member
-            factor = default_settings.display.autosizefactor * length_factor
-            autosize_out[rc] = np.mean(np.diff(ranges_rc[rc])) / factor
-        else:
-            autosize_out = autosize
+            autosizefactor = default_settings.display.autosizefactor
+            rc_params[rc]["autosize"] = np.mean(np.diff(ranges_rc[rc])) / autosizefactor
         to_resize_keys = {
             k for k, v in traces_dict_1.items() if v and "_autosize" in v[0]
         }
@@ -779,7 +776,7 @@ def draw_frame(objs, colorsequence=None, autosize=None, **kwargs) -> Tuple:
             k: v for k, v in objs_props["objects"].items() if k in to_resize_keys
         }
         traces_dict_2, extra_backend_traces_2 = get_traces_3D(
-            flat_objs_props, autosize=autosize_out.get(rc, None), **rc_params, **kwargs
+            flat_objs_props, autosize=rc_params[rc]["autosize"], **rc_kwargs, **kwargs
         )
         traces_dict.update(
             {(k, *rc): v for k, v in {**traces_dict_1, **traces_dict_2}.items()}
@@ -797,7 +794,7 @@ def draw_frame(objs, colorsequence=None, autosize=None, **kwargs) -> Tuple:
     return (
         traces,
         extra_backend_traces,
-        {"autosize": autosize_out, "labels": labels, "zoom": zoom},
+        rc_params,
     )
 
 
@@ -809,8 +806,7 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
     for obj, params in flat_objs_props.items():
         if autosize is None and getattr(obj, "_autosize", False):
             # temporary coordinates to be able to calculate ranges
-            factor = get_unit_factor(kwargs.get("units_length", "m"), target_unit="m")
-            x, y, z = obj._position.T * factor
+            x, y, z = obj._position.T
             traces_dict[obj] = [{"x": x, "y": y, "z": z, "_autosize": True}]
         else:
             params = {**params, **kwargs}
@@ -875,7 +871,7 @@ def get_frames(
     frames = []
 
     title_str = title
-    rc_params = {"autosize": "return"}
+    rc_params = {}
     for i, ind in enumerate(path_indices):
         extra_backend_traces = []
         if animation:
@@ -885,7 +881,7 @@ def get_frames(
         traces, extra_backend_traces, rc_params_temp = draw_frame(
             objs,
             colorsequence=colorsequence,
-            autosize=rc_params["autosize"],
+            rc_params=rc_params,
             supports_colorgradient=supports_colorgradient,
             extra_backend=backend,
             **kwargs,
@@ -900,14 +896,30 @@ def get_frames(
                 "extra_backend_traces": extra_backend_traces,
             }
         )
-
     clean_legendgroups(frames)
     traces = [t for frame in frames for t in frame["data"]]
-    ranges = get_scene_ranges(*traces, *extra_backend_traces, zoom=rc_params["zoom"])
+    zoom = {rc: v["zoom"] for rc, v in rc_params.items()}
+    ranges_rc = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
+    labels_rc = {(1, 1): {k: "" for k in "xyz"}}
+    scale_factors_rc = {}
+    for rc, params in rc_params.items():
+        units_length = params["units_length"]
+        if units_length == "auto":
+            rmax = np.amax(np.abs(ranges_rc[rc]))
+            units_length = f"{unit_prefix(rmax, as_tuple=True)[2]}m"
+        unit_str = "" if not (units_length) else f" ({units_length})"
+        labels_rc[rc] = {k: f"{k}{unit_str}" for k in "xyz"}
+        scale_factors_rc[rc] = get_unit_factor(units_length, target_unit="m")
+        ranges_rc[rc] *= scale_factors_rc[rc]
+
+    for frame in frames:
+        for key in ("data", "extra_backend_traces"):
+            frame[key] = rescale_traces(frame[key], factors=scale_factors_rc)
+
     out = {
         "frames": frames,
-        "ranges": ranges,
-        "labels": rc_params["labels"],
+        "ranges": ranges_rc,
+        "labels": labels_rc,
         "input_kwargs": {**kwargs, **animation_kwargs},
     }
     if animation:

@@ -266,7 +266,7 @@ def get_unit_factor(unit_input, *, target_unit, deci_centi=True):
     return factor
 
 
-def unit_prefix(number, unit="", precision=3, char_between="") -> str:
+def unit_prefix(number, unit="", precision=3, char_between="", as_tuple=False) -> str:
     """
     displays a number with given unit and precision and uses unit prefixes for the exponents from
     yotta (y) to Yocto (Y). If the exponent is smaller or bigger, falls back to scientific notation.
@@ -281,10 +281,13 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     char_between : str, optional
         character to insert between number of prefix. Can be " " or any string, if a space is wanted
         before the unit symbol , by default ""
+    as_tuple: bool, optional
+        if True returns (new_number_str, char_between, prefix, unit) tuple
+        else returns the joined string
     Returns
     -------
-    str
-        returns formatted number as string
+    str or tuple
+        returns formatted number as string or tuple
     """
     digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
     prefix = _UNIT_PREFIX.get(digits, "")
@@ -292,7 +295,10 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     if prefix == "":
         digits = 0
     new_number_str = f"{number / 10 ** digits:.{precision}g}"
-    return f"{new_number_str}{char_between}{prefix}{unit}"
+    res = (new_number_str, char_between, prefix, unit)
+    if as_tuple:
+        return res
+    return "".join(f"{v}" for v in res)
 
 
 def add_iteration_suffix(name):

@@ -3,8 +3,8 @@ import plotly.graph_objects as go
 import pytest
 
 import magpylib as magpy
-from magpylib._src.display.traces_utility import get_unit_factor
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.utility import get_unit_factor
 
 # pylint: disable=assignment-from-no-return
 # pylint: disable=no-member

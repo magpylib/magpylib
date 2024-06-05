@@ -14,7 +14,6 @@ from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.input_checks import check_input_zoom
 from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
-from magpylib._src.utility import get_unit_factor
 from magpylib._src.utility import merge_dicts_with_conflict_check
 
 DEFAULT_ROW_COL_PARAMS = {
@@ -55,13 +54,12 @@ def place_and_orient_model3d(
     coordsargs=None,
     scale=1,
     return_model_args=False,
-    units_length="m",
+    length_factor=1,
     **kwargs,
 ):
     """places and orients mesh3d dict"""
-    if orientation is None and position is None and units_length == "m" and scale == 1:
+    if orientation is None and position is None and length_factor == 1:
         return {**model_kwargs, **kwargs}
-    length_factor = get_unit_factor(units_length, target_unit="m")
     position = (0.0, 0.0, 0.0) if position is None else position
     position = np.array(position, dtype=float)
     new_model_dict = {}
@@ -541,6 +539,23 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
     if not ranges_rc:
         ranges_rc[(1, 1)] = np.array([[-1.0, 1.0]] * 3)
     return ranges_rc
+
+
+def rescale_traces(traces, factors):
+    """Rescale traces based on scale factors by (row,col) index"""
+    for ind, tr in enumerate(traces):
+        rc = tr.get("row", 1), tr.get("col", 1)
+        kw = {}
+        if "constructor" in tr:
+            kwex = tr["kwargs_extra"]
+            rc = kwex["row"], kwex["col"]
+            kw.update(
+                model_args=tr.get("args", None),
+                coordsargs=tr.get("coordsargs", None),
+            )
+        if "z" in tr:  # rescale only 3d traces
+            traces[ind] = place_and_orient_model3d(tr, length_factor=factors[rc], **kw)
+    return traces
 
 
 def group_traces(*traces):
