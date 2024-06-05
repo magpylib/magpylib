@@ -807,7 +807,8 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
     for obj, params in flat_objs_props.items():
         if autosize is None and getattr(obj, "_autosize", False):
             # temporary coordinates to be able to calculate ranges
-            x, y, z = obj._position.T
+            factor = get_unit_factor(kwargs.get("units_length", "m"), target_unit="m")
+            x, y, z = obj._position.T * factor
             traces_dict[obj] = [{"x": x, "y": y, "z": z, "_autosize": True}]
         else:
             params = {**params, **kwargs}
