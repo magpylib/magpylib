@@ -209,15 +209,7 @@ def _show(
     )
 
     if markers:
-        objects = [
-            *objects,
-            {
-                "objects": [MagpyMarkers(*markers)],
-                "row": 1,
-                "col": 1,
-                "output": "model3d",
-            },
-        ]
+        objects.append({"objects": [MagpyMarkers(*markers)], **DEFAULT_ROW_COL_PARAMS})
 
     if backend == "auto":
         backend = infer_backend(kwargs.get("canvas", None))

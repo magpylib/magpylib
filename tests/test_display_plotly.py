@@ -385,6 +385,16 @@ def test_legends():
     assert [t.name for t in fig.data] == ["Plotly extra trace (1m|1m|1m)"] * 4
     assert [t.showlegend for t in fig.data] == [True, False, False, False]
 
+    fig = magpy.show(
+        markers=[(0, 0, 0)],
+        backend="plotly",
+        style_legend_show=False,
+        return_fig=True,
+    )
+
+    assert [t.name for t in fig.data] == ["Marker"]
+    assert [t.showlegend for t in fig.data] == [False]
+
 
 def test_units_length():
     """test units lenghts"""
