@@ -512,7 +512,6 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
             tr_dim_count[rc]["2D"] += 1
         else:
             tr_dim_count[rc]["3D"] += 1
-            ranges_rc[rc]["trace3d_found"] = True
             pts = np.array([tr[k] for k in coords], dtype="float64").T
             try:  # for mesh3d, use only vertices part of faces for range calculation
                 inds = np.array([tr[k] for k in "ijk"], dtype="int64").T
