@@ -265,7 +265,6 @@ def get_objects_props_by_row_col(*objs, colorsequence, **kwargs):
     flat_objs_rc = {}
     rc_params_by_obj = {}
     for obj in objs:
-        rc = obj["row"], obj["col"]
         rc_params = {k: v for k, v in obj.items() if k != "objects"}
         for subobj in obj["objects"]:
             if subobj not in rc_params_by_obj:
