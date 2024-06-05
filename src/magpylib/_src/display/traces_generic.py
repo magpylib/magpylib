@@ -421,7 +421,7 @@ def get_traces_2D(
     return traces
 
 
-def process_extra_trace(model, units_length):
+def process_extra_trace(model):
     "process extra trace attached to some magpylib object"
     extr = model["model3d"]
     model_kwargs = {**(extr.kwargs() if callable(extr.kwargs) else extr.kwargs)}
@@ -440,7 +440,6 @@ def process_extra_trace(model, units_length):
         position=model["position"],
         coordsargs=extr.coordsargs,
         scale=extr.scale,
-        units_length=units_length,
         return_model_args=True,
         return_coordsargs=True,
     )
@@ -460,7 +459,6 @@ def get_generic_traces3D(
     extra_backend=False,
     row=1,
     col=1,
-    units_length="mm",
     **kwargs,
 ) -> list:
     """
