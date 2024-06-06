@@ -1,7 +1,8 @@
 # Changelog
 
 ## [Unreleased] - YYYY-MM-DD
-
+- Added `units_length` input to the `show` function to allow displaying axes with different length units. This parameter can be set individually for each subplot. ([#786](https://github.com/magpylib/magpylib/pull/786))
+- Fixed markers legend not being suppressible ([#789](https://github.com/magpylib/magpylib/pull/789))
 
 ## [5.0.3] - 2024-06-03
 
