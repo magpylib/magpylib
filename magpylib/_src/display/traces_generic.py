@@ -419,6 +419,7 @@ def process_extra_trace(model):
 
 def get_generic_traces3D(
     input_obj,
+    sources,
     autosize=None,
     legendgroup=None,
     legendtext=None,
@@ -462,6 +463,8 @@ def get_generic_traces3D(
     make_func_kwargs = {"legendgroup": legendgroup, **kwargs}
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
+    if hasattr(style, "pixel"):
+        make_func_kwargs["sources"] = sources
 
     has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
     path_traces_extra_non_generic_backend = []
@@ -734,6 +737,15 @@ def draw_frame(objs, *, colorsequence, rc_params, **kwargs) -> Tuple:
     traces_dicts, kwargs: dict, dict
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
+    sources = format_obj_input(
+        *{sub_obj for obj in objs for sub_obj in obj["objects"]},
+        allow="sources+collections",
+    )
+    sources = [
+        s
+        for s in sources
+        if not (isinstance(s, magpy.Collection) and not s.sources_all)
+    ]
     if colorsequence is None:
         # pylint: disable=no-member
         colorsequence = default_settings.display.colorsequence
@@ -757,7 +769,7 @@ def draw_frame(objs, *, colorsequence, rc_params, **kwargs) -> Tuple:
         rc_keys = ("row", "col")
         rc_kwargs = {k: v for k, v in objs_props["rc_params"].items() if k in rc_keys}
         traces_dict_1, extra_backend_traces_1 = get_traces_3D(
-            objs_props["objects"], **rc_kwargs, **kwargs
+            objs_props["objects"], sources=sources, **rc_kwargs, **kwargs
         )
         rc_params[rc]["autosize"] = rc_params.get(rc, {}).get("autosize", None)
         if rc_params[rc]["autosize"] is None:
@@ -776,7 +788,11 @@ def draw_frame(objs, *, colorsequence, rc_params, **kwargs) -> Tuple:
             k: v for k, v in objs_props["objects"].items() if k in to_resize_keys
         }
         traces_dict_2, extra_backend_traces_2 = get_traces_3D(
-            flat_objs_props, autosize=rc_params[rc]["autosize"], **rc_kwargs, **kwargs
+            flat_objs_props,
+            autosize=rc_params[rc]["autosize"],
+            sources=sources,
+            **rc_kwargs,
+            **kwargs,
         )
         traces_dict.update(
             {(k, *rc): v for k, v in {**traces_dict_1, **traces_dict_2}.items()}
@@ -798,7 +814,9 @@ def draw_frame(objs, *, colorsequence, rc_params, **kwargs) -> Tuple:
     )
 
 
-def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs):
+def get_traces_3D(
+    flat_objs_props, sources, extra_backend=False, autosize=None, **kwargs
+):
     """Return traces, traces to resize and extra_backend_traces"""
     # pylint: disable=protected-access
     extra_backend_traces = []
@@ -821,6 +839,7 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
                     obj._style = style_temp.copy()
                 out_traces = get_generic_traces3D(
                     obj,
+                    sources=sources,
                     extra_backend=extra_backend,
                     autosize=autosize,
                     **params,
