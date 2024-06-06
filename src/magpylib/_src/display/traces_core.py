@@ -526,10 +526,33 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
     Create the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
     For now, only "cube" shape is provided.
     """
-    pixels = [
-        make_BaseCuboid("plotly-dict", position=p, dimension=[size] * 3)
-        for p in positions
-    ]
+    # pylint: disable=import-outside-toplevel
+    from magpylib._src.fields.field_wrap_BH import getBH_level2
+
+    BH_array = getBH_level2(
+        sources,
+        [sensor],
+        sumup=True,
+        squeeze=False,
+        field="B",
+        pixel_agg=None,
+        output="ndarray",
+        in_out="auto",
+    )
+    print(BH_array.shape, positions.shape)
+
+    if symbol == "cube":
+        pixels = [
+            make_BaseCuboid("plotly-dict", position=p, dimension=[size] * 3)
+            for p in positions
+        ]
+    elif symbol == "cone":
+        pixels = [
+            make_BasePyramid(
+                "plotly-dict", position=p, base=5, diameter=size, height=size
+            )
+            for p in positions
+        ]
     return merge_mesh3d(*pixels)
 
 
@@ -590,7 +613,9 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
         if pixel_size > 0:
             pixel_dim *= pixel_size
             poss = pixel[1:] if one_pix else pixel
-            pixels_mesh = make_Pixels(positions=poss, size=pixel_dim)
+            pixels_mesh = make_Pixels(
+                sensor=obj, sources=sources, positions=poss, size=pixel_dim
+            )
             pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
         hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))

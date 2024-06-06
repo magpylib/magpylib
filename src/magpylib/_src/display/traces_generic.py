@@ -451,6 +451,7 @@ def process_extra_trace(model):
 
 def get_generic_traces3D(
     input_obj,
+    sources,
     autosize=None,
     legendgroup=None,
     legendtext=None,
@@ -494,6 +495,8 @@ def get_generic_traces3D(
     make_func_kwargs = {"legendgroup": legendgroup, **kwargs}
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
+    if hasattr(style, "pixel"):
+        make_func_kwargs["sources"] = sources
 
     has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
     path_traces_extra_non_generic_backend = []
@@ -801,6 +804,15 @@ def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> tup
     traces_dicts, kwargs: dict, dict
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
+    sources = format_obj_input(
+        *{sub_obj for obj in objs for sub_obj in obj["objects"]},
+        allow="sources+collections",
+    )
+    sources = [
+        s
+        for s in sources
+        if not (isinstance(s, magpy.Collection) and not s.sources_all)
+    ]
     if colorsequence is None:
         # pylint: disable=no-member
         colorsequence = default_settings.display.colorsequence
