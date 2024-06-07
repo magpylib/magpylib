@@ -127,6 +127,41 @@ def get_vertices_from_model(model_kwargs, model_args=None, coordsargs=None):
     return vertices, coordsargs, useargs
 
 
+def get_orientation_from_vec(vec, ref_axis=(0, 0, 1)):
+    """Compute rotation from input vector to reference axis.
+
+    Parameters
+    ----------
+    vec : array_like of shape (n,3)
+        Input vector (3D)
+    ref_axis : array_like, optional
+        Reference axis (3D), default is (0, 0, 1)
+
+    Returns
+    -------
+    RotScipy
+        Rotation object from input vector to reference axis
+    """
+    # normalize reference axis
+    norm = np.linalg.norm(ref_axis)
+    if norm != 0:
+        ref_axis = ref_axis / norm
+
+    # clean and normalize input vector
+    vec[np.isnan(vec).any(axis=1)] = [0, 0, 0]
+    norm = np.linalg.norm(vec, axis=1)
+    norm[norm == 0] = 1
+    vec = (vec.T / norm).T
+
+    # get angle and axis for rotvec
+    cross = np.cross(vec, ref_axis)
+    dot = np.dot(vec, ref_axis)
+    angle = np.arccos(dot)
+    rotvec = (-angle * cross.T).T
+    rotvec[(cross == 0).all(axis=1) & (dot == -1)] = [0, 0, np.pi]
+    return RotScipy.from_rotvec(rotvec)
+
+
 def draw_arrowed_line(
     vec,
     pos,

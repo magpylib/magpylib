@@ -428,6 +428,7 @@ def get_generic_traces3D(
     extra_backend=False,
     row=1,
     col=1,
+    path_ind=-1,
     **kwargs,
 ) -> list:
     """
@@ -464,7 +465,7 @@ def get_generic_traces3D(
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
     if hasattr(style, "pixel"):
-        make_func_kwargs["sources"] = sources
+        make_func_kwargs.update(sources=sources, path_ind=path_ind)
 
     has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
     path_traces_extra_non_generic_backend = []
@@ -755,6 +756,7 @@ def draw_frame(objs, *, colorsequence, rc_params, **kwargs) -> Tuple:
     style_path_frames = kwargs.get(
         "style_path_frames", [-1]
     )  # get before next func strips style
+    path_ind = style_path_frames[-1]
     objs_props_by_row_col, kwargs = get_objects_props_by_row_col(
         *objs, colorsequence=colorsequence, **kwargs
     )
@@ -769,7 +771,11 @@ def draw_frame(objs, *, colorsequence, rc_params, **kwargs) -> Tuple:
         rc_keys = ("row", "col")
         rc_kwargs = {k: v for k, v in objs_props["rc_params"].items() if k in rc_keys}
         traces_dict_1, extra_backend_traces_1 = get_traces_3D(
-            objs_props["objects"], sources=sources, **rc_kwargs, **kwargs
+            objs_props["objects"],
+            sources=sources,
+            path_ind=path_ind,
+            **rc_kwargs,
+            **kwargs,
         )
         rc_params[rc]["autosize"] = rc_params.get(rc, {}).get("autosize", None)
         if rc_params[rc]["autosize"] is None:
@@ -791,6 +797,7 @@ def draw_frame(objs, *, colorsequence, rc_params, **kwargs) -> Tuple:
             flat_objs_props,
             autosize=rc_params[rc]["autosize"],
             sources=sources,
+            path_ind=path_ind,
             **rc_kwargs,
             **kwargs,
         )
@@ -815,7 +822,7 @@ def draw_frame(objs, *, colorsequence, rc_params, **kwargs) -> Tuple:
 
 
 def get_traces_3D(
-    flat_objs_props, sources, extra_backend=False, autosize=None, **kwargs
+    flat_objs_props, sources, extra_backend=False, autosize=None, path_ind=-1, **kwargs
 ):
     """Return traces, traces to resize and extra_backend_traces"""
     # pylint: disable=protected-access
@@ -842,6 +849,7 @@ def get_traces_3D(
                     sources=sources,
                     extra_backend=extra_backend,
                     autosize=autosize,
+                    path_ind=path_ind,
                     **params,
                 )
                 if extra_backend:

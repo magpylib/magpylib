@@ -34,6 +34,7 @@ from magpylib._src.display.traces_utility import create_null_dim_trace
 from magpylib._src.display.traces_utility import draw_arrow_from_vertices
 from magpylib._src.display.traces_utility import draw_arrow_on_circle
 from magpylib._src.display.traces_utility import get_legend_label
+from magpylib._src.display.traces_utility import get_orientation_from_vec
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import triangles_area
@@ -522,25 +523,13 @@ def make_TriangularMesh(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, A
     return traces
 
 
-def make_Pixels(sensor, sources, positions, symbol="cone", size=1) -> Dict[str, Any]:
+def make_Pixels(
+    sensor, sources, positions, symbol="cone", size=1, path_ind=-1
+) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
     For now, only "cube" shape is provided.
     """
-    # pylint: disable=import-outside-toplevel
-    from magpylib._src.fields.field_wrap_BH import getBH_level2
-
-    BH_array = getBH_level2(
-        sources,
-        [sensor],
-        sumup=True,
-        squeeze=False,
-        field="B",
-        pixel_agg=None,
-        output="ndarray",
-        in_out="auto",
-    )
-    print(BH_array.shape, positions.shape)
 
     if symbol == "cube":
         pixels = [
@@ -548,16 +537,37 @@ def make_Pixels(sensor, sources, positions, symbol="cone", size=1) -> Dict[str, 
             for p in positions
         ]
     elif symbol == "cone":
+        # pylint: disable=import-outside-toplevel
+        from magpylib._src.fields.field_wrap_BH import getBH_level2
+
+        BH_array = getBH_level2(
+            sources,
+            [sensor],
+            sumup=True,
+            squeeze=False,
+            field="B",
+            pixel_agg=None,
+            output="ndarray",
+            in_out="auto",
+        )
+        # select first source (for sumup=True there is only one) and path index + reshape pixel
+        BH_array = BH_array[0][path_ind].reshape(-1, 3)
+        orientations = get_orientation_from_vec(BH_array)
         pixels = [
             make_BasePyramid(
-                "plotly-dict", position=p, base=5, diameter=size, height=size
+                "plotly-dict",
+                position=p,
+                orientation=o,
+                base=5,
+                diameter=size,
+                height=size * 2,
             )
-            for p in positions
+            for p, o in zip(positions, orientations)
         ]
     return merge_mesh3d(*pixels)
 
 
-def make_Sensor(obj, *, autosize, sources, **kwargs) -> Dict[str, Any]:
+def make_Sensor(obj, *, autosize, sources, path_ind, **kwargs) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
     provided arguments.
@@ -615,7 +625,11 @@ def make_Sensor(obj, *, autosize, sources, **kwargs) -> Dict[str, Any]:
             pixel_dim *= pixel_size
             poss = pixel[1:] if one_pix else pixel
             pixels_mesh = make_Pixels(
-                sensor=obj, sources=sources, positions=poss, size=pixel_dim
+                sensor=obj,
+                sources=sources,
+                positions=poss,
+                size=pixel_dim,
+                path_ind=path_ind,
             )
             pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
