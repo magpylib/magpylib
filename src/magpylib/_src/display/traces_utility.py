@@ -9,6 +9,8 @@ from functools import lru_cache
 from itertools import chain, cycle
 
 import numpy as np
+from matplotlib.colors import rgb2hex
+from plotly.colors import sample_colorscale
 from scipy.spatial.transform import Rotation as RotScipy
 
 from magpylib._src.defaults.defaults_classes import default_settings
@@ -845,3 +847,20 @@ def create_null_dim_trace(color=None, **kwargs):
     if color is not None:
         trace["marker_color"] = color
     return {**trace, **kwargs}
+
+
+def get_hexcolors_from_scale(values, colorscale="Rainbow", nan_color="#b2beb5"):
+    """Convert numerical values to hexadecimal colors based on a color scale.
+    Invalid value in the array a converted to the specified `nan_color`."""
+    values = np.array(values)
+    nan_mask = np.isnan(values)
+    valid = values[~nan_mask]
+    min_, max_ = np.min(valid), np.max(valid)
+    ptp = (max_ - min_) if max_ != min_ else 1
+    values = (values - min_) / ptp
+    rgb_colors = sample_colorscale(colorscale, values[~nan_mask], colortype=None)
+    hex_colors = [rgb2hex(rgb) for rgb in rgb_colors]
+    out = np.array([""] * len(values), dtype="<U10")
+    out[nan_mask] = nan_color
+    out[~nan_mask] = hex_colors
+    return out

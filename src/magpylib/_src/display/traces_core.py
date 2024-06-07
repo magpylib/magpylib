@@ -536,7 +536,7 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
         # pylint: disable=import-outside-toplevel
         from magpylib._src.fields.field_wrap_BH import getBH_level2
 
-        BH_array = getBH_level2(
+        field_array = getBH_level2(
             sources,
             [sensor],
             sumup=True,
@@ -547,10 +547,13 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
             in_out="auto",
         )
         # select first source (for sumup=True there is only one) and path index + reshape pixel
-        BH_array = BH_array[0][path_ind].reshape(-1, 3)
-        orientations = get_orientation_from_vec(BH_array)
-        pixels = [
-            make_BasePyramid(
+        field_array = field_array[0][path_ind].reshape(-1, 3)
+        orientations = get_orientation_from_vec(field_array)
+        field_mag = np.linalg.norm(field_array, axis=1)
+        hex_colors = get_hexcolors_from_scale(field_mag)
+        pixels = []
+        for p, o, c in zip(positions, orientations, hex_colors):
+            pix = make_BasePyramid(
                 "plotly-dict",
                 position=p,
                 orientation=o,
@@ -558,8 +561,8 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
                 diameter=size,
                 height=size * 2,
             )
-            for p, o in zip(positions, orientations)
-        ]
+            pix["facecolor"] = np.repeat(c, len(pix["i"]))
+            pixels.append(pix)
     return merge_mesh3d(*pixels)
 
 
@@ -574,6 +577,7 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
     style = obj.style
+    show_hull = True
     dimension = getattr(obj, "dimension", style.size)
     pixel = obj.pixel
     no_pix = pixel is None
@@ -627,14 +631,16 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
                 size=pixel_dim,
                 path_ind=path_ind,
             )
-            pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
+            if pixels_mesh.get("facecolor", None) is None:
+                pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
-        hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
-        hull_dim[hull_dim == 0] = pixel_dim / 2
-        hull_mesh = make_BaseCuboid(
-            "plotly-dict", position=hull_pos, dimension=hull_dim
-        )
-        hull_mesh["facecolor"] = np.repeat(style.color, len(hull_mesh["i"]))
-        meshes_to_merge.append(hull_mesh)
+        if show_hull:
+            hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
+            hull_dim[hull_dim == 0] = pixel_dim / 2
+            hull_mesh = make_BaseCuboid(
+                "plotly-dict", position=hull_pos, dimension=hull_dim
+            )
+            hull_mesh["facecolor"] = np.repeat(style.color, len(hull_mesh["i"]))
+            meshes_to_merge.append(hull_mesh)
     trace = merge_mesh3d(*meshes_to_merge)
     return {**trace, **kwargs}
