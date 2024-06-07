@@ -460,6 +460,7 @@ def get_generic_traces3D(
     extra_backend=False,
     row=1,
     col=1,
+    path_ind=-1,
     **kwargs,
 ) -> list:
     """
@@ -496,7 +497,7 @@ def get_generic_traces3D(
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
     if hasattr(style, "pixel"):
-        make_func_kwargs["sources"] = sources
+        make_func_kwargs.update(sources=sources, path_ind=path_ind)
 
     has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
     path_traces_extra_non_generic_backend = []
