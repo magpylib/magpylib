@@ -267,9 +267,11 @@ def get_objects_props_by_row_col(*objs, colorsequence, **kwargs):
     for obj in objs:
         rc_params = {k: v for k, v in obj.items() if k != "objects"}
         for subobj in obj["objects"]:
-            if subobj not in rc_params_by_obj:
-                rc_params_by_obj[subobj] = []
-            rc_params_by_obj[subobj].append(rc_params)
+            children = getattr(subobj, "children_all", [subobj])
+            for child in children:
+                if child not in rc_params_by_obj:
+                    rc_params_by_obj[child] = []
+                rc_params_by_obj[child].append(rc_params)
     flat_sub_objs = get_flatten_objects_properties_recursive(
         *rc_params_by_obj, colorsequence=colorsequence, **kwargs
     )
