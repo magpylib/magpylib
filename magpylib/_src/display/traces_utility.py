@@ -301,14 +301,17 @@ def get_objects_props_by_row_col(*objs, colorsequence, **kwargs):
     Properties include: row_cols, style, legendgroup, legendtext"""
     flat_objs_rc = {}
     rc_params_by_obj = {}
+    obj_list_semi_flat = [o for obj in objs for o in obj["objects"]]
     for obj in objs:
         rc_params = {k: v for k, v in obj.items() if k != "objects"}
         for subobj in obj["objects"]:
-            if subobj not in rc_params_by_obj:
-                rc_params_by_obj[subobj] = []
-            rc_params_by_obj[subobj].append(rc_params)
+            children = getattr(subobj, "children_all", [subobj])
+            for child in children:
+                if child not in rc_params_by_obj:
+                    rc_params_by_obj[child] = []
+                rc_params_by_obj[child].append(rc_params)
     flat_sub_objs = get_flatten_objects_properties_recursive(
-        *rc_params_by_obj, colorsequence=colorsequence, **kwargs
+        *obj_list_semi_flat, colorsequence=colorsequence, **kwargs
     )
     for obj, rc_params_list in rc_params_by_obj.items():
         for rc_params in rc_params_list:
