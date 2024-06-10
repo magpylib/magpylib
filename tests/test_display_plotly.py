@@ -396,6 +396,32 @@ def test_legends():
     assert [t.showlegend for t in fig.data] == [False]
 
 
+def test_color_precedence():
+    """Test if color precedence is respected when calling in nested collections"""
+    c1 = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    c2 = c1.copy(position=(1, 0, 0))
+    c3 = c1.copy(position=(2, 0, 0))
+    coll = magpy.Collection(c1, magpy.Collection(c2, c3))
+    kw = dict(
+        backend="plotly",
+        style_magnetization_show=False,
+        colorsequence=["red", "blue", "green"],
+        return_fig=True,
+    )
+    fig = magpy.show(coll, **kw)
+    assert [tr["color"] for tr in fig.data] == ["red"]
+
+    fig = magpy.show(*coll, **kw)
+    assert [tr["color"] for tr in fig.data] == ["red", "blue"]
+
+    fig = magpy.show(*coll.sources_all, **kw)
+    assert [tr["color"] for tr in fig.data] == ["red", "blue", "green"]
+
+    fig = magpy.show({"objects": c1, "col": 1}, {"objects": c1, "col": 2}, **kw)
+    # sane obj in different subplot should have same color
+    assert [tr["color"] for tr in fig.data] == ["red", "red"]
+
+
 def test_units_length():
     """test units lenghts"""
 
