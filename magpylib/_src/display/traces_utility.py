@@ -259,7 +259,7 @@ def get_rot_pos_from_path(obj, show_path=None):
     return rots, poss, inds
 
 
-def get_objects_props_by_row_col(*objs, colorsequence, **kwargs):
+def get_objects_props_by_row_col(*objs, colorsequence, style_kwargs):
     """Return flat dict with objs as keys object properties as values.
     Properties include: row_cols, style, legendgroup, legendtext"""
     flat_objs_rc = {}
@@ -274,7 +274,9 @@ def get_objects_props_by_row_col(*objs, colorsequence, **kwargs):
                     rc_params_by_obj[child] = []
                 rc_params_by_obj[child].append(rc_params)
     flat_sub_objs = get_flatten_objects_properties_recursive(
-        *obj_list_semi_flat, colorsequence=colorsequence, **kwargs
+        *obj_list_semi_flat,
+        style_kwargs=style_kwargs,
+        colorsequence=colorsequence,
     )
     for obj, rc_params_list in rc_params_by_obj.items():
         for rc_params in rc_params_list:
@@ -282,19 +284,18 @@ def get_objects_props_by_row_col(*objs, colorsequence, **kwargs):
             if rc not in flat_objs_rc:
                 flat_objs_rc[rc] = {"objects": {}, "rc_params": rc_params}
             flat_objs_rc[rc]["objects"][obj] = flat_sub_objs[obj]
-    kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
-    return flat_objs_rc, kwargs
+    return flat_objs_rc
 
 
 def get_flatten_objects_properties_recursive(
     *obj_list_semi_flat,
+    style_kwargs=None,
     colorsequence=None,
     color_cycle=None,
     parent_legendgroup=None,
     parent_color=None,
     parent_label=None,
     parent_showlegend=None,
-    **kwargs,
 ):
     """returns a flat dict -> (obj: display_props, ...) from nested collections"""
     if color_cycle is None:
@@ -302,7 +303,8 @@ def get_flatten_objects_properties_recursive(
     flat_objs = {}
     for subobj in dict.fromkeys(obj_list_semi_flat):
         isCollection = getattr(subobj, "children", None) is not None
-        style = get_style(subobj, default_settings, **kwargs)
+        style_kwargs = {} if style_kwargs is None else style_kwargs
+        style = get_style(subobj, default_settings, **style_kwargs)
         if style.label is None:
             style.label = str(type(subobj).__name__)
         legendgroup = f"{subobj}" if parent_legendgroup is None else parent_legendgroup
@@ -330,7 +332,7 @@ def get_flatten_objects_properties_recursive(
                 parent_color=style.color,
                 parent_label=label,
                 parent_showlegend=style.legend.show,
-                **kwargs,
+                style_kwargs=style_kwargs,
             )
             flat_objs = {**new_ojbs, **flat_objs}
     return flat_objs
