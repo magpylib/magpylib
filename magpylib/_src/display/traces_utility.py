@@ -24,7 +24,7 @@ DEFAULT_ROW_COL_PARAMS = {
     "pixel_agg": "mean",
     "in_out": "auto",
     "zoom": 0,
-    "units_length": "m",
+    "units_length": "auto",
 }
 
 
