@@ -3,6 +3,7 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
 # import numbers
+from contextlib import contextmanager
 from functools import lru_cache
 from inspect import signature
 from math import log10
@@ -493,3 +494,19 @@ def merge_dicts_with_conflict_check(objs, *, target, identifiers, unique_fields)
                 dict.fromkeys([*merged_dict[key][target], *obj[target]])
             )
     return merged_dict
+
+
+@contextmanager
+def style_temp_edit(obj, style_temp, copy=True):
+    """Temporary replace style to allow edits before returning to original state"""
+    # pylint: disable=protected-access
+    orig_style = getattr(obj, "_style", None)
+    try:
+        # temporary replace style attribute
+        obj._style = style_temp
+        if style_temp and copy:
+            # deepcopy style only if obj is in multiple subplots.
+            obj._style = style_temp.copy()
+        yield
+    finally:
+        obj._style = orig_style
