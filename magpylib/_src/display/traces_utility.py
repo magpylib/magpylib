@@ -26,7 +26,7 @@ DEFAULT_ROW_COL_PARAMS = {
     "pixel_agg": "mean",
     "in_out": "auto",
     "zoom": 0,
-    "units_length": "m",
+    "units_length": "auto",
 }
 
 
@@ -337,7 +337,7 @@ def get_flatten_objects_properties_recursive(
     if color_cycle is None:
         color_cycle = cycle(colorsequence)
     flat_objs = {}
-    for subobj in obj_list_semi_flat:
+    for subobj in dict.fromkeys(obj_list_semi_flat):
         isCollection = getattr(subobj, "children", None) is not None
         style = get_style(subobj, default_settings, **kwargs)
         if style.label is None:
@@ -359,18 +359,17 @@ def get_flatten_objects_properties_recursive(
             "showlegend": parent_showlegend,
         }
         if isCollection:
-            flat_objs.update(
-                get_flatten_objects_properties_recursive(
-                    *subobj.children,
-                    colorsequence=colorsequence,
-                    color_cycle=color_cycle,
-                    parent_legendgroup=legendgroup,
-                    parent_color=style.color,
-                    parent_label=label,
-                    parent_showlegend=style.legend.show,
-                    **kwargs,
-                )
+            new_ojbs = get_flatten_objects_properties_recursive(
+                *subobj.children,
+                colorsequence=colorsequence,
+                color_cycle=color_cycle,
+                parent_legendgroup=legendgroup,
+                parent_color=style.color,
+                parent_label=label,
+                parent_showlegend=style.legend.show,
+                **kwargs,
             )
+            flat_objs = {**new_ojbs, **flat_objs}
     return flat_objs
 
 

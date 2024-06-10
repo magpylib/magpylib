@@ -33,6 +33,7 @@ from magpylib._src.display.traces_utility import slice_mesh_from_colorscale
 from magpylib._src.style import DefaultMarkers
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import get_unit_factor
+from magpylib._src.utility import style_temp_edit
 from magpylib._src.utility import unit_prefix
 
 
@@ -260,6 +261,7 @@ def get_traces_2D(
     pixel_agg=None,
     in_out="auto",
     style_path_frames=None,
+    styles=None,
     # pylint: disable=unused-argument
     units_length="m",
     zoom=0,
@@ -326,7 +328,8 @@ def get_traces_2D(
         return obj_lst_str
 
     def get_label_and_color(obj):
-        style = obj.style
+        style = styles.get(obj, None)
+        style = obj.style if style is None else style
         label = get_legend_label(obj, style=style)
         color = getattr(style, "color", None)
         return label, color
@@ -808,9 +811,15 @@ def draw_frame(objs, *, colorsequence, rc_params, **kwargs) -> Tuple:
     traces = group_traces(*[t for tr in traces_dict.values() for t in tr])
 
     obj_list_2d = [o for o in objs if o["output"] != "model3d"]
+    styles = {
+        obj: params.get("style", None)
+        for o_rc in objs_props_by_row_col.values()
+        for obj, params in o_rc["objects"].items()
+    }
     for objs_2d in obj_list_2d:
         traces2d = get_traces_2D(
             **objs_2d,
+            styles=styles,
             style_path_frames=style_path_frames,
         )
         traces.extend(traces2d)
@@ -825,25 +834,18 @@ def get_traces_3D(
     flat_objs_props, sources, extra_backend=False, autosize=None, path_ind=-1, **kwargs
 ):
     """Return traces, traces to resize and extra_backend_traces"""
-    # pylint: disable=protected-access
     extra_backend_traces = []
     traces_dict = {}
     for obj, params in flat_objs_props.items():
         if autosize is None and getattr(obj, "_autosize", False):
             # temporary coordinates to be able to calculate ranges
+            # pylint: disable=protected-access
             x, y, z = obj._position.T
             traces_dict[obj] = [{"x": x, "y": y, "z": z, "_autosize": True}]
         else:
             params = {**params, **kwargs}
             traces_dict[obj] = []
-            orig_style = getattr(obj, "_style", None)
-            try:
-                style_temp = params.pop("style", None)
-                # temporary replace style attribute
-                obj._style = style_temp
-                if style_temp:
-                    # deepcopy style only if obj is in multiple subplots.
-                    obj._style = style_temp.copy()
+            with style_temp_edit(obj, style_temp=params.pop("style", None), copy=True):
                 out_traces = get_generic_traces3D(
                     obj,
                     sources=sources,
@@ -855,8 +857,6 @@ def get_traces_3D(
                 if extra_backend:
                     extra_backend_traces.extend(out_traces.get(extra_backend, []))
                 traces_dict[obj].extend(out_traces["generic"])
-            finally:
-                obj._style = orig_style
     return traces_dict, extra_backend_traces
 
 
