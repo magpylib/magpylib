@@ -805,15 +805,6 @@ def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> tup
     traces_dicts, kwargs: dict, dict
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
-    sources = format_obj_input(
-        *{sub_obj for obj in objs for sub_obj in obj["objects"]},
-        allow="sources+collections",
-    )
-    sources = [
-        s
-        for s in sources
-        if not (isinstance(s, magpy.Collection) and not s.sources_all)
-    ]
     if colorsequence is None:
         # pylint: disable=no-member
         colorsequence = default_settings.display.colorsequence
@@ -824,6 +815,17 @@ def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> tup
         colorsequence=colorsequence,
         style_kwargs=style_kwargs,
     )
+
+    styles = {
+        obj: params.get("style", None)
+        for o_rc in objs_rc.values()
+        for obj, params in o_rc["objects"].items()
+    }
+    if frame_ind == 0:
+        set_sensor_field_array(
+            [obj for props in objs_rc.values() for obj in props["objects"]],
+            styles,
+        )
     traces_dict = {}
     extra_backend_traces = []
     rc_params = {} if rc_params is None else rc_params
@@ -862,11 +864,6 @@ def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> tup
             extra_backend_traces.extend([*traces_ex1, *traces_ex2])
     traces = group_traces(*[t for tr in traces_dict.values() for t in tr])
 
-    styles = {
-        obj: params.get("style", None)
-        for o_rc in objs_rc.values()
-        for obj, params in o_rc["objects"].items()
-    }
     for props in objs_rc.values():
         if props["rc_params"]["output"] != "model3d":
             traces2d = get_traces_2D(
@@ -918,14 +915,15 @@ def get_frames(
 
     title_str = title
     rc_params = {}
-    for i, ind in enumerate(path_indices):
+    for frame_ind, path_ind in enumerate(path_indices):
         extra_backend_traces = []
         if animation:
-            style_kwargs["style_path_frames"] = [ind]
+            style_kwargs["style_path_frames"] = [path_ind]
             title = "Animation 3D - " if title is None else title
             title_str = f"""{title}path index: {ind + 1:0{exp}d}"""
         traces, extra_backend_traces, rc_params_temp = draw_frame(
             objs,
+            frame_ind=frame_ind,
             colorsequence=colorsequence,
             rc_params=rc_params,
             supports_colorgradient=supports_colorgradient,
@@ -933,12 +931,12 @@ def get_frames(
             style_kwargs=style_kwargs,
             **kwargs,
         )
-        if i == 0:  # get the dipoles and sensors autosize from first frame
+        if frame_ind == 0:  # get the dipoles and sensors autosize from first frame
             rc_params = rc_params_temp
         frames.append(
             {
                 "data": traces,
-                "name": str(ind + 1),
+                "name": str(path_ind + 1),
                 "layout": {"title": title_str},
                 "extra_backend_traces": extra_backend_traces,
             }
