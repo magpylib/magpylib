@@ -525,44 +525,22 @@ def make_TriangularMesh(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, A
 
 
 def make_Pixels(
-    sensor,
     *,
-    sources,
     positions,
-    path_ind=-1,
-    symbol="cone",
+    symbol,
     size=1,
+    field_array=None,
 ) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
     For now, only "cube" shape is provided.
     """
-
-    if symbol == "cube":
-        pixels = [
-            make_BaseCuboid("plotly-dict", position=p, dimension=[size] * 3)
-            for p in positions
-        ]
-    elif symbol == "cone":
-        # pylint: disable=import-outside-toplevel
-        from magpylib._src.fields.field_wrap_BH import getBH_level2
-
-        field_array = getBH_level2(
-            sources,
-            [sensor],
-            sumup=True,
-            squeeze=False,
-            field="B",
-            pixel_agg=None,
-            output="ndarray",
-            in_out="auto",
-        )
-        # select first source (for sumup=True there is only one) and path index + reshape pixel
-        field_array = field_array[0][path_ind].reshape(-1, 3)
-        orientations = get_orientation_from_vec(field_array)
+    if field_array is not None:
         field_mag = np.linalg.norm(field_array, axis=1)
         hex_colors = get_hexcolors_from_scale(field_mag)
-        pixels = []
+    pixels = []
+    if symbol == "." and field_array is not None:
+        orientations = get_orientation_from_vec(field_array)
         for p, o, c in zip(positions, orientations, hex_colors):
             pix = make_BasePyramid(
                 "plotly-dict",
@@ -574,10 +552,20 @@ def make_Pixels(
             )
             pix["facecolor"] = np.repeat(c, len(pix["i"]))
             pixels.append(pix)
+    else:
+        for ind, p in enumerate(positions):
+            pix = make_BaseCuboid(
+                "plotly-dict",
+                position=p,
+                dimension=[size] * 3,
+            )
+            if field_array is not None:
+                pix["facecolor"] = np.repeat(hex_colors[ind], len(pix["i"]))
+            pixels.append(pix)
     return merge_mesh3d(*pixels)
 
 
-def make_Sensor(obj, *, autosize, sources, **kwargs) -> Dict[str, Any]:
+def make_Sensor(obj, *, autosize, path_ind, **kwargs) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
     provided arguments.
@@ -635,11 +623,13 @@ def make_Sensor(obj, *, autosize, sources, **kwargs) -> Dict[str, Any]:
         if pixel_size > 0:
             pixel_dim *= pixel_size
             poss = pixel[1:] if one_pix else pixel
+            field_array = getattr(obj, "__field_array", None)
+            field_array = None if field_array is None else field_array[path_ind]
             pixels_mesh = make_Pixels(
-                sensor=obj,
-                sources=sources,
+                field_array=field_array,
                 positions=poss,
                 size=pixel_dim,
+                symbol=style.pixel.symbol,
             )
             if pixels_mesh.get("facecolor", None) is None:
                 pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))

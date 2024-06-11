@@ -490,7 +490,10 @@ def get_generic_traces3D(
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
     if hasattr(style, "pixel"):
-        make_func_kwargs.update(sources=sources)
+        frames = style.path.frames
+        # TODO adapt to frames generally, not just last one
+        path_ind = frames[-1] if not isinstance(frames, numbers.Number) else -1
+        make_func_kwargs.update(path_ind=path_ind)
 
     has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
     path_traces_extra_non_generic_backend = []
@@ -783,7 +786,44 @@ def get_traces_3D(
     return traces_dict, extra_backend_traces
 
 
-def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> Tuple:
+def set_sensor_field_array(objects, styles):
+    # pylint: disable=import-outside-toplevel
+    from magpylib._src.fields.field_wrap_BH import getBH_level2
+
+    sources = format_obj_input(objects, allow="sources+collections")
+    sources = [
+        s
+        for s in sources
+        if not (isinstance(s, magpy.Collection) and not s.sources_all)
+    ]
+    sensors = format_obj_input(objects, allow="sensors+collections")
+    sensors = [
+        sub_s
+        for s in sensors
+        for sub_s in (s.sensors_all if isinstance(s, magpy.Collection) else [s])
+    ]
+    for sens in sensors:
+        # TODO change trigger for field array
+        if styles[sens].pixel.symbol == ".":
+            field_array = getBH_level2(
+                sources,
+                [sens],
+                sumup=True,
+                squeeze=False,
+                field="B",
+                pixel_agg=None,
+                output="ndarray",
+                in_out="auto",
+            )
+            # select first source (for sumup=True there is only one) and path index + reshape pixel
+            path_len = field_array.shape[1]
+            field_array = field_array[0].reshape(path_len, -1, 3)
+            sens.__field_array = field_array
+
+
+def draw_frame(
+    objs, *, frame_ind, colorsequence, rc_params, style_kwargs, **kwargs
+) -> Tuple:
     """
     Creates traces from input `objs` and provided parameters, updates the size of objects like
     Sensors and Dipoles in `kwargs` depending on the canvas size.
@@ -793,15 +833,6 @@ def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> Tup
     traces_dicts, kwargs: dict, dict
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
-    sources = format_obj_input(
-        *{sub_obj for obj in objs for sub_obj in obj["objects"]},
-        allow="sources+collections",
-    )
-    sources = [
-        s
-        for s in sources
-        if not (isinstance(s, magpy.Collection) and not s.sources_all)
-    ]
     if colorsequence is None:
         # pylint: disable=no-member
         colorsequence = default_settings.display.colorsequence
@@ -812,6 +843,17 @@ def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> Tup
         colorsequence=colorsequence,
         style_kwargs=style_kwargs,
     )
+
+    styles = {
+        obj: params.get("style", None)
+        for o_rc in objs_rc.values()
+        for obj, params in o_rc["objects"].items()
+    }
+    if frame_ind == 0:
+        set_sensor_field_array(
+            [obj for props in objs_rc.values() for obj in props["objects"]],
+            styles,
+        )
     traces_dict = {}
     extra_backend_traces = []
     rc_params = {} if rc_params is None else rc_params
@@ -823,7 +865,6 @@ def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> Tup
             rc_kwargs = {k: v for k, v in props["rc_params"].items() if k in rc_keys}
             traces_d1, traces_ex1 = get_traces_3D(
                 props["objects"],
-                sources=sources,
                 **rc_kwargs,
                 **kwargs,
             )
@@ -844,7 +885,6 @@ def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> Tup
             traces_d2, traces_ex2 = get_traces_3D(
                 flat_objs_props,
                 autosize=rc_params[rc]["autosize"],
-                sources=sources,
                 **rc_kwargs,
                 **kwargs,
             )
@@ -854,11 +894,6 @@ def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> Tup
             extra_backend_traces.extend([*traces_ex1, *traces_ex2])
     traces = group_traces(*[t for tr in traces_dict.values() for t in tr])
 
-    styles = {
-        obj: params.get("style", None)
-        for o_rc in objs_rc.values()
-        for obj, params in o_rc["objects"].items()
-    }
     for props in objs_rc.values():
         if props["rc_params"]["output"] != "model3d":
             traces2d = get_traces_2D(
@@ -910,14 +945,15 @@ def get_frames(
 
     title_str = title
     rc_params = {}
-    for i, ind in enumerate(path_indices):
+    for frame_ind, path_ind in enumerate(path_indices):
         extra_backend_traces = []
         if animation:
-            style_kwargs["style_path_frames"] = [ind]
+            style_kwargs["style_path_frames"] = [path_ind]
             title = "Animation 3D - " if title is None else title
-            title_str = f"""{title}path index: {ind+1:0{exp}d}"""
+            title_str = f"""{title}path index: {path_ind+1:0{exp}d}"""
         traces, extra_backend_traces, rc_params_temp = draw_frame(
             objs,
+            frame_ind=frame_ind,
             colorsequence=colorsequence,
             rc_params=rc_params,
             supports_colorgradient=supports_colorgradient,
@@ -925,12 +961,12 @@ def get_frames(
             style_kwargs=style_kwargs,
             **kwargs,
         )
-        if i == 0:  # get the dipoles and sensors autosize from first frame
+        if frame_ind == 0:  # get the dipoles and sensors autosize from first frame
             rc_params = rc_params_temp
         frames.append(
             {
                 "data": traces,
-                "name": str(ind + 1),
+                "name": str(path_ind + 1),
                 "layout": {"title": title_str},
                 "extra_backend_traces": extra_backend_traces,
             }
