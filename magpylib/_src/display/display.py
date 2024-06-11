@@ -31,14 +31,14 @@ class RegisteredBackend:
         self,
         *,
         name,
-        show_func_getter,
+        show_func,
         supports_animation,
         supports_subplots,
         supports_colorgradient,
         supports_animation_output,
     ):
         self.name = name
-        self.show_func_getter = show_func_getter
+        self.show_func = show_func
         self.supports = {
             "animation": supports_animation,
             "subplots": supports_subplots,
@@ -127,7 +127,7 @@ class RegisteredBackend:
             style_kwargs=style_kwargs,
             **display_kwargs,
         )
-        return self.show_func_getter()(
+        return self.show_func(
             data,
             max_rows=max_rows,
             max_cols=max_cols,
@@ -138,12 +138,12 @@ class RegisteredBackend:
         )
 
 
-def get_show_func(backend):
+def show_func(backend):
     """Return the backend show function"""
     # defer import to show call. Importerror should only fail if unavalaible backend is called
-    return lambda: getattr(
+    return lambda *args, backend=backend, **kwargs: getattr(
         import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
-    )
+    )(*args, **kwargs)
 
 
 def infer_backend(canvas):
@@ -483,7 +483,7 @@ ctx = DisplayContext()
 
 RegisteredBackend(
     name="matplotlib",
-    show_func_getter=get_show_func("matplotlib"),
+    show_func=show_func("matplotlib"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=False,
@@ -493,7 +493,7 @@ RegisteredBackend(
 
 RegisteredBackend(
     name="plotly",
-    show_func_getter=get_show_func("plotly"),
+    show_func=show_func("plotly"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
@@ -502,7 +502,7 @@ RegisteredBackend(
 
 RegisteredBackend(
     name="pyvista",
-    show_func_getter=get_show_func("pyvista"),
+    show_func=show_func("pyvista"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
