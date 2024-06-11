@@ -12,13 +12,14 @@ from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.display.traces_utility import DEFAULT_ROW_COL_PARAMS
+from magpylib._src.display.traces_utility import linearize_dict
 from magpylib._src.display.traces_utility import process_show_input_objs
 from magpylib._src.input_checks import check_format_input_backend
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.input_checks import check_input_animation
 from magpylib._src.utility import check_path_format
 
-disp_args = get_defaults_dict("display").keys()
+disp_args = set(get_defaults_dict("display"))
 
 
 class RegisteredBackend:
@@ -30,14 +31,14 @@ class RegisteredBackend:
         self,
         *,
         name,
-        show_func_getter,
+        show_func,
         supports_animation,
         supports_subplots,
         supports_colorgradient,
         supports_animation_output,
     ):
         self.name = name
-        self.show_func_getter = show_func_getter
+        self.show_func = show_func
         self.supports = {
             "animation": supports_animation,
             "subplots": supports_subplots,
@@ -82,12 +83,18 @@ class RegisteredBackend:
                     f"\nFalling back to: {params}"
                 )
                 kwargs.update(params)
-        frame_kwargs = {
+        display_kwargs = {
             k: v
             for k, v in kwargs.items()
-            if any(k.startswith(arg) for arg in disp_args)
+            if any(k.startswith(arg) for arg in disp_args - {"style"})
         }
-        kwargs = {k: v for k, v in kwargs.items() if k not in frame_kwargs}
+        style_kwargs = {k: v for k, v in kwargs.items() if k.startswith("style")}
+        style_kwargs = linearize_dict(style_kwargs, separator="_")
+        kwargs = {
+            k: v
+            for k, v in kwargs.items()
+            if (k not in display_kwargs and k not in style_kwargs)
+        }
         backend_kwargs = {
             k[len(backend) + 1 :]: v
             for k, v in kwargs.items()
@@ -117,9 +124,10 @@ class RegisteredBackend:
             supports_colorgradient=self.supports["colorgradient"],
             backend=backend,
             title=title,
-            **frame_kwargs,
+            style_kwargs=style_kwargs,
+            **display_kwargs,
         )
-        return self.show_func_getter()(
+        return self.show_func(
             data,
             max_rows=max_rows,
             max_cols=max_cols,
@@ -133,9 +141,9 @@ class RegisteredBackend:
 def get_show_func(backend):
     """Return the backend show function"""
     # defer import to show call. Importerror should only fail if unavalaible backend is called
-    return lambda: getattr(
+    return lambda *args, backend=backend, **kwargs: getattr(
         import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
-    )
+    )(*args, **kwargs)
 
 
 def infer_backend(canvas):
@@ -475,7 +483,7 @@ ctx = DisplayContext()
 
 RegisteredBackend(
     name="matplotlib",
-    show_func_getter=get_show_func("matplotlib"),
+    show_func=get_show_func("matplotlib"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=False,
@@ -485,7 +493,7 @@ RegisteredBackend(
 
 RegisteredBackend(
     name="plotly",
-    show_func_getter=get_show_func("plotly"),
+    show_func=get_show_func("plotly"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
@@ -494,7 +502,7 @@ RegisteredBackend(
 
 RegisteredBackend(
     name="pyvista",
-    show_func_getter=get_show_func("pyvista"),
+    show_func=get_show_func("pyvista"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,

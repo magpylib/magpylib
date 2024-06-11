@@ -526,11 +526,12 @@ def make_TriangularMesh(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, A
 
 def make_Pixels(
     sensor,
+    *,
     sources,
     positions,
+    path_ind=-1,
     symbol="cone",
     size=1,
-    path_ind=-1,
 ) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
@@ -576,7 +577,7 @@ def make_Pixels(
     return merge_mesh3d(*pixels)
 
 
-def make_Sensor(obj, *, autosize, sources, path_ind, **kwargs) -> Dict[str, Any]:
+def make_Sensor(obj, *, autosize, sources, **kwargs) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
     provided arguments.
@@ -639,7 +640,6 @@ def make_Sensor(obj, *, autosize, sources, path_ind, **kwargs) -> Dict[str, Any]
                 sources=sources,
                 positions=poss,
                 size=pixel_dim,
-                path_ind=path_ind,
             )
             if pixels_mesh.get("facecolor", None) is None:
                 pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
