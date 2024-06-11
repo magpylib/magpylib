@@ -210,9 +210,6 @@ def get_trace2D_dict(
     frames_indices,
     mode,
     label_suff,
-    color,
-    symbol,
-    linestyle,
     **kwargs,
 ):
     """return a 2d trace based on field and parameters"""
@@ -222,7 +219,7 @@ def get_trace2D_dict(
         y = y[0]
     else:
         y = np.linalg.norm(y, axis=0)
-    marker_size = np.array([2] * len(frames_indices))
+    marker_size = np.array([3] * len(frames_indices))
     marker_size[focus_inds] = 15
     title = f"{field_str}{''.join(coords_str)}"
     trace = {
@@ -239,15 +236,11 @@ def get_trace2D_dict(
         ),
         "x": frames_indices,
         "y": y[frames_indices],
-        "line_dash": linestyle,
-        "line_color": color,
         "marker_size": marker_size,
-        "marker_color": color,
-        "marker_symbol": symbol,
         "showlegend": True,
         "legendgroup": f"{title}{label_suff}",
-        **kwargs,
     }
+    trace.update(kwargs)
     return trace
 
 
@@ -291,13 +284,13 @@ def get_traces_2D(
         if field_str not in "BHMJ" and set(coords_str).difference(set("xyz")):
             raise ValueError(
                 "The `output` parameter must start with 'B', 'H', 'M', 'J' "
-                "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Hz') )"
+                "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') )"
                 f"\nreceived {out!r} instead"
             )
         output_params[out] = {
             "field_str": field_str,
             "coords_str": coords_str,
-            "linestyle": linestyle,
+            "line_dash": linestyle,
         }
     BH_array = getBH_level2(
         sources,
@@ -356,13 +349,15 @@ def get_traces_2D(
             focus_inds = get_focus_inds(src, sens)
             label_sens, color_sens = get_label_and_color(sens)
             label_suff = label_sens
-            if not sumup:
-                label, color = label_src, color_src
-            else:
+            label = label_src
+            line_color = color_src
+            marker_color = color_sens if len(sensors) > 1 else None
+            if sumup:
+                line_color = color_sens
+                label = label_sens
                 label_suff = (
                     f"{label_src}" if len(sources) == 1 else f"{len(sources)} sources"
                 )
-                label, color = label_sens, color_sens
             num_of_pix = (
                 len(sens.pixel.reshape(-1, 3))
                 if (not isinstance(sens, magpy.Collection))
@@ -373,13 +368,13 @@ def get_traces_2D(
             pix_suff = ""
             num_of_pix_to_show = 1 if pixel_agg else num_of_pix
             for pix_ind in range(num_of_pix_to_show):
-                symbol = next(symbols)
+                marker_symbol = next(symbols)
                 BH = BH_array[src_ind, sens_ind, :, pix_ind]
                 if num_of_pix > 1:
                     if pixel_agg:
-                        pix_suff = f" ({num_of_pix} pixels {pixel_agg})"
+                        pix_suff = f" - {num_of_pix} pixels {pixel_agg}"
                     else:
-                        pix_suff = f" (pixel {pix_ind})"
+                        pix_suff = f" - pixel {pix_ind}"
                 for param in output_params.values():
                     traces.append(
                         get_trace2D_dict(
@@ -391,8 +386,10 @@ def get_traces_2D(
                             mode=mode,
                             label_suff=label_suff,
                             name=f"{label}{pix_suff}",
-                            color=color,
-                            symbol=symbol,
+                            line_color=line_color,
+                            marker_color=marker_color,
+                            marker_line_color=marker_color,
+                            marker_symbol=marker_symbol,
                             type="scatter",
                             row=row,
                             col=col,
