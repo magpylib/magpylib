@@ -138,7 +138,7 @@ class RegisteredBackend:
         )
 
 
-def show_func(backend):
+def get_show_func(backend):
     """Return the backend show function"""
     # defer import to show call. Importerror should only fail if unavalaible backend is called
     return lambda *args, backend=backend, **kwargs: getattr(
@@ -483,7 +483,7 @@ ctx = DisplayContext()
 
 RegisteredBackend(
     name="matplotlib",
-    show_func=show_func("matplotlib"),
+    show_func=get_show_func("matplotlib"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=False,
@@ -493,7 +493,7 @@ RegisteredBackend(
 
 RegisteredBackend(
     name="plotly",
-    show_func=show_func("plotly"),
+    show_func=get_show_func("plotly"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
@@ -502,7 +502,7 @@ RegisteredBackend(
 
 RegisteredBackend(
     name="pyvista",
-    show_func=show_func("pyvista"),
+    show_func=get_show_func("pyvista"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
