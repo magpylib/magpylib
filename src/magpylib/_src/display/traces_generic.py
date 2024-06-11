@@ -451,7 +451,6 @@ def process_extra_trace(model):
 
 def get_generic_traces3D(
     input_obj,
-    sources,
     autosize=None,
     legendgroup=None,
     legendtext=None,
@@ -514,9 +513,17 @@ def get_generic_traces3D(
         input_obj, style.path.frames
     )
     traces_generic = []
-    if pos_orient_inds.size != 0:
+
+    is_frame_dependent = False
+    if hasattr(style, "pixel"):
+        # TODO adapt criteria to show field direction
+        is_frame_dependent = style.pixel.symbol == "."
+
+    def get_traces_func(**extra_kwargs):
+        nonlocal is_mag
+        traces_generic_temp = []
         if style.model3d.showdefault and make_func is not None:
-            p_trs = make_func(**make_func_kwargs)
+            p_trs = make_func(**make_func_kwargs, **extra_kwargs)
             p_trs = [p_trs] if isinstance(p_trs, dict) else p_trs
             for p_tr_item in p_trs:
                 p_tr = p_tr_item.copy()
@@ -529,8 +536,14 @@ def get_generic_traces3D(
                         color_slicing=not supports_colorgradient,
                     )
 
-                traces_generic.append(p_tr)
+                traces_generic_temp.append(p_tr)
+        return traces_generic_temp
 
+    if pos_orient_inds.size != 0:
+        if is_frame_dependent:
+            traces_generic.append(None)
+        else:
+            traces_generic.extend(get_traces_func())
         extra_model3d_traces = (
             style.model3d.data if style.model3d.data is not None else []
         )
@@ -568,7 +581,7 @@ def get_generic_traces3D(
     legend_label = get_legend_label(input_obj)
 
     path_traces_generic = []
-    for tr in traces_generic:
+    for trg in traces_generic:
         temp_rot_traces = []
         name_suff = tr.pop("name_suffix", None)
         name = tr.get("name", "") if legendtext is None else legendtext
