@@ -427,7 +427,7 @@ def process_extra_trace(model):
         "coordsargs": extr.coordsargs,
         "kwargs_extra": model["kwargs_extra"],
     }
-    kwargs, args = place_and_orient_model3d(
+    kwargs, args, coordsargs = place_and_orient_model3d(
         model_kwargs=model_kwargs,
         model_args=model_args,
         orientation=model["orientation"],
@@ -435,7 +435,9 @@ def process_extra_trace(model):
         coordsargs=extr.coordsargs,
         scale=extr.scale,
         return_model_args=True,
+        return_coordsargs=True,
     )
+    trace3d["coordsargs"] = coordsargs
     trace3d["kwargs"].update(kwargs)
     trace3d["args"] = args
     return trace3d
