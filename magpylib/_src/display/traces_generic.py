@@ -445,7 +445,6 @@ def process_extra_trace(model):
 
 def get_generic_traces3D(
     input_obj,
-    sources,
     autosize=None,
     legendgroup=None,
     legendtext=None,
@@ -489,11 +488,6 @@ def get_generic_traces3D(
     make_func_kwargs = {"legendgroup": legendgroup, **kwargs}
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
-    if hasattr(style, "pixel"):
-        frames = style.path.frames
-        # TODO adapt to frames generally, not just last one
-        path_ind = frames[-1] if not isinstance(frames, numbers.Number) else -1
-        make_func_kwargs.update(path_ind=path_ind)
 
     has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
     path_traces_extra_non_generic_backend = []
@@ -510,9 +504,17 @@ def get_generic_traces3D(
         input_obj, style.path.frames
     )
     traces_generic = []
-    if pos_orient_inds.size != 0:
+
+    is_frame_dependent = False
+    if hasattr(style, "pixel"):
+        # TODO adapt criteria to show field direction
+        is_frame_dependent = style.pixel.symbol == "."
+
+    def get_traces_func(**extra_kwargs):
+        nonlocal is_mag
+        traces_generic_temp = []
         if style.model3d.showdefault and make_func is not None:
-            p_trs = make_func(**make_func_kwargs)
+            p_trs = make_func(**make_func_kwargs, **extra_kwargs)
             p_trs = [p_trs] if isinstance(p_trs, dict) else p_trs
             for p_tr in p_trs:
                 is_mag = p_tr.pop("ismagnet", is_mag)
@@ -524,8 +526,14 @@ def get_generic_traces3D(
                         color_slicing=not supports_colorgradient,
                     )
 
-                traces_generic.append(p_tr)
+                traces_generic_temp.append(p_tr)
+        return traces_generic_temp
 
+    if pos_orient_inds.size != 0:
+        if is_frame_dependent:
+            traces_generic.append(None)
+        else:
+            traces_generic.extend(get_traces_func())
         extra_model3d_traces = (
             style.model3d.data if style.model3d.data is not None else []
         )
@@ -564,15 +572,23 @@ def get_generic_traces3D(
     legend_label = get_legend_label(input_obj)
 
     path_traces_generic = []
-    for tr in traces_generic:
+    for trg in traces_generic:
         temp_rot_traces = []
-        name_suff = tr.pop("name_suffix", None)
-        name = tr.get("name", "") if legendtext is None else legendtext
-        for orient, pos in zip(orientations, positions):
-            tr1 = place_and_orient_model3d(tr, orientation=orient, position=pos)
-            if name_suff is not None:
-                tr1["name"] = f"{name}{name_suff}"
-            temp_rot_traces.append(tr1)
+        for path_ind, (orient, pos, pos_orient_ind) in enumerate(
+            zip(orientations, positions, pos_orient_inds)
+        ):
+            tr_list = [trg]
+            if trg is None:
+                tr_list = get_traces_func(path_ind=pos_orient_ind)
+                tr_list = [tr_list] if isinstance(tr_list, dict) else tr_list
+            for tr in tr_list:
+                if path_ind == 0:
+                    name_suff = tr.pop("name_suffix", None)
+                    name = tr.get("name", "") if legendtext is None else legendtext
+                tr1 = place_and_orient_model3d(tr, orientation=orient, position=pos)
+                if name_suff is not None:
+                    tr1["name"] = f"{name}{name_suff}"
+                temp_rot_traces.append(tr1)
         path_traces_generic.extend(group_traces(*temp_rot_traces))
 
     if np.array(input_obj.position).ndim > 1 and style.path.show:
@@ -756,9 +772,7 @@ def extract_animation_properties(
     return path_indices, exp, frame_duration
 
 
-def get_traces_3D(
-    flat_objs_props, extra_backend=False, autosize=None, sources=None, **kwargs
-):
+def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs):
     """Return traces, traces to resize and extra_backend_traces"""
     extra_backend_traces = []
     traces_dict = {}
@@ -775,7 +789,6 @@ def get_traces_3D(
             with style_temp_edit(obj, style_temp=params.pop("style", None), copy=True):
                 out_traces = get_generic_traces3D(
                     obj,
-                    sources=sources,
                     extra_backend=extra_backend,
                     autosize=autosize,
                     **params,
