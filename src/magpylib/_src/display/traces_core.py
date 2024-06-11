@@ -528,7 +528,7 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
     """
     if field_array is not None:
         field_mag = np.linalg.norm(field_array, axis=1)
-        hex_colors = get_hexcolors_from_scale(field_mag)
+        hex_colors = get_hexcolors_from_scale(field_mag, min_=cmin, max_=cmax)
     pixels = []
     if symbol == "." and field_array is not None:
         orientations = get_orientation_from_vec(field_array)
@@ -615,9 +615,15 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
             pixel_dim *= pixel_size
             poss = pixel[1:] if one_pix else pixel
             field_array = getattr(obj, "__field_array", None)
-            field_array = None if field_array is None else field_array[path_ind]
+            cmin, cmax = None, None
+            if field_array is not None:
+                field_mag = np.linalg.norm(field_array.reshape(-1, 3), axis=1)
+                cmin, cmax = np.amin(field_mag), np.amax(field_mag)
+                field_array = field_array[path_ind]
             pixels_mesh = make_Pixels(
                 field_array=field_array,
+                cmin=cmin,
+                cmax=cmax,
                 positions=poss,
                 size=pixel_dim,
                 path_ind=path_ind,

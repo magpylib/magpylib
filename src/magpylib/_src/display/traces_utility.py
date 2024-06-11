@@ -849,15 +849,18 @@ def create_null_dim_trace(color=None, **kwargs):
     return {**trace, **kwargs}
 
 
-def get_hexcolors_from_scale(values, colorscale="Rainbow", nan_color="#b2beb5"):
+def get_hexcolors_from_scale(
+    values, colorscale="Rainbow", nan_color="#b2beb5", min_=None, max_=None
+):
     """Convert numerical values to hexadecimal colors based on a color scale.
     Invalid value in the array a converted to the specified `nan_color`."""
     values = np.array(values)
     nan_mask = np.isnan(values)
     valid = values[~nan_mask]
-    min_, max_ = np.min(valid), np.max(valid)
-    ptp = (max_ - min_) if max_ != min_ else 1
-    values = (values - min_) / ptp
+    min_ = np.min(valid) if min_ is None else min_
+    max_ = np.max(valid) if max_ is None else max_
+    ptp = max_ - min_
+    values = (values - min_) / ptp if ptp != 0 else values * 0 + 0.5
     rgb_colors = sample_colorscale(colorscale, values[~nan_mask], colortype=None)
     hex_colors = [rgb2hex(rgb) for rgb in rgb_colors]
     out = np.array([""] * len(values), dtype="<U10")
