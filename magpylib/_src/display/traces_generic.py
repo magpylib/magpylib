@@ -427,7 +427,7 @@ def process_extra_trace(model):
         "coordsargs": extr.coordsargs,
         "kwargs_extra": model["kwargs_extra"],
     }
-    kwargs, args = place_and_orient_model3d(
+    kwargs, args, coordsargs = place_and_orient_model3d(
         model_kwargs=model_kwargs,
         model_args=model_args,
         orientation=model["orientation"],
@@ -435,7 +435,9 @@ def process_extra_trace(model):
         coordsargs=extr.coordsargs,
         scale=extr.scale,
         return_model_args=True,
+        return_coordsargs=True,
     )
+    trace3d["coordsargs"] = coordsargs
     trace3d["kwargs"].update(kwargs)
     trace3d["args"] = args
     return trace3d
@@ -758,13 +760,14 @@ def get_traces_3D(
     extra_backend_traces = []
     traces_dict = {}
     for obj, params in flat_objs_props.items():
+        params = {**params, **kwargs}
         if autosize is None and getattr(obj, "_autosize", False):
             # temporary coordinates to be able to calculate ranges
             # pylint: disable=protected-access
             x, y, z = obj._position.T
-            traces_dict[obj] = [{"x": x, "y": y, "z": z, "_autosize": True}]
+            rc_dict = {k: v for k, v in params.items() if k in ("row", "col")}
+            traces_dict[obj] = [{"x": x, "y": y, "z": z, "_autosize": True, **rc_dict}]
         else:
-            params = {**params, **kwargs}
             traces_dict[obj] = []
             with style_temp_edit(obj, style_temp=params.pop("style", None), copy=True):
                 out_traces = get_generic_traces3D(

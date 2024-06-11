@@ -56,44 +56,48 @@ def place_and_orient_model3d(
     coordsargs=None,
     scale=1,
     return_model_args=False,
+    return_coordsargs=False,
     length_factor=1,
     **kwargs,
 ):
     """places and orients mesh3d dict"""
     if orientation is None and position is None and length_factor == 1:
-        return {**model_kwargs, **kwargs}
-    position = (0.0, 0.0, 0.0) if position is None else position
-    position = np.array(position, dtype=float)
-    new_model_dict = {}
-    if model_args is None:
-        model_args = ()
-    new_model_args = list(model_args)
-    vertices, coordsargs, useargs = get_vertices_from_model(
-        model_kwargs, model_args, coordsargs
-    )
+        new_model_kwargs = {**model_kwargs, **kwargs}
+        new_model_args = model_args
+    else:
+        position = (0.0, 0.0, 0.0) if position is None else position
+        position = np.array(position, dtype=float)
+        new_model_dict = {}
+        if model_args is None:
+            model_args = ()
+        new_model_args = list(model_args)
+        vertices, coordsargs, useargs = get_vertices_from_model(
+            model_kwargs, model_args, coordsargs
+        )
+        # sometimes traces come as (n,m,3) shape
+        vert_shape = vertices.shape
+        vertices = np.reshape(vertices, (3, -1))
 
-    # sometimes traces come as (n,m,3) shape
-    vert_shape = vertices.shape
-    vertices = np.reshape(vertices, (3, -1))
+        vertices = vertices.T
 
-    vertices = vertices.T
-
-    if orientation is not None:
-        vertices = orientation.apply(vertices)
-    new_vertices = (vertices * scale + position).T * length_factor
-    new_vertices = np.reshape(new_vertices, vert_shape)
-    for i, k in enumerate("xyz"):
-        key = coordsargs[k]
-        if useargs:
-            ind = int(key[5])
-            new_model_args[ind] = new_vertices[i]
-        else:
-            new_model_dict[key] = new_vertices[i]
-    new_model_kwargs = {**model_kwargs, **new_model_dict, **kwargs}
+        if orientation is not None:
+            vertices = orientation.apply(vertices)
+        new_vertices = (vertices * scale + position).T * length_factor
+        new_vertices = np.reshape(new_vertices, vert_shape)
+        for i, k in enumerate("xyz"):
+            key = coordsargs[k]
+            if useargs:
+                ind = int(key[5])
+                new_model_args[ind] = new_vertices[i]
+            else:
+                new_model_dict[key] = new_vertices[i]
+        new_model_kwargs = {**model_kwargs, **new_model_dict, **kwargs}
 
     out = (new_model_kwargs,)
     if return_model_args:
         out += (new_model_args,)
+    if return_coordsargs:
+        out += (coordsargs,)
     return out[0] if len(out) == 1 else out
 
 
@@ -588,17 +592,21 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
 def rescale_traces(traces, factors):
     """Rescale traces based on scale factors by (row,col) index"""
     for ind, tr in enumerate(traces):
-        rc = tr.get("row", 1), tr.get("col", 1)
-        kw = {}
         if "constructor" in tr:
             kwex = tr["kwargs_extra"]
             rc = kwex["row"], kwex["col"]
-            kw.update(
+            kwargs, args = place_and_orient_model3d(
+                model_kwargs=tr.get("kwargs", None),
                 model_args=tr.get("args", None),
                 coordsargs=tr.get("coordsargs", None),
+                length_factor=factors[rc],
+                return_model_args=True,
             )
+            tr["kwargs"].update(kwargs)
+            tr["args"] = args
         if "z" in tr:  # rescale only 3d traces
-            traces[ind] = place_and_orient_model3d(tr, length_factor=factors[rc], **kw)
+            rc = tr.get("row", 1), tr.get("col", 1)
+            traces[ind] = place_and_orient_model3d(tr, length_factor=factors[rc])
     return traces
 
 
