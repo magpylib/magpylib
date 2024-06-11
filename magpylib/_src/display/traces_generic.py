@@ -210,6 +210,8 @@ def get_trace2D_dict(
     frames_indices,
     mode,
     label_suff,
+    units_polarization,
+    units_magnetization,
     **kwargs,
 ):
     """return a 2d trace based on field and parameters"""
@@ -222,6 +224,11 @@ def get_trace2D_dict(
     marker_size = np.array([3] * len(frames_indices))
     marker_size[focus_inds] = 15
     title = f"{field_str}{''.join(coords_str)}"
+    unit = (
+        units_polarization
+        if field_str in "BJ"
+        else units_magnetization if field_str in "HM" else ""
+    )
     trace = {
         "mode": "lines+markers",
         "legendgrouptitle_text": f"{title}"
@@ -229,7 +236,7 @@ def get_trace2D_dict(
         "text": mode,
         "hovertemplate": (
             "<b>Path index</b>: %{x}    "
-            f"<b>{title}</b>: " + "%{y:.3s}T<br>"
+            f"<b>{title}</b>: %{{y:.3s}}{unit}<br>"
             f"<b>{'sources'}</b>:<br>{obj_lst_str['sources']}<br>"
             f"<b>{'sensors'}</b>:<br>{obj_lst_str['sensors']}"
             # "<extra></extra>",
@@ -253,6 +260,8 @@ def get_traces_2D(
     pixel_agg=None,
     in_out="auto",
     styles=None,
+    units_polarization="T",
+    units_magnetization="A/m",
     # pylint: disable=unused-argument
     units_length="m",
     zoom=0,
@@ -277,6 +286,7 @@ def get_traces_2D(
     if not isinstance(output, (list, tuple)):
         output = [output]
     output_params = {}
+    field_str_list = []
     for out, linestyle in zip(output, cycle(ALLOWED_LINESTYLES[:6])):
         field_str, *coords_str = out
         if not coords_str:
@@ -287,23 +297,28 @@ def get_traces_2D(
                 "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') )"
                 f"\nreceived {out!r} instead"
             )
+        field_str_list.append(field_str)
         output_params[out] = {
             "field_str": field_str,
             "coords_str": coords_str,
             "line_dash": linestyle,
         }
-    BH_array = getBH_level2(
-        sources,
-        sensors,
-        sumup=sumup,
-        squeeze=False,
-        field=field_str,
-        pixel_agg=pixel_agg,
-        output="ndarray",
-        in_out=in_out,
-    )
-    BH_array = BH_array.swapaxes(1, 2)  # swap axes to have sensors first, path second
-    frames_indices = np.arange(0, BH_array.shape[2])
+    field_str_list = list(dict.fromkeys(field_str_list))
+    BH_array = {}
+    for field_str in field_str_list:
+        BH_array[field_str] = getBH_level2(
+            sources,
+            sensors,
+            sumup=sumup,
+            squeeze=False,
+            field=field_str,
+            pixel_agg=pixel_agg,
+            output="ndarray",
+            in_out=in_out,
+        )
+        # swap axes to have sensors first, path second
+        BH_array[field_str] = BH_array[field_str].swapaxes(1, 2)
+    frames_indices = np.arange(0, BH_array[field_str_list[0]].shape[2])
 
     def get_focus_inds(*objs):
         focus_inds = []
@@ -369,13 +384,13 @@ def get_traces_2D(
             num_of_pix_to_show = 1 if pixel_agg else num_of_pix
             for pix_ind in range(num_of_pix_to_show):
                 marker_symbol = next(symbols)
-                BH = BH_array[src_ind, sens_ind, :, pix_ind]
                 if num_of_pix > 1:
                     if pixel_agg:
                         pix_suff = f" - {num_of_pix} pixels {pixel_agg}"
                     else:
                         pix_suff = f" - pixel {pix_ind}"
                 for param in output_params.values():
+                    BH = BH_array[param["field_str"]][src_ind, sens_ind, :, pix_ind]
                     traces.append(
                         get_trace2D_dict(
                             BH,
@@ -393,6 +408,8 @@ def get_traces_2D(
                             type="scatter",
                             row=row,
                             col=col,
+                            units_polarization=units_polarization,
+                            units_magnetization=units_magnetization,
                         )
                     )
     return traces
