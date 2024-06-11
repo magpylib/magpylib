@@ -143,7 +143,7 @@ class RegisteredBackend:
         )
 
 
-def get_show_func(backend):
+def show_func(backend):
     """Return the backend show function"""
     # defer import to show call. Importerror should only fail if unavalaible backend is called
     return lambda *args, backend=backend, **kwargs: getattr(
