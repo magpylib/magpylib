@@ -22,11 +22,11 @@ from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.display.traces_utility import draw_arrowed_line
 from magpylib._src.display.traces_utility import get_legend_label
 from magpylib._src.display.traces_utility import get_objects_props_by_row_col
-from magpylib._src.display.traces_utility import get_rot_pos_from_path
 from magpylib._src.display.traces_utility import get_scene_ranges
 from magpylib._src.display.traces_utility import getColorscale
 from magpylib._src.display.traces_utility import getIntensity
 from magpylib._src.display.traces_utility import group_traces
+from magpylib._src.display.traces_utility import path_frames_to_indices
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import rescale_traces
 from magpylib._src.display.traces_utility import slice_mesh_from_colorscale
@@ -502,15 +502,18 @@ def get_generic_traces3D(
             out.update({extra_backend: path_traces_extra_non_generic_backend})
         return out
 
-    orientations, positions, pos_orient_inds = get_rot_pos_from_path(
-        input_obj, style.path.frames
-    )
     traces_generic = []
-
+    positions, orientations = input_obj._position, input_obj._orientation
+    path_len = len(positions)
+    max_pos_ind = path_len - 1
     is_frame_dependent = False
     if hasattr(style, "pixel"):
         # TODO adapt criteria to show field direction
         is_frame_dependent = style.pixel.symbol == "."
+        if is_frame_dependent:
+            path_len = len(input_obj.__field_array)
+
+    path_inds = path_frames_to_indices(style.path.frames, path_len)
 
     def get_traces_func(**extra_kwargs):
         nonlocal is_mag
@@ -531,7 +534,7 @@ def get_generic_traces3D(
                 traces_generic_temp.append(p_tr)
         return traces_generic_temp
 
-    if pos_orient_inds.size != 0:
+    if path_inds.size != 0:
         if is_frame_dependent:
             traces_generic.append(None)
         else:
@@ -572,19 +575,18 @@ def get_generic_traces3D(
             traces_generic.append(mag_arrow_tr)
 
     legend_label = get_legend_label(input_obj)
-
     path_traces_generic = []
     for trg in traces_generic:
         temp_rot_traces = []
-        for path_ind, (orient, pos, pos_orient_ind) in enumerate(
-            zip(orientations, positions, pos_orient_inds)
-        ):
+        for ind, path_ind in enumerate(path_inds):
+            pos_orient_ind = max_pos_ind if path_ind > max_pos_ind else path_ind
+            pos, orient = positions[pos_orient_ind], orientations[pos_orient_ind]
             tr_list = [trg]
             if trg is None:
-                tr_list = get_traces_func(path_ind=pos_orient_ind)
+                tr_list = get_traces_func(path_ind=path_ind)
                 tr_list = [tr_list] if isinstance(tr_list, dict) else tr_list
             for tr in tr_list:
-                if path_ind == 0:
+                if ind == 0:
                     name_suff = tr.pop("name_suffix", None)
                     name = tr.get("name", "") if legendtext is None else legendtext
                 tr1 = place_and_orient_model3d(tr, orientation=orient, position=pos)
