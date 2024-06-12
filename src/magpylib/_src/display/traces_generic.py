@@ -501,10 +501,12 @@ def get_generic_traces3D(
     has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
     path_traces_extra_non_generic_backend = []
     if not has_path and make_func is not None:
-        tr = make_func(**make_func_kwargs)
-        tr["row"] = row
-        tr["col"] = col
-        out = {"generic": [tr]}
+        trs = make_func(**make_func_kwargs)  # can return multiple traces
+        trs = [trs] if isinstance(trs, dict) else trs
+        for tr in trs:
+            tr["row"] = row
+            tr["col"] = col
+        out = {"generic": trs}
         if extra_backend:
             out.update({extra_backend: path_traces_extra_non_generic_backend})
         return out
