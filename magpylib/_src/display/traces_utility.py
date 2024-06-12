@@ -3,6 +3,7 @@
 # pylint: disable=too-many-branches
 from collections import defaultdict
 from functools import lru_cache
+from itertools import chain
 from itertools import cycle
 from typing import Tuple
 
@@ -76,7 +77,7 @@ def place_and_orient_model3d(
         )
         # sometimes traces come as (n,m,3) shape
         vert_shape = vertices.shape
-        vertices = np.reshape(vertices, (3, -1))
+        vertices = np.reshape(vertices.astype(float), (3, -1))
 
         vertices = vertices.T
 
@@ -309,8 +310,8 @@ def get_objects_props_by_row_col(*objs, colorsequence, style_kwargs):
     for obj in objs:
         rc_params = {k: v for k, v in obj.items() if k != "objects"}
         for subobj in obj["objects"]:
-            children = getattr(subobj, "children_all", [subobj])
-            for child in children:
+            children = getattr(subobj, "children_all", [])
+            for child in chain([subobj], children):
                 if child not in rc_params_by_obj:
                     rc_params_by_obj[child] = []
                 rc_params_by_obj[child].append(rc_params)
