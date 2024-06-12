@@ -527,7 +527,6 @@ def make_TriangularMesh(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, A
 def make_Pixels(
     *,
     positions,
-    symbol,
     size=1,
     field_array=None,
     cmin=None,
@@ -537,21 +536,32 @@ def make_Pixels(
     Create the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
     For now, only "cube" shape is provided.
     """
-    if field_array is not None:
-        field_mag = np.linalg.norm(field_array, axis=1)
-        hex_colors = get_hexcolors_from_scale(field_mag, min_=cmin, max_=cmax)
     pixels = []
-    if symbol == "." and field_array is not None:
+    if field_array is not None:
+        null_mask = (np.abs(field_array) < 1e-12).all(axis=1)
+        field_array[null_mask] = np.nan
+        nan_color = "#b2beb5"
+        field_mag = np.linalg.norm(field_array, axis=1)
+        hex_colors = get_hexcolors_from_scale(
+            field_mag, min_=cmin, max_=cmax, nan_color=nan_color
+        )
         orientations = get_orientation_from_vec(field_array)
         for p, o, c in zip(positions, orientations, hex_colors):
-            pix = make_BasePyramid(
-                "plotly-dict",
-                position=p,
-                orientation=o,
-                base=5,
-                diameter=size,
-                height=size * 2,
-            )
+            if c == nan_color:
+                pix = make_BaseCuboid(
+                    "plotly-dict",
+                    position=p,
+                    dimension=[size] * 3,
+                )
+            else:
+                pix = make_BasePyramid(
+                    "plotly-dict",
+                    position=p,
+                    orientation=o,
+                    base=5,
+                    diameter=size,
+                    height=size * 2,
+                )
             pix["facecolor"] = np.repeat(c, len(pix["i"]))
             pixels.append(pix)
     else:
@@ -578,7 +588,8 @@ def make_Sensor(obj, *, autosize, path_ind=None, **kwargs) -> Dict[str, Any]:
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
     style = obj.style
-    show_hull = False
+    field_array = getattr(obj, "__field_array", None)
+    show_hull = field_array is None
     dimension = getattr(obj, "dimension", style.size)
     pixel = obj.pixel
     no_pix = pixel is None
@@ -625,7 +636,6 @@ def make_Sensor(obj, *, autosize, path_ind=None, **kwargs) -> Dict[str, Any]:
         if pixel_size > 0:
             pixel_dim *= pixel_size
             poss = pixel[1:] if one_pix else pixel
-            field_array = getattr(obj, "__field_array", None)
             cmin, cmax = None, None
             if field_array is not None:
                 field_mag = np.linalg.norm(field_array.reshape(-1, 3), axis=1)
@@ -637,7 +647,6 @@ def make_Sensor(obj, *, autosize, path_ind=None, **kwargs) -> Dict[str, Any]:
                 cmax=cmax,
                 positions=poss,
                 size=pixel_dim,
-                symbol=style.pixel.symbol,
             )
             if pixels_mesh.get("facecolor", None) is None:
                 pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
