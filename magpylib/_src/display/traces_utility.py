@@ -74,7 +74,7 @@ def place_and_orient_model3d(
         )
         # sometimes traces come as (n,m,3) shape
         vert_shape = vertices.shape
-        vertices = np.reshape(vertices, (3, -1))
+        vertices = np.reshape(vertices.astype(float), (3, -1))
 
         vertices = vertices.T
 
