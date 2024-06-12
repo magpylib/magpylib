@@ -268,26 +268,18 @@ def draw_arrow_on_circle(sign, diameter, arrow_size, scaled=True, angle_pos_deg=
     return vertices
 
 
-def get_rot_pos_from_path(obj, show_path=None):
-    """
-    subsets orientations and positions depending on `show_path` value.
-    examples:
-    show_path = [1,2,8], path_len = 6 -> path_indices = [1,2,6]
-    returns rots[[1,2,6]], poss[[1,2,6]]
-    """
+def path_frames_to_indices(frames, path_len):
+    """get frames indices from frames input (can be bool,int, array)"""
     # pylint: disable=protected-access
     # pylint: disable=invalid-unary-operand-type
-    if show_path is None:
-        show_path = True
-    pos = obj._position
-    orient = obj._orientation
-    path_len = pos.shape[0]
-    if show_path is True or show_path is False or show_path == 0:
+    if frames is None:
+        frames = True
+    if frames is True or frames is False or frames == 0:
         inds = np.array([-1])
-    elif isinstance(show_path, int):
-        inds = np.arange(path_len, dtype=int)[::-show_path]
-    elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
-        inds = np.array(show_path)
+    elif isinstance(frames, int):
+        inds = np.arange(path_len, dtype=int)[::-frames]
+    elif hasattr(frames, "__iter__") and not isinstance(frames, str):
+        inds = np.array(frames)
     else:  # pragma: no cover
         msg = f"Invalid show_path value ({show_path})"
         raise ValueError(msg)
@@ -295,9 +287,7 @@ def get_rot_pos_from_path(obj, show_path=None):
     inds = np.unique(inds)
     if inds.size == 0:
         inds = np.array([path_len - 1])
-    rots = orient[inds]
-    poss = pos[inds]
-    return rots, poss, inds
+    return inds
 
 
 def get_objects_props_by_row_col(*objs, colorsequence, style_kwargs):
@@ -850,7 +840,7 @@ def create_null_dim_trace(color=None, **kwargs):
 
 
 def get_hexcolors_from_scale(
-    values, colorscale="Rainbow", nan_color="#b2beb5", min_=None, max_=None
+    values, colorscale="Jet", nan_color="#b2beb5", min_=None, max_=None
 ):
     """Convert numerical values to hexadecimal colors based on a color scale.
     Invalid value in the array a converted to the specified `nan_color`."""
