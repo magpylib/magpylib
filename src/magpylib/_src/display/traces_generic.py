@@ -516,14 +516,14 @@ def get_generic_traces3D(
     path_len = len(positions)
     max_pos_ind = path_len - 1
     is_frame_dependent = False
+    path_inds = path_inds_minimal = path_frames_to_indices(style.path.frames, path_len)
     if hasattr(style, "pixel"):
         vsrc = style.pixel.field.vectorsource
         csrc = style.pixel.field.colorsource
         is_frame_dependent = vsrc or csrc
         if is_frame_dependent:
             path_len = len(next(iter(input_obj.__field_array.values())))
-
-    path_inds = path_frames_to_indices(style.path.frames, path_len)
+            path_inds = path_frames_to_indices(style.path.frames, path_len)
 
     def get_traces_func(**extra_kwargs):
         nonlocal is_mag
@@ -638,8 +638,8 @@ def get_generic_traces3D(
                 for orient, pos in zip(orientations, positions, strict=False):
                     tr_non_generic = {
                         "model3d": extr,
-                        "position": pos,
-                        "orientation": orient,
+                        "position": positions[path_ind],
+                        "orientation": orientations[path_ind],
                         "kwargs_extra": {
                             "opacity": style.opacity,
                             "color": style.color,
