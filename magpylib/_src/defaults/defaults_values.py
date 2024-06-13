@@ -95,6 +95,11 @@ DEFAULTS = {
                     "sizemode": "scaled",
                     "color": None,
                     "symbol": "o",
+                    "field": {
+                        "symbol": "cone",
+                        "vectorsource": None,
+                        "colorsource": None,
+                    },
                 },
                 "arrows": {
                     "x": {"color": "red"},

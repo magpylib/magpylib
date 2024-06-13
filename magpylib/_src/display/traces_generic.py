@@ -508,10 +508,11 @@ def get_generic_traces3D(
     max_pos_ind = path_len - 1
     is_frame_dependent = False
     if hasattr(style, "pixel"):
-        # TODO adapt criteria to show field direction
-        is_frame_dependent = style.pixel.symbol == "."
+        vsrc = style.pixel.field.vectorsource
+        csrc = style.pixel.field.colorsource
+        is_frame_dependent = vsrc or csrc
         if is_frame_dependent:
-            path_len = len(input_obj.__field_array)
+            path_len = len(next(iter(input_obj.__field_array.values())))
 
     path_inds = path_frames_to_indices(style.path.frames, path_len)
 
@@ -820,22 +821,28 @@ def set_sensor_field_array(objects, styles):
         for sub_s in (s.sensors_all if isinstance(s, magpy.Collection) else [s])
     ]
     for sens in sensors:
-        # TODO change trigger for field array
-        if styles[sens].pixel.symbol == ".":
-            field_array = getBH_level2(
-                sources,
-                [sens],
-                sumup=True,
-                squeeze=False,
-                field="B",
-                pixel_agg=None,
-                output="ndarray",
-                in_out="auto",
-            )
-            # select first source (for sumup=True there is only one) and path index + reshape pixel
-            path_len = field_array.shape[1]
-            field_array = field_array[0].reshape(path_len, -1, 3)
-            sens.__field_array = field_array
+        vsrc = styles[sens].pixel.field.vectorsource
+        csrc = styles[sens].pixel.field.colorsource
+        if vsrc or csrc:
+            sens.__field_array = {}
+            csrc = csrc if csrc else vsrc
+            vrsc = vsrc if vsrc else csrc[0]
+            for field in {vrsc, csrc[0]}:
+                out = getBH_level2(
+                    sources,
+                    [sens],
+                    sumup=True,
+                    squeeze=False,
+                    field=field,
+                    pixel_agg=None,
+                    output="ndarray",
+                    in_out="auto",
+                )
+                # select first source (for sumup=True there is only one)
+                # and path index + reshape pixel
+                path_len = out.shape[1]
+                out = out[0].reshape(path_len, -1, 3)
+                sens.__field_array[field] = out
 
 
 def draw_frame(

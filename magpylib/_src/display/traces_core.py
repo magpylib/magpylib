@@ -527,52 +527,44 @@ def make_TriangularMesh(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, A
 def make_Pixels(
     *,
     positions,
-    size=1,
-    field_array=None,
-    cmin=None,
-    cmax=None,
+    vectors,
+    colors,
+    symbol,
+    size,
+    null_thresh=1e-12,
 ) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
     For now, only "cube" shape is provided.
     """
     pixels = []
-    if field_array is not None:
-        null_mask = (np.abs(field_array) < 1e-12).all(axis=1)
-        field_array[null_mask] = np.nan
-        nan_color = "#b2beb5"
-        field_mag = np.linalg.norm(field_array, axis=1)
-        hex_colors = get_hexcolors_from_scale(
-            field_mag, min_=cmin, max_=cmax, nan_color=nan_color
-        )
-        orientations = get_orientation_from_vec(field_array)
-        for p, o, c in zip(positions, orientations, hex_colors):
-            if c == nan_color:
-                pix = make_BaseCuboid(
-                    "plotly-dict",
-                    position=p,
-                    dimension=[size] * 3,
-                )
-            else:
-                pix = make_BasePyramid(
-                    "plotly-dict",
-                    position=p,
-                    orientation=o,
-                    base=5,
-                    diameter=size,
-                    height=size * 2,
-                )
-            pix["facecolor"] = np.repeat(c, len(pix["i"]))
+    kw = {"backend": "plotly-dict"}
+    if vectors is None:
+        for ind, pos in enumerate(positions):
+            pix = make_BaseCuboid("plotly-dict", position=pos, dimension=[size] * 3)
+            if colors is not None:
+                pix["facecolor"] = np.repeat(colors[ind], len(pix["i"]))
             pixels.append(pix)
     else:
-        for ind, p in enumerate(positions):
-            pix = make_BaseCuboid(
-                "plotly-dict",
-                position=p,
-                dimension=[size] * 3,
-            )
-            if field_array is not None:
-                pix["facecolor"] = np.repeat(hex_colors[ind], len(pix["i"]))
+        orientations = get_orientation_from_vec(vectors)
+        for ind, (pos, orient) in enumerate(zip(positions, orientations)):
+            kw.update(position=pos)
+            is_null_vec = (np.abs(vectors[ind]) < null_thresh).all()
+            if is_null_vec:
+                pix = make_BaseCuboid(dimension=[size] * 3, **kw)
+            else:
+                kw.update(orientation=orient, base=5, diameter=size, height=size * 2)
+                if symbol == "cone":
+                    pix = make_BasePyramid(**kw)
+                elif symbol == "arrow3d":
+                    pix = make_BaseArrow(**kw)
+                else:  # pragma: no cover
+                    raise ValueError(
+                        "Invalid pixel field symbol (must be 'cone' or 'arrow3d')"
+                        f", got {symbol!r}"
+                    )
+            if colors is not None:
+                pix["facecolor"] = np.repeat(colors[ind], len(pix["i"]))
             pixels.append(pix)
     return merge_mesh3d(*pixels)
 
@@ -588,8 +580,8 @@ def make_Sensor(obj, *, autosize, path_ind=None, **kwargs) -> Dict[str, Any]:
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
     style = obj.style
-    field_array = getattr(obj, "__field_array", None)
-    show_hull = field_array is None
+    field_array = getattr(obj, "__field_array", {})
+    show_hull = not bool(field_array)
     dimension = getattr(obj, "dimension", style.size)
     pixel = obj.pixel
     no_pix = pixel is None
@@ -636,17 +628,33 @@ def make_Sensor(obj, *, autosize, path_ind=None, **kwargs) -> Dict[str, Any]:
         if pixel_size > 0:
             pixel_dim *= pixel_size
             poss = pixel[1:] if one_pix else pixel
-            cmin, cmax = None, None
-            if field_array is not None:
-                field_mag = np.linalg.norm(field_array.reshape(-1, 3), axis=1)
-                cmin, cmax = np.amin(field_mag), np.amax(field_mag)
-                field_array = field_array[path_ind]
+            vectors, colors, null_thresh = None, None, 1e-12
+            if field_array:
+                vsrc = style.pixel.field.vectorsource
+                csrc = style.pixel.field.colorsource
+                if vsrc:
+                    vectors = field_array[vsrc][path_ind]
+                    # if csrc=="" -> show vectors but no color
+                    csrc = vsrc if csrc is None else csrc
+                if csrc:
+                    # get cmin, cmax for whole path
+                    field_str, *coords_str = csrc
+                    coords_str = coords_str if coords_str else "xyz"
+                    coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
+                    field_array = field_array[field_str][..., coords]
+                    field_mag = np.linalg.norm(field_array, axis=-1)
+                    cmin, cmax = np.amin(field_mag), np.amax(field_mag)
+                    field_mag = field_mag[path_ind]
+                    is_null = (np.abs(field_array[path_ind]) < null_thresh).all(axis=1)
+                    field_mag[is_null] = np.nan
+                    colors = get_hexcolors_from_scale(field_mag, min_=cmin, max_=cmax)
             pixels_mesh = make_Pixels(
-                field_array=field_array,
-                cmin=cmin,
-                cmax=cmax,
                 positions=poss,
+                vectors=vectors,
+                colors=colors,
                 size=pixel_dim,
+                symbol=style.pixel.field.symbol,
+                null_thresh=null_thresh,
             )
             if pixels_mesh.get("facecolor", None) is None:
                 pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
