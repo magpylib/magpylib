@@ -517,10 +517,11 @@ def get_generic_traces3D(
     max_pos_ind = path_len - 1
     is_frame_dependent = False
     if hasattr(style, "pixel"):
-        # TODO adapt criteria to show field direction
-        is_frame_dependent = style.pixel.symbol == "."
+        vsrc = style.pixel.field.vectorsource
+        csrc = style.pixel.field.colorsource
+        is_frame_dependent = vsrc or csrc
         if is_frame_dependent:
-            path_len = len(input_obj.__field_array)
+            path_len = len(next(iter(input_obj.__field_array.values())))
 
     path_inds = path_frames_to_indices(style.path.frames, path_len)
 
