@@ -6,7 +6,6 @@
 # pylint: disable=too-many-nested-blocks
 # pylint: disable=cyclic-import
 import warnings
-from itertools import combinations
 from itertools import cycle
 from typing import Any
 from typing import Dict
@@ -15,6 +14,7 @@ from typing import Union
 
 import numpy as np
 from scipy.spatial import distance
+from scipy.spatial.distance import pdist
 from scipy.spatial.transform import Rotation as RotScipy
 
 from magpylib._src.display.sensor_mesh import get_sensor_mesh
@@ -620,10 +620,13 @@ def make_Sensor(obj, *, autosize, path_ind=None, **kwargs) -> Dict[str, Any]:
         pixel_size = style.pixel.size
         pixel_dim = 1
         if style.pixel.sizemode == "scaled":
-            combs = np.array(list(combinations(pixel, 2)))
-            vecs = np.diff(combs, axis=1)
-            dists = np.linalg.norm(vecs, axis=2)
-            min_dist = np.min(dists)
+            if len(pixel) < 1000:
+                min_dist = np.min(pdist(pixel))
+            else:
+                # when too many pixels, min_dist computation is too expensive (On^2)
+                # using volume/(side length) approximation instead
+                vol = np.prod(np.ptp(pixel, axis=0))
+                min_dist = (vol / len(pixel)) ** (1 / 3)
             pixel_dim = dim_ext / 5 if min_dist == 0 else min_dist / 2
         if pixel_size > 0:
             pixel_dim *= pixel_size
