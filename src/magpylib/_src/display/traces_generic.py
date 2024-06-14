@@ -520,7 +520,7 @@ def get_generic_traces3D(
     if hasattr(style, "pixel"):
         vsrc = style.pixel.field.vectorsource
         csrc = style.pixel.field.colorsource
-        is_frame_dependent = vsrc or csrc
+        is_frame_dependent = (vsrc or csrc) and input_obj.__field_array
         if is_frame_dependent:
             path_len = len(next(iter(input_obj.__field_array.values())))
             path_inds = path_frames_to_indices(style.path.frames, path_len)
