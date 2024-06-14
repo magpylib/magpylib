@@ -530,6 +530,7 @@ def make_Pixels(
     vectors,
     colors,
     symbol,
+    shownull,
     size,
     null_thresh=1e-12,
 ) -> Dict[str, Any]:
@@ -549,8 +550,10 @@ def make_Pixels(
         for ind, (pos, orient) in enumerate(zip(positions, orientations)):
             kw = {"backend": "plotly-dict", "position": pos}
             is_null_vec = (np.abs(vectors[ind]) < null_thresh).all()
+            pix = None
             if is_null_vec:
-                pix = make_BaseCuboid(dimension=[size] * 3, **kw)
+                if shownull:
+                    pix = make_BaseCuboid(dimension=[size] * 3, **kw)
             else:
                 kw.update(orientation=orient, base=5, diameter=size, height=size * 2)
                 if symbol == "cone":
@@ -562,9 +565,10 @@ def make_Pixels(
                         "Invalid pixel field symbol (must be 'cone' or 'arrow3d')"
                         f", got {symbol!r}"
                     )
-            if colors is not None:
-                pix["facecolor"] = np.repeat(colors[ind], len(pix["i"]))
-            pixels.append(pix)
+            if pix is not None:
+                if colors is not None:
+                    pix["facecolor"] = np.repeat(colors[ind], len(pix["i"]))
+                pixels.append(pix)
     return merge_mesh3d(*pixels)
 
 
@@ -656,6 +660,7 @@ def make_Sensor(obj, *, autosize, path_ind=None, **kwargs) -> Dict[str, Any]:
                 colors=colors,
                 size=pixel_dim,
                 symbol=style.pixel.field.symbol,
+                shownull=style.pixel.field.shownull,
                 null_thresh=null_thresh,
             )
             if pixels_mesh.get("facecolor", None) is None:
