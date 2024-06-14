@@ -572,7 +572,9 @@ def make_Pixels(
     return merge_mesh3d(*pixels)
 
 
-def make_Sensor(obj, *, autosize, path_ind=None, **kwargs) -> Dict[str, Any]:
+def make_Sensor(
+    obj, *, autosize, path_ind=None, field_array, **kwargs
+) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
     provided arguments.
@@ -583,7 +585,6 @@ def make_Sensor(obj, *, autosize, path_ind=None, **kwargs) -> Dict[str, Any]:
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
     style = obj.style
-    field_array = getattr(obj, "__field_array", {})
     show_hull = not bool(field_array)
     dimension = getattr(obj, "dimension", style.size)
     pixel = obj.pixel

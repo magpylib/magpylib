@@ -451,6 +451,7 @@ def get_generic_traces3D(
     showlegend=None,
     supports_colorgradient=True,
     extra_backend=False,
+    field_array=None,
     row=1,
     col=1,
     **kwargs,
@@ -484,16 +485,40 @@ def get_generic_traces3D(
         is_mag_arrows = "arrow" in magstyl.mode
         magstyl.show = "color" in magstyl.mode
 
-    make_func = getattr(input_obj, "get_trace", None)
+    get_trace_method = getattr(input_obj, "get_trace", None)
+    if get_trace_method is not None:
+
+        def make_func(*args, **kwargs):
+            out = get_trace_method(*args, **kwargs)  # can return multiple traces
+            out = list(out) if isinstance(out, (list, tuple)) else [out]
+            return out
+
+    else:
+        make_func = None
+
     make_func_kwargs = {"legendgroup": legendgroup, **kwargs}
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
 
-    has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
+    positions = getattr(input_obj, "_position", None)
+    orientations = getattr(input_obj, "_orientation", None)
+    has_path = positions is not None and orientations is not None
+    path_len = 1 if positions is None else len(positions)
+    max_pos_ind = path_len - 1
+    is_frame_dependent = False
+    path_inds = path_inds_minimal = path_frames_to_indices(style.path.frames, path_len)
+    if hasattr(style, "pixel"):
+        make_func_kwargs["field_array"] = field_array
+        vsrc = style.pixel.field.vectorsource
+        csrc = style.pixel.field.colorsource
+        is_frame_dependent = (vsrc or csrc) and field_array
+        if is_frame_dependent:
+            path_len = len(next(iter(field_array.values())))
+            path_inds = path_frames_to_indices(style.path.frames, path_len)
+
     path_traces_extra_non_generic_backend = []
     if not has_path and make_func is not None:
-        trs = make_func(**make_func_kwargs)  # can return multiple traces
-        trs = [trs] if isinstance(trs, dict) else trs
+        trs = make_func(**make_func_kwargs)
         for tr in trs:
             tr["row"] = row
             tr["col"] = col
@@ -502,26 +527,11 @@ def get_generic_traces3D(
             out.update({extra_backend: path_traces_extra_non_generic_backend})
         return out
 
-    traces_generic = []
-    positions, orientations = input_obj._position, input_obj._orientation
-    path_len = len(positions)
-    max_pos_ind = path_len - 1
-    is_frame_dependent = False
-    path_inds = path_inds_minimal = path_frames_to_indices(style.path.frames, path_len)
-    if hasattr(style, "pixel"):
-        vsrc = style.pixel.field.vectorsource
-        csrc = style.pixel.field.colorsource
-        is_frame_dependent = (vsrc or csrc) and input_obj.__field_array
-        if is_frame_dependent:
-            path_len = len(next(iter(input_obj.__field_array.values())))
-            path_inds = path_frames_to_indices(style.path.frames, path_len)
-
     def get_traces_func(**extra_kwargs):
         nonlocal is_mag
         traces_generic_temp = []
         if style.model3d.showdefault and make_func is not None:
             p_trs = make_func(**make_func_kwargs, **extra_kwargs)
-            p_trs = [p_trs] if isinstance(p_trs, dict) else p_trs
             for p_tr in p_trs:
                 is_mag = p_tr.pop("ismagnet", is_mag)
                 if is_mag and p_tr.get("type", "") == "mesh3d":
@@ -535,6 +545,7 @@ def get_generic_traces3D(
                 traces_generic_temp.append(p_tr)
         return traces_generic_temp
 
+    traces_generic = []
     if path_inds.size != 0:
         if is_frame_dependent:
             traces_generic.append(None)
@@ -781,6 +792,7 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
     """Return traces, traces to resize and extra_backend_traces"""
     extra_backend_traces = []
     traces_dict = {}
+    field_by_sens = kwargs.pop("field_by_sens", {})
     for obj, params in flat_objs_props.items():
         params = {**params, **kwargs}
         if autosize is None and getattr(obj, "_autosize", False):
@@ -796,6 +808,7 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
                     obj,
                     extra_backend=extra_backend,
                     autosize=autosize,
+                    field_array=field_by_sens.get(obj, None),
                     **params,
                 )
                 if extra_backend:
@@ -804,10 +817,12 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
     return traces_dict, extra_backend_traces
 
 
-def set_sensor_field_array(objects, styles):
+def get_sensor_pixel_field(objects, styles):
+    """get field_by_sens if sensor has style pixel field"""
     # pylint: disable=import-outside-toplevel
     from magpylib._src.fields.field_wrap_BH import getBH_level2
 
+    field_by_sens = {}
     sensors = format_obj_input(objects, allow="sensors+collections")
     sensors = [
         sub_s
@@ -819,7 +834,7 @@ def set_sensor_field_array(objects, styles):
         vsrc = styles[sens].pixel.field.vectorsource
         csrc = styles[sens].pixel.field.colorsource
         if vsrc or csrc:
-            sens.__field_array = {}
+            field_by_sens[sens] = {}
             csrc = csrc if csrc else vsrc
             vrsc = vsrc if vsrc else csrc[0]
             for field in {vrsc, csrc[0]}:
@@ -841,12 +856,13 @@ def set_sensor_field_array(objects, styles):
                     # and path index + reshape pixel
                     path_len = out.shape[1]
                     out = out[0].reshape(path_len, -1, 3)
-                    sens.__field_array[field] = out
+                    field_by_sens[sens][field] = out
                     has_pix_field = True
+    return field_by_sens
 
 
 def draw_frame(
-    objs, *, frame_ind, colorsequence, rc_params, style_kwargs, **kwargs
+    objs, *, field_by_sens, colorsequence, rc_params, style_kwargs, **kwargs
 ) -> Tuple:
     """
     Creates traces from input `objs` and provided parameters, updates the size of objects like
@@ -873,11 +889,12 @@ def draw_frame(
         for o_rc in objs_rc.values()
         for obj, params in o_rc["objects"].items()
     }
-    if frame_ind == 0:
-        set_sensor_field_array(
+    if field_by_sens is None:
+        field_by_sens = get_sensor_pixel_field(
             [obj for props in objs_rc.values() for obj in props["objects"]],
             styles,
         )
+    kwargs["field_by_sens"] = field_by_sens
     traces_dict = {}
     extra_backend_traces = []
     rc_params = {} if rc_params is None else rc_params
@@ -894,6 +911,8 @@ def draw_frame(
             )
             rc_params[rc]["autosize"] = rc_params.get(rc, {}).get("autosize", None)
             if rc_params[rc]["autosize"] is None:
+                # get the dipoles and sensors autosize from first frame
+                # rc_params gets returned and passed back to the function
                 zoom = rc_params[rc]["zoom"] = props["rc_params"]["zoom"]
                 traces = [t for tr in traces_d1.values() for t in tr]
                 ranges_rc = get_scene_ranges(*traces, *traces_ex1, zoom=zoom)
@@ -926,7 +945,7 @@ def draw_frame(
                 styles=styles,
             )
             traces.extend(traces2d)
-    return traces, extra_backend_traces, rc_params
+    return traces, extra_backend_traces, rc_params, field_by_sens
 
 
 def get_frames(
@@ -966,18 +985,18 @@ def get_frames(
         )
     # create frame for each path index or downsampled path index
     frames = []
-
     title_str = title
-    rc_params = {}
-    for frame_ind, path_ind in enumerate(path_indices):
+    field_by_sens = None
+    rc_params = None
+    for path_ind in path_indices:
         extra_backend_traces = []
         if animation:
             style_kwargs["style_path_frames"] = [path_ind]
             title = "Animation 3D - " if title is None else title
             title_str = f"""{title}path index: {path_ind+1:0{exp}d}"""
-        traces, extra_backend_traces, rc_params_temp = draw_frame(
+        traces, extra_backend_traces, rc_params, field_by_sens = draw_frame(
             objs,
-            frame_ind=frame_ind,
+            field_by_sens=field_by_sens,
             colorsequence=colorsequence,
             rc_params=rc_params,
             supports_colorgradient=supports_colorgradient,
@@ -985,8 +1004,6 @@ def get_frames(
             style_kwargs=style_kwargs,
             **kwargs,
         )
-        if frame_ind == 0:  # get the dipoles and sensors autosize from first frame
-            rc_params = rc_params_temp
         frames.append(
             {
                 "data": traces,
