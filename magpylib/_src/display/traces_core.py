@@ -538,7 +538,6 @@ def make_Pixels(
     For now, only "cube" shape is provided.
     """
     pixels = []
-    kw = {"backend": "plotly-dict"}
     if vectors is None:
         for ind, pos in enumerate(positions):
             pix = make_BaseCuboid("plotly-dict", position=pos, dimension=[size] * 3)
@@ -548,7 +547,7 @@ def make_Pixels(
     else:
         orientations = get_orientation_from_vec(vectors)
         for ind, (pos, orient) in enumerate(zip(positions, orientations)):
-            kw.update(position=pos)
+            kw = {"backend": "plotly-dict", "position": pos}
             is_null_vec = (np.abs(vectors[ind]) < null_thresh).all()
             if is_null_vec:
                 pix = make_BaseCuboid(dimension=[size] * 3, **kw)
