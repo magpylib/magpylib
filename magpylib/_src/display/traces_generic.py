@@ -511,7 +511,7 @@ def get_generic_traces3D(
     if hasattr(style, "pixel"):
         vsrc = style.pixel.field.vectorsource
         csrc = style.pixel.field.colorsource
-        is_frame_dependent = vsrc or csrc
+        is_frame_dependent = (vsrc or csrc) and input_obj.__field_array
         if is_frame_dependent:
             path_len = len(next(iter(input_obj.__field_array.values())))
             path_inds = path_frames_to_indices(style.path.frames, path_len)
@@ -808,14 +808,13 @@ def set_sensor_field_array(objects, styles):
     # pylint: disable=import-outside-toplevel
     from magpylib._src.fields.field_wrap_BH import getBH_level2
 
-    sources = format_obj_input(objects, allow="sources")
-    sources = list(set(sources))  # remove duplicates
     sensors = format_obj_input(objects, allow="sensors+collections")
     sensors = [
         sub_s
         for s in sensors
         for sub_s in (s.sensors_all if isinstance(s, magpy.Collection) else [s])
     ]
+    has_pix_field = False
     for sens in sensors:
         vsrc = styles[sens].pixel.field.vectorsource
         csrc = styles[sens].pixel.field.colorsource
@@ -824,21 +823,26 @@ def set_sensor_field_array(objects, styles):
             csrc = csrc if csrc else vsrc
             vrsc = vsrc if vsrc else csrc[0]
             for field in {vrsc, csrc[0]}:
-                out = getBH_level2(
-                    sources,
-                    [sens],
-                    sumup=True,
-                    squeeze=False,
-                    field=field,
-                    pixel_agg=None,
-                    output="ndarray",
-                    in_out="auto",
-                )
-                # select first source (for sumup=True there is only one)
-                # and path index + reshape pixel
-                path_len = out.shape[1]
-                out = out[0].reshape(path_len, -1, 3)
-                sens.__field_array[field] = out
+                if not has_pix_field:
+                    sources = format_obj_input(objects, allow="sources")
+                    sources = list(set(sources))  # remove duplicates
+                if sources:
+                    out = getBH_level2(
+                        sources,
+                        [sens],
+                        sumup=True,
+                        squeeze=False,
+                        field=field,
+                        pixel_agg=None,
+                        output="ndarray",
+                        in_out="auto",
+                    )
+                    # select first source (for sumup=True there is only one)
+                    # and path index + reshape pixel
+                    path_len = out.shape[1]
+                    out = out[0].reshape(path_len, -1, 3)
+                    sens.__field_array[field] = out
+                    has_pix_field = True
 
 
 def draw_frame(
