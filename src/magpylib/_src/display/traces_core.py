@@ -539,8 +539,10 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
         for ind, (pos, orient) in enumerate(zip(positions, orientations)):
             kw = {"backend": "plotly-dict", "position": pos}
             is_null_vec = (np.abs(vectors[ind]) < null_thresh).all()
+            pix = None
             if is_null_vec:
-                pix = make_BaseCuboid(dimension=[size] * 3, **kw)
+                if shownull:
+                    pix = make_BaseCuboid(dimension=[size] * 3, **kw)
             else:
                 kw.update(orientation=orient, base=5, diameter=size, height=size * 2)
                 if symbol == "cone":
@@ -552,9 +554,10 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
                         "Invalid pixel field symbol (must be 'cone' or 'arrow3d')"
                         f", got {symbol!r}"
                     )
-            if colors is not None:
-                pix["facecolor"] = np.repeat(colors[ind], len(pix["i"]))
-            pixels.append(pix)
+            if pix is not None:
+                if colors is not None:
+                    pix["facecolor"] = np.repeat(colors[ind], len(pix["i"]))
+                pixels.append(pix)
     return merge_mesh3d(*pixels)
 
 

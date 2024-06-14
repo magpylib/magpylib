@@ -101,6 +101,7 @@ DEFAULTS = {
                         "symbol": "cone",
                         "vectorsource": None,
                         "colorsource": None,
+                        "shownull": True,
                     },
                 },
                 "arrows": {

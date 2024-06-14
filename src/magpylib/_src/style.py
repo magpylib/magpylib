@@ -1667,6 +1667,9 @@ class PixelField(MagicProperties):
         Defines the pixel color source (e.g. "Bx", "Hxy", "J", etc.). If not specfied,
         the amplitude of the `vectorsource` value is used.
 
+    shownull: bool, default=True
+        Show/hide null or invalid field values
+
     symbol: {"cone", "arrow3d"}:
         Orientation symbol for field vector.
     """
@@ -1709,6 +1712,19 @@ class PixelField(MagicProperties):
             f" but received {repr(val)} instead."
         )
         self._colorsource = val
+
+    @property
+    def shownull(self):
+        """Show/hide null or invalid field values"""
+        return self._shownull
+
+    @shownull.setter
+    def shownull(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"The `shownull` property of {type(self).__name__} must be either True or False,"
+            f"but received {repr(val)} instead."
+        )
+        self._shownull = val
 
     @property
     def symbol(self):
