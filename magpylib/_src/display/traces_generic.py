@@ -808,12 +808,8 @@ def set_sensor_field_array(objects, styles):
     # pylint: disable=import-outside-toplevel
     from magpylib._src.fields.field_wrap_BH import getBH_level2
 
-    sources = format_obj_input(objects, allow="sources+collections")
-    sources = [
-        s
-        for s in sources
-        if not (isinstance(s, magpy.Collection) and not s.sources_all)
-    ]
+    sources = format_obj_input(objects, allow="sources")
+    sources = list(set(sources))  # remove duplicates
     sensors = format_obj_input(objects, allow="sensors+collections")
     sensors = [
         sub_s
