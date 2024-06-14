@@ -134,7 +134,9 @@ def get_vertices_from_model(model_kwargs, model_args=None, coordsargs=None):
 
 
 def get_orientation_from_vec(vec, ref_axis=(0, 0, 1)):
-    """Compute rotation from input vector to reference axis.
+    """
+    Compute rotation from input vector to reference axis, handling NaNs, infs,
+    or zero vectors by returning an identity rotation.
 
     Parameters
     ----------
@@ -145,26 +147,51 @@ def get_orientation_from_vec(vec, ref_axis=(0, 0, 1)):
 
     Returns
     -------
-    RotScipy
-        Rotation object from input vector to reference axis
+    Rotation
+        Rotation object from input vector to reference axis.
     """
+
     # normalize reference axis
-    norm = np.linalg.norm(ref_axis)
-    if norm != 0:
-        ref_axis = ref_axis / norm
+    ref_axis = np.array(ref_axis) / np.linalg.norm(ref_axis)
 
-    # clean and normalize input vector
-    vec[np.isnan(vec).any(axis=1)] = [0, 0, 0]
-    norm = np.linalg.norm(vec, axis=1)
-    norm[norm == 0] = 1
-    vec = (vec.T / norm).T
+    # Initialize rotation vector array
+    rotvec = np.zeros_like(vec)
 
-    # get angle and axis for rotvec
-    cross = np.cross(vec, ref_axis)
-    dot = np.dot(vec, ref_axis)
-    angle = np.arccos(dot)
-    rotvec = (-angle * cross.T).T
-    rotvec[(cross == 0).all(axis=1) & (dot == -1)] = [0, 0, np.pi]
+    # Find invalid vectors (NaNs, infs) and zero vectors
+    invalid_mask = np.isnan(vec).any(axis=1) | np.isinf(vec).any(axis=1)
+    zero_vector_mask = ~invalid_mask & (np.linalg.norm(vec, axis=1) == 0)
+    valid_mask = ~(invalid_mask | zero_vector_mask)
+
+    # Normalize valid input vectors
+    vec_valid = vec[valid_mask]
+    norm_valid = np.linalg.norm(vec_valid, axis=1, keepdims=True)
+    vec_valid = vec_valid / norm_valid
+
+    # get angle and axis for valid rotvecs
+    cross_valid = np.cross(vec_valid, ref_axis)
+    cross_magnitudes = np.linalg.norm(cross_valid, axis=1)
+    mask = cross_magnitudes > 0
+    cross_valid[mask] = cross_valid[mask] / cross_magnitudes[mask][:, np.newaxis]
+    dot_valid = np.dot(vec_valid, ref_axis)
+    # Clip dot product to ensure it falls within the valid range of arccos
+    dot_valid = np.clip(dot_valid, -1.0, 1.0)
+    angle_valid = np.arccos(dot_valid)
+
+    # Compute rotation vectors for valid inputs
+    rotvec_valid = -cross_valid * angle_valid[:, np.newaxis]
+
+    # Handle the edge case where the vectors are anti-parallel
+    anti_parallel_mask = np.isclose(dot_valid, -1)
+    if np.any(anti_parallel_mask):
+        # Find an arbitrary axis orthogonal to the reference axis
+        orthogonal_axis = np.cross(ref_axis, np.array([1, 0, 0]))
+        # if ref_axis was colinear with orthogonal axis
+        if np.linalg.norm(orthogonal_axis) == 0:
+            orthogonal_axis = np.cross(ref_axis, np.array([0, 1, 0]))
+        # Apply 180 degrees rotation around the orthogonal axis
+        rotvec_valid[anti_parallel_mask] = np.pi * orthogonal_axis
+
+    rotvec[valid_mask] = rotvec_valid
     return RotScipy.from_rotvec(rotvec)
 
 
