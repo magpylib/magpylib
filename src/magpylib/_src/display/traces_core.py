@@ -572,7 +572,6 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
     style = obj.style
-    field_array = getattr(obj, "__field_array", {})
     show_hull = not bool(field_array)
     dimension = getattr(obj, "dimension", style.size)
     pixel = obj.pixel
