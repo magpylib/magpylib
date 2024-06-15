@@ -590,6 +590,7 @@ def get_generic_traces3D(
     path_traces_generic = []
     for trg in traces_generic:
         temp_rot_traces = []
+        name, name_suff = "", None
         for ind, path_ind in enumerate(path_inds):
             pos_orient_ind = max_pos_ind if path_ind > max_pos_ind else path_ind
             pos, orient = positions[pos_orient_ind], orientations[pos_orient_ind]
@@ -837,7 +838,7 @@ def get_sensor_pixel_field(objects, styles):
             field_by_sens[sens] = {}
             csrc = csrc if csrc else vsrc
             vrsc = vsrc if vsrc else csrc[0]
-            for field in {vrsc, csrc[0]}:
+            for field in tuple({vrsc, csrc[0]}):
                 if not has_pix_field:
                     sources = format_obj_input(objects, allow="sources")
                     sources = list(set(sources))  # remove duplicates
