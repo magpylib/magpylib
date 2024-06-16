@@ -912,9 +912,13 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
 
     # extract animation info
-    is_animation, path_indices, path_digits, frame_duration, animation_kwargs = (
-        process_animation_kwargs([o for obj in objs for o in obj["objects"]], **kwargs)
-    )
+    (
+        is_animation,
+        path_indices,
+        path_digits,
+        frame_duration,
+        animation_kwargs,
+    ) = process_animation_kwargs([o for obj in objs for o in obj["objects"]], **kwargs)
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("animation")}
 
     if kwargs:
@@ -963,7 +967,11 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
             }
         )
     clean_legendgroups(frames)
-    traces = [t for frame in frames for t in frame["data"]]
+    all_traces = [
+        t
+        for frame in frames
+        for t in chain(frame["data"], frame["extra_backend_traces"])
+    ]
     zoom = {rc: v["rc_params"]["zoom"] for rc, v in objs_rc.items()}
     ranges_rc = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
     labels_rc = {(1, 1): dict.fromkeys("xyz", "")}
