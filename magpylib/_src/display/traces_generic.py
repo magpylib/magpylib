@@ -975,18 +975,18 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
         }
         for path_ind in path_indices
     ]
-    for rc, objs in objs_rc.items():
-        styles = {obj: prop["style"] for obj, prop in objs["objects"].items()}
+    for rc, props in objs_rc.items():
+        styles = {obj: prop["style"] for obj, prop in props["objects"].items()}
         rc_params = None
         with style_temp_edit(*styles, styles_temp=styles):
-            field_by_sens = get_sensor_pixel_field([o for o in objs["objects"]])
+            field_by_sens = get_sensor_pixel_field(list(props["objects"]))
             for frame, path_ind in zip(frames, path_indices):
                 if is_animation:
                     style_kwargs["style_path_frames"] = [path_ind]
                     title = "Animation 3D - " if title is None else title
                     title_str = f"""{title}path index: {path_ind+1:0{path_digits}d}"""
                 traces, extra_backend_traces, rc_params = draw_frame(
-                    objs,
+                    props,
                     field_by_sens=field_by_sens,
                     rc_params=rc_params,
                     supports_colorgradient=supports_colorgradient,
@@ -1006,8 +1006,8 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
     ranges_rc = get_scene_ranges(*all_traces, zoom=zoom)
     labels_rc = {(1, 1): {k: "" for k in "xyz"}}
     scale_factors_rc = {}
-    for rc, objs in objs_rc.items():
-        params = objs["rc_params"]
+    for rc, props in objs_rc.items():
+        params = props["rc_params"]
         units_length = params["units_length"]
         if units_length == "auto":
             rmax = np.amax(np.abs(ranges_rc[rc]))
