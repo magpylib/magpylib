@@ -976,8 +976,8 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
     ranges_rc = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
     labels_rc = {(1, 1): dict.fromkeys("xyz", "")}
     scale_factors_rc = {}
-    for rc, objs in objs_rc.items():
-        params = objs["rc_params"]
+    for rc, props in objs_rc.items():
+        params = props["rc_params"]
         units_length = params["units_length"]
         if units_length == "auto":
             rmax = np.amax(np.abs(ranges_rc[rc]))
