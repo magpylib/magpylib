@@ -93,15 +93,9 @@ class RegisteredBackend:
         display_kwargs = {
             k: v
             for k, v in kwargs.items()
-            if any(k.startswith(arg) for arg in disp_args - {"style"})
+            if any(k.startswith(arg) for arg in disp_args)
         }
-        style_kwargs = {k: v for k, v in kwargs.items() if k.startswith("style")}
-        style_kwargs = linearize_dict(style_kwargs, separator="_")
-        kwargs = {
-            k: v
-            for k, v in kwargs.items()
-            if (k not in display_kwargs and k not in style_kwargs)
-        }
+        kwargs = {k: v for k, v in kwargs.items() if k not in display_kwargs}
         backend_kwargs = {
             k[len(backend) + 1 :]: v
             for k, v in kwargs.items()
@@ -129,7 +123,6 @@ class RegisteredBackend:
             supports_colorgradient=self.supports["colorgradient"],
             backend=backend,
             title=title,
-            style_kwargs=style_kwargs,
             **display_kwargs,
         )
         return self.show_func(

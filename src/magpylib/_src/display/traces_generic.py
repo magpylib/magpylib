@@ -265,7 +265,6 @@ def get_traces_2D(
     sumup=True,
     pixel_agg=None,
     in_out="auto",
-    styles=None,
     units_polarization="T",
     units_magnetization="A/m",
     units_length="m",  # noqa: ARG001
@@ -329,8 +328,7 @@ def get_traces_2D(
     def get_focus_inds(*objs):
         focus_inds = []
         for obj in objs:
-            style = styles.get(obj, obj.style)
-            frames = style.path.frames
+            frames = obj.style.path.frames
             inds = [] if frames is None else frames
             if isinstance(inds, numbers.Number):
                 # pylint: disable=invalid-unary-operand-type
@@ -348,10 +346,8 @@ def get_traces_2D(
         return obj_lst_str
 
     def get_label_and_color(obj):
-        style = styles.get(obj, None)
-        style = obj.style if style is None else style
-        label = get_legend_label(obj, style=style)
-        color = getattr(style, "color", None)
+        label = get_legend_label(obj)
+        color = getattr(obj.style, "color", None)
         return label, color
 
     obj_lst_str = {
@@ -702,8 +698,11 @@ def clean_legendgroups(frames, clean_2d=False):
 
 
 def process_animation_kwargs(obj_list, animation=False, **kwargs):
-    """Update animation kwargs"""
-    flat_obj_list = format_obj_input(obj_list)
+    """Extract animation kwargs and make sure the number of frames does not exceed
+    the max frames and max frame rate, downsample if necessary
+    """
+    obj_list_semi_flat = format_obj_input(obj_list, allow="sources+sensors+collections")
+    flat_obj_list = format_obj_input(obj_list_semi_flat)
     # set animation and animation_time
     if isinstance(animation, numbers.Number) and not isinstance(animation, bool):
         kwargs["animation_time"] = animation
@@ -723,8 +722,13 @@ def process_animation_kwargs(obj_list, animation=False, **kwargs):
     anim_def = default_settings.display.animation.copy()
     anim_def.update({k[10:]: v for k, v in kwargs.items()}, _match_properties=False)
     animation_kwargs = {f"animation_{k}": v for k, v in anim_def.as_dict().items()}
-    kwargs = {k: v for k, v in kwargs.items() if not k.startswith("animation")}
-    return kwargs, animation, animation_kwargs
+
+    path_indices, path_digits, frame_duration = [-1], 0, 0
+    if animation:
+        path_indices, path_digits, frame_duration = extract_animation_properties(
+            obj_list_semi_flat, **animation_kwargs
+        )
+    return animation, path_indices, path_digits, frame_duration
 
 
 def extract_animation_properties(
@@ -778,7 +782,7 @@ def extract_animation_properties(
 
     # calculate exponent of last frame index to avoid digit shift in
     # frame number display during animation
-    exp = (
+    path_digits = (
         np.log10(path_indices.max()).astype(int) + 1
         if path_indices.ndim != 0 and path_indices.max() > 0
         else 1
@@ -795,7 +799,7 @@ def extract_animation_properties(
             stacklevel=2,
         )
 
-    return path_indices, exp, frame_duration
+    return path_indices, path_digits, frame_duration
 
 
 def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs):
@@ -812,17 +816,17 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
             traces_dict[obj] = [{"x": x, "y": y, "z": z, "_autosize": True, **rc_dict}]
         else:
             traces_dict[obj] = []
-            with style_temp_edit(obj, style_temp=params.pop("style", None), copy=True):
-                out_traces = get_generic_traces3D(
-                    obj,
-                    extra_backend=extra_backend,
-                    autosize=autosize,
-                    field_array=field_by_sens.get(obj, None),
-                    **params,
-                )
-                if extra_backend:
-                    extra_backend_traces.extend(out_traces.get(extra_backend, []))
-                traces_dict[obj].extend(out_traces["generic"])
+            params.pop("style", None)
+            out_traces = get_generic_traces3D(
+                obj,
+                extra_backend=extra_backend,
+                autosize=autosize,
+                field_array=field_by_sens.get(obj, None),
+                **params,
+            )
+            if extra_backend:
+                extra_backend_traces.extend(out_traces.get(extra_backend, []))
+            traces_dict[obj].extend(out_traces["generic"])
     return traces_dict, extra_backend_traces
 
 
@@ -836,28 +840,13 @@ def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> tup
     traces_dicts, kwargs: dict, dict
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
-    if colorsequence is None:
-        # pylint: disable=no-member
-        colorsequence = default_settings.display.colorsequence
     # dipoles and sensors use autosize, the trace building has to be put at the back of the queue.
     # autosize is calculated from the other traces overall scene range
-    objs_rc = get_objects_props_by_row_col(
-        *objs,
-        colorsequence=colorsequence,
-        style_kwargs=style_kwargs,
-    )
+    style_kwargs = {k[6:]: v for k, v in style_kwargs.items() if k.startswith("style_")}
+    if style_kwargs:
+        for obj in objs["objects"]:
+            obj.style.update(style_kwargs)
 
-    styles = {
-        obj: params.get("style", None)
-        for o_rc in objs_rc.values()
-        for obj, params in o_rc["objects"].items()
-    }
-    if field_by_sens is None:
-        field_by_sens = get_sensor_pixel_field(
-            [obj for props in objs_rc.values() for obj in props["objects"]],
-            styles,
-        )
-    kwargs["field_by_sens"] = field_by_sens
     traces_dict = {}
     extra_backend_traces = []
     rc_params = {} if rc_params is None else rc_params
@@ -898,31 +887,40 @@ def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> tup
             extra_backend_traces.extend([*traces_ex1, *traces_ex2])
     traces = group_traces(*[t for tr in traces_dict.values() for t in tr])
 
-    for props in objs_rc.values():
-        if props["rc_params"]["output"] != "model3d":
-            traces2d = get_traces_2D(
-                *props["objects"],
-                **props["rc_params"],
-                styles=styles,
-            )
-            traces.extend(traces2d)
-    return traces, extra_backend_traces, rc_params, field_by_sens
+    if objs["rc_params"]["output"] != "model3d":
+        traces2d = get_traces_2D(
+            *objs["objects"],
+            **objs["rc_params"],
+        )
+        traces.extend(traces2d)
+    return traces, extra_backend_traces, rc_params
 
 
-def get_frames(
-    objs,
-    colorsequence=None,
-    title=None,
-    animation=False,
-    supports_colorgradient=True,
-    backend="generic",
-    style_kwargs=None,
-    **kwargs,
-):
+def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
     """This is a helper function which generates frames with generic traces to be provided to
     the chosen backend. According to a certain zoom level, all three space direction will be equal
     and match the maximum of the ranges needed to display all objects, including their paths.
     """
+
+    # process all kwargs
+    # pylint: disable=no-member
+    colorsequence = kwargs.pop("colorsequence", default_settings.display.colorsequence)
+
+    # extract style info
+    style_kwargs = {k: v for k, v in kwargs.items() if k.startswith("style")}
+    style_kwargs = linearize_dict(style_kwargs, separator="_")
+    kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
+
+    # extract animation info
+    animation_kwargs = {k: v for k, v in kwargs.items() if k.startswith("animation")}
+    is_animation, path_indices, path_digits, frame_duration = process_animation_kwargs(
+        [o for obj in objs for o in obj["objects"]], **animation_kwargs
+    )
+    kwargs = {k: v for k, v in kwargs.items() if not k.startswith("animation")}
+
+    if kwargs:
+        raise TypeError(f"`show` got unexpected keyword argument(s) {kwargs!r}")
+
     # infer title if necessary
     if objs:
         style = objs[0]["objects"][0].style
@@ -931,21 +929,13 @@ def get_frames(
     else:
         title = "No objects to be displayed"
 
-    # make sure the number of frames does not exceed the max frames and max frame rate
-    # downsample if necessary
-    obj_list_semi_flat = format_obj_input(
-        [o["objects"] for o in objs], allow="sources+sensors+collections"
+    objs_rc = get_objects_props_by_row_col(
+        *objs,
+        colorsequence=colorsequence,
+        style_kwargs=style_kwargs,
     )
-    kwargs, animation, animation_kwargs = process_animation_kwargs(
-        obj_list_semi_flat, animation=animation, **kwargs
-    )
-    path_indices = [-1]
-    if animation:
-        path_indices, exp, frame_duration = extract_animation_properties(
-            obj_list_semi_flat, **animation_kwargs
-        )
     # create frame for each path index or downsampled path index
-    frames = []
+    style_kwargs = {}
     title_str = title
     field_by_sens = None
     rc_params = None
@@ -975,11 +965,12 @@ def get_frames(
         )
     clean_legendgroups(frames)
     traces = [t for frame in frames for t in frame["data"]]
-    zoom = {rc: v["zoom"] for rc, v in rc_params.items()}
+    zoom = {rc: v["rc_params"]["zoom"] for rc, v in objs_rc.items()}
     ranges_rc = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
     labels_rc = {(1, 1): dict.fromkeys("xyz", "")}
     scale_factors_rc = {}
-    for rc, params in rc_params.items():
+    for rc, objs in objs_rc.items():
+        params = objs["rc_params"]
         units_length = params["units_length"]
         if units_length == "auto":
             rmax = np.amax(np.abs(ranges_rc[rc]))
@@ -999,7 +990,7 @@ def get_frames(
         "labels": labels_rc,
         "input_kwargs": {**kwargs, **animation_kwargs},
     }
-    if animation:
+    if is_animation:
         out.update(
             {
                 "frame_duration": frame_duration,
