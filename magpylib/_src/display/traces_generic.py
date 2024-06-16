@@ -720,7 +720,7 @@ def process_animation_kwargs(obj_list, animation=False, **kwargs):
         path_indices, path_digits, frame_duration = extract_animation_properties(
             obj_list_semi_flat, **animation_kwargs
         )
-    return animation, path_indices, path_digits, frame_duration
+    return animation, path_indices, path_digits, frame_duration, animation_kwargs
 
 
 def extract_animation_properties(
@@ -938,9 +938,8 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
 
     # extract animation info
-    animation_kwargs = {k: v for k, v in kwargs.items() if k.startswith("animation")}
-    is_animation, path_indices, path_digits, frame_duration = process_animation_kwargs(
-        [o for obj in objs for o in obj["objects"]], **animation_kwargs
+    is_animation, path_indices, path_digits, frame_duration, animation_kwargs = (
+        process_animation_kwargs([o for obj in objs for o in obj["objects"]], **kwargs)
     )
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("animation")}
 
