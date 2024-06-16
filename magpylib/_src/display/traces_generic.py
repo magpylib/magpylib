@@ -938,9 +938,13 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
 
     # extract animation info
-    is_animation, path_indices, path_digits, frame_duration, animation_kwargs = (
-        process_animation_kwargs([o for obj in objs for o in obj["objects"]], **kwargs)
-    )
+    (
+        is_animation,
+        path_indices,
+        path_digits,
+        frame_duration,
+        animation_kwargs,
+    ) = process_animation_kwargs([o for obj in objs for o in obj["objects"]], **kwargs)
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("animation")}
 
     if kwargs:
@@ -962,7 +966,15 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
     # create frame for each path index or downsampled path index
     style_kwargs = {}
     title_str = title
-    frames = [{"name": str(path_ind + 1)} for path_ind in path_indices]
+    frames = [
+        {
+            "name": str(path_ind + 1),
+            "data": [],
+            "extra_backend_traces": [],
+            "layout": {},
+        }
+        for path_ind in path_indices
+    ]
     for rc, objs in objs_rc.items():
         styles = {obj: prop["style"] for obj, prop in objs["objects"].items()}
         rc_params = None
@@ -981,15 +993,17 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
                     extra_backend=backend,
                     style_kwargs=style_kwargs,
                 )
-                frame.setdefault("data", []).extend(traces)
-                frame.setdefault("extra_backend_traces", []).extend(
-                    extra_backend_traces
-                )
+                frame["data"].extend(traces)
+                frame["extra_backend_traces"].extend(extra_backend_traces)
                 frame["layout"] = {"title": title_str}
     clean_legendgroups(frames)
-    traces = [t for frame in frames for t in frame["data"]]
+    all_traces = [
+        t
+        for frame in frames
+        for t in chain(frame["data"], frame["extra_backend_traces"])
+    ]
     zoom = {rc: v["rc_params"]["zoom"] for rc, v in objs_rc.items()}
-    ranges_rc = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
+    ranges_rc = get_scene_ranges(*all_traces, zoom=zoom)
     labels_rc = {(1, 1): {k: "" for k in "xyz"}}
     scale_factors_rc = {}
     for rc, objs in objs_rc.items():
