@@ -575,7 +575,7 @@ def make_Pixels(
         if pix is not None:
             if colors is not None:
                 if field_symbol == "arrow2d":
-                    pix["line_color"] = colors[ind]
+                    pix["line_color"] = np.repeat(colors[ind], len(pix["x"]))
                 else:
                     pix["facecolor"] = np.repeat(colors[ind], len(pix["i"]))
             pixels.append(pix)
