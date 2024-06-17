@@ -528,49 +528,44 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
     For now, only "cube" shape is provided.
     """
     pixels = []
-    if vectors is None:
-        for ind, pos in enumerate(positions):
-            pix = make_BaseCuboid("plotly-dict", position=pos, dimension=[size] * 3)
-            if colors is not None:
-                pix["facecolor"] = np.repeat(colors[ind], len(pix["i"]))
-            pixels.append(pix)
-    else:
+    orientations = None
+    is_null_vec = None
+    if vectors is not None:
         orientations = get_orientation_from_vec(vectors)
         is_null_vec = (np.abs(vectors) < null_thresh).all(axis=1)
-        for ind, (pos, orient) in enumerate(zip(positions, orientations)):
-            kw = {"backend": "plotly-dict", "position": pos}
-            pix = None
-            if is_null_vec[ind]:
-                if shownull:
-                    if field_symbol == "arrow2d":
-                        x, y, z = pos.T
-                        coords = {"x": x, "y": y, "z": z}
-                        pix = {"type": "scatter3d", "mode": "markers", **coords}
-                        pix["marker_symbol"] = symbol
-                        pix["marker_size"] = 2
-                    else:
-                        pix = make_BaseCuboid(dimension=[size] * 3, **kw)
+    for ind, pos in enumerate(positions):
+        kw = {"backend": "plotly-dict", "position": pos}
+        pix = None
+        if vectors is not None and not is_null_vec[ind]:
+            orient = orientations[ind]
+            kw.update(orientation=orient, base=5, diameter=size, height=size * 2)
+            if field_symbol == "cone":
+                pix = make_BasePyramid(**kw)
+            elif field_symbol == "arrow3d":
+                pix = make_BaseArrow(**kw, type="mesh3d")
+            elif field_symbol == "arrow2d":
+                pix = make_BaseArrow(**kw, type="scatter3d")
+            else:  # pragma: no cover
+                raise ValueError(
+                    "Invalid pixel field symbol (must be 'cone' or 'arrow3d')"
+                    f", got {field_symbol!r}"
+                )
+        elif vectors is None or shownull:
+            if field_symbol == "arrow2d":
+                x, y, z = pos.T
+                coords = {"x": x, "y": y, "z": z}
+                pix = {"type": "scatter3d", "mode": "markers", **coords}
+                pix["marker_symbol"] = symbol
+                pix["marker_size"] = 2
             else:
-                kw.update(orientation=orient, base=5, diameter=size, height=size * 2)
-                if field_symbol == "cone":
-                    pix = make_BasePyramid(**kw)
-                elif field_symbol == "arrow3d":
-                    pix = make_BaseArrow(**kw, type="mesh3d")
-                elif field_symbol == "arrow2d":
-                    pix = make_BaseArrow(**kw, type="scatter3d")
-                else:  # pragma: no cover
-                    raise ValueError(
-                        "Invalid pixel field symbol (must be 'cone' or 'arrow3d')"
-                        f", got {field_symbol!r}"
-                    )
-            if pix is not None:
-                if colors is not None:
-                    if field_symbol == "arrow2d":
-                        pix["line_color"] = colors[ind]
-                        pix["marker_color"] = colors[ind]
-                    else:
-                        pix["facecolor"] = np.repeat(colors[ind], len(pix["i"]))
-                pixels.append(pix)
+                pix = make_BaseCuboid(dimension=[size] * 3, **kw)
+        if pix is not None:
+            if colors is not None:
+                if field_symbol == "arrow2d":
+                    pix["line_color"] = colors[ind]
+                else:
+                    pix["facecolor"] = np.repeat(colors[ind], len(pix["i"]))
+            pixels.append(pix)
     return group_traces(*pixels)
 
 
