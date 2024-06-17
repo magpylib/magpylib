@@ -17,6 +17,7 @@ import numpy as np
 from matplotlib import patches
 from matplotlib.animation import FuncAnimation
 
+from magpylib._src.display.traces_utility import split_line_color_array
 from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
 
 if os.getenv("MAGPYLIB_MPL_SVG") == "true":  # pragma: no cover
@@ -173,16 +174,19 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
                         "args": (*coords_s, t),
                     }
                 )
-        traces_mpl.append(
-            {
-                "constructor": "plot",
-                "args": coords,
-                "kwargs": {
-                    **{k: v for k, v in props.items() if v is not None},
-                    "alpha": trace.get("opacity", 1),
-                },
-            }
-        )
+        line_colors = split_line_color_array(trace.get("line_color", None))
+        for split in line_colors:
+            props["color"], inds = split
+            traces_mpl.append(
+                {
+                    "constructor": "plot",
+                    "args": coords[:, inds[0] : inds[1]],
+                    "kwargs": {
+                        **{k: v for k, v in props.items() if v is not None},
+                        "alpha": trace.get("opacity", 1),
+                    },
+                }
+            )
     else:  # pragma: no cover
         msg = (
             f"Trace type {trace['type']!r} cannot be transformed into matplotlib trace"

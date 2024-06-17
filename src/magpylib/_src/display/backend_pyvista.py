@@ -23,6 +23,7 @@ except ImportError as missing_module:  # pragma: no cover
 from matplotlib.colors import LinearSegmentedColormap
 from pyvista.plotting.colors import Color  # pylint: disable=import-error
 
+from magpylib._src.display.traces_utility import split_line_color_array
 from magpylib._src.utility import open_animation
 
 # from magpylib._src.utility import format_obj_input
@@ -128,14 +129,17 @@ def generic_trace_to_pyvista(trace):
         if trace["type"] == "scatter3d":
             points = np.array([trace[k] for k in "xyz"], dtype=float).T
             if "lines" in mode:
-                trace_pv_line = {
-                    "type": "mesh",
-                    "mesh": pv.lines_from_points(points),
-                    "color": line_color,
-                    "line_width": line_width,
-                    "opacity": trace.get("opacity", None),
-                }
-                traces_pv.append(trace_pv_line)
+                line_colors = split_line_color_array(line_color)
+                for split in line_colors:
+                    color, inds = split
+                    trace_pv_line = {
+                        "type": "mesh",
+                        "mesh": pv.lines_from_points(points[inds[0] : inds[1]]),
+                        "color": color,
+                        "line_width": line_width,
+                        "opacity": trace.get("opacity", None),
+                    }
+                    traces_pv.append(trace_pv_line)
             if "markers" in mode:
                 trace_pv_marker = {
                     "type": "mesh",

@@ -466,13 +466,17 @@ def merge_scatter3d(*traces):
     if not mode:
         traces[0]["mode"] = "markers"
     no_gap = "line" not in mode
-
+    fill_values = {"x": None, "y": None, "z": None}
+    for k in ("marker_color", "line_color"):
+        if traces[0].get(k, None) is not None:
+            if isinstance(traces[0][k], (list, tuple, np.ndarray)):
+                fill_values[k] = "black"
     merged_trace = {}
-    for k in "xyz":
+    for k, fill_value in fill_values.items():
         if no_gap:
             stack = [b[k] for b in traces]
         else:
-            stack = [pts for b in traces for pts in [[None], b[k]]]
+            stack = [pts for b in traces for pts in [[fill_value], b[k]]]
         merged_trace[k] = np.hstack(stack)
     for k, v in traces[0].items():
         if k not in merged_trace:
@@ -917,3 +921,20 @@ def get_hexcolors_from_scale(
     out[nan_mask] = nan_color
     out[~nan_mask] = hex_colors
     return out
+
+
+def split_line_color_array(line_colors):
+    """splits line_color when it is an array. Unlike plotly, matplotlib
+    and pyvista cannot display line plots with an array of colors."""
+    color_split = []
+    if not isinstance(line_colors, (list, tuple, np.ndarray)):
+        line_colors = [line_colors]
+    line_colors = np.array(line_colors)
+    last_color = next((c for c in line_colors if c is not None), None)
+    last_ind = 0
+    for ind, color in enumerate(line_colors):
+        if (color is not None and color != last_color) or ind == len(line_colors):
+            color_split.append((last_color, (last_ind, ind)))
+            last_ind = ind
+            last_color = color
+    return color_split
