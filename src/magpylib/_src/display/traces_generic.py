@@ -453,7 +453,7 @@ def get_generic_traces3D(
     showlegend=None,
     supports_colorgradient=True,
     extra_backend=False,
-    field_array=None,
+    field_values=None,
     row=1,
     col=1,
     path_ind=-1,
@@ -513,12 +513,12 @@ def get_generic_traces3D(
     is_frame_dependent = False
     path_inds = path_inds_minimal = path_frames_to_indices(style.path.frames, path_len)
     if hasattr(style, "pixel"):
-        make_func_kwargs["field_array"] = field_array
+        make_func_kwargs["field_values"] = field_values
         vsrc = style.pixel.field.vectorsource
         csrc = style.pixel.field.colorsource
-        is_frame_dependent = (vsrc or csrc) and field_array
+        is_frame_dependent = (vsrc or csrc) and field_values
         if is_frame_dependent:
-            path_len = len(next(iter(field_array.values())))
+            path_len = len(next(iter(field_values.values())))
             path_inds = path_frames_to_indices(style.path.frames, path_len)
 
     path_traces_extra_non_generic_backend = []
@@ -821,7 +821,7 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
                 obj,
                 extra_backend=extra_backend,
                 autosize=autosize,
-                field_array=field_by_sens.get(obj, None),
+                field_values=field_by_sens.get(obj, None),
                 **params,
             )
             if extra_backend:

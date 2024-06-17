@@ -96,7 +96,7 @@ DEFAULTS = {
                     "size": 1,
                     "sizemode": "scaled",
                     "color": None,
-                    "symbol": "o",
+                    "symbol": None,
                     "field": {
                         "symbol": "cone",
                         "vectorsource": None,

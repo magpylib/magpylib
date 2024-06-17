@@ -195,6 +195,39 @@ def get_orientation_from_vec(vec, ref_axis=(0, 0, 1)):
     return RotScipy.from_rotvec(rotvec)
 
 
+def draw_zarrow(
+    height=1.0,
+    diameter=0.1,
+    sign_offset=1.0,
+    sign=1,
+    pivot="middle",
+    include_line=True,
+):
+    """Provides x,y,z coordinates of an arrow drawn in the x-z-plane (y=0)
+    centered in x,y,z=(0,0,0)"""
+    shift = sign_offset - 0.5
+    hx = 0.6 * diameter
+    hz = np.sign(sign) * diameter
+    anchor = (
+        (0, -0.5, 0)
+        if pivot == "tip"
+        else (0, 0.5, 0) if pivot == "tail" else (0, 0, 0)
+    )
+    arrow = [
+        [0, 0, shift],
+        [-hx, 0, shift - hz],
+        [0, 0, shift],
+        [hx, 0, shift - hz],
+        [0, 0, shift],
+    ]
+    if include_line:
+        arrow = [[0, 0, -0.5], *arrow, [0, 0, 0.5]]
+    else:
+        arrow = [[0, 0, -0.5], [np.nan] * 3, *arrow, [np.nan] * 3, [0, 0, 0.5]]
+    arrow = (np.array(arrow) + np.array(anchor)) * height
+    return arrow
+
+
 def draw_arrowed_line(
     vec,
     pos,

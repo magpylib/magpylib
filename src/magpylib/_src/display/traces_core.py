@@ -536,29 +536,42 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
             pixels.append(pix)
     else:
         orientations = get_orientation_from_vec(vectors)
+        is_null_vec = (np.abs(vectors) < null_thresh).all(axis=1)
         for ind, (pos, orient) in enumerate(zip(positions, orientations)):
             kw = {"backend": "plotly-dict", "position": pos}
-            is_null_vec = (np.abs(vectors[ind]) < null_thresh).all()
             pix = None
-            if is_null_vec:
+            if is_null_vec[ind]:
                 if shownull:
-                    pix = make_BaseCuboid(dimension=[size] * 3, **kw)
+                    if field_symbol == "arrow2d":
+                        x, y, z = pos.T
+                        coords = {"x": x, "y": y, "z": z}
+                        pix = {"type": "scatter3d", "mode": "markers", **coords}
+                        pix["marker_symbol"] = symbol
+                        pix["marker_size"] = 2
+                    else:
+                        pix = make_BaseCuboid(dimension=[size] * 3, **kw)
             else:
                 kw.update(orientation=orient, base=5, diameter=size, height=size * 2)
-                if symbol == "cone":
+                if field_symbol == "cone":
                     pix = make_BasePyramid(**kw)
-                elif symbol == "arrow3d":
-                    pix = make_BaseArrow(**kw)
+                elif field_symbol == "arrow3d":
+                    pix = make_BaseArrow(**kw, type="mesh3d")
+                elif field_symbol == "arrow2d":
+                    pix = make_BaseArrow(**kw, type="scatter3d")
                 else:  # pragma: no cover
                     raise ValueError(
                         "Invalid pixel field symbol (must be 'cone' or 'arrow3d')"
-                        f", got {symbol!r}"
+                        f", got {field_symbol!r}"
                     )
             if pix is not None:
                 if colors is not None:
-                    pix["facecolor"] = np.repeat(colors[ind], len(pix["i"]))
+                    if field_symbol == "arrow2d":
+                        pix["line_color"] = colors[ind]
+                        pix["marker_color"] = colors[ind]
+                    else:
+                        pix["facecolor"] = np.repeat(colors[ind], len(pix["i"]))
                 pixels.append(pix)
-    return merge_mesh3d(*pixels)
+    return group_traces(*pixels)
 
 
 def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
@@ -572,7 +585,7 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
     style = obj.style
-    show_hull = not bool(field_array)
+    show_hull = not bool(field_values)
     dimension = getattr(obj, "dimension", style.size)
     pixel = obj.pixel
     no_pix = pixel is None
@@ -605,7 +618,7 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
     vertices /= 2  # sensor_mesh vertices are of length 2
     x, y, z = vertices.T
     sensor.update(x=x, y=y, z=z)
-    meshes_to_merge = [sensor]
+    traces_to_merge = [sensor]
     if not no_pix:
         pixel_color = style.pixel.color
         pixel_size = style.pixel.size
@@ -623,11 +636,11 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
             pixel_dim *= pixel_size
             poss = pixel[1:] if one_pix else pixel
             vectors, colors, null_thresh = None, None, 1e-12
-            if field_array:
+            if field_values:
                 vsrc = style.pixel.field.vectorsource
                 csrc = style.pixel.field.colorsource
                 if vsrc:
-                    vectors = field_array[vsrc][path_ind]
+                    vectors = field_values[vsrc][path_ind]
                     # if csrc=="" -> show vectors but no color
                     csrc = vsrc if csrc is None else csrc
                 if csrc:
@@ -635,7 +648,7 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
                     field_str, *coords_str = csrc
                     coords_str = coords_str if coords_str else "xyz"
                     coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
-                    field_array = field_array[field_str][..., coords]
+                    field_array = field_values[field_str][..., coords]
                     field_mag = np.linalg.norm(field_array, axis=-1)
                     cmin, cmax = np.amin(field_mag), np.amax(field_mag)
                     field_mag = field_mag[path_ind]
@@ -659,6 +672,6 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
                 "plotly-dict", position=hull_pos, dimension=hull_dim
             )
             hull_mesh["facecolor"] = np.repeat(style.color, len(hull_mesh["i"]))
-            meshes_to_merge.append(hull_mesh)
-    trace = merge_mesh3d(*meshes_to_merge)
-    return {**trace, **kwargs}
+            traces_to_merge.append(hull_mesh)
+    traces = group_traces(*traces_to_merge)
+    return [{**tr, **kwargs} for tr in traces]
