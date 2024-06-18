@@ -25,7 +25,7 @@
 - The Magpylib inputs and outputs are now in **SI Units**.
 - The `magnetization` parameter has also been redefined to reflect the true physical magnetization quantity in units of A/m.
 ### Other Improvements
-- The `magnetization` parameter is now codependent with the new `polarization` parameter that is the physical magnetic polarization ([#712](https://github.com/magpylib/magpylib/issues/712)) in units of Tesla.
+- The `magnetization` parameter is now codependent with the new `polarization` parameter that is the physical magnetic polarization ([#712](https://github.com/magpylib/magpylib/issues/712)) in units of Tesla
 - Added `getM` (magnetization) and `getJ` (polarization) top level functions and class methods reminiscent of `getB` and `getH`.
 - The `in_out` (inside/outside) parameter is added to all field functions (`getBHJM`) to specify the location of the observers relative to the magnet body in order to increase performance ([#717](https://github.com/magpylib/magpylib/issues/717), [#608](https://github.com/magpylib/magpylib/issues/608))
 - Review of documentation and adding a few requested things ([#685](https://github.com/magpylib/magpylib/issues/685), some of [#659](https://github.com/magpylib/magpylib/issues/659))
