@@ -58,7 +58,7 @@ def dipole_Hfield(
     if np.any(mask1):
         with np.errstate(divide="ignore", invalid="ignore"):
             H[mask1] = moments[mask1] / 0.0
-            np.nan_to_num(H, copy=False, posinf=np.inf, neginf=np.NINF)
+            np.nan_to_num(H, copy=False, posinf=np.inf, neginf=-np.inf)
 
     return H
 
