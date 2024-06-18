@@ -552,11 +552,14 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
                 )
         elif vectors is None or shownull:
             if field_symbol == "arrow2d":
-                x, y, z = pos.T
-                coords = {"x": x, "y": y, "z": z}
-                pix = {"type": "scatter3d", "mode": "markers", **coords}
-                pix["marker_symbol"] = symbol
-                pix["marker_size"] = 2
+                x, y, z = pos[:, None]
+                pix = {
+                    "type": "scatter3d",
+                    "mode": "markers",
+                    **{"x": x, "y": y, "z": z},
+                    "marker_symbol": symbol,
+                    "marker_size": 2,
+                }
             else:
                 pix = make_BaseCuboid(dimension=[size] * 3, **kw)
         if pix is not None:
