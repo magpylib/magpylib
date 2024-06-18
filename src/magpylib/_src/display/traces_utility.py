@@ -697,10 +697,8 @@ def group_traces(*traces):
         for k in [*common_keys, *spec_keys.get(tr["type"], [])]:
             v = tr.get(k, None) is None if k == "facecolor" else tr.get(k, "")
             gr.append(str(v))
-        gr = "".join(gr)
-        if gr not in mesh_groups:
-            mesh_groups[gr] = []
-        mesh_groups[gr].append(tr)
+        gr = tuple(gr)
+        mesh_groups.setdefault(gr, []).append(tr)
 
     traces = []
     for group in mesh_groups.values():
