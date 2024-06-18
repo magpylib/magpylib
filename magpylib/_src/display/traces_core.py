@@ -556,7 +556,7 @@ def make_Pixels(
                 pix = make_BasePyramid(**kw)
             elif field_symbol == "arrow3d":
                 pix = make_BaseArrow(**kw, type="mesh3d")
-            elif field_symbol == "arrow2d":
+            elif field_symbol == "arrow":
                 pix = make_BaseArrow(**kw, type="scatter3d")
             else:  # pragma: no cover
                 raise ValueError(
@@ -564,7 +564,7 @@ def make_Pixels(
                     f", got {field_symbol!r}"
                 )
         elif vectors is None or shownull:
-            if field_symbol == "arrow2d":
+            if field_symbol == "arrow":
                 x, y, z = pos[:, None]
                 pix = {
                     "type": "scatter3d",
@@ -577,7 +577,7 @@ def make_Pixels(
                 pix = make_BaseCuboid(dimension=[size] * 3, **kw)
         if pix is not None:
             if colors is not None:
-                if field_symbol == "arrow2d":
+                if field_symbol == "arrow":
                     pix["line_color"] = np.repeat(colors[ind], len(pix["x"]))
                 else:
                     pix["facecolor"] = np.repeat(colors[ind], len(pix["i"]))

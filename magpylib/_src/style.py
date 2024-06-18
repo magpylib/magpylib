@@ -1662,11 +1662,11 @@ class PixelField(MagicProperties):
     shownull: bool, default=True
         Show/hide null or invalid field values
 
-    symbol: {"cone", "arrow2d", "arrow3d"}:
+    symbol: {"cone", "arrow", "arrow3d"}:
         Orientation symbol for field vector.
     """
 
-    _allowed_symbols = ("cone", "arrow2d", "arrow3d")
+    _allowed_symbols = ("cone", "arrow", "arrow3d")
     _allowed_vectorsources = ("B", "H", "J", "M")
 
     @property
