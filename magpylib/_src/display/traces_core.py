@@ -565,11 +565,14 @@ def make_Pixels(
                 )
         elif vectors is None or shownull:
             if field_symbol == "arrow2d":
-                x, y, z = pos.T
-                coords = {"x": x, "y": y, "z": z}
-                pix = {"type": "scatter3d", "mode": "markers", **coords}
-                pix["marker_symbol"] = symbol
-                pix["marker_size"] = 2
+                x, y, z = pos[:, None]
+                pix = {
+                    "type": "scatter3d",
+                    "mode": "markers",
+                    **{"x": x, "y": y, "z": z},
+                    "marker_symbol": symbol,
+                    "marker_size": 2,
+                }
             else:
                 pix = make_BaseCuboid(dimension=[size] * 3, **kw)
         if pix is not None:
@@ -688,9 +691,7 @@ def make_Sensor(
                     {
                         "type": "scatter3d",
                         "mode": "markers",
-                        "x": x,
-                        "y": y,
-                        "z": z,
+                        **{"x": x, "y": y, "z": z},
                         "marker_symbol": style.pixel.symbol,
                         "marker_color": "black" if pixel_color is None else pixel_color,
                         "marker_size": 2,
