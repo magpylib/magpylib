@@ -683,24 +683,14 @@ def group_traces(*traces):
         ],
     }
     for tr in traces:
-        tr = linearize_dict(
-            tr,
-            separator="_",
-        )
+        tr = linearize_dict(tr, separator="_")
         gr = [tr["type"]]
         for k in [*common_keys, *spec_keys.get(tr["type"], [])]:
-            if k == "facecolor":
-                v = tr.get(k, None) is None
-            elif k in ("line_color", "marker_color"):
-                v = tr.get(k, None)
-                v = v if isinstance(v, str) else str(type(v))
-            else:
-                v = tr.get(k, "")
+            v = tr.get(k, None)
+            v = type(v) if isinstance(v, (list, tuple, np.ndarray)) else v
             gr.append(str(v))
-        gr = "".join(gr)
-        if gr not in mesh_groups:
-            mesh_groups[gr] = []
-        mesh_groups[gr].append(tr)
+        gr = tuple(gr)
+        mesh_groups.setdefault(gr, []).append(tr)
 
     traces = []
     for group in mesh_groups.values():
