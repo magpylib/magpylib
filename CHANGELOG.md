@@ -1,7 +1,10 @@
 # Changelog
 
-## [5.0.3] - 2024-06-03
+## Unreleased
+- Add support for Numpy 2.0 ([#795](https://github.com/magpylib/magpylib/pull/789))
+- Fix markers legend not being suppressible ([#795](https://github.com/magpylib/magpylib/pull/789))
 
+## [5.0.3] - 2024-06-03
 - Fix subplot object properties propagation ([#780](https://github.com/magpylib/magpylib/pull/780))
 - Migrate to pydata-sphinx-theme and fix docs search function ([#762](https://github.com/magpylib/magpylib/pull/762))
 - Fix docs version-switcher ([#782](https://github.com/magpylib/magpylib/pull/782))

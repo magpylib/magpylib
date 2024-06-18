@@ -219,7 +219,7 @@ def test_cylinder_field1():
 
     nulll = np.zeros(N)
     eins = np.ones(N)
-    d, h, _ = dim.T
+    d, h, _ = dim.T  # pylint: disable=no-member
     dim5 = np.array([nulll, d / 2, h, nulll, eins * 360]).T
     B1 = BHJM_cylinder_segment(
         field="B", observers=poso, polarization=magg, dimension=dim5
@@ -400,6 +400,7 @@ def test_cylinder_tile_vs_fem():
     amp3 = np.linalg.norm(B3, axis=1)
     amp4 = np.linalg.norm(B4, axis=1)
 
+    # pylint: disable=unsubscriptable-object
     assert np.amax((fd1[:, 1:] * 1000 - B1).T / amp1) < 0.05
     assert np.amax((fd2[5:-5, 1:] * 1000 - B2[5:-5]).T / amp2[5:-5]) < 0.05
     assert np.amax((fd3[:, 1:] * 1000 - B3).T / amp3) < 0.05
