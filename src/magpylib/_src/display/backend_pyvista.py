@@ -23,7 +23,8 @@ except ImportError as missing_module:  # pragma: no cover
 from matplotlib.colors import LinearSegmentedColormap
 from pyvista.plotting.colors import Color  # pylint: disable=import-error
 
-from magpylib._src.display.traces_utility import split_line_color_array
+from magpylib._src.display.traces_utility import get_trace_kw
+from magpylib._src.display.traces_utility import split_input_arrays
 from magpylib._src.utility import open_animation
 
 # from magpylib._src.utility import format_obj_input
@@ -80,72 +81,63 @@ def colormap_from_colorscale(colorscale, name="plotly_to_mpl", N=256, gamma=1.0)
     return LinearSegmentedColormap(name, cdict, N, gamma)
 
 
-def generic_trace_to_pyvista(trace):
-    """Transform a generic trace into a pyvista trace"""
-    traces_pv = []
-    leg_title = trace.get("legendgrouptitle_text", None)
-    if trace["type"] == "mesh3d":
-        vertices = np.array([trace[k] for k in "xyz"], dtype=float).T
-        faces = np.array([trace[k] for k in "ijk"]).T.flatten()
-        faces = np.insert(faces, range(0, len(faces), 3), 3)
-        colorscale = trace.get("colorscale", None)
-        mesh = pv.PolyData(vertices, faces)
-        facecolor = trace.get("facecolor", None)
-        trace_pv = {
-            "type": "mesh",
-            "mesh": mesh,
-            "color": trace.get("color", None),
-            "scalars": trace.get("intensity", None),
-            "opacity": trace.get("opacity", None),
-        }
-        if facecolor is not None:
-            # pylint: disable=unsupported-assignment-operation
-            mesh.cell_data["colors"] = [
-                Color(c, default_color=(0, 0, 0)).int_rgb for c in facecolor
-            ]
-            trace_pv.update(
-                {
-                    "scalars": "colors",
-                    "rgb": True,
-                    "preference": "cell",
-                }
-            )
-        traces_pv.append(trace_pv)
-        if colorscale is not None:
-            trace_pv["cmap"] = colormap_from_colorscale(colorscale)
-    elif "scatter" in trace["type"]:
-        line = trace.get("line", {})
-        line_color = line.get("color", trace.get("line_color", None))
-        line_width = line.get("width", trace.get("line_width", None))
-        line_width = 1 if line_width is None else line_width
-        line_style = line.get("dash", trace.get("line_dash"))
-        marker = trace.get("marker", {})
-        marker_color = marker.get("color", trace.get("marker_color", None))
-        marker_size = marker.get("size", trace.get("marker_size", None))
-        marker_size = 1 if marker_size is None else marker_size
-        marker_symbol = marker.get("symbol", trace.get("marker_symbol", None))
-        mode = trace.get("mode", None)
-        mode = "markers" if mode is None else mode
-        if trace["type"] == "scatter3d":
-            points = np.array([trace[k] for k in "xyz"], dtype=float).T
-            if "lines" in mode:
-                line_colors = split_line_color_array(line_color)
-                for split in line_colors:
-                    color, inds = split
-                    trace_pv_line = {
-                        "type": "mesh",
-                        "mesh": pv.lines_from_points(points[inds[0] : inds[1]]),
-                        "color": color,
-                        "line_width": line_width,
-                        "opacity": trace.get("opacity", None),
-                    }
-                    traces_pv.append(trace_pv_line)
-            if "markers" in mode:
-                trace_pv_marker = {
+def mesh3d_to_pyvista(trace):
+    """Convert mesh3d trace input to a list of mesh constructor dict"""
+    vertices = np.array([trace[k] for k in "xyz"], dtype=float).T
+    faces = np.array([trace[k] for k in "ijk"]).T.flatten()
+    faces = np.insert(faces, range(0, len(faces), 3), 3)
+    colorscale = trace.get("colorscale", None)
+    mesh = pv.PolyData(vertices, faces)
+    facecolor = trace.get("facecolor", None)
+    trace_pv = {
+        "type": "mesh",
+        "mesh": mesh,
+        "color": trace.get("color", None),
+        "scalars": trace.get("intensity", None),
+        "opacity": trace.get("opacity", None),
+    }
+    if facecolor is not None:
+        # pylint: disable=unsupported-assignment-operation
+        mesh.cell_data["colors"] = [
+            Color(c, default_color=(0, 0, 0)).int_rgb for c in facecolor
+        ]
+        trace_pv.update(
+            {
+                "scalars": "colors",
+                "rgb": True,
+                "preference": "cell",
+            }
+        )
+    if colorscale is not None:
+        trace_pv["cmap"] = colormap_from_colorscale(colorscale)
+    return trace_pv
+
+
+def scatter_to_pyvista(trace):
+    """Convert scatter trace input to a list of plot or scatter constructor dicts
+    Note 3d scatter plot is done with the mesh constructor and does not support symbols
+    """
+    traces = []
+
+    # get kwargs
+    mode = get_trace_kw(trace, "mode", none_replace="markers")
+    line_color = get_trace_kw(trace, "line_color")
+    line_width = get_trace_kw(trace, "line_width", none_replace=1)
+    line_dash = get_trace_kw(trace, "line_dash")
+    line_dash = LINESTYLES_TO_PYVISTA.get(line_dash, "-")
+    marker_color = get_trace_kw(trace, "marker_color")
+    marker_size = get_trace_kw(trace, "marker_size", none_replace=1)
+    marker_symbol = get_trace_kw(trace, "marker_symbol", none_replace="o")
+
+    if trace["type"] == "scatter3d":
+        points = np.array([trace[k] for k in "xyz"], dtype=float).T
+        if "lines" in mode:
+            for (lcol,), inds in split_input_arrays(line_color):
+                trace_pv_line = {
                     "type": "mesh",
-                    "mesh": pv.PolyData(points),
-                    "color": marker_color,
-                    "point_size": marker_size,
+                    "mesh": pv.lines_from_points(points[inds[0] : inds[1]]),
+                    "color": lcol,
+                    "line_width": line_width,
                     "opacity": trace.get("opacity", None),
                 }
                 traces_pv.append(trace_pv_marker)
@@ -194,7 +186,63 @@ def generic_trace_to_pyvista(trace):
                         "y": np.array(tr["y"][mask]),
                         "size": size,
                     }
-                    traces_pv.append(tr)
+                    traces.append(trace_pv_marker)
+        if "text" in mode and trace.get("text", False) and len(points) > 0:
+            txt = trace["text"]
+            txt = [txt] * len(points[0]) if isinstance(txt, str) else txt
+            trace_pv_text = {
+                "type": "point_labels",
+                "points": points,
+                "labels": txt,
+                "always_visible": True,
+            }
+            traces.append(trace_pv_text)
+    else:
+        if "lines" in mode:
+            trace_pv_line = {
+                "type": "line",
+                "x": trace["x"],
+                "y": trace["y"],
+                "color": line_color,
+                "width": line_width,
+                "style": line_dash,
+                "label": trace.get("name", ""),
+            }
+            traces.append(trace_pv_line)
+        if "markers" in mode:
+            trace_pv_marker = {
+                "type": "scatter",
+                "x": trace["x"],
+                "y": trace["y"],
+                "color": marker_color,
+                "size": marker_size,
+                "style": SYMBOLS_TO_PYVISTA.get(marker_symbol, "o"),
+            }
+            marker_size = (
+                marker_size
+                if isinstance(marker_size, (list, tuple, np.ndarray))
+                else np.array([marker_size])
+            )
+            for size in np.unique(marker_size):
+                tr = trace_pv_marker.copy()
+                mask = marker_size == size
+                tr = {
+                    **tr,
+                    "x": np.array(tr["x"])[mask],
+                    "y": np.array(tr["y"][mask]),
+                    "size": size,
+                }
+                traces.append(tr)
+    return traces
+
+
+def generic_trace_to_pyvista(trace):
+    """Transform a generic trace into a pyvista traces"""
+    traces_pv = []
+    if trace["type"] == "mesh3d":
+        traces_pv.append(mesh3d_to_pyvista(trace))
+    elif trace["type"] in ("scatter", "scatter3d"):
+        traces_pv.extend(scatter_to_pyvista(trace))
     else:  # pragma: no cover
         msg = f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
         raise ValueError(msg)

@@ -17,8 +17,10 @@ import numpy as np
 from matplotlib import patches
 from matplotlib.animation import FuncAnimation
 
-from magpylib._src.display.traces_utility import split_line_color_array
+from magpylib._src.display.traces_utility import get_trace_kw
+from magpylib._src.display.traces_utility import split_input_arrays
 from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
+from magpylib._src.utility import is_array_like
 
 if os.getenv("MAGPYLIB_MPL_SVG") == "true":  # pragma: no cover
     from matplotlib_inline.backend_inline import set_matplotlib_formats
@@ -40,16 +42,6 @@ LINE_STYLES_TO_MATPLOTLIB = {
     "dot": (0, (1, 1)),
     "longdash": "loosely dotted",
     "longdashdot": "loosely dashdotted",
-}
-
-SCATTER_KWARGS_LOOKUPS = {
-    "ls": ("line", "dash"),
-    "lw": ("line", "width"),
-    "color": ("line", "color"),
-    "marker": ("marker", "symbol"),
-    "mfc": ("marker", "color"),
-    "mec": ("marker", "color"),
-    "ms": ("marker", "size"),
 }
 
 
@@ -92,39 +84,29 @@ class StripedHandler:
             current_position += patch_width * proportion
 
 
-def generic_trace_to_matplotlib(trace, antialiased=True):
-    """Transform a generic trace into a matplotlib trace"""
-    traces_mpl = []
-    leg_title = trace.get("legendgrouptitle_text", None)
-    showlegend = trace.get("showlegend", True)
-    if trace["type"] == "mesh3d":
-        subtraces = [trace]
-        has_facecolor = trace.get("facecolor", None) is not None
-        if has_facecolor:
-            subtraces = subdivide_mesh_by_facecolor(trace)
-        for ind, subtrace in enumerate(subtraces):
-            x, y, z = np.array([subtrace[k] for k in "xyz"], dtype=float)
-            triangles = np.array([subtrace[k] for k in "ijk"]).T
-            tr_mesh = {
-                "constructor": "plot_trisurf",
-                "args": (x, y, z),
-                "kwargs": {
-                    "triangles": triangles,
-                    "alpha": subtrace.get("opacity", None),
-                    "color": subtrace.get("color", None),
-                    "linewidth": 0,
-                    "antialiased": antialiased,
-                },
-            }
-            if showlegend and has_facecolor:
-                tr_mesh["legend_handler"] = StripedHandler(Counter(trace["facecolor"]))
-            if ind != 0:  # hide substrace legends except first
-                tr_mesh["kwargs"]["label"] = "_nolegend_"
-            traces_mpl.append(tr_mesh)
-    elif "scatter" in trace["type"]:
-        props = {
-            k: trace.get(v[0], {}).get(v[1], trace.get("_".join(v), None))
-            for k, v in SCATTER_KWARGS_LOOKUPS.items()
+def mesh3d_to_matplotlib(trace, antialiased):
+    """Convert mesh3d trace input to a list of plot_trisurf constructor dicts
+    Note: plot_trisurf does not accept different facecolors on the same trace
+    so they need to be splitted into multiple traces
+    """
+    traces = []
+    subtraces = [trace]
+    has_facecolor = trace.get("facecolor", None) is not None
+    if has_facecolor:
+        subtraces = subdivide_mesh_by_facecolor(trace)
+    for ind, subtrace in enumerate(subtraces):
+        x, y, z = np.array([subtrace[k] for k in "xyz"], dtype=float)
+        triangles = np.array([subtrace[k] for k in "ijk"]).T
+        tr_mesh = {
+            "constructor": "plot_trisurf",
+            "args": (x, y, z),
+            "kwargs": {
+                "triangles": triangles,
+                "alpha": subtrace.get("opacity", None),
+                "color": subtrace.get("color", None),
+                "linewidth": 0,
+                "antialiased": antialiased,
+            },
         }
         coords_str = "xyz"
         if trace["type"] == "scatter":
@@ -136,15 +118,8 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
             traces_mpl.append(
                 {
                     "constructor": "scatter",
-                    "args": (*coords,),
-                    "kwargs": {
-                        "s": props["ms"],
-                        "color": props["mec"],
-                        "marker": SYMBOLS_TO_MATPLOTLIB.get(
-                            props["marker"], props["marker"]
-                        ),
-                        "label": None,
-                    },
+                    "args": tuple(coords[:, inds[0] : inds[1]]),
+                    "kwargs": {"marker": msymb, "label": None, **kw},
                 }
             )
             props.pop("ms")
@@ -182,11 +157,29 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
                     "constructor": "plot",
                     "args": coords[:, inds[0] : inds[1]],
                     "kwargs": {
-                        **{k: v for k, v in props.items() if v is not None},
                         "alpha": trace.get("opacity", 1),
+                        "ls": line_dash,
+                        "lw": lwidth,
+                        "color": lcolor,
                     },
                 }
             )
+    # plot the test parts with `text` constructor
+    if "text" in mode and trace.get("text", False) and len(coords) > 0:
+        txt = trace["text"]
+        txt = [txt] * len(coords[0]) if isinstance(txt, str) else txt
+        for *coords_s, txt in zip(*coords, txt):
+            traces.append({"constructor": "text", "args": (*coords_s, txt)})
+    return traces
+
+
+def generic_trace_to_matplotlib(trace, antialiased=True):
+    """Transform a generic trace into a matplotlib trace"""
+    traces_mpl = []
+    if trace["type"] == "mesh3d":
+        traces_mpl.extend(mesh3d_to_matplotlib(trace, antialiased))
+    elif trace["type"] in ("scatter", "scatter3d"):
+        traces_mpl.extend(scatter_to_matplotlib(trace))
     else:  # pragma: no cover
         msg = (
             f"Trace type {trace['type']!r} cannot be transformed into matplotlib trace"
@@ -201,9 +194,9 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
                 if "label" not in tr_mesh["kwargs"]:
                     tr_mesh["kwargs"]["label"] = trace.get("name", "")
                     if leg_title is not None:
-                        tr_mesh["kwargs"]["label"] += f" ({leg_title})"
+                        tr["kwargs"]["label"] += f" ({leg_title})"
             else:
-                tr_mesh["kwargs"]["label"] = "_nolegend"
+                tr["kwargs"]["label"] = "_nolegend"
     return traces_mpl
 
 

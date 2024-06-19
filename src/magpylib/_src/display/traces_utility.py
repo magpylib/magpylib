@@ -466,17 +466,34 @@ def merge_scatter3d(*traces):
     if not mode:
         traces[0]["mode"] = "markers"
     no_gap = "line" not in mode
-    fill_values = {"x": None, "y": None, "z": None}
-    for k in ("marker_color", "line_color"):
-        if traces[0].get(k, None) is not None:
-            if isinstance(traces[0][k], (list, tuple, np.ndarray)):
-                fill_values[k] = "black"
-    merged_trace = {}
+
+    ffill = "--<forward_fill>--"
+
+    def fill_trace(tr, fill_value):
+        if fill_value == ffill:
+            return [*tr[k], *tr[k][-1:]]
+        return [*tr[k], fill_value]
+
+    fill_values = {
+        "x": np.nan,
+        "y": np.nan,
+        "z": np.nan,
+        "marker_symbol": ffill,
+        "marker_size": 0,
+        "marker_color": ffill,
+        "line_color": ffill,
+    }
+    fill_values = {
+        k: v
+        for k, v in fill_values.items()
+        if k in traces[0] and isinstance(traces[0][k], (list, tuple, np.ndarray))
+    }
+    merged_trace = {**traces[0]}
     for k, fill_value in fill_values.items():
         if no_gap:
-            stack = [b[k] for b in traces]
+            stack = [tr[k] for tr in traces]
         else:
-            stack = [pts for b in traces for pts in [[fill_value], b[k]]]
+            stack = [fill_trace(tr, fill_value) for tr in traces]
         merged_trace[k] = np.hstack(stack)
     for k, v in traces[0].items():
         if k not in merged_trace:
@@ -697,9 +714,8 @@ def group_traces(*traces):
         for k in [*common_keys, *spec_keys.get(tr["type"], [])]:
             v = tr.get(k, None) is None if k == "facecolor" else tr.get(k, "")
             gr.append(str(v))
-        gr = tuple(gr)
+        gr = hash(tuple(gr))
         mesh_groups.setdefault(gr, []).append(tr)
-
     traces = []
     for group in mesh_groups.values():
         traces.extend(merge_traces(*group))
@@ -921,18 +937,48 @@ def get_hexcolors_from_scale(
     return out
 
 
-def split_line_color_array(line_colors):
-    """splits line_color when it is an array. Unlike plotly, matplotlib
-    and pyvista cannot display line plots with an array of colors."""
-    color_split = []
-    if not isinstance(line_colors, (list, tuple, np.ndarray)):
-        line_colors = [line_colors]
-    line_colors = np.array(line_colors)
-    last_color = next((c for c in line_colors if c is not None), None)
-    last_ind = 0
-    for ind, color in enumerate(line_colors):
-        if (color is not None and color != last_color) or ind == len(line_colors):
-            color_split.append((last_color, (last_ind, ind)))
-            last_ind = ind
-            last_color = color
-    return color_split
+def split_input_arrays(*input_arrays):
+    """splits input_arrays into chunks of same values.
+    Use case: Unlike plotly, matplotlib and pyvista cannot display line plots with an array of
+    colors.
+    """
+    list_like = (list, tuple, np.ndarray)
+    max_length = max(
+        len(inp) if isinstance(inp, list_like) else 1 for inp in input_arrays
+    )
+    input_arrays = [
+        [inp] * max_length if not isinstance(inp, list_like) else inp
+        for inp in input_arrays
+    ]
+    input_array = list(zip(*input_arrays))
+    input_split = []
+    prev_inp = next(iter(input_array))
+    prev_ind = 0
+    for ind, inp in enumerate(input_array):
+        val, last_val = tuple(inp), tuple(prev_inp)
+        is_end = ind == len(input_array) - 1
+        if val != last_val or is_end:
+            last_ind = ind if ind != 0 else None
+            input_split.append((prev_inp, (prev_ind, last_ind)))
+            prev_ind = ind
+            prev_inp = inp
+    return input_split
+
+
+def get_trace_kw(trace, arg, *, none_replace=None):
+    """Return the trace value from key while accepting magic notation
+    examples for: trace = {"marker_size": [3], "line": {"color": "blue"}}
+    get_kw(trace, "marker_size") -> array([3])
+    get_kw(trace, "line_color") -> "blue"
+    get_kw(trace, "line_dash") -> None
+    get_kw(trace, "line_width", none_replace=3) -> 3 # not found is like None
+    """
+    pref, *param = arg.split("_")
+    parent = trace.get(pref, {})
+    res = trace.get(arg, None)
+    if param:
+        res = parent.get("".join(param), trace.get(arg, None))
+    res = np.array(res) if is_array_like(res) else res
+    if res is None:
+        return none_replace
+    return res
