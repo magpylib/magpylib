@@ -534,20 +534,49 @@ def make_Pixels(
     field_symbol,
     shownull,
     size,
+    marker_size=10,
     null_thresh=1e-12,
 ) -> Dict[str, Any]:
     """
-    Create the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
+    Create the plotly dict for Sensor pixels based on pixel positions and chosen size
     For now, only "cube" shape is provided.
     """
+    # Note: the function must return a single object after grouping
+    # This is relevant for animation in plotly where a different number of traces
+    # in each frame results in weird artifacts.
+    # markers plots must share the same kw types to be able to be merged with line plots!
+
+    if symbol is not None and vectors is None:
+        x, y, z = positions.T
+        return {
+            "type": "scatter3d",
+            "mode": "markers",
+            **{"x": x, "y": y, "z": z},
+            "marker_symbol": symbol,
+            "marker_color": colors,
+            "marker_size": marker_size,
+        }
     pixels = []
     orientations = None
     is_null_vec = None
+    allowed_symbols = ("cone", "arrow", "arrow3d")
+    if field_symbol not in allowed_symbols:  # pragma: no cover
+        raise ValueError(
+            f"Invalid pixel field symbol (must be one of {allowed_symbols})"
+            f", got {field_symbol!r}"
+        )
     if vectors is not None:
         orientations = get_orientation_from_vec(vectors)
         is_null_vec = (np.abs(vectors) < null_thresh).all(axis=1)
     for ind, pos in enumerate(positions):
         kw = {"backend": "plotly-dict", "position": pos}
+        kw2d = {
+            "type": "scatter3d",
+            "mode": "markers+lines",
+            "marker_symbol": symbol,
+            "marker_color": None,
+            "line_color": None,
+        }
         pix = None
         if vectors is not None and not is_null_vec[ind]:
             orient = orientations[ind]
@@ -555,34 +584,36 @@ def make_Pixels(
             if field_symbol == "cone":
                 pix = make_BasePyramid(**kw)
             elif field_symbol == "arrow3d":
-                pix = make_BaseArrow(**kw, type="mesh3d")
+                pix = make_BaseArrow(**kw)
             elif field_symbol == "arrow":
-                pix = make_BaseArrow(**kw, type="scatter3d")
-            else:  # pragma: no cover
-                raise ValueError(
-                    "Invalid pixel field symbol (must be 'cone' or 'arrow3d')"
-                    f", got {field_symbol!r}"
-                )
+                pix = make_BaseArrow(**kw, **kw2d)
+                pix["marker_size"] = np.repeat(0.0, len(pix["x"]))
         elif vectors is None or shownull:
             if field_symbol == "arrow":
                 x, y, z = pos[:, None]
                 pix = {
-                    "type": "scatter3d",
-                    "mode": "markers",
                     **{"x": x, "y": y, "z": z},
-                    "marker_symbol": symbol,
-                    "marker_size": 2,
+                    "marker_size": [marker_size],
+                    **kw2d,
                 }
             else:
                 pix = make_BaseCuboid(dimension=[size] * 3, **kw)
         if pix is not None:
             if colors is not None:
+                color = (
+                    colors[ind]
+                    if isinstance(colors, (list, tuple, np.ndarray))
+                    else colors
+                )
                 if field_symbol == "arrow":
-                    pix["line_color"] = np.repeat(colors[ind], len(pix["x"]))
+                    pix["line_color"] = np.repeat(color, len(pix["x"]))
+                    pix["marker_color"] = pix["line_color"]
                 else:
-                    pix["facecolor"] = np.repeat(colors[ind], len(pix["i"]))
+                    pix["facecolor"] = np.repeat(color, len(pix["i"]))
             pixels.append(pix)
-    return group_traces(*pixels)
+    pixels = group_traces(*pixels)
+    assert len(pixels) == 1
+    return pixels[0]
 
 
 def make_Sensor(
@@ -598,24 +629,18 @@ def make_Sensor(
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
     style = obj.style
+    traces_to_merge = []
     show_hull = not bool(field_values)
     dimension = getattr(obj, "dimension", style.size)
+    dim = np.array(
+        [dimension] * 3 if isinstance(dimension, (float, int)) else dimension[:3],
+        dtype=float,
+    )
     pixel = obj.pixel
     no_pix = pixel is None
     if not no_pix:
         pixel = np.unique(np.array(pixel).reshape((-1, 3)), axis=0)
     one_pix = not no_pix and pixel.shape[0] == 1
-    style_arrows = style.arrows.as_dict(flatten=True, separator="_")
-    sensor = get_sensor_mesh(
-        **style_arrows, center_color=style.color, handedness=obj.handedness
-    )
-    vertices = np.array([sensor[k] for k in "xyz"]).T
-    if style.color is not None:
-        sensor["facecolor"][sensor["facecolor"] == "rgb(238,238,238)"] = style.color
-    dim = np.array(
-        [dimension] * 3 if isinstance(dimension, (float, int)) else dimension[:3],
-        dtype=float,
-    )
     if autosize is not None and style.sizemode == "scaled":
         dim *= autosize
     if no_pix:
@@ -625,13 +650,23 @@ def make_Sensor(
             pixel = np.concatenate([[[0, 0, 0]], pixel])
         hull_dim = pixel.max(axis=0) - pixel.min(axis=0)
         dim_ext = max(np.mean(dim), np.min(hull_dim))
-    cube_mask = (abs(vertices) < 1).all(axis=1)
-    vertices[cube_mask] = 0 * vertices[cube_mask]
-    vertices[~cube_mask] = dim_ext * vertices[~cube_mask]
-    vertices /= 2  # sensor_mesh vertices are of length 2
-    x, y, z = vertices.T
-    sensor.update(x=x, y=y, z=z)
-    traces_to_merge = [sensor]
+    style_arrows = style.arrows.as_dict(flatten=True, separator="_")
+    if any(style_arrows[f"{k}_show"] for k in "xyz"):
+        sens_mesh = get_sensor_mesh(
+            **style_arrows, center_color=style.color, handedness=obj.handedness
+        )
+        vertices = np.array([sens_mesh[k] for k in "xyz"]).T
+        if style.color is not None:
+            sens_mesh["facecolor"][
+                sens_mesh["facecolor"] == "rgb(238,238,238)"
+            ] = style.color
+        cube_mask = (abs(vertices) < 1).all(axis=1)
+        vertices[cube_mask] = 0 * vertices[cube_mask]
+        vertices[~cube_mask] = dim_ext * vertices[~cube_mask]
+        vertices /= 2  # sensor_mesh vertices are of length 2
+        x, y, z = vertices.T
+        sens_mesh.update(x=x, y=y, z=z)
+        traces_to_merge.append(sens_mesh)
     if not no_pix:
         pixel_color = style.pixel.color
         pixel_size = style.pixel.size
@@ -648,7 +683,8 @@ def make_Sensor(
         if pixel_size > 0:
             pixel_dim *= pixel_size
             poss = pixel[1:] if one_pix else pixel
-            vectors, colors, null_thresh = None, None, 1e-12
+            vectors, null_thresh = None, 1e-12
+            colors = "black" if pixel_color is None else pixel_color
             if field_values:
                 vsrc = style.pixel.field.vectorsource
                 csrc = style.pixel.field.colorsource
@@ -668,37 +704,18 @@ def make_Sensor(
                     is_null = (np.abs(field_array[path_ind]) < null_thresh).all(axis=1)
                     field_mag[is_null] = np.nan
                     colors = get_hexcolors_from_scale(field_mag, min_=cmin, max_=cmax)
-            if style.pixel.symbol is None or field_values:
-                pixels_traces = make_Pixels(
-                    positions=poss,
-                    vectors=vectors,
-                    colors=colors,
-                    size=pixel_dim,
-                    symbol=style.pixel.symbol,
-                    field_symbol=style.pixel.field.symbol,
-                    shownull=style.pixel.field.shownull,
-                    null_thresh=null_thresh,
-                )
-                for tr in pixels_traces:
-                    if (
-                        tr["type"].lower() == "mesh3d"
-                        and tr.get("facecolor", None) is None
-                    ):
-                        tr["facecolor"] = np.repeat(pixel_color, len(tr["i"]))
-            else:
-                x, y, z = poss.T
-                pixels_traces = [
-                    {
-                        "type": "scatter3d",
-                        "mode": "markers",
-                        **{"x": x, "y": y, "z": z},
-                        "marker_symbol": style.pixel.symbol,
-                        "marker_color": "black" if pixel_color is None else pixel_color,
-                        "marker_size": 2,
-                    }
-                ]
+            pixels_trace = make_Pixels(
+                positions=poss,
+                vectors=vectors,
+                colors=colors,
+                size=pixel_dim,
+                symbol=style.pixel.symbol,
+                field_symbol=style.pixel.field.symbol,
+                shownull=style.pixel.field.shownull,
+                null_thresh=null_thresh,
+            )
 
-            traces_to_merge.extend(pixels_traces)
+            traces_to_merge.append(pixels_trace)
         if show_hull:
             hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
             hull_dim[hull_dim == 0] = pixel_dim / 2

@@ -515,3 +515,8 @@ def style_temp_edit(*objs, styles_temp=None):
     finally:
         for obj in objs:
             obj._style = orig_styles[obj]
+
+
+def is_array_like(inp):
+    """Return boolean on wether input is an array, list or tuple"""
+    return isinstance(inp, (list, tuple, np.ndarray))
