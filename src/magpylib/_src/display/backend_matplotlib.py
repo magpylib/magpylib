@@ -118,7 +118,7 @@ def mesh3d_to_matplotlib(trace, antialiased):
             traces_mpl.append(
                 {
                     "constructor": "scatter",
-                    "args": tuple(coords[:, inds[0] : inds[1]]),
+                    "args": tuple(coords[:, inds]),
                     "kwargs": {"marker": msymb, "label": None, **kw},
                 }
             )
@@ -155,7 +155,7 @@ def mesh3d_to_matplotlib(trace, antialiased):
             traces_mpl.append(
                 {
                     "constructor": "plot",
-                    "args": coords[:, inds[0] : inds[1]],
+                    "args": coords[:, inds],
                     "kwargs": {
                         "alpha": trace.get("opacity", 1),
                         "ls": line_dash,

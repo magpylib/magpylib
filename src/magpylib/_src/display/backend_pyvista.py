@@ -136,7 +136,7 @@ def scatter_to_pyvista(trace):
             for (lcol,), inds in split_input_arrays(line_color):
                 trace_pv_line = {
                     "type": "mesh",
-                    "mesh": pv.lines_from_points(points[inds[0] : inds[1]]),
+                    "mesh": pv.lines_from_points(points[inds]),
                     "color": lcol,
                     "line_width": line_width,
                     "opacity": trace.get("opacity", None),
@@ -202,11 +202,10 @@ def scatter_to_pyvista(trace):
         if "lines" in mode:
             splits = split_input_arrays(line_color, line_width, line_dash)
             for (lcolor, lwidth, ldash), inds in splits:
-                print("asdf")
                 trace_pv_line = {
                     "type": "line",
-                    "x": trace["x"][inds[0] : inds[1]],
-                    "y": trace["y"][inds[0] : inds[1]],
+                    "x": trace["x"][inds],
+                    "y": trace["y"][inds],
                     "color": lcolor,
                     "width": lwidth,
                     "style": ldash,
@@ -214,20 +213,20 @@ def scatter_to_pyvista(trace):
                 }
             traces.append(trace_pv_line)
         if "markers" in mode:
-            for (msize,), inds in split_input_arrays(marker_size):
+            for (msize,), inds in split_input_arrays(marker_size, ordered=False):
                 if msize != 0:
                     mcol = marker_color
                     if is_array_like(mcol):
-                        mcol = mcol[inds[0] : inds[1]]
+                        mcol = mcol[inds]
                     if is_array_like(marker_symbol):
-                        msymb = marker_symbol[inds[0] : inds[1]]
+                        msymb = marker_symbol[inds]
                         msymb = [SYMBOLS_TO_PYVISTA.get(s, "o") for s in msymb]
                     else:
                         msymb = SYMBOLS_TO_PYVISTA.get(marker_symbol, "o")
                     trace_pv_marker = {
                         "type": "scatter",
-                        "x": trace["x"][inds[0] : inds[1]],
-                        "y": trace["y"][inds[0] : inds[1]],
+                        "x": trace["x"][inds],
+                        "y": trace["y"][inds],
                         "color": mcol,
                         "size": msize,
                         "style": msymb,
