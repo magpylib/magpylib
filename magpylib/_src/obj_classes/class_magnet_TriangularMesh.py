@@ -19,6 +19,8 @@ from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
 from magpylib._src.style import TriangularMeshStyle
+from magpylib._src.units import downcast
+from magpylib._src.units import to_unit_from_target
 
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
@@ -114,7 +116,10 @@ class TriangularMesh(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_trimesh)
-    _field_func_kwargs_ndim = {"polarization": 2, "mesh": 3}
+    _field_func_kwargs = {
+        "polarization": {"ndim": 2, "unit": "T"},
+        "mesh": {"ndim": 3, "unit": "m"},
+    }
     get_trace = make_TriangularMesh
     _style_class = TriangularMeshStyle
 
@@ -392,7 +397,9 @@ class TriangularMesh(BaseMagnet):
                 elif mode == "raise":
                     raise ValueError(msg)
 
-            self._faces = fix_trimesh_orientation(self._vertices, self._faces)
+            self._faces = fix_trimesh_orientation(
+                downcast(self._vertices, "m"), self._faces
+            )
             self._status_reoriented = True
 
     def get_faces_subsets(self):
@@ -435,7 +442,7 @@ class TriangularMesh(BaseMagnet):
         """
         if self._status_selfintersecting_data is None:
             self._status_selfintersecting_data = get_intersecting_triangles(
-                self._vertices, self._faces
+                downcast(self._vertices, "m"), self._faces
             )
         return self._status_selfintersecting_data
 
@@ -474,12 +481,15 @@ class TriangularMesh(BaseMagnet):
     @staticmethod
     def _get_barycenter(position, orientation, vertices, faces):
         """Returns the barycenter of a tetrahedron."""
+        pos = downcast(position, "m")
+        vert = downcast(vertices, "m")
         centroid = (
             np.array([0.0, 0.0, 0.0])
-            if vertices is None
-            else calculate_centroid(vertices, faces)
+            if vert is None
+            else calculate_centroid(vert, faces)
         )
-        barycenter = orientation.apply(centroid) + position
+        barycenter = orientation.apply(centroid) + pos
+        barycenter = to_unit_from_target(barycenter, target=position, default_unit="m")
         return barycenter
 
     def _input_check(self, vertices, faces):
@@ -496,14 +506,15 @@ class TriangularMesh(BaseMagnet):
             vertices,
             dims=(2,),
             shape_m1=3,
-            sig_name="TriangularMesh.vertices",
+            sig_name=f"{self.__class__.__name__}.vertices",
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
+            unit="m",
         )
         trias = check_format_input_vector(
             faces,
             dims=(2,),
             shape_m1=3,
-            sig_name="TriangularMesh.faces",
+            sig_name=f"{self.__class__.__name__}.faces",
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
         ).astype(int)
         try:

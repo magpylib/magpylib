@@ -13,6 +13,8 @@ from magpylib._src.input_checks import check_format_input_axis
 from magpylib._src.input_checks import check_format_input_orientation
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.input_checks import check_start_type
+from magpylib._src.units import downcast
+from magpylib._src.units import to_unit_from_target
 
 
 def multi_anchor_behavior(anchor, inrotQ, rotation):
@@ -109,7 +111,7 @@ def path_padding(inpath, start, target_object):
     scalar_input = inpath.ndim == 1
 
     # load old path
-    ppath = target_object._position
+    ppath = downcast(target_object._position, "m")
     opath = target_object._orientation.as_quat()
 
     lenip = 1 if scalar_input else len(inpath)
@@ -154,9 +156,11 @@ def apply_move(target_object, displacement, start="auto"):
         displacement,
         dims=(1, 2),
         shape_m1=3,
-        sig_name="displacement",
+        sig_name=f"{target_object.__class__.__name__}.displacement",
         sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
+        unit="m",
     )
+    inpath = downcast(inpath, "m")
     check_start_type(start)
 
     # pad target_object path and compute start and end-index for rotation application
@@ -166,7 +170,9 @@ def apply_move(target_object, displacement, start="auto"):
 
     # apply move operation
     ppath[start:end] += inpath
-    target_object._position = ppath
+    target_object._position = to_unit_from_target(
+        ppath, target=target_object._position, default_unit="m"
+    )
 
     return target_object
 
@@ -206,6 +212,7 @@ def apply_rotation(
     # when an anchor is given
     if anchor is not None:
         # apply multi-anchor behavior
+        anchor = downcast(anchor, "m")
         anchor, inrotQ, rotation = multi_anchor_behavior(anchor, inrotQ, rotation)
 
     # pad target_object path and compute start and end-index for rotation application
@@ -216,6 +223,7 @@ def apply_rotation(
     #   is applied to a child in a Collection. In this case the anchor must be set to
     #   the parent_path.
     if anchor is None and parent_path is not None:
+        parent_path = downcast(parent_path, "m")
         # target anchor length
         len_anchor = end - newstart
         # pad up parent_path if input requires it
@@ -240,7 +248,9 @@ def apply_rotation(
     # store new position and orientation
     # pylint: disable=attribute-defined-outside-init
     target_object._orientation = R.from_quat(opath)
-    target_object._position = ppath
+    target_object._position = to_unit_from_target(
+        ppath, target=target_object._position, default_unit="m"
+    )
 
     return target_object
 
@@ -524,6 +534,9 @@ class BaseTransform:
         axis = check_format_input_axis(axis)
         check_start_type(start)
         check_degree_type(degrees)
+
+        # downcast if necessary, quantity unit overrules degrees boolean
+        angle = downcast(angle, "deg" if degrees else "rad")
 
         # degree to rad
         if degrees:

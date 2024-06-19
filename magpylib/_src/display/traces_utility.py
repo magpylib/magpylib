@@ -12,6 +12,7 @@ from scipy.spatial.transform import Rotation as RotScipy
 from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.style import get_style
+from magpylib._src.units import downcast
 from magpylib._src.utility import format_obj_input
 
 
@@ -46,7 +47,7 @@ def place_and_orient_model3d(
     if orientation is None and position is None:
         return {**model_kwargs, **kwargs}
     position = (0.0, 0.0, 0.0) if position is None else position
-    position = np.array(position, dtype=float)
+    position = np.array(downcast(position, "m"), dtype=float)
     new_model_dict = {}
     if model_args is None:
         model_args = ()
@@ -106,8 +107,7 @@ def get_vertices_from_model(model_kwargs, model_args=None, coordsargs=None):
                     "Matplotlib backends will set up coordsargs automatically if "
                     "the `args=(xs,ys,zs)` argument is provided."
                 )
-        vertices.append(v)
-
+        vertices.append(downcast(v, "m"))
     vertices = np.array(vertices)
     return vertices, coordsargs, useargs
 
@@ -197,6 +197,7 @@ def draw_arrow_from_vertices(
 
 def draw_arrow_on_circle(sign, diameter, arrow_size, scaled=True, angle_pos_deg=0):
     """draws an oriented circle with an arrow"""
+    diameter = downcast(diameter, "m")
     if scaled:
         hy = 0.2 * arrow_size
     else:

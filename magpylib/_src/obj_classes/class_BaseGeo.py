@@ -11,6 +11,8 @@ from magpylib._src.input_checks import check_format_input_orientation
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
 from magpylib._src.style import BaseStyle
+from magpylib._src.units import downcast
+from magpylib._src.units import to_unit_from_target
 from magpylib._src.utility import add_iteration_suffix
 
 
@@ -20,6 +22,7 @@ def pad_slice_path(path1, path2):
     path2: shape (M,x)
     return: path2 with format (N,x)
     """
+    path1, path2 = downcast(path1, "m"), downcast(path2, "m")
     delta_path = len(path1) - len(path2)
     if delta_path > 0:
         return np.pad(path2, ((0, delta_path), (0, 0)), "edge")
@@ -110,9 +113,10 @@ class BaseGeo(BaseTransform):
             position,
             dims=(1, 2),
             shape_m1=3,
-            sig_name="position",
+            sig_name=f"{self.__class__.__name__}.position",
             sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
             reshape=(-1, 3),
+            unit="m",
         )
         oriQ = check_format_input_orientation(orientation, init_format=True)
 
@@ -180,22 +184,26 @@ class BaseGeo(BaseTransform):
             inp,
             dims=(1, 2),
             shape_m1=3,
-            sig_name="position",
+            sig_name=f"{self.__class__.__name__}.position",
             sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
             reshape=(-1, 3),
+            unit="m",
         )
-
+        parent_pos = downcast(self._position, "m")
         # pad/slice and set orientation path to same length
         oriQ = self._orientation.as_quat()
-        self._orientation = R.from_quat(pad_slice_path(self._position, oriQ))
+        self._orientation = R.from_quat(pad_slice_path(parent_pos, oriQ))
 
         # when there are children include their relative position
         for child in getattr(self, "children", []):
-            old_pos = pad_slice_path(self._position, old_pos)
-            child_pos = pad_slice_path(self._position, child._position)
+            old_pos = pad_slice_path(parent_pos, old_pos)
+            child_pos = pad_slice_path(parent_pos, child._position)
             rel_child_pos = child_pos - old_pos
             # set child position (pad/slice orientation)
-            child.position = self._position + rel_child_pos
+            child_pos = parent_pos + rel_child_pos
+            child.position = to_unit_from_target(
+                child_pos, target=child.position, default_unit="m"
+            )
 
     @property
     def orientation(self):
@@ -224,7 +232,10 @@ class BaseGeo(BaseTransform):
         self._orientation = R.from_quat(oriQ)
 
         # pad/slice position path to same length
-        self._position = pad_slice_path(oriQ, self._position)
+        pos = pad_slice_path(oriQ, self._position)
+        self._position = to_unit_from_target(
+            pos, target=self._position, default_unit="m"
+        )
 
         # when there are children they rotate about self.position
         # after the old Collection orientation is rotated away.

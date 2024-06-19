@@ -1,4 +1,3 @@
-# pylint: disable=line-too-long
 """
 Welcome to Magpylib !
 ---------------------
@@ -27,11 +26,14 @@ The original software publication (version 2):
 https://www.sciencedirect.com/science/article/pii/S2352711020300170
 
 """
+
 # module level dunders
 __version__ = "5.0.4"
 __author__ = "Michael Ortner & Alexandre Boisselet"
 __credits__ = "The Magpylib community"
 __all__ = [
+    "SUPPORTED_PLOTTING_BACKENDS",
+    "units",
     "magnet",
     "current",
     "misc",
@@ -52,6 +54,7 @@ __all__ = [
     "mu_0",
 ]
 
+
 # create interface to outside of package
 from scipy.constants import mu_0
 
@@ -70,3 +73,4 @@ from magpylib._src.fields import getJ
 from magpylib._src.fields import getM
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_Sensor import Sensor
+from magpylib._src.units import units_global as units

@@ -7,7 +7,7 @@ from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
-from magpylib._src.utility import unit_prefix
+from magpylib._src.units import unit_prefix
 
 
 class Polyline(BaseCurrent):
@@ -78,12 +78,13 @@ class Polyline(BaseCurrent):
 
     # pylint: disable=dangerous-default-value
     _field_func = staticmethod(current_vertices_field)
-    _field_func_kwargs_ndim = {
-        "current": 1,
-        "vertices": 3,
-        "segment_start": 2,
-        "segment_end": 2,
+    _field_func_kwargs = {
+        "current": {"ndim": 1, "unit": "A"},
+        "vertices": {"ndim": 3, "unit": "m"},
+        "segment_start": {"ndim": 2, "unit": "m"},
+        "segment_end": {"ndim": 2, "unit": "m"},
     }
+
     get_trace = make_Polyline
 
     def __init__(
@@ -121,7 +122,11 @@ class Polyline(BaseCurrent):
         """Default style description text"""
         if self.vertices is None:
             return "no vertices"
-        return f"{unit_prefix(self.current)}A" if self.current else "no current"
+        return (
+            "no current"
+            if self.current is None
+            else f"{unit_prefix(self.current, 'A')}"
+        )
 
 
 class Line(Polyline):

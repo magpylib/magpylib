@@ -102,7 +102,10 @@ class Triangle(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_triangle)
-    _field_func_kwargs_ndim = {"polarization": 2, "vertices": 2}
+    _field_func_kwargs = {
+        "polarization": {"ndim": 2, "unit": "T"},
+        "vertices": {"ndim": 2, "unit": "m"},
+    }
     get_trace = make_Triangle
     _style_class = TriangleStyle
 
@@ -136,9 +139,10 @@ class Triangle(BaseMagnet):
             val,
             dims=(2,),
             shape_m1=3,
-            sig_name="Triangle.vertices",
+            sig_name=f"{self.__class__.__name__}.vertices",
             sig_type="array_like (list, tuple, ndarray) of shape (3,3)",
             allow_None=True,
+            unit="m",
         )
 
     @property

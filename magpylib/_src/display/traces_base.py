@@ -1,5 +1,7 @@
 """base traces building functions"""
 
+# pylint: disable=invalid-unary-operand-type
+
 from functools import partial
 
 import numpy as np
@@ -8,6 +10,7 @@ from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.fields.field_BH_tetrahedron import check_chirality
+from magpylib._src.units import downcast
 
 
 def base_validator(name, value, conditions):
@@ -92,7 +95,7 @@ def make_Cuboid(
         A dictionary with necessary key/value pairs with the necessary information to construct
         a 3D-model.
     """
-    dimension = np.array(dimension, dtype=float)
+    dimension = np.array(downcast(dimension, "m"), dtype=float)
     trace = {
         "i": np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
         "j": np.array([0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2]),
@@ -159,6 +162,8 @@ def make_Prism(
         A dictionary with necessary key/value pairs with the necessary information to construct
         a 3D-model.
     """
+    diameter = downcast(diameter, "m")
+    height = downcast(height, "m")
     N = base
     t = np.linspace(0, 2 * np.pi, N, endpoint=False)
     c1 = np.array([1 * np.cos(t), 1 * np.sin(t), t * 0 - 1]) * 0.5
@@ -245,6 +250,7 @@ def make_Ellipsoid(
         A dictionary with necessary key/value pairs with the necessary information to construct
         a 3D-model.
     """
+    dimension = downcast(dimension, "m")
     N = vert
     phi = np.linspace(0, 2 * np.pi, vert, endpoint=False)
     theta = np.linspace(-np.pi / 2, np.pi / 2, vert, endpoint=True)
@@ -339,7 +345,12 @@ def make_CylinderSegment(
         A dictionary with necessary key/value pairs with the necessary information to construct
         a 3D-model.
     """
-    r1, r2, h, phi1, phi2 = dimension
+    (
+        r1,
+        r2,
+        h,
+    ) = downcast(dimension[:3], "m")
+    phi1, phi2 = downcast(dimension[3:], "°")
     N = max(5, int(vert * abs(phi1 - phi2) / 360))
     phi = np.linspace(phi1, phi2, N)
     x = np.cos(np.deg2rad(phi))
@@ -444,6 +455,8 @@ def make_Pyramid(
         A dictionary with necessary key/value pairs with the necessary information to construct
         a 3D-model.
     """
+    diameter = downcast(diameter, "m")
+    height = downcast(height, "m")
     pivot_conditions = {
         "tail": height / 2,
         "tip": -height / 2,
@@ -525,7 +538,8 @@ def make_Arrow(
         A dictionary with necessary key/value pairs with the necessary information to construct
         a 3D-model.
     """
-
+    diameter = downcast(diameter, "m")
+    height = downcast(height, "m")
     h, d, z = height, diameter, 0
     pivot_conditions = {
         "tail": h / 2,
@@ -598,6 +612,7 @@ def make_Tetrahedron(
         a 3D-model.
     """
     # create triangles implying right vertices chirality
+    vertices = downcast(vertices, "m")
     triangles = np.array([[0, 2, 1], [0, 3, 2], [1, 3, 0], [1, 2, 3]])
     points = check_chirality(np.array([vertices]))[0]
     trace = dict(zip("xyzijk", [*points.T, *triangles.T]))
@@ -656,7 +671,7 @@ def make_TriangularMesh(
         A dictionary with necessary key/value pairs with the necessary information to construct
         a 3D-model.
     """
-    vertices = np.array(vertices)
+    vertices = np.array(downcast(vertices, "m"))
     x, y, z = vertices.T
     if faces is None:
         hull = ConvexHull(vertices)

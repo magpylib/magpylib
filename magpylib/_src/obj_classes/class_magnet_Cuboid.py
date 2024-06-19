@@ -4,7 +4,7 @@ from magpylib._src.display.traces_core import make_Cuboid
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
-from magpylib._src.utility import unit_prefix
+from magpylib._src.units import unit_prefix
 
 
 class Cuboid(BaseMagnet):
@@ -76,7 +76,10 @@ class Cuboid(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_cuboid)
-    _field_func_kwargs_ndim = {"polarization": 2, "dimension": 2}
+    _field_func_kwargs = {
+        "polarization": {"ndim": 2, "unit": "T"},
+        "dimension": {"ndim": 2, "unit": "m"},
+    }
     get_trace = make_Cuboid
 
     def __init__(
@@ -110,10 +113,11 @@ class Cuboid(BaseMagnet):
             dim,
             dims=(1,),
             shape_m1=3,
-            sig_name="Cuboid.dimension",
+            sig_name=f"{self.__class__.__name__}.dimension",
             sig_type="array_like (list, tuple, ndarray) of shape (3,) with positive values",
             allow_None=True,
             forbid_negative0=True,
+            unit="m",
         )
 
     @property
@@ -121,5 +125,5 @@ class Cuboid(BaseMagnet):
         """Default style description text"""
         if self.dimension is None:
             return "no dimension"
-        d = [unit_prefix(d) for d in self.dimension]
-        return f"{d[0]}m|{d[1]}m|{d[2]}m"
+        d = [unit_prefix(d, "m") for d in self.dimension]
+        return f"{d[0]}|{d[1]}|{d[2]}"

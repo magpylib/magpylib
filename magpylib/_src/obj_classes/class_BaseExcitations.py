@@ -4,6 +4,7 @@
 import warnings
 
 import numpy as np
+from scipy.constants import mu_0
 
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_wrap_BH import getBH_level2
@@ -14,6 +15,9 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.style import CurrentStyle
 from magpylib._src.style import MagnetStyle
+from magpylib._src.units import downcast
+from magpylib._src.units import is_Quantity
+from magpylib._src.units import to_Quantity
 from magpylib._src.utility import format_star_input
 
 
@@ -22,7 +26,7 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
     and corresponding field function"""
 
     _field_func = None
-    _field_func_kwargs_ndim = {}
+    _field_func_kwargs = {}
     _editable_field_func = False
 
     def __init__(self, position, orientation, field_func=None, style=None, **kwargs):
@@ -359,8 +363,6 @@ class BaseMagnet(BaseSource):
     def __init__(
         self, position, orientation, magnetization, polarization, style, **kwargs
     ):
-        super().__init__(position, orientation, style=style, **kwargs)
-
         self._polarization = None
         self._magnetization = None
         if magnetization is not None:
@@ -372,6 +374,7 @@ class BaseMagnet(BaseSource):
                 )
         if polarization is not None:
             self.polarization = polarization
+        super().__init__(position, orientation, style=style, **kwargs)
 
     @property
     def magnetization(self):
@@ -385,13 +388,19 @@ class BaseMagnet(BaseSource):
             mag,
             dims=(1,),
             shape_m1=3,
-            sig_name="magnetization",
+            sig_name=f"{self.__class__.__name__}.magnetization",
             sig_type="array_like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
+            unit="A/m",
         )
-        self._polarization = self._magnetization * (4 * np.pi * 1e-7)
-        if np.linalg.norm(self._magnetization) < 2000:
-            self._magnetization_low_warning()
+        mag = self._magnetization
+        if mag is not None:
+            mag_A_per_m = downcast(mag, "A/m")
+            if is_Quantity(mag):
+                mag = to_Quantity(mag_A_per_m, "T")
+            self._polarization = mag * mu_0
+            if np.linalg.norm(mag_A_per_m) < 2000:
+                self._magnetization_low_warning()
 
     @property
     def polarization(self):
@@ -405,11 +414,16 @@ class BaseMagnet(BaseSource):
             mag,
             dims=(1,),
             shape_m1=3,
-            sig_name="polarization",
+            sig_name=f"{self.__class__.__name__}.polarization",
             sig_type="array_like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
+            unit="T",
         )
-        self._magnetization = self._polarization / (4 * np.pi * 1e-7)
+        pol = self._polarization
+        if pol is not None:
+            if is_Quantity(pol):
+                pol = to_Quantity(downcast(pol, "T"), "A/m")
+            self._magnetization = pol / mu_0
 
     def _magnetization_low_warning(self):
         warnings.warn(
@@ -429,8 +443,8 @@ class BaseCurrent(BaseSource):
     _style_class = CurrentStyle
 
     def __init__(self, position, orientation, current, style, **kwargs):
-        super().__init__(position, orientation, style=style, **kwargs)
         self.current = current
+        super().__init__(position, orientation, style=style, **kwargs)
 
     @property
     def current(self):
@@ -443,7 +457,8 @@ class BaseCurrent(BaseSource):
         # input type and init check
         self._current = check_format_input_scalar(
             current,
-            sig_name="current",
+            sig_name=f"{self.__class__.__name__}.current",
             sig_type="`None` or a number (int, float)",
             allow_None=True,
+            unit="A",
         )

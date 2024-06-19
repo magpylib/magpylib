@@ -7,7 +7,8 @@ from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 from magpylib._src.style import DipoleStyle
-from magpylib._src.utility import unit_prefix
+from magpylib._src.units import downcast
+from magpylib._src.units import unit_prefix
 
 
 class Dipole(BaseSource):
@@ -83,7 +84,7 @@ class Dipole(BaseSource):
     """
 
     _field_func = staticmethod(BHJM_dipole)
-    _field_func_kwargs_ndim = {"moment": 2}
+    _field_func_kwargs = {"moment": {"ndim": 2, "unit": "A·m²"}}
     _style_class = DipoleStyle
     get_trace = make_Dipole
     _autosize = True
@@ -115,16 +116,21 @@ class Dipole(BaseSource):
             mom,
             dims=(1,),
             shape_m1=3,
-            sig_name="moment",
+            sig_name=f"{self.__class__.__name__}.moment",
             sig_type="array_like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
+            unit="A*m**2",  # python syntax necessary for astropy, unyt
         )
 
     @property
     def _default_style_description(self):
         """Default style description text"""
-        moment = np.array([0.0, 0.0, 0.0]) if self.moment is None else self.moment
+        moment = (
+            np.array([0.0, 0.0, 0.0])
+            if self.moment is None
+            else downcast(self.moment, "A*m**2")
+        )
         moment_mag = np.linalg.norm(moment)
         if moment_mag == 0:
             return "no moment"
-        return f"moment={unit_prefix(moment_mag)}A·m²"
+        return f"moment={unit_prefix(moment_mag,'A·m²')}"

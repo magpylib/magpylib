@@ -2,18 +2,21 @@
 
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
+# pylint: disable=too-many-branches
 import inspect
 import numbers
 
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibMissingInput
-from magpylib._src.utility import format_obj_input
+from magpylib._src.units import downcast
+from magpylib._src.units import get_magnitude
+from magpylib._src.units import to_Quantity
+from magpylib._src.units import unit_checker
 from magpylib._src.utility import wrong_obj_msg
 
 # pylint: disable=no-member
@@ -218,6 +221,7 @@ def check_format_input_anchor(inp):
         sig_name="anchor",
         sig_type="`None` or `0` or array_like (list, tuple, ndarray) with shape (3,)",
         allow_None=True,
+        unit="m",
     )
 
 
@@ -265,20 +269,30 @@ def check_format_input_angle(inp):
         - inp shape must be (n,)
         - return as ndarray
     """
-    if isinstance(inp, numbers.Number):
-        return float(inp)
+    kw = {
+        "sig_name": "angle",
+        "sig_type": "number (int, float) or array_like (list, tuple, ndarray) with shape (n,)",
+        "unit": "deg",
+    }
+    if isinstance(get_magnitude(inp), numbers.Number):
+        return check_format_input_scalar(inp, **kw)
 
     return check_format_input_vector(
         inp,
         dims=(1,),
         shape_m1="any",
-        sig_name="angle",
-        sig_type="int, float or array_like (list, tuple, ndarray) with shape (n,)",
+        **kw,
     )
 
 
+@unit_checker()
 def check_format_input_scalar(
-    inp, sig_name, sig_type, allow_None=False, forbid_negative=False
+    inp,
+    *,
+    sig_name,
+    sig_type,
+    allow_None=False,
+    forbid_negative=False,
 ):
     """check scalar input and return in formatted form
     - must be scalar or None (if allowed)
@@ -305,8 +319,10 @@ def check_format_input_scalar(
     return inp
 
 
+@unit_checker()
 def check_format_input_vector(
     inp,
+    *,
     dims,
     shape_m1,
     sig_name,
@@ -349,9 +365,9 @@ def check_format_input_vector(
         ),
     )
     if isinstance(reshape, tuple):
-        return np.reshape(inp, reshape)
+        inp = np.reshape(inp, reshape)
 
-    if forbid_negative0:
+    elif forbid_negative0:
         if np.any(inp <= 0):
             raise MagpylibBadUserInput(
                 f"Input parameter `{sig_name}` cannot have values <= 0."
@@ -396,6 +412,7 @@ def check_format_input_vertices(inp):
         sig_name="vertices",
         sig_type="`None` or array_like (list, tuple, ndarray) with shape (n,3)",
         allow_None=True,
+        unit="m",
     )
 
     if inp is not None:
@@ -455,63 +472,91 @@ def check_format_input_backend(inp):
     )
 
 
-def check_format_input_observers(inp, pixel_agg=None):
+def check_format_array_observers(inp, sig_name="observers", **kwargs):
+    "checks if input is an observers array and returns a sensor"
+    from magpylib._src.obj_classes.class_Sensor import Sensor
+
+    inp, had_units = downcast(
+        inp, "m", return_had_units=True, sig_name=sig_name
+    )  # is recursive
+    inp = np.array(inp)
+    if had_units:
+        inp = to_Quantity(inp, "m", sig_name=sig_name)
+    defaults_kw = {
+        "dims": range(1, 20),
+        "shape_m1": 3,
+        "sig_type": "array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3) or None",
+        "allow_None": True,
+        "unit": "m",
+    }
+    inp = check_format_input_vector(inp, sig_name=sig_name, **{**defaults_kw, **kwargs})
+    sens = Sensor()
+    # this allows to have the right error message. Input is an observer not a pixel.
+    # pylint: disable=protected-access
+    sens._pixel = inp
+    return sens
+
+
+def check_format_input_observers(inp, pixel_agg=None, field=""):
     """
     checks observers input and returns a list of sensor objects
     """
-    # pylint: disable=raise-missing-from
     from magpylib._src.obj_classes.class_Collection import Collection
     from magpylib._src.obj_classes.class_Sensor import Sensor
 
-    # make bare Sensor, bare Collection into a list
-    if isinstance(inp, (Collection, Sensor)):
-        inp = (inp,)
-
     # note: bare pixel is automatically made into a list by Sensor
-
     # any good input must now be list/tuple/array
-    if not isinstance(inp, (list, tuple, np.ndarray)):
-        raise MagpylibBadUserInput(wrong_obj_msg(inp, allow="observers"))
+    array_like = isinstance(inp, (list, tuple, np.ndarray))
 
     # empty list
-    if len(inp) == 0:
+    if (array_like and len(inp) == 0) or inp is None:
         raise MagpylibBadUserInput(wrong_obj_msg(inp, allow="observers"))
 
     # now inp can still be [pos_vec, sens, coll] or just a pos_vec
-
-    try:  # try if input is just a pos_vec
-        inp = np.array(inp, dtype=float)
-        pix_shapes = [(1, 3) if inp.shape == (3,) else inp.shape]
-        return [_src.obj_classes.class_Sensor.Sensor(pixel=inp)], pix_shapes
-    except (TypeError, ValueError):  # if not, it must be [pos_vec, sens, coll]
-        sensors = []
-        for obj in inp:
-            if isinstance(obj, Sensor):
-                sensors.append(obj)
-            elif isinstance(obj, Collection):
-                child_sensors = format_obj_input(obj, allow="sensors")
-                if not child_sensors:
-                    raise MagpylibBadUserInput(wrong_obj_msg(obj, allow="observers"))
-                sensors.extend(child_sensors)
+    sensors = []
+    sig_name = f"`get{field}` observers"
+    try:  # try if input is just a pos_vec (or a quantity)
+        sensors.append(check_format_array_observers(inp, sig_name=sig_name))
+    except (
+        TypeError,
+        ValueError,
+        MagpylibBadUserInput,
+    ) as msg:  # if not, it must be [pos_vec, sens, coll]
+        # make bare Sensor, bare Collection into a list
+        if array_like:
+            for child in inp:
+                s2, _ = check_format_input_observers(child, pixel_agg, field)
+                sensors.extend(s2)
+        else:
+            if isinstance(inp, Sensor):
+                sensors.append(inp)
+            elif isinstance(inp, Collection):
+                s2 = inp.sensors_all
+                if not s2:
+                    raise MagpylibBadUserInput(
+                        wrong_obj_msg(inp, allow="observers")
+                    ) from msg
+                sensors.extend(s2)
             else:  # if its not a Sensor or a Collection it can only be a pos_vec
                 try:
-                    obj = np.array(obj, dtype=float)
-                    sensors.append(_src.obj_classes.class_Sensor.Sensor(pixel=obj))
+                    sensors.append(check_format_array_observers(inp, sig_name=sig_name))
                 except Exception:  # or some unwanted crap
-                    raise MagpylibBadUserInput(wrong_obj_msg(obj, allow="observers"))
+                    raise MagpylibBadUserInput(
+                        wrong_obj_msg(inp, allow="observers")
+                    ) from msg
 
-        # all pixel shapes must be the same
-        pix_shapes = [
-            (1, 3) if (s.pixel is None or s.pixel.shape == (3,)) else s.pixel.shape
-            for s in sensors
-        ]
-        if pixel_agg is None and not all_same(pix_shapes):
-            raise MagpylibBadUserInput(
-                "Different observer input shape detected."
-                " All observer inputs must be of similar shape, unless a"
-                " numpy pixel aggregator is provided, e.g. `pixel_agg='mean'`!"
-            )
-        return sensors, pix_shapes
+    # all pixel shapes must be the same
+    pix_shapes = [
+        (1, 3) if (s.pixel is None or s.pixel.shape == (3,)) else s.pixel.shape
+        for s in sensors
+    ]
+    if pixel_agg is None and not all_same(pix_shapes):
+        raise MagpylibBadUserInput(
+            "Different observer input shape detected."
+            " All observer inputs must be of similar shape, unless a"
+            " numpy pixel aggregator is provided, e.g. `pixel_agg='mean'`!"
+        )
+    return sensors, pix_shapes
 
 
 def check_format_input_obj(
@@ -639,7 +684,6 @@ def check_getBH_output_type(output):
         )
     if output == "dataframe":
         try:
-            # pylint: disable=import-outside-toplevel
             # pylint: disable=unused-import
             import pandas
         except ImportError as missing_module:  # pragma: no cover

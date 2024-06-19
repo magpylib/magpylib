@@ -17,5 +17,9 @@ class MagpylibMissingInput(Exception):
     """catching missing user inputs"""
 
 
+class MagpylibUnitsError(Exception):
+    """catching missing units inputs"""
+
+
 class MagpylibDeprecationWarning(Warning):
     """Non-suppressed Deprecation Warning."""

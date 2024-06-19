@@ -7,7 +7,7 @@ from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_circle import BHJM_circle
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
-from magpylib._src.utility import unit_prefix
+from magpylib._src.units import unit_prefix
 
 
 class Circle(BaseCurrent):
@@ -73,7 +73,10 @@ class Circle(BaseCurrent):
     """
 
     _field_func = staticmethod(BHJM_circle)
-    _field_func_kwargs_ndim = {"current": 1, "diameter": 1}
+    _field_func_kwargs = {
+        "current": {"ndim": 1, "unit": "A"},
+        "diameter": {"ndim": 1, "unit": "m"},
+    }
     get_trace = make_Circle
 
     def __init__(
@@ -103,10 +106,11 @@ class Circle(BaseCurrent):
         """Set Circle loop diameter, float, meter."""
         self._diameter = check_format_input_scalar(
             dia,
-            sig_name="diameter",
+            sig_name=f"{self.__class__.__name__}.diameter",
             sig_type="`None` or a positive number (int, float)",
             allow_None=True,
             forbid_negative=True,
+            unit="m",
         )
 
     @property
@@ -114,7 +118,11 @@ class Circle(BaseCurrent):
         """Default style description text"""
         if self.diameter is None:
             return "no dimension"
-        return f"{unit_prefix(self.current)}A" if self.current else "no current"
+        return (
+            "no current"
+            if self.current is None
+            else f"{unit_prefix(self.current, 'A')}"
+        )
 
 
 class Loop(Circle):

@@ -8,7 +8,7 @@ from magpylib._src.fields.field_BH_cylinder_segment import (
 )
 from magpylib._src.input_checks import check_format_input_cylinder_segment
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
-from magpylib._src.utility import unit_prefix
+from magpylib._src.units import unit_prefix
 
 
 class CylinderSegment(BaseMagnet):
@@ -102,7 +102,10 @@ class CylinderSegment(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_cylinder_segment_internal)
-    _field_func_kwargs_ndim = {"polarization": 2, "dimension": 2}
+    _field_func_kwargs = {
+        "polarization": {"ndim": 2, "unit": "T"},
+        "dimension": {"ndim": 2, "unit": ("m", "m", "m", "deg", "deg")},
+    }
     get_trace = make_CylinderSegment
 
     def __init__(
@@ -176,5 +179,6 @@ class CylinderSegment(BaseMagnet):
         """Default style description text"""
         if self.dimension is None:
             return "no dimension"
-        d = [unit_prefix(d) for d in self.dimension]
-        return f"r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°"
+        d = [unit_prefix(d, "m") for d in self.dimension[:3]]
+        a = [unit_prefix(d, "°") for d in self.dimension[3:]]
+        return f"r={d[0]}|{d[1]}, h={d[2]}, φ={a[0]}|{a[1]}"

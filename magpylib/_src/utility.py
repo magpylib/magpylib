@@ -5,7 +5,6 @@
 # import numbers
 from functools import lru_cache
 from inspect import signature
-from math import log10
 from typing import Callable
 from typing import Sequence
 
@@ -34,6 +33,7 @@ ALLOWED_OBSERVER_MSG = """Observers must be either
 ALLOWED_SENSORS_MSG = """Sensors must be either
 - Sensor object
 - Collection with at least one Sensor
+- A quantity object (if units are used)
 - 1D list of the above"""
 
 
@@ -41,7 +41,7 @@ def wrong_obj_msg(*objs, allow="sources"):
     """return error message for wrong object type provided"""
     assert len(objs) <= 1, "only max one obj allowed"
     allowed = allow.split("+")
-    prefix = "No" if len(allowed) == 1 else "Bad"
+    prefix = "No valid" if len(allowed) == 1 else "Bad"
     msg = f"{prefix} {'/'.join(allowed)} provided"
     if "sources" in allowed:
         msg += "\n" + get_allowed_sources_msg()
@@ -215,56 +215,6 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
             if warn:
                 print(f"Warning, cannot add {obj!r} to Collection.")
     return new_list
-
-
-_UNIT_PREFIX = {
-    -24: "y",  # yocto
-    -21: "z",  # zepto
-    -18: "a",  # atto
-    -15: "f",  # femto
-    -12: "p",  # pico
-    -9: "n",  # nano
-    -6: "µ",  # micro
-    -3: "m",  # milli
-    0: "",
-    3: "k",  # kilo
-    6: "M",  # mega
-    9: "G",  # giga
-    12: "T",  # tera
-    15: "P",  # peta
-    18: "E",  # exa
-    21: "Z",  # zetta
-    24: "Y",  # yotta
-}
-
-
-def unit_prefix(number, unit="", precision=3, char_between="") -> str:
-    """
-    displays a number with given unit and precision and uses unit prefixes for the exponents from
-    yotta (y) to Yocto (Y). If the exponent is smaller or bigger, falls back to scientific notation.
-    Parameters
-    ----------
-    number : int, float
-        can be any number
-    unit : str, optional
-        unit symbol can be any string, by default ""
-    precision : int, optional
-        gives the number of significant digits, by default 3
-    char_between : str, optional
-        character to insert between number of prefix. Can be " " or any string, if a space is wanted
-        before the unit symbol , by default ""
-    Returns
-    -------
-    str
-        returns formatted number as string
-    """
-    digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
-    prefix = _UNIT_PREFIX.get(digits, "")
-
-    if prefix == "":
-        digits = 0
-    new_number_str = f"{number / 10 ** digits:.{precision}g}"
-    return f"{new_number_str}{char_between}{prefix}{unit}"
 
 
 def add_iteration_suffix(name):
