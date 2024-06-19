@@ -146,7 +146,7 @@ def scatter_to_matplotlib(trace):
 
     # plot the marker part with `scatter` constructor
     if "markers" in mode:
-        for (msymb,), inds in split_input_arrays(marker_symbol, ordered=True):
+        for (msymb,), inds in split_input_arrays(marker_symbol, ordered=False):
             msymb = SYMBOLS_TO_MATPLOTLIB.get(msymb, msymb)
             kw = {"s": marker_size, "color": marker_color}
             for k, v in kw.items():
