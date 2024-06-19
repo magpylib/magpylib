@@ -143,16 +143,16 @@ def scatter_to_matplotlib(trace):
 
     # plot the marker part with `scatter` constructor
     if "markers" in mode:
-        for (msymb,), inds in split_input_arrays(marker_symbol):
+        for (msymb,), inds in split_input_arrays(marker_symbol, ordered=False):
             msymb = SYMBOLS_TO_MATPLOTLIB.get(msymb, msymb)
             kw = {"s": marker_size, "color": marker_color}
             for k, v in kw.items():
                 if is_array_like(v):
-                    kw[k] = v[inds[0] : inds[1]]
+                    kw[k] = v[inds]
             traces.append(
                 {
                     "constructor": "scatter",
-                    "args": tuple(coords[:, inds[0] : inds[1]]),
+                    "args": tuple(coords[:, inds]),
                     "kwargs": {"marker": msymb, "label": None, **kw},
                 }
             )
@@ -163,7 +163,7 @@ def scatter_to_matplotlib(trace):
             traces.append(
                 {
                     "constructor": "plot",
-                    "args": coords[:, inds[0] : inds[1]],
+                    "args": coords[:, inds],
                     "kwargs": {
                         "alpha": trace.get("opacity", 1),
                         "ls": line_dash,

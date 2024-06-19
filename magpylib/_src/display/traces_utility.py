@@ -929,10 +929,13 @@ def get_hexcolors_from_scale(
     return out
 
 
-def split_input_arrays(*input_arrays):
+def split_input_arrays(*input_arrays, ordered=True):
     """splits input_arrays into chunks of same values.
     Use case: Unlike plotly, matplotlib and pyvista cannot display line plots with an array of
     colors.
+    The argument order=True is necessary for line arrays wher the order is important.
+    For markers, the order is not important and unique combinations with their respective
+    indices are returned.
     """
     list_like = (list, tuple, np.ndarray)
     max_length = max(
@@ -943,18 +946,25 @@ def split_input_arrays(*input_arrays):
         for inp in input_arrays
     ]
     input_array = list(zip(*input_arrays))
-    input_split = []
-    prev_inp = next(iter(input_array))
-    prev_ind = 0
+    if ordered:
+        input_split = []
+        prev_inp = next(iter(input_array))
+        prev_ind = 0
+        for ind, inp in enumerate(input_array):
+            val, prev_val = tuple(inp), tuple(prev_inp)
+            is_end = ind == len(input_array) - 1
+            if val != prev_val or is_end:
+                last_ind = ind if ind != 0 else None
+                input_split.append((prev_inp, slice(prev_ind, last_ind)))
+                prev_ind = ind
+                prev_inp = inp
+        return input_split
+
+    input_split = {}
     for ind, inp in enumerate(input_array):
-        val, last_val = tuple(inp), tuple(prev_inp)
-        is_end = ind == len(input_array) - 1
-        if val != last_val or is_end:
-            last_ind = ind if ind != 0 else None
-            input_split.append((prev_inp, (prev_ind, last_ind)))
-            prev_ind = ind
-            prev_inp = inp
-    return input_split
+        val = tuple(inp)
+        input_split.setdefault(val, []).append(ind)
+    return list(input_split.items())
 
 
 def get_trace_kw(trace, arg, *, none_replace=None):
