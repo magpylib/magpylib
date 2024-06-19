@@ -135,7 +135,10 @@ def scatter_to_matplotlib(trace):
 
     # get coords
     coords_str = "xyz"
-    if trace["type"] == "scatter":
+    if trace["type"] == "scatter3d":
+        # for 3d traces marker size is proportional to volume, not radius like generic
+        marker_size = marker_size**3
+    else:
         coords_str = "xy"
         # for 2d traces marker size is proportional to area, not radius like generic
         marker_size = marker_size**2
@@ -143,12 +146,13 @@ def scatter_to_matplotlib(trace):
 
     # plot the marker part with `scatter` constructor
     if "markers" in mode:
-        for (msymb,), inds in split_input_arrays(marker_symbol, ordered=False):
+        for (msymb,), inds in split_input_arrays(marker_symbol, ordered=True):
             msymb = SYMBOLS_TO_MATPLOTLIB.get(msymb, msymb)
             kw = {"s": marker_size, "color": marker_color}
             for k, v in kw.items():
                 if is_array_like(v):
                     kw[k] = v[inds]
+            # print(kw)
             traces.append(
                 {
                     "constructor": "scatter",
