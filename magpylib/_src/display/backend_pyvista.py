@@ -140,7 +140,7 @@ def scatter_to_pyvista(trace):
         if "markers" in mode:
             splits = split_input_arrays(marker_color, marker_size)
             for (mcolor, msize), inds in splits:
-                if marker_size != 0:
+                if msize != 0:
                     trace_pv_marker = {
                         "type": "mesh",
                         "mesh": pv.PolyData(points[inds[0] : inds[1]]),
