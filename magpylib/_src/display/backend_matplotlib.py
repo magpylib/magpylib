@@ -129,7 +129,7 @@ def scatter_to_matplotlib(trace):
     line_width = get_trace_kw(trace, "line_width", none_replace=1)
     line_dash = get_trace_kw(trace, "line_dash")
     line_dash = LINE_STYLES_TO_MATPLOTLIB.get(line_dash, line_dash)
-    marker_color = get_trace_kw(trace, "marker_color")
+    marker_color = get_trace_kw(trace, "marker_color", none_replace=line_color)
     marker_size = get_trace_kw(trace, "marker_size", none_replace=1)
     marker_symbol = get_trace_kw(trace, "marker_symbol", none_replace="o")
 
