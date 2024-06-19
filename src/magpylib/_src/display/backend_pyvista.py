@@ -25,6 +25,7 @@ from pyvista.plotting.colors import Color  # pylint: disable=import-error
 
 from magpylib._src.display.traces_utility import get_trace_kw
 from magpylib._src.display.traces_utility import split_input_arrays
+from magpylib._src.utility import is_array_like
 from magpylib._src.utility import open_animation
 
 # from magpylib._src.utility import format_obj_input
@@ -199,40 +200,39 @@ def scatter_to_pyvista(trace):
             traces.append(trace_pv_text)
     else:
         if "lines" in mode:
-            trace_pv_line = {
-                "type": "line",
-                "x": trace["x"],
-                "y": trace["y"],
-                "color": line_color,
-                "width": line_width,
-                "style": line_dash,
-                "label": trace.get("name", ""),
-            }
+            splits = split_input_arrays(line_color, line_width, line_dash)
+            for (lcolor, lwidth, ldash), inds in splits:
+                print("asdf")
+                trace_pv_line = {
+                    "type": "line",
+                    "x": trace["x"][inds[0] : inds[1]],
+                    "y": trace["y"][inds[0] : inds[1]],
+                    "color": lcolor,
+                    "width": lwidth,
+                    "style": ldash,
+                    "label": trace.get("name", ""),
+                }
             traces.append(trace_pv_line)
         if "markers" in mode:
-            trace_pv_marker = {
-                "type": "scatter",
-                "x": trace["x"],
-                "y": trace["y"],
-                "color": marker_color,
-                "size": marker_size,
-                "style": SYMBOLS_TO_PYVISTA.get(marker_symbol, "o"),
-            }
-            marker_size = (
-                marker_size
-                if isinstance(marker_size, (list, tuple, np.ndarray))
-                else np.array([marker_size])
-            )
-            for size in np.unique(marker_size):
-                tr = trace_pv_marker.copy()
-                mask = marker_size == size
-                tr = {
-                    **tr,
-                    "x": np.array(tr["x"])[mask],
-                    "y": np.array(tr["y"][mask]),
-                    "size": size,
-                }
-                traces.append(tr)
+            for (msize,), inds in split_input_arrays(marker_size):
+                if msize != 0:
+                    mcol = marker_color
+                    if is_array_like(mcol):
+                        mcol = mcol[inds[0] : inds[1]]
+                    if is_array_like(marker_symbol):
+                        msymb = marker_symbol[inds[0] : inds[1]]
+                        msymb = [SYMBOLS_TO_PYVISTA.get(s, "o") for s in msymb]
+                    else:
+                        msymb = SYMBOLS_TO_PYVISTA.get(marker_symbol, "o")
+                    trace_pv_marker = {
+                        "type": "scatter",
+                        "x": trace["x"][inds[0] : inds[1]],
+                        "y": trace["y"][inds[0] : inds[1]],
+                        "color": mcol,
+                        "size": msize,
+                        "style": msymb,
+                    }
+                    traces.append(trace_pv_marker)
     return traces
 
 
