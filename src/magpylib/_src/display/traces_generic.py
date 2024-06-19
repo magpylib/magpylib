@@ -226,7 +226,7 @@ def get_trace2D_dict(
     y = BH.T[list(coords_inds)]
     y = y[0] if len(coords_inds) == 1 else np.linalg.norm(y, axis=0)
     marker_size = np.array([3] * len(frames_indices))
-    marker_size[np.clip(focus_inds, 0, len(marker_size) - 1)] = 15
+    marker_size[np.clip(focus_inds, None, len(marker_size) - 1)] = 15
     title = f"{field_str}{''.join(coords_str)}"
     unit = (
         units_polarization
