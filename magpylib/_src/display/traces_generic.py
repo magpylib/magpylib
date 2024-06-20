@@ -838,11 +838,15 @@ def get_sensor_pixel_field(objects):
     for sens in sensors:
         vsrc = sens.style.pixel.field.vectorsource
         csrc = sens.style.pixel.field.colorsource
+        csrc = vsrc if csrc == "auto" else csrc
         if vsrc or csrc:
             field_by_sens[sens] = {}
-            csrc = csrc if csrc else vsrc
-            vrsc = vsrc if vsrc else csrc[0]
-            for field in tuple({vrsc, csrc[0]}):
+            fields_str = []
+            if vsrc:
+                fields_str.append(vsrc)
+            if csrc:
+                fields_str.append(csrc[0])
+            for field in set(fields_str):
                 if not has_pix_field:
                     sources = format_obj_input(objects, allow="sources")
                     sources = list(set(sources))  # remove duplicates
