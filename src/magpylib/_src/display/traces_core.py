@@ -586,11 +586,7 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
                 pix = make_BaseCuboid(dimension=[size] * 3, **kw)
         if pix is not None:
             if colors is not None:
-                color = (
-                    colors[ind]
-                    if isinstance(colors, (list, tuple, np.ndarray))
-                    else colors
-                )
+                color = colors[ind] if is_array_like(colors) else colors
                 if field_symbol == "arrow":
                     pix["line_color"] = np.repeat(color, len(pix["x"]))
                     pix["marker_color"] = pix["line_color"]
