@@ -1699,17 +1699,16 @@ class PixelField(MagicProperties):
     @colorsource.setter
     def colorsource(self, val):
         valid = True
-        if val not in ("", None):
+        if val not in (None, False):
             field_str, *coords_str = val
             if not coords_str:
                 coords_str = list("xyz")
             if field_str not in "BHMJ" and set(coords_str).difference(set("xyz")):
                 valid = False
         assert valid, (
-            f"The `colorsource` property of {type(self).__name__} must start with either"
-            f" {self._allowed_vectorsources} and be followed by a combination of 'x', 'y', 'z'"
-            " (e.g. 'Bxy' or ('Bxy', 'Bz') )"
-            f" but received {repr(val)} instead."
+            f"The `colorsource` property of {type(self).__name__} must be None or False or start"
+            f" with either {self._allowed_vectorsources} and be followed by a combination of"
+            f" 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') ) but received {repr(val)} instead."
         )
         self._colorsource = val
 

@@ -610,7 +610,6 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
     """
     style = obj.style
     traces_to_merge = []
-    show_hull = not bool(field_values)
     dimension = getattr(obj, "dimension", style.size)
     dim = np.array(
         [dimension] * 3 if isinstance(dimension, (float, int)) else dimension[:3],
@@ -659,9 +658,9 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
         sens_mesh.update(x=x, y=y, z=z)
         traces_to_merge.append(sens_mesh)
     if not no_pix:
-        pixel_color = style.pixel.color
-        pixel_size = style.pixel.size
-        pixel_dim = 1
+        px_color = style.pixel.color
+        px_size = style.pixel.size
+        px_dim = 1
         if style.pixel.sizemode == "scaled":
             if len(pixel) < 1000:
                 min_dist = np.min(pdist(pixel))
@@ -670,21 +669,20 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
                 # using volume/(side length) approximation instead
                 vol = np.prod(np.ptp(pixel, axis=0))
                 min_dist = (vol / len(pixel)) ** (1 / 3)
-            pixel_dim = dim_ext / 5 if min_dist == 0 else min_dist / 2
-        if pixel_size > 0:
-            pixel_dim *= pixel_size
-            poss = pixel[1:] if one_pix else pixel
-            vectors, null_thresh = None, 1e-12
-            colors = "black" if pixel_color is None else pixel_color
+            px_dim = dim_ext / 5 if min_dist == 0 else min_dist / 2
+        if px_size > 0:
+            px_dim *= px_size
+            px_positions = pixel[1:] if one_pix else pixel
+            px_vectors, null_thresh = None, 1e-12
+            px_colors = "black" if px_color is None else px_color
             if field_values:
                 vsrc = style.pixel.field.vectorsource
                 csrc = style.pixel.field.colorsource
-                if vsrc:
-                    vectors = field_values[vsrc][path_ind]
-                    # if csrc=="" -> show vectors but no color
-                    csrc = vsrc if csrc is None else csrc
-                if csrc:
-                    # get cmin, cmax for whole path
+                csrc = vsrc if csrc is None else csrc
+                if vsrc is not None:
+                    px_vectors = field_values[vsrc][path_ind]
+                if csrc is not False:
+                    # get cmin, cmax from whole path
                     field_str, *coords_str = csrc
                     coords_str = coords_str if coords_str else "xyz"
                     coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
@@ -707,7 +705,7 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
             meshes_to_merge.append(pixels_mesh)
         if show_hull:
             hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
-            hull_dim[hull_dim == 0] = pixel_dim / 2
+            hull_dim[hull_dim == 0] = px_dim / 2
             hull_mesh = make_BaseCuboid(
                 "plotly-dict", position=hull_pos, dimension=hull_dim
             )
