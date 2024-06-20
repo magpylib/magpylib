@@ -3,6 +3,7 @@
 # pylint: disable=too-many-branches
 from collections import defaultdict
 from functools import lru_cache
+from itertools import chain
 from itertools import cycle
 from typing import Tuple
 
@@ -11,8 +12,21 @@ from scipy.spatial.transform import Rotation as RotScipy
 
 from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import linearize_dict
+from magpylib._src.input_checks import check_input_zoom
 from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
+from magpylib._src.utility import merge_dicts_with_conflict_check
+
+DEFAULT_ROW_COL_PARAMS = {
+    "row": 1,
+    "col": 1,
+    "output": "model3d",
+    "sumup": True,
+    "pixel_agg": "mean",
+    "in_out": "auto",
+    "zoom": 0,
+    "units_length": "auto",
+}
 
 
 def get_legend_label(obj, style=None, suffix=True):
@@ -34,49 +48,55 @@ def get_legend_label(obj, style=None, suffix=True):
 
 def place_and_orient_model3d(
     model_kwargs,
+    *,
     model_args=None,
     orientation=None,
     position=None,
     coordsargs=None,
     scale=1,
     return_model_args=False,
+    return_coordsargs=False,
+    length_factor=1,
     **kwargs,
 ):
     """places and orients mesh3d dict"""
-    if orientation is None and position is None:
-        return {**model_kwargs, **kwargs}
-    position = (0.0, 0.0, 0.0) if position is None else position
-    position = np.array(position, dtype=float)
-    new_model_dict = {}
-    if model_args is None:
-        model_args = ()
-    new_model_args = list(model_args)
-    vertices, coordsargs, useargs = get_vertices_from_model(
-        model_kwargs, model_args, coordsargs
-    )
+    if orientation is None and position is None and length_factor == 1:
+        new_model_kwargs = {**model_kwargs, **kwargs}
+        new_model_args = model_args
+    else:
+        position = (0.0, 0.0, 0.0) if position is None else position
+        position = np.array(position, dtype=float)
+        new_model_dict = {}
+        if model_args is None:
+            model_args = ()
+        new_model_args = list(model_args)
+        vertices, coordsargs, useargs = get_vertices_from_model(
+            model_kwargs, model_args, coordsargs
+        )
+        # sometimes traces come as (n,m,3) shape
+        vert_shape = vertices.shape
+        vertices = np.reshape(vertices.astype(float), (3, -1))
 
-    # sometimes traces come as (n,m,3) shape
-    vert_shape = vertices.shape
-    vertices = np.reshape(vertices, (3, -1))
+        vertices = vertices.T
 
-    vertices = vertices.T
-
-    if orientation is not None:
-        vertices = orientation.apply(vertices)
-    new_vertices = (vertices * scale + position).T
-    new_vertices = np.reshape(new_vertices, vert_shape)
-    for i, k in enumerate("xyz"):
-        key = coordsargs[k]
-        if useargs:
-            ind = int(key[5])
-            new_model_args[ind] = new_vertices[i]
-        else:
-            new_model_dict[key] = new_vertices[i]
-    new_model_kwargs = {**model_kwargs, **new_model_dict, **kwargs}
+        if orientation is not None:
+            vertices = orientation.apply(vertices)
+        new_vertices = (vertices * scale + position).T * length_factor
+        new_vertices = np.reshape(new_vertices, vert_shape)
+        for i, k in enumerate("xyz"):
+            key = coordsargs[k]
+            if useargs:
+                ind = int(key[5])
+                new_model_args[ind] = new_vertices[i]
+            else:
+                new_model_dict[key] = new_vertices[i]
+        new_model_kwargs = {**model_kwargs, **new_model_dict, **kwargs}
 
     out = (new_model_kwargs,)
     if return_model_args:
         out += (new_model_args,)
+    if return_coordsargs:
+        out += (coordsargs,)
     return out[0] if len(out) == 1 else out
 
 
@@ -244,42 +264,52 @@ def get_rot_pos_from_path(obj, show_path=None):
     return rots, poss, inds
 
 
-def get_flatten_objects_properties(*objs, colorsequence, **kwargs):
+def get_objects_props_by_row_col(*objs, colorsequence, style_kwargs):
     """Return flat dict with objs as keys object properties as values.
     Properties include: row_cols, style, legendgroup, legendtext"""
-    flat_objs = {}
+    flat_objs_rc = {}
+    rc_params_by_obj = {}
+    obj_list_semi_flat = [o for obj in objs for o in obj["objects"]]
     for obj in objs:
-        flat_sub_objs = get_flatten_objects_properties_recursive(
-            *obj["objects"], colorsequence=colorsequence, **kwargs
-        )
-        for subobj, props in flat_sub_objs.items():
-            if subobj in flat_objs:
-                props["row_cols"] = flat_objs[subobj]["row_cols"]
-            elif "row_cols" not in props:
-                props["row_cols"] = []
-            props["row_cols"].extend([(obj["row"], obj["col"], obj["output"])])
-        flat_objs.update(flat_sub_objs)
-    kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
-    return flat_objs, kwargs
+        rc_params = {k: v for k, v in obj.items() if k != "objects"}
+        for subobj in obj["objects"]:
+            children = getattr(subobj, "children_all", [])
+            for child in chain([subobj], children):
+                if child not in rc_params_by_obj:
+                    rc_params_by_obj[child] = []
+                rc_params_by_obj[child].append(rc_params)
+    flat_sub_objs = get_flatten_objects_properties_recursive(
+        *obj_list_semi_flat,
+        style_kwargs=style_kwargs,
+        colorsequence=colorsequence,
+    )
+    for obj, rc_params_list in rc_params_by_obj.items():
+        for rc_params in rc_params_list:
+            rc = rc_params["row"], rc_params["col"]
+            if rc not in flat_objs_rc:
+                flat_objs_rc[rc] = {"objects": {}, "rc_params": rc_params}
+            flat_objs_rc[rc]["objects"][obj] = flat_sub_objs[obj]
+    return flat_objs_rc
 
 
 def get_flatten_objects_properties_recursive(
     *obj_list_semi_flat,
+    style_kwargs=None,
     colorsequence=None,
     color_cycle=None,
     parent_legendgroup=None,
     parent_color=None,
     parent_label=None,
     parent_showlegend=None,
-    **kwargs,
 ):
     """returns a flat dict -> (obj: display_props, ...) from nested collections"""
     if color_cycle is None:
         color_cycle = cycle(colorsequence)
     flat_objs = {}
-    for subobj in obj_list_semi_flat:
+    for subobj in dict.fromkeys(obj_list_semi_flat):
         isCollection = getattr(subobj, "children", None) is not None
-        style = get_style(subobj, default_settings, **kwargs)
+        style_kwargs = {} if style_kwargs is None else style_kwargs
+        style = get_style(subobj, default_settings, **style_kwargs)
         if style.label is None:
             style.label = str(type(subobj).__name__)
         legendgroup = f"{subobj}" if parent_legendgroup is None else parent_legendgroup
@@ -299,18 +329,17 @@ def get_flatten_objects_properties_recursive(
             "showlegend": parent_showlegend,
         }
         if isCollection:
-            flat_objs.update(
-                get_flatten_objects_properties_recursive(
-                    *subobj.children,
-                    colorsequence=colorsequence,
-                    color_cycle=color_cycle,
-                    parent_legendgroup=legendgroup,
-                    parent_color=style.color,
-                    parent_label=label,
-                    parent_showlegend=style.legend.show,
-                    **kwargs,
-                )
+            new_ojbs = get_flatten_objects_properties_recursive(
+                *subobj.children,
+                colorsequence=colorsequence,
+                color_cycle=color_cycle,
+                parent_legendgroup=legendgroup,
+                parent_color=style.color,
+                parent_label=label,
+                parent_showlegend=style.legend.show,
+                style_kwargs=style_kwargs,
             )
+            flat_objs = {**new_ojbs, **flat_objs}
     return flat_objs
 
 
@@ -467,38 +496,47 @@ def getColorscale(
     return colorscale
 
 
-def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
+def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
     """
     Returns 3x2 array of the min and max ranges in x,y,z directions of input traces. Traces can be
     any plotly trace object or a dict, with x,y,z numbered parameters.
     """
-    trace3d_found = False
-    if traces:
-        ranges = {k: [] for k in "xyz"}
-        for tr in traces:
-            coords = "xyz"
-            if "constructor" in tr:
-                verts, *_ = get_vertices_from_model(
-                    model_args=tr.get("args", None),
-                    model_kwargs=tr.get("kwargs", None),
-                    coordsargs=tr.get("coordsargs", None),
-                )
-                tr = dict(zip("xyz", verts))
-            if "z" in tr:  # only extend range for 3d traces
-                trace3d_found = True
-                pts = np.array([tr[k] for k in coords], dtype="float64").T
-                try:  # for mesh3d, use only vertices part of faces for range calculation
-                    inds = np.array([tr[k] for k in "ijk"], dtype="int64").T
-                    pts = pts[inds]
-                except KeyError:
-                    # for 2d meshes, nothing special needed
-                    pass
-                pts = pts.reshape(-1, 3)
-                if pts.size != 0:
-                    min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
-                    for v, min_, max_ in zip(ranges.values(), *min_max):
-                        v.extend([min_, max_])
-        if trace3d_found:
+    ranges_rc = {}
+    tr_dim_count = {}
+    for tr in traces:
+        coords = "xyz"
+        rc = tr.get("row", 1), tr.get("col", 1)
+        if "constructor" in tr:
+            verts, *_ = get_vertices_from_model(
+                model_args=tr.get("args", None),
+                model_kwargs=tr.get("kwargs", None),
+                coordsargs=tr.get("coordsargs", None),
+            )
+            kwex = tr["kwargs_extra"]
+            tr = dict(zip("xyz", verts))
+            rc = kwex["row"], kwex["col"]
+        if rc not in ranges_rc:
+            ranges_rc[rc] = {k: [] for k in "xyz"}
+            tr_dim_count[rc] = {"2D": 0, "3D": 0}
+        if "z" not in tr:  # only extend range for 3d traces
+            tr_dim_count[rc]["2D"] += 1
+        else:
+            tr_dim_count[rc]["3D"] += 1
+            pts = np.array([tr[k] for k in coords], dtype="float64").T
+            try:  # for mesh3d, use only vertices part of faces for range calculation
+                inds = np.array([tr[k] for k in "ijk"], dtype="int64").T
+                pts = pts[inds]
+            except KeyError:
+                # for 2d meshes, nothing special needed
+                pass
+            pts = pts.reshape(-1, 3)
+            if pts.size != 0:
+                min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
+                for v, min_, max_ in zip(ranges_rc[rc].values(), *min_max):
+                    v.extend([min_, max_])
+    for rc, ranges in ranges_rc.items():
+        if tr_dim_count[rc]["3D"]:
+            zo = zoom[rc] if isinstance(zoom, dict) else zoom
             # SET 3D PLOT BOUNDARIES
             # collect min/max from all elements
             r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
@@ -506,10 +544,34 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
             m = size.max() / 2
             m = 1 if m == 0 else m
             center = r.mean(axis=1)
-            ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
-    if not traces or not trace3d_found:
-        ranges = np.array([[-1.0, 1.0]] * 3)
-    return ranges
+            ranges = np.array([center - m * (1 + zo), center + m * (1 + zo)]).T
+        else:
+            ranges = np.array([[-1.0, 1.0]] * 3)
+        ranges_rc[rc] = ranges
+    if not ranges_rc:
+        ranges_rc[(1, 1)] = np.array([[-1.0, 1.0]] * 3)
+    return ranges_rc
+
+
+def rescale_traces(traces, factors):
+    """Rescale traces based on scale factors by (row,col) index"""
+    for ind, tr in enumerate(traces):
+        if "constructor" in tr:
+            kwex = tr["kwargs_extra"]
+            rc = kwex["row"], kwex["col"]
+            kwargs, args = place_and_orient_model3d(
+                model_kwargs=tr.get("kwargs", None),
+                model_args=tr.get("args", None),
+                coordsargs=tr.get("coordsargs", None),
+                length_factor=factors[rc],
+                return_model_args=True,
+            )
+            tr["kwargs"].update(kwargs)
+            tr["args"] = args
+        if "z" in tr:  # rescale only 3d traces
+            rc = tr.get("row", 1), tr.get("col", 1)
+            traces[ind] = place_and_orient_model3d(tr, length_factor=factors[rc])
+    return traces
 
 
 def group_traces(*traces):
@@ -578,57 +640,52 @@ def subdivide_mesh_by_facecolor(trace):
 
 def process_show_input_objs(objs, **kwargs):
     """Extract max_rows and max_cols from obj list of dicts"""
-    defaults = {
-        "row": 1,
-        "col": 1,
-        "output": "model3d",
-        "sumup": True,
-        "pixel_agg": "mean",
-        "in_out": "auto",
-    }
-    max_rows = max_cols = 1
-    flat_objs = []
-    new_objs = {}
-    subplot_specs = {}
+    defaults = DEFAULT_ROW_COL_PARAMS.copy()
+    identifiers = ("row", "col")
+    unique_fields = tuple(k for k in defaults if k not in identifiers)
+    sources_and_sensors_only = []
+    new_objs = []
     for obj in objs:
+        # add missing kwargs
         if isinstance(obj, dict):
             obj = {**defaults, **obj, **kwargs}
         else:
             obj = {**defaults, "objects": obj, **kwargs}
 
+        # extend objects list
         obj["objects"] = format_obj_input(
             obj["objects"], allow="sources+sensors+collections"
         )
-        flat_objs.extend(format_obj_input(obj["objects"], allow="sources+sensors"))
-        if obj["row"] is not None:
-            max_rows = max(max_rows, obj["row"])
-        if obj["col"] is not None:
-            max_cols = max(max_cols, obj["col"])
-        out = obj["output"]
-        key = (obj["row"], obj["col"], out if isinstance(out, str) else tuple(out))
-        if key not in new_objs:
-            new_objs[key] = obj
-        else:
-            new_objs[key]["objects"] = list(
-                dict.fromkeys(new_objs[key]["objects"] + obj["objects"])
-            )
-        current_subplot_specs = subplot_specs.get(key[:2], obj["output"])
-        if current_subplot_specs != obj["output"]:
-            raise ValueError(
-                f"Row/Col {key[:2]}, received conflicting output types "
-                f"{current_subplot_specs!r} vs {obj['output']!r}"
-            )
-        subplot_specs[key[:2]] = obj["output"]
+        sources_and_sensors_only.extend(
+            format_obj_input(obj["objects"], allow="sources+sensors")
+        )
+        new_objs.append(obj)
 
+    row_col_dict = merge_dicts_with_conflict_check(
+        new_objs,
+        target="objects",
+        identifiers=identifiers,
+        unique_fields=unique_fields,
+    )
+
+    # create subplot specs grid
+    row_cols = [*row_col_dict]
+    max_rows, max_cols = np.max(row_cols, axis=0).astype(int) if row_cols else (1, 1)
+    # convert to int to avoid np.int32 type conflicting with plolty subplot specs
+    max_rows, max_cols = int(max_rows), int(max_cols)
     specs = np.array([[{"type": "scene"}] * max_cols] * max_rows)
-    for inds, out in subplot_specs.items():
-        if out != "model3d":
-            specs[inds[0] - 1, inds[1] - 1] = {"type": "xy"}
+    for rc, obj in row_col_dict.items():
+        if obj["output"] != "model3d":
+            specs[rc[0] - 1, rc[1] - 1] = {"type": "xy"}
     if max_rows == 1 and max_cols == 1:
         max_rows = max_cols = None
+
+    for obj in row_col_dict.values():
+        check_input_zoom(obj.get("zoom", None))
+
     return (
-        list(new_objs.values()),
-        list(dict.fromkeys(flat_objs)),
+        list(row_col_dict.values()),
+        list(dict.fromkeys(sources_and_sensors_only)),
         max_rows,
         max_cols,
         specs,

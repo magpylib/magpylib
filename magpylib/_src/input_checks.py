@@ -69,14 +69,9 @@ def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, length=None, 
 
 def check_input_zoom(inp):
     """check show zoom input"""
-    if not isinstance(inp, numbers.Number):
+    if not (isinstance(inp, numbers.Number) and inp >= 0):
         raise MagpylibBadUserInput(
-            "Input parameter `zoom` must be a number `zoom>=0`.\n"
-            f"Instead received {inp}."
-        )
-    if inp < 0:
-        raise MagpylibBadUserInput(
-            "Input parameter `zoom` must be a number `zoom>=0`.\n"
+            "Input parameter `zoom` must be a positive number or zero.\n"
             f"Instead received {inp}."
         )
 

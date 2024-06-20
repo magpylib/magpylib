@@ -3,6 +3,7 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
 # import numbers
+from contextlib import contextmanager
 from functools import lru_cache
 from inspect import signature
 from math import log10
@@ -237,8 +238,36 @@ _UNIT_PREFIX = {
     24: "Y",  # yotta
 }
 
+_UNIT_PREFIX_REVERSED = {v: k for k, v in _UNIT_PREFIX.items()}
 
-def unit_prefix(number, unit="", precision=3, char_between="") -> str:
+
+@lru_cache(maxsize=None)
+def get_unit_factor(unit_input, *, target_unit, deci_centi=True):
+    """return unit factor based on input and target unit"""
+    if unit_input is None or unit_input == target_unit:
+        return 1
+    pref, suff, factor_power = "", "", None
+    prefs = _UNIT_PREFIX_REVERSED
+    if deci_centi:
+        prefs = {**_UNIT_PREFIX_REVERSED, "d": -1, "c": -2}
+    unit_input_str = str(unit_input)
+    if unit_input_str:
+        if len(unit_input_str) >= 2:
+            pref, *suff = unit_input_str
+            suff = "".join(suff)
+        if suff == target_unit:
+            factor_power = prefs.get(pref, None)
+
+    if factor_power is None or len(unit_input_str) > 2:
+        valid_inputs = [f"{k}{target_unit}" for k in prefs]
+        raise ValueError(
+            f"Invalid unit input ({unit_input!r}), must be one of {valid_inputs}"
+        )
+    factor = 1 / (10**factor_power)
+    return factor
+
+
+def unit_prefix(number, unit="", precision=3, char_between="", as_tuple=False) -> str:
     """
     displays a number with given unit and precision and uses unit prefixes for the exponents from
     yotta (y) to Yocto (Y). If the exponent is smaller or bigger, falls back to scientific notation.
@@ -253,10 +282,13 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     char_between : str, optional
         character to insert between number of prefix. Can be " " or any string, if a space is wanted
         before the unit symbol , by default ""
+    as_tuple: bool, optional
+        if True returns (new_number_str, char_between, prefix, unit) tuple
+        else returns the joined string
     Returns
     -------
-    str
-        returns formatted number as string
+    str or tuple
+        returns formatted number as string or tuple
     """
     digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
     prefix = _UNIT_PREFIX.get(digits, "")
@@ -264,7 +296,10 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     if prefix == "":
         digits = 0
     new_number_str = f"{number / 10 ** digits:.{precision}g}"
-    return f"{new_number_str}{char_between}{prefix}{unit}"
+    res = (new_number_str, char_between, prefix, unit)
+    if as_tuple:
+        return res
+    return "".join(f"{v}" for v in res)
 
 
 def add_iteration_suffix(name):
@@ -398,3 +433,80 @@ def has_parameter(func: Callable, param_name: str) -> bool:
     """Check if input function has a specific parameter"""
     sig = signature(func)
     return param_name in sig.parameters
+
+
+def merge_dicts_with_conflict_check(objs, *, target, identifiers, unique_fields):
+    """
+    Merge dictionaries ensuring unique identifier fields don't lead to conflict.
+
+    Parameters
+    ----------
+    objs : list of dicts
+        List of dictionaries to be merged based on identifier fields.
+    target : str
+        The key in the dictionaries whose values are lists to be merged.
+    identifiers : list of str
+        Keys used to identify a unique dictionary.
+    unique_fields : list of str
+        Additional keys that must not conflict across merged dictionaries.
+
+    Returns
+    -------
+    dict of dicts
+        Merged dictionaries with combined `target` lists, ensuring no conflicts
+        in `unique_fields`.
+
+    Raises
+    ------
+    ValueError
+        If a conflict is detected in `unique_fields` for any `identifiers`.
+
+    Notes
+    -----
+    `objs` should be a list of dictionaries. Identifiers determine uniqueness,
+    and merging is done by extending the lists in the `target` key. If any of
+    the `unique_fields` conflict with previously tracked identifiers, a
+    `ValueError` is raised detailing the conflict.
+
+    """
+    merged_dict = {}
+    tracker = {}
+    for obj in objs:
+        key_dict = {k: obj[k] for k in identifiers}
+        key = tuple(key_dict.values())
+        tracker_previous = tracker.get(key, None)
+        tracker_actual = tuple(obj[field] for field in unique_fields)
+        if key in tracker and tracker_previous != tracker_actual:
+            diff = [
+                f"{f!r} first got {a!r} then {t!r}"
+                for f, a, t in zip(unique_fields, tracker_actual, tracker_previous)
+                if a != t
+            ]
+            raise ValueError(
+                f"Conflicting parameters detected for {key_dict}: {', '.join(diff)}."
+            )
+        tracker[key] = tracker_actual
+
+        if key not in merged_dict:
+            merged_dict[key] = obj
+        else:
+            merged_dict[key][target] = list(
+                dict.fromkeys([*merged_dict[key][target], *obj[target]])
+            )
+    return merged_dict
+
+
+@contextmanager
+def style_temp_edit(obj, style_temp, copy=True):
+    """Temporary replace style to allow edits before returning to original state"""
+    # pylint: disable=protected-access
+    orig_style = getattr(obj, "_style", None)
+    try:
+        # temporary replace style attribute
+        obj._style = style_temp
+        if style_temp and copy:
+            # deepcopy style only if obj is in multiple subplots.
+            obj._style = style_temp.copy()
+        yield
+    finally:
+        obj._style = orig_style
