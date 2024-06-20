@@ -142,6 +142,7 @@ def scatter_to_matplotlib(trace):
         coords_str = "xy"
         # for 2d traces marker size is proportional to area, not radius like generic
         marker_size = marker_size**2
+
     coords = np.array([trace[k] for k in coords_str], dtype=float)
 
     # plot the marker part with `scatter` constructor
@@ -152,7 +153,6 @@ def scatter_to_matplotlib(trace):
             for k, v in kw.items():
                 if is_array_like(v):
                     kw[k] = v[inds]
-            # print(kw)
             traces.append(
                 {
                     "constructor": "scatter",

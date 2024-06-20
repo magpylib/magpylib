@@ -473,7 +473,7 @@ def merge_scatter3d(*traces):
             return [*tr[k], *tr[k][-1:]]
         return [*tr[k], fill_value]
 
-    fill_values = {
+    fill_vals = {
         "x": np.nan,
         "y": np.nan,
         "z": np.nan,
@@ -482,17 +482,15 @@ def merge_scatter3d(*traces):
         "marker_color": ffill,
         "line_color": ffill,
     }
-    fill_values = {
-        k: v
-        for k, v in fill_values.items()
-        if k in traces[0] and isinstance(traces[0][k], (list, tuple, np.ndarray))
+    fill_vals = {
+        k: v for k, v in fill_vals.items() if is_array_like(traces[0].get(k, None))
     }
     merged_trace = {**traces[0]}
-    for k, fill_value in fill_values.items():
+    for k, fill_val in fill_vals.items():
         if no_gap:
             stack = [tr[k] for tr in traces]
         else:
-            stack = [fill_trace(tr, fill_value) for tr in traces]
+            stack = [fill_trace(tr, fill_val) for tr in traces]
         merged_trace[k] = np.hstack(stack)
     for k, v in traces[0].items():
         if k not in merged_trace:
@@ -705,7 +703,7 @@ def group_traces(*traces):
         gr = [tr["type"]]
         for k in [*common_keys, *spec_keys.get(tr["type"], [])]:
             v = tr.get(k, None)
-            v = "array" if isinstance(v, (list, tuple, np.ndarray)) else v
+            v = "array" if is_array_like(v) else v
             gr.append(str(v))
         gr = hash(tuple(gr))
         mesh_groups.setdefault(gr, []).append(tr)
@@ -937,13 +935,11 @@ def split_input_arrays(*input_arrays, ordered=True):
     For markers, the order is not important and unique combinations with their respective
     indices are returned.
     """
-    list_like = (list, tuple, np.ndarray)
-    max_length = max(
-        len(inp) if isinstance(inp, list_like) else 1 for inp in input_arrays
-    )
+    max_length = max(len(inp) if is_array_like(inp) else 0 for inp in input_arrays)
+    if max_length == 0:
+        return [(tuple(input_arrays), slice(None))]
     input_arrays = [
-        [inp] * max_length if not isinstance(inp, list_like) else inp
-        for inp in input_arrays
+        [inp] * max_length if not is_array_like(inp) else inp for inp in input_arrays
     ]
     input_array = list(zip(*input_arrays))
     if ordered:
