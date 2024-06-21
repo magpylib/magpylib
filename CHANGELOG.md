@@ -2,6 +2,7 @@
 
 ## [Unreleased] - YYYY-MM-DD
 - Added `units_length` input to the `show` function to allow displaying axes with different length units. This parameter can be set individually for each subplot. ([#786](https://github.com/magpylib/magpylib/pull/786))
+- Small documentation and Readme improvement. Change naming from "explicit expression" to "analytical expression" as described in ([#794](https://github.com/magpylib/magpylib/issues/794)).
 
 ## [5.0.4] - 2024-06-18
 - Add support for Numpy 2.0 ([#795](https://github.com/magpylib/magpylib/pull/789))
