@@ -699,7 +699,7 @@ def make_Sensor(
                     is_null = (np.abs(field_array[path_ind]) < null_thresh).all(axis=1)
                     field_mag[is_null] = np.nan
                     px_colors = get_hexcolors_from_scale(
-                        field_mag, min_=cmin, max_=cmax
+                        field_mag, cmin=cmin, cmax=cmax
                     )
             pixels_trace = make_Pixels(
                 positions=px_positions,
