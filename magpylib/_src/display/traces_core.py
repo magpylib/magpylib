@@ -678,7 +678,7 @@ def make_Sensor(
                 min_dist = (vol / len(pixel)) ** (1 / 3)
             px_dim = dim_ext / 5 if min_dist == 0 else min_dist / 2
         if px_size > 0:
-            px_sizes = px_dim = px_dim* px_size
+            px_sizes = px_dim = px_dim * px_size
             px_positions = pixel[1:] if one_pix else pixel
             px_vectors, null_thresh = None, 1e-12
             px_colors = "black" if px_color is None else px_color
@@ -691,7 +691,7 @@ def make_Sensor(
                     px_vectors = field_values[vsrc][path_ind]
                 if sizemode != "constant":
                     norms = np.linalg.norm(field_values[vsrc], axis=-1)
-                    if sizemode=="log":
+                    if sizemode == "log":
                         norms[norms == 0] = 1
                         norms[np.isnan(norms)] = 1
                         norms = np.log(norms)
@@ -700,7 +700,7 @@ def make_Sensor(
                         norms = (norms - min_) / ptp if ptp != 0 else norms * 0 + 0.5
                         px_sizes *= norms[path_ind]
                     else:
-                        px_sizes *= norms[path_ind]/np.max(norms)
+                        px_sizes *= norms[path_ind] / np.max(norms)
                 if csrc is not False:
                     # get cmin, cmax from whole path
                     field_str, *coords_str = csrc
