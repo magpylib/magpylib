@@ -100,6 +100,7 @@ DEFAULTS = {
                         "vectorsource": None,
                         "colorsource": None,
                         "shownull": True,
+                        "sizemode": "constant",
                     },
                 },
                 "arrows": {

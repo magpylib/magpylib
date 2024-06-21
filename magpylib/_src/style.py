@@ -1664,10 +1664,14 @@ class PixelField(MagicProperties):
 
     symbol: {"cone", "arrow", "arrow3d"}:
         Orientation symbol for field vector.
+
+    sizemode: {"constant", "linear", "log"}
+        Symbol size mode releative the the field magnitude.
     """
 
-    _allowed_symbols = ("cone", "arrow", "arrow3d")
     _allowed_vectorsources = ("B", "H", "J", "M")
+    _allowed_symbols = ("cone", "arrow", "arrow3d")
+    _allowed_sizemodes = ("constant", "linear", "log")
 
     @property
     def vectorsource(self):
@@ -1719,7 +1723,7 @@ class PixelField(MagicProperties):
 
     @property
     def symbol(self):
-        """Pixel symbol. Can be one of `("cone", "arrow3d")`."""
+        """Pixel symbol. Can be one of `{"cone", "arrow", "arrow3d"}`."""
         return self._symbol
 
     @symbol.setter
@@ -1730,6 +1734,20 @@ class PixelField(MagicProperties):
             f"but received {repr(val)} instead."
         )
         self._symbol = val
+
+    @property
+    def sizemode(self):
+        """Pixel sizemode. Can be one of `{"constant", "linear", "log"}`."""
+        return self._sizemode
+
+    @sizemode.setter
+    def sizemode(self, val):
+        assert val is None or val in self._allowed_sizemodes, (
+            f"The `sizemode` property of {type(self).__name__} must be one of"
+            f"{self._allowed_sizemodes},\n"
+            f"but received {repr(val)} instead."
+        )
+        self._sizemode = val
 
 
 class Pixel(MagicProperties):
