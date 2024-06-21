@@ -564,6 +564,7 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
             "line_color": None,
         }
         pix = None
+        size = sizes[ind] if is_array_like(sizes) else sizes
         if vectors is not None and not is_null_vec[ind]:
             orient = orientations[ind]
             kw.update(orientation=orient, base=5, diameter=size, height=size * 2)
@@ -671,16 +672,29 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
                 min_dist = (vol / len(pixel)) ** (1 / 3)
             px_dim = dim_ext / 5 if min_dist == 0 else min_dist / 2
         if px_size > 0:
-            px_dim *= px_size
+            px_sizes = px_dim = px_dim* px_size
             px_positions = pixel[1:] if one_pix else pixel
             px_vectors, null_thresh = None, 1e-12
             px_colors = "black" if px_color is None else px_color
             if field_values:
                 vsrc = style.pixel.field.vectorsource
                 csrc = style.pixel.field.colorsource
+                sizemode = style.pixel.field.sizemode
                 csrc = vsrc if csrc is None else csrc
                 if vsrc is not None:
                     px_vectors = field_values[vsrc][path_ind]
+                if sizemode != "constant":
+                    norms = np.linalg.norm(field_values[vsrc], axis=-1)
+                    if sizemode=="log":
+                        norms[norms == 0] = 1
+                        norms[np.isnan(norms)] = 1
+                        norms = np.log(norms)
+                        min_, max_ = np.min(norms), np.max(norms)
+                        ptp = max_ - min_
+                        norms = (norms - min_) / ptp if ptp != 0 else norms * 0 + 0.5
+                        px_sizes *= norms[path_ind]
+                    else:
+                        px_sizes *= norms[path_ind]/np.max(norms)
                 if csrc is not False:
                     # get cmin, cmax from whole path
                     field_str, *coords_str = csrc
