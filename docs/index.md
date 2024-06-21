@@ -1,6 +1,6 @@
 # Magpylib Documentation
 
-Magpylib is an **open-source Python package** for calculating static **magnetic fields** of magnets, currents, and other sources. It uses **explicit expressions**, solutions to macroscopic magnetostatic problems, implemented in **vectorized** form which makes the computation **extremely fast**. Make use of the open-source Python ecosystem for spectacular visualization.
+Magpylib is an **open-source Python package** for calculating static **magnetic fields** of magnets, currents, and other sources. It uses **analytical expressions**, solutions to macroscopic magnetostatic problems, implemented in **vectorized** form which makes the computation **extremely fast**. Make use of the open-source Python ecosystem for spectacular visualization.
 
 <h2> Resources </h2>
 

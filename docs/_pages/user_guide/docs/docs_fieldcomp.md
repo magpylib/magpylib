@@ -104,7 +104,7 @@ The functional interface is potentially faster than the object oriented one if u
 (docs-field-core)=
 ## Core interface
 
-At the heart of Magpylib lies a set of core functions that are our implementations of explicit field expressions found in the literature, see {ref}`guide-ressources-physics`. Direct access to these functions is given through the `magpylib.core` subpackage which includes,
+At the heart of Magpylib lies a set of core functions that are our implementations of analytical field expressions found in the literature, see {ref}`guide-ressources-physics`. Direct access to these functions is given through the `magpylib.core` subpackage which includes,
 
 ::::{grid} 1
 :gutter: 1

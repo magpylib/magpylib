@@ -8,7 +8,7 @@ The following secions are detiled technical documentations of the Magpylib posit
 
 :::{grid-item}
 :columns: 12 7 7 7
-The explicit magnetic field expressions found in the literature, implemented in the [Magpylib core](docs-field-core), are given in native coordinates of the sources which is convenient for the mathematical formulation. It is a common problem to transform the field into an application relevant observer coordinate system. While not technically difficult, such transformations are prone to error.
+The analytical magnetic field expressions found in the literature, implemented in the [Magpylib core](docs-field-core), are given in native coordinates of the sources which is convenient for the mathematical formulation. It is a common problem to transform the field into an application relevant observer coordinate system. While not technically difficult, such transformations are prone to error.
 :::
 :::{grid-item}
 :columns: 12 5 5 5
