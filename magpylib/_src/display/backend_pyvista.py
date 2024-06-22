@@ -266,7 +266,8 @@ def display_pyvista(
                 canvas.subplot(row, col)
                 if subplot_specs[row, col]["type"] == "scene":
                     getattr(canvas, f"add_{typ}")(**tr1)
-                    canvas.show_axes()
+                    if callable(canvas.show_axes):
+                        canvas.show_axes()
                 else:
                     if charts.get((row, col), None) is None:
                         charts_max_ind += 1
