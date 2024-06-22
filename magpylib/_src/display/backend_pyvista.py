@@ -279,6 +279,13 @@ def display_pyvista(
                 -1, 3
             )
             canvas.add_mesh(pv.PolyData(pts), opacity=0)
+            try:
+                canvas.remove_scalar_bar()
+            except IndexError:
+                # try to remove scalar bar, if none, pass
+                # needs to happen in the loop otherwise they cummulate
+                # while the max of 10 is reached and throws a ValueError
+                pass
 
         for rowcol, count in count_with_labels.items():
             if 0 < count <= legend_maxitems:
@@ -289,11 +296,6 @@ def display_pyvista(
         # match other backends plotter properties
         canvas.set_background("gray", top="white")
         canvas.camera.azimuth = -90
-        try:
-            canvas.remove_scalar_bar()
-        except IndexError:
-            # try to remove scalar bar, if none, pass
-            pass
 
     def run_animation(filename, embed=True):
         # embed=True, embeds the animation into the notebook page and is necessary when using
