@@ -275,7 +275,9 @@ def display_pyvista(
                     getattr(charts[(row, col)], typ)(**tr1)
             # in pyvista there is no way to set the bouds so we add corners with
             # a transparent scatter plot to set the ranges and zoom correctly
-            pts  = np.array(np.meshgrid(*data["ranges"][row+1,col+1])).T.reshape(-1, 3)
+            pts = np.array(np.meshgrid(*data["ranges"][row + 1, col + 1])).T.reshape(
+                -1, 3
+            )
             canvas.add_mesh(pv.PolyData(pts), opacity=0)
 
         for rowcol, count in count_with_labels.items():
