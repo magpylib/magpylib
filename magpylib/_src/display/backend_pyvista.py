@@ -275,9 +275,8 @@ def display_pyvista(
                     getattr(charts[(row, col)], typ)(**tr1)
             # in pyvista there is no way to set the bouds so we add corners with
             # a transparent scatter plot to set the ranges and zoom correctly
-            pts = np.array(np.meshgrid(*data["ranges"][row + 1, col + 1])).T.reshape(
-                -1, 3
-            )
+            ranges = data["ranges"][row + 1, col + 1]
+            pts = np.array(np.meshgrid(*ranges)).T.reshape(-1, 3)
             canvas.add_mesh(pv.PolyData(pts), opacity=0)
             try:
                 canvas.remove_scalar_bar()
@@ -287,15 +286,14 @@ def display_pyvista(
                 # while the max of 10 is reached and throws a ValueError
                 pass
 
-        for rowcol, count in count_with_labels.items():
+        for (row, col), count in count_with_labels.items():
+            canvas.subplot(row, col)
+            # match other backends plotter properties
+            canvas.camera.azimuth = -90
+            canvas.set_background("gray", top="white")
             if 0 < count <= legend_maxitems:
-                row, col = rowcol
-                canvas.subplot(row, col)
                 if subplot_specs[row, col]["type"] == "scene":
                     canvas.add_legend(bcolor=None)
-        # match other backends plotter properties
-        canvas.set_background("gray", top="white")
-        canvas.camera.azimuth = -90
 
     def run_animation(filename, embed=True):
         # embed=True, embeds the animation into the notebook page and is necessary when using
