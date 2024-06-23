@@ -697,7 +697,11 @@ def make_Sensor(
                         norms = np.log10(norms)
                         min_, max_ = np.min(norms), np.max(norms)
                         ptp = max_ - min_
-                        norms = (norms-min_+1)/(ptp+1) if ptp != -1 else norms * 0 + 0.5
+                        norms = (
+                            (norms - min_ + 1) / (ptp + 1)
+                            if ptp != -1
+                            else norms * 0 + 0.5
+                        )
                         norms[is_null_mask] = 0
                         px_sizes *= norms[path_ind]
                     else:
