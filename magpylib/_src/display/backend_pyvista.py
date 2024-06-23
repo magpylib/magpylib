@@ -226,6 +226,8 @@ def display_pyvista(
 
     frames = data["frames"]
 
+    #only update layout if canvas is not provided
+    canvas_update = canvas is None
     fig_kwargs = {} if not fig_kwargs else fig_kwargs
     show_kwargs = {} if not show_kwargs else show_kwargs
     show_kwargs = {**show_kwargs}
@@ -234,7 +236,7 @@ def display_pyvista(
     max_rows = max_rows if max_rows is not None else 1
     max_cols = max_cols if max_cols is not None else 1
     show_canvas = False
-    if canvas is None:
+    if canvas_update:
         if not return_fig:
             show_canvas = True  # pragma: no cover
         canvas = pv.Plotter(
@@ -266,8 +268,6 @@ def display_pyvista(
                 canvas.subplot(row, col)
                 if subplot_specs[row, col]["type"] == "scene":
                     getattr(canvas, f"add_{typ}")(**tr1)
-                    if callable(canvas.show_axes):
-                        canvas.show_axes()
                 else:
                     if charts.get((row, col), None) is None:
                         charts_max_ind += 1
@@ -290,8 +290,11 @@ def display_pyvista(
         for (row, col), count in count_with_labels.items():
             canvas.subplot(row, col)
             # match other backends plotter properties
-            canvas.camera.azimuth = -90
-            canvas.set_background("gray", top="white")
+            if canvas_update:
+                if callable(canvas.show_axes):
+                    canvas.show_axes()
+                canvas.camera.azimuth = -90
+                canvas.set_background("gray", top="white")
             if 0 < count <= legend_maxitems:
                 if subplot_specs[row, col]["type"] == "scene":
                     canvas.add_legend(bcolor=None)
