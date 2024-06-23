@@ -217,9 +217,10 @@ def animate_path(
             sliders_dict["steps"].append(slider_step)
 
     # update fig
-    title = frames[0].layout.title.text
     fig.frames = frames
-    fig.add_traces(fig.frames[0].data, rows=rows, cols=cols)
+    frame0 = fig.frames[0]
+    title = frame0.layout.title.text
+    fig.add_traces(frame0.data, rows=rows, cols=cols)
     if update_layout:
         fig.update_layout(
             height=None,
