@@ -296,7 +296,7 @@ def display_plotly(
     show_kwargs = {} if not show_kwargs else show_kwargs
     show_kwargs = {"renderer": renderer, **show_kwargs}
 
-    #only update layout if canvas is not provided
+    # only update layout if canvas is not provided
     canvas_update = canvas is None
     fig = canvas
     show_fig = False
