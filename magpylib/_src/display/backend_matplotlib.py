@@ -251,10 +251,10 @@ def display_matplotlib(
     ranges = data["ranges"]
     labels = data["labels"]
 
+    #only update layout if canvas is not provided
+    canvas_update = canvas is None
     fig_kwargs = {} if not fig_kwargs else fig_kwargs
-    fig_kwargs = {"dpi": 80, **fig_kwargs}
     show_kwargs = {} if not show_kwargs else show_kwargs
-    show_kwargs = {**show_kwargs}
 
     for fr in frames:
         new_data = []
@@ -266,8 +266,9 @@ def display_matplotlib(
 
     show_canvas = False
     axes = {}
-    if canvas is None:
+    if canvas_update:
         show_canvas = True
+        fig_kwargs["dpi"] = fig_kwargs.get("dpi", 80)
         if fig_kwargs.get("figsize", None) is None:
             figsize = (8, 8)
             ratio = subplot_specs.shape[1] / subplot_specs.shape[0]
@@ -353,7 +354,7 @@ def display_matplotlib(
         for row_col_num, ax in axes.items():
             count = count_with_labels.get(row_col_num, 0)
             if ax.name == "3d":
-                if row_col_num in ranges:
+                if row_col_num in ranges and canvas_update:
                     ax.set(
                         **{f"{k}label": labels[row_col_num][k] for k in "xyz"},
                         **{f"{k}lim": r for k, r in zip("xyz", ranges[row_col_num])},
