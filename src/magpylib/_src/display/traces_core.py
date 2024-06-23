@@ -686,12 +686,13 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
                 if sizemode != "constant":
                     norms = np.linalg.norm(field_values[vsrc], axis=-1)
                     if sizemode == "log":
-                        norms[norms == 0] = 1
-                        norms[np.isnan(norms)] = 1
-                        norms = np.log(norms)
+                        is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
+                        norms[is_null_mask] = 1
+                        norms = np.log10(norms)
                         min_, max_ = np.min(norms), np.max(norms)
                         ptp = max_ - min_
-                        norms = (norms - min_) / ptp if ptp != 0 else norms * 0 + 0.5
+                        norms = (norms-min_+1)/(ptp+1) if ptp != -1 else norms * 0 + 0.5
+                        norms[is_null_mask] = 0
                         px_sizes *= norms[path_ind]
                     else:
                         px_sizes *= norms[path_ind] / np.max(norms)
