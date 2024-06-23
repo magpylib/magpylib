@@ -158,6 +158,36 @@ def animate_path(
     maximum of the ranges needed to display all objects, including their paths.
     """
     fps = int(1000 / frame_duration)
+
+    play_dict = {
+        "args": [
+            None,
+            {
+                "frame": {"duration": frame_duration},
+                "transition": {"duration": 0},
+                "fromcurrent": True,
+            },
+        ],
+        "label": "Play",
+        "method": "animate",
+    }
+    pause_dict = {
+        "args": [[None], {"frame": {"duration": 0}, "mode": "immediate"}],
+        "label": "Pause",
+        "method": "animate",
+    }
+    buttons_dict = {
+        "buttons": [play_dict, pause_dict],
+        "direction": "left",
+        "pad": {"r": 10, "t": 20},
+        "showactive": False,
+        "type": "buttons",
+        "x": 0.1,
+        "xanchor": "right",
+        "y": 0,
+        "yanchor": "top",
+    }
+
     if animation_slider:
         sliders_dict = {
             "active": 0,
@@ -175,46 +205,11 @@ def animate_path(
             "y": 0,
             "steps": [],
         }
-
-    buttons_dict = {
-        "buttons": [
-            {
-                "args": [
-                    None,
-                    {
-                        "frame": {"duration": frame_duration},
-                        "transition": {"duration": 0},
-                        "fromcurrent": True,
-                    },
-                ],
-                "label": "Play",
-                "method": "animate",
-            },
-            {
-                "args": [[None], {"frame": {"duration": 0}, "mode": "immediate"}],
-                "label": "Pause",
-                "method": "animate",
-            },
-        ],
-        "direction": "left",
-        "pad": {"r": 10, "t": 20},
-        "showactive": False,
-        "type": "buttons",
-        "x": 0.1,
-        "xanchor": "right",
-        "y": 0,
-        "yanchor": "top",
-    }
-
-    for ind in path_indices:
-        if animation_slider:
+        for ind in path_indices:
             slider_step = {
                 "args": [
                     [str(ind + 1)],
-                    {
-                        "frame": {"duration": 0, "redraw": True},
-                        "mode": "immediate",
-                    },
+                    {"frame": {"duration": 0, "redraw": True}, "mode": "immediate"},
                 ],
                 "label": str(ind + 1),
                 "method": "animate",
@@ -222,22 +217,18 @@ def animate_path(
             sliders_dict["steps"].append(slider_step)
 
     # update fig
+    title = frames[0].layout.title.text
     fig.frames = frames
-    frame0 = fig.frames[0]
-    fig.add_traces(
-        frame0.data,
-        rows=rows,
-        cols=cols,
-    )
-    title = frame0.layout.title.text
+    fig.add_traces(fig.frames[0].data, rows=rows, cols=cols)
     if update_layout:
         fig.update_layout(
             height=None,
             title=title,
         )
+    sliders = [sliders_dict] if animation_slider else None
     fig.update_layout(
-        updatemenus=[buttons_dict],
-        sliders=[sliders_dict] if animation_slider else None,
+        updatemenus=[*fig.layout.updatemenus, buttons_dict],
+        sliders=[*fig.layout.sliders, *sliders],
     )
 
 
@@ -291,7 +282,6 @@ def display_plotly(
     canvas=None,
     renderer=None,
     return_fig=False,
-    update_layout=True,
     max_rows=None,
     max_cols=None,
     subplot_specs=None,
@@ -305,6 +295,8 @@ def display_plotly(
     show_kwargs = {} if not show_kwargs else show_kwargs
     show_kwargs = {"renderer": renderer, **show_kwargs}
 
+    #only update layout if canvas is not provided
+    canvas_update = canvas is None
     fig = canvas
     show_fig = False
     extra_data = False
@@ -354,14 +346,14 @@ def display_plotly(
                 data["path_indices"],
                 data["frame_duration"],
                 animation_slider=animation_slider,
-                update_layout=update_layout,
+                update_layout=canvas_update,
                 rows=rows_list,
                 cols=cols_list,
             )
-        ranges_rc = data["ranges"]
-        if extra_data:
-            ranges_rc = get_scene_ranges(*frames[0]["data"])
-        if update_layout:
+        if canvas_update:
+            ranges_rc = data["ranges"]
+            if extra_data:
+                ranges_rc = get_scene_ranges(*frames[0]["data"])
             apply_fig_ranges(
                 fig, ranges_rc, labels_rc=data["labels"], apply2d=isanimation
             )
