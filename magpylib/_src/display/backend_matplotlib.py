@@ -255,6 +255,8 @@ def display_matplotlib(
     canvas_update = canvas is None
     fig_kwargs = {} if not fig_kwargs else fig_kwargs
     show_kwargs = {} if not show_kwargs else show_kwargs
+    show_kwargs = {**show_kwargs}
+
 
     for fr in frames:
         new_data = []
