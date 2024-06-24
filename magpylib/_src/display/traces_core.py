@@ -535,7 +535,7 @@ def make_Pixels(
     field_symbol,
     shownull,
     sizes,
-    marker_size=10,
+    marker2d_default_size = 10,
     null_thresh=1e-12,
 ) -> Dict[str, Any]:
     """
@@ -547,15 +547,17 @@ def make_Pixels(
     # in each frame results in weird artifacts.
     # markers plots must share the same kw types to be able to be merged with line plots!
 
+    sizes_2dfactor = marker2d_default_size/np.max(sizes)
     if symbol is not None and vectors is None:
         x, y, z = positions.T
+        sizes = sizes if is_array_like(sizes) else np.repeat(sizes, len(x))
         return {
             "type": "scatter3d",
             "mode": "markers",
             **{"x": x, "y": y, "z": z},
             "marker_symbol": symbol,
             "marker_color": colors,
-            "marker_size": marker_size,
+            "marker_size": sizes * sizes_2dfactor,
         }
     pixels = []
     orientations = None
@@ -595,7 +597,7 @@ def make_Pixels(
                 x, y, z = pos[:, None]
                 pix = {
                     **{"x": x, "y": y, "z": z},
-                    "marker_size": [marker_size],
+                    "marker_size": [size*sizes_2dfactor],
                     **kw2d,
                 }
             else:
@@ -690,10 +692,11 @@ def make_Sensor(
                 if vsrc is not None:
                     px_vectors = field_values[vsrc][path_ind]
                 if sizemode != "constant":
+                    vsrc = csrc if vsrc is None else vsrc
                     norms = np.linalg.norm(field_values[vsrc], axis=-1)
                     if sizemode == "log":
                         is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
-                        norms[is_null_mask] = 1
+                        norms[is_null_mask] = np.min(norms[norms!=0])
                         norms = np.log10(norms)
                         min_, max_ = np.min(norms), np.max(norms)
                         ptp = max_ - min_
