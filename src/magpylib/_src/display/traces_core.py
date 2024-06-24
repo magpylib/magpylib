@@ -532,7 +532,7 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
     # in each frame results in weird artifacts.
     # markers plots must share the same kw types to be able to be merged with line plots!
 
-    sizes_2dfactor = marker2d_default_size/np.max(sizes)
+    sizes_2dfactor = marker2d_default_size / np.max(sizes)
     if symbol is not None and vectors is None:
         x, y, z = positions.T
         sizes = sizes if is_array_like(sizes) else np.repeat(sizes, len(x))
@@ -582,7 +582,7 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
                 x, y, z = pos[:, None]
                 pix = {
                     **{"x": x, "y": y, "z": z},
-                    "marker_size": [size*sizes_2dfactor],
+                    "marker_size": [size * sizes_2dfactor],
                     **kw2d,
                 }
             else:
@@ -690,7 +690,7 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
                     norms = np.linalg.norm(field_values[vsrc], axis=-1)
                     if sizemode == "log":
                         is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
-                        norms[is_null_mask] = np.min(norms[norms!=0])
+                        norms[is_null_mask] = np.min(norms[norms != 0])
                         norms = np.log10(norms)
                         min_, max_ = np.min(norms), np.max(norms)
                         ptp = max_ - min_
