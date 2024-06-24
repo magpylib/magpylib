@@ -535,7 +535,7 @@ def make_Pixels(
     field_symbol,
     shownull,
     sizes,
-    marker2d_default_size=10,
+    marker2d_default_size,
     null_thresh=1e-12,
 ) -> Dict[str, Any]:
     """
@@ -732,6 +732,7 @@ def make_Sensor(
                 field_symbol=style.pixel.field.symbol,
                 shownull=style.pixel.field.shownull,
                 null_thresh=null_thresh,
+                marker2d_default_size=10 * px_size,
             )
 
             traces_to_merge.append(pixels_trace)
