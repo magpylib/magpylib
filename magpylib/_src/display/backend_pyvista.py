@@ -211,6 +211,7 @@ def display_pyvista(
     data,
     canvas=None,
     return_fig=False,
+    canvas_update=None,
     jupyter_backend=None,
     max_rows=None,
     max_cols=None,
@@ -227,7 +228,7 @@ def display_pyvista(
     frames = data["frames"]
 
     # only update layout if canvas is not provided
-    canvas_update = canvas is None
+    canvas_update = canvas is None if canvas_update is None else canvas_update
     fig_kwargs = {} if not fig_kwargs else fig_kwargs
     show_kwargs = {} if not show_kwargs else show_kwargs
     show_kwargs = {**show_kwargs}
@@ -236,7 +237,7 @@ def display_pyvista(
     max_rows = max_rows if max_rows is not None else 1
     max_cols = max_cols if max_cols is not None else 1
     show_canvas = False
-    if canvas_update:
+    if canvas is None:
         if not return_fig:
             show_canvas = True  # pragma: no cover
         canvas = pv.Plotter(

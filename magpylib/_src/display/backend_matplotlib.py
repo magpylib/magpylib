@@ -236,6 +236,7 @@ def display_matplotlib(
     canvas=None,
     repeat=False,
     return_fig=False,
+    canvas_update=None,
     return_animation=False,
     max_rows=None,
     max_cols=None,
@@ -252,7 +253,7 @@ def display_matplotlib(
     labels = data["labels"]
 
     # only update layout if canvas is not provided
-    canvas_update = canvas is None
+    canvas_update = canvas is None if canvas_update is None else canvas_update
     fig_kwargs = {} if not fig_kwargs else fig_kwargs
     show_kwargs = {} if not show_kwargs else show_kwargs
     show_kwargs = {**show_kwargs}
@@ -268,7 +269,6 @@ def display_matplotlib(
     show_canvas = False
     axes = {}
     if canvas_update:
-        show_canvas = True
         fig_kwargs["dpi"] = fig_kwargs.get("dpi", 80)
         if fig_kwargs.get("figsize", None) is None:
             figsize = (8, 8)
@@ -276,6 +276,7 @@ def display_matplotlib(
             if legend_maxitems != 0:
                 ratio *= 1.5  # extend horizontal ratio if legend is present
             fig_kwargs["figsize"] = (figsize[0] * ratio, figsize[1])
+    if canvas is None:
         fig = plt.figure(**{"tight_layout": True, **fig_kwargs})
     elif isinstance(canvas, matplotlib.axes.Axes):
         fig = canvas.get_figure()
@@ -292,6 +293,9 @@ def display_matplotlib(
             "The `canvas` parameter must be one of `[None, matplotlib.axes.Axes, "
             f"matplotlib.figure.Figure]`. Received type {type(canvas)!r} instead"
         )
+    if canvas is not None and canvas_update:
+        fig.set_size_inches(*fig_kwargs["figsize"], forward=True)
+        fig.set_dpi(fig_kwargs["dpi"])
     if max_rows is None and max_cols is None:
         if isinstance(canvas, matplotlib.axes.Axes):
             axes[(1, 1)] = canvas

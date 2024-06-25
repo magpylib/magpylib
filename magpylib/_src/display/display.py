@@ -239,6 +239,7 @@ def show(
     zoom=_DefaultValue,
     markers=_DefaultValue,
     return_fig=_DefaultValue,
+    canvas_update=_DefaultValue,
     row=_DefaultValue,
     col=_DefaultValue,
     output=_DefaultValue,
@@ -289,6 +290,12 @@ def show(
         - with matplotlib: `matplotlib.figure.Figure`.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
         - with pyvista: `pyvista.Plotter`.
+
+    canvas_update: bool, default=None.
+        When no canvas is provided, Magpylib creates one and sets the layout to internally defined
+        settings (e.g. camera angle, aspect ratio). If a canvas is provided, no changes to the
+        layout are made. One can however explicitly force a behavior by setting `canvas_update`
+        to True or False.
 
     row: int or None,
         If provided specifies the row in which the objects will be displayed.
@@ -420,6 +427,7 @@ def show_context(
     zoom=_DefaultValue,
     markers=_DefaultValue,
     return_fig=_DefaultValue,
+    canvas_update=_DefaultValue,
     row=_DefaultValue,
     col=_DefaultValue,
     output=_DefaultValue,
