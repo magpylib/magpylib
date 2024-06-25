@@ -203,7 +203,7 @@ fig = go.Figure().set_subplots(
 fig.add_scatter(y=B[:, 2], name="Bz")
 
 # Draw 3d model in the existing Plotly figure
-magpy.show(loop, sens, canvas=fig, canvas_update=True)
+magpy.show(loop, sens, canvas=fig, col=2, canvas_update=True)
 
 # Add 3d scatter trace to main figure model
 fig.add_scatter3d(x=(-0.1, 0.1), y=(0, 0), z=(0, 0), col=2, row=1)
