@@ -177,7 +177,7 @@ plt.show()
 ```
 
 ```{attention}
-When providing a canvas, no update to its layout is performed on the Magpylib side, unless explicitly specified via `canvas_update=True`. The example above outputs a 3D scene with the default Matplotlib settings and will not match the standard Magpylib settings.
+When providing a canvas, no update to its layout is performed on the Magpylib side, unless set explicitly specified via the `canvas_update` parameter to `True`. By default `"auto"` only updates the canvas if is not provided by the user. The example above outputs a 3D scene with the default Matplotlib settings and will not match the standard Magpylib settings.
 ```
 
 +++

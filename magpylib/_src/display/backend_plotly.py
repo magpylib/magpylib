@@ -283,7 +283,7 @@ def display_plotly(
     canvas=None,
     renderer=None,
     return_fig=False,
-    canvas_update=None,
+    canvas_update="auto",
     max_rows=None,
     max_cols=None,
     subplot_specs=None,
@@ -298,7 +298,6 @@ def display_plotly(
     show_kwargs = {"renderer": renderer, **show_kwargs}
 
     # only update layout if canvas is not provided
-    canvas_update = canvas is None if canvas_update is None else canvas_update
     fig = canvas
     show_fig = False
     extra_data = False

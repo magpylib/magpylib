@@ -236,7 +236,7 @@ def display_matplotlib(
     canvas=None,
     repeat=False,
     return_fig=False,
-    canvas_update=None,
+    canvas_update="auto",
     return_animation=False,
     max_rows=None,
     max_cols=None,
@@ -253,7 +253,6 @@ def display_matplotlib(
     labels = data["labels"]
 
     # only update layout if canvas is not provided
-    canvas_update = canvas is None if canvas_update is None else canvas_update
     fig_kwargs = {} if not fig_kwargs else fig_kwargs
     show_kwargs = {} if not show_kwargs else show_kwargs
     show_kwargs = {**show_kwargs}
