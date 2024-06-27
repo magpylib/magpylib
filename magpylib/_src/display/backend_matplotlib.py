@@ -265,7 +265,7 @@ def display_matplotlib(
             new_data.append(process_extra_trace(model))
         fr["data"] = new_data
 
-    show_canvas = False
+    show_canvas = bool(canvas is None)
     axes = {}
     if canvas_update:
         fig_kwargs["dpi"] = fig_kwargs.get("dpi", 80)
