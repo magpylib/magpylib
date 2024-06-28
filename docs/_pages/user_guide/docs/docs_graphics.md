@@ -171,13 +171,13 @@ magpy.show(loop, sens, canvas=ax2)
 # Modify show output
 ax2.plot([-0.1, 0.1], [0, 0], [0, 0], color="k")
 
-# Generate figure
+# Render figure
 plt.tight_layout()
 plt.show()
 ```
 
 ```{attention}
-When providing a canvas, no update to its layout is performed on the Magpylib side, unless set explicitly specified via the `canvas_update` parameter to `True`. By default `"auto"` only updates the canvas if is not provided by the user. The example above outputs a 3D scene with the default Matplotlib settings and will not match the standard Magpylib settings.
+When providing a canvas, no update to its layout is performed by Magpylib, unless explicitly specified by setting `canvas_update=True` in `show()`. By default `canvas_update="auto"` only updates the canvas if is not provided by the user. The example above outputs a 3D scene with the default Matplotlib settings and will not match the standard Magpylib settings.
 ```
 
 +++
@@ -229,7 +229,7 @@ magpy.show(loop, sens, canvas=pl)
 line = np.array([(-0.1, 0, 0), (0.1, 0, 0)])
 pl.add_lines(line, color="black")
 
-# Generate figure
+# Render figure
 pl.show()
 ```
 
