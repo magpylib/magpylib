@@ -211,6 +211,7 @@ def display_pyvista(
     data,
     canvas=None,
     return_fig=False,
+    canvas_update="auto",
     jupyter_backend=None,
     max_rows=None,
     max_cols=None,
@@ -266,8 +267,6 @@ def display_pyvista(
                 canvas.subplot(row, col)
                 if subplot_specs[row, col]["type"] == "scene":
                     getattr(canvas, f"add_{typ}")(**tr1)
-                    if callable(canvas.show_axes):
-                        canvas.show_axes()
                 else:
                     if charts.get((row, col), None) is None:
                         charts_max_ind += 1
@@ -290,8 +289,11 @@ def display_pyvista(
         for (row, col), count in count_with_labels.items():
             canvas.subplot(row, col)
             # match other backends plotter properties
-            canvas.camera.azimuth = -90
-            canvas.set_background("gray", top="white")
+            if canvas_update:
+                if callable(canvas.show_axes):
+                    canvas.show_axes()
+                canvas.camera.azimuth = -90
+                canvas.set_background("gray", top="white")
             if 0 < count <= legend_maxitems:
                 if subplot_specs[row, col]["type"] == "scene":
                     canvas.add_legend(bcolor=None)
