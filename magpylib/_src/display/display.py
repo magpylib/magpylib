@@ -16,6 +16,7 @@ from magpylib._src.display.traces_utility import process_show_input_objs
 from magpylib._src.input_checks import check_format_input_backend
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.input_checks import check_input_animation
+from magpylib._src.input_checks import check_input_canvas_update
 from magpylib._src.utility import check_path_format
 
 disp_args = set(get_defaults_dict("display"))
@@ -174,9 +175,11 @@ def infer_backend(canvas):
 
 def _show(
     *objects,
-    backend=None,
     animation=False,
     markers=None,
+    canvas=None,
+    canvas_update=None,
+    backend=None,
     **kwargs,
 ):
     """Display objects and paths graphically.
@@ -190,9 +193,7 @@ def _show(
         **{k: v for k, v in kwargs.items() if k in DEFAULT_ROW_COL_PARAMS},
     )
     kwargs = {k: v for k, v in kwargs.items() if k not in DEFAULT_ROW_COL_PARAMS}
-    kwargs["max_rows"], kwargs["max_cols"] = max_rows, max_cols
-    kwargs["subplot_specs"] = subplot_specs
-
+    canvas_update = check_input_canvas_update(canvas_update, canvas)
     # test if every individual obj_path is good
     check_path_format(obj_list_flat)
 
@@ -212,12 +213,17 @@ def _show(
         objects.append({"objects": [MagpyMarkers(*markers)], **DEFAULT_ROW_COL_PARAMS})
 
     if backend == "auto":
-        backend = infer_backend(kwargs.get("canvas", None))
+        backend = infer_backend(canvas)
 
     return RegisteredBackend.show(
         backend=backend,
         *objects,
         animation=animation,
+        canvas=canvas,
+        canvas_update=canvas_update,
+        subplot_specs=subplot_specs,
+        max_rows=max_rows,
+        max_cols=max_cols,
         **kwargs,
     )
 
@@ -231,6 +237,7 @@ def show(
     zoom=_DefaultValue,
     markers=_DefaultValue,
     return_fig=_DefaultValue,
+    canvas_update=_DefaultValue,
     row=_DefaultValue,
     col=_DefaultValue,
     output=_DefaultValue,
@@ -281,6 +288,12 @@ def show(
         - with matplotlib: `matplotlib.figure.Figure`.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
         - with pyvista: `pyvista.Plotter`.
+
+    canvas_update: bool, default="auto".
+        When no canvas is provided, Magpylib creates one and sets the layout to internally defined
+        settings (e.g. camera angle, aspect ratio). If a canvas is provided, no changes to the
+        layout are made. One can however explicitly force a behavior by setting `canvas_update`
+        to True or False.
 
     row: int or None,
         If provided specifies the row in which the objects will be displayed.
@@ -412,6 +425,7 @@ def show_context(
     zoom=_DefaultValue,
     markers=_DefaultValue,
     return_fig=_DefaultValue,
+    canvas_update=_DefaultValue,
     row=_DefaultValue,
     col=_DefaultValue,
     output=_DefaultValue,

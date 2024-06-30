@@ -248,6 +248,7 @@ def display_matplotlib(
     canvas=None,
     repeat=False,
     return_fig=False,
+    canvas_update="auto",
     return_animation=False,
     max_rows=None,
     max_cols=None,
@@ -263,8 +264,8 @@ def display_matplotlib(
     ranges = data["ranges"]
     labels = data["labels"]
 
+    # only update layout if canvas is not provided
     fig_kwargs = {} if not fig_kwargs else fig_kwargs
-    fig_kwargs = {"dpi": 80, **fig_kwargs}
     show_kwargs = {} if not show_kwargs else show_kwargs
     show_kwargs = {**show_kwargs}
 
@@ -276,16 +277,17 @@ def display_matplotlib(
             new_data.append(process_extra_trace(model))
         fr["data"] = new_data
 
-    show_canvas = False
+    show_canvas = bool(canvas is None)
     axes = {}
-    if canvas is None:
-        show_canvas = True
+    if canvas_update:
+        fig_kwargs["dpi"] = fig_kwargs.get("dpi", 80)
         if fig_kwargs.get("figsize", None) is None:
             figsize = (8, 8)
             ratio = subplot_specs.shape[1] / subplot_specs.shape[0]
             if legend_maxitems != 0:
                 ratio *= 1.5  # extend horizontal ratio if legend is present
             fig_kwargs["figsize"] = (figsize[0] * ratio, figsize[1])
+    if canvas is None:
         fig = plt.figure(**{"tight_layout": True, **fig_kwargs})
     elif isinstance(canvas, matplotlib.axes.Axes):
         fig = canvas.get_figure()
@@ -302,6 +304,9 @@ def display_matplotlib(
             "The `canvas` parameter must be one of `[None, matplotlib.axes.Axes, "
             f"matplotlib.figure.Figure]`. Received type {type(canvas)!r} instead"
         )
+    if canvas is not None and canvas_update:
+        fig.set_size_inches(*fig_kwargs["figsize"], forward=True)
+        fig.set_dpi(fig_kwargs["dpi"])
     if max_rows is None and max_cols is None:
         if isinstance(canvas, matplotlib.axes.Axes):
             axes[(1, 1)] = canvas
@@ -365,7 +370,7 @@ def display_matplotlib(
         for row_col_num, ax in axes.items():
             count = count_with_labels.get(row_col_num, 0)
             if ax.name == "3d":
-                if row_col_num in ranges:
+                if row_col_num in ranges and canvas_update:
                     ax.set(
                         **{f"{k}label": labels[row_col_num][k] for k in "xyz"},
                         **{f"{k}lim": r for k, r in zip("xyz", ranges[row_col_num])},

@@ -440,6 +440,7 @@ def test_colors_output2d():
     s2 = s1.copy().move((0, 0, 1))
     objs = {"objects": [l1, l2, s1, s2]}
     kw = {
+        "backend": "plotly",
         "return_fig": True,
         "colorsequence": ["red", "blue", "green", "cyan"],
     }
