@@ -87,11 +87,11 @@ with magpy.show_context([magnet, sensor], backend='plotly', animation=True) as s
 
 ## Exporting Animations
 
-Animations are wonderful but can be quite difficult to export when they are needed, for example, in a presentation. Here we show how to create customizable *.gif animations.
+Animations are wonderful but can be quite difficult to export when they are needed, for example, in a presentation. Here we show how to creat and export animations using the *.gif format.
 
 ### Built-in export
 
-The easiest way is use the Magpylib built-in command `animation_output` in the `show` function. It works only with the Pyvista backend.
+The easiest way to export an animation is via the Magpylib built-in command `animation_output` in the `show` function. It works only with the Pyvista backend. The following code will create a file "test4.gif".
 
 ```python
 import magpylib as magpy
@@ -108,14 +108,162 @@ magpy.show(
     cube2,
     style_legend_show=False,
     animation=3,
-    animation_output="test4.gif",
+    animation_output="my.gif",
     backend="pyvista",
     style_path_show=False,
 )
 ```
 
+<img src="../../_static/videos/example_gif1.gif" width=50% align="center">
+
 ### Custom export Pyvista
 
-For customizing videos it is best to work directly in the respective graphic backends.
+For customizing videos it is best to work directly in the respective graphic backends. Here we show how to transfer the Magpylib graphic objects to a Pyvista plotter, customize the plotting scene, export screen shots, and combine them in a *.gif. The following example also shows how to achieve transparency.
 
+```python
+import magpylib as magpy
+import pyvista as pv
+from PIL import Image
+import tempfile
+from pathlib import Path
 
+def create_gif(frame_files, frame_time, output_file="test.gif"):
+    """Create GIF from frames in the temporary directory."""
+    frames = [Image.open(image) for image in frame_files]
+    if frames:
+        frames[0].save(
+            output_file,
+            format="GIF",
+            append_images=frames[1:],
+            save_all=True,
+            duration=frame_time,
+            loop=0,     # Infinite loop
+            disposal=2  # Remove previous image for achiving transparency
+        )
+
+def create_frames(frames, temp_dir):
+    """Create frames with Pyvista."""
+
+    # Create Magpylib objects
+    mag1 = magpy.magnet.CylinderSegment(dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1))
+    mag2 = magpy.magnet.CylinderSegment(dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1))
+
+    for i in range(frames):
+        
+        pl = pv.Plotter(notebook=False, off_screen=True, window_size=[300, 300])
+    
+        # Modify object position
+        mag1.rotate_from_angax(360/frames, axis='z')
+        mag2.rotate_from_angax(-360/frames, axis='z')
+        magpy.show(mag1, mag2, canvas=pl, style_legend_show=False)
+        
+        # Modify scene in Pyvista
+        pl.add_mesh(pv.Line(mag1.barycenter, mag2.barycenter), color="cyan")
+        
+        # Customize view
+        pl.camera_position = [
+            (5, 5, 5),  # Position of the camera
+            (0, 0, 0),  # Focal point (what the camera is looking at)
+            (0, 0, 1)   # View up direction
+        ]
+        pl.camera.zoom(0.5)
+        pl.set_background("k")  # required for transparency
+        
+        # Screenshot
+        pl.screenshot(temp_dir/f'frame{i:03d}.png', transparent_background=True)
+        pl.close()
+    return sorted(temp_dir.glob("*.png"))
+
+def main():
+    frames = 100
+    frame_time = 40
+    output_file = "my.gif"
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_dir = Path(temp_dir)
+        frame_files = create_frames(frames, temp_dir)
+        create_gif(frame_files, frame_time, output_file)
+
+if __name__ == "__main__":
+    main()
+```
+
+<img src="../../_static/videos/example_gif2.gif" width=50% align="center">
+
+### Custom export Plotly
+
+The following examples shows how to work in the Plotly backend.
+
+```{important}
+This requires the kaleido package version 0.1.0.post1!
+```
+
+```python
+import magpylib as magpy
+import pyvista as pv
+from PIL import Image
+import tempfile
+from pathlib import Path
+
+def create_gif(frame_files, frame_time, output_file="test.gif"):
+    """Create GIF from frames in the temporary directory."""
+    frames = [Image.open(image) for image in frame_files]
+    if frames:
+        frames[0].save(
+            output_file,
+            format="GIF",
+            append_images=frames[1:],
+            save_all=True,
+            duration=frame_time,
+            loop=0,     # Infinite loop
+            disposal=2  # Remove previous image for achiving transparency
+        )
+
+def create_frames(frames, temp_dir):
+    """Create frames with Pyvista."""
+
+    # Create Magpylib objects
+    mag1 = magpy.magnet.CylinderSegment(dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1))
+    mag2 = magpy.magnet.CylinderSegment(dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1))
+
+    for i in range(frames):
+        
+        pl = pv.Plotter(notebook=False, off_screen=True, window_size=[300, 300])
+    
+        # Modify object position
+        mag1.rotate_from_angax(360/frames, axis='z')
+        mag2.rotate_from_angax(-360/frames, axis='z')
+        magpy.show(mag1, mag2, canvas=pl, style_legend_show=False)
+        
+        # Modify scene in Pyvista
+        pl.add_mesh(pv.Line(mag1.barycenter, mag2.barycenter), color="cyan")
+        
+        # Customize view
+        pl.camera_position = [
+            (5, 5, 5),  # Position of the camera
+            (0, 0, 0),  # Focal point (what the camera is looking at)
+            (0, 0, 1)   # View up direction
+        ]
+        pl.camera.zoom(0.5)
+        pl.set_background("k")  # required for transparency
+        
+        # Screenshot
+        pl.screenshot(temp_dir/f'frame{i:03d}.png', transparent_background=True)
+        pl.close()
+    return sorted(temp_dir.glob("*.png"))
+
+def main():
+    frames = 100
+    frame_time = 40
+    output_file = "my.gif"
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_dir = Path(temp_dir)
+        frame_files = create_frames(frames, temp_dir)
+        create_gif(frame_files, frame_time, output_file)
+
+if __name__ == "__main__":
+    main()
+```
+
+<img src="../../_static/videos/example_gif3.gif" width=50% align="center">
