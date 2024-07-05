@@ -84,3 +84,38 @@ with magpy.show_context([magnet, sensor], backend='plotly', animation=True) as s
     sc.show(output="Bz", col=2, row=1)
     sc.show(output="model3d", col=2, row=2)
 ```
+
+## Exporting Animations
+
+Animations are wonderful but can be quite difficult to export when they are needed, for example, in a presentation. Here we show how to create customizable *.gif animations.
+
+### Built-in export
+
+The easiest way is use the Magpylib built-in command `animation_output` in the `show` function. It works only with the Pyvista backend.
+
+```python
+import magpylib as magpy
+import numpy as np
+
+# Create magnets with Paths
+path = [(np.sin(t)+1.5,0,0) for t in np.linspace(0, 2*np.pi, 50)]
+cube1 = magpy.magnet.Cuboid(dimension=(1,1,1), polarization=(1,0,0), position= path)
+cube2 = cube1.copy(position=-np.array(path), polarization=(-1,0,0))
+
+# Store gif with animation_output using Pyvista
+magpy.show(
+    cube1,
+    cube2,
+    style_legend_show=False,
+    animation=3,
+    animation_output="test4.gif",
+    backend="pyvista",
+    style_path_show=False,
+)
+```
+
+### Custom export Pyvista
+
+For customizing videos it is best to work directly in the respective graphic backends.
+
+
