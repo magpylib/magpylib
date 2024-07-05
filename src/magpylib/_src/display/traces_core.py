@@ -621,7 +621,7 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
     pixel = obj.pixel
     no_pix = pixel is None
     if not no_pix:
-        pixel = np.unique(np.array(pixel).reshape((-1, 3)), axis=0)
+        pixel = np.array(pixel).reshape((-1, 3))
     one_pix = not no_pix and pixel.shape[0] == 1
     style_arrows = style.arrows.as_dict(flatten=True, separator="_")
     sensor = get_sensor_mesh(
