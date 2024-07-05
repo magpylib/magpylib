@@ -638,7 +638,7 @@ def make_Sensor(
     pixel = obj.pixel
     no_pix = pixel is None
     if not no_pix:
-        pixel = np.unique(np.array(pixel).reshape((-1, 3)), axis=0)
+        pixel = np.array(pixel).reshape((-1, 3))
     one_pix = not no_pix and pixel.shape[0] == 1
     if autosize is not None and style.sizemode == "scaled":
         dim *= autosize
