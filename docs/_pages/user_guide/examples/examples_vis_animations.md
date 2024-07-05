@@ -98,7 +98,7 @@ import magpylib as magpy
 import numpy as np
 
 # Create magnets with Paths
-path = [(np.sin(t)+1.5,0,0) for t in np.linspace(0, 2*np.pi, 50)]
+path = [(np.sin(t)+1.5,0,0) for t in np.linspace(0, 2*np.pi, 30)]
 cube1 = magpy.magnet.Cuboid(dimension=(1,1,1), polarization=(1,0,0), position= path)
 cube2 = cube1.copy(position=-np.array(path), polarization=(-1,0,0))
 
@@ -200,10 +200,10 @@ This requires the kaleido package version 0.1.0.post1!
 
 ```python
 import magpylib as magpy
-import pyvista as pv
 from PIL import Image
 import tempfile
 from pathlib import Path
+import plotly.graph_objs as go
 
 def create_gif(frame_files, frame_time, output_file="test.gif"):
     """Create GIF from frames in the temporary directory."""
@@ -216,7 +216,6 @@ def create_gif(frame_files, frame_time, output_file="test.gif"):
             save_all=True,
             duration=frame_time,
             loop=0,     # Infinite loop
-            disposal=2  # Remove previous image for achiving transparency
         )
 
 def create_frames(frames, temp_dir):
@@ -227,34 +226,48 @@ def create_frames(frames, temp_dir):
     mag2 = magpy.magnet.CylinderSegment(dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1))
 
     for i in range(frames):
-        
-        pl = pv.Plotter(notebook=False, off_screen=True, window_size=[300, 300])
-    
+
         # Modify object position
         mag1.rotate_from_angax(360/frames, axis='z')
         mag2.rotate_from_angax(-360/frames, axis='z')
-        magpy.show(mag1, mag2, canvas=pl, style_legend_show=False)
         
-        # Modify scene in Pyvista
-        pl.add_mesh(pv.Line(mag1.barycenter, mag2.barycenter), color="cyan")
-        
-        # Customize view
-        pl.camera_position = [
-            (5, 5, 5),  # Position of the camera
-            (0, 0, 0),  # Focal point (what the camera is looking at)
-            (0, 0, 1)   # View up direction
-        ]
-        pl.camera.zoom(0.5)
-        pl.set_background("k")  # required for transparency
-        
+        # Transfer Magpylib scene to Plotly (requires kaleido==0.1.0.post1)
+        fig = magpy.show(mag1, mag2, return_fig=True, backend="plotly", style_legend_show=False)
+
+        # Modify in Plotly
+        line_trace = go.Scatter3d(
+            x=(0,0,4,4,0),
+            y=(0,0,0,0,0),
+            z=(-2,2,2,-2,-2),
+            mode="lines",
+            line=dict(color="black")
+        )
+        fig.add_trace(line_trace)
+
+        # Customize layout
+        camera = dict(
+            eye = dict(x=1.5, y=1.5, z=1.5),
+            up = dict(x=0, y=0, z=1),
+        )
+        fig.update_layout(
+            scene=dict(
+                camera=camera,
+                xaxis=dict(range=(-5,5)),
+                yaxis=dict(range=(-5,5)),
+                zaxis=dict(range=(-5,5)),
+            ),
+            showlegend=False,
+            margin=dict(l=0, r=0, t=0, b=0),
+        )
+
         # Screenshot
-        pl.screenshot(temp_dir/f'frame{i:03d}.png', transparent_background=True)
-        pl.close()
+        fig.write_image(temp_dir/f'frame{i:03d}.png', width=500, height=500)
+        print(i)
     return sorted(temp_dir.glob("*.png"))
 
 def main():
-    frames = 100
-    frame_time = 40
+    frames = 50
+    frame_time = 50
     output_file = "my.gif"
 
     with tempfile.TemporaryDirectory() as temp_dir:
