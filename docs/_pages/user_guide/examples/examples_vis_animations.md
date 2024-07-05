@@ -190,6 +190,8 @@ if __name__ == "__main__":
 
 <img src="../../_static/videos/example_gif2.gif" width=50% align="center">
 
+Notic that when providing a canvas, no update to its layout is performed by Magpylib, unless explicitly specified by setting `canvas_update=True` in `show()`. By default `canvas_update="auto"` only updates the canvas if is not provided by the user. Details can be found in the [graphics documentation](guide-graphics-canvas).
+
 ### Custom export Plotly
 
 The following examples shows how to work in the Plotly backend.
