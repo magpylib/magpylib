@@ -1,15 +1,15 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.5
+    jupytext_version: 1.16.1
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
+orphan: true
 ---
 
 (examples-vis-animations)=
@@ -21,7 +21,7 @@ Magpylib can display the motion of objects along paths in the form of animations
 ```{hint}
 1. Animations work best with the [plotly backend](guide-graphic-backends).
 
-2. If your browser window opens, but your animation does not load, reload the page (ctrl+r in chrome).
+2. If your browser window opens, but your animation does not load, reload the page.
 
 3. Avoid rendering too many frames.
 ```
@@ -30,30 +30,30 @@ Detailed information about how to tune animations can be found in the [graphics 
 
 ## Simple Animations
 
-Animations are created with `show` by setting `animation=True`. It is also possible to hand over the animation time with this kwarg.
+Animations are created with `show` by setting `animation=True`. It is also possible to hand over the animation time with this parameter.
 
 ```{code-cell} ipython3
-import numpy as np
 import magpylib as magpy
+import numpy as np
 
 # Define magnet with path
 magnet = magpy.magnet.Cylinder(
     polarization=(1, 0, 0),
     dimension=(2, 1),
-    position=(4,0,0),
+    position=(4, 0, 0),
     style_label="magnet",
 )
 magnet.rotate_from_angax(angle=np.linspace(0, 300, 40), start=0, axis="z", anchor=0)
 
 # Define sensor with path
 sensor = magpy.Sensor(
-    pixel=[(-.2, 0, 0), (.2, 0, 0)],
-    position = np.linspace((0, 0, -3), (0, 0, 3), 40),
+    pixel=[(-0.2, 0, 0), (0.2, 0, 0)],
+    position=np.linspace((0, 0, -3), (0, 0, 3), 40),
     style_label="sensor",
 )
 
 # Display as animation - prefers plotly backend
-magpy.show(sensor, magnet, animation=True, backend='plotly')
+magpy.show(sensor, magnet, animation=True, backend="plotly")
 ```
 
 (examples-vis-animated-subplots)=
@@ -68,7 +68,7 @@ magpy.show(sensor, magnet, animation=True, backend='plotly')
 magpy.show(
     dict(objects=[magnet, sensor], output=["Bx", "By", "Bz"], col=1),
     dict(objects=[magnet, sensor], output="model3d", col=2),
-    backend='plotly',
+    backend="plotly",
     animation=True,
 )
 ```
@@ -78,7 +78,7 @@ It is also possible to use the [show_context](guide-graphics-show_context) conte
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
 
-with magpy.show_context([magnet, sensor], backend='plotly', animation=True) as sc:
+with magpy.show_context([magnet, sensor], backend="plotly", animation=True) as sc:
     sc.show(output="Bx", col=1, row=1)
     sc.show(output="By", col=1, row=2)
     sc.show(output="Bz", col=2, row=1)
@@ -149,17 +149,17 @@ def create_frames(frames, temp_dir):
     mag2 = magpy.magnet.CylinderSegment(dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1))
 
     for i in range(frames):
-        
+
         pl = pv.Plotter(notebook=False, off_screen=True, window_size=[300, 300])
-    
+
         # Modify object position
         mag1.rotate_from_angax(360/frames, axis='z')
         mag2.rotate_from_angax(-360/frames, axis='z')
         magpy.show(mag1, mag2, canvas=pl, style_legend_show=False)
-        
+
         # Modify scene in Pyvista
         pl.add_mesh(pv.Line(mag1.barycenter, mag2.barycenter), color="cyan")
-        
+
         # Customize view
         pl.camera_position = [
             (5, 5, 5),  # Position of the camera
@@ -168,7 +168,7 @@ def create_frames(frames, temp_dir):
         ]
         pl.camera.zoom(0.5)
         pl.set_background("k")  # required for transparency
-        
+
         # Screenshot
         pl.screenshot(temp_dir/f'frame{i:03d}.png', transparent_background=True)
         pl.close()
@@ -190,7 +190,7 @@ if __name__ == "__main__":
 
 <img src="../../../_static/videos/example_gif2.gif" width=50% align="center">
 
-Notic that when providing a canvas, no update to its layout is performed by Magpylib, unless explicitly specified by setting `canvas_update=True` in `show()`. By default `canvas_update="auto"` only updates the canvas if is not provided by the user. Details can be found in the [graphics documentation](guide-graphics-canvas).
+Notice that when providing a canvas, no update to its layout is performed by Magpylib, unless explicitly specified by setting `canvas_update=True` in `show()`. By default `canvas_update="auto"` only updates the canvas if is not provided by the user. Details can be found in the [graphics documentation](guide-graphics-canvas).
 
 ### Custom export Plotly
 
@@ -232,7 +232,7 @@ def create_frames(frames, temp_dir):
         # Modify object position
         mag1.rotate_from_angax(360/frames, axis='z')
         mag2.rotate_from_angax(-360/frames, axis='z')
-        
+
         # Transfer Magpylib scene to Plotly (requires kaleido==0.1.0.post1)
         fig = magpy.show(mag1, mag2, return_fig=True, backend="plotly", style_legend_show=False)
 
