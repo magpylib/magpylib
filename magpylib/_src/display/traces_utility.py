@@ -700,10 +700,13 @@ def group_traces(*traces):
     }
     for tr in traces:
         tr = linearize_dict(tr, separator="_")
-        gr = [tr["type"]]
-        for k in [*common_keys, *spec_keys.get(tr["type"], [])]:
+        tr_typ = tr["type"]
+        gr = [tr_typ]
+        for k in [*common_keys, *spec_keys.get(tr_typ, [])]:
             v = tr.get(k, None)
-            v = "array" if is_array_like(v) else v
+            # colorscales cannot merged in mesh3d (yet)
+            if k != "colorscale" and is_array_like(v):
+                v = "array"
             gr.append(str(v))
         gr = hash(tuple(gr))
         mesh_groups.setdefault(gr, []).append(tr)
