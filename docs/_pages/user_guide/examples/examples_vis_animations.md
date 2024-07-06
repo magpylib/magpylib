@@ -207,7 +207,8 @@ import tempfile
 from pathlib import Path
 import plotly.graph_objs as go
 
-def create_gif(frame_files, frame_time, output_file="test.gif"):
+
+def create_gif(frame_files, frame_time, output_file):
     """Create GIF from frames in the temporary directory."""
     frames = [Image.open(image) for image in frame_files]
     if frames:
@@ -217,55 +218,57 @@ def create_gif(frame_files, frame_time, output_file="test.gif"):
             append_images=frames[1:],
             save_all=True,
             duration=frame_time,
-            loop=0,     # Infinite loop
+            loop=0,  # Infinite loop
         )
+
 
 def create_frames(frames, temp_dir):
     """Create frames with Pyvista."""
 
     # Create Magpylib objects
-    mag1 = magpy.magnet.CylinderSegment(dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1))
-    mag2 = magpy.magnet.CylinderSegment(dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1))
+    mag1 = magpy.magnet.CylinderSegment(
+        dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1)
+    )
+    mag2 = magpy.magnet.CylinderSegment(
+        dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1)
+    )
 
     for i in range(frames):
+        # Set object position
+        mag1.rotate_from_angax(360 / frames, axis="z")
+        mag2.rotate_from_angax(-360 / frames, axis="z")
 
-        # Modify object position
-        mag1.rotate_from_angax(360/frames, axis='z')
-        mag2.rotate_from_angax(-360/frames, axis='z')
-
-        # Transfer Magpylib scene to Plotly (requires kaleido==0.1.0.post1)
-        fig = magpy.show(mag1, mag2, return_fig=True, backend="plotly", style_legend_show=False)
-
-        # Modify in Plotly
-        line_trace = go.Scatter3d(
-            x=(0,0,4,4,0),
-            y=(0,0,0,0,0),
-            z=(-2,2,2,-2,-2),
-            mode="lines",
-            line=dict(color="black")
+        fig = magpy.show(
+            mag1, mag2, return_fig=True, backend="plotly", style_legend_show=False
         )
-        fig.add_trace(line_trace)
+
+        # Edit figure in Plotly
+        fig.add_scatter3d(
+            x=(0, 0, 4, 4, 0),
+            y=(0, 0, 0, 0, 0),
+            z=(-2, 2, 2, -2, -2),
+            mode="lines",
+            line_color="black",
+        )
 
         # Customize layout
-        camera = dict(
-            eye = dict(x=1.5, y=1.5, z=1.5),
-            up = dict(x=0, y=0, z=1),
-        )
         fig.update_layout(
             scene=dict(
-                camera=camera,
-                xaxis=dict(range=(-5,5)),
-                yaxis=dict(range=(-5,5)),
-                zaxis=dict(range=(-5,5)),
+                camera_eye={"x": 1.5, "y": 1.5, "z": 1.5},
+                camera_up={"x": 0, "y": 0, "z": 1},
+                xaxis_range=(-5, 5),
+                yaxis_range=(-5, 5),
+                zaxis_range=(-5, 5),
             ),
             showlegend=False,
             margin=dict(l=0, r=0, t=0, b=0),
         )
 
-        # Screenshot
-        fig.write_image(temp_dir/f'frame{i:03d}.png', width=500, height=500)
-        print(i)
+        # Create screenshot (requires kaleido package)
+        print(f"Writing frame {i+1:3d}/{frames}")
+        fig.write_image(temp_dir / f"frame{i:03d}.png", width=500, height=500)
     return sorted(temp_dir.glob("*.png"))
+
 
 def main():
     frames = 50
@@ -276,6 +279,7 @@ def main():
         temp_dir = Path(temp_dir)
         frame_files = create_frames(frames, temp_dir)
         create_gif(frame_files, frame_time, output_file)
+
 
 if __name__ == "__main__":
     main()
