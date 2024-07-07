@@ -124,12 +124,10 @@ For customizing videos it is best to work directly in the respective graphic bac
 import magpylib as magpy
 import pyvista as pv
 from PIL import Image
-import tempfile
-from pathlib import Path
 
-def create_gif(frame_files, frame_time, output_file="test.gif"):
-    """Create GIF from frames in the temporary directory."""
-    frames = [Image.open(image) for image in frame_files]
+def create_gif(images, frame_time, output_file):
+    """Create a GIF from images"""
+    frames = [Image.fromarray(img) for img in images]
     if frames:
         frames[0].save(
             output_file,
@@ -137,55 +135,66 @@ def create_gif(frame_files, frame_time, output_file="test.gif"):
             append_images=frames[1:],
             save_all=True,
             duration=frame_time,
-            loop=0,     # Infinite loop
-            disposal=2  # Remove previous image for achiving transparency
+            loop=0,  # Infinite loop
+            disposal=2,  # Remove previous frames for transparency
         )
 
-def create_frames(frames, temp_dir):
-    """Create frames with Pyvista."""
 
+def init_plotter():
+    """ Init Pyvista plotter with custom scene layout"""
+    pl = pv.Plotter(notebook=False, off_screen=True, window_size=[300, 300])
+    pl.camera_position = [
+        (5, 5, 5),  # Position of the camera
+        (0, 0, 0),  # Focal point (what the camera is looking at)
+        (0, 0, 1)   # View up direction
+    ]
+    pl.camera.zoom(0.5)
+    pl.set_background("k")  # For better transparency
+    return pl
+
+
+def create_frames(frames):
+    """Create frames with Pyvista."""
+    
     # Create Magpylib objects
     mag1 = magpy.magnet.CylinderSegment(dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1))
     mag2 = magpy.magnet.CylinderSegment(dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1))
 
-    for i in range(frames):
+    images = []
+    pl = init_plotter()
+    for _ in range(frames):
+        
+        # Modify object positions
+        mag1.rotate_from_angax(360 / frames, axis='z')
+        mag2.rotate_from_angax(-360 / frames, axis='z')
 
-        pl = pv.Plotter(notebook=False, off_screen=True, window_size=[300, 300])
-
-        # Modify object position
-        mag1.rotate_from_angax(360/frames, axis='z')
-        mag2.rotate_from_angax(-360/frames, axis='z')
+        # Transfer Magpylib objects to Pyvista plotter
+        pl.clear()
         magpy.show(mag1, mag2, canvas=pl, style_legend_show=False)
-
-        # Modify scene in Pyvista
+        
+        # Modify Pyvista scene
         pl.add_mesh(pv.Line(mag1.barycenter, mag2.barycenter), color="cyan")
 
-        # Customize view
-        pl.camera_position = [
-            (5, 5, 5),  # Position of the camera
-            (0, 0, 0),  # Focal point (what the camera is looking at)
-            (0, 0, 1)   # View up direction
-        ]
-        pl.camera.zoom(0.5)
-        pl.set_background("k")  # required for transparency
-
         # Screenshot
-        pl.screenshot(temp_dir/f'frame{i:03d}.png', transparent_background=True)
-        pl.close()
-    return sorted(temp_dir.glob("*.png"))
+        ss = pl.screenshot(transparent_background=True, return_img=True)
+        images.append(ss)
+
+    pl.close()
+    return images
+
 
 def main():
     frames = 100
     frame_time = 40
     output_file = "my.gif"
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_dir = Path(temp_dir)
-        frame_files = create_frames(frames, temp_dir)
-        create_gif(frame_files, frame_time, output_file)
+    images = create_frames(frames)
+    create_gif(images, frame_time, output_file)
+
 
 if __name__ == "__main__":
     main()
+
 ```
 
 <img src="../../../_static/videos/example_gif2.gif" width=50% align="center">
