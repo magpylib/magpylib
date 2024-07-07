@@ -162,7 +162,7 @@ def create_frames(frames):
 
     images = []
     pl = init_plotter()
-    for _ in range(frames):
+    for i in range(frames):
         
         # Modify object positions
         mag1.rotate_from_angax(360 / frames, axis='z')
@@ -171,11 +171,12 @@ def create_frames(frames):
         # Transfer Magpylib objects to Pyvista plotter
         pl.clear()
         magpy.show(mag1, mag2, canvas=pl, style_legend_show=False)
-        
-        # Modify Pyvista scene
+
+        # Edit figure in Pyvista
         pl.add_mesh(pv.Line(mag1.barycenter, mag2.barycenter), color="cyan")
 
         # Screenshot
+        print(f"Writing frame {i+1:3d}/{frames}")
         ss = pl.screenshot(transparent_background=True, return_img=True)
         images.append(ss)
 
@@ -194,7 +195,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 ```
 
 <img src="../../../_static/videos/example_gif2.gif" width=50% align="center">
@@ -205,21 +205,15 @@ Notice that when providing a canvas, no update to its layout is performed by Mag
 
 The following examples shows how to work in the Plotly backend.
 
-```{important}
-This requires the kaleido package version 0.1.0.post1!
-```
-
 ```python
 import magpylib as magpy
 from PIL import Image
-import tempfile
-from pathlib import Path
-import plotly.graph_objs as go
+import io
 
 
-def create_gif(frame_files, frame_time, output_file):
+def create_gif(images, frame_time, output_file):
     """Create GIF from frames in the temporary directory."""
-    frames = [Image.open(image) for image in frame_files]
+    frames = [Image.open(io.BytesIO(data)) for data in images]
     if frames:
         frames[0].save(
             output_file,
@@ -231,17 +225,14 @@ def create_gif(frame_files, frame_time, output_file):
         )
 
 
-def create_frames(frames, temp_dir):
+def create_frames(frames):
     """Create frames with Pyvista."""
 
     # Create Magpylib objects
-    mag1 = magpy.magnet.CylinderSegment(
-        dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1)
-    )
-    mag2 = magpy.magnet.CylinderSegment(
-        dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1)
-    )
-
+    mag1 = magpy.magnet.CylinderSegment(dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1))
+    mag2 = magpy.magnet.CylinderSegment(dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1))
+    
+    images = []
     for i in range(frames):
         # Set object position
         mag1.rotate_from_angax(360 / frames, axis="z")
@@ -273,10 +264,11 @@ def create_frames(frames, temp_dir):
             margin=dict(l=0, r=0, t=0, b=0),
         )
 
-        # Create screenshot (requires kaleido package)
+        # Screenshot (requires kaleido package)
         print(f"Writing frame {i+1:3d}/{frames}")
-        fig.write_image(temp_dir / f"frame{i:03d}.png", width=500, height=500)
-    return sorted(temp_dir.glob("*.png"))
+        img = fig.to_image(format="png", width=500, height=500)
+        images.append(img)
+    return images
 
 
 def main():
@@ -284,10 +276,8 @@ def main():
     frame_time = 50
     output_file = "my.gif"
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_dir = Path(temp_dir)
-        frame_files = create_frames(frames, temp_dir)
-        create_gif(frame_files, frame_time, output_file)
+    images = create_frames(frames)
+    create_gif(images, frame_time, output_file)
 
 
 if __name__ == "__main__":
