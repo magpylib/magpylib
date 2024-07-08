@@ -1650,14 +1650,15 @@ class PixelField(MagicProperties):
 
     Parameters
     ----------
-    vectorsource:
-
     vectorsource: str, default=None
-        Defines the pixel orientation vector source (one of "B", "H", "M", "J")
+        The pixel orientation vector source (one of "B", "H", "M", "J")
 
     colorsource: str, default=None
-        Defines the pixel color source (e.g. "Bx", "Hxy", "J", etc.). If not specfied,
+        The pixel color source (e.g. "Bx", "Hxy", "J", etc.). If not specfied,
         the amplitude of the `vectorsource` value is used.
+
+    colorscale: str, default="Inferno",
+        The colorscale used with `colorsource`.
 
     shownull: bool, default=True
         Show/hide null or invalid field values
@@ -1672,6 +1673,31 @@ class PixelField(MagicProperties):
     _allowed_vectorsources = ("B", "H", "J", "M")
     _allowed_symbols = ("cone", "arrow", "arrow3d")
     _allowed_sizemodes = ("constant", "linear", "log")
+    _allowed_colorscales = [
+        "Viridis",
+        "Plasma",
+        "Inferno",
+        "Magma",
+        "Cividis",
+        "Greys",
+        "Purples",
+        "Blues",
+        "Greens",
+        "Oranges",
+        "Reds",
+        "YlOrBr",
+        "YlOrRd",
+        "OrRd",
+        "PuRd",
+        "RdPu",
+        "BuPu",
+        "GnBu",
+        "PuBu",
+        "YlGnBu",
+        "PuBuGn",
+        "BuGn",
+        "YlGn",
+    ]
 
     @property
     def vectorsource(self):
@@ -1707,6 +1733,20 @@ class PixelField(MagicProperties):
             f" 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') ) but received {repr(val)} instead."
         )
         self._colorsource = val
+
+    @property
+    def colorscale(self):
+        """Pixel vector source."""
+        return self._colorscale
+
+    @colorscale.setter
+    def colorscale(self, val):
+        assert val is None or val in self._allowed_colorscales, (
+            f"The `colorscale` property of {type(self).__name__} must be one of"
+            f"{self._allowed_colorscales},\n"
+            f"but received {repr(val)} instead."
+        )
+        self._colorscale = val
 
     @property
     def shownull(self):

@@ -912,7 +912,7 @@ def create_null_dim_trace(color=None, **kwargs):
 
 def get_hexcolors_from_scale(
     values,
-    colorscale="Jet",
+    colorscale,
     cmin=None,
     cmax=None,
     nan_color="#b2beb5",

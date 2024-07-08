@@ -99,6 +99,7 @@ DEFAULTS = {
                         "symbol": "cone",
                         "vectorsource": None,
                         "colorsource": None,
+                        "colorscale": "Viridis",
                         "shownull": True,
                         "sizemode": "constant",
                     },
