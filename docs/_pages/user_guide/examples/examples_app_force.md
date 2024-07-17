@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
 
 ```
-
+<img src="../../../_static/videos/example_gif4.gif" width=50% align="center">
 
 ```python
 # this cell only shows your code
