@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
 
 ```
-<img src="../../../_static/videos/example_gif4.gif" width=50% align="center">
+<img src="../../../_static/videos/example_force_gif.gif" width=50% align="center">
 
 ## Features
 
