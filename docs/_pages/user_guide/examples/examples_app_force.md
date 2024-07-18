@@ -24,6 +24,7 @@ In this simulation, we model the interactions between two distinct types of magn
 ```{code-cell} ipython3
 import glob
 import numpy as np
+import pyvista as pv
 from PIL import Image
 import magpylib as magpy
 from magpylib_force import getFT
@@ -140,7 +141,7 @@ def display(targets):
     n_targets = len(targets)
     
 
-    p = magpy.show(targets, backend='pyvista', return_fig=True)
+    p = magpy.show(targets, backend='pyvista', return_fig=True,style_legend_show=False)
 
     for i in range(n_targets):
         # sources are all magnets instead of target
