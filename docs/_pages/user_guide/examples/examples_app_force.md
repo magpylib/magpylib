@@ -16,9 +16,15 @@ kernelspec:
 
 # Magnet Force and Torque
 
-This example demonstrates a dynamic simulation of two magnetic objects using magpylib. We simulate the motion and rotation of a cuboid magnet and a spherical magnet under the influence of magnetic forces and torques. The simulation updates the positions and orientations of the magnets over time, visualizing their trajectories, rotational dynamics, and the forces acting on them. A first order semi-implicit Euler method leads to the following equations for the position $\mathbf{s}$, the velocity $\mathbf{v} = \dot{\mathbf{s}}$, the rotation angle $\mathbf{s}$ and the angular velocity $\mathbf{\omega}$ in each time step $\Delta t$:
+This example demonstrates a dynamic simulation of two magnetic objects using magpylib. We simulate the motion and rotation of a cuboid magnet and a spherical magnet under the influence of magnetic forces and torques. The simulation updates the positions and orientations of the magnets over time, visualizing their trajectories, rotational dynamics, and the forces acting on them. A first order semi-implicit Euler method leads to the following equations for the position $\mathbf{s}$, the velocity $\mathbf{v} = \dot{\mathbf{s}}$, the rotation angle $\mathbf{\varphi}$ and the angular velocity $\mathbf{\omega}$ in each time step $\Delta t$:
 
-$$\dot{\mathbf{v}}(t+\Delta t) = \mathbf{v}(t) + \frac{\Delta t}{m} F(\mathbf{s}(t))$$
+$$\mathbf{v}(t+\Delta t) = \mathbf{v}(t) + \frac{\Delta t}{m} \mathbf{F}(\mathbf{s}(t))$$
+
+$$\mathbf{s}(t+\Delta t) = \mathbf{s}(t) + \Delta t  \mathbf{v} (t + \Delta t)$$
+
+$$\mathbf{\omega} (t + \Delta t) = \mathbf{ω}(t) + \Delta t J^{-1} \mathbf{J}(t)$$
+
+$$\mathbf{\varphi} (t + \Delta t) = \mathbf{\varphi}(t) + \Delta t * \mathbf{\omega} (t + \Delta t) $$
 
 
 
@@ -40,14 +46,6 @@ import magpylib as magpy
 from magpylib_force import getFT
 from scipy.spatial.transform import Rotation as R
 
-
-def inverse_inertia_tensor_cuboid_solid(mass, dimensions):
-    dimensions_sq = dimensions**2
-    inv_tensor = 12/mass * np.array([[1/(dimensions_sq[1]+dimensions_sq[2]),0.,0.], [0.,1/(dimensions_sq[0]+dimensions_sq[2]),0.], [0.,0.,1/(dimensions_sq[0]+dimensions_sq[1])]])
-    return inv_tensor
-
-def inverse_inertia_tensor_sphere_solid(mass, diameter):
-    return 10 / mass / diameter**2 * np.identity(3)
 
 def apply_movement(targets, dt):
     """defines magnet system that is capable for moving according to force and torque
@@ -83,14 +81,14 @@ if __name__ == "__main__":
     t1 = magpy.magnet.Cuboid(position=(2.,0.,2.), dimension=(1.,1.,1.), polarization=(0.,0.,0.92283), orientation=R.from_euler('y', 0, degrees=True))
     t1.meshing = (20,20,20)
     t1.mass = 2.32
-    t1.inverse_inertia_tensor = inverse_inertia_tensor_cuboid_solid(t1.mass, t1.dimension)
+    t1.inverse_inertia_tensor = 2.5862069 * np.eye(3)
     t1.velocity = np.array([99., 0., 0.])
     t1.angular_velocity = np.array([0.,0,0.])
 
     t2 = magpy.magnet.Sphere(position=(2.,0.,4.001), diameter=1.241, polarization=(0.,0.,0.92583), orientation=R.from_euler('y', 0, degrees=True))
     t2.meshing = 20
     t2.mass = 2.32
-    t2.inverse_inertia_tensor = inverse_inertia_tensor_sphere_solid(t2.mass, t2.diameter)
+    t2.inverse_inertia_tensor = 2.798778 * np.eye(3)
     t2.velocity = np.array([-99., 0., 0.])
     t2.angular_velocity = np.array([0.,0.,0.])
 
@@ -103,6 +101,7 @@ if __name__ == "__main__":
         
 
 
+    
     #cuboid values after movement
     print('cuboid')
     print('position after', t1.position)
