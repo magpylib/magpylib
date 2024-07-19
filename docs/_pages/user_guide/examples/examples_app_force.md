@@ -26,6 +26,7 @@ In this simulation, we model the interactions between two distinct types of magn
 
 
 ```{code-cell} ipython3
+import os
 import glob
 import numpy as np
 import pyvista as pv
@@ -34,6 +35,8 @@ import magpylib as magpy
 from magpylib_force import getFT
 from scipy.spatial.transform import Rotation as R
 
+
+# os.makedirs('tmp', exist_ok=True)
 
 
 def inverse_inertia_tensor_cuboid_solid(mass, dimensions):
@@ -60,10 +63,7 @@ def apply_movement(targets, dt):
     for i in range(n_targets):
         # sources are all magnets instead of target
         FTs[i,:,:] = getFT(targets[:i] + targets[i+1:], [targets[i]], anchor=None)
-    print("FTs",FTs)
-    print()
-    print ("velocities", targets[0].velocity,targets[1].velocity)
-    print ("angular velocities", targets[0].angular_velocity, targets[1].angular_velocity)
+    
 
 
     # simulate movement
@@ -73,14 +73,6 @@ def apply_movement(targets, dt):
         targets[i].angular_velocity = targets[i].angular_velocity + dt*targets[i].orientation.apply(np.dot(targets[i].inverse_inertia_tensor, targets[i].orientation.inv().apply(FTs[i,1,:])))
         targets[i].position = targets[i].position + dt * targets[i].velocity
         targets[i].orientation = R.from_rotvec(dt*targets[i].angular_velocity)*targets[i].orientation
-
-        print()
-        print('magnet', i)
-        print('position after', targets[i].position)
-        print('velocity after' , targets[i].velocity)
-        print('angular velocity after' , targets[i].angular_velocity )
-        print()
-
 
 
 
@@ -104,9 +96,23 @@ if __name__ == "__main__":
     dt = 0.0005
 
     
-    for i in range(255):
+    for i in range(150):
         apply_movement(targets, dt)
+        
 
+
+    #cuboid values after movement
+    print('cuboid')
+    print('position after', t1.position)
+    print('velocity after' , t1.velocity)
+    print('angular velocity after' , t1.angular_velocity )
+    print()
+
+    #sphere values after movement
+    print('sphere')
+    print('position after', t2.position)
+    print('velocity after' , t2.velocity)
+    print('angular velocity after' , t2.angular_velocity )
 
 
 
@@ -136,8 +142,11 @@ In the for loop the function `apply_movement` is callen up. The position will be
 
 ## Visualization
 
-> Keep in mind, that if you want to visualize it like the animation above, you need some extra code lines:
+Keep in mind, that if you want to visualize it like the animation above, you need some extra code lines.
 
+There is an [Example Animations - Custom export Pyvista](https://magpylib.readthedocs.io/en/latest/_pages/user_guide/examples/examples_vis_animations.html#custom-export-pyvista), where you can read up the functionality of visualizing code with Pyvista.
+
+But if you only want to let this example run, without any background information, you can copy the underneath code in the same file, which you have created for the values.
 
 ```python
 def display(targets):
