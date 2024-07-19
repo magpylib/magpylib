@@ -51,7 +51,6 @@ docs = [
     "numpy-stl",
     "pyvista",
     "magpylib-material-response",
-    "magpylib-force",
 ]
 test = [
     "tox>=4.11",
