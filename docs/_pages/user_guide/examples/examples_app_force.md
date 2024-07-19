@@ -36,9 +36,6 @@ from magpylib_force import getFT
 from scipy.spatial.transform import Rotation as R
 
 
-# os.makedirs('tmp', exist_ok=True)
-
-
 def inverse_inertia_tensor_cuboid_solid(mass, dimensions):
     dimensions_sq = dimensions**2
     inv_tensor = 12/mass * np.array([[1/(dimensions_sq[1]+dimensions_sq[2]),0.,0.], [0.,1/(dimensions_sq[0]+dimensions_sq[2]),0.], [0.,0.,1/(dimensions_sq[0]+dimensions_sq[1])]])
@@ -149,6 +146,10 @@ There is an [Example Animations - Custom export Pyvista](https://magpylib.readth
 But if you only want to let this example run, without any background information, you can copy the underneath code in the same file, which you have created for the values.
 
 ```python
+
+os.makedirs('tmp', exist_ok=True)
+
+
 def display(targets):
 
     n_targets = len(targets)
@@ -205,3 +206,8 @@ make_gif("test", duration=50)
         p.close()
 
 ```
+
+
+For your understanding, the first line has to be pasted to the beginning of the document right after the imports. It makes sure, if the appropriate folder is existing. Otherwise the folder will be created. The other code can be pasted after the code block from above. Only the for loop in the end has to be adjusted with the last for loop from the programm above.
+
+
