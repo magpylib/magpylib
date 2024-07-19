@@ -20,8 +20,10 @@ This example demonstrates a dynamic simulation of two magnetic objects using mag
 
 In this simulation, we model the interactions between two distinct types of magnets: a cuboid magnet and a spherical magnet. The goal is to observe how these magnets influence each other through magnetic forces and torques, and how these interactions affect their motion and rotation.
 
+   >[!WARNING]
+   >
+   >The installation of Magpylib-force is required!
 
-Warning: Magpylib-force is required!
 
 ```{code-cell} ipython3
 import glob
@@ -125,10 +127,10 @@ The functions `inverse_interia_tensor_cuboid_solid` and `inverse_interia_tensor_
 
 Until now, there were only the definitions. With the if statement `if __name__ == __"main"__:` the functional code starts by running the simulation loop.
 
-First of all the **position**, the **dimension**, the **polarization** and the **orientation** have to be defined. Also the **meshing**, the **mass**, the **velocity** and the **angular_velocity** you can define on your own. The **inverse_interia_tensor** has to be defined by call up the previously created funktion (difference between sphere and cuboid!). This steps have to be repeated as often as you want magnets. 
+First of all the **position**, the **dimension**, the **polarization** and the **orientation** have to be defined. Also the **meshing**, the **mass**, the **velocity** and the **angular_velocity** you can define on your own. The **inverse_interia_tensor** has to be defined by call up the previously created function (difference between sphere and cuboid!). This steps have to be repeated as often as you want magnets. 
 
-Now there is only the for loop left. The number in the pracets is the amount of repatitions you want to have values of. 
-In the for loop the function `apply_movement` is call up. So the positon will be updated as often you have choose the number in the pracets. Be aware of, that this is index numbering and starts with 0. 
+Now there is only the for loop left. The number in the pracets is the amount of repetitions you want to have values of. 
+In the for loop the function `apply_movement` is callen up. The position will be updated as often as the number specified in the parentheses. Note that this is index numbering and starts at 0.
 
 
 
@@ -182,7 +184,7 @@ make_gif("test", duration=50)
 
 ```
 
-Also the for loop, has to be extended: 
+> Also the for loop, has to be extended: 
 ```python
     for i in range(255):
         apply_movement(targets, dt)
