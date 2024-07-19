@@ -21,6 +21,8 @@ This example demonstrates a dynamic simulation of two magnetic objects using mag
 In this simulation, we model the interactions between two distinct types of magnets: a cuboid magnet and a spherical magnet. The goal is to observe how these magnets influence each other through magnetic forces and torques, and how these interactions affect their motion and rotation.
 
 
+Warning: Magpylib-force is required!
+
 ```{code-cell} ipython3
 import glob
 import numpy as np
@@ -112,13 +114,13 @@ if __name__ == "__main__":
 ## Features
 
 - calculation of the force and torques between magnet objects
-- update of magnets velocities, angular velocities and positions.
+- update of magnets velocities, angular velocities and positions
 
 ## Explenation 
 
 The functions `inverse_interia_tensor_cuboid_solid` and `inverse_interia_tensor_sphere_solid` calculate the inverse interia for cuboids und spheres. The important parameters to calculate are the mass of the object and the dimension or rather the diameter. 
 
-`apply_movement` funktion updates the positions of the magnets based on the calculated force and torques. 
+`apply_movement` function updates the positions of the magnets based on the calculated force and torques. 
 
 
 Until now, there were only the definitions. With the if statement `if __name__ == __"main"__:` the functional code starts by running the simulation loop.
@@ -132,7 +134,7 @@ In the for loop the function `apply_movement` is call up. So the positon will be
 
 ## Visualization
 
-> KEEP IN MIND, THAT IF YOU WANT TO VISUALIZE IT LIKE THE ANIMATION ABOVE, YOU NEED SOME EXTRA CODE LINES:
+> Keep in mind, that if you want to visualize it like the animation above, you need some extra code lines:
 
 
 ```python
