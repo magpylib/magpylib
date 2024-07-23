@@ -12,7 +12,7 @@ kernelspec:
   name: python3
 ---
 
-(examples-app-force)=
+(examples-app-force1)=
 
 # Magnet Force and Torque
 
