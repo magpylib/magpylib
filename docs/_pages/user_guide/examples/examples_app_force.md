@@ -24,7 +24,7 @@ $$\mathbf{s}(t+\Delta t) = \mathbf{s}(t) + \Delta t  \mathbf{v} (t + \Delta t)$$
 
 $$\mathbf{\omega} (t + \Delta t) = \mathbf{ω}(t) + \Delta t J^{-1} \mathbf{T}(t)$$
 
-$$\mathbf{\varphi} (t + \Delta t) = \mathbf{\varphi}(t) + \Delta t * \mathbf{\omega} (t + \Delta t) $$
+$$\mathbf{\varphi} (t + \Delta t) = \mathbf{\varphi}(t) + \Delta t \cdot \mathbf{\omega} (t + \Delta t) $$
 
 $\mathbf{F}$ denotes the force and $\mathbf{T}$ the torque acting on the magnet with mass $m$ and inertia tensor $J$.
 
