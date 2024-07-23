@@ -18,16 +18,15 @@ kernelspec:
 
 This example demonstrates a dynamic simulation of two magnetic objects using magpylib. We simulate the motion and rotation of a cuboid magnet and a spherical magnet under the influence of magnetic forces and torques. The simulation updates the positions and orientations of the magnets over time, visualizing their trajectories, rotational dynamics, and the forces acting on them. A first order semi-implicit Euler method leads to the following equations for the position $\mathbf{s}$, the velocity $\mathbf{v} = \dot{\mathbf{s}}$, the rotation angle $\mathbf{\varphi}$ and the angular velocity $\mathbf{\omega}$ in each time step $\Delta t$:
 
-$$\mathbf{v}(t+\Delta t) = \mathbf{v}(t) + \frac{\Delta t}{m} \mathbf{F}(\mathbf{s}(t))$$
+$$\mathbf{v}(t+\Delta t) = \mathbf{v}(t) + \frac{\Delta t}{m} \mathbf{F}(t)$$
 
 $$\mathbf{s}(t+\Delta t) = \mathbf{s}(t) + \Delta t  \mathbf{v} (t + \Delta t)$$
 
-$$\mathbf{\omega} (t + \Delta t) = \mathbf{ω}(t) + \Delta t J^{-1} \mathbf{J}(t)$$
+$$\mathbf{\omega} (t + \Delta t) = \mathbf{ω}(t) + \Delta t J^{-1} \mathbf{T}(t)$$
 
 $$\mathbf{\varphi} (t + \Delta t) = \mathbf{\varphi}(t) + \Delta t * \mathbf{\omega} (t + \Delta t) $$
 
-
-
+$\mathbf{F}$ denotes the force and $\mathbf{T}$ the torque acting on the magnet with mass $m$ and inertia tensor $J$.
 
 In this simulation, we model the interactions between two distinct types of magnets: a cuboid magnet and a spherical magnet. The goal is to observe how these magnets influence each other through magnetic forces and torques, and how these interactions affect their motion and rotation.
 
