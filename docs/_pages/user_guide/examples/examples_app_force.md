@@ -22,7 +22,7 @@ $$\mathbf{v}(t+\Delta t) = \mathbf{v}(t) + \frac{\Delta t}{m} \mathbf{F}(t)$$
 
 $$\mathbf{s}(t+\Delta t) = \mathbf{s}(t) + \Delta t  \mathbf{v} (t + \Delta t)$$
 
-$$\mathbf{\omega} (t + \Delta t) = \mathbf{ω}(t) + \Delta t J^{-1} \mathbf{T}(t)$$
+$$\mathbf{\omega} (t + \Delta t) = \mathbf{ω}(t) + \Delta t \cdot J^{-1} \mathbf{T}(t)$$
 
 $$\mathbf{\varphi} (t + \Delta t) = \mathbf{\varphi}(t) + \Delta t \cdot \mathbf{\omega} (t + \Delta t) $$
 
