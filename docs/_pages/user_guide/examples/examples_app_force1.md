@@ -124,7 +124,7 @@ if __name__ == "__main__":
 - calculation of the force and torques between magnet objects
 - update of magnets velocities, angular velocities and positions
 
-## Explenation 
+## Explanation 
 
 The functions `inverse_interia_tensor_cuboid_solid` and `inverse_interia_tensor_sphere_solid` calculate the inverse interia for cuboids und spheres. The important parameters to calculate are the mass of the object and the dimension or rather the diameter. 
 
