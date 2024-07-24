@@ -126,14 +126,14 @@ if __name__ == "__main__":
 
 ## Explanation 
 
-The functions `inverse_interia_tensor_cuboid_solid` and `inverse_interia_tensor_sphere_solid` calculate the inverse interia for cuboids und spheres. The important parameters to calculate are the mass of the object and the dimension or rather the diameter. 
+The functions `inverse_inertia_tensor_cuboid_solid` and `inverse_inertia_tensor_sphere_solid` calculate the inverse ineria for cuboids und spheres. The important parameters to calculate are the mass of the object and the dimension or rather the diameter. 
 
 `apply_movement` function updates the positions of the magnets based on the calculated force and torques. 
 
 
 Until now, there were only the definitions. With the if statement `if __name__ == __"main"__:` the functional code starts by running the simulation loop.
 
-First of all the **position**, the **dimension**, the **polarization** and the **orientation** have to be defined. Also the **meshing**, the **mass**, the **velocity** and the **angular_velocity** you can define on your own. The **inverse_interia_tensor** has to be defined by call up the previously created function (difference between sphere and cuboid!). This steps have to be repeated as often as you want magnets. 
+First of all the **position**, the **dimension**, the **polarization** and the **orientation** have to be defined. Also the **meshing**, the **mass**, the **velocity** and the **angular_velocity** you can define on your own. The **inverse_inertia_tensor** has to be defined by call up the previously created function (difference between sphere and cuboid!). This steps have to be repeated as often as you want magnets. 
 
 Now there is only the for loop left. The number in the pracets is the amount of repetitions you want to have values of. 
 In the for loop the function `apply_movement` is callen up. The position will be updated as often as the number specified in the parentheses. Note that this is index numbering and starts at 0.
