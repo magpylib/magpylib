@@ -14,4 +14,4 @@ kernelspec:
 
 (examples-app-force3)=
 
-# Equations of Motion
+# Magnetic force and torque
