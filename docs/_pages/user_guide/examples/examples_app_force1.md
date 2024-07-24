@@ -14,7 +14,7 @@ kernelspec:
 
 (examples-app-force1)=
 
-# Magnet Force and Torque
+# Equations of motion -- two-body problem 
 
 This example demonstrates a dynamic simulation of two magnetic objects using magpylib. We simulate the motion and rotation of a cuboid magnet and a spherical magnet under the influence of magnetic forces and torques. The simulation updates the positions and orientations of the magnets over time, visualizing their trajectories, rotational dynamics, and the forces acting on them. A first order semi-implicit Euler method leads to the following equations for the position $\mathbf{s}$, the velocity $\mathbf{v} = \dot{\mathbf{s}}$, the rotation angle $\mathbf{\varphi}$ and the angular velocity $\mathbf{\omega}$ in each time step $\Delta t$:
 
