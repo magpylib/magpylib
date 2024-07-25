@@ -18,13 +18,14 @@ kernelspec:
 Imagine visualizing the invisible forces at play in the magnetic interactions between objects—this is what we achieve using Magpylib. 
 
 ### But what is force and torque exactly on the topic of magnetization? 
-**Force:** In the context of magnetic interactions, the force is a vector quantity that represents the push or pull experienced by a magnetic object due to the presence of another magnetic object. This force can cause the object to move if it is free to do so. The force vector has both a magnitude (how strong the force is) and a direction (the direction in which the force acts).
+#### FORCE
+In the context of magnetic interactions, the force is a vector quantity that represents the push or pull experienced by a magnetic object due to the presence of another magnetic object. This force can cause the object to move if it is free to do so. The force vector has both a magnitude (how strong the force is) and a direction (the direction in which the force acts).
 
 #### Calculation 
 
 The force 𝐹 on a magnetic dipole 𝑚 in a magnetic field 𝐵 is given by:
 
-                         𝐹 = ∇(𝑚*𝐵)
+$$𝐹 = ∇(𝑚*𝐵)$$
 
 where 
 𝑚 is the magnetic moment of the target object. This force is calculated by taking the gradient of the dot product of the magnetic moment and the magnetic field.
@@ -32,22 +33,21 @@ where
 
 <br>
 
+#### TORQUE
 
-
-**Torque:** Torque, also known as the moment of force, is a measure of the rotational effect produced by the force on a magnetic object. It is a vector quantity that depends on both the magnitude of the force and the distance from the point where the force is applied to the axis of rotation. Torque causes an object to rotate or change its rotational motion. In magnetic interactions, torque is significant when the magnetic moments of the objects interact, causing them to experience rotational forces.
+Torque, also known as the moment of force, is a measure of the rotational effect produced by the force on a magnetic object. It is a vector quantity that depends on both the magnitude of the force and the distance from the point where the force is applied to the axis of rotation. Torque causes an object to rotate or change its rotational motion. In magnetic interactions, torque is significant when the magnetic moments of the objects interact, causing them to experience rotational forces.
 
 #### Calculation
 
 The torque 𝑇 on a magnetic dipole 𝑚 in a magnetic field 𝐵 is given by:
 
-                         𝑇 = 𝑚 * 𝐵
+ $$𝑇 = 𝑚 * 𝐵$$
 
 where 
 𝑚 is the magnetic moment of the target object. This torque is calculated by taking the cross product of the magnetic moment and the magnetic field.
 
 ## For the beginning - Step for Step
-We will start with a simple example to show the functionality of calculation force and torque.
-
+We will begin with a straightforward example to illustrate how force and torque calculations work.
 
 ### Imports 
 > [!IMPORTANT]
@@ -86,7 +86,7 @@ def display(targets,sources):
     p.camera.focal_point = (8,0.,8.)
     return p
 ```
-This functions displays the output and calculates force and torque. The `getFT` function is inclucded in the magpylib-force package and will be executed in the background. `add_arrows` is important to visualize the unvisible force and torque. The codelines concerning camera settings are there to set camera positon and the focal point of the camera. 
+This function displays the output and calculates force and torque. The getFT function is included in the magpylib-force package and is executed in the background. The add_arrows command is important for visualizing the invisible force and torque. The lines of code concerning the camera settings are used to set the camera position and the focal point of the camera.
 
 ### Functional Code
 ```{code-cell} ipython3
@@ -116,7 +116,7 @@ In this if statement the magnetic objects are initialized by their position, dim
 
 The allocation, which magnet is a target and which a source is important for the calculation of force and torque. Sources let act the force on targets, so only the targets will be calculated.
 
-For the for loop it's good to know that the number in brackets is the amount of passes of the loop (for the animation above you can see there are much more steps to create a video). The command `os.makedirs('tmp', exist_ok = true)`checks if there is a folder named 'tmp' in the same folder as the python file is. If no, the script create this folder automatically. If it exists, the files will be overwritten because of the same naming as you can see two lines underneath in brackets : `('tmp/{:04d}.png.format(i))`. The `{:04d}` is responsible for a clean naming: the files will be saved as number.png and the max is 9999.
+In the for loop, the number in parentheses specifies the number of iterations (or passes) the loop will execute. In this simple example, the loop runs only once `(range(1))`, but in the context of the animation underneath, there are many more steps required to create a video. The command `os.makedirs('tmp', exist_ok=True)` checks if there is a folder named tmp in the same directory as the Python file. If the folder does not exist, the script creates it automatically. If it already exists, the files will not be overwritten due to the exist_ok=True parameter. The line `p.screenshot('tmp/{:04d}.png'.format(i))` specifies the filename for the screenshots. The `{:04d}` ensures clean naming by padding the number with leading zeros, resulting in filenames like 0000.png, 0001.png, and so on, up to a maximum of 9999.png. This naming convention helps maintain an orderly sequence of image files for creating animations.
 
 
 
@@ -229,7 +229,7 @@ make_gif("test", duration=50)
 
 ## Code Explenation
 
-This is just a developed code from the simple example above. Underneath there are listed the changes or rather the adds. 
+This code is a developed version of the simple example above. The changes or additions are listed below.
 
 ```python
 for i in range(25):
@@ -260,8 +260,7 @@ for i in range(25):
         p.close() 
 
 ```
-The for loops got extended. There are now three for loops and in every for loop the position of the cylinder and the circle got updated for the values in brackets. The numbers in brackets stands for the naming of the pictures, which will be saved. No numbers are allowed to overlap, because in this case the files will be overwritten. 
-
+The for loops have been extended. There are now three for loops, and in each for loop, the position of the cylinder and the circle is updated according to the values in brackets. The numbers in brackets represent the naming of the pictures, which will be saved. Overlapping numbers are not allowed, as this would result in the files being overwritten.
 
 
 ```pthon
@@ -279,7 +278,7 @@ def make_gif(filename, duration=25, loop=0):
 
 make_gif("test", duration=50)
 ``` 
-Also the `make_gif` function got added. This function make a gif out of the pictures, which are saved in the 'tmp' folder. 
+Additionally, the make_gif function has been added. This function creates a GIF from the pictures saved in the 'tmp' folder.
 
 > [!WARNING]
-> Wrong Savings in the folder lead to a not functional gif! If you reduce the numbers in the brackets in the for loops, make sure that you delete the folder first to prevent wrong gif making. 
+> Incorrect file savings in the folder will result in a non-functional GIF! If you reduce the numbers in the brackets in the for loops, make sure to delete the folder first to prevent errors in GIF creation. 
