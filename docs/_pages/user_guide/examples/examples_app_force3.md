@@ -41,7 +41,7 @@ Torque, also known as the moment of force, is a measure of the rotational effect
 
 The torque 𝑇 on a magnetic dipole 𝑚 in a magnetic field 𝐵 is given by:
 
- $$𝑇 = 𝑚 * 𝐵$$
+ $$𝑇 = 𝑚 \cross 𝐵$$
 
 where 
 𝑚 is the magnetic moment of the target object. This torque is calculated by taking the cross product of the magnetic moment and the magnetic field.
