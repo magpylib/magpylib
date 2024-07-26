@@ -34,7 +34,7 @@ In this simulation, we model the interactions between two distinct types of magn
    >
    >The installation of Magpylib-force is required!
 
-
+## Import & Movement
 ```{code-cell} ipython3
 import os
 import glob
@@ -73,34 +73,42 @@ def apply_movement(targets, dt):
         targets[i].position = targets[i].position + dt * targets[i].velocity
         targets[i].orientation = R.from_rotvec(dt*targets[i].angular_velocity)*targets[i].orientation
 
+```
+The `appply_movement` function simulates the movement and rotation of magnets based on calculated forces and torques. It first determines the forces and torques acting on each magnet due to the other magnets. Then, it updates the magnets' linear and rotational movements by adjusting their velocities, positions, angular velocities, and orientations accordingly.
 
 
-if __name__ == "__main__":
-# TARGETS: Magpylib target objects that move according to field
-    t1 = magpy.magnet.Cuboid(position=(2.,0.,2.), dimension=(1.,1.,1.), polarization=(0.,0.,0.92283), orientation=R.from_euler('y', 0, degrees=True))
-    t1.meshing = (20,20,20)
-    t1.mass = 2.32
-    t1.inverse_inertia_tensor = 2.5862069 * np.eye(3)
-    t1.velocity = np.array([99., 0., 0.])
-    t1.angular_velocity = np.array([0.,0,0.])
+## Functional Code
 
-    t2 = magpy.magnet.Sphere(position=(2.,0.,4.001), diameter=1.241, polarization=(0.,0.,0.92583), orientation=R.from_euler('y', 0, degrees=True))
-    t2.meshing = 20
-    t2.mass = 2.32
-    t2.inverse_inertia_tensor = 2.798778 * np.eye(3)
-    t2.velocity = np.array([-99., 0., 0.])
-    t2.angular_velocity = np.array([0.,0.,0.])
+```{code-cell} ipython3
 
-    targets = magpy.Collection(t1, t2)
-    dt = 0.0005
 
+t1 = magpy.magnet.Cuboid(position=(2.,0.,2.), dimension=(1.,1.,1.), polarization=(0.,0.,0.92283), orientation=R.from_euler('y', 0, degrees=True))
+t1.meshing = (20,20,20)
+t1.mass = 2.32
+t1.inverse_inertia_tensor = 2.5862069 * np.eye(3)
+t1.velocity = np.array([99., 0., 0.])
+t1.angular_velocity = np.array([0.,0,0.])
+
+t2 = magpy.magnet.Sphere(position=(2.,0.,4.001), diameter=1.241, polarization=(0.,0.,0.92583), orientation=R.from_euler('y', 0, degrees=True))
+t2.meshing = 20
+t2.mass = 2.32
+t2.inverse_inertia_tensor = 2.798778 * np.eye(3)
+t2.velocity = np.array([-99., 0., 0.])
+t2.angular_velocity = np.array([0.,0.,0.])
+
+targets = magpy.Collection(t1, t2)
+dt = 0.0005
+
+
+for i in range(150):
+    apply_movement(targets, dt)
     
-    for i in range(150):
-        apply_movement(targets, dt)
-        
+```
+Now the allocation of the targets take place. For the movement the two magents need next to position, dimension or diameter, polarization and orientatiion also a mass, velocity and a angular velocity. Also the inverse interia tensor is calculated with the scalevalue and 3x3 diagonal matrix. The scalevalue you have to calculate on your own. `dt` represents the finite time step used in the movement simulation. It denotes the duration of a single simulation step and is used to calculate the updates to the positions, velocities, angular velocities, and orientations of the magnets over time. The smaller the dt, the more precise and detailed the simulation will be, as changes are computed over smaller increments of time. In the for loop, which is executed 150 times, the apply_movement function is called, thereby updating the values (force, torque, velocity, angular velocity and position) 150 times.
 
+## Prints    
 
-    
+```{code-cell} ipython3
     #cuboid values after movement
     print('cuboid')
     print('position after', t1.position)
@@ -117,6 +125,9 @@ if __name__ == "__main__":
 
 
 ```
+Last but not least, the values get printed out in the serial monitor on your device. 
+
+
 <img src="../../../_static/videos/example_force_gif_bigMagnets.gif" width=50% align="center">
 
 ## Features
@@ -124,25 +135,11 @@ if __name__ == "__main__":
 - calculation of the force and torques between magnet objects
 - update of magnets velocities, angular velocities and positions
 
-## Explanation 
-
-The functions `inverse_inertia_tensor_cuboid_solid` and `inverse_inertia_tensor_sphere_solid` calculate the inverse ineria for cuboids und spheres. The important parameters to calculate are the mass of the object and the dimension or rather the diameter. 
-
-`apply_movement` function updates the positions of the magnets based on the calculated force and torques. 
-
-
-Until now, there were only the definitions. With the if statement `if __name__ == __"main"__:` the functional code starts by running the simulation loop.
-
-First of all the **position**, the **dimension**, the **polarization** and the **orientation** have to be defined. Also the **meshing**, the **mass**, the **velocity** and the **angular_velocity** you can define on your own. The **inverse_inertia_tensor** has to be defined by call up the previously created function (difference between sphere and cuboid!). This steps have to be repeated as often as you want magnets. 
-
-Now there is only the for loop left. The number in the pracets is the amount of repetitions you want to have values of. 
-In the for loop the function `apply_movement` is callen up. The position will be updated as often as the number specified in the parentheses. Note that this is index numbering and starts at 0.
-
 
 
 ## Visualization
 
-Keep in mind, that if you want to visualize it like the animation above, you need some extra code lines.
+Keep in mind, that if you want to visualize it like the animation above, you need some extra code lines to the code from above.
 
 There is an [Example Animations - Custom export Pyvista](https://magpylib.readthedocs.io/en/latest/_pages/user_guide/examples/examples_vis_animations.html#custom-export-pyvista), where you can read up the functionality of visualizing code with Pyvista.
 
@@ -211,6 +208,6 @@ make_gif("test", duration=50)
 ```
 
 
-For your understanding, the first line has to be pasted to the beginning of the document right after the imports. It makes sure, if the appropriate folder is existing. Otherwise the folder will be created. The other code can be pasted after the code block from above. Only the for loop in the end has to be adjusted with the last for loop from the programm above.
+For your understanding, the first line makes sure, if the appropriate folder is existing. Otherwise the folder will be created. The other code can be pasted after the code block from above. Only the for loop in the end has to be adjusted with the last for loop from the programm above.
 
 
