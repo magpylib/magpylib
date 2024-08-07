@@ -215,6 +215,30 @@
 :img-bottom: ../../../_static/images/examples_icon_WIP.png
 :::
 
+:::{grid-item-card} {ref}`examples-app-force1`
+:text-align: center
+:link: examples-app-force1
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_WIP.png
+:::
+
+:::{grid-item-card} {ref}`examples-app-force2`
+:text-align: center
+:link: examples-app-force2
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_WIP.png
+:::
+
+:::{grid-item-card} {ref}`examples-app-force3`
+:text-align: center
+:link: examples-app-force3
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_WIP.png
+:::
+
 ::::
 
 
@@ -248,6 +272,7 @@ examples_app_end_of_shaft.md
 examples_app_halbach.md
 examples_app_coils.md
 examples_app_scales.md
+examples_app_force.md
 
 ```
 
