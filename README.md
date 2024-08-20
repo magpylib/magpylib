@@ -42,7 +42,7 @@ Magpylib supports _Python3.10+_ and relies on common scientific computation libr
 
 # Resources
 
- - Check out our **[Documentation](https://magpylib.readthedocs.io/en/latest)** for detailed information.
+ - Check out our **[Documentation](https://magpylib.readthedocs.io/en/stable)** for detailed information about the last stable release, or the **[Dev Docs](https://magpylib.readthedocs.io/en/latest)** to see the unreleased development version features.
  - Please abide by our **[Code of Conduct](https://github.com/magpylib/magpylib/blob/main/CODE_OF_CONDUCT.md)**.
  - Contribute through **[Discussions](https://github.com/magpylib/magpylib/discussions)** and coding by following the **[Contribution Guide](https://github.com/magpylib/magpylib/blob/main/CONTRIBUTING.md)**. The Git project **[Issues](https://github.com/magpylib/magpylib/issues)** give an up-to-date list of potential enhancements and planned milestones. Propose new ones.
  - A **[Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs)** introduction to Magpylib v4.0.0 within the **[GSC network](https://www.internationalcollaboration.org/).**
@@ -105,7 +105,7 @@ print(B.round(2))  # --> [[-0.12 -0.04 -0.02]
 magpy.show(cube, sensor, backend="pyvista")
 ```
 
-More details and other important features are described in detail in the **[Documentation](https://magpylib.readthedocs.io/en/latest)**. Key features are:
+More details and other important features are described in detail in the **[Documentation](https://magpylib.readthedocs.io/en/stable)**. Key features are:
 
 - **Collections**: Group multiple objects for common manipulation
 - **Complex shapes**: Create magnets with arbitrary shapes
