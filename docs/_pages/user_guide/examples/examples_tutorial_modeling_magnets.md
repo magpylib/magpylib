@@ -90,7 +90,7 @@ import numpy as np
 import magpylib as magpy
 
 magnet = magpy.magnet.Cylinder(dimensions=(5e-3, 20e-3), polarization=(0, 0, 1.22))
-sensor = magpy.Sensor(position=(0, 0, -22e-3)) # 22 mm from center of magnet, 12 mm airgap
+sensor = magpy.Sensor(position=(0, 0, -15e-3)) # 22 mm from center of magnet, 5 mm airgap
 
 x = np.linspace(-15, 15, 61)*1e-3 # moving from X = -15 mm to X = +15 mm
 move = [(xi, 0, 0) for xi in x]
@@ -101,16 +101,17 @@ field = sensor.getB(magnet)
 In which the cylinder magnet with L/D = 4 is considered. Keep in mind that we are using Magpylib version>5, with SI units. For the magnet with L/D = 0.25, cylinder dimensions have to be modified.
 
 ### Experimental data and comparison
-To obtain the experimental data, a 6-degrees of freedom testbench was used, in which we can place any magnet and magnetic sensor of choice. With independent rotation and linear movement stages, it is possible to control the air gap and sensor movement. The initial positioning of the sensor in the XY plane was calibrated using an optimization algorithm, to account for small displacements from the center of the magnet.
+To obtain the experimental data, a 6-degrees of freedom testbench was used, in which we can place any magnet and magnetic sensor of choice. With independent rotation and linear movement stages, it is possible to control the air gap and sensor movement.
 
 ![comparison LD025](../../../_static/images/examples_tutorial_magnet_testbench.png)
 
-Plotting the simulated field against the experimental data for the magnet with L/D = 4, we obtain the following:
-![comparison LD4](../../../_static/images/examples_tutorial_magnet_CylinderLD4.png)
+The following figure presents the comparison for the Z-component of the magnetic field for a magnet with L/D = 4. The curves show simulation when using the nominal remanence, the remanence corrected from the B-H curve and the fitted remanence value obtained using the experimental data. Due to tolerances in airgap control and die position inside the sensor packaging, dashed lines are added representing sensor displacement of +/- 100 µm.
+![comparison LD4](../../../_static/images/examples_tutorial_magnet_LD4_comp.png)
+Whereas the nominal remanence is of 1.22 T and the corrected value estimated from the datasheet is 1.21 T, an optimization procedure using the experimental data resulted in 1.1847 T. This value is the closest one to what is obtained when performing the characterization of the magnet with a set of coils, which resulted in 1.17 T. Another point to notice is that, for this case, if the sensor was 100 µm closer to the magnet, the resulting curve is even above of that obtained with the nominal remanence.  
 
-To achieve a proper fit, the value used for magnetic polarization of the cylinder magnet was 1.17 T, a bit more than 4% below the nominal remanence and lower than what can be estimated from the hysteresis curve in the datasheet. It is expected that the difference is bigger for the magnet with L/D = 0.25, and this is confirmed with the following comparison: 
-![comparison LD025](../../../_static/images/examples_tutorial_magnet_CylinderLD025.png)
-In this case, a value for 1.12 T for the magnetic polarization is what provides a good fit to the experimental data, more than 8% off from the nominal value. Such is the effect of having magnets with different geometrical aspect ratios.
+The same comparison is made for a magnet with L/D = 0.25, for which greater differences are expected.
+![comparison LD025](../../../_static/images/examples_tutorial_magnet_LD025_comp.png)
+In this case, from the B-H one can estimate a remanence of 1.18 T, and the fitting with the experimental data yields 1.1254 T remanence. Again, this value is the closest one to what is obtained with magnetic characterization, which resulted in 1.11 T remanence. The same air gap tolerance analysis is performed, and if the sensor was 100 µm closer to the magnet even the B-H curve correction would indicate a remanence above the obtained data.
 
 Surely, there are other aspects that will influence your magnetic readings that were not mentioned here, such as sensor offset, sensitivity, and higher order components of the magnetic field that are not taken into account in the analytical expressions solved by Magpylib. But understanding from the start that the geometry of the magnet itself affects its magnetic polarization value, and how to infer the corrected value from a well written datasheet, is an important step towards a better alignment between your simulations and the experimental data.
 
