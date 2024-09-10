@@ -12,6 +12,6 @@ kernelspec:
   name: python3
 ---
 
-(examples-app-force2)=
+(examples-app-haftkraft)=
 
 # Magnet Haftkraft

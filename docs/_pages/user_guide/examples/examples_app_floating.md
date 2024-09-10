@@ -12,7 +12,7 @@ kernelspec:
   name: python3
 ---
 
-(examples-app-force1)=
+(examples-app-floating)=
 
 # Magnetic two-body problem 
 
