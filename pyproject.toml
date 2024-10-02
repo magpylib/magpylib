@@ -86,3 +86,8 @@ testpaths = ["magpylib", "tests"]
 # add_imports = ["from __future__ import annotations"]
 force_single_line = true
 profile = "black"
+
+[tool.poetry.include]
+# Include non-code files like `.pth` files
+# This is relative to the project root
+file = "magpylib/_src/fields/model_multiplicative_field_correction_0_SiLU_MIN-1e-5.pth"

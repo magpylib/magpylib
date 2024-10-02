@@ -4,6 +4,7 @@ The core sub-package gives direct access to our field implementations.
 
 __all__ = [
     "magnet_cuboid_Bfield",
+    "magnet_cuboid_Bfield_NN",
     "magnet_cylinder_axial_Bfield",
     "magnet_cylinder_diametral_Hfield",
     "magnet_cylinder_segment_Hfield",
@@ -16,6 +17,7 @@ __all__ = [
 
 from magpylib._src.fields.field_BH_circle import current_circle_Hfield
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_Bfield
+from magpylib._src.fields.field_BH_cuboid_NN import magnet_cuboid_Bfield_NN
 from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_axial_Bfield
 from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_diametral_Hfield
 from magpylib._src.fields.field_BH_cylinder_segment import (
