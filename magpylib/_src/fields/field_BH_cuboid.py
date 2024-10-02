@@ -3,9 +3,15 @@ Implementations of analytical expressions for the magnetic field of homogeneousl
 magnetized Cuboids. Computation details in function docstrings.
 """
 
-import numpy as np
-from scipy.constants import mu_0 as MU0
+import os
+import warnings
 
+import numpy as np
+import torch
+
+import magpylib
+from magpylib import mu_0 as MU0
+from magpylib._src.fields.networks.networks import PINN_network
 from magpylib._src.input_checks import check_field_input
 
 # pylint: disable=too-many-statements
@@ -183,174 +189,177 @@ def magnet_cuboid_Bfield(
     B /= 4 * np.pi
     return B
 
-# # def axis_string_to_int(s):
-# #     if s == 'x':
-# #         return 0
-# #     elif s == 'y':
-# #         return 1
-# #     elif s == 'z':
-# #         return 2
-# #     else:
-# #         raise Exception('Sorry, input needs to be "x", "y" or "z"')
+
+# pylint: disable=too-many-statements
 
 
-# # def rotate(array, initial_axis, final_axis, abs):
-# #     """
-# #     returns adapted array after a coorinate transformation, where initial_axis is rotated to final_axis
-
-# #     Args:
-# #         array (ndarray, dim (n,3)): array where columns are exchanged according to rotation.
-# #         initial_axis (string): axis that gets rotated from ('x', 'y', or 'z')
-# #         final_axis (string): axis that gets rotated into ('x', 'y', or 'z')
-
-# #     Returns:
-# #         ndarray, dim (n,3): new array with exchanged axes
-
-# #     """
-# #     assert array.ndim == 2 and array.shape[1] == 3, 'wrong dimensions in input array'
-
-# #     initial_axis = axis_string_to_int(initial_axis)
-# #     final_axis = axis_string_to_int(final_axis)
-
-# #     if initial_axis == final_axis:
-# #         return array
-# #     else:
-# #         array_new = np.copy(array)
-# #         array_new[:,final_axis] = array[:,initial_axis]
-# #         if abs:
-# #             array_new[:,initial_axis] = array[:,final_axis]
-# #         else:
-# #             array_new[:,initial_axis] = -array[:,final_axis]
-
-# #     return array_new
+#######################
 
 
-# # #####################
-# # # load NN
-
-# # import torch
-# # import torch.nn as nn
-# # import sys
-# # from NN.networks import PINN_network
-
-# # # path_weights_B = '/home/stipsitzm/23_Hippie/hippie_magnetics/results_demag_one/B_global/model_multiplicative_field_correction_0_SiLU_MIN-1e-5.pth'
-# # path_weights_B = 'NN/model_multiplicative_field_correction_0_SiLU_MIN-1e-5.pth'
-
-# # # # networks for global fields (one network for whole space)
-# # B_model = PINN_network(6, activation=nn.SiLU(), final_activation=nn.SiLU(),defined_with_dropout=True) # (a,b,Chi, x,y,z) -> (B_x, B_y, B_z)
-# # B_model.load_state_dict(torch.load(path_weights_B, map_location=torch.device('cpu')))
-
-# # #######################
+def axis_string_to_int(s):
+    if s == "x":
+        return 0
+    elif s == "y":
+        return 1
+    elif s == "z":
+        return 2
+    else:
+        raise Exception('Sorry, input needs to be "x", "y" or "z"')
 
 
-# # def eval_NN(dimensions, observers, susceptibilities):
+def rotate(array, initial_axis, final_axis, abs):
+    """
+    returns adapted array after a coorinate transformation, where initial_axis is rotated to final_axis
 
-# #     dimensions_normalized = dimensions.T / dimensions[:,2]
-# #     dimensions_normalized = dimensions_normalized.T
-# #     dimensions_normalized[:,2] = susceptibilities
-# #     dimension_batch = torch.tensor(dimensions_normalized, dtype=torch.float32)
+    Args:
+        array (ndarray, dim (n,3)): array where columns are exchanged according to rotation.
+        initial_axis (string): axis that gets rotated from ('x', 'y', or 'z')
+        final_axis (string): axis that gets rotated into ('x', 'y', or 'z')
 
-# #     observers_normalized = np.abs(observers) / dimensions
-# #     xyz_batch = torch.tensor(observers_normalized, dtype=torch.float32)
+    Returns:
+        ndarray, dim (n,3): new array with exchanged axes
 
-# #     res = B_model(dimension_batch, xyz_batch)
+    """
+    assert array.ndim == 2 and array.shape[1] == 3, "wrong dimensions in input array"
 
-# #     return res
+    initial_axis = axis_string_to_int(initial_axis)
+    final_axis = axis_string_to_int(final_axis)
 
+    if initial_axis == final_axis:
+        return array
+    else:
+        array_new = np.copy(array)
+        array_new[:, final_axis] = array[:, initial_axis]
+        if abs:
+            array_new[:, initial_axis] = array[:, final_axis]
+        else:
+            array_new[:, initial_axis] = -array[:, final_axis]
 
-# # def magnet_cuboid_Bfield_NN(
-# #     observers: np.ndarray,
-# #     dimensions: np.ndarray,
-# #     polarizations: np.ndarray,
-# #     susceptibilities: np.ndarray,
-# # ):
-# #     """B-field of homogeneously magnetized cuboids in Cartesian Coordinates.
-
-# #     The cuboids sides are parallel to the coordinate axes. The geometric centers of the
-# #     cuboids lie in the origin. The output is proportional to the polarization magnitude
-# #     and independent of the length units chosen for observers and dimensions.
-
-# #     Parameters
-# #     ----------
-# #     observers: ndarray, shape (n,3)
-# #         Observer positions (x,y,z) in Cartesian coordinates.
-
-# #     dimensions: ndarray, shape (n,3)
-# #         Length of cuboids sides.
-
-# #     polarizations: ndarray, shape (n,3)
-# #         Magnetic polarization vectors.
-
-# #     susceptibilities: ndarray, shape (n,)
-# #         Magnetic susceptibilities
-
-# #     Returns
-# #     -------
-# #     B-Field: ndarray, shape (n,3)
-# #         B-field generated by Cuboids at observer positions.
-
-# #     """
-
-# #     polarizations_x = np.copy(polarizations)
-# #     polarizations_x[:,1] = 0
-# #     polarizations_x[:,2] = 0
-# #     polarizations_y = np.copy(polarizations)
-# #     polarizations_y[:,0] = 0
-# #     polarizations_y[:,2] = 0
-# #     polarizations_z = np.copy(polarizations)
-# #     polarizations_z[:,0] = 0
-# #     polarizations_z[:,1] = 0
-
-# #     Bx = magnet_cuboid_Bfield(observers, dimensions, polarizations_x)
-# #     By = magnet_cuboid_Bfield(observers, dimensions, polarizations_y)
-# #     Bz = magnet_cuboid_Bfield(observers, dimensions, polarizations_z)
+    return array_new
 
 
+def eval_NN(B_model, dimensions, observers, susceptibilities):
 
-# #     # z-polarization
-# #     res_z = eval_NN(dimensions, observers, susceptibilities)
-# #     res_z = res_z.detach().numpy()
+    dimensions_normalized = dimensions.T / dimensions[:, 2]
+    dimensions_normalized = dimensions_normalized.T
+    dimensions_normalized[:, 2] = susceptibilities
+    dimension_batch = torch.tensor(dimensions_normalized, dtype=torch.float32)
+
+    observers_normalized = np.abs(observers) / dimensions
+    xyz_batch = torch.tensor(observers_normalized, dtype=torch.float32)
+
+    res = B_model(dimension_batch, xyz_batch)
+
+    return res
 
 
-# #     # x-polarization
-# #     dimensions_rotate_x = rotate(dimensions, 'x', 'z', True)
-# #     observers_rotate_x = rotate(observers, 'x', 'z', True)
+def magnet_cuboid_Bfield_NN(
+    observers: np.ndarray,
+    dimensions: np.ndarray,
+    polarizations: np.ndarray,
+    susceptibilities: np.ndarray,
+):
+    """B-field of homogeneously magnetized cuboids in Cartesian Coordinates.
 
-# #     res_x = eval_NN(dimensions_rotate_x, observers_rotate_x, susceptibilities)
-# #     res_x = res_x.detach().numpy()
-# #     res_x = rotate(res_x, 'z', 'x', True)
+    The cuboids sides are parallel to the coordinate axes. The geometric centers of the
+    cuboids lie in the origin. The output is proportional to the polarization magnitude
+    and independent of the length units chosen for observers and dimensions.
 
-# #     # y-polarization
-# #     dimensions_rotate_y = rotate(dimensions, 'y', 'z', True)
-# #     observers_rotate_y = rotate(observers, 'y', 'z', True)
+    Parameters
+    ----------
+    observers: ndarray, shape (n,3)
+        Observer positions (x,y,z) in Cartesian coordinates.
 
-# #     res_y = eval_NN(dimensions_rotate_y, observers_rotate_y, susceptibilities)
-# #     res_y = res_y.detach().numpy()
-# #     res_y = rotate(res_y, 'z', 'y', True)
+    dimensions: ndarray, shape (n,3)
+        Length of cuboids sides.
 
-# #     result = Bx * res_x + By * res_y + Bz * res_z
+    polarizations: ndarray, shape (n,3)
+        Magnetic polarization vectors.
 
-# #     return result
+    susceptibilities: ndarray, shape (n,)
+        Magnetic susceptibilities
 
-# # # observers = np.array([[0,0,1], [1,2,3]])
-# # # dimensions = np.array([[1,1,1], [1,2,3]])
-# # # polarizations = np.array([[0,0,3], [1,1,1]])
-# # # susceptibilities = np.array([1,1])
+    Returns
+    -------
+    B-Field: ndarray, shape (n,3)
+        B-field generated by Cuboids at observer positions.
 
-# # # res_NN = magnet_cuboid_Bfield_NN(observers, dimensions, polarizations, susceptibilities)
-# # # res = magnet_cuboid_Bfield(observers, dimensions, polarizations)
+    """
 
-# # # print('res NN', res_NN)
-# # # print('res', res)
+    polarizations_x = np.copy(polarizations)
+    polarizations_x[:, 1] = 0
+    polarizations_x[:, 2] = 0
+    polarizations_y = np.copy(polarizations)
+    polarizations_y[:, 0] = 0
+    polarizations_y[:, 2] = 0
+    polarizations_z = np.copy(polarizations)
+    polarizations_z[:, 0] = 0
+    polarizations_z[:, 1] = 0
 
-# # # print('res NN norm', np.linalg.norm(res_NN))
-# # # print('res norm', np.linalg.norm(res))
+    Bx = magnet_cuboid_Bfield(observers, dimensions, polarizations_x)
+    By = magnet_cuboid_Bfield(observers, dimensions, polarizations_y)
+    Bz = magnet_cuboid_Bfield(observers, dimensions, polarizations_z)
+
+    ####################
+    # Get the path to the installed package
+    package_dir = os.path.dirname(magpylib.__file__)
+
+    # path_weights_B = '/home/stipsitzm/23_Hippie/hippie_magnetics/results_demag_one/B_global/model_multiplicative_field_correction_0_SiLU_MIN-1e-5.pth'
+    # path_weights_B = 'magpylib/_src/fields/networks/model_multiplicative_field_correction_0_SiLU_MIN-1e-5.pth'
+    path_weights_B = os.path.join(
+        package_dir,
+        "_src",
+        "fields",
+        "networks",
+        "model_multiplicative_field_correction_0_SiLU_MIN-1e-5.pth",
+    )
+
+    # # networks for global fields (one network for whole space)
+    B_model = PINN_network(
+        6,
+        activation=torch.nn.SiLU(),
+        final_activation=torch.nn.SiLU(),
+        defined_with_dropout=True,
+    )  # (a,b,Chi, x,y,z) -> (B_x, B_y, B_z)
+    B_model.load_state_dict(
+        torch.load(path_weights_B, map_location=torch.device("cpu"))
+    )
+    ####################
+
+    # z-polarization
+    res_z = eval_NN(B_model, dimensions, observers, susceptibilities)
+    res_z = res_z.detach().numpy()
+
+    # x-polarization
+    dimensions_rotate_x = rotate(dimensions, "x", "z", True)
+    observers_rotate_x = rotate(observers, "x", "z", True)
+
+    res_x = eval_NN(B_model, dimensions_rotate_x, observers_rotate_x, susceptibilities)
+    res_x = res_x.detach().numpy()
+    res_x = rotate(res_x, "z", "x", True)
+
+    # y-polarization
+    dimensions_rotate_y = rotate(dimensions, "y", "z", True)
+    observers_rotate_y = rotate(observers, "y", "z", True)
+
+    res_y = eval_NN(B_model, dimensions_rotate_y, observers_rotate_y, susceptibilities)
+    res_y = res_y.detach().numpy()
+    res_y = rotate(res_y, "z", "y", True)
+
+    result = Bx * res_x + By * res_y + Bz * res_z
+
+    return result
+
+
+#####################################################################################
+
 
 def BHJM_magnet_cuboid(
     field: str,
     observers: np.ndarray,
     dimension: np.ndarray,
     polarization: np.ndarray,
+    susceptibility: np.ndarray,
 ) -> np.ndarray:
     """
     - translate cuboid core field to BHJM
@@ -409,22 +418,40 @@ def BHJM_magnet_cuboid(
         return BHJM / MU0
 
     BHJM *= 0  # return (0,0,0) for all special cases
-    BHJM[mask_gen] = magnet_cuboid_Bfield(
-        observers=observers[mask_gen],
-        dimensions=dimension[mask_gen],
-        polarizations=polarization[mask_gen],
-    )
+
+    # use NN to compute when there is susceptibility
+    mask_sus = susceptibility != 0
+    mask_gen_sus = mask_gen * mask_sus
+    mask_gen_nosus = mask_gen * ~mask_sus
+    if np.any(mask_gen_sus):
+        BHJM[mask_gen_sus] = magnet_cuboid_Bfield_NN(
+            observers=observers[mask_gen_sus],
+            dimensions=dimension[mask_gen_sus],
+            polarizations=polarization[mask_gen_sus],
+            susceptibilities=susceptibility[mask_gen_sus],
+        )
+    if np.any(mask_gen_nosus):
+        BHJM[mask_gen_nosus] = magnet_cuboid_Bfield(
+            observers=observers[mask_gen_nosus],
+            dimensions=dimension[mask_gen_nosus],
+            polarizations=polarization[mask_gen_nosus],
+        )
+
     if field == "B":
         return BHJM
 
     if field == "H":
         BHJM[mask_inside] -= polarization[mask_inside]
+        if np.any(susceptibility[mask_inside]):
+            warnings.warn(
+                "Polarization correction factor not included in H-field computation "
+                "with finite susceptibility on magnet inside. Use B instead."
+            )
         return BHJM / MU0
 
     raise ValueError(  # pragma: no cover
         "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"
     )
-
 
 
 # # # def BHJM_magnet_cuboid_NN(

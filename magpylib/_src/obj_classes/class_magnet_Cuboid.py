@@ -76,7 +76,7 @@ class Cuboid(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_cuboid)
-    _field_func_kwargs_ndim = {"polarization": 2, "dimension": 2}
+    _field_func_kwargs_ndim = {"polarization": 2, "dimension": 2, "susceptibility": 1}
     get_trace = make_Cuboid
 
     def __init__(
@@ -86,11 +86,13 @@ class Cuboid(BaseMagnet):
         dimension=None,
         polarization=None,
         magnetization=None,
+        susceptibility=0,
         style=None,
         **kwargs,
     ):
         # instance attributes
         self.dimension = dimension
+        self.susceptibility = susceptibility
 
         # init inheritance
         super().__init__(
@@ -98,6 +100,16 @@ class Cuboid(BaseMagnet):
         )
 
     # property getters and setters
+    @property
+    def susceptibility(self):
+        """Magnet susceptibility..."""
+        return self._susceptibility
+
+    @susceptibility.setter
+    def susceptibility(self, inp):
+        """set susceptibilty"""
+        self._susceptibility = inp
+
     @property
     def dimension(self):
         """Length of the cuboid sides [a,b,c] in arbitrary length units, e.g. in meter."""
