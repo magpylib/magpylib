@@ -8,6 +8,7 @@ import warnings
 
 import numpy as np
 import torch
+os.environ["CUDA_VISIBLE_DEVICES"]=""
 
 import magpylib
 from magpylib import mu_0 as MU0
