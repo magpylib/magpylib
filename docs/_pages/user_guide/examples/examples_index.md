@@ -228,7 +228,7 @@
 :link: examples-force-force
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../../_static/images/examples_icon_WIP.png
+:img-bottom: ../../../_static/images/examples_icon_force_force.png
 :::
 
 :::{grid-item-card} {ref}`examples-force-haftkraft`
