@@ -216,17 +216,32 @@
 :img-bottom: ../../../_static/images/examples_icon_WIP.png
 :::
 
-:::{grid-item-card} {ref}`examples-app-haftkraft`
+::::
+
+## Magpylib-Force
+
+::::{grid} 2 3 4 4
+:gutter: 4
+
+:::{grid-item-card} {ref}`examples-force-force`
 :text-align: center
-:link: examples-app-haftkraft
+:link: examples-force-force
 :link-type: ref
 :link-alt: link to example
 :img-bottom: ../../../_static/images/examples_icon_WIP.png
 :::
 
-:::{grid-item-card} {ref}`examples-app-floating`
+:::{grid-item-card} {ref}`examples-force-haftkraft`
 :text-align: center
-:link: examples-app-floating
+:link: examples-force-haftkraft
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_force_haftkraft.png
+:::
+
+:::{grid-item-card} {ref}`examples-force-floating`
+:text-align: center
+:link: examples-force-floating
 :link-type: ref
 :link-alt: link to example
 :img-bottom: ../../../_static/images/examples_icon_WIP.png
@@ -265,8 +280,9 @@ examples_app_end_of_shaft.md
 examples_app_halbach.md
 examples_app_coils.md
 examples_app_scales.md
-examples_app_haftkraft.md
-examples_app_floating.md
 
+examples_force_force.md
+examples_force_haftkraft.md
+examples_force_floating.md
 ```
 
