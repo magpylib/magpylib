@@ -3,6 +3,8 @@
 # pylint: disable=missing-function-docstring
 # pylint: disable=no-name-in-module
 # pylint: disable=too-many-statements
+# pylint: disable=too-many-positional-arguments
+
 import numpy as np
 from scipy.constants import mu_0 as MU0
 from scipy.special import ellipeinc

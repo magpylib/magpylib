@@ -4,6 +4,7 @@ homogeneously magnetized Cylinders. Computation details in function docstrings.
 """
 
 # pylint: disable = no-name-in-module
+
 import numpy as np
 from scipy.constants import mu_0 as MU0
 from scipy.special import ellipe
