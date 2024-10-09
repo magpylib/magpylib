@@ -4,6 +4,8 @@ from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 
+# pylint: disable=too-many-positional-arguments
+
 ###############################################################################
 ###############################################################################
 # NEW BASE GEO TESTS FROM v4
