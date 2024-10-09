@@ -244,7 +244,7 @@
 :link: examples-force-floating
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../../_static/images/examples_icon_WIP.png
+:img-bottom: ../../../_static/images/examples_icon_force_floating.png
 :::
 
 ::::
