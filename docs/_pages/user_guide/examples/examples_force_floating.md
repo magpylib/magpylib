@@ -14,200 +14,224 @@ kernelspec:
 
 (examples-force-floating)=
 
-# Magnetic two-body problem 
+# Floating Magnets
 
-This example demonstrates a dynamic simulation of two magnetic objects using magpylib. We simulate the motion and rotation of a cuboid magnet and a spherical magnet under the influence of magnetic forces and torques. The simulation updates the positions and orientations of the magnets over time, visualizing their trajectories, rotational dynamics, and the forces acting on them. A first order semi-implicit Euler method leads to the following equations for the position $\mathbf{s}$, the velocity $\mathbf{v} = \dot{\mathbf{s}}$, the rotation angle $\mathbf{\varphi}$ and the angular velocity $\mathbf{\omega}$ in each time step $\Delta t$:
+## Formalism
 
-$$\mathbf{v}(t+\Delta t) = \mathbf{v}(t) + \frac{\Delta t}{m} \mathbf{F}(t)$$
+With force and torque we can compute how a magnet moves in a magnetic field by solving the equations of motion,
 
-$$\mathbf{s}(t+\Delta t) = \mathbf{s}(t) + \Delta t  \mathbf{v} (t + \Delta t)$$
+$$ \vec{F} = \dot{\vec{p}} \ \text{and} \ \vec{T} = \dot{\vec{L}}$$
 
-$$\mathbf{\omega} (t + \Delta t) = \mathbf{ω}(t) + \Delta t  J^{-1} \mathbf{T}(t)$$
+with force $\vec{F}$, momentum $\vec{p}$, torque $\vec{T}$ and angular momentum $\vec{L}$.
 
-$$\mathbf{\varphi} (t + \Delta t) = \mathbf{\varphi}(t) + \Delta t \mathbf{\omega} (t + \Delta t) $$
+We implement a first order semi-implicit Euler method that is used to compute [planetary motion](https://www.mgaillard.fr/2021/07/11/euler-integration.html). The algorithm splits the computation into small subsequent time-steps $\Delta t$, resulting in the following equations for the position $\vec{s}$, the velocity $\vec{v} = \dot{\vec{s}}$, the rotation angle $\vec{\varphi}$ and the angular velocity $\vec{\omega}$,
 
-$\mathbf{F}$ denotes the force and $\mathbf{T}$ the torque acting on the magnet with mass $m$ and inertia tensor $J$.
+$$\vec{v}(t+\Delta t) = \vec{v}(t) + \frac{\Delta t}{m} \vec{F}(t)$$
 
-In this simulation, we model the interactions between two distinct types of magnets: a cuboid magnet and a spherical magnet. The goal is to observe how these magnets influence each other through magnetic forces and torques, and how these interactions affect their motion and rotation.
+$$\vec{s}(t+\Delta t) = \vec{s}(t) + \Delta t \cdot \vec{v} (t + \Delta t)$$
 
-   >[!WARNING]
-   >
-   >The installation of Magpylib-force is required!
+$$\vec{\omega} (t + \Delta t) = \vec{ω}(t) + \Delta t \cdot J^{-1} \cdot \vec{T}(t)$$
 
-## Import & Movement
+$$\vec{\varphi} (t + \Delta t) = \vec{\varphi}(t) + \Delta t \cdot \vec{\omega} (t + \Delta t) $$
+
+## Magnet and Coil
+
+In the following example we show an implementation of the proposed Euler scheme. A cubical magnet is accelerated by a current loop along the z-axis as show in the following sketch:
+
+```{figure} ../../../_static/images/examples_force_floating_coil-magnet.png
+:width: 40%
+:align: center
+:alt: Sketch of current loop and magnet.
+
+A cubical magnet is accelerated by a current loop.
+```
+
+Due to the symmetry of the problem there is no torque so we solve only the translation part of the equations of motion.
+
+In the beginning, the magnet is at rest and slightly displaced in z-direction from the center of the current loop. With time the magnet is accelerated and it's z-position is displayed in the figure below.
+
 ```{code-cell} ipython3
-import os
-import glob
 import numpy as np
-import pyvista as pv
-from PIL import Image
+import matplotlib.pyplot as plt
 import magpylib as magpy
 from magpylib_force import getFT
 from scipy.spatial.transform import Rotation as R
 
-
-def apply_movement(targets, dt):
-    """defines magnet system that is capable for moving according to force and torque
-    Parameters
-    ----------
-    targets: magpylib collection
-        Target magnets where movement is performed on
-    dt: float
-        finite time step for movement simulation
+def timestep(source, target, dt):
     """
-    n_targets = len(targets)
+    Apply translation-only Euler-sceme timestep to target.
 
-    # calculate force and torque
-    FTs = np.zeros((n_targets, 2, 3))
-    for i in range(n_targets):
-        # sources are all magnets instead of target
-        FTs[i,:,:] = getFT(targets[:i] + targets[i+1:], [targets[i]], anchor=None)
+    Parameters:
+    -----------
+    source: Magpylib source object that generates the magnetic field
+
+    target: Magpylib target object viable for force computation. In addition,
+        the target object must have the following parameters describing
+        the motion state: v (velocity), m (mass)
+
+    dt: Euler scheme length of timestep
+    """
     
+    # compute force
+    F, _ = getFT(source, target)
+    
+    # compute/set new velocity and position
+    target.v = target.v + dt/target.m * F
+    target.position = target.position + dt * target.v
 
+# Current loop that generates the field
+loop = magpy.current.Circle(diameter=10e-3, current=10)
 
-    # simulate movement
-    for i in range(n_targets):
-        # calculate movement and rotation
-        targets[i].velocity = targets[i].velocity + dt/targets[i].mass * FTs[i,0,:]
-        targets[i].angular_velocity = targets[i].angular_velocity + dt*targets[i].orientation.apply(np.dot(targets[i].inverse_inertia_tensor, targets[i].orientation.inv().apply(FTs[i,1,:])))
-        targets[i].position = targets[i].position + dt * targets[i].velocity
-        targets[i].orientation = R.from_rotvec(dt*targets[i].angular_velocity)*targets[i].orientation
+# Magnets which are accelerated in the loop-field
+cube1 = magpy.magnet.Cuboid(dimension=(5e-3,5e-3,5e-3), polarization=(0,0,1))
+cube1.meshing=(3,3,3)
+cube2 = cube1.copy(polarization=(0,0,-1))
 
+# Compute motion
+for cube, lab in zip([cube1, cube2], ["attractive", "repulsive"]):
+    
+    # Set initial conditions
+    cube.m = 1e-3
+    cube.position=(0,0,3e-3)
+    cube.v = np.array([0,0,0])
+
+    # Compute timesteps
+    z = []
+    for _ in range(100):
+        z.append(cube.position[2]*1000)
+        timestep(loop, cube, dt=1e-3)
+
+    plt.plot(z, marker='.', label=lab)
+
+# Graphic styling
+plt.gca().legend()
+plt.gca().grid()
+plt.gca().set(
+    title="Magnet motion",
+    xlabel="timestep ()",
+    ylabel="z-Position (mm)",
+)
+plt.show()
 ```
-The `appply_movement` function simulates the movement and rotation of magnets based on calculated forces and torques. It first determines the forces and torques acting on each magnet due to the other magnets. Then, it updates the magnets' linear and rotational movements by adjusting their velocities, positions, angular velocities, and orientations accordingly.
 
+The simulation is made with two magnets with opposing polarizations. In the "repulsive" case (orange) the magnetic moment of magnet and coil are anti-parallel and the magnet is simply pushed away from the coil in positive z-direction. In the "attractive" case  (blue) the moments are parallel to each other, and the magnet is accelerated towards the coil center. Due to inertia it then comes out on the other side, and is again attracted towards the center resulting in an oscillation.
 
-## Functional Code
+```{warning}
+This algorithm accumulates its error over time, which can be avoided by choosing smaller timesteps.
+```
+
+## Two-body problem
+
+In the following example we demonstrate a fully dynamic simulation with two magnetic bodies that rotate around each other, attracted towards each other by the magnetic force, and repelled by the centrifugal force.
+
+```{figure} ../../../_static/images/examples_force_floating_ringdown.png
+:width: 80%
+:align: center
+:alt: Sketch of two-magnet ringdown.
+
+Two freely moving magnets rotate around each other.
+```
+
+Contrary to the simple case above, we apply the Euler scheme also to the rotation degrees of freedom, as the magnets will change their orientation while they circle around each other.
 
 ```{code-cell} ipython3
+import numpy as np
+import matplotlib.pyplot as plt
+import magpylib as magpy
+from magpylib_force import getFT
+from scipy.spatial.transform import Rotation as R
 
+def timestep(source, target, dt):
+    """
+    Apply full Euler-sceme timestep to target.
 
-t1 = magpy.magnet.Cuboid(position=(2.,0.,2.), dimension=(1.,1.,1.), polarization=(0.,0.,0.92283), orientation=R.from_euler('y', 0, degrees=True))
-t1.meshing = (20,20,20)
-t1.mass = 2.32
-t1.inverse_inertia_tensor = 2.5862069 * np.eye(3)
-t1.velocity = np.array([99., 0., 0.])
-t1.angular_velocity = np.array([0.,0,0.])
+    Parameters:
+    -----------
+    source: Magpylib source object that generates the magnetic field
 
-t2 = magpy.magnet.Sphere(position=(2.,0.,4.001), diameter=1.241, polarization=(0.,0.,0.92583), orientation=R.from_euler('y', 0, degrees=True))
-t2.meshing = 20
-t2.mass = 2.32
-t2.inverse_inertia_tensor = 2.798778 * np.eye(3)
-t2.velocity = np.array([-99., 0., 0.])
-t2.angular_velocity = np.array([0.,0.,0.])
+    target: Magpylib target object viable for force computation. In addition,
+        the target object must have the following parameters describing
+        the motion state: v (velocity), m (mass), w (angular velocity),
+        I_inv (inverse inertial tensor)
 
-targets = magpy.Collection(t1, t2)
-dt = 0.0005
-
-
-for i in range(150):
-    apply_movement(targets, dt)
+    dt: Euler scheme length of timestep
+    """
+    # compute force
+    F, T = getFT(source, target)
     
-```
-Now the allocation of the targets take place. For the movement the two magents need next to position, dimension or diameter, polarization and orientatiion also a mass, velocity and a angular velocity. Also the inverse interia tensor is calculated with the scalevalue and 3x3 diagonal matrix. The scalevalue you have to calculate on your own. `dt` represents the finite time step used in the movement simulation. It denotes the duration of a single simulation step and is used to calculate the updates to the positions, velocities and angular velocities of the magnets over time. The smaller the dt, the more precise and detailed the simulation will be, as changes are computed over smaller increments of time. In the for loop, which is executed 150 times, the apply_movement function is called, thereby updating the values (force, torque, velocity, angular velocity and position) 150 times.
-
-## Prints    
-
-```{code-cell} ipython3
-    #cuboid values after movement
-    print('cuboid')
-    print('position after', t1.position)
-    print('velocity after' , t1.velocity)
-    print('angular velocity after' , t1.angular_velocity )
-    print()
-
-    #sphere values after movement
-    print('sphere')
-    print('position after', t2.position)
-    print('velocity after' , t2.velocity)
-    print('angular velocity after' , t2.angular_velocity )
-
-
-
-```
-Last but not least, the values get printed out in the serial monitor on your device. 
-
-
-<img src="../../../_static/videos/example_force_gif_bigMagnets.gif" width=50% align="center">
-
-## Features
-
-- calculation of the force and torques between magnet objects
-- update of magnets velocities, angular velocities and positions
-
-
-
-## Visualization
-
-Keep in mind, that if you want to visualize it like the animation above, you need some extra code lines to the code from above.
-
-There is an [Example Animations - Custom export Pyvista](https://magpylib.readthedocs.io/en/latest/_pages/user_guide/examples/examples_vis_animations.html#custom-export-pyvista), where you can read up the functionality of visualizing code with Pyvista.
-
-But if you only want to let this example run, without any background information, you can copy the underneath code in the same file, which you have created for the values.
-
-```python
-
-os.makedirs('tmp', exist_ok=True)
-
-
-def display(targets):
-
-    n_targets = len(targets)
+    # compute/set new velocity and position
+    target.v = target.v + dt/target.m * F
+    target.position = target.position + dt * target.v
     
-
-    p = magpy.show(targets, backend='pyvista', return_fig=True,style_legend_show=False)
-
-    for i in range(n_targets):
-        # sources are all magnets instead of target
-        FTs = getFT(targets[:i] + targets[i+1:], [targets[i]], anchor=None)
+    # compute/set new angular velocity and rotation angle
+    target.w = target.w + dt*target.orientation.apply(np.dot(target.I_inv, target.orientation.inv().apply(T)))
+    target.orientation = R.from_rotvec(dt*target.w)*target.orientation
 
 
-        force_torque_mag = np.linalg.norm(FTs, axis=-1)
-        velocities_mag = np.linalg.norm(targets[i].velocity)
-        angular_velocity_mag = np.linalg.norm(targets[i].angular_velocity)
+v0 = 5.18   # init velocity
+steps=505   # number of timesteps
+dt = 1e-2   # timstep size
 
-        p.add_arrows(cent=targets[i].position, direction=FTs[0,:], mag=1/force_torque_mag[0], color='g')
-        p.add_arrows(cent=targets[i].position, direction=targets[i].velocity, mag=1/velocities_mag, color='b')
-        p.add_arrows(cent=targets[i].position, direction=FTs[1,:], mag=1/force_torque_mag[1], color='r')
-        p.add_arrows(cent=targets[i].position, direction=targets[i].angular_velocity, mag=1/angular_velocity_mag, color='m')
+# Create the two magnets and set initial conditions
+sphere1 = magpy.magnet.Sphere(position=(5,0,0), diameter=1, polarization=(1,0,0))
+sphere1.meshing = 5
+sphere1.m = 2
+sphere1.v = np.array([0, v0, 0])
+sphere1.w = np.array([0, 0, 0])
+sphere1.I_inv = 1 * np.eye(3)
 
-        p.camera.position = (0., -15., 0.)
-        p.camera.focal_point = (2.,0.,3.)
-    return p
+sphere2 = sphere1.copy(position=(-5,0,0))
+sphere2.v = np.array([0,-v0, 0])
 
+# Solve equations of motion
+data = np.zeros((4,steps,3))
+for i in range(steps):
+    timestep(sphere1, sphere2, dt)
+    timestep(sphere2, sphere1, dt)
 
+    # Store results of each timestep
+    data[0,i] = sphere1.position
+    data[1,i] = sphere2.position
+    data[2,i] = sphere1.orientation.as_euler('xyz')
+    data[3,i] = sphere2.orientation.as_euler('xyz')
 
-# #creation of the gif
-def make_gif(filename, duration=25, loop=0):
-    frames = [Image.open(image) for image in glob.glob(f"tmp/*.png")]
-    frames[0].save(
-        f"{filename}.gif",
-        format="GIF",
-        append_images=frames[1:],
-        save_all=True,
-        duration=duration,
-        loop=loop,
-        disposal=2, # remove previous image that becomes visible through transparency
-    )
+# Plot results
+fig, (ax1,ax2) = plt.subplots(2,1,figsize=(10,5))
 
-make_gif("test", duration=50)
+for j,ls in enumerate(["-", "--"]):
+    
+    # Plot positions
+    for i,a in enumerate("xyz"):
+        ax1.plot(data[j,:,i], label= a + str(j+1), ls=ls)
+    
+    # Plot orientations
+    for i,a in enumerate(["phi", "psi", "theta"]):
+        ax2.plot(data[j+2,:,i], label= a + str(j+1), ls=ls)
 
+# Figure styling
+for ax in fig.axes:
+    ax.legend(fontsize=9, loc=6, facecolor='.8')
+    ax.grid()
+ax1.set(
+    title="Floating Magnet Ringdown",
+    ylabel="Positions (m)",
+)
+ax2.set(
+    ylabel="Orientations (rad)",
+    xlabel="timestep ()",
+)
+plt.tight_layout()
+plt.show()
 ```
 
-> Also the for loop, has to be extended: 
-```python
-    for i in range(255):
-        apply_movement(targets, dt)
-        p = display(targets)
-        p.off_screen = True
-        p.screenshot('tmp/{:04d}.png'.format(i))
-        p.show()
-        
-        p.close()
+In the figure one can see, that the initial velocity is chosen so that the magnets approach each other in a ringdown-like behavior. The magnets are magnetically locked towards each other - both always show the same orientation. However, given no initial angular velocity, the rotation angle is oscillating several times while circling once.
 
+A video is helpful in this case to understand what is going on. From the computation above, we build the following gif making use of this [export-animation](examples-vis-exporting-animations) tutorial.
+
+```{figure} ../../../_static/videos/example_force_floating_ringdown.gif
+:width: 60%
+:align: center
+:alt: animation of simulated magnet ringdown.
+
+Animation of above simulated magnet ringdown.
 ```
-
-
-For your understanding, the first line makes sure, if the appropriate folder is existing. Otherwise the folder will be created. The other code can be pasted after the code block from above. Only the for loop in the end has to be adjusted with the last for loop from the programm above.
-
-
