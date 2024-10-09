@@ -2,7 +2,9 @@
 
 # Magnetic Holding Force
 
-With Magpylib it is possible to compute the holding force of a magnet attached magnetically to a soft-ferromagnetic plate.
+The examples here require installaion of the [magpylib-force package](https://pypi.org/project/magpylib-force/). See also the [magpylib-force documentation](docs-magpylib-force).
+
+With Magpylib-force it is possible to compute the holding force of a magnet attached magnetically to a soft-ferromagnetic plate.
 
 ```{figure} ../../../_static/images/examples_force_haftkraft.png
 :width: 40%

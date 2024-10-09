@@ -16,6 +16,8 @@ kernelspec:
 
 # Floating Magnets
 
+The examples here require installaion of the [magpylib-force package](https://pypi.org/project/magpylib-force/). See also the [magpylib-force documentation](docs-magpylib-force).
+
 ## Formalism
 
 With force and torque we can compute how a magnet moves in a magnetic field by solving the equations of motion,
