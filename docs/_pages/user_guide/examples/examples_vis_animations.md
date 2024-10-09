@@ -85,6 +85,8 @@ with magpy.show_context([magnet, sensor], backend="plotly", animation=True) as s
     sc.show(output="model3d", col=2, row=2)
 ```
 
+(examples-vis-exporting-animations)=
+
 ## Exporting Animations
 
 Animations are wonderful but can be quite difficult to export when they are needed, for example, in a presentation. Here we show how to creat and export animations using the *.gif format.

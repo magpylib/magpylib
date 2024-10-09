@@ -1,3 +1,5 @@
+# pylint: disable=too-many-positional-arguments
+
 """Magnet Tetrahedron class code"""
 
 import numpy as np

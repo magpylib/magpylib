@@ -2,6 +2,8 @@
 
 # pylint: disable=redefined-builtin
 # pylint: disable=import-outside-toplevel
+# pylint: disable=too-many-positional-arguments
+
 from collections import Counter
 
 from magpylib._src.defaults.defaults_utility import validate_style_keys

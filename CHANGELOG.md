@@ -7,6 +7,7 @@
 - Fixed Pvyvista plot bounds not fitting on animation. Also enables `zoom` feature which was not working until now. ([#798](https://github.com/magpylib/magpylib/pull/798))
 - Fixed canvas layout being modified even when user-provided. Also added a new `canvas_update` parameter to choose the layout behavior (by default `"auto"`) ([#799](https://github.com/magpylib/magpylib/pull/799))
 - Improved documentation ([#766](https://github.com/magpylib/magpylib/issues/766), [#802](https://github.com/magpylib/magpylib/issues/802))
+- Documentation now includes force computation, which is still in a separate package "magpylib-force", but which will be integrated into Magplyib in the coming months. ([#787](https://github.com/magpylib/magpylib/issues/787))
 
 ## [5.0.4] - 2024-06-18
 - Added support for Numpy 2.0 ([#795](https://github.com/magpylib/magpylib/pull/789))

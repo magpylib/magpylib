@@ -1,5 +1,7 @@
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-lines
+# pylint: disable=too-many-positional-arguments
+
 """Field computation structure:
 
 level_core:(field_BH_XXX.py files)

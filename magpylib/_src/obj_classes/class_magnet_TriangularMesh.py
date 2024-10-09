@@ -22,6 +22,7 @@ from magpylib._src.style import TriangularMeshStyle
 
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
+# pylint: disable=too-many-positional-arguments
 
 
 class TriangularMesh(BaseMagnet):
