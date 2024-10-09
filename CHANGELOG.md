@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased] - YYYY-MM-DD
+
+## [5.0.5] - 2024-10-09
 - Fixed a bug where the magnetization arrow graphical representation would be anchored badly after rotation ([#805](https://github.com/magpylib/magpylib/issues/805))
 - Added `units_length` input to the `show` function to allow displaying axes with different length units. This parameter can be set individually for each subplot. ([#786](https://github.com/magpylib/magpylib/pull/786))
 - Small documentation and Readme improvement. Change naming from "explicit expression" to "analytical expression" as described in ([#794](https://github.com/magpylib/magpylib/issues/794)).
@@ -478,7 +480,8 @@ The first official release of the Magpylib library.
 
 ---
 
-[Unreleased]:https://github.com/magpylib/magpylib/compare/5.0.4...HEAD
+[Unreleased]:https://github.com/magpylib/magpylib/compare/5.0.5...HEAD
+[5.0.5]:https://github.com/magpylib/magpylib/compare/5.0.4...5.0.5
 [5.0.4]:https://github.com/magpylib/magpylib/compare/5.0.3...5.0.4
 [5.0.3]:https://github.com/magpylib/magpylib/compare/5.0.2...5.0.3
 [5.0.2]:https://github.com/magpylib/magpylib/compare/5.0.1...5.0.2
