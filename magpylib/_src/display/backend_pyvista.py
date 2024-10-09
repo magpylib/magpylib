@@ -2,6 +2,8 @@
 
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
+# pylint: disable=too-many-positional-arguments
+
 import os
 import tempfile
 from functools import lru_cache
@@ -280,7 +282,7 @@ def display_pyvista(
             canvas.add_mesh(pv.PolyData(pts), opacity=0)
             try:
                 canvas.remove_scalar_bar()
-            except IndexError:
+            except (StopIteration, IndexError):
                 # try to remove scalar bar, if none, pass
                 # needs to happen in the loop otherwise they cummulate
                 # while the max of 10 is reached and throws a ValueError

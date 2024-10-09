@@ -6,6 +6,8 @@ import magpylib as magpy
 from magpylib._src.obj_classes.class_BaseTransform import apply_move
 from magpylib._src.obj_classes.class_BaseTransform import apply_rotation
 
+# pylint: disable=too-many-positional-arguments
+
 
 @pytest.mark.parametrize(
     (

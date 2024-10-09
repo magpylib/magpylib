@@ -1,3 +1,5 @@
+# pylint: disable=too-many-positional-arguments
+
 """Magnet Sphere class code"""
 
 from magpylib._src.display.traces_core import make_Sphere

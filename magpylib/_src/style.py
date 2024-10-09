@@ -3,6 +3,8 @@
 # pylint: disable=C0302
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=cyclic-import
+# pylint: disable=too-many-positional-arguments
+
 import numpy as np
 
 from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES

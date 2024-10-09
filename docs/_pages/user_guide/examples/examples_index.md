@@ -178,6 +178,7 @@
 
 ::::
 
+
 ## Applications
 
 ::::{grid} 2 3 4 4
@@ -217,6 +218,37 @@
 
 ::::
 
+## Magpylib-Force
+
+::::{grid} 2 3 4 4
+:gutter: 4
+
+:::{grid-item-card} {ref}`examples-force-force`
+:text-align: center
+:link: examples-force-force
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_force_force.png
+:::
+
+:::{grid-item-card} {ref}`examples-force-haftkraft`
+:text-align: center
+:link: examples-force-haftkraft
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_force_haftkraft.png
+:::
+
+:::{grid-item-card} {ref}`examples-force-floating`
+:text-align: center
+:link: examples-force-floating
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_force_floating.png
+:::
+
+::::
+
 
 ```{toctree}
 :maxdepth: 2
@@ -249,5 +281,8 @@ examples_app_halbach.md
 examples_app_coils.md
 examples_app_scales.md
 
+examples_force_force.md
+examples_force_haftkraft.md
+examples_force_floating.md
 ```
 
