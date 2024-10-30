@@ -484,7 +484,8 @@ The first official release of the Magpylib library.
 
 ---
 
-[Unreleased]:https://github.com/magpylib/magpylib/compare/5.1.0...HEAD
+[Unreleased]:https://github.com/magpylib/magpylib/compare/5.1.1...HEAD
+[5.1.1]:https://github.com/magpylib/magpylib/compare/5.1.0...5.1.1
 [5.1.0]:https://github.com/magpylib/magpylib/compare/5.0.4...5.1.0
 [5.0.4]:https://github.com/magpylib/magpylib/compare/5.0.3...5.0.4
 [5.0.3]:https://github.com/magpylib/magpylib/compare/5.0.2...5.0.3
