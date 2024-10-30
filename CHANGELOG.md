@@ -2,6 +2,10 @@
 
 ## [Unreleased] - YYYY-MM-DD
 
+## [5.1.1] - 2024-10-31
+- Included magpylib-force version 0.3.1 in documentation
+- Removed unused issue templates and improved PR template
+
 ## [5.1.0] - 2024-10-09
 - Fixed a bug where the magnetization arrow graphical representation would be anchored badly after rotation ([#805](https://github.com/magpylib/magpylib/issues/805))
 - Added `units_length` input to the `show` function to allow displaying axes with different length units. This parameter can be set individually for each subplot. ([#786](https://github.com/magpylib/magpylib/pull/786))
