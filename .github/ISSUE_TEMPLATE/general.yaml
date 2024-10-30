@@ -1,0 +1,51 @@
+name: Report a problem 🐛
+description: Problem reports are for when something behaves incorrectly, or differently from how you'd expect.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: dropdown
+    id: version
+    attributes:
+      label: Magpylib version
+      description: What version of Magpylib are you running?
+      options:
+        - 5.x (Latest)
+        - 5.x (Unreleased)
+        - 4.x
+        - 3.x
+        - 2.x
+        - 1.x
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      placeholder: Tell us what you see! Also tell us, what did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: code-example
+    attributes:
+      label: Code example
+      description: |
+        A complete, minimal, self-contained example code that reproduces the issue.
+        This will be automatically formatted into code, so no need for backticks.
+      placeholder: |
+        import numpy as np
+        import magpylib as magpy
+
+        cuboid = magpy.magnet.Cuboid(polarization=(0.,0.,1.), dimension=(1.,1.,1.))
+        cuboid.move(np.linspace((0,0,0), (0,0,10), 11), start=0)
+        cuboid.show()
+      render: Python
+  - type: textarea
+    id: addition-context
+    attributes:
+      label: Additional context
+      placeholder: |
+        OS: [e.g. Linux 32bit, MacOs Monterey, Windows 10 64bit]
+        IDE: [e.g. Spyder, PyCharm, VSCode, Jupyterlab]
