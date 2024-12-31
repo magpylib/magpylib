@@ -4,9 +4,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.0
+    jupytext_version: 1.16.1
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 orphan: true
@@ -21,8 +21,8 @@ orphan: true
 Once all Magpylib objects and their paths have been created, `show` creates a 3D plot of the geometric arrangement using the Matplotlib (command line default) and Plotly (notebook default) packages. `show` generates a new figure which is automatically displayed.
 
 ```{code-cell} ipython3
-import numpy as np
 import magpylib as magpy
+import numpy as np
 
 magnet = magpy.magnet.Cylinder(
     polarization=(0, 0, 1),
@@ -34,7 +34,7 @@ current = magpy.current.Circle(
 )
 dipole = magpy.misc.Dipole(
     moment=(0, 0, 1),
-    position=np.linspace((2,0,-2), (2,0,2), 20),
+    position=np.linspace((2, 0, -2), (2, 0, 2), 20),
 )
 sensor = magpy.Sensor(
     pixel=[(0, 0, z) for z in (-0.5, 0, 0.5)],
@@ -55,15 +55,15 @@ The graphic backend refers to the plotting library that is used for graphic outp
 The graphic backend is set via the kwarg `backend` in the `show` function, which is demonstrated in the following example
 
 ```{code-cell} ipython3
-import numpy as np
 import magpylib as magpy
+import numpy as np
 
 # Define sources and paths
 loop = magpy.current.Circle(
-    current=1, diameter=1, position=np.linspace((0,0,-3), (0,0,3), 40)
+    current=1, diameter=1, position=np.linspace((0, 0, -3), (0, 0, 3), 40)
 )
 cylinder = magpy.magnet.Cylinder(
-    polarization=(0,-1,0), dimension=(1,2), position=(0,-3,0)
+    polarization=(0, -1, 0), dimension=(1, 2), position=(0, -3, 0)
 )
 cylinder.rotate_from_angax(np.linspace(0, 300, 40), "z", anchor=0, start=0)
 
@@ -132,23 +132,30 @@ There is a high level of **feature parity**, however, not all graphic features a
 When calling `show`, a figure is automatically generated and displayed. It is also possible to place the `show` output in a given figure using the `canvas` argument. Consider the following Magpylib field computation,
 
 ```{code-cell} ipython3
-import numpy as np
 import magpylib as magpy
+import numpy as np
 
 # Magpylib field computation
-loop = magpy.current.Circle(current=1, diameter=.1)
-sens = magpy.Sensor(position=np.linspace((0,0,-.1), (0,0,.1), 100))
+loop = magpy.current.Circle(current=1, diameter=0.1)
+sens = magpy.Sensor(position=np.linspace((0, 0, -0.1), (0, 0, 0.1), 100))
 B = loop.getB(sens)
 ```
 
 The following examples demonstrate how to place the Magpylib `show` output in figures created with the three supported graphic backends.
 
++++
+
 In **Matplotlib** we combine a 2D-field plot with the 3D show output and modify the 3D show output with a line.
 
 ```{code-cell} ipython3
-# Continuation from above - ensure previous code is executed
-
+import magpylib as magpy
 import matplotlib.pyplot as plt
+import numpy as np
+
+# Magpylib field computation
+loop = magpy.current.Circle(current=1, diameter=0.1)
+sens = magpy.Sensor(position=np.linspace((0, 0, -0.1), (0, 0, 0.1), 100))
+B = loop.getB(sens)
 
 # Create Matplotlib figure with subplots
 fig = plt.figure(figsize=(10, 4))
@@ -162,19 +169,30 @@ ax1.plot(B)
 magpy.show(loop, sens, canvas=ax2)
 
 # Modify show output
-ax2.plot([-.1,.1], [0,0], [0,0], color='k')
+ax2.plot([-0.1, 0.1], [0, 0], [0, 0], color="k")
 
-# Generate figure
+# Render figure
 plt.tight_layout()
 plt.show()
 ```
 
+```{attention}
+When providing a canvas, no update to its layout is performed by Magpylib, unless explicitly specified by setting `canvas_update=True` in `show()`. By default `canvas_update="auto"` only updates the canvas if is not provided by the user. The example above outputs a 3D scene with the default Matplotlib settings and will not match the standard Magpylib settings.
+```
+
++++
+
 In **Plotly** we combine a 2D-field plot with the 3D show output and modify the 3D show output with a line.
 
 ```{code-cell} ipython3
-# Continuation from above - ensure previous code is executed
-
+import magpylib as magpy
+import numpy as np
 import plotly.graph_objects as go
+
+# Magpylib field computation
+loop = magpy.current.Circle(current=1, diameter=0.1)
+sens = magpy.Sensor(position=np.linspace((0, 0, -0.1), (0, 0, 0.1), 100))
+B = loop.getB(sens)
 
 # Create Plotly figure and subplots
 fig = go.Figure().set_subplots(
@@ -182,20 +200,15 @@ fig = go.Figure().set_subplots(
 )
 
 # 2D Plotly plot
-fig.add_trace(go.Scatter(y=B[:,2], name="Bz"))
+fig.add_scatter(y=B[:, 2], name="Bz")
 
-# Place Magpylib show output in a Plotly figure
-temp_fig = go.Figure()
-magpy.show(loop, sens, canvas=temp_fig)
+# Draw 3d model in the existing Plotly figure
+magpy.show(loop, sens, canvas=fig, col=2, canvas_update=True)
 
-# Modify show output
-temp_fig.add_trace(go.Scatter3d(x=(-.1,.1), y=(0,0), z=(0,0)))
+# Add 3d scatter trace to main figure model
+fig.add_scatter3d(x=(-0.1, 0.1), y=(0, 0), z=(0, 0), col=2, row=1)
 
-# Add to main figure
-fig.add_traces(temp_fig.data, rows=1, cols=2)
-fig.layout.scene.update(temp_fig.layout.scene)
-
-# Generate figure
+# Render figure
 fig.show()
 ```
 
@@ -213,10 +226,10 @@ pl = pv.Plotter()
 magpy.show(loop, sens, canvas=pl)
 
 # Add a Line to 3D scene
-line = np.array([(-.1,0,0), (.1,0,0)])
+line = np.array([(-0.1, 0, 0), (0.1, 0, 0)])
 pl.add_lines(line, color="black")
 
-# Generate figure
+# Render figure
 pl.show()
 ```
 
@@ -226,19 +239,19 @@ pl.show()
 Instead of forwarding a figure to an existing canvas, it is also possible to return the figure object for further manipulation using the `return_fig` command. In the following example this is demonstrated for the pyvista backend.
 
 ```{code-cell} ipython3
-import numpy as np
 import magpylib as magpy
+import numpy as np
 
 # Create Magpylib objects with paths
-loop = magpy.current.Circle(current=1, diameter=.1)
-sens = magpy.Sensor(position=np.linspace((0,0,-.1), (0,0,.1), 100))
+loop = magpy.current.Circle(current=1, diameter=0.1)
+sens = magpy.Sensor(position=np.linspace((0, 0, -0.1), (0, 0, 0.1), 100))
 
 # Return pyvista scene object with show
 pl = magpy.show(loop, sens, backend="pyvista", return_fig=True)
 
 # Modify Pyvista scene
-pl.add_lines(np.array([(-.1,0,0), (.1,0,0)]), color="black")
-pl.camera.position = (.5, .2, .1)
+pl.add_lines(np.array([(-0.1, 0, 0), (0.1, 0, 0)]), color="black")
+pl.camera.position = (0.5, 0.2, 0.1)
 pl.set_background("yellow", top="lightgreen")
 pl.enable_anti_aliasing("ssaa")
 
@@ -261,12 +274,12 @@ Each path step will generate one frame of the animation, unless `animation_fps` 
 The following example demonstrates the animation feature,
 
 ```{code-cell} ipython3
-import numpy as np
 import magpylib as magpy
+import numpy as np
 
 # Create Magpylib objects with paths
-loop = magpy.current.Circle(current=1, diameter=.1)
-sens = magpy.Sensor(position=np.linspace((0,0,-.1), (0,0,.1), 100))
+loop = magpy.current.Circle(current=1, diameter=0.1)
+sens = magpy.Sensor(position=np.linspace((0, 0, -0.1), (0, 0, 0.1), 100))
 
 # Show animation
 magpy.show(
@@ -310,12 +323,14 @@ All of this is achieved via the `show` function by passing input objects as dict
 The following code demonstrates these features.
 
 ```{code-cell} ipython3
-import numpy as np
 import magpylib as magpy
+import numpy as np
 
 # Create Magpylib objects with paths
-loop = magpy.current.Circle(current=1, diameter=.1, style_label="L")
-sens = magpy.Sensor(position=np.linspace((-.1,0,.1), (.1,0,.1), 50), style_label="S")
+loop = magpy.current.Circle(current=1, diameter=0.1, style_label="L")
+sens = magpy.Sensor(
+    position=np.linspace((-0.1, 0, 0.1), (0.1, 0, 0.1), 50), style_label="S"
+)
 
 # Use built-in subplots
 magpy.show(
@@ -323,23 +338,23 @@ magpy.show(
     {"objects": [loop, sens], "output": "Bx", "col": 2},
     {"objects": [loop, sens], "output": ["Hx", "Hy", "Hz"], "row": 2},
     {"objects": [loop, sens], "output": "Hxyz", "col": 2, "row": 2},
-    backend='matplotlib',
+    backend="matplotlib",
 )
 ```
 
 Each input dictionary can contain kwargs, like `pixel_agg=None` or `sumup=False` for 2D plots.
 
 ```{code-cell} ipython3
-import numpy as np
 import magpylib as magpy
+import numpy as np
 
 # Create Magpylib objects with paths
-loop1 = magpy.current.Circle(current=1, diameter=.1, style_label="L1")
-loop2 = loop1.copy(diameter=.2, style_label="L2")
+loop1 = magpy.current.Circle(current=1, diameter=0.1, style_label="L1")
+loop2 = loop1.copy(diameter=0.2, style_label="L2")
 sens = magpy.Sensor(
-    pixel=[(.01,0,0), (-.01,0,0)],
-    position=np.linspace((-.2,0,.1), (.2,0,.1), 50),
-    style_label="S"
+    pixel=[(0.01, 0, 0), (-0.01, 0, 0)],
+    position=np.linspace((-0.2, 0, 0.1), (0.2, 0, 0.1), 50),
+    style_label="S",
 )
 obj = [loop1, loop2, sens]
 
@@ -347,8 +362,15 @@ obj = [loop1, loop2, sens]
 magpy.show(
     {"objects": obj, "output": "Hx"},
     {"objects": obj, "output": "Hx", "pixel_agg": None, "col": 2},
-    {"objects": obj, "output": "Hx", "sumup": False, "row":2},
-    {"objects": obj, "output": "Hx", "pixel_agg": None, "sumup": False, "row": 2, "col": 2},
+    {"objects": obj, "output": "Hx", "sumup": False, "row": 2},
+    {
+        "objects": obj,
+        "output": "Hx",
+        "pixel_agg": None,
+        "sumup": False,
+        "row": 2,
+        "col": 2,
+    },
 )
 ```
 
@@ -360,15 +382,17 @@ To make the subplot syntax more convenient we introduced the `show_context` nati
 The above example becomes:
 
 ```{code-cell} ipython3
-import numpy as np
 import magpylib as magpy
+import numpy as np
 
 # Create Magpylib objects with paths
-loop = magpy.current.Circle(current=1, diameter=.1, style_label="L")
-sens = magpy.Sensor(position=np.linspace((-.1,0,.1), (.1,0,.1), 50), style_label="S")
+loop = magpy.current.Circle(current=1, diameter=0.1, style_label="L")
+sens = magpy.Sensor(
+    position=np.linspace((-0.1, 0, 0.1), (0.1, 0, 0.1), 50), style_label="S"
+)
 
 # Use built-in subplots via show_context
-with magpy.show_context(loop, sens, backend='plotly') as sc:
+with magpy.show_context(loop, sens, backend="plotly") as sc:
     sc.show()
     sc.show(output="Bx", col=2)
     sc.show(output=["Hx", "Hy", "Hz"], row=2)
@@ -408,12 +432,14 @@ with magpy.show_context():
 It is very helpful to combine 2D and 3D subplots in an animation that shows the motion of the 3D system, while displaying the field at the respective path instance at the same time. Unfortunately, it is quite tedious to create such animations. The most powerful feature and main reason behind built-in subplots is the ability to do just that with few lines of code.
 
 ```{code-cell} ipython3
-import numpy as np
 import magpylib as magpy
+import numpy as np
 
 # Create Magpylib objects with paths
-loop = magpy.current.Circle(current=1, diameter=.1, style_label="L")
-sens = magpy.Sensor(position=np.linspace((-.1,0,.1), (.1,0,.1), 50), style_label="S")
+loop = magpy.current.Circle(current=1, diameter=0.1, style_label="L")
+sens = magpy.Sensor(
+    position=np.linspace((-0.1, 0, 0.1), (0.1, 0, 0.1), 50), style_label="S"
+)
 
 # Use built-in subplots via show_context
 with magpy.show_context(loop, sens, animation=True) as sc:
@@ -421,4 +447,24 @@ with magpy.show_context(loop, sens, animation=True) as sc:
     sc.show(output="Bx", col=2)
     sc.show(output=["Hx", "Hy", "Hz"], row=2)
     sc.show(output="Hxyz", col=2, row=2)
+```
+
+### Canvas length units
+
+When displaying very small Magpylib objects, the axes scaling in meters might be inadequate and you may want to use other units that fit the system dimensions more nicely. The example below shows how to display an object (in this case the same) with different length units and zoom levels.
+
+```{tip}
+Setting `units_length="auto"` will infer the most suitable units based on the maximum range of the system.
+```
+
+```{code-cell} ipython3
+import magpylib as magpy
+
+c1 = magpy.magnet.Cuboid(dimension=(0.001, 0.001, 0.001), polarization=(1, 2, 3))
+
+with magpy.show_context(c1, backend="matplotlib") as s:
+    s.show(row=1, col=1, units_length="auto", zoom=0)
+    s.show(row=1, col=2, units_length="mm", zoom=1)
+    s.show(row=2, col=1, units_length="µm", zoom=2)
+    s.show(row=2, col=2, units_length="m", zoom=3)
 ```

@@ -1,6 +1,8 @@
 """BaseHomMag class code"""
 
 # pylint: disable=cyclic-import
+# pylint: disable=too-many-positional-arguments
+
 import warnings
 
 import numpy as np

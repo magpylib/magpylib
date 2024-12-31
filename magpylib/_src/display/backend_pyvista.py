@@ -2,6 +2,8 @@
 
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
+# pylint: disable=too-many-positional-arguments
+
 import os
 import tempfile
 from functools import lru_cache
@@ -211,6 +213,7 @@ def display_pyvista(
     data,
     canvas=None,
     return_fig=False,
+    canvas_update="auto",
     jupyter_backend=None,
     max_rows=None,
     max_cols=None,
@@ -266,27 +269,36 @@ def display_pyvista(
                 canvas.subplot(row, col)
                 if subplot_specs[row, col]["type"] == "scene":
                     getattr(canvas, f"add_{typ}")(**tr1)
-                    canvas.show_axes()
                 else:
                     if charts.get((row, col), None) is None:
                         charts_max_ind += 1
                         charts[(row, col)] = pv.Chart2D()
                         canvas.add_chart(charts[(row, col)])
                     getattr(charts[(row, col)], typ)(**tr1)
-        for rowcol, count in count_with_labels.items():
+            # in pyvista there is no way to set the bouds so we add corners with
+            # a transparent scatter plot to set the ranges and zoom correctly
+            ranges = data["ranges"][row + 1, col + 1]
+            pts = np.array(np.meshgrid(*ranges)).T.reshape(-1, 3)
+            canvas.add_mesh(pv.PolyData(pts), opacity=0)
+            try:
+                canvas.remove_scalar_bar()
+            except (StopIteration, IndexError):
+                # try to remove scalar bar, if none, pass
+                # needs to happen in the loop otherwise they cummulate
+                # while the max of 10 is reached and throws a ValueError
+                pass
+
+        for (row, col), count in count_with_labels.items():
+            canvas.subplot(row, col)
+            # match other backends plotter properties
+            if canvas_update:
+                if callable(canvas.show_axes):
+                    canvas.show_axes()
+                canvas.camera.azimuth = -90
+                canvas.set_background("gray", top="white")
             if 0 < count <= legend_maxitems:
-                row, col = rowcol
-                canvas.subplot(row, col)
                 if subplot_specs[row, col]["type"] == "scene":
                     canvas.add_legend(bcolor=None)
-        # match other backends plotter properties
-        canvas.set_background("gray", top="white")
-        canvas.camera.azimuth = -90
-        try:
-            canvas.remove_scalar_bar()
-        except IndexError:
-            # try to remove scalar bar, if none, pass
-            pass
 
     def run_animation(filename, embed=True):
         # embed=True, embeds the animation into the notebook page and is necessary when using

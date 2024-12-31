@@ -48,8 +48,8 @@ strl = grid.streamlines_from_source(
 # Create a Pyvista plotting scene
 pl = pv.Plotter()
 
-# Add magnet to scene
-magpy.show(magnet, canvas=pl, backend="pyvista")
+# Add magnet to scene - streamlines units are assumed to be meters
+magpy.show(magnet, canvas=pl, units_length="m", backend="pyvista")
 
 # Prepare legend parameters
 legend_args = {

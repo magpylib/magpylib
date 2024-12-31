@@ -1,3 +1,5 @@
+# pylint: disable=too-many-positional-arguments
+
 """Polyline current class code"""
 
 import warnings

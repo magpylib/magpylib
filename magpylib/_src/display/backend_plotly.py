@@ -2,6 +2,8 @@
 
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-positional-arguments
+
 import inspect
 from functools import lru_cache
 
@@ -75,15 +77,17 @@ def match_args(ttype: str):
     return set(named_args)
 
 
-def apply_fig_ranges(fig, ranges, apply2d=True):
+def apply_fig_ranges(fig, ranges_rc, labels_rc, apply2d=True):
     """This is a helper function which applies the ranges properties of the provided `fig` object
-    according to a provided ranges. All three space direction will be equal and match the
-    maximum of the ranges needed to display all objects, including their paths.
+    according to a provided ranges for each subplot. All three space direction will be equal and
+    match the maximum of the ranges needed to display all objects, including their paths.
 
     Parameters
     ----------
-    ranges: array of dimension=(3,2)
+    ranges_rc: dict of arrays of dimension=(3,2)
         min and max graph range
+    labels_rc: dict of dicts
+        contains a dict with 'x', 'y', 'z' keys and respective labels as strings for each subplot
 
     apply2d: bool, default = True
         applies fixed range also on 2d traces
@@ -92,15 +96,27 @@ def apply_fig_ranges(fig, ranges, apply2d=True):
     -------
     None: NoneType
     """
-    fig.update_scenes(
-        **{
-            f"{k}axis": {"range": ranges[i], "autorange": False, "title": f"{k} (m)"}
-            for i, k in enumerate("xyz")
-        },
-        aspectratio={k: 1 for k in "xyz"},
-        aspectmode="manual",
-        camera_eye={"x": 1, "y": -1.5, "z": 1.4},
-    )
+    for rc, ranges in ranges_rc.items():
+        row, col = rc
+        labels = labels_rc.get(rc, {k: "" for k in "xyz"})
+        kwargs = {
+            **{
+                f"{k}axis": {
+                    "range": ranges[i],
+                    "autorange": False,
+                    "title": labels[k],
+                }
+                for i, k in enumerate("xyz")
+            },
+            "aspectratio": {k: 1 for k in "xyz"},
+            "aspectmode": "manual",
+            "camera_eye": {"x": 1, "y": -1.5, "z": 1.4},
+        }
+
+        # pylint: disable=protected-access
+        if fig._grid_ref is not None:
+            kwargs.update({"row": row, "col": col})
+        fig.update_scenes(**kwargs)
     if apply2d:
         apply_2d_ranges(fig)
 
@@ -144,6 +160,36 @@ def animate_path(
     maximum of the ranges needed to display all objects, including their paths.
     """
     fps = int(1000 / frame_duration)
+
+    play_dict = {
+        "args": [
+            None,
+            {
+                "frame": {"duration": frame_duration},
+                "transition": {"duration": 0},
+                "fromcurrent": True,
+            },
+        ],
+        "label": "Play",
+        "method": "animate",
+    }
+    pause_dict = {
+        "args": [[None], {"frame": {"duration": 0}, "mode": "immediate"}],
+        "label": "Pause",
+        "method": "animate",
+    }
+    buttons_dict = {
+        "buttons": [play_dict, pause_dict],
+        "direction": "left",
+        "pad": {"r": 10, "t": 20},
+        "showactive": False,
+        "type": "buttons",
+        "x": 0.1,
+        "xanchor": "right",
+        "y": 0,
+        "yanchor": "top",
+    }
+
     if animation_slider:
         sliders_dict = {
             "active": 0,
@@ -161,46 +207,11 @@ def animate_path(
             "y": 0,
             "steps": [],
         }
-
-    buttons_dict = {
-        "buttons": [
-            {
-                "args": [
-                    None,
-                    {
-                        "frame": {"duration": frame_duration},
-                        "transition": {"duration": 0},
-                        "fromcurrent": True,
-                    },
-                ],
-                "label": "Play",
-                "method": "animate",
-            },
-            {
-                "args": [[None], {"frame": {"duration": 0}, "mode": "immediate"}],
-                "label": "Pause",
-                "method": "animate",
-            },
-        ],
-        "direction": "left",
-        "pad": {"r": 10, "t": 20},
-        "showactive": False,
-        "type": "buttons",
-        "x": 0.1,
-        "xanchor": "right",
-        "y": 0,
-        "yanchor": "top",
-    }
-
-    for ind in path_indices:
-        if animation_slider:
+        for ind in path_indices:
             slider_step = {
                 "args": [
                     [str(ind + 1)],
-                    {
-                        "frame": {"duration": 0, "redraw": True},
-                        "mode": "immediate",
-                    },
+                    {"frame": {"duration": 0, "redraw": True}, "mode": "immediate"},
                 ],
                 "label": str(ind + 1),
                 "method": "animate",
@@ -210,20 +221,17 @@ def animate_path(
     # update fig
     fig.frames = frames
     frame0 = fig.frames[0]
-    fig.add_traces(
-        frame0.data,
-        rows=rows,
-        cols=cols,
-    )
     title = frame0.layout.title.text
+    fig.add_traces(frame0.data, rows=rows, cols=cols)
     if update_layout:
         fig.update_layout(
             height=None,
             title=title,
         )
+    sliders = [sliders_dict] if animation_slider else None
     fig.update_layout(
-        updatemenus=[buttons_dict],
-        sliders=[sliders_dict] if animation_slider else None,
+        updatemenus=[*fig.layout.updatemenus, buttons_dict],
+        sliders=[*fig.layout.sliders, *sliders],
     )
 
 
@@ -274,11 +282,10 @@ def process_extra_trace(model):
 
 def display_plotly(
     data,
-    zoom=1,
     canvas=None,
     renderer=None,
     return_fig=False,
-    update_layout=True,
+    canvas_update="auto",
     max_rows=None,
     max_cols=None,
     subplot_specs=None,
@@ -292,6 +299,7 @@ def display_plotly(
     show_kwargs = {} if not show_kwargs else show_kwargs
     show_kwargs = {"renderer": renderer, **show_kwargs}
 
+    # only update layout if canvas is not provided
     fig = canvas
     show_fig = False
     extra_data = False
@@ -341,15 +349,17 @@ def display_plotly(
                 data["path_indices"],
                 data["frame_duration"],
                 animation_slider=animation_slider,
-                update_layout=update_layout,
+                update_layout=canvas_update,
                 rows=rows_list,
                 cols=cols_list,
             )
-        ranges = data["ranges"]
-        if extra_data:
-            ranges = get_scene_ranges(*frames[0]["data"], zoom=zoom)
-        if update_layout:
-            apply_fig_ranges(fig, ranges, apply2d=isanimation)
+        if canvas_update:
+            ranges_rc = data["ranges"]
+            if extra_data:
+                ranges_rc = get_scene_ranges(*frames[0]["data"])
+            apply_fig_ranges(
+                fig, ranges_rc, labels_rc=data["labels"], apply2d=isanimation
+            )
             fig.update_layout(
                 legend_itemsizing="constant",
                 # legend_groupclick="toggleitem",

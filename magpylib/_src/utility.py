@@ -3,6 +3,7 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
 # import numbers
+from contextlib import contextmanager
 from functools import lru_cache
 from inspect import signature
 from typing import Callable
@@ -348,3 +349,80 @@ def has_parameter(func: Callable, param_name: str) -> bool:
     """Check if input function has a specific parameter"""
     sig = signature(func)
     return param_name in sig.parameters
+
+
+def merge_dicts_with_conflict_check(objs, *, target, identifiers, unique_fields):
+    """
+    Merge dictionaries ensuring unique identifier fields don't lead to conflict.
+
+    Parameters
+    ----------
+    objs : list of dicts
+        List of dictionaries to be merged based on identifier fields.
+    target : str
+        The key in the dictionaries whose values are lists to be merged.
+    identifiers : list of str
+        Keys used to identify a unique dictionary.
+    unique_fields : list of str
+        Additional keys that must not conflict across merged dictionaries.
+
+    Returns
+    -------
+    dict of dicts
+        Merged dictionaries with combined `target` lists, ensuring no conflicts
+        in `unique_fields`.
+
+    Raises
+    ------
+    ValueError
+        If a conflict is detected in `unique_fields` for any `identifiers`.
+
+    Notes
+    -----
+    `objs` should be a list of dictionaries. Identifiers determine uniqueness,
+    and merging is done by extending the lists in the `target` key. If any of
+    the `unique_fields` conflict with previously tracked identifiers, a
+    `ValueError` is raised detailing the conflict.
+
+    """
+    merged_dict = {}
+    tracker = {}
+    for obj in objs:
+        key_dict = {k: obj[k] for k in identifiers}
+        key = tuple(key_dict.values())
+        tracker_previous = tracker.get(key, None)
+        tracker_actual = tuple(obj[field] for field in unique_fields)
+        if key in tracker and tracker_previous != tracker_actual:
+            diff = [
+                f"{f!r} first got {a!r} then {t!r}"
+                for f, a, t in zip(unique_fields, tracker_actual, tracker_previous)
+                if a != t
+            ]
+            raise ValueError(
+                f"Conflicting parameters detected for {key_dict}: {', '.join(diff)}."
+            )
+        tracker[key] = tracker_actual
+
+        if key not in merged_dict:
+            merged_dict[key] = obj
+        else:
+            merged_dict[key][target] = list(
+                dict.fromkeys([*merged_dict[key][target], *obj[target]])
+            )
+    return merged_dict
+
+
+@contextmanager
+def style_temp_edit(obj, style_temp, copy=True):
+    """Temporary replace style to allow edits before returning to original state"""
+    # pylint: disable=protected-access
+    orig_style = getattr(obj, "_style", None)
+    try:
+        # temporary replace style attribute
+        obj._style = style_temp
+        if style_temp and copy:
+            # deepcopy style only if obj is in multiple subplots.
+            obj._style = style_temp.copy()
+        yield
+    finally:
+        obj._style = orig_style

@@ -422,8 +422,7 @@ def test_matplotlib_model3d_extra_updatefunc():
 
 def test_empty_display():
     """should not fail if nothing to display"""
-    ax = plt.subplot(projection="3d")
-    magpy.show(canvas=ax, backend="matplotlib", return_fig=True)
+    magpy.show(backend="matplotlib", return_fig=True)
 
 
 def test_graphics_model_mpl():
@@ -523,7 +522,10 @@ def test_bad_show_inputs():
     )
     with pytest.raises(
         ValueError,
-        match=r"Row/Col .* received conflicting output types.*",
+        match=(
+            r"Conflicting parameters detected for {'row': 1, 'col': 1}:"
+            r" 'output' first got 'model3d' then 'Bx'."
+        ),
     ):
         with magpy.show_context(animation=False, sumup=True, pixel_agg="mean") as s:
             s.show(cyl1, sensor, col=1, output="Bx")
@@ -615,3 +617,13 @@ def test_show_legend():
     s2.style.legend = "full legend replace"
     s3.style.description = "description replace only"
     magpy.show(s1, s2, s3, return_fig=True)
+
+
+@pytest.mark.parametrize("units_length", ["mT", "inch", "dam", "e"])
+def test_bad_units_length(units_length):
+    """test units lenghts"""
+
+    c = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+
+    with pytest.raises(ValueError, match=r"Invalid unit input.*"):
+        c.show(units_length=units_length, return_fig=True, backend="matplotlib")

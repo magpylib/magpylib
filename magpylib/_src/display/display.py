@@ -11,14 +11,16 @@ from magpylib._src.defaults.defaults_utility import _DefaultValue
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.display.traces_generic import get_frames
+from magpylib._src.display.traces_utility import DEFAULT_ROW_COL_PARAMS
+from magpylib._src.display.traces_utility import linearize_dict
 from magpylib._src.display.traces_utility import process_show_input_objs
 from magpylib._src.input_checks import check_format_input_backend
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.input_checks import check_input_animation
-from magpylib._src.input_checks import check_input_zoom
+from magpylib._src.input_checks import check_input_canvas_update
 from magpylib._src.utility import check_path_format
 
-disp_args = get_defaults_dict("display").keys()
+disp_args = set(get_defaults_dict("display"))
 
 
 class RegisteredBackend:
@@ -30,14 +32,14 @@ class RegisteredBackend:
         self,
         *,
         name,
-        show_func_getter,
+        show_func,
         supports_animation,
         supports_subplots,
         supports_colorgradient,
         supports_animation_output,
     ):
         self.name = name
-        self.show_func_getter = show_func_getter
+        self.show_func = show_func
         self.supports = {
             "animation": supports_animation,
             "subplots": supports_subplots,
@@ -54,7 +56,6 @@ class RegisteredBackend:
         cls,
         *objs,
         backend,
-        zoom=0,
         title=None,
         max_rows=None,
         max_cols=None,
@@ -83,12 +84,18 @@ class RegisteredBackend:
                     f"\nFalling back to: {params}"
                 )
                 kwargs.update(params)
-        frame_kwargs = {
+        display_kwargs = {
             k: v
             for k, v in kwargs.items()
-            if any(k.startswith(arg) for arg in disp_args)
+            if any(k.startswith(arg) for arg in disp_args - {"style"})
         }
-        kwargs = {k: v for k, v in kwargs.items() if k not in frame_kwargs}
+        style_kwargs = {k: v for k, v in kwargs.items() if k.startswith("style")}
+        style_kwargs = linearize_dict(style_kwargs, separator="_")
+        kwargs = {
+            k: v
+            for k, v in kwargs.items()
+            if (k not in display_kwargs and k not in style_kwargs)
+        }
         backend_kwargs = {
             k[len(backend) + 1 :]: v
             for k, v in kwargs.items()
@@ -117,13 +124,12 @@ class RegisteredBackend:
             objs,
             supports_colorgradient=self.supports["colorgradient"],
             backend=backend,
-            zoom=zoom,
             title=title,
-            **frame_kwargs,
+            style_kwargs=style_kwargs,
+            **display_kwargs,
         )
-        return self.show_func_getter()(
+        return self.show_func(
             data,
-            zoom=zoom,
             max_rows=max_rows,
             max_cols=max_cols,
             subplot_specs=subplot_specs,
@@ -136,12 +142,9 @@ class RegisteredBackend:
 def get_show_func(backend):
     """Return the backend show function"""
     # defer import to show call. Importerror should only fail if unavalaible backend is called
-    return lambda: getattr(
+    return lambda *args, backend=backend, **kwargs: getattr(
         import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
-    )
-
-
-ROW_COL_SPECIFIC_NAMES = ("row", "col", "output", "sumup", "pixel_agg", "in_out")
+    )(*args, **kwargs)
 
 
 def infer_backend(canvas):
@@ -180,10 +183,11 @@ def infer_backend(canvas):
 
 def _show(
     *objects,
-    backend=None,
     animation=False,
-    zoom=0,
     markers=None,
+    canvas=None,
+    canvas_update=None,
+    backend=None,
     **kwargs,
 ):
     """Display objects and paths graphically.
@@ -193,18 +197,16 @@ def _show(
 
     # process input objs
     objects, obj_list_flat, max_rows, max_cols, subplot_specs = process_show_input_objs(
-        objects, **{k: v for k, v in kwargs.items() if k in ROW_COL_SPECIFIC_NAMES}
+        objects,
+        **{k: v for k, v in kwargs.items() if k in DEFAULT_ROW_COL_PARAMS},
     )
-    kwargs = {k: v for k, v in kwargs.items() if k not in ROW_COL_SPECIFIC_NAMES}
-    kwargs["max_rows"], kwargs["max_cols"] = max_rows, max_cols
-    kwargs["subplot_specs"] = subplot_specs
-
+    kwargs = {k: v for k, v in kwargs.items() if k not in DEFAULT_ROW_COL_PARAMS}
+    canvas_update = check_input_canvas_update(canvas_update, canvas)
     # test if every individual obj_path is good
     check_path_format(obj_list_flat)
 
     # input checks
     backend = check_format_input_backend(backend)
-    check_input_zoom(zoom)
     check_input_animation(animation)
     check_format_input_vector(
         markers,
@@ -216,24 +218,20 @@ def _show(
     )
 
     if markers:
-        objects = [
-            *objects,
-            {
-                "objects": [MagpyMarkers(*markers)],
-                "row": 1,
-                "col": 1,
-                "output": "model3d",
-            },
-        ]
+        objects.append({"objects": [MagpyMarkers(*markers)], **DEFAULT_ROW_COL_PARAMS})
 
     if backend == "auto":
-        backend = infer_backend(kwargs.get("canvas", None))
+        backend = infer_backend(canvas)
 
     return RegisteredBackend.show(
         backend=backend,
         *objects,
-        zoom=zoom,
         animation=animation,
+        canvas=canvas,
+        canvas_update=canvas_update,
+        subplot_specs=subplot_specs,
+        max_rows=max_rows,
+        max_cols=max_cols,
         **kwargs,
     )
 
@@ -247,6 +245,7 @@ def show(
     zoom=_DefaultValue,
     markers=_DefaultValue,
     return_fig=_DefaultValue,
+    canvas_update=_DefaultValue,
     row=_DefaultValue,
     col=_DefaultValue,
     output=_DefaultValue,
@@ -297,6 +296,12 @@ def show(
         - with matplotlib: `matplotlib.figure.Figure`.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
         - with pyvista: `pyvista.Plotter`.
+
+    canvas_update: bool, default="auto".
+        When no canvas is provided, Magpylib creates one and sets the layout to internally defined
+        settings (e.g. camera angle, aspect ratio). If a canvas is provided, no changes to the
+        layout are made. One can however explicitly force a behavior by setting `canvas_update`
+        to True or False.
 
     row: int or None,
         If provided specifies the row in which the objects will be displayed.
@@ -407,9 +412,9 @@ def show(
         }
     )
     if ctx.isrunning:
-        rco = {k: v for k, v in kwargs.items() if k in ROW_COL_SPECIFIC_NAMES}
+        rco = {k: v for k, v in kwargs.items() if k in DEFAULT_ROW_COL_PARAMS}
         ctx.kwargs.update(
-            {k: v for k, v in kwargs.items() if k not in ROW_COL_SPECIFIC_NAMES}
+            {k: v for k, v in kwargs.items() if k not in DEFAULT_ROW_COL_PARAMS}
         )
         ctx_objects = tuple({**o, **rco} for o in ctx.objects_from_ctx)
         objects, *_ = process_show_input_objs(ctx_objects + objects, **rco)
@@ -428,6 +433,7 @@ def show_context(
     zoom=_DefaultValue,
     markers=_DefaultValue,
     return_fig=_DefaultValue,
+    canvas_update=_DefaultValue,
     row=_DefaultValue,
     col=_DefaultValue,
     output=_DefaultValue,
@@ -452,11 +458,11 @@ def show_context(
     )
     try:
         ctx.isrunning = True
-        rco = {k: v for k, v in kwargs.items() if k in ROW_COL_SPECIFIC_NAMES}
+        rco = {k: v for k, v in kwargs.items() if k in DEFAULT_ROW_COL_PARAMS}
         objects, *_ = process_show_input_objs(objects, **rco)
         ctx.objects_from_ctx += tuple(objects)
         ctx.kwargs.update(
-            {k: v for k, v in kwargs.items() if k not in ROW_COL_SPECIFIC_NAMES}
+            {k: v for k, v in kwargs.items() if k not in DEFAULT_ROW_COL_PARAMS}
         )
         yield ctx
         ctx.show_return_value = _show(*ctx.objects, **ctx.kwargs)
@@ -491,7 +497,7 @@ ctx = DisplayContext()
 
 RegisteredBackend(
     name="matplotlib",
-    show_func_getter=get_show_func("matplotlib"),
+    show_func=get_show_func("matplotlib"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=False,
@@ -501,7 +507,7 @@ RegisteredBackend(
 
 RegisteredBackend(
     name="plotly",
-    show_func_getter=get_show_func("plotly"),
+    show_func=get_show_func("plotly"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
@@ -510,7 +516,7 @@ RegisteredBackend(
 
 RegisteredBackend(
     name="pyvista",
-    show_func_getter=get_show_func("pyvista"),
+    show_func=get_show_func("pyvista"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,

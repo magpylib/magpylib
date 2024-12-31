@@ -4,6 +4,7 @@ homogeneously magnetized Cylinders. Computation details in function docstrings.
 """
 
 # pylint: disable = no-name-in-module
+
 import numpy as np
 from scipy.constants import mu_0 as MU0
 from scipy.special import ellipe
@@ -71,7 +72,7 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
         / np.pi
     )
 
-    return np.row_stack((Br, np.zeros(n), Bz))
+    return np.vstack((Br, np.zeros(n), Bz))
 
 
 # CORE
@@ -257,7 +258,7 @@ def magnet_cylinder_diametral_Hfield(
             )
         )
 
-    return np.row_stack((Hr, Hphi, Hz))
+    return np.vstack((Hr, Hphi, Hz))
 
 
 def BHJM_magnet_cylinder(

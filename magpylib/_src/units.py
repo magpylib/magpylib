@@ -4,6 +4,7 @@
 import abc
 from functools import wraps
 from math import log10
+from functools import lru_cache
 
 import numpy as np
 
@@ -30,6 +31,7 @@ _UNIT_PREFIX = {
     24: "Y",  # yotta
 }
 
+_UNIT_PREFIX_REVERSED = {v: k for k, v in _UNIT_PREFIX.items()}
 
 # ---------------------------------------classes----------------------------------------------------
 
@@ -659,7 +661,35 @@ def unit_checker():
     return decorator
 
 
-def unit_prefix(number, unit="", precision=3, char_between="") -> str:
+
+@lru_cache(maxsize=None)
+def get_unit_factor(unit_input, *, target_unit, deci_centi=True):
+    """return unit factor based on input and target unit"""
+    if unit_input is None or unit_input == target_unit:
+        return 1
+    pref, suff, factor_power = "", "", None
+    prefs = _UNIT_PREFIX_REVERSED
+    if deci_centi:
+        prefs = {**_UNIT_PREFIX_REVERSED, "d": -1, "c": -2}
+    unit_input_str = str(unit_input)
+    if unit_input_str:
+        if len(unit_input_str) >= 2:
+            pref, *suff = unit_input_str
+            suff = "".join(suff)
+        if suff == target_unit:
+            factor_power = prefs.get(pref, None)
+
+    if factor_power is None or len(unit_input_str) > 2:
+        valid_inputs = [f"{k}{target_unit}" for k in prefs]
+        raise ValueError(
+            f"Invalid unit input ({unit_input!r}), must be one of {valid_inputs}"
+        )
+    factor = 1 / (10**factor_power)
+    return factor
+
+
+
+def unit_prefix(number, unit="", precision=3, char_between="", as_tuple=False) -> str:
     """
     displays a number with given unit and precision and uses unit prefixes for the exponents from
     yotta (y) to Yocto (Y). If the exponent is smaller or bigger, falls back to scientific notation.
@@ -674,6 +704,9 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     char_between : str, optional
         character to insert between number of prefix. Can be " " or any string, if a space is wanted
         before the unit symbol , by default ""
+    as_tuple: bool, optional
+        if True returns (new_number_str, char_between, prefix, unit) tuple
+        else returns the joined string
     Returns
     -------
     str
@@ -686,4 +719,7 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     if prefix == "":
         digits = 0
     new_number_str = f"{number / 10 ** digits:.{precision}g}"
-    return f"{new_number_str}{char_between}{prefix}{unit}"
+    res = (new_number_str, char_between, prefix, unit)
+    if as_tuple:
+        return res
+    return "".join(f"{v}" for v in res)

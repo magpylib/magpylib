@@ -1,17 +1,35 @@
 # Changelog
 
-## [5.0.3] - 2024-06-03
+## [Unreleased] - YYYY-MM-DD
 
-- Fix subplot object properties propagation ([#780](https://github.com/magpylib/magpylib/pull/780))
+## [5.1.1] - 2024-10-31
+- Included magpylib-force version 0.3.1 in documentation
+- Removed unused issue templates and improved PR template
+
+## [5.1.0] - 2024-10-09
+- Fixed a bug where the magnetization arrow graphical representation would be anchored badly after rotation ([#805](https://github.com/magpylib/magpylib/issues/805))
+- Added `units_length` input to the `show` function to allow displaying axes with different length units. This parameter can be set individually for each subplot. ([#786](https://github.com/magpylib/magpylib/pull/786))
+- Small documentation and Readme improvement. Change naming from "explicit expression" to "analytical expression" as described in ([#794](https://github.com/magpylib/magpylib/issues/794)).
+- Fixed Pvyvista plot bounds not fitting on animation. Also enables `zoom` feature which was not working until now. ([#798](https://github.com/magpylib/magpylib/pull/798))
+- Fixed canvas layout being modified even when user-provided. Also added a new `canvas_update` parameter to choose the layout behavior (by default `"auto"`) ([#799](https://github.com/magpylib/magpylib/pull/799))
+- Improved documentation ([#766](https://github.com/magpylib/magpylib/issues/766), [#802](https://github.com/magpylib/magpylib/issues/802))
+- Documentation now includes force computation, which is still in a separate package "magpylib-force", but which will be integrated into Magplyib in the coming months. ([#787](https://github.com/magpylib/magpylib/issues/787))
+
+## [5.0.4] - 2024-06-18
+- Added support for Numpy 2.0 ([#795](https://github.com/magpylib/magpylib/pull/789))
+- Fixed markers legend not being suppressible ([#795](https://github.com/magpylib/magpylib/pull/789))
+
+## [5.0.3] - 2024-06-03
+- Fixed subplot object properties propagation ([#780](https://github.com/magpylib/magpylib/pull/780))
 - Migrate to pydata-sphinx-theme and fix docs search function ([#762](https://github.com/magpylib/magpylib/pull/762))
-- Fix docs version-switcher ([#782](https://github.com/magpylib/magpylib/pull/782))
+- Fixed docs version-switcher ([#782](https://github.com/magpylib/magpylib/pull/782))
 
 ## [5.0.2] - 2024-05-21
 - Fixed a display issue causing incorrect calculation of view box limits ([#772](https://github.com/magpylib/magpylib/pull/772))
 - Removed support for python 3.8 and 3.9 by now following the scientific-python.org support timelines ([#773](https://github.com/magpylib/magpylib/pull/773))
 - Fixed CI testing with newer backend versions ([#774](https://github.com/magpylib/magpylib/pull/774))
 - Updated site notice to mention the awarded "small development grant" by NumFocus. ([#758](https://github.com/magpylib/magpylib/pull/758))
-- Fix inaccurate citation year for Yang publication ([#764](https://github.com/magpylib/magpylib/pull/764), with thanks to @feldnerd for the contribution!)
+- Fixed inaccurate citation year for Yang publication ([#764](https://github.com/magpylib/magpylib/pull/764), with thanks to @feldnerd for the contribution!)
 
 ## [5.0.1] - 2024-04-12
 - Fixed a bug where `getBHJM` of a Collection would produce one extra dimension ([#753](https://github.com/magpylib/magpylib/issues/753))
@@ -22,7 +40,7 @@
 - The Magpylib inputs and outputs are now in **SI Units**.
 - The `magnetization` parameter has also been redefined to reflect the true physical magnetization quantity in units of A/m.
 ### Other Improvements
-- The `magnetization` parameter is now codependent with the new `polarization` parameter that is the physical magnetic polarization ([#712](https://github.com/magpylib/magpylib/issues/712)) in units of Tesla.
+- The `magnetization` parameter is now codependent with the new `polarization` parameter that is the physical magnetic polarization ([#712](https://github.com/magpylib/magpylib/issues/712)) in units of Tesla
 - Added `getM` (magnetization) and `getJ` (polarization) top level functions and class methods reminiscent of `getB` and `getH`.
 - The `in_out` (inside/outside) parameter is added to all field functions (`getBHJM`) to specify the location of the observers relative to the magnet body in order to increase performance ([#717](https://github.com/magpylib/magpylib/issues/717), [#608](https://github.com/magpylib/magpylib/issues/608))
 - Review of documentation and adding a few requested things ([#685](https://github.com/magpylib/magpylib/issues/685), some of [#659](https://github.com/magpylib/magpylib/issues/659))
@@ -39,8 +57,8 @@
 - Rework CI/CD workflows ([#686](https://github.com/magpylib/magpylib/pull/686))
 
 ## [4.4.1] - 2023-11-09
-- Fix deployment release ([#682](https://github.com/magpylib/magpylib/pull/682))
-- Fix axis mismatch on show/hide of sensor arrows ([#679](https://github.com/magpylib/magpylib/pull/679))
+- Fixed deployment release ([#682](https://github.com/magpylib/magpylib/pull/682))
+- Fixed axis mismatch on show/hide of sensor arrows ([#679](https://github.com/magpylib/magpylib/pull/679))
 - Documentation improvements ([#673](https://github.com/magpylib/magpylib/pull/673))
 
 
@@ -70,7 +88,7 @@
 - Change Pyvista plotting defaults when using `show(backend='pyvista')` to fit better with other libraries. ([#551](https://github.com/magpylib/magpylib/issues/551))
 - Added code of conduct attempting to align with NumFocus standards ([#558](https://github.com/magpylib/magpylib/issues/558))
 - Improved Loop field computation in terms of performance and numerical stability ([#374](https://github.com/magpylib/magpylib/issues/374))
-- Add `magnetization.mode` style to allow showing magnetization direction for any backend ([#576](https://github.com/magpylib/magpylib/pull/576))
+- Added `magnetization.mode` style to allow showing magnetization direction for any backend ([#576](https://github.com/magpylib/magpylib/pull/576))
 - Documentation changes:
     - Correct conda install command
     - Integration of Triangle and Tetrahedron
@@ -79,11 +97,11 @@
 - Fixed some bugs, minor performance increase, internal refactoring
 
 ## [4.1.2] - 2023-01-15
-- Fix wrong magnetization arrow direction for some edge cases ([#570](https://github.com/magpylib/magpylib/discussions/570), [#571](https://github.com/magpylib/magpylib/issues/571), [#572](https://github.com/magpylib/magpylib/pull/572))
-- Fix cryptic `getB`/`getH` error message ([#562](https://github.com/magpylib/magpylib/issues/562), [#563](https://github.com/magpylib/magpylib/pull/563))
+- Fixed wrong magnetization arrow direction for some edge cases ([#570](https://github.com/magpylib/magpylib/discussions/570), [#571](https://github.com/magpylib/magpylib/issues/571), [#572](https://github.com/magpylib/magpylib/pull/572))
+- Fixed cryptic `getB`/`getH` error message ([#562](https://github.com/magpylib/magpylib/issues/562), [#563](https://github.com/magpylib/magpylib/pull/563))
 
 ## [4.1.1] - 2022-08-11
-- Fix inverted y and z axes colors for sensor representations ([#556](https://github.com/magpylib/magpylib/pull/556))
+- Fixed inverted y and z axes colors for sensor representations ([#556](https://github.com/magpylib/magpylib/pull/556))
 
 ## [4.1.0] - 2022-08-08
 - Field computation `getB`/`getH` now supports 2D [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe) in addition to the `numpy.ndarray` as output type. ([#523](https://github.com/magpylib/magpylib/pull/523))
@@ -99,11 +117,11 @@
 
 ## [4.0.3] - 2022-05-13
 
-- Fix copy order Bug ([#530](https://github.com/magpylib/magpylib/issues/530))
+- Fixed copy order Bug ([#530](https://github.com/magpylib/magpylib/issues/530))
 
 ## [4.0.2] - 2022-05-04
 
-- Fix magnetization coloring with mesh grouping (Plotly) ([#526](https://github.com/magpylib/magpylib/pull/526))
+- Fixed magnetization coloring with mesh grouping (Plotly) ([#526](https://github.com/magpylib/magpylib/pull/526))
 - Allow float color quadruples ([#529](https://github.com/magpylib/magpylib/pull/529))
 
 ## [4.0.1] - 2022-04-29
@@ -225,7 +243,7 @@ This is a major update that includes
 
 ## [3.0.1] - 2021-06-27
 
-- Add deployment automation ([#260](https://github.com/magpylib/magpylib/issues/260), [#296](https://github.com/magpylib/magpylib/issues/296), [#341](https://github.com/magpylib/magpylib/pull/341), [#342](https://github.com/magpylib/magpylib/pull/342))
+- Added deployment automation ([#260](https://github.com/magpylib/magpylib/issues/260), [#296](https://github.com/magpylib/magpylib/issues/296), [#341](https://github.com/magpylib/magpylib/pull/341), [#342](https://github.com/magpylib/magpylib/pull/342))
 
 
 ---
@@ -389,8 +407,8 @@ Improved internal workings
   - This should cause no API changes, if you have problems please notify us.
 
 ### Fixed
-- Fix multiprocessing enabled `Collection.getBsweep()` for lots of objects with few positions causing great performance loss. This functionality now behaves as expected for the use case.
-- Fix `Collection.displaySystem()`'s drawing of Dipole objects in external axes (plots) using the `subplotAx` kwarg crashing the application. This functionality now behaves as expected for the use case.
+- Fixed multiprocessing enabled `Collection.getBsweep()` for lots of objects with few positions causing great performance loss. This functionality now behaves as expected for the use case.
+- Fixed `Collection.displaySystem()`'s drawing of Dipole objects in external axes (plots) using the `subplotAx` kwarg crashing the application. This functionality now behaves as expected for the use case.
 
 ---
 
@@ -466,7 +484,10 @@ The first official release of the Magpylib library.
 
 ---
 
-[Unreleased]:https://github.com/magpylib/magpylib/compare/5.0.3...HEAD
+[Unreleased]:https://github.com/magpylib/magpylib/compare/5.1.1...HEAD
+[5.1.1]:https://github.com/magpylib/magpylib/compare/5.1.0...5.1.1
+[5.1.0]:https://github.com/magpylib/magpylib/compare/5.0.4...5.1.0
+[5.0.4]:https://github.com/magpylib/magpylib/compare/5.0.3...5.0.4
 [5.0.3]:https://github.com/magpylib/magpylib/compare/5.0.2...5.0.3
 [5.0.2]:https://github.com/magpylib/magpylib/compare/5.0.1...5.0.2
 [5.0.1]:https://github.com/magpylib/magpylib/compare/5.0.0...5.0.1

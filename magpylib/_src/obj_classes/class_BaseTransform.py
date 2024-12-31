@@ -1,6 +1,8 @@
 """BaseTransform class code"""
 
 # pylint: disable=protected-access
+# pylint: disable=too-many-positional-arguments
+
 import numbers
 
 import numpy as np

@@ -3,6 +3,8 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-positional-arguments
+
 import inspect
 import numbers
 
@@ -72,15 +74,10 @@ def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, length=None, 
 
 def check_input_zoom(inp):
     """check show zoom input"""
-    if not isinstance(inp, numbers.Number):
+    if not (isinstance(inp, numbers.Number) and inp >= 0):
         raise MagpylibBadUserInput(
-            "Input parameter `zoom` must be a number `zoom>=0`.\n"
-            f"Instead received {inp}."
-        )
-    if inp < 0:
-        raise MagpylibBadUserInput(
-            "Input parameter `zoom` must be a number `zoom>=0`.\n"
-            f"Instead received {inp}."
+            "Input parameter `zoom` must be a positive number or zero.\n"
+            f"Instead received {inp!r}."
         )
 
 
@@ -88,7 +85,7 @@ def check_input_animation(inp):
     """check show animation input"""
     ERR_MSG = (
         "Input parameter `animation` must be boolean or a positive number.\n"
-        f"Instead received {inp}."
+        f"Instead received {inp!r}."
     )
     if not isinstance(inp, numbers.Number):
         raise MagpylibBadUserInput(ERR_MSG)
@@ -108,7 +105,7 @@ def check_start_type(inp):
     ):
         raise MagpylibBadUserInput(
             f"Input parameter `start` must be integer value or 'auto'.\n"
-            f"Instead received {repr(inp)}."
+            f"Instead received {inp!r}."
         )
 
 
@@ -117,7 +114,7 @@ def check_degree_type(inp):
     if not isinstance(inp, bool):
         raise MagpylibBadUserInput(
             "Input parameter `degrees` must be boolean (`True` or `False`).\n"
-            f"Instead received {repr(inp)}."
+            f"Instead received {inp!r}."
         )
 
 
@@ -127,7 +124,7 @@ def check_field_input(inp):
     if not (isinstance(inp, str) and inp in allowed):
         raise MagpylibBadUserInput(
             f"`field` input can only be one of {allowed}.\n"
-            f"Instead received {repr(inp)}."
+            f"Instead received {inp!r}."
         )
 
 
@@ -142,7 +139,7 @@ def validate_field_func(val):
     if not callable(val):
         raise MagpylibBadUserInput(
             "Input parameter `field_func` must be a callable.\n"
-            f"Instead received {type(val).__name__}."
+            f"Instead received {type(val).__name__!r}."
         )
 
     fn_args = inspect.getfullargspec(val).args
@@ -150,7 +147,7 @@ def validate_field_func(val):
         raise MagpylibBadUserInput(
             "Input parameter `field_func` must have two positional args"
             " called 'field' and 'observers'.\n"
-            f"Instead received a callable where the first two args are: {fn_args[:2]}"
+            f"Instead received a callable where the first two args are: {fn_args[:2]!r}"
         )
 
     for field in ["B", "H"]:
@@ -160,13 +157,14 @@ def validate_field_func(val):
                 raise MagpylibBadUserInput(
                     "Input parameter `field_func` must be a callable that returns B- and H-field"
                     " as numpy ndarray.\n"
-                    f"Instead it returns type {type(out)} for {field}-field."
+                    f"Instead it returns type {type(out)!r} for {field}-field."
                 )
             if out.shape != (2, 3):
                 raise MagpylibBadUserInput(
                     "Input parameter `field_func` must be a callable that returns B- and H-field"
                     " as numpy ndarray with shape (n,3), when `observers` input is shape (n,3).\n"
-                    f"Instead it returns shape {out.shape} for {field}-field for input shape (2,3)"
+                    f"Instead it returns shape {out.shape} for {field}-field for input shape "
+                    "(2,3)"
                 )
 
     return None
@@ -193,7 +191,7 @@ def check_format_input_orientation(inp, init_format=False):
     if not isinstance(inp, (Rotation, type(None))):
         raise MagpylibBadUserInput(
             f"Input parameter `orientation` must be `None` or scipy `Rotation` object.\n"
-            f"Instead received type {type(inp)}."
+            f"Instead received type {type(inp)!r}."
         )
     # handle None input and compute inpQ
     if inp is None:
@@ -243,7 +241,7 @@ def check_format_input_axis(inp):
             return np.array((0, 0, 1))
         raise MagpylibBadUserInput(
             "Input parameter `axis` must be array_like shape (3,) or one of ['x', 'y', 'z'].\n"
-            f"Instead received string {inp}.\n"
+            f"Instead received string {inp!r}.\n"
         )
 
     inp = check_format_input_vector(
@@ -305,7 +303,7 @@ def check_format_input_scalar(
 
     ERR_MSG = (
         f"Input parameter `{sig_name}` must be {sig_type}.\n"
-        f"Instead received {repr(inp)}."
+        f"Instead received {inp!r}."
     )
 
     if not isinstance(inp, numbers.Number):
@@ -348,7 +346,7 @@ def check_format_input_vector(
     is_array_like(
         inp,
         f"Input parameter `{sig_name}` must be {sig_type}.\n"
-        f"Instead received type {type(inp)}.",
+        f"Instead received type {type(inp)!r}.",
     )
     inp = make_float_array(
         inp,
@@ -388,7 +386,7 @@ def check_format_input_vector2(
     is_array_like(
         inp,
         f"Input parameter `{param_name}` must be array_like.\n"
-        f"Instead received type {type(inp)}.",
+        f"Instead received type {type(inp)!r}.",
     )
     inp = make_float_array(
         inp,
@@ -453,8 +451,8 @@ def check_format_input_cylinder_segment(inp):
     if case2 | case3 | case4 | case5:
         raise MagpylibBadUserInput(
             f"Input parameter `CylinderSegment.dimension` must be array_like of the form"
-            f" (r1, r2, h, phi1, phi2) with 0<=r1<r2, h>0, phi1<phi2 and phi2-phi1<=360,\n"
-            f"but received {inp} instead."
+            f" (r1, r2, h, phi1, phi2) with 0<=r1<r2, h>0, phi1<phi2 and phi2-phi1<=360,"
+            f"\nInstead received {inp!r}."
         )
     return inp
 
@@ -467,8 +465,8 @@ def check_format_input_backend(inp):
     if inp in backends:
         return inp
     raise MagpylibBadUserInput(
-        f"Input parameter `backend` must be one of `{backends+[None]}`.\n"
-        f"Instead received {inp}."
+        f"Input parameter `backend` must be one of `{backends+[None]}`."
+        f"\nInstead received {inp!r}."
     )
 
 
@@ -610,7 +608,7 @@ def check_format_input_obj(
         if typechecks and not isinstance(obj, (BaseSource, Sensor, Collection)):
             raise MagpylibBadUserInput(
                 f"Input objects must be {allow} or a flat list thereof.\n"
-                f"Instead received {type(obj)}."
+                f"Instead received {type(obj)!r}."
             )
 
     return obj_list
@@ -653,8 +651,8 @@ def check_format_pixel_agg(pixel_agg):
 
     PIXEL_AGG_ERR_MSG = (
         "Input `pixel_agg` must be a reference to a numpy callable that reduces"
-        + " an array shape like 'mean', 'std', 'median', 'min', ...\n"
-        + f"Instead received {pixel_agg}."
+        " an array shape like 'mean', 'std', 'median', 'min', ..."
+        f"\nInstead received {pixel_agg!r}."
     )
 
     if pixel_agg is None:
@@ -680,7 +678,7 @@ def check_getBH_output_type(output):
     if output not in acceptable:
         raise ValueError(
             f"The `output` argument must be one of {acceptable}."
-            f"\nInstead received {output}."
+            f"\nInstead received {output!r}."
         )
     if output == "dataframe":
         try:
@@ -694,3 +692,14 @@ def check_getBH_output_type(output):
             ) from missing_module
 
     return output
+
+
+def check_input_canvas_update(canvas_update, canvas):
+    """chekc if canvas_update is acceptable also depending on canvas input"""
+    acceptable = (True, False, "auto", None)
+    if canvas_update not in acceptable:
+        raise ValueError(
+            f"The `canvas_update` must be one of {acceptable}"
+            f"\nInstead received {canvas_update!r}."
+        )
+    return canvas is None if canvas_update in (None, "auto") else canvas_update

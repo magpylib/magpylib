@@ -20,13 +20,13 @@
 </a>
 <a href="https://anaconda.org/conda-forge/magpylib"> <img src="https://anaconda.org/conda-forge/magpylib/badges/version.svg" alt="Conda Cloud" height="18">
 </a>
-<a href="https://mybinder.org/v2/gh/magpylib/magpylib/5.0.3?filepath=docs%2Fexamples"> <img src="https://mybinder.org/badge_logo.svg" alt="MyBinder link" height="18">
+<a href="https://mybinder.org/v2/gh/magpylib/magpylib/5.1.1?filepath=docs%2Fexamples"> <img src="https://mybinder.org/badge_logo.svg" alt="MyBinder link" height="18">
 </a>
 <a href="https://github.com/psf/black"> <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="black" height="18">
 </a>
 </div>
 
-Magpylib is a Python package for calculating **3D static magnetic fields** of magnets, line currents and other sources. The computation is based on explicit expressions and is therefore **extremely fast**. A **user friendly API** enables convenient positioning of sources and observers.
+Magpylib is an **open-source Python package** for calculating static **magnetic fields** of magnets, currents, and other sources. It uses **analytical expressions**, solutions to macroscopic magnetostatic problems, implemented in **vectorized** form which makes the computation **extremely fast** and leverages the open-source Python ecosystem for spectacular visualizations!
 
 # Installation
 
@@ -42,7 +42,7 @@ Magpylib supports _Python3.10+_ and relies on common scientific computation libr
 
 # Resources
 
- - Check out our **[Documentation](https://magpylib.readthedocs.io/en/latest)** for detailed information.
+ - Check out our **[Documentation](https://magpylib.readthedocs.io/en/stable)** for detailed information about the last stable release, or the **[Dev Docs](https://magpylib.readthedocs.io/en/latest)** to see the unreleased development version features.
  - Please abide by our **[Code of Conduct](https://github.com/magpylib/magpylib/blob/main/CODE_OF_CONDUCT.md)**.
  - Contribute through **[Discussions](https://github.com/magpylib/magpylib/discussions)** and coding by following the **[Contribution Guide](https://github.com/magpylib/magpylib/blob/main/CONTRIBUTING.md)**. The Git project **[Issues](https://github.com/magpylib/magpylib/issues)** give an up-to-date list of potential enhancements and planned milestones. Propose new ones.
  - A **[Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs)** introduction to Magpylib v4.0.0 within the **[GSC network](https://www.internationalcollaboration.org/).**
@@ -105,7 +105,7 @@ print(B.round(2))  # --> [[-0.12 -0.04 -0.02]
 magpy.show(cube, sensor, backend="pyvista")
 ```
 
-More details and other important features are described in detail in the **[Documentation](https://magpylib.readthedocs.io/en/latest)**. Key features are:
+More details and other important features are described in detail in the **[Documentation](https://magpylib.readthedocs.io/en/stable)**. Key features are:
 
 - **Collections**: Group multiple objects for common manipulation
 - **Complex shapes**: Create magnets with arbitrary shapes
@@ -136,7 +136,7 @@ A valid software citation could be
     author = {{Michael-Ortner et al.}},
     title = {magpylib},
     url = {https://magpylib.readthedocs.io/en/latest/},
-    version = {5.0.3},
+    version = {5.1.1},
     date = {2023-06-25},
 }
 ```

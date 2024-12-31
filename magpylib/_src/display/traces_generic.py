@@ -5,6 +5,8 @@
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-nested-blocks
 # pylint: disable=cyclic-import
+# pylint: disable=too-many-positional-arguments
+
 import numbers
 import warnings
 from collections import Counter
@@ -20,18 +22,22 @@ from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
 from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.display.traces_utility import draw_arrowed_line
-from magpylib._src.display.traces_utility import get_flatten_objects_properties
 from magpylib._src.display.traces_utility import get_legend_label
+from magpylib._src.display.traces_utility import get_objects_props_by_row_col
 from magpylib._src.display.traces_utility import get_rot_pos_from_path
 from magpylib._src.display.traces_utility import get_scene_ranges
 from magpylib._src.display.traces_utility import getColorscale
 from magpylib._src.display.traces_utility import getIntensity
 from magpylib._src.display.traces_utility import group_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
+from magpylib._src.display.traces_utility import rescale_traces
 from magpylib._src.display.traces_utility import slice_mesh_from_colorscale
 from magpylib._src.style import DefaultMarkers
 from magpylib._src.units import downcast
 from magpylib._src.utility import format_obj_input
+from magpylib._src.units import get_unit_factor
+from magpylib._src.utility import style_temp_edit
+from magpylib._src.utility import unit_prefix
 
 
 class MagpyMarkers:
@@ -64,6 +70,7 @@ class MagpyMarkers:
             "y": y,
             "z": z,
             "mode": "markers",
+            "showlegend": style.legend.show,  # pylint: disable=no-member
             **marker_kwargs,
             **kwargs,
         }
@@ -151,10 +158,12 @@ def make_mag_arrows(obj):
     mag = obj.magnetization
     # collect all draw positions and directions
     pos = downcast(obj._position, "m")
-    center = getattr(obj, "_barycenter", pos)[0] - pos[0]
+    pos = downcast(getattr(obj, "_barycenter", pos))[0] - pos[0]
+    # we need initial relative barycenter, arrow gets orientated later
+    pos = obj._orientation[0].inv().apply(pos)
     direc = mag / (np.linalg.norm(mag) + 1e-6) * length
     x, y, z = draw_arrowed_line(
-        direc, center, sign=1, arrow_pos=arrow.offset, pivot="tail"
+        direc, pos, sign=1, arrow_pos=arrow.offset, pivot="tail"
     ).T
     trace = {
         "type": "scatter3d",
@@ -206,13 +215,12 @@ def get_trace2D_dict(
     field_str,
     coords_str,
     obj_lst_str,
-    frame_focus_inds,
+    focus_inds,
     frames_indices,
     mode,
     label_suff,
-    color,
-    symbol,
-    linestyle,
+    units_polarization,
+    units_magnetization,
     **kwargs,
 ):
     """return a 2d trace based on field and parameters"""
@@ -222,9 +230,14 @@ def get_trace2D_dict(
         y = y[0]
     else:
         y = np.linalg.norm(y, axis=0)
-    marker_size = np.array([2] * len(frames_indices))
-    marker_size[frame_focus_inds] = 15
+    marker_size = np.array([3] * len(frames_indices))
+    marker_size[focus_inds] = 15
     title = f"{field_str}{''.join(coords_str)}"
+    unit = (
+        units_polarization
+        if field_str in "BJ"
+        else units_magnetization if field_str in "HM" else ""
+    )
     trace = {
         "mode": "lines+markers",
         "legendgrouptitle_text": f"{title}"
@@ -232,35 +245,35 @@ def get_trace2D_dict(
         "text": mode,
         "hovertemplate": (
             "<b>Path index</b>: %{x}    "
-            f"<b>{title}</b>: " + "%{y:.3s}T<br>"
+            f"<b>{title}</b>: %{{y:.3s}}{unit}<br>"
             f"<b>{'sources'}</b>:<br>{obj_lst_str['sources']}<br>"
             f"<b>{'sensors'}</b>:<br>{obj_lst_str['sensors']}"
             # "<extra></extra>",
         ),
         "x": frames_indices,
         "y": y[frames_indices],
-        "line_dash": linestyle,
-        "line_color": color,
         "marker_size": marker_size,
-        "marker_color": color,
-        "marker_symbol": symbol,
         "showlegend": True,
         "legendgroup": f"{title}{label_suff}",
-        **kwargs,
     }
+    trace.update(kwargs)
     return trace
 
 
-def get_generic_traces_2D(
-    *,
-    objects,
+def get_traces_2D(
+    *objects,
     output=("Bx", "By", "Bz"),
     row=None,
     col=None,
     sumup=True,
     pixel_agg=None,
     in_out="auto",
-    style_path_frames=None,
+    styles=None,
+    units_polarization="T",
+    units_magnetization="A/m",
+    # pylint: disable=unused-argument
+    units_length="m",
+    zoom=0,
 ):
     """draws and animates sensor values over a path in a subplot"""
     # pylint: disable=import-outside-toplevel
@@ -282,6 +295,7 @@ def get_generic_traces_2D(
     if not isinstance(output, (list, tuple)):
         output = [output]
     output_params = {}
+    field_str_list = []
     for out, linestyle in zip(output, cycle(ALLOWED_LINESTYLES[:6])):
         field_str, *coords_str = out
         if not coords_str:
@@ -289,31 +303,44 @@ def get_generic_traces_2D(
         if field_str not in "BHMJ" and set(coords_str).difference(set("xyz")):
             raise ValueError(
                 "The `output` parameter must start with 'B', 'H', 'M', 'J' "
-                "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Hz') )"
+                "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') )"
                 f"\nreceived {out!r} instead"
             )
+        field_str_list.append(field_str)
         output_params[out] = {
             "field_str": field_str,
             "coords_str": coords_str,
-            "linestyle": linestyle,
+            "line_dash": linestyle,
         }
-    BH_array = getBH_level2(
-        sources,
-        sensors,
-        sumup=sumup,
-        squeeze=False,
-        field=field_str,
-        pixel_agg=pixel_agg,
-        output="ndarray",
-        in_out=in_out,
-    )
-    BH_array = BH_array.swapaxes(1, 2)  # swap axes to have sensors first, path second
+    field_str_list = list(dict.fromkeys(field_str_list))
+    BH_array = {}
+    for field_str in field_str_list:
+        BH_array[field_str] = getBH_level2(
+            sources,
+            sensors,
+            sumup=sumup,
+            squeeze=False,
+            field=field_str,
+            pixel_agg=pixel_agg,
+            output="ndarray",
+            in_out=in_out,
+        )
+        # swap axes to have sensors first, path second
+        BH_array[field_str] = BH_array[field_str].swapaxes(1, 2)
+    frames_indices = np.arange(0, BH_array[field_str_list[0]].shape[2])
 
-    frames_indices = np.arange(0, BH_array.shape[2])
-    frame_focus_inds = [-1] if style_path_frames is None else style_path_frames
-    if isinstance(frame_focus_inds, numbers.Number):
-        # pylint: disable=invalid-unary-operand-type
-        frame_focus_inds = frames_indices[::-style_path_frames]
+    def get_focus_inds(*objs):
+        focus_inds = []
+        for obj in objs:
+            style = styles.get(obj, obj.style)
+            frames = style.path.frames
+            inds = [] if frames is None else frames
+            if isinstance(inds, numbers.Number):
+                # pylint: disable=invalid-unary-operand-type
+                inds = frames_indices[::-frames]
+            focus_inds.extend(inds)
+        focus_inds = list(dict.fromkeys(focus_inds))
+        return focus_inds if focus_inds else [-1]
 
     def get_obj_list_str(objs):
         if len(objs) < 8:
@@ -324,7 +351,8 @@ def get_generic_traces_2D(
         return obj_lst_str
 
     def get_label_and_color(obj):
-        style = obj.style
+        style = styles.get(obj, None)
+        style = obj.style if style is None else style
         label = get_legend_label(obj, style=style)
         color = getattr(style, "color", None)
         return label, color
@@ -342,15 +370,18 @@ def get_generic_traces_2D(
         label_src, color_src = get_label_and_color(src)
         symbols = cycle(ALLOWED_SYMBOLS[:6])
         for sens_ind, sens in enumerate(sensors):
+            focus_inds = get_focus_inds(src, sens)
             label_sens, color_sens = get_label_and_color(sens)
             label_suff = label_sens
-            if mode == "sensors":
-                label, color = label_src, color_src
-            else:
+            label = label_src
+            line_color = color_src
+            marker_color = color_sens if len(sensors) > 1 else None
+            if sumup:
+                line_color = color_sens
+                label = label_sens
                 label_suff = (
                     f"{label_src}" if len(sources) == 1 else f"{len(sources)} sources"
                 )
-                label, color = label_sens, color_sens
             num_of_pix = (
                 len(sens.pixel.reshape(-1, 3))
                 if (not isinstance(sens, magpy.Collection))
@@ -361,29 +392,33 @@ def get_generic_traces_2D(
             pix_suff = ""
             num_of_pix_to_show = 1 if pixel_agg else num_of_pix
             for pix_ind in range(num_of_pix_to_show):
-                symbol = next(symbols)
-                BH = BH_array[src_ind, sens_ind, :, pix_ind]
+                marker_symbol = next(symbols)
                 if num_of_pix > 1:
                     if pixel_agg:
-                        pix_suff = f" ({num_of_pix} pixels {pixel_agg})"
+                        pix_suff = f" - {num_of_pix} pixels {pixel_agg}"
                     else:
-                        pix_suff = f" (pixel {pix_ind})"
+                        pix_suff = f" - pixel {pix_ind}"
                 for param in output_params.values():
+                    BH = BH_array[param["field_str"]][src_ind, sens_ind, :, pix_ind]
                     traces.append(
                         get_trace2D_dict(
                             BH,
                             **param,
                             obj_lst_str=obj_lst_str,
-                            frame_focus_inds=frame_focus_inds,
+                            focus_inds=focus_inds,
                             frames_indices=frames_indices,
                             mode=mode,
                             label_suff=label_suff,
                             name=f"{label}{pix_suff}",
-                            color=color,
-                            symbol=symbol,
+                            line_color=line_color,
+                            marker_color=marker_color,
+                            marker_line_color=marker_color,
+                            marker_symbol=marker_symbol,
                             type="scatter",
                             row=row,
                             col=col,
+                            units_polarization=units_polarization,
+                            units_magnetization=units_magnetization,
                         )
                     )
     return traces
@@ -398,9 +433,10 @@ def process_extra_trace(model):
         "constructor": extr.constructor,
         "kwargs": model_kwargs,
         "args": model_args,
+        "coordsargs": extr.coordsargs,
         "kwargs_extra": model["kwargs_extra"],
     }
-    kwargs, args = place_and_orient_model3d(
+    kwargs, args, coordsargs = place_and_orient_model3d(
         model_kwargs=model_kwargs,
         model_args=model_args,
         orientation=model["orientation"],
@@ -408,13 +444,15 @@ def process_extra_trace(model):
         coordsargs=extr.coordsargs,
         scale=extr.scale,
         return_model_args=True,
+        return_coordsargs=True,
     )
+    trace3d["coordsargs"] = coordsargs
     trace3d["kwargs"].update(kwargs)
     trace3d["args"] = args
     return trace3d
 
 
-def get_generic_traces(
+def get_generic_traces3D(
     input_obj,
     autosize=None,
     legendgroup=None,
@@ -445,7 +483,6 @@ def get_generic_traces(
     # pylint: disable=too-many-nested-blocks
     # pylint: disable=protected-access
     # pylint: disable=import-outside-toplevel
-
     style = input_obj.style
     is_mag_arrows = False
     is_mag = hasattr(input_obj, "magnetization") and hasattr(style, "magnetization")
@@ -501,24 +538,24 @@ def get_generic_traces(
             extr.update(extr.updatefunc())  # update before checking backend
             if extr.backend == "generic":
                 extr.update(extr.updatefunc())
-                tr_generic = {"opacity": style.opacity}
+                tr_non_generic = {"opacity": style.opacity}
                 ttype = extr.constructor.lower()
                 obj_extr_trace = extr.kwargs() if callable(extr.kwargs) else extr.kwargs
                 obj_extr_trace = {"type": ttype, **obj_extr_trace}
                 if ttype == "scatter3d":
                     for k in ("marker", "line"):
-                        tr_generic[f"{k}_color"] = tr_generic.get(
+                        tr_non_generic[f"{k}_color"] = tr_non_generic.get(
                             f"{k}_color", style.color
                         )
                 elif ttype == "mesh3d":
-                    tr_generic["showscale"] = tr_generic.get("showscale", False)
-                    tr_generic["color"] = tr_generic.get("color", style.color)
+                    tr_non_generic["showscale"] = tr_non_generic.get("showscale", False)
+                    tr_non_generic["color"] = tr_non_generic.get("color", style.color)
                 else:  # pragma: no cover
                     raise ValueError(
                         f"{ttype} is not supported, only 'scatter3d' and 'mesh3d' are"
                     )
-                tr_generic.update(linearize_dict(obj_extr_trace, separator="_"))
-                traces_generic.append(tr_generic)
+                tr_non_generic.update(linearize_dict(obj_extr_trace, separator="_"))
+                traces_generic.append(tr_non_generic)
 
     if is_mag_arrows:
         mag = input_obj.magnetization
@@ -548,6 +585,7 @@ def get_generic_traces(
     path_traces_generic = group_traces(*path_traces_generic)
 
     for tr in path_traces_generic:
+        tr.update(place_and_orient_model3d(tr))
         tr.update(row=row, col=col)
         if tr.get("opacity", None) is None:
             tr["opacity"] = style.opacity
@@ -577,7 +615,7 @@ def get_generic_traces(
             extr.update(extr.updatefunc())  # update before checking backend
             if extr.backend == extra_backend:
                 for orient, pos in zip(orientations, positions):
-                    tr_generic = {
+                    tr_non_generic = {
                         "model3d": extr,
                         "position": pos,
                         "orientation": orient,
@@ -595,8 +633,8 @@ def get_generic_traces(
                             "col": col,
                         },
                     }
-                    tr_generic = process_extra_trace(tr_generic)
-                    path_traces_extra_non_generic_backend.append(tr_generic)
+                    tr_non_generic = process_extra_trace(tr_non_generic)
+                    path_traces_extra_non_generic_backend.append(tr_non_generic)
         out.update({extra_backend: path_traces_extra_non_generic_backend})
     return out
 
@@ -721,7 +759,34 @@ def extract_animation_properties(
     return path_indices, exp, frame_duration
 
 
-def draw_frame(objs, colorsequence=None, zoom=0.0, autosize=None, **kwargs) -> Tuple:
+def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs):
+    """Return traces, traces to resize and extra_backend_traces"""
+    extra_backend_traces = []
+    traces_dict = {}
+    for obj, params in flat_objs_props.items():
+        params = {**params, **kwargs}
+        if autosize is None and getattr(obj, "_autosize", False):
+            # temporary coordinates to be able to calculate ranges
+            # pylint: disable=protected-access
+            x, y, z = obj._position.T
+            rc_dict = {k: v for k, v in params.items() if k in ("row", "col")}
+            traces_dict[obj] = [{"x": x, "y": y, "z": z, "_autosize": True, **rc_dict}]
+        else:
+            traces_dict[obj] = []
+            with style_temp_edit(obj, style_temp=params.pop("style", None), copy=True):
+                out_traces = get_generic_traces3D(
+                    obj,
+                    extra_backend=extra_backend,
+                    autosize=autosize,
+                    **params,
+                )
+                if extra_backend:
+                    extra_backend_traces.extend(out_traces.get(extra_backend, []))
+                traces_dict[obj].extend(out_traces["generic"])
+    return traces_dict, extra_backend_traces
+
+
+def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> Tuple:
     """
     Creates traces from input `objs` and provided parameters, updates the size of objects like
     Sensors and Dipoles in `kwargs` depending on the canvas size.
@@ -736,89 +801,73 @@ def draw_frame(objs, colorsequence=None, zoom=0.0, autosize=None, **kwargs) -> T
         colorsequence = default_settings.display.colorsequence
     # dipoles and sensors use autosize, the trace building has to be put at the back of the queue.
     # autosize is calculated from the other traces overall scene range
-
-    style_path_frames = kwargs.get(
-        "style_path_frames", [-1]
-    )  # get before next func strips style
-    flat_objs_props, kwargs = get_flatten_objects_properties(
-        *objs, colorsequence=colorsequence, **kwargs
+    objs_rc = get_objects_props_by_row_col(
+        *objs,
+        colorsequence=colorsequence,
+        style_kwargs=style_kwargs,
     )
-    traces_dict, traces_to_resize_dict, extra_backend_traces = get_row_col_traces(
-        flat_objs_props, **kwargs
-    )
-    traces = [t for tr in traces_dict.values() for t in tr]
-    ranges = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
-    if autosize is None or autosize == "return":
-        # pylint: disable=no-member
-        autosize = np.mean(np.diff(ranges)) / default_settings.display.autosizefactor
-
-    traces_dict_2, _, extra_backend_traces2 = get_row_col_traces(
-        traces_to_resize_dict, autosize=autosize, **kwargs
-    )
-    traces_dict.update(traces_dict_2)
-    extra_backend_traces.extend(extra_backend_traces2)
-    traces = group_traces(*[t for tr in traces_dict.values() for t in tr])
-    obj_list_2d = [o for o in objs if o["output"] != "model3d"]
-    for objs_2d in obj_list_2d:
-        traces2d = get_generic_traces_2D(
-            **objs_2d,
-            style_path_frames=style_path_frames,
-        )
-        traces.extend(traces2d)
-    return traces, autosize, ranges, extra_backend_traces
-
-
-def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kwargs):
-    """Return traces, traces to resize and extra_backend_traces"""
-    # pylint: disable=protected-access
-    extra_backend_traces = []
     traces_dict = {}
-    traces_to_resize_dict = {}
-    for obj, params in flat_objs_props.items():
-        params.update(kwargs)
-        if autosize is None and getattr(obj, "_autosize", False):
-            traces_to_resize_dict[obj] = {**params}
-            # temporary coordinates to be able to calculate ranges
-            x, y, z = downcast(obj._position, "m").T
-            traces_dict[obj] = [{"x": x, "y": y, "z": z}]
-        else:
-            traces_dict[obj] = []
-            rco_obj = params.pop("row_cols")
-            orig_style = getattr(obj, "_style", None)
-            try:
-                style_temp = params.pop("style", None)
-                for rco in rco_obj:
-                    # temporary replace style attribute
-                    obj._style = style_temp
-                    if len(rco_obj) >= 2 and style_temp:
-                        # deepcopy style only if obj is in multiple subplots.
-                        obj._style = style_temp.copy()
-                    params["row"], params["col"], output_typ = rco
-                    if output_typ == "model3d":
-                        out_traces = get_generic_traces(
-                            obj,
-                            extra_backend=extra_backend,
-                            autosize=autosize,
-                            **params,
-                        )
-                        if extra_backend:
-                            extra_backend_traces.extend(
-                                out_traces.get(extra_backend, [])
-                            )
-                        traces_dict[obj].extend(out_traces["generic"])
-            finally:
-                obj._style = orig_style
-    return traces_dict, traces_to_resize_dict, extra_backend_traces
+    extra_backend_traces = []
+    rc_params = {} if rc_params is None else rc_params
+    for rc, props in objs_rc.items():
+        if props["rc_params"]["output"] == "model3d":
+            rc_params[rc] = rc_params.get(rc, {})
+            rc_params[rc]["units_length"] = props["rc_params"]["units_length"]
+            rc_keys = ("row", "col")
+            rc_kwargs = {k: v for k, v in props["rc_params"].items() if k in rc_keys}
+            traces_d1, traces_ex1 = get_traces_3D(
+                props["objects"], **rc_kwargs, **kwargs
+            )
+            rc_params[rc]["autosize"] = rc_params.get(rc, {}).get("autosize", None)
+            if rc_params[rc]["autosize"] is None:
+                zoom = rc_params[rc]["zoom"] = props["rc_params"]["zoom"]
+                traces = [t for tr in traces_d1.values() for t in tr]
+                ranges_rc = get_scene_ranges(*traces, *traces_ex1, zoom=zoom)
+                # pylint: disable=no-member
+                factor = default_settings.display.autosizefactor
+                rc_params[rc]["autosize"] = np.mean(np.diff(ranges_rc[rc])) / factor
+            to_resize_keys = {
+                k for k, v in traces_d1.items() if v and "_autosize" in v[0]
+            }
+            flat_objs_props = {
+                k: v for k, v in props["objects"].items() if k in to_resize_keys
+            }
+            traces_d2, traces_ex2 = get_traces_3D(
+                flat_objs_props,
+                autosize=rc_params[rc]["autosize"],
+                **rc_kwargs,
+                **kwargs,
+            )
+            traces_dict.update(
+                {(k, *rc): v for k, v in {**traces_d1, **traces_d2}.items()}
+            )
+            extra_backend_traces.extend([*traces_ex1, *traces_ex2])
+    traces = group_traces(*[t for tr in traces_dict.values() for t in tr])
+
+    styles = {
+        obj: params.get("style", None)
+        for o_rc in objs_rc.values()
+        for obj, params in o_rc["objects"].items()
+    }
+    for props in objs_rc.values():
+        if props["rc_params"]["output"] != "model3d":
+            traces2d = get_traces_2D(
+                *props["objects"],
+                **props["rc_params"],
+                styles=styles,
+            )
+            traces.extend(traces2d)
+    return traces, extra_backend_traces, rc_params
 
 
 def get_frames(
     objs,
     colorsequence=None,
-    zoom=1,
     title=None,
     animation=False,
     supports_colorgradient=True,
     backend="generic",
+    style_kwargs=None,
     **kwargs,
 ):
     """This is a helper function which generates frames with generic traces to be provided to
@@ -848,25 +897,26 @@ def get_frames(
         )
     # create frame for each path index or downsampled path index
     frames = []
-    autosize = "return"
+
     title_str = title
+    rc_params = {}
     for i, ind in enumerate(path_indices):
         extra_backend_traces = []
         if animation:
-            kwargs["style_path_frames"] = [ind]
+            style_kwargs["style_path_frames"] = [ind]
             title = "Animation 3D - " if title is None else title
             title_str = f"""{title}path index: {ind+1:0{exp}d}"""
-        traces, autosize_init, ranges, extra_backend_traces = draw_frame(
+        traces, extra_backend_traces, rc_params_temp = draw_frame(
             objs,
-            colorsequence,
-            zoom,
-            autosize=autosize,
+            colorsequence=colorsequence,
+            rc_params=rc_params,
             supports_colorgradient=supports_colorgradient,
             extra_backend=backend,
+            style_kwargs=style_kwargs,
             **kwargs,
         )
         if i == 0:  # get the dipoles and sensors autosize from first frame
-            autosize = autosize_init
+            rc_params = rc_params_temp
         frames.append(
             {
                 "data": traces,
@@ -875,13 +925,30 @@ def get_frames(
                 "extra_backend_traces": extra_backend_traces,
             }
         )
-
     clean_legendgroups(frames)
     traces = [t for frame in frames for t in frame["data"]]
-    ranges = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
+    zoom = {rc: v["zoom"] for rc, v in rc_params.items()}
+    ranges_rc = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
+    labels_rc = {(1, 1): {k: "" for k in "xyz"}}
+    scale_factors_rc = {}
+    for rc, params in rc_params.items():
+        units_length = params["units_length"]
+        if units_length == "auto":
+            rmax = np.amax(np.abs(ranges_rc[rc]))
+            units_length = f"{unit_prefix(rmax, as_tuple=True)[2]}m"
+        unit_str = "" if not (units_length) else f" ({units_length})"
+        labels_rc[rc] = {k: f"{k}{unit_str}" for k in "xyz"}
+        scale_factors_rc[rc] = get_unit_factor(units_length, target_unit="m")
+        ranges_rc[rc] *= scale_factors_rc[rc]
+
+    for frame in frames:
+        for key in ("data", "extra_backend_traces"):
+            frame[key] = rescale_traces(frame[key], factors=scale_factors_rc)
+
     out = {
         "frames": frames,
-        "ranges": ranges,
+        "ranges": ranges_rc,
+        "labels": labels_rc,
         "input_kwargs": {**kwargs, **animation_kwargs},
     }
     if animation:

@@ -24,6 +24,7 @@ from magpylib._src.units import to_unit_from_target
 
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
+# pylint: disable=too-many-positional-arguments
 
 
 class TriangularMesh(BaseMagnet):

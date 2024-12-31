@@ -554,7 +554,7 @@ def test_input_show_zoom_bad(zoom):
     """bad show zoom inputs"""
     x = magpy.Sensor()
     with pytest.raises(MagpylibBadUserInput):
-        magpy.show(x, zoom=zoom)
+        magpy.show(x, zoom=zoom, return_fig=True, backend="plotly")
 
 
 @pytest.mark.parametrize(

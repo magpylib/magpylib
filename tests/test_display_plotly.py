@@ -4,6 +4,7 @@ import pytest
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.units import get_unit_factor
 
 # pylint: disable=assignment-from-no-return
 # pylint: disable=no-member
@@ -383,3 +384,105 @@ def test_legends():
     )
     assert [t.name for t in fig.data] == ["Plotly extra trace (1m|1m|1m)"] * 4
     assert [t.showlegend for t in fig.data] == [True, False, False, False]
+
+    fig = magpy.show(
+        markers=[(0, 0, 0)],
+        backend="plotly",
+        style_legend_show=False,
+        return_fig=True,
+    )
+
+    assert [t.name for t in fig.data] == ["Marker"]
+    assert [t.showlegend for t in fig.data] == [False]
+
+
+def test_color_precedence():
+    """Test if color precedence is respected when calling in nested collections"""
+    c1 = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    c2 = c1.copy(position=(1, 0, 0))
+    c3 = c1.copy(position=(2, 0, 0))
+    coll = magpy.Collection(c1, magpy.Collection(c2, c3))
+    kw = {
+        "backend": "plotly",
+        "style_magnetization_show": False,
+        "colorsequence": ["red", "blue", "green"],
+        "return_fig": True,
+    }
+    fig = magpy.show(coll, **kw)
+    assert [tr["color"] for tr in fig.data] == ["red"]
+
+    fig = magpy.show(*coll, **kw)
+    assert [tr["color"] for tr in fig.data] == ["red", "blue"]
+
+    fig = magpy.show(*coll.sources_all, **kw)
+    assert [tr["color"] for tr in fig.data] == ["red", "blue", "green"]
+
+    fig = magpy.show({"objects": c1, "col": 1}, {"objects": c1, "col": 2}, **kw)
+    # sane obj in different subplot should have same color
+    assert [tr["color"] for tr in fig.data] == ["red", "red"]
+
+
+def test_colors_output2d():
+    """Tests if lines have objects corresponding colors in ouptut=Bx, By..."""
+    l1 = magpy.current.Circle(
+        current=1,
+        diameter=1,
+        style_label="L1",
+        style_arrow_show=False,
+    )
+    l2 = l1.copy(diameter=2)
+    s1 = magpy.Sensor(
+        pixel=[[0, 0, 0], [0, 1, 0]],
+        position=np.linspace((-1, 0, 1), (1, 0, 1), 10),
+        style_label="S",
+        style_model3d_showdefault=False,
+    )
+    s2 = s1.copy().move((0, 0, 1))
+    objs = {"objects": [l1, l2, s1, s2]}
+    kw = {
+        "backend": "plotly",
+        "return_fig": True,
+        "colorsequence": ["red", "blue", "green", "cyan"],
+    }
+    kw2d = {"output": "Bx", "col": 2}
+
+    def get_scatters2d(fig):
+        return [t.line.color for t in fig.data if t.type == "scatter"]
+
+    fig = magpy.show(objs, {**objs, **kw2d, "sumup": True}, **kw)
+    assert get_scatters2d(fig) == ["green", "cyan"]
+
+    fig = magpy.show(objs, {**objs, **kw2d, "sumup": True, "pixel_agg": None}, **kw)
+    assert get_scatters2d(fig) == [*["green"] * 2, *["cyan"] * 2]
+
+    fig = magpy.show(objs, {**objs, **kw2d, "sumup": False}, **kw)
+    assert get_scatters2d(fig) == [*["red"] * 2, *["blue"] * 2]
+
+    fig = magpy.show(objs, {**objs, **kw2d, "sumup": False, "pixel_agg": None}, **kw)
+    assert get_scatters2d(fig) == [*["red"] * 4, *["blue"] * 4]
+
+
+def test_units_length():
+    """test units lenghts"""
+
+    dims = (1, 2, 3)
+    c1 = magpy.magnet.Cuboid(dimension=dims, polarization=(1, 2, 3))
+    inputs = [
+        {"objects": c1, "row": 1, "col": 1, "units_length": "m", "zoom": 3},
+        {"objects": c1, "row": 1, "col": 2, "units_length": "dm", "zoom": 2},
+        {"objects": c1, "row": 2, "col": 1, "units_length": "cm", "zoom": 1},
+        {"objects": c1, "row": 2, "col": 2, "units_length": "mm", "zoom": 0},
+    ]
+    fig = magpy.show(
+        *inputs,
+        backend="plotly",
+        return_fig=True,
+    )
+    for ind, inp in enumerate(inputs):
+        scene = getattr(fig.layout, f"scene{'' if ind==0 else ind+1}")
+        for k in "xyz":
+            ax = getattr(scene, f"{k}axis")
+            assert ax.title.text == f"{k} ({inp['units_length']})"
+            factor = get_unit_factor(inp["units_length"], target_unit="m")
+            r = (inp["zoom"] + 1) / 2 * factor * max(dims)
+            assert ax.range == (-r, r)

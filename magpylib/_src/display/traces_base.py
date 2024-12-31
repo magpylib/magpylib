@@ -1,6 +1,7 @@
 """base traces building functions"""
 
 # pylint: disable=invalid-unary-operand-type
+# pylint: disable=too-many-positional-arguments
 
 from functools import partial
 
