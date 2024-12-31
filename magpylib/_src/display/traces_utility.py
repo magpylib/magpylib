@@ -1,6 +1,8 @@
 """ Display function codes"""
 
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-positional-arguments
+
 from collections import defaultdict
 from functools import lru_cache
 from itertools import chain

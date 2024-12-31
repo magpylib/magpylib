@@ -1,11 +1,19 @@
 # Changelog
 
 ## [Unreleased] - YYYY-MM-DD
+
+## [5.1.1] - 2024-10-31
+- Included magpylib-force version 0.3.1 in documentation
+- Removed unused issue templates and improved PR template
+
+## [5.1.0] - 2024-10-09
+- Fixed a bug where the magnetization arrow graphical representation would be anchored badly after rotation ([#805](https://github.com/magpylib/magpylib/issues/805))
 - Added `units_length` input to the `show` function to allow displaying axes with different length units. This parameter can be set individually for each subplot. ([#786](https://github.com/magpylib/magpylib/pull/786))
 - Small documentation and Readme improvement. Change naming from "explicit expression" to "analytical expression" as described in ([#794](https://github.com/magpylib/magpylib/issues/794)).
 - Fixed Pvyvista plot bounds not fitting on animation. Also enables `zoom` feature which was not working until now. ([#798](https://github.com/magpylib/magpylib/pull/798))
 - Fixed canvas layout being modified even when user-provided. Also added a new `canvas_update` parameter to choose the layout behavior (by default `"auto"`) ([#799](https://github.com/magpylib/magpylib/pull/799))
-- Improved documentation ([#766](https://github.com/magpylib/magpylib/issues/766))
+- Improved documentation ([#766](https://github.com/magpylib/magpylib/issues/766), [#802](https://github.com/magpylib/magpylib/issues/802))
+- Documentation now includes force computation, which is still in a separate package "magpylib-force", but which will be integrated into Magplyib in the coming months. ([#787](https://github.com/magpylib/magpylib/issues/787))
 
 ## [5.0.4] - 2024-06-18
 - Added support for Numpy 2.0 ([#795](https://github.com/magpylib/magpylib/pull/789))
@@ -476,7 +484,9 @@ The first official release of the Magpylib library.
 
 ---
 
-[Unreleased]:https://github.com/magpylib/magpylib/compare/5.0.4...HEAD
+[Unreleased]:https://github.com/magpylib/magpylib/compare/5.1.1...HEAD
+[5.1.1]:https://github.com/magpylib/magpylib/compare/5.1.0...5.1.1
+[5.1.0]:https://github.com/magpylib/magpylib/compare/5.0.4...5.1.0
 [5.0.4]:https://github.com/magpylib/magpylib/compare/5.0.3...5.0.4
 [5.0.3]:https://github.com/magpylib/magpylib/compare/5.0.2...5.0.3
 [5.0.2]:https://github.com/magpylib/magpylib/compare/5.0.1...5.0.2

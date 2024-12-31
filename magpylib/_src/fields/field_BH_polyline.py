@@ -2,6 +2,8 @@
 Implementations of analytical expressions of line current segments
 """
 
+# pylint: disable=too-many-positional-arguments
+
 import numpy as np
 from numpy.linalg import norm
 from scipy.constants import mu_0 as MU0

@@ -1,3 +1,5 @@
+# pylint: disable=too-many-positional-arguments
+
 """Sensor class code"""
 
 import numpy as np

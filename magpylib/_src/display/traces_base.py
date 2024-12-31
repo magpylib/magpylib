@@ -1,5 +1,7 @@
 """base traces building functions"""
 
+# pylint: disable=too-many-positional-arguments
+
 from functools import partial
 
 import numpy as np

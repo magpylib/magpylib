@@ -2,6 +2,8 @@
 
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
+# pylint: disable=too-many-positional-arguments
+
 import os
 import tempfile
 from functools import lru_cache

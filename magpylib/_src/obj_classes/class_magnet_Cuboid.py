@@ -1,3 +1,5 @@
+# pylint: disable=too-many-positional-arguments
+
 """Magnet Cuboid class code"""
 
 from magpylib._src.display.traces_core import make_Cuboid

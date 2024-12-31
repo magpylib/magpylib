@@ -4,6 +4,8 @@
 # pylint: disable=too-many-statements
 # pylint: disable=import-outside-toplevel
 # pylint: disable=wrong-import-position
+# pylint: disable=too-many-positional-arguments
+
 import os
 from collections import Counter
 
