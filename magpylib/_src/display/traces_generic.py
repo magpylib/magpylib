@@ -37,7 +37,7 @@ from magpylib._src.units import downcast
 from magpylib._src.utility import format_obj_input
 from magpylib._src.units import get_unit_factor
 from magpylib._src.utility import style_temp_edit
-from magpylib._src.utility import unit_prefix
+from magpylib._src.units import unit_prefix
 
 
 class MagpyMarkers:
