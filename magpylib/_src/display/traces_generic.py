@@ -158,7 +158,7 @@ def make_mag_arrows(obj):
     mag = obj.magnetization
     # collect all draw positions and directions
     pos = downcast(obj._position, "m")
-    pos = downcast(getattr(obj, "_barycenter", pos))[0] - pos[0]
+    pos = downcast(getattr(obj, "_barycenter", pos), "m")[0] - pos[0]
     # we need initial relative barycenter, arrow gets orientated later
     pos = obj._orientation[0].inv().apply(pos)
     direc = mag / (np.linalg.norm(mag) + 1e-6) * length
