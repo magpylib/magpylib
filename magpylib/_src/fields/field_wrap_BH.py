@@ -1062,6 +1062,21 @@ def getM(
     Functional interface: ndarray, shape (n,3)
         M-field for every parameter set in units of A/m.
 
+    Examples
+    --------
+    In this example we test if a point lies inside a magnet or not.
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> cube = magpy.magnet.Cuboid(
+    ...     dimension=(10,1,1),
+    ...     polarization=(1,0,0)
+    ... ).rotate_from_angax(45,'z')
+    >>> J = cube.getJ((3,3,0))
+    >>> with np.printoptions(precision=3):
+    ...    print(J)
+    [0.707 0.707 0.   ]
+
     Notes
     -----
     This function automatically joins all sensor and position inputs together and groups
@@ -1199,6 +1214,32 @@ def getJ(
 
     Functional interface: ndarray, shape (n,3)
         J-field for every parameter set in units of T.
+
+    Returns
+    -------
+    M-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
+        M-field at each path position (index m) for each sensor (index k) and each sensor pixel
+        position (indices n1, n2, ...) in units of A/m. Sensor pixel positions are equivalent
+        to simple observer positions. Paths of objects that are shorter than index m are
+        considered as static beyond their end.
+
+    Functional interface: ndarray, shape (n,3)
+        M-field for every parameter set in units of A/m.
+
+    Examples
+    --------
+    In this example we test if a point lies inside a magnet or not.
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> cube = magpy.magnet.Cuboid(
+    ...     dimension=(10,1,1),
+    ...     polarization=(1,0,0)
+    ... ).rotate_from_angax(45,'z')
+    >>> M = cube.getM((3,3,0))
+    >>> with np.printoptions(precision=3):
+    ...    print(M)
+    [562697.697 562697.697      0.   ]
 
     Notes
     -----
