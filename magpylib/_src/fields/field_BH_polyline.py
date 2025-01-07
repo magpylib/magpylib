@@ -119,6 +119,9 @@ def current_polyline_Hfield(
     -----
     Field computation via law of Biot Savart. See also countless online resources.
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
+
+    Be careful with magnetic fields of discontinued segements. They are
+    unphysical and can lead to unphysical effects.
     """
     # rename
     p1, p2, po = segments_start, segments_end, observers
