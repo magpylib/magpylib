@@ -1072,10 +1072,10 @@ def getM(
     ...     dimension=(10,1,1),
     ...     polarization=(1,0,0)
     ... ).rotate_from_angax(45,'z')
-    >>> J = cube.getJ((3,3,0))
+    >>> M = cube.getM((3,3,0))
     >>> with np.printoptions(precision=3):
-    ...    print(J)
-    [0.707 0.707 0.   ]
+    ...    print(M)
+    [562697.697 562697.697      0.   ]
 
     Notes
     -----
@@ -1236,10 +1236,10 @@ def getJ(
     ...     dimension=(10,1,1),
     ...     polarization=(1,0,0)
     ... ).rotate_from_angax(45,'z')
-    >>> M = cube.getM((3,3,0))
+    >>> J = cube.getJ((3,3,0))
     >>> with np.printoptions(precision=3):
-    ...    print(M)
-    [562697.697 562697.697      0.   ]
+    ...    print(J)
+    [0.707 0.707 0.   ]
 
     Notes
     -----
