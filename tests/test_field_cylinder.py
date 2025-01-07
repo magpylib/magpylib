@@ -204,9 +204,7 @@ def test_cylinder_tile_slanovc(inputs, H_expected):
         "observers": inputs["obs_pos"],
         "dimensions": inputs["dim"],
     }
-    H = (
-        magnet_cylinder_segment_Hfield(**inputs_mod) / 4 / np.pi * 1e7
-    )  # factors come from B <->H change
+    H = magnet_cylinder_segment_Hfield(**inputs_mod)  # factors come from B <->H change
     np.testing.assert_allclose(H, H_expected)
 
 
