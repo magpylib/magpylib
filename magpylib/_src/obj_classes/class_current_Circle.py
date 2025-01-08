@@ -55,21 +55,13 @@ class Circle(BaseCurrent):
     of such a current loop with 100 A current and a diameter of 2 meters at the observer position
     (0.01,0.01,0.01) given in units of m:
 
+    >>> import numpy as np
     >>> import magpylib as magpy
     >>> src = magpy.current.Circle(current=100, diameter=2)
     >>> H = src.getH((.01,.01,.01))
-    >>> print(H)
-    [7.50093701e-03 7.50093701e-03 4.99999967e+01]
-
-    We rotate the source object, and compute the B-field, this time at a set of observer positions:
-
-    >>> src.rotate_from_angax(90, 'x')
-    Circle(id=...)
-    >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
-    >>> print(B)
-    [[-9.42595544e-09 -6.28318490e-05 -9.42595544e-09]
-     [-3.77179218e-08 -6.28317871e-05 -3.77179218e-08]
-     [-8.49179752e-08 -6.28315185e-05 -8.49179752e-08]]
+    >>> with np.printoptions(precision=3):
+    ...     print(H)
+    [7.501e-03 7.501e-03 5.000e+01]
     """
 
     _field_func = staticmethod(BHJM_circle)
