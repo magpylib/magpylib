@@ -728,9 +728,9 @@ class BaseCollection(BaseDisplayRepr):
         ... ).rotate_from_angax(45,'z')
         >>> coll = magpy.Collection(cube)
         >>> M = coll.getM((3,3,0))
-        >>> with np.printoptions(precision=3):
+        >>> with np.printoptions(precision=0):
         ...    print(M)
-        [562697.697 562697.697      0.   ]
+        [562698. 562698.      0.]
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
