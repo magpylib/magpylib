@@ -1064,7 +1064,7 @@ def getM(
 
     Examples
     --------
-    In this example we test if a point lies inside a magnet or not.
+    In this example we test the magnetization at an observer point.
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -1075,7 +1075,7 @@ def getM(
     >>> M = cube.getM((3,3,0))
     >>> with np.printoptions(precision=0):
     ...    print(M)
-    [562697. 562697.      0.]
+    [562698. 562698.      0.]
 
     Notes
     -----
@@ -1228,7 +1228,7 @@ def getJ(
 
     Examples
     --------
-    In this example we test if a point lies inside a magnet or not.
+    In this example we test the polarization at an observer point.
 
     >>> import numpy as np
     >>> import magpylib as magpy

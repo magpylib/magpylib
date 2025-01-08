@@ -66,7 +66,7 @@ class Cuboid(BaseMagnet):
     >>> H = src.getH((.01,.01,.01))
     >>> with np.printoptions(precision=0):
     ...     print(H)
-    [16149. 14906. 13664.]
+    [16149. 14907. 13665.]
     """
 
     _field_func = staticmethod(BHJM_magnet_cuboid)
