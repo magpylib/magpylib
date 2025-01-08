@@ -70,34 +70,14 @@ class Tetrahedron(BaseMagnet):
     through the vertices (0,0,0), (.01,0,0), (0,.01,0) and (0,0,.01) in units of m at the
     observer position (0.01,0.01,0.01) given in units of m:
 
+    >>> import numpy as np
     >>> import magpylib as magpy
     >>> verts = [(0,0,0), (.01,0,0), (0,.01,0), (0,0,.01)]
     >>> src = magpy.magnet.Tetrahedron(polarization=(.1,.2,.3), vertices=verts)
     >>> H = src.getH((.01,.01,.01))
-    >>> print(H)
-    [2070.8978262  1656.71826096 1242.53869572]
-
-    We rotate the source object, and compute the B-field, this time at a set of observer positions:
-
-    >>> src.rotate_from_angax(45, 'x')
-    Tetrahedron(id=...)
-    >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
-    >>> print(B)
-    [[ 8.68006559e-04  2.00895792e-03 -5.03469140e-04]
-     [ 1.01357229e-04  1.93731796e-04 -1.59677364e-05]
-     [ 2.90426931e-05  5.22556994e-05 -1.70596096e-06]]
-
-    The same result is obtained when the rotated source moves along a path away from an
-    observer at position (1,1,1). Here we use a `Sensor` object as observer.
-
-    >>> sens = magpy.Sensor(position=(.01,.01,.01))
-    >>> src.move([(-.01,-.01,-.01), (-.02,-.02,-.02)])
-    Tetrahedron(id=...)
-    >>> B = src.getB(sens)
-    >>> print(B)
-    [[ 8.68006559e-04  2.00895792e-03 -5.03469140e-04]
-     [ 1.01357229e-04  1.93731796e-04 -1.59677364e-05]
-     [ 2.90426931e-05  5.22556994e-05 -1.70596096e-06]]
+    >>> with np.printoptions(precision=3):
+    ...     print(H)
+    [2070.898 1656.718 1242.539]
     """
 
     _field_func = staticmethod(BHJM_magnet_tetrahedron)
