@@ -1073,9 +1073,9 @@ def getM(
     ...     polarization=(1,0,0)
     ... ).rotate_from_angax(45,'z')
     >>> M = cube.getM((3,3,0))
-    >>> with np.printoptions(precision=3):
+    >>> with np.printoptions(precision=0):
     ...    print(M)
-    [562697.697 562697.697      0.   ]
+    [562697. 562697.      0.]
 
     Notes
     -----

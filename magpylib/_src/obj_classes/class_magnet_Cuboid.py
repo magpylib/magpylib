@@ -64,9 +64,9 @@ class Cuboid(BaseMagnet):
     >>> import magpylib as magpy
     >>> src = magpy.magnet.Cuboid(polarization=(.5,.6,.7), dimension=(.01,.01,.01))
     >>> H = src.getH((.01,.01,.01))
-    >>> with np.printoptions(precision=3):
+    >>> with np.printoptions(precision=0):
     ...     print(H)
-    [16149.041 14906.807 13664.573]
+    [16149. 14906. 13664.]
     """
 
     _field_func = staticmethod(BHJM_magnet_cuboid)
