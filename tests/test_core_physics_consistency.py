@@ -10,6 +10,7 @@ from magpylib._src.fields.field_BH_polyline import BHJM_current_polyline
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import BHJM_triangle
+from magpylib._src.fields.field_BH_current_sheet import BHJM_current_sheet
 
 # PHYSICS CONSISTENCY TESTING
 #
@@ -627,3 +628,68 @@ def test_core_physics_Tetrahedron_VS_Cuboid():
             )[0]
             np.testing.assert_allclose(b, bb)
             np.testing.assert_allclose(h, hh)
+
+def test_core_physics_current_sheet_VS_Polyline():
+    """test core current_sheet vs many polylines"""
+
+    n_random = 10  #number of random observers
+    np.random.seed(0)
+    observers_random = np.random.random(n_random*3) * 10 - 5
+    observers_random = observers_random.reshape((n_random,3))
+    observers_special_cases = np.array(((-1,0,0), (2,0,0), (0,-1,0), (0,2,0), (2,-1,0), (-1,2,0), (-1,2,1), (-1,2,-1)))
+
+    observers = np.concatenate((observers_random, observers_special_cases), axis=0)
+
+    n = len(observers)
+
+    coordinates = np.tile(np.array((1,0,1)).T, (n,1))
+    current_densities = np.tile(np.array((1,1)).T, (n,1))
+
+    B_field_current_sheet = BHJM_current_sheet(
+        'B',
+        observers,
+        coordinates,
+        current_densities,
+    ) 
+
+    m = 25     #discretization with lines
+
+    x_values = np.linspace(0,1,m)
+    x_values = x_values[:-1]
+    y_values = x_values[1:]
+
+    length = np.sum((1-x_values)/2*np.sqrt(2)) + np.sum((1-y_values)/2*np.sqrt(2))
+    current = np.sqrt(2)/2/length
+
+    segment_start = np.zeros((2*m-3, 3))
+    segment_end = np.zeros((2*m-3, 3))
+
+    segment_start[:m-1, 0] = x_values
+    segment_start[m-1:, 1] = y_values
+    segment_start_tiled = np.tile(segment_start, (n,1))
+
+    segment_end[:m-1, 0] = (1+x_values)/2
+    segment_end[:m-1, 1] = (1-x_values)/2
+    segment_end[m-1:, 0] = (1-y_values)/2
+    segment_end[m-1:, 1] = (1+y_values)/2
+    segment_end_tiled = np.tile(segment_end, (n,1))
+
+    current_repeated = np.ones(n*(2*m-3)) * current
+
+    observers_repeated = np.repeat(observers, 2*m-3, axis=0)
+    print(observers_repeated)
+
+    B_field_lines = BHJM_current_polyline(
+        'B',
+        observers_repeated,
+        segment_start_tiled,
+        segment_end_tiled,
+        current_repeated,
+    )
+
+    B_field_lines = B_field_lines.reshape((n, 2*m-3, 3))
+    B_field_lines = np.sum(B_field_lines, axis=1)
+
+    np.testing.assert_allclose(B_field_lines, B_field_current_sheet, rtol=1e-3)
+
+
