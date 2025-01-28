@@ -37,4 +37,4 @@ print(f"Holding Force: {round(F[2]*100)} g")
 # Holding Force: 349 g
 ```
 
-Magnet dimensions and material from this example are taken from the [web](https://www.supermagnete.at/quadermagnete-neodym/quadermagnet-5mm-2.5mm-1.5mm_Q-05-2.5-1.5-HN). The remanence of N45 material lies within 1.32 and 1.36 T which corresponds to the polarization, see also the ["Modelling a real magnet"](examples-tutorial-modelling-magnets) tutorial. The computation confirms what is stated on the web-page, that the holding force of this magnet is about 350 g.
+Magnet dimensions and material from this example are taken from the [web](https://www.supermagnete.at/quadermagnete-neodym/quadermagnet-5mm-2.5mm-1.5mm_Q-05-2.5-1.5-HN). The remanence of N45 material lies within 1.32 and 1.36 T which corresponds to the polarization, see also the ["Modeling a real magnet"](examples-tutorial-modeling-magnets) tutorial. The computation confirms what is stated on the web-page, that the holding force of this magnet is about 350 g.
