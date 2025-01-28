@@ -534,9 +534,7 @@ class BaseCollection(BaseDisplayRepr):
 
         return sources, sensors
 
-    def getB(
-        self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
-    ):
+    def getB(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
         """Compute B-field for given sources and observers.
 
         SI units are used for all inputs and outputs.
@@ -563,19 +561,6 @@ class BaseCollection(BaseDisplayRepr):
             `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
             object is returned (the Pandas library must be installed).
 
-        in_out: {'auto', 'inside', 'outside'}
-            This parameter only applies for magnet bodies. It specifies the location of the
-            observers relative to the magnet body, affecting the calculation of the magnetic field.
-            The options are:
-            - 'auto': The location (inside or outside the cuboid) is determined automatically for
-            each observer.
-            - 'inside': All observers are considered to be inside the cuboid; use this for
-              performance optimization if applicable.
-            - 'outside': All observers are considered to be outside the cuboid; use this for
-              performance optimization if applicable.
-            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-            locations is unknown.
-
         Returns
         -------
         B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
@@ -588,26 +573,27 @@ class BaseCollection(BaseDisplayRepr):
         --------
         In this example we create a collection from two sources and two sensors:
 
+        >>> import numpy as np
         >>> import magpylib as magpy
+        >>> # Create Collection with two sensors and two magnets
         >>> src1 = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
         >>> src2 = src1.copy()
-        >>> sens1 = magpy.Sensor(position=(0,0,1))
+        >>> sens1 = magpy.Sensor(position=(0,0,.6))
         >>> sens2 = sens1.copy()
         >>> col = src1 + src2 + sens1 + sens2
-
-        The following computations all give the same result:
-
+        >>> # The following computations al give the same result
         >>> B = col.getB()
         >>> B = magpy.getB(col, col)
         >>> B = magpy.getB(col, [sens1, sens2])
         >>> B = magpy.getB([src1, src2], col)
         >>> B = magpy.getB([src1, src2], [sens1, sens2])
-        >>> print(B)
-        [[[0.         0.         0.08333333]
-          [0.         0.         0.08333333]]
+        >>> with np.printoptions(precision=3):
+        ...     print(B)
+        [[[0.    0.    0.386]
+          [0.    0.    0.386]]
         <BLANKLINE>
-         [[0.         0.         0.08333333]
-          [0.         0.         0.08333333]]]
+         [[0.    0.    0.386]
+          [0.    0.    0.386]]]
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
@@ -619,12 +605,10 @@ class BaseCollection(BaseDisplayRepr):
             squeeze=squeeze,
             pixel_agg=pixel_agg,
             output=output,
-            in_out=in_out,
+            in_out="auto",
         )
 
-    def getH(
-        self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
-    ):
+    def getH(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
         """Compute H-field for given sources and observers.
 
         SI units are used for all inputs and outputs.
@@ -659,43 +643,31 @@ class BaseCollection(BaseDisplayRepr):
             equivalent to simple observer positions. Paths of objects that are shorter than
             index m are considered as static beyond their end.
 
-        in_out: {'auto', 'inside', 'outside'}
-            This parameter only applies for magnet bodies. It specifies the location of the
-            observers relative to the magnet body, affecting the calculation of the magnetic field.
-            The options are:
-            - 'auto': The location (inside or outside the cuboid) is determined automatically for
-            each observer.
-            - 'inside': All observers are considered to be inside the cuboid; use this for
-              performance optimization if applicable.
-            - 'outside': All observers are considered to be outside the cuboid; use this for
-              performance optimization if applicable.
-            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-            locations is unknown.
-
         Examples
         --------
         In this example we create a collection from two sources and two sensors:
 
+        >>> import numpy as np
         >>> import magpylib as magpy
+        >>> # Create Collection with two sensors and two magnets
         >>> src1 = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
         >>> src2 = src1.copy()
         >>> sens1 = magpy.Sensor(position=(0,0,1))
         >>> sens2 = sens1.copy()
         >>> col = src1 + src2 + sens1 + sens2
-
-        The following computations all give the same result:
-
+        >>> # The following computations al give the same result
         >>> H = col.getH()
         >>> H = magpy.getH(col, col)
         >>> H = magpy.getH(col, [sens1, sens2])
         >>> H = magpy.getH([src1, src2], col)
         >>> H = magpy.getH([src1, src2], [sens1, sens2])
-        >>> print(H)
-        [[[    0.             0.         66314.55958552]
-          [    0.             0.         66314.55958552]]
+        >>> with np.printoptions(precision=3):
+        ...    print(H)
+        [[[    0.       0.   66314.56]
+          [    0.       0.   66314.56]]
         <BLANKLINE>
-         [[    0.             0.         66314.55958552]
-          [    0.             0.         66314.55958552]]]
+         [[    0.       0.   66314.56]
+          [    0.       0.   66314.56]]]
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
@@ -708,12 +680,10 @@ class BaseCollection(BaseDisplayRepr):
             squeeze=squeeze,
             pixel_agg=pixel_agg,
             output=output,
-            in_out=in_out,
+            in_out="auto",
         )
 
-    def getM(
-        self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
-    ):
+    def getM(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
         """Compute M-field for given sources and observers.
 
         SI units are used for all inputs and outputs.
@@ -748,18 +718,19 @@ class BaseCollection(BaseDisplayRepr):
             equivalent to simple observer positions. Paths of objects that are shorter than
             index m are considered as static beyond their end.
 
-        in_out: {'auto', 'inside', 'outside'}
-            This parameter only applies for magnet bodies. It specifies the location of the
-            observers relative to the magnet body, affecting the calculation of the magnetic field.
-            The options are:
-            - 'auto': The location (inside or outside the cuboid) is determined automatically for
-            each observer.
-            - 'inside': All observers are considered to be inside the cuboid; use this for
-              performance optimization if applicable.
-            - 'outside': All observers are considered to be outside the cuboid; use this for
-              performance optimization if applicable.
-            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-            locations is unknown.
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import magpylib as magpy
+        >>> cube = magpy.magnet.Cuboid(
+        ...     dimension=(10,1,1),
+        ...     polarization=(1,0,0)
+        ... ).rotate_from_angax(45,'z')
+        >>> coll = magpy.Collection(cube)
+        >>> M = coll.getM((3,3,0))
+        >>> with np.printoptions(precision=0):
+        ...    print(M)
+        [562698. 562698.      0.]
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
@@ -772,12 +743,10 @@ class BaseCollection(BaseDisplayRepr):
             squeeze=squeeze,
             pixel_agg=pixel_agg,
             output=output,
-            in_out=in_out,
+            in_out="auto",
         )
 
-    def getJ(
-        self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
-    ):
+    def getJ(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
         """Compute J-field for given sources and observers.
 
         SI units are used for all inputs and outputs.
@@ -804,19 +773,6 @@ class BaseCollection(BaseDisplayRepr):
             `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
             object is returned (the Pandas library must be installed).
 
-        in_out: {'auto', 'inside', 'outside'}
-            This parameter only applies for magnet bodies. It specifies the location of the
-            observers relative to the magnet body, affecting the calculation of the magnetic field.
-            The options are:
-            - 'auto': The location (inside or outside the cuboid) is determined automatically for
-            each observer.
-            - 'inside': All observers are considered to be inside the cuboid; use this for
-              performance optimization if applicable.
-            - 'outside': All observers are considered to be outside the cuboid; use this for
-              performance optimization if applicable.
-            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-            locations is unknown.
-
         Returns
         -------
         J-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
@@ -824,6 +780,20 @@ class BaseCollection(BaseDisplayRepr):
             sensor pixel position (indices n1,n2,...) in units of T. Sensor pixel positions
             are equivalent to simple observer positions. Paths of objects that are shorter
             than index m are considered as static beyond their end.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import magpylib as magpy
+        >>> cube = magpy.magnet.Cuboid(
+        ...     dimension=(10,1,1),
+        ...     polarization=(1,0,0)
+        ... ).rotate_from_angax(45,'z')
+        >>> coll = magpy.Collection(cube)
+        >>> J = coll.getJ((3,3,0))
+        >>> with np.printoptions(precision=3):
+        ...    print(J)
+        [0.707 0.707 0.   ]
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
@@ -836,7 +806,7 @@ class BaseCollection(BaseDisplayRepr):
             squeeze=squeeze,
             pixel_agg=pixel_agg,
             output=output,
-            in_out=in_out,
+            in_out="auto",
         )
 
     @property
@@ -917,6 +887,7 @@ class Collection(BaseGeo, BaseCollection):
     Collections function as groups of multiple magpylib objects. In this example
     we create a collection with two sources and move the whole collection:
 
+    >>> import numpy as np
     >>> import magpylib as magpy
     >>> src1 = magpy.magnet.Sphere(position=(2,0,0), diameter=1,polarization=(.1,.2,.3))
     >>> src2 = magpy.current.Circle(position=(-2,0,0), diameter=1, current=1)
@@ -961,8 +932,9 @@ class Collection(BaseGeo, BaseCollection):
     a single command:
 
     >>> B = col.getB()
-    >>> print(B)
-    [ 2.32922681e-04 -9.31694991e-05 -3.44484717e-10]
+    >>> with np.printoptions(precision=3):
+    ...    print(B)
+    [ 2.329e-04 -9.317e-05 -3.445e-10]
     """
 
     def __init__(

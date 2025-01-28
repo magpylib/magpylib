@@ -106,12 +106,14 @@ class TriangularMesh(BaseMagnet):
     with polarization (0.1,0.2,0.3) in units of T at the observer position
     (0.01,0.01,0.01) given in units of m:
 
+    >>> import numpy as np
     >>> import magpylib as magpy
     >>> vv = ((0,0,0), (.01,0,0), (0,.01,0), (0,0,.01))
     >>> tt = ((0,1,2), (0,1,3), (0,2,3), (1,2,3))
     >>> trim = magpy.magnet.TriangularMesh(polarization=(.1,.2,.3), vertices=vv, faces=tt)
-    >>> print(trim.getB((.01,.01,.01)))
-    [0.00260237 0.00208189 0.00156142]
+    >>> with np.printoptions(precision=3):
+    ...     print(trim.getB((.01,.01,.01))*1000)
+    [2.602 2.082 1.561]
     """
 
     _field_func = staticmethod(BHJM_magnet_trimesh)
@@ -600,9 +602,6 @@ class TriangularMesh(BaseMagnet):
         Returns
         -------
         magnet source: `TriangularMesh` object
-
-        Examples
-        --------
         """
         return cls(
             position=position,
@@ -693,9 +692,6 @@ class TriangularMesh(BaseMagnet):
         Returns
         -------
         magnet source: `TriangularMesh` object
-
-        Examples
-        --------
         """
         # pylint: disable=import-outside-toplevel
         try:
@@ -803,9 +799,6 @@ class TriangularMesh(BaseMagnet):
         Returns
         -------
         magnet source: `TriangularMesh` object
-
-        Examples
-        --------
         """
         if not isinstance(triangles, (list, Collection)):
             raise TypeError(
@@ -911,9 +904,6 @@ class TriangularMesh(BaseMagnet):
         Returns
         -------
         magnet source: `TriangularMesh` object
-
-        Examples
-        --------
         """
         mesh = check_format_input_vector2(
             mesh,

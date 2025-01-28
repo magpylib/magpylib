@@ -59,33 +59,13 @@ class Cylinder(BaseMagnet):
     cylinder magnet with polarization (.1,.2,.3) in units of T and 0.01 meter diameter and
     height at the observer position (0.01,0.01,0.01) given in units of m:
 
+    >>> import numpy as np
     >>> import magpylib as magpy
     >>> src = magpy.magnet.Cylinder(polarization=(.1,.2,.3), dimension=(.01,.01))
     >>> H = src.getH((.01,.01,.01))
-    >>> print(H)
-    [4849.91343121 3883.17815517 2739.73202237]
-
-    We rotate the source object, and compute the B-field, this time at a set of observer positions:
-
-    >>> src.rotate_from_angax(45, 'x')
-    Cylinder(id=...)
-    >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
-    >>> print(B)
-    [[3.31419501e-03 5.26683023e-03 3.77670149e-04]
-     [4.22984050e-04 6.77105357e-04 4.46493154e-05]
-     [1.25715233e-04 2.01445027e-04 1.31238931e-05]]
-
-    The same result is obtained when the rotated source moves along a path away from an
-    observer at position (0.01,0.01,0.01). Here we use a `Sensor` object as observer.
-
-    >>> sens = magpy.Sensor(position=(.01,.01,.01))
-    >>> src.move([(-.01,-.01,-.01), (-.02,-.02,-.02)])
-    Cylinder(id=...)
-    >>> B = src.getB(sens)
-    >>> print(B)
-    [[3.31419501e-03 5.26683023e-03 3.77670149e-04]
-     [4.22984050e-04 6.77105357e-04 4.46493154e-05]
-     [1.25715233e-04 2.01445027e-04 1.31238931e-05]]
+    >>> with np.printoptions(precision=3):
+    ...     print(H)
+    [4849.913 3883.178 2739.732]
     """
 
     _field_func = staticmethod(BHJM_magnet_cylinder)

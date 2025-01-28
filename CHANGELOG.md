@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased] - YYYY-MM-DD
+- Improved docstrings by adding examples where missing and by using rounding in all examples to avoid doctest fails
+- Fixed a bug where a core getH would return the B-field
+- Input `in_out` is by default set to `"auto"` for collections to avoiding ambiguities.
 
 ## [5.1.1] - 2024-10-31
 - Included magpylib-force version 0.3.1 in documentation

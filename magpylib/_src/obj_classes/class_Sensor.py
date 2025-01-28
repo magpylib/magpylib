@@ -62,29 +62,33 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     `Sensor` objects are observers for magnetic field computation. In this example we compute the
     B-field in units of T as seen by the sensor in the center of a circular current loop:
 
+    >>> import numpy as np
     >>> import magpylib as magpy
     >>> sens = magpy.Sensor()
     >>> loop = magpy.current.Circle(current=1, diameter=0.01)
     >>> B = sens.getB(loop)
-    >>> print(B)
-    [0.         0.         0.00012566]
+    >>> with np.printoptions(precision=3):
+    ...     print(B*1000)
+    [0.    0.    0.126]
 
     We rotate the sensor by 45 degrees and compute the field again:
 
     >>> sens.rotate_from_rotvec((45,0,0))
     Sensor(id=...)
     >>> B = sens.getB(loop)
-    >>> print(B)
-    [0.00000000e+00 8.88576588e-05 8.88576588e-05]
+    >>> with np.printoptions(precision=3):
+    ...     print(B)
+    [0.000e+00 8.886e-05 8.886e-05]
 
     Finally we set some sensor pixels and compute the field again:
 
     >>> sens.pixel=((0,0,0), (.001,0,0), (.002,0,0))
     >>> B = sens.getB(loop)
-    >>> print(B)
-    [[0.00000000e+00 8.88576588e-05 8.88576588e-05]
-     [0.00000000e+00 9.16274003e-05 9.16274003e-05]
-     [0.00000000e+00 1.01415384e-04 1.01415384e-04]]
+    >>> with np.printoptions(precision=3):
+    ...     print(B)
+    [[0.000e+00 8.886e-05 8.886e-05]
+     [0.000e+00 9.163e-05 9.163e-05]
+     [0.000e+00 1.014e-04 1.014e-04]]
     """
 
     _style_class = SensorStyle
@@ -203,29 +207,33 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Sensors are observers for magnetic field computation. In this example we compute the
         B-field in T as seen by the sensor in the center of a circular current loop:
 
+        >>> import numpy as np
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()
         >>> loop = magpy.current.Circle(current=1, diameter=.01)
         >>> B = sens.getB(loop)
-        >>> print(B)
-        [0.         0.         0.00012566]
+        >>> with np.printoptions(precision=3):
+        ...     print(B*1000)
+        [0.    0.    0.126]
 
         Then we rotate the sensor by 45 degrees and compute the field again:
 
         >>> sens.rotate_from_rotvec((45,0,0))
         Sensor(id=...)
         >>> B = sens.getB(loop)
-        >>> print(B)
-        [0.00000000e+00 8.88576588e-05 8.88576588e-05]
+        >>> with np.printoptions(precision=3):
+        ...     print(B)
+        [0.000e+00 8.886e-05 8.886e-05]
 
         Finally we set some sensor pixels and compute the field again:
 
         >>> sens.pixel=((0,0,0), (.001,0,0), (.002,0,0))
         >>> B = sens.getB(loop)
-        >>> print(B)
-        [[0.00000000e+00 8.88576588e-05 8.88576588e-05]
-         [0.00000000e+00 9.16274003e-05 9.16274003e-05]
-         [0.00000000e+00 1.01415384e-04 1.01415384e-04]]
+        >>> with np.printoptions(precision=3):
+        ...     print(B)
+        [[0.000e+00 8.886e-05 8.886e-05]
+         [0.000e+00 9.163e-05 9.163e-05]
+         [0.000e+00 1.014e-04 1.014e-04]]
         """
         sources = format_star_input(sources)
         return getBH_level2(
@@ -298,11 +306,13 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Sensors are observers for magnetic field computation. In this example we compute the
         B-field in T as seen by the sensor in the center of a circular current loop:
 
+        >>> import numpy as np
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()
         >>> loop = magpy.current.Circle(current=1, diameter=.01)
         >>> H = sens.getH(loop)
-        >>> print(H)
+        >>> with np.printoptions(precision=3):
+        ...     print(H)
         [  0.   0. 100.]
 
         Then we rotate the sensor by 45 degrees and compute the field again:
@@ -310,17 +320,19 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         >>> sens.rotate_from_rotvec((45,0,0))
         Sensor(id=...)
         >>> H = sens.getH(loop)
-        >>> print(H)
-        [ 0.         70.71067812 70.71067812]
+        >>> with np.printoptions(precision=3):
+        ...     print(H)
+        [ 0.    70.711 70.711]
 
         Finally we set some sensor pixels and compute the field again:
 
         >>> sens.pixel=((0,0,0), (.001,0,0), (.002,0,0))
         >>> H = sens.getH(loop)
-        >>> print(H)
-        [[ 0.         70.71067812 70.71067812]
-         [ 0.         72.9147684  72.9147684 ]
-         [ 0.         80.7037979  80.7037979 ]]
+        >>> with np.printoptions(precision=3):
+        ...     print(H)
+        [[ 0.    70.711 70.711]
+         [ 0.    72.915 72.915]
+         [ 0.    80.704 80.704]]
         """
         sources = format_star_input(sources)
         return getBH_level2(
@@ -387,6 +399,22 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             M-field of each source (index l) at each path position (index m) and each sensor pixel
             position (indices n1,n2,...) in units of A/m. Paths of objects that are shorter than
             index m are considered as static beyond their end.
+
+        Examples
+        --------
+        Test if there is magnetization at the location of the sensor.
+
+        >>> import numpy as np
+        >>> import magpylib as magpy
+        >>> cube = magpy.magnet.Cuboid(
+        ...     dimension=(10,1,1),
+        ...     polarization=(1,0,0)
+        ... )
+        >>> sens = magpy.Sensor()
+        >>> M = sens.getM(cube)
+        >>> with np.printoptions(precision=0):
+        ...    print(M)
+        [795775.      0.      0.]
         """
         sources = format_star_input(sources)
         return getBH_level2(
@@ -453,6 +481,22 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             J-field of each source (index l) at each path position (index m) and each sensor pixel
             position (indices n1,n2,...) in units of T. Paths of objects that are shorter than
             index m are considered as static beyond their end.
+
+        Examples
+        --------
+        Test if there is polarization at the location of the sensor.
+
+        >>> import numpy as np
+        >>> import magpylib as magpy
+        >>> cube = magpy.magnet.Cuboid(
+        ...     dimension=(10,1,1),
+        ...     polarization=(1,0,0)
+        ... )
+        >>> sens = magpy.Sensor()
+        >>> J = sens.getJ(cube)
+        >>> with np.printoptions(precision=0):
+        ...    print(J)
+        [1. 0. 0.]
         """
         sources = format_star_input(sources)
         return getBH_level2(
