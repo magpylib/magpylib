@@ -51,7 +51,7 @@ def test_current_sheet_Bfield():
         observers,
         coordinates,
         current_densities,
-    ) 
+    )
 
     B_BEM = -np.array((
         (-5.77021E-09,   5.77021E-09,  -8.75240E-09),
@@ -110,7 +110,7 @@ def test_current_sheet_Bfield():
         observers,
         coordinates,
         current_densities,
-    ) 
+    )
 
     print(B_field_current_sheet)
 
@@ -136,4 +136,3 @@ def test_current_sheet_Bfield():
     ))
 
     np.testing.assert_allclose(B_BEM, B_field_current_sheet, rtol=1e-3)
-

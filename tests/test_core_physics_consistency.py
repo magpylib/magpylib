@@ -664,7 +664,7 @@ def test_core_physics_current_sheet_VS_Polyline():
         observers,
         coordinates,
         current_densities,
-    ) 
+    )
 
 
     m = 25     #discretization with lines
