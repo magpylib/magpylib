@@ -632,13 +632,27 @@ def test_core_physics_Tetrahedron_VS_Cuboid():
 def test_core_physics_current_sheet_VS_Polyline():
     """test core current_sheet vs many polylines"""
 
-    n_random = 10  #number of random observers
-    np.random.seed(0)
-    observers_random = np.random.random(n_random*3) * 10 - 5
-    observers_random = observers_random.reshape((n_random,3))
-    observers_special_cases = np.array(((-1,0,0), (2,0,0), (0,-1,0), (0,2,0), (2,-1,0), (-1,2,0), (-1,2,1), (-1,2,-1)))
-
-    observers = np.concatenate((observers_random, observers_special_cases), axis=0)
+    observers = np.array((
+        (4.881350392732475285e-01, 2.151893663724194994e+00, 1.027633760716438971e+00),
+        (4.488318299689684210e-01, -7.634520066109526937e-01, 1.458941130666561392e+00),
+        (-6.241278873730751187e-01, 3.917730007820797056e+00, 4.636627605010293252e+00),
+        (-1.165584811742222726e+00, 2.917250380826645895e+00, 2.889491975290443548e-01),
+        (6.804456109393228758e-01, 4.255966382926610336e+00, -4.289639418021130801e+00),
+        (-4.128707002984592478e+00, -4.797816025596742584e+00, 3.326198455479380200e+00),
+        (2.781567509498504620e+00, 3.700121482468190948e+00, 4.786183422327640713e+00),
+        (2.991585642167235548e+00, -3.852063774706815380e-01, 2.805291762864554173e+00),
+        (-3.817255741310667805e+00, 1.399210213275238424e+00, -3.566467125909535962e+00),
+        (4.446689170495838894e+00, 2.184832175007169752e-01, -8.533806000947645742e-01),
+        (-1.000000000000000000e+00, 0.000000000000000000e+00, 0.000000000000000000e+00),
+        (2.000000000000000000e+00, 0.000000000000000000e+00, 0.000000000000000000e+00),
+        (0.000000000000000000e+00, -1.000000000000000000e+00, 0.000000000000000000e+00),
+        (0.000000000000000000e+00, 2.000000000000000000e+00, 0.000000000000000000e+00),
+        (2.000000000000000000e+00, -1.000000000000000000e+00, 0.000000000000000000e+00),
+        (-1.000000000000000000e+00, 2.000000000000000000e+00, 0.000000000000000000e+00),
+        (-1.000000000000000000e+00, 2.000000000000000000e+00, 1.000000000000000000e+00),
+        (-1.000000000000000000e+00, 2.000000000000000000e+00, -1.000000000000000000e+00),
+        (2.000000000000000000e+00, 1.000000000000000000e+00, 0.000000000000000000e+00)
+    ))
 
     n = len(observers)
 
@@ -651,6 +665,7 @@ def test_core_physics_current_sheet_VS_Polyline():
         coordinates,
         current_densities,
     ) 
+
 
     m = 25     #discretization with lines
 
@@ -677,7 +692,6 @@ def test_core_physics_current_sheet_VS_Polyline():
     current_repeated = np.ones(n*(2*m-3)) * current
 
     observers_repeated = np.repeat(observers, 2*m-3, axis=0)
-    print(observers_repeated)
 
     B_field_lines = BHJM_current_polyline(
         'B',
@@ -691,5 +705,3 @@ def test_core_physics_current_sheet_VS_Polyline():
     B_field_lines = np.sum(B_field_lines, axis=1)
 
     np.testing.assert_allclose(B_field_lines, B_field_current_sheet, rtol=1e-3)
-
-

@@ -89,8 +89,8 @@ def current_sheet_Hfield(
     
 
     x, y, z, u1, u2, v2, ju, jv = assign_masks(observers, coordinates, current_densities, mask_plane)
-    H[mask_plane,2] = (ju*np.arctanh(x/np.sqrt(x**2 + y**2)) + ju*np.arctanh((u1 - x)/np.sqrt(u1**2 - 2*u1*x + x**2 + y**2)) - (ju*(u1 - u2) - jv*v2)*np.arctanh((u1**2 - u1*(u2 + x) + u2*x + v2*y)/(np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2)*np.sqrt(u1**2 - 2*u1*x + x**2 + y**2)))/np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2) + (ju*(u1 - u2) - jv*v2)*np.arctanh((u1*(u2 - x) - u2**2 
-        + u2*x + v2*(-v2 + y))/(np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2)*np.sqrt(u2**2 - 2*u2*x + v2**2 - 2*v2*y + x**2 + y**2)))/np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2) + (ju*u2 + jv*v2)*np.arctanh((-u2*x - v2*y)/(np.sqrt(u2**2 + v2**2)*np.sqrt(x**2 + y**2)))/np.sqrt(u2**2 + v2**2) - (ju*u2 + jv*v2)*np.arctanh((u2**2 - u2*x + v2*(v2 - y))/(np.sqrt(u2**2 + v2**2)*np.sqrt(u2**2 - 2*u2*x + v2**2 - 2*v2*y + x**2 + y**2)))/np.sqrt(u2**2 + v2**2))/(u1*v2)
+    H[mask_plane,2] = -(ju*np.arctanh(x/np.sqrt(x**2 + y**2)) + ju*np.arctanh((u1 - x)/np.sqrt(u1**2 - 2*u1*x + x**2 + y**2)) - (ju*(u1 - u2) - jv*v2)*np.arctanh((u1**2 - u1*(u2 + x) + u2*x 
+        + v2*y)/(np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2)*np.sqrt(u1**2 - 2*u1*x + x**2 + y**2)))/np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2) + (ju*(u1 - u2) - jv*v2)*np.arctanh((u1*(u2 - x) - u2**2 + u2*x + v2*(-v2 + y))/(np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2)*np.sqrt(u2**2 - 2*u2*x + v2**2 - 2*v2*y + x**2 + y**2)))/np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2) + (ju*u2 + jv*v2)*np.arctanh((-u2*x - v2*y)/(np.sqrt(u2**2 + v2**2)*np.sqrt(x**2 + y**2)))/np.sqrt(u2**2 + v2**2) - (ju*u2 + jv*v2)*np.arctanh((u2**2 - u2*x + v2*(v2 - y))/(np.sqrt(u2**2 + v2**2)*np.sqrt(u2**2 - 2*u2*x + v2**2 - 2*v2*y + x**2 + y**2)))/np.sqrt(u2**2 + v2**2))/(u1*v2)
     
     x, y, z, u1, u2, v2, ju, jv = assign_masks(observers, coordinates, current_densities, mask1)
     H[mask1,2] = (-ju*x*np.log(np.abs(x))/np.sqrt(x**2) - ju*(u1 - x)*np.log(np.abs(-u1 + x))/np.sqrt((u1 - x)**2) + (ju*(u1 - u2) - jv*v2)*np.arctanh((u1*(-u2 + x) + u2**2 - u2*x + 
@@ -121,7 +121,7 @@ def BHJM_current_sheet(
     current_densities: np.ndarray,
 ) -> np.ndarray:
     """
-    - translate Polyline field to BHJM
+    - translate current sheet field to BHJM
     - treat some special cases
     """
     # pylint: disable=too-many-statements
