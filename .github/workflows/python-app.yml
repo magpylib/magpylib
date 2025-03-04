@@ -44,7 +44,7 @@ jobs:
           - windows-latest
     steps:
       - name: Setup headless display
-        uses: pyvista/setup-headless-display-action@v2
+        uses: pyvista/setup-headless-display-action@v3
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0

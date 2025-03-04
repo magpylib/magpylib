@@ -63,6 +63,7 @@ test = [
     "ipywidgets", # for plotly FigureWidget
     "imageio[tifffile, ffmpeg]",
     "jupyterlab",
+    "anywidget",
 ]
 binder = [
     "jupytext",
