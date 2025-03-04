@@ -38,12 +38,12 @@
 :img-bottom: ../../../_static/images/examples_icon_tutorial_custom.png
 :::
 
-:::{grid-item-card} {ref}`examples-tutorial-modelling-magnets`
+:::{grid-item-card} {ref}`examples-tutorial-modeling-magnets`
 :text-align: center
-:link: examples-tutorial-modelling-magnets
+:link: examples-tutorial-modeling-magnets
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../../_static/images/examples_icon_tutorial_modelling_magnets.png
+:img-bottom: ../../../_static/images/examples_icon_tutorial_modeling_magnets.png
 :::
 
 ::::
@@ -231,12 +231,12 @@
 :img-bottom: ../../../_static/images/examples_icon_force_force.png
 :::
 
-:::{grid-item-card} {ref}`examples-force-haftkraft`
+:::{grid-item-card} {ref}`examples-force-holding-force`
 :text-align: center
-:link: examples-force-haftkraft
+:link: examples-force-holding-force
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../../_static/images/examples_icon_force_haftkraft.png
+:img-bottom: ../../../_static/images/examples_icon_force_holding_force.png
 :::
 
 :::{grid-item-card} {ref}`examples-force-floating`
@@ -258,7 +258,7 @@ examples_tutorial_paths.md
 examples_tutorial_field_computation.md
 examples_tutorial_collection.md
 examples_tutorial_custom.md
-examples_tutorial_modelling_magnets.md
+examples_tutorial_modeling_magnets.md
 
 examples_vis_magnet_colors.md
 examples_vis_animations.md
@@ -282,7 +282,7 @@ examples_app_coils.md
 examples_app_scales.md
 
 examples_force_force.md
-examples_force_haftkraft.md
+examples_force_holding_force.md
 examples_force_floating.md
 ```
 
