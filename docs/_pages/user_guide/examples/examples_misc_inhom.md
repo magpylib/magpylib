@@ -16,7 +16,7 @@ kernelspec:
 
 # Inhomogeneous Magnetization
 
-The analytical expressions implemented in Magpylib treat only simple homogeneous polarizations. When dealing with high-grade materials that are magnetized in homogeneous fields this is a good approximation. However, there are many cases where such a homogeneous model is not justified. The tutorial {ref}`examples-tutorial-modelling-magnets` and the user-guide {ref}`guide-physics-demag` provide some insights on this topic.
+The analytical expressions implemented in Magpylib treat only simple homogeneous polarizations. When dealing with high-grade materials that are magnetized in homogeneous fields this is a good approximation. However, there are many cases where such a homogeneous model is not justified. The tutorial {ref}`examples-tutorial-modeling-magnets` and the user-guide {ref}`guide-physics-demag` provide some insights on this topic.
 
 Here we show how to deal with inhomogeneous polarization based on a commonly misunderstood example of a cylindrical quadrupol magnet. While graphical representations of such magnets usually depict only four poles, see {ref}`examples-vis-magnet-colors`, such magnets exhibit complex polarization given by the magnetization device that is used to magnetize them.
 

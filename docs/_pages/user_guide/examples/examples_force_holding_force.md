@@ -1,4 +1,4 @@
-(examples-force-haftkraft)=
+(examples-force-holding-force)=
 
 # Magnetic Holding Force
 
@@ -6,7 +6,7 @@ The examples here require installaion of the [magpylib-force package](https://py
 
 With Magpylib-force it is possible to compute the holding force of a magnet attached magnetically to a soft-ferromagnetic plate. The "pull-force" is the opposing force that is required to detach the magnet from the surface.
 
-```{figure} ../../../_static/images/examples_force_haftkraft.png
+```{figure} ../../../_static/images/examples_force_holding_force.png
 :width: 40%
 :align: center
 :alt: Sketch of holding force.
