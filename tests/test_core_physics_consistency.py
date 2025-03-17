@@ -656,13 +656,13 @@ def test_core_physics_current_sheet_VS_Polyline():
 
     n = len(observers)
 
-    coordinates = np.tile(np.array((1,0,1)).T, (n,1))
-    current_densities = np.tile(np.array((1,1)).T, (n,1))
+    vertices = np.tile(np.expand_dims(np.array(((0,0,0), (1,0,0), (0,1,0))), axis=0), (n,1,1))
+    current_densities = np.tile(np.array((1,1,0)).T, (n,1))
 
     B_field_current_sheet = BHJM_current_sheet(
         'B',
         observers,
-        coordinates,
+        vertices,
         current_densities,
     )
 

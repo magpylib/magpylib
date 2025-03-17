@@ -6,8 +6,77 @@ Implementations of analytical expressions of current sheet
 
 import numpy as np
 from scipy.constants import mu_0 as MU0
+from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.input_checks import check_field_input
+
+def coordinate_transformation(vertices):
+    """
+    Function that transforms the triangle to elementar current sheet
+
+    Parameters
+    ----------
+    vertices: ndarray, shape (n,3,3)
+        Triangle vertex positions ((P11,P12,P13), (P21, P22, P23), ...) in Cartesian
+        coordinates.
+
+    Returns
+    -------
+    elementar_coordinates: ndarray, shape (n,3)
+        Coordinates of elementar current sheet (0,0,0), (u1,0,0), (u2,v2,0)
+        in the form ((u1, u2, v2), ....)
+
+    translation: ndarray, shape (n,3)
+        Translation done for the coordinate transformation.
+        Sign so that elementar vertices + translation = real vertices
+
+    rotation: scipy.rotation object
+        Rotation done for the coordinate transformation.
+    """
+
+    n = len(vertices)
+
+    # step 1
+    # translate so that Pi1 -> (0,0,0)
+    translation = np.copy(vertices[:,0,:])
+    vertices[:,1,:] = vertices[:,1,:] - translation
+    vertices[:,2,:] = vertices[:,2,:] - translation
+    vertices[:,0,:] = 0
+
+    # step 2
+    # apply two rotations so that Pi2 -> (u1,0,0)
+
+    # step 2.1: first rotation around x-axis so that Pi2 -> xy-plane
+    theta = -np.arctan2(vertices[:,1,2], vertices[:,1,1])
+
+    r21 = R.from_euler('x', theta)
+
+    vertices[:,1,:] = r21.apply(vertices[:,1,:])
+    vertices[:,2,:] = r21.apply(vertices[:,2,:])
+
+    # step 2.2: second rotation around z-axis so that Pi2 -> x-axis
+    alpha = -np.arctan2(vertices[:,1,1], vertices[:,1,0])
+
+    r22 = R.from_euler('z', alpha)
+
+    vertices[:,1,:] = r22.apply(vertices[:,1,:])
+    vertices[:,2,:] = r22.apply(vertices[:,2,:])
+
+    # step 3
+    # apply rotation around x-axis so that Pi3 -> (u2,v2,0)
+    psi = -np.arctan2(vertices[:,2,2], vertices[:,2,1])
+
+    r3 = R.from_euler('x', psi)
+
+    vertices[:,2,:] = r3.apply(vertices[:,2,:])
+
+    rotation = r3*r22*r21
+
+    elementar_coordinates = np.zeros((n,3))
+    elementar_coordinates[:,0] = vertices[:,1,0]
+    elementar_coordinates[:,1:] = vertices[:,2,:2]
+
+    return (elementar_coordinates, translation, rotation)
 
 
 def assign_masks(observers, coordinates, current_densities, mask):
@@ -23,7 +92,7 @@ def assign_masks(observers, coordinates, current_densities, mask):
     return (x, y, z, u1, u2, v2, ju, jv)
 
 # CORE
-def current_sheet_Hfield(
+def elementar_current_sheet_Hfield(
     observers: np.ndarray,
     coordinates: np.ndarray,
     current_densities: np.ndarray,
@@ -60,11 +129,14 @@ def current_sheet_Hfield(
     Field computation via law of Biot Savart. See also countless online resources.
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
     """
+    # tolerance for numerical errors
+    num_tol = 1e-10
+
     # rename
     x, y, z, u1, u2, v2, ju, jv = assign_masks(observers, coordinates, current_densities, None)
 
     # in-plane with triangle
-    in_plane = np.abs(z) < 1e-15
+    in_plane = np.abs(z) < num_tol
 
     # critical value for condition, if observer within triangle or on the edges
     critical_value01 = (x*v2 + y*u2) / (u1 * v2)   #within triangle
@@ -75,15 +147,15 @@ def current_sheet_Hfield(
 
 
     # separate on-sheet cases (-> B=0)
-    mask0 = in_plane & (-1e-15 <= critical_value01 + critical_value02) & \
-            (critical_value01 + critical_value02 <= 1+1e-15) & \
+    mask0 = in_plane & (-num_tol <= critical_value01 + critical_value02) & \
+            (critical_value01 + critical_value02 <= 1+num_tol) & \
             (critical_value01 >= 0) & (critical_value02 >= 0)
             # each condition account for numerical issues
 
     # separate on-edge cases
-    mask1 = in_plane & (critical_value1 < 1e-15) & ~mask0
-    mask2 = in_plane & (critical_value2 < 1e-15) & ~mask0
-    mask3 = in_plane & (critical_value3 < 1e-15) & ~mask0
+    mask1 = in_plane & (critical_value1 < num_tol) & ~mask0
+    mask2 = in_plane & (critical_value2 < num_tol) & ~mask0
+    mask3 = in_plane & (critical_value3 < num_tol) & ~mask0
     mask_plane = ~(mask0 | mask1 | mask2 | mask3) & in_plane
     mask_general = ~in_plane
 
@@ -233,7 +305,7 @@ def current_sheet_Hfield(
 def BHJM_current_sheet(
     field: str,
     observers: np.ndarray,
-    coordinates: np.ndarray,
+    vertices: np.ndarray,
     current_densities: np.ndarray,
 ) -> np.ndarray:
     """
@@ -243,6 +315,11 @@ def BHJM_current_sheet(
     # pylint: disable=too-many-statements
 
     check_field_input(field)
+
+    coordinates, t, r = coordinate_transformation(vertices.astype(float))
+
+    observers = np.copy(r.apply(observers - t))
+    current_densities = np.copy(r.apply(current_densities)[:,:2])
 
     BHJM = np.zeros_like(observers, dtype=float)
 
@@ -269,11 +346,13 @@ def BHJM_current_sheet(
         coordinates = coordinates[not_mask0]
         current_densities = current_densities[not_mask0]
 
-    BHJM[not_mask0] = current_sheet_Hfield(
+    BHJM[not_mask0] = elementar_current_sheet_Hfield(
         observers=observers,
         coordinates = coordinates,
         current_densities=current_densities,
     )
+
+    BHJM = r.apply(BHJM, inverse=True)
 
     if field == "H":
         return BHJM
