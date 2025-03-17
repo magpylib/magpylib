@@ -3,6 +3,7 @@ from scipy.constants import mu_0 as MU0
 
 from magpylib._src.fields.field_BH_circle import BHJM_circle
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
+from magpylib._src.fields.field_BH_current_sheet import BHJM_current_sheet
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
@@ -10,7 +11,6 @@ from magpylib._src.fields.field_BH_polyline import BHJM_current_polyline
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import BHJM_triangle
-from magpylib._src.fields.field_BH_current_sheet import BHJM_current_sheet
 
 # PHYSICS CONSISTENCY TESTING
 #
@@ -629,79 +629,145 @@ def test_core_physics_Tetrahedron_VS_Cuboid():
             np.testing.assert_allclose(b, bb)
             np.testing.assert_allclose(h, hh)
 
+
 def test_core_physics_current_sheet_VS_Polyline():
     """test core current_sheet vs many polylines"""
 
-    observers = np.array((
-        (4.881350392732475285e-01, 2.151893663724194994e+00, 1.027633760716438971e+00),
-        (4.488318299689684210e-01, -7.634520066109526937e-01, 1.458941130666561392e+00),
-        (-6.241278873730751187e-01, 3.917730007820797056e+00, 4.636627605010293252e+00),
-        (-1.165584811742222726e+00, 2.917250380826645895e+00, 2.889491975290443548e-01),
-        (6.804456109393228758e-01, 4.255966382926610336e+00, -4.289639418021130801e+00),
-        (-4.128707002984592478e+00, -4.797816025596742584e+00, 3.326198455479380200e+00),
-        (2.781567509498504620e+00, 3.700121482468190948e+00, 4.786183422327640713e+00),
-        (2.991585642167235548e+00, -3.852063774706815380e-01, 2.805291762864554173e+00),
-        (-3.817255741310667805e+00, 1.399210213275238424e+00, -3.566467125909535962e+00),
-        (4.446689170495838894e+00, 2.184832175007169752e-01, -8.533806000947645742e-01),
-        (-1.000000000000000000e+00, 0.000000000000000000e+00, 0.000000000000000000e+00),
-        (2.000000000000000000e+00, 0.000000000000000000e+00, 0.000000000000000000e+00),
-        (0.000000000000000000e+00, -1.000000000000000000e+00, 0.000000000000000000e+00),
-        (0.000000000000000000e+00, 2.000000000000000000e+00, 0.000000000000000000e+00),
-        (2.000000000000000000e+00, -1.000000000000000000e+00, 0.000000000000000000e+00),
-        (-1.000000000000000000e+00, 2.000000000000000000e+00, 0.000000000000000000e+00),
-        (-1.000000000000000000e+00, 2.000000000000000000e+00, 1.000000000000000000e+00),
-        (-1.000000000000000000e+00, 2.000000000000000000e+00, -1.000000000000000000e+00),
-        (2.000000000000000000e+00, 1.000000000000000000e+00, 0.000000000000000000e+00)
-    ))
+    observers = np.array(
+        (
+            (
+                4.881350392732475285e-01,
+                2.151893663724194994e00,
+                1.027633760716438971e00,
+            ),
+            (
+                4.488318299689684210e-01,
+                -7.634520066109526937e-01,
+                1.458941130666561392e00,
+            ),
+            (
+                -6.241278873730751187e-01,
+                3.917730007820797056e00,
+                4.636627605010293252e00,
+            ),
+            (
+                -1.165584811742222726e00,
+                2.917250380826645895e00,
+                2.889491975290443548e-01,
+            ),
+            (
+                6.804456109393228758e-01,
+                4.255966382926610336e00,
+                -4.289639418021130801e00,
+            ),
+            (
+                -4.128707002984592478e00,
+                -4.797816025596742584e00,
+                3.326198455479380200e00,
+            ),
+            (2.781567509498504620e00, 3.700121482468190948e00, 4.786183422327640713e00),
+            (
+                2.991585642167235548e00,
+                -3.852063774706815380e-01,
+                2.805291762864554173e00,
+            ),
+            (
+                -3.817255741310667805e00,
+                1.399210213275238424e00,
+                -3.566467125909535962e00,
+            ),
+            (
+                4.446689170495838894e00,
+                2.184832175007169752e-01,
+                -8.533806000947645742e-01,
+            ),
+            (
+                -1.000000000000000000e00,
+                0.000000000000000000e00,
+                0.000000000000000000e00,
+            ),
+            (2.000000000000000000e00, 0.000000000000000000e00, 0.000000000000000000e00),
+            (
+                0.000000000000000000e00,
+                -1.000000000000000000e00,
+                0.000000000000000000e00,
+            ),
+            (0.000000000000000000e00, 2.000000000000000000e00, 0.000000000000000000e00),
+            (
+                2.000000000000000000e00,
+                -1.000000000000000000e00,
+                0.000000000000000000e00,
+            ),
+            (
+                -1.000000000000000000e00,
+                2.000000000000000000e00,
+                0.000000000000000000e00,
+            ),
+            (
+                -1.000000000000000000e00,
+                2.000000000000000000e00,
+                1.000000000000000000e00,
+            ),
+            (
+                -1.000000000000000000e00,
+                2.000000000000000000e00,
+                -1.000000000000000000e00,
+            ),
+            (2.000000000000000000e00, 1.000000000000000000e00, 0.000000000000000000e00),
+        )
+    )
 
     n = len(observers)
 
-    vertices = np.tile(np.expand_dims(np.array(((0,0,0), (1,0,0), (0,1,0))), axis=0), (n,1,1))
-    current_densities = np.tile(np.array((1,1,0)).T, (n,1))
+    vertices = np.tile(
+        np.expand_dims(np.array(((0, 0, 0), (1, 0, 0), (0, 1, 0))), axis=0), (n, 1, 1)
+    )
+    current_densities = np.tile(np.array((1, 1, 0)).T, (n, 1))
 
     B_field_current_sheet = BHJM_current_sheet(
-        'B',
+        "B",
         observers,
         vertices,
         current_densities,
     )
 
+    m = 25  # discretization with lines
 
-    m = 25     #discretization with lines
-
-    x_values = np.linspace(0,1,m)
+    x_values = np.linspace(0, 1, m)
     x_values = x_values[:-1]
     y_values = x_values[1:]
 
-    length = np.sum((1-x_values)/2*np.sqrt(2)) + np.sum((1-y_values)/2*np.sqrt(2))
-    current = np.sqrt(2)/2/length
+    length = np.sum((1 - x_values) / 2 * np.sqrt(2)) + np.sum(
+        (1 - y_values) / 2 * np.sqrt(2)
+    )
+    current = np.sqrt(2) / 2 / length
 
-    segment_start = np.zeros((2*m-3, 3))
-    segment_end = np.zeros((2*m-3, 3))
+    segment_start = np.zeros((2 * m - 3, 3))
+    segment_end = np.zeros((2 * m - 3, 3))
 
-    segment_start[:m-1, 0] = x_values
-    segment_start[m-1:, 1] = y_values
-    segment_start_tiled = np.tile(segment_start, (n,1))
+    segment_start[: m - 1, 0] = x_values
+    segment_start[m - 1 :, 1] = y_values
+    segment_start_tiled = np.tile(segment_start, (n, 1))
 
-    segment_end[:m-1, 0] = (1+x_values)/2
-    segment_end[:m-1, 1] = (1-x_values)/2
-    segment_end[m-1:, 0] = (1-y_values)/2
-    segment_end[m-1:, 1] = (1+y_values)/2
-    segment_end_tiled = np.tile(segment_end, (n,1))
+    segment_end[: m - 1, 0] = (1 + x_values) / 2
+    segment_end[: m - 1, 1] = (1 - x_values) / 2
+    segment_end[m - 1 :, 0] = (1 - y_values) / 2
+    segment_end[m - 1 :, 1] = (1 + y_values) / 2
+    segment_end_tiled = np.tile(segment_end, (n, 1))
 
-    current_repeated = np.ones(n*(2*m-3)) * current
+    current_repeated = np.ones(n * (2 * m - 3)) * current
 
-    observers_repeated = np.repeat(observers, 2*m-3, axis=0)
+    observers_repeated = np.repeat(observers, 2 * m - 3, axis=0)
 
     B_field_lines = BHJM_current_polyline(
-        'B',
+        "B",
         observers_repeated,
         segment_start_tiled,
         segment_end_tiled,
         current_repeated,
     )
 
-    B_field_lines = B_field_lines.reshape((n, 2*m-3, 3))
+    B_field_lines = B_field_lines.reshape((n, 2 * m - 3, 3))
     B_field_lines = np.sum(B_field_lines, axis=1)
 
     np.testing.assert_allclose(B_field_lines, B_field_current_sheet, rtol=1e-3)

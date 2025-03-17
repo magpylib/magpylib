@@ -10,6 +10,7 @@ from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.input_checks import check_field_input
 
+
 def coordinate_transformation(vertices):
     """
     Function that transforms the triangle to elementar current sheet
@@ -38,43 +39,43 @@ def coordinate_transformation(vertices):
 
     # step 1
     # translate so that Pi1 -> (0,0,0)
-    translation = np.copy(vertices[:,0,:])
-    vertices[:,1,:] = vertices[:,1,:] - translation
-    vertices[:,2,:] = vertices[:,2,:] - translation
-    vertices[:,0,:] = 0
+    translation = np.copy(vertices[:, 0, :])
+    vertices[:, 1, :] = vertices[:, 1, :] - translation
+    vertices[:, 2, :] = vertices[:, 2, :] - translation
+    vertices[:, 0, :] = 0
 
     # step 2
     # apply two rotations so that Pi2 -> (u1,0,0)
 
     # step 2.1: first rotation around x-axis so that Pi2 -> xy-plane
-    theta = -np.arctan2(vertices[:,1,2], vertices[:,1,1])
+    theta = -np.arctan2(vertices[:, 1, 2], vertices[:, 1, 1])
 
-    r21 = R.from_euler('x', theta)
+    r21 = R.from_euler("x", theta)
 
-    vertices[:,1,:] = r21.apply(vertices[:,1,:])
-    vertices[:,2,:] = r21.apply(vertices[:,2,:])
+    vertices[:, 1, :] = r21.apply(vertices[:, 1, :])
+    vertices[:, 2, :] = r21.apply(vertices[:, 2, :])
 
     # step 2.2: second rotation around z-axis so that Pi2 -> x-axis
-    alpha = -np.arctan2(vertices[:,1,1], vertices[:,1,0])
+    alpha = -np.arctan2(vertices[:, 1, 1], vertices[:, 1, 0])
 
-    r22 = R.from_euler('z', alpha)
+    r22 = R.from_euler("z", alpha)
 
-    vertices[:,1,:] = r22.apply(vertices[:,1,:])
-    vertices[:,2,:] = r22.apply(vertices[:,2,:])
+    vertices[:, 1, :] = r22.apply(vertices[:, 1, :])
+    vertices[:, 2, :] = r22.apply(vertices[:, 2, :])
 
     # step 3
     # apply rotation around x-axis so that Pi3 -> (u2,v2,0)
-    psi = -np.arctan2(vertices[:,2,2], vertices[:,2,1])
+    psi = -np.arctan2(vertices[:, 2, 2], vertices[:, 2, 1])
 
-    r3 = R.from_euler('x', psi)
+    r3 = R.from_euler("x", psi)
 
-    vertices[:,2,:] = r3.apply(vertices[:,2,:])
+    vertices[:, 2, :] = r3.apply(vertices[:, 2, :])
 
-    rotation = r3*r22*r21
+    rotation = r3 * r22 * r21
 
-    elementar_coordinates = np.zeros((n,3))
-    elementar_coordinates[:,0] = vertices[:,1,0]
-    elementar_coordinates[:,1:] = vertices[:,2,:2]
+    elementar_coordinates = np.zeros((n, 3))
+    elementar_coordinates[:, 0] = vertices[:, 1, 0]
+    elementar_coordinates[:, 1:] = vertices[:, 2, :2]
 
     return (elementar_coordinates, translation, rotation)
 
@@ -86,10 +87,11 @@ def assign_masks(observers, coordinates, current_densities, mask):
         u1, u2, v2 = coordinates.T
         ju, jv = current_densities.T
     else:
-        x, y, z = observers[mask,:].T
-        u1, u2, v2 = coordinates[mask,:].T
-        ju, jv = current_densities[mask,:].T
+        x, y, z = observers[mask, :].T
+        u1, u2, v2 = coordinates[mask, :].T
+        ju, jv = current_densities[mask, :].T
     return (x, y, z, u1, u2, v2, ju, jv)
+
 
 # CORE
 def elementar_current_sheet_Hfield(
@@ -99,11 +101,11 @@ def elementar_current_sheet_Hfield(
 ) -> np.ndarray:
     """H-field of current sheets.
 
-    The elementar current sheet is defined as the triangle with the vertices 
+    The elementar current sheet is defined as the triangle with the vertices
     (0,0,0), (u1,0,0), (u2,v2,0).
-    The current flows in the direction of current_density. 
-    The field is set to (0,0,0) on the sheet itself. 
-    The output is proportional to the current and independent of the length units 
+    The current flows in the direction of current_density.
+    The field is set to (0,0,0) on the sheet itself.
+    The output is proportional to the current and independent of the length units
     chosen for observers and dimensions.
 
     Parameters
@@ -112,11 +114,11 @@ def elementar_current_sheet_Hfield(
         Observer positions (x,y,z) in Cartesian coordinates.
 
     coordinates: ndarray, shape (n,3)
-        Defining coordinates of elementar current sheet (0,0,0), (u1,0,0), (u2,v2,0), where 
+        Defining coordinates of elementar current sheet (0,0,0), (u1,0,0), (u2,v2,0), where
         u1, u2, v2 = coordinates
 
     current_densities: ndarray, shape (n,2)
-        x- and y-coordinates of electrical current densities in sheets. 
+        x- and y-coordinates of electrical current densities in sheets.
         Since elementar current sheet lies in x-y-plane, no z-coordinate required.
 
     Returns
@@ -133,24 +135,29 @@ def elementar_current_sheet_Hfield(
     num_tol = 1e-10
 
     # rename
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(observers, coordinates, current_densities, None)
+    x, y, z, u1, u2, v2, ju, jv = assign_masks(
+        observers, coordinates, current_densities, None
+    )
 
     # in-plane with triangle
     in_plane = np.abs(z) < num_tol
 
     # critical value for condition, if observer within triangle or on the edges
-    critical_value01 = (x*v2 + y*u2) / (u1 * v2)   #within triangle
-    critical_value02 = y / v2   #within triangle
-    critical_value1 = np.abs(y)    #edge1
-    critical_value2 = np.abs(u2*y - v2*x)     #edge2
-    critical_value3 = np.abs(v2*(x-u1) + y*(u1-u2))      #edge3
-
+    critical_value01 = (x * v2 + y * u2) / (u1 * v2)  # within triangle
+    critical_value02 = y / v2  # within triangle
+    critical_value1 = np.abs(y)  # edge1
+    critical_value2 = np.abs(u2 * y - v2 * x)  # edge2
+    critical_value3 = np.abs(v2 * (x - u1) + y * (u1 - u2))  # edge3
 
     # separate on-sheet cases (-> B=0)
-    mask0 = in_plane & (-num_tol <= critical_value01 + critical_value02) & \
-            (critical_value01 + critical_value02 <= 1+num_tol) & \
-            (critical_value01 >= 0) & (critical_value02 >= 0)
-            # each condition account for numerical issues
+    mask0 = (
+        in_plane
+        & (-num_tol <= critical_value01 + critical_value02)
+        & (critical_value01 + critical_value02 <= 1 + num_tol)
+        & (critical_value01 >= 0)
+        & (critical_value02 >= 0)
+    )
+    # each condition account for numerical issues
 
     # separate on-edge cases
     mask1 = in_plane & (critical_value1 < num_tol) & ~mask0
@@ -162,142 +169,271 @@ def elementar_current_sheet_Hfield(
     # calculate fields
     H = np.zeros_like(observers, dtype=float)
 
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(observers,
-                                               coordinates,
-                                               current_densities,
-                                               mask_general)
-    H[mask_general,0] = (
-                        np.arctan((-u2*(y**2 + z**2) + v2*x*y)/
-                                (v2*z*np.sqrt(x**2 + y**2 + z**2))) +
-                        np.arctan((v2*y*(u1 - x) - (u1 - u2)*(y**2 + z**2))/
-                                (v2*z*np.sqrt(u1**2 - 2*u1*x + x**2 + y**2 + z**2))) -
-                        np.arctan((-u2*(y**2 + z**2) - v2**2*x + v2*y*(u2 + x))/
-                                (v2*z*np.sqrt(u2**2 - 2*u2*x + v2**2 -
-                                              2*v2*y + x**2 + y**2 + z**2))) -
-                        np.arctan((-u1*(v2**2 - 2*v2*y + y**2 + z**2) +
-                                   u2*(y**2 + z**2) + v2**2*x - v2*y*(u2 + x))/
-                                (v2*z*np.sqrt(u2**2 - 2*u2*x + v2**2 -
-                                              2*v2*y + x**2 + y**2 + z**2)))
-                        )/(u1*v2*z)
-    H[mask_general,2] = -(ju*np.arctanh(x/np.sqrt(x**2 + y**2 + z**2)) +
-                          ju*np.arctanh((u1 - x)/np.sqrt(u1**2 - 2*u1*x + x**2 + y**2 + z**2)) -
-                          (ju*(u1 - u2) - jv*v2)*
-                          np.arctanh((u1**2 - u1*(u2 + x) + u2*x + v2*y)/
-                                     (np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2)*
-                                      np.sqrt(u1**2 - 2*u1*x + x**2 + y**2 + z**2)))/
-                          np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2) +
-                          (ju*(u1 - u2) - jv*v2)*
-                          np.arctanh((u1*(u2 - x) - u2**2 + u2*x + v2*(-v2 + y))/
-                                     (np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2)*
-                                      np.sqrt(u2**2 - 2*u2*x + v2**2 -
-                                              2*v2*y + x**2 + y**2 + z**2)))/
-                          np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2) +
-                          (ju*u2 + jv*v2)*
-                          np.arctanh((-u2*x - v2*y)/
-                                     (np.sqrt(u2**2 + v2**2)*np.sqrt(x**2 + y**2 + z**2)))/
-                          np.sqrt(u2**2 + v2**2) -
-                          (ju*u2 + jv*v2)*
-                          np.arctanh((u2**2 - u2*x + v2*(v2 - y))/
-                                     (np.sqrt(u2**2 + v2**2)*
-                                      np.sqrt(u2**2 - 2*u2*x + v2**2 -
-                                              2*v2*y + x**2 + y**2 + z**2)))/
-                          np.sqrt(u2**2 + v2**2))/(u1*v2)
+    x, y, z, u1, u2, v2, ju, jv = assign_masks(
+        observers, coordinates, current_densities, mask_general
+    )
+    H[mask_general, 0] = (
+        np.arctan(
+            (-u2 * (y**2 + z**2) + v2 * x * y) / (v2 * z * np.sqrt(x**2 + y**2 + z**2))
+        )
+        + np.arctan(
+            (v2 * y * (u1 - x) - (u1 - u2) * (y**2 + z**2))
+            / (v2 * z * np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2 + z**2))
+        )
+        - np.arctan(
+            (-u2 * (y**2 + z**2) - v2**2 * x + v2 * y * (u2 + x))
+            / (
+                v2
+                * z
+                * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2 + z**2)
+            )
+        )
+        - np.arctan(
+            (
+                -u1 * (v2**2 - 2 * v2 * y + y**2 + z**2)
+                + u2 * (y**2 + z**2)
+                + v2**2 * x
+                - v2 * y * (u2 + x)
+            )
+            / (
+                v2
+                * z
+                * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2 + z**2)
+            )
+        )
+    ) / (u1 * v2 * z)
+    H[mask_general, 2] = -(
+        ju * np.arctanh(x / np.sqrt(x**2 + y**2 + z**2))
+        + ju * np.arctanh((u1 - x) / np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2 + z**2))
+        - (ju * (u1 - u2) - jv * v2)
+        * np.arctanh(
+            (u1**2 - u1 * (u2 + x) + u2 * x + v2 * y)
+            / (
+                np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+                * np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2 + z**2)
+            )
+        )
+        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+        + (ju * (u1 - u2) - jv * v2)
+        * np.arctanh(
+            (u1 * (u2 - x) - u2**2 + u2 * x + v2 * (-v2 + y))
+            / (
+                np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+                * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2 + z**2)
+            )
+        )
+        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+        + (ju * u2 + jv * v2)
+        * np.arctanh(
+            (-u2 * x - v2 * y) / (np.sqrt(u2**2 + v2**2) * np.sqrt(x**2 + y**2 + z**2))
+        )
+        / np.sqrt(u2**2 + v2**2)
+        - (ju * u2 + jv * v2)
+        * np.arctanh(
+            (u2**2 - u2 * x + v2 * (v2 - y))
+            / (
+                np.sqrt(u2**2 + v2**2)
+                * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2 + z**2)
+            )
+        )
+        / np.sqrt(u2**2 + v2**2)
+    ) / (u1 * v2)
 
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(observers,
-                                               coordinates,
-                                               current_densities,
-                                               mask_plane)
-    H[mask_plane,2] = -(ju*np.arctanh(x/np.sqrt(x**2 + y**2)) +
-                        ju*np.arctanh((u1 - x)/np.sqrt(u1**2 - 2*u1*x + x**2 + y**2)) -
-                        (ju*(u1 - u2) - jv*v2)*
-                        np.arctanh((u1**2 - u1*(u2 + x) + u2*x + v2*y)/
-                                   (np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2)*
-                                    np.sqrt(u1**2 - 2*u1*x + x**2 + y**2)))/
-                        np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2) +
-                        (ju*(u1 - u2) - jv*v2)*
-                        np.arctanh((u1*(u2 - x) - u2**2 + u2*x + v2*(-v2 + y))/
-                                   (np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2)*
-                                    np.sqrt(u2**2 - 2*u2*x + v2**2 - 2*v2*y + x**2 + y**2)))/
-                        np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2) +
-                        (ju*u2 + jv*v2)*
-                        np.arctanh((-u2*x - v2*y)/(np.sqrt(u2**2 + v2**2)*np.sqrt(x**2 + y**2)))/
-                        np.sqrt(u2**2 + v2**2) -
-                        (ju*u2 + jv*v2)*
-                        np.arctanh((u2**2 - u2*x + v2*(v2 - y))/
-                                   (np.sqrt(u2**2 + v2**2)*
-                                    np.sqrt(u2**2 - 2*u2*x + v2**2 - 2*v2*y + x**2 + y**2)))/
-                        np.sqrt(u2**2 + v2**2))/(u1*v2)
+    x, y, z, u1, u2, v2, ju, jv = assign_masks(
+        observers, coordinates, current_densities, mask_plane
+    )
+    H[mask_plane, 2] = -(
+        ju * np.arctanh(x / np.sqrt(x**2 + y**2))
+        + ju * np.arctanh((u1 - x) / np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2))
+        - (ju * (u1 - u2) - jv * v2)
+        * np.arctanh(
+            (u1**2 - u1 * (u2 + x) + u2 * x + v2 * y)
+            / (
+                np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+                * np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2)
+            )
+        )
+        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+        + (ju * (u1 - u2) - jv * v2)
+        * np.arctanh(
+            (u1 * (u2 - x) - u2**2 + u2 * x + v2 * (-v2 + y))
+            / (
+                np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+                * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2)
+            )
+        )
+        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+        + (ju * u2 + jv * v2)
+        * np.arctanh(
+            (-u2 * x - v2 * y) / (np.sqrt(u2**2 + v2**2) * np.sqrt(x**2 + y**2))
+        )
+        / np.sqrt(u2**2 + v2**2)
+        - (ju * u2 + jv * v2)
+        * np.arctanh(
+            (u2**2 - u2 * x + v2 * (v2 - y))
+            / (
+                np.sqrt(u2**2 + v2**2)
+                * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2)
+            )
+        )
+        / np.sqrt(u2**2 + v2**2)
+    ) / (u1 * v2)
 
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(observers, coordinates, current_densities, mask1)
-    H[mask1,2] = (-ju*x*np.log(np.abs(x))/np.sqrt(x**2) -
-                  ju*(u1 - x)*np.log(np.abs(-u1 + x))/np.sqrt((u1 - x)**2) +
-                  (ju*(u1 - u2) - jv*v2)*
-                  np.arctanh((u1*(-u2 + x) + u2**2 - u2*x + v2**2)/
-                             (np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2)*
-                              np.sqrt(u2**2 - 2*u2*x + v2**2 + x**2)))/
-                  np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2) +
-                  (ju*(u1 - u2) - jv*v2)*
-                  np.arctanh((u1 - u2)*(u1 - x)/
-                             (np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2)*np.sqrt((u1 - x)**2)))/
-                  np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2) +
-                  (ju*u2 + jv*v2)*
-                  np.arctanh((u2**2 - u2*x + v2**2)/
-                             (np.sqrt(u2**2 + v2**2)*np.sqrt(u2**2 - 2*u2*x + v2**2 + x**2)))/
-                  np.sqrt(u2**2 + v2**2) -
-                  (ju*u2 + jv*v2)*
-                  np.arctanh(u2*(u1 - x)/(np.sqrt(u2**2 + v2**2)*np.sqrt((u1 - x)**2)))/
-                  np.sqrt(u2**2 + v2**2))/(u1*v2)
+    x, y, z, u1, u2, v2, ju, jv = assign_masks(
+        observers, coordinates, current_densities, mask1
+    )
+    H[mask1, 2] = (
+        -ju * x * np.log(np.abs(x)) / np.sqrt(x**2)
+        - ju * (u1 - x) * np.log(np.abs(-u1 + x)) / np.sqrt((u1 - x) ** 2)
+        + (ju * (u1 - u2) - jv * v2)
+        * np.arctanh(
+            (u1 * (-u2 + x) + u2**2 - u2 * x + v2**2)
+            / (
+                np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+                * np.sqrt(u2**2 - 2 * u2 * x + v2**2 + x**2)
+            )
+        )
+        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+        + (ju * (u1 - u2) - jv * v2)
+        * np.arctanh(
+            (u1 - u2)
+            * (u1 - x)
+            / (np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2) * np.sqrt((u1 - x) ** 2))
+        )
+        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+        + (ju * u2 + jv * v2)
+        * np.arctanh(
+            (u2**2 - u2 * x + v2**2)
+            / (np.sqrt(u2**2 + v2**2) * np.sqrt(u2**2 - 2 * u2 * x + v2**2 + x**2))
+        )
+        / np.sqrt(u2**2 + v2**2)
+        - (ju * u2 + jv * v2)
+        * np.arctanh(u2 * (u1 - x) / (np.sqrt(u2**2 + v2**2) * np.sqrt((u1 - x) ** 2)))
+        / np.sqrt(u2**2 + v2**2)
+    ) / (u1 * v2)
 
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(observers, coordinates, current_densities, mask2)
-    H[mask2,2] = (-ju*np.arctanh((u1*v2 - u2*y)/
-                                 (v2*np.sqrt(u1**2 - 2*u1*u2*y/v2 + y**2*(u2**2/v2**2 + 1)))) +
-                  ju*np.arctanh(u2*(v2 - y)/(v2*np.sqrt((u2**2 + v2**2)*(v2 - y)**2/v2**2))) +
-                  (ju*(u1 - u2) - jv*v2)*
-                  np.arctanh((u1**2*v2 - u1*u2*(v2 + y) + y*(u2**2 + v2**2))/
-                             (v2*np.sqrt(u1**2 - 2*u1*u2*y/v2 + y**2*(u2**2/v2**2 + 1))*
-                              np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2)))/
-                  np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2) +
-                  (ju*(u1 - u2) - jv*v2)*
-                  np.arctanh((v2 - y)*(-u1*u2 + u2**2 + v2**2)/
-                             (v2*np.sqrt((u2**2 + v2**2)*(v2 - y)**2/v2**2)*
-                              np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2)))/
-                  np.sqrt(u1**2 - 2*u1*u2 + u2**2 + v2**2) +
-                  y*(ju*u2 + jv*v2)*np.log(np.abs(y*(-u2**2 - v2**2)))/
-                  (v2*np.sqrt(y**2*(u2**2 + v2**2)/v2**2)) +
-                  (v2 - y)*(ju*u2 + jv*v2)*np.log(np.abs((u2**2 + v2**2)*(v2 - y)))/
-                  (v2*np.sqrt((u2**2 + v2**2)*(v2 - y)**2/v2**2)))/(u1*v2)
+    x, y, z, u1, u2, v2, ju, jv = assign_masks(
+        observers, coordinates, current_densities, mask2
+    )
+    H[mask2, 2] = (
+        -ju
+        * np.arctanh(
+            (u1 * v2 - u2 * y)
+            / (v2 * np.sqrt(u1**2 - 2 * u1 * u2 * y / v2 + y**2 * (u2**2 / v2**2 + 1)))
+        )
+        + ju
+        * np.arctanh(
+            u2 * (v2 - y) / (v2 * np.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2))
+        )
+        + (ju * (u1 - u2) - jv * v2)
+        * np.arctanh(
+            (u1**2 * v2 - u1 * u2 * (v2 + y) + y * (u2**2 + v2**2))
+            / (
+                v2
+                * np.sqrt(u1**2 - 2 * u1 * u2 * y / v2 + y**2 * (u2**2 / v2**2 + 1))
+                * np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+            )
+        )
+        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+        + (ju * (u1 - u2) - jv * v2)
+        * np.arctanh(
+            (v2 - y)
+            * (-u1 * u2 + u2**2 + v2**2)
+            / (
+                v2
+                * np.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2)
+                * np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+            )
+        )
+        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+        + y
+        * (ju * u2 + jv * v2)
+        * np.log(np.abs(y * (-(u2**2) - v2**2)))
+        / (v2 * np.sqrt(y**2 * (u2**2 + v2**2) / v2**2))
+        + (v2 - y)
+        * (ju * u2 + jv * v2)
+        * np.log(np.abs((u2**2 + v2**2) * (v2 - y)))
+        / (v2 * np.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2))
+    ) / (u1 * v2)
 
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(observers, coordinates, current_densities, mask3)
-    H[mask3,2] = (ju*v2*np.arctanh((u1*(-v2 + y) - u2*y)/
-                                   (v2*np.sqrt((u1**2*(v2 - y)**2 + 2*u1*u2*y*(v2 - y) +
-                                                y**2*(u2**2 + v2**2))/v2**2))) +
-                        ju*v2*np.arctanh((u1 - u2)*(v2 - y)/
-                                         (v2*np.sqrt((v2 - y)**2*
-                                                     (u1**2 - 2*u1*u2 + u2**2 + v2**2)/v2**2))) -
-                        v2*(ju*u2 + jv*v2)*
-                        np.arctanh((u1*u2*(-v2 + y) + y*(-u2**2 - v2**2))/
-                                   (v2*np.sqrt((u1**2*(v2 - y)**2 + 2*u1*u2*y*(v2 - y) +
-                                                y**2*(u2**2 + v2**2))/v2**2)*
-                                    np.sqrt(u2**2 + v2**2)))/
-                        np.sqrt(u2**2 + v2**2) +
-                        v2*(ju*u2 + jv*v2)*
-                        np.arctanh((v2 - y)*(-u1*u2 + u2**2 + v2**2)/
-                                   (v2*np.sqrt((v2 - y)**2*(u1**2 - 2*u1*u2 + u2**2 + v2**2)/v2**2)*
-                                    np.sqrt(u2**2 + v2**2)))/
-                        np.sqrt(u2**2 + v2**2) -
-                        y*(ju*(-u1 + u2) + jv*v2)*
-                        np.log(np.abs(y*(-u1**2 + 2*u1*u2 - u2**2 - v2**2)))/
-                        np.sqrt(y**2*(u1**2 - 2*u1*u2 + u2**2 + v2**2)/v2**2) -
-                        (v2 - y)*(ju*(-u1 + u2) + jv*v2)*
-                        np.log(np.abs((v2 - y)*(u1**2 - 2*u1*u2 + u2**2 + v2**2)))/
-                        np.sqrt((v2 - y)**2*(u1**2 - 2*u1*u2 + u2**2 + v2**2)/v2**2))/(u1*v2**2)
+    x, y, z, u1, u2, v2, ju, jv = assign_masks(
+        observers, coordinates, current_densities, mask3
+    )
+    H[mask3, 2] = (
+        ju
+        * v2
+        * np.arctanh(
+            (u1 * (-v2 + y) - u2 * y)
+            / (
+                v2
+                * np.sqrt(
+                    (
+                        u1**2 * (v2 - y) ** 2
+                        + 2 * u1 * u2 * y * (v2 - y)
+                        + y**2 * (u2**2 + v2**2)
+                    )
+                    / v2**2
+                )
+            )
+        )
+        + ju
+        * v2
+        * np.arctanh(
+            (u1 - u2)
+            * (v2 - y)
+            / (
+                v2
+                * np.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
+            )
+        )
+        - v2
+        * (ju * u2 + jv * v2)
+        * np.arctanh(
+            (u1 * u2 * (-v2 + y) + y * (-(u2**2) - v2**2))
+            / (
+                v2
+                * np.sqrt(
+                    (
+                        u1**2 * (v2 - y) ** 2
+                        + 2 * u1 * u2 * y * (v2 - y)
+                        + y**2 * (u2**2 + v2**2)
+                    )
+                    / v2**2
+                )
+                * np.sqrt(u2**2 + v2**2)
+            )
+        )
+        / np.sqrt(u2**2 + v2**2)
+        + v2
+        * (ju * u2 + jv * v2)
+        * np.arctanh(
+            (v2 - y)
+            * (-u1 * u2 + u2**2 + v2**2)
+            / (
+                v2
+                * np.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
+                * np.sqrt(u2**2 + v2**2)
+            )
+        )
+        / np.sqrt(u2**2 + v2**2)
+        - y
+        * (ju * (-u1 + u2) + jv * v2)
+        * np.log(np.abs(y * (-(u1**2) + 2 * u1 * u2 - u2**2 - v2**2)))
+        / np.sqrt(y**2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
+        - (v2 - y)
+        * (ju * (-u1 + u2) + jv * v2)
+        * np.log(np.abs((v2 - y) * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2)))
+        / np.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
+    ) / (u1 * v2**2)
 
-    H[:,1] = H[:,0]     #copy?
+    H[:, 1] = H[:, 0]  # copy?
 
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(observers, coordinates, current_densities, None)
-    H[:,0] *= jv*z*u1*v2 / (4*np.pi)
-    H[:,1] *= -ju*z*u1*v2 / (4*np.pi)
-    H[:,2] *= u1*v2 / (4*np.pi)
+    x, y, z, u1, u2, v2, ju, jv = assign_masks(
+        observers, coordinates, current_densities, None
+    )
+    H[:, 0] *= jv * z * u1 * v2 / (4 * np.pi)
+    H[:, 1] *= -ju * z * u1 * v2 / (4 * np.pi)
+    H[:, 2] *= u1 * v2 / (4 * np.pi)
 
     return H
 
@@ -319,7 +455,7 @@ def BHJM_current_sheet(
     coordinates, t, r = coordinate_transformation(vertices.astype(float))
 
     observers = np.copy(r.apply(observers - t))
-    current_densities = np.copy(r.apply(current_densities)[:,:2])
+    current_densities = np.copy(r.apply(current_densities)[:, :2])
 
     BHJM = np.zeros_like(observers, dtype=float)
 
@@ -333,7 +469,7 @@ def BHJM_current_sheet(
     mask_nan_u1 = np.isnan(u1)
     mask_nan_u2 = np.isnan(u2)
     mask_nan_v2 = np.isnan(v2)
-    mask_degenerated = (np.abs(u1) < 1e-15) |  (np.abs(v2) < 1e-15)
+    mask_degenerated = (np.abs(u1) < 1e-15) | (np.abs(v2) < 1e-15)
     mask0 = mask_nan_u1 | mask_nan_u2 | mask_nan_v2 | mask_degenerated
     not_mask0 = ~mask0  # avoid multiple computation of ~mask
 
@@ -348,7 +484,7 @@ def BHJM_current_sheet(
 
     BHJM[not_mask0] = elementar_current_sheet_Hfield(
         observers=observers,
-        coordinates = coordinates,
+        coordinates=coordinates,
         current_densities=current_densities,
     )
 
