@@ -81,5 +81,5 @@ plt.show()
 ```
 
 ```{warning}
-Magpylib models magnets with perfect polarization. However, such magnets do not exist in reality due to fabrication tolerances and material response. While fabrication tolerances can be estimated easily, our [tutorial](examples-tutorial-modelling-magnets) explains how to deal with material response.
+Magpylib models magnets with perfect polarization. However, such magnets do not exist in reality due to fabrication tolerances and material response. While fabrication tolerances can be estimated easily, our [tutorial](examples-tutorial-modeling-magnets) explains how to deal with material response.
 ```

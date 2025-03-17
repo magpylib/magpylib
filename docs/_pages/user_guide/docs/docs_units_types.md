@@ -33,7 +33,7 @@ Up to version 4, Magpylib was unfortunately contributing to the naming confusion
 ```
 
 ```{note}
-The connection between the magnetic polarization J, the magnetization M and the material parameters of a real permanent magnet are shown in {ref}`examples-tutorial-modelling-magnets`.
+The connection between the magnetic polarization J, the magnetization M and the material parameters of a real permanent magnet are shown in {ref}`examples-tutorial-modeling-magnets`.
 ```
 
 (guide-docs-io-scale-invariance)=

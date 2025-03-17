@@ -109,25 +109,28 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
         --------
         Compute the B-field of a spherical magnet at three positions:
 
+        >>> import numpy as np
         >>> import magpylib as magpy
         >>> src = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
         >>> B = src.getB(((0,0,0), (1,0,0), (2,0,0)))
-        >>> print(B)
-        [[ 0.          0.          0.66666667]
-         [ 0.          0.         -0.04166667]
-         [ 0.          0.         -0.00520833]]
+        >>> with np.printoptions(precision=3):
+        ...     print(B)
+        [[ 0.     0.     0.667]
+         [ 0.     0.    -0.042]
+         [ 0.     0.    -0.005]]
 
         Compute the B-field at two sensors, each one with two pixels
 
         >>> sens1 = magpy.Sensor(position=(1,0,0), pixel=((0,0,.1), (0,0,-.1)))
         >>> sens2 = sens1.copy(position=(2,0,0))
         >>> B = src.getB(sens1, sens2)
-        >>> print(B)
-        [[[ 0.01219289  0.         -0.0398301 ]
-          [-0.01219289  0.         -0.0398301 ]]
+        >>> with np.printoptions(precision=3):
+        ...     print(B)
+        [[[ 0.012  0.    -0.04 ]
+          [-0.012  0.    -0.04 ]]
         <BLANKLINE>
-         [[ 0.00077639  0.         -0.00515004]
-          [-0.00077639  0.         -0.00515004]]]
+         [[ 0.001  0.    -0.005]
+          [-0.001  0.    -0.005]]]
         """
         observers = format_star_input(observers)
         return getBH_level2(
@@ -194,27 +197,29 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
         --------
         Compute the H-field of a spherical magnet at three positions:
 
+        >>> import numpy as np
         >>> import magpylib as magpy
 
         >>> src = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
         >>> H = src.getH(((0,0,0), (1,0,0), (2,0,0)))
-        >>> print(H)
-        [[      0.               0.         -265258.23834209]
-         [      0.               0.          -33157.27979276]
-         [      0.               0.           -4144.6599741 ]]
+        >>> with np.printoptions(precision=0):
+        ...     print(H)
+        [[      0.       0. -265258.]
+         [      0.       0.  -33157.]
+         [      0.       0.   -4145.]]
 
         Compute the H-field at two sensors, each one with two pixels
 
         >>> sens1 = magpy.Sensor(position=(1,0,0), pixel=((0,0,.1), (0,0,-.1)))
         >>> sens2 = sens1.copy(position=(2,0,0))
         >>> H = src.getH(sens1, sens2)
-        >>> print(H)
-        [[[  9702.79184001      0.         -31695.78667738]
-          [ -9702.79184001      0.         -31695.78667738]]
+        >>> with np.printoptions(precision=0):
+        ...     print(H)
+        [[[  9703.      0. -31696.]
+          [ -9703.      0. -31696.]]
         <BLANKLINE>
-         [[   617.83031344      0.          -4098.27441249]
-          [  -617.83031344      0.          -4098.27441249]]]
-
+         [[   618.      0.  -4098.]
+          [  -618.      0.  -4098.]]]
         """
         observers = format_star_input(observers)
         return getBH_level2(
@@ -276,6 +281,21 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
             pixel position (indices n1,n2,...) in units of A/m. Sensor pixel positions are
             equivalent to simple observer positions. Paths of objects that are shorter than
             index m will be considered as static beyond their end.
+
+        Examples
+        --------
+        In this example we test the magnetization at an observer point.
+
+        >>> import numpy as np
+        >>> import magpylib as magpy
+        >>> cube = magpy.magnet.Cuboid(
+        ...     dimension=(10,1,1),
+        ...     polarization=(1,0,0)
+        ... ).rotate_from_angax(45,'z')
+        >>> M = cube.getM((3,3,0))
+        >>> with np.printoptions(precision=0):
+        ...    print(M)
+        [562698. 562698.      0.]
         """
         observers = format_star_input(observers)
         return getBH_level2(
@@ -339,6 +359,21 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
             pixel position (indices n1,n2,...) in units of T. Sensor pixel positions are equivalent
             to simple observer positions. Paths of objects that are shorter than index m will be
             considered as static beyond their end.
+
+        Examples
+        --------
+        In this example we test the polarization at an observer point.
+
+        >>> import numpy as np
+        >>> import magpylib as magpy
+        >>> cube = magpy.magnet.Cuboid(
+        ...     dimension=(10,1,1),
+        ...     polarization=(1,0,0)
+        ... ).rotate_from_angax(45,'z')
+        >>> J = cube.getJ((3,3,0))
+        >>> with np.printoptions(precision=3):
+        ...    print(J)
+        [0.707 0.707 0.   ]
         """
         observers = format_star_input(observers)
         return getBH_level2(
