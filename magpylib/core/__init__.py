@@ -12,6 +12,7 @@ __all__ = [
     "current_polyline_Hfield",
     "dipole_Hfield",
     "triangle_Bfield",
+    "current_sheet_Hfield",
 ]
 
 from magpylib._src.fields.field_BH_circle import current_circle_Hfield
@@ -25,3 +26,4 @@ from magpylib._src.fields.field_BH_dipole import dipole_Hfield
 from magpylib._src.fields.field_BH_polyline import current_polyline_Hfield
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_Bfield
 from magpylib._src.fields.field_BH_triangle import triangle_Bfield
+from magpylib._src.fields.field_BH_current_sheet import current_sheet_Hfield
