@@ -195,4 +195,4 @@ messages_control.disable = [
 ]
 
 [tool.codespell]
-skip = './src/magpylib/_src/fields/special_el3'
+skip = 'src/magpylib/_src/fields/special_el3.py'
