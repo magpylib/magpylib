@@ -540,10 +540,10 @@ def test_bad_show_inputs():
             r"Conflicting parameters detected for {'row': 1, 'col': 1}:"
             r" 'output' first got 'model3d' then 'Bx'."
         ),
+        magpy.show_context(animation=False, sumup=True, pixel_agg="mean") as s,
     ):
-        with magpy.show_context(animation=False, sumup=True, pixel_agg="mean") as s:
-            s.show(cyl1, sensor, col=1, output="Bx")
-            s.show(cyl1, sensor, col=1)
+        s.show(cyl1, sensor, col=1, output="Bx")
+        s.show(cyl1, sensor, col=1)
 
     # test unsupported specific args for some backends
     with pytest.warns(
