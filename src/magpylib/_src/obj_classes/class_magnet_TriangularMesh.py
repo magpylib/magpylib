@@ -1,5 +1,7 @@
 """Magnet TriangularMesh class code"""
 
+from __future__ import annotations
+
 import warnings
 
 import numpy as np
@@ -7,14 +9,18 @@ from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
 from magpylib._src.display.traces_core import make_TriangularMesh
 from magpylib._src.exceptions import MagpylibMissingInput
-from magpylib._src.fields.field_BH_triangularmesh import BHJM_magnet_trimesh
-from magpylib._src.fields.field_BH_triangularmesh import calculate_centroid
-from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
-from magpylib._src.fields.field_BH_triangularmesh import get_disconnected_faces_subsets
-from magpylib._src.fields.field_BH_triangularmesh import get_intersecting_triangles
-from magpylib._src.fields.field_BH_triangularmesh import get_open_edges
-from magpylib._src.input_checks import check_format_input_vector
-from magpylib._src.input_checks import check_format_input_vector2
+from magpylib._src.fields.field_BH_triangularmesh import (
+    BHJM_magnet_trimesh,
+    calculate_centroid,
+    fix_trimesh_orientation,
+    get_disconnected_faces_subsets,
+    get_intersecting_triangles,
+    get_open_edges,
+)
+from magpylib._src.input_checks import (
+    check_format_input_vector,
+    check_format_input_vector2,
+)
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
@@ -931,4 +937,4 @@ class TriangularMesh(BaseMagnet):
     def _default_style_description(self):
         """Default style description text"""
         ntri = len(self.faces)
-        return f"{ntri} face{'s'[:ntri^1]}"
+        return f"{ntri} face{'s'[: ntri ^ 1]}"

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R
@@ -22,7 +24,7 @@ def validate_pos_orient(obj, ppath, opath_as_rotvec):
         ppath,
         rtol=1e-05,
         atol=1e-08,
-        err_msg=f"position validation failed with ({sp})" f"\n expected {ppath}",
+        err_msg=f"position validation failed with ({sp})\n expected {ppath}",
     )
     np.testing.assert_allclose(
         so.as_matrix(),
@@ -81,7 +83,7 @@ def get_init_pos_orient_test_data():
 @pytest.mark.parametrize(
     "init_position, init_orientation_rotvec, expected_position, expected_orientation_rotvec",
     get_init_pos_orient_test_data(),
-    ids=[f"{ind+1:02d}" for ind, t in enumerate(get_init_pos_orient_test_data())],
+    ids=[f"{ind + 1:02d}" for ind, t in enumerate(get_init_pos_orient_test_data())],
 )
 def test_BaseGeo_init(
     init_position,
@@ -163,7 +165,7 @@ def get_data_object_setter(inp):
 @pytest.mark.parametrize(
     "init_pos, init_ori, test_pos, test_ori",
     get_data_object_setter("pos"),
-    ids=[f"{ind+1:02d}" for ind, _ in enumerate(get_data_object_setter("pos"))],
+    ids=[f"{ind + 1:02d}" for ind, _ in enumerate(get_data_object_setter("pos"))],
 )
 def test_BaseGeo_setting_position(
     init_pos,
@@ -185,7 +187,7 @@ def test_BaseGeo_setting_position(
 @pytest.mark.parametrize(
     "init_pos, init_ori, test_pos, test_ori",
     get_data_object_setter("ori"),
-    ids=[f"{ind+1:02d}" for ind, _ in enumerate(get_data_object_setter("ori"))],
+    ids=[f"{ind + 1:02d}" for ind, _ in enumerate(get_data_object_setter("ori"))],
 )
 def test_BaseGeo_setting_orientation(
     init_pos,

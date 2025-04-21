@@ -6,6 +6,8 @@ Computation details in function docstrings.
 # pylint: disable=too-many-nested-blocks
 # pylint: disable=too-many-branches
 # pylance: disable=Code is unreachable
+from __future__ import annotations
+
 import numpy as np
 import scipy.spatial
 from scipy.constants import mu_0 as MU0
@@ -373,7 +375,7 @@ def segments_intersect_facets(segments, facets, eps=1e-6):
     cross = (np.sign(g1) != np.sign(g2)) * (np.abs(g1) > eps) * (np.abs(g2) > eps)
 
     v = []  # get signed volumes
-    for i, j in zip((0, 1, 2), (1, 2, 0)):
+    for i, j in zip((0, 1, 2), (1, 2, 0), strict=False):
         sv = np.sum((t[i] - s[1]) * np.cross(t[j] - s[1], s[0] - s[1]), axis=1)
         v.append(np.sign(sv))
 
@@ -574,5 +576,5 @@ def BHJM_magnet_trimesh(
         return BHJM / MU0
 
     raise ValueError(  # pragma: no cover
-        "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"
+        f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
     )

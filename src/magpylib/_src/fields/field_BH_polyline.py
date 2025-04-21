@@ -3,6 +3,7 @@ Implementations of analytical expressions of line current segments
 """
 
 # pylint: disable=too-many-positional-arguments
+from __future__ import annotations
 
 import numpy as np
 from numpy.linalg import norm
@@ -242,5 +243,5 @@ def BHJM_current_polyline(
         return BHJM * MU0
 
     raise ValueError(  # pragma: no cover
-        "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"
+        f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
     )

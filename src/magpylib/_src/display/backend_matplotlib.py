@@ -5,6 +5,7 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=wrong-import-position
 # pylint: disable=too-many-positional-arguments
+from __future__ import annotations
 
 import os
 from collections import Counter
@@ -80,7 +81,7 @@ class StripedHandler:
         patch_width = width
         current_position = x0
 
-        for color, proportion in zip(self.colors, self.proportions):
+        for color, proportion in zip(self.colors, self.proportions, strict=False):
             handlebox.add_artist(
                 patches.Rectangle(
                     [current_position, y0], patch_width * proportion, height, fc=color
@@ -157,14 +158,14 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
         if "lines" not in mode:
             props["ls"] = ""
         if "markers" in mode:
-            if not props.get("marker", None):
+            if not props.get("marker"):
                 props["marker"] = "o"
         else:
             props["marker"] = None
         if "text" in mode and trace.get("text", False) and len(coords) > 0:
             txt = trace["text"]
             txt = [txt] * len(coords[0]) if isinstance(txt, str) else txt
-            for *coords_s, txt in zip(*coords, txt):
+            for *coords_s, txt in zip(*coords, txt, strict=False):
                 traces_mpl.append(
                     {
                         "constructor": "text",
@@ -363,7 +364,10 @@ def display_matplotlib(
                 if row_col_num in ranges and canvas_update:
                     ax.set(
                         **{f"{k}label": labels[row_col_num][k] for k in "xyz"},
-                        **{f"{k}lim": r for k, r in zip("xyz", ranges[row_col_num])},
+                        **{
+                            f"{k}lim": r
+                            for k, r in zip("xyz", ranges[row_col_num], strict=False)
+                        },
                     )
                 ax.set_box_aspect(aspect=(1, 1, 1))
                 if 0 < count <= legend_maxitems:

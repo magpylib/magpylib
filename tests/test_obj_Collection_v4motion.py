@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R
@@ -18,8 +20,7 @@ def validate_pos_orient(obj, ppath, opath_as_rotvec):
     ppath = np.array(ppath)
     opath = R.from_rotvec(opath_as_rotvec)
     assert ppath.shape == sp.shape, (
-        "position shapes do not match"
-        f"\n object has {sp.shape} instead of {ppath.shape}"
+        f"position shapes do not match\n object has {sp.shape} instead of {ppath.shape}"
     )
     assert opath.as_rotvec().shape == so.as_rotvec().shape, (
         "orientation as_rotvec shapes do not match"
@@ -107,7 +108,9 @@ def get_data_collection_position_setter():
     """col_pos_init, col_ori_init, src_pos_init, src_ori_init,
     col_pos_test, col_ori_test, src_pos_test, src_ori_test""",
     get_data_collection_position_setter(),
-    ids=[f"{ind+1:02d}" for ind, _ in enumerate(get_data_collection_position_setter())],
+    ids=[
+        f"{ind + 1:02d}" for ind, _ in enumerate(get_data_collection_position_setter())
+    ],
 )
 def test_Collection_setting_position(
     col_pos_init,
@@ -217,7 +220,8 @@ def get_data_collection_orientation_setter():
     col_ori_test, src_pos_test, src_ori_test""",
     get_data_collection_orientation_setter(),
     ids=[
-        f"{ind+1:02d}" for ind, _ in enumerate(get_data_collection_orientation_setter())
+        f"{ind + 1:02d}"
+        for ind, _ in enumerate(get_data_collection_orientation_setter())
     ],
 )
 def test_Collection_setting_orientation(
@@ -277,6 +281,7 @@ def test_Collection_setter():
     for poz, roz in zip(
         [(0, 0, 0), (0, 0, 5), (5, 0, 0), (5, 0, 5), (10, 0, 0), (10, 0, 5)],
         [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 2, 3), (-2, -1, 3)],
+        strict=False,
     ):
         col = magpy.Collection()
         for i in range(5):

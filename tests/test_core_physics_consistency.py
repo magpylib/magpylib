@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
@@ -179,7 +181,9 @@ def test_core_physics_dipole_sphere():
     obs = np.array([(1, 2, 3), (-2, -2, -2), (3, 5, -4), (5, 4, 0.1)])
     dia = np.array([2, 3, 0.1, 3.3])
     pol = np.array([(1, 2, 3), (0, 0, 1), (-1, -2, 0), (1, -1, 0.1)])
-    mom = np.array([4 * (d / 2) ** 3 * np.pi / 3 * p / MU0 for d, p in zip(dia, pol)])
+    mom = np.array(
+        [4 * (d / 2) ** 3 * np.pi / 3 * p / MU0 for d, p in zip(dia, pol, strict=False)]
+    )
 
     B1 = BHJM_magnet_sphere(
         field="B",
@@ -322,7 +326,7 @@ def test_core_physics_geometry_cylinder_from_segments():
     sections = np.array([-12, 65, 123, 180, 245, 348])
 
     Bseg = np.zeros((2, 3))
-    for phi1, phi2 in zip(sections[:-1], sections[1:]):
+    for phi1, phi2 in zip(sections[:-1], sections[1:], strict=False):
         B_part = BHJM_cylinder_segment(
             field="B",
             observers=obs,

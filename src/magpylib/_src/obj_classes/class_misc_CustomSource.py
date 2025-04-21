@@ -1,5 +1,7 @@
 """Custom class code"""
 
+from __future__ import annotations
+
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 
 

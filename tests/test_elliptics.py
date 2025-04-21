@@ -1,14 +1,11 @@
+from __future__ import annotations
+
 import unittest
 
 import numpy as np
 
-from magpylib._src.fields.special_cel import cel
-from magpylib._src.fields.special_cel import cel0
-from magpylib._src.fields.special_cel import celv
-from magpylib._src.fields.special_el3 import el3
-from magpylib._src.fields.special_el3 import el3_angle
-from magpylib._src.fields.special_el3 import el3v
-from magpylib._src.fields.special_el3 import el30
+from magpylib._src.fields.special_cel import cel, cel0, celv
+from magpylib._src.fields.special_el3 import el3, el3_angle, el3v, el30
 
 
 class TestEllExceptions(unittest.TestCase):
@@ -59,7 +56,7 @@ def test_el3_vs_original():
     np.testing.assert_allclose(res0, resv)
 
     # compare to modified original
-    res1 = np.array([el30(x, kc, p) for x, kc, p in zip(x11, kc11, p11)])
+    res1 = np.array([el30(x, kc, p) for x, kc, p in zip(x11, kc11, p11, strict=False)])
     np.testing.assert_allclose(res0, res1)
 
 
@@ -93,7 +90,7 @@ def test_el3s():
     kcs = (np.random.rand(N) - 0.5) * 10
     ps = (np.random.rand(N) - 0.5) * 10
 
-    res0 = [el30(x, kc, p) for x, kc, p in zip(xs, kcs, ps)]
+    res0 = [el30(x, kc, p) for x, kc, p in zip(xs, kcs, ps, strict=False)]
     res1 = el3v(xs, kcs, ps)
     res2 = el3(xs, kcs, ps)
 
@@ -112,7 +109,7 @@ def test_cels():
     cc = (np.random.rand(N) - 0.5) * 10
     ss = (np.random.rand(N) - 0.5) * 10
 
-    res0 = [cel0(kc, p, c, s) for kc, p, c, s in zip(kcc, pp, cc, ss)]
+    res0 = [cel0(kc, p, c, s) for kc, p, c, s in zip(kcc, pp, cc, ss, strict=False)]
     res1 = celv(kcc, pp, cc, ss)
     res2 = cel(kcc, pp, cc, ss)
 

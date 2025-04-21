@@ -2,12 +2,11 @@
 
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-positional-arguments
+from __future__ import annotations
 
 from collections import defaultdict
 from functools import lru_cache
-from itertools import chain
-from itertools import cycle
-from typing import Tuple
+from itertools import chain, cycle
 
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
@@ -16,8 +15,7 @@ from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.input_checks import check_input_zoom
 from magpylib._src.style import get_style
-from magpylib._src.utility import format_obj_input
-from magpylib._src.utility import merge_dicts_with_conflict_check
+from magpylib._src.utility import format_obj_input, merge_dicts_with_conflict_check
 
 DEFAULT_ROW_COL_PARAMS = {
     "row": 1,
@@ -117,17 +115,16 @@ def get_vertices_from_model(model_kwargs, model_args=None, coordsargs=None):
             useargs = True
             ind = int(key[5])
             v = model_args[ind]
+        elif key in model_kwargs:
+            v = model_kwargs[key]
         else:
-            if key in model_kwargs:
-                v = model_kwargs[key]
-            else:
-                raise ValueError(
-                    "Rotating/Moving of provided model failed, trace dictionary "
-                    f"has no argument {k!r}, use `coordsargs` to specify the names of the "
-                    "coordinates to be used.\n"
-                    "Matplotlib backends will set up coordsargs automatically if "
-                    "the `args=(xs,ys,zs)` argument is provided."
-                )
+            raise ValueError(
+                "Rotating/Moving of provided model failed, trace dictionary "
+                f"has no argument {k!r}, use `coordsargs` to specify the names of the "
+                "coordinates to be used.\n"
+                "Matplotlib backends will set up coordsargs automatically if "
+                "the `args=(xs,ys,zs)` argument is provided."
+            )
         vertices.append(v)
 
     vertices = np.array(vertices)
@@ -142,7 +139,7 @@ def draw_arrowed_line(
     arrow_pos=0.5,
     pivot="middle",
     include_line=True,
-) -> Tuple:
+) -> tuple:
     """
     Provides x,y,z coordinates of an arrow drawn in the x-y-plane (z=0), showing up the y-axis and
     centered in x,y,z=(0,0,0). The arrow vertices are then turned in the direction of `vec` and
@@ -160,7 +157,9 @@ def draw_arrowed_line(
     anchor = (
         (0, -0.5, 0)
         if pivot == "tip"
-        else (0, 0.5, 0) if pivot == "tail" else (0, 0, 0)
+        else (0, 0.5, 0)
+        if pivot == "tail"
+        else (0, 0, 0)
     )
     arrow = [
         [0, arrow_shift, 0],
@@ -209,7 +208,7 @@ def draw_arrow_from_vertices(
                 arrow_pos=arrow_pos,
                 include_line=include_line,
             ).T
-            for vec, pos, siz in zip(vectors, positions, arrow_sizes)
+            for vec, pos, siz in zip(vectors, positions, arrow_sizes, strict=False)
         ],
         axis=1,
     )
@@ -356,7 +355,9 @@ def merge_mesh3d(*traces):
     L = np.array([0] + [len(b["x"]) for b in traces[:-1]]).cumsum()
     for k in "ijk":
         if k in traces[0]:
-            merged_trace[k] = np.hstack([b[k] + l for b, l in zip(traces, L)])
+            merged_trace[k] = np.hstack(
+                [b[k] + l for b, l in zip(traces, L, strict=False)]
+            )
     for k in "xyz":
         merged_trace[k] = np.concatenate([b[k] for b in traces])
     for k in ("intensity", "facecolor"):
@@ -515,7 +516,7 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
                 coordsargs=tr.get("coordsargs", None),
             )
             kwex = tr["kwargs_extra"]
-            tr = dict(zip("xyz", verts))
+            tr = dict(zip("xyz", verts, strict=False))
             rc = kwex["row"], kwex["col"]
         if rc not in ranges_rc:
             ranges_rc[rc] = {k: [] for k in "xyz"}
@@ -534,7 +535,9 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
             pts = pts.reshape(-1, 3)
             if pts.size != 0:
                 min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
-                for v, min_, max_ in zip(ranges_rc[rc].values(), *min_max):
+                for v, min_, max_ in zip(
+                    ranges_rc[rc].values(), *min_max, strict=False
+                ):
                     v.extend([min_, max_])
     for rc, ranges in ranges_rc.items():
         if tr_dim_count[rc]["3D"]:
@@ -790,7 +793,7 @@ def slice_mesh_from_colorscale(trace, axis, colorscale):
             (vl, tl), (vr, tr) = slice_mesh_with_plane(vr, tr, origs[ind], axis)
         else:
             vl, tl = vr, tr
-        trace_temp = dict(zip("xyzijk", [*vl.T, *tl.T]))
+        trace_temp = dict(zip("xyzijk", [*vl.T, *tl.T], strict=False))
         trace_temp.update(facecolor=np.array([color] * len(tl)))
         traces.append(trace_temp)
     return {**trace, **merge_mesh3d(*traces)}

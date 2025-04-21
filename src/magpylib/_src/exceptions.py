@@ -1,5 +1,7 @@
 """Definition of custom exceptions"""
 
+from __future__ import annotations
+
 
 class MagpylibBadUserInput(Exception):
     """bad user input"""

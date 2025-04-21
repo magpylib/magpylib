@@ -1,10 +1,10 @@
+from __future__ import annotations
+
 import numpy as np
 import pytest
 
 import magpylib as magpy
-from magpylib._src.utility import add_iteration_suffix
-from magpylib._src.utility import check_duplicates
-from magpylib._src.utility import filter_objects
+from magpylib._src.utility import add_iteration_suffix, check_duplicates, filter_objects
 
 
 def test_duplicates():

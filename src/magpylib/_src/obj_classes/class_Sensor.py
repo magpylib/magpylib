@@ -2,6 +2,8 @@
 
 """Sensor class code"""
 
+from __future__ import annotations
+
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Sensor
@@ -520,5 +522,5 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             nop = int(np.prod(px_shape))
             if pix.ndim > 2:
                 desc += f"{'x'.join(str(p) for p in px_shape)}="
-            desc += f"{nop} pixel{'s'[:nop^1]}"
+            desc += f"{nop} pixel{'s'[: nop ^ 1]}"
         return desc

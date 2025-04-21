@@ -1,6 +1,8 @@
 """utilities for creating property classes"""
 
 # pylint: disable=too-many-branches
+from __future__ import annotations
+
 import collections.abc
 import re
 from copy import deepcopy
@@ -297,7 +299,7 @@ def validate_property_class(val, name, class_, parent):
         raise ValueError(
             f"the `{name}` property of `{type(parent).__name__}` must be an instance \n"
             f"of `{class_}` or a dictionary with equivalent key/value pairs \n"
-            f"but received {repr(val)} instead"
+            f"but received {val!r} instead"
         )
     return val
 
@@ -319,7 +321,8 @@ def validate_style_keys(style_kwargs):
 
 
 class MagicProperties:
-    """
+    (
+        """
     Base Class to represent only the property attributes defined at initialization, after which the
     class is frozen. This prevents user to create any attributes that are not defined as properties.
 
@@ -327,12 +330,14 @@ class MagicProperties:
     ------
     AttributeError
         raises AttributeError if the object is not a property
-    """ """"""
+    """
+        """"""
+    )
 
     __isfrozen = False
 
     def __init__(self, **kwargs):
-        input_dict = {k: None for k in self._property_names_generator()}
+        input_dict = dict.fromkeys(self._property_names_generator())
         if kwargs:
             magic_kwargs = magic_to_dict(kwargs)
             diff = set(magic_kwargs.keys()).difference(set(input_dict.keys()))
@@ -367,7 +372,7 @@ class MagicProperties:
 
     def __repr__(self):
         params = self._property_names_generator()
-        dict_str = ", ".join(f"{k}={repr(getattr(self,k))}" for k in params)
+        dict_str = ", ".join(f"{k}={getattr(self, k)!r}" for k in params)
         return f"{type(self).__name__}({dict_str})"
 
     def as_dict(self, flatten=False, separator="."):

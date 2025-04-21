@@ -4,16 +4,15 @@ homogeneously magnetized Cylinders. Computation details in function docstrings.
 """
 
 # pylint: disable = no-name-in-module
+from __future__ import annotations
 
 import numpy as np
 from scipy.constants import mu_0 as MU0
-from scipy.special import ellipe
-from scipy.special import ellipk
+from scipy.special import ellipe, ellipk
 
 from magpylib._src.fields.special_cel import cel
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import cart_to_cyl_coordinates
-from magpylib._src.utility import cyl_field_to_cart
+from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
 
 
 # CORE
@@ -397,5 +396,5 @@ def BHJM_magnet_cylinder(
         return BHJM / MU0
 
     raise ValueError(  # pragma: no cover
-        "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"
+        f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
     )

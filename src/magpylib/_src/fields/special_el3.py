@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 
 from magpylib._src.fields.special_cel import cel
@@ -558,7 +560,7 @@ def el3(xv: np.ndarray, kcv: np.ndarray, pv: np.ndarray) -> np.ndarray:
     n_input = len(xv)
 
     if n_input < 10:
-        return np.array([el30(x, kc, p) for x, kc, p in zip(xv, kcv, pv)])
+        return np.array([el30(x, kc, p) for x, kc, p in zip(xv, kcv, pv, strict=False)])
 
     return el3v(xv, kcv, pv)
 

@@ -2,6 +2,8 @@
 Core implementation of dipole field
 """
 
+from __future__ import annotations
+
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
@@ -101,5 +103,5 @@ def BHJM_dipole(
         return BHJM * MU0
 
     raise ValueError(  # pragma: no cover
-        "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"
+        f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
     )

@@ -2,6 +2,8 @@
 
 """Magnet Tetrahedron class code"""
 
+from __future__ import annotations
+
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Tetrahedron

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import pickle
 
@@ -44,12 +46,12 @@ def test_Sphere_basics():
 
     btest = []
     for mag, dim, ang, ax, anch, mov, poso in zip(
-        mags, dims, angs, axs, anchs, movs, posos
+        mags, dims, angs, axs, anchs, movs, posos, strict=False
     ):
         pm = magpy.magnet.Sphere(polarization=mag, diameter=dim)
 
         # 18 subsequent operations
-        for a, aa, aaa, mv in zip(ang, ax, anch, mov):
+        for a, aa, aaa, mv in zip(ang, ax, anch, mov, strict=False):
             pm.move(mv).rotate_from_angax(a, aa, aaa, start=-1)
 
         btest += [pm.getB(poso)]

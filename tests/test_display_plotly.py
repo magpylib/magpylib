@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import plotly.graph_objects as go
 import pytest
@@ -229,12 +231,7 @@ def test_extra_model3d():
         }
 
     cuboid.style.model3d.add_trace(
-        **{
-            "backend": "plotly",
-            "constructor": "Scatter3d",
-            "kwargs": my_callable_kwargs,
-            "show": True,
-        }
+        backend="plotly", constructor="Scatter3d", kwargs=my_callable_kwargs, show=True
     )
     cuboid.style.model3d.data[0].show = False
     cuboid.show(
@@ -479,7 +476,7 @@ def test_units_length():
         return_fig=True,
     )
     for ind, inp in enumerate(inputs):
-        scene = getattr(fig.layout, f"scene{'' if ind==0 else ind+1}")
+        scene = getattr(fig.layout, f"scene{'' if ind == 0 else ind + 1}")
         for k in "xyz":
             ax = getattr(scene, f"{k}axis")
             assert ax.title.text == f"{k} ({inp['units_length']})"

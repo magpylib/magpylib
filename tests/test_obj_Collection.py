@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import pickle
 import re
@@ -57,7 +59,7 @@ def test_Collection_basics():
 
     B1, B2 = [], []
     for mag, dim2, dim3, ang, ax, anch, mov, poso, rv in zip(
-        mags, dims2, dims3, angs, axs, anchs, movs, posos, rvs
+        mags, dims2, dims3, angs, axs, anchs, movs, posos, rvs, strict=False
     ):
         rot = R.from_rotvec(rv)
 
@@ -79,7 +81,7 @@ def test_Collection_basics():
         col1.add(pm4, pm5, pm6)
 
         # 18 subsequent operations
-        for a, aa, aaa, mv in zip(ang, ax, anch, mov):
+        for a, aa, aaa, mv in zip(ang, ax, anch, mov, strict=False):
             for pm in [pm1b, pm2b, pm3b, pm4b, pm5b, pm6b]:
                 pm.move(mv).rotate_from_angax(a, aa, aaa).rotate(rot, aaa)
 

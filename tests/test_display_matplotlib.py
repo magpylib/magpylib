@@ -1,4 +1,6 @@
 # pylint: disable="wrong-import-position"
+from __future__ import annotations
+
 import re
 from unittest.mock import patch
 

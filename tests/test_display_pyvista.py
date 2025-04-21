@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import sys
 import tempfile
@@ -29,7 +31,7 @@ try:
             imageio.plugins.ffmpeg.download()
         else:
             raise err
-except Exception:  # noqa: E722
+except Exception:
     # skip test if ffmpeg cannot be loaded
     FFMPEG_FAILED = True
 

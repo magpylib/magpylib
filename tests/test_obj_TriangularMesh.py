@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 import sys
 import warnings
@@ -9,9 +11,11 @@ import pyvista as pv
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.fields.field_BH_triangularmesh import BHJM_magnet_trimesh
-from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
-from magpylib._src.fields.field_BH_triangularmesh import lines_end_in_trimesh
+from magpylib._src.fields.field_BH_triangularmesh import (
+    BHJM_magnet_trimesh,
+    fix_trimesh_orientation,
+    lines_end_in_trimesh,
+)
 
 
 def test_TriangularMesh_repr():

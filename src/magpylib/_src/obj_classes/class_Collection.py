@@ -3,6 +3,7 @@
 # pylint: disable=redefined-builtin
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-positional-arguments
+from __future__ import annotations
 
 from collections import Counter
 
@@ -12,8 +13,7 @@ from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_obj
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.utility import format_obj_input
-from magpylib._src.utility import rec_obj_remover
+from magpylib._src.utility import format_obj_input, rec_obj_remover
 
 
 def repr_obj(obj, format="type+id+label"):
@@ -98,7 +98,7 @@ def collection_tree_generator(
     pointers[: len(props)] = [branch if children else space] * len(props)
 
     # create branch entries
-    for pointer, child in zip(pointers, contents):
+    for pointer, child in zip(pointers, contents, strict=False):
         child_repr = child if isinstance(child, str) else repr_obj(child, format)
         yield prefix + pointer + child_repr
 
@@ -245,7 +245,7 @@ class BaseCollection(BaseDisplayRepr):
             max_elems=10,
         ):
             lines.append(line)
-        return f"""<pre>{'<br>'.join(lines)}</pre>"""
+        return f"""<pre>{"<br>".join(lines)}</pre>"""
 
     def describe(self, format="type+label+id", max_elems=10, return_string=False):
         # pylint: disable=arguments-differ
@@ -820,7 +820,7 @@ class BaseCollection(BaseDisplayRepr):
             }
             for name, num in nums.items():
                 if num > 0:
-                    items.append(f"{num} {name}{'s'[:num^1]}")
+                    items.append(f"{num} {name}{'s'[: num ^ 1]}")
         else:
             items.append("no children")
         return ", ".join(items)

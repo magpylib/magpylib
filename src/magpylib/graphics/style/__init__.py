@@ -2,14 +2,13 @@
 The `magpylib.display.style` sub-package provides different object styles.
 """
 
+from __future__ import annotations
+
 __all__ = [
-    "MagnetStyle",
     "CurrentStyle",
     "DipoleStyle",
+    "MagnetStyle",
     "SensorStyle",
 ]
 
-from magpylib._src.style import CurrentStyle
-from magpylib._src.style import DipoleStyle
-from magpylib._src.style import MagnetStyle
-from magpylib._src.style import SensorStyle
+from magpylib._src.style import CurrentStyle, DipoleStyle, MagnetStyle, SensorStyle

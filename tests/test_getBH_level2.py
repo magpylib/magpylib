@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import unittest
 import warnings
 
@@ -37,6 +39,7 @@ def test_getB_level2_input_simple():
         [pos_obs, sens1, sens2, sens3, [sens1, sens2]],
         [fb1, fb1, fb1, fb1, fb2],
         [fc1, fc1, fc1, fc1, fc2],
+        strict=False,
     ):
         src_obs_res = [
             [pm1, poso, fb],
@@ -93,6 +96,7 @@ def test_getB_level2_input_shape22():
         [pos_obs, sens1, [sens1, sens1, sens1]],
         [fb22, fb22, [fb22, fb22, fb22]],
         [fc22, fc22, [fc22, fc22, fc22]],
+        strict=False,
     ):
         fb = np.array(fb)
         fc = np.array(fc)
@@ -508,9 +512,13 @@ def test_pixel_agg3():
 
     c2 = x0 + x1 + x2 + x3
 
-    for src, src_sh in zip([s0, c0, [s0, c0], c1, [s0, c0, c1, s1]], [1, 1, 2, 1, 4]):
+    for src, src_sh in zip(
+        [s0, c0, [s0, c0], c1, [s0, c0, c1, s1]], [1, 1, 2, 1, 4], strict=False
+    ):
         for obs, obs_sh in zip(
-            [e0, e1, e2, e3, x0, x1, x2, x3, c2, [x0, x2, x3]], [1] * 8 + [4, 3]
+            [e0, e1, e2, e3, x0, x1, x2, x3, c2, [x0, x2, x3]],
+            [1] * 8 + [4, 3],
+            strict=False,
         ):
             for px_agg in ["mean", "average", "min"]:
                 np.testing.assert_allclose(
@@ -522,9 +530,13 @@ def test_pixel_agg3():
 
     # same check with a path
     s0.position = [(0, 0, 0)] * 5
-    for src, src_sh in zip([s0, c0, [s0, c0], c1, [s0, c0, c1, s1]], [1, 1, 2, 1, 4]):
+    for src, src_sh in zip(
+        [s0, c0, [s0, c0], c1, [s0, c0, c1, s1]], [1, 1, 2, 1, 4], strict=False
+    ):
         for obs, obs_sh in zip(
-            [e0, e1, e2, e3, x0, x1, x2, x3, c2, [x0, x2, x3]], [1] * 8 + [4, 3]
+            [e0, e1, e2, e3, x0, x1, x2, x3, c2, [x0, x2, x3]],
+            [1] * 8 + [4, 3],
+            strict=False,
         ):
             for px_agg in ["mean", "average", "min"]:
                 np.testing.assert_allclose(

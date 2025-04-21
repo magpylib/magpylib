@@ -3,9 +3,10 @@
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-positional-arguments
+from __future__ import annotations
 
 import inspect
-from functools import lru_cache
+from functools import cache
 
 import numpy as np
 
@@ -51,7 +52,7 @@ SIZE_FACTORS_TO_PLOTLY = {
 }
 
 
-@lru_cache(maxsize=None)  # Cache all results
+@cache  # Cache all results
 def match_args(ttype: str):
     """
     Return named arguments of a Plotly graph object function.
@@ -98,7 +99,7 @@ def apply_fig_ranges(fig, ranges_rc, labels_rc, apply2d=True):
     """
     for rc, ranges in ranges_rc.items():
         row, col = rc
-        labels = labels_rc.get(rc, {k: "" for k in "xyz"})
+        labels = labels_rc.get(rc, dict.fromkeys("xyz", ""))
         kwargs = {
             **{
                 f"{k}axis": {
@@ -108,7 +109,7 @@ def apply_fig_ranges(fig, ranges_rc, labels_rc, apply2d=True):
                 }
                 for i, k in enumerate("xyz")
             },
-            "aspectratio": {k: 1 for k in "xyz"},
+            "aspectratio": dict.fromkeys("xyz", 1),
             "aspectmode": "manual",
             "camera_eye": {"x": 1, "y": -1.5, "z": 1.4},
         }

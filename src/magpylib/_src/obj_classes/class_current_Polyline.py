@@ -2,6 +2,8 @@
 
 """Polyline current class code"""
 
+from __future__ import annotations
+
 import warnings
 
 from magpylib._src.display.traces_core import make_Polyline

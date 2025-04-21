@@ -4,11 +4,11 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-positional-arguments
+from __future__ import annotations
 
 import numpy as np
 from scipy.constants import mu_0 as MU0
-from scipy.special import ellipeinc
-from scipy.special import ellipkinc
+from scipy.special import ellipeinc, ellipkinc
 
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.special_el3 import el3_angle
@@ -2285,7 +2285,7 @@ def magnet_cylinder_segment_Hfield(
     ]
 
     # calling case functions with respective masked arguments
-    for cid, cfkt, cargs in zip(case_id, case_fkt, case_args):
+    for cid, cfkt, cargs in zip(case_id, case_fkt, case_args, strict=False):
         mask = cases == cid
         if any(mask):
             result[mask] = cfkt(*[allargs[aid][mask] for aid in cargs])
@@ -2458,7 +2458,7 @@ def BHJM_cylinder_segment(
         return BHJM
 
     raise ValueError(  # pragma: no cover
-        "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"
+        f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
     )
 
     # return convert_HBMJ(

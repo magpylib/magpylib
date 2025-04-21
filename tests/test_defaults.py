@@ -1,10 +1,14 @@
+from __future__ import annotations
+
 import pytest
 
 import magpylib as magpy
 from magpylib._src.defaults.defaults_classes import DefaultSettings
-from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
-from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
-from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
+from magpylib._src.defaults.defaults_utility import (
+    ALLOWED_LINESTYLES,
+    ALLOWED_SYMBOLS,
+    SUPPORTED_PLOTTING_BACKENDS,
+)
 from magpylib._src.style import DisplayStyle
 
 bad_inputs = {

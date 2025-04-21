@@ -1,4 +1,5 @@
 # pylint: disable=too-many-positional-arguments
+from __future__ import annotations
 
 import math as m
 
@@ -129,7 +130,9 @@ def cel(kcv: np.ndarray, pv: np.ndarray, cv: np.ndarray, sv: np.ndarray) -> np.n
     n_input = len(kcv)
 
     if n_input < 10:
-        return np.array([cel0(kc, p, c, s) for kc, p, c, s in zip(kcv, pv, cv, sv)])
+        return np.array(
+            [cel0(kc, p, c, s) for kc, p, c, s in zip(kcv, pv, cv, sv, strict=False)]
+        )
 
     return celv(kcv, pv, cv, sv)
 

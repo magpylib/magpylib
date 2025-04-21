@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import unittest
 
 import numpy as np
@@ -6,9 +8,7 @@ import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_observers
-from magpylib._src.utility import check_path_format
-from magpylib._src.utility import format_obj_input
-from magpylib._src.utility import format_src_inputs
+from magpylib._src.utility import check_path_format, format_obj_input, format_src_inputs
 
 GETBH_KWARGS = {
     "sumup": False,

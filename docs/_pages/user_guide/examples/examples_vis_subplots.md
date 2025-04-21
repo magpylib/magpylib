@@ -16,7 +16,9 @@ kernelspec:
 
 # Subplots
 
-It is very illustrative to combine 2D and 3D subplots when viewing the field along paths. Consider the following system of a sensor and a magnet, both endowed with paths.
+It is very illustrative to combine 2D and 3D subplots when viewing the field
+along paths. Consider the following system of a sensor and a magnet, both
+endowed with paths.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -37,11 +39,14 @@ sens = magpy.Sensor(
 )
 ```
 
-In the following, we demonstrate various ways how to generate 2D/3D subplot combinations for this system.
+In the following, we demonstrate various ways how to generate 2D/3D subplot
+combinations for this system.
 
 # Plotting canvas with own figure
 
-Customization is best done by adding the [Magpylib 3D-model](guide-graphics-show) to your own figure using the `canvas` kwarg.
+Customization is best done by adding the
+[Magpylib 3D-model](guide-graphics-show) to your own figure using the `canvas`
+kwarg.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -61,12 +66,16 @@ magpy.show(sens, cyl, canvas=ax2)
 plt.show()
 ```
 
-How to add and modify subplots in all three supported backends is demonstrated in the [canvas documentation](guide-graphics-canvas). It is also possible to customize the Magpylib 3D output by returning and editing the respective canvas using the `return_fig` kwarg, see [return figures](guide-graphics-return_fig).
-
+How to add and modify subplots in all three supported backends is demonstrated
+in the [canvas documentation](guide-graphics-canvas). It is also possible to
+customize the Magpylib 3D output by returning and editing the respective canvas
+using the `return_fig` kwarg, see [return figures](guide-graphics-return_fig).
 
 # Built-in subplots
 
-For maximal efficiency, Magpylib offers auto-generated subplots of 3D models and the field along paths by providing the `show` function with proper input dictionaries.
+For maximal efficiency, Magpylib offers auto-generated subplots of 3D models and
+the field along paths by providing the `show` function with proper input
+dictionaries.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -78,11 +87,13 @@ magpy.show(
 )
 ```
 
-Detailed information on built-in subplots is provided in the [user guide](guide-graphics-subplots).
+Detailed information on built-in subplots is provided in the
+[user guide](guide-graphics-subplots).
 
 # show_context
 
-With a built-in context manager this functionality can be accessed with maximal ease
+With a built-in context manager this functionality can be accessed with maximal
+ease
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed

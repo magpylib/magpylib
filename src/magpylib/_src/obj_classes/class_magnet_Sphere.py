@@ -2,6 +2,8 @@
 
 """Magnet Sphere class code"""
 
+from __future__ import annotations
+
 from magpylib._src.display.traces_core import make_Sphere
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.input_checks import check_format_input_scalar

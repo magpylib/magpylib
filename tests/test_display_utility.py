@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from unittest.mock import patch
 
 import matplotlib.pyplot as plt
@@ -7,8 +9,10 @@ import pytest
 import pyvista
 
 import magpylib as magpy
-from magpylib._src.display.traces_utility import draw_arrow_from_vertices
-from magpylib._src.display.traces_utility import merge_scatter3d
+from magpylib._src.display.traces_utility import (
+    draw_arrow_from_vertices,
+    merge_scatter3d,
+)
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 

@@ -1,4 +1,6 @@
 # here all core functions should be tested properly - ideally against FEM
+from __future__ import annotations
+
 import numpy as np
 
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_Bfield

@@ -2,6 +2,8 @@
 
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-branches
+from __future__ import annotations
+
 import numpy as np
 
 from magpylib._src.display.display import show
@@ -48,22 +50,22 @@ class BaseDisplayRepr:
         lines = [f"{self!r}"]
         for k in list(dict.fromkeys(list(UNITS) + list(params))):
             if not k.startswith("_") and k in params and k not in exclude:
-                unit = UNITS.get(k, None)
+                unit = UNITS.get(k)
                 unit_str = f" {unit}" if unit else ""
                 if k == "position":
-                    val = getattr(self, "_position")
+                    val = self._position
                     if val.shape[0] != 1:
                         lines.append(f"  • path length: {val.shape[0]}")
                         k = f"{k} (last)"
                     val = f"{val[-1]}"
                 elif k == "orientation":
-                    val = getattr(self, "_orientation")
+                    val = self._orientation
                     val = val.as_rotvec(degrees=True)
                     if len(val) != 1:
                         k = f"{k} (last)"
                     val = f"{val[-1]}"
                 elif k == "pixel":
-                    val = getattr(self, "pixel")
+                    val = self.pixel
                     if val is not None:
                         px_shape = val.shape[:-1]
                         val_str = f"{int(np.prod(px_shape))}"
@@ -73,7 +75,7 @@ class BaseDisplayRepr:
                 elif k == "status_disconnected_data":
                     val = getattr(self, k)
                     if val is not None:
-                        val = f"{len(val)} part{'s'[:len(val)^1]}"
+                        val = f"{len(val)} part{'s'[: len(val) ^ 1]}"
                 elif isinstance(getattr(self, k), (list, tuple, np.ndarray)):
                     val = np.array(getattr(self, k))
                     if np.prod(val.shape) > 4:
@@ -105,11 +107,11 @@ class BaseDisplayRepr:
 
     def _repr_html_(self):
         lines = self._get_description(exclude=("style", "field_func"))
-        return f"""<pre>{'<br>'.join(lines)}</pre>"""
+        return f"""<pre>{"<br>".join(lines)}</pre>"""
 
     def __repr__(self) -> str:
         name = getattr(self, "name", None)
         if name is None and hasattr(self, "style"):
-            name = getattr(getattr(self, "style"), "label", None)
+            name = getattr(self.style, "label", None)
         name_str = "" if name is None else f", label={name!r}"
         return f"{type(self).__name__}(id={id(self)!r}{name_str})"

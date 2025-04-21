@@ -49,26 +49,32 @@ level4(getB_from_sensor, getH_from_sensor): <--- USER INTERFACE
 
 level5(sens.getB, sens.getH): <--- USER INTERFACE
 """
+
+from __future__ import annotations
+
 import numbers
 import warnings
+from collections.abc import Callable
 from itertools import product
-from typing import Callable
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.exceptions import MagpylibMissingInput
-from magpylib._src.input_checks import check_dimensions
-from magpylib._src.input_checks import check_excitations
-from magpylib._src.input_checks import check_format_input_observers
-from magpylib._src.input_checks import check_format_pixel_agg
-from magpylib._src.input_checks import check_getBH_output_type
-from magpylib._src.utility import check_static_sensor_orient
-from magpylib._src.utility import format_obj_input
-from magpylib._src.utility import format_src_inputs
-from magpylib._src.utility import get_registered_sources
-from magpylib._src.utility import has_parameter
+from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibMissingInput
+from magpylib._src.input_checks import (
+    check_dimensions,
+    check_excitations,
+    check_format_input_observers,
+    check_format_pixel_agg,
+    check_getBH_output_type,
+)
+from magpylib._src.utility import (
+    check_static_sensor_orient,
+    format_obj_input,
+    format_src_inputs,
+    get_registered_sources,
+    has_parameter,
+)
 
 
 def tile_group_property(group: list, n_pp: int, prop_name: str):
@@ -279,11 +285,13 @@ def getBH_level2(
 
     # objects to tile up and reset below
     mask_reset = [max_path_len != pl for pl in path_lengths]
-    reset_obj = [obj for obj, mask in zip(obj_list, mask_reset) if mask]
-    reset_obj_m0 = [pl for pl, mask in zip(path_lengths, mask_reset) if mask]
+    reset_obj = [obj for obj, mask in zip(obj_list, mask_reset, strict=False) if mask]
+    reset_obj_m0 = [
+        pl for pl, mask in zip(path_lengths, mask_reset, strict=False) if mask
+    ]
 
     if max_path_len > 1:
-        for obj, m0 in zip(reset_obj, reset_obj_m0):
+        for obj, m0 in zip(reset_obj, reset_obj_m0, strict=False):
             # length to be tiled
             m_tile = max_path_len - m0
             # tile up position
@@ -306,7 +314,7 @@ def getBH_level2(
                 else r.apply(sens.pixel.reshape(-1, 3))
             )
             + p
-            for r, p in zip(sens._orientation, sens._position)
+            for r, p in zip(sens._orientation, sens._position, strict=False)
         ]
         for sens in sensors
     ]
@@ -403,7 +411,7 @@ def getBH_level2(
         B = np.concatenate(Bagg, axis=2)
 
     # reset tiled objects
-    for obj, m0 in zip(reset_obj, reset_obj_m0):
+    for obj, m0 in zip(reset_obj, reset_obj_m0, strict=False):
         obj._position = obj._position[:m0]
         obj._orientation = obj._orientation[:m0]
 
@@ -520,7 +528,7 @@ def getBH_dict_level2(
                 val = np.array(val, dtype=float)
         except TypeError as err:
             raise MagpylibBadUserInput(
-                f"{key} input must be array-like.\n" f"Instead received {val}"
+                f"{key} input must be array-like.\nInstead received {val}"
             ) from err
         expected_dim = field_func_kwargs_ndim.get(key, 1)
         if val.ndim == expected_dim or ragged_seq[key]:

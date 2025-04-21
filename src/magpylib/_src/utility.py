@@ -3,12 +3,13 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
 # import numbers
+from __future__ import annotations
+
+from collections.abc import Callable, Sequence
 from contextlib import contextmanager
-from functools import lru_cache
+from functools import cache
 from inspect import signature
 from math import log10
-from typing import Callable
-from typing import Sequence
 
 import numpy as np
 
@@ -52,7 +53,7 @@ def wrong_obj_msg(*objs, allow="sources"):
         msg += "\n" + ALLOWED_SENSORS_MSG
     if objs:
         obj = objs[0]
-        msg += f"\nreceived {obj!r} of type {type(obj).__name__!r} instead." ""
+        msg += f"\nreceived {obj!r} of type {type(obj).__name__!r} instead."
     return msg
 
 
@@ -79,20 +80,19 @@ def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> 
     from magpylib._src.obj_classes.class_Sensor import Sensor
 
     obj_list = []
-    flatten_collection = not "collections" in allow.split("+")
+    flatten_collection = "collections" not in allow.split("+")
     for obj in objects:
         try:
             if isinstance(obj, (BaseSource, Sensor)):
                 obj_list += [obj]
+            elif flatten_collection or isinstance(obj, (list, tuple)):
+                obj_list += format_obj_input(
+                    *obj,
+                    allow=allow,
+                    warn=warn,
+                )  # recursive flattening
             else:
-                if flatten_collection or isinstance(obj, (list, tuple)):
-                    obj_list += format_obj_input(
-                        *obj,
-                        allow=allow,
-                        warn=warn,
-                    )  # recursive flattening
-                else:
-                    obj_list += [obj]
+                obj_list += [obj]
         except Exception as error:
             raise MagpylibBadUserInput(wrong_obj_msg(obj, allow=allow)) from error
     obj_list = filter_objects(obj_list, allow=allow, warn=False)
@@ -212,9 +212,8 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
     for obj in obj_list:
         if isinstance(obj, allowed_classes):
             new_list += [obj]
-        else:
-            if warn:
-                print(f"Warning, cannot add {obj!r} to Collection.")
+        elif warn:
+            print(f"Warning, cannot add {obj!r} to Collection.")
     return new_list
 
 
@@ -241,7 +240,7 @@ _UNIT_PREFIX = {
 _UNIT_PREFIX_REVERSED = {v: k for k, v in _UNIT_PREFIX.items()}
 
 
-@lru_cache(maxsize=None)
+@cache
 def get_unit_factor(unit_input, *, target_unit, deci_centi=True):
     """return unit factor based on input and target unit"""
     if unit_input is None or unit_input == target_unit:
@@ -295,7 +294,7 @@ def unit_prefix(number, unit="", precision=3, char_between="", as_tuple=False) -
 
     if prefix == "":
         digits = 0
-    new_number_str = f"{number / 10 ** digits:.{precision}g}"
+    new_number_str = f"{number / 10**digits:.{precision}g}"
     res = (new_number_str, char_between, prefix, unit)
     if as_tuple:
         return res
@@ -322,7 +321,7 @@ def add_iteration_suffix(name):
         midchar = ""
         n = m.group()
         endstr = -len(n)
-    name = f"{name[:endstr]}{midchar}{int(n)+1:0{len(n)}}"
+    name = f"{name[:endstr]}{midchar}{int(n) + 1:0{len(n)}}"
     return name
 
 
@@ -379,14 +378,16 @@ def get_subclasses(cls, recursive=False):
 def get_registered_sources():
     """Return all registered sources"""
     # pylint: disable=import-outside-toplevel
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+    from magpylib._src.obj_classes.class_BaseExcitations import (
+        BaseCurrent,
+        BaseMagnet,
+        BaseSource,
+    )
 
     return {
         k: v
         for k, v in get_subclasses(BaseSource, recursive=True).items()
-        if not v in (BaseCurrent, BaseMagnet, BaseSource)
+        if v not in (BaseCurrent, BaseMagnet, BaseSource)
     }
 
 
@@ -416,8 +417,7 @@ def open_animation(filepath, embed=True):
 
             display(IPyImage(data=filepath, embed=embed))
         elif filepath.endswith(".mp4"):
-            from IPython.display import Video
-            from IPython.display import display
+            from IPython.display import Video, display
 
             display(Video(data=filepath, embed=embed))
         else:  # pragma: no cover
@@ -428,7 +428,7 @@ def open_animation(filepath, embed=True):
         webbrowser.open(filepath)
 
 
-@lru_cache(maxsize=None)
+@cache
 def has_parameter(func: Callable, param_name: str) -> bool:
     """Check if input function has a specific parameter"""
     sig = signature(func)
@@ -474,12 +474,14 @@ def merge_dicts_with_conflict_check(objs, *, target, identifiers, unique_fields)
     for obj in objs:
         key_dict = {k: obj[k] for k in identifiers}
         key = tuple(key_dict.values())
-        tracker_previous = tracker.get(key, None)
+        tracker_previous = tracker.get(key)
         tracker_actual = tuple(obj[field] for field in unique_fields)
         if key in tracker and tracker_previous != tracker_actual:
             diff = [
                 f"{f!r} first got {a!r} then {t!r}"
-                for f, a, t in zip(unique_fields, tracker_actual, tracker_previous)
+                for f, a, t in zip(
+                    unique_fields, tracker_actual, tracker_previous, strict=False
+                )
                 if a != t
             ]
             raise ValueError(

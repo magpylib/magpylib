@@ -1,8 +1,12 @@
-from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
-from magpylib._src.defaults.defaults_utility import MagicProperties
-from magpylib._src.defaults.defaults_utility import color_validator
-from magpylib._src.defaults.defaults_utility import get_defaults_dict
-from magpylib._src.defaults.defaults_utility import validate_property_class
+from __future__ import annotations
+
+from magpylib._src.defaults.defaults_utility import (
+    SUPPORTED_PLOTTING_BACKENDS,
+    MagicProperties,
+    color_validator,
+    get_defaults_dict,
+    validate_property_class,
+)
 from magpylib._src.style import DisplayStyle
 
 
@@ -91,7 +95,7 @@ class Display(MagicProperties):
         assert val is None or val in backends, (
             f"the `backend` property of {type(self).__name__} must be one of"
             f"{backends}"
-            f" but received {repr(val)} instead"
+            f" but received {val!r} instead"
         )
         self._backend = val
 
@@ -141,9 +145,9 @@ class Display(MagicProperties):
 
     @autosizefactor.setter
     def autosizefactor(self, val):
-        assert val is None or isinstance(val, (int, float)) and val > 0, (
+        assert val is None or (isinstance(val, (int, float)) and val > 0), (
             f"the `autosizefactor` property of {type(self).__name__} must be a strictly positive"
-            f" number but received {repr(val)} instead"
+            f" number but received {val!r} instead"
         )
         self._autosizefactor = val
 
@@ -193,9 +197,9 @@ class Animation(MagicProperties):
 
     @maxfps.setter
     def maxfps(self, val):
-        assert val is None or isinstance(val, int) and val > 0, (
+        assert val is None or (isinstance(val, int) and val > 0), (
             f"The `maxfps` property of {type(self).__name__} must be a strictly positive"
-            f" integer but received {repr(val)} instead."
+            f" integer but received {val!r} instead."
         )
         self._maxfps = val
 
@@ -206,9 +210,9 @@ class Animation(MagicProperties):
 
     @fps.setter
     def fps(self, val):
-        assert val is None or isinstance(val, int) and val > 0, (
+        assert val is None or (isinstance(val, int) and val > 0), (
             f"The `fps` property of {type(self).__name__} must be a strictly positive"
-            f" integer but received {repr(val)} instead."
+            f" integer but received {val!r} instead."
         )
         self._fps = val
 
@@ -219,9 +223,9 @@ class Animation(MagicProperties):
 
     @maxframes.setter
     def maxframes(self, val):
-        assert val is None or isinstance(val, int) and val > 0, (
+        assert val is None or (isinstance(val, int) and val > 0), (
             f"The `maxframes` property of {type(self).__name__} must be a strictly positive"
-            f" integer but received {repr(val)} instead."
+            f" integer but received {val!r} instead."
         )
         self._maxframes = val
 
@@ -232,9 +236,9 @@ class Animation(MagicProperties):
 
     @time.setter
     def time(self, val):
-        assert val is None or isinstance(val, int) and val > 0, (
+        assert val is None or (isinstance(val, int) and val > 0), (
             f"The `time` property of {type(self).__name__} must be a strictly positive"
-            f" integer but received {repr(val)} instead."
+            f" integer but received {val!r} instead."
         )
         self._time = val
 
@@ -247,7 +251,7 @@ class Animation(MagicProperties):
     def slider(self, val):
         assert val is None or isinstance(val, bool), (
             f"The `slider` property of {type(self).__name__} must be a either `True` or `False`"
-            f" but received {repr(val)} instead."
+            f" but received {val!r} instead."
         )
         self._slider = val
 
@@ -264,7 +268,7 @@ class Animation(MagicProperties):
             assert val is None or valid, (
                 f"The `output` property of {type(self).__name__} must be a either `mp4` or `gif` "
                 "or a valid path ending with `.mp4` or `.gif`"
-                f" but received {repr(val)} instead."
+                f" but received {val!r} instead."
             )
         self._output = val
 

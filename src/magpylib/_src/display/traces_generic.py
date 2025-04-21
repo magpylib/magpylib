@@ -6,37 +6,42 @@
 # pylint: disable=too-many-nested-blocks
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-positional-arguments
+from __future__ import annotations
 
 import numbers
 import warnings
 from collections import Counter
-from itertools import chain
-from itertools import cycle
-from typing import Tuple
+from itertools import chain, cycle
 
 import numpy as np
 
 import magpylib as magpy
 from magpylib._src.defaults.defaults_classes import default_settings
-from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
-from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
-from magpylib._src.defaults.defaults_utility import linearize_dict
-from magpylib._src.display.traces_utility import draw_arrowed_line
-from magpylib._src.display.traces_utility import get_legend_label
-from magpylib._src.display.traces_utility import get_objects_props_by_row_col
-from magpylib._src.display.traces_utility import get_rot_pos_from_path
-from magpylib._src.display.traces_utility import get_scene_ranges
-from magpylib._src.display.traces_utility import getColorscale
-from magpylib._src.display.traces_utility import getIntensity
-from magpylib._src.display.traces_utility import group_traces
-from magpylib._src.display.traces_utility import place_and_orient_model3d
-from magpylib._src.display.traces_utility import rescale_traces
-from magpylib._src.display.traces_utility import slice_mesh_from_colorscale
+from magpylib._src.defaults.defaults_utility import (
+    ALLOWED_LINESTYLES,
+    ALLOWED_SYMBOLS,
+    linearize_dict,
+)
+from magpylib._src.display.traces_utility import (
+    draw_arrowed_line,
+    get_legend_label,
+    get_objects_props_by_row_col,
+    get_rot_pos_from_path,
+    get_scene_ranges,
+    getColorscale,
+    getIntensity,
+    group_traces,
+    place_and_orient_model3d,
+    rescale_traces,
+    slice_mesh_from_colorscale,
+)
 from magpylib._src.style import DefaultMarkers
-from magpylib._src.utility import format_obj_input
-from magpylib._src.utility import get_unit_factor
-from magpylib._src.utility import style_temp_edit
-from magpylib._src.utility import unit_prefix
+from magpylib._src.utility import (
+    format_obj_input,
+    get_unit_factor,
+    style_temp_edit,
+    unit_prefix,
+)
 
 
 class MagpyMarkers:
@@ -231,7 +236,9 @@ def get_trace2D_dict(
     unit = (
         units_polarization
         if field_str in "BJ"
-        else units_magnetization if field_str in "HM" else ""
+        else units_magnetization
+        if field_str in "HM"
+        else ""
     )
     trace = {
         "mode": "lines+markers",
@@ -566,7 +573,7 @@ def get_generic_traces3D(
         temp_rot_traces = []
         name_suff = tr.pop("name_suffix", None)
         name = tr.get("name", "") if legendtext is None else legendtext
-        for orient, pos in zip(orientations, positions):
+        for orient, pos in zip(orientations, positions, strict=False):
             tr1 = place_and_orient_model3d(tr, orientation=orient, position=pos)
             if name_suff is not None:
                 tr1["name"] = f"{name}{name_suff}"
@@ -599,7 +606,9 @@ def get_generic_traces3D(
         tr["showlegend"] = (
             showlegend
             if showlegend is not None
-            else tr_showleg if style.legend.show else False
+            else tr_showleg
+            if style.legend.show
+            else False
         )
     out = {"generic": path_traces_generic}
 
@@ -609,7 +618,7 @@ def get_generic_traces3D(
                 continue
             extr.update(extr.updatefunc())  # update before checking backend
             if extr.backend == extra_backend:
-                for orient, pos in zip(orientations, positions):
+                for orient, pos in zip(orientations, positions, strict=False):
                     tr_non_generic = {
                         "model3d": extr,
                         "position": pos,
@@ -621,7 +630,9 @@ def get_generic_traces3D(
                             "showlegend": (
                                 showlegend
                                 if showlegend is not None
-                                else None if style.legend.show else False
+                                else None
+                                if style.legend.show
+                                else False
                             ),
                             "name": legendtext if legendtext else legend_label,
                             "row": row,
@@ -781,7 +792,7 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
     return traces_dict, extra_backend_traces
 
 
-def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> Tuple:
+def draw_frame(objs, *, colorsequence, rc_params, style_kwargs, **kwargs) -> tuple:
     """
     Creates traces from input `objs` and provided parameters, updates the size of objects like
     Sensors and Dipoles in `kwargs` depending on the canvas size.
@@ -900,7 +911,7 @@ def get_frames(
         if animation:
             style_kwargs["style_path_frames"] = [ind]
             title = "Animation 3D - " if title is None else title
-            title_str = f"""{title}path index: {ind+1:0{exp}d}"""
+            title_str = f"""{title}path index: {ind + 1:0{exp}d}"""
         traces, extra_backend_traces, rc_params_temp = draw_frame(
             objs,
             colorsequence=colorsequence,
@@ -924,7 +935,7 @@ def get_frames(
     traces = [t for frame in frames for t in frame["data"]]
     zoom = {rc: v["zoom"] for rc, v in rc_params.items()}
     ranges_rc = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
-    labels_rc = {(1, 1): {k: "" for k in "xyz"}}
+    labels_rc = {(1, 1): dict.fromkeys("xyz", "")}
     scale_factors_rc = {}
     for rc, params in rc_params.items():
         units_length = params["units_length"]

@@ -3,6 +3,7 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-positional-arguments
+from __future__ import annotations
 
 import inspect
 import numbers
@@ -13,10 +14,8 @@ from scipy.spatial.transform import Rotation
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
-from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.exceptions import MagpylibMissingInput
-from magpylib._src.utility import format_obj_input
-from magpylib._src.utility import wrong_obj_msg
+from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibMissingInput
+from magpylib._src.utility import format_obj_input, wrong_obj_msg
 
 # pylint: disable=no-member
 
@@ -61,11 +60,11 @@ def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, length=None, 
     if inp.ndim in dims:
         if length is None:
             if inp.shape[-1] == shape_m1:
-                return None
+                return
             if shape_m1 == "any":
-                return None
+                return
         elif len(inp) == length:
-            return None
+            return
     raise MagpylibBadUserInput(msg)
 
 
@@ -120,8 +119,7 @@ def check_field_input(inp):
     allowed = tuple("BHMJ")
     if not (isinstance(inp, str) and inp in allowed):
         raise MagpylibBadUserInput(
-            f"`field` input can only be one of {allowed}.\n"
-            f"Instead received {inp!r}."
+            f"`field` input can only be one of {allowed}.\nInstead received {inp!r}."
         )
 
 
@@ -131,7 +129,7 @@ def validate_field_func(val):
     - input and output shape must match
     """
     if val is None:
-        return None
+        return
 
     if not callable(val):
         raise MagpylibBadUserInput(
@@ -164,7 +162,7 @@ def validate_field_func(val):
                     "(2,3)"
                 )
 
-    return None
+    return
 
 
 #################################################################
@@ -288,8 +286,7 @@ def check_format_input_scalar(
             return None
 
     ERR_MSG = (
-        f"Input parameter `{sig_name}` must be {sig_type}.\n"
-        f"Instead received {inp!r}."
+        f"Input parameter `{sig_name}` must be {sig_type}.\nInstead received {inp!r}."
     )
 
     if not isinstance(inp, numbers.Number):
@@ -376,7 +373,7 @@ def check_format_input_vector2(
         inp,
         f"Input parameter `{param_name}` must contain only float compatible entries.\n",
     )
-    for d1, d2 in zip(inp.shape, shape):
+    for d1, d2 in zip(inp.shape, shape, strict=False):
         if d2 is not None:
             if d1 != d2:
                 raise ValueError(f"Input parameter `{param_name}` has bad shape.")
@@ -448,7 +445,7 @@ def check_format_input_backend(inp):
     if inp in backends:
         return inp
     raise MagpylibBadUserInput(
-        f"Input parameter `backend` must be one of `{backends+[None]}`."
+        f"Input parameter `backend` must be one of `{backends + [None]}`."
         f"\nInstead received {inp!r}."
     )
 

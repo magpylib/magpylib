@@ -2,11 +2,13 @@
 The `magpylib.magnet` subpackage contains all magnet classes.
 """
 
+from __future__ import annotations
+
 __all__ = [
     "Cuboid",
     "Cylinder",
-    "Sphere",
     "CylinderSegment",
+    "Sphere",
     "Tetrahedron",
     "TriangularMesh",
 ]

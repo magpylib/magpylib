@@ -2,6 +2,7 @@
 
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-positional-arguments
+from __future__ import annotations
 
 import warnings
 
@@ -9,13 +10,14 @@ import numpy as np
 
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_wrap_BH import getBH_level2
-from magpylib._src.input_checks import check_format_input_scalar
-from magpylib._src.input_checks import check_format_input_vector
-from magpylib._src.input_checks import validate_field_func
+from magpylib._src.input_checks import (
+    check_format_input_scalar,
+    check_format_input_vector,
+    validate_field_func,
+)
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.style import CurrentStyle
-from magpylib._src.style import MagnetStyle
+from magpylib._src.style import CurrentStyle, MagnetStyle
 from magpylib._src.utility import format_star_input
 
 

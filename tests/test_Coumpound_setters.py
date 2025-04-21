@@ -1,10 +1,11 @@
 # pylint: disable=eval-used
 # pylint: disable=unused-import
+from __future__ import annotations
+
 import os
 
 import numpy as np
 import pytest
-from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.display.traces_base import make_Prism
@@ -138,6 +139,7 @@ COMPOUND_DATA = np.load(file, allow_pickle=True).item()
         zip(
             COMPOUND_DATA["setters_inputs"],
             COMPOUND_DATA["pos_orient_as_matrix_expected"],
+            strict=False,
         )
     ),
     ids=COMPOUND_DATA["test_names"],
@@ -146,7 +148,9 @@ def test_compound_setters(setters_inputs, pos_orient_as_matrix_expected):
     """testing of compound object setters and the effects on its children."""
     c1 = create_compound_set(**setters_inputs)
     pos_orient = get_pos_orient_from_collection(c1)
-    for ind, (po, po_exp) in enumerate(zip(pos_orient, pos_orient_as_matrix_expected)):
+    for ind, (po, po_exp) in enumerate(
+        zip(pos_orient, pos_orient_as_matrix_expected, strict=False)
+    ):
         obj_str = "child"
         if ind == 0:  # first ind is (position, orientation.as_matrix()) of collection
             obj_str = "Collection"
@@ -154,5 +158,5 @@ def test_compound_setters(setters_inputs, pos_orient_as_matrix_expected):
         pos_exp, orient_exp = po_exp
         err_msg = f"{obj_str} position matching failed"
         np.testing.assert_almost_equal(pos, pos_exp, err_msg=err_msg)
-        err_msg = f"{obj_str}{ind if ind!=0 else ''} orientation matching failed"
+        err_msg = f"{obj_str}{ind if ind != 0 else ''} orientation matching failed"
         np.testing.assert_almost_equal(orient, orient_exp, err_msg=err_msg)

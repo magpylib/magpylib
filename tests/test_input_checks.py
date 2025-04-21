@@ -1,11 +1,15 @@
+from __future__ import annotations
+
 import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
-from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.exceptions import MagpylibDeprecationWarning
-from magpylib._src.exceptions import MagpylibMissingInput
+from magpylib._src.exceptions import (
+    MagpylibBadUserInput,
+    MagpylibDeprecationWarning,
+    MagpylibMissingInput,
+)
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 
 # pylint: disable=unnecessary-lambda-assignment

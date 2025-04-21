@@ -3,13 +3,14 @@ Implementations of analytical expressions for the magnetic field of
 a circular current loop. Computation details in function docstrings.
 """
 
+from __future__ import annotations
+
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
 from magpylib._src.fields.special_cel import cel_iter
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import cart_to_cyl_coordinates
-from magpylib._src.utility import cyl_field_to_cart
+from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
 
 
 # CORE
@@ -152,5 +153,5 @@ def BHJM_circle(
         return BHJM * MU0
 
     raise ValueError(  # pragma: no cover
-        "`output_field_type` must be one of ('B', 'H', 'M', 'J'), " f"got {field!r}"
+        f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
     )

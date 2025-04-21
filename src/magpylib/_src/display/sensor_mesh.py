@@ -1,4 +1,5 @@
 # pylint: disable=too-many-positional-arguments
+from __future__ import annotations
 
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
@@ -169,7 +170,7 @@ def get_sensor_mesh(
     show = (center_show, x_show, y_show, z_show)
     for k in ("i", "j", "k", "facecolor"):
         t = []
-        for i, s in zip(indices, show):
+        for i, s in zip(indices, show, strict=False):
             if s:
                 t.extend(trace[k][i[0] : i[1]])
         trace[k] = np.array(t)
