@@ -197,13 +197,13 @@ class TriangularMesh(BaseMagnet):
         """Validate mode argument"""
         accepted_arg_vals = (True, False, "warn", "raise", "ignore", "skip")
         if arg not in accepted_arg_vals:
-            raise ValueError(
+            msg = (
                 f"The `{arg_name}` argument must be one of {accepted_arg_vals}, "
                 f"instead received {arg!r}."
                 f"\nNote that `True` translates to `'warn'` and `False` to `'skip'`"
             )
-        arg = "warn" if arg is True else "skip" if arg is False else arg
-        return arg
+            raise ValueError(msg)
+        return "warn" if arg is True else "skip" if arg is False else arg
 
     def check_open(self, mode="warn"):
         """
@@ -250,7 +250,7 @@ class TriangularMesh(BaseMagnet):
                     "Open edges are stored in the status_open_data property."
                 )
                 if mode == "warn":
-                    warnings.warn(msg)
+                    warnings.warn(msg, stacklevel=2)
                 elif mode == "raise":
                     raise ValueError(msg)
         return self._status_open
@@ -298,7 +298,7 @@ class TriangularMesh(BaseMagnet):
                     "Parts are stored in the status_disconnected_data property."
                 )
                 if mode == "warn":
-                    warnings.warn(msg)
+                    warnings.warn(msg, stacklevel=2)
                 elif mode == "raise":
                     raise ValueError(msg)
         return self._status_disconnected
@@ -347,7 +347,7 @@ class TriangularMesh(BaseMagnet):
                     "Parts are stored in the status_selfintersecting_data property."
                 )
                 if mode == "warn":
-                    warnings.warn(msg)
+                    warnings.warn(msg, stacklevel=2)
                 elif mode == "raise":
                     raise ValueError(msg)
         return self._status_selfintersecting
@@ -390,14 +390,15 @@ class TriangularMesh(BaseMagnet):
             if self._status_open is None:
                 if mode in ["warn", "raise"]:
                     warnings.warn(
-                        f"Unchecked mesh status in {self!r} detected. Now applying check_open()"
+                        f"Unchecked mesh status in {self!r} detected. Now applying check_open()",
+                        stacklevel=2,
                     )
                 self.check_open(mode=mode)
 
             if self._status_open:
                 msg = f"Open mesh in {self!r} detected. reorient_faces() can give bad results."
                 if mode == "warn":
-                    warnings.warn(msg)
+                    warnings.warn(msg, stacklevel=2)
                 elif mode == "raise":
                     raise ValueError(msg)
 
@@ -488,8 +489,7 @@ class TriangularMesh(BaseMagnet):
             if vertices is None
             else calculate_centroid(vertices, faces)
         )
-        barycenter = orientation.apply(centroid) + position
-        return barycenter
+        return orientation.apply(centroid) + position
 
     def _input_check(self, vertices, faces):
         """input checks here ?"""
@@ -498,9 +498,11 @@ class TriangularMesh(BaseMagnet):
         # unique vertices ?
         # do validation checks
         if vertices is None:
-            raise MagpylibMissingInput(f"Parameter `vertices` of {self} must be set.")
+            msg = f"Parameter `vertices` of {self} must be set."
+            raise MagpylibMissingInput(msg)
         if faces is None:
-            raise MagpylibMissingInput(f"Parameter `faces` of {self} must be set.")
+            msg = f"Parameter `faces` of {self} must be set."
+            raise MagpylibMissingInput(msg)
         verts = check_format_input_vector(
             vertices,
             dims=(2,),
@@ -518,9 +520,8 @@ class TriangularMesh(BaseMagnet):
         try:
             verts[trias]
         except IndexError as e:
-            raise IndexError(
-                "Some `faces` indices do not match with `vertices` array"
-            ) from e
+            msg = "Some `faces` indices do not match with `vertices` array"
+            raise IndexError(msg) from e
         return verts, trias
 
     def to_TriangleCollection(self):
@@ -703,15 +704,15 @@ class TriangularMesh(BaseMagnet):
         try:
             import pyvista
         except ImportError as missing_module:  # pragma: no cover
-            raise ModuleNotFoundError(
-                """In order load pyvista Polydata objects, you first need to install pyvista via pip
+            msg = """In order load pyvista Polydata objects, you first need to install pyvista via pip
                 or conda, see https://docs.pyvista.org/getting-started/installation.html"""
-            ) from missing_module
+            raise ModuleNotFoundError(msg) from missing_module
         if not isinstance(polydata, pyvista.core.pointset.PolyData):
-            raise TypeError(
+            msg = (
                 "The `polydata` parameter must be an instance of `pyvista.core.pointset.PolyData`, "
                 f"received {polydata!r} instead"
             )
+            raise TypeError(msg)
         polydata = polydata.triangulate()
         vertices = polydata.points
         faces = polydata.faces.reshape(-1, 4)[:, 1:]
@@ -806,17 +807,19 @@ class TriangularMesh(BaseMagnet):
         -------
         magnet source: `TriangularMesh` object
         """
-        if not isinstance(triangles, (list, Collection)):
-            raise TypeError(
+        if not isinstance(triangles, list | Collection):
+            msg = (
                 "The `triangles` parameter must be a list or Collection of `Triangle` objects, "
                 f"\nreceived type {type(triangles)} instead"
             )
+            raise TypeError(msg)
         for obj in triangles:
             if not isinstance(obj, Triangle):
-                raise TypeError(
+                msg = (
                     "All elements of `triangles` must be `Triangle` objects, "
                     f"\nreceived type {type(obj)} instead"
                 )
+                raise TypeError(msg)
         mesh = np.array([tria.vertices for tria in triangles])
         vertices, tr = np.unique(mesh.reshape((-1, 3)), axis=0, return_inverse=True)
         faces = tr.reshape((-1, 3))

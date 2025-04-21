@@ -85,7 +85,8 @@ class RegisteredBackend:
                 warnings.warn(
                     f"The {backend!r} backend does not support {name!r}, "
                     f"you need to use {supported_str} instead."
-                    f"\nFalling back to: {params}"
+                    f"\nFalling back to: {params}",
+                    stacklevel=2,
                 )
                 kwargs.update(params)
         display_kwargs = {
@@ -120,9 +121,7 @@ class RegisteredBackend:
             **{k[5:]: v for k, v in backend_kwargs.items() if k.startswith("show_")},
         }
         kwargs = {
-            k: v
-            for k, v in kwargs.items()
-            if not (k.startswith("fig") or k.startswith("show"))
+            k: v for k, v in kwargs.items() if not (k.startswith(("fig", "show")))
         }
         data = get_frames(
             objs,
@@ -168,10 +167,10 @@ def infer_backend(canvas):
             backend = "plotly"
     except ImportError:  # pragma: no cover
         pass
-    if isinstance(canvas, (mplAxes, mplFig)):
+    if isinstance(canvas, mplAxes | mplFig):
         backend = "matplotlib"
     elif plotly_available and isinstance(
-        canvas, (plotly.graph_objects.Figure, plotly.graph_objects.FigureWidget)
+        canvas, plotly.graph_objects.Figure | plotly.graph_objects.FigureWidget
     ):
         backend = "plotly"
     else:

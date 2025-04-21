@@ -5,6 +5,7 @@
 # import numbers
 from __future__ import annotations
 
+import warnings
 from collections.abc import Callable, Sequence
 from contextlib import contextmanager
 from functools import cache
@@ -83,9 +84,9 @@ def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> 
     flatten_collection = "collections" not in allow.split("+")
     for obj in objects:
         try:
-            if isinstance(obj, (BaseSource, Sensor)):
+            if isinstance(obj, BaseSource | Sensor):
                 obj_list += [obj]
-            elif flatten_collection or isinstance(obj, (list, tuple)):
+            elif flatten_collection or isinstance(obj, list | tuple):
                 obj_list += format_obj_input(
                     *obj,
                     allow=allow,
@@ -95,8 +96,7 @@ def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> 
                 obj_list += [obj]
         except Exception as error:
             raise MagpylibBadUserInput(wrong_obj_msg(obj, allow=allow)) from error
-    obj_list = filter_objects(obj_list, allow=allow, warn=False)
-    return obj_list
+    return filter_objects(obj_list, allow=allow, warn=False)
 
 
 def format_src_inputs(sources) -> list:
@@ -119,7 +119,7 @@ def format_src_inputs(sources) -> list:
     src_list = []
 
     # if bare source make into list
-    if not isinstance(sources, (list, tuple)):
+    if not isinstance(sources, list | tuple):
         sources = [sources]
 
     if not sources:
@@ -167,7 +167,7 @@ def check_duplicates(obj_list: Sequence) -> list:
             obj_list_new += [src]
 
     if len(obj_list_new) != len(obj_list):
-        print("WARNING: Eliminating duplicates")
+        warnings.warn("Eliminating duplicates", UserWarning, stacklevel=2)
 
     return obj_list_new
 
@@ -213,7 +213,8 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
         if isinstance(obj, allowed_classes):
             new_list += [obj]
         elif warn:
-            print(f"Warning, cannot add {obj!r} to Collection.")
+            msg = f"Warning, cannot add {obj!r} to Collection."
+            warnings.warn(msg, UserWarning, stacklevel=2)
     return new_list
 
 
@@ -259,11 +260,9 @@ def get_unit_factor(unit_input, *, target_unit, deci_centi=True):
 
     if factor_power is None or len(unit_input_str) > 2:
         valid_inputs = [f"{k}{target_unit}" for k in prefs]
-        raise ValueError(
-            f"Invalid unit input ({unit_input!r}), must be one of {valid_inputs}"
-        )
-    factor = 1 / (10**factor_power)
-    return factor
+        msg = f"Invalid unit input ({unit_input!r}), must be one of {valid_inputs}"
+        raise ValueError(msg)
+    return 1 / (10**factor_power)
 
 
 def unit_prefix(number, unit="", precision=3, char_between="", as_tuple=False) -> str:
@@ -321,8 +320,7 @@ def add_iteration_suffix(name):
         midchar = ""
         n = m.group()
         endstr = -len(n)
-    name = f"{name[:endstr]}{midchar}{int(n) + 1:0{len(n)}}"
-    return name
+    return f"{name[:endstr]}{midchar}{int(n) + 1:0{len(n)}}"
 
 
 def cart_to_cyl_coordinates(observer):
@@ -359,9 +357,8 @@ def rec_obj_remover(parent, child):
             parent._children.remove(child)
             parent._update_src_and_sens()
             return True
-        if isinstance(obj, Collection):
-            if rec_obj_remover(obj, child):
-                break
+        if isinstance(obj, Collection) and rec_obj_remover(obj, child):
+            break
     return None
 
 
@@ -421,7 +418,8 @@ def open_animation(filepath, embed=True):
 
             display(Video(data=filepath, embed=embed))
         else:  # pragma: no cover
-            raise TypeError("Filetype not supported, only 'mp4 or 'gif' allowed")
+            msg = "Filetype not supported, only 'mp4 or 'gif' allowed"
+            raise TypeError(msg)
     else:
         import webbrowser
 
@@ -484,9 +482,8 @@ def merge_dicts_with_conflict_check(objs, *, target, identifiers, unique_fields)
                 )
                 if a != t
             ]
-            raise ValueError(
-                f"Conflicting parameters detected for {key_dict}: {', '.join(diff)}."
-            )
+            msg = f"Conflicting parameters detected for {key_dict}: {', '.join(diff)}."
+            raise ValueError(msg)
         tracker[key] = tracker_actual
 
         if key not in merged_dict:

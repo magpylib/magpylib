@@ -13,10 +13,9 @@ import numpy as np
 try:
     import plotly.graph_objects as go
 except ImportError as missing_module:  # pragma: no cover
-    raise ModuleNotFoundError(
-        """In order to use the plotly plotting backend, you need to install plotly via pip or conda,
+    msg = """In order to use the plotly plotting backend, you need to install plotly via pip or conda,
         see https://github.com/plotly/plotly.py"""
-    ) from missing_module
+    raise ModuleNotFoundError(msg) from missing_module
 
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.display.traces_utility import get_scene_ranges
@@ -296,8 +295,8 @@ def display_plotly(
 ):
     """Display objects and paths graphically using the plotly library."""
 
-    fig_kwargs = {} if not fig_kwargs else fig_kwargs
-    show_kwargs = {} if not show_kwargs else show_kwargs
+    fig_kwargs = fig_kwargs if fig_kwargs else {}
+    show_kwargs = show_kwargs if show_kwargs else {}
     show_kwargs = {"renderer": renderer, **show_kwargs}
 
     # only update layout if canvas is not provided

@@ -215,6 +215,5 @@ def BHJM_triangle(
     if field == "H":
         return BHJM / MU0
 
-    raise ValueError(  # pragma: no cover
-        f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
-    )
+    msg = f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
+    raise ValueError(msg)  # pragma: no cover

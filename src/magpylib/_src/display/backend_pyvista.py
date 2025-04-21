@@ -14,10 +14,9 @@ import numpy as np
 try:
     import pyvista as pv
 except ImportError as missing_module:  # pragma: no cover
-    raise ModuleNotFoundError(
-        """In order to use the pyvista plotting backend, you need to install pyvista via pip or
+    msg = """In order to use the pyvista plotting backend, you need to install pyvista via pip or
         conda, see https://docs.pyvista.org/getting-started/installation.html"""
-    ) from missing_module
+    raise ModuleNotFoundError(msg) from missing_module
 
 from matplotlib.colors import LinearSegmentedColormap
 from pyvista.plotting.colors import Color  # pylint: disable=import-error
@@ -177,7 +176,7 @@ def generic_trace_to_pyvista(trace):
                 }
                 marker_size = (
                     marker_size
-                    if isinstance(marker_size, (list, tuple, np.ndarray))
+                    if isinstance(marker_size, list | tuple | np.ndarray)
                     else np.array([marker_size])
                 )
                 for size in np.unique(marker_size):
@@ -191,20 +190,18 @@ def generic_trace_to_pyvista(trace):
                     }
                     traces_pv.append(tr)
     else:  # pragma: no cover
-        raise ValueError(
-            f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
-        )
+        msg = f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
+        raise ValueError(msg)
     showlegend = trace.get("showlegend", False)
     for tr in traces_pv:
         tr["row"] = trace.get("row", 1) - 1
         tr["col"] = trace.get("col", 1) - 1
-        if tr["type"] != "point_labels":
-            if showlegend:
-                showlegend = False  # show only first subtrace
-                if "label" not in tr:
-                    tr["label"] = trace.get("name", "")
-                if leg_title is not None:
-                    tr["label"] += f" ({leg_title})"
+        if tr["type"] != "point_labels" and showlegend:
+            showlegend = False  # show only first subtrace
+            if "label" not in tr:
+                tr["label"] = trace.get("name", "")
+            if leg_title is not None:
+                tr["label"] += f" ({leg_title})"
         if not tr.get("label", ""):
             tr.pop("label", None)
     return traces_pv
@@ -230,8 +227,8 @@ def display_pyvista(
 
     frames = data["frames"]
 
-    fig_kwargs = {} if not fig_kwargs else fig_kwargs
-    show_kwargs = {} if not show_kwargs else show_kwargs
+    fig_kwargs = fig_kwargs if fig_kwargs else {}
+    show_kwargs = show_kwargs if show_kwargs else {}
     show_kwargs = {**show_kwargs}
 
     animation = bool(len(frames) > 1)

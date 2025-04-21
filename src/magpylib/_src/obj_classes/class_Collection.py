@@ -316,7 +316,7 @@ class BaseCollection(BaseDisplayRepr):
         # pylint: disable=protected-access
 
         # allow flat lists as input
-        if len(children) == 1 and isinstance(children[0], (list, tuple)):
+        if len(children) == 1 and isinstance(children[0], list | tuple):
             children = children[0]
 
         # check and format input
@@ -332,19 +332,19 @@ class BaseCollection(BaseDisplayRepr):
             if isinstance(obj, Collection):
                 # no need to check recursively with `collections_all` if obj is already self
                 if obj is self or self in obj.collections_all:
-                    raise MagpylibBadUserInput(
-                        f"Cannot add {obj!r} because a Collection must not reference itself."
-                    )
+                    msg = f"Cannot add {obj!r} because a Collection must not reference itself."
+                    raise MagpylibBadUserInput(msg)
             if obj._parent is None:
                 obj._parent = self
             elif override_parent:
                 obj._parent.remove(obj)
                 obj._parent = self
             else:
-                raise MagpylibBadUserInput(
+                msg = (
                     f"Cannot add {obj!r} to {self!r} because it already has a parent.\n"
                     "Consider using `override_parent=True`."
                 )
+                raise MagpylibBadUserInput(msg)
 
         # set attributes
         self._children += obj_list
@@ -405,7 +405,7 @@ class BaseCollection(BaseDisplayRepr):
         # pylint: disable=protected-access
 
         # allow flat lists as input
-        if len(children) == 1 and isinstance(children[0], (list, tuple)):
+        if len(children) == 1 and isinstance(children[0], list | tuple):
             children = children[0]
 
         # check and format input
@@ -426,14 +426,14 @@ class BaseCollection(BaseDisplayRepr):
                 child._parent = None
             else:
                 if errors == "raise":
-                    raise MagpylibBadUserInput(
-                        f"Cannot find and remove {child} from {self}."
-                    )
+                    msg = f"Cannot find and remove {child} from {self}."
+                    raise MagpylibBadUserInput(msg)
                 if errors != "ignore":
-                    raise MagpylibBadUserInput(
+                    msg = (
                         "Input `errors` must be one of ('raise', 'ignore').\n"
                         f"Instead received {errors}."
                     )
+                    raise MagpylibBadUserInput(msg)
         return self
 
     def set_children_styles(self, arg=None, recursive=True, _validate=True, **kwargs):
@@ -517,10 +517,11 @@ class BaseCollection(BaseDisplayRepr):
         if current_sensors and current_sources:
             sources, sensors = self, self
             if inputs:
-                raise MagpylibBadUserInput(
+                msg = (
                     "Collections with sensors and sources do not allow `collection.getB()` inputs."
                     "Consider using `magpy.getB()` instead."
                 )
+                raise MagpylibBadUserInput(msg)
         # if collection has no sources, *inputs must be the sources
         elif not current_sources:
             sources, sensors = inputs, self

@@ -69,10 +69,7 @@ def path_padding_param(scalar_input: bool, lenop: int, lenip: int, start: int):
 
     # start='auto': apply to all if scalar, append if vector
     if start == "auto":
-        if scalar_input:
-            start = 0
-        else:
-            start = lenop
+        start = 0 if scalar_input else lenop
 
     # numpy convention with negative start indices
     if start < 0:

@@ -102,9 +102,9 @@ def test_animation_warning():
         src.show(canvas=pl, animation=True, backend="pyvista")
 
 
-@pytest.mark.parametrize("is_notebook_result", (True, False))
-@pytest.mark.parametrize("extension", ("mp4", "gif"))
-@pytest.mark.parametrize("filename", (True, False))
+@pytest.mark.parametrize("is_notebook_result", [True, False])
+@pytest.mark.parametrize("extension", ["mp4", "gif"])
+@pytest.mark.parametrize("filename", [True, False])
 def test_pyvista_animation(is_notebook_result, extension, filename):
     """Test pyvista animation"""
     # define sensor and source

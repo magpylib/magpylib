@@ -62,7 +62,7 @@ def get_init_pos_orient_test_data():
     o3 = [(0, 0, 0.1), (0, 0, 0.2)]
     o4 = [(0, 0, 0.1), (0, 0, 0.2), (0, 0, 0.3)]
 
-    init_test_data = [
+    return [
         [p0, o0, p0, (0, 0, 0)],
         [p0, o1, p0, o1],
         [p0, o2, p0, o1],
@@ -75,13 +75,17 @@ def get_init_pos_orient_test_data():
         [p2, o1, p2, [o1] * 2],
         [p2, o2, p2, [o1] * 2],
         [p2, o3, p2, o3],
-        [p2, o4, p2 + [(1, 1, 1)], o4],  # uneven paths
+        [p2, o4, [*p2, (1, 1, 1)], o4],  # uneven paths
     ]
-    return init_test_data
 
 
 @pytest.mark.parametrize(
-    "init_position, init_orientation_rotvec, expected_position, expected_orientation_rotvec",
+    (
+        "init_position",
+        "init_orientation_rotvec",
+        "expected_position",
+        "expected_orientation_rotvec",
+    ),
     get_init_pos_orient_test_data(),
     ids=[f"{ind + 1:02d}" for ind, t in enumerate(get_init_pos_orient_test_data())],
 )
@@ -139,7 +143,7 @@ def get_data_object_setter(inp):
         (P1, O1, p1, O1),
         (P1, O1, p3, [O1] * 3),  # edge-pad
         (P2, O2, p1, O2[1]),  # end-slice
-        (P2, O2, p3, O2 + [(0.3, 0.3, 0.3)]),  # edge-pad
+        (P2, O2, p3, [*O2, (0.3, 0.3, 0.3)]),  # edge-pad
         (P3, O3, p1, O3[2]),  # end-slice
         (P3, O3, p3, O3),
         (P4, O4, p1, O4[3]),  # end-slice
@@ -151,7 +155,7 @@ def get_data_object_setter(inp):
         (P1, O1, P1, o1),
         (P1, O1, [P1] * 3, o3),  # edge-pad
         (P2, O2, P2[1], o1),  # end-slice
-        (P2, O2, P2 + [P2[1]], o3),  # edge-pad
+        (P2, O2, [*P2, P2[1]], o3),  # edge-pad
         (P3, O3, P3[-1], o1),  # end-slice
         (P3, O3, P3, o3),
         (P4, O4, P4[-1], o1),  # end-slice
@@ -163,7 +167,7 @@ def get_data_object_setter(inp):
 
 
 @pytest.mark.parametrize(
-    "init_pos, init_ori, test_pos, test_ori",
+    ("init_pos", "init_ori", "test_pos", "test_ori"),
     get_data_object_setter("pos"),
     ids=[f"{ind + 1:02d}" for ind, _ in enumerate(get_data_object_setter("pos"))],
 )
@@ -185,7 +189,7 @@ def test_BaseGeo_setting_position(
 
 
 @pytest.mark.parametrize(
-    "init_pos, init_ori, test_pos, test_ori",
+    ("init_pos", "init_ori", "test_pos", "test_ori"),
     get_data_object_setter("ori"),
     ids=[f"{ind + 1:02d}" for ind, _ in enumerate(get_data_object_setter("ori"))],
 )
@@ -213,7 +217,7 @@ def test_BaseGeo_setting_orientation(
 
 def get_data_BaseGeo_multianchor_rotation():
     """get test data as dictionaries for multi anchor testing"""
-    data = [
+    return [
         {
             "description": "scalar path - scalar anchor",
             "init_position": (0, 0, 0),
@@ -336,7 +340,6 @@ def get_data_BaseGeo_multianchor_rotation():
             ],
         },
     ]
-    return data
 
 
 @pytest.mark.parametrize(

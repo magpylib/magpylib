@@ -145,9 +145,8 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     def handedness(self, val):
         """Set Sensor handedness in the local object coordinates."""
         if val not in {"right", "left"}:
-            raise MagpylibBadUserInput(
-                "Sensor `handedness` must be either `'right'` or `'left'`"
-            )
+            msg = "Sensor `handedness` must be either `'right'` or `'left'`"
+            raise MagpylibBadUserInput(msg)
         self._handedness = val
 
     def getB(

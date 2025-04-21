@@ -12,7 +12,8 @@ def test_duplicates():
     pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     pm2 = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(1, 2))
     src_list = [pm1, pm2, pm1]
-    src_list_new = check_duplicates(src_list)
+    with pytest.warns(UserWarning):
+        src_list_new = check_duplicates(src_list)
     assert src_list_new == [pm1, pm2], "duplicate elimination failed"
 
 
@@ -22,7 +23,8 @@ def test_filter_objects():
     pm2 = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(1, 2))
     sens = magpy.Sensor()
     src_list = [pm1, pm2, sens]
-    list_new = filter_objects(src_list, allow="sources")
+    with pytest.warns(UserWarning):
+        list_new = filter_objects(src_list, allow="sources")
     assert list_new == [pm1, pm2], "Failed to eliminate sensor"
 
 
@@ -75,7 +77,7 @@ def test_format_getBH_class_inputs():
 
 
 @pytest.mark.parametrize(
-    "name, expected",
+    ("name", "expected"),
     [
         ("col", "col_01"),
         ("col_", "col_01"),

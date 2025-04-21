@@ -195,7 +195,7 @@ DATA = np.load("tests/testdata/testdata_cy_cases.npy", allow_pickle=True).item()
 
 
 @pytest.mark.parametrize(
-    "inputs, H_expected",
+    ("inputs", "H_expected"),
     [[v["inputs"], v["H_expected"]] for v in DATA.values()],
     ids=list(DATA.keys()),
 )

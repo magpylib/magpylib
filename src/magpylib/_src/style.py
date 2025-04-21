@@ -130,7 +130,7 @@ class Line(MagicProperties):
 
     @width.setter
     def width(self, val):
-        assert val is None or (isinstance(val, (int, float)) and val >= 0), (
+        assert val is None or (isinstance(val, int | float) and val >= 0), (
             f"The `width` property of {type(self).__name__} must be a positive number,\n"
             f"but received {val!r} instead."
         )
@@ -242,7 +242,7 @@ class BaseStyle(MagicProperties):
 
     @opacity.setter
     def opacity(self, val):
-        assert val is None or (isinstance(val, (float, int)) and 0 <= val <= 1), (
+        assert val is None or (isinstance(val, float | int) and 0 <= val <= 1), (
             "The `opacity` property must be a value between 0 and 1,\n"
             f"but received {val!r} instead."
         )
@@ -396,7 +396,7 @@ class Model3d(MagicProperties):
     def _validate_data(self, traces, **kwargs):
         if traces is None:
             traces = []
-        elif not isinstance(traces, (list, tuple)):
+        elif not isinstance(traces, list | tuple):
             traces = [traces]
         new_traces = []
         for trace in traces:
@@ -595,7 +595,7 @@ class Trace3d(MagicProperties):
 
     @scale.setter
     def scale(self, val):
-        assert isinstance(val, (int, float)) and val > 0, (
+        assert isinstance(val, int | float) and val > 0, (
             f"The `scale` property of {type(self).__name__} must be a strictly positive number,\n"
             f"but received {val!r} instead."
         )
@@ -627,7 +627,7 @@ class Trace3d(MagicProperties):
 
     @backend.setter
     def backend(self, val):
-        backends = ["generic"] + list(SUPPORTED_PLOTTING_BACKENDS)
+        backends = ["generic", *list(SUPPORTED_PLOTTING_BACKENDS)]
         assert val is None or val in backends, (
             f"The `backend` property of {type(self).__name__} must be one of"
             f"{backends},\n"
@@ -660,7 +660,7 @@ class Trace3d(MagicProperties):
             if not isinstance(test_val, dict):
                 msg = f"but callable returned type {type(test_val)}."
             else:
-                bad_keys = [k for k in test_val.keys() if k not in valid_props]
+                bad_keys = [k for k in test_val if k not in valid_props]
                 if bad_keys:
                     msg = f"but invalid output dictionary keys received: {bad_keys}."
 
@@ -834,7 +834,7 @@ class MagnetizationColor(MagicProperties):
 
     @transition.setter
     def transition(self, val):
-        assert val is None or (isinstance(val, (float, int)) and 0 <= val <= 1), (
+        assert val is None or (isinstance(val, float | int) and 0 <= val <= 1), (
             "color transition must be a value between 0 and 1"
         )
         self._transition = val
@@ -1055,10 +1055,11 @@ class DisconnectedMesh(MagicProperties, MarkerLineProperties):
                     for c in val
                 )
             except TypeError as err:
-                raise ValueError(
+                msg = (
                     f"The `colorsequence` property of {name} must be an "
                     f"iterable of colors but received {val!r} instead"
-                ) from err
+                )
+                raise ValueError(msg) from err
 
         self._colorsequence = val
 
@@ -1193,7 +1194,7 @@ class Orientation(MagicProperties):
 
     @size.setter
     def size(self, val):
-        assert val is None or (isinstance(val, (int, float)) and val >= 0), (
+        assert val is None or (isinstance(val, int | float) and val >= 0), (
             f"The `size` property of {type(self).__name__} must be a positive number,\n"
             f"but received {val!r} instead."
         )
@@ -1218,7 +1219,7 @@ class Orientation(MagicProperties):
 
     @offset.setter
     def offset(self, val):
-        assert val is None or (isinstance(val, (float, int))), (
+        assert val is None or (isinstance(val, float | int)), (
             f"The `offset` property must valid number\nbut received {val!r} instead."
         )
         self._offset = val
@@ -1519,7 +1520,7 @@ class SensorProperties:
 
     @size.setter
     def size(self, val):
-        assert val is None or (isinstance(val, (int, float)) and val >= 0), (
+        assert val is None or (isinstance(val, int | float) and val >= 0), (
             f"The `size` property of {type(self).__name__} must be a positive number,\n"
             f"but received {val!r} instead."
         )
@@ -1674,7 +1675,7 @@ class Pixel(MagicProperties):
 
     @size.setter
     def size(self, val):
-        assert val is None or (isinstance(val, (int, float)) and val >= 0), (
+        assert val is None or (isinstance(val, int | float) and val >= 0), (
             f"the `size` property of {type(self).__name__} must be a positive number"
             f"but received {val!r} instead."
         )
@@ -1851,7 +1852,7 @@ class Arrow(Line):
 
     @size.setter
     def size(self, val):
-        assert val is None or (isinstance(val, (int, float)) and val >= 0), (
+        assert val is None or (isinstance(val, int | float) and val >= 0), (
             f"The `size` property of {type(self).__name__} must be a positive number,\n"
             f"but received {val!r} instead."
         )
@@ -1879,7 +1880,7 @@ class Arrow(Line):
 
     @offset.setter
     def offset(self, val):
-        assert val is None or ((isinstance(val, (float, int))) and 0 <= val <= 1), (
+        assert val is None or ((isinstance(val, float | int)) and 0 <= val <= 1), (
             "The `offset` property must valid number between 0 and 1\n"
             f"but received {val!r} instead."
         )
@@ -1943,7 +1944,7 @@ class Marker(MagicProperties):
 
     @size.setter
     def size(self, val):
-        assert val is None or (isinstance(val, (int, float)) and val >= 0), (
+        assert val is None or (isinstance(val, int | float) and val >= 0), (
             f"The `size` property of {type(self).__name__} must be a positive number,\n"
             f"but received {val!r} instead."
         )
@@ -2022,7 +2023,7 @@ class DipoleProperties:
 
     @size.setter
     def size(self, val):
-        assert val is None or (isinstance(val, (int, float)) and val >= 0), (
+        assert val is None or (isinstance(val, int | float) and val >= 0), (
             f"The `size` property of {type(self).__name__} must be a positive number,\n"
             f"but received {val!r} instead."
         )

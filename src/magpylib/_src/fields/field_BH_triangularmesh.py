@@ -40,11 +40,9 @@ def calculate_centroid(vertices, faces):
     )
 
     # Calculate the centroid of the entire mesh
-    mesh_centroid = np.sum(triangle_centroids.T * triangle_areas, axis=1) / np.sum(
+    return np.sum(triangle_centroids.T * triangle_areas, axis=1) / np.sum(
         triangle_areas
     )
-
-    return mesh_centroid
 
 
 def v_norm2(a: np.ndarray) -> np.ndarray:
@@ -70,26 +68,24 @@ def v_cross(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     """
     a x b
     """
-    result = np.array(
+    return np.array(
         (
             a[:, 1] * b[:, 2] - a[:, 2] * b[:, 1],
             a[:, 2] * b[:, 0] - a[:, 0] * b[:, 2],
             a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0],
         )
     ).T
-    return result
 
 
 def v_dot_cross3d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> np.ndarray:
     """
     a x b * c
     """
-    result = (
+    return (
         (a[..., 1] * b[..., 2] - a[..., 2] * b[..., 1]) * c[..., 0]
         + (a[..., 2] * b[..., 0] - a[..., 0] * b[..., 2]) * c[..., 1]
         + (a[..., 0] * b[..., 1] - a[..., 1] * b[..., 0]) * c[..., 2]
     )
-    return result
 
 
 def get_disconnected_faces_subsets(faces: list) -> list:
@@ -111,8 +107,7 @@ def get_disconnected_faces_subsets(faces: list) -> list:
             rest = rest2
         subsets_inds.append(list(first))
         tria_temp = rest
-    subsets = [faces[np.isin(faces, list(ps)).all(axis=1)] for ps in subsets_inds]
-    return subsets
+    return [faces[np.isin(faces, list(ps)).all(axis=1)] for ps in subsets_inds]
 
 
 def get_open_edges(faces: np.ndarray) -> bool:
@@ -355,7 +350,8 @@ def segments_intersect_facets(segments, facets, eps=1e-6):
         otherwise some triangles may be detected as intersecting themselves.
     """
     if eps <= 0:  # pragma: no cover
-        raise ValueError("eps must be strictly positive")
+        msg = "eps must be strictly positive"
+        raise ValueError(msg)
 
     s, t = segments.swapaxes(0, 1), facets.swapaxes(0, 1)
 
@@ -411,7 +407,8 @@ def get_intersecting_triangles(vertices, triangles, r=None, r_factor=1.5, eps=1e
         otherwise some triangles may be detected as intersecting themselves.
     """
     if r_factor < 1:  # pragma: no cover
-        raise ValueError("r_factor must be greater or equal to 1")
+        msg = "r_factor must be greater or equal to 1"
+        raise ValueError(msg)
 
     vertices = vertices.astype(np.float32)
     facets = vertices[triangles]
@@ -575,6 +572,5 @@ def BHJM_magnet_trimesh(
     if field == "M":
         return BHJM / MU0
 
-    raise ValueError(  # pragma: no cover
-        f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
-    )
+    msg = f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
+    raise ValueError(msg)  # pragma: no cover

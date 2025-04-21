@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 
@@ -36,7 +36,7 @@ import magpylib as magpy
 
 def test_vs_mag2_linear():
     """test against magpylib v2"""
-    with open(os.path.abspath("tests/testdata/testdata_vs_mag2.p"), "rb") as f:
+    with open(Path("tests/testdata/testdata_vs_mag2.p").resolve(), "rb") as f:
         data = pickle.load(f)[0]
     poso = [(t, -t, t) for t in np.linspace(0, 3, 100)]
     pm = magpy.magnet.Cuboid(polarization=(111, 222, 333), dimension=(1, 2, 3))
@@ -47,7 +47,7 @@ def test_vs_mag2_linear():
 
 def test_vs_mag2_rotation():
     """test against magpylib v2"""
-    with open(os.path.abspath("tests/testdata/testdata_vs_mag2.p"), "rb") as f:
+    with Path("tests/testdata/testdata_vs_mag2.p").resolve().open("rb") as f:
         data = pickle.load(f)[1]
     pm = magpy.magnet.Cuboid(polarization=(111, 222, 333), dimension=(1, 2, 3))
     possis = [
@@ -60,7 +60,7 @@ def test_vs_mag2_rotation():
 
 def test_vs_mag2_spiral():
     """test against magpylib v2"""
-    with open(os.path.abspath("tests/testdata/testdata_vs_mag2.p"), "rb") as f:
+    with Path("tests/testdata/testdata_vs_mag2.p").resolve().open("rb") as f:
         data = pickle.load(f)[2]
     pm = magpy.magnet.Cuboid(
         polarization=(111, 222, 333), dimension=(1, 2, 3), position=(3, 0, 0)

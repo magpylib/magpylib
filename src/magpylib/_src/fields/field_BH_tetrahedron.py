@@ -58,13 +58,11 @@ def point_inside(points: np.ndarray, vertices: np.ndarray, in_out: str) -> np.nd
 
     tetra = np.linalg.inv(mat)
     newp = np.matmul(tetra, np.reshape(points - vertices[:, 0, :], (*points.shape, 1)))
-    inside = (
+    return (
         np.all(newp >= 0, axis=1)
         & np.all(newp <= 1, axis=1)
         & (np.sum(newp, axis=1) <= 1)
     ).flatten()
-
-    return inside
 
 
 def BHJM_magnet_tetrahedron(
@@ -128,6 +126,5 @@ def BHJM_magnet_tetrahedron(
         BHJM[mask_inside] += polarization[mask_inside]
         return BHJM
 
-    raise ValueError(  # pragma: no cover
-        f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
-    )
+    msg = f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
+    raise ValueError(msg)  # pragma: no cover

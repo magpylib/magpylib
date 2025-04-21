@@ -165,7 +165,7 @@ def make_mag_arrows(obj):
     x, y, z = draw_arrowed_line(
         direc, pos, sign=1, arrow_pos=arrow.offset, pivot="tail"
     ).T
-    trace = {
+    return {
         "type": "scatter3d",
         "mode": "lines",
         "line_width": arrow.width,
@@ -176,7 +176,6 @@ def make_mag_arrows(obj):
         "z": z,
         "showlegend": False,
     }
-    return trace
 
 
 def make_path(input_obj, label=None):
@@ -195,7 +194,7 @@ def make_path(input_obj, label=None):
     line["dash"] = line["style"]
     line["color"] = style.color if line["color"] is None else line["color"]
     line = {k: v for k, v in line.items() if k != "style"}
-    scatter_path = {
+    return {
         "type": "scatter3d",
         "x": x,
         "y": y,
@@ -206,7 +205,6 @@ def make_path(input_obj, label=None):
         **txt_kwargs,
         "opacity": style.opacity,
     }
-    return scatter_path
 
 
 def get_trace2D_dict(
@@ -226,10 +224,7 @@ def get_trace2D_dict(
     """return a 2d trace based on field and parameters"""
     coords_inds = ["xyz".index(k) for k in coords_str]
     y = BH.T[list(coords_inds)]
-    if len(coords_inds) == 1:
-        y = y[0]
-    else:
-        y = np.linalg.norm(y, axis=0)
+    y = y[0] if len(coords_inds) == 1 else np.linalg.norm(y, axis=0)
     marker_size = np.array([3] * len(frames_indices))
     marker_size[focus_inds] = 15
     title = f"{field_str}{''.join(coords_str)}"
@@ -294,7 +289,7 @@ def get_traces_2D(
         for sub_s in (s.sensors_all if isinstance(s, magpy.Collection) else [s])
     ]
 
-    if not isinstance(output, (list, tuple)):
+    if not isinstance(output, list | tuple):
         output = [output]
     output_params = {}
     field_str_list = []
@@ -303,11 +298,12 @@ def get_traces_2D(
         if not coords_str:
             coords_str = list("xyz")
         if field_str not in "BHMJ" and set(coords_str).difference(set("xyz")):
-            raise ValueError(
+            msg = (
                 "The `output` parameter must start with 'B', 'H', 'M', 'J' "
                 "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') )"
                 f"\nreceived {out!r} instead"
             )
+            raise ValueError(msg)
         field_str_list.append(field_str)
         output_params[out] = {
             "field_str": field_str,
@@ -553,9 +549,8 @@ def get_generic_traces3D(
                     tr_non_generic["showscale"] = tr_non_generic.get("showscale", False)
                     tr_non_generic["color"] = tr_non_generic.get("color", style.color)
                 else:  # pragma: no cover
-                    raise ValueError(
-                        f"{ttype} is not supported, only 'scatter3d' and 'mesh3d' are"
-                    )
+                    msg = f"{ttype} is not supported, only 'scatter3d' and 'mesh3d' are"
+                    raise ValueError(msg)
                 tr_non_generic.update(linearize_dict(obj_extr_trace, separator="_"))
                 traces_generic.append(tr_non_generic)
 
@@ -685,7 +680,9 @@ def process_animation_kwargs(obj_list, animation=False, **kwargs):
         and animation is not False
     ):  # check if some path exist for any object
         animation = False
-        warnings.warn("No path to be animated detected, displaying standard plot")
+        warnings.warn(
+            "No path to be animated detected, displaying standard plot", stacklevel=2
+        )
 
     # pylint: disable=no-member
     anim_def = default_settings.display.animation.copy()
@@ -726,7 +723,8 @@ def extract_animation_properties(
             f" {animation_maxfps}. `animation_fps` will be set to"
             f" {animation_maxfps}. "
             f"You can modify the default value by setting it in "
-            "`magpylib.defaults.display.animation.maxfps`"
+            "`magpylib.defaults.display.animation.maxfps`",
+            stacklevel=2,
         )
         animation_fps = animation_maxfps
 
@@ -759,7 +757,8 @@ def extract_animation_properties(
             f"The number of frames ({max_pl}) is greater than the max allowed "
             f"of {animation_maxframes}. The `animation_fps` will be set to {new_fps}. "
             f"You can modify the default value by setting it in "
-            "`magpylib.defaults.display.animation.maxframes`"
+            "`magpylib.defaults.display.animation.maxframes`",
+            stacklevel=2,
         )
 
     return path_indices, exp, frame_duration

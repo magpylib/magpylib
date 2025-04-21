@@ -201,10 +201,11 @@ def getBH_level2(
 
     # bad user inputs mixing getBH_dict kwargs with object oriented interface
     if kwargs:
-        raise MagpylibBadUserInput(
+        msg = (
             f"Keyword arguments {tuple(kwargs.keys())} are only allowed when the source "
             "is defined by a string (e.g. sources='Cylinder')"
         )
+        raise MagpylibBadUserInput(msg)
 
     # format sources input:
     #   input: allow only one bare src object or a 1D list/tuple of src and col
@@ -221,12 +222,13 @@ def getBH_level2(
     if in_out != "auto":
         from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
 
-        if not any(isinstance(src, (Tetrahedron, TriangularMesh)) for src in src_list):
+        if not any(isinstance(src, Tetrahedron | TriangularMesh) for src in src_list):
             warnings.warn(
                 "Argument `in_out` for field computation was set, but is ignored"
                 " in the computation. `in_out` has an effect only for magnet classes"
                 " Tetrahedron and TriangularMesh.",
                 UserWarning,
+                stacklevel=2,
             )
 
     # make sure that TriangularMesh sources have a closed mesh when getB is called - warn if not
@@ -237,12 +239,14 @@ def getBH_level2(
                 if src.status_open is None:
                     warnings.warn(
                         f"Unchecked mesh status of {src} detected before B-field computation. "
-                        "An open mesh may return bad results."
+                        "An open mesh may return bad results.",
+                        stacklevel=2,
                     )
                 elif src.status_open:  # mesh is open
                     warnings.warn(
                         f"Open mesh of {src} detected before B-field computation. "
-                        "An open mesh may return bad results."
+                        "An open mesh may return bad results.",
+                        stacklevel=2,
                     )
 
     # format observers input:
@@ -255,7 +259,7 @@ def getBH_level2(
     pix_nums = [
         int(np.prod(ps[:-1])) for ps in pix_shapes
     ]  # number of pixel for each sensor
-    pix_inds = np.cumsum([0] + pix_nums)  # cumulative indices of pixel for each sensor
+    pix_inds = np.cumsum([0, *pix_nums])  # cumulative indices of pixel for each sensor
     pix_all_same = len(set(pix_shapes)) == 1
 
     # check which sensors have unit rotation
@@ -327,10 +331,11 @@ def getBH_level2(
     for ind, src in enumerate(src_list):
         group_key = src.field_func
         if group_key is None:
-            raise MagpylibMissingInput(
+            msg = (
                 f"Cannot compute {field}-field because "
                 f"`field_func` of {src} has undefined {field}-field computation."
             )
+            raise MagpylibMissingInput(msg)
         if group_key not in field_func_groups:
             field_func_groups[group_key] = {
                 "sources": [],
@@ -350,10 +355,11 @@ def getBH_level2(
             field_func=field_func, field=field, in_out=in_out, **src_dict
         )
         if B_group is None:
-            raise MagpylibMissingInput(
+            msg = (
                 f"Cannot compute {field}-field because "
                 f"`field_func` {field_func} has undefined {field}-field computation."
             )
+            raise MagpylibMissingInput(msg)
         B_group = B_group.reshape(
             (lg, max_path_len, n_pix, 3)
         )  # reshape (2% slower for large arrays)
@@ -500,10 +506,11 @@ def getBH_dict_level2(
             source_classes[source_type]._field_func_kwargs_ndim
         )
     except KeyError as err:
-        raise MagpylibBadUserInput(
+        msg = (
             f"Input parameter `sources` must be one of {list(source_classes)}"
             " when using the functional interface."
-        ) from err
+        )
+        raise MagpylibBadUserInput(msg) from err
 
     kwargs["observers"] = observers
     kwargs["position"] = position
@@ -527,9 +534,8 @@ def getBH_dict_level2(
                 ragged_seq[key] = False
                 val = np.array(val, dtype=float)
         except TypeError as err:
-            raise MagpylibBadUserInput(
-                f"{key} input must be array-like.\nInstead received {val}"
-            ) from err
+            msg = f"{key} input must be array-like.\nInstead received {val}"
+            raise MagpylibBadUserInput(msg) from err
         expected_dim = field_func_kwargs_ndim.get(key, 1)
         if val.ndim == expected_dim or ragged_seq[key]:
             if len(val) == 1:
@@ -540,10 +546,11 @@ def getBH_dict_level2(
         kwargs[key] = val
 
     if len(set(vec_lengths.values())) > 1:
-        raise MagpylibBadUserInput(
+        msg = (
             "Input array lengths must be 1 or of a similar length.\n"
             f"Instead received lengths {vec_lengths}"
         )
+        raise MagpylibBadUserInput(msg)
     vec_len = max(vec_lengths.values(), default=1)
     # tile 1D inputs and replace original values in kwargs
     for key, val in kwargs.items():

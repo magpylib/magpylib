@@ -74,7 +74,7 @@ def test_bad_backend():
 
 
 @pytest.mark.parametrize(
-    "canvas,is_notebook_result,backend",
+    ("canvas", "is_notebook_result", "backend"),
     [
         (None, True, "plotly"),
         (None, False, "matplotlib"),

@@ -2457,9 +2457,8 @@ def BHJM_cylinder_segment(
         BHJM[~mask_not_on_surf] *= 0
         return BHJM
 
-    raise ValueError(  # pragma: no cover
-        f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
-    )
+    msg = f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
+    raise ValueError(msg)  # pragma: no cover
 
     # return convert_HBMJ(
     #     output_field_type=field,

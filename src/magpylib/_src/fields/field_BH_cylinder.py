@@ -395,6 +395,5 @@ def BHJM_magnet_cylinder(
             BHJM[mask_ax_inside, 2] -= pol_z[mask_ax_inside]
         return BHJM / MU0
 
-    raise ValueError(  # pragma: no cover
-        f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
-    )
+    msg = f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
+    raise ValueError(msg)  # pragma: no cover

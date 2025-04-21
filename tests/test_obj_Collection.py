@@ -99,7 +99,7 @@ def test_Collection_basics():
 
 
 @pytest.mark.parametrize(
-    "test_input,expected",
+    ("test_input", "expected"),
     [
         ("sens_col.getB(src_col).shape", (4, 3)),
         ("src_col.getB(sens_col).shape", (4, 3)),

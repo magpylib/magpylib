@@ -140,8 +140,7 @@ class Triangle(BaseMagnet):
         centroid = (
             np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
         )
-        barycenter = orientation.apply(centroid) + position
-        return barycenter
+        return orientation.apply(centroid) + position
 
     @property
     def _default_style_description(self):

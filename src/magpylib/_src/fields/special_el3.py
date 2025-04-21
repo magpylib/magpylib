@@ -62,12 +62,12 @@ def el30(x, kc, p):
         if bo:
             s = -s
         u = (u + 1) * 0.5
-        result = (u - s * h) * np.sqrt(h) * x + u * np.arcsinh(x)
-        return result
+        return (u - s * h) * np.sqrt(h) * x + u * np.arcsinh(x)
 
     w = 1 + f
     if w == 0:
-        raise RuntimeError("FAIL")
+        msg = "FAIL"
+        raise RuntimeError(msg)
     p1 = CB / hh if p == 0.0 else p
     s = np.abs(s)
     y = np.abs(x)
@@ -328,7 +328,8 @@ def el3v(x, kc, p):
 
     w = 1 + f
     if np.any(w == 0):
-        raise RuntimeError("FAIL")
+        msg = "FAIL"
+        raise RuntimeError(msg)
 
     p1 = np.copy(p)
     mask3 = p == 0

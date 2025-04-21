@@ -95,9 +95,8 @@ class BaseGeo(BaseTransform):
                 if k.startswith("style_"):
                     style_kwargs[k[6:]] = v
                 else:
-                    raise TypeError(
-                        f"__init__() got an unexpected keyword argument {k!r}"
-                    )
+                    msg = f"__init__() got an unexpected keyword argument {k!r}"
+                    raise TypeError(msg)
             style.update(**style_kwargs)
         return style
 
@@ -151,10 +150,11 @@ class BaseGeo(BaseTransform):
                 self._parent.remove(self)
             self._parent = None
         else:
-            raise MagpylibBadUserInput(
+            msg = (
                 "Input `parent` must be `None` or a `Collection` object."
                 f"Instead received {type(inp)}."
             )
+            raise MagpylibBadUserInput(msg)
 
     @property
     def position(self):
@@ -272,10 +272,11 @@ class BaseGeo(BaseTransform):
         if isinstance(val, dict):
             style.update(val)
         elif not isinstance(val, self._style_class):
-            raise ValueError(
+            msg = (
                 f"Input parameter `style` must be of type {self._style_class}.\n"
                 f"Instead received type {type(val)}"
             )
+            raise ValueError(msg)
         return style
 
     # dunders -------------------------------------------------------

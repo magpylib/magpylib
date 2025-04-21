@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 from collections import Counter
 
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import patches
@@ -130,7 +130,7 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
             # marker size is proportional to area, not radius like generic
             props["ms"] = np.pi * props["ms"] ** 2
         coords = np.array([trace[k] for k in coords_str], dtype=float)
-        if isinstance(props["ms"], (list, tuple, np.ndarray)):
+        if isinstance(props["ms"], list | tuple | np.ndarray):
             traces_mpl.append(
                 {
                     "constructor": "scatter",
@@ -183,9 +183,10 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
             }
         )
     else:  # pragma: no cover
-        raise ValueError(
+        msg = (
             f"Trace type {trace['type']!r} cannot be transformed into matplotlib trace"
         )
+        raise ValueError(msg)
     for tr_mesh in traces_mpl:
         tr_mesh["row"] = trace.get("row", 1)
         tr_mesh["col"] = trace.get("col", 1)
@@ -216,8 +217,7 @@ def extract_axis_from_row_col(fig, row, col):
     inds = [geom(ax)[-1] for ax in fig.axes]
     # retrieve first index that matches
     ind = inds.index(default_ind)
-    ax = fig.axes[ind]
-    return ax
+    return fig.axes[ind]
 
 
 def process_extra_trace(model):
@@ -256,8 +256,8 @@ def display_matplotlib(
     labels = data["labels"]
 
     # only update layout if canvas is not provided
-    fig_kwargs = {} if not fig_kwargs else fig_kwargs
-    show_kwargs = {} if not show_kwargs else show_kwargs
+    fig_kwargs = fig_kwargs if fig_kwargs else {}
+    show_kwargs = show_kwargs if show_kwargs else {}
     show_kwargs = {**show_kwargs}
 
     for fr in frames:
@@ -280,26 +280,28 @@ def display_matplotlib(
             fig_kwargs["figsize"] = (figsize[0] * ratio, figsize[1])
     if canvas is None:
         fig = plt.figure(**{"tight_layout": True, **fig_kwargs})
-    elif isinstance(canvas, matplotlib.axes.Axes):
+    elif isinstance(canvas, mpl.axes.Axes):
         fig = canvas.get_figure()
         if max_rows is not None or max_cols is not None:
-            raise ValueError(
+            msg = (
                 "Provided canvas is an instance of `matplotlib.axes.Axes` and does not support "
                 "`rows` or `cols` attributes. Use an instance of `matplotlib.figure.Figure` "
                 "instead"
             )
-    elif isinstance(canvas, matplotlib.figure.Figure):
+            raise ValueError(msg)
+    elif isinstance(canvas, mpl.figure.Figure):
         fig = canvas
     else:
-        raise TypeError(
+        msg = (
             "The `canvas` parameter must be one of `[None, matplotlib.axes.Axes, "
             f"matplotlib.figure.Figure]`. Received type {type(canvas)!r} instead"
         )
+        raise TypeError(msg)
     if canvas is not None and canvas_update:
         fig.set_size_inches(*fig_kwargs["figsize"], forward=True)
         fig.set_dpi(fig_kwargs["dpi"])
     if max_rows is None and max_cols is None:
-        if isinstance(canvas, matplotlib.axes.Axes):
+        if isinstance(canvas, mpl.axes.Axes):
             axes[(1, 1)] = canvas
         else:
             sp_typ = subplot_specs[0, 0]["type"]
@@ -318,7 +320,7 @@ def display_matplotlib(
                 projection = (
                     "3d" if subplot_specs[row - 1, col - 1]["type"] == "scene" else None
                 )
-                if isinstance(canvas, matplotlib.figure.Figure):
+                if isinstance(canvas, mpl.figure.Figure):
                     try:
                         axes[row_col_num] = extract_axis_from_row_col(fig, row, col)
                     except (ValueError, IndexError):  # IndexError if axis is not found
@@ -413,3 +415,4 @@ def display_matplotlib(
 
     if out:
         return out[0] if len(out) == 1 else out
+    return None

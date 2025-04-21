@@ -244,7 +244,7 @@ def color_validator(color_input, allow_None=True, parent_name=""):
         if 0 <= color_new <= 1:
             c = int(color_new * 255)
             color_new = f"#{c:02x}{c:02x}{c:02x}"
-    elif isinstance(color_input, (tuple, list)):
+    elif isinstance(color_input, tuple | list):
         color_new = tuple(color_input)
         if len(color_new) == 4:  # trim opacity
             color_new = color_new[:-1]
@@ -275,7 +275,7 @@ def color_validator(color_input, allow_None=True, parent_name=""):
         fail = not re_hex.fullmatch(color_new)
 
     if fail and str(color_new) not in mcolors:
-        raise ValueError(
+        msg = (
             f"Invalid value of type '{type(color_input)}' "
             f"received for the color property of {parent_name}"
             f"\n   Received value: {color_input!r}"
@@ -286,6 +286,7 @@ def color_validator(color_input, allow_None=True, parent_name=""):
             "    - A number between 0 and 1 (for grey scale) (e.g. '.5' or .8)\n"
             f"    - A named CSS color:\n{list(mcolors.keys())}"
         )
+        raise ValueError(msg)
     return color_new
 
 
@@ -296,11 +297,12 @@ def validate_property_class(val, name, class_, parent):
     elif val is None:
         val = class_()
     if not isinstance(val, class_):
-        raise ValueError(
+        msg = (
             f"the `{name}` property of `{type(parent).__name__}` must be an instance \n"
             f"of `{class_}` or a dictionary with equivalent key/value pairs \n"
             f"but received {val!r} instead"
         )
+        raise ValueError(msg)
     return val
 
 
@@ -313,10 +315,11 @@ def validate_style_keys(style_kwargs):
     kwargs_diff = set(level0_style_keys).difference(valid_keys)
     invalid_keys = {level0_style_keys[k] for k in kwargs_diff}
     if invalid_keys:
-        raise ValueError(
+        msg = (
             f"Following arguments are invalid style properties: `{invalid_keys}`\n"
             f"\n Available style properties are: `{valid_keys}`"
         )
+        raise ValueError(msg)
     return style_kwargs
 
 
@@ -342,10 +345,11 @@ class MagicProperties:
             magic_kwargs = magic_to_dict(kwargs)
             diff = set(magic_kwargs.keys()).difference(set(input_dict.keys()))
             for attr in diff:
-                raise AttributeError(
+                msg = (
                     f"{type(self).__name__} has no property '{attr}'"
                     f"\n Available properties are: {list(self._property_names_generator())}"
                 )
+                raise AttributeError(msg)
             input_dict.update(magic_kwargs)
         for k, v in input_dict.items():
             setattr(self, k, v)
@@ -353,10 +357,11 @@ class MagicProperties:
 
     def __setattr__(self, key, value):
         if self.__isfrozen and not hasattr(self, key):
-            raise AttributeError(
+            msg = (
                 f"{type(self).__name__} has no property '{key}'"
                 f"\n Available properties are: {list(self._property_names_generator())}"
             )
+            raise AttributeError(msg)
         object.__setattr__(self, key, value)
 
     def _freeze(self):

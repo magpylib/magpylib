@@ -120,10 +120,11 @@ class Display(MagicProperties):
                     for c in val
                 )
             except TypeError as err:
-                raise ValueError(
+                msg = (
                     f"The `colorsequence` property of {name} must be an "
                     f"iterable of colors but received {val!r} instead"
-                ) from err
+                )
+                raise ValueError(msg) from err
 
         self._colorsequence = val
 
@@ -145,7 +146,7 @@ class Display(MagicProperties):
 
     @autosizefactor.setter
     def autosizefactor(self, val):
-        assert val is None or (isinstance(val, (int, float)) and val > 0), (
+        assert val is None or (isinstance(val, int | float) and val > 0), (
             f"the `autosizefactor` property of {type(self).__name__} must be a strictly positive"
             f" number but received {val!r} instead"
         )
@@ -264,7 +265,7 @@ class Animation(MagicProperties):
     def output(self, val):
         if val is not None:
             val = str(val)
-            valid = val.endswith("mp4") or val.endswith("gif")
+            valid = val.endswith(("mp4", "gif"))
             assert val is None or valid, (
                 f"The `output` property of {type(self).__name__} must be a either `mp4` or `gif` "
                 "or a valid path ending with `.mp4` or `.gif`"

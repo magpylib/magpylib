@@ -51,9 +51,8 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
         if self._editable_field_func:
             validate_field_func(val)
         else:
-            raise AttributeError(
-                "The `field_func` attribute should not be edited for original Magpylib sources."
-            )
+            msg = "The `field_func` attribute should not be edited for original Magpylib sources."
+            raise AttributeError(msg)
         self._field_func = val
 
     def getB(
@@ -405,10 +404,11 @@ class BaseMagnet(BaseSource):
         if magnetization is not None:
             self.magnetization = magnetization
             if polarization is not None:
-                raise ValueError(
+                msg = (
                     "The attributes magnetization and polarization are dependent. "
                     "Only one can be provided at magnet initialization."
                 )
+                raise ValueError(msg)
         if polarization is not None:
             self.polarization = polarization
 

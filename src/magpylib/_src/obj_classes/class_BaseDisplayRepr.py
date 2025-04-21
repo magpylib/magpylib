@@ -76,7 +76,7 @@ class BaseDisplayRepr:
                     val = getattr(self, k)
                     if val is not None:
                         val = f"{len(val)} part{'s'[: len(val) ^ 1]}"
-                elif isinstance(getattr(self, k), (list, tuple, np.ndarray)):
+                elif isinstance(getattr(self, k), list | tuple | np.ndarray):
                     val = np.array(getattr(self, k))
                     if np.prod(val.shape) > 4:
                         val = f"shape{val.shape}"

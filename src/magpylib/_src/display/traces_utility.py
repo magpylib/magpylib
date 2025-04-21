@@ -102,9 +102,8 @@ def place_and_orient_model3d(
 
 def get_vertices_from_model(model_kwargs, model_args=None, coordsargs=None):
     """get vertices from model kwargs and args"""
-    if model_args:
-        if coordsargs is None:  # matplotlib default
-            coordsargs = {"x": "args[0]", "y": "args[1]", "z": "args[2]"}
+    if model_args and coordsargs is None:  # matplotlib default
+        coordsargs = {"x": "args[0]", "y": "args[1]", "z": "args[2]"}
     vertices = []
     if coordsargs is None:
         coordsargs = {"x": "x", "y": "y", "z": "z"}
@@ -118,13 +117,14 @@ def get_vertices_from_model(model_kwargs, model_args=None, coordsargs=None):
         elif key in model_kwargs:
             v = model_kwargs[key]
         else:
-            raise ValueError(
+            msg = (
                 "Rotating/Moving of provided model failed, trace dictionary "
                 f"has no argument {k!r}, use `coordsargs` to specify the names of the "
                 "coordinates to be used.\n"
                 "Matplotlib backends will set up coordsargs automatically if "
                 "the `args=(xs,ys,zs)` argument is provided."
             )
+            raise ValueError(msg)
         vertices.append(v)
 
     vertices = np.array(vertices)
@@ -218,10 +218,7 @@ def draw_arrow_from_vertices(
 
 def draw_arrow_on_circle(sign, diameter, arrow_size, scaled=True, angle_pos_deg=0):
     """draws an oriented circle with an arrow"""
-    if scaled:
-        hy = 0.2 * arrow_size
-    else:
-        hy = arrow_size / diameter * 2
+    hy = 0.2 * arrow_size if scaled else arrow_size / diameter * 2
     hx = 0.6 * hy
     hy *= np.sign(sign)
     x = np.array([1 + hx, 1, 1 - hx]) * diameter / 2
@@ -255,7 +252,8 @@ def get_rot_pos_from_path(obj, show_path=None):
     elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
         inds = np.array(show_path)
     else:  # pragma: no cover
-        raise ValueError(f"Invalid show_path value ({show_path})")
+        msg = f"Invalid show_path value ({show_path})"
+        raise ValueError(msg)
     inds[inds >= path_len] = path_len - 1
     inds = np.unique(inds)
     if inds.size == 0:
@@ -445,8 +443,7 @@ def getIntensity(vertices, axis) -> np.ndarray:
     # normalize to interval [0,1] (necessary for when merging mesh3d traces)
     ptp = np.ptp(intensity)
     ptp = ptp if ptp != 0 else 1
-    intensity = (intensity - np.min(intensity)) / ptp
-    return intensity
+    return (intensity - np.min(intensity)) / ptp
 
 
 @lru_cache(maxsize=32)
@@ -604,10 +601,7 @@ def group_traces(*traces):
         )
         gr = [tr["type"]]
         for k in [*common_keys, *spec_keys.get(tr["type"], [])]:
-            if k == "facecolor":
-                v = tr.get(k, None) is None
-            else:
-                v = tr.get(k, "")
+            v = tr.get(k, None) is None if k == "facecolor" else tr.get(k, "")
             gr.append(str(v))
         gr = "".join(gr)
         if gr not in mesh_groups:

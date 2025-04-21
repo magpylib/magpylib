@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import itertools
+
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
@@ -326,7 +328,7 @@ def test_core_physics_geometry_cylinder_from_segments():
     sections = np.array([-12, 65, 123, 180, 245, 348])
 
     Bseg = np.zeros((2, 3))
-    for phi1, phi2 in zip(sections[:-1], sections[1:], strict=False):
+    for phi1, phi2 in itertools.pairwise(sections):
         B_part = BHJM_cylinder_segment(
             field="B",
             observers=obs,

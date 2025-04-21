@@ -359,10 +359,7 @@ def make_mesh_lines(obj, mode, **kwargs) -> dict[str, Any]:
         if mode == "selfintersecting":
             tr = obj.faces[obj.get_selfintersecting_faces()]
         edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
-        if mode == "open":
-            edges = obj.get_open_edges()
-        else:
-            edges = np.unique(edges, axis=0)
+        edges = obj.get_open_edges() if mode == "open" else np.unique(edges, axis=0)
         lines = vert[edges]
 
     if lines.size == 0:
@@ -460,7 +457,8 @@ def make_TriangularMesh(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
                 warnings.warn(
                     f"Unchecked open mesh status in {obj!r} detected, before attempting "
                     "to show potential open edges, which may take a while to compute "
-                    "when the mesh has many faces, now applying operation..."
+                    "when the mesh has many faces, now applying operation...",
+                    stacklevel=2,
                 )
                 obj.check_open()
         elif mode == "disconnected" and show_mesh:
@@ -468,7 +466,8 @@ def make_TriangularMesh(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
                 warnings.warn(
                     f"Unchecked disconnected mesh status in {obj!r} detected, before "
                     "attempting to show possible disconnected parts, which may take a while "
-                    "to compute when the mesh has many faces, now applying operation..."
+                    "to compute when the mesh has many faces, now applying operation...",
+                    stacklevel=2,
                 )
             is_disconnected = obj.check_disconnected()
         elif mode == "selfintersecting":
@@ -476,7 +475,8 @@ def make_TriangularMesh(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
                 warnings.warn(
                     f"Unchecked selfintersecting mesh status in {obj!r} detected, before "
                     "attempting to show possible disconnected parts, which may take a while "
-                    "to compute when the mesh has many faces, now applying operation..."
+                    "to compute when the mesh has many faces, now applying operation...",
+                    stacklevel=2,
                 )
                 obj.check_selfintersecting()
 
@@ -559,7 +559,7 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
     if style.color is not None:
         sensor["facecolor"][sensor["facecolor"] == "rgb(238,238,238)"] = style.color
     dim = np.array(
-        [dimension] * 3 if isinstance(dimension, (float, int)) else dimension[:3],
+        [dimension] * 3 if isinstance(dimension, float | int) else dimension[:3],
         dtype=float,
     )
     if autosize is not None and style.sizemode == "scaled":

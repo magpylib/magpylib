@@ -59,7 +59,7 @@ def get_data_collection_position_setter():
     col_pos_init, col_ori_init, src_pos_init, src_ori_init
     col_pos_test, col_ori_test, src_pos_test, src_ori_test
     """
-    data_pos = [
+    return [
         [
             (1, 2, 3),
             (0.1, 0.2, 0.3),
@@ -101,12 +101,19 @@ def get_data_collection_position_setter():
             [(0.1, 0.1, 0.1)] * 3,
         ],
     ]
-    return data_pos
 
 
 @pytest.mark.parametrize(
-    """col_pos_init, col_ori_init, src_pos_init, src_ori_init,
-    col_pos_test, col_ori_test, src_pos_test, src_ori_test""",
+    (
+        "col_pos_init",
+        "col_ori_init",
+        "src_pos_init",
+        "src_ori_init",
+        "col_pos_test",
+        "col_ori_test",
+        "src_pos_test",
+        "src_ori_test",
+    ),
     get_data_collection_position_setter(),
     ids=[
         f"{ind + 1:02d}" for ind, _ in enumerate(get_data_collection_position_setter())
@@ -144,7 +151,7 @@ def get_data_collection_orientation_setter():
     col_pos_init, col_ori_init, src_pos_init, src_ori_init
     col_pos_test, col_ori_test, src_pos_test, src_ori_test
     """
-    data_ori = [
+    return [
         # col orientation setter simple
         [
             (1, 0, 3),
@@ -212,12 +219,19 @@ def get_data_collection_orientation_setter():
             (0, 0, np.pi / 2),
         ],
     ]
-    return data_ori
 
 
 @pytest.mark.parametrize(
-    """col_pos_init, col_ori_init, src_pos_init, src_ori_init, col_pos_test,
-    col_ori_test, src_pos_test, src_ori_test""",
+    (
+        "col_pos_init",
+        "col_ori_init",
+        "src_pos_init",
+        "src_ori_init",
+        "col_pos_test",
+        "col_ori_test",
+        "src_pos_test",
+        "src_ori_test",
+    ),
     get_data_collection_orientation_setter(),
     ids=[
         f"{ind + 1:02d}"

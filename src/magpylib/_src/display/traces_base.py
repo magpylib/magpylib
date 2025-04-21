@@ -18,7 +18,7 @@ def base_validator(name, value, conditions):
     msg = f"""Input {name} must be one of `{tuple(conditions.keys())},`
 received {value!r} instead.
 """
-    assert value in conditions.keys(), msg
+    assert value in conditions, msg
     return conditions[value]
 
 

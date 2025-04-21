@@ -121,7 +121,7 @@ def get_pos_orient_from_collection(coll):
     """returns a list of (position, orientation.as_matrix()) tuple of a collection and of its
     children"""
     pos_orient = []
-    for obj in [coll] + coll.children:
+    for obj in [coll, *coll.children]:
         pos_orient.append((obj.position, obj.orientation.as_matrix()))
     return pos_orient
 
@@ -134,7 +134,7 @@ COMPOUND_DATA = np.load(file, allow_pickle=True).item()
 
 
 @pytest.mark.parametrize(
-    "setters_inputs, pos_orient_as_matrix_expected",
+    ("setters_inputs", "pos_orient_as_matrix_expected"),
     list(
         zip(
             COMPOUND_DATA["setters_inputs"],

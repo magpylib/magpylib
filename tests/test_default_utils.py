@@ -100,7 +100,7 @@ def test_linearize_dict():
 
 
 @pytest.mark.parametrize(
-    "color, allow_None, color_expected",
+    ("color", "allow_None", "color_expected"),
     [
         (None, True, None),
         ("blue", True, "blue"),
@@ -122,7 +122,7 @@ def test_good_colors(color, allow_None, color_expected):
 
 
 @pytest.mark.parametrize(
-    "color, allow_None, expected_exception",
+    ("color", "allow_None", "expected_exception"),
     [
         (None, False, ValueError),
         (-1, False, ValueError),

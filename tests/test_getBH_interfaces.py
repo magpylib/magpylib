@@ -266,7 +266,10 @@ def test_sensor_handedness():
     """test sensor handedness"""
     k = 0.1
     N = [5, 4, 3]
-    ls = lambda n: np.linspace(-k / 2, k / 2, n)
+
+    def ls(n):
+        return np.linspace(-k / 2, k / 2, n)
+
     pixel = np.array([[x, y, z] for x in ls(N[0]) for y in ls(N[1]) for z in ls(N[2])])
     pixel = pixel.reshape((*N, 3))
     c = magpy.magnet.Cuboid(
@@ -365,7 +368,7 @@ def test_getB_on_missing_excitations(module, class_, missing_arg, kwargs):
         getattr(getattr(magpy, module), class_)(**kwargs).getB([0, 0, 0])
 
 
-@pytest.mark.parametrize("field", ("H", "B", "M", "J"))
+@pytest.mark.parametrize("field", ["H", "B", "M", "J"])
 def test_getHBMJ_self_consistency(field):
     """test getHBMJ self consistency"""
     sources = [

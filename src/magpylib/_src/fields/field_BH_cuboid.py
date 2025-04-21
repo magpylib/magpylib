@@ -275,6 +275,7 @@ def BHJM_magnet_cuboid(
         BHJM[mask_inside] -= polarization[mask_inside]
         return BHJM / MU0
 
+    msg = f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
     raise ValueError(  # pragma: no cover
-        f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
+        msg
     )

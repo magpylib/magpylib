@@ -856,7 +856,7 @@ def test_input_collection_remove_good(children):
     """good inputs: collection.remove(children)"""
     col = magpy.Collection(*children)
     assert col.children == (
-        list(children[0]) if isinstance(children[0], (tuple, list)) else children
+        list(children[0]) if isinstance(children[0], tuple | list) else children
     )
     col.remove(*children)
     assert not col.children

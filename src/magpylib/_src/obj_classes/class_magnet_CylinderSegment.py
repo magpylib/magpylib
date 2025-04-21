@@ -152,8 +152,7 @@ class CylinderSegment(BaseMagnet):
             # get centroid for rotated annular sector
             x, y, z = centroid_x * np.cos(phi), centroid_x * np.sin(phi), 0
             centroid = np.array([x, y, z])
-        barycenter = orientation.apply(centroid) + position
-        return barycenter
+        return orientation.apply(centroid) + position
 
     @property
     def _default_style_description(self):
