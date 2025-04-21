@@ -156,7 +156,7 @@ html_theme_options = {
     "check_switcher": True,
     "icon_links": [
         {
-            "name": "Github",
+            "name": "GitHub",
             "url": "https://github.com/magpylib/magpylib",
             "icon": "https://img.shields.io/github/stars/magpylib/magpylib?style=social",
             "type": "url",

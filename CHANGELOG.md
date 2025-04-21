@@ -41,7 +41,7 @@
 
 ## [5.0.4] - 2024-06-18
 
-- Added support for Numpy 2.0
+- Added support for NumPy 2.0
   ([#795](https://github.com/magpylib/magpylib/pull/789))
 - Fixed markers legend not being suppressible
   ([#795](https://github.com/magpylib/magpylib/pull/789))
@@ -310,7 +310,7 @@ This is a major update that includes
   - Scale invariant field evaluations.
   - Special cases caught within 1e-15 rtol and atol to account for numerical
     imprecision with positioning (e.g. object rotation).
-  - Suppress Numpy divide/invalid warnings. return `np.nan` as `(0,0,0)` (e.g.
+  - Suppress NumPy divide/invalid warnings. return `np.nan` as `(0,0,0)` (e.g.
     on magnet edges or on line currents) and allow return of `np.inf`.
   - New closed form implementation for `Cylinder` with diametral magnetization
     is much faster (100-1000x) and numerically stable for small `r`.
@@ -329,7 +329,7 @@ This is a major update that includes
   - Minimal non-squeeze output shape is (1,1,1,1,3), meaning that a single pixel
     is now also represented.
     ([#493](https://github.com/magpylib/magpylib/pull/493))
-- With the new kwarg `pixel_agg` it is now possible to apply a Numpy function
+- With the new kwarg `pixel_agg` it is now possible to apply a NumPy function
   with reducing functionality (like `mean`, `min`, `average`) to the pixel
   output. In this case, it is allowed to provide `getB` and `getH` with
   different observer input shapes.
@@ -782,7 +782,7 @@ API changes New features Improved internal workings
 
 ### Changed
 
-- `getBsweep()` for Collections and Sources now always returns a Numpy array
+- `getBsweep()` for Collections and Sources now always returns a NumPy array
 - Zero-length segments in Line sources now return `[0,0,0]` and a warning,
   making it easier to draw spirals without letting users do this unaware.
 
