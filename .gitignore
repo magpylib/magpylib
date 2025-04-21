@@ -156,3 +156,7 @@ Thumbs.db
 # Common editor files
 *~
 *.swp
+__temp*.py
+
+# uv
+uv.lock
