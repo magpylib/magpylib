@@ -91,6 +91,7 @@ version.source = "vcs"
 build.hooks.vcs.version-file = "src/magpylib/_version.py"
 
 [tool.hatch.envs.default]
+installer = "uv"
 features = ["test"]
 scripts.test = "pytest {args}"
 
