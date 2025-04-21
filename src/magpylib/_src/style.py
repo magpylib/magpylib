@@ -27,6 +27,23 @@ def get_families(obj):
     # pylint: disable=import-outside-toplevel
     # pylint: disable=possibly-unused-variable
     # pylint: disable=redefined-outer-name
+    # ruff: noqa: F401, I001, I002
+    from magpylib._src.display.traces_generic import MagpyMarkers as Markers
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent as Current
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet as Magnet
+    from magpylib._src.obj_classes.class_current_Circle import Circle
+    from magpylib._src.obj_classes.class_current_Polyline import Polyline
+    from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid
+    from magpylib._src.obj_classes.class_magnet_Cylinder import Cylinder
+    from magpylib._src.obj_classes.class_magnet_CylinderSegment import CylinderSegment
+    from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
+    from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
+    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
+    from magpylib._src.obj_classes.class_misc_CustomSource import CustomSource
+    from magpylib._src.obj_classes.class_misc_Dipole import Dipole
+    from magpylib._src.obj_classes.class_misc_Triangle import Triangle
+    from magpylib._src.obj_classes.class_Sensor import Sensor
+    # ruff: enable = F401, I001, I002
 
     loc = locals()
     obj_families = []
