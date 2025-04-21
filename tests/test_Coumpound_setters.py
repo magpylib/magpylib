@@ -8,6 +8,9 @@ import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R  # noqa: F401
 
+from scipy.spatial.transform import Rotation as R # noqa: F401
+
+
 import magpylib as magpy
 from magpylib._src.display.traces_base import make_Prism
 
