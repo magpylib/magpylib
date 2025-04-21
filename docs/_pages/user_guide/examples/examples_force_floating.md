@@ -20,13 +20,20 @@ The examples here require installation of the [magpylib-force package](https://p
 
 ## Formalism
 
-With force and torque we can compute how a magnet moves in a magnetic field by solving the equations of motion,
+With force and torque we can compute how a magnet moves in a magnetic field by
+solving the equations of motion,
 
 $$ \vec{F} = \dot{\vec{p}} \ \text{and} \ \vec{T} = \dot{\vec{L}}$$
 
-with force $\vec{F}$, momentum $\vec{p}$, torque $\vec{T}$ and angular momentum $\vec{L}$.
+with force $\vec{F}$, momentum $\vec{p}$, torque $\vec{T}$ and angular momentum
+$\vec{L}$.
 
-We implement a first order semi-implicit Euler method that is used to compute [planetary motion](https://www.mgaillard.fr/2021/07/11/euler-integration.html). The algorithm splits the computation into small subsequent time-steps $\Delta t$, resulting in the following equations for the position $\vec{s}$, the velocity $\vec{v} = \dot{\vec{s}}$, the rotation angle $\vec{\varphi}$ and the angular velocity $\vec{\omega}$,
+We implement a first order semi-implicit Euler method that is used to compute
+[planetary motion](https://www.mgaillard.fr/2021/07/11/euler-integration.html).
+The algorithm splits the computation into small subsequent time-steps
+$\Delta t$, resulting in the following equations for the position $\vec{s}$, the
+velocity $\vec{v} = \dot{\vec{s}}$, the rotation angle $\vec{\varphi}$ and the
+angular velocity $\vec{\omega}$,
 
 $$\vec{v}(t+\Delta t) = \vec{v}(t) + \frac{\Delta t}{m} \vec{F}(t)$$
 
@@ -38,7 +45,9 @@ $$\vec{\varphi} (t + \Delta t) = \vec{\varphi}(t) + \Delta t \cdot \vec{\omega} 
 
 ## Magnet and Coil
 
-In the following example we show an implementation of the proposed Euler scheme. A cubical magnet is accelerated by a current loop along the z-axis as show in the following sketch:
+In the following example we show an implementation of the proposed Euler scheme.
+A cubical magnet is accelerated by a current loop along the z-axis as show in
+the following sketch:
 
 ```{figure} ../../../_static/images/examples_force_floating_coil-magnet.png
 :width: 40%
@@ -48,9 +57,12 @@ In the following example we show an implementation of the proposed Euler scheme.
 A cubical magnet is accelerated by a current loop.
 ```
 
-Due to the symmetry of the problem there is no torque so we solve only the translation part of the equations of motion.
+Due to the symmetry of the problem there is no torque so we solve only the
+translation part of the equations of motion.
 
-In the beginning, the magnet is at rest and slightly displaced in z-direction from the center of the current loop. With time the magnet is accelerated and it's z-position is displayed in the figure below.
+In the beginning, the magnet is at rest and slightly displaced in z-direction
+from the center of the current loop. With time the magnet is accelerated and
+it's z-position is displayed in the figure below.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -116,7 +128,13 @@ plt.gca().set(
 plt.show()
 ```
 
-The simulation is made with two magnets with opposing polarizations. In the "repulsive" case (orange) the magnetic moment of magnet and coil are anti-parallel and the magnet is simply pushed away from the coil in positive z-direction. In the "attractive" case  (blue) the moments are parallel to each other, and the magnet is accelerated towards the coil center. Due to inertia it then comes out on the other side, and is again attracted towards the center resulting in an oscillation.
+The simulation is made with two magnets with opposing polarizations. In the
+"repulsive" case (orange) the magnetic moment of magnet and coil are
+anti-parallel and the magnet is simply pushed away from the coil in positive
+z-direction. In the "attractive" case (blue) the moments are parallel to each
+other, and the magnet is accelerated towards the coil center. Due to inertia it
+then comes out on the other side, and is again attracted towards the center
+resulting in an oscillation.
 
 ```{warning}
 This algorithm accumulates its error over time, which can be avoided by choosing smaller timesteps.
@@ -124,7 +142,9 @@ This algorithm accumulates its error over time, which can be avoided by choosing
 
 ## Two-body problem
 
-In the following example we demonstrate a fully dynamic simulation with two magnetic bodies that rotate around each other, attracted towards each other by the magnetic force, and repelled by the centrifugal force.
+In the following example we demonstrate a fully dynamic simulation with two
+magnetic bodies that rotate around each other, attracted towards each other by
+the magnetic force, and repelled by the centrifugal force.
 
 ```{figure} ../../../_static/images/examples_force_floating_ringdown.png
 :width: 80%
@@ -134,7 +154,9 @@ In the following example we demonstrate a fully dynamic simulation with two magn
 Two freely moving magnets rotate around each other.
 ```
 
-Contrary to the simple case above, we apply the Euler scheme also to the rotation degrees of freedom, as the magnets will change their orientation while they circle around each other.
+Contrary to the simple case above, we apply the Euler scheme also to the
+rotation degrees of freedom, as the magnets will change their orientation while
+they circle around each other.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -226,9 +248,15 @@ plt.tight_layout()
 plt.show()
 ```
 
-In the figure one can see, that the initial velocity is chosen so that the magnets approach each other in a ringdown-like behavior. The magnets are magnetically locked towards each other - both always show the same orientation. However, given no initial angular velocity, the rotation angle is oscillating several times while circling once.
+In the figure one can see, that the initial velocity is chosen so that the
+magnets approach each other in a ringdown-like behavior. The magnets are
+magnetically locked towards each other - both always show the same orientation.
+However, given no initial angular velocity, the rotation angle is oscillating
+several times while circling once.
 
-A video is helpful in this case to understand what is going on. From the computation above, we build the following gif making use of this [export-animation](examples-vis-exporting-animations) tutorial.
+A video is helpful in this case to understand what is going on. From the
+computation above, we build the following gif making use of this
+[export-animation](examples-vis-exporting-animations) tutorial.
 
 ```{figure} ../../../_static/videos/example_force_floating_ringdown.gif
 :width: 60%

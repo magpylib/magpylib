@@ -16,7 +16,10 @@ orphan: true
 
 # Pyvista Bodies
 
-[Pyvista](https://docs.pyvista.org/version/stable/) is a powerful open-source tool for the creation and visualization of meshes. Pyvista `PolyData` objects can be directly transformed into Magpylib `TriangularMesh` magnets via the classmethod `from_pyvista`.
+[Pyvista](https://docs.pyvista.org/version/stable/) is a powerful open-source
+tool for the creation and visualization of meshes. Pyvista `PolyData` objects
+can be directly transformed into Magpylib `TriangularMesh` magnets via the
+classmethod `from_pyvista`.
 
 ```{note}
 The Pyvista library used in the following examples is not automatically installed with Magpylib. A Pyvista installation guide is found [here](https://docs.pyvista.org/getting-started/installation.html).
@@ -50,7 +53,10 @@ with magpy.show_context(dodec, sens, backend='plotly') as s:
 
 ## Boolean operations with Pyvista
 
-With Pyvista it is possible to build complex shapes with boolean geometric operations. However, such operations often result in open and disconnected meshes that require some refinement to produce solid magnets. The following example demonstrates the problem, how to analyze and fix it.
+With Pyvista it is possible to build complex shapes with boolean geometric
+operations. However, such operations often result in open and disconnected
+meshes that require some refinement to produce solid magnets. The following
+example demonstrates the problem, how to analyze and fix it.
 
 ```{code-cell} ipython3
 import pyvista as pv
@@ -83,10 +89,13 @@ magnet.show(
 )
 ```
 
-The result cannot be used for magnetic field computation. Even if all faces were present, the reorient-faces algorithm would fail when these faces are disconnected. Such problems can be fixed by
+The result cannot be used for magnetic field computation. Even if all faces were
+present, the reorient-faces algorithm would fail when these faces are
+disconnected. Such problems can be fixed by
 
 1. giving Pyvista a finer mesh to work with from the start
-2. Pyvista mesh cleaning (merge duplicate points, remove unused points, remove degenerate faces)
+2. Pyvista mesh cleaning (merge duplicate points, remove unused points, remove
+   degenerate faces)
 
 The following code produces a clean magnet.
 

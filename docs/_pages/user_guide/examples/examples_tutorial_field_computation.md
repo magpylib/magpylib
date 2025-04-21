@@ -18,7 +18,8 @@ orphan: true
 
 ## Most basic Example
 
-The v2 slogan was *"The magnetic field is only three lines of code away"*, which is demonstrated by the following most fundamental and self-explanatory example,
+The v2 slogan was _"The magnetic field is only three lines of code away"_, which
+is demonstrated by the following most fundamental and self-explanatory example,
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -30,9 +31,14 @@ print(B)
 
 ## Field on a Grid
 
-There are four field computation functions: `getB` will compute the B-field in T. `getH` computes the H-field in A/m. `getJ` computes the magnetic polarization in units of T. `getM` computes the magnetization in units of A/m.
+There are four field computation functions: `getB` will compute the B-field in
+T. `getH` computes the H-field in A/m. `getJ` computes the magnetic polarization
+in units of T. `getM` computes the magnetization in units of A/m.
 
-All these functions will return the field in the shape of the input. In the following example, BHJM-fields of a diametrically magnetized cylinder magnet are computed on a position grid in the symmetry plane and are then displayed using Matplotlib.
+All these functions will return the field in the shape of the input. In the
+following example, BHJM-fields of a diametrically magnetized cylinder magnet are
+computed on a position grid in the symmetry plane and are then displayed using
+Matplotlib.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -92,9 +98,14 @@ plt.show()
 
 ## Using Sensors
 
-The `Sensor` class enables relative positioning of observer grids in the global coordinate system. The observer grid is stored in the `pixel` parameter of the sensor object which is `(0,0,0)` by default (sensor position = observer position).
+The `Sensor` class enables relative positioning of observer grids in the global
+coordinate system. The observer grid is stored in the `pixel` parameter of the
+sensor object which is `(0,0,0)` by default (sensor position = observer
+position).
 
-The following example shows a moving and rotating sensor with two pixels. At the same time, the source objects are moving to demonstrate the versatility of the field computation.
+The following example shows a moving and rotating sensor with two pixels. At the
+same time, the source objects are moving to demonstrate the versatility of the
+field computation.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -127,7 +138,10 @@ with magpy.show_context(sensor, coll, animation=True, backend="plotly"):
 
 ## Multiple Inputs
 
-When `getBHJM` receive multiple inputs for sources and observers they will compute all possible combinations. It is still beneficial to call the field computation only a single time, because similar sources will be grouped, and the computation will be vectorized automatically.
+When `getBHJM` receive multiple inputs for sources and observers they will
+compute all possible combinations. It is still beneficial to call the field
+computation only a single time, because similar sources will be grouped, and the
+computation will be vectorized automatically.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -149,7 +163,8 @@ B = magpy.getB([cube1, cube2, cube3], [sens1, sens2])
 B.shape
 ```
 
-Select the second cube (first index), the first sensor (second index), pixel 3-4 (index three and four) and the Bz-component of the field (index five)
+Select the second cube (first index), the first sensor (second index), pixel 3-4
+(index three and four) and the Bz-component of the field (index five)
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -157,11 +172,14 @@ Select the second cube (first index), the first sensor (second index), pixel 3-4
 B[1, 0, 2, 3, 2]
 ```
 
-A path will add another index. Every higher pixel dimension will add another index as well.
+A path will add another index. Every higher pixel dimension will add another
+index as well.
 
 ## Field as Pandas Dataframe
 
-Instead of a NumPy `ndarray`, the field computation can also return a [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe) using the `output='dataframe'` kwarg.
+Instead of a NumPy `ndarray`, the field computation can also return a
+[pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe)
+using the `output='dataframe'` kwarg.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -191,7 +209,9 @@ B = magpy.getB(
 B
 ```
 
-Plotting libraries such as [plotly](https://plotly.com/python/plotly-express/) or [seaborn](https://seaborn.pydata.org/introduction.html) can take advantage of this feature, as they can deal with `dataframes` directly.
+Plotting libraries such as [plotly](https://plotly.com/python/plotly-express/)
+or [seaborn](https://seaborn.pydata.org/introduction.html) can take advantage of
+this feature, as they can deal with `dataframes` directly.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -214,12 +234,15 @@ fig.show()
 
 ## Functional Interface
 
-All above computations demonstrate the convenient object-oriented interface of Magpylib. However, there are instances when it is better to work with the functional interface instead.
+All above computations demonstrate the convenient object-oriented interface of
+Magpylib. However, there are instances when it is better to work with the
+functional interface instead.
 
 1. Reduce overhead of Python objects
 2. Complex computation instances
 
-In the following example we show how complex instances are computed using the functional interface.
+In the following example we show how complex instances are computed using the
+functional interface.
 
 ```{important}
 The functional interface will only outperform the object oriented interface if you use NumPy operations for input array creation, such as `tile`, `repeat`, `reshape`, ... !

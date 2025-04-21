@@ -16,7 +16,8 @@ orphan: true
 
 # Animations
 
-Magpylib can display the motion of objects along paths in the form of animations.
+Magpylib can display the motion of objects along paths in the form of
+animations.
 
 ```{hint}
 1. Animations work best with the [plotly backend](guide-graphic-backends).
@@ -26,11 +27,13 @@ Magpylib can display the motion of objects along paths in the form of animations
 3. Avoid rendering too many frames.
 ```
 
-Detailed information about how to tune animations can be found in the [graphics documentation](guide-graphic-animations).
+Detailed information about how to tune animations can be found in the
+[graphics documentation](guide-graphic-animations).
 
 ## Simple Animations
 
-Animations are created with `show` by setting `animation=True`. It is also possible to hand over the animation time with this parameter.
+Animations are created with `show` by setting `animation=True`. It is also
+possible to hand over the animation time with this parameter.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -60,7 +63,10 @@ magpy.show(sensor, magnet, animation=True, backend="plotly")
 
 ## Animated Subplots
 
-[Subplots](examples-vis-subplots) are a powerful tool to see the field along a path while viewing the 3D models at the same time. This is specifically illustrative as an animation where the field at the respective path position is indicated by a marker.
+[Subplots](examples-vis-subplots) are a powerful tool to see the field along a
+path while viewing the 3D models at the same time. This is specifically
+illustrative as an animation where the field at the respective path position is
+indicated by a marker.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -73,7 +79,8 @@ magpy.show(
 )
 ```
 
-It is also possible to use the [show_context](guide-graphics-show_context) context manager.
+It is also possible to use the [show_context](guide-graphics-show_context)
+context manager.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -89,11 +96,15 @@ with magpy.show_context([magnet, sensor], backend="plotly", animation=True) as s
 
 ## Exporting Animations
 
-Animations are wonderful but can be quite difficult to export when they are needed, for example, in a presentation. Here we show how to creat and export animations using the *.gif format.
+Animations are wonderful but can be quite difficult to export when they are
+needed, for example, in a presentation. Here we show how to creat and export
+animations using the \*.gif format.
 
 ### Built-in export
 
-The easiest way to export an animation is via the Magpylib built-in command `animation_output` in the `show` function. It works only with the Pyvista backend. The following code will create a file "test4.gif".
+The easiest way to export an animation is via the Magpylib built-in command
+`animation_output` in the `show` function. It works only with the Pyvista
+backend. The following code will create a file "test4.gif".
 
 ```python
 import magpylib as magpy
@@ -120,7 +131,10 @@ magpy.show(
 
 ### Custom export Pyvista
 
-For customizing videos it is best to work directly in the respective graphic backends. Here we show how to transfer the Magpylib graphic objects to a Pyvista plotter, customize the plotting scene, export screen shots, and combine them in a *.gif. The following example also shows how to achieve transparency.
+For customizing videos it is best to work directly in the respective graphic
+backends. Here we show how to transfer the Magpylib graphic objects to a Pyvista
+plotter, customize the plotting scene, export screen shots, and combine them in
+a \*.gif. The following example also shows how to achieve transparency.
 
 ```python
 import magpylib as magpy
@@ -206,7 +220,11 @@ if __name__ == "__main__":
 
 <img src="../../../_static/videos/example_gif2.gif" width=50% align="center">
 
-Notice that when providing a canvas, no update to its layout is performed by Magpylib, unless explicitly specified by setting `canvas_update=True` in `show()`. By default `canvas_update="auto"` only updates the canvas if is not provided by the user. Details can be found in the [graphics documentation](guide-graphics-canvas).
+Notice that when providing a canvas, no update to its layout is performed by
+Magpylib, unless explicitly specified by setting `canvas_update=True` in
+`show()`. By default `canvas_update="auto"` only updates the canvas if is not
+provided by the user. Details can be found in the
+[graphics documentation](guide-graphics-canvas).
 
 ### Custom export Plotly
 
