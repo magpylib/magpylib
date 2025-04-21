@@ -312,7 +312,7 @@ def make_triangle_orientations(obj, **kwargs) -> dict[str, Any]:
         )
         traces.append(tr)
     trace = merge_mesh3d(*traces)
-    trace["ismagnet"] = False  # neede to avoid updating mag mesh
+    trace["ismagnet"] = False  # needed to avoid updating mag mesh
     return trace
 
 
@@ -390,7 +390,7 @@ def make_mesh_lines(obj, mode, **kwargs) -> dict[str, Any]:
 
 def make_Triangle(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     """
-    Creates the plotly mesh3d parameters for a Trianglular facet in a dictionary based on the
+    Creates the plotly mesh3d parameters for a Triangular facet in a dictionary based on the
     provided arguments.
     """
     style = obj.style
@@ -432,7 +432,7 @@ def make_Triangle(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
 
 def make_TriangularMesh_single(obj, **kwargs) -> dict[str, Any]:
     """
-    Creates the plotly mesh3d parameters for a Trianglular facet mesh in a dictionary based on the
+    Creates the plotly mesh3d parameters for a Triangular facet mesh in a dictionary based on the
     provided arguments.
     """
     style = obj.style
@@ -447,7 +447,7 @@ def make_TriangularMesh_single(obj, **kwargs) -> dict[str, Any]:
 
 def make_TriangularMesh(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     """
-    Creates the plotly mesh3d parameters for a Trianglular facet mesh in a dictionary based on the
+    Creates the plotly mesh3d parameters for a Triangular facet mesh in a dictionary based on the
     provided arguments.
     """
     # pylint: disable=protected-access

@@ -18,7 +18,7 @@ orphan: true
 
 The position and orientation attributes are key elements of Magpylib. The
 documentation section {ref}`docs-position` describes how they work in detail.
-Wile these definitions can seem abstract, the interface was constructed as
+While these definitions can seem abstract, the interface was constructed as
 intuitively as possible which is demonstrated in this tutorial.
 
 ```{important}

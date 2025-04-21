@@ -193,3 +193,6 @@ messages_control.disable = [
   "protected-access", # TODO - review later
   "unused-argument", # already covered by ruff
 ]
+
+[tool.codespell]
+skip = './src/magpylib/_src/fields/special_el3'

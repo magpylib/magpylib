@@ -15,6 +15,7 @@ def el30(x, kc, p):
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
     # pylint: disable=consider-swap-variables
+    # codespell:ignore
     if x == 0:
         return 0.0
 

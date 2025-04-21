@@ -148,7 +148,7 @@ def test_Triangle_display():
             for v in points[triangles]
         ]
     )
-    # make north/south limit pass an ege by bicolor mode and (45° mag)
+    # make north/south limit pass an edge by bicolor mode and (45° mag)
     magpy.show(
         *src,
         backend="matplotlib",
@@ -623,7 +623,7 @@ def test_show_legend():
 
 @pytest.mark.parametrize("units_length", ["mT", "inch", "dam", "e"])
 def test_bad_units_length(units_length):
-    """test units lenghts"""
+    """test units lengths"""
 
     c = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
 

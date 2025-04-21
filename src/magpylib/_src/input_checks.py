@@ -648,7 +648,7 @@ def check_getBH_output_type(output):
 
 
 def check_input_canvas_update(canvas_update, canvas):
-    """chekc if canvas_update is acceptable also depending on canvas input"""
+    """check if canvas_update is acceptable also depending on canvas input"""
     acceptable = (True, False, "auto", None)
     if canvas_update not in acceptable:
         raise ValueError(

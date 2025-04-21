@@ -231,7 +231,7 @@ def get_inwards_mask(
                 break
         else:
             # if loop reaches the end and does not find any connected edge, while still
-            # having some indices to go trough -> mesh is is disconnected. A new seed is
+            # having some indices to go through -> mesh is is disconnected. A new seed is
             # needed and needs to be checked via ray tracing before continuing.
             any_connected = False
     return mask
@@ -248,7 +248,7 @@ def lines_end_in_trimesh(lines: np.ndarray, faces: np.ndarray) -> np.ndarray:
     Parameters
     ----------
     lines: ndarray shape (n,2,3)
-        n line segements defined through respectively 2 (first index) positions with
+        n line segments defined through respectively 2 (first index) positions with
         coordinates (x,y,z) (last index). The first point must lie outside of the mesh.
 
     faces: ndarray, shape (m,3,3)

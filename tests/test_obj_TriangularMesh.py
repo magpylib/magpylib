@@ -121,7 +121,7 @@ def test_TriangularMesh_getB_different_facet_shapes_mixed():
     tmesh_cube = magpy.magnet.TriangularMesh.from_pyvista(
         polydata=pv.Cube(), **cube_kwargs
     )
-    # create a sensor of which the pixel line corsses both bodies
+    # create a sensor of which the pixel line crosses both bodies
     sens = magpy.Sensor(pixel=np.linspace((-2, 1, 1), (2, 1, 1))).rotate_from_angax(
         [14, 65, 97], (4, 6, 9), anchor=0
     )
@@ -304,7 +304,7 @@ def test_TriangularMesh_from_pyvista():
             polarization=(0, 0, 1), polydata=obj
         )
 
-    # shoud work
+    # should work
     get_tri_from_pv(pv.Cube())
 
     # should fail

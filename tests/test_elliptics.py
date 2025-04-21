@@ -47,7 +47,7 @@ def test_el3_vs_original():
     # result0 = np.array([el30(x, kc, p) for x,kc,p in zip(x11,kc11,p11)])
     # np.save('data_test_el3', np.array([result0,x11,kc11,p11]))
 
-    # load data from orginal implementation
+    # load data from original implementation
     data = np.load("tests/testdata/testdata_el3.npy")
     res0, x11, kc11, p11 = data
 
@@ -72,7 +72,7 @@ def test_el3_angle_vs_original():
     # result0 = np.array([el3_angle0(phi, n, m) for phi,n,m in zip(phis,ns,ms)])
     # np.save('data_test_el3_angle', np.array([result0,phis,ns,ms]))
 
-    # load data from orginal implementation
+    # load data from original implementation
     data = np.load("tests/testdata/testdata_el3_angle.npy")
     res0, phis, ns, ms = data
 

@@ -449,7 +449,7 @@ def test_pixel_agg_heterogeneous_pixel_shapes():
     sens_col1.rotate_from_angax([45], "z", anchor=(5, 0, 0))
     sens_col2.rotate_from_angax([45], "z", anchor=(5, 0, 0))
 
-    # different pixel shapes withoug pixel_agg should raise an error
+    # different pixel shapes without pixel_agg should raise an error
     with pytest.raises(MagpylibBadUserInput):
         magpy.getB(src1, sens_col2, pixel_agg=None)
 
@@ -477,7 +477,7 @@ def test_pixel_agg_heterogeneous_pixel_shapes():
     # positions respectively for each sensor, so mean equals single value
     np.testing.assert_allclose(B3, B4)
 
-    # Testing autmatic vs manual aggregation (mean) with different pixel shapes
+    # Testing automatic vs manual aggregation (mean) with different pixel shapes
     B_by_sens_agg_1 = magpy.getB(src_col, sens_col2, squeeze=False, pixel_agg="mean")
     B_by_sens_agg_2 = []
     for sens in sens_col2:

@@ -204,11 +204,11 @@ def draw_arrow_from_vertices(
                 vec,
                 pos,
                 sign,
-                arrow_size=siz,
+                arrow_size=size,
                 arrow_pos=arrow_pos,
                 include_line=include_line,
             ).T
-            for vec, pos, siz in zip(vectors, positions, arrow_sizes, strict=False)
+            for vec, pos, size in zip(vectors, positions, arrow_sizes, strict=False)
         ],
         axis=1,
     )

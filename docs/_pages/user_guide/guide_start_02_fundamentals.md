@@ -13,7 +13,7 @@ language, the [NumPy array class](https://numpy.org/doc/stable/) and the
 [Scipy Rotation class](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html).
 
 ```{hint}
-Since v5 all Magpylib inputs and ouputs are by default in SI-units. See {ref}`guide-docs-io-scale-invariance` for convenient use.
+Since v5 all Magpylib inputs and outputs are by default in SI-units. See {ref}`guide-docs-io-scale-invariance` for convenient use.
 ```
 
 ### Create sources and observers as Python objects
@@ -177,7 +177,7 @@ print(obj1.position)  # -> [0.001 0.002 0.003]
 print(obj2.position)  # -> [0.001 0.002 0.003]
 ```
 
-Collections are dicussed in detail [here](guide-docs-classes-collections).
+Collections are discussed in detail [here](guide-docs-classes-collections).
 
 ### Complex Magnet Shapes
 

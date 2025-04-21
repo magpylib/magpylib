@@ -62,7 +62,7 @@ class Display(MagicProperties):
             '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
             '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
             '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
-        An iterable of color values used to cycle trough for every object displayed.
+        An iterable of color values used to cycle through for every object displayed.
         A color may be specified by
       - a hex string (e.g. '#ff0000')
       - an rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -101,7 +101,7 @@ class Display(MagicProperties):
 
     @property
     def colorsequence(self):
-        """An iterable of color values used to cycle trough for every object displayed.
+        """An iterable of color values used to cycle through for every object displayed.
           A color may be specified by
         - a hex string (e.g. '#ff0000')
         - an rgb/rgba string (e.g. 'rgb(255,0,0)')

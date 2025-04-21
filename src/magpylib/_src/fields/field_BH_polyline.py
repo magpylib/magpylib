@@ -121,7 +121,7 @@ def current_polyline_Hfield(
     Field computation via law of Biot Savart. See also countless online resources.
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
 
-    Be careful with magnetic fields of discontinued segements. They are
+    Be careful with magnetic fields of discontinued segments. They are
     unphysical and can lead to unphysical effects.
     """
     # rename
@@ -156,9 +156,9 @@ def current_polyline_Hfield(
         currents = currents[not_mask1]
 
     # determine field direction
-    cros = np.cross(p2 - p1, po - p4)
-    norm_cros = norm(cros, axis=1)
-    eB = (cros.T / norm_cros).T
+    cros_ = np.cross(p2 - p1, po - p4)
+    norm_cros = norm(cros_, axis=1)
+    eB = (cros_.T / norm_cros).T
 
     # compute angles
     norm_o1 = norm(

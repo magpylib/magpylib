@@ -175,7 +175,7 @@ def test_display_bad_style_kwargs():
 
 
 def test_extra_model3d():
-    """test diplay when object has an extra model object attached"""
+    """test display when object has an extra model object attached"""
     magpy.defaults.display.backend = "plotly"
     cuboid = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     cuboid.move(np.linspace((0.4, 0.4, 0.4), (12.4, 12.4, 12.4), 33), start=-1)
@@ -420,7 +420,7 @@ def test_color_precedence():
 
 
 def test_colors_output2d():
-    """Tests if lines have objects corresponding colors in ouptut=Bx, By..."""
+    """Tests if lines have objects corresponding colors in output=Bx, By..."""
     l1 = magpy.current.Circle(
         current=1,
         diameter=1,
@@ -460,7 +460,7 @@ def test_colors_output2d():
 
 
 def test_units_length():
-    """test units lenghts"""
+    """test units lengths"""
 
     dims = (1, 2, 3)
     c1 = magpy.magnet.Cuboid(dimension=dims, polarization=(1, 2, 3))

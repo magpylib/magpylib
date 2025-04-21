@@ -2,7 +2,7 @@
 
 # Position, Orientation, and Paths
 
-The following secions are detiled technical documentations of the Magpylib
+The following sections are detailed technical documentations of the Magpylib
 position and orientation interface. Practical examples and good practice usage
 is demonstrated in the tutorial {ref}`examples-tutorial-paths`.
 

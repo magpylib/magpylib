@@ -243,7 +243,7 @@ class BaseStyle(MagicProperties):
     @opacity.setter
     def opacity(self, val):
         assert val is None or (isinstance(val, (float, int)) and 0 <= val <= 1), (
-            "The `opacity` property must be a value betwen 0 and 1,\n"
+            "The `opacity` property must be a value between 0 and 1,\n"
             f"but received {val!r} instead."
         )
         self._opacity = val
@@ -1023,7 +1023,7 @@ class DisconnectedMesh(MagicProperties, MarkerLineProperties):
         key/value pairs.
 
     colorsequence: iterable, default=["red", "blue", "green", "cyan", "magenta", "yellow"]
-        An iterable of color values used to cycle trough for every disconnected part of
+        An iterable of color values used to cycle through for every disconnected part of
         disconnected triangular mesh object.
         A color may be specified by
       - a hex string (e.g. '#ff0000')
@@ -1035,7 +1035,7 @@ class DisconnectedMesh(MagicProperties, MarkerLineProperties):
 
     @property
     def colorsequence(self):
-        """An iterable of color values used to cycle trough for every disconnected part of
+        """An iterable of color values used to cycle through for every disconnected part of
         disconnected triangular mesh object.
           A color may be specified by
         - a hex string (e.g. '#ff0000')

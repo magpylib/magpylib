@@ -570,7 +570,7 @@ This is a major update that includes
 
 - Modified rotate methods:
   - The class methods `.rotate(angle, axis, anchor)` have been replaced by a new
-    `.rotate(rotation, anchor, increment, start)` method where `rotation` ist a
+    `.rotate(rotation, anchor, increment, start)` method where `rotation` is a
     scipy `Rotation` object.
   - The original angle-axis-anchor rotation is now provided by the new method
     `.rotate_from_angax(angle, axis, anchor, increment, start, degrees)`.
@@ -613,7 +613,7 @@ This is a major update that includes
       ends while other paths continue.
     4. `magpylib.getBv(**kwargs)` gives direct access to the field formulas and
        mostly replaces the `getBv_XXX()` functionality of v2. All inputs must be
-       arrays of length N or of length 1 (statics will be tiled).
+       arrays of length N or of length 1 (constants will be tiled).
   - While `getBv` is the fastest way to compute the fields it is much more
     convenient to use `getB()` which mostly provides the same performance.
     Specifically,the new `getB()` automatically groups all inputs for combined
@@ -685,7 +685,7 @@ API changes New features Improved internal workings
 
 ### Added
 
-- Performance computation trough vector functionality included in new top-level
+- Performance computation through vector functionality included in new top-level
   subpackage "vector"
 - Vectorized versions of math functions added to "math" subpackage
 

@@ -68,7 +68,7 @@ def test_repr():
 
 
 def test_old_Loop_deprecation_warning():
-    """test old calss deprecation warning"""
+    """test old class deprecation warning"""
     with pytest.warns(MagpylibDeprecationWarning):
         old_class = magpy.current.Loop()
 
