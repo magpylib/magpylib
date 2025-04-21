@@ -1,30 +1,37 @@
+# magpylib
+
+[![Actions Status][actions-badge]][actions-link]
+[![Documentation Status][rtd-badge]][rtd-link]
+
+[![PyPI version][pypi-version]][pypi-link]
+[![Conda-Forge][conda-badge]][conda-link]
+[![PyPI platforms][pypi-platforms]][pypi-link]
+
+[![GitHub Discussion][github-discussions-badge]][github-discussions-link]
+
+<!-- SPHINX-START -->
+
+<!-- prettier-ignore-start -->
+[actions-badge]:            https://github.com/magpylib/magpylib/workflows/CI/badge.svg
+[actions-link]:             https://github.com/magpylib/magpylib/actions
+[conda-badge]:              https://img.shields.io/conda/vn/conda-forge/magpylib
+[conda-link]:               https://github.com/conda-forge/magpylib-feedstock
+[github-discussions-badge]: https://img.shields.io/static/v1?label=Discussions&message=Ask&color=blue&logo=github
+[github-discussions-link]:  https://github.com/magpylib/magpylib/discussions
+[pypi-link]:                https://pypi.org/project/magpylib/
+[pypi-platforms]:           https://img.shields.io/pypi/pyversions/magpylib
+[pypi-version]:             https://img.shields.io/pypi/v/magpylib
+[rtd-badge]:                https://readthedocs.org/projects/magpylib/badge/?version=latest
+[rtd-link]:                 https://magpylib.readthedocs.io/en/latest/?badge=latest
+
+<!-- prettier-ignore-end -->
+
 
 > [!WARNING]
 > Version 5 introduces critical breaking changes with, among others, the _move to SI units_. We recommended to pin your dependencies to `magpylib>=4.5<5` until you are ready to migrate to the latest version! ([see details](https://github.com/magpylib/magpylib/discussions/647))
 
 <p align="left"><img align="center" src=docs/_static/images/magpylib_flag.png width=35%>
 </p>
-
----
-
-<div>
-<a href="https://opensource.org/licenses/BSD-2-Clause"> <img src="https://img.shields.io/badge/License-BSD_2--Clause-orange.svg">
-</a>
-<a href="https://github.com/magpylib/magpylib/actions/workflows/python-app.yml"> <img src="https://github.com/magpylib/magpylib/actions/workflows/python-app.yml/badge.svg">
-</a>
-<a href="https://magpylib.readthedocs.io/en/latest/"> <img src="https://readthedocs.org/projects/magpylib/badge/?version=latest">
-</a>
-<a href="https://codecov.io/gh/magpylib/magpylib"> <img src="https://codecov.io/gh/magpylib/magpylib/branch/main/graph/badge.svg">
-</a>
-<a href="https://pypi.org/project/magpylib/"> <img src="https://badge.fury.io/py/magpylib.svg" alt="PyPI version" height="18">
-</a>
-<a href="https://anaconda.org/conda-forge/magpylib"> <img src="https://anaconda.org/conda-forge/magpylib/badges/version.svg" alt="Conda Cloud" height="18">
-</a>
-<a href="https://mybinder.org/v2/gh/magpylib/magpylib/5.1.1?filepath=docs%2Fexamples"> <img src="https://mybinder.org/badge_logo.svg" alt="MyBinder link" height="18">
-</a>
-<a href="https://github.com/psf/black"> <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="black" height="18">
-</a>
-</div>
 
 Magpylib is an **open-source Python package** for calculating static **magnetic fields** of magnets, currents, and other sources. It uses **analytical expressions**, solutions to macroscopic magnetostatic problems, implemented in **vectorized** form which makes the computation **extremely fast** and leverages the open-source Python ecosystem for spectacular visualizations!
 
@@ -38,7 +45,7 @@ Install from conda forge using **conda**
 ```
 conda install -c conda-forge magpylib
 ```
-Magpylib supports _Python3.10+_ and relies on common scientific computation libraries _NumPy_, _Scipy_, _Matplotlib_ and _Plotly_. Optionally, _Pyvista_ is recommended as graphical backend.
+Magpylib supports _Python3.11+_ and relies on common scientific computation libraries _NumPy_, _Scipy_, _Matplotlib_ and _Plotly_. Optionally, _Pyvista_ is recommended as graphical backend.
 
 # Resources
 

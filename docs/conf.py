@@ -1,19 +1,8 @@
-#
-# Configuration file for the Sphinx documentation builder.
-#
-# This file does only contain a selection of the most common options. For a
-# full list see the documentation:
-# http://www.sphinx-doc.org/en/main/config
-# -- Path setup --------------------------------------------------------------
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+from __future__ import annotations
+
 import os
 import sys
+import importlib.metadata
 
 # This is for pyvista
 os.system("/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
@@ -59,13 +48,10 @@ def setup(app):
 # -- Project information -----------------------------------------------------
 
 project = "Magpylib"
-copyright = "2019-2024, Magpylib developers, License: BSD 2-clause, Built with Sphinx Pydata-Theme"
+copyright = "2019-2025, Magpylib developers, License: BSD 2-clause, Built with Sphinx Pydata-Theme"
 author = "The Magpylib Project <magpylib@gmail.com>"
 
-# The short X.Y version
-version = ""
-# The full version, including alpha/beta/rc tags
-from magpylib import __version__ as release
+version = release = importlib.metadata.version("magpylib")
 
 # -- General configuration ---------------------------------------------------
 
