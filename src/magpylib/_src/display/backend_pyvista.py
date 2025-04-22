@@ -5,9 +5,11 @@
 # pylint: disable=too-many-positional-arguments
 from __future__ import annotations
 
+import contextlib
 import os
 import tempfile
 from functools import lru_cache
+from pathlib import Path
 
 import numpy as np
 
@@ -221,7 +223,7 @@ def display_pyvista(
     fig_kwargs=None,
     show_kwargs=None,
     mp4_quality=5,
-    **kwargs,  # pylint: disable=unused-argument
+    **kwargs,  # noqa: ARG001
 ):
     """Display objects and paths graphically using the pyvista library."""
 
@@ -278,13 +280,10 @@ def display_pyvista(
             ranges = data["ranges"][row + 1, col + 1]
             pts = np.array(np.meshgrid(*ranges)).T.reshape(-1, 3)
             canvas.add_mesh(pv.PolyData(pts), opacity=0)
-            try:
+            with contextlib.suppress(StopIteration, IndexError):
                 canvas.remove_scalar_bar()
-            except (StopIteration, IndexError):
-                # try to remove scalar bar, if none, pass
                 # needs to happen in the loop otherwise they cummulate
                 # while the max of 10 is reached and throws a ValueError
-                pass
 
         for (row, col), count in count_with_labels.items():
             canvas.subplot(row, col)
@@ -294,16 +293,17 @@ def display_pyvista(
                     canvas.show_axes()
                 canvas.camera.azimuth = -90
                 canvas.set_background("gray", top="white")
-            if 0 < count <= legend_maxitems:
-                if subplot_specs[row, col]["type"] == "scene":
-                    canvas.add_legend(bcolor=None)
+            if (
+                0 < count <= legend_maxitems
+                and subplot_specs[row, col]["type"] == "scene"
+            ):
+                canvas.add_legend(bcolor=None)
 
     def run_animation(filename, embed=True):
         # embed=True, embeds the animation into the notebook page and is necessary when using
         # temp files
         nonlocal show_canvas, charts_max_ind, charts
-
-        suff = os.path.splitext(filename)[-1]
+        suff = Path(filename).suffix
         if suff == ".gif":
             loop = 1 if repeat is False else 0 if repeat is True else int(repeat)
             canvas.open_gif(filename, loop=loop, fps=1000 / data["frame_duration"])
@@ -331,15 +331,12 @@ def display_pyvista(
         animation_output = "gif" if animation_output is None else animation_output
         if animation_output in ("gif", "mp4"):
             try:
-                temp = os.path.join(tempfile.gettempdir(), os.urandom(24).hex())
-                temp += f".{animation_output}"
+                temp = Path(tempfile.gettempdir()) / os.urandom(24).hex()
+                temp = temp.with_suffix(f".{animation_output}")
                 run_animation(temp, embed=True)
             finally:
-                try:
-                    os.unlink(temp)
-                except FileNotFoundError:  # pragma: no cover
-                    # avoid exception if file is not found
-                    pass
+                with contextlib.suppress(FileNotFoundError):  # pragma: no cover
+                    temp.unlink()
         else:
             run_animation(animation_output, embed=True)
 

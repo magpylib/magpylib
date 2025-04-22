@@ -354,7 +354,7 @@ def merge_mesh3d(*traces):
     for k in "ijk":
         if k in traces[0]:
             merged_trace[k] = np.hstack(
-                [b[k] + l for b, l in zip(traces, L, strict=False)]
+                [b[k] + m for b, m in zip(traces, L, strict=False)]
             )
     for k in "xyz":
         merged_trace[k] = np.concatenate([b[k] for b in traces])
@@ -503,7 +503,8 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
     """
     ranges_rc = {}
     tr_dim_count = {}
-    for tr in traces:
+    for tr_item in traces:
+        tr = tr_item
         coords = "xyz"
         rc = tr.get("row", 1), tr.get("col", 1)
         if "constructor" in tr:
@@ -536,7 +537,8 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
                     ranges_rc[rc].values(), *min_max, strict=False
                 ):
                     v.extend([min_, max_])
-    for rc, ranges in ranges_rc.items():
+    for rc, ranges_item in ranges_rc.items():
+        ranges = ranges_item
         if tr_dim_count[rc]["3D"]:
             zo = zoom[rc] if isinstance(zoom, dict) else zoom
             # SET 3D PLOT BOUNDARIES
@@ -594,7 +596,8 @@ def group_traces(*traces):
             "mode",
         ],
     }
-    for tr in traces:
+    for tr_item in traces:
+        tr = tr_item
         tr = linearize_dict(
             tr,
             separator="_",
@@ -644,7 +647,8 @@ def process_show_input_objs(objs, **kwargs):
     unique_fields = tuple(k for k in defaults if k not in identifiers)
     sources_and_sensors_only = []
     new_objs = []
-    for obj in objs:
+    for obj_item in objs:
+        obj = obj_item
         # add missing kwargs
         if isinstance(obj, dict):
             obj = {**defaults, **obj, **kwargs}

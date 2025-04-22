@@ -3,6 +3,9 @@ from __future__ import annotations
 import importlib.metadata
 import os
 import sys
+from pathlib import Path
+
+import sphinx.ext.apidoc
 
 # This is for pyvista
 os.system("/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
@@ -12,11 +15,11 @@ os.environ["PYVISTA_USE_IPYVTK"] = "true"
 os.environ["MAGPYLIB_MPL_SVG"] = "true"
 
 # Location of Sphinx files
-sys.path.insert(0, os.path.abspath("./../"))  ##Add the folder one level above
+
+sys.path.insert(0, str(Path("./../").resolve()))  ##Add the folder one level above
 os.environ["SPHINX_APIDOC_OPTIONS"] = (
     "members,show-inheritance"  ## Hide undocumented members
 )
-import sphinx.ext.apidoc
 
 # from sphinx_gallery.sorting import FileNameSortKey
 

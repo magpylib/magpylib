@@ -274,7 +274,7 @@ class BaseCollection(BaseDisplayRepr):
 
         if return_string:
             return output
-        print(output)
+        print(output)  # noqa: T201
         return None
 
     # methods -------------------------------------------------------
@@ -329,11 +329,12 @@ class BaseCollection(BaseDisplayRepr):
 
         # assign parent
         for obj in obj_list:
-            if isinstance(obj, Collection):
-                # no need to check recursively with `collections_all` if obj is already self
-                if obj is self or self in obj.collections_all:
-                    msg = f"Cannot add {obj!r} because a Collection must not reference itself."
-                    raise MagpylibBadUserInput(msg)
+            # no need to check recursively with `collections_all` if obj is already self
+            if isinstance(obj, Collection) and (
+                obj is self or self in obj.collections_all
+            ):
+                msg = f"Cannot add {obj!r} because a Collection must not reference itself."
+                raise MagpylibBadUserInput(msg)
             if obj._parent is None:
                 obj._parent = self
             elif override_parent:

@@ -381,7 +381,7 @@ def make_CylinderSegment(
         i.extend([i5, i5 + N - 1])
         j.extend([k5, k5 + N - 1])
         k.extend([j5, j5 + N - 1])
-    i, j, k = (np.hstack(l) for l in (i, j, k))
+    i, j, k = (np.hstack(m) for m in (i, j, k))
 
     trace = {"x": x, "y": y, "z": z, "i": i, "j": j, "k": k}
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)

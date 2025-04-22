@@ -544,7 +544,8 @@ def BHJM_magnet_trimesh(
     if in_out == "auto":
         prev_ind = 0
         # group similar meshes for inside-outside evaluation and adding B
-        for new_ind, _ in enumerate(BHJM):
+        for new_ind_item, _ in enumerate(BHJM):
+            new_ind = new_ind_item
             if (
                 new_ind == len(BHJM) - 1
                 or mesh[new_ind].shape != mesh[prev_ind].shape

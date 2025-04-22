@@ -291,7 +291,7 @@ def display_plotly(
     subplot_specs=None,
     fig_kwargs=None,
     show_kwargs=None,
-    **kwargs,  # pylint: disable=unused-argument
+    **kwargs,  # noqa: ARG001
 ):
     """Display objects and paths graphically using the plotly library."""
 
@@ -308,14 +308,12 @@ def display_plotly(
             show_fig = True
         fig = go.Figure()
 
-    if not (max_rows is None and max_cols is None):
-        # pylint: disable=protected-access
-        if fig._grid_ref is None:
-            fig = fig.set_subplots(
-                rows=max_rows,
-                cols=max_cols,
-                specs=subplot_specs.tolist(),
-            )
+    if not (max_rows is None and max_cols is None) and fig._grid_ref is None:  # pylint: disable=protected-access
+        fig = fig.set_subplots(
+            rows=max_rows,
+            cols=max_cols,
+            specs=subplot_specs.tolist(),
+        )
 
     frames = data["frames"]
     for fr in frames:

@@ -408,12 +408,12 @@ def open_animation(filepath, embed=True):
     """Display video or gif file using tkinter or IPython"""
     # pylint: disable=import-outside-toplevel
     if is_notebook():
-        if filepath.endswith(".gif"):
+        if str(filepath).lower().endswith(".gif"):
             from IPython.display import Image as IPyImage
             from IPython.display import display
 
             display(IPyImage(data=filepath, embed=embed))
-        elif filepath.endswith(".mp4"):
+        elif str(filepath).lower().endswith(".mp4"):
             from IPython.display import Video, display
 
             display(Video(data=filepath, embed=embed))

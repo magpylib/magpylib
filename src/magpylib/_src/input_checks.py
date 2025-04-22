@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import inspect
 import numbers
+from importlib.util import find_spec
 
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -482,22 +483,27 @@ def check_format_input_observers(inp, pixel_agg=None):
         inp = np.array(inp, dtype=float)
         pix_shapes = [(1, 3) if inp.shape == (3,) else inp.shape]
         return [_src.obj_classes.class_Sensor.Sensor(pixel=inp)], pix_shapes
-    except (TypeError, ValueError):  # if not, it must be [pos_vec, sens, coll]
+    except (TypeError, ValueError) as err:  # if not, it must be [pos_vec, sens, coll]
         sensors = []
-        for obj in inp:
+        for obj_item in inp:
+            obj = obj_item
             if isinstance(obj, Sensor):
                 sensors.append(obj)
             elif isinstance(obj, Collection):
                 child_sensors = format_obj_input(obj, allow="sensors")
                 if not child_sensors:
-                    raise MagpylibBadUserInput(wrong_obj_msg(obj, allow="observers"))
+                    raise MagpylibBadUserInput(
+                        wrong_obj_msg(obj, allow="observers")
+                    ) from err
                 sensors.extend(child_sensors)
             else:  # if its not a Sensor or a Collection it can only be a pos_vec
                 try:
                     obj = np.array(obj, dtype=float)
                     sensors.append(_src.obj_classes.class_Sensor.Sensor(pixel=obj))
                 except Exception:  # or some unwanted crap
-                    raise MagpylibBadUserInput(wrong_obj_msg(obj, allow="observers"))
+                    raise MagpylibBadUserInput(
+                        wrong_obj_msg(obj, allow="observers")
+                    ) from err
 
         # all pixel shapes must be the same
         pix_shapes = [
@@ -510,7 +516,7 @@ def check_format_input_observers(inp, pixel_agg=None):
                 " All observer inputs must be of similar shape, unless a"
                 " numpy pixel aggregator is provided, e.g. `pixel_agg='mean'`!"
             )
-            raise MagpylibBadUserInput(msg)
+            raise MagpylibBadUserInput(msg) from err
         return sensors, pix_shapes
 
 
@@ -637,19 +643,13 @@ def check_getBH_output_type(output):
             f"\nInstead received {output!r}."
         )
         raise ValueError(msg)
-    if output == "dataframe":
-        try:
-            # pylint: disable=import-outside-toplevel
-            # pylint: disable=unused-import
-            import pandas as pd
-        except ImportError as missing_module:  # pragma: no cover
-            msg = (
-                "In order to use the `dataframe` output type, you need to install pandas "
-                "via pip or conda, "
-                "see https://pandas.pydata.org/docs/getting_started/install.html"
-            )
-            raise ModuleNotFoundError(msg) from missing_module
-
+    if output == "dataframe" and find_spec("pandas") is None:  # pragma: no cover
+        msg = (
+            "In order to use the `dataframe` output type, you need to install pandas "
+            "via pip or conda, "
+            "see https://pandas.pydata.org/docs/getting_started/install.html"
+        )
+        raise ModuleNotFoundError(msg)
     return output
 
 

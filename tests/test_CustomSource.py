@@ -9,7 +9,7 @@ import magpylib as magpy
 # pylint: disable=unused-argument
 
 
-def constant_field(field, observers=(0, 0, 0)):
+def constant_field(field, observers=(0, 0, 0)):  # noqa: ARG001
     """constant field"""
     position = np.array(observers)
     length = 1 if position.ndim == 1 else len(position)

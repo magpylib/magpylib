@@ -119,9 +119,10 @@ def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False) -> d
                     same_keys_only=same_keys_only,
                     replace_None_only=replace_None_only,
                 )
-            elif new_dict.get(k, None) is None or not replace_None_only:
-                if not same_keys_only or k in new_dict:
-                    new_dict[k] = u[k]
+            elif (new_dict.get(k, None) is None or not replace_None_only) and (
+                not same_keys_only or k in new_dict
+            ):
+                new_dict[k] = u[k]
     return new_dict
 
 

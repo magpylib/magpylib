@@ -226,7 +226,7 @@ def test_core_physics_long_solenoid():
         where Jz = MU0 * I * N / L, and holds for B and for H-M.
     """
 
-    I = 134
+    I = 134  # noqa: E741
     N = 5000
     R = 1.543
     L = 1234
@@ -299,12 +299,11 @@ def test_core_physics_current_replacement():
     )[0, 2]
 
     N = 1000  # current discretization
-    I = Jz / MU0 / N * L
     H = BHJM_circle(
         field="H",
         observers=np.linspace((0, 0, -L / 2), (0, 0, L / 2), N) + obs,
         diameter=np.array([2 * R] * N),
-        current=np.array([I] * N),
+        current=np.array([Jz / MU0 / N * L] * N),
     )
     Hz_curr = np.sum(H, axis=0)[2]
 

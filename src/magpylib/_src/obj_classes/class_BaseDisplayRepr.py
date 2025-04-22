@@ -48,7 +48,8 @@ class BaseDisplayRepr:
             exclude = ()
         params = list(self._property_names_generator())
         lines = [f"{self!r}"]
-        for k in list(dict.fromkeys(list(UNITS) + list(params))):
+        for key in list(dict.fromkeys(list(UNITS) + list(params))):
+            k = key
             if not k.startswith("_") and k in params and k not in exclude:
                 unit = UNITS.get(k)
                 unit_str = f" {unit}" if unit else ""
@@ -102,7 +103,7 @@ class BaseDisplayRepr:
         if return_string:
             return output
 
-        print(output)
+        print(output)  # noqa: T201
         return None
 
     def _repr_html_(self):

@@ -438,12 +438,12 @@ def getBH_level2(
             src_ids = [s.style.label if s.style.label else f"{s}" for s in sources]
         sens_ids = [s.style.label if s.style.label else f"{s}" for s in sensors]
         num_of_pixels = np.prod(pix_shapes[0][:-1]) if pixel_agg is None else 1
-        df = pd.DataFrame(
+        df_field = pd.DataFrame(
             data=product(src_ids, range(max_path_len), sens_ids, range(num_of_pixels)),
             columns=["source", "path", "sensor", "pixel"],
         )
-        df[[field + k for k in "xyz"]] = B.reshape(-1, 3)
-        return df
+        df_field[[field + k for k in "xyz"]] = B.reshape(-1, 3)
+        return df_field
 
     # reduce all size-1 levels
     if squeeze:
@@ -462,7 +462,7 @@ def getBH_dict_level2(
     *,
     field: str,
     position=(0, 0, 0),
-    orientation=R.identity(),
+    orientation=None,
     squeeze=True,
     in_out="auto",
     **kwargs: dict,
@@ -497,7 +497,8 @@ def getBH_dict_level2(
     #  which tells the program which dimension it should tile up.
 
     # pylint: disable=import-outside-toplevel
-
+    if orientation is None:
+        orientation = R.identity()
     try:
         source_classes = get_registered_sources()
         field_func = source_classes[source_type]._field_func
@@ -521,7 +522,8 @@ def getBH_dict_level2(
     # evaluation vector lengths
     vec_lengths = {}
     ragged_seq = {}
-    for key, val in kwargs.items():
+    for key, val_item in kwargs.items():
+        val = val_item
         try:
             if (
                 not isinstance(val, numbers.Number)

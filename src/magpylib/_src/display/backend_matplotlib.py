@@ -7,6 +7,7 @@
 # pylint: disable=too-many-positional-arguments
 from __future__ import annotations
 
+import contextlib
 import os
 from collections import Counter
 
@@ -73,7 +74,7 @@ class StripedHandler:
         self.colors = list(color_data.keys())
         self.proportions = [value / total for value in color_data.values()]
 
-    def legend_artist(self, legend, orig_handle, fontsize, handlebox):
+    def legend_artist(self, legend, orig_handle, fontsize, handlebox):  # noqa: ARG002
         # pylint: disable=unused-argument
         """Create custom legend key"""
         x0, y0 = handlebox.xdescent, handlebox.ydescent
@@ -165,11 +166,11 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
         if "text" in mode and trace.get("text", False) and len(coords) > 0:
             txt = trace["text"]
             txt = [txt] * len(coords[0]) if isinstance(txt, str) else txt
-            for *coords_s, txt in zip(*coords, txt, strict=False):
+            for *coords_s, t in zip(*coords, txt, strict=False):
                 traces_mpl.append(
                     {
                         "constructor": "text",
-                        "args": (*coords_s, txt),
+                        "args": (*coords_s, t),
                     }
                 )
         traces_mpl.append(
@@ -248,7 +249,7 @@ def display_matplotlib(
     legend_maxitems=20,
     fig_kwargs=None,
     show_kwargs=None,
-    **kwargs,  # pylint: disable=unused-argument
+    **kwargs,  # noqa: ARG001
 ):
     """Display objects and paths graphically using the matplotlib library."""
     frames = data["frames"]
@@ -376,11 +377,9 @@ def display_matplotlib(
                     lg_kw = {"bbox_to_anchor": (1.04, 1), "loc": "upper left"}
                     if handler_map:
                         lg_kw["handler_map"] = handler_map
-                    try:
-                        ax.legend(**lg_kw)
-                    except AttributeError:
+                    with contextlib.suppress(AttributeError):
                         # see https://github.com/matplotlib/matplotlib/pull/25565
-                        pass
+                        ax.legend(**lg_kw)
             else:
                 ax.legend(loc="best")
 

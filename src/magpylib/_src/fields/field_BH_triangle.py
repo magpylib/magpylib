@@ -142,11 +142,11 @@ def triangle_Bfield(
     L = vertices[:, (1, 2, 0)] - vertices[:, (0, 1, 2)]
     L = np.swapaxes(L, 0, 1)
     l2 = np.sum(L * L, axis=-1)
-    l = np.sqrt(l2)
+    l1 = np.sqrt(l2)
 
     # vert-vert -- vert-obs
     b = np.einsum("ijk, ijk->ij", R, L)
-    bl = b / l
+    bl = b / l1
     ind = np.fabs(r + bl)  # closeness measure to corner and edge
 
     # The computation of ind is the origin of a major numerical instability
@@ -168,10 +168,10 @@ def triangle_Bfield(
     # )
 
     with np.errstate(divide="ignore", invalid="ignore"):
-        I = np.where(
+        I = np.where(  # noqa: E741
             ind > 1.0e-12,
-            1.0 / l * np.log((np.sqrt(l2 + 2 * b + r2) + l + bl) / ind),
-            -(1.0 / l) * np.log(np.fabs(l - r) / r),
+            1.0 / l1 * np.log((np.sqrt(l2 + 2 * b + r2) + l1 + bl) / ind),
+            -(1.0 / l1) * np.log(np.fabs(l1 - r) / r),
         )
     PQR = np.einsum("ij, ijk -> jk", I, L)
     B = sigma * (n.T * solid_angle(R, r) - vcross3(n, PQR).T)

@@ -268,9 +268,8 @@ def get_traces_2D(
     styles=None,
     units_polarization="T",
     units_magnetization="A/m",
-    # pylint: disable=unused-argument
-    units_length="m",
-    zoom=0,
+    units_length="m",  # noqa: ARG001
+    zoom=0,  # noqa: ARG001
 ):
     """draws and animates sensor values over a path in a subplot"""
     # pylint: disable=import-outside-toplevel
@@ -515,7 +514,8 @@ def get_generic_traces3D(
         if style.model3d.showdefault and make_func is not None:
             p_trs = make_func(**make_func_kwargs)
             p_trs = [p_trs] if isinstance(p_trs, dict) else p_trs
-            for p_tr in p_trs:
+            for p_tr_item in p_trs:
+                p_tr = p_tr_item.copy()
                 is_mag = p_tr.pop("ismagnet", is_mag)
                 if is_mag and p_tr.get("type", "") == "mesh3d":
                     p_tr = update_magnet_mesh(
@@ -644,7 +644,8 @@ def clean_legendgroups(frames, clean_2d=False):
     """removes legend duplicates for a plotly figure"""
     for fr in frames:
         legendgroups = {}
-        for tr in chain(fr["data"], fr["extra_backend_traces"]):
+        for tr_item in chain(fr["data"], fr["extra_backend_traces"]):
+            tr = tr_item
             if "z" in tr or clean_2d or "kwargs_extra" in tr:
                 tr = tr.get("kwargs_extra", tr)
                 lg = tr.get("legendgroup", None)
@@ -699,9 +700,8 @@ def extract_animation_properties(
     animation_time,
     animation_fps,
     animation_maxframes,
-    # pylint: disable=unused-argument
-    animation_slider,
-    animation_output,
+    animation_slider,  # noqa: ARG001
+    animation_output,  # noqa: ARG001
 ):
     """Extract animation properties"""
     # pylint: disable=import-outside-toplevel
@@ -768,8 +768,8 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
     """Return traces, traces to resize and extra_backend_traces"""
     extra_backend_traces = []
     traces_dict = {}
-    for obj, params in flat_objs_props.items():
-        params = {**params, **kwargs}
+    for obj, params_item in flat_objs_props.items():
+        params = {**params_item, **kwargs}
         if autosize is None and getattr(obj, "_autosize", False):
             # temporary coordinates to be able to calculate ranges
             # pylint: disable=protected-access

@@ -232,9 +232,9 @@ def test_dataframe_ouptut_sumup():
         magpy.magnet.Cuboid(polarization=(0, 0, 1000), dimension=(1, 1, 1)),
         magpy.magnet.Cylinder(polarization=(0, 1000, 0), dimension=(1, 1)),
     ]
-    df = magpy.getB(sources, (0, 0, 0), sumup=True, output="dataframe")
+    df_field = magpy.getB(sources, (0, 0, 0), sumup=True, output="dataframe")
     np.testing.assert_allclose(
-        df[["Bx", "By", "Bz"]].values,
+        df_field[["Bx", "By", "Bz"]].values,
         np.array([[-2.16489014e-14, 6.46446609e02, 6.66666667e02]]),
     )
 
@@ -248,9 +248,9 @@ def test_dataframe_ouptut_pixel_agg():
 
     sources = (src1,)
     sensors = sens1, sens2, sens3
-    df = magpy.getB(sources, sensors, pixel_agg="mean", output="dataframe")
+    df_field = magpy.getB(sources, sensors, pixel_agg="mean", output="dataframe")
     np.testing.assert_allclose(
-        df[["Bx", "By", "Bz"]].values,
+        df_field[["Bx", "By", "Bz"]].values,
         np.array(
             [[0.0, 0.0, 134.78238624], [0.0, 0.0, 19.63857207], [0.0, 0.0, 5.87908614]]
         ),

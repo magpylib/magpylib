@@ -4,6 +4,8 @@ import numpy as np
 
 from magpylib._src.fields.special_cel import cel
 
+# ruff: noqa: E741  # Avoid ambiguity with variable names
+
 
 def el30(x, kc, p):
     """

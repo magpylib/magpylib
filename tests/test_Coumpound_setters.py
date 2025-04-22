@@ -2,7 +2,7 @@
 # pylint: disable=unused-import
 from __future__ import annotations
 
-import os
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -128,7 +128,7 @@ def get_pos_orient_from_collection(coll):
 
 
 folder = "tests/testdata"
-file = os.path.join(folder, "testdata_compound_setter_cases.npy")
+file = Path(folder) / "testdata_compound_setter_cases.npy"
 # create_compound_test_data(file)
 
 COMPOUND_DATA = np.load(file, allow_pickle=True).item()

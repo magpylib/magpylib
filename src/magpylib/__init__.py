@@ -19,6 +19,7 @@ from magpylib._src.obj_classes.class_Sensor import Sensor
 from ._version import version as __version__
 
 __all__ = [
+    "SUPPORTED_PLOTTING_BACKENDS",
     "Collection",
     "Sensor",
     "__version__",

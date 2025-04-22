@@ -416,7 +416,8 @@ class Model3d(MagicProperties):
         elif not isinstance(traces, list | tuple):
             traces = [traces]
         new_traces = []
-        for trace in traces:
+        for trace_item in traces:
+            trace = trace_item
             updatefunc = None
             if not isinstance(trace, Trace3d) and callable(trace):
                 updatefunc = trace
@@ -612,7 +613,7 @@ class Trace3d(MagicProperties):
 
     @scale.setter
     def scale(self, val):
-        assert isinstance(val, int | float) and val > 0, (
+        assert isinstance(val, int | float) and val > 0, (  # noqa: PT018
             f"The `scale` property of {type(self).__name__} must be a strictly positive number,\n"
             f"but received {val!r} instead."
         )

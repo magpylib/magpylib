@@ -5,6 +5,7 @@ from __future__ import annotations
 import warnings
 from contextlib import contextmanager
 from importlib import import_module
+from typing import ClassVar
 
 from matplotlib.axes import Axes as mplAxes
 from matplotlib.figure import Figure as mplFig
@@ -30,7 +31,7 @@ disp_args = set(get_defaults_dict("display"))
 class RegisteredBackend:
     """Base class for display backends"""
 
-    backends = {}
+    backends: ClassVar[dict[str, RegisteredBackend]] = {}
 
     def __init__(
         self,
@@ -227,8 +228,8 @@ def _show(
         backend = infer_backend(canvas)
 
     return RegisteredBackend.show(
-        backend=backend,
         *objects,
+        backend=backend,
         animation=animation,
         canvas=canvas,
         canvas_update=canvas_update,

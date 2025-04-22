@@ -470,15 +470,14 @@ def make_TriangularMesh(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
                     stacklevel=2,
                 )
             is_disconnected = obj.check_disconnected()
-        elif mode == "selfintersecting":
-            if obj._status_selfintersecting is None:
-                warnings.warn(
-                    f"Unchecked selfintersecting mesh status in {obj!r} detected, before "
-                    "attempting to show possible disconnected parts, which may take a while "
-                    "to compute when the mesh has many faces, now applying operation...",
-                    stacklevel=2,
-                )
-                obj.check_selfintersecting()
+        elif mode == "selfintersecting" and obj._status_selfintersecting is None:
+            warnings.warn(
+                f"Unchecked selfintersecting mesh status in {obj!r} detected, before "
+                "attempting to show possible disconnected parts, which may take a while "
+                "to compute when the mesh has many faces, now applying operation...",
+                stacklevel=2,
+            )
+            obj.check_selfintersecting()
 
     if is_disconnected:
         tria_orig = obj._faces
