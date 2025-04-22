@@ -72,7 +72,10 @@ class Cuboid(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_cuboid)
-    _field_func_kwargs_ndim = {"polarization": 2, "dimension": 2}
+    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
+        "polarization": 2,
+        "dimension": 2,
+    }
     get_trace = make_Cuboid
 
     def __init__(

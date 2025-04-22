@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import warnings
+from typing import ClassVar
 
 from magpylib._src.display.traces_core import make_Polyline
 from magpylib._src.exceptions import MagpylibDeprecationWarning
@@ -75,7 +76,7 @@ class Polyline(BaseCurrent):
 
     # pylint: disable=dangerous-default-value
     _field_func = staticmethod(current_vertices_field)
-    _field_func_kwargs_ndim = {
+    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "current": 1,
         "vertices": 3,
         "segment_start": 2,

@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from magpylib._src.display.traces_core import make_Cylinder
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.input_checks import check_format_input_vector
@@ -71,7 +73,10 @@ class Cylinder(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_cylinder)
-    _field_func_kwargs_ndim = {"polarization": 2, "dimension": 2}
+    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
+        "polarization": 2,
+        "dimension": 2,
+    }
     get_trace = make_Cylinder
 
     def __init__(

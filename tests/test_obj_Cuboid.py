@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 
@@ -41,7 +41,7 @@ from magpylib._src.obj_classes.class_Sensor import Sensor
 def test_Cuboid_basics():
     """test Cuboid fundamentals"""
     # data generated in comment above
-    with open(os.path.abspath("./tests/testdata/testdata_Cuboid.p"), "rb") as f:
+    with Path("tests/testdata/testdata_Cuboid.p").resolve().open("rb") as f:
         data = pickle.load(f)
     mags, dims, posos, angs, axs, anchs, movs, B = data
 

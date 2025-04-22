@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import warnings
+from typing import ClassVar
 
 from magpylib._src.display.traces_core import make_Circle
 from magpylib._src.exceptions import MagpylibDeprecationWarning
@@ -67,7 +68,7 @@ class Circle(BaseCurrent):
     """
 
     _field_func = staticmethod(BHJM_circle)
-    _field_func_kwargs_ndim = {"current": 1, "diameter": 1}
+    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"current": 1, "diameter": 1}
     get_trace = make_Circle
 
     def __init__(

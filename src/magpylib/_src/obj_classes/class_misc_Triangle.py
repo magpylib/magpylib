@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Triangle
@@ -85,7 +87,10 @@ class Triangle(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_triangle)
-    _field_func_kwargs_ndim = {"polarization": 2, "vertices": 2}
+    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
+        "polarization": 2,
+        "vertices": 2,
+    }
     get_trace = make_Triangle
     _style_class = TriangleStyle
 

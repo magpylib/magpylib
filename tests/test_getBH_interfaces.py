@@ -201,7 +201,7 @@ def test_dataframe_ouptut():
 
     for field in "BH":
         cols = [f"{field}{k}" for k in "xyz"]
-        df = getattr(magpy, f"get{field}")(
+        df_field = getattr(magpy, f"get{field}")(
             sources, sens_col, sumup=False, output="dataframe"
         )
         BH = getattr(magpy, f"get{field}")(
@@ -209,18 +209,20 @@ def test_dataframe_ouptut():
         )
         for i in range(2):
             np.testing.assert_array_equal(
-                BH[i].reshape(-1, 3), df[df["source"] == df["source"].unique()[i]][cols]
+                BH[i].reshape(-1, 3),
+                df_field[df_field["source"] == df_field["source"].unique()[i]][cols],
             )
             np.testing.assert_array_equal(
-                BH[:, i].reshape(-1, 3), df[df["path"] == df["path"].unique()[i]][cols]
+                BH[:, i].reshape(-1, 3),
+                df_field[df_field["path"] == df_field["path"].unique()[i]][cols],
             )
             np.testing.assert_array_equal(
                 BH[:, :, i].reshape(-1, 3),
-                df[df["sensor"] == df["sensor"].unique()[i]][cols],
+                df_field[df_field["sensor"] == df_field["sensor"].unique()[i]][cols],
             )
             np.testing.assert_array_equal(
                 BH[:, :, :, i].reshape(-1, 3),
-                df[df["pixel"] == df["pixel"].unique()[i]][cols],
+                df_field[df_field["pixel"] == df_field["pixel"].unique()[i]][cols],
             )
 
 
@@ -258,7 +260,10 @@ def test_dataframe_ouptut_pixel_agg():
 def test_getBH_bad_output_type():
     """test bad output in `getBH`"""
     src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=r"The `output` argument must be one of ('ndarray', 'dataframe')*.",
+    ):
         src.getB((0, 0, 0), output="bad_output_type")
 
 

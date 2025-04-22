@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from magpylib._src.display.traces_core import make_Sphere
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.input_checks import check_format_input_scalar
@@ -71,7 +73,10 @@ class Sphere(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_sphere)
-    _field_func_kwargs_ndim = {"polarization": 2, "diameter": 1}
+    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
+        "polarization": 2,
+        "diameter": 1,
+    }
     get_trace = make_Sphere
 
     def __init__(

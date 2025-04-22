@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Tetrahedron
@@ -83,7 +85,10 @@ class Tetrahedron(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_tetrahedron)
-    _field_func_kwargs_ndim = {"polarization": 1, "vertices": 3}
+    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
+        "polarization": 1,
+        "vertices": 3,
+    }
     get_trace = make_Tetrahedron
 
     def __init__(

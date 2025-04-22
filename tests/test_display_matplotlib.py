@@ -391,9 +391,12 @@ def test_matplotlib_model3d_extra_bad_input():
         "coordsargs": {"x": "xs", "y": "ys", "z": "Z"},  # bad Z input
     }
     obj = magpy.misc.Dipole(moment=(0, 0, 1))
-    with pytest.raises(ValueError):
-        obj.style.model3d.add_trace(**trace)
-        ax = plt.subplot(projection="3d")
+    obj.style.model3d.add_trace(**trace)
+    ax = plt.subplot(projection="3d")
+    with pytest.raises(
+        ValueError,
+        match=r"Rotating/Moving of provided model failed, trace dictionary has no argument 'z',.*",
+    ):
         obj.show(canvas=ax, return_fig=True)
 
 
@@ -408,26 +411,26 @@ def test_matplotlib_model3d_extra_updatefunc():
     ax = plt.subplot(projection="3d")
     obj.show(canvas=ax, return_fig=True)
 
-    with pytest.raises(ValueError):
-        updatefunc = "not callable"
+    updatefunc = "not callable"
+    with pytest.raises(
+        ValueError, match=(r"the `data` property of `Model3d` must be an instance.*")
+    ):
         obj.style.model3d.add_trace(updatefunc)
 
+    updatefunc = "not callable"
     with pytest.raises(AssertionError):
-        updatefunc = "not callable"
         obj.style.model3d.add_trace(updatefunc=updatefunc)
 
+    def updatefunc():
+        return "bad output type"
+
     with pytest.raises(AssertionError):
-
-        def updatefunc():
-            return "bad output type"
-
         obj.style.model3d.add_trace(updatefunc=updatefunc)
 
+    def updatefunc():
+        return {"bad_key": "some_value"}
+
     with pytest.raises(AssertionError):
-
-        def updatefunc():
-            return {"bad_key": "some_value"}
-
         obj.style.model3d.add_trace(updatefunc=updatefunc)
 
 
@@ -531,18 +534,16 @@ def test_bad_show_inputs():
     cyl1 = magpy.magnet.Cylinder(
         polarization=(0.1, 0, 0), dimension=(1, 2), style_label="Cylinder1"
     )
-    with (
-        pytest.raises(
-            ValueError,
-            match=(
-                r"Conflicting parameters detected for {'row': 1, 'col': 1}:"
-                r" 'output' first got 'model3d' then 'Bx'."
-            ),
+    with pytest.raises(  # noqa: PT012, SIM117
+        ValueError,
+        match=(
+            r"Conflicting parameters detected for {'row': 1, 'col': 1}:"
+            r" 'output' first got 'model3d' then 'Bx'."
         ),
-        magpy.show_context(animation=False, sumup=True, pixel_agg="mean") as s,
     ):
-        s.show(cyl1, sensor, col=1, output="Bx")
-        s.show(cyl1, sensor, col=1)
+        with magpy.show_context(animation=False, sumup=True, pixel_agg="mean") as s:
+            s.show(cyl1, sensor, col=1, output="Bx")
+            s.show(cyl1, sensor, col=1)
 
     # test unsupported specific args for some backends
     with pytest.warns(

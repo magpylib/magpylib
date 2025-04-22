@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import warnings
+from typing import ClassVar
 
 import numpy as np
 
@@ -26,7 +27,7 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
     and corresponding field function"""
 
     _field_func = None
-    _field_func_kwargs_ndim = {}
+    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {}
     _editable_field_func = False
 
     def __init__(self, position, orientation, field_func=None, style=None, **kwargs):

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Dipole
@@ -65,7 +67,7 @@ class Dipole(BaseSource):
     """
 
     _field_func = staticmethod(BHJM_dipole)
-    _field_func_kwargs_ndim = {"moment": 2}
+    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"moment": 2}
     _style_class = DipoleStyle
     get_trace = make_Dipole
     _autosize = True

@@ -36,7 +36,7 @@ import magpylib as magpy
 
 def test_vs_mag2_linear():
     """test against magpylib v2"""
-    with open(Path("tests/testdata/testdata_vs_mag2.p").resolve(), "rb") as f:
+    with Path("tests/testdata/testdata_vs_mag2.p").resolve().open("rb") as f:
         data = pickle.load(f)[0]
     poso = [(t, -t, t) for t in np.linspace(0, 3, 100)]
     pm = magpy.magnet.Cuboid(polarization=(111, 222, 333), dimension=(1, 2, 3))

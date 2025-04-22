@@ -92,14 +92,14 @@ def test_getB_level2_input_shape22():
     fb22 = magpy.getB(pm1(), pos_obs)
     fc22 = magpy.getB(pm3(), pos_obs)
 
-    for poso, fb, fc in zip(
+    for poso, fb_, fc_ in zip(
         [pos_obs, sens1, [sens1, sens1, sens1]],
         [fb22, fb22, [fb22, fb22, fb22]],
         [fc22, fc22, [fc22, fc22, fc22]],
         strict=False,
     ):
-        fb = np.array(fb)
-        fc = np.array(fc)
+        fb = np.array(fb_)
+        fc = np.array(fc_)
         src_obs_res = [
             [pm1(), poso, fb],
             [pm3(), poso, fc],

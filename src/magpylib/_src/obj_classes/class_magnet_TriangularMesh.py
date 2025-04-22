@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import warnings
+from typing import ClassVar
 
 import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
@@ -123,7 +124,7 @@ class TriangularMesh(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_trimesh)
-    _field_func_kwargs_ndim = {"polarization": 2, "mesh": 3}
+    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"polarization": 2, "mesh": 3}
     get_trace = make_TriangularMesh
     _style_class = TriangularMeshStyle
 

@@ -174,7 +174,7 @@ def test_MagicProperties():
     # check setting attribute/property
     assert bp1.prop1 == 1, "`bp1.prop1` should be `1`"
     with pytest.raises(AttributeError):
-        bp1.prop1e  # only properties are allowed to be set
+        bp1.prop1e = "val"  # only properties are allowed to be set
 
     assert bp1.as_dict() == {"prop1": 1}, "`as_dict` method failed"
 

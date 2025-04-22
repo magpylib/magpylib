@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import unittest
-
 import numpy as np
+import pytest
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
@@ -254,44 +253,71 @@ def bad_input_shape_dipole_mom():
 
 
 #####################################################################
-class TestExceptions(unittest.TestCase):
-    """test class for exception testing"""
+def test_except_utility():
+    """utility"""
+    with pytest.raises(MagpylibBadUserInput):
+        utility_check_path_format()
+    with pytest.raises(MagpylibBadUserInput):
+        utility_format_obj_input()
+    with pytest.raises(MagpylibBadUserInput):
+        utility_format_src_inputs()
+    with pytest.raises(MagpylibBadUserInput):
+        utility_format_obs_inputs()
 
-    def test_except_utility(self):
-        """utility"""
-        self.assertRaises(MagpylibBadUserInput, utility_check_path_format)
-        self.assertRaises(MagpylibBadUserInput, utility_format_obj_input)
-        self.assertRaises(MagpylibBadUserInput, utility_format_src_inputs)
-        self.assertRaises(MagpylibBadUserInput, utility_format_obs_inputs)
 
-    def test_except_getBHv(self):
-        """getBHv"""
-        self.assertRaises(TypeError, getBHv_missing_input1)
-        self.assertRaises(TypeError, getBHv_missing_input2)
-        self.assertRaises(TypeError, getBHv_missing_input3)
-        self.assertRaises(TypeError, getBHv_missing_input4_cuboid)
-        self.assertRaises(TypeError, getBHv_missing_input4_cyl)
-        self.assertRaises(TypeError, getBHv_missing_input4_sphere)
-        self.assertRaises(TypeError, getBHv_missing_input5_cuboid)
-        self.assertRaises(TypeError, getBHv_missing_input5_cyl)
-        self.assertRaises(TypeError, getBHv_missing_input5_sphere)
-        self.assertRaises(MagpylibBadUserInput, getBHv_bad_input1)
-        self.assertRaises(MagpylibBadUserInput, getBHv_bad_input2)
-        self.assertRaises(MagpylibBadUserInput, getBHv_bad_input3)
-        self.assertRaises(MagpylibBadUserInput, getBHv_unknown_source_type)
+def test_except_getBHv():
+    """getBHv"""
+    with pytest.raises(TypeError):
+        getBHv_missing_input1()
+    with pytest.raises(TypeError):
+        getBHv_missing_input2()
+    with pytest.raises(TypeError):
+        getBHv_missing_input3()
+    with pytest.raises(TypeError):
+        getBHv_missing_input4_cuboid()
+    with pytest.raises(TypeError):
+        getBHv_missing_input4_cyl()
+    with pytest.raises(TypeError):
+        getBHv_missing_input4_sphere()
+    with pytest.raises(TypeError):
+        getBHv_missing_input5_cuboid()
+    with pytest.raises(TypeError):
+        getBHv_missing_input5_cyl()
+    with pytest.raises(TypeError):
+        getBHv_missing_input5_sphere()
+    with pytest.raises(MagpylibBadUserInput):
+        getBHv_bad_input1()
+    with pytest.raises(MagpylibBadUserInput):
+        getBHv_bad_input2()
+    with pytest.raises(MagpylibBadUserInput):
+        getBHv_bad_input3()
+    with pytest.raises(MagpylibBadUserInput):
+        getBHv_unknown_source_type()
 
-    def test_except_getBH_lev2(self):
-        """getBH_level2 exception testing"""
-        self.assertRaises(MagpylibBadUserInput, getBH_level2_bad_input1)
-        self.assertRaises(MagpylibBadUserInput, getBH_different_pixel_shapes)
 
-    def test_except_bad_input_shape_basegeo(self):
-        """BaseGeo bad input shapes"""
-        self.assertRaises(MagpylibBadUserInput, bad_input_shape_basegeo_pos)
-        self.assertRaises(MagpylibBadUserInput, bad_input_shape_cuboid_dim)
-        self.assertRaises(MagpylibBadUserInput, bad_input_shape_cuboid_mag)
-        self.assertRaises(MagpylibBadUserInput, bad_input_shape_cyl_dim)
-        self.assertRaises(MagpylibBadUserInput, bad_input_shape_cyl_mag)
-        self.assertRaises(MagpylibBadUserInput, bad_input_shape_sphere_mag)
-        self.assertRaises(MagpylibBadUserInput, bad_input_shape_sensor_pix_pos)
-        self.assertRaises(MagpylibBadUserInput, bad_input_shape_dipole_mom)
+def test_except_getBH_lev2():
+    """getBH_level2 exception testing"""
+    with pytest.raises(MagpylibBadUserInput):
+        getBH_level2_bad_input1()
+    with pytest.raises(MagpylibBadUserInput):
+        getBH_different_pixel_shapes()
+
+
+def test_except_bad_input_shape_basegeo():
+    """BaseGeo bad input shapes"""
+    with pytest.raises(MagpylibBadUserInput):
+        bad_input_shape_basegeo_pos()
+    with pytest.raises(MagpylibBadUserInput):
+        bad_input_shape_cuboid_dim()
+    with pytest.raises(MagpylibBadUserInput):
+        bad_input_shape_cuboid_mag()
+    with pytest.raises(MagpylibBadUserInput):
+        bad_input_shape_cyl_dim()
+    with pytest.raises(MagpylibBadUserInput):
+        bad_input_shape_cyl_mag()
+    with pytest.raises(MagpylibBadUserInput):
+        bad_input_shape_sphere_mag()
+    with pytest.raises(MagpylibBadUserInput):
+        bad_input_shape_sensor_pix_pos()
+    with pytest.raises(MagpylibBadUserInput):
+        bad_input_shape_dipole_mom()

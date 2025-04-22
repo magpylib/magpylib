@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import os
 import pickle
 import re
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -53,7 +53,7 @@ def test_Collection_basics():
     """test Collection fundamentals, test against magpylib2 fields"""
     # pylint: disable=pointless-statement
     # data generated below
-    with open(os.path.abspath("./tests/testdata/testdata_Collection.p"), "rb") as f:
+    with Path("tests/testdata/testdata_Collection.p").resolve().open("rb") as f:
         data = pickle.load(f)
     mags, dims2, dims3, posos, angs, axs, anchs, movs, rvs, _ = data
 
@@ -319,11 +319,12 @@ def test_set_children_styles():
     src2 = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(1, 2))
     col = src1 + src2
     col.set_children_styles(magnetization_show=False)
-    assert (
-        src1.style.magnetization.show is False
-        and src1.style.magnetization.show is False
-    ), """failed updating styles to children"""
-    with pytest.raises(ValueError):
+    assert src1.style.magnetization.show is False, "failed updating styles to src1"
+    assert src2.style.magnetization.show is False, "failed updating styles to src2"
+    with pytest.raises(
+        ValueError,
+        match=r"Following arguments are invalid style properties: `{'bad_input'}`",
+    ):
         col.set_children_styles(bad_input="somevalue")
 
 

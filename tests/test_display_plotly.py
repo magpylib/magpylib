@@ -170,7 +170,10 @@ def test_display_bad_style_kwargs():
     """test if some magic kwargs are invalid"""
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=r"Following arguments are invalid style properties: `{'bad_style_kwarg'}`.*",
+    ):
         magpy.show(canvas=fig, markers=[(1, 2, 3)], style_bad_style_kwarg=None)
 
 

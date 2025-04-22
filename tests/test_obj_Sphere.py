@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 
@@ -40,7 +40,7 @@ from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 def test_Sphere_basics():
     """test Cuboid fundamentals, test against magpylib2 fields"""
     # data generated below
-    with open(os.path.abspath("./tests/testdata/testdata_Sphere.p"), "rb") as f:
+    with Path("tests/testdata/testdata_Sphere.p").resolve().open("rb") as f:
         data = pickle.load(f)
     mags, dims, posos, angs, axs, anchs, movs, B = data
 

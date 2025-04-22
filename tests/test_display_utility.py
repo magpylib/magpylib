@@ -68,8 +68,8 @@ def test_draw_arrow_from_vertices():
 
 def test_bad_backend():
     """test bad plotting input name"""
+    c = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
     with pytest.raises(MagpylibBadUserInput):
-        c = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
         c.show(backend="asdf")
 
 

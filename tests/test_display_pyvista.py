@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import os
 import sys
 import tempfile
@@ -120,24 +121,25 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
     src.move([[0, 0, 0], [0, 0, 1]], start=0)
     objs = [src, sens]
 
-    with patch("magpylib._src.utility.is_notebook", return_value=is_notebook_result):
-        with patch("webbrowser.open"):
-            try:
-                temp = os.path.join(tempfile.gettempdir(), os.urandom(24).hex())
-                temp += f".{extension}"
-                animation_output = temp if filename else extension
-                magpy.show(
-                    {"objects": objs, "col": 1, "output": ("Bx", "By", "Bz")},
-                    {"objects": objs, "col": 2},
-                    backend="pyvista",
-                    animation=True,
-                    animation_output=animation_output,
-                    mp4_quality=1,
-                    return_fig=True,
-                )
-            finally:
-                try:
-                    os.unlink(temp)
-                except FileNotFoundError:
-                    # avoid exception if file is not found
-                    pass
+    with (
+        patch("magpylib._src.utility.is_notebook", return_value=is_notebook_result),
+        patch("webbrowser.open"),
+    ):
+        try:
+            from pathlib import Path
+
+            temp = Path(tempfile.gettempdir()) / os.urandom(24).hex()
+            temp = temp.with_suffix(f".{extension}")
+            animation_output = temp if filename else extension
+            magpy.show(
+                {"objects": objs, "col": 1, "output": ("Bx", "By", "Bz")},
+                {"objects": objs, "col": 2},
+                backend="pyvista",
+                animation=True,
+                animation_output=animation_output,
+                mp4_quality=1,
+                return_fig=True,
+            )
+        finally:
+            with contextlib.suppress(FileNotFoundError):
+                temp.unlink()

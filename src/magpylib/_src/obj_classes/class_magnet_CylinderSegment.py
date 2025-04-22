@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 import numpy as np
 
 from magpylib._src.display.traces_core import make_CylinderSegment
@@ -86,7 +88,10 @@ class CylinderSegment(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_cylinder_segment_internal)
-    _field_func_kwargs_ndim = {"polarization": 2, "dimension": 2}
+    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
+        "polarization": 2,
+        "dimension": 2,
+    }
     get_trace = make_CylinderSegment
 
     def __init__(
