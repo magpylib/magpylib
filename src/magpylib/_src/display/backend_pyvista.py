@@ -16,9 +16,9 @@ import numpy as np
 try:
     import pyvista as pv
 except ImportError as missing_module:  # pragma: no cover
-    msg = """In order to use the pyvista plotting backend, you need to install pyvista via pip or
+    error_msg = """In order to use the pyvista plotting backend, you need to install pyvista via pip or
         conda, see https://docs.pyvista.org/getting-started/installation.html"""
-    raise ModuleNotFoundError(msg) from missing_module
+    raise ModuleNotFoundError(error_msg) from missing_module
 
 from matplotlib.colors import LinearSegmentedColormap
 from pyvista.plotting.colors import Color  # pylint: disable=import-error

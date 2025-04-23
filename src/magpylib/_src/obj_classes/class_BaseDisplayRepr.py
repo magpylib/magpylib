@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from magpylib._src.display.display import show
 from magpylib._src.display.traces_core import make_DefaultTrace
@@ -53,21 +54,24 @@ class BaseDisplayRepr:
             if not k.startswith("_") and k in params and k not in exclude:
                 unit = UNITS.get(k)
                 unit_str = f" {unit}" if unit else ""
+                val = ""
                 if k == "position":
-                    val = self._position
-                    if val.shape[0] != 1:
-                        lines.append(f"  • path length: {val.shape[0]}")
-                        k = f"{k} (last)"
-                    val = f"{val[-1]}"
+                    val = getattr(self, "_position", None)
+                    if isinstance(val, np.ndarray):
+                        if val.shape[0] != 1:
+                            lines.append(f"  • path length: {val.shape[0]}")
+                            k = f"{k} (last)"
+                        val = f"{val[-1]}"
                 elif k == "orientation":
-                    val = self._orientation
-                    val = val.as_rotvec(degrees=True)
-                    if len(val) != 1:
-                        k = f"{k} (last)"
-                    val = f"{val[-1]}"
+                    val = getattr(self, "_orientation", None)
+                    if isinstance(val, Rotation):
+                        val = val.as_rotvec(degrees=True) #pylint: disable=no-member
+                        if len(val) != 1:
+                            k = f"{k} (last)"
+                        val = f"{val[-1]}"
                 elif k == "pixel":
-                    val = self.pixel
-                    if val is not None:
+                    val = getattr(self, "pixel", None)
+                    if isinstance(val, np.ndarray):
                         px_shape = val.shape[:-1]
                         val_str = f"{int(np.prod(px_shape))}"
                         if val.ndim > 2:
@@ -112,7 +116,8 @@ class BaseDisplayRepr:
 
     def __repr__(self) -> str:
         name = getattr(self, "name", None)
-        if name is None and hasattr(self, "style"):
-            name = getattr(self.style, "label", None)
+        if name is None:
+            style = getattr(self, "style", None)
+            name = getattr(style, "label", None)
         name_str = "" if name is None else f", label={name!r}"
         return f"{type(self).__name__}(id={id(self)!r}{name_str})"

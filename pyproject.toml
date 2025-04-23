@@ -191,6 +191,7 @@ messages_control.disable = [
   "wrong-import-position",
   "invalid-name", # TODO - review later
   "protected-access", # TODO - review later
+  "duplicate-code", # already covered by ruff
   "unused-argument", # already covered by ruff
 ]
 
