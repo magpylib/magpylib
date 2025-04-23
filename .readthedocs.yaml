@@ -7,6 +7,9 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.12"
+  apt_packages:
+    # for pyvista
+    - libgl1-mesa-dev
   commands:
     - asdf plugin add uv
     - asdf install uv latest
