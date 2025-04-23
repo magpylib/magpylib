@@ -65,7 +65,7 @@ class BaseDisplayRepr:
                 elif k == "orientation":
                     val = getattr(self, "_orientation", None)
                     if isinstance(val, Rotation):
-                        val = val.as_rotvec(degrees=True) #pylint: disable=no-member
+                        val = val.as_rotvec(degrees=True)  # pylint: disable=no-member
                         if len(val) != 1:
                             k = f"{k} (last)"
                         val = f"{val[-1]}"
