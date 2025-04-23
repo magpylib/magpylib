@@ -43,7 +43,7 @@ def setup(app):
             "-M",  # Modules first
             "-o",  # Output the files to:
             "./_autogen/",  # Output Directory
-            "./../magpylib",  # Main Module directory
+            "./../src/magpylib",  # Main Module directory
         ]
     )
 
