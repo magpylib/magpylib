@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import importlib.metadata
 import os
+import sys
+from pathlib import Path
 
 import sphinx.ext.apidoc
 
@@ -14,7 +16,7 @@ os.environ["MAGPYLIB_MPL_SVG"] = "true"
 
 # Location of Sphinx files
 
-# sys.path.insert(0, str(Path("./../").resolve()))  ##Add the folder one level above
+sys.path.insert(0, str(Path("./../").resolve()))  ##Add the folder one level above
 os.environ["SPHINX_APIDOC_OPTIONS"] = (
     "members,show-inheritance"  ## Hide undocumented members
 )
