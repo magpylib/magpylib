@@ -36,15 +36,15 @@ The default styles can be modified in three ways:
 
 ```python
 magpy.defaults.display.style.magnet.magnetization.show = True
-magpy.defaults.display.style.magnet.magnetization.color.mode = 'bicolor'
-magpy.defaults.display.style.magnet.magnetization.color.north = 'grey'
+magpy.defaults.display.style.magnet.magnetization.color.mode = "bicolor"
+magpy.defaults.display.style.magnet.magnetization.color.north = "grey"
 ```
 
 2. By assigning a style dictionary with equivalent keys,
 
 ```python
 magpy.defaults.display.style.magnet = {
-    'magnetization': {'show': True, 'color': {'north': 'grey', 'mode': 'tricolor'}}
+    "magnetization": {"show": True, "color": {"north": "grey", "mode": "tricolor"}}
 }
 ```
 
@@ -52,8 +52,7 @@ magpy.defaults.display.style.magnet = {
 
 ```python
 magpy.defaults.display.style.magnet.magnetization.update(
-    'show': True,
-    'color': {'north'='grey', mode='tricolor',}
+    show=True, color={"north": "grey", "mode": "tricolor"}
 )
 ```
 
@@ -119,10 +118,11 @@ With magic underscore notation, the previous examples can be written as:
 
 ```python
 import magpylib as magpy
+
 magpy.defaults.display.style.magnet = {
-    'magnetization_show': True,
-    'magnetization_color_middle': 'grey',
-    'magnetization_color_mode': 'tricolor',
+    "magnetization_show": True,
+    "magnetization_color_middle": "grey",
+    "magnetization_color_mode": "tricolor",
 }
 ```
 
@@ -130,10 +130,11 @@ or directly as named keywords in the `update` method as:
 
 ```python
 import magpylib as magpy
+
 magpy.defaults.display.style.magnet.update(
     magnetization_show=True,
-    magnetization_color_middle='grey',
-    magnetization_color_mode='tricolor',
+    magnetization_color_middle="grey",
+    magnetization_color_mode="tricolor",
 )
 ```
 
