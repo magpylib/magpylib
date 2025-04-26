@@ -22,7 +22,7 @@ that compute the respective fields B (B-field), H (H-field), J (polarization) or
 import magpylib as magpy
 
 # Define source and observer objects
-loop = magpy.current.Circle(current=1, diameter=0.001)
+loop = magpy.current.Circle(current=1, diameter=.001)
 sens = magpy.Sensor()
 
 # Compute field
@@ -78,16 +78,15 @@ All "scalar" inputs of shape (x,) are automatically tiled up to shape (n,x) to c
 ```python
 import numpy as np
 import magpylib as magpy
-
 # All inputs and outputs in SI units
 
 # Compute the cuboid field for 3 input instances
-N = 3  # number of instances
+N = 3 # number of instances
 B = magpy.getB(
-    sources="Cuboid",
-    observers=np.linspace((0, 0, 1), (0, 0, 3), N),
-    dimension=np.linspace((1, 1, 1), (3, 3, 3), 3, N),
-    polarization=(0, 0, 1),
+    sources='Cuboid',
+    observers=np.linspace((0,0,1), (0,0,3), N),
+    dimension=np.linspace((1,1,1), (3,3,3),3, N),
+    polarization=(0,0,1),
 )
 
 # This example demonstrates the scale invariance
@@ -154,13 +153,12 @@ All inputs must be NumPy ndarrays of shape (n,x). Details can be found in the re
 ```python
 import numpy as np
 import magpylib as magpy
-
 # All inputs and outputs in SI units
 
 # Prepare input
-z0 = np.array([1, 1])
-r = np.array([1, 1])
-z = np.array([2, 2])
+z0 = np.array([1,1])
+r  = np.array([1,1])
+z  = np.array([2,2])
 
 # Compute field with core functions
 B = magpy.core.magnet_cylinder_axial_Bfield(z0=z0, r=r, z=z).T

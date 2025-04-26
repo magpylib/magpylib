@@ -31,7 +31,6 @@ The package provides only a single top-level function <span style="color: orange
 
 ```python
 import magpylib_force as mforce
-
 mforce.getFT(sources, targets, anchor, eps=1e-5, squeeze=True)
 ```
 
@@ -53,11 +52,11 @@ import magpylib as magpy
 import magpylib_force as mforce
 
 # create source and target objects
-loop = magpy.current.Circle(diameter=2e-3, current=10, position=(0, 0, -1e-3))
-cube = magpy.magnet.Cuboid(dimension=(1e-3, 1e-3, 1e-3), polarization=(1, 0, 0))
+loop = magpy.current.Circle(diameter=2e-3, current=10, position=(0,0,-1e-3))
+cube = magpy.magnet.Cuboid(dimension=(1e-3,1e-3,1e-3), polarization=(1,0,0))
 
 # provide meshing for target object
-cube.meshing = (5, 5, 5)
+cube.meshing = (5,5,5)
 
 # compute force and torque
 FT = mforce.getFT(loop, cube)
