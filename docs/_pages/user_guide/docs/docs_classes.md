@@ -85,9 +85,7 @@ found in {ref}`examples-tutorial-modeling-magnets`.
 ### Cuboid
 
 ```python
-magpylib.magnet.Cuboid(
-    position, orientation, dimension, polarization, magnetization, style
-)
+magpylib.magnet.Cuboid(position, orientation, dimension, polarization, magnetization, style)
 ```
 
 ::::{grid} 2 :::{grid-item} :columns: 9 `Cuboid` objects represent magnets with
@@ -100,9 +98,7 @@ are parallel to the coordinate axes. ::: :::{grid-item} :columns: 3
 ### Cylinder
 
 ```python
-magpylib.magnet.Cylinder(
-    position, orientation, dimension, polarization, magnetization, style
-)
+magpylib.magnet.Cylinder(position, orientation, dimension, polarization, magnetization, style)
 ```
 
 ::::{grid} 2 :::{grid-item} :columns: 9 `Cylinder` objects represent magnets
@@ -115,9 +111,7 @@ coordinates, and the cylinder axis coincides with the z-axis. ::: :::{grid-item}
 ### CylinderSegment
 
 ```python
-magpylib.magnet.CylinderSegment(
-    position, orientation, dimension, polarization, magnetization, style
-)
+magpylib.magnet.CylinderSegment(position, orientation, dimension, polarization, magnetization, style)
 ```
 
 ::::{grid} 2 :::{grid-item} :columns: 9 `CylinderSegment` objects represent
@@ -135,9 +129,7 @@ computation. ::: ::::
 ### Sphere
 
 ```python
-magpylib.magnet.Sphere(
-    position, orientation, diameter, polarization, magnetization, style
-)
+magpylib.magnet.Sphere(position, orientation, diameter, polarization, magnetization, style)
 ```
 
 ::::{grid} 2 :::{grid-item} :columns: 9 `Sphere` objects represent magnets of
@@ -149,9 +141,7 @@ the origin of the local coordinates. ::: :::{grid-item} :columns: 3
 ### Tetrahedron
 
 ```python
-magpylib.magnet.Tetrahedron(
-    position, orientation, vertices, polarization, magnetization, style
-)
+magpylib.magnet.Tetrahedron(position, orientation, vertices, polarization, magnetization, style)
 ```
 
 ::::{grid} 2 :::{grid-item} :columns: 9 `Tetrahedron` objects represent magnets
@@ -168,19 +158,7 @@ fields. ::: ::::
 ### TriangularMesh
 
 ```python
-magpylib.magnet.TriangularMesh(
-    position,
-    orientation,
-    vertices,
-    faces,
-    polarization,
-    magnetization,
-    check_open,
-    check_disconnected,
-    check_selfintersecting,
-    reorient_faces,
-    style,
-)
+magpylib.magnet.TriangularMesh(position, orientation, vertices, faces, polarization, magnetization, check_open, check_disconnected, check_selfintersecting, reorient_faces, style)
 ```
 
 ::::{grid} 2 :::{grid-item} :columns: 9 `TriangularMesh` objects represent
@@ -321,9 +299,7 @@ magnet with body volume $V$ is given by $\vec{m}=\vec{M}\cdot V$. ::: ::::
 ### Triangle
 
 ```python
-magpylib.misc.Triangle(
-    position, orientation, vertices, polarization, magnetization, style
-)
+magpylib.misc.Triangle(position, orientation, vertices, polarization, magnetization, style)
 ```
 
 ::::{grid} 2 :::{grid-item} :columns: 9 `Triangle` objects represent triangular
