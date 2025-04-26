@@ -39,9 +39,10 @@ jobs:
         python-version: ["3.11", "3.12", "3.13"]
         runs-on: [ubuntu-latest, windows-latest, macos-latest]
 
-        include:
-          - python-version: "pypy-3.11"
-            runs-on: ubuntu-latest
+        # include:
+        #   - python-version: "pypy-3.11"
+        #     runs-on: ubuntu-latest
+        # Note: Commented out because it fails tests for pyvista due to vtk wheels
 
     steps:
       - name: Setup headless display
