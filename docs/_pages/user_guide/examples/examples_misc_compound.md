@@ -16,19 +16,11 @@ orphan: true
 
 # Compounds
 
-The `Collection` class is a powerful tool for grouping and tracking object
-assemblies. However, it is often convenient to have assembly parameters
-themselves, like number of magnets, as variables. This is achieved by
-sub-classing `Collection`. We refer to such classes as "**Compounds**" and show
-how to seamlessly integrate them into Magpylib.
+The `Collection` class is a powerful tool for grouping and tracking object assemblies. However, it is often convenient to have assembly parameters themselves, like number of magnets, as variables. This is achieved by sub-classing `Collection`. We refer to such classes as "**Compounds**" and show how to seamlessly integrate them into Magpylib.
 
 ## Subclassing collections
 
-In the following example we design a compound class `MagnetRing` which
-represents a ring of cuboid magnets with the parameter `cubes` that should refer
-to the number of magnets on the ring. The ring will automatically adjust its
-size when `cubes` is modified, including an additionally added encompassing 3D
-model that may, for example, represent a mechanical magnet holder.
+In the following example we design a compound class `MagnetRing` which represents a ring of cuboid magnets with the parameter `cubes` that should refer to the number of magnets on the ring. The ring will automatically adjust its size when `cubes` is modified, including an additionally added encompassing 3D model that may, for example, represent a mechanical magnet holder.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -95,8 +87,7 @@ class MagnetRing(magpy.Collection):
         return self
 ```
 
-This new `MagnetRing` class seamlessly integrates into Magpylib and makes use of
-the position and orientation interface, field computation and graphic display.
+This new `MagnetRing` class seamlessly integrates into Magpylib and makes use of the position and orientation interface, field computation and graphic display.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -133,15 +124,9 @@ magpy.show(ring, sensor, backend='plotly')
 
 ## Postponed trace construction
 
-In the above example, the trace is constructed in `_update`, every time the
-parameter `cubes` is modified. This can lead to an unwanted computational
-overhead, especially as the construction is only necessary for graphical
-representation.
+In the above example, the trace is constructed in `_update`, every time the parameter `cubes` is modified. This can lead to an unwanted computational overhead, especially as the construction is only necessary for graphical representation.
 
-To make our compounds ready for heavy computation, while retaining Magpylib
-graphic possibilities, it is possible to provide a trace which will only be
-constructed when `show` is called. The following modification of the above
-example demonstrates this:
+To make our compounds ready for heavy computation, while retaining Magpylib graphic possibilities, it is possible to provide a trace which will only be constructed when `show` is called. The following modification of the above example demonstrates this:
 
 ```{code-cell} ipython3
 class MagnetRingAdv(magpy.Collection):
@@ -206,8 +191,7 @@ class MagnetRingAdv(magpy.Collection):
         return trace
 ```
 
-We have removed the trace construction from the `_update` method, and instead
-provided `_custom_trace3d` as a callable.
+We have removed the trace construction from the `_update` method, and instead provided `_custom_trace3d` as a callable.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -219,5 +203,4 @@ ring1 = MagnetRingAdv()
 %time for _ in range(10): ring1.cubes=10
 ```
 
-This example is not very impressive because the provided trace is not very
-heavy.
+This example is not very impressive because the provided trace is not very heavy.

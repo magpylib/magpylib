@@ -16,36 +16,30 @@ orphan: true
 
 # Superposition
 
-The
-[superposition principle](https://en.wikipedia.org/wiki/Superposition_principle)
-states that the net response caused by two or more stimuli is the sum of the
-responses caused by each stimulus individually. This principle holds in
-magnetostatics when there is no material response, and simply states that the
-total field created by multiple magnets and currents is the sum of the
-individual fields.
+The [superposition principle](https://en.wikipedia.org/wiki/Superposition_principle) states that the net response caused by two or more stimuli is the sum of the responses caused by each stimulus individually. This principle holds in magnetostatics when there is no material response, and simply states that the total field created by multiple magnets and currents is the sum of the individual fields.
 
-When two magnets overlap geometrically, the magnetization in the overlap region
-is given by the vector sum of the two individual magnetizations. This enables
-two geometric operations,
+When two magnets overlap geometrically, the magnetization in the overlap region is given by the vector sum of the two individual magnetizations. This enables two geometric operations,
 
-:::::{grid} 1 2 2 2 :gutter: 4
+:::::{grid} 1 2 2 2
+:gutter: 4
 
-::::{grid-item-card} Union :img-bottom:
-../../../\_static/images/docu_field_superpos_union.png :shadow: None Build
-complex forms by aligning base shapes (no overlap) with each other with similar
-magnetization vector. ::::
+::::{grid-item-card} Union
+:img-bottom: ../../../_static/images/docu_field_superpos_union.png
+:shadow: None
+Build complex forms by aligning base shapes (no overlap) with each other with similar magnetization vector.
+::::
 
-::::{grid-item-card} Cut-Out :img-bottom:
-../../../\_static/images/docu_field_superpos_cutout.png :shadow: None When two
-objects with opposing magnetization vectors of similar amplitude overlap, they
-will just cancel in the overlap region. This enables geometric cut-out
-operations. :::: :::::
+::::{grid-item-card} Cut-Out
+:img-bottom: ../../../_static/images/docu_field_superpos_cutout.png
+:shadow: None
+When two objects with opposing magnetization vectors of similar amplitude overlap, they will just cancel in the overlap region. This enables geometric cut-out operations.
+::::
+:::::
+
 
 ## Union operation
 
-Geometric union by superposition is demonstrated in the following example where
-a wedge-shaped magnet with a round back is constructed from three base-forms: a
-CylinderSegment, a Cuboid and a TriangularMesh.
+Geometric union by superposition is demonstrated in the following example where a wedge-shaped magnet with a round back is constructed from three base-forms: a CylinderSegment, a Cuboid and a TriangularMesh.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -82,14 +76,9 @@ with magpy.show_context(magnet, sensor, backend="plotly", style_legend_show=Fals
 
 ## Cut-out operation
 
-When two objects with opposing magnetization vectors of similar amplitude
-overlap, they will just cancel in the overlap region. This enables geometric
-cut-out operations. In the following example we construct an exact hollow
-cylinder solution from two concentric cylinder shapes with opposite
-magnetizations and compare the result to the `CylinderSegment` class solution.
+When two objects with opposing magnetization vectors of similar amplitude overlap, they will just cancel in the overlap region. This enables geometric cut-out operations. In the following example we construct an exact hollow cylinder solution from two concentric cylinder shapes with opposite magnetizations and compare the result to the `CylinderSegment` class solution.
 
-Here the `getM` and `getJ` functions come in handy. They allow us to see the
-magnetization distribution that is the result of the superposition.
+Here the `getM` and `getJ` functions come in handy. They allow us to see the magnetization distribution that is the result of the superposition.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -139,11 +128,9 @@ plt.tight_layout()
 plt.show()
 ```
 
-The two figures show that the magnetization is zero outside of the cylinder, as
-well as in the overlap region where the two magnetizations cancel.
+The two figures show that the magnetization is zero outside of the cylinder, as well as in the overlap region where the two magnetizations cancel.
 
-Finally, we want to show that the superposition gives the same result as a
-computation from the CylinderSegment solution.
+Finally, we want to show that the superposition gives the same result as a computation from the CylinderSegment solution.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -158,20 +145,13 @@ print("CylinderSegment result:", ring1.getB((.01, .02, .03)))
 print("        Cut-out result:", ring0.getB((.01, .02, .03)))
 ```
 
-Note that it is faster to compute the `Cylinder` field two times than computing
-the `CylinderSegment` field one time. This is why Magpylib automatically falls
-back to the `Cylinder` solution whenever `CylinderSegment` is called with 360
-deg section angles.
+Note that it is faster to compute the `Cylinder` field two times than computing the `CylinderSegment` field one time. This is why Magpylib automatically falls back to the `Cylinder` solution whenever `CylinderSegment` is called with 360 deg section angles.
 
-Unfortunately, with respect to 3D-models, cut-out operations cannot be displayed
-graphically at this point in time, but {ref}`examples-own-3d-models` offer
-custom solutions.
+Unfortunately, with respect to 3D-models, cut-out operations cannot be displayed graphically at this point in time, but {ref}`examples-own-3d-models` offer custom solutions.
 
 ## Nice example
 
-The following example combines union and cut-out to create a complex magnet
-shape which is then displayed by combining a streamplot with a contourplot in
-matplotlib.
+The following example combines union and cut-out to create a complex magnet shape which is then displayed by combining a streamplot with a contourplot in matplotlib.
 
 ```{code-cell} ipython3
 import numpy as np

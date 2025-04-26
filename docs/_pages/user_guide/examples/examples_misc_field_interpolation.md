@@ -16,21 +16,16 @@ orphan: true
 
 # Field Interpolation
 
-There are several reasons for working with field interpolations rather than
-computing the field on demand.
+There are several reasons for working with field interpolations rather than computing the field on demand.
 
 1. Very large grids take a lot of time to compute, even with Magpylib.
-2. The field might not be accessible through Magpylib, e.g. when demagnetization
-   is included, but it can be computed with a 3rd party FE tool or is the result
-   of an experiment.
+2. The field might not be accessible through Magpylib, e.g. when demagnetization is included, but it can be computed with a 3rd party FE tool or is the result of an experiment.
 
-Combining field interpolation and `CustomSource` enables integration of
-pre-computed solutions. In the following example we show how this can be done.
+Combining field interpolation and `CustomSource` enables integration of pre-computed solutions. In the following example we show how this can be done.
 
 ## Interpolation
 
-We start by defining a 3D vector-field interpolation function relying on Scipy
-`RegularGridInterpolator`.
+We start by defining a 3D vector-field interpolation function relying on Scipy `RegularGridInterpolator`.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -89,11 +84,7 @@ def interpolation(observer, data, method="linear", bounds_error=False, fill_valu
 
 ## CustomSource with Interpolation Field
 
-In the second step we create a custom source with an interpolated field
-`field_func` input. The data for the interpolation is generated from the
-Magpylib `Cuboid` field, which makes it easy to verify the approach afterwards.
-To the custom source a nice 3D model is added that makes it possible to display
-it and the cuboid at the same time.
+In the second step we create a custom source with an interpolated field `field_func` input. The data for the interpolation is generated from the Magpylib `Cuboid` field, which makes it easy to verify the approach afterwards. To the custom source a nice 3D model is added that makes it possible to display it and the cuboid at the same time.
 
 ```{code-cell} ipython3
 # Create data for interpolation
@@ -127,10 +118,7 @@ magpy.show(custom, cube, zoom=1, backend="matplotlib")
 
 ## Testing Interpolation Accuracy
 
-Finally, we compare the "exact" field of the cuboid source with the interpolated
-field of the custom source. For this purpose, a sensor is added and a generic
-rotation is applied to the sources. Naturally there is some error that can be
-reduced by increasing the interpolation grid finesse.
+Finally, we compare the "exact" field of the cuboid source with the interpolated field of the custom source. For this purpose, a sensor is added and a generic rotation is applied to the sources. Naturally there is some error that can be reduced by increasing the interpolation grid finesse.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
