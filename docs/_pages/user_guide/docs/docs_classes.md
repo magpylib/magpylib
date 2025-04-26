@@ -64,7 +64,9 @@ All magnets are sources. They have the <span style="color: orange">**polarizatio
 
 ### Cuboid
 ```python
-magpylib.magnet.Cuboid(position, orientation, dimension, polarization, magnetization, style)
+magpylib.magnet.Cuboid(
+    position, orientation, dimension, polarization, magnetization, style
+)
 ```
 
 ::::{grid} 2
@@ -81,7 +83,9 @@ magpylib.magnet.Cuboid(position, orientation, dimension, polarization, magnetiza
 
 ### Cylinder
 ```python
-magpylib.magnet.Cylinder(position, orientation, dimension, polarization, magnetization, style)
+magpylib.magnet.Cylinder(
+    position, orientation, dimension, polarization, magnetization, style
+)
 ```
 
 ::::{grid} 2
@@ -98,7 +102,9 @@ magpylib.magnet.Cylinder(position, orientation, dimension, polarization, magneti
 
 ### CylinderSegment
 ```python
-magpylib.magnet.CylinderSegment(position, orientation, dimension, polarization, magnetization, style)
+magpylib.magnet.CylinderSegment(
+    position, orientation, dimension, polarization, magnetization, style
+)
 ```
 
 ::::{grid} 2
@@ -119,7 +125,9 @@ magpylib.magnet.CylinderSegment(position, orientation, dimension, polarization, 
 
 ### Sphere
 ```python
-magpylib.magnet.Sphere(position, orientation, diameter, polarization, magnetization, style)
+magpylib.magnet.Sphere(
+    position, orientation, diameter, polarization, magnetization, style
+)
 ```
 
 ::::{grid} 2
@@ -136,7 +144,9 @@ magpylib.magnet.Sphere(position, orientation, diameter, polarization, magnetizat
 
 ### Tetrahedron
 ```python
-magpylib.magnet.Tetrahedron(position, orientation, vertices, polarization, magnetization, style)
+magpylib.magnet.Tetrahedron(
+    position, orientation, vertices, polarization, magnetization, style
+)
 ```
 
 ::::{grid} 2
@@ -158,7 +168,19 @@ magpylib.magnet.Tetrahedron(position, orientation, vertices, polarization, magne
 
 ### TriangularMesh
 ```python
-magpylib.magnet.TriangularMesh(position, orientation, vertices, faces, polarization, magnetization, check_open, check_disconnected, check_selfintersecting, reorient_faces, style)
+magpylib.magnet.TriangularMesh(
+    position,
+    orientation,
+    vertices,
+    faces,
+    polarization,
+    magnetization,
+    check_open,
+    check_disconnected,
+    check_selfintersecting,
+    reorient_faces,
+    style,
+)
 ```
 
 ::::{grid} 2
@@ -278,7 +300,9 @@ magpylib.misc.Dipole(position, orientation, moment, style)
 
 ### Triangle
 ```python
-magpylib.misc.Triangle(position, orientation, vertices, polarization, magnetization, style)
+magpylib.misc.Triangle(
+    position, orientation, vertices, polarization, magnetization, style
+)
 ```
 
 ::::{grid} 2
