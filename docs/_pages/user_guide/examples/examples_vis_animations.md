@@ -16,8 +16,7 @@ orphan: true
 
 # Animations
 
-Magpylib can display the motion of objects along paths in the form of
-animations.
+Magpylib can display the motion of objects along paths in the form of animations.
 
 ```{hint}
 1. Animations work best with the [plotly backend](guide-graphic-backends).
@@ -27,13 +26,11 @@ animations.
 3. Avoid rendering too many frames.
 ```
 
-Detailed information about how to tune animations can be found in the
-[graphics documentation](guide-graphic-animations).
+Detailed information about how to tune animations can be found in the [graphics documentation](guide-graphic-animations).
 
 ## Simple Animations
 
-Animations are created with `show` by setting `animation=True`. It is also
-possible to hand over the animation time with this parameter.
+Animations are created with `show` by setting `animation=True`. It is also possible to hand over the animation time with this parameter.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -63,10 +60,7 @@ magpy.show(sensor, magnet, animation=True, backend="plotly")
 
 ## Animated Subplots
 
-[Subplots](examples-vis-subplots) are a powerful tool to see the field along a
-path while viewing the 3D models at the same time. This is specifically
-illustrative as an animation where the field at the respective path position is
-indicated by a marker.
+[Subplots](examples-vis-subplots) are a powerful tool to see the field along a path while viewing the 3D models at the same time. This is specifically illustrative as an animation where the field at the respective path position is indicated by a marker.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -79,8 +73,7 @@ magpy.show(
 )
 ```
 
-It is also possible to use the [show_context](guide-graphics-show_context)
-context manager.
+It is also possible to use the [show_context](guide-graphics-show_context) context manager.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -96,24 +89,20 @@ with magpy.show_context([magnet, sensor], backend="plotly", animation=True) as s
 
 ## Exporting Animations
 
-Animations are wonderful but can be quite difficult to export when they are
-needed, for example, in a presentation. Here we show how to creat and export
-animations using the \*.gif format.
+Animations are wonderful but can be quite difficult to export when they are needed, for example, in a presentation. Here we show how to creat and export animations using the *.gif format.
 
 ### Built-in export
 
-The easiest way to export an animation is via the Magpylib built-in command
-`animation_output` in the `show` function. It works only with the Pyvista
-backend. The following code will create a file "test4.gif".
+The easiest way to export an animation is via the Magpylib built-in command `animation_output` in the `show` function. It works only with the Pyvista backend. The following code will create a file "test4.gif".
 
 ```python
 import magpylib as magpy
 import numpy as np
 
 # Create magnets with Paths
-path = [(np.sin(t) + 1.5, 0, 0) for t in np.linspace(0, 2 * np.pi, 30)]
-cube1 = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(1, 0, 0), position=path)
-cube2 = cube1.copy(position=-np.array(path), polarization=(-1, 0, 0))
+path = [(np.sin(t)+1.5,0,0) for t in np.linspace(0, 2*np.pi, 30)]
+cube1 = magpy.magnet.Cuboid(dimension=(1,1,1), polarization=(1,0,0), position= path)
+cube2 = cube1.copy(position=-np.array(path), polarization=(-1,0,0))
 
 # Store gif with animation_output using Pyvista
 magpy.show(
@@ -131,16 +120,12 @@ magpy.show(
 
 ### Custom export Pyvista
 
-For customizing videos it is best to work directly in the respective graphic
-backends. Here we show how to transfer the Magpylib graphic objects to a Pyvista
-plotter, customize the plotting scene, export screen shots, and combine them in
-a \*.gif. The following example also shows how to achieve transparency.
+For customizing videos it is best to work directly in the respective graphic backends. Here we show how to transfer the Magpylib graphic objects to a Pyvista plotter, customize the plotting scene, export screen shots, and combine them in a *.gif. The following example also shows how to achieve transparency.
 
 ```python
 import magpylib as magpy
 import pyvista as pv
 from PIL import Image
-
 
 def create_gif(images, frame_time, output_file):
     """Create a GIF from images"""
@@ -158,12 +143,12 @@ def create_gif(images, frame_time, output_file):
 
 
 def init_plotter():
-    """Init Pyvista plotter with custom scene layout"""
+    """ Init Pyvista plotter with custom scene layout"""
     pl = pv.Plotter(notebook=False, off_screen=True, window_size=[300, 300])
     pl.camera_position = [
         (5, 5, 5),  # Position of the camera
         (0, 0, 0),  # Focal point (what the camera is looking at)
-        (0, 0, 1),  # View up direction
+        (0, 0, 1)   # View up direction
     ]
     pl.camera.zoom(0.5)
     pl.set_background("k")  # For better transparency
@@ -172,22 +157,18 @@ def init_plotter():
 
 def create_frames(frames):
     """Create frames with Pyvista."""
-
+    
     # Create Magpylib objects
-    mag1 = magpy.magnet.CylinderSegment(
-        dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1)
-    )
-    mag2 = magpy.magnet.CylinderSegment(
-        dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1)
-    )
+    mag1 = magpy.magnet.CylinderSegment(dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1))
+    mag2 = magpy.magnet.CylinderSegment(dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1))
 
     images = []
     pl = init_plotter()
     for i in range(frames):
-
+        
         # Modify object positions
-        mag1.rotate_from_angax(360 / frames, axis="z")
-        mag2.rotate_from_angax(-360 / frames, axis="z")
+        mag1.rotate_from_angax(360 / frames, axis='z')
+        mag2.rotate_from_angax(-360 / frames, axis='z')
 
         # Transfer Magpylib objects to Pyvista plotter
         pl.clear()
@@ -220,11 +201,7 @@ if __name__ == "__main__":
 
 <img src="../../../_static/videos/example_gif2.gif" width=50% align="center">
 
-Notice that when providing a canvas, no update to its layout is performed by
-Magpylib, unless explicitly specified by setting `canvas_update=True` in
-`show()`. By default `canvas_update="auto"` only updates the canvas if is not
-provided by the user. Details can be found in the
-[graphics documentation](guide-graphics-canvas).
+Notice that when providing a canvas, no update to its layout is performed by Magpylib, unless explicitly specified by setting `canvas_update=True` in `show()`. By default `canvas_update="auto"` only updates the canvas if is not provided by the user. Details can be found in the [graphics documentation](guide-graphics-canvas).
 
 ### Custom export Plotly
 
@@ -254,13 +231,9 @@ def create_frames(frames):
     """Create frames with Pyvista."""
 
     # Create Magpylib objects
-    mag1 = magpy.magnet.CylinderSegment(
-        dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1)
-    )
-    mag2 = magpy.magnet.CylinderSegment(
-        dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1)
-    )
-
+    mag1 = magpy.magnet.CylinderSegment(dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1))
+    mag2 = magpy.magnet.CylinderSegment(dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1))
+    
     images = []
     for i in range(frames):
         # Set object position

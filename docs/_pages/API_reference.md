@@ -1,5 +1,4 @@
 (docu-APIref)=
-
 # API reference
 
 The API reference includes all Magpylib docstrings.

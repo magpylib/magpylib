@@ -16,8 +16,7 @@ kernelspec:
 
 # Magnetic Scales
 
-In this example we will show how magnetic scales can be constructed with
-Magpylib for fast field computation.
+In this example we will show how magnetic scales can be constructed with Magpylib for fast field computation.
 
 - reference to DS 91411 and 91479
 - ideal-typical scales

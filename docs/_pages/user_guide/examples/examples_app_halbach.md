@@ -16,18 +16,13 @@ kernelspec:
 
 # Halbach Magnets
 
-Magpylib is an excellent tool to create magnet assemblies. In this example we
-will show how to model Halbach magnets.
+Magpylib is an excellent tool to create magnet assemblies. In this example we will show how to model Halbach magnets.
 
 ```{note}
 In the following examples we make use of the [arbitrary unit convention](guide-docs-io-scale-invariance).
 ```
 
-The original Halbach-magnetization describes a hollow cylinder with a
-polarization direction that rotates twice while going around the cylinder once.
-In reality such polarizations are difficult to fabricate. What is commonly done
-instead are "Discreete Halbach Arrays", which are magnet assemblies that
-approximate a Halbach magnetization.
+The original Halbach-magnetization describes a hollow cylinder with a polarization direction that rotates twice while going around the cylinder once. In reality such polarizations are difficult to fabricate. What is commonly done instead are "Discreete Halbach Arrays", which are magnet assemblies that approximate a Halbach magnetization.
 
 The following code creates a Discreete Halbach Cylinder generated from Cuboids:
 
@@ -53,8 +48,7 @@ for a in angles:
 halbach.show(backend='plotly')
 ```
 
-Next we compute and display the field on an xy-grid in the symmetry plane using
-the [matplotlib streamplot](examples-vis-mpl-streamplot) example.
+Next we compute and display the field on an xy-grid in the symmetry plane using the [matplotlib streamplot](examples-vis-mpl-streamplot) example.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed

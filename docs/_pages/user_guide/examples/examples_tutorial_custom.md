@@ -16,9 +16,7 @@ orphan: true
 
 # CustomSource
 
-The {ref}`guide-docs-classes-custom-source` class was implemented to offer easy
-integration of user field implementations into Magpylib's object-oriented
-interface.
+The {ref}`guide-docs-classes-custom-source` class was implemented to offer easy integration of user field implementations into Magpylib's object-oriented interface.
 
 ```{note}
 Obviously, any field implementation can be integrated. Specifically, fields where superposition holds and interactions do not disturb the sources (e.g. electric, gravitational, ...) can benefit from Magpylib's position and orientation interface.
@@ -26,21 +24,15 @@ Obviously, any field implementation can be integrated. Specifically, fields wher
 
 ## Magnetic Monopole
 
-In this example we create a class that represents the elusive magnetic monopole,
-which would have a magnetic field like this
+In this example we create a class that represents the elusive magnetic monopole, which would have a magnetic field like this
 
 $$
 {\bf B} = Q_m \frac{{\bf r}}{|{\bf r}|^3}.
 $$
 
-Here the monopole lies in the origin of the local coordinates, $Q_m$ is the
-monopole charge and ${\bf r}$ is the observer position.
+Here the monopole lies in the origin of the local coordinates, $Q_m$ is the monopole charge and ${\bf r}$ is the observer position.
 
-We create this field as a Python function and hand it over to a CustomSource
-`field_func` argument. The `field_func` input must be a callable with two
-positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must
-accept ndarrays of shape (n,3)), and return the respective fields in units of T
-and A/m in the same shape.
+We create this field as a Python function and hand it over to a CustomSource `field_func` argument. The `field_func` input must be a callable with two positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must accept ndarrays of shape (n,3)), and return the respective fields in units of T and A/m in the same shape.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -79,8 +71,7 @@ print(mono.getB((1, 0, 0)))
 print(mono.getH((1, 0, 0)))
 ```
 
-Multiple of these sources can now be combined, making use of the Magpylib
-position/orientation interface.
+Multiple of these sources can now be combined, making use of the Magpylib position/orientation interface.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -113,8 +104,7 @@ plt.show()
 
 ## Adding a 3D model
 
-While `CustomSource` is graphically represented by a simple marker by default,
-we can easily add a 3D model as described in {ref}`examples-own-3d-models`.
+While `CustomSource` is graphically represented by a simple marker by default, we can easily add a 3D model as described in {ref}`examples-own-3d-models`.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -137,11 +127,7 @@ magpy.show(mono1, mono2)
 
 ## Subclassing CustomSource
 
-In the above example it would be nice to make the `CustomSource` dynamic, so
-that it would have a property `charge` that can be changed at will, rather than
-having to redefine the `field_func` and initialize a new object every time. In
-the following example we show how to sub-class `CustomSource` to achieve this.
-The problem is reminiscent of {ref}`examples-misc-compound`.
+In the above example it would be nice to make the `CustomSource` dynamic, so that it would have a property `charge` that can be changed at will, rather than having to redefine the `field_func` and initialize a new object every time. In the following example we show how to sub-class `CustomSource` to achieve this. The problem is reminiscent of {ref}`examples-misc-compound`.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -209,8 +195,7 @@ mono.charge = -1
 print(mono.getB((1, 0, 0)))
 ```
 
-The new class seamlessly integrates into the Magpylib interface as we show in
-the following example where we have a look at the Quadrupole field.
+The new class seamlessly integrates into the Magpylib interface as we show in the following example where we have a look at the Quadrupole field.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed

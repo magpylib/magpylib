@@ -1,9 +1,7 @@
 (guide-index)=
-
 # User Guide
 
-The user guide provides detailed descriptions of the Magpylib API with many
-interactive examples to help users along the way.
+The user guide provides detailed descriptions of the Magpylib API with many interactive examples to help users along the way.
 
 ```{toctree}
 :maxdepth: 2
