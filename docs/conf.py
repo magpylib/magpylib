@@ -42,7 +42,7 @@ def setup(app):
             "-E",  # user docstring headers
             "-M",  # Modules first
             "-o",  # Output the files to:
-            "./_autogen/",  # Output Directory
+            "./docs/_autogen/",  # Output Directory
             "./src/magpylib",  # Main Module directory
         ]
     )
