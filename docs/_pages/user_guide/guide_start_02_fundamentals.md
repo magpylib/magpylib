@@ -8,7 +8,7 @@ In this section we present the most important Magpylib features, focussing on th
 Learn the Magpylib fundamentals (create magnets, view system, compute field) in 5 minutes. This requires a basic understanding of the Python programming language, the [NumPy array class](https://numpy.org/doc/stable/) and the [Scipy Rotation class](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html).
 
 ```{hint}
-Since v5 all Magpylib inputs and ouputs are by default in SI-units. See {ref}`guide-docs-io-scale-invariance` for convenient use.
+Since v5 all Magpylib inputs and outputs are by default in SI-units. See {ref}`guide-docs-io-scale-invariance` for convenient use.
 ```
 
 ### Create sources and observers as Python objects
@@ -158,7 +158,7 @@ print(obj1.position)  # -> [0.001 0.002 0.003]
 print(obj2.position)  # -> [0.001 0.002 0.003]
 ```
 
-Collections are dicussed in detail [here](guide-docs-classes-collections).
+Collections are discussed in detail [here](guide-docs-classes-collections).
 
 ### Complex Magnet Shapes
 There most convenient way to create a magnet with complex shape is by using the convex hull of a point cloud (= simplest geometric form that includes all given points) and transform it into a triangular surface mesh.

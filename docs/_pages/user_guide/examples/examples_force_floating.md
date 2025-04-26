@@ -16,7 +16,7 @@ kernelspec:
 
 # Floating Magnets
 
-The examples here require installaion of the [magpylib-force package](https://pypi.org/project/magpylib-force/). See also the [magpylib-force documentation](docs-magpylib-force).
+The examples here require installation of the [magpylib-force package](https://pypi.org/project/magpylib-force/). See also the [magpylib-force documentation](docs-magpylib-force).
 
 ## Formalism
 
