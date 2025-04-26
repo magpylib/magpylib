@@ -1,28 +1,30 @@
 # Units and Types
 
 (guide-docs-units)=
-
 ## Units
 
-The important vacuum permeability $\mu_0$ is provided at the package top-level
-<span style="color: orange">**mu_0**</span>. It's value is not $4 \pi 10^{-7}$
-since
-[the redefinition of the SI base units](https://en.wikipedia.org/wiki/2019_redefinition_of_the_SI_base_units),
-but a value close to it.
+The important vacuum permeability $\mu_0$ is provided at the package top-level <span style="color: orange">**mu_0**</span>. It's value is not $4 \pi 10^{-7}$ since [the redefinition of the SI base units](https://en.wikipedia.org/wiki/2019_redefinition_of_the_SI_base_units), but a value close to it.
 
-For historical reasons Magpylib used non-SI units until Version 4. Starting with
-version 5 all inputs and outputs are SI-based.
+For historical reasons Magpylib used non-SI units until Version 4. Starting with version 5 all inputs and outputs are SI-based.
 
-::::{grid} 3 :::{grid-item} :columns: 1 :::
+::::{grid} 3
+:::{grid-item}
+:columns: 1
+:::
 
-:::{grid-item} :columns: 10 | PHYSICAL QUANTITY | MAGPYLIB PARAMETER | UNITS
-from v5| UNITS until v4| |:---:|:---:|:---:|:---:| | Magnetic Polarization
-$\vec{J}$ | `polarization`, `getJ()` | **T** | - | | Magnetization $\vec{M}$ |
-`magnetization`, `getM()` | **A/m** | mT | | Electric Current $i_0$ | `current`
-| **A** | A | | Magnetic Dipole Moment $\vec{m}$ | `moment` | **A·m²** | mT·mm³
-| | B-field $\vec{B}$ | `getB()` | **T** | mT | | H-field $\vec{H}$ | `getH()` |
-**A/m** | kA/m | | Length-inputs | `position`, `dimension`, `vertices`, ... |
-**m** | mm | | Angle-inputs | `angle`, `dimension`, ... | **°** | ° | :::
+:::{grid-item}
+:columns: 10
+| PHYSICAL QUANTITY | MAGPYLIB PARAMETER | UNITS from v5| UNITS until v4|
+|:---:|:---:|:---:|:---:|
+| Magnetic Polarization $\vec{J}$  | `polarization`, `getJ()`      | **T**      | -        |
+| Magnetization $\vec{M}$          | `magnetization`, `getM()`     | **A/m**    | mT       |
+| Electric Current $i_0$           | `current`                     | **A**      | A        |
+| Magnetic Dipole Moment $\vec{m}$ | `moment`                      | **A·m²**   | mT·mm³   |
+| B-field $\vec{B}$                | `getB()`                      | **T**      | mT       |
+| H-field $\vec{H}$                | `getH()`                      | **A/m**    | kA/m     |
+| Length-inputs                    | `position`, `dimension`, `vertices`, ...  | **m**      | mm       |
+| Angle-inputs                     | `angle`, `dimension`, ...     | **°**      | °        |
+:::
 
 ::::
 
@@ -35,7 +37,6 @@ The connection between the magnetic polarization J, the magnetization M and the 
 ```
 
 (guide-docs-io-scale-invariance)=
-
 ## Arbitrary unit Convention
 
 ```{hint}
@@ -46,6 +47,4 @@ In addition, `getB` returns the same unit as given by the `polarization` input. 
 
 ## Types
 
-Magpylib requires no special input format. All scalar types (`int`, `float`,
-...) and vector types (`list`, `tuple`, `np.ndarray`, ... ) are accepted.
-Magpylib returns everything as `np.ndarray`.
+Magpylib requires no special input format. All scalar types (`int`, `float`, ...) and vector types (`list`, `tuple`, `np.ndarray`, ... ) are accepted. Magpylib returns everything as `np.ndarray`.

@@ -1,16 +1,11 @@
 (getting-started)=
-
 # The Magpylib fundamentals
 
-In this section we present the most important Magpylib features, focussing on
-the intuitive object-oriented interface.
+In this section we present the most important Magpylib features, focussing on the intuitive object-oriented interface.
 
 ## Basic features
 
-Learn the Magpylib fundamentals (create magnets, view system, compute field) in
-5 minutes. This requires a basic understanding of the Python programming
-language, the [NumPy array class](https://numpy.org/doc/stable/) and the
-[Scipy Rotation class](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html).
+Learn the Magpylib fundamentals (create magnets, view system, compute field) in 5 minutes. This requires a basic understanding of the Python programming language, the [NumPy array class](https://numpy.org/doc/stable/) and the [Scipy Rotation class](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html).
 
 ```{hint}
 Since v5 all Magpylib inputs and ouputs are by default in SI-units. See {ref}`guide-docs-io-scale-invariance` for convenient use.
@@ -18,9 +13,7 @@ Since v5 all Magpylib inputs and ouputs are by default in SI-units. See {ref}`gu
 
 ### Create sources and observers as Python objects
 
-In the object oriented interface sources of the magnetic field (magnets,
-currents, others) and observers of the magnetic field (sensors) are created as
-Python objects.
+In the object oriented interface sources of the magnetic field (magnets, currents, others) and observers of the magnetic field (sensors) are created as Python objects.
 
 ```python
 import magpylib as magpy
@@ -40,8 +33,7 @@ Find detailed information on the Magpylib classes [here](docs-classes).
 
 ### Position and orientation
 
-All Magpylib objects (sources and observers) have position and orientation in a
-global Cartesian coordinate system that can be manipulated.
+All Magpylib objects (sources and observers) have position and orientation in a global Cartesian coordinate system that can be manipulated.
 
 ```python
 # By default, the position of a Magpylib object is
@@ -71,14 +63,11 @@ print(sensor.position)  # -> [-0.01  0.    0.  ]
 print(sensor.orientation.as_rotvec(degrees=True))  # -> [ 0.  0. -45.]
 ```
 
-Find detailed information on position and orientation attributes and how to
-manipulate them [here](docs-position).
+Find detailed information on position and orientation attributes and how to manipulate them [here](docs-position).
 
 ### 3D view of objects
 
-In-built 3D graphic output helps to see if all Magpylib objects are positioned
-properly. The magnet polarization is represented by default by a 3-color scheme,
-the sensor by an axes cross.
+In-built 3D graphic output helps to see if all Magpylib objects are positioned properly. The magnet polarization is represented by default by a 3-color scheme, the sensor by an axes cross.
 
 ```python
 # Use the `show` function to view your system
@@ -89,13 +78,11 @@ magpy.show(cube, sensor, backend="plotly")
 
 <img src="../../_static/images/getting_started_fundamentals1.png" width=50% align="center">
 
-Detailed information on the graphical output with `show` is given
-[here](guide-graphics).
+Detailed information on the graphical output with `show` is given [here](guide-graphics).
 
 ### Computing the field
 
-The field can be computed at sensor objects, or simply by specifying a position
-of interest.
+The field can be computed at sensor objects, or simply by specifying a position of interest.
 
 ```python
 # Compute the B-field for some positions.
@@ -122,14 +109,11 @@ Detailed information on field computation is provided [here](docs-fieldcomp).
 
 ## Advanced features
 
-While most things can be achieved with the above, the following features will
-make your live much easier.
+While most things can be achieved with the above, the following features will make your live much easier.
 
 ### Paths
 
-Magpylib position and orientation attributes can store multiple values that are
-referred to as paths. The field will automatically be computed for all path
-positions. Use this feature to model objects that move to multiple locations.
+Magpylib position and orientation attributes can store multiple values that are referred to as paths. The field will automatically be computed for all path positions. Use this feature to model objects that move to multiple locations.
 
 ```python
 import numpy as np
@@ -155,10 +139,7 @@ print(B.round(3))  # ->[[ 0.004  0.    -0.001]
 More information on paths is provided [here](docs-position).
 
 ### Collections
-
-Magpylib objects can be grouped into Collections. An operation applied to a
-Collection is applied to every object in it. The Collection itself behaves like
-a single source object.
+Magpylib objects can be grouped into Collections. An operation applied to a Collection is applied to every object in it. The Collection itself behaves like a single source object.
 
 ```python
 import magpylib as magpy
@@ -180,10 +161,7 @@ print(obj2.position)  # -> [0.001 0.002 0.003]
 Collections are dicussed in detail [here](guide-docs-classes-collections).
 
 ### Complex Magnet Shapes
-
-There most convenient way to create a magnet with complex shape is by using the
-convex hull of a point cloud (= simplest geometric form that includes all given
-points) and transform it into a triangular surface mesh.
+There most convenient way to create a magnet with complex shape is by using the convex hull of a point cloud (= simplest geometric form that includes all given points) and transform it into a triangular surface mesh.
 
 ```python
 import numpy as np
@@ -208,14 +186,12 @@ pyramid = magpy.magnet.TriangularMesh.from_ConvexHull(
 # Display the magnet graphically
 pyramid.show()
 ```
-
 <img src="../../_static/images/getting_started_complex_shapes.png" width=50% align="center">
 
-There are several other possibilities to create complex magnet shapes. Some can
-be found in the [examples](examples-complex-magnet-shapes).
+There are several other possibilities to create complex magnet shapes. Some can be found in the [examples](examples-complex-magnet-shapes).
+
 
 ### Graphic Styles
-
 Magpylib offers many ways to customize the graphic output.
 
 ```python
@@ -240,15 +216,12 @@ cyl = magpy.magnet.Cylinder(
 )
 magpy.show(cube, cyl)
 ```
-
 <img src="../../_static/images/getting_started_styles.png" width=50% align="center">
 
 The many options for graphic styling can be found [here](guide-graphic-styles).
 
 ### Animation
-
-Object paths can be animated. For this feature the plotly graphic backend is
-recommended.
+Object paths can be animated. For this feature the plotly graphic backend is recommended.
 
 ```python
 import numpy as np
@@ -265,18 +238,12 @@ cube.rotate_from_angax(angle=np.linspace(10, 360, 18), axis="x")
 # Generate an animation with `show`
 cube.show(animation=True, backend="plotly")
 ```
-
 <img src="../../_static/images/getting_started_animation.png" width=50% align="center">
 
-Nice animation examples are shown [here](examples-vis-animations), and a
-detailed discussion is provided [here](guide-graphic-animations).
+Nice animation examples are shown [here](examples-vis-animations), and a detailed discussion is provided [here](guide-graphic-animations).
 
 ### Functional interface
-
-Magpylib's object oriented interface is convenient to work with but is also
-slowed down by object initialization and handling. The functional interface
-bypasses this load and enables fast field computation for an arbitrary set of
-input parameters.
+Magpylib's object oriented interface is convenient to work with but is also slowed down by object initialization and handling. The functional interface bypasses this load and enables fast field computation for an arbitrary set of input parameters.
 
 ```python
 import magpylib as magpy
