@@ -16,11 +16,19 @@ kernelspec:
 
 # Coils
 
-In this example we show how to model air-coils, then combine two coils into a Helmholtz-pair and visualize the homogeneity of the resulting magnetic field. A nice explanation of coils and the magnetic field is given [here](https://www.nagwa.com/en/explainers/186157825721/#:~:text=The%20magnetic%20field%20strength%2C%20%F0%9D%90%B5,%EF%8A%AD%20T%E2%8B%85m%2FA.). With the code examples below you can easily compare Magpylib results to results presented in this tutorial.
+In this example we show how to model air-coils, then combine two coils into a
+Helmholtz-pair and visualize the homogeneity of the resulting magnetic field. A
+nice explanation of coils and the magnetic field is given
+[here](https://www.nagwa.com/en/explainers/186157825721/#:~:text=The%20magnetic%20field%20strength%2C%20%F0%9D%90%B5,%EF%8A%AD%20T%E2%8B%85m%2FA.).
+With the code examples below you can easily compare Magpylib results to results
+presented in this tutorial.
 
 ## Coil models
 
-**Model 1:** The coil consists of multiple windings, each of which can be modeled with a circular current loop which is realized by the `Circle` class. The individual windings are combined into a `Collection` which itself behaves like a single magnetic field source.
+**Model 1:** The coil consists of multiple windings, each of which can be
+modeled with a circular current loop which is realized by the `Circle` class.
+The individual windings are combined into a `Collection` which itself behaves
+like a single magnetic field source.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -38,7 +46,9 @@ for z in np.linspace(-8, 8, 16):
 coil1.show()
 ```
 
-**Model 2:** The coil is in reality more like a spiral, which can be modeled using the `Polyline` class. However, a good spiral approximation requires many small line segments, which makes the computation slower.
+**Model 2:** The coil is in reality more like a spiral, which can be modeled
+using the `Polyline` class. However, a good spiral approximation requires many
+small line segments, which makes the computation slower.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -54,7 +64,11 @@ coil2 = magpy.current.Polyline(
 coil2.show()
 ```
 
-**Model 3:** A [Helmholtz coil](https://en.wikipedia.org/wiki/Helmholtz_coil) is a device for producing a region of nearly uniform magnetic field. It consists of two coils on the same axis, carrying an equal electric current in the same direction. In classical layouts, the distance between the coils is similar to the coil radius.
+**Model 3:** A [Helmholtz coil](https://en.wikipedia.org/wiki/Helmholtz_coil) is
+a device for producing a region of nearly uniform magnetic field. It consists of
+two coils on the same axis, carrying an equal electric current in the same
+direction. In classical layouts, the distance between the coils is similar to
+the coil radius.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -80,7 +94,11 @@ helmholtz.show()
 
 ## Plotting the field
 
-Streamplot from Matplotlib is a powerful tool to outline the field lines. However, it must be understood that streamplot shows only a projection of the field onto the observation plane. All field components that point out of the plane become invisible. In out example we choose symmetry planes, where the perpendicular component is negligible.
+Streamplot from Matplotlib is a powerful tool to outline the field lines.
+However, it must be understood that streamplot shows only a projection of the
+field onto the observation plane. All field components that point out of the
+plane become invisible. In out example we choose symmetry planes, where the
+perpendicular component is negligible.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -122,7 +140,9 @@ plt.show()
 
 ## Helmholtz field homogeneity
 
-While the optimal solution is given by two current loops, real world applications must deal with finite sizes and limited construction space. Here Magpylib enables fast analysis of different possible geometries.
+While the optimal solution is given by two current loops, real world
+applications must deal with finite sizes and limited construction space. Here
+Magpylib enables fast analysis of different possible geometries.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed

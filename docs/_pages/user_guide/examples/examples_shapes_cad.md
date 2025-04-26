@@ -16,7 +16,10 @@ kernelspec:
 
 # Magnets from CAD
 
-The easiest way to create complex magnet shapes from CAD files is through Pyvista using the [TriangularMesh class](docu-magpylib-api-trimesh). Pyvista supports *.stl files, and any open CAD file format is easily transformed to stl.
+The easiest way to create complex magnet shapes from CAD files is through
+Pyvista using the [TriangularMesh class](docu-magpylib-api-trimesh). Pyvista
+supports \*.stl files, and any open CAD file format is easily transformed to
+stl.
 
 ```{warning}
 CAD files might include many Triangles, especially when dealing with round sides and edges, that do not significantly contribute to the field and will slow down the Magpylib computation.

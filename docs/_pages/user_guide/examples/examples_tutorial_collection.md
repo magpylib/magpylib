@@ -16,16 +16,28 @@ orphan: true
 
 # Working with Collections
 
-The top-level class `Collection` allows users to group objects by reference for common manipulation. The following concepts apply to Magpylib Collections:
+The top-level class `Collection` allows users to group objects by reference for
+common manipulation. The following concepts apply to Magpylib Collections:
 
-1. A collection spans its own local frame of reference with position and orientation, to which the children are added. Thus, any operation applied to the collection is individually applied to all its children.
-2. The collection itself behaves like a single Magpylib object (can be source and/or observer).
-3. All children inside the collection can be individually addressed and manipulated, which will automatically manipulate their state inside the parent collection.
-4. Collections have their own `style` attributes, their paths are displayed in `show`, and all children are automatically assigned their parent color.
+1. A collection spans its own local frame of reference with position and
+   orientation, to which the children are added. Thus, any operation applied to
+   the collection is individually applied to all its children.
+2. The collection itself behaves like a single Magpylib object (can be source
+   and/or observer).
+3. All children inside the collection can be individually addressed and
+   manipulated, which will automatically manipulate their state inside the
+   parent collection.
+4. Collections have their own `style` attributes, their paths are displayed in
+   `show`, and all children are automatically assigned their parent color.
 
 ## Constructing Collections
 
-Collections have the attributes `children`, `sources`, `sensors` and `collections`. These attributes are ordered lists that contain objects that are added to the collection by reference (not copied). `children` returns a list of all objects in the collection. `sources` returns a list of the sources, `sensors` a list of the sensors and `collections` a list of "sub-collections" within the collection.
+Collections have the attributes `children`, `sources`, `sensors` and
+`collections`. These attributes are ordered lists that contain objects that are
+added to the collection by reference (not copied). `children` returns a list of
+all objects in the collection. `sources` returns a list of the sources,
+`sensors` a list of the sensors and `collections` a list of "sub-collections"
+within the collection.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -42,7 +54,8 @@ print(f"sensors:     {coll.sensors}")
 print(f"collections: {coll.collections}")
 ```
 
-New additions are always added at the end. Use the **`add`** method or the parameters.
+New additions are always added at the end. Use the **`add`** method or the
+parameters.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -64,7 +77,9 @@ print(f"sensors:     {coll.sensors}")
 print(f"collections: {coll.collections}")
 ```
 
-The **`describe`** method is a very convenient way to view a Collection structure, especially when the collection is nested, i.e., when containing other collections.
+The **`describe`** method is a very convenient way to view a Collection
+structure, especially when the collection is nested, i.e., when containing other
+collections.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -76,9 +91,11 @@ c2.add(s2.copy())
 coll.describe(format="label+type")
 ```
 
-The parameter `format` can be any combination of `"type"`, `"label"`, `"id"` and `"properties"`.
+The parameter `format` can be any combination of `"type"`, `"label"`, `"id"` and
+`"properties"`.
 
-For convenience, any two Magpylib objects can be added up with `+` to form a collection.
+For convenience, any two Magpylib objects can be added up with `+` to form a
+collection.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -93,7 +110,9 @@ coll.describe(format="label")
 
 ## Child-Parent Relations
 
-Objects that are part of a collection become children of that collection, and the collection itself becomes their parent. Every Magpylib object has the `parent` attribute, which is `None` by default.
+Objects that are part of a collection become children of that collection, and
+the collection itself becomes their parent. Every Magpylib object has the
+`parent` attribute, which is `None` by default.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -106,7 +125,10 @@ print(f"c1.parent:   {c1.parent}")
 print(f"c1.children: {c1.children}")
 ```
 
-Rather than adding objects to a collection, as described above, one can also set the `parent` parameter. A Magpylib object can only have a single parent, i.e., it can only be part of a single collection. As a result, changing the parent will automatically remove the object from its previous collection.
+Rather than adding objects to a collection, as described above, one can also set
+the `parent` parameter. A Magpylib object can only have a single parent, i.e.,
+it can only be part of a single collection. As a result, changing the parent
+will automatically remove the object from its previous collection.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -129,7 +151,8 @@ c2.describe(format="label")
 
 ## Accessing Children
 
-Collections have `__getitem__` through the attribute `children` defined which enables using collections directly as iterators,
+Collections have `__getitem__` through the attribute `children` defined which
+enables using collections directly as iterators,
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -151,7 +174,10 @@ and makes it possible to directly reference to a child object by index:
 print(coll[0])
 ```
 
-Collection nesting is powerful to create a self-consistent hierarchical structure, however, it is often in the way of quick child access in nested trees. For this, the `children_all`, `sources_all`, `sensors_all` and `collections_all` read-only parameters, return all objects in the tree:
+Collection nesting is powerful to create a self-consistent hierarchical
+structure, however, it is often in the way of quick child access in nested
+trees. For this, the `children_all`, `sources_all`, `sensors_all` and
+`collections_all` read-only parameters, return all objects in the tree:
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -170,7 +196,8 @@ print([s.style.label for s in coll.sensors_all])
 
 ## Practical Example
 
-The following example demonstrates how collections enable user-friendly manipulation of groups, sub-groups, and individual objects.
+The following example demonstrates how collections enable user-friendly
+manipulation of groups, sub-groups, and individual objects.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -203,7 +230,10 @@ for coil in [coil1, coil2]:
 magpy.show(*helmholtz, animation=True, style_path_show=False)
 ```
 
-For magnetic field computation, a collection with source children behaves like a single source object, and a collection with sensor children behaves like a flat list of its sensors when provided as `sources` and `observers` input respectively.
+For magnetic field computation, a collection with source children behaves like a
+single source object, and a collection with sensor children behaves like a flat
+list of its sensors when provided as `sources` and `observers` input
+respectively.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed
@@ -226,7 +256,11 @@ plt.show()
 
 ## Efficient 3D Models
 
-The graphical backend libraries were not designed for complex 3D graphic output. As a result, it often becomes inconvenient and slow when attempting to display many 3D objects. One solution to this problem when dealing with large collections is to represent the latter by a single encompassing body, and to deactivate the individual 3D models of all children.
+The graphical backend libraries were not designed for complex 3D graphic output.
+As a result, it often becomes inconvenient and slow when attempting to display
+many 3D objects. One solution to this problem when dealing with large
+collections is to represent the latter by a single encompassing body, and to
+deactivate the individual 3D models of all children.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -260,4 +294,6 @@ coll.show()
 
 ## Compound Objects
 
-Collections can be subclassed to form dynamic groups that seamlessly integrate into Magpylib. Such classes are referred to as **compounds**. An example of how this is done is shown in {ref}`examples-misc-compound`.
+Collections can be subclassed to form dynamic groups that seamlessly integrate
+into Magpylib. Such classes are referred to as **compounds**. An example of how
+this is done is shown in {ref}`examples-misc-compound`.

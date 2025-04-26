@@ -16,9 +16,19 @@ orphan: true
 
 # Magnetic Angle Sensor
 
-End of shaft angle sensing is a classic example for a magnetic position system. The goal is to determine the angular position of a rotating shaft. A magnet, typically a diametrically magnetized cylinder, is mounted at the end of the shaft. A 2D sensor is mounted below. When the shaft rotates the two sensor outputs will be $s_1=B_0 sin(\varphi)$ and $s_2=B_0 cos(\varphi)$, so that the angle is uniquely given by $\varphi = arctan_2(s_1,s_2)$.
+End of shaft angle sensing is a classic example for a magnetic position system.
+The goal is to determine the angular position of a rotating shaft. A magnet,
+typically a diametrically magnetized cylinder, is mounted at the end of the
+shaft. A 2D sensor is mounted below. When the shaft rotates the two sensor
+outputs will be $s_1=B_0 sin(\varphi)$ and $s_2=B_0 cos(\varphi)$, so that the
+angle is uniquely given by $\varphi = arctan_2(s_1,s_2)$.
 
-In the example below we show such a typical end-of-shaft system with a 2-pixel sensor, that is commonly used to eliminate external stray fields. In addition, we assume that the magnet is not perfectly mounted at the end of the shaft, but slightly displaced to the side, which results in a wobble motion. Such tolerances are easily implemented with Magpylib, they can be visualized and their influence on the sensor output signal can be tested quickly.
+In the example below we show such a typical end-of-shaft system with a 2-pixel
+sensor, that is commonly used to eliminate external stray fields. In addition,
+we assume that the magnet is not perfectly mounted at the end of the shaft, but
+slightly displaced to the side, which results in a wobble motion. Such
+tolerances are easily implemented with Magpylib, they can be visualized and
+their influence on the sensor output signal can be tested quickly.
 
 ```{code-cell} ipython3
 import numpy as np
