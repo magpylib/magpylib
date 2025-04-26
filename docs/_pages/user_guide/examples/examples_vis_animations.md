@@ -100,9 +100,9 @@ import magpylib as magpy
 import numpy as np
 
 # Create magnets with Paths
-path = [(np.sin(t)+1.5,0,0) for t in np.linspace(0, 2*np.pi, 30)]
-cube1 = magpy.magnet.Cuboid(dimension=(1,1,1), polarization=(1,0,0), position= path)
-cube2 = cube1.copy(position=-np.array(path), polarization=(-1,0,0))
+path = [(np.sin(t) + 1.5, 0, 0) for t in np.linspace(0, 2 * np.pi, 30)]
+cube1 = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(1, 0, 0), position=path)
+cube2 = cube1.copy(position=-np.array(path), polarization=(-1, 0, 0))
 
 # Store gif with animation_output using Pyvista
 magpy.show(
@@ -127,6 +127,7 @@ import magpylib as magpy
 import pyvista as pv
 from PIL import Image
 
+
 def create_gif(images, frame_time, output_file):
     """Create a GIF from images"""
     frames = [Image.fromarray(img) for img in images]
@@ -143,12 +144,12 @@ def create_gif(images, frame_time, output_file):
 
 
 def init_plotter():
-    """ Init Pyvista plotter with custom scene layout"""
+    """Init Pyvista plotter with custom scene layout"""
     pl = pv.Plotter(notebook=False, off_screen=True, window_size=[300, 300])
     pl.camera_position = [
         (5, 5, 5),  # Position of the camera
         (0, 0, 0),  # Focal point (what the camera is looking at)
-        (0, 0, 1)   # View up direction
+        (0, 0, 1),  # View up direction
     ]
     pl.camera.zoom(0.5)
     pl.set_background("k")  # For better transparency
@@ -157,18 +158,22 @@ def init_plotter():
 
 def create_frames(frames):
     """Create frames with Pyvista."""
-    
+
     # Create Magpylib objects
-    mag1 = magpy.magnet.CylinderSegment(dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1))
-    mag2 = magpy.magnet.CylinderSegment(dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1))
+    mag1 = magpy.magnet.CylinderSegment(
+        dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1)
+    )
+    mag2 = magpy.magnet.CylinderSegment(
+        dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1)
+    )
 
     images = []
     pl = init_plotter()
     for i in range(frames):
-        
+
         # Modify object positions
-        mag1.rotate_from_angax(360 / frames, axis='z')
-        mag2.rotate_from_angax(-360 / frames, axis='z')
+        mag1.rotate_from_angax(360 / frames, axis="z")
+        mag2.rotate_from_angax(-360 / frames, axis="z")
 
         # Transfer Magpylib objects to Pyvista plotter
         pl.clear()
@@ -231,9 +236,13 @@ def create_frames(frames):
     """Create frames with Pyvista."""
 
     # Create Magpylib objects
-    mag1 = magpy.magnet.CylinderSegment(dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1))
-    mag2 = magpy.magnet.CylinderSegment(dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1))
-    
+    mag1 = magpy.magnet.CylinderSegment(
+        dimension=(3, 4, 1, 0, 45), polarization=(0, 0, 1)
+    )
+    mag2 = magpy.magnet.CylinderSegment(
+        dimension=(2, 3, 1, 0, 45), polarization=(0, 0, -1)
+    )
+
     images = []
     for i in range(frames):
         # Set object position
