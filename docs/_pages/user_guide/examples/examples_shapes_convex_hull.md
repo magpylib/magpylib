@@ -16,9 +16,14 @@ orphan: true
 
 # Convex Hull
 
-In geometry the convex hull of a point cloud is the smallest convex shape that contains all points, see [Wikipedia](https://en.wikipedia.org/wiki/Convex_hull).
+In geometry the convex hull of a point cloud is the smallest convex shape that
+contains all points, see [Wikipedia](https://en.wikipedia.org/wiki/Convex_hull).
 
-Magpylib offers construction of convex hull magnets by combining the `magpylib.magnets.TriangularMesh` and the [scipy.spatial.ConvexHull](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html) classes via the class method `from_ConvexHull`. Note, that the Scipy method does not guarantee correct face orientations if `reorient_faces` is disabled.
+Magpylib offers construction of convex hull magnets by combining the
+`magpylib.magnets.TriangularMesh` and the
+[scipy.spatial.ConvexHull](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html)
+classes via the class method `from_ConvexHull`. Note, that the Scipy method does
+not guarantee correct face orientations if `reorient_faces` is disabled.
 
 ## Pyramid magnet
 
