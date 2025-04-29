@@ -10,16 +10,18 @@ from typing import ClassVar
 from matplotlib.axes import Axes as mplAxes
 from matplotlib.figure import Figure as mplFig
 
-from magpylib._src.defaults.defaults_utility import _DefaultValue
-from magpylib._src.defaults.defaults_utility import get_defaults_dict
-from magpylib._src.display.traces_generic import MagpyMarkers
-from magpylib._src.display.traces_generic import get_frames
-from magpylib._src.display.traces_utility import DEFAULT_ROW_COL_PARAMS
-from magpylib._src.display.traces_utility import process_show_input_objs
-from magpylib._src.input_checks import check_format_input_backend
-from magpylib._src.input_checks import check_format_input_vector
-from magpylib._src.input_checks import check_input_animation
-from magpylib._src.input_checks import check_input_canvas_update
+from magpylib._src.defaults.defaults_utility import _DefaultValue, get_defaults_dict
+from magpylib._src.display.traces_generic import MagpyMarkers, get_frames
+from magpylib._src.display.traces_utility import (
+    DEFAULT_ROW_COL_PARAMS,
+    process_show_input_objs,
+)
+from magpylib._src.input_checks import (
+    check_format_input_backend,
+    check_format_input_vector,
+    check_input_animation,
+    check_input_canvas_update,
+)
 from magpylib._src.utility import check_path_format
 
 disp_args = set(get_defaults_dict("display"))

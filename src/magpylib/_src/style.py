@@ -1717,7 +1717,7 @@ class PixelField(MagicProperties):
         assert val is None or val in self._allowed_vectorsources, (
             f"The `vectorsource` property of {type(self).__name__} must be one of"
             f"{self._allowed_vectorsources},\n"
-            f"but received {repr(val)} instead."
+            f"but received {val!r} instead."
         )
         self._vectorsource = val
 
@@ -1738,7 +1738,7 @@ class PixelField(MagicProperties):
         assert valid, (
             f"The `colorsource` property of {type(self).__name__} must be None or False or start"
             f" with either {self._allowed_vectorsources} and be followed by a combination of"
-            f" 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') ) but received {repr(val)} instead."
+            f" 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') ) but received {val!r} instead."
         )
         self._colorsource = val
 
@@ -1752,7 +1752,7 @@ class PixelField(MagicProperties):
         assert val is None or val in self._allowed_colorscales, (
             f"The `colorscale` property of {type(self).__name__} must be one of"
             f"{self._allowed_colorscales},\n"
-            f"but received {repr(val)} instead."
+            f"but received {val!r} instead."
         )
         self._colorscale = val
 
@@ -1765,7 +1765,7 @@ class PixelField(MagicProperties):
     def shownull(self, val):
         assert val is None or isinstance(val, bool), (
             f"The `shownull` property of {type(self).__name__} must be either True or False,"
-            f"but received {repr(val)} instead."
+            f"but received {val!r} instead."
         )
         self._shownull = val
 
@@ -1779,7 +1779,7 @@ class PixelField(MagicProperties):
         assert val is None or val in self._allowed_symbols, (
             f"The `symbol` property of {type(self).__name__} must be one of"
             f"{self._allowed_symbols},\n"
-            f"but received {repr(val)} instead."
+            f"but received {val!r} instead."
         )
         self._symbol = val
 
@@ -1793,7 +1793,7 @@ class PixelField(MagicProperties):
         assert val is None or val in self._allowed_sizemodes, (
             f"The `sizemode` property of {type(self).__name__} must be one of"
             f"{self._allowed_sizemodes},\n"
-            f"but received {repr(val)} instead."
+            f"but received {val!r} instead."
         )
         self._sizemode = val
 

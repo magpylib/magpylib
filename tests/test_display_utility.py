@@ -9,9 +9,11 @@ import pytest
 import pyvista
 
 import magpylib as magpy
-from magpylib._src.display.traces_utility import draw_arrow_from_vertices
-from magpylib._src.display.traces_utility import get_orientation_from_vec
-from magpylib._src.display.traces_utility import merge_scatter3d
+from magpylib._src.display.traces_utility import (
+    draw_arrow_from_vertices,
+    get_orientation_from_vec,
+    merge_scatter3d,
+)
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 
