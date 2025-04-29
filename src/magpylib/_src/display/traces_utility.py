@@ -226,8 +226,7 @@ def draw_zarrow(
         arrow = [[0, 0, -0.5], *arrow, [0, 0, 0.5]]
     else:
         arrow = [[0, 0, -0.5], [np.nan] * 3, *arrow, [np.nan] * 3, [0, 0, 0.5]]
-    arrow = (np.array(arrow) + np.array(anchor)) * height
-    return arrow
+    return (np.array(arrow) + np.array(anchor)) * height
 
 
 def draw_arrowed_line(

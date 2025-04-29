@@ -241,7 +241,7 @@ def generic_trace_to_pyvista(trace):
     elif trace["type"] in ("scatter", "scatter3d"):
         traces_pv.extend(scatter_to_pyvista(trace))
     else:  # pragma: no cover
-        msg = f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
+        msg = f"{trace['type']!r} trace type conversion not supported"
         raise ValueError(msg)
     showlegend = trace.get("showlegend", False)
     for tr in traces_pv:

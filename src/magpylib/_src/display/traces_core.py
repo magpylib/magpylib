@@ -551,10 +551,11 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
     is_null_vec = None
     allowed_symbols = ("cone", "arrow", "arrow3d")
     if field_symbol not in allowed_symbols:  # pragma: no cover
-        raise ValueError(
+        msg = (
             f"Invalid pixel field symbol (must be one of {allowed_symbols})"
             f", got {field_symbol!r}"
         )
+        raise ValueError(msg)
     if vectors is not None:
         orientations = get_orientation_from_vec(vectors)
         is_null_vec = (np.abs(vectors) < null_thresh).all(axis=1)

@@ -493,8 +493,7 @@ def get_generic_traces3D(
 
         def make_func(*args, **kwargs):
             out = get_trace_method(*args, **kwargs)  # can return multiple traces
-            out = list(out) if isinstance(out, (list, tuple)) else [out]
-            return out
+            return list(out) if isinstance(out, list | tuple) else [out]
 
     else:
         make_func = None
@@ -922,7 +921,8 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("animation")}
 
     if kwargs:
-        raise TypeError(f"`show` got unexpected keyword argument(s) {kwargs!r}")
+        msg = f"`show` got unexpected keyword argument(s) {kwargs!r}"
+        raise TypeError(msg)
 
     # infer title if necessary
     if objs:

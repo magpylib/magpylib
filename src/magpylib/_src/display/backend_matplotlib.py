@@ -89,7 +89,7 @@ class StripedHandler:
 def mesh3d_to_matplotlib(trace, antialiased):
     """Convert mesh3d trace input to a list of plot_trisurf constructor dicts
     Note: plot_trisurf does not accept different facecolors on the same trace
-    so they need to be splitted into multiple traces
+    so they need to be split into multiple traces
     """
     traces = []
     subtraces = [trace]
