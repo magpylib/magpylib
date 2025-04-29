@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import warnings
+from collections.abc import Dict
 from itertools import cycle
 from typing import Any
 

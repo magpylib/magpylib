@@ -533,7 +533,8 @@ def get_generic_traces3D(
         traces_generic_temp = []
         if style.model3d.showdefault and make_func is not None:
             p_trs = make_func(**make_func_kwargs, **extra_kwargs)
-            for p_tr in p_trs:
+            for p_tr_item in p_trs:
+                p_tr = p_tr_item.copy()
                 is_mag = p_tr.pop("ismagnet", is_mag)
                 if is_mag and p_tr.get("type", "") == "mesh3d":
                     p_tr = update_magnet_mesh(
@@ -810,8 +811,8 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
     extra_backend_traces = []
     traces_dict = {}
     field_by_sens = kwargs.pop("field_by_sens", {})
-    for obj, params in flat_objs_props.items():
-        params = {**params, **kwargs}
+    for obj, params_item in flat_objs_props.items():
+        params = {**params_item, **kwargs}
         if autosize is None and getattr(obj, "_autosize", False):
             # temporary coordinates to be able to calculate ranges
             # pylint: disable=protected-access
@@ -882,7 +883,7 @@ def get_sensor_pixel_field(objects):
     return field_by_sens
 
 
-def draw_frame(objs, *, rc_params, style_kwargs, **kwargs) -> Tuple:
+def draw_frame(objs, *, rc_params, style_kwargs, **kwargs):
     """
     Creates traces from input `objs` and provided parameters, updates the size of objects like
     Sensors and Dipoles in `kwargs` depending on the canvas size.
@@ -992,7 +993,7 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
         }
         for path_ind in path_indices
     ]
-    for rc, props in objs_rc.items():
+    for props in objs_rc.values():
         styles = {obj: prop["style"] for obj, prop in props["objects"].items()}
         rc_params = None
         with style_temp_edit(*styles, styles_temp=styles):

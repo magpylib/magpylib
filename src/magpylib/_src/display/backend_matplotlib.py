@@ -153,8 +153,8 @@ def scatter_to_matplotlib(trace):
 
     # plot the marker part with `scatter` constructor
     if "markers" in mode:
-        for (msymb,), inds in split_input_arrays(marker_symbol, ordered=False):
-            msymb = SYMBOLS_TO_MATPLOTLIB.get(msymb, msymb)
+        for (msymb_item,), inds in split_input_arrays(marker_symbol, ordered=False):
+            msymb = SYMBOLS_TO_MATPLOTLIB.get(msymb_item, msymb_item)
             kw = {"s": marker_size, "color": marker_color}
             for k, v in kw.items():
                 if is_array_like(v):
@@ -186,8 +186,8 @@ def scatter_to_matplotlib(trace):
     if "text" in mode and trace.get("text", False) and len(coords) > 0:
         txt = trace["text"]
         txt = [txt] * len(coords[0]) if isinstance(txt, str) else txt
-        for *coords_s, txt in zip(*coords, txt, strict=False):
-            traces.append({"constructor": "text", "args": (*coords_s, txt)})
+        for *coords_s, t in zip(*coords, txt, strict=False):
+            traces.append({"constructor": "text", "args": (*coords_s, t)})
     return traces
 
 
