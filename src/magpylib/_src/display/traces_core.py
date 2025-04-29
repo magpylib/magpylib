@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import warnings
-from collections.abc import Dict
 from itertools import cycle
 from typing import Any
 
@@ -538,7 +537,7 @@ def make_Pixels(
     sizes,
     marker2d_default_size,
     null_thresh=1e-12,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Create the plotly dict for Sensor pixels based on pixel positions and chosen size
     For now, only "cube" shape is provided.
@@ -624,7 +623,7 @@ def make_Pixels(
 
 def make_Sensor(
     obj, *, autosize, path_ind=None, field_values, **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
     provided arguments.
