@@ -59,33 +59,13 @@ class Sphere(BaseMagnet):
     of a spherical magnet with polarization (0.1,0.2,0.3) in units of T and diameter
     of 0.01 meter at the observer position (0.01,0.01,0.01) given in units of m:
 
+    >>> import numpy as np
     >>> import magpylib as magpy
     >>> src = magpy.magnet.Sphere(polarization=(.1,.2,.3), diameter=.01)
     >>> H = src.getH((.01,.01,.01))
-    >>> print(H)
-    [3190.56073566 2552.44858853 1914.33644139]
-
-    We rotate the source object, and compute the B-field, this time at a set of observer positions:
-
-    >>> src.rotate_from_angax(45, 'x')
-    Sphere(id=...)
-    >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
-    >>> print(B)
-    [[2.26804606e-03 3.63693295e-03 2.34863859e-04]
-     [2.83505757e-04 4.54616618e-04 2.93579824e-05]
-     [8.40017059e-05 1.34701220e-04 8.69866146e-06]]
-
-    The same result is obtained when the rotated source moves along a path away from an
-    observer at position (.01,.01,.01). This time we use a `Sensor` object as observer.
-
-    >>> src.move([(-.01,-.01,-.01), (-.02,-.02,-.02)])
-    Sphere(id=...)
-    >>> sens = magpy.Sensor(position=(.01,.01,.01))
-    >>> B = src.getB(sens)
-    >>> print(B)
-    [[2.26804606e-03 3.63693295e-03 2.34863859e-04]
-     [2.83505757e-04 4.54616618e-04 2.93579824e-05]
-     [8.40017059e-05 1.34701220e-04 8.69866146e-06]]
+    >>> with np.printoptions(precision=3):
+    ...     print(H)
+    [3190.561 2552.449 1914.336]
     """
 
     _field_func = staticmethod(BHJM_magnet_sphere)

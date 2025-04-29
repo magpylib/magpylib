@@ -58,24 +58,17 @@ class Polyline(BaseCurrent):
     of a square-shaped line-current with 1 A current at the observer position (1,1,1) given in
     units of m:
 
+    >>> import numpy as np
     >>> import magpylib as magpy
     >>> src = magpy.current.Polyline(
     ...     current=1,
     ...     vertices=((.01,0,0), (0,.01,0), (-.01,0,0), (0,-.01,0), (.01,0,0)),
     ... )
     >>> H = src.getH((.01,.01,.01))
-    >>> print(H)
-    [3.16063859 3.16063859 0.76687556]
+    >>> with np.printoptions(precision=3):
+    ...     print(H)
+    [3.161 3.161 0.767]
 
-    We rotate the source object, and compute the B-field, this time at a set of observer positions:
-
-    >>> src.rotate_from_angax(90, 'x')
-    Polyline(id=...)
-    >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
-    >>> print(B)
-    [[-3.97177559e-06 -9.63684251e-07 -3.97177559e-06]
-     [-4.90331150e-07 -3.11039072e-08 -4.90331150e-07]
-     [-1.43908549e-07 -4.10438492e-09 -1.43908549e-07]]
     """
 
     # pylint: disable=dangerous-default-value

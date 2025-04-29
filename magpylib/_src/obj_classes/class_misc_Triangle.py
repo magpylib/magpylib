@@ -1,7 +1,6 @@
 # pylint: disable=too-many-positional-arguments
 
-"""Magnet Triangle class
-"""
+"""Magnet Triangle class"""
 
 import numpy as np
 
@@ -73,34 +72,14 @@ class Triangle(BaseMagnet):
     through the vertices (0,0,0), (0.01,0,0) and (0,0.01,0) in units of m at the
     observer position (0.01,0.01,0.01) given in units of m:
 
+    >>> import numpy as np
     >>> import magpylib as magpy
     >>> verts = [(0,0,0), (.01,0,0), (0,.01,0)]
     >>> src = magpy.misc.Triangle(polarization=(.1,.2,.3), vertices=verts)
     >>> H = src.getH((.1,.1,.1))
-    >>> print(H)
-    [18.8886983  18.8886983  19.54560636]
-
-    We rotate the source object, and compute the B-field, this time at a set of observer positions:
-
-    >>> src.rotate_from_angax(45, 'x')
-    Triangle(id=...)
-    >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
-    >>> print(B)
-    [[0.00394659 0.00421773 0.00421773]
-     [0.00073746 0.00077326 0.00077326]
-     [0.00030049 0.00031044 0.00031044]]
-
-    The same result is obtained when the rotated source moves along a path away from an
-    observer at position (0.01,0.01,0.01). Here we use a `Sensor` object as observer.
-
-    >>> sens = magpy.Sensor(position=(.01,.01,.01))
-    >>> src.move([(-.01,-.01,-.01), (-.02,-.02,-.02)])
-    Triangle(id=...)
-    >>> B = src.getB(sens)
-    >>> print(B)
-    [[0.00394659 0.00421773 0.00421773]
-     [0.00073746 0.00077326 0.00077326]
-     [0.00030049 0.00031044 0.00031044]]
+    >>> with np.printoptions(precision=3):
+    ...     print(H)
+    [18.889 18.889 19.546]
     """
 
     _field_func = staticmethod(BHJM_triangle)

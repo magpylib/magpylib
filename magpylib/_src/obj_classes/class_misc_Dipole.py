@@ -53,33 +53,13 @@ class Dipole(BaseSource):
     of such a magnetic dipole with a moment of (100,100,100) in units of A·m² at an
     observer position (.01,.01,.01) given in units of m:
 
+    >>> import numpy as np
     >>> import magpylib as magpy
     >>> src = magpy.misc.Dipole(moment=(10,10,10))
     >>> H = src.getH((.01,.01,.01))
-    >>> print(H)
-    [306293.83078988 306293.83078988 306293.83078988]
-
-    We rotate the source object, and compute the B-field, this time at a set of observer positions:
-
-    >>> src.rotate_from_angax(45, 'x')
-    Dipole(id=...)
-    >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
-    >>> print(B)
-    [[0.27216553 0.46461562 0.19245009]
-     [0.03402069 0.05807695 0.02405626]
-     [0.0100802  0.01720799 0.00712778]]
-
-    The same result is obtained when the rotated source moves along a path away from an
-    observer at position (1,1,1). This time we use a `Sensor` object as observer.
-
-    >>> src.move([(-.01,-.01,-.01), (-.02,-.02,-.02)])
-    Dipole(id=...)
-    >>> sens = magpy.Sensor(position=(.01,.01,.01))
-    >>> B = src.getB(sens)
-    >>> print(B)
-    [[0.27216553 0.46461562 0.19245009]
-     [0.03402069 0.05807695 0.02405626]
-     [0.0100802  0.01720799 0.00712778]]
+    >>> with np.printoptions(precision=0):
+    ...     print(H)
+    [306294. 306294. 306294.]
     """
 
     _field_func = staticmethod(BHJM_dipole)

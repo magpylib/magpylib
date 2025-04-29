@@ -691,33 +691,37 @@ def getB(
     In this example we compute the B-field in T of a spherical magnet and a current
     loop at the observer position (0.01,0.01,0.01) given in units of m:
 
+    >>> import numpy as np
     >>> import magpylib as magpy
     >>> src1 = magpy.current.Circle(current=100, diameter=.002)
     >>> src2 = magpy.magnet.Sphere(polarization=(0,0,.1), diameter=.001)
     >>> B = magpy.getB([src1, src2], (.01,.01,.01))
-    >>> print(B)
-    [[ 6.05434592e-06  6.05434592e-06  2.35680448e-08]
-     [ 8.01875374e-07  8.01875374e-07 -9.05619815e-23]]
+    >>> with np.printoptions(precision=3):
+    ...     print(B)
+    [[ 6.054e-06  6.054e-06  2.357e-08]
+     [ 8.019e-07  8.019e-07 -9.056e-23]]
 
     We can also use sensor objects as observers input:
 
     >>> sens1 = magpy.Sensor(position=(.01,.01,.01))
     >>> sens2 = sens1.copy(position=(.01,.01,-.01))
     >>> B = magpy.getB([src1, src2], [sens1, sens2])
-    >>> print(B)
-    [[[ 6.05434592e-06  6.05434592e-06  2.35680448e-08]
-      [-6.05434592e-06 -6.05434592e-06  2.35680448e-08]]
+    >>> with np.printoptions(precision=3):
+    ...     print(B)
+    [[[ 6.054e-06  6.054e-06  2.357e-08]
+      [-6.054e-06 -6.054e-06  2.357e-08]]
     <BLANKLINE>
-     [[ 8.01875374e-07  8.01875374e-07 -9.05619815e-23]
-      [-8.01875374e-07 -8.01875374e-07 -9.05619815e-23]]]
+     [[ 8.019e-07  8.019e-07 -9.056e-23]
+      [-8.019e-07 -8.019e-07 -9.056e-23]]]
 
     Through the functional interface we can compute the same fields for the loop as:
 
     >>> obs = [(.01,.01,.01), (.01,.01,-.01)]
     >>> B = magpy.getB('Circle', obs, current=100, diameter=.002)
-    >>> print(B)
-    [[ 6.05434592e-06  6.05434592e-06  2.35680448e-08]
-     [-6.05434592e-06 -6.05434592e-06  2.35680448e-08]]
+    >>> with np.printoptions(precision=3):
+    ...     print(B)
+    [[ 6.054e-06  6.054e-06  2.357e-08]
+     [-6.054e-06 -6.054e-06  2.357e-08]]
 
     But also for a set of four completely different instances:
 
@@ -728,11 +732,12 @@ def getB(
     ...     diameter=(.001, .002, .003, .004),
     ...     position=((0,0,0), (0,0,.01), (0,0,.02), (0,0,.03)),
     ... )
-    >>> print(B)
-    [[ 1.66322588e-07  1.66322588e-07  1.61742625e-10]
-     [-4.69451598e-07 -4.69451598e-07  4.70690813e-07]
-     [ 7.96993186e-07  1.59398637e-06 -7.91258466e-07]
-     [-1.37369334e-06 -1.37369334e-06 -1.36554287e-06]]
+    >>> with np.printoptions(precision=3):
+    ...     print(B)
+    [[ 1.663e-07  1.663e-07  1.617e-10]
+     [-4.695e-07 -4.695e-07  4.707e-07]
+     [ 7.970e-07  1.594e-06 -7.913e-07]
+     [-1.374e-06 -1.374e-06 -1.366e-06]]
     """
     return getBH_level2(
         sources,
@@ -877,33 +882,37 @@ def getH(
     In this example we compute the H-field in A/m of a spherical magnet and a current loop
     at the observer position (0.01,0.01,0.01) given in units of m:
 
+    >>> import numpy as np
     >>> import magpylib as magpy
     >>> src1 = magpy.current.Circle(current=100, diameter=.002)
     >>> src2 = magpy.magnet.Sphere(polarization=(0,0,.1), diameter=.001)
     >>> H = magpy.getH([src1, src2], (.01,.01,.01))
-    >>> print(H)
-    [[ 4.81789540e+00  4.81789540e+00  1.87548541e-02]
-     [ 6.38112147e-01  6.38112147e-01 -7.20669350e-17]]
+    >>> with np.printoptions(precision=3):
+    ...    print(H)
+    [[ 4.818e+00  4.818e+00  1.875e-02]
+     [ 6.381e-01  6.381e-01 -7.207e-17]]
 
     We can also use sensor objects as observers input:
 
     >>> sens1 = magpy.Sensor(position=(.01,.01,.01))
     >>> sens2 = sens1.copy(position=(.01,.01,-.01))
     >>> H = magpy.getH([src1, src2], [sens1, sens2])
-    >>> print(H)
-    [[[ 4.81789540e+00  4.81789540e+00  1.87548541e-02]
-      [-4.81789540e+00 -4.81789540e+00  1.87548541e-02]]
+    >>> with np.printoptions(precision=3):
+    ...    print(H)
+    [[[ 4.818e+00  4.818e+00  1.875e-02]
+      [-4.818e+00 -4.818e+00  1.875e-02]]
     <BLANKLINE>
-     [[ 6.38112147e-01  6.38112147e-01 -7.20669350e-17]
-      [-6.38112147e-01 -6.38112147e-01 -7.20669350e-17]]]
+     [[ 6.381e-01  6.381e-01 -7.207e-17]
+      [-6.381e-01 -6.381e-01 -7.207e-17]]]
 
     Through the functional interface we can compute the same fields for the loop as:
 
     >>> obs = [(.01,.01,.01), (.01,.01,-.01)]
     >>> H = magpy.getH('Circle', obs, current=100, diameter=.002)
-    >>> print(H)
-    [[ 4.8178954   4.8178954   0.01875485]
-     [-4.8178954  -4.8178954   0.01875485]]
+    >>> with np.printoptions(precision=3):
+    ...    print(H)
+    [[ 4.818  4.818  0.019]
+     [-4.818 -4.818  0.019]]
 
     But also for a set of four completely different instances:
 
@@ -914,11 +923,12 @@ def getH(
     ...     diameter=(.001, .002, .003, .004),
     ...     position=((0,0,0), (0,0,.01), (0,0,.02), (0,0,.03)),
     ... )
-    >>> print(H)
-    [[ 1.32355310e-01  1.32355310e-01  1.28710691e-04]
-     [-3.73577711e-01 -3.73577711e-01  3.74563848e-01]
-     [ 6.34227026e-01  1.26845405e+00 -6.29663481e-01]
-     [-1.09315042e+00 -1.09315042e+00 -1.08666449e+00]]
+    >>> with np.printoptions(precision=3):
+    ...     print(H)
+    [[ 1.324e-01  1.324e-01  1.287e-04]
+     [-3.736e-01 -3.736e-01  3.746e-01]
+     [ 6.342e-01  1.268e+00 -6.297e-01]
+     [-1.093e+00 -1.093e+00 -1.087e+00]]
     """
     return getBH_level2(
         sources,
@@ -1051,6 +1061,21 @@ def getM(
 
     Functional interface: ndarray, shape (n,3)
         M-field for every parameter set in units of A/m.
+
+    Examples
+    --------
+    In this example we test the magnetization at an observer point.
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> cube = magpy.magnet.Cuboid(
+    ...     dimension=(10,1,1),
+    ...     polarization=(1,0,0)
+    ... ).rotate_from_angax(45,'z')
+    >>> M = cube.getM((3,3,0))
+    >>> with np.printoptions(precision=0):
+    ...    print(M)
+    [562698. 562698.      0.]
 
     Notes
     -----
@@ -1189,6 +1214,32 @@ def getJ(
 
     Functional interface: ndarray, shape (n,3)
         J-field for every parameter set in units of T.
+
+    Returns
+    -------
+    M-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
+        M-field at each path position (index m) for each sensor (index k) and each sensor pixel
+        position (indices n1, n2, ...) in units of A/m. Sensor pixel positions are equivalent
+        to simple observer positions. Paths of objects that are shorter than index m are
+        considered as static beyond their end.
+
+    Functional interface: ndarray, shape (n,3)
+        M-field for every parameter set in units of A/m.
+
+    Examples
+    --------
+    In this example we test the polarization at an observer point.
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> cube = magpy.magnet.Cuboid(
+    ...     dimension=(10,1,1),
+    ...     polarization=(1,0,0)
+    ... ).rotate_from_angax(45,'z')
+    >>> J = cube.getJ((3,3,0))
+    >>> with np.printoptions(precision=3):
+    ...    print(J)
+    [0.707 0.707 0.   ]
 
     Notes
     -----

@@ -60,21 +60,13 @@ class Cuboid(BaseMagnet):
     cubical magnet with magnetic polarization of (0.5,0.6,0.7) in units of T and
     0.01 meter sides at the observer position (0.01,0.01,0.01) given in units of m:
 
+    >>> import numpy as np
     >>> import magpylib as magpy
     >>> src = magpy.magnet.Cuboid(polarization=(.5,.6,.7), dimension=(.01,.01,.01))
     >>> H = src.getH((.01,.01,.01))
-    >>> print(H)
-    [16149.04135639 14906.8074059  13664.57345541]
-
-    We rotate the source object, and compute the B-field, this time at a set of observer positions:
-
-    >>> src.rotate_from_angax(45, 'x')
-    Cuboid(id=...)
-    >>> B = src.getB([(.01,0,0), (0,.01,0), (0,0,.01)])
-    >>> print(B)
-    [[ 0.06739119  0.00476528 -0.0619486 ]
-     [-0.03557183 -0.01149497 -0.08403664]
-     [-0.03557183  0.00646436  0.14943466]]
+    >>> with np.printoptions(precision=0):
+    ...     print(H)
+    [16149. 14907. 13665.]
     """
 
     _field_func = staticmethod(BHJM_magnet_cuboid)

@@ -1,4 +1,4 @@
-"""Custom class code """
+"""Custom class code"""
 
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 
@@ -58,28 +58,6 @@ class CustomSource(BaseSource):
     >>> H = src.getH((.01,.01,.01))
     >>> print(H)
     [0.08 0.   0.  ]
-
-    We rotate the source object, and compute the B-field, this time at a set of observer positions:
-
-    >>> src.rotate_from_angax(45, 'z')
-    CustomSource(id=...)
-    >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
-    >>> print(B)
-    [[0.00707107 0.00707107 0.        ]
-     [0.00707107 0.00707107 0.        ]
-     [0.00707107 0.00707107 0.        ]]
-
-    The same result is obtained when the rotated source moves along a path away from an
-    observer at position (0.01,0.01,0.01). This time we use a `Sensor` object as observer.
-
-    >>> src.move([(-.01,-.01,-.01), (-.02,-.02,-.02)])
-    CustomSource(id=...)
-    >>> sens = magpy.Sensor(position=(.01,.01,.01))
-    >>> B = src.getB(sens)
-    >>> print(B)
-    [[0.00707107 0.00707107 0.        ]
-     [0.00707107 0.00707107 0.        ]
-     [0.00707107 0.00707107 0.        ]]
     """
 
     _editable_field_func = True

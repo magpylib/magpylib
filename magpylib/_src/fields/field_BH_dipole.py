@@ -34,6 +34,19 @@ def dipole_Hfield(
     H-field: ndarray, shape (n,3)
         H-field of Dipole in Cartesian coordinates.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> H = magpy.core.dipole_Hfield(
+    ...    observers=np.array([(1,1,1), (2,2,2)]),
+    ...    moments=np.array([(1e5,0,0), (0,0,1e5)]),
+    ... )
+    >>> with np.printoptions(precision=3):
+    ...     print(H)
+    [[2.895e-13 1.531e+03 1.531e+03]
+     [1.914e+02 1.914e+02 3.619e-14]]
+
     Notes
     -----
     The moment of a magnet is given by its volume*magnetization.
