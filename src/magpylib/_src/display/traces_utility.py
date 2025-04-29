@@ -211,7 +211,9 @@ def draw_zarrow(
     anchor = (
         (0, -0.5, 0)
         if pivot == "tip"
-        else (0, 0.5, 0) if pivot == "tail" else (0, 0, 0)
+        else (0, 0.5, 0)
+        if pivot == "tail"
+        else (0, 0, 0)
     )
     arrow = [
         [0, 0, shift],
@@ -953,7 +955,7 @@ def split_input_arrays(*input_arrays, ordered=True):
     input_arrays = [
         [inp] * max_length if not is_array_like(inp) else inp for inp in input_arrays
     ]
-    input_array = list(zip(*input_arrays))
+    input_array = list(zip(*input_arrays, strict=False))
     if ordered:
         input_split = []
         prev_inp = next(iter(input_array))

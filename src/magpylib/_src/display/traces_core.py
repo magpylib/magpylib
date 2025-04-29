@@ -539,7 +539,9 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
         return {
             "type": "scatter3d",
             "mode": "markers",
-            **{"x": x, "y": y, "z": z},
+            "x": x,
+            "y": y,
+            "z": z,
             "marker_symbol": symbol,
             "marker_color": colors,
             "marker_size": sizes * sizes_2dfactor,
@@ -581,7 +583,9 @@ def make_Pixels(positions, size=1) -> dict[str, Any]:
             if field_symbol == "arrow":
                 x, y, z = pos[:, None]
                 pix = {
-                    **{"x": x, "y": y, "z": z},
+                    "x": x,
+                    "y": y,
+                    "z": z,
                     "marker_size": [size * sizes_2dfactor],
                     **kw2d,
                 }
@@ -650,9 +654,9 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
         )
         vertices = np.array([sens_mesh[k] for k in "xyz"]).T
         if style.color is not None:
-            sens_mesh["facecolor"][
-                sens_mesh["facecolor"] == "rgb(238,238,238)"
-            ] = style.color
+            sens_mesh["facecolor"][sens_mesh["facecolor"] == "rgb(238,238,238)"] = (
+                style.color
+            )
         cube_mask = (abs(vertices) < 1).all(axis=1)
         vertices[cube_mask] = 0 * vertices[cube_mask]
         vertices[~cube_mask] = dim_ext * vertices[~cube_mask]

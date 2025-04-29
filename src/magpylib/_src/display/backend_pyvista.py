@@ -23,10 +23,8 @@ except ImportError as missing_module:  # pragma: no cover
 from matplotlib.colors import LinearSegmentedColormap
 from pyvista.plotting.colors import Color  # pylint: disable=import-error
 
-from magpylib._src.display.traces_utility import get_trace_kw
-from magpylib._src.display.traces_utility import split_input_arrays
-from magpylib._src.utility import is_array_like
-from magpylib._src.utility import open_animation
+from magpylib._src.display.traces_utility import get_trace_kw, split_input_arrays
+from magpylib._src.utility import is_array_like, open_animation
 
 # from magpylib._src.utility import format_obj_input
 
