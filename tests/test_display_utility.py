@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from unittest.mock import patch
 
 import matplotlib.pyplot as plt
@@ -65,13 +67,13 @@ def test_draw_arrow_from_vertices():
 
 def test_bad_backend():
     """test bad plotting input name"""
+    c = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
     with pytest.raises(MagpylibBadUserInput):
-        c = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
         c.show(backend="asdf")
 
 
 @pytest.mark.parametrize(
-    "canvas,is_notebook_result,backend",
+    ("canvas", "is_notebook_result", "backend"),
     [
         (None, True, "plotly"),
         (None, False, "matplotlib"),

@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_COLOR: 3
+
+jobs:
+  pre-commit:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v5
+      - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --hook-stage manual --all-files
+      - name: Run Pylint
+        run: uvx nox -s pylint -- --output-format=github
+
+  checks:
+    name: Check Python ${{ matrix.python-version }} on ${{ matrix.runs-on }}
+    runs-on: ${{ matrix.runs-on }}
+    needs: [pre-commit]
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+        runs-on: [ubuntu-latest, windows-latest, macos-latest]
+
+        # include:
+        #   - python-version: "pypy-3.11"
+        #     runs-on: ubuntu-latest
+        # Note: Commented out because it fails tests for pyvista due to vtk wheels
+
+    steps:
+      - name: Setup headless display
+        uses: pyvista/setup-headless-display-action@v3
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install OpenBLAS
+        if: runner.os == 'Linux' && startsWith(matrix.python-version, 'pypy')
+        run: sudo apt-get update && sudo apt-get install -y libopenblas-dev
+
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies with uv
+        run: uv pip install .[test]
+
+      - name: Test package
+        run: >-
+          uv run pytest -ra --cov --cov-report=xml --cov-report=term
+          --durations=20
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

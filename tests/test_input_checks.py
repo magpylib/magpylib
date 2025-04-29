@@ -1,11 +1,15 @@
+from __future__ import annotations
+
 import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
-from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.exceptions import MagpylibDeprecationWarning
-from magpylib._src.exceptions import MagpylibMissingInput
+from magpylib._src.exceptions import (
+    MagpylibBadUserInput,
+    MagpylibDeprecationWarning,
+    MagpylibMissingInput,
+)
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 
 # pylint: disable=unnecessary-lambda-assignment
@@ -468,7 +472,7 @@ def test_input_objects_field_func_good():
     np.testing.assert_raises(MagpylibMissingInput, src.getH, (1, 2, 3))
 
     # acceptable func with B and H return
-    def f(field, observers):
+    def f(field, observers):  # noqa : ARG001
         """3 in 3 out"""
         return observers
 
@@ -502,18 +506,28 @@ def test_input_objects_field_func_good():
 @pytest.mark.parametrize(
     "func",
     [
-        1,  # non callable
-        lambda fieldd, observers, whatever: None,  # bad arg names
-        lambda field, observers: 1 if field == "B" else None,  # no ndarray return on B
-        lambda field, observers: (
-            1 if field == "H" else observers
-        ),  # no ndarray return on H
-        lambda field, observers: (
-            np.array([1, 2, 3]) if field == "B" else None
-        ),  # bad return shape on B
-        lambda field, observers: (
-            np.array([1, 2, 3]) if field == "H" else observers
-        ),  # bad return shape on H
+        pytest.param(1, id="non-callable"),
+        pytest.param(lambda fieldd, observers, whatever: None, id="bad-arg-names"),  # noqa: ARG005
+        pytest.param(
+            lambda field, observers: 1 if field == "B" else None,  # noqa: ARG005
+            id="no-ndarray-return-on-B",
+        ),
+        pytest.param(
+            lambda field, observers: (1 if field == "H" else observers),
+            id="no-ndarray-return-on-H",
+        ),
+        pytest.param(
+            lambda field, observers: (  # noqa: ARG005
+                np.array([1, 2, 3]) if field == "B" else None
+            ),
+            id="bad-return-shape-on-B",
+        ),
+        pytest.param(
+            lambda field, observers: (
+                np.array([1, 2, 3]) if field == "H" else observers
+            ),
+            id="bad-return-shape-on-H",
+        ),
     ],
 )
 def test_input_objects_field_func_bad(func):
@@ -852,7 +866,7 @@ def test_input_collection_remove_good(children):
     """good inputs: collection.remove(children)"""
     col = magpy.Collection(*children)
     assert col.children == (
-        list(children[0]) if isinstance(children[0], (tuple, list)) else children
+        list(children[0]) if isinstance(children[0], tuple | list) else children
     )
     col.remove(*children)
     assert not col.children

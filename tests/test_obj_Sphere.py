@@ -1,5 +1,7 @@
-import os
+from __future__ import annotations
+
 import pickle
+from pathlib import Path
 
 import numpy as np
 
@@ -38,18 +40,18 @@ from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 def test_Sphere_basics():
     """test Cuboid fundamentals, test against magpylib2 fields"""
     # data generated below
-    with open(os.path.abspath("./tests/testdata/testdata_Sphere.p"), "rb") as f:
+    with Path("tests/testdata/testdata_Sphere.p").resolve().open("rb") as f:
         data = pickle.load(f)
     mags, dims, posos, angs, axs, anchs, movs, B = data
 
     btest = []
     for mag, dim, ang, ax, anch, mov, poso in zip(
-        mags, dims, angs, axs, anchs, movs, posos
+        mags, dims, angs, axs, anchs, movs, posos, strict=False
     ):
         pm = magpy.magnet.Sphere(polarization=mag, diameter=dim)
 
         # 18 subsequent operations
-        for a, aa, aaa, mv in zip(ang, ax, anch, mov):
+        for a, aa, aaa, mv in zip(ang, ax, anch, mov, strict=False):
             pm.move(mv).rotate_from_angax(a, aa, aaa, start=-1)
 
         btest += [pm.getB(poso)]

@@ -1,10 +1,12 @@
 # pylint: disable="wrong-import-position"
+from __future__ import annotations
+
 import re
 from unittest.mock import patch
 
-import matplotlib  # noreorder
+import matplotlib as mpl  # noreorder
 
-matplotlib.use("Agg")
+mpl.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import numpy as np
@@ -146,7 +148,7 @@ def test_Triangle_display():
             for v in points[triangles]
         ]
     )
-    # make north/south limit pass an ege by bicolor mode and (45° mag)
+    # make north/south limit pass an edge by bicolor mode and (45° mag)
     magpy.show(
         *src,
         backend="matplotlib",
@@ -389,34 +391,46 @@ def test_matplotlib_model3d_extra_bad_input():
         "coordsargs": {"x": "xs", "y": "ys", "z": "Z"},  # bad Z input
     }
     obj = magpy.misc.Dipole(moment=(0, 0, 1))
-    with pytest.raises(ValueError):
-        obj.style.model3d.add_trace(**trace)
-        ax = plt.subplot(projection="3d")
+    obj.style.model3d.add_trace(**trace)
+    ax = plt.subplot(projection="3d")
+    with pytest.raises(
+        ValueError,
+        match=r"Rotating/Moving of provided model failed, trace dictionary has no argument 'z',.*",
+    ):
         obj.show(canvas=ax, return_fig=True)
 
 
 def test_matplotlib_model3d_extra_updatefunc():
     """test display extra model3d"""
     obj = magpy.misc.Dipole(moment=(0, 0, 1))
-    updatefunc = lambda: make_Cuboid("matplotlib", position=(2, 0, 0))
+
+    def updatefunc():
+        return make_Cuboid("matplotlib", position=(2, 0, 0))
+
     obj.style.model3d.data = updatefunc
     ax = plt.subplot(projection="3d")
     obj.show(canvas=ax, return_fig=True)
 
-    with pytest.raises(ValueError):
-        updatefunc = "not callable"
+    updatefunc = "not callable"
+    with pytest.raises(
+        ValueError, match=(r"the `data` property of `Model3d` must be an instance.*")
+    ):
         obj.style.model3d.add_trace(updatefunc)
 
+    updatefunc = "not callable"
     with pytest.raises(AssertionError):
-        updatefunc = "not callable"
         obj.style.model3d.add_trace(updatefunc=updatefunc)
 
-    with pytest.raises(AssertionError):
-        updatefunc = lambda: "bad output type"
-        obj.style.model3d.add_trace(updatefunc=updatefunc)
+    def updatefunc():
+        return "bad output type"
 
     with pytest.raises(AssertionError):
-        updatefunc = lambda: {"bad_key": "some_value"}
+        obj.style.model3d.add_trace(updatefunc=updatefunc)
+
+    def updatefunc():
+        return {"bad_key": "some_value"}
+
+    with pytest.raises(AssertionError):
         obj.style.model3d.add_trace(updatefunc=updatefunc)
 
 
@@ -442,7 +456,7 @@ def test_graphics_model_generic_to_mpl():
     model3d["kwargs"]["facecolor"] = np.array(["blue"] * 12)
     c.style.model3d.add_trace(**model3d)
     fig = c.show(style_path_frames=1, backend="matplotlib", return_fig=True)
-    assert isinstance(fig, matplotlib.figure.Figure)
+    assert isinstance(fig, mpl.figure.Figure)
 
 
 def test_mpl_animation():
@@ -454,8 +468,8 @@ def test_mpl_animation():
     )
     # pylint: disable=protected-access
     anim._draw_was_started = True  # avoid mpl test warning
-    assert isinstance(fig, matplotlib.figure.Figure)
-    assert isinstance(anim, matplotlib.animation.FuncAnimation)
+    assert isinstance(fig, mpl.figure.Figure)
+    assert isinstance(anim, mpl.animation.FuncAnimation)
 
 
 def test_subplots():
@@ -520,7 +534,7 @@ def test_bad_show_inputs():
     cyl1 = magpy.magnet.Cylinder(
         polarization=(0.1, 0, 0), dimension=(1, 2), style_label="Cylinder1"
     )
-    with pytest.raises(
+    with pytest.raises(  # noqa: PT012, SIM117
         ValueError,
         match=(
             r"Conflicting parameters detected for {'row': 1, 'col': 1}:"
@@ -621,7 +635,7 @@ def test_show_legend():
 
 @pytest.mark.parametrize("units_length", ["mT", "inch", "dam", "e"])
 def test_bad_units_length(units_length):
-    """test units lenghts"""
+    """test units lengths"""
 
     c = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
 

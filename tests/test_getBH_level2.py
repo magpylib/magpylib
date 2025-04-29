@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import unittest
 import warnings
 
@@ -37,6 +39,7 @@ def test_getB_level2_input_simple():
         [pos_obs, sens1, sens2, sens3, [sens1, sens2]],
         [fb1, fb1, fb1, fb1, fb2],
         [fc1, fc1, fc1, fc1, fc2],
+        strict=False,
     ):
         src_obs_res = [
             [pm1, poso, fb],
@@ -89,13 +92,14 @@ def test_getB_level2_input_shape22():
     fb22 = magpy.getB(pm1(), pos_obs)
     fc22 = magpy.getB(pm3(), pos_obs)
 
-    for poso, fb, fc in zip(
+    for poso, fb_, fc_ in zip(
         [pos_obs, sens1, [sens1, sens1, sens1]],
         [fb22, fb22, [fb22, fb22, fb22]],
         [fc22, fc22, [fc22, fc22, fc22]],
+        strict=False,
     ):
-        fb = np.array(fb)
-        fc = np.array(fc)
+        fb = np.array(fb_)
+        fc = np.array(fc_)
         src_obs_res = [
             [pm1(), poso, fb],
             [pm3(), poso, fc],
@@ -445,7 +449,7 @@ def test_pixel_agg_heterogeneous_pixel_shapes():
     sens_col1.rotate_from_angax([45], "z", anchor=(5, 0, 0))
     sens_col2.rotate_from_angax([45], "z", anchor=(5, 0, 0))
 
-    # different pixel shapes withoug pixel_agg should raise an error
+    # different pixel shapes without pixel_agg should raise an error
     with pytest.raises(MagpylibBadUserInput):
         magpy.getB(src1, sens_col2, pixel_agg=None)
 
@@ -473,7 +477,7 @@ def test_pixel_agg_heterogeneous_pixel_shapes():
     # positions respectively for each sensor, so mean equals single value
     np.testing.assert_allclose(B3, B4)
 
-    # Testing autmatic vs manual aggregation (mean) with different pixel shapes
+    # Testing automatic vs manual aggregation (mean) with different pixel shapes
     B_by_sens_agg_1 = magpy.getB(src_col, sens_col2, squeeze=False, pixel_agg="mean")
     B_by_sens_agg_2 = []
     for sens in sens_col2:
@@ -508,9 +512,13 @@ def test_pixel_agg3():
 
     c2 = x0 + x1 + x2 + x3
 
-    for src, src_sh in zip([s0, c0, [s0, c0], c1, [s0, c0, c1, s1]], [1, 1, 2, 1, 4]):
+    for src, src_sh in zip(
+        [s0, c0, [s0, c0], c1, [s0, c0, c1, s1]], [1, 1, 2, 1, 4], strict=False
+    ):
         for obs, obs_sh in zip(
-            [e0, e1, e2, e3, x0, x1, x2, x3, c2, [x0, x2, x3]], [1] * 8 + [4, 3]
+            [e0, e1, e2, e3, x0, x1, x2, x3, c2, [x0, x2, x3]],
+            [1] * 8 + [4, 3],
+            strict=False,
         ):
             for px_agg in ["mean", "average", "min"]:
                 np.testing.assert_allclose(
@@ -522,9 +530,13 @@ def test_pixel_agg3():
 
     # same check with a path
     s0.position = [(0, 0, 0)] * 5
-    for src, src_sh in zip([s0, c0, [s0, c0], c1, [s0, c0, c1, s1]], [1, 1, 2, 1, 4]):
+    for src, src_sh in zip(
+        [s0, c0, [s0, c0], c1, [s0, c0, c1, s1]], [1, 1, 2, 1, 4], strict=False
+    ):
         for obs, obs_sh in zip(
-            [e0, e1, e2, e3, x0, x1, x2, x3, c2, [x0, x2, x3]], [1] * 8 + [4, 3]
+            [e0, e1, e2, e3, x0, x1, x2, x3, c2, [x0, x2, x3]],
+            [1] * 8 + [4, 3],
+            strict=False,
         ):
             for px_agg in ["mean", "average", "min"]:
                 np.testing.assert_allclose(

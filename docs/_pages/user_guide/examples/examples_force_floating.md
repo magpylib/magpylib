@@ -16,7 +16,7 @@ kernelspec:
 
 # Floating Magnets
 
-The examples here require installaion of the [magpylib-force package](https://pypi.org/project/magpylib-force/). See also the [magpylib-force documentation](docs-magpylib-force).
+The examples here require installation of the [magpylib-force package](https://pypi.org/project/magpylib-force/). See also the [magpylib-force documentation](docs-magpylib-force).
 
 ## Formalism
 
@@ -73,10 +73,10 @@ def timestep(source, target, dt):
 
     dt: Euler scheme length of timestep
     """
-    
+
     # compute force
     F, _ = getFT(source, target)
-    
+
     # compute/set new velocity and position
     target.v = target.v + dt/target.m * F
     target.position = target.position + dt * target.v
@@ -91,7 +91,7 @@ cube2 = cube1.copy(polarization=(0,0,-1))
 
 # Compute motion
 for cube, lab in zip([cube1, cube2], ["attractive", "repulsive"]):
-    
+
     # Set initial conditions
     cube.m = 1e-3
     cube.position=(0,0,3e-3)
@@ -160,11 +160,11 @@ def timestep(source, target, dt):
     """
     # compute force
     F, T = getFT(source, target)
-    
+
     # compute/set new velocity and position
     target.v = target.v + dt/target.m * F
     target.position = target.position + dt * target.v
-    
+
     # compute/set new angular velocity and rotation angle
     target.w = target.w + dt*target.orientation.apply(np.dot(target.I_inv, target.orientation.inv().apply(T)))
     target.orientation = R.from_rotvec(dt*target.w)*target.orientation
@@ -201,11 +201,11 @@ for i in range(steps):
 fig, (ax1,ax2) = plt.subplots(2,1,figsize=(10,5))
 
 for j,ls in enumerate(["-", "--"]):
-    
+
     # Plot positions
     for i,a in enumerate("xyz"):
         ax1.plot(data[j,:,i], label= a + str(j+1), ls=ls)
-    
+
     # Plot orientations
     for i,a in enumerate(["phi", "psi", "theta"]):
         ax2.plot(data[j+2,:,i], label= a + str(j+1), ls=ls)

@@ -1,6 +1,8 @@
-import os
+from __future__ import annotations
+
 import pickle
 import re
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -51,13 +53,13 @@ def test_Collection_basics():
     """test Collection fundamentals, test against magpylib2 fields"""
     # pylint: disable=pointless-statement
     # data generated below
-    with open(os.path.abspath("./tests/testdata/testdata_Collection.p"), "rb") as f:
+    with Path("tests/testdata/testdata_Collection.p").resolve().open("rb") as f:
         data = pickle.load(f)
     mags, dims2, dims3, posos, angs, axs, anchs, movs, rvs, _ = data
 
     B1, B2 = [], []
     for mag, dim2, dim3, ang, ax, anch, mov, poso, rv in zip(
-        mags, dims2, dims3, angs, axs, anchs, movs, posos, rvs
+        mags, dims2, dims3, angs, axs, anchs, movs, posos, rvs, strict=False
     ):
         rot = R.from_rotvec(rv)
 
@@ -79,7 +81,7 @@ def test_Collection_basics():
         col1.add(pm4, pm5, pm6)
 
         # 18 subsequent operations
-        for a, aa, aaa, mv in zip(ang, ax, anch, mov):
+        for a, aa, aaa, mv in zip(ang, ax, anch, mov, strict=False):
             for pm in [pm1b, pm2b, pm3b, pm4b, pm5b, pm6b]:
                 pm.move(mv).rotate_from_angax(a, aa, aaa).rotate(rot, aaa)
 
@@ -97,7 +99,7 @@ def test_Collection_basics():
 
 
 @pytest.mark.parametrize(
-    "test_input,expected",
+    ("test_input", "expected"),
     [
         ("sens_col.getB(src_col).shape", (4, 3)),
         ("src_col.getB(sens_col).shape", (4, 3)),
@@ -317,11 +319,12 @@ def test_set_children_styles():
     src2 = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(1, 2))
     col = src1 + src2
     col.set_children_styles(magnetization_show=False)
-    assert (
-        src1.style.magnetization.show is False
-        and src1.style.magnetization.show is False
-    ), """failed updating styles to children"""
-    with pytest.raises(ValueError):
+    assert src1.style.magnetization.show is False, "failed updating styles to src1"
+    assert src2.style.magnetization.show is False, "failed updating styles to src2"
+    with pytest.raises(
+        ValueError,
+        match=r"Following arguments are invalid style properties: `{'bad_input'}`",
+    ):
         col.set_children_styles(bad_input="somevalue")
 
 

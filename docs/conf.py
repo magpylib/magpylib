@@ -1,19 +1,11 @@
-#
-# Configuration file for the Sphinx documentation builder.
-#
-# This file does only contain a selection of the most common options. For a
-# full list see the documentation:
-# http://www.sphinx-doc.org/en/main/config
-# -- Path setup --------------------------------------------------------------
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+from __future__ import annotations
+
+import importlib.metadata
 import os
 import sys
+from pathlib import Path
+
+import sphinx.ext.apidoc
 
 # This is for pyvista
 os.system("/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
@@ -23,11 +15,11 @@ os.environ["PYVISTA_USE_IPYVTK"] = "true"
 os.environ["MAGPYLIB_MPL_SVG"] = "true"
 
 # Location of Sphinx files
-sys.path.insert(0, os.path.abspath("./../"))  ##Add the folder one level above
+
+sys.path.insert(0, str(Path("./../").resolve()))  ##Add the folder one level above
 os.environ["SPHINX_APIDOC_OPTIONS"] = (
     "members,show-inheritance"  ## Hide undocumented members
 )
-import sphinx.ext.apidoc
 
 # from sphinx_gallery.sorting import FileNameSortKey
 
@@ -50,8 +42,8 @@ def setup(app):
             "-E",  # user docstring headers
             "-M",  # Modules first
             "-o",  # Output the files to:
-            "./_autogen/",  # Output Directory
-            "./../magpylib",  # Main Module directory
+            "./docs/_autogen/",  # Output Directory
+            "./src/magpylib",  # Main Module directory
         ]
     )
 
@@ -59,13 +51,10 @@ def setup(app):
 # -- Project information -----------------------------------------------------
 
 project = "Magpylib"
-copyright = "2019-2024, Magpylib developers, License: BSD 2-clause, Built with Sphinx Pydata-Theme"
+copyright = "2019-2025, Magpylib developers, License: BSD 2-clause, Built with Sphinx Pydata-Theme"
 author = "The Magpylib Project <magpylib@gmail.com>"
 
-# The short X.Y version
-version = ""
-# The full version, including alpha/beta/rc tags
-from magpylib import __version__ as release
+version = release = importlib.metadata.version("magpylib")
 
 # -- General configuration ---------------------------------------------------
 
@@ -170,7 +159,7 @@ html_theme_options = {
     "check_switcher": True,
     "icon_links": [
         {
-            "name": "Github",
+            "name": "GitHub",
             "url": "https://github.com/magpylib/magpylib",
             "icon": "https://img.shields.io/github/stars/magpylib/magpylib?style=social",
             "type": "url",

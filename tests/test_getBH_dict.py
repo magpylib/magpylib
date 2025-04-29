@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
-from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.exceptions import MagpylibDeprecationWarning
+from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibDeprecationWarning
 
 
 def test_getB_dict1():
