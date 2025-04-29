@@ -17,20 +17,24 @@ import numpy as np
 
 import magpylib as magpy
 from magpylib._src.defaults.defaults_classes import default_settings
-from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
-from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
-from magpylib._src.defaults.defaults_utility import linearize_dict
-from magpylib._src.display.traces_utility import draw_arrowed_line
-from magpylib._src.display.traces_utility import get_legend_label
-from magpylib._src.display.traces_utility import get_objects_props_by_row_col
-from magpylib._src.display.traces_utility import get_scene_ranges
-from magpylib._src.display.traces_utility import getColorscale
-from magpylib._src.display.traces_utility import getIntensity
-from magpylib._src.display.traces_utility import group_traces
-from magpylib._src.display.traces_utility import path_frames_to_indices
-from magpylib._src.display.traces_utility import place_and_orient_model3d
-from magpylib._src.display.traces_utility import rescale_traces
-from magpylib._src.display.traces_utility import slice_mesh_from_colorscale
+from magpylib._src.defaults.defaults_utility import (
+    ALLOWED_LINESTYLES,
+    ALLOWED_SYMBOLS,
+    linearize_dict,
+)
+from magpylib._src.display.traces_utility import (
+    draw_arrowed_line,
+    get_legend_label,
+    get_objects_props_by_row_col,
+    get_scene_ranges,
+    getColorscale,
+    getIntensity,
+    group_traces,
+    path_frames_to_indices,
+    place_and_orient_model3d,
+    rescale_traces,
+    slice_mesh_from_colorscale,
+)
 from magpylib._src.style import DefaultMarkers
 from magpylib._src.utility import (
     format_obj_input,
@@ -993,11 +997,11 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
         rc_params = None
         with style_temp_edit(*styles, styles_temp=styles):
             field_by_sens = get_sensor_pixel_field(list(props["objects"]))
-            for frame, path_ind in zip(frames, path_indices):
+            for frame, path_ind in zip(frames, path_indices, strict=False):
                 if is_animation:
                     style_kwargs["style_path_frames"] = [path_ind]
                     title = "Animation 3D - " if title is None else title
-                    title_str = f"""{title}path index: {path_ind+1:0{path_digits}d}"""
+                    title_str = f"""{title}path index: {path_ind + 1:0{path_digits}d}"""
                 traces, extra_backend_traces, rc_params = draw_frame(
                     props,
                     field_by_sens=field_by_sens,
@@ -1017,7 +1021,7 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
     ]
     zoom = {rc: v["rc_params"]["zoom"] for rc, v in objs_rc.items()}
     ranges_rc = get_scene_ranges(*all_traces, zoom=zoom)
-    labels_rc = {(1, 1): {k: "" for k in "xyz"}}
+    labels_rc = {(1, 1): dict.fromkeys("xyz", "")}
     scale_factors_rc = {}
     for rc, props in objs_rc.items():
         params = props["rc_params"]

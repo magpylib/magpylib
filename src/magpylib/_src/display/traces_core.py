@@ -29,16 +29,18 @@ from magpylib._src.display.traces_base import make_Tetrahedron as make_BaseTetra
 from magpylib._src.display.traces_base import (
     make_TriangularMesh as make_BaseTriangularMesh,
 )
-from magpylib._src.display.traces_utility import create_null_dim_trace
-from magpylib._src.display.traces_utility import draw_arrow_from_vertices
-from magpylib._src.display.traces_utility import draw_arrow_on_circle
-from magpylib._src.display.traces_utility import get_hexcolors_from_scale
-from magpylib._src.display.traces_utility import get_legend_label
-from magpylib._src.display.traces_utility import get_orientation_from_vec
-from magpylib._src.display.traces_utility import group_traces
-from magpylib._src.display.traces_utility import merge_mesh3d
-from magpylib._src.display.traces_utility import place_and_orient_model3d
-from magpylib._src.display.traces_utility import triangles_area
+from magpylib._src.display.traces_utility import (
+    create_null_dim_trace,
+    draw_arrow_from_vertices,
+    draw_arrow_on_circle,
+    get_hexcolors_from_scale,
+    get_legend_label,
+    get_orientation_from_vec,
+    group_traces,
+    merge_mesh3d,
+    place_and_orient_model3d,
+    triangles_area,
+)
 from magpylib._src.utility import is_array_like
 
 
@@ -552,7 +554,9 @@ def make_Pixels(
         return {
             "type": "scatter3d",
             "mode": "markers",
-            **{"x": x, "y": y, "z": z},
+            "x": x,
+            "y": y,
+            "z": z,
             "marker_symbol": symbol,
             "marker_color": colors,
             "marker_size": sizes * sizes_2dfactor,
@@ -594,7 +598,9 @@ def make_Pixels(
             if field_symbol == "arrow":
                 x, y, z = pos[:, None]
                 pix = {
-                    **{"x": x, "y": y, "z": z},
+                    "x": x,
+                    "y": y,
+                    "z": z,
                     "marker_size": [size * sizes_2dfactor],
                     **kw2d,
                 }
@@ -654,9 +660,9 @@ def make_Sensor(
         )
         vertices = np.array([sens_mesh[k] for k in "xyz"]).T
         if style.color is not None:
-            sens_mesh["facecolor"][
-                sens_mesh["facecolor"] == "rgb(238,238,238)"
-            ] = style.color
+            sens_mesh["facecolor"][sens_mesh["facecolor"] == "rgb(238,238,238)"] = (
+                style.color
+            )
         cube_mask = (abs(vertices) < 1).all(axis=1)
         vertices[cube_mask] = 0 * vertices[cube_mask]
         vertices[~cube_mask] = dim_ext * vertices[~cube_mask]

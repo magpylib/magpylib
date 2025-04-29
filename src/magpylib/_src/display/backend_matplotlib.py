@@ -17,9 +17,11 @@ import numpy as np
 from matplotlib import patches
 from matplotlib.animation import FuncAnimation
 
-from magpylib._src.display.traces_utility import get_trace_kw
-from magpylib._src.display.traces_utility import split_input_arrays
-from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
+from magpylib._src.display.traces_utility import (
+    get_trace_kw,
+    split_input_arrays,
+    subdivide_mesh_by_facecolor,
+)
 from magpylib._src.utility import is_array_like
 
 if os.getenv("MAGPYLIB_MPL_SVG") == "true":  # pragma: no cover
@@ -184,7 +186,7 @@ def scatter_to_matplotlib(trace):
     if "text" in mode and trace.get("text", False) and len(coords) > 0:
         txt = trace["text"]
         txt = [txt] * len(coords[0]) if isinstance(txt, str) else txt
-        for *coords_s, txt in zip(*coords, txt):
+        for *coords_s, txt in zip(*coords, txt, strict=False):
             traces.append({"constructor": "text", "args": (*coords_s, txt)})
     return traces
 
