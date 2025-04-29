@@ -1681,7 +1681,7 @@ class PixelField(MagicProperties):
     _allowed_vectorsources = ("B", "H", "J", "M")
     _allowed_symbols = ("cone", "arrow", "arrow3d")
     _allowed_sizemodes = ("constant", "linear", "log")
-    _allowed_colorscales = [
+    _allowed_colorscales = (
         "Viridis",
         "Plasma",
         "Inferno",
@@ -1705,7 +1705,7 @@ class PixelField(MagicProperties):
         "PuBuGn",
         "BuGn",
         "YlGn",
-    ]
+    )
 
     @property
     def vectorsource(self):

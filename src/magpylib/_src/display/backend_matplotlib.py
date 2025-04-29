@@ -170,8 +170,8 @@ def mesh3d_to_matplotlib(trace, antialiased):
     if "text" in mode and trace.get("text", False) and len(coords) > 0:
         txt = trace["text"]
         txt = [txt] * len(coords[0]) if isinstance(txt, str) else txt
-        for *coords_s, txt in zip(*coords, txt, strict=False):
-            traces.append({"constructor": "text", "args": (*coords_s, txt)})
+        for *coords_s, t in zip(*coords, txt, strict=False):
+            traces.append({"constructor": "text", "args": (*coords_s, t)})
     return traces
 
 

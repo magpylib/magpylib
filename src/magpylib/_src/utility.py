@@ -517,5 +517,5 @@ def style_temp_edit(*objs, styles_temp=None):
 
 
 def is_array_like(inp):
-    """Return boolean on wether input is an array, list or tuple"""
+    """Return boolean on whether input is an array, list or tuple"""
     return isinstance(inp, list | tuple | np.ndarray)

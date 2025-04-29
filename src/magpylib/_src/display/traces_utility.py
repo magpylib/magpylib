@@ -944,7 +944,7 @@ def split_input_arrays(*input_arrays, ordered=True):
     """splits input_arrays into chunks of same values.
     Use case: Unlike plotly, matplotlib and pyvista cannot display line plots with an array of
     colors.
-    The argument order=True is necessary for line arrays wher the order is important.
+    The argument order=True is necessary for line arrays where the order is important.
     For markers, the order is not important and unique combinations with their respective
     indices are returned.
     """
