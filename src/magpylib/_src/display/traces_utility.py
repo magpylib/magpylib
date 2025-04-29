@@ -230,8 +230,7 @@ def draw_zarrow(
         arrow = [[0, 0, -0.5], *arrow, [0, 0, 0.5]]
     else:
         arrow = [[0, 0, -0.5], [np.nan] * 3, *arrow, [np.nan] * 3, [0, 0, 0.5]]
-    arrow = (np.array(arrow) + np.array(anchor)) * height
-    return arrow
+    return (np.array(arrow) + np.array(anchor)) * height
 
 
 def draw_arrowed_line(
@@ -347,7 +346,8 @@ def path_frames_to_indices(frames, path_len):
     elif hasattr(frames, "__iter__") and not isinstance(frames, str):
         inds = np.array(frames)
     else:  # pragma: no cover
-        raise ValueError(f"Invalid show_path value ({frames})")
+        msg = f"Invalid show_path value ({frames})"
+        raise ValueError(msg)
     inds = inds[inds < path_len]
     if inds.size == 0:
         inds = np.array([path_len - 1])

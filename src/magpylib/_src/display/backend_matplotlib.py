@@ -89,7 +89,7 @@ class StripedHandler:
 def mesh3d_to_matplotlib(trace, antialiased):
     """Convert mesh3d trace input to a list of plot_trisurf constructor dicts
     Note: plot_trisurf does not accept different facecolors on the same trace
-    so they need to be splitted into multiple traces
+    so they need to be split into multiple traces
     """
     traces = []
     subtraces = [trace]
@@ -199,7 +199,8 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
     elif trace["type"] in ("scatter", "scatter3d"):
         traces_mpl.extend(scatter_to_matplotlib(trace))
     else:  # pragma: no cover
-        raise ValueError(f"{trace['type']!r} trace type conversion not supported")
+        msg = f"{trace['type']!r} trace type conversion not supported"
+        raise ValueError(msg)
     for tr in traces_mpl:
         tr["row"] = trace.get("row", 1)
         tr["col"] = trace.get("col", 1)

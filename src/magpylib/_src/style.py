@@ -1662,7 +1662,7 @@ class PixelField(MagicProperties):
         The pixel orientation vector source (one of "B", "H", "M", "J")
 
     colorsource: str, default=None
-        The pixel color source (e.g. "Bx", "Hxy", "J", etc.). If not specfied,
+        The pixel color source (e.g. "Bx", "Hxy", "J", etc.). If not specified,
         the amplitude of the `vectorsource` value is used.
 
     colorscale: str, default="Inferno",
@@ -1675,7 +1675,7 @@ class PixelField(MagicProperties):
         Orientation symbol for field vector.
 
     sizemode: {"constant", "linear", "log"}
-        Symbol size mode releative the the field magnitude.
+        Symbol size mode relative the the field magnitude.
     """
 
     _allowed_vectorsources = ("B", "H", "J", "M")

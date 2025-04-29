@@ -207,20 +207,19 @@ def generic_trace_to_pyvista(trace):
     elif trace["type"] in ("scatter", "scatter3d"):
         traces_pv.extend(scatter_to_pyvista(trace))
     else:  # pragma: no cover
-        msg = f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
+        msg = f"{trace['type']!r} trace type conversion not supported"
         raise ValueError(msg)
     showlegend = trace.get("showlegend", False)
     for tr in traces_pv:
         tr["row"] = trace.get("row", 1) - 1
         tr["col"] = trace.get("col", 1) - 1
-        if tr["type"] != "point_labels":
-            if showlegend:
-                showlegend = False  # show only first subtrace
-                if "label" not in tr:
-                    tr["label"] = trace.get("name", "")
-                leg_title = trace.get("legendgrouptitle_text", None)
-                if leg_title is not None:
-                    tr["label"] += f" ({leg_title})"
+        if tr["type"] != "point_labels" and showlegend:
+            showlegend = False  # show only first subtrace
+            if "label" not in tr:
+                tr["label"] = trace.get("name", "")
+            leg_title = trace.get("legendgrouptitle_text", None)
+            if leg_title is not None:
+                tr["label"] += f" ({leg_title})"
         if not tr.get("label", ""):
             tr.pop("label", None)
     return traces_pv
