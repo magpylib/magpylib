@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 import sys
 import warnings
@@ -9,9 +11,11 @@ import pyvista as pv
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.fields.field_BH_triangularmesh import BHJM_magnet_trimesh
-from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
-from magpylib._src.fields.field_BH_triangularmesh import lines_end_in_trimesh
+from magpylib._src.fields.field_BH_triangularmesh import (
+    BHJM_magnet_trimesh,
+    fix_trimesh_orientation,
+    lines_end_in_trimesh,
+)
 
 
 def test_TriangularMesh_repr():
@@ -117,7 +121,7 @@ def test_TriangularMesh_getB_different_facet_shapes_mixed():
     tmesh_cube = magpy.magnet.TriangularMesh.from_pyvista(
         polydata=pv.Cube(), **cube_kwargs
     )
-    # create a sensor of which the pixel line corsses both bodies
+    # create a sensor of which the pixel line crosses both bodies
     sens = magpy.Sensor(pixel=np.linspace((-2, 1, 1), (2, 1, 1))).rotate_from_angax(
         [14, 65, 97], (4, 6, 9), anchor=0
     )
@@ -300,7 +304,7 @@ def test_TriangularMesh_from_pyvista():
             polarization=(0, 0, 1), polydata=obj
         )
 
-    # shoud work
+    # should work
     get_tri_from_pv(pv.Cube())
 
     # should fail
@@ -308,43 +312,41 @@ def test_TriangularMesh_from_pyvista():
         get_tri_from_pv("bad_pyvista_obj_input")
 
     # Should raise if pyvista is not installed
-    with patch.dict(sys.modules, {"pyvista": None}):
-        with pytest.raises(ModuleNotFoundError):
-            get_tri_from_pv(pv.Cube())
+    with patch.dict(sys.modules, {"pyvista": None}), pytest.raises(ModuleNotFoundError):
+        get_tri_from_pv(pv.Cube())
 
 
 def test_TriangularMesh_from_faces_bad_inputs():
     """Test from_faces classmethod bad inputs"""
     pol = (0, 0, 1)
+    kw = {
+        "polarization": pol,
+        "check_open": False,
+        "check_disconnected": False,
+        "reorient_faces": False,
+    }
 
     def get_tri_from_triangles(trias):
-        return magpy.magnet.TriangularMesh.from_triangles(
-            polarization=pol,
-            triangles=trias,
-            check_open=False,
-            check_disconnected=False,
-            reorient_faces=False,
-        )
+        return magpy.magnet.TriangularMesh.from_triangles(triangles=trias, **kw)
 
     def get_tri_from_mesh(mesh):
-        return magpy.magnet.TriangularMesh.from_mesh(
-            polarization=pol,
-            mesh=mesh,
-            check_open=False,
-            check_disconnected=False,
-            reorient_faces=False,
-        )
+        return magpy.magnet.TriangularMesh.from_mesh(mesh=mesh, **kw)
 
     triangle = magpy.misc.Triangle(
         polarization=pol, vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)]
     )
 
     # good element type but not array-like
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match=r"The `triangles` parameter must be a list or Collection of `Triangle` objects*.",
+    ):
         get_tri_from_triangles(triangle)
 
     # element in list has wrong type
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError, match=r"All elements of `triangles` must be `Triangle` objects*."
+    ):
         get_tri_from_triangles(["bad_type"])
 
     # bad type input
@@ -353,12 +355,12 @@ def test_TriangularMesh_from_faces_bad_inputs():
 
     # bad shape input
     msh = [((0, 0), (1, 0), (0, 1))] * 2
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=r"Input parameter `mesh` has bad shape*."):
         get_tri_from_mesh(msh)
 
     # bad shape input
     msh = [((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))] * 2
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=r"Input parameter `mesh` has bad shape*."):
         get_tri_from_mesh(msh)
 
 

@@ -1,52 +1,85 @@
+# magpylib
 
-> [!WARNING]
-> Version 5 introduces critical breaking changes with, among others, the _move to SI units_. We recommended to pin your dependencies to `magpylib>=4.5<5` until you are ready to migrate to the latest version! ([see details](https://github.com/magpylib/magpylib/discussions/647))
+[![Actions Status][actions-badge]][actions-link]
+[![Documentation Status][rtd-badge]][rtd-link]
+
+[![PyPI version][pypi-version]][pypi-link]
+[![Conda-Forge][conda-badge]][conda-link]
+[![PyPI platforms][pypi-platforms]][pypi-link]
+
+[![GitHub Discussion][github-discussions-badge]][github-discussions-link]
+
+<!-- SPHINX-START -->
+
+<!-- prettier-ignore-start -->
+[actions-badge]:            https://github.com/magpylib/magpylib/workflows/CI/badge.svg
+[actions-link]:             https://github.com/magpylib/magpylib/actions
+[conda-badge]:              https://img.shields.io/conda/vn/conda-forge/magpylib
+[conda-link]:               https://github.com/conda-forge/magpylib-feedstock
+[github-discussions-badge]: https://img.shields.io/static/v1?label=Discussions&message=Ask&color=blue&logo=github
+[github-discussions-link]:  https://github.com/magpylib/magpylib/discussions
+[pypi-link]:                https://pypi.org/project/magpylib/
+[pypi-platforms]:           https://img.shields.io/pypi/pyversions/magpylib
+[pypi-version]:             https://img.shields.io/pypi/v/magpylib
+[rtd-badge]:                https://readthedocs.org/projects/magpylib/badge/?version=latest
+[rtd-link]:                 https://magpylib.readthedocs.io/en/latest/?badge=latest
+
+<!-- prettier-ignore-end -->
+
+> [!WARNING] Version 5 introduces critical breaking changes with, among others,
+> the _move to SI units_. We recommended to pin your dependencies to
+> `magpylib>=4.5<5` until you are ready to migrate to the latest version!
+> ([see details](https://github.com/magpylib/magpylib/discussions/647))
 
 <p align="left"><img align="center" src=docs/_static/images/magpylib_flag.png width=35%>
 </p>
 
----
-
-<div>
-<a href="https://opensource.org/licenses/BSD-2-Clause"> <img src="https://img.shields.io/badge/License-BSD_2--Clause-orange.svg">
-</a>
-<a href="https://github.com/magpylib/magpylib/actions/workflows/python-app.yml"> <img src="https://github.com/magpylib/magpylib/actions/workflows/python-app.yml/badge.svg">
-</a>
-<a href="https://magpylib.readthedocs.io/en/latest/"> <img src="https://readthedocs.org/projects/magpylib/badge/?version=latest">
-</a>
-<a href="https://codecov.io/gh/magpylib/magpylib"> <img src="https://codecov.io/gh/magpylib/magpylib/branch/main/graph/badge.svg">
-</a>
-<a href="https://pypi.org/project/magpylib/"> <img src="https://badge.fury.io/py/magpylib.svg" alt="PyPI version" height="18">
-</a>
-<a href="https://anaconda.org/conda-forge/magpylib"> <img src="https://anaconda.org/conda-forge/magpylib/badges/version.svg" alt="Conda Cloud" height="18">
-</a>
-<a href="https://mybinder.org/v2/gh/magpylib/magpylib/5.1.1?filepath=docs%2Fexamples"> <img src="https://mybinder.org/badge_logo.svg" alt="MyBinder link" height="18">
-</a>
-<a href="https://github.com/psf/black"> <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="black" height="18">
-</a>
-</div>
-
-Magpylib is an **open-source Python package** for calculating static **magnetic fields** of magnets, currents, and other sources. It uses **analytical expressions**, solutions to macroscopic magnetostatic problems, implemented in **vectorized** form which makes the computation **extremely fast** and leverages the open-source Python ecosystem for spectacular visualizations!
+Magpylib is an **open-source Python package** for calculating static **magnetic
+fields** of magnets, currents, and other sources. It uses **analytical
+expressions**, solutions to macroscopic magnetostatic problems, implemented in
+**vectorized** form which makes the computation **extremely fast** and leverages
+the open-source Python ecosystem for spectacular visualizations!
 
 # Installation
 
 Install from PyPI using **pip**
+
 ```
 pip install magpylib
 ```
+
 Install from conda forge using **conda**
+
 ```
 conda install -c conda-forge magpylib
 ```
-Magpylib supports _Python3.10+_ and relies on common scientific computation libraries _NumPy_, _Scipy_, _Matplotlib_ and _Plotly_. Optionally, _Pyvista_ is recommended as graphical backend.
+
+Magpylib supports _Python3.11+_ and relies on common scientific computation
+libraries _NumPy_, _Scipy_, _Matplotlib_ and _Plotly_. Optionally, _Pyvista_ is
+recommended as graphical backend.
 
 # Resources
 
- - Check out our **[Documentation](https://magpylib.readthedocs.io/en/stable)** for detailed information about the last stable release, or the **[Dev Docs](https://magpylib.readthedocs.io/en/latest)** to see the unreleased development version features.
- - Please abide by our **[Code of Conduct](https://github.com/magpylib/magpylib/blob/main/CODE_OF_CONDUCT.md)**.
- - Contribute through **[Discussions](https://github.com/magpylib/magpylib/discussions)** and coding by following the **[Contribution Guide](https://github.com/magpylib/magpylib/blob/main/CONTRIBUTING.md)**. The Git project **[Issues](https://github.com/magpylib/magpylib/issues)** give an up-to-date list of potential enhancements and planned milestones. Propose new ones.
- - A **[Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs)** introduction to Magpylib v4.0.0 within the **[GSC network](https://www.internationalcollaboration.org/).**
-- An **[open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170)** from the year 2020 describes v2 of this library with most basic concepts still intact in later versions.
+- Check out our **[Documentation](https://magpylib.readthedocs.io/en/stable)**
+  for detailed information about the last stable release, or the
+  **[Dev Docs](https://magpylib.readthedocs.io/en/latest)** to see the
+  unreleased development version features.
+- Please abide by our
+  **[Code of Conduct](https://github.com/magpylib/magpylib/blob/main/CODE_OF_CONDUCT.md)**.
+- Contribute through
+  **[Discussions](https://github.com/magpylib/magpylib/discussions)** and coding
+  by following the
+  **[Contribution Guide](https://github.com/magpylib/magpylib/blob/main/CONTRIBUTING.md)**.
+  The Git project **[Issues](https://github.com/magpylib/magpylib/issues)** give
+  an up-to-date list of potential enhancements and planned milestones. Propose
+  new ones.
+- A **[Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs)**
+  introduction to Magpylib v4.0.0 within the
+  **[GSC network](https://www.internationalcollaboration.org/).**
+- An
+  **[open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170)**
+  from the year 2020 describes v2 of this library with most basic concepts still
+  intact in later versions.
 
 # Quickstart
 
@@ -70,7 +103,7 @@ print(cube.orientation.as_rotvec())  # --> [0. 0. 0.]
 
 # Manipulate object position and orientation through the respective attributes,
 # or by using the powerful `move` and `rotate` methods.
-cube.move((0, 0, -0.02))# in SI Units (m)
+cube.move((0, 0, -0.02))  # in SI Units (m)
 cube.rotate_from_angax(angle=45, axis="z")
 print(cube.position)  # --> [0. 0. -0.02]
 print(cube.orientation.as_rotvec(degrees=True))  # --> [0. 0. 45.]
@@ -94,7 +127,7 @@ print(H.round())  # --> [-94537. -35642. -14085.]  # in SI Units (A/m)
 # Position and orientation attributes of Magpylib objects can be vectors of
 # multiple positions/orientations referred to as "paths". When computing the
 # magnetic field of an object with a path, it is computed at every path index.
-cube.position = [(0, 0, -.02), (1, 0, -.02), (2, 0, -.02)]  # in SI Units (m)
+cube.position = [(0, 0, -0.02), (1, 0, -0.02), (2, 0, -0.02)]  # in SI Units (m)
 B = cube.getB(sensor)
 print(B.round(2))  # --> [[-0.12 -0.04 -0.02]
 #                         [ 0.   -0.    0.  ]
@@ -105,7 +138,9 @@ print(B.round(2))  # --> [[-0.12 -0.04 -0.02]
 magpy.show(cube, sensor, backend="pyvista")
 ```
 
-More details and other important features are described in detail in the **[Documentation](https://magpylib.readthedocs.io/en/stable)**. Key features are:
+More details and other important features are described in detail in the
+**[Documentation](https://magpylib.readthedocs.io/en/stable)**. Key features
+are:
 
 - **Collections**: Group multiple objects for common manipulation
 - **Complex shapes**: Create magnets with arbitrary shapes
@@ -115,7 +150,10 @@ More details and other important features are described in detail in the **[Docu
 
 # How can I cite this library ?
 
-We would be happy if you give us credit for our efforts. A valid bibtex entry for the [2020 open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170) would be
+We would be happy if you give us credit for our efforts. A valid bibtex entry
+for the
+[2020 open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170)
+would be
 
 ```
 @article{ortner2020magpylib,

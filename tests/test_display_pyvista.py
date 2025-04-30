@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import contextlib
 import os
 import sys
 import tempfile
@@ -29,7 +32,7 @@ try:
             imageio.plugins.ffmpeg.download()
         else:
             raise err
-except Exception:  # noqa: E722
+except Exception:
     # skip test if ffmpeg cannot be loaded
     FFMPEG_FAILED = True
 
@@ -100,15 +103,15 @@ def test_animation_warning():
         src.show(canvas=pl, animation=True, backend="pyvista")
 
 
-@pytest.mark.parametrize("is_notebook_result", (True, False))
-@pytest.mark.parametrize("extension", ("mp4", "gif"))
-@pytest.mark.parametrize("filename", (True, False))
+@pytest.mark.parametrize("is_notebook_result", [True, False])
+@pytest.mark.parametrize("extension", ["mp4", "gif"])
+@pytest.mark.parametrize("filename", [True, False])
 def test_pyvista_animation(is_notebook_result, extension, filename):
     """Test pyvista animation"""
     # define sensor and source
     pv.OFF_SCREEN = True
     if sys.platform == "linux":
-        pv.start_xvfb()  #  needed for unix systems or it will test will crash with fatal error
+        os.environ["PYVISTA_VTK_OSMESA"] = "1"
     if not HAS_IMAGEIO and extension == "gif":
         pytest.skip("Extension gif skipped because imageio failed to load")
     if FFMPEG_FAILED and extension == "mp4":
@@ -118,24 +121,25 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
     src.move([[0, 0, 0], [0, 0, 1]], start=0)
     objs = [src, sens]
 
-    with patch("magpylib._src.utility.is_notebook", return_value=is_notebook_result):
-        with patch("webbrowser.open"):
-            try:
-                temp = os.path.join(tempfile.gettempdir(), os.urandom(24).hex())
-                temp += f".{extension}"
-                animation_output = temp if filename else extension
-                magpy.show(
-                    {"objects": objs, "col": 1, "output": ("Bx", "By", "Bz")},
-                    {"objects": objs, "col": 2},
-                    backend="pyvista",
-                    animation=True,
-                    animation_output=animation_output,
-                    mp4_quality=1,
-                    return_fig=True,
-                )
-            finally:
-                try:
-                    os.unlink(temp)
-                except FileNotFoundError:
-                    # avoid exception if file is not found
-                    pass
+    with (
+        patch("magpylib._src.utility.is_notebook", return_value=is_notebook_result),
+        patch("webbrowser.open"),
+    ):
+        try:
+            from pathlib import Path
+
+            temp = Path(tempfile.gettempdir()) / os.urandom(24).hex()
+            temp = temp.with_suffix(f".{extension}")
+            animation_output = temp if filename else extension
+            magpy.show(
+                {"objects": objs, "col": 1, "output": ("Bx", "By", "Bz")},
+                {"objects": objs, "col": 2},
+                backend="pyvista",
+                animation=True,
+                animation_output=animation_output,
+                mp4_quality=1,
+                return_fig=True,
+            )
+        finally:
+            with contextlib.suppress(FileNotFoundError):
+                temp.unlink()

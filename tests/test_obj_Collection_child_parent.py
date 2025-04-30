@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 
 import magpylib as magpy
@@ -9,7 +11,9 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 
 def test_parent_setter():
     """setting and removing a parent"""
-    child_labels = lambda x: [c.style.label for c in x]
+
+    def child_labels(x):
+        return [c.style.label for c in x]
 
     # default parent is None
     x1 = magpy.Sensor(style_label="x1")
@@ -177,7 +181,9 @@ def test_collection_parent_child_relation():
 
 def test_collections_add():
     """test collection construction"""
-    child_labels = lambda x: [c.style.label for c in x]
+
+    def child_labels(x):
+        return [c.style.label for c in x]
 
     x1 = magpy.Sensor(style_label="x1")
     x2 = magpy.Sensor(style_label="x2")
@@ -224,7 +230,9 @@ def test_collection_plus():
     """
     testing collection adding and the += functionality
     """
-    child_labels = lambda x: [c.style.label for c in x]
+
+    def child_labels(x):
+        return [c.style.label for c in x]
 
     s1 = magpy.magnet.Cuboid(style_label="s1")
     s2 = magpy.magnet.Cuboid(style_label="s2")
@@ -252,9 +260,15 @@ def test_collection_plus():
 
 def test_collection_remove():
     """removing from collections"""
-    child_labels = lambda x: [c.style.label for c in x]
-    source_labels = lambda x: [c.style.label for c in x.sources]
-    sensor_labels = lambda x: [c.style.label for c in x.sensors]
+
+    def child_labels(x):
+        return [c.style.label for c in x]
+
+    def source_labels(x):
+        return [c.style.label for c in x.sources]
+
+    def sensor_labels(x):
+        return [c.style.label for c in x.sensors]
 
     x1 = magpy.Sensor(style_label="x1")
     x2 = magpy.Sensor(style_label="x2")

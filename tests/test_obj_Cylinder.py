@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 
 import magpylib as magpy
@@ -68,7 +70,7 @@ def test_Cylinder_getBH():
     dim2 = [(1, 2), (2, 3), (3, 4)]
     dim5 = [(0, 0.5, 2, 0, 360), (0, 1, 3, 0, 360), (0.0000001, 1.5, 4, 0, 360)]
 
-    for d2, d5 in zip(dim2, dim5):
+    for d2, d5 in zip(dim2, dim5, strict=False):
         src1 = magpy.magnet.Cylinder(polarization=pol, dimension=d2)
         src2 = magpy.magnet.CylinderSegment(polarization=pol, dimension=d5)
         B0 = src1.getB(poso)

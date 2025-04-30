@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 from numpy.testing import assert_allclose
 from scipy.constants import mu_0 as MU0
@@ -7,8 +9,10 @@ from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
-from magpylib._src.fields.field_BH_polyline import BHJM_current_polyline
-from magpylib._src.fields.field_BH_polyline import current_vertices_field
+from magpylib._src.fields.field_BH_polyline import (
+    BHJM_current_polyline,
+    current_vertices_field,
+)
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import BHJM_triangle
@@ -752,7 +756,7 @@ def test_field_line_from_vert():
     )
 
     B = []
-    for obs, vert, curr in zip(observers, vertices, current):
+    for obs, vert, curr in zip(observers, vertices, current, strict=False):
         p1 = vert[:-1]
         p2 = vert[1:]
         po = np.array([obs] * (len(vert) - 1))

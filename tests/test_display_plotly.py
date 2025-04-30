@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import plotly.graph_objects as go
 import pytest
@@ -168,12 +170,15 @@ def test_display_bad_style_kwargs():
     """test if some magic kwargs are invalid"""
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=r"Following arguments are invalid style properties: `{'bad_style_kwarg'}`.*",
+    ):
         magpy.show(canvas=fig, markers=[(1, 2, 3)], style_bad_style_kwarg=None)
 
 
 def test_extra_model3d():
-    """test diplay when object has an extra model object attached"""
+    """test display when object has an extra model object attached"""
     magpy.defaults.display.backend = "plotly"
     cuboid = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     cuboid.move(np.linspace((0.4, 0.4, 0.4), (12.4, 12.4, 12.4), 33), start=-1)
@@ -229,12 +234,7 @@ def test_extra_model3d():
         }
 
     cuboid.style.model3d.add_trace(
-        **{
-            "backend": "plotly",
-            "constructor": "Scatter3d",
-            "kwargs": my_callable_kwargs,
-            "show": True,
-        }
+        backend="plotly", constructor="Scatter3d", kwargs=my_callable_kwargs, show=True
     )
     cuboid.style.model3d.data[0].show = False
     cuboid.show(
@@ -423,7 +423,7 @@ def test_color_precedence():
 
 
 def test_colors_output2d():
-    """Tests if lines have objects corresponding colors in ouptut=Bx, By..."""
+    """Tests if lines have objects corresponding colors in output=Bx, By..."""
     l1 = magpy.current.Circle(
         current=1,
         diameter=1,
@@ -463,7 +463,7 @@ def test_colors_output2d():
 
 
 def test_units_length():
-    """test units lenghts"""
+    """test units lengths"""
 
     dims = (1, 2, 3)
     c1 = magpy.magnet.Cuboid(dimension=dims, polarization=(1, 2, 3))
@@ -479,7 +479,7 @@ def test_units_length():
         return_fig=True,
     )
     for ind, inp in enumerate(inputs):
-        scene = getattr(fig.layout, f"scene{'' if ind==0 else ind+1}")
+        scene = getattr(fig.layout, f"scene{'' if ind == 0 else ind + 1}")
         for k in "xyz":
             ax = getattr(scene, f"{k}axis")
             assert ax.title.text == f"{k} ({inp['units_length']})"
