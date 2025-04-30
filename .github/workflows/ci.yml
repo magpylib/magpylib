@@ -60,6 +60,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           python-version: ${{ matrix.python-version }}
+          activate-environment: true
 
       - name: Install dependencies with uv
         run: uv pip install .[test]
