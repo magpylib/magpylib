@@ -94,6 +94,14 @@
 :img-bottom: ../../../_static/images/examples_icon_vis_pv_streamlines.png
 :::
 
+:::{grid-item-card} {ref}`examples-vis-vectorfield`
+:text-align: center
+:link: examples-vis-vectorfield
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_vis_vectorfield.png
+:::
+
 
 
 ::::
@@ -265,6 +273,7 @@ examples_vis_animations.md
 examples_vis_subplots.md
 examples_vis_mpl_streamplot.md
 examples_vis_pv_streamlines.md
+examples_vis_vectorfield.md
 
 examples_shapes_superpos.md
 examples_shapes_convex_hull.md
