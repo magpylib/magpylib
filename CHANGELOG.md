@@ -2,12 +2,13 @@
 
 ## [Unreleased] - YYYY-MM-DD
 
+- Added new `style.pixel.field` parameters to quickly represent vector fields ([#793](https://github.com/magpylib/magpylib/pull/793))
+- Input `in_out` is now by default set to `"auto"` for collections to avoiding
+  ambiguities.
+- Fixed a bug where a core getH would return the B-field
 - Improved docstrings by adding examples where missing and by using rounding in
   all examples to avoid doctest fails
-- Fixed a bug where a core getH would return the B-field
-- Input `in_out` is by default set to `"auto"` for collections to avoiding
-  ambiguities.
-- Improve documentation
+- Improved documentation
   ([#829](https://github.com/magpylib/magpylib/issues/829))
 
 ## [5.1.1] - 2024-10-31
