@@ -27,9 +27,9 @@ With this new capability, you can display the vector field for `"B"`, `"H"`, `"M
 This notebook provides examples of how to use these features effectively, along with explanations of the relevant parameters.
 
 
-# Parameter Overview
+## Parameter Overview
 
-## `style.pixel.field` Parameters
+### `style.pixel.field` Parameters
 
 - **`vectorsource`** (default=`None`): Defines the field source for vector visualization:
   - `None`: No field direction is shown.
@@ -58,7 +58,7 @@ This notebook provides examples of how to use these features effectively, along 
   - `"log"`: Proportional to the normalized logarithm of the magnitude.
 
 
-## Additional Features
+### Additional Features
 
 - **Color Scales**: Supports predefined color scales (e.g., `"Viridis"`, `"Inferno"`, `"Jet"`) or which are common to both `Plotly` and `Matplotlib`.
 - **Normalization**: Field vectors and magnitude normalization are applied per sensor path for each sensor individually.
@@ -71,9 +71,9 @@ This notebook provides examples of how to use these features effectively, along 
 
 +++
 
-# Examples
+## Examples
 
-## Animated B-field
+### Animated B-field
 
 ```{note}
 Default is `"cone"` (can be set globally like any other style).
@@ -105,7 +105,7 @@ magpy.show(
 )
 ```
 
-## Display B, H, J, or M Field
+### Display B, H, J, or M Field
 
 ```{note}
 Null or NaN field values are not displayed via a directional symbol but are visible by default.
@@ -147,7 +147,7 @@ magpy.show(
 )
 ```
 
-## Display Field Magnitude via Coloring
+### Display Field Magnitude via Coloring
 
 ```{note}
 Field coloring can be set independently of the field vector source. If not specified, it refers to the vector source magnitude. If set to `False`, no coloring is used, and symbols are displayed in black.
@@ -190,7 +190,7 @@ magpy.show(
 )
 ```
 
-## Use Different Directional Symbols
+### Use Different Directional Symbols
 
 ```{note}
 Default is `"cone"` (can be set globally like any other style).
@@ -233,7 +233,7 @@ magpy.show(
 )
 ```
 
-## Set the Sizing Modes of Directional Symbols
+### Set the Sizing Modes of Directional Symbols
 
 ```{note}
 Default is `"constant"` (can be set globally like any other style).
@@ -277,7 +277,7 @@ magpy.show(
 )
 ```
 
-## Edge Cases: Hide `Null` or `NaN` Values
+### Edge Cases: Hide `Null` or `NaN` Values
 
 ```{note}
 Null and NaN values are treated the same. These pixels can be hidden if desired.
@@ -323,7 +323,7 @@ magpy.show(
 )
 ```
 
-## Color Scales
+### Color Scales
 
 ```{note}
 Other color scales are available (a curated list of common sequential colors between Matplotlib and Plotly).
