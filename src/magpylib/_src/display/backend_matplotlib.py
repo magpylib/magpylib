@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import contextlib
 import os
-from collections import Counter
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -18,11 +17,8 @@ from matplotlib import patches
 from matplotlib.animation import FuncAnimation
 
 from magpylib._src.display.traces_utility import (
-    get_trace_kw,
-    split_input_arrays,
     subdivide_mesh_by_facecolor,
 )
-from magpylib._src.utility import is_array_like
 
 if os.getenv("MAGPYLIB_MPL_SVG") == "true":  # pragma: no cover
     from matplotlib_inline.backend_inline import set_matplotlib_formats

@@ -26,7 +26,6 @@ from magpylib._src.display.traces_utility import (
     draw_arrowed_line,
     get_legend_label,
     get_objects_props_by_row_col,
-    get_rot_pos_from_path,
     get_scene_ranges,
     getColorscale,
     getIntensity,
@@ -39,7 +38,6 @@ from magpylib._src.style import DefaultMarkers
 from magpylib._src.utility import (
     format_obj_input,
     get_unit_factor,
-    style_temp_edit,
     unit_prefix,
 )
 

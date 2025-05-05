@@ -14,7 +14,6 @@ from magpylib._src.defaults.defaults_utility import _DefaultValue, get_defaults_
 from magpylib._src.display.traces_generic import MagpyMarkers, get_frames
 from magpylib._src.display.traces_utility import (
     DEFAULT_ROW_COL_PARAMS,
-    linearize_dict,
     process_show_input_objs,
 )
 from magpylib._src.input_checks import (

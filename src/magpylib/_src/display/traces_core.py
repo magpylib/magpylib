@@ -8,7 +8,7 @@
 from __future__ import annotations
 
 import warnings
-from itertools import combinations, cycle
+from itertools import cycle
 from typing import Any
 
 import numpy as np
