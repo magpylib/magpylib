@@ -5,10 +5,13 @@ magnetized Spheres. Computation details in function docstrings.
 
 from __future__ import annotations
 
+import array_api_extra as xpx
 import numpy as np
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
+from magpylib._src.array_api_utils import xp_promote
 
 
 # CORE
@@ -58,12 +61,39 @@ def magnet_sphere_Bfield(
     The field corresponds to a dipole field on the outside and is 2/3*mag
     in the inside (see e.g. "Theoretical Physics, Bertelmann").
     """
-    return BHJM_magnet_sphere(
-        field="B",
-        observers=observers,
-        diameter=diameters,
-        polarization=polarizations,
-    )
+    xp = array_namespace(observers, diameters, polarizations)
+    observers, diameters, polarizations = xp_promote(observers, diameters, polarizations, force_floating=True, xp=xp)
+    r = xp.linalg.vector_norm(observers, axis=-1)
+    r_sphere = xp.abs(diameters) / 2.0
+
+    # inside field & allocate
+    polarization = polarizations
+    mask_out = r > r_sphere
+
+    mask_in = ~mask_out
+
+    def B_in(polarization):
+        return 2.0 * polarization / 3.0
+
+    def B_out(polarization, observers, r_sphere, r):
+        mask = r == 0.0
+        r = xpx.at(r)[mask].set(xp.nan)
+        return (
+            (
+                xp.divide(
+                    3 * xp.sum(polarization * observers, axis=1) * observers.T
+                    - polarization.T * r**2,
+                    r**5,
+                )
+            )
+            * r_sphere**3
+            / 3.0
+        ).T
+
+    B = B_out(polarization, observers, r_sphere[xp.newaxis, :], r[xp.newaxis, :])
+    B = xpx.at(B)[mask_in].set(B_in(polarization[mask_in]))
+
+    return B
 
 
 def BHJM_magnet_sphere(
