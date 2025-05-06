@@ -58,6 +58,7 @@ docs = [
     "pyvista",
     "magpylib-material-response",
     "magpylib-force",
+    "kaleido",
 ]
 test = [
     "tox>=4.11",

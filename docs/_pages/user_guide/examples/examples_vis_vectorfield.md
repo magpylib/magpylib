@@ -112,6 +112,19 @@ Null or NaN field values are not displayed via a directional symbol but are visi
 ```
 
 ```{code-cell} ipython3
+# Only 10 interactive 3d plots (Webgl contexts) can be displayed at time
+# The following will display subsequent plots as non-interative png images
+import plotly.io as pio
+pio.renderers.default = 'png'
+pio.templates["custom"] = pio.templates["plotly"]
+pio.templates["custom"].layout.update(
+    width=1400,  # Set default width
+    height=600  # Set default height
+)
+pio.templates.default = "custom"
+```
+
+```{code-cell} ipython3
 :tags: [hide-input]
 
 import numpy as np
@@ -350,7 +363,7 @@ s0 = magpy.Sensor(
     position=(0, 0, 0),
 )
 objects = []
-for i, colorscale in enumerate(("Viridis", "Inferno", "Oranges", "RdPu", "Greys")):
+for i, colorscale in enumerate(("Viridis", "Inferno", "Oranges", "RdPu")):
     s1 = s0.copy(
         style_pixel_field_vectorsource="B",
         style_pixel_field_colorscale=colorscale,
