@@ -62,9 +62,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           activate-environment: true
 
-      - name: Install dependencies with uv
-        run: uv pip install .[test]
-
       - name: Test package
         run: >-
           uv run pytest -ra --cov --cov-report=xml --cov-report=term

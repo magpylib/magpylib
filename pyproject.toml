@@ -39,10 +39,11 @@ dependencies = [
     "plotly>=5.16",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
   "pytest >=6",
   "pytest-cov >=3",
+  {include-group = "test"}
 ]
 docs = [
     "pydata-sphinx-theme",
@@ -95,11 +96,6 @@ installer = "uv"
 features = ["test"]
 scripts.test = "pytest {args}"
 
-
-[tool.uv]
-dev-dependencies = [
-  "magpylib[test]",
-]
 
 
 [tool.pytest.ini_options]
