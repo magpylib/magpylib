@@ -77,18 +77,21 @@ def dipole_Hfield(
     return H
 
 
-def BHJM_dipole(
-    field: str,
-    observers: np.ndarray,
-    moment: np.ndarray,
-) -> np.ndarray:
+def BHJM_dipole(field: str, observers: np.ndarray, moment: np.ndarray) -> np.ndarray:
     """
     - translate dipole field to BHJM
     """
     check_field_input(field)
+    xp = array_namespace(observers, moment)
+
+    if not xp.isdtype(observers.dtype, kind=("real floating", "complex floating")):
+        observers = xp.astype(observers, xp.float64)
+
+    if not xp.isdtype(moment.dtype, kind=("real floating", "complex floating")):
+        moment = xp.astype(moment, xp.float64)
 
     if field in "MJ":
-        return np.zeros_like(observers, dtype=float)
+        return xp.zeros_like(observers, dtype=xp.float32)
 
     BHJM = dipole_Hfield(
         observers=observers,
