@@ -530,11 +530,11 @@ def test_BHJM_current_polyline():
 
 def test_BHJM_dipole():
     """Test of dipole field core function"""
-    pol = np.array([(0, 0, 1), (1, 0, 1), (-1, 0.321, 0.123)])
+    pol = xp.asarray([(0, 0, 1), (1, 0, 1), (-1, 0.321, 0.123)])
 
     kw = {
-        "observers": np.array([(1, 2, 3), (-1, -2, -3), (3, 3, -1)]),
-        "moment": pol * 4 * np.pi / 3 / MU0,
+        "observers": xp.asarray([(1, 2, 3), (-1, -2, -3), (3, 3, -1)]),
+        "moment": pol * 4 * xp.pi / 3 / MU0,
     }
     H, B, M, _ = helper_check_HBMJ_consistency(BHJM_dipole, **kw)
 
