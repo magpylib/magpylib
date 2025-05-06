@@ -4,10 +4,13 @@ Core implementation of dipole field
 
 from __future__ import annotations
 
+import array_api_extra as xpx
 import numpy as np
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
+from magpylib._src.array_api_utils import xp_promote
 
 
 # CORE
@@ -53,27 +56,23 @@ def dipole_Hfield(
     -----
     The moment of a magnet is given by its volume*magnetization.
     """
+    xp = array_namespace(observers, moments)
+    observers, moments = xp_promote(observers, moments, force_floating=True, xp=xp)
+    r = xp.linalg.vector_norm(observers, axis=-1, keepdims=True)
 
-    x, y, z = observers.T
-    r = np.sqrt(x**2 + y**2 + z**2)  # faster than np.linalg.norm
-    with np.errstate(divide="ignore", invalid="ignore"):
-        # 0/0 produces invalid warn and results in np.nan
-        # x/0 produces divide warn and results in np.inf
-        H = (
-            (
-                3 * np.sum(moments * observers, axis=1) * observers.T / r**5
-                - moments.T / r**3
-            ).T
-            / 4
-            / np.pi
-        )
+    # 0/0 produces invalid warn and results in np.nan
+    # x/0 produces divide warn and results in np.inf
+    mask_r = r == 0.0
+    r = xpx.at(r)[mask_r].set(1.0)
+    dotprod = xp.vecdot(moments, observers)[:, xp.newaxis]
 
-    # when r=0 return np.inf in all non-zero moments directions
-    mask1 = r == 0
-    if np.any(mask1):
-        with np.errstate(divide="ignore", invalid="ignore"):
-            H[mask1] = moments[mask1] / 0.0
-            np.nan_to_num(H, copy=False, posinf=np.inf, neginf=-np.inf)
+    def B(dotprod, observers, moments, r):
+        A = xp.divide(3 * dotprod * observers, r**5)
+        B = xp.divide(moments, r**3)
+        return xp.divide((A - B), 4.0 * xp.pi)
+
+    H = xpx.apply_where(~mask_r, (dotprod, observers, moments, r), B, fill_value=xp.inf)
+    # H = xpx.at(H)[xp.broadcast_to(mask_r, H.shape)].set(xp.inf)
 
     return H
 
