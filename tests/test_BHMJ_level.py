@@ -167,7 +167,7 @@ def test_BHJM_magnet_cylinder():
 
 def test_BHJM_magnet_sphere():
     """test BHJM_magnet_sphere"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -175,8 +175,8 @@ def test_BHJM_magnet_sphere():
             (2, 3, -1),
         ]
     )
-    dia = np.array([1, 2, 3, 4])
-    obs = np.array(
+    dia = xp.asarray([1, 2, 3, 4])
+    obs = xp.asarray(
         [
             (1, 2, 3),
             (1, -1, 0),
