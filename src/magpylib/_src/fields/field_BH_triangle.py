@@ -6,13 +6,17 @@ Computation details in function docstrings.
 # pylance: disable=Code is unreachable
 from __future__ import annotations
 
+from functools import partial
+
+import array_api_extra as xpx
 import numpy as np
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
 
 
-def vcross3(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+def vcross3(xp, a: np.ndarray, b: np.ndarray) -> np.ndarray:
     """
     vectorized cross product for 3d vectors. Is ~4x faster than np.cross when
     arrays are smallish. Only slightly faster for large arrays.
@@ -20,29 +24,28 @@ def vcross3(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     returns: (n, 3)
     """
     # receives nan values at corners
-    with np.errstate(invalid="ignore"):
-        result = np.array(
-            [
-                a[:, 1] * b[:, 2] - a[:, 2] * b[:, 1],
-                a[:, 2] * b[:, 0] - a[:, 0] * b[:, 2],
-                a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0],
-            ]
-        )
+    result = xp.asarray(
+        [
+            a[:, 1] * b[:, 2] - a[:, 2] * b[:, 1],
+            a[:, 2] * b[:, 0] - a[:, 0] * b[:, 2],
+            a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0],
+        ]
+    )
     return result.T
 
 
-def norm_vector(v) -> np.ndarray:
+def norm_vector_xp(xp, v) -> np.ndarray:
     """
     Calculates normalized orthogonal vector on a plane defined by three vertices.
     """
-    a = v[:, 1] - v[:, 0]
-    b = v[:, 2] - v[:, 0]
-    n = vcross3(a, b)
-    n_norm = np.linalg.norm(n, axis=-1)
-    return n / np.expand_dims(n_norm, axis=-1)
+    a = v[:, 1, ...] - v[:, 0, ...]
+    b = v[:, 2, ...] - v[:, 0, ...]
+    n = xp.linalg.cross(a, b)
+    n_norm = xp.sqrt(xp.vecdot(n, n, axis=-1))
+    return n / xp.expand_dims(n_norm, axis=-1)
 
 
-def solid_angle(R: np.ndarray, r: np.ndarray) -> np.ndarray:
+def solid_angle_xp(xp, R: np.ndarray, r: np.ndarray) -> np.ndarray:
     """
     Vectorized computation of the solid angle of triangles.
 
@@ -56,23 +59,40 @@ def solid_angle(R: np.ndarray, r: np.ndarray) -> np.ndarray:
     Returns:
     [sangle_a, sangle_b, sangle_c, ...]
     """
+    R0, R1, R2 = R[0, ...], R[1, ...], R[2, ...]
+    r0, r1, r2 = r[0, ...], r[1, ...], r[2, ...]
 
     # Calculates (oriented) volume of the parallelepiped in vectorized form.
-    N = np.einsum("ij, ij->i", R[2], vcross3(R[1], R[0]))
+    N = xp.vecdot(
+        R2,
+        xp.linalg.cross(R1, R0),
+    )
 
     D = (
-        r[0] * r[1] * r[2]
-        + np.einsum("ij, ij->i", R[2], R[1]) * r[0]
-        + np.einsum("ij, ij->i", R[2], R[0]) * r[1]
-        + np.einsum("ij, ij->i", R[1], R[0]) * r[2]
+        r0 * r1 * r2
+        + xp.vecdot(
+            R2,
+            R1,
+        )
+        * r0
+        + xp.vecdot(
+            R2,
+            R0,
+        )
+        * r1
+        + xp.vecdot(
+            R1,
+            R0,
+        )
+        * r2
     )
-    result = 2.0 * np.arctan2(N, D)
+    result = 2.0 * xp.atan2(N, D)
 
     # modulus 2pi to avoid jumps on edges in line
     # "B = sigma * ((n.T * solid_angle(R, r)) - vcross3(n, PQR).T)"
     # <-- bad fix :(
 
-    return np.where(abs(result) > 6.2831853, 0, result)
+    return xp.where(xp.abs(result) > 6.2831853, 0, result)
 
 
 def triangle_Bfield(
@@ -130,24 +150,34 @@ def triangle_Bfield(
     Loss of precision when approaching a triangle as (x-edge)**2 :(
     Loss of precision with distance from the triangle as distance**3 :(
     """
+    xp = array_namespace(observers, vertices, polarizations)
+    norm_vector = partial(norm_vector_xp, xp)
+    solid_angle = partial(solid_angle_xp, xp)
+
     n = norm_vector(vertices)
-    sigma = np.einsum("ij, ij->i", n, polarizations)  # vectorized inner product
+    sigma = xp.vecdot(
+        n,
+        polarizations,
+    )  # vectorized inner product
 
     # vertex <-> observer
-    R = np.swapaxes(vertices, 0, 1) - observers
-    r2 = np.sum(R * R, axis=-1)
-    r = np.sqrt(r2)
+    R = xp.permute_dims(vertices, (1, 0, 2)) - observers
+    r2 = xp.sum(R * R, axis=-1)
+    r = xp.sqrt(r2)
 
     # vertex <-> vertex
-    L = vertices[:, (1, 2, 0)] - vertices[:, (0, 1, 2)]
-    L = np.swapaxes(L, 0, 1)
-    l2 = np.sum(L * L, axis=-1)
-    l1 = np.sqrt(l2)
+    L = xp.empty_like(vertices[:, 0:3, :])
+    L = xpx.at(L)[:, 0, ...].set(vertices[:, 1, :] - vertices[:, 0, :])
+    L = xpx.at(L)[:, 1, ...].set(vertices[:, 2, :] - vertices[:, 1, :])
+    L = xpx.at(L)[:, 2, ...].set(vertices[:, 0, :] - vertices[:, 2, :])
+    L = xp.permute_dims(L, (1, 0, 2))
+    l2 = xp.sum(L * L, axis=-1)
+    l1 = xp.sqrt(l2)
 
     # vert-vert -- vert-obs
-    b = np.einsum("ijk, ijk->ij", R, L)
+    b = xp.vecdot(R, L)
     bl = b / l1
-    ind = np.fabs(r + bl)  # closeness measure to corner and edge
+    ind = xp.abs(r + bl)  # closeness measure to corner and edge
 
     # The computation of ind is the origin of a major numerical instability
     #    when approaching the triangle because r ~ -bl. This number
@@ -166,16 +196,41 @@ def triangle_Bfield(
     #     1/x,
     #     0
     # )
+    def B_not_degenerate(l1, l2, r, r2, b, bl, ind):
+        l_arg1 = xp.sqrt(l2 + 2 * b + r2) + l1 + bl
+        return 1.0 / l1 * xp.log(l_arg1 / ind)
 
-    with np.errstate(divide="ignore", invalid="ignore"):
-        I = np.where(  # noqa: E741
-            ind > 1.0e-12,
-            1.0 / l1 * np.log((np.sqrt(l2 + 2 * b + r2) + l1 + bl) / ind),
-            -(1.0 / l1) * np.log(np.fabs(l1 - r) / r),
-        )
-    PQR = np.einsum("ij, ijk -> jk", I, L)
-    B = sigma * (n.T * solid_angle(R, r) - vcross3(n, PQR).T)
-    B = B / np.pi / 4.0
+    def B_edge(l1, r):
+        lr = xp.abs(l1 - r)
+        return -(1.0 / l1) * xp.log(lr / r)
+
+    def B_degenerate(l1, l2, r, r2, b, bl, ind):
+        r_mask = (r != 0.0) & (xp.abs(l1 - r) > 0.0)
+        return xpx.apply_where(r_mask, (l1, r), B_edge, fill_value=xp.nan)
+
+    ind_mask = ind > 1.0e-12
+    r_mask = r == 0.0
+    r_copy = xp.asarray(r, copy=True)
+    lr = xp.abs(l1 - r)
+    lr_mask = lr == 0.0
+    lr = xpx.at(lr)[ind_mask | lr_mask].set(3.0)
+    ind = xpx.at(ind)[~ind_mask].set(1.0)
+    r_copy = xpx.at(r_copy)[r_mask].set(1.0)
+
+    I = xpx.apply_where(  # noqa: E741
+        ind_mask,
+        (l1, l2, r, r2, b, bl, ind),
+        B_not_degenerate,
+        B_degenerate,
+        # 1.0 / l1 * xp.log(l_arg1 / ind),
+        # -(1.0 / l1) * xp.log(lr / r_copy),
+    )
+    I = xpx.at(I)[r_mask].set(xp.nan)
+    I = xpx.at(I)[lr_mask & ~ind_mask].set(xp.nan)
+
+    PQR = xp.vecdot(I[:, :, xp.newaxis], L, axis=-3)
+    B = sigma * (n.T * solid_angle(R, r) - xp.linalg.cross(n, PQR).T)
+    B = B / xp.pi / 4.0
 
     return B.T
 
@@ -190,8 +245,18 @@ def BHJM_triangle(
     - translate triangle core field to BHJM
     """
     check_field_input(field)
+    xp = array_namespace(observers, vertices, polarization)
 
-    BHJM = polarization.astype(float) * 0.0
+    if not xp.isdtype(observers.dtype, kind=("real floating", "complex floating")):
+        observers = xp.astype(observers, xp.float64)
+
+    if not xp.isdtype(vertices.dtype, kind=("real floating", "complex floating")):
+        vertices = xp.astype(vertices, xp.float64)
+
+    if not xp.isdtype(polarization.dtype, kind=("real floating", "complex floating")):
+        polarization = xp.astype(polarization, xp.float64)
+
+    BHJM = xp.astype(polarization, xp.float64) * 0.0
 
     if field == "M":
         return BHJM
@@ -200,9 +265,7 @@ def BHJM_triangle(
         return BHJM
 
     BHJM = triangle_Bfield(
-        observers=observers,
-        vertices=vertices,
-        polarizations=polarization,
+        observers=observers, vertices=vertices, polarizations=polarization
     )
 
     # new MU0 problem:
