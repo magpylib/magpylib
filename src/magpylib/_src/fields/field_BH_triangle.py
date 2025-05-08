@@ -249,8 +249,18 @@ def BHJM_triangle(
     - translate triangle core field to BHJM
     """
     check_field_input(field)
+    xp = array_namespace(observers, vertices, polarization)
 
-    BHJM = polarization.astype(float) * 0.0
+    if not xp.isdtype(observers.dtype, kind=("real floating", "complex floating")):
+        observers = xp.astype(observers, xp.float64)
+
+    if not xp.isdtype(vertices.dtype, kind=("real floating", "complex floating")):
+        vertices = xp.astype(vertices, xp.float64)
+
+    if not xp.isdtype(polarization.dtype, kind=("real floating", "complex floating")):
+        polarization = xp.astype(polarization, xp.float64)
+
+    BHJM = xp.astype(polarization, xp.float64) * 0.0
 
     if field == "M":
         return BHJM
@@ -259,9 +269,7 @@ def BHJM_triangle(
         return BHJM
 
     BHJM = triangle_Bfield(
-        observers=observers,
-        vertices=vertices,
-        polarizations=polarization,
+        observers=observers, vertices=vertices, polarizations=polarization
     )
 
     # new MU0 problem:

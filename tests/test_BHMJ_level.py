@@ -267,7 +267,7 @@ def test_field_cylinder_segment_BH():
 
 def test_BHJM_triangle_BH():
     """Test of triangle field core function"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -275,7 +275,7 @@ def test_BHJM_triangle_BH():
             (1, -1, 2),
         ]
     )
-    vert = np.array(
+    vert = xp.asarray(
         [
             [(0, 0, 0), (0, 1, 0), (1, 0, 0)],
             [(0, 0, 0), (0, 1, 0), (1, 0, 0)],
@@ -283,7 +283,7 @@ def test_BHJM_triangle_BH():
             [(1, 2, 2), (0, 1, -1), (3, -1, 1)],
         ]
     )
-    obs = np.array(
+    obs = xp.asarray(
         [
             (1, 1, 1),
             (1, 1, 1),
@@ -847,11 +847,11 @@ def test_triangle5():
     ]
 
     n = 10
-    ts = np.linspace(-1, 6, n)
-    obs1 = np.array([(t, 0, 0) for t in ts])
-    obs2 = np.array([(0, t, 0) for t in ts])
-    mag = np.array([(111, 222, 333)] * n)
-    ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]] * n)
+    ts = xp.linspace(-1, 6, n)
+    obs1 = xp.asarray([(t, 0, 0) for t in ts])
+    obs2 = xp.asarray([(0, t, 0) for t in ts])
+    mag = xp.asarray([(111, 222, 333)] * n)
+    ver = xp.asarray([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]] * n)
 
     b1 = (
         BHJM_triangle(
@@ -877,11 +877,11 @@ def test_triangle5():
 
 def test_triangle6():
     """special case tests on corners - result is nan"""
-    obs1 = np.array([(0, 0, 0)])
-    obs2 = np.array([(0, 5, 0)])
-    obs3 = np.array([(5, 0, 0)])
-    mag = np.array([(1, 2, 3)])
-    ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]])
+    obs1 = xp.asarray([(0, 0, 0)])
+    obs2 = xp.asarray([(0, 5, 0)])
+    obs3 = xp.asarray([(5, 0, 0)])
+    mag = xp.asarray([(1, 2, 3)])
+    ver = xp.asarray([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]])
     b1 = BHJM_triangle(
         field="B",
         observers=obs1,
