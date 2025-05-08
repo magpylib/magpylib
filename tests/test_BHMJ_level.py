@@ -489,18 +489,18 @@ def test_BHJM_circle():
 
 def test_BHJM_current_polyline():
     """Test of current polyline field core function"""
-    vert = np.array([(-1.5, 0, 0), (-0.5, 0, 0), (0.5, 0, 0), (1.5, 0, 0)])
+    vert = xp.asarray([(-1.5, 0, 0), (-0.5, 0, 0), (0.5, 0, 0), (1.5, 0, 0)])
 
     kw = {
-        "observers": np.array([(0, 0, 1)] * 3),
-        "current": np.array([1, 1, 1]),
-        "segment_start": vert[:-1],
-        "segment_end": vert[1:],
+        "observers": xp.asarray([(0, 0, 1)] * 3),
+        "current": xp.asarray([1, 1, 1]),
+        "segment_start": vert[:-1, ...],
+        "segment_end": vert[1:, ...],
     }
     H, B, M, _ = helper_check_HBMJ_consistency(BHJM_current_polyline, **kw)
 
     Btest = (
-        np.array(
+        xp.asarray(
             [
                 [0.0, -0.03848367, 0.0],
                 [0.0, -0.08944272, 0.0],
@@ -512,7 +512,7 @@ def test_BHJM_current_polyline():
     np.testing.assert_allclose(B, Btest, rtol=0, atol=1e-7)
 
     Htest = (
-        np.array(
+        xp.asarray(
             [
                 [0.0, -30624.33145161, 0.0],
                 [0.0, -71176.25434172, 0.0],
@@ -591,10 +591,10 @@ def test_field_loop_specials():
 def test_field_line_special_cases():
     """test line current for all cases"""
 
-    c1 = np.array([1])
-    po1 = np.array([(1, 2, 3)])
-    ps1 = np.array([(0, 0, 0)])
-    pe1 = np.array([(2, 2, 2)])
+    c1 = xp.asarray([1])
+    po1 = xp.asarray([(1, 2, 3)])
+    ps1 = xp.asarray([(0, 0, 0)])
+    pe1 = xp.asarray([(2, 2, 2)])
 
     # only normal
     B1 = (
@@ -607,11 +607,11 @@ def test_field_line_special_cases():
         )
         * 1e6
     )
-    x1 = np.array([[0.02672612, -0.05345225, 0.02672612]])
+    x1 = xp.asarray([[0.02672612, -0.05345225, 0.02672612]])
     assert_allclose(x1, B1, rtol=1e-6)
 
     # only on_line
-    po1b = np.array([(1, 1, 1)])
+    po1b = xp.asarray([(1, 1, 1)])
     B2 = (
         BHJM_current_polyline(
             field="B",
@@ -622,7 +622,7 @@ def test_field_line_special_cases():
         )
         * 1e6
     )
-    x2 = np.zeros((1, 3))
+    x2 = xp.zeros((1, 3))
     assert_allclose(x2, B2, rtol=1e-6)
 
     # only zero-segment
@@ -636,14 +636,14 @@ def test_field_line_special_cases():
         )
         * 1e6
     )
-    x3 = np.zeros((1, 3))
+    x3 = xp.zeros((1, 3))
     assert_allclose(x3, B3, rtol=1e-6)
 
     # only on_line and zero_segment
-    c2 = np.array([1] * 2)
-    ps2 = np.array([(0, 0, 0)] * 2)
-    pe2 = np.array([(0, 0, 0), (2, 2, 2)])
-    po2 = np.array([(1, 2, 3), (1, 1, 1)])
+    c2 = xp.asarray([1] * 2)
+    ps2 = xp.asarray([(0, 0, 0)] * 2)
+    pe2 = xp.asarray([(0, 0, 0), (2, 2, 2)])
+    po2 = xp.asarray([(1, 2, 3), (1, 1, 1)])
     B4 = (
         BHJM_current_polyline(
             field="B",
@@ -654,11 +654,11 @@ def test_field_line_special_cases():
         )
         * 1e6
     )
-    x4 = np.zeros((2, 3))
+    x4 = xp.zeros((2, 3))
     assert_allclose(x4, B4, rtol=1e-6)
 
     # normal + zero_segment
-    po2b = np.array([(1, 2, 3), (1, 2, 3)])
+    po2b = xp.asarray([(1, 2, 3), (1, 2, 3)])
     B5 = (
         BHJM_current_polyline(
             field="B",
@@ -669,11 +669,11 @@ def test_field_line_special_cases():
         )
         * 1e6
     )
-    x5 = np.array([[0, 0, 0], [0.02672612, -0.05345225, 0.02672612]])
+    x5 = xp.asarray([[0, 0, 0], [0.02672612, -0.05345225, 0.02672612]])
     assert_allclose(x5, B5, rtol=1e-6)
 
     # normal + on_line
-    pe2b = np.array([(2, 2, 2)] * 2)
+    pe2b = xp.asarray([(2, 2, 2)] * 2)
     B6 = (
         BHJM_current_polyline(
             field="B",
@@ -684,14 +684,14 @@ def test_field_line_special_cases():
         )
         * 1e6
     )
-    x6 = np.array([[0.02672612, -0.05345225, 0.02672612], [0, 0, 0]])
+    x6 = xp.asarray([[0.02672612, -0.05345225, 0.02672612], [0, 0, 0]])
     assert_allclose(x6, B6, rtol=1e-6)
 
     # normal + zero_segment + on_line
-    c4 = np.array([1] * 3)
-    ps4 = np.array([(0, 0, 0)] * 3)
-    pe4 = np.array([(0, 0, 0), (2, 2, 2), (2, 2, 2)])
-    po4 = np.array([(1, 2, 3), (1, 2, 3), (1, 1, 1)])
+    c4 = xp.asarray([1] * 3)
+    ps4 = xp.asarray([(0, 0, 0)] * 3)
+    pe4 = xp.asarray([(0, 0, 0), (2, 2, 2), (2, 2, 2)])
+    po4 = xp.asarray([(1, 2, 3), (1, 2, 3), (1, 1, 1)])
     B7 = (
         BHJM_current_polyline(
             field="B",
@@ -702,7 +702,7 @@ def test_field_line_special_cases():
         )
         * 1e6
     )
-    x7 = np.array([[0, 0, 0], [0.02672612, -0.05345225, 0.02672612], [0, 0, 0]])
+    x7 = xp.asarray([[0, 0, 0], [0.02672612, -0.05345225, 0.02672612], [0, 0, 0]])
     assert_allclose(x7, B7, rtol=1e-6)
 
 
@@ -734,19 +734,16 @@ def test_field_loop2():
 
 def test_field_line_from_vert():
     """test the Polyline field from vertex input"""
-    observers = np.array([(1, 2, 2), (1, 2, 3), (-1, 0, -3)])
-    current = np.array([1, 5, -3])
+    observers = xp.asarray([(1, 2, 2), (1, 2, 3), (-1, 0, -3)])
+    current = xp.asarray([1, 5, -3])
 
-    vertices = np.array(
-        [
-            np.array(
-                [(0, 0, 0), (1, 1, 1), (2, 2, 2), (3, 3, 3), (1, 2, 3), (-3, 4, -5)]
-            ),
-            np.array([(0, 0, 0), (3, 3, 3), (-3, 4, -5)]),
-            np.array([(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)]),
-        ],
-        dtype="object",
-    )
+    vertices = [
+        xp.asarray(
+            [(0, 0, 0), (1, 1, 1), (2, 2, 2), (3, 3, 3), (1, 2, 3), (-3, 4, -5)]
+        ),
+        xp.asarray([(0, 0, 0), (3, 3, 3), (-3, 4, -5)]),
+        xp.asarray([(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)]),
+    ]
 
     B_vert = current_vertices_field(
         field="B",
@@ -759,10 +756,10 @@ def test_field_line_from_vert():
     for obs, vert, curr in zip(observers, vertices, current, strict=False):
         p1 = vert[:-1]
         p2 = vert[1:]
-        po = np.array([obs] * (len(vert) - 1))
-        cu = np.array([curr] * (len(vert) - 1))
+        po = xp.asarray([obs] * (len(vert) - 1))
+        cu = xp.asarray([curr] * (len(vert) - 1))
         B += [
-            np.sum(
+            xp.sum(
                 BHJM_current_polyline(
                     field="B",
                     observers=po,
@@ -773,17 +770,17 @@ def test_field_line_from_vert():
                 axis=0,
             )
         ]
-    B = np.array(B)
+    B = xp.asarray(B)
 
     assert_allclose(B_vert, B)
 
 
 def test_field_line_v4():
     """test current_line_Bfield() for all cases"""
-    cur = np.array([1] * 7)
-    start = np.array([(-1, 0, 0)] * 7)
-    end = np.array([(1, 0, 0), (-1, 0, 0), (1, 0, 0), (-1, 0, 0)] + [(1, 0, 0)] * 3)
-    obs = np.array(
+    cur = xp.asarray([1] * 7)
+    start = xp.asarray([(-1, 0, 0)] * 7)
+    end = xp.asarray([(1, 0, 0), (-1, 0, 0), (1, 0, 0), (-1, 0, 0)] + [(1, 0, 0)] * 3)
+    obs = xp.asarray(
         [
             (0, 0, 1),
             (0, 0, 0),
@@ -804,7 +801,7 @@ def test_field_line_v4():
         )
         * 1e6
     )
-    Btest = np.array(
+    Btest = xp.asarray(
         [
             [0, -0.14142136, 0],
             [0, 0.0, 0],

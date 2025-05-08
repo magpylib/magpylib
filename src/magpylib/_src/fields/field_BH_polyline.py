@@ -20,7 +20,7 @@ def current_vertices_field(
     field: str,
     observers: np.ndarray,
     current: np.ndarray,
-    vertices: np.ndarray = None,
+    vertices: np.ndarray | list[np.ndarray] | None = None,
     segment_start=None,  # list of mix3 ndarrays
     segment_end=None,
 ) -> np.ndarray:
@@ -38,6 +38,13 @@ def current_vertices_field(
     ### Returns:
     - B-field (ndarray nx3): B-field vectors at pos_obs in units of T
     """
+    arrs = [observers, current, segment_start, segment_end]
+    if vertices is np.ndarray:
+        arrs = arrs + [vertices]
+    elif vertices is list:
+        arrs = arrs + vertices
+    xp = array_namespace(*arrs)
+
     if vertices is None:
         return BHJM_current_polyline(
             field=field,
@@ -47,29 +54,35 @@ def current_vertices_field(
             segment_end=segment_end,
         )
 
-    nvs = np.array([f.shape[0] for f in vertices])  # lengths of vertices sets
+    nvs = xp.asarray([f.shape[0] for f in vertices])  # lengths of vertices sets
     if all(v == nvs[0] for v in nvs):  # if all vertices sets have the same lengths
         n0, n1, *_ = vertices.shape
         BH = BHJM_current_polyline(
             field=field,
-            observers=np.repeat(observers, n1 - 1, axis=0),
-            current=np.repeat(current, n1 - 1, axis=0),
-            segment_start=vertices[:, :-1].reshape(-1, 3),
-            segment_end=vertices[:, 1:].reshape(-1, 3),
+            observers=xp.repeat(observers, n1 - 1, axis=0),
+            current=xp.repeat(current, n1 - 1, axis=0),
+            segment_start=xp.reshape(vertices[:, :-1], (-1, 3)),
+            segment_end=xp.reshape(vertices[:, 1:], (-1, 3)),
         )
-        BH = BH.reshape((n0, n1 - 1, 3))
-        BH = np.sum(BH, axis=1)
+        BH = xp.reshape(BH, (n0, n1 - 1, 3))
+        BH = xp.sum(BH, axis=1)
     else:
-        split_indices = np.cumsum(nvs - 1)[:-1]  # remove last to avoid empty split
+        split_indices = xp.roll(
+            xp.cumulative_sum(nvs - 1), shift=1
+        )  # remove last to avoid empty split
+        split_indices[0, ...] = 0
+        ind1 = (split_indices[i] for i in range(split_indices.shape[0]))
+        ind2 = (split_indices[1:][i] for i in range(split_indices.shape[0] - 1))
         BH = BHJM_current_polyline(
             field=field,
-            observers=np.repeat(observers, nvs - 1, axis=0),
-            current=np.repeat(current, nvs - 1, axis=0),
-            segment_start=np.concatenate([vert[:-1] for vert in vertices]),
-            segment_end=np.concatenate([vert[1:] for vert in vertices]),
+            observers=xp.repeat(observers, nvs - 1, axis=0),
+            current=xp.repeat(current, nvs - 1, axis=0),
+            segment_start=xp.concat([vert[:-1, ...] for vert in vertices]),
+            segment_end=xp.concat([vert[1:, ...] for vert in vertices]),
         )
-        bh_split = np.split(BH, split_indices)
-        BH = np.array([np.sum(bh, axis=0) for bh in bh_split])
+        bh_split = list(BH[slice(i, j), ...] for i, j in zip_longest(ind1, ind2))
+        print(len(bh_split))
+        BH = xp.asarray([xp.sum(bh, axis=0) for bh in bh_split])
     return BH
 
 
@@ -211,24 +224,37 @@ def BHJM_current_polyline(
     # pylint: disable=too-many-statements
 
     check_field_input(field)
+    xp = array_namespace(observers, segment_start, segment_end, current)
 
-    BHJM = np.zeros_like(observers, dtype=float)
+    if not xp.isdtype(observers.dtype, kind=("real floating", "complex floating")):
+        observers = xp.astype(observers, xp.float64)
+
+    if not xp.isdtype(segment_start.dtype, kind=("real floating", "complex floating")):
+        segment_start = xp.astype(segment_start, xp.float64)
+
+    if not xp.isdtype(segment_end.dtype, kind=("real floating", "complex floating")):
+        segment_end = xp.astype(segment_end, xp.float64)
+
+    if not xp.isdtype(current.dtype, kind=("real floating", "complex floating")):
+        current = xp.astype(current, xp.float64)
+
+    BHJM = xp.zeros_like(observers, dtype=xp.float64)
 
     if field in "MJ":
         return BHJM
 
     # Check for zero-length segments (or discontinuous)
-    mask_nan_start = np.isnan(segment_start).all(axis=1)
-    mask_nan_end = np.isnan(segment_end).all(axis=1)
-    mask_equal = np.all(segment_start == segment_end, axis=1)
+    mask_nan_start = xp.all(xp.isnan(segment_start), axis=1)
+    mask_nan_end = xp.all(xp.isnan(segment_end), axis=1)
+    mask_equal = xp.all(segment_start == segment_end, axis=1)
     mask0 = mask_equal | mask_nan_start | mask_nan_end
     not_mask0 = ~mask0  # avoid multiple computation of ~mask
 
-    if np.all(mask0):
+    if xp.all(mask0):
         return BHJM
 
     # continue only with non-zero segments
-    if np.any(mask0):
+    if xp.any(mask0):
         current = current[not_mask0]
         segment_start = segment_start[not_mask0]
         segment_end = segment_end[not_mask0]
