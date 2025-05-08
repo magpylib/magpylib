@@ -268,7 +268,7 @@ def test_field_cylinder_segment_BH():
 
 def test_BHJM_triangle_BH():
     """Test of triangle field core function"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -276,7 +276,7 @@ def test_BHJM_triangle_BH():
             (1, -1, 2),
         ]
     )
-    vert = np.array(
+    vert = xp.asarray(
         [
             [(0, 0, 0), (0, 1, 0), (1, 0, 0)],
             [(0, 0, 0), (0, 1, 0), (1, 0, 0)],
@@ -284,7 +284,7 @@ def test_BHJM_triangle_BH():
             [(1, 2, 2), (0, 1, -1), (3, -1, 1)],
         ]
     )
-    obs = np.array(
+    obs = xp.asarray(
         [
             (1, 1, 1),
             (1, 1, 1),
