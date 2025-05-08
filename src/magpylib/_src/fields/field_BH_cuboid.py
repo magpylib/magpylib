@@ -216,25 +216,33 @@ def BHJM_magnet_cuboid(
     - translate cuboid core field to BHJM
     - treat special cases
     """
+    xp = array_namespace(observers, dimension, polarization)
+
+    if not xp.isdtype(observers.dtype, kind=("real floating", "complex floating")):
+        observers = xp.astype(observers, xp.float64)
+
+    if not xp.isdtype(dimension.dtype, kind=("real floating", "complex floating")):
+        dimension = xp.astype(dimension, xp.float64)
+
+    if not xp.isdtype(polarization.dtype, kind=("real floating", "complex floating")):
+        polarization = xp.astype(polarization, xp.float64)
 
     RTOL_SURFACE = 1e-15  # relative distance tolerance to be considered on surface
 
     check_field_input(field)
 
-    pol_x, pol_y, pol_z = polarization.T
-    a, b, c = np.abs(dimension.T) / 2
-    x, y, z = observers.T
+    pol_x, pol_y, pol_z = (polarization[:, i] for i in range(3))
+    a, b, c = ((xp.abs(dimension) / 2)[:, i] for i in range(3))
+    x, y, z = (observers[:, i] for i in range(3))
 
     # allocate for output
-    BHJM = polarization.astype(float)
+    BHJM = xp.astype(polarization, xp.float64)
 
     # SPECIAL CASE 1: polarization = (0,0,0)
-    mask_pol_not_null = ~(
-        (pol_x == 0) * (pol_y == 0) * (pol_z == 0)
-    )  # 2x faster than np.all()
+    mask_pol_not_null = xp.any(polarization != 0, axis=1)
 
     # SPECIAL CASE 2: 0 in dimension
-    mask_dim_not_null = (a * b * c).astype(bool)
+    mask_dim_not_null = (a * b * c) != 0
 
     # SPECIAL CASE 3: observer lies on-edge/corner
     #   EPSILON to account for numerical imprecision when e.g. rotating
@@ -242,9 +250,9 @@ def BHJM_magnet_cuboid(
     #    a is e.g. EPSILON itself)
 
     # on-surface is not a special case
-    mask_surf_x = abs(x_dist := abs(x) - a) < RTOL_SURFACE * a  # on surface
-    mask_surf_y = abs(y_dist := abs(y) - b) < RTOL_SURFACE * b  # on surface
-    mask_surf_z = abs(z_dist := abs(z) - c) < RTOL_SURFACE * c  # on surface
+    mask_surf_x = xp.abs(x_dist := xp.abs(x) - a) < RTOL_SURFACE * a  # on surface
+    mask_surf_y = xp.abs(y_dist := xp.abs(y) - b) < RTOL_SURFACE * b  # on surface
+    mask_surf_z = xp.abs(z_dist := xp.abs(z) - c) < RTOL_SURFACE * c  # on surface
 
     # inside-outside
     mask_inside_x = x_dist < RTOL_SURFACE * a
