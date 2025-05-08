@@ -490,18 +490,18 @@ def test_BHJM_circle():
 
 def test_BHJM_current_polyline():
     """Test of current polyline field core function"""
-    vert = np.array([(-1.5, 0, 0), (-0.5, 0, 0), (0.5, 0, 0), (1.5, 0, 0)])
+    vert = xp.asarray([(-1.5, 0, 0), (-0.5, 0, 0), (0.5, 0, 0), (1.5, 0, 0)])
 
     kw = {
-        "observers": np.array([(0, 0, 1)] * 3),
-        "current": np.array([1, 1, 1]),
-        "segment_start": vert[:-1],
-        "segment_end": vert[1:],
+        "observers": xp.asarray([(0, 0, 1)] * 3),
+        "current": xp.asarray([1, 1, 1]),
+        "segment_start": vert[:-1, ...],
+        "segment_end": vert[1:, ...],
     }
     H, B, M, _ = helper_check_HBMJ_consistency(BHJM_current_polyline, **kw)
 
     Btest = (
-        np.array(
+        xp.asarray(
             [
                 [0.0, -0.03848367, 0.0],
                 [0.0, -0.08944272, 0.0],
@@ -513,7 +513,7 @@ def test_BHJM_current_polyline():
     np.testing.assert_allclose(B, Btest, rtol=0, atol=1e-7)
 
     Htest = (
-        np.array(
+        xp.asarray(
             [
                 [0.0, -30624.33145161, 0.0],
                 [0.0, -71176.25434172, 0.0],
