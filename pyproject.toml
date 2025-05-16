@@ -41,8 +41,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "pytest >=6",
+  "pytest>=7.4",
   "pytest-cov >=3",
+  "pytest-regressions",
 ]
 docs = [
     "pydata-sphinx-theme",
@@ -61,11 +62,9 @@ docs = [
     "kaleido",
 ]
 test = [
-    "tox>=4.11",
-    "pytest >=6",
-    "pytest-cov >=3",
     "pytest>=7.4",
-    "coverage",
+    "pytest-cov >=3",
+    "pytest-regressions",
     "pandas",
     "pyvista",
     "ipywidgets", # for plotly FigureWidget
