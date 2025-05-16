@@ -71,6 +71,7 @@ test = [
     "imageio[tifffile, ffmpeg]",
     "jupyterlab",
     "anywidget",
+    "kaleido",
 ]
 binder = [
     "jupytext",
