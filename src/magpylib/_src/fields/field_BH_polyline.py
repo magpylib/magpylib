@@ -5,8 +5,6 @@ Implementations of analytical expressions of line current segments
 # pylint: disable=too-many-positional-arguments
 from __future__ import annotations
 
-from functools import partial
-
 import array_api_extra as xpx
 import numpy as np
 from array_api_compat import array_namespace
