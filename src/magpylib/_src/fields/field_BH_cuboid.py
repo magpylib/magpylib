@@ -6,6 +6,7 @@ magnetized Cuboids. Computation details in function docstrings.
 from __future__ import annotations
 
 import numpy as np
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
@@ -79,9 +80,11 @@ def magnet_cuboid_Bfield(
 
     Cichon: IEEE Sensors Journal, vol. 19, no. 7, April 1, 2019, p.2509
     """
-    pol_x, pol_y, pol_z = polarizations.T
-    a, b, c = dimensions.T / 2
-    x, y, z = np.copy(observers).T
+    xp = array_namespace(observers, dimensions, polarizations)
+
+    pol_x, pol_y, pol_z = (polarizations[:, i] for i in range(3))
+    a, b, c = ((dimensions / 2)[:, i] for i in range(3))
+    x, y, z = (observers[:, i] for i in range(3))
 
     # avoid indeterminate forms by evaluating in bottQ4 only --------
     # basic masks
@@ -95,10 +98,10 @@ def magnet_cuboid_Bfield(
     z[maskz] = z[maskz] * -1
 
     # create sign flips for position changes
-    qsigns = np.ones((len(pol_x), 3, 3))
-    qs_flipx = np.array([[1, -1, -1], [-1, 1, 1], [-1, 1, 1]])
-    qs_flipy = np.array([[1, -1, 1], [-1, 1, -1], [1, -1, 1]])
-    qs_flipz = np.array([[1, 1, -1], [1, 1, -1], [-1, -1, 1]])
+    qsigns = xp.ones((pol_x.shape[0], 3, 3), dtype=xp.float32)
+    qs_flipx = xp.asarray([[1, -1, -1], [-1, 1, 1], [-1, 1, 1]], dtype=xp.float32)
+    qs_flipy = xp.asarray([[1, -1, 1], [-1, 1, -1], [1, -1, 1]], dtype=xp.float32)
+    qs_flipz = xp.asarray([[1, 1, -1], [1, 1, -1], [-1, -1, 1]], dtype=xp.float32)
     # signs flips can be applied subsequently
     qsigns[maskx] = qsigns[maskx] * qs_flipx
     qsigns[masky] = qsigns[masky] * qs_flipy
@@ -119,59 +122,58 @@ def magnet_cuboid_Bfield(
     ymb2, ypb2 = ymb**2, ypb**2
     zmc2, zpc2 = zmc**2, zpc**2
 
-    mmm = np.sqrt(xma2 + ymb2 + zmc2)
-    pmp = np.sqrt(xpa2 + ymb2 + zpc2)
-    pmm = np.sqrt(xpa2 + ymb2 + zmc2)
-    mmp = np.sqrt(xma2 + ymb2 + zpc2)
-    mpm = np.sqrt(xma2 + ypb2 + zmc2)
-    ppp = np.sqrt(xpa2 + ypb2 + zpc2)
-    ppm = np.sqrt(xpa2 + ypb2 + zmc2)
-    mpp = np.sqrt(xma2 + ypb2 + zpc2)
+    mmm = xp.sqrt(xma2 + ymb2 + zmc2)
+    pmp = xp.sqrt(xpa2 + ymb2 + zpc2)
+    pmm = xp.sqrt(xpa2 + ymb2 + zmc2)
+    mmp = xp.sqrt(xma2 + ymb2 + zpc2)
+    mpm = xp.sqrt(xma2 + ypb2 + zmc2)
+    ppp = xp.sqrt(xpa2 + ypb2 + zpc2)
+    ppm = xp.sqrt(xpa2 + ypb2 + zmc2)
+    mpp = xp.sqrt(xma2 + ypb2 + zpc2)
 
-    with np.errstate(divide="ignore", invalid="ignore"):
-        ff2x = np.log((xma + mmm) * (xpa + ppm) * (xpa + pmp) * (xma + mpp)) - np.log(
-            (xpa + pmm) * (xma + mpm) * (xma + mmp) * (xpa + ppp)
-        )
+    ff2x = xp.log((xma + mmm) * (xpa + ppm) * (xpa + pmp) * (xma + mpp)) - xp.log(
+        (xpa + pmm) * (xma + mpm) * (xma + mmp) * (xpa + ppp)
+    )
 
-        ff2y = np.log(
-            (-ymb + mmm) * (-ypb + ppm) * (-ymb + pmp) * (-ypb + mpp)
-        ) - np.log((-ymb + pmm) * (-ypb + mpm) * (ymb - mmp) * (ypb - ppp))
+    ff2y = xp.log((-ymb + mmm) * (-ypb + ppm) * (-ymb + pmp) * (-ypb + mpp)) - xp.log(
+        (-ymb + pmm) * (-ypb + mpm) * (ymb - mmp) * (ypb - ppp)
+    )
 
-        ff2z = np.log(
-            (-zmc + mmm) * (-zmc + ppm) * (-zpc + pmp) * (-zpc + mpp)
-        ) - np.log((-zmc + pmm) * (zmc - mpm) * (-zpc + mmp) * (zpc - ppp))
+    ff2z = xp.log((-zmc + mmm) * (-zmc + ppm) * (-zpc + pmp) * (-zpc + mpp)) - xp.log(
+        (-zmc + pmm) * (zmc - mpm) * (-zpc + mmp) * (zpc - ppp)
+    )
 
     ff1x = (
-        np.arctan2((ymb * zmc), (xma * mmm))
-        - np.arctan2((ymb * zmc), (xpa * pmm))
-        - np.arctan2((ypb * zmc), (xma * mpm))
-        + np.arctan2((ypb * zmc), (xpa * ppm))
-        - np.arctan2((ymb * zpc), (xma * mmp))
-        + np.arctan2((ymb * zpc), (xpa * pmp))
-        + np.arctan2((ypb * zpc), (xma * mpp))
-        - np.arctan2((ypb * zpc), (xpa * ppp))
+        xp.atan2((ymb * zmc), (xma * mmm))
+        - xp.atan2((ymb * zmc), (xpa * pmm))
+        - xp.atan2((ypb * zmc), (xma * mpm))
+        + xp.atan2((ypb * zmc), (xpa * ppm))
+        - xp.atan2((ymb * zpc), (xma * mmp))
+        + xp.atan2((ymb * zpc), (xpa * pmp))
+        + xp.atan2((ypb * zpc), (xma * mpp))
+        - xp.atan2((ypb * zpc), (xpa * ppp))
     )
 
     ff1y = (
-        np.arctan2((xma * zmc), (ymb * mmm))
-        - np.arctan2((xpa * zmc), (ymb * pmm))
-        - np.arctan2((xma * zmc), (ypb * mpm))
-        + np.arctan2((xpa * zmc), (ypb * ppm))
-        - np.arctan2((xma * zpc), (ymb * mmp))
-        + np.arctan2((xpa * zpc), (ymb * pmp))
-        + np.arctan2((xma * zpc), (ypb * mpp))
-        - np.arctan2((xpa * zpc), (ypb * ppp))
+        xp.atan2((xma * zmc), (ymb * mmm))
+        - xp.atan2((xpa * zmc), (ymb * pmm))
+        - xp.atan2((xma * zmc), (ypb * mpm))
+        + xp.atan2((xpa * zmc), (ypb * ppm))
+        - xp.atan2((xma * zpc), (ymb * mmp))
+        + xp.atan2((xpa * zpc), (ymb * pmp))
+        + xp.atan2((xma * zpc), (ypb * mpp))
+        - xp.atan2((xpa * zpc), (ypb * ppp))
     )
 
     ff1z = (
-        np.arctan2((xma * ymb), (zmc * mmm))
-        - np.arctan2((xpa * ymb), (zmc * pmm))
-        - np.arctan2((xma * ypb), (zmc * mpm))
-        + np.arctan2((xpa * ypb), (zmc * ppm))
-        - np.arctan2((xma * ymb), (zpc * mmp))
-        + np.arctan2((xpa * ymb), (zpc * pmp))
-        + np.arctan2((xma * ypb), (zpc * mpp))
-        - np.arctan2((xpa * ypb), (zpc * ppp))
+        xp.atan2((xma * ymb), (zmc * mmm))
+        - xp.atan2((xpa * ymb), (zmc * pmm))
+        - xp.atan2((xma * ypb), (zmc * mpm))
+        + xp.atan2((xpa * ypb), (zmc * ppm))
+        - xp.atan2((xma * ymb), (zpc * mmp))
+        + xp.atan2((xpa * ymb), (zpc * pmp))
+        + xp.atan2((xma * ypb), (zpc * mpp))
+        - xp.atan2((xpa * ypb), (zpc * ppp))
     )
 
     # contributions from x-polarization
@@ -193,10 +195,10 @@ def magnet_cuboid_Bfield(
     by_tot = by_pol_x + by_pol_y + by_pol_z
     bz_tot = bz_pol_x + bz_pol_y + bz_pol_z
 
-    # B = np.c_[bx_tot, by_tot, bz_tot]      # faster for 10^5 and more evaluations
-    B = np.concatenate(((bx_tot,), (by_tot,), (bz_tot,)), axis=0).T
+    # B = xp.c_[bx_tot, by_tot, bz_tot]      # faster for 10^5 and more evaluations
+    B = xp.stack((bx_tot, by_tot, bz_tot), axis=-1)
 
-    B /= 4 * np.pi
+    B /= 4 * xp.pi
     return B
 
 
@@ -210,25 +212,33 @@ def BHJM_magnet_cuboid(
     - translate cuboid core field to BHJM
     - treat special cases
     """
+    xp = array_namespace(observers, dimension, polarization)
+
+    if not xp.isdtype(observers.dtype, kind=("real floating", "complex floating")):
+        observers = xp.astype(observers, xp.float64)
+
+    if not xp.isdtype(dimension.dtype, kind=("real floating", "complex floating")):
+        dimension = xp.astype(dimension, xp.float64)
+
+    if not xp.isdtype(polarization.dtype, kind=("real floating", "complex floating")):
+        polarization = xp.astype(polarization, xp.float64)
 
     RTOL_SURFACE = 1e-15  # relative distance tolerance to be considered on surface
 
     check_field_input(field)
 
-    pol_x, pol_y, pol_z = polarization.T
-    a, b, c = np.abs(dimension.T) / 2
-    x, y, z = observers.T
+    pol_x, pol_y, pol_z = (polarization[:, i] for i in range(3))
+    a, b, c = ((xp.abs(dimension) / 2)[:, i] for i in range(3))
+    x, y, z = (observers[:, i] for i in range(3))
 
     # allocate for output
-    BHJM = polarization.astype(float)
+    BHJM = xp.astype(polarization, xp.float64)
 
     # SPECIAL CASE 1: polarization = (0,0,0)
-    mask_pol_not_null = ~(
-        (pol_x == 0) * (pol_y == 0) * (pol_z == 0)
-    )  # 2x faster than np.all()
+    mask_pol_not_null = xp.any(polarization != 0, axis=1)
 
     # SPECIAL CASE 2: 0 in dimension
-    mask_dim_not_null = (a * b * c).astype(bool)
+    mask_dim_not_null = (a * b * c) != 0
 
     # SPECIAL CASE 3: observer lies on-edge/corner
     #   EPSILON to account for numerical imprecision when e.g. rotating
@@ -236,9 +246,9 @@ def BHJM_magnet_cuboid(
     #    a is e.g. EPSILON itself)
 
     # on-surface is not a special case
-    mask_surf_x = abs(x_dist := abs(x) - a) < RTOL_SURFACE * a  # on surface
-    mask_surf_y = abs(y_dist := abs(y) - b) < RTOL_SURFACE * b  # on surface
-    mask_surf_z = abs(z_dist := abs(z) - c) < RTOL_SURFACE * c  # on surface
+    mask_surf_x = xp.abs(x_dist := xp.abs(x) - a) < RTOL_SURFACE * a  # on surface
+    mask_surf_y = xp.abs(y_dist := xp.abs(y) - b) < RTOL_SURFACE * b  # on surface
+    mask_surf_z = xp.abs(z_dist := xp.abs(z) - c) < RTOL_SURFACE * c  # on surface
 
     # inside-outside
     mask_inside_x = x_dist < RTOL_SURFACE * a

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import array_api_strict as xp
 import numpy as np
 from numpy.testing import assert_allclose
 from scipy.constants import mu_0 as MU0
@@ -41,7 +42,7 @@ def helper_check_HBMJ_consistency(func, **kw):
 
 def test_BHJM_magnet_cuboid():
     """test cuboid field"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -51,7 +52,7 @@ def test_BHJM_magnet_cuboid():
             (1, 2, 3),
         ]
     )
-    dim = np.array(
+    dim = xp.asarray(
         [
             (1, 2, 3),
             (-1, -2, 2),
@@ -61,7 +62,7 @@ def test_BHJM_magnet_cuboid():
             (3, 3, 3),
         ]
     )
-    obs = np.array(
+    obs = xp.asarray(
         [
             (1, 2, 3),
             (1, -1, 0),
@@ -98,7 +99,7 @@ def test_BHJM_magnet_cuboid():
     ]
     np.testing.assert_allclose(H, Htest, rtol=1e-5)
 
-    Jtest = np.array([(0, 0, 0)] * 5 + [(1, 2, 3)])
+    Jtest = xp.asarray([(0, 0, 0)] * 5 + [(1, 2, 3)])
     np.testing.assert_allclose(J, Jtest, rtol=1e-5)
 
     # H_inout = BHJM_magnet_cuboid(field="H", in_out="outside", **kw)
@@ -166,7 +167,7 @@ def test_BHJM_magnet_cylinder():
 
 def test_BHJM_magnet_sphere():
     """test BHJM_magnet_sphere"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -174,8 +175,8 @@ def test_BHJM_magnet_sphere():
             (2, 3, -1),
         ]
     )
-    dia = np.array([1, 2, 3, 4])
-    obs = np.array(
+    dia = xp.asarray([1, 2, 3, 4])
+    obs = xp.asarray(
         [
             (1, 2, 3),
             (1, -1, 0),
@@ -267,7 +268,7 @@ def test_field_cylinder_segment_BH():
 
 def test_BHJM_triangle_BH():
     """Test of triangle field core function"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -275,7 +276,7 @@ def test_BHJM_triangle_BH():
             (1, -1, 2),
         ]
     )
-    vert = np.array(
+    vert = xp.asarray(
         [
             [(0, 0, 0), (0, 1, 0), (1, 0, 0)],
             [(0, 0, 0), (0, 1, 0), (1, 0, 0)],
@@ -283,7 +284,7 @@ def test_BHJM_triangle_BH():
             [(1, 2, 2), (0, 1, -1), (3, -1, 1)],
         ]
     )
-    obs = np.array(
+    obs = xp.asarray(
         [
             (1, 1, 1),
             (1, 1, 1),
@@ -489,18 +490,18 @@ def test_BHJM_circle():
 
 def test_BHJM_current_polyline():
     """Test of current polyline field core function"""
-    vert = np.array([(-1.5, 0, 0), (-0.5, 0, 0), (0.5, 0, 0), (1.5, 0, 0)])
+    vert = xp.asarray([(-1.5, 0, 0), (-0.5, 0, 0), (0.5, 0, 0), (1.5, 0, 0)])
 
     kw = {
-        "observers": np.array([(0, 0, 1)] * 3),
-        "current": np.array([1, 1, 1]),
-        "segment_start": vert[:-1],
-        "segment_end": vert[1:],
+        "observers": xp.asarray([(0, 0, 1)] * 3),
+        "current": xp.asarray([1, 1, 1]),
+        "segment_start": vert[:-1, ...],
+        "segment_end": vert[1:, ...],
     }
     H, B, M, _ = helper_check_HBMJ_consistency(BHJM_current_polyline, **kw)
 
     Btest = (
-        np.array(
+        xp.asarray(
             [
                 [0.0, -0.03848367, 0.0],
                 [0.0, -0.08944272, 0.0],
@@ -512,7 +513,7 @@ def test_BHJM_current_polyline():
     np.testing.assert_allclose(B, Btest, rtol=0, atol=1e-7)
 
     Htest = (
-        np.array(
+        xp.asarray(
             [
                 [0.0, -30624.33145161, 0.0],
                 [0.0, -71176.25434172, 0.0],
@@ -529,11 +530,11 @@ def test_BHJM_current_polyline():
 
 def test_BHJM_dipole():
     """Test of dipole field core function"""
-    pol = np.array([(0, 0, 1), (1, 0, 1), (-1, 0.321, 0.123)])
+    pol = xp.asarray([(0, 0, 1), (1, 0, 1), (-1, 0.321, 0.123)])
 
     kw = {
-        "observers": np.array([(1, 2, 3), (-1, -2, -3), (3, 3, -1)]),
-        "moment": pol * 4 * np.pi / 3 / MU0,
+        "observers": xp.asarray([(1, 2, 3), (-1, -2, -3), (3, 3, -1)]),
+        "moment": pol * 4 * xp.pi / 3 / MU0,
     }
     H, B, M, _ = helper_check_HBMJ_consistency(BHJM_dipole, **kw)
 
