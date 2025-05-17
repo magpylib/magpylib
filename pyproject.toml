@@ -41,8 +41,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "pytest >=6",
+  "pytest>=7.4",
   "pytest-cov >=3",
+  "pytest-regressions",
 ]
 docs = [
     "pydata-sphinx-theme",
@@ -58,19 +59,19 @@ docs = [
     "pyvista",
     "magpylib-material-response",
     "magpylib-force",
+    "kaleido==1.0.0rc13",
 ]
 test = [
-    "tox>=4.11",
-    "pytest >=6",
-    "pytest-cov >=3",
     "pytest>=7.4",
-    "coverage",
+    "pytest-cov >=3",
+    "pytest-regressions",
     "pandas",
     "pyvista",
     "ipywidgets", # for plotly FigureWidget
     "imageio[tifffile, ffmpeg]",
     "jupyterlab",
     "anywidget",
+    "kaleido==1.0.0rc13",
 ]
 binder = [
     "jupytext",
@@ -139,6 +140,7 @@ disallow_incomplete_defs = true
 
 
 [tool.ruff]
+target-version = "py311"
 
 [tool.ruff.lint]
 extend-select = [

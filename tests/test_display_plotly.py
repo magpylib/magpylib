@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+# pylint: disable=assignment-from-no-return
+# pylint: disable=no-member
 import numpy as np
 import plotly.graph_objects as go
 import pytest
@@ -7,9 +9,6 @@ import pytest
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.utility import get_unit_factor
-
-# pylint: disable=assignment-from-no-return
-# pylint: disable=no-member
 
 
 def test_Cylinder_display():
@@ -486,3 +485,103 @@ def test_units_length():
             factor = get_unit_factor(inp["units_length"], target_unit="m")
             r = (inp["zoom"] + 1) / 2 * factor * max(dims)
             assert ax.range == (-r, r)
+
+
+def test_field_coloring_subplot(image_regression_helper):
+    """Test field coloring in subplots for all colorsource options."""
+    c1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), style_opacity=0.2
+    )
+    ls = np.linspace(-1, 1, 10)
+    s0 = magpy.Sensor(pixel=[[x, y, 0] for x in ls for y in ls], position=(0, 0, 0))
+    colorsources = ["H", "Jxy", "Bz", False]
+    subplots = []
+    for i, cs in enumerate(colorsources, 1):
+        s = s0.copy(
+            style_pixel_field_vectorsource="B",
+            style_pixel_field_colorsource=cs,
+            style_description=str(cs),
+        )
+        subplots.append({"objects": [c1, s], "col": i})
+    fig = magpy.show(*subplots, backend="plotly", return_fig=True)
+    image_regression_helper(fig, "field_coloring_subplot")
+
+
+def test_pixel_field_directional_symbols(image_regression_helper):
+    """Test different directional symbols in subplots for all symbol options."""
+    c1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), style_opacity=0.2
+    )
+    ls = np.linspace(-1, 1, 10)
+    s0 = magpy.Sensor(pixel=[[x, y, 0] for x in ls for y in ls], position=(0, 0, 0))
+    symbols = ["cone", "arrow3d", "arrow"]
+    subplots = []
+    for i, sym in enumerate(symbols, 1):
+        s = s0.copy(
+            style_pixel_field_vectorsource="B",
+            style_pixel_field_symbol=sym,
+            style_description=str(sym),
+        )
+        subplots.append({"objects": [c1, s], "col": i})
+    fig = magpy.show(*subplots, backend="plotly", return_fig=True)
+    image_regression_helper(fig, "directional_symbols_subplot")
+
+
+def test_pixel_field_sizing_modes(image_regression_helper):
+    """Test sizing modes of directional symbols in subplots for all sizemode options."""
+    c1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), style_opacity=0.2
+    )
+    ls = np.linspace(-1, 1, 10)
+    s0 = magpy.Sensor(pixel=[[x, y, 0] for x in ls for y in ls], position=(0, 0, 0))
+    sizemodes = ["constant", "log", "linear"]
+    subplots = []
+    for i, sm in enumerate(sizemodes, 1):
+        s = s0.copy(
+            style_pixel_field_vectorsource="B",
+            style_pixel_field_sizemode=sm,
+            style_description=str(sm),
+        )
+        subplots.append({"objects": [c1, s], "col": i})
+    fig = magpy.show(*subplots, backend="plotly", return_fig=True)
+    image_regression_helper(fig, "sizing_modes_subplot")
+
+
+def test_pixel_field_null_values(image_regression_helper):
+    """Test handling of null or NaN values in subplots for both shownull options."""
+    c1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), style_opacity=0.2
+    )
+    ls = np.linspace(-1, 1, 5)
+    s0 = magpy.Sensor(pixel=[[x, y, 0] for x in ls for y in ls], position=(0, 0, 0))
+    shownulls = [True, False]
+    subplots = []
+    for i, sn in enumerate(shownulls, 1):
+        s = s0.copy(
+            style_pixel_field_vectorsource="B",
+            style_pixel_field_shownull=sn,
+            style_description=str(sn),
+        )
+        subplots.append({"objects": [c1, s], "col": i})
+    fig = magpy.show(*subplots, backend="plotly", return_fig=True)
+    image_regression_helper(fig, "null_values_subplot")
+
+
+def test_pixel_field_color_scales(image_regression_helper):
+    """Test different color scales in subplots for all colorscale options."""
+    c1 = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), style_opacity=0.2
+    )
+    ls = np.linspace(-1, 1, 10)
+    s0 = magpy.Sensor(pixel=[[x, y, 1] for x in ls for y in ls], position=(0, 0, 0))
+    colorscales = ["Viridis", "Inferno", "Oranges", "RdPu"]
+    subplots = []
+    for i, cs in enumerate(colorscales, 1):
+        s = s0.copy(
+            style_pixel_field_vectorsource="B",
+            style_pixel_field_colorscale=cs,
+            style_description=str(cs),
+        )
+        subplots.append({"objects": [c1, s], "col": i})
+    fig = magpy.show(*subplots, backend="plotly", return_fig=True)
+    image_regression_helper(fig, "color_scales_subplot")
