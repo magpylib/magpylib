@@ -41,7 +41,9 @@ def _normalize_bdata(obj):
             # Always use little-endian for comparison
             dtype_le = dtype.newbyteorder("<")
             arr = np.frombuffer(b, dtype=dtype_le)
-            return arr.tolist()
+            # Re-encode to bdata for platform-independent storage
+            bdata_str = base64.b64encode(arr.astype(dtype_le).tobytes()).decode("ascii")
+            return {"bdata": bdata_str, "dtype": obj["dtype"]}
         return {k: _normalize_bdata(v) for k, v in obj.items()}
     if isinstance(obj, list):
         return [_normalize_bdata(i) for i in obj]
