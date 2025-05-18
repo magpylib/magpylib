@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import warnings
+import base64
 
 import numpy as np
 import pytest
@@ -30,6 +31,23 @@ def _sanitize_ids(obj):
     return obj
 
 
+def _normalize_bdata(obj):
+    """Recursively decode bdata fields and convert to lists with canonical endianness."""
+    if isinstance(obj, dict):
+        # If both bdata and dtype are present, decode and replace with list
+        if "bdata" in obj and "dtype" in obj:
+            b = base64.b64decode(obj["bdata"])
+            dtype = np.dtype(obj["dtype"])
+            # Always use little-endian for comparison
+            dtype_le = dtype.newbyteorder("<")
+            arr = np.frombuffer(b, dtype=dtype_le)
+            return arr.tolist()
+        return {k: _normalize_bdata(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_normalize_bdata(i) for i in obj]
+    return obj
+
+
 @pytest.fixture
 def fig_regression_helper(data_regression, image_regression):
     """Regression helper for Plotly figures using to_plotly_json()."""
@@ -41,16 +59,10 @@ def fig_regression_helper(data_regression, image_regression):
                 fig_data = fig.to_plotly_json()
                 fig_data = _convert_ndarray_to_list(fig_data)
                 fig_data = _sanitize_ids(fig_data)
-                data_regression.check(
-                    fig_data,
-                    # basename=basename,
-                )
+                fig_data = _normalize_bdata(fig_data)
+                data_regression.check(fig_data)
             elif mode == "image":
                 image_bytes = fig.to_image(format="png", scale=1)
-                image_regression.check(
-                    image_data=image_bytes,
-                    diff_threshold=0.1,
-                    # basename=basename,
-                )
+                image_regression.check(image_data=image_bytes, diff_threshold=0.1)
 
     return check_fig
