@@ -40,7 +40,9 @@ repos:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
         args: [--prose-wrap=always]
-        exclude: ^docs/ # messes up colon fences for grids in docs
+        # Exclude docs (messes up colon fences for grids)
+        # Excclude test YAML files from formatting (messes up fig data diffs)
+        exclude: ^docs/|^tests/.*\.ya?ml$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.11.5"
