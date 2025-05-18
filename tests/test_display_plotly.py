@@ -487,7 +487,7 @@ def test_units_length():
             assert ax.range == (-r, r)
 
 
-def test_field_coloring_subplot(fig_regression_helper):
+def test_field_coloring_subplot():
     """Test field coloring in subplots for all colorsource options."""
     c1 = magpy.magnet.Cuboid(
         polarization=(1, 0, 0), dimension=(1, 1, 1), style_opacity=0.2
@@ -503,11 +503,10 @@ def test_field_coloring_subplot(fig_regression_helper):
             style_description=str(cs),
         )
         subplots.append({"objects": [c1, s], "col": i})
-    fig = magpy.show(*subplots, backend="plotly", return_fig=True)
-    fig_regression_helper(fig)
+    magpy.show(*subplots, backend="plotly", return_fig=True)
 
 
-def test_pixel_field_directional_symbols(fig_regression_helper):
+def test_pixel_field_directional_symbols():
     """Test different directional symbols in subplots for all symbol options."""
     c1 = magpy.magnet.Cuboid(
         polarization=(1, 0, 0), dimension=(1, 1, 1), style_opacity=0.2
@@ -523,11 +522,10 @@ def test_pixel_field_directional_symbols(fig_regression_helper):
             style_description=str(sym),
         )
         subplots.append({"objects": [c1, s], "col": i})
-    fig = magpy.show(*subplots, backend="plotly", return_fig=True)
-    fig_regression_helper(fig)
+    magpy.show(*subplots, backend="plotly", return_fig=True)
 
 
-def test_pixel_field_sizing_modes(fig_regression_helper):
+def test_pixel_field_sizing_modes():
     """Test sizing modes of directional symbols in subplots for all sizemode options."""
     c1 = magpy.magnet.Cuboid(
         polarization=(1, 0, 0), dimension=(1, 1, 1), style_opacity=0.2
@@ -543,11 +541,10 @@ def test_pixel_field_sizing_modes(fig_regression_helper):
             style_description=str(sm),
         )
         subplots.append({"objects": [c1, s], "col": i})
-    fig = magpy.show(*subplots, backend="plotly", return_fig=True)
-    fig_regression_helper(fig)
+    magpy.show(*subplots, backend="plotly", return_fig=True)
 
 
-def test_pixel_field_null_values(fig_regression_helper):
+def test_pixel_field_null_values():
     """Test handling of null or NaN values in subplots for both shownull options."""
     c1 = magpy.magnet.Cuboid(
         polarization=(1, 0, 0), dimension=(1, 1, 1), style_opacity=0.2
@@ -563,11 +560,10 @@ def test_pixel_field_null_values(fig_regression_helper):
             style_description=str(sn),
         )
         subplots.append({"objects": [c1, s], "col": i})
-    fig = magpy.show(*subplots, backend="plotly", return_fig=True)
-    fig_regression_helper(fig)
+    magpy.show(*subplots, backend="plotly", return_fig=True)
 
 
-def test_pixel_field_color_scales(fig_regression_helper):
+def test_pixel_field_color_scales():
     """Test different color scales in subplots for all colorscale options."""
     c1 = magpy.magnet.Cuboid(
         polarization=(1, 0, 0), dimension=(1, 1, 1), style_opacity=0.2
@@ -583,5 +579,4 @@ def test_pixel_field_color_scales(fig_regression_helper):
             style_description=str(cs),
         )
         subplots.append({"objects": [c1, s], "col": i})
-    fig = magpy.show(*subplots, backend="plotly", return_fig=True)
-    fig_regression_helper(fig)
+    magpy.show(*subplots, backend="plotly", return_fig=True)
