@@ -317,10 +317,15 @@ def BHJM_magnet_cylinder(
     """
 
     check_field_input(field)
+    xp = array_namespace(observers, dimension, polarization)
+    observers = xp.astype(observers, xp.float64)
+    dimension = xp.astype(dimension, xp.float64)
+    polarization = xp.astype(polarization, xp.float64)
 
     # transform to Cy CS --------------------------------------------
     r, phi, z = cart_to_cyl_coordinates(observers)
-    r0, z0 = dimension.T / 2
+    dims = dimension.T / 2
+    r0, z0 = dims[0, ...], dims[1, ...]
 
     # scale invariance (make dimensionless)
     r = r / r0
@@ -328,10 +333,10 @@ def BHJM_magnet_cylinder(
     z0 = z0 / r0
 
     # allocate for output
-    BHJM = polarization.astype(float)
+    BHJM = xp.astype(polarization, (xp.float64))
 
     # inside/outside
-    mask_between_bases = np.abs(z) <= z0  # in-between top and bottom plane
+    mask_between_bases = xp.abs(z) <= z0  # in-between top and bottom plane
     mask_inside_hull = r <= 1  # inside Cylinder hull plane
     mask_inside = mask_between_bases & mask_inside_hull
 
@@ -344,17 +349,23 @@ def BHJM_magnet_cylinder(
         return BHJM / MU0
 
     # SPECIAL CASE 1: on Cylinder edge
-    mask_on_hull = np.isclose(r, 1, rtol=1e-15, atol=0)  # on Cylinder hull plane
-    mask_on_bases = np.isclose(abs(z), z0, rtol=1e-15, atol=0)  # on top or bottom plane
+    mask_on_hull = xpx.isclose(r, 1, rtol=1e-15, atol=0)  # on Cylinder hull plane
+    mask_on_bases = xpx.isclose(
+        abs(z), z0, rtol=1e-15, atol=0
+    )  # on top or bottom plane
     mask_not_on_edge = ~(mask_on_hull & mask_on_bases)
 
     # axial/transv polarization cases
-    pol_x, pol_y, pol_z = polarization.T
+    pol_x, pol_y, pol_z = (
+        polarization[..., 0],
+        polarization[..., 1],
+        polarization[..., 2],
+    )
     mask_pol_tv = (pol_x != 0) | (pol_y != 0)
     mask_pol_ax = pol_z != 0
 
     # SPECIAL CASE 2: pol = 0
-    mask_pol_not_null = ~((pol_x == 0) * (pol_y == 0) * (pol_z == 0))
+    mask_pol_not_null = (pol_x != 0) | (pol_y != 0) | (pol_z != 0)
 
     # general case
     mask_gen = mask_pol_not_null & mask_not_on_edge
@@ -367,9 +378,9 @@ def BHJM_magnet_cylinder(
     BHJM *= 0
 
     # transversal polarization contributions -----------------------
-    if any(mask_pol_tv):
-        pol_xy = np.sqrt(pol_x**2 + pol_y**2)[mask_pol_tv]
-        tetta = np.arctan2(pol_y[mask_pol_tv], pol_x[mask_pol_tv])
+    if xp.any(mask_pol_tv):
+        pol_xy = xp.sqrt(pol_x**2 + pol_y**2)[mask_pol_tv]
+        tetta = xp.atan2(pol_y[mask_pol_tv], pol_x[mask_pol_tv])
 
         BHJM[mask_pol_tv] = (
             magnet_cylinder_diametral_Hfield(
@@ -382,30 +393,42 @@ def BHJM_magnet_cylinder(
         ).T
 
     # axial polarization contributions ----------------------------
-    if any(mask_pol_ax):
-        BHJM[mask_pol_ax] += (
-            magnet_cylinder_axial_Bfield(
-                z0=z0[mask_pol_ax],
-                r=r[mask_pol_ax],
-                z=z[mask_pol_ax],
-            )
-            * pol_z[mask_pol_ax]
-        ).T
+    if xp.any(mask_pol_ax):
+        BHJM[mask_pol_ax] = (
+            BHJM[mask_pol_ax]
+            + (
+                magnet_cylinder_axial_Bfield(
+                    z0=z0[mask_pol_ax],
+                    r=r[mask_pol_ax],
+                    z=z[mask_pol_ax],
+                )
+                * pol_z[mask_pol_ax]
+            ).T
+        )
 
     BHJM[:, 0], BHJM[:, 1] = cyl_field_to_cart(phi, BHJM[:, 0], BHJM[:, 1])
 
     # add/subtract Mag when inside for B/H
     if field == "B":
-        mask_tv_inside = mask_pol_tv * mask_inside
-        if any(mask_tv_inside):  # tv computes H-field
-            BHJM[mask_tv_inside, 0] += pol_x[mask_tv_inside]
-            BHJM[mask_tv_inside, 1] += pol_y[mask_tv_inside]
+        mask_tv_inside = mask_pol_tv & mask_inside
+        mask_tv_inside = xp.broadcast_to(mask_tv_inside[:, xp.newaxis], BHJM.shape)
+        mask_tv_inside = xpx.at(mask_tv_inside)[:, 2].set(False, copy=True)
+
+        if xp.any(mask_tv_inside):  # tv computes H-field
+            BHJM = xpx.at(BHJM)[mask_tv_inside].set(
+                BHJM[mask_tv_inside] + polarization[mask_tv_inside]
+            )
+            # BHJM[:, 1] += pol_y * mask_tv_inside
         return BHJM
 
     if field == "H":
-        mask_ax_inside = mask_pol_ax * mask_inside
-        if any(mask_ax_inside):  # ax computes B-field
-            BHJM[mask_ax_inside, 2] -= pol_z[mask_ax_inside]
+        mask_ax_inside = mask_pol_ax & mask_inside
+        mask_ax_inside = xp.broadcast_to(mask_ax_inside[:, xp.newaxis], BHJM.shape)
+        mask_ax_inside = xpx.at(mask_ax_inside)[:, :2].set(False, copy=True)
+        if xp.any(mask_ax_inside):  # ax computes B-field
+            BHJM = xpx.at(BHJM)[mask_ax_inside].set(
+                BHJM[mask_ax_inside] - polarization[mask_ax_inside]
+            )
         return BHJM / MU0
 
     msg = f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
