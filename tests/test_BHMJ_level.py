@@ -453,14 +453,14 @@ def test_BHJM_magnet_trimesh_BH():
 def test_BHJM_circle():
     """Test of current circle field core function"""
     kw = {
-        "observers": np.array([(1, 1, 1), (2, 2, 2), (3, 3, 3)]),
-        "current": np.array([1, 1, 2]) * 1e3,
-        "diameter": np.array([2, 4, 6]),
+        "observers": xp.asarray([(1, 1, 1), (2, 2, 2), (3, 3, 3)]),
+        "current": xp.asarray([1.0, 1.0, 2.0]) * 1e3,
+        "diameter": xp.asarray([2, 4, 6]),
     }
     H, B, M, _ = helper_check_HBMJ_consistency(BHJM_circle, **kw)
 
     Btest = (
-        np.array(
+        xp.asarray(
             [
                 [0.06235974, 0.06235974, 0.02669778],
                 [0.03117987, 0.03117987, 0.01334889],
@@ -472,7 +472,7 @@ def test_BHJM_circle():
     np.testing.assert_allclose(B, Btest)
 
     Htest = (
-        np.array(
+        xp.asarray(
             [
                 [49624.3033947, 49624.3033947, 21245.41908818],
                 [24812.15169735, 24812.15169735, 10622.70954409],
@@ -564,9 +564,9 @@ def test_BHJM_dipole():
 
 def test_field_loop_specials():
     """test loop special cases"""
-    cur = np.array([1, 1, 1, 1, 0, 2])
-    dia = np.array([2, 2, 0, 0, 2, 2])
-    obs = np.array([(0, 0, 0), (1, 0, 0), (0, 0, 0), (1, 0, 0), (1, 0, 0), (0, 0, 0)])
+    cur = xp.asarray([1, 1, 1, 1, 0, 2])
+    dia = xp.asarray([2, 2, 0, 0, 2, 2])
+    obs = xp.asarray([(0, 0, 0), (1, 0, 0), (0, 0, 0), (1, 0, 0), (1, 0, 0), (0, 0, 0)])
 
     B = (
         BHJM_circle(
@@ -708,9 +708,9 @@ def test_field_line_special_cases():
 
 def test_field_loop2():
     """test if field function accepts correct inputs"""
-    curr = np.array([1])
-    dia = np.array([2])
-    obs = np.array([[0, 0, 0]])
+    curr = xp.asarray([1])
+    dia = xp.asarray([2])
+    obs = xp.asarray([[0, 0, 0]])
     B = BHJM_circle(
         field="B",
         observers=obs,
@@ -718,9 +718,9 @@ def test_field_loop2():
         diameter=dia,
     )
 
-    curr = np.array([1] * 2)
-    dia = np.array([2] * 2)
-    obs = np.array([[0, 0, 0]] * 2)
+    curr = xp.asarray([1] * 2)
+    dia = xp.asarray([2] * 2)
+    obs = xp.asarray([[0, 0, 0]] * 2)
     B2 = BHJM_circle(
         field="B",
         observers=obs,
@@ -728,8 +728,8 @@ def test_field_loop2():
         diameter=dia,
     )
 
-    assert_allclose(B, (B2[0],))
-    assert_allclose(B, (B2[1],))
+    assert_allclose(B, (B2[0, ...],))
+    assert_allclose(B, (B2[1, ...],))
 
 
 def test_field_line_from_vert():
