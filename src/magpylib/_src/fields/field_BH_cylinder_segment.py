@@ -2379,25 +2379,30 @@ def BHJM_cylinder_segment(
     - translate cylinder segment field to BHJM
     - special cases catching
     """
+    xp = array_namespace(observers, dimension, polarization)
     check_field_input(field)
 
-    BHJM = polarization.astype(float)
+    observers = xp.astype(observers, xp.float64)
+    dimension = xp.astype(dimension, xp.float64)
+    polarization = xp.astype(polarization, xp.float64)
 
-    r1, r2, h, phi1, phi2 = dimension.T
-    r1 = abs(r1)
-    r2 = abs(r2)
-    h = abs(h)
+    BHJM = xp.astype(polarization, xp.float64)
+
+    # r1, r2, h, phi1, phi2 = dimension.T
+    r1 = xp.abs(dimension[:, 0])
+    r2 = xp.abs(dimension[:, 1])
+    h = xp.abs(dimension[:, 2])
     z1, z2 = -h / 2, h / 2
 
     # transform dim deg->rad
-    phi1 = phi1 / 180 * np.pi
-    phi2 = phi2 / 180 * np.pi
-    dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
+    phi1 = dimension[:, 3] / 180 * xp.pi
+    phi2 = dimension[:, 4] / 180 * xp.pi
+    dim = xp.asarray([r1, r2, phi1, phi2, z1, z2]).T
 
     # transform obs_pos to Cy CS --------------------------------------------
-    x, y, z = observers.T
-    r, phi = np.sqrt(x**2 + y**2), np.arctan2(y, x)
-    pos_obs_cy = np.concatenate(((r,), (phi,), (z,)), axis=0).T
+    x, y, z = (observers[:, i] for i in range(3))
+    r, phi = xp.sqrt(x**2 + y**2), xp.atan2(y, x)
+    pos_obs_cy = xp.concat((r[None, ...], phi[None, ...], z[None, ...]), axis=0).T
 
     # determine when points lie inside and on surface of magnet -------------
 
@@ -2405,7 +2410,7 @@ def BHJM_cylinder_segment(
     # if in_out == "auto":
     # phip1 in [-2pi,0], phio2 in [0,2pi]
     phio1 = phi
-    phio2 = phi - np.sign(phi) * 2 * np.pi
+    phio2 = phi - xp.sign(phi) * 2 * xp.pi
 
     # phi=phi1, phi=phi2
     mask_phi1 = close(phio1, phi1) | close(phio2, phi1)
@@ -2413,8 +2418,8 @@ def BHJM_cylinder_segment(
 
     # r, phi ,z lies in-between, avoid numerical fluctuations (e.g. due to rotations) by including 1e-14
     mask_r_in = (r1 - 1e-14 < r) & (r < r2 + 1e-14)
-    mask_phi_in = (np.sign(phio1 - phi1) != np.sign(phio1 - phi2)) | (
-        np.sign(phio2 - phi1) != np.sign(phio2 - phi2)
+    mask_phi_in = (xp.sign(phio1 - phi1) != xp.sign(phio1 - phi2)) | (
+        xp.sign(phio2 - phi1) != xp.sign(phio2 - phi2)
     )
     mask_z_in = (z1 - 1e-14 < z) & (z < z2 + 1e-14)
 
@@ -2429,13 +2434,13 @@ def BHJM_cylinder_segment(
     # inside
     mask_inside = mask_r_in & mask_phi_in & mask_z_in
     # else:
-    #     mask_inside = np.full(len(observers), in_out == "inside")
-    #     mask_not_on_surf = np.full(len(observers), True)
+    #     mask_inside = xp.full((observers.shape[0]), in_out == "inside")
+    #     mask_not_on_surf = xp.full((observers.shape[0]), True)
     # WARNING @alex
     #   1. inside and not_on_surface are not the same! Can't just put to true.
 
     # return 0 when all points are on surface
-    if not np.any(mask_not_on_surf):
+    if not xp.any(mask_not_on_surf):
         return BHJM * 0
 
     if field == "J":
@@ -2455,19 +2460,21 @@ def BHJM_cylinder_segment(
     phi = phi[mask_not_on_surf]
 
     # transform mag to spherical CS -----------------------------------------
-    m = np.sqrt(pol[:, 0] ** 2 + pol[:, 1] ** 2 + pol[:, 2] ** 2) / MU0  # J -> M
-    phi_m = np.arctan2(pol[:, 1], pol[:, 0])
-    th_m = np.arctan2(np.sqrt(pol[:, 0] ** 2 + pol[:, 1] ** 2), pol[:, 2])
-    mag_sph = np.concatenate(((m,), (phi_m,), (th_m,)), axis=0).T
+    m = xp.sqrt(pol[:, 0] ** 2 + pol[:, 1] ** 2 + pol[:, 2] ** 2) / MU0  # J -> M
+    phi_m = xp.atan2(pol[:, 1], pol[:, 0])
+    th_m = xp.atan2(xp.sqrt(pol[:, 0] ** 2 + pol[:, 1] ** 2), pol[:, 2])
+    mag_sph = xp.concat((m[None, ...], phi_m[None, ...], th_m[None, ...]), axis=0).T
 
     # compute H and transform to cart CS -------------------------------------
     H_cy = magnet_cylinder_segment_Hfield(
         magnetizations=mag_sph, dimensions=dim, observers=pos_obs_cy
     )
-    Hr, Hphi, Hz = H_cy.T
-    Hx = Hr * np.cos(phi) - Hphi * np.sin(phi)
-    Hy = Hr * np.sin(phi) + Hphi * np.cos(phi)
-    BHJM[mask_not_on_surf] = np.concatenate(((Hx,), (Hy,), (Hz,)), axis=0).T
+    Hr, Hphi, Hz = H_cy[:, 0], H_cy[:, 1], H_cy[:, 2]
+    Hx = Hr * xp.cos(phi) - Hphi * xp.sin(phi)
+    Hy = Hr * xp.sin(phi) + Hphi * xp.cos(phi)
+    BHJM[mask_not_on_surf] = xp.concat(
+        (Hx[None, ...], Hy[None, ...], Hz[None, ...]), axis=0
+    ).T
 
     if field == "H":
         return BHJM
@@ -2482,6 +2489,28 @@ def BHJM_cylinder_segment(
     raise ValueError(msg)  # pragma: no cover
 
     # return convert_HBMJ(
+    #     output_field_type=field,
+    #     polarization=polarization,
+    #     input_field_type="H",
+    #     field_values=H_all,
+    #     mask_inside=mask_inside & mask_not_on_surf,
+    # )
+
+    # return convert_HBMJ(
+    #     output_field_type=field,
+    #     polarization=polarization,
+    #     input_field_type="H",
+    #     field_values=H_all,
+    #     mask_inside=mask_inside & mask_not_on_surf,
+    # )
+
+    # return convert_HBMJ(
+    #     output_field_type=field,
+    #     polarization=polarization,
+    #     input_field_type="H",
+    #     field_values=H_all,
+    #     mask_inside=mask_inside & mask_not_on_surf,
+    # )
     #     output_field_type=field,
     #     polarization=polarization,
     #     input_field_type="H",
