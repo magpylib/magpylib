@@ -8,9 +8,12 @@ from __future__ import annotations
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
+from array_api_compat import array_namespace
+
 from magpylib._src.fields.special_cel import cel_iter
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
+from magpylib._src.array_api_utils import xp_promote
 
 
 # CORE
@@ -67,7 +70,9 @@ def current_circle_Hfield(
     efficient expression for the magnetic field of a current loop.", M.Ortner et al,
     Magnetism 2023, 3(1), 11-31.
     """
-    n5 = len(r)
+    xp = array_namespace(r0, r, z, i0)
+    r0, r, z, i0 = xp_promote(r0, r, z, i0, force_floating=True, xp=xp)
+    n5 = r.shape[0]
 
     # express through ratios (make dimensionless, avoid large/small input values, stupid)
     r = r / r0
@@ -79,23 +84,23 @@ def current_circle_Hfield(
     k2 = 4 * r / x0
     q2 = (z2 + (r - 1) ** 2) / x0
 
-    k = np.sqrt(k2)
-    q = np.sqrt(q2)
+    k = xp.sqrt(k2)
+    q = xp.sqrt(q2)
     p = 1 + q
-    pf = k / np.sqrt(r) / q2 / 20 / r0 * 1e-6 * i0
+    pf = k / xp.sqrt(r) / q2 / 20 / r0 * 1e-6 * i0
 
     # cel* part
     cc = k2 * k2
     ss = 2 * cc * q / p
-    Hr = pf * z / r * cel_iter(q, p, np.ones(n5), cc, ss, p, q)
+    Hr = pf * z / r * cel_iter(q, p, xp.ones(n5), cc, ss, p, q)
 
     # cel** part
     cc = k2 * (k2 - (q2 + 1) / r)
     ss = 2 * k2 * q * (k2 / p - p / r)
-    Hz = -pf * cel_iter(q, p, np.ones(n5), cc, ss, p, q)
+    Hz = -pf * cel_iter(q, p, xp.ones(n5), cc, ss, p, q)
 
     # input is I -> output must be H-field
-    return np.vstack((Hr, np.zeros(n5), Hz)) * 795774.7154594767  # *1e7/4/np.pi
+    return xp.stack((Hr, xp.zeros(n5), Hz), axis=0) * 795774.7154594767  # *1e7/4/np.pi
 
 
 def BHJM_circle(
