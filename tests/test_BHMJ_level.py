@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import array_api_strict as xp
 import numpy as np
 from numpy.testing import assert_allclose
 from scipy.constants import mu_0 as MU0
@@ -108,7 +109,7 @@ def test_BHJM_magnet_cuboid():
 
 def test_BHJM_magnet_cylinder():
     """test cylinder field computation"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -116,7 +117,7 @@ def test_BHJM_magnet_cylinder():
             (1, 1, 1),
         ]
     )
-    dim = np.array(
+    dim = xp.asarray(
         [
             (1, 2),
             (2, 2),
@@ -124,7 +125,7 @@ def test_BHJM_magnet_cylinder():
             (3, 3),
         ]
     )
-    obs = np.array(
+    obs = xp.asarray(
         [
             (1, 2, 3),
             (1, -1, 0),
@@ -156,7 +157,7 @@ def test_BHJM_magnet_cylinder():
     ]
     np.testing.assert_allclose(H, Htest)
 
-    Jtest = np.array([(0, 0, 0), (0, 0, 0), (0, 0, 0), (1, 1, 1)])
+    Jtest = xp.asarray([(0, 0, 0), (0, 0, 0), (0, 0, 0), (1, 1, 1)])
     np.testing.assert_allclose(J, Jtest)
 
     # H_inout = BHJM_magnet_cylinder(field="H", in_out="outside", **kw)
