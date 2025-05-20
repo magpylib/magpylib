@@ -11,6 +11,10 @@ build:
     # for pyvista
     - libgl1-mesa-dev
   commands:
+    - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-linux-signing-keyring.gpg
+    - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-signing-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+    - apt-get update
+    - apt-get install -y google-chrome-stable
     - asdf plugin add uv
     - asdf install uv latest
     - asdf global uv latest
