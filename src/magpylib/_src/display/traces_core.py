@@ -617,7 +617,11 @@ def make_Pixels(
                     pix["facecolor"] = np.repeat(color, len(pix["i"]))
             pixels.append(pix)
     pixels = group_traces(*pixels)
-    assert len(pixels) == 1
+    if len(pixels) != 1:
+        raise ValueError(
+            f"Expected exactly one pixel trace after grouping, but got {len(pixels)}. "
+            "This may indicate an issue with the input data or the grouping logic."
+        )
     return pixels[0]
 
 
