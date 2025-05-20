@@ -7,6 +7,8 @@ import array_api_extra as xpx
 import numpy as np
 from array_api_compat import array_namespace
 
+from magpylib._src.array_api_utils import lazy_while, xp_promote
+
 
 def cel0(kc, p, c, s):
     """
@@ -59,6 +61,8 @@ def celv(kc, p, c, s):
     vectorized version of the cel integral above
     """
     xp = array_namespace(kc, p, c, s)
+    kc, p, c, s = xp_promote(kc, p, c, s, force_floating=True, xp=xp)
+    dtype = kc.dtype
 
     # if kc == 0:
     #    return NaN
@@ -67,7 +71,7 @@ def celv(kc, p, c, s):
     n = kc.shape[0]
 
     k = xp.abs(kc)
-    em = xp.ones(n, dtype=xp.float64)
+    em = xp.ones(n, dtype=dtype)
 
     # cc = xp.asarray(c, copy=True)
     # pp = xp.asarray(p, copy=True)
@@ -106,10 +110,8 @@ def celv(kc, p, c, s):
     em = k + em
     kk = xp.asarray(k, copy=True)
 
-    # define a mask that adjusts with every evaluation step so that only
-    # non-converged entries are further iterated.
-    mask = xp.ones(n, dtype=xp.bool)
-    while xp.any(mask):
+    def iter_step(val):
+        f, cc, g, ss, pp, em, kk, k = val
         k = 2 * xp.sqrt(kk)
         kk = k * em
         f = cc
@@ -119,11 +121,22 @@ def celv(kc, p, c, s):
         pp = g + pp
         g = em
         em = k + em
+        return f, cc, g, ss, pp, em, kk, k
 
-        # redefine mask
+    def cond(val):
+        f, cc, g, ss, pp, em, kk, k = val
         err = g - k
         tol = g * errtol
         mask = xp.abs(err) > tol
+        return xp.any(mask)
+
+    # define a mask that adjusts with every evaluation step so that only
+    # non-converged entries are further iterated.
+    mask = xp.ones(n, dtype=xp.bool)
+    val = f, cc, g, ss, pp, em, kk, k
+    val = lazy_while(iter_step, cond, val)
+
+    f, cc, g, ss, pp, em, kk, k = val
 
     return (xp.pi / 2) * (ss + cc * em) / (em * (em + pp))
 
@@ -191,7 +204,9 @@ def cel_iterv(qc, p, g, cc, ss, em, kk):
     Iterative part of Bulirsch cel algorithm
     """
     xp = array_namespace(qc, p, g, cc, ss, em, kk)
-    while xp.any(xp.abs(g - qc) >= qc * 1e-8):
+
+    def iter_step(val):
+        qc, p, g, cc, ss, em, kk = val
         qc = 2 * xp.sqrt(kk)
         kk = qc * em
         f = cc
@@ -201,4 +216,13 @@ def cel_iterv(qc, p, g, cc, ss, em, kk):
         p = p + g
         g = em
         em = em + qc
+        return qc, p, g, cc, ss, em, kk
+
+    def cond(val):
+        qc, p, g, cc, ss, em, kk = val
+        return xp.any(xp.abs(g - qc) >= qc * 1e-8)
+
+    val = qc, p, g, cc, ss, em, kk
+    val = lazy_while(iter_step, cond, val)
+    qc, p, g, cc, ss, em, kk = val
     return 1.5707963267948966 * (ss + cc * em) / (em * (em + p))

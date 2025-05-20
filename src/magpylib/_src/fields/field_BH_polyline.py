@@ -5,15 +5,13 @@ Implementations of analytical expressions of line current segments
 # pylint: disable=too-many-positional-arguments
 from __future__ import annotations
 
-from itertools import zip_longest
-
 import array_api_extra as xpx
 import numpy as np
 from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.input_checks import check_field_input
 from magpylib._src.array_api_utils import xp_promote
+from magpylib._src.input_checks import check_field_input
 
 
 def current_vertices_field(
@@ -129,7 +127,10 @@ def current_polyline_Hfield(
     unphysical and can lead to unphysical effects.
     """
     xp = array_namespace(observers, segments_start, segments_end, currents)
-    observers, segments_start, segments_end, currents = xp_promote(observers, segments_start, segments_end, currents, force_floating=True, xp=xp)
+    observers, segments_start, segments_end, currents = xp_promote(
+        observers, segments_start, segments_end, currents, force_floating=True, xp=xp
+    )
+    dtype = observers.dtype
     # rename
     p1, p2, po = segments_start, segments_end, observers
     # make dimensionless (avoid all large/small input problems) by introducing
@@ -150,49 +151,72 @@ def current_polyline_Hfield(
     mask1 = norm_o4 < 1e-15  # account for numerical issues
 
     # continue only with general off-line cases
-    not_mask1 = ~mask1
-    po = po[not_mask1]
-    p1 = p1[not_mask1]
-    p2 = p2[not_mask1]
-    p4 = p4[not_mask1]
-    norm_12 = norm_12[not_mask1]
-    norm_o4 = norm_o4[not_mask1]
-    currents = currents[not_mask1]
+    def H_calc(po, p1, p2, p4, norm_12, norm_o4, currents):
+        cros_ = xp.linalg.cross(p2 - p1, po - p4)
 
-    # determine field direction
-    cros_ = xp.linalg.cross(p2 - p1, po - p4)
+        norm_cros = xp.linalg.vector_norm(cros_, axis=-1)
+        eB = (cros_.T / norm_cros).T
 
-    norm_cros = xp.linalg.vector_norm(cros_, axis=-1)
-    eB = (cros_.T / norm_cros).T
+        # compute angles
+        norm_o1 = xp.linalg.vector_norm(
+            po - p1, axis=-1
+        )  # improve performance by computing all norms at once
+        norm_o2 = xp.linalg.vector_norm(po - p2, axis=-1)
+        norm_41 = xp.linalg.vector_norm(p4 - p1, axis=-1)
+        norm_42 = xp.linalg.vector_norm(p4 - p2, axis=-1)
+        sinTh1 = norm_41 / norm_o1
+        sinTh2 = norm_42 / norm_o2
 
-    # compute angles
-    norm_o1 = xp.linalg.vector_norm(
-        po - p1, axis=-1
-    )  # improve performance by computing all norms at once
-    norm_o2 = xp.linalg.vector_norm(po - p2, axis=-1)
-    norm_41 = xp.linalg.vector_norm(p4 - p1, axis=-1)
-    norm_42 = xp.linalg.vector_norm(p4 - p2, axis=-1)
-    sinTh1 = norm_41 / norm_o1
-    sinTh2 = norm_42 / norm_o2
-    deltaSin = xp.empty((po.shape[0],))
+        mask2 = (norm_41 > 1) & (norm_41 > norm_42)
+        mask3 = (norm_42 > 1) & (norm_42 > norm_41)
+        mask4 = ~mask2 & ~mask3
 
-    # determine how p1,p2,p4 are sorted on the line (to get sinTH signs)
-    # both points below
-    mask2 = (norm_41 > 1) & (norm_41 > norm_42)
-    deltaSin = xpx.at(deltaSin)[mask2].set(xp.abs(sinTh1[mask2] - sinTh2[mask2]))
-    # both points above
-    mask3 = (norm_42 > 1) & (norm_42 > norm_41)
-    deltaSin = xpx.at(deltaSin)[mask3].set(xp.abs(sinTh2[mask3] - sinTh1[mask3]))
-    # one above one below or one equals p4
-    mask4 = ~mask2 & ~mask3
-    deltaSin = xpx.at(deltaSin)[mask4].set(xp.abs(sinTh1[mask4] + sinTh2[mask4]))
+        deltaSin = xpx.apply_where(
+            mask2,
+            (sinTh1, sinTh2),
+            lambda sinTh1, sinTh2: sinTh1 - sinTh2,
+            fill_value=0.0,
+        )
+        deltaSin = xpx.apply_where(
+            mask3,
+            (sinTh1, sinTh2, deltaSin),
+            lambda sinTh1, sinTh2, deltaSin: sinTh2 - sinTh1,
+            lambda sinTh1, sinTh2, deltaSin: deltaSin,
+        )
+        deltaSin = xpx.apply_where(
+            mask4,
+            (sinTh1, sinTh2, deltaSin),
+            lambda sinTh1, sinTh2, deltaSin: sinTh1 + sinTh2,
+            lambda sinTh1, sinTh2, deltaSin: deltaSin,
+        )
 
-    # B = (deltaSin / norm_o4 * eB.T / norm_12 * current * 1e-7).T
+        # deltaSin = xp.empty((po.shape[0],))
 
-    # avoid array creation if possible
-    H = xp.zeros_like(observers, dtype=xp.float64)
-    H = xpx.at(H)[~mask1].set(
-        (deltaSin / norm_o4 * eB.T / norm_12 * currents / (4 * np.pi)).T
+        # determine how p1,p2,p4 are sorted on the line (to get sinTH signs)
+        # both points below
+        # mask2 = (norm_41 > 1) & (norm_41 > norm_42)
+        # deltaSin = xpx.at(deltaSin)[mask2].set(xp.abs(sinTh1[mask2] - sinTh2[mask2]))
+        # both points above
+        # mask3 = (norm_42 > 1) & (norm_42 > norm_41)
+        # deltaSin = xpx.at(deltaSin)[mask3].set(xp.abs(sinTh2[mask3] - sinTh1[mask3]))
+        # one above one below or one equals p4
+        # mask4 = ~mask2 & ~mask3
+        # deltaSin = xpx.at(deltaSin)[mask4].set(xp.abs(sinTh1[mask4] + sinTh2[mask4]))
+
+        # B = (deltaSin / norm_o4 * eB.T / norm_12 * current * 1e-7).T
+
+        return (deltaSin / norm_o4 * eB.T / norm_12 * currents / (4 * np.pi)).T
+
+    # H = xpx.apply_where(
+    # ~mask1[:, None],
+    # (po, p1, p2, p4, norm_12[:, None], norm_o4[:, None], currents[:, None]),
+    # H_calc,
+    # fill_value=0.0,
+    # )
+    H = xp.where(
+        ~mask1[:, None],
+        H_calc(po, p1, p2, p4, norm_12, norm_o4, currents),
+        0.0,
     )
     return H
 

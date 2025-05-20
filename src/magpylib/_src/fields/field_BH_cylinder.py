@@ -13,11 +13,11 @@ import numpy as np
 from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
+from magpylib._src.array_api_utils import xp_promote
 from magpylib._src.fields.special_cel import cel
 from magpylib._src.fields.special_elliptic import ellipe, ellipk
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
-from magpylib._src.array_api_utils import xp_promote
 
 
 # CORE
@@ -65,10 +65,8 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
     """
     xp = array_namespace(z0, r, z)
     z0, r, z = xp_promote(z0, r, z, force_floating=True, xp=xp)
+    dtype = z0.dtype
     n = z0.shape[0]
-    z0 = xp.astype(z0, xp.float64)
-    r = xp.astype(r, xp.float64)
-    z = xp.astype(z, xp.float64)
 
     # some important quantities
     zph, zmh = z + z0, z - z0
@@ -80,7 +78,7 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
     k1 = xp.sqrt((zph**2 + dmr**2) / (zph**2 + dpr**2))
     k0 = xp.sqrt((zmh**2 + dmr**2) / (zmh**2 + dpr**2))
     gamma = dmr / dpr
-    one = xp.ones(n, dtype=xp.float64)
+    one = xp.ones(n, dtype=dtype)
 
     # radial field (unit polarization)
     Br = (cel(k1, one, one, -one) / sq1 - cel(k0, one, one, -one) / sq0) / xp.pi
@@ -202,11 +200,15 @@ def magnet_cylinder_diametral_Hfield(
             * r4X
         )
 
-        Hr[mask_small_r] = -xp.cos(phiX) / 4 * (term1 + 9 * term2 + 25 * term3)
+        Hr = xpx.at(Hr)[mask_small_r].set(
+            -xp.cos(phiX) / 4 * (term1 + 9 * term2 + 25 * term3)
+        )
 
-        Hphi[mask_small_r] = xp.sin(phiX) / 4 * (term1 + 3 * term2 + 5 * term3)
+        Hphi = xpx.at(Hphi)[mask_small_r](
+            xp.sin(phiX) / 4 * (term1 + 3 * term2 + 5 * term3)
+        )
 
-        Hz[mask_small_r] = (
+        Hz = xpx.at(Hz)[mask_small_r].set(
             -xp.cos(phiX)
             / 4
             * (
@@ -252,10 +254,16 @@ def magnet_cylinder_diametral_Hfield(
         #   so only the special case must be caught (not the surroundings)
         mask_special = rm == 0
         argc = xp.ones(n) * 1e16  # should be np.Inf but leads to 1/0 problems in cel
-        argc[~mask_special] = -4 * r[~mask_special] / rm2[~mask_special]
+        argc = xpx.apply_where(
+            ~mask_special,
+            (r, rm2, argc),
+            lambda r, rm2, argc: -4 * r / rm2,
+            lambda r, rm2, argc: argc,
+        )
         # special case 1/rm
-        one_over_rm = xp.zeros(n)
-        one_over_rm[~mask_special] = 1 / rm[~mask_special]
+        one_over_rm = xpx.apply_where(
+            ~mask_special, (rm,), lambda rm: 1 / rm, fill_value=0.0
+        )
 
         elle_p = ellipe(argp)
         elle_m = ellipe(argm)
@@ -266,7 +274,7 @@ def magnet_cylinder_diametral_Hfield(
         ellpi_m = cel(xp.sqrt(1 - argm), 1 - argc, onez, onez)  # elliptic_Pi
 
         # compute fields
-        Hr[mask_general] = (
+        Hr = xpx.at(Hr)[mask_general].set(
             -xp.cos(phi)
             / (4 * xp.pi * r2)
             * (
@@ -278,7 +286,7 @@ def magnet_cylinder_diametral_Hfield(
             )
         )
 
-        Hphi[mask_general] = (
+        Hphi = xpx.at(Hphi)[mask_general].set(
             xp.sin(phi)
             / (4 * xp.pi * r2)
             * (
@@ -291,7 +299,7 @@ def magnet_cylinder_diametral_Hfield(
             )
         )
 
-        Hz[mask_general] = (
+        Hz = xpx.at(Hz)[mask_general].set(
             -xp.cos(phi)
             / (2 * xp.pi * r)
             * (

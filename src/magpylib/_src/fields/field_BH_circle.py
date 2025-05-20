@@ -6,14 +6,13 @@ a circular current loop. Computation details in function docstrings.
 from __future__ import annotations
 
 import numpy as np
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from array_api_compat import array_namespace
-
+from magpylib._src.array_api_utils import xp_promote
 from magpylib._src.fields.special_cel import cel_iter
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
-from magpylib._src.array_api_utils import xp_promote
 
 
 # CORE

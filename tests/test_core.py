@@ -1,8 +1,11 @@
 # here all core functions should be tested properly - ideally against FEM
 from __future__ import annotations
 
-import array_api_strict as xp
+import array_api_strict
+import jax
 import numpy as np
+import pytest
+from array_api_extra.testing import lazy_xp_function, patch_lazy_xp_functions
 
 from magpylib.core import (
     current_circle_Hfield,
@@ -16,8 +19,24 @@ from magpylib.core import (
     triangle_Bfield,
 )
 
+lazy_xp_function(current_circle_Hfield)
+lazy_xp_function(current_polyline_Hfield)
+lazy_xp_function(dipole_Hfield)
+lazy_xp_function(magnet_cuboid_Bfield)
+lazy_xp_function(magnet_cylinder_axial_Bfield)
+lazy_xp_function(magnet_cylinder_diametral_Hfield)
+lazy_xp_function(magnet_cylinder_segment_Hfield)
+lazy_xp_function(magnet_sphere_Bfield)
+lazy_xp_function(triangle_Bfield)
 
-def test_magnet_sphere_Bfield():
+
+@pytest.fixture(params=[np, array_api_strict, jax.numpy])
+def xp(request, monkeypatch):
+    patch_lazy_xp_functions(request, monkeypatch, xp=request.param)
+    return request.param
+
+
+def test_magnet_sphere_Bfield(xp):
     "magnet_sphere_Bfield test"
     B = magnet_sphere_Bfield(
         observers=xp.asarray([(0, 0, 0)]),
@@ -25,10 +44,10 @@ def test_magnet_sphere_Bfield():
         polarizations=xp.asarray([(0, 0, 1)]),
     )
     Btest = xp.asarray([(0, 0, 2 / 3)])
-    np.testing.assert_allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest, rtol=1e-4)
 
 
-def test_current_circle_Hfield():
+def test_current_circle_Hfield(xp):
     Htest = xp.asarray([[0.09098208, 0.09415448], [0.0, 0.0], [0.07677892, 0.22625335]])
     H = current_circle_Hfield(
         r0=xp.asarray([1, 2]),
@@ -36,10 +55,10 @@ def test_current_circle_Hfield():
         z=xp.asarray([1, 2]),
         i0=xp.asarray([1, 3]),
     )
-    np.testing.assert_allclose(H, Htest)
+    np.testing.assert_allclose(H, Htest, rtol=1e-4)
 
 
-def test_current_polyline_Hfield():
+def test_current_polyline_Hfield(xp):
     Htest = xp.asarray([[0.0, -2.29720373, 2.29720373], [0.0, 0.59785204, -0.59785204]])
 
     H = current_polyline_Hfield(
@@ -48,10 +67,10 @@ def test_current_polyline_Hfield():
         segments_end=xp.asarray([(1, 0, 0), (-1, 0, 0)]),
         currents=xp.asarray([100, 200]),
     )
-    np.testing.assert_allclose(H, Htest)
+    np.testing.assert_allclose(H, Htest, rtol=1e-4)
 
 
-def test_dipole_Hfield():
+def test_dipole_Hfield(xp):
     Htest = xp.asarray(
         [
             [2.89501155e-13, 1.53146915e03, 1.53146915e03],
@@ -62,14 +81,14 @@ def test_dipole_Hfield():
         observers=xp.asarray([(1, 1, 1), (2, 2, 2)]),
         moments=xp.asarray([(1e5, 0, 0), (0, 0, 1e5)]),
     )
-    np.testing.assert_allclose(H, Htest)
+    np.testing.assert_allclose(H, Htest, atol=1e-6)
 
 
-def test_magnet_cuboid_Bfield():
+def test_magnet_cuboid_Bfield(xp):
     Btest = xp.asarray(
         [
-            [1.56103722e-02, 1.56103722e-02, -3.53394965e-17],
-            [7.73243250e-03, 6.54431406e-03, 1.04789520e-02],
+            [1.5610372220113404e-02, 1.5610372220113404e-02, -3.5339496460705743e-17],
+            [7.7324325000007145e-03, 6.5443140645650129e-03, 1.0478952028501879e-02],
         ]
     )
     B = magnet_cuboid_Bfield(
@@ -77,20 +96,20 @@ def test_magnet_cuboid_Bfield():
         dimensions=xp.asarray([(1, 1, 1), (1, 2, 3)]),
         polarizations=xp.asarray([(0, 0, 1), (0.5, 0.5, 0)]),
     )
-    np.testing.assert_allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest, atol=1e-6)
 
 
-def test_magnet_cylinder_axial_Bfield():
+def test_magnet_cylinder_axial_Bfield(xp):
     Btest = xp.asarray([[0.05561469, 0.04117919], [0.0, 0.0], [0.06690167, 0.01805674]])
     B = magnet_cylinder_axial_Bfield(
         z0=xp.asarray([1, 2]),
         r=xp.asarray([1, 2]),
         z=xp.asarray([2, 3]),
     )
-    np.testing.assert_allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest, rtol=1e-4)
 
 
-def test_magnet_cylinder_diametral_Hfield():
+def test_magnet_cylinder_diametral_Hfield(xp):
     Btest = xp.asarray(
         [
             [-0.020742122169014, 0.007307203574376],
@@ -104,10 +123,10 @@ def test_magnet_cylinder_diametral_Hfield():
         z=xp.asarray([2, 3]),
         phi=xp.asarray([0.1, np.pi / 4]),
     )
-    np.testing.assert_allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest, rtol=1e-4)
 
 
-def test_magnet_cylinder_segment_Hfield():
+def test_magnet_cylinder_segment_Hfield(xp):
     Btest = xp.asarray(
         [
             [-1948.14367497, 32319.94437208, 17616.88571231],
@@ -119,10 +138,10 @@ def test_magnet_cylinder_segment_Hfield():
         dimensions=xp.asarray([(1, 2, 0.1, 0.2, -1, 1), (1, 2, 0.3, 0.9, 0, 1)]),
         magnetizations=xp.asarray([(1e7, 0.1, 0.2), (1e6, 1.1, 2.2)]),
     )
-    np.testing.assert_allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest, rtol=1e-4)
 
 
-def test_triangle_Bfield():
+def test_triangle_Bfield(xp):
     Btest = xp.asarray(
         [[7.45158965, 4.61994866, 3.13614132], [2.21345618, 2.67710148, 2.21345618]]
     )
@@ -136,4 +155,4 @@ def test_triangle_Bfield():
         ),
         polarizations=xp.asarray([(1.0, 1.0, 1.0), (1.0, 1.0, 0.0)]) * 1e3,
     )
-    np.testing.assert_allclose(B, Btest)
+    np.testing.assert_allclose(B, Btest, rtol=1e-4)

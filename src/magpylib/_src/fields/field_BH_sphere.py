@@ -10,8 +10,8 @@ import numpy as np
 from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.input_checks import check_field_input
 from magpylib._src.array_api_utils import xp_promote
+from magpylib._src.input_checks import check_field_input
 
 
 # CORE
@@ -62,7 +62,9 @@ def magnet_sphere_Bfield(
     in the inside (see e.g. "Theoretical Physics, Bertelmann").
     """
     xp = array_namespace(observers, diameters, polarizations)
-    observers, diameters, polarizations = xp_promote(observers, diameters, polarizations, force_floating=True, xp=xp)
+    observers, diameters, polarizations = xp_promote(
+        observers, diameters, polarizations, force_floating=True, xp=xp
+    )
     r = xp.linalg.vector_norm(observers, axis=-1)
     r_sphere = xp.abs(diameters) / 2.0
 
@@ -90,8 +92,9 @@ def magnet_sphere_Bfield(
             / 3.0
         ).T
 
-    B = B_out(polarization, observers, r_sphere[xp.newaxis, :], r[xp.newaxis, :])
-    B = xpx.at(B)[mask_in].set(B_in(polarization[mask_in]))
+    B_o = B_out(polarization, observers, r_sphere[xp.newaxis, :], r[xp.newaxis, :])
+    B_i = B_in(polarization)
+    B = xp.where(mask_in, B_i, B_o)
 
     return B
 

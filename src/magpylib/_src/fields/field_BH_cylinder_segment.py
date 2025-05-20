@@ -11,11 +11,11 @@ import numpy as np
 from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
+from magpylib._src.array_api_utils import xp_promote
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.special_el3 import el3_angle
 from magpylib._src.fields.special_elliptic import ellipeinc, ellipkinc
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.array_api_utils import xp_promote
 
 
 def arctan_k_tan_2(k, phi):
@@ -71,30 +71,40 @@ def determine_cases(r, phi, z, r1, phi1, z1):
     # allocate result
     result = xp.ones((3, n))
 
+    mask_ind0 = xp.full_like(result, False, dtype=xp.bool)
+    mask_ind0 = xpx.at(mask_ind0)[0, ...].set(True)
+
     # identify z-case
     mask_z = close(z, z1)
-    result[0, ...] = 200
-    result[0, :][mask_z] = 100
+    result = xpx.at(result)[0, ...].set(200)
+    result = xpx.at(result)[mask_ind0 & mask_z[xp.newaxis, ...]].set(100)
 
     # identify phi-case
     mod_2pi = xp.abs(phi - phi1) % (2 * xp.pi)
     mask_phi1 = xp.logical_or(close(mod_2pi, 0), close(mod_2pi, 2 * xp.pi))
     mod_pi = xp.abs(phi - phi1) % xp.pi
     mask_phi2 = xp.logical_or(close(mod_pi, 0), close(mod_pi, xp.pi))
-    result[1, ...] = 30
-    result[1, ...][mask_phi2] = 20
-    result[1, ...][mask_phi1] = 10
+
+    mask_ind1 = xp.full_like(result, False, dtype=xp.bool)
+    mask_ind1 = xpx.at(mask_ind1)[1, ...].set(True)
+
+    result = xpx.at(result)[1, ...].set(30)
+    result = xpx.at(result)[mask_ind1 & mask_phi2[xp.newaxis, ...]].set(20)
+    result = xpx.at(result)[mask_ind1 & mask_phi1[xp.newaxis, ...]].set(10)
+
+    mask_ind2 = xp.full_like(result, False, dtype=xp.bool)
+    mask_ind2 = xpx.at(mask_ind2)[2, ...].set(True)
 
     # identify r-case
     mask_r2 = close(r, 0)
     mask_r3 = close(r1, 0)
     mask_r4 = close(r, r1)
     mask_r1 = mask_r2 & mask_r3
-    result[2, ...] = 5
-    result[2, ...][mask_r4] = 4
-    result[2, ...][mask_r3] = 3
-    result[2, ...][mask_r2] = 2
-    result[2, ...][mask_r1] = 1
+    result = xpx.at(result)[2, ...].set(5)
+    result = xpx.at(result)[mask_ind2 & mask_r4].set(4)
+    result = xpx.at(result)[mask_ind2 & mask_r3].set(3)
+    result = xpx.at(result)[mask_ind2 & mask_r2].set(2)
+    result = xpx.at(result)[mask_ind2 & mask_r1].set(1)
 
     return xp.asarray(xp.sum(result, axis=0), dtype=xp.int32)
 
@@ -1827,292 +1837,462 @@ def Hz_zk_case235(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
 
 def case112(xp, r_i, phi_bar_M, theta_M):
     results = xp.zeros(((r_i.shape[0]), 3, 3))
-    results[:, 1, 2] = Hphi_zk_case112(xp, r_i, theta_M)
-    results[:, 2, 0] = Hz_ri_case112(xp, phi_bar_M, theta_M)
-    results[:, 2, 1] = Hz_phij_case112(xp, r_i, phi_bar_M, theta_M)
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case112(xp, r_i, theta_M))
+    results = xpx.at(results)[:, 2, 0].set(Hz_ri_case112(xp, phi_bar_M, theta_M))
+    results = xpx.at(results)[:, 2, 1].set(Hz_phij_case112(xp, r_i, phi_bar_M, theta_M))
     return results
 
 
 def case113(xp, r, phi_bar_M, theta_M):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 1, 2] = Hphi_zk_case113(xp, r, theta_M)
-    results[:, 2, 1] = Hz_phij_case113(xp, r, phi_bar_M, theta_M)
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case113(xp, r, theta_M))
+    results = xpx.at(results)[:, 2, 1].set(Hz_phij_case113(xp, r, phi_bar_M, theta_M))
     return results
 
 
 def case115(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 2] = Hr_zk_case115(xp, r, r_i, r_bar_i, phi_bar_j, theta_M)
-    results[:, 1, 2] = Hphi_zk_case115(xp, r, r_i, r_bar_i, theta_M)
-    results[:, 2, 0] = Hz_ri_case115(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M)
-    results[:, 2, 1] = Hz_phij_case115(xp, r_bar_i, phi_bar_M, theta_M)
+    results = xpx.at(results)[:, 0, 2].set(
+        Hr_zk_case115(xp, r, r_i, r_bar_i, phi_bar_j, theta_M)
+    )
+    results = xpx.at(results)[:, 1, 2].set(
+        Hphi_zk_case115(xp, r, r_i, r_bar_i, theta_M)
+    )
+    results = xpx.at(results)[:, 2, 0].set(
+        Hz_ri_case115(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M)
+    )
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case115(xp, r_bar_i, phi_bar_M, theta_M)
+    )
     return results
 
 
 def case122(xp, r_i, phi_bar_M, theta_M):
     results = xp.zeros(((r_i.shape[0]), 3, 3))
-    results[:, 1, 2] = Hphi_zk_case122(xp, r_i, theta_M)
-    results[:, 2, 0] = Hz_ri_case122(xp, phi_bar_M, theta_M)
-    results[:, 2, 1] = Hz_phij_case122(xp, r_i, phi_bar_M, theta_M)
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case122(xp, r_i, theta_M))
+    results = xpx.at(results)[:, 2, 0].set(Hz_ri_case122(xp, phi_bar_M, theta_M))
+    results = xpx.at(results)[:, 2, 1].set(Hz_phij_case122(xp, r_i, phi_bar_M, theta_M))
     return results
 
 
 def case123(xp, r, phi_bar_M, theta_M):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 1, 2] = Hphi_zk_case123(xp, r, theta_M)
-    results[:, 2, 1] = Hz_phij_case123(xp, r, phi_bar_M, theta_M)
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case123(xp, r, theta_M))
+    results = xpx.at(results)[:, 2, 1].set(Hz_phij_case123(xp, r, phi_bar_M, theta_M))
     return results
 
 
 def case124(xp, r, phi_bar_M, theta_M):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 1, 2] = Hphi_zk_case124(xp, r, theta_M)
-    results[:, 2, 0] = Hz_ri_case124(xp, phi_bar_M, theta_M)
-    results[:, 2, 1] = Hz_phij_case124(xp, r, phi_bar_M, theta_M)
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case124(xp, r, theta_M))
+    results = xpx.at(results)[:, 2, 0].set(Hz_ri_case124(xp, phi_bar_M, theta_M))
+    results = xpx.at(results)[:, 2, 1].set(Hz_phij_case124(xp, r, phi_bar_M, theta_M))
     return results
 
 
 def case125(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 2] = Hr_zk_case125(xp, r, r_i, r_bar_i, phi_bar_j, theta_M)
-    results[:, 1, 2] = Hphi_zk_case125(xp, r, r_i, theta_M)
-    results[:, 2, 0] = Hz_ri_case125(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M)
-    results[:, 2, 1] = Hz_phij_case125(xp, r, r_i, phi_bar_M, theta_M)
+    results = xpx.at(results)[:, 0, 2].set(
+        Hr_zk_case125(xp, r, r_i, r_bar_i, phi_bar_j, theta_M)
+    )
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case125(xp, r, r_i, theta_M))
+    results = xpx.at(results)[:, 2, 0].set(
+        Hz_ri_case125(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M)
+    )
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case125(xp, r, r_i, phi_bar_M, theta_M)
+    )
     return results
 
 
 def case132(xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 2] = Hr_zk_case132(xp, r_i, phi_bar_j, theta_M)
-    results[:, 1, 2] = Hphi_zk_case132(xp, r_i, phi_bar_j, theta_M)
-    results[:, 2, 0] = Hz_ri_case132(xp, phi_bar_Mj, theta_M)
-    results[:, 2, 1] = Hz_phij_case132(xp, r_i, phi_bar_Mj, theta_M)
+    results = xpx.at(results)[:, 0, 2].set(Hr_zk_case132(xp, r_i, phi_bar_j, theta_M))
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case132(xp, r_i, phi_bar_j, theta_M))
+    results = xpx.at(results)[:, 2, 0].set(Hz_ri_case132(xp, phi_bar_Mj, theta_M))
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case132(xp, r_i, phi_bar_Mj, theta_M)
+    )
     return results
 
 
 def case133(xp, r, phi_bar_j, phi_bar_Mj, theta_M):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 2] = Hr_zk_case133(xp, r, phi_bar_j, theta_M)
-    results[:, 1, 2] = Hphi_zk_case133(xp, phi_bar_j, theta_M)
-    results[:, 2, 1] = Hz_phij_case133(xp, phi_bar_j, phi_bar_Mj, theta_M)
+    results = xpx.at(results)[:, 0, 2].set(Hr_zk_case133(xp, r, phi_bar_j, theta_M))
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case133(xp, phi_bar_j, theta_M))
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case133(xp, phi_bar_j, phi_bar_Mj, theta_M)
+    )
     return results
 
 
 def case134(xp, r, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 2] = Hr_zk_case134(xp, r, phi_bar_j, theta_M)
-    results[:, 1, 2] = Hphi_zk_case134(xp, phi_bar_j, theta_M)
-    results[:, 2, 0] = Hz_ri_case134(xp, phi_bar_j, phi_bar_M, theta_M)
-    results[:, 2, 1] = Hz_phij_case134(xp, phi_bar_j, phi_bar_Mj, theta_M)
+    results = xpx.at(results)[:, 0, 2].set(Hr_zk_case134(xp, r, phi_bar_j, theta_M))
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case134(xp, phi_bar_j, theta_M))
+    results = xpx.at(results)[:, 2, 0].set(
+        Hz_ri_case134(xp, phi_bar_j, phi_bar_M, theta_M)
+    )
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case134(xp, phi_bar_j, phi_bar_Mj, theta_M)
+    )
     return results
 
 
 def case135(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 2] = Hr_zk_case135(xp, r, r_i, r_bar_i, phi_bar_j, theta_M)
-    results[:, 1, 2] = Hphi_zk_case135(xp, r, r_i, phi_bar_j, theta_M)
-    results[:, 2, 0] = Hz_ri_case135(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M)
-    results[:, 2, 1] = Hz_phij_case135(xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M)
+    results = xpx.at(results)[:, 0, 2].set(
+        Hr_zk_case135(xp, r, r_i, r_bar_i, phi_bar_j, theta_M)
+    )
+    results = xpx.at(results)[:, 1, 2].set(
+        Hphi_zk_case135(xp, r, r_i, phi_bar_j, theta_M)
+    )
+    results = xpx.at(results)[:, 2, 0].set(
+        Hz_ri_case135(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M)
+    )
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case135(xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M)
+    )
     return results
 
 
 def case211(xp, phi_j, phi_bar_M, theta_M, z_bar_k):
     results = xp.zeros(((phi_j.shape[0]), 3, 3))
-    results[:, 0, 1] = Hr_phij_case211(xp, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case211(xp, phi_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case211(xp, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(Hz_zk_case211(xp, phi_j, theta_M, z_bar_k))
     return results
 
 
 def case212(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k):
     results = xp.zeros(((r_i.shape[0]), 3, 3))
-    results[:, 0, 0] = Hr_ri_case212(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 1] = Hr_phij_case212(xp, r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 0] = Hphi_ri_case212(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case212(xp, r_i, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case212(xp, r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case212(xp, r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case212(xp, r_i, phi_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 0, 0].set(
+        Hr_ri_case212(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case212(xp, r_i, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 0].set(
+        Hphi_ri_case212(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case212(xp, r_i, theta_M, z_bar_k))
+    results = xpx.at(results)[:, 2, 0].set(
+        Hz_ri_case212(xp, r_i, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case212(xp, r_i, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(
+        Hz_zk_case212(xp, r_i, phi_j, theta_M, z_bar_k)
+    )
     return results
 
 
 def case213(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 1] = Hr_phij_case213(xp, r, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case213(xp, r, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case213(xp, r, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case213(xp, phi_bar_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case213(xp, r, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case213(xp, r, theta_M, z_bar_k))
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case213(xp, r, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(
+        Hz_zk_case213(xp, phi_bar_j, theta_M, z_bar_k)
+    )
     return results
 
 
 def case214(xp, r, phi_j, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 0] = Hr_ri_case214(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 1] = Hr_phij_case214(xp, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case214(xp, r, phi_bar_j, theta_M, z_bar_k)
-    results[:, 1, 0] = Hphi_ri_case214(
-        xp, r, phi_j, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+    results = xpx.at(results)[:, 0, 0].set(
+        Hr_ri_case214(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
     )
-    results[:, 1, 2] = Hphi_zk_case214(xp, r, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case214(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case214(xp, r, phi_bar_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case214(xp, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 0, 2].set(
+        Hr_zk_case214(xp, r, phi_bar_j, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 0].set(
+        Hphi_ri_case214(xp, r, phi_j, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case214(xp, r, theta_M, z_bar_k))
+    results = xpx.at(results)[:, 2, 0].set(
+        Hz_ri_case214(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(
+        Hz_zk_case214(xp, r, phi_bar_j, theta_M, z_bar_k)
+    )
     return results
 
 
 def case215(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 0] = Hr_ri_case215(
-        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+    results = xpx.at(results)[:, 0, 0].set(
+        Hr_ri_case215(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
     )
-    results[:, 0, 1] = Hr_phij_case215(xp, r_bar_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case215(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
-    results[:, 1, 0] = Hphi_ri_case215(
-        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case215(xp, r_bar_i, phi_bar_M, theta_M, z_bar_k)
     )
-    results[:, 1, 2] = Hphi_zk_case215(xp, r, r_bar_i, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case215(
-        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+    results = xpx.at(results)[:, 0, 2].set(
+        Hr_zk_case215(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
     )
-    results[:, 2, 1] = Hz_phij_case215(xp, r_bar_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case215(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 1, 0].set(
+        Hphi_ri_case215(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 2].set(
+        Hphi_zk_case215(xp, r, r_bar_i, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 0].set(
+        Hz_ri_case215(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case215(xp, r_bar_i, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(
+        Hz_zk_case215(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
+    )
     return results
 
 
 def case221(xp, phi_j, phi_bar_M, theta_M, z_bar_k):
     results = xp.zeros(((phi_j.shape[0]), 3, 3))
-    results[:, 0, 1] = Hr_phij_case221(xp, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case221(xp, phi_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case221(xp, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(Hz_zk_case221(xp, phi_j, theta_M, z_bar_k))
     return results
 
 
 def case222(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k):
     results = xp.zeros(((r_i.shape[0]), 3, 3))
-    results[:, 0, 0] = Hr_ri_case222(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 1] = Hr_phij_case222(xp, r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 0] = Hphi_ri_case222(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case222(xp, r_i, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case222(xp, r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case222(xp, r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case222(xp, r_i, phi_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 0, 0].set(
+        Hr_ri_case222(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case222(xp, r_i, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 0].set(
+        Hphi_ri_case222(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case222(xp, r_i, theta_M, z_bar_k))
+    results = xpx.at(results)[:, 2, 0].set(
+        Hz_ri_case222(xp, r_i, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case222(xp, r_i, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(
+        Hz_zk_case222(xp, r_i, phi_j, theta_M, z_bar_k)
+    )
     return results
 
 
 def case223(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 1] = Hr_phij_case223(xp, r, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case223(xp, r, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case223(xp, r, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case223(xp, r, phi_bar_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case223(xp, r, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case223(xp, r, theta_M, z_bar_k))
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case223(xp, r, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(
+        Hz_zk_case223(xp, r, phi_bar_j, theta_M, z_bar_k)
+    )
     return results
 
 
 def case224(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 0] = Hr_ri_case224(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 1] = Hr_phij_case224(xp, r, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case224(xp, r, phi_bar_j, theta_M, z_bar_k)
-    results[:, 1, 0] = Hphi_ri_case224(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case224(xp, r, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case224(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case224(xp, r, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case224(xp, r, phi_bar_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 0, 0].set(
+        Hr_ri_case224(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case224(xp, r, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 0, 2].set(
+        Hr_zk_case224(xp, r, phi_bar_j, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 0].set(
+        Hphi_ri_case224(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 2].set(Hphi_zk_case224(xp, r, theta_M, z_bar_k))
+    results = xpx.at(results)[:, 2, 0].set(
+        Hz_ri_case224(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case224(xp, r, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(
+        Hz_zk_case224(xp, r, phi_bar_j, theta_M, z_bar_k)
+    )
     return results
 
 
 def case225(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 0] = Hr_ri_case225(
-        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+    results = xpx.at(results)[:, 0, 0].set(
+        Hr_ri_case225(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
     )
-    results[:, 0, 1] = Hr_phij_case225(xp, r, r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case225(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
-    results[:, 1, 0] = Hphi_ri_case225(
-        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case225(xp, r, r_i, phi_bar_M, theta_M, z_bar_k)
     )
-    results[:, 1, 2] = Hphi_zk_case225(xp, r, r_i, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case225(
-        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+    results = xpx.at(results)[:, 0, 2].set(
+        Hr_zk_case225(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
     )
-    results[:, 2, 1] = Hz_phij_case225(xp, r, r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case225(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 1, 0].set(
+        Hphi_ri_case225(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 2].set(
+        Hphi_zk_case225(xp, r, r_i, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 0].set(
+        Hz_ri_case225(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case225(xp, r, r_i, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(
+        Hz_zk_case225(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
+    )
     return results
 
 
 def case231(xp, phi_j, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
     results = xp.zeros(((phi_j.shape[0]), 3, 3))
-    results[:, 0, 1] = Hr_phij_case231(xp, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 1, 1] = Hphi_phij_case231(xp, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case231(xp, phi_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case231(xp, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 1].set(
+        Hphi_phij_case231(xp, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(Hz_zk_case231(xp, phi_j, theta_M, z_bar_k))
     return results
 
 
 def case232(xp, r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k):
     results = xp.zeros(((r_i.shape[0]), 3, 3))
-    results[:, 0, 0] = Hr_ri_case232(
-        xp, r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k
+    results = xpx.at(results)[:, 0, 0].set(
+        Hr_ri_case232(
+            xp, r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k
+        )
     )
-    results[:, 0, 1] = Hr_phij_case232(xp, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case232(xp, r_i, phi_bar_j, theta_M, z_bar_k)
-    results[:, 1, 0] = Hphi_ri_case232(
-        xp, r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case232(xp, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
     )
-    results[:, 1, 1] = Hphi_phij_case232(
-        xp, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k
+    results = xpx.at(results)[:, 0, 2].set(
+        Hr_zk_case232(xp, r_i, phi_bar_j, theta_M, z_bar_k)
     )
-    results[:, 1, 2] = Hphi_zk_case232(xp, r_i, phi_bar_j, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case232(xp, r_i, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case232(xp, r_i, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case232(xp, r_i, phi_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 1, 0].set(
+        Hphi_ri_case232(
+            xp, r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k
+        )
+    )
+    results = xpx.at(results)[:, 1, 1].set(
+        Hphi_phij_case232(xp, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 2].set(
+        Hphi_zk_case232(xp, r_i, phi_bar_j, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 0].set(
+        Hz_ri_case232(xp, r_i, phi_bar_Mj, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case232(xp, r_i, phi_bar_Mj, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(
+        Hz_zk_case232(xp, r_i, phi_j, theta_M, z_bar_k)
+    )
     return results
 
 
 def case233(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 1] = Hr_phij_case233(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case233(xp, r, phi_bar_j, theta_M, z_bar_k)
-    results[:, 1, 1] = Hphi_phij_case233(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case233(xp, r, phi_bar_j, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case233(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case233(xp, r, phi_bar_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case233(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 0, 2].set(
+        Hr_zk_case233(xp, r, phi_bar_j, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 1].set(
+        Hphi_phij_case233(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 2].set(
+        Hphi_zk_case233(xp, r, phi_bar_j, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case233(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(
+        Hz_zk_case233(xp, r, phi_bar_j, theta_M, z_bar_k)
+    )
     return results
 
 
 def case234(xp, r, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 0] = Hr_ri_case234(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 1] = Hr_phij_case234(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case234(xp, r, phi_bar_j, theta_M, z_bar_k)
-    results[:, 1, 0] = Hphi_ri_case234(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 1] = Hphi_phij_case234(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case234(xp, r, phi_bar_j, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case234(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case234(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case234(xp, r, phi_bar_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 0, 0].set(
+        Hr_ri_case234(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case234(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 0, 2].set(
+        Hr_zk_case234(xp, r, phi_bar_j, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 0].set(
+        Hphi_ri_case234(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 1].set(
+        Hphi_phij_case234(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 1, 2].set(
+        Hphi_zk_case234(xp, r, phi_bar_j, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 0].set(
+        Hz_ri_case234(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case234(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(
+        Hz_zk_case234(xp, r, phi_bar_j, theta_M, z_bar_k)
+    )
     return results
 
 
 def case235(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k):
     results = xp.zeros(((r.shape[0]), 3, 3))
-    results[:, 0, 0] = Hr_ri_case235(
-        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+    results = xpx.at(results)[:, 0, 0].set(
+        Hr_ri_case235(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
     )
-    results[:, 0, 1] = Hr_phij_case235(
-        xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k
+    results = xpx.at(results)[:, 0, 1].set(
+        Hr_phij_case235(xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
     )
-    results[:, 0, 2] = Hr_zk_case235(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
-    results[:, 1, 0] = Hphi_ri_case235(
-        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+    results = xpx.at(results)[:, 0, 2].set(
+        Hr_zk_case235(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
     )
-    results[:, 1, 1] = Hphi_phij_case235(
-        xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k
+    results = xpx.at(results)[:, 1, 0].set(
+        Hphi_ri_case235(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
     )
-    results[:, 1, 2] = Hphi_zk_case235(xp, r, r_i, phi_bar_j, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case235(
-        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+    results = xpx.at(results)[:, 1, 1].set(
+        Hphi_phij_case235(xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
     )
-    results[:, 2, 1] = Hz_phij_case235(
-        xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k
+    results = xpx.at(results)[:, 1, 2].set(
+        Hphi_zk_case235(xp, r, r_i, phi_bar_j, theta_M, z_bar_k)
     )
-    results[:, 2, 2] = Hz_zk_case235(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
+    results = xpx.at(results)[:, 2, 0].set(
+        Hz_ri_case235(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 1].set(
+        Hz_phij_case235(xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    )
+    results = xpx.at(results)[:, 2, 2].set(
+        Hz_zk_case235(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
+    )
     return results
 
 
@@ -2172,7 +2352,9 @@ def magnet_cylinder_segment_Hfield(
     """
 
     xp = array_namespace(observers, dimensions, magnetizations)
-    observers, dimensions, magnetizations = xp_promote(observers, dimensions, magnetizations, force_floating=True, xp=xp)
+    observers, dimensions, magnetizations = xp_promote(
+        observers, dimensions, magnetizations, force_floating=True, xp=xp
+    )
     # tile inputs into 8-stacks (boundary cases)
     rphiz = xp.repeat(observers, 8, axis=0).T
     r, phi, z = (rphiz[i, ...] for i in range(3))
@@ -2184,7 +2366,7 @@ def magnet_cylinder_segment_Hfield(
 
     # initialize results array with nan
     result = xp.empty(((r.shape[0]), 3, 3))
-    result[:, ...] = xp.nan
+    result = xpx.at(result)[:, ...].set(xp.nan)
 
     # cases to evaluate
     cases = determine_cases(r, phi, z, r_i, phi_j, z_k)
@@ -2302,7 +2484,9 @@ def magnet_cylinder_segment_Hfield(
     for cid, cfkt, cargs in zip(case_id, case_fkt, case_args, strict=False):
         mask = cases == cid
         if any(mask):
-            result[mask] = cfkt(xp, *[allargs[aid][mask] for aid in cargs])
+            result = xpx.at(result)[mask].set(
+                cfkt(xp, *[allargs[aid][mask] for aid in cargs])
+            )
 
     # sum up contributions from different boundary cases (ax1) and different face types (ax3)
     result = xp.reshape(result, (-1, 8, 3, 3))
@@ -2316,6 +2500,176 @@ def magnet_cylinder_segment_Hfield(
     result = result.T * magnetizations[:, 0] * 1e-7 / MU0
 
     return result.T
+
+
+def BHJM_cylinder_segment_internal(
+    field: str,
+    observers: np.ndarray,
+    polarization: np.ndarray,
+    dimension: np.ndarray,
+) -> np.ndarray:
+    """
+    internal version of BHJM_cylinder_segment used for object oriented interface.
+
+    Falls back to magnet_cylinder_field whenever the section angles describe the full
+    360° cylinder.
+    """
+    xp = array_namespace(observers, polarization, dimension)
+
+    BHfinal = xp.zeros_like(observers, dtype=float)
+
+    r1, r2, h, phi1, phi2 = dimension.T
+
+    # case1: segment
+    mask1 = (phi2 - phi1) < 360
+
+    BHfinal[mask1] = BHJM_cylinder_segment(
+        field=field,
+        observers=observers[mask1],
+        polarization=polarization[mask1],
+        dimension=dimension[mask1],
+    )
+
+    # case2: full cylinder
+    mask1x = ~mask1
+    BHfinal[mask1x] = BHJM_magnet_cylinder(
+        field=field,
+        observers=observers[mask1x],
+        polarization=polarization[mask1x],
+        dimension=xp.c_[2 * r2[mask1x], h[mask1x]],
+    )
+
+    # case2a: hollow cylinder <- should be vectorized together with above
+    mask2 = (r1 != 0) & mask1x
+    BHfinal[mask2] -= BHJM_magnet_cylinder(
+        field=field,
+        observers=observers[mask2],
+        polarization=polarization[mask2],
+        dimension=xp.c_[2 * r1[mask2], h[mask2]],
+    )
+
+    return BHfinal
+
+
+def BHJM_cylinder_segment(
+    field: str,
+    observers: np.ndarray,
+    dimension: np.ndarray,
+    polarization: np.ndarray,
+) -> np.ndarray:
+    """
+    - translate cylinder segment field to BHJM
+    - special cases catching
+    """
+    check_field_input(field)
+
+    BHJM = polarization.astype(float)
+
+    r1, r2, h, phi1, phi2 = dimension.T
+    r1 = abs(r1)
+    r2 = abs(r2)
+    h = abs(h)
+    z1, z2 = -h / 2, h / 2
+
+    # transform dim deg->rad
+    phi1 = phi1 / 180 * np.pi
+    phi2 = phi2 / 180 * np.pi
+    dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
+
+    # transform obs_pos to Cy CS --------------------------------------------
+    x, y, z = observers.T
+    r, phi = np.sqrt(x**2 + y**2), np.arctan2(y, x)
+    pos_obs_cy = np.concatenate(((r,), (phi,), (z,)), axis=0).T
+
+    # determine when points lie inside and on surface of magnet -------------
+
+    # mask_inside = None
+    # if in_out == "auto":
+    # phip1 in [-2pi,0], phio2 in [0,2pi]
+    phio1 = phi
+    phio2 = phi - np.sign(phi) * 2 * np.pi
+
+    # phi=phi1, phi=phi2
+    mask_phi1 = close(phio1, phi1) | close(phio2, phi1)
+    mask_phi2 = close(phio1, phi2) | close(phio2, phi2)
+
+    # r, phi ,z lies in-between, avoid numerical fluctuations (e.g. due to rotations) by including 1e-14
+    mask_r_in = (r1 - 1e-14 < r) & (r < r2 + 1e-14)
+    mask_phi_in = (np.sign(phio1 - phi1) != np.sign(phio1 - phi2)) | (
+        np.sign(phio2 - phi1) != np.sign(phio2 - phi2)
+    )
+    mask_z_in = (z1 - 1e-14 < z) & (z < z2 + 1e-14)
+
+    # on surface
+    mask_surf_z = (
+        (close(z, z1) | close(z, z2)) & mask_phi_in & mask_r_in
+    )  # top / bottom
+    mask_surf_r = (close(r, r1) | close(r, r2)) & mask_phi_in & mask_z_in  # in / out
+    mask_surf_phi = (mask_phi1 | mask_phi2) & mask_r_in & mask_z_in  # in / out
+    mask_not_on_surf = ~(mask_surf_z | mask_surf_r | mask_surf_phi)
+
+    # inside
+    mask_inside = mask_r_in & mask_phi_in & mask_z_in
+    # else:
+    #     mask_inside = np.full(len(observers), in_out == "inside")
+    #     mask_not_on_surf = np.full(len(observers), True)
+    # WARNING @alex
+    #   1. inside and not_on_surface are not the same! Can't just put to true.
+
+    # return 0 when all points are on surface
+    if not np.any(mask_not_on_surf):
+        return BHJM * 0
+
+    if field == "J":
+        BHJM[~mask_inside] = 0
+        return BHJM
+
+    if field == "M":
+        BHJM[~mask_inside] = 0
+        return BHJM / MU0
+
+    BHJM *= 0
+
+    # redefine input if there are some surface-points -------------------------
+    pol = polarization[mask_not_on_surf]
+    dim = dim[mask_not_on_surf]
+    pos_obs_cy = pos_obs_cy[mask_not_on_surf]
+    phi = phi[mask_not_on_surf]
+
+    # transform mag to spherical CS -----------------------------------------
+    m = np.sqrt(pol[:, 0] ** 2 + pol[:, 1] ** 2 + pol[:, 2] ** 2) / MU0  # J -> M
+    phi_m = np.arctan2(pol[:, 1], pol[:, 0])
+    th_m = np.arctan2(np.sqrt(pol[:, 0] ** 2 + pol[:, 1] ** 2), pol[:, 2])
+    mag_sph = np.concatenate(((m,), (phi_m,), (th_m,)), axis=0).T
+
+    # compute H and transform to cart CS -------------------------------------
+    H_cy = magnet_cylinder_segment_Hfield(
+        magnetizations=mag_sph, dimensions=dim, observers=pos_obs_cy
+    )
+    Hr, Hphi, Hz = H_cy.T
+    Hx = Hr * np.cos(phi) - Hphi * np.sin(phi)
+    Hy = Hr * np.sin(phi) + Hphi * np.cos(phi)
+    BHJM[mask_not_on_surf] = np.concatenate(((Hx,), (Hy,), (Hz,)), axis=0).T
+
+    if field == "H":
+        return BHJM
+
+    if field == "B":
+        BHJM *= MU0
+        BHJM[mask_inside] += polarization[mask_inside]
+        BHJM[~mask_not_on_surf] *= 0
+        return BHJM
+
+    msg = f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
+    raise ValueError(msg)  # pragma: no cover
+
+    # return convert_HBMJ(
+    #     output_field_type=field,
+    #     polarization=polarization,
+    #     input_field_type="H",
+    #     field_values=H_all,
+    #     mask_inside=mask_inside & mask_not_on_surf,
+    # )
 
 
 def BHJM_cylinder_segment_internal(

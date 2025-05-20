@@ -1,15 +1,33 @@
+from __future__ import annotations
+
+import math
+from collections.abc import Callable, Sequence
+from functools import partial, wraps
+from types import ModuleType
+from typing import Any, Literal, ParamSpec, TypeAlias, cast
+
+import array_api_compat as _compat
 import numpy as np
 import numpy.typing as npt
 from array_api_compat import (
-    is_numpy_namespace as is_numpy,
-    is_torch_namespace as is_torch,
     array_namespace,
+    is_dask_namespace,
+    is_jax_namespace,
+    is_numpy_array,
 )
-from typing import Any, TypeAlias, Literal
-from types import ModuleType
+from array_api_compat import (
+    is_numpy_namespace as is_numpy,
+)
+from array_api_compat import (
+    is_torch_namespace as is_torch,
+)
+from typing_extensions import TypeIs
 
 Array: TypeAlias = Any  # To be changed to a Protocol later (see array-api#589)
+DType: TypeAlias = Any  # To be changed to a Protocol later (see array-api#589)
 ArrayLike: TypeAlias = Array | npt.ArrayLike
+
+P = ParamSpec("P")
 
 
 def _check_finite(array: Array, xp: ModuleType) -> None:
@@ -71,9 +89,8 @@ def xp_default_dtype(xp):
     if is_torch(xp):
         # historically, we allow pytorch to keep its default of float32
         return xp.get_default_dtype()
-    else:
-        # we default to float64
-        return xp.float64
+    # we default to float64
+    return xp.float64
 
 
 def xp_result_type(*args, force_floating=False, xp):
@@ -192,3 +209,198 @@ def xp_promote(*args, broadcast=False, force_floating=False, xp):
         out.append(arg)
 
     return out[0] if len(out) == 1 else tuple(out)
+
+
+def _is_jax_jit_enabled(xp: ModuleType) -> bool:  # numpydoc ignore=PR01,RT01
+    """Return True if this function is being called inside ``jax.jit``."""
+    import jax  # pylint: disable=import-outside-toplevel
+
+    x = xp.asarray(False)
+    try:
+        return bool(x)
+    except jax.errors.TracerBoolConversionError:
+        return True
+
+
+def is_python_scalar(x: object) -> TypeIs[complex]:  # numpydoc ignore=PR01,RT01
+    """Return True if `x` is a Python scalar, False otherwise."""
+    # isinstance(x, float) returns True for np.float64
+    # isinstance(x, complex) returns True for np.complex128
+    # bool is a subclass of int
+    return isinstance(x, int | float | complex) and not is_numpy_array(x)
+
+
+def lazy_while(  # type: ignore[valid-type]  # numpydoc ignore=GL07,SA04
+    func: Callable[P, Array | ArrayLike | Sequence[Array | ArrayLike]],
+    cond: Callable[P, bool],
+    args: Array | complex | None,
+    shape: tuple[int | None, ...] | Sequence[tuple[int | None, ...]] | None = None,
+    dtype: DType | Sequence[DType] | None = None,
+    as_numpy: bool = False,
+    xp: ModuleType | None = None,
+    **kwargs: P.kwargs,  # pyright: ignore[reportGeneralTypeIssues]
+) -> Array | tuple[Array, ...]:
+    args_not_none = [arg for arg in args if arg is not None]
+    array_args = [arg for arg in args_not_none if not is_python_scalar(arg)]
+    if not array_args:
+        msg = "Must have at least one argument array"
+        raise ValueError(msg)
+    if xp is None:
+        xp = array_namespace(*args)
+
+    # Normalize and validate shape and dtype
+    shapes: list[tuple[int | None, ...]]
+    dtypes: list[DType]
+    multi_output = False
+
+    if shape is None:
+        shapes = [np.broadcast_shapes(*(arg.shape for arg in array_args))]
+    elif all(isinstance(s, int | None) for s in shape):
+        # Do not test for shape to be a tuple
+        # https://github.com/data-apis/array-api/issues/891#issuecomment-2637430522
+        shapes = [cast(tuple[int | None, ...], shape)]
+    else:
+        shapes = list(shape)  # type: ignore[arg-type]  # pyright: ignore[reportAssignmentType]
+        multi_output = True
+
+    if dtype is None:
+        dtypes = [xp.result_type(*args_not_none)] * len(shapes)
+    elif multi_output:
+        if not isinstance(dtype, Sequence):
+            msg = "Got multiple shapes but only one dtype"
+            raise ValueError(msg)
+        dtypes = list(dtype)  # pyright: ignore[reportUnknownArgumentType]
+    else:
+        if isinstance(dtype, Sequence):
+            msg = "Got single shape but multiple dtypes"
+            raise ValueError(msg)
+
+        dtypes = [dtype]
+
+    if len(shapes) != len(dtypes):
+        msg = f"Got {len(shapes)} shapes and {len(dtypes)} dtypes"
+        raise ValueError(msg)
+    del shape
+    del dtype
+    # End of shape and dtype parsing
+
+    # Backend-specific branches
+    if is_dask_namespace(xp):
+        import dask
+        import dask.array
+
+        metas: list[Array] = [arg._meta for arg in array_args]  # pylint: disable=protected-access    # pyright: ignore[reportAttributeAccessIssue]
+        meta_xp = array_namespace(*metas)
+
+        def dask_wrapper(args):
+            while cond(args):
+                args = func(args)
+            return args
+
+        wrapped = dask.delayed(  # type: ignore[attr-defined]  # pyright: ignore[reportPrivateImportUsage]
+            _lazy_apply_wrapper(dask_wrapper, as_numpy, multi_output, meta_xp),
+            pure=True,
+        )
+        # This finalizes each arg, which is the same as arg.rechunk(-1).
+        # Please read docstring above for why we're not using
+        # dask.array.map_blocks or dask.array.blockwise!
+        delayed_out = dask.array.map_blocks(wrapped, args, **kwargs)
+
+        out = tuple(
+            xp.from_delayed(
+                delayed_out[i],  # pyright: ignore[reportIndexIssue]
+                # Dask's unknown shapes diverge from the Array API specification
+                shape=tuple(math.nan if s is None else s for s in shape),
+                dtype=dtype,
+                meta=metas[0],
+            )
+            for i, (shape, dtype) in enumerate(zip(shapes, dtypes, strict=True))
+        )
+
+    elif is_jax_namespace(xp) and _is_jax_jit_enabled(xp):
+        # Delay calling func with jax.pure_callback, which will forward to func eager
+        # JAX arrays. Do not use jax.pure_callback when running outside of the JIT,
+        # as it does not support raising exceptions:
+        # https://github.com/jax-ml/jax/issues/26102
+        import jax
+
+        if any(None in shape for shape in shapes):
+            msg = "Output shape must be fully known when running inside jax.jit"
+            raise ValueError(msg)
+
+        # Shield kwargs from being coerced into JAX arrays.
+        # jax.pure_callback calls jax.jit under the hood, but without the chance of
+        # passing static_argnames / static_argnums.
+        wrapped = _lazy_apply_wrapper(
+            partial(func, **kwargs), as_numpy, multi_output, xp
+        )
+
+        # suppress unused-ignore to run mypy in -e lint as well as -e dev
+        out = cast(  # type: ignore[bad-cast,unused-ignore]
+            tuple[Array, ...],
+            jax.lax.while_loop(
+                cond,
+                wrapped,
+                init_val=args,
+            ),
+        )
+
+    else:
+        # Eager backends, including non-jitted JAX
+        # wrapped = _lazy_apply_wrapper(func, as_numpy, multi_output, xp)
+        while cond(args):
+            args = func(args)
+        out = args
+
+    return out
+
+
+def traverse_args(args):
+    if not isinstance(args, Sequence):
+        yield args
+    else:
+        for a in args:
+            yield from traverse_args(a)
+
+
+def _lazy_apply_wrapper(  # type: ignore[explicit-any]  # numpydoc ignore=PR01,RT01
+    func: Callable[..., Array | ArrayLike | Sequence[Array | ArrayLike]],
+    as_numpy: bool,
+    multi_output: bool,
+    xp: ModuleType,
+) -> Callable[..., tuple[Array, ...]]:
+    """
+    Helper of `lazy_apply`.
+
+    Given a function that accepts one or more arrays as positional arguments and returns
+    a single array-like or a sequence of array-likes, return a function that accepts the
+    same number of Array API arrays and always returns a tuple of Array API array.
+
+    Any keyword arguments are passed through verbatim to the wrapped function.
+    """
+
+    # On Dask, @wraps causes the graph key to contain the wrapped function's name
+    @wraps(func)
+    def wrapper(  # type: ignore[decorated-any,explicit-any]
+        *args: Array | complex | None, **kwargs: Any
+    ) -> tuple[Array, ...]:  # numpydoc ignore=GL08
+        args_list = []
+        device = None
+        for a in args:
+            for arg in a:
+                if arg is not None and not is_python_scalar(arg):
+                    if device is None:
+                        device = _compat.device(arg)
+                    if as_numpy:
+                        import numpy as np
+
+                        arg = cast(Array, np.asarray(arg))  # type: ignore[bad-cast]  # noqa: PLW2901
+                args_list.append(arg)
+        # assert device is not None
+
+        out = func(tuple(args_list), **kwargs)
+
+        return tuple(xp.asarray(o, device=device) for o in out)
+
+    return wrapper
+    return wrapper
