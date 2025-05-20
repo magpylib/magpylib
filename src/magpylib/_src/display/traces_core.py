@@ -618,10 +618,11 @@ def make_Pixels(
             pixels.append(pix)
     pixels = group_traces(*pixels)
     if len(pixels) != 1:
-        raise ValueError(
+        msg = (
             f"Expected exactly one pixel trace after grouping, but got {len(pixels)}. "
             "This may indicate an issue with the input data or the grouping logic."
         )
+        raise ValueError(msg)
     return pixels[0]
 
 
