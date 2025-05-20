@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import array_api_strict as xp
 import numpy as np
 from numpy.testing import assert_allclose
 from scipy.constants import mu_0 as MU0
@@ -321,7 +322,7 @@ def test_BHJM_triangle_BH():
 
 def test_magnet_tetrahedron_field_BH():
     """Test of tetrahedron field core function"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -330,7 +331,7 @@ def test_magnet_tetrahedron_field_BH():
             (3, 2, 1),  # inside
         ]
     )
-    vert = np.array(
+    vert = xp.asarray(
         [
             [(0, 0, 0), (0, 1, 0), (1, 0, 0), (0, 0, 1)],
             [(0, 0, 0), (0, 1, 0), (1, 0, 0), (0, 0, 1)],
@@ -339,7 +340,7 @@ def test_magnet_tetrahedron_field_BH():
             [(-10, 0, -10), (10, 10, -10), (10, -10, -10), (0, 0, 10)],
         ]
     )
-    obs = np.array(
+    obs = xp.asarray(
         [
             (1, 1, 1),
             (1, 1, 1),
@@ -424,9 +425,9 @@ def test_BHJM_magnet_trimesh_BH():
             [-0.47620221972465515, -0.0791524201631546, 0.8757661581039429],
         ],
     ]
-    mesh = np.array([mesh1, mesh2])
-    pol = np.array([(1, 2, 3), (3, 2, 1)])
-    obs = np.array([(1, 2, 3), (0, 0, 0)])
+    mesh = xp.asarray([mesh1, mesh2])
+    pol = xp.asarray([(1, 2, 3), (3, 2, 1)])
+    obs = xp.asarray([(1, 2, 3), (0, 0, 0)])
     kw = {
         "observers": obs,
         "polarization": pol,
