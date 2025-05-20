@@ -59,7 +59,7 @@ docs = [
     "pyvista",
     "magpylib-material-response",
     "magpylib-force",
-    "kaleido==1.0.0rc13",
+    "kaleido==0.2.1.post1",
 ]
 test = [
     "pytest>=7.4",
@@ -71,7 +71,6 @@ test = [
     "imageio[tifffile, ffmpeg]",
     "jupyterlab",
     "anywidget",
-    "kaleido==1.0.0rc13",
 ]
 binder = [
     "jupytext",
