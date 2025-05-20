@@ -17,6 +17,7 @@ def ellipkinc(phi: Array, m: Array):
 
 
 def ellipe(m: Array):
+    # return cel(kc, one, one, kc2)
     return xpx.lazy_apply(sp.special.ellipe, m, as_numpy=True)
 
 

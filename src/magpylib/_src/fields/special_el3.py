@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import array_api_extra as xpx
 import numpy as np
 from array_api_compat import array_namespace
 
@@ -273,8 +274,12 @@ def el3v(x, kc, p):
 
     s = xp.zeros(nnn)
     mask1 = kc == 0
-    s[mask1] = CA / (1 + xp.abs(x[mask1]))
-    s[~mask1] = kc[~mask1]
+    s = xpx.apply_where(
+        mask1,
+        (x, kc),
+        lambda x, kc: CA / (1 + xp.abs(x)),
+        lambda x, kc: kc,
+    )
     t = s * s
     pm = 0.5 * t
     e = hh * t
@@ -316,7 +321,9 @@ def el3v(x, kc, p):
         if bo:
             sx = -sx
         ux = (ux + 1) * 0.5
-        result[mask2] = (ux - sx * hx) * xp.sqrt(hx) * xx + ux * xp.asinh(xx)
+        result = xpx.at(result)[mask2].set(
+            (ux - sx * hx) * xp.sqrt(hx) * xx + ux * xp.asinh(xx)
+        )
 
     mask2x = ~mask2
     p, pm, t, hh, h, x = (
@@ -339,14 +346,14 @@ def el3v(x, kc, p):
 
     p1 = xp.asarray(p, copy=True)
     mask3 = p == 0
-    p1[mask3] = CB / hh[mask3]
+    p1 = xpx.apply_where(mask3, (hh, p1), lambda hh, p1: CB / hh, lambda hh, p1: p1)
     s = xp.abs(s)
     y = xp.abs(x)
     g = p1 - 1.0
-    g[g == 0] = CB
+    g = xpx.at(g)[g == 0].set(CB)
     f = p1 - t
     mask4 = f == 0
-    f[mask4] = CB * t[mask4]
+    f = xp.where(mask4, CB * t, f)
     am = 1.0 - t
     ap = 1.0 + e
     r = p1 * h
@@ -357,7 +364,7 @@ def el3v(x, kc, p):
     de = xp.sqrt(pz)
     q = xp.sqrt(xp.abs(p1))
     mask5 = pm > 0.5
-    pm[mask5] = 0.5
+    pm = xpx.at(pm)[mask5].set(0.5)
     pm = p1 - pm
 
     uvdc = xp.zeros((4, (pm.shape[0])))
@@ -365,77 +372,79 @@ def el3v(x, kc, p):
 
     mask6 = pm >= 0.0
     if xp.any(mask6):
-        u[mask6] = xp.sqrt(r[mask6] * ap[mask6])
-        v[mask6] = y[mask6] * de[mask6] * xp.sign(g[mask6])
-        d[mask6] = 1 / q[mask6]
-        c[mask6] = 1.0
+        u = xp.where(mask6, xp.sqrt(r * ap), u)
+        v = xp.where(mask6, y * de * xp.sign(g), v)
+        d = xp.where(mask6, 1 / q, d)
+        c = xp.where(mask6, 1.0, c)
 
     mask6x = ~mask6
     if xp.any(mask6x):
-        u[mask6x] = xp.sqrt(h[mask6x] * ap[mask6x] * pz[mask6x])
-        ye[mask6x] = y[mask6x] * q[mask6x]
-        v[mask6x] = am[mask6x] * ye[mask6x]
-        q[mask6x] = -de[mask6x] / g[mask6x]
-        d[mask6x] = -am[mask6x] / de[mask6x]
-        c[mask6x] = 0
-        pz[mask6x] = ap[mask6x] - r[mask6x]
+        u = xp.where(mask6x, xp.sqrt(h * ap * pz), u)
+        ye = xp.where(mask6x, y * q, ye)
+        v = xp.where(mask6x, am * ye, v)
+        q = xp.where(mask6x, -de / g, q)
+        d = xp.where(mask6x, -am / de, d)
+        c = xpx.at(c)[mask6x].set(0)
+        pz = xp.where(mask6x, ap - r, pz)
 
     if xp.any(bo):
-        r[bo] = v[bo] / u[bo]
-        z[bo] = 1
-        k[bo] = 1
+        r = xp.where(bo, v / u, r)
+        z = xpx.at(z)[bo].set(1)
+        k = xpx.at(k)[bo].set(1)
 
         mask7 = bo & (pm < 0)
         if xp.any(mask7):
-            h[mask7] = y[mask7] * xp.sqrt(h[mask7] / (ap[mask7] * fa[mask7]))
-            h[mask7] = 1 / h[mask7] - h[mask7]
-            z[mask7] = h[mask7] - 2 * r[mask7]
-            r[mask7] = 2 + r[mask7] * h[mask7]
+            h = xp.where(mask7, y * xp.sqrt(h / (ap * fa)), h)
+            h = xp.where(mask7, 1 / h - h, h)
+            z = xp.where(mask7, h - 2 * r, z)
+            r = xp.where(mask7, 2 + r * h, r)
 
             mask7a = mask7 & (r == 0)
-            r[mask7a] = CB
+            r = xpx.at(r)[mask7a].set(CB)
 
             mask7b = mask7 & (z == 0)
-            z[mask7b] = h[mask7b] * CB
+            z = xp.where(mask7b, h * CB, z)
 
-            z[mask7] = r[mask7] / z[mask7]
-            r[mask7] = xp.asarray(z[mask7], copy=True)
-            w[mask7] = pz[mask7]
+            z = xp.where(mask7, r / z, z)
+            r = xp.where(mask7, z, r)
+            w = xp.where(mask7, pz, w)
 
-        u[bo] = u[bo] / w[bo]
-        v[bo] = v[bo] / w[bo]
+        u = xp.where(bo, u / w, u)
+        v = xp.where(bo, v / w, v)
 
     box = ~bo
     if xp.any(box):
-        t[box] = u[box] + xp.abs(v[box])
-        bk[box] = True
+        t = xp.where(box, u + xp.abs(v), t)
+        bk = xpx.at(bk)[box].set(True)
 
         mask8 = box & (p1 < 0)
         if xp.any(mask8):
-            de[mask8] = v[mask8] / pz[mask8]
-            ye[mask8] = u[mask8] * ye[mask8]
-            ye[mask8] = 2 * ye[mask8]
-            u[mask8] = t[mask8] / pz[mask8]
-            v[mask8] = (-f[mask8] - g[mask8] * e[mask8]) / t[mask8]
-            t[mask8] = pz[mask8] * xp.abs(w[mask8])
-            z[mask8] = (
-                hh[mask8] * r[mask8] * f[mask8] - g[mask8] * ap[mask8] + ye[mask8]
-            ) / t[mask8]
-            ye[mask8] = ye[mask8] / t[mask8]
+            de = xp.where(mask8, v / pz, de)
+            ye = xp.where(mask8, u * ye, ye)
+            ye = xp.where(mask8, 2 * ye, ye)
+            u = xp.where(mask8, t / pz, u)
+            v = xp.where(mask8, (-f - g * e) / t, v)
+            t = xp.where(mask8, pz * xp.abs(w), t)
+            z = xp.where(
+                mask8,
+                (hh * r * f - g * ap + ye) / t,
+                z,
+            )
+            ye = xp.where(mask8, ye / t, ye)
 
         mask8x = box & (p1 >= 0)
         if xp.any(mask8x):
-            de[mask8x] = v[mask8x] / w[mask8x]
-            ye[mask8x] = 0
-            u[mask8x] = (e[mask8x] + p1[mask8x]) / t[mask8x]
-            v[mask8x] = t[mask8x] / w[mask8x]
-            z[mask8x] = 1.0
+            de = xp.where(mask8x, v / w, de)
+            ye = xpx.at(ye).set(0)
+            u = xp.where(mask8x, (e + p1) / t, u)
+            v = xp.where(mask8x, t / w, v)
+            z = xpx.at(z)[mask8x].set(1.0)
 
         mask9 = box & (s > 1)
         if xp.any(mask9):
-            h[mask9] = u[mask9]
-            u[mask9] = v[mask9]
-            v[mask9] = h[mask9]
+            h = xp.where(mask9, u, h)
+            u = xp.where(mask9, v, u)
+            v = xp.where(mask9, h, v)
 
     y = 1 / y
     e = xp.asarray(s, copy=True)
@@ -448,120 +457,118 @@ def el3v(x, kc, p):
         (p.shape[0]), dtype=xp.bool
     )  # dynamic mask, changed in each loop iteration
     while xp.any(mask10):
-        y[mask10] = y[mask10] - e[mask10] / y[mask10]
+        y = xp.where(mask10, y - e / y, y)
 
         mask11 = mask10 & (y == 0.0)
-        y[mask11] = xp.sqrt(e[mask11]) * CB
+        y = xp.where(mask11, xp.sqrt(e) * CB, y)
 
-        f[mask10] = c[mask10]
-        c[mask10] = d[mask10] / q[mask10] + c[mask10]
-        g[mask10] = e[mask10] / q[mask10]
-        d[mask10] = f[mask10] * g[mask10] + d[mask10]
-        d[mask10] = 2 * d[mask10]
-        q[mask10] = g[mask10] + q[mask10]
-        g[mask10] = t[mask10]
-        t[mask10] = s[mask10] + t[mask10]
-        n[mask10] = 2 * n[mask10]
-        m[mask10] = 2 * m[mask10]
+        f = xp.where(mask10, c, f)
+        c = xp.where(mask10, d / q + c, c)
+        g = xp.where(mask10, e / q, g)
+        d = xp.where(mask10, f * g + d, d)
+        d = xp.where(mask10, 2 * d, d)
+        q = xp.where(mask10, g + q, q)
+        g = xp.where(mask10, t, g)
+        t = xp.where(mask10, s + t, t)
+        n = xp.where(mask10, 2 * n, n)
+        m = xp.where(mask10, 2 * m, m)
         bo10 = mask10 & bo
         if xp.any(bo10):
             bo10b = bo10 & (z < 0)
-            m[bo10b] = k[bo10b] + m[bo10b]
+            m = xp.where(bo10b, k + m, m)
 
-            k[bo10] = xp.sign(r[bo10])
-            h[bo10] = e[bo10] / (u[bo10] * u[bo10] + v[bo10] * v[bo10])
-            u[bo10] = u[bo10] * (1 + h[bo10])
-            v[bo10] = v[bo10] * (1 - h[bo10])
+            k = xp.where(bo10, xp.sign(r), k)
+            h = xp.where(bo10, e / (u * u + v * v), h)
+            u = xp.where(bo10, u * (1 + h), u)
+            v = xp.where(bo10, v * (1 - h), v)
 
         bo10x = xp.asarray(mask10 & ~bo10, dtype=xp.bool)
         if xp.any(bo10x):
-            r[bo10x] = u[bo10x] / v[bo10x]
-            h[bo10x] = z[bo10x] * r[bo10x]
-            z[bo10x] = h[bo10x] * z[bo10x]
-            hh[bo10x] = e[bo10x] / v[bo10x]
+            r = xp.where(bo10x, u / v, r)
+            h = xp.where(bo10x, z * r, h)
+            z = xp.where(bo10x, h * z, z)
+            hh = xp.where(bo10x, e / v, hh)
 
             bo10x_bk = xp.asarray(bo10x * bk, dtype=bool)  # if bk
             bo10x_bkx = xp.asarray(bo10x * ~bk, dtype=bool)
             if xp.any(bo10x_bk):
-                de[bo10x_bk] = de[bo10x_bk] / u[bo10x_bk]
-                ye[bo10x_bk] = ye[bo10x_bk] * (h[bo10x_bk] + 1 / h[bo10x_bk]) + de[
-                    bo10x_bk
-                ] * (1 + r[bo10x_bk])
-                de[bo10x_bk] = de[bo10x_bk] * (u[bo10x_bk] - hh[bo10x_bk])
-                bk[bo10x_bk] = xp.abs(ye[bo10x_bk]) < 1
+                de = xp.where(bo10x_bk, de / u, de)
+                ye = xp.where(bo10x_bk, ye * (h + 1 / h) + de * (1 + r), ye)
+                de = xp.where(bo10x_bk, de[bo10x_bk] * (u[bo10x_bk] - hh[bo10x_bk]), de)
+                bk = xp.where(bo10x_bk, xp.abs(ye[bo10x_bk]) < 1, bk)
             if xp.any(bo10x_bkx):
-                a_crack = xp.log(x[bo10x_bkx])
-                k[bo10x_bkx] = (a_crack / ln2).astype(int) + 1
-                a_crack = a_crack - k[bo10x_bkx] * ln2
-                m[bo10x_bkx] = xp.exp(a_crack)
-                m[bo10x_bkx] = m[bo10x_bkx] + k[bo10x_bkx]
+                a_crack = xp.log(x)
+                k = xp.where(bo10x_bkx, xp.astype(a_crack / ln2, xp.int32) + 1, k)
+                a_crack = a_crack - k * ln2
+                m = xp.where(bo10x_bkx, xp.exp(a_crack), m)
+                m = xp.where(bo10x_bkx, m + k, m)
 
         mask11 = xp.abs(g - s) > CA * g
         if xp.any(mask11):
             bo11 = mask11 & bo
             if xp.any(bo11):
-                g[bo11] = (1 / r[bo11] - r[bo11]) * 0.5
-                hh[bo11] = u[bo11] + v[bo11] * g[bo11]
-                h[bo11] = g[bo11] * u[bo11] - v[bo11]
+                g = xp.where(bo11, (1 / r - r) * 0.5, g)
+                hh = xp.where(bo11, u + v * g, hh)
+                h = xp.where(bo11, g * u - v, h)
 
                 bo11b = bo11 & (hh == 0)
-                hh[bo11b] = u[bo11b] * CB
+                hh = xp.where(bo11b, u * CB, hh)
 
                 bo11c = bo11 & (h == 0)
-                h[bo11c] = v[bo11c] * CB
+                h = xp.where(bo11c, v * CB, h)
 
-                z[bo11] = r[bo11] * h[bo11]
-                r[bo11] = hh[bo11] / h[bo11]
+                z = xp.where(bo11, r * h, z)
+                r = xp.where(bo11, hh / h, r)
 
             bo11x = mask11 & ~bo
             if xp.any(bo11x):
-                u[bo11x] = u[bo11x] + e[bo11x] / u[bo11x]
-                v[bo11x] = v[bo11x] + hh[bo11x]
+                u = xp.where(bo11x, u + e / u, u)
+                v = xp.where(bo11x, v + hh, v)
 
-            s[mask11] = xp.sqrt(e[mask11])
-            s[mask11] = 2 * s[mask11]
-            e[mask11] = s[mask11] * t[mask11]
-            l[mask11] = 2 * l[mask11]
+            s = xp.where(mask11, xp.sqrt(e), s)
+            s = xp.where(mask11, 2 * s, s)
+            e = xp.where(mask11, s * t, e)
+            l = xp.where(mask11, 2 * l, l)
 
             mask12 = mask11 & (y < 0)
-            l[mask12] = l[mask12] + 1
+            l = xp.where(mask12, l + 1, l)
 
         # break off parts that have completed their iteration
         mask10 = mask11
 
     mask12 = y < 0
-    l[mask12] = l[mask12] + 1
+    l = xp.where(mask12, l + 1, l)
 
     e = xp.atan(t / y) + xp.pi * l
     e = e * (c * t + d) / (t * (t + q))
 
     if xp.any(bo):
-        h[bo] = v[bo] / (t[bo] + u[bo])
-        z[bo] = 1 - r[bo] * h[bo]
-        h[bo] = r[bo] + h[bo]
+        h = xp.where(bo, v / (t + u), h)
+        z = xp.where(bo, 1 - r * h, z)
+        h = xp.where(bo, r + h, h)
 
         bob = bo & (z == 0)
-        z[bob] = CB
+        z = xp.where(bob, CB, z)
 
         boc = bo & (z < 0)
-        m[boc] = m[boc] + xp.sign(h[boc])
+        m = xp.where(boc, m + xp.sign(h), m)
 
-        s[bo] = xp.atan(h[bo] / z[bo]) + m[bo] * xp.pi
+        s = xp.where(bo, xp.atan(h / z) + m * xp.pi, s)
 
     box = ~bo
     if xp.any(box):
         box_bk = box & bk
-        s[box_bk] = xp.asinh(ye[box_bk])
+        s = xp.where(box_bk, xp.asinh(ye), s)
 
         box_bkx = box & ~bk
-        s[box_bkx] = xp.log(z[box_bkx]) + m[box_bkx] * ln2
+        s = xp.where(box_bkx, xp.log(z) + m * ln2, s)
 
-        s[box] = s[box] * 0.5
+        s = xp.where(box, s * 0.5, s)
     e = (e + xp.sqrt(fa) * s) / n
-    result[~mask2] = xp.sign(x) * e
+    result = xpx.at(result)[~mask2].set(xp.sign(x) * e)
 
     # include mask0-case
-    result0[mask0] = result
+    result0 = xpx.at(result0)[mask0].set(result)
 
     return result0
 
@@ -608,12 +615,12 @@ def el3_angle(phi: np.ndarray, n: np.ndarray, m: np.ndarray) -> np.ndarray:
     mask1 = (n <= 0) & (phi_red < -xp.pi / 2)
     mask2 = (n >= 0) & (phi_red > xp.pi / 2)
     if xp.any(mask1):
-        n[mask1] = n[mask1] - 1
-        phi_red[mask1] = phi_red[mask1] + xp.pi
+        n = xp.where(mask1, n - 1, n)
+        phi_red = xp.where(mask1, phi_red + xp.pi, phi_red)
 
     if xp.any(mask2):
-        n[mask2] = n[mask2] + 1
-        phi_red[mask2] = phi_red[mask2] - xp.pi
+        n = xp.where(mask2, n + 1, n)
+        phi_red = xp.where(mask2, phi_red - xp.pi, phi_red)
 
     mask3 = n != 0
     mask3x = ~mask3
@@ -630,14 +637,26 @@ def el3_angle(phi: np.ndarray, n: np.ndarray, m: np.ndarray) -> np.ndarray:
         mask3c = ~mask3a & ~mask3b
 
         if xp.any(mask3a):
-            results3[mask3a] = (2 * n3[mask3a] + 1) * cel3_res[mask3a]
+            results3 = xp.where(mask3a, (2 * n3 + 1) * cel3_res, results3)
         if xp.any(mask3b):
-            results3[mask3b] = (2 * n3[mask3b] - 1) * cel3_res[mask3b]
+            results3 = xp.where(mask3b, (2 * n3 - 1) * cel3_res, results3)
         if xp.any(mask3c):
-            el33_res = el3(xp.tan(phi3[mask3c]), kc3[mask3c], p3[mask3c])
-            results3[mask3c] = 2 * n3[mask3c] * cel3_res[mask3c] + el33_res
+            results3 = xpx.apply_where(
+                mask3c,
+                (
+                    phi3,
+                    kc3,
+                    p3,
+                    n3,
+                    cel3_res,
+                    results3,
+                ),
+                lambda phi3, kc3, p3, n3, cel3_res, results3: el3(xp.tan(phi3), kc3, p3)
+                + 2 * n3 * cel3_res,
+                lambda phi3, kc3, p3, n3, cel3_res, results3: results3,
+            )
 
-        results[mask3] = results3
+        results = xpx.at(results)[mask3].set(results3)
 
     if xp.any(mask3x):
         phi_red3x = phi_red[mask3x]
@@ -650,19 +669,28 @@ def el3_angle(phi: np.ndarray, n: np.ndarray, m: np.ndarray) -> np.ndarray:
 
         if xp.any(mask3xa):
             onez = xp.ones(xp.count_nonzero(mask3xa))
-            results3x[mask3xa] = cel(
-                kc3x[mask3xa], p3x[mask3xa], onez, onez
+            results3x = xpx.apply_where(
+                mask3xa,
+                (kc3x, p3x, results3x),
+                lambda kc3x, p3x, results3x: cel(kc3x, p3x, onez, onez),
+                lambda kc3x, p3x, results3x: results3x,
             )  # 3rd kind cel
         if xp.any(mask3xb):
             onez = xp.ones(xp.count_nonzero(mask3xb))
-            results3x[mask3xb] = -cel(
-                kc3x[mask3xb], p3x[mask3xb], onez, onez
+            results3x = xp.where(
+                mask3xb,
+                (kc3x, p3x, results3x),
+                lambda kc3x, p3x, results3x: -cel(kc3x, p3x, onez, onez),
+                lambda kc3x, p3x, results3x: results3x,
             )  # 3rd kind cel
         if xp.any(mask3xc):
-            results3x[mask3xc] = el3(
-                xp.tan(phi3x[mask3xc]), kc3x[mask3xc], p3x[mask3xc]
+            results3x = xpx.apply_where(
+                mask3xc,
+                (phi3x, kc3x, p3x, results3x),
+                lambda phi3x, kc3x, p3x, results3x: el3(xp.tan(phi3x), kc3x, p3x),
+                lambda phi3x, kc3x, p3x, results3x: results3x,
             )
 
-        results[mask3x] = results3x
+        results = xpx.at(results)[mask3x].set(results3x)
 
     return results
