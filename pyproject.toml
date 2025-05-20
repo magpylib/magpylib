@@ -59,7 +59,7 @@ docs = [
     "pyvista",
     "magpylib-material-response",
     "magpylib-force",
-    "kaleido==0.2.1.post1",
+    "kaleido==0.2.1", # ulterior versions don't ship chrome
 ]
 test = [
     "pytest>=7.4",
