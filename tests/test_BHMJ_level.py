@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import array_api_strict as xp
 import numpy as np
 from numpy.testing import assert_allclose
 from scipy.constants import mu_0 as MU0
@@ -213,7 +214,7 @@ def test_BHJM_magnet_sphere():
 
 def test_field_cylinder_segment_BH():
     """CylinderSegment field test"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -221,7 +222,7 @@ def test_field_cylinder_segment_BH():
             (2, 3, -1),
         ]
     )
-    dim = np.array(
+    dim = xp.asarray(
         [
             (1, 2, 3, 10, 20),
             (1, 2, 3, 10, 20),
@@ -229,7 +230,7 @@ def test_field_cylinder_segment_BH():
             (0.1, 5, 2, 20, 370),
         ]
     )
-    obs = np.array(
+    obs = xp.asarray(
         [
             (1, 2, 3),
             (1, -1, 0),
