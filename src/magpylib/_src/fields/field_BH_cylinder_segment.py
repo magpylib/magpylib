@@ -6,13 +6,16 @@
 # pylint: disable=too-many-positional-arguments
 from __future__ import annotations
 
+import array_api_extra as xpx
 import numpy as np
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
-from scipy.special import ellipeinc, ellipkinc
 
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.fields.special_el3 import el3_angle
+from magpylib._src.fields.special_elliptic import ellipeinc, ellipkinc
 from magpylib._src.input_checks import check_field_input
+from magpylib._src.array_api_utils import xp_promote
 
 
 def arctan_k_tan_2(k, phi):
@@ -23,16 +26,18 @@ def arctan_k_tan_2(k, phi):
 
     can be replaced by non-masked version ?
     """
+    xp = array_namespace(k, phi)
 
-    full_periods = np.round(phi / (2.0 * np.pi))
-    phi_red = phi - full_periods * 2.0 * np.pi
+    full_periods = xp.round(phi / (2.0 * xp.pi))
+    phi_red = phi - full_periods * 2.0 * xp.pi
 
-    result = full_periods * np.pi
+    result = full_periods * xp.pi
 
-    return np.where(
-        np.abs(phi_red) < np.pi,
-        result + np.arctan(k * np.tan(phi_red / 2.0)),
-        result + phi_red / 2.0,
+    return xpx.apply_where(
+        xp.abs(phi_red) < xp.pi,
+        (result, k, phi_red),
+        lambda result, k, phi_red: result + xp.atan(k * xp.tan(phi_red / 2.0)),
+        lambda result, k, phi_red: result + phi_red / 2.0,
     )
 
 
@@ -42,7 +47,7 @@ def close(arg1: np.ndarray, arg2: np.ndarray) -> np.ndarray:
     input: ndarray, shape (n,) or numpy-interpretable scalar
     output: ndarray, dtype=bool
     """
-    return np.isclose(arg1, arg2, rtol=1e-12, atol=1e-12)
+    return xpx.isclose(arg1, arg2, rtol=1e-12, atol=1e-12)
 
 
 def determine_cases(r, phi, z, r1, phi1, z1):
@@ -60,37 +65,38 @@ def determine_cases(r, phi, z, r1, phi1, z1):
       2nd digit: 1:phi-phi1= 2n*pi,  2:phi-phi1=(2n+1)*pi,  3:general
       3rd digit: 1:r=r1=0,  2:r=0,  3:r1=0,  4:r=r1>0,  5:general
     """
-    n = len(r)  # input length
+    xp = array_namespace(r, phi, z, r1, phi1, z1)
+    n = r.shape[0]  # input length
 
     # allocate result
-    result = np.ones((3, n))
+    result = xp.ones((3, n))
 
     # identify z-case
     mask_z = close(z, z1)
-    result[0] = 200
-    result[0, mask_z] = 100
+    result[0, ...] = 200
+    result[0, :][mask_z] = 100
 
     # identify phi-case
-    mod_2pi = np.abs(phi - phi1) % (2 * np.pi)
-    mask_phi1 = np.logical_or(close(mod_2pi, 0), close(mod_2pi, 2 * np.pi))
-    mod_pi = np.abs(phi - phi1) % np.pi
-    mask_phi2 = np.logical_or(close(mod_pi, 0), close(mod_pi, np.pi))
-    result[1] = 30
-    result[1, mask_phi2] = 20
-    result[1, mask_phi1] = 10
+    mod_2pi = xp.abs(phi - phi1) % (2 * xp.pi)
+    mask_phi1 = xp.logical_or(close(mod_2pi, 0), close(mod_2pi, 2 * xp.pi))
+    mod_pi = xp.abs(phi - phi1) % xp.pi
+    mask_phi2 = xp.logical_or(close(mod_pi, 0), close(mod_pi, xp.pi))
+    result[1, ...] = 30
+    result[1, ...][mask_phi2] = 20
+    result[1, ...][mask_phi1] = 10
 
     # identify r-case
     mask_r2 = close(r, 0)
     mask_r3 = close(r1, 0)
     mask_r4 = close(r, r1)
-    mask_r1 = mask_r2 * mask_r3
-    result[2] = 5
-    result[2, mask_r4] = 4
-    result[2, mask_r3] = 3
-    result[2, mask_r2] = 2
-    result[2, mask_r1] = 1
+    mask_r1 = mask_r2 & mask_r3
+    result[2, ...] = 5
+    result[2, ...][mask_r4] = 4
+    result[2, ...][mask_r3] = 3
+    result[2, ...][mask_r2] = 2
+    result[2, ...][mask_r1] = 1
 
-    return np.array(np.sum(result, axis=0), dtype=int)
+    return xp.asarray(xp.sum(result, axis=0), dtype=xp.int32)
 
 
 # Implementation of all non-zero field components in every special case
@@ -100,384 +106,382 @@ def determine_cases(r, phi, z, r1, phi1, z1):
 # 112 ##############
 
 
-def Hphi_zk_case112(r_i, theta_M):
-    return np.cos(theta_M) * np.log(r_i)
+def Hphi_zk_case112(xp, r_i, theta_M):
+    return xp.cos(theta_M) * xp.log(r_i)
 
 
-def Hz_ri_case112(phi_bar_M, theta_M):
-    return -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hz_ri_case112(xp, phi_bar_M, theta_M):
+    return -xp.sin(theta_M) * xp.sin(phi_bar_M)
 
 
-def Hz_phij_case112(r_i, phi_bar_M, theta_M):
-    return np.sin(theta_M) * np.sin(phi_bar_M) * np.log(r_i)
+def Hz_phij_case112(xp, r_i, phi_bar_M, theta_M):
+    return xp.sin(theta_M) * xp.sin(phi_bar_M) * xp.log(r_i)
 
 
 # 113 ##############
 
 
-def Hphi_zk_case113(r, theta_M):
-    return -np.cos(theta_M) * np.log(r)
+def Hphi_zk_case113(xp, r, theta_M):
+    return -xp.cos(theta_M) * xp.log(r)
 
 
-def Hz_phij_case113(r, phi_bar_M, theta_M):
-    return -np.sin(theta_M) * np.sin(phi_bar_M) * np.log(r)
+def Hz_phij_case113(xp, r, phi_bar_M, theta_M):
+    return -xp.sin(theta_M) * xp.sin(phi_bar_M) * xp.log(r)
 
 
 # 115 ##############
 
 
-def Hr_zk_case115(r, r_i, r_bar_i, phi_bar_j, theta_M):
+def Hr_zk_case115(xp, r, r_i, r_bar_i, phi_bar_j, theta_M):
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / r_bar_i**2)
-    E_coef = np.cos(theta_M) * np.abs(r_bar_i) / r
+    E_coef = xp.cos(theta_M) * xp.abs(r_bar_i) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / r_bar_i**2)
-    F_coef = -np.cos(theta_M) * (r**2 + r_i**2) / (r * np.abs(r_bar_i))
+    F_coef = -xp.cos(theta_M) * (r**2 + r_i**2) / (r * xp.abs(r_bar_i))
     return E_coef * E + F_coef * F
 
 
-def Hphi_zk_case115(r, r_i, r_bar_i, theta_M):
+def Hphi_zk_case115(xp, r, r_i, r_bar_i, theta_M):
     t1 = r_i / r
-    t1_coef = -np.cos(theta_M) * np.sign(r_bar_i)
-    t2 = np.log(np.abs(r_bar_i)) * np.sign(r_bar_i)
-    t2_coef = -np.cos(theta_M)
+    t1_coef = -xp.cos(theta_M) * xp.sign(r_bar_i)
+    t2 = xp.log(xp.abs(r_bar_i)) * xp.sign(r_bar_i)
+    t2_coef = -xp.cos(theta_M)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hz_ri_case115(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
-    t1 = np.abs(r_bar_i) / r
-    t1_coef = np.sin(theta_M) * np.sin(phi_bar_M)
+def Hz_ri_case115(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
+    t1 = xp.abs(r_bar_i) / r
+    t1_coef = xp.sin(theta_M) * xp.sin(phi_bar_M)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / r_bar_i**2)
-    E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.abs(r_bar_i) / r
+    E_coef = xp.sin(theta_M) * xp.cos(phi_bar_M) * xp.abs(r_bar_i) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / r_bar_i**2)
     F_coef = (
-        -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (r * np.abs(r_bar_i))
+        -xp.sin(theta_M) * xp.cos(phi_bar_M) * (r**2 + r_i**2) / (r * xp.abs(r_bar_i))
     )
     return t1_coef * t1 + E_coef * E + F_coef * F
 
 
-def Hz_phij_case115(r_bar_i, phi_bar_M, theta_M):
-    t1 = np.log(np.abs(r_bar_i)) * np.sign(r_bar_i)
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hz_phij_case115(xp, r_bar_i, phi_bar_M, theta_M):
+    t1 = xp.log(xp.abs(r_bar_i)) * xp.sign(r_bar_i)
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
 # 122 ##############
 
 
-def Hphi_zk_case122(r_i, theta_M):
-    return -np.cos(theta_M) * np.log(r_i)
+def Hphi_zk_case122(xp, r_i, theta_M):
+    return -xp.cos(theta_M) * xp.log(r_i)
 
 
-def Hz_ri_case122(phi_bar_M, theta_M):
-    return np.sin(theta_M) * np.sin(phi_bar_M)
+def Hz_ri_case122(xp, phi_bar_M, theta_M):
+    return xp.sin(theta_M) * xp.sin(phi_bar_M)
 
 
-def Hz_phij_case122(r_i, phi_bar_M, theta_M):
-    return -np.sin(theta_M) * np.sin(phi_bar_M) * np.log(r_i)
+def Hz_phij_case122(xp, r_i, phi_bar_M, theta_M):
+    return -xp.sin(theta_M) * xp.sin(phi_bar_M) * xp.log(r_i)
 
 
 # 123 ##############
 
 
-def Hphi_zk_case123(r, theta_M):
-    return -np.cos(theta_M) * np.log(r)
+def Hphi_zk_case123(xp, r, theta_M):
+    return -xp.cos(theta_M) * xp.log(r)
 
 
-def Hz_phij_case123(r, phi_bar_M, theta_M):
-    return -np.sin(theta_M) * np.sin(phi_bar_M) * np.log(r)
+def Hz_phij_case123(xp, r, phi_bar_M, theta_M):
+    return -xp.sin(theta_M) * xp.sin(phi_bar_M) * xp.log(r)
 
 
 # 124 ##############
 
 
-def Hphi_zk_case124(r, theta_M):
-    return np.cos(theta_M) * (1.0 - np.log(2.0 * r))
+def Hphi_zk_case124(xp, r, theta_M):
+    return xp.cos(theta_M) * (1.0 - xp.log(2.0 * r))
 
 
-def Hz_ri_case124(phi_bar_M, theta_M):
-    return 2.0 * np.sin(theta_M) * np.sin(phi_bar_M)
+def Hz_ri_case124(xp, phi_bar_M, theta_M):
+    return 2.0 * xp.sin(theta_M) * xp.sin(phi_bar_M)
 
 
-def Hz_phij_case124(r, phi_bar_M, theta_M):
-    return -np.sin(theta_M) * np.sin(phi_bar_M) * np.log(2.0 * r)
+def Hz_phij_case124(xp, r, phi_bar_M, theta_M):
+    return -xp.sin(theta_M) * xp.sin(phi_bar_M) * xp.log(2.0 * r)
 
 
 # 125 ##############
 
 
-def Hr_zk_case125(r, r_i, r_bar_i, phi_bar_j, theta_M):
+def Hr_zk_case125(xp, r, r_i, r_bar_i, phi_bar_j, theta_M):
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / r_bar_i**2)
-    E_coef = np.cos(theta_M) * np.abs(r_bar_i) / r
+    E_coef = xp.cos(theta_M) * xp.abs(r_bar_i) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / r_bar_i**2)
-    F_coef = -np.cos(theta_M) * (r**2 + r_i**2) / (r * np.abs(r_bar_i))
+    F_coef = -xp.cos(theta_M) * (r**2 + r_i**2) / (r * xp.abs(r_bar_i))
     return E_coef * E + F_coef * F
 
 
-def Hphi_zk_case125(r, r_i, theta_M):
-    return np.cos(theta_M) / r * (r_i - r * np.log(r + r_i))
+def Hphi_zk_case125(xp, r, r_i, theta_M):
+    return xp.cos(theta_M) / r * (r_i - r * xp.log(r + r_i))
 
 
-def Hz_ri_case125(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
+def Hz_ri_case125(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / r_bar_i**2)
-    E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.abs(r_bar_i) / r
+    E_coef = xp.sin(theta_M) * xp.cos(phi_bar_M) * xp.abs(r_bar_i) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / r_bar_i**2)
     F_coef = (
-        -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (r * np.abs(r_bar_i))
+        -xp.sin(theta_M) * xp.cos(phi_bar_M) * (r**2 + r_i**2) / (r * xp.abs(r_bar_i))
     )
-    return np.sin(theta_M) * np.sin(phi_bar_M) * (r + r_i) / r + E_coef * E + F_coef * F
+    return xp.sin(theta_M) * xp.sin(phi_bar_M) * (r + r_i) / r + E_coef * E + F_coef * F
 
 
-def Hz_phij_case125(r, r_i, phi_bar_M, theta_M):
-    return -np.sin(theta_M) * np.sin(phi_bar_M) * np.log(r + r_i)
+def Hz_phij_case125(xp, r, r_i, phi_bar_M, theta_M):
+    return -xp.sin(theta_M) * xp.sin(phi_bar_M) * xp.log(r + r_i)
 
 
 # 132 ##############
 
 
-def Hr_zk_case132(r_i, phi_bar_j, theta_M):
-    return np.cos(theta_M) * np.sin(phi_bar_j) * np.log(r_i)
+def Hr_zk_case132(xp, r_i, phi_bar_j, theta_M):
+    return xp.cos(theta_M) * xp.sin(phi_bar_j) * xp.log(r_i)
 
 
-def Hphi_zk_case132(r_i, phi_bar_j, theta_M):
-    return np.cos(theta_M) * np.cos(phi_bar_j) * np.log(r_i)
+def Hphi_zk_case132(xp, r_i, phi_bar_j, theta_M):
+    return xp.cos(theta_M) * xp.cos(phi_bar_j) * xp.log(r_i)
 
 
-def Hz_ri_case132(phi_bar_Mj, theta_M):
-    return -np.sin(theta_M) * np.sin(phi_bar_Mj)
+def Hz_ri_case132(xp, phi_bar_Mj, theta_M):
+    return -xp.sin(theta_M) * xp.sin(phi_bar_Mj)
 
 
-def Hz_phij_case132(r_i, phi_bar_Mj, theta_M):
-    return np.sin(theta_M) * np.sin(phi_bar_Mj) * np.log(r_i)
+def Hz_phij_case132(xp, r_i, phi_bar_Mj, theta_M):
+    return xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.log(r_i)
 
 
 # 133 ##############
 
 
-def Hr_zk_case133(r, phi_bar_j, theta_M):
-    return -np.cos(theta_M) * np.sin(phi_bar_j) + np.cos(theta_M) * np.sin(
+def Hr_zk_case133(xp, r, phi_bar_j, theta_M):
+    return -xp.cos(theta_M) * xp.sin(phi_bar_j) + xp.cos(theta_M) * xp.sin(
         phi_bar_j
-    ) * np.log(r * (1.0 - np.cos(phi_bar_j)))
+    ) * xp.log(r * (1.0 - xp.cos(phi_bar_j)))
 
 
-def Hphi_zk_case133(phi_bar_j, theta_M):
-    return np.cos(theta_M) - np.cos(theta_M) * np.cos(phi_bar_j) * np.arctanh(
-        np.cos(phi_bar_j)
+def Hphi_zk_case133(xp, phi_bar_j, theta_M):
+    return xp.cos(theta_M) - xp.cos(theta_M) * xp.cos(phi_bar_j) * xp.atanh(
+        xp.cos(phi_bar_j)
     )
 
 
-def Hz_phij_case133(phi_bar_j, phi_bar_Mj, theta_M):
-    return -np.sin(theta_M) * np.sin(phi_bar_Mj) * np.arctanh(np.cos(phi_bar_j))
+def Hz_phij_case133(xp, phi_bar_j, phi_bar_Mj, theta_M):
+    return -xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.atanh(xp.cos(phi_bar_j))
 
 
 # 134 ##############
 
 
-def Hr_zk_case134(r, phi_bar_j, theta_M):
-    t1 = np.sin(phi_bar_j)
-    t1_coef = -np.cos(theta_M)
-    t2 = np.sin(phi_bar_j) / np.sqrt(1.0 - np.cos(phi_bar_j))
-    t2_coef = -np.sqrt(2.0) * np.cos(theta_M)
-    t3 = np.log(
-        r * (1.0 - np.cos(phi_bar_j) + np.sqrt(2.0) * np.sqrt(1.0 - np.cos(phi_bar_j)))
+def Hr_zk_case134(xp, r, phi_bar_j, theta_M):
+    t1 = xp.sin(phi_bar_j)
+    t1_coef = -xp.cos(theta_M)
+    t2 = xp.sin(phi_bar_j) / xp.sqrt(1.0 - xp.cos(phi_bar_j))
+    t2_coef = -xp.sqrt(2.0) * xp.cos(theta_M)
+    t3 = xp.log(
+        r * (1.0 - xp.cos(phi_bar_j) + xp.sqrt(2.0) * xp.sqrt(1.0 - xp.cos(phi_bar_j)))
     )
-    t3_coef = np.cos(theta_M) * np.sin(phi_bar_j)
-    t4 = np.arctanh(
-        np.sin(phi_bar_j) / (np.sqrt(2.0) * np.sqrt(1.0 - np.cos(phi_bar_j)))
-    )
-    t4_coef = np.cos(theta_M)
+    t3_coef = xp.cos(theta_M) * xp.sin(phi_bar_j)
+    t4 = xp.atanh(xp.sin(phi_bar_j) / (xp.sqrt(2.0) * xp.sqrt(1.0 - xp.cos(phi_bar_j))))
+    t4_coef = xp.cos(theta_M)
     return t1_coef * t1 + t2_coef * t2 + t3_coef * t3 + t4_coef * t4
 
 
-def Hphi_zk_case134(phi_bar_j, theta_M):
-    return np.sqrt(2) * np.cos(theta_M) * np.sqrt(1 - np.cos(phi_bar_j)) + np.cos(
+def Hphi_zk_case134(xp, phi_bar_j, theta_M):
+    return xp.sqrt(2) * xp.cos(theta_M) * xp.sqrt(1 - xp.cos(phi_bar_j)) + xp.cos(
         theta_M
-    ) * np.cos(phi_bar_j) * np.arctanh(np.sqrt((1 - np.cos(phi_bar_j)) / 2))
+    ) * xp.cos(phi_bar_j) * xp.atanh(xp.sqrt((1 - xp.cos(phi_bar_j)) / 2))
 
 
-def Hz_ri_case134(phi_bar_j, phi_bar_M, theta_M):
-    t1 = np.sqrt(1.0 - np.cos(phi_bar_j))
-    t1_coef = np.sqrt(2.0) * np.sin(theta_M) * np.sin(phi_bar_M)
-    t2 = np.sin(phi_bar_j) / t1
-    t2_coef = -np.sqrt(2.0) * np.sin(theta_M) * np.cos(phi_bar_M)
-    t3 = np.arctanh(t2 / np.sqrt(2.0))
-    t3_coef = np.sin(theta_M) * np.cos(phi_bar_M)
+def Hz_ri_case134(xp, phi_bar_j, phi_bar_M, theta_M):
+    t1 = xp.sqrt(1.0 - xp.cos(phi_bar_j))
+    t1_coef = xp.sqrt(2.0) * xp.sin(theta_M) * xp.sin(phi_bar_M)
+    t2 = xp.sin(phi_bar_j) / t1
+    t2_coef = -xp.sqrt(2.0) * xp.sin(theta_M) * xp.cos(phi_bar_M)
+    t3 = xp.atanh(t2 / xp.sqrt(2.0))
+    t3_coef = xp.sin(theta_M) * xp.cos(phi_bar_M)
     return t1_coef * t1 + t2_coef * t2 + t3_coef * t3
 
 
-def Hz_phij_case134(phi_bar_j, phi_bar_Mj, theta_M):
+def Hz_phij_case134(xp, phi_bar_j, phi_bar_Mj, theta_M):
     return (
-        np.sin(theta_M)
-        * np.sin(phi_bar_Mj)
-        * np.arctanh(np.sqrt((1.0 - np.cos(phi_bar_j)) / 2.0))
+        xp.sin(theta_M)
+        * xp.sin(phi_bar_Mj)
+        * xp.atanh(xp.sqrt((1.0 - xp.cos(phi_bar_j)) / 2.0))
     )
 
 
 # 135 ##############
 
 
-def Hr_zk_case135(r, r_i, r_bar_i, phi_bar_j, theta_M):
-    t1 = np.sin(phi_bar_j)
-    t1_coef = -np.cos(theta_M)
-    t2 = np.log(
+def Hr_zk_case135(xp, r, r_i, r_bar_i, phi_bar_j, theta_M):
+    t1 = xp.sin(phi_bar_j)
+    t1_coef = -xp.cos(theta_M)
+    t2 = xp.log(
         r_i
-        - r * np.cos(phi_bar_j)
-        + np.sqrt(r_i**2 + r**2 - 2 * r_i * r * np.cos(phi_bar_j))
+        - r * xp.cos(phi_bar_j)
+        + xp.sqrt(r_i**2 + r**2 - 2 * r_i * r * xp.cos(phi_bar_j))
     )
-    t2_coef = np.cos(theta_M) * np.sin(phi_bar_j)
+    t2_coef = xp.cos(theta_M) * xp.sin(phi_bar_j)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / r_bar_i**2)
-    E_coef = np.cos(theta_M) * np.abs(r_bar_i) / r
+    E_coef = xp.cos(theta_M) * xp.abs(r_bar_i) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / r_bar_i**2)
-    F_coef = -np.cos(theta_M) * (r**2 + r_i**2) / (r * np.abs(r_bar_i))
+    F_coef = -xp.cos(theta_M) * (r**2 + r_i**2) / (r * xp.abs(r_bar_i))
     return t1_coef * t1 + t2_coef * t2 + E_coef * E + F_coef * F
 
 
-def Hphi_zk_case135(r, r_i, phi_bar_j, theta_M):
-    t1 = np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j))
-    t1_coef = np.cos(theta_M) / r
-    t2 = np.arctanh((r * np.cos(phi_bar_j) - r_i) / t1)
-    t2_coef = -np.cos(theta_M) * np.cos(phi_bar_j)
+def Hphi_zk_case135(xp, r, r_i, phi_bar_j, theta_M):
+    t1 = xp.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * xp.cos(phi_bar_j))
+    t1_coef = xp.cos(theta_M) / r
+    t2 = xp.atanh((r * xp.cos(phi_bar_j) - r_i) / t1)
+    t2_coef = -xp.cos(theta_M) * xp.cos(phi_bar_j)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hz_ri_case135(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
+def Hz_ri_case135(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
     t = r_bar_i**2
-    t1 = np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j)) / r
-    t1_coef = np.sin(theta_M) * np.sin(phi_bar_M)
+    t1 = xp.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * xp.cos(phi_bar_j)) / r
+    t1_coef = xp.sin(theta_M) * xp.sin(phi_bar_M)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / t)
-    E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.sqrt(t) / r
+    E_coef = xp.sin(theta_M) * xp.cos(phi_bar_M) * xp.sqrt(t) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / t)
-    F_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (r * np.sqrt(t))
+    F_coef = -xp.sin(theta_M) * xp.cos(phi_bar_M) * (r**2 + r_i**2) / (r * xp.sqrt(t))
     return t1_coef * t1 + E_coef * E + F_coef * F
 
 
-def Hz_phij_case135(r, r_i, phi_bar_j, phi_bar_Mj, theta_M):
-    t1 = np.arctanh(
-        (r * np.cos(phi_bar_j) - r_i)
-        / np.sqrt(r**2 + r_i**2 - 2 * r * r_i * np.cos(phi_bar_j))
+def Hz_phij_case135(xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M):
+    t1 = xp.atanh(
+        (r * xp.cos(phi_bar_j) - r_i)
+        / xp.sqrt(r**2 + r_i**2 - 2 * r * r_i * xp.cos(phi_bar_j))
     )
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_Mj)
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_Mj)
     return t1_coef * t1
 
 
 # 211 ##############
 
 
-def Hr_phij_case211(phi_bar_M, theta_M, z_bar_k):
+def Hr_phij_case211(xp, phi_bar_M, theta_M, z_bar_k):
     return (
-        -np.sin(theta_M)
-        * np.sin(phi_bar_M)
-        * np.sign(z_bar_k)
-        * np.log(np.abs(z_bar_k))
+        -xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
+        * xp.sign(z_bar_k)
+        * xp.log(xp.abs(z_bar_k))
     )
 
 
-def Hz_zk_case211(phi_j, theta_M, z_bar_k):
-    return -np.cos(theta_M) * np.sign(z_bar_k) * phi_j
+def Hz_zk_case211(xp, phi_j, theta_M, z_bar_k):
+    return -xp.cos(theta_M) * xp.sign(z_bar_k) * phi_j
 
 
 # 212 ##############
 
 
-def Hr_ri_case212(r_i, phi_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sin(theta_M) * z_bar_k / np.sqrt(r_i**2 + z_bar_k**2)
-    t2 = 1.0 / 2.0 * phi_j * np.cos(phi_bar_M)
-    t3 = 1.0 / 4.0 * np.sin(phi_bar_M)
+def Hr_ri_case212(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sin(theta_M) * z_bar_k / xp.sqrt(r_i**2 + z_bar_k**2)
+    t2 = 1.0 / 2.0 * phi_j * xp.cos(phi_bar_M)
+    t3 = 1.0 / 4.0 * xp.sin(phi_bar_M)
     return t1 * (t2 - t3)
 
 
-def Hr_phij_case212(r_i, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.arctanh(z_bar_k / np.sqrt(r_i**2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hr_phij_case212(xp, r_i, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.atanh(z_bar_k / xp.sqrt(r_i**2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hphi_ri_case212(r_i, phi_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sin(theta_M) * z_bar_k / np.sqrt(r_i**2 + z_bar_k**2)
-    t2 = 1.0 / 4.0 * np.cos(phi_bar_M)
-    t3 = 1.0 / 2.0 * phi_j * np.sin(phi_bar_M)
+def Hphi_ri_case212(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sin(theta_M) * z_bar_k / xp.sqrt(r_i**2 + z_bar_k**2)
+    t2 = 1.0 / 4.0 * xp.cos(phi_bar_M)
+    t3 = 1.0 / 2.0 * phi_j * xp.sin(phi_bar_M)
     return t1 * (-t2 + t3)
 
 
-def Hphi_zk_case212(r_i, theta_M, z_bar_k):
-    t1 = r_i / np.sqrt(r_i**2 + z_bar_k**2)
-    t1_coef = -np.cos(theta_M)
-    t2 = np.arctanh(t1)
-    t2_coef = np.cos(theta_M)
+def Hphi_zk_case212(xp, r_i, theta_M, z_bar_k):
+    t1 = r_i / xp.sqrt(r_i**2 + z_bar_k**2)
+    t1_coef = -xp.cos(theta_M)
+    t2 = xp.atanh(t1)
+    t2_coef = xp.cos(theta_M)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hz_ri_case212(r_i, phi_bar_M, theta_M, z_bar_k):
-    t1 = r_i / np.sqrt(r_i**2 + z_bar_k**2)
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hz_ri_case212(xp, r_i, phi_bar_M, theta_M, z_bar_k):
+    t1 = r_i / xp.sqrt(r_i**2 + z_bar_k**2)
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hz_phij_case212(r_i, phi_bar_M, theta_M, z_bar_k):
+def Hz_phij_case212(xp, r_i, phi_bar_M, theta_M, z_bar_k):
     return (
-        np.sin(theta_M)
-        * np.sin(phi_bar_M)
-        * np.arctanh(r_i / np.sqrt(r_i**2 + z_bar_k**2))
+        xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
+        * xp.atanh(r_i / xp.sqrt(r_i**2 + z_bar_k**2))
     )
 
 
-def Hz_zk_case212(r_i, phi_j, theta_M, z_bar_k):
-    t1 = phi_j / np.sqrt(r_i**2 + z_bar_k**2)
-    t1_coef = -np.cos(theta_M) * z_bar_k
+def Hz_zk_case212(xp, r_i, phi_j, theta_M, z_bar_k):
+    t1 = phi_j / xp.sqrt(r_i**2 + z_bar_k**2)
+    t1_coef = -xp.cos(theta_M) * z_bar_k
     return t1_coef * t1
 
 
 # 213 ##############
 
 
-def Hr_phij_case213(r, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.arctanh(z_bar_k / np.sqrt(r**2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hr_phij_case213(xp, r, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.atanh(z_bar_k / xp.sqrt(r**2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hphi_zk_case213(r, theta_M, z_bar_k):
-    t1 = np.sqrt(r**2 + z_bar_k**2)
-    t1_coef = np.cos(theta_M) / r
-    t2 = np.arctanh(r / t1)
-    t2_coef = -np.cos(theta_M)
+def Hphi_zk_case213(xp, r, theta_M, z_bar_k):
+    t1 = xp.sqrt(r**2 + z_bar_k**2)
+    t1_coef = xp.cos(theta_M) / r
+    t2 = xp.atanh(r / t1)
+    t2_coef = -xp.cos(theta_M)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hz_phij_case213(r, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.arctanh(r / np.sqrt(r**2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hz_phij_case213(xp, r, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.atanh(r / xp.sqrt(r**2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hz_zk_case213(phi_bar_j, theta_M, z_bar_k):
-    t1 = np.sign(z_bar_k)
-    t1_coef = np.cos(theta_M) * phi_bar_j
+def Hz_zk_case213(xp, phi_bar_j, theta_M, z_bar_k):
+    t1 = xp.sign(z_bar_k)
+    t1_coef = xp.cos(theta_M) * phi_bar_j
     return t1_coef * t1
 
 
 # 214 ##############
 
 
-def Hr_ri_case214(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+def Hr_ri_case214(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     E_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * z_bar_k**2
-        * np.sign(z_bar_k)
+        * xp.sign(z_bar_k)
         / (2.0 * r**2)
     )
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     F_coef = (
-        np.sin(theta_M)
-        * np.cos(phi_bar_M)
-        * np.sign(z_bar_k)
+        xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
+        * xp.sign(z_bar_k)
         * (2.0 * r**2 + z_bar_k**2)
         / (2.0 * r**2)
     )
     return (
-        -np.sin(theta_M)
-        * np.sin(phi_bar_M)
-        * np.sign(z_bar_k)
+        -xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
+        * xp.sign(z_bar_k)
         * z_bar_k**2
         / (2.0 * r**2)
         + E_coef * E
@@ -485,29 +489,29 @@ def Hr_ri_case214(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     )
 
 
-def Hr_phij_case214(phi_bar_M, theta_M, z_bar_k):
+def Hr_phij_case214(xp, phi_bar_M, theta_M, z_bar_k):
     return (
-        -np.sin(theta_M)
-        * np.sin(phi_bar_M)
-        * np.sign(z_bar_k)
-        * np.log(np.abs(z_bar_k))
+        -xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
+        * xp.sign(z_bar_k)
+        * xp.log(xp.abs(z_bar_k))
     )
 
 
-def Hr_zk_case214(r, phi_bar_j, theta_M, z_bar_k):
+def Hr_zk_case214(xp, r, phi_bar_j, theta_M, z_bar_k):
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
-    E_coef = np.cos(theta_M) * np.abs(z_bar_k) / r
+    E_coef = xp.cos(theta_M) * xp.abs(z_bar_k) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
-    F_coef = -np.cos(theta_M) * (2.0 * r**2 + z_bar_k**2) / (r * np.abs(z_bar_k))
-    t = np.sqrt(r**2 + z_bar_k**2)
+    F_coef = -xp.cos(theta_M) * (2.0 * r**2 + z_bar_k**2) / (r * xp.abs(z_bar_k))
+    t = xp.sqrt(r**2 + z_bar_k**2)
 
     def Pi1(sign):
         return el3_angle(phi_bar_j / 2, 2 * r / (r + sign * t), -4 * r**2 / z_bar_k**2)
 
     def Pi1_coef(sign):
         return (
-            -np.cos(theta_M)
-            / (r * np.sqrt((r**2 + z_bar_k**2) * z_bar_k**2))
+            -xp.cos(theta_M)
+            / (r * xp.sqrt((r**2 + z_bar_k**2) * z_bar_k**2))
             * (t - sign * r)
             * (r + sign * t) ** 2
         )
@@ -522,11 +526,11 @@ def Hr_zk_case214(r, phi_bar_j, theta_M, z_bar_k):
     def Pi2_coef(sign):
         return (
             sign
-            * np.cos(theta_M)
+            * xp.cos(theta_M)
             * z_bar_k**4
             / (
                 r
-                * np.sqrt((r**2 + z_bar_k**2) * (4.0 * r**2 + z_bar_k**2))
+                * xp.sqrt((r**2 + z_bar_k**2) * (4.0 * r**2 + z_bar_k**2))
                 * (r + sign * t)
             )
         )
@@ -541,87 +545,87 @@ def Hr_zk_case214(r, phi_bar_j, theta_M, z_bar_k):
     )
 
 
-def Hphi_ri_case214(r, phi_j, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = -np.sin(theta_M) * np.cos(phi_bar_M) * np.sign(z_bar_k) / 2.0
+def Hphi_ri_case214(xp, r, phi_j, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = -xp.sin(theta_M) * xp.cos(phi_bar_M) * xp.sign(z_bar_k) / 2.0
     t2 = phi_j
-    t2_coef = np.sin(theta_M) * np.sin(phi_bar_M) * np.sign(z_bar_k) / 2.0
-    t3 = np.sign(z_bar_k) * z_bar_k**2 / (2.0 * r**2)
-    t3_coef = -np.sin(theta_M) * np.cos(phi_bar_M)
-    t4 = np.log(np.abs(z_bar_k) / (np.sqrt(2.0) * r))
-    t4_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * np.sign(z_bar_k)
+    t2_coef = xp.sin(theta_M) * xp.sin(phi_bar_M) * xp.sign(z_bar_k) / 2.0
+    t3 = xp.sign(z_bar_k) * z_bar_k**2 / (2.0 * r**2)
+    t3_coef = -xp.sin(theta_M) * xp.cos(phi_bar_M)
+    t4 = xp.log(xp.abs(z_bar_k) / (xp.sqrt(2.0) * r))
+    t4_coef = -xp.sin(theta_M) * xp.cos(phi_bar_M) * xp.sign(z_bar_k)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     E_coef = (
-        np.sin(theta_M)
-        * np.sin(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
         * z_bar_k**2
-        * np.sign(z_bar_k)
+        * xp.sign(z_bar_k)
         / (2.0 * r**2)
     )
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     F_coef = (
-        -np.sin(theta_M)
-        * np.sin(phi_bar_M)
-        * np.sign(z_bar_k)
+        -xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
+        * xp.sign(z_bar_k)
         * (4.0 * r**2 + z_bar_k**2)
         / (2.0 * r**2)
     )
     return t1 + t2_coef * t2 + t3_coef * t3 + t4_coef * t4 + E_coef * E + F_coef * F
 
 
-def Hphi_zk_case214(r, theta_M, z_bar_k):
-    t1 = np.abs(z_bar_k)
-    t1_coef = np.cos(theta_M) / r
+def Hphi_zk_case214(xp, r, theta_M, z_bar_k):
+    t1 = xp.abs(z_bar_k)
+    t1_coef = xp.cos(theta_M) / r
     return t1_coef * t1
 
 
-def Hz_ri_case214(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+def Hz_ri_case214(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
-    E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.abs(z_bar_k) / r
+    E_coef = xp.sin(theta_M) * xp.cos(phi_bar_M) * xp.abs(z_bar_k) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     F_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * (2.0 * r**2 + z_bar_k**2)
-        / (r * np.abs(z_bar_k))
+        / (r * xp.abs(z_bar_k))
     )
     return (
-        np.sin(theta_M) * np.sin(phi_bar_M) * np.abs(z_bar_k) / r
+        xp.sin(theta_M) * xp.sin(phi_bar_M) * xp.abs(z_bar_k) / r
         + E_coef * E
         + F_coef * F
     )
 
 
-def Hz_zk_case214(r, phi_bar_j, theta_M, z_bar_k):
-    t = np.sqrt(r**2 + z_bar_k**2)
+def Hz_zk_case214(xp, r, phi_bar_j, theta_M, z_bar_k):
+    t = xp.sqrt(r**2 + z_bar_k**2)
 
     def Pi(sign):
         return el3_angle(phi_bar_j / 2, 2 * r / (r + sign * t), -4 * r**2 / z_bar_k**2)
 
-    Pi_coef = np.cos(theta_M) * np.sign(z_bar_k)
+    Pi_coef = xp.cos(theta_M) * xp.sign(z_bar_k)
     return Pi_coef * Pi(1) + Pi_coef * Pi(-1)
 
 
 # 215 ##############
 
 
-def Hr_ri_case215(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    t2 = np.arctanh(z_bar_k / np.sqrt(r_bar_i**2 + z_bar_k**2))
-    t2_coef = np.sin(theta_M) * np.sin(phi_bar_M) / 2.0 * (1.0 - r_i**2 / r**2)
+def Hr_ri_case215(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    t2 = xp.atanh(z_bar_k / xp.sqrt(r_bar_i**2 + z_bar_k**2))
+    t2_coef = xp.sin(theta_M) * xp.sin(phi_bar_M) / 2.0 * (1.0 - r_i**2 / r**2)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     E_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * z_bar_k
-        * np.sqrt(r_bar_i**2 + z_bar_k**2)
+        * xp.sqrt(r_bar_i**2 + z_bar_k**2)
         / (2 * r**2)
     )
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     F_coef = (
-        np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * z_bar_k
         * (2.0 * r_i**2 + z_bar_k**2)
-        / (2 * r**2 * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (2 * r**2 * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
     Pi = el3_angle(
         phi_bar_j / 2.0,
@@ -629,18 +633,18 @@ def Hr_ri_case215(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
         -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2),
     )
     Pi_coef = (
-        np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * z_bar_k
         * (r**2 + r_i**2)
         * (r + r_i)
-        / (2.0 * r**2 * r_bar_i * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (2.0 * r**2 * r_bar_i * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
     return (
-        -np.sin(theta_M)
-        * np.sin(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
         * z_bar_k
-        * np.sqrt(r_bar_i**2 + z_bar_k**2)
+        * xp.sqrt(r_bar_i**2 + z_bar_k**2)
         / (2.0 * r**2)
         + t2_coef * t2
         + E_coef * E
@@ -649,22 +653,22 @@ def Hr_ri_case215(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     )
 
 
-def Hr_phij_case215(r_bar_i, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.arctanh(z_bar_k / np.sqrt(r_bar_i**2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hr_phij_case215(xp, r_bar_i, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.atanh(z_bar_k / xp.sqrt(r_bar_i**2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hr_zk_case215(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
+def Hr_zk_case215(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
-    E_coef = np.cos(theta_M) * np.sqrt(r_bar_i**2 + z_bar_k**2) / r
+    E_coef = xp.cos(theta_M) * xp.sqrt(r_bar_i**2 + z_bar_k**2) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     F_coef = (
-        -np.cos(theta_M)
+        -xp.cos(theta_M)
         * (r**2 + r_i**2 + z_bar_k**2)
-        / (r * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (r * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
-    t = np.sqrt(r**2 + z_bar_k**2)
+    t = xp.sqrt(r**2 + z_bar_k**2)
 
     def Pi1(sign):
         return el3_angle(
@@ -675,8 +679,8 @@ def Hr_zk_case215(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
 
     def Pi1_coef(sign):
         return (
-            -np.cos(theta_M)
-            / (r * np.sqrt((r**2 + z_bar_k**2) * (r_bar_i**2 + z_bar_k**2)))
+            -xp.cos(theta_M)
+            / (r * xp.sqrt((r**2 + z_bar_k**2) * (r_bar_i**2 + z_bar_k**2)))
             * (t - sign * r)
             * (r_i + sign * t) ** 2
         )
@@ -694,12 +698,12 @@ def Hr_zk_case215(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
     def Pi2_coef(sign):
         return (
             sign
-            * np.cos(theta_M)
+            * xp.cos(theta_M)
             * z_bar_k**2
             * (r_bar_i**2 + z_bar_k**2)
             / (
                 r
-                * np.sqrt((r**2 + z_bar_k**2) * ((r + r_i) ** 2 + z_bar_k**2))
+                * xp.sqrt((r**2 + z_bar_k**2) * ((r + r_i) ** 2 + z_bar_k**2))
                 * (r + sign * t)
             )
         )
@@ -714,26 +718,26 @@ def Hr_zk_case215(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
     )
 
 
-def Hphi_ri_case215(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sqrt(r_bar_i**2 + z_bar_k**2) * z_bar_k / (2.0 * r**2)
-    t1_coef = -np.sin(theta_M) * np.cos(phi_bar_M)
-    t2 = np.arctanh(z_bar_k / np.sqrt(r_bar_i**2 + z_bar_k**2))
-    t2_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
+def Hphi_ri_case215(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sqrt(r_bar_i**2 + z_bar_k**2) * z_bar_k / (2.0 * r**2)
+    t1_coef = -xp.sin(theta_M) * xp.cos(phi_bar_M)
+    t2 = xp.atanh(z_bar_k / xp.sqrt(r_bar_i**2 + z_bar_k**2))
+    t2_coef = -xp.sin(theta_M) * xp.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     E_coef = (
-        np.sin(theta_M)
-        * np.sin(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
         * z_bar_k
-        * np.sqrt(r_bar_i**2 + z_bar_k**2)
+        * xp.sqrt(r_bar_i**2 + z_bar_k**2)
         / (2 * r**2)
     )
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     F_coef = (
-        -np.sin(theta_M)
-        * np.sin(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
         * z_bar_k
         * (2.0 * r**2 + 2.0 * r_i**2 + z_bar_k**2)
-        / (2.0 * r**2 * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (2.0 * r**2 * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
     Pi = el3_angle(
         phi_bar_j / 2.0,
@@ -741,47 +745,47 @@ def Hphi_ri_case215(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
         -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2),
     )
     Pi_coef = (
-        np.sin(theta_M)
-        * np.sin(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
         * z_bar_k
         * (r + r_i) ** 2
-        / (2.0 * r**2 * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (2.0 * r**2 * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
     return t1_coef * t1 + t2_coef * t2 + E_coef * E + F_coef * F + Pi_coef * Pi
 
 
-def Hphi_zk_case215(r, r_bar_i, theta_M, z_bar_k):
-    t1 = np.sqrt(r_bar_i**2 + z_bar_k**2)
-    t1_coef = np.cos(theta_M) / r
-    t2 = np.arctanh(r_bar_i / t1)
-    t2_coef = -np.cos(theta_M)
+def Hphi_zk_case215(xp, r, r_bar_i, theta_M, z_bar_k):
+    t1 = xp.sqrt(r_bar_i**2 + z_bar_k**2)
+    t1_coef = xp.cos(theta_M) / r
+    t2 = xp.atanh(r_bar_i / t1)
+    t2_coef = -xp.cos(theta_M)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hz_ri_case215(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+def Hz_ri_case215(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     t = r_bar_i**2 + z_bar_k**2
-    t1 = np.sqrt(r_bar_i**2 + z_bar_k**2) / r
-    t1_coef = np.sin(theta_M) * np.sin(phi_bar_M)
+    t1 = xp.sqrt(r_bar_i**2 + z_bar_k**2) / r
+    t1_coef = xp.sin(theta_M) * xp.sin(phi_bar_M)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / t)
-    E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.sqrt(t) / r
+    E_coef = xp.sin(theta_M) * xp.cos(phi_bar_M) * xp.sqrt(t) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / t)
     F_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * (r**2 + r_i**2 + z_bar_k**2)
-        / (r * np.sqrt(t))
+        / (r * xp.sqrt(t))
     )
     return t1_coef * t1 + E_coef * E + F_coef * F
 
 
-def Hz_phij_case215(r_bar_i, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.arctanh(r_bar_i / np.sqrt(r_bar_i**2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hz_phij_case215(xp, r_bar_i, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.atanh(r_bar_i / xp.sqrt(r_bar_i**2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hz_zk_case215(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
-    t = np.sqrt(r**2 + z_bar_k**2)
+def Hz_zk_case215(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
+    t = xp.sqrt(r**2 + z_bar_k**2)
 
     def Pi(sign):
         return el3_angle(
@@ -792,10 +796,10 @@ def Hz_zk_case215(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
 
     def Pi_coef(sign):
         return (
-            np.cos(theta_M)
+            xp.cos(theta_M)
             * z_bar_k
             * (r_i + sign * t)
-            / (np.sqrt(r_bar_i**2 + z_bar_k**2) * (r + sign * t))
+            / (xp.sqrt(r_bar_i**2 + z_bar_k**2) * (r + sign * t))
         )
 
     return Pi_coef(1) * Pi(1) + Pi_coef(-1) * Pi(-1)
@@ -804,134 +808,134 @@ def Hz_zk_case215(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
 # 221 ##############
 
 
-def Hr_phij_case221(phi_bar_M, theta_M, z_bar_k):
+def Hr_phij_case221(xp, phi_bar_M, theta_M, z_bar_k):
     return (
-        -np.sin(theta_M)
-        * np.sin(phi_bar_M)
-        * np.sign(z_bar_k)
-        * np.log(np.abs(z_bar_k))
+        -xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
+        * xp.sign(z_bar_k)
+        * xp.log(xp.abs(z_bar_k))
     )
 
 
-def Hz_zk_case221(phi_j, theta_M, z_bar_k):
-    return -np.cos(theta_M) * np.sign(z_bar_k) * phi_j
+def Hz_zk_case221(xp, phi_j, theta_M, z_bar_k):
+    return -xp.cos(theta_M) * xp.sign(z_bar_k) * phi_j
 
 
 # 222 ##############
 
 
-def Hr_ri_case222(r_i, phi_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sin(theta_M) * z_bar_k / np.sqrt(r_i**2 + z_bar_k**2)
-    t2 = 1.0 / 2.0 * phi_j * np.cos(phi_bar_M)
-    t3 = 1.0 / 4.0 * np.sin(phi_bar_M)
+def Hr_ri_case222(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sin(theta_M) * z_bar_k / xp.sqrt(r_i**2 + z_bar_k**2)
+    t2 = 1.0 / 2.0 * phi_j * xp.cos(phi_bar_M)
+    t3 = 1.0 / 4.0 * xp.sin(phi_bar_M)
     return t1 * (t2 - t3)
 
 
-def Hr_phij_case222(r_i, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.arctanh(z_bar_k / np.sqrt(r_i**2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hr_phij_case222(xp, r_i, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.atanh(z_bar_k / xp.sqrt(r_i**2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hphi_ri_case222(r_i, phi_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sin(theta_M) * z_bar_k / np.sqrt(r_i**2 + z_bar_k**2)
-    t2 = 1.0 / 4.0 * np.cos(phi_bar_M)
-    t3 = 1.0 / 2.0 * phi_j * np.sin(phi_bar_M)
+def Hphi_ri_case222(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sin(theta_M) * z_bar_k / xp.sqrt(r_i**2 + z_bar_k**2)
+    t2 = 1.0 / 4.0 * xp.cos(phi_bar_M)
+    t3 = 1.0 / 2.0 * phi_j * xp.sin(phi_bar_M)
     return t1 * (-t2 + t3)
 
 
-def Hphi_zk_case222(r_i, theta_M, z_bar_k):
-    t1 = r_i / np.sqrt(r_i**2 + z_bar_k**2)
-    t1_coef = np.cos(theta_M)
-    t2 = np.arctanh(t1)
-    t2_coef = -np.cos(theta_M)
+def Hphi_zk_case222(xp, r_i, theta_M, z_bar_k):
+    t1 = r_i / xp.sqrt(r_i**2 + z_bar_k**2)
+    t1_coef = xp.cos(theta_M)
+    t2 = xp.atanh(t1)
+    t2_coef = -xp.cos(theta_M)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hz_ri_case222(r_i, phi_bar_M, theta_M, z_bar_k):
-    t1 = r_i / np.sqrt(r_i**2 + z_bar_k**2)
-    t1_coef = np.sin(theta_M) * np.sin(phi_bar_M)
+def Hz_ri_case222(xp, r_i, phi_bar_M, theta_M, z_bar_k):
+    t1 = r_i / xp.sqrt(r_i**2 + z_bar_k**2)
+    t1_coef = xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hz_phij_case222(r_i, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.arctanh(r_i / np.sqrt(r_i**2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hz_phij_case222(xp, r_i, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.atanh(r_i / xp.sqrt(r_i**2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hz_zk_case222(r_i, phi_j, theta_M, z_bar_k):
-    t1 = z_bar_k / np.sqrt(r_i**2 + z_bar_k**2)
-    t1_coef = -np.cos(theta_M) * phi_j
+def Hz_zk_case222(xp, r_i, phi_j, theta_M, z_bar_k):
+    t1 = z_bar_k / xp.sqrt(r_i**2 + z_bar_k**2)
+    t1_coef = -xp.cos(theta_M) * phi_j
     return t1_coef * t1
 
 
 # 223 ##############
 
 
-def Hr_phij_case223(r, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.arctanh(z_bar_k / np.sqrt(r**2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hr_phij_case223(xp, r, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.atanh(z_bar_k / xp.sqrt(r**2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hphi_zk_case223(r, theta_M, z_bar_k):
-    t1 = np.sqrt(r**2 + z_bar_k**2)
-    t1_coef = np.cos(theta_M) / r
-    t2 = np.arctanh(r / t1)
-    t2_coef = -np.cos(theta_M)
+def Hphi_zk_case223(xp, r, theta_M, z_bar_k):
+    t1 = xp.sqrt(r**2 + z_bar_k**2)
+    t1_coef = xp.cos(theta_M) / r
+    t2 = xp.atanh(r / t1)
+    t2_coef = -xp.cos(theta_M)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hz_phij_case223(r, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.arctanh(r / np.sqrt(r**2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hz_phij_case223(xp, r, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.atanh(r / xp.sqrt(r**2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hz_zk_case223(r, phi_bar_j, theta_M, z_bar_k):
-    t1 = arctan_k_tan_2(np.sqrt(r**2 + z_bar_k**2) / np.abs(z_bar_k), 2.0 * phi_bar_j)
-    t1_coef = np.cos(theta_M) * np.sign(z_bar_k)
+def Hz_zk_case223(xp, r, phi_bar_j, theta_M, z_bar_k):
+    t1 = arctan_k_tan_2(xp.sqrt(r**2 + z_bar_k**2) / xp.abs(z_bar_k), 2.0 * phi_bar_j)
+    t1_coef = xp.cos(theta_M) * xp.sign(z_bar_k)
     return t1_coef * t1
 
 
 # 224 ##############
 
 
-def Hr_ri_case224(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sqrt(4.0 * r**2 + z_bar_k**2) * z_bar_k / (2.0 * r**2)
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hr_ri_case224(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sqrt(4.0 * r**2 + z_bar_k**2) * z_bar_k / (2.0 * r**2)
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     E_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * z_bar_k**2
-        * np.sign(z_bar_k)
+        * xp.sign(z_bar_k)
         / (2.0 * r**2)
     )
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     F_coef = (
-        np.sin(theta_M)
-        * np.cos(phi_bar_M)
-        * np.sign(z_bar_k)
+        xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
+        * xp.sign(z_bar_k)
         * (2.0 * r**2 + z_bar_k**2)
         / (2.0 * r**2)
     )
     return t1_coef * t1 + E_coef * E + F_coef * F
 
 
-def Hr_phij_case224(r, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.arctanh(z_bar_k / np.sqrt(4.0 * r**2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hr_phij_case224(xp, r, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.atanh(z_bar_k / xp.sqrt(4.0 * r**2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hr_zk_case224(r, phi_bar_j, theta_M, z_bar_k):
+def Hr_zk_case224(xp, r, phi_bar_j, theta_M, z_bar_k):
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
-    E_coef = np.cos(theta_M) * np.abs(z_bar_k) / r
+    E_coef = xp.cos(theta_M) * xp.abs(z_bar_k) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
-    F_coef = -np.cos(theta_M) * (2.0 * r**2 + z_bar_k**2) / (r * np.abs(z_bar_k))
-    t = np.sqrt(r**2 + z_bar_k**2)
+    F_coef = -xp.cos(theta_M) * (2.0 * r**2 + z_bar_k**2) / (r * xp.abs(z_bar_k))
+    t = xp.sqrt(r**2 + z_bar_k**2)
 
     def Pi1(sign):
         return el3_angle(
@@ -940,8 +944,8 @@ def Hr_zk_case224(r, phi_bar_j, theta_M, z_bar_k):
 
     def Pi1_coef(sign):
         return (
-            -np.cos(theta_M)
-            / (r * np.sqrt((r**2 + z_bar_k**2) * z_bar_k**2))
+            -xp.cos(theta_M)
+            / (r * xp.sqrt((r**2 + z_bar_k**2) * z_bar_k**2))
             * (t - sign * r)
             * (r + sign * t) ** 2
         )
@@ -956,11 +960,11 @@ def Hr_zk_case224(r, phi_bar_j, theta_M, z_bar_k):
     def Pi2_coef(sign):
         return (
             sign
-            * np.cos(theta_M)
+            * xp.cos(theta_M)
             * z_bar_k**4
             / (
                 r
-                * np.sqrt((r**2 + z_bar_k**2) * (4.0 * r**2 + z_bar_k**2))
+                * xp.sqrt((r**2 + z_bar_k**2) * (4.0 * r**2 + z_bar_k**2))
                 * (r + sign * t)
             )
         )
@@ -975,94 +979,94 @@ def Hr_zk_case224(r, phi_bar_j, theta_M, z_bar_k):
     )
 
 
-def Hphi_ri_case224(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sqrt(4.0 * r**2 + z_bar_k**2) * z_bar_k / (2.0 * r**2)
-    t1_coef = -np.sin(theta_M) * np.cos(phi_bar_M)
-    t2 = np.arctanh(z_bar_k / np.sqrt(4.0 * r**2 + z_bar_k**2))
-    t2_coef = -np.sin(theta_M) * np.cos(phi_bar_M)
+def Hphi_ri_case224(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sqrt(4.0 * r**2 + z_bar_k**2) * z_bar_k / (2.0 * r**2)
+    t1_coef = -xp.sin(theta_M) * xp.cos(phi_bar_M)
+    t2 = xp.atanh(z_bar_k / xp.sqrt(4.0 * r**2 + z_bar_k**2))
+    t2_coef = -xp.sin(theta_M) * xp.cos(phi_bar_M)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     E_coef = (
-        np.sin(theta_M)
-        * np.sin(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
         * z_bar_k**2
-        * np.sign(z_bar_k)
+        * xp.sign(z_bar_k)
         / (2.0 * r**2)
     )
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     F_coef = (
-        -np.sin(theta_M)
-        * np.sin(phi_bar_M)
-        * np.sign(z_bar_k)
+        -xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
+        * xp.sign(z_bar_k)
         * (4.0 * r**2 + z_bar_k**2)
         / (2.0 * r**2)
     )
     return t1_coef * t1 + t2_coef * t2 + E_coef * E + F_coef * F
 
 
-def Hphi_zk_case224(r, theta_M, z_bar_k):
-    t1 = np.sqrt(4.0 * r**2 + z_bar_k**2)
-    t1_coef = np.cos(theta_M) / r
-    t2 = np.arctanh(2.0 * r / t1)
-    t2_coef = -np.cos(theta_M)
+def Hphi_zk_case224(xp, r, theta_M, z_bar_k):
+    t1 = xp.sqrt(4.0 * r**2 + z_bar_k**2)
+    t1_coef = xp.cos(theta_M) / r
+    t2 = xp.atanh(2.0 * r / t1)
+    t2_coef = -xp.cos(theta_M)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hz_ri_case224(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sqrt(4.0 * r**2 + z_bar_k**2) / r
-    t1_coef = np.sin(theta_M) * np.sin(phi_bar_M)
+def Hz_ri_case224(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sqrt(4.0 * r**2 + z_bar_k**2) / r
+    t1_coef = xp.sin(theta_M) * xp.sin(phi_bar_M)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
-    E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.abs(z_bar_k) / r
+    E_coef = xp.sin(theta_M) * xp.cos(phi_bar_M) * xp.abs(z_bar_k) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     F_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * (2.0 * r**2 + z_bar_k**2)
-        / (r * np.abs(z_bar_k))
+        / (r * xp.abs(z_bar_k))
     )
     return t1_coef * t1 + E_coef * E + F_coef * F
 
 
-def Hz_phij_case224(r, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.arctanh(2.0 * r / np.sqrt(4.0 * r**2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hz_phij_case224(xp, r, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.atanh(2.0 * r / xp.sqrt(4.0 * r**2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hz_zk_case224(r, phi_bar_j, theta_M, z_bar_k):
-    t = np.sqrt(r**2 + z_bar_k**2)
+def Hz_zk_case224(xp, r, phi_bar_j, theta_M, z_bar_k):
+    t = xp.sqrt(r**2 + z_bar_k**2)
 
     def Pi(sign):
         return el3_angle(
             phi_bar_j / 2.0, 2.0 * r / (r + sign * t), -4.0 * r**2 / z_bar_k**2
         )
 
-    Pi_coef = np.cos(theta_M) * np.sign(z_bar_k)
+    Pi_coef = xp.cos(theta_M) * xp.sign(z_bar_k)
     return Pi_coef * Pi(1) + Pi_coef * Pi(-1)
 
 
 # 225 ##############
 
 
-def Hr_ri_case225(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sqrt((r + r_i) ** 2 + z_bar_k**2) * z_bar_k / (2.0 * r**2)
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
-    t2 = np.arctanh(z_bar_k / np.sqrt((r + r_i) ** 2 + z_bar_k**2))
-    t2_coef = np.sin(theta_M) * np.sin(phi_bar_M) / 2.0 * (1.0 - r_i**2 / r**2)
+def Hr_ri_case225(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sqrt((r + r_i) ** 2 + z_bar_k**2) * z_bar_k / (2.0 * r**2)
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
+    t2 = xp.atanh(z_bar_k / xp.sqrt((r + r_i) ** 2 + z_bar_k**2))
+    t2_coef = xp.sin(theta_M) * xp.sin(phi_bar_M) / 2.0 * (1.0 - r_i**2 / r**2)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     E_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * z_bar_k
-        * np.sqrt(r_bar_i**2 + z_bar_k**2)
+        * xp.sqrt(r_bar_i**2 + z_bar_k**2)
         / (2.0 * r**2)
     )
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     F_coef = (
-        np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * z_bar_k
         * (2.0 * r_i**2 + z_bar_k**2)
-        / (2.0 * r**2 * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (2.0 * r**2 * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
     Pi = el3_angle(
         phi_bar_j / 2.0,
@@ -1070,32 +1074,32 @@ def Hr_ri_case225(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
         -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2),
     )
     Pi_coef = (
-        np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * z_bar_k
         * (r**2 + r_i**2)
         * (r + r_i)
-        / (2.0 * r**2 * r_bar_i * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (2.0 * r**2 * r_bar_i * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
     return t1_coef * t1 + t2_coef * t2 + E_coef * E + F_coef * F + Pi_coef * Pi
 
 
-def Hr_phij_case225(r, r_i, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.arctanh(z_bar_k / np.sqrt((r + r_i) ** 2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hr_phij_case225(xp, r, r_i, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.atanh(z_bar_k / xp.sqrt((r + r_i) ** 2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hr_zk_case225(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
+def Hr_zk_case225(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
-    E_coef = np.cos(theta_M) * np.sqrt(r_bar_i**2 + z_bar_k**2) / r
+    E_coef = xp.cos(theta_M) * xp.sqrt(r_bar_i**2 + z_bar_k**2) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     F_coef = (
-        -np.cos(theta_M)
+        -xp.cos(theta_M)
         * (r**2 + r_i**2 + z_bar_k**2)
-        / (r * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (r * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
-    t = np.sqrt(r**2 + z_bar_k**2)
+    t = xp.sqrt(r**2 + z_bar_k**2)
 
     def Pi1(sign):
         return el3_angle(
@@ -1106,8 +1110,8 @@ def Hr_zk_case225(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
 
     def Pi1_coef(sign):
         return (
-            -np.cos(theta_M)
-            / (r * np.sqrt((r**2 + z_bar_k**2) * (r_bar_i**2 + z_bar_k**2)))
+            -xp.cos(theta_M)
+            / (r * xp.sqrt((r**2 + z_bar_k**2) * (r_bar_i**2 + z_bar_k**2)))
             * (t - sign * r)
             * (r_i + sign * t) ** 2
         )
@@ -1125,12 +1129,12 @@ def Hr_zk_case225(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
     def Pi2_coef(sign):
         return (
             sign
-            * np.cos(theta_M)
+            * xp.cos(theta_M)
             * z_bar_k**2
             * (r_bar_i**2 + z_bar_k**2)
             / (
                 r
-                * np.sqrt((r**2 + z_bar_k**2) * ((r + r_i) ** 2 + z_bar_k**2))
+                * xp.sqrt((r**2 + z_bar_k**2) * ((r + r_i) ** 2 + z_bar_k**2))
                 * (r + sign * t)
             )
         )
@@ -1145,26 +1149,26 @@ def Hr_zk_case225(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
     )
 
 
-def Hphi_ri_case225(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sqrt((r + r_i) ** 2 + z_bar_k**2) * z_bar_k / (2.0 * r**2)
-    t1_coef = -np.sin(theta_M) * np.cos(phi_bar_M)
-    t2 = np.arctanh(z_bar_k / np.sqrt((r + r_i) ** 2 + z_bar_k**2))
-    t2_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
+def Hphi_ri_case225(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sqrt((r + r_i) ** 2 + z_bar_k**2) * z_bar_k / (2.0 * r**2)
+    t1_coef = -xp.sin(theta_M) * xp.cos(phi_bar_M)
+    t2 = xp.atanh(z_bar_k / xp.sqrt((r + r_i) ** 2 + z_bar_k**2))
+    t2_coef = -xp.sin(theta_M) * xp.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     E_coef = (
-        np.sin(theta_M)
-        * np.sin(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
         * z_bar_k
-        * np.sqrt(r_bar_i**2 + z_bar_k**2)
+        * xp.sqrt(r_bar_i**2 + z_bar_k**2)
         / (2.0 * r**2)
     )
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     F_coef = (
-        -np.sin(theta_M)
-        * np.sin(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
         * z_bar_k
         * (2.0 * r**2 + 2.0 * r_i**2 + z_bar_k**2)
-        / (2.0 * r**2 * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (2.0 * r**2 * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
     Pi = el3_angle(
         phi_bar_j / 2.0,
@@ -1172,47 +1176,47 @@ def Hphi_ri_case225(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
         -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2),
     )
     Pi_coef = (
-        np.sin(theta_M)
-        * np.sin(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
         * z_bar_k
         * (r + r_i) ** 2
-        / (2.0 * r**2 * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (2.0 * r**2 * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
     return t1_coef * t1 + t2_coef * t2 + E_coef * E + F_coef * F + Pi_coef * Pi
 
 
-def Hphi_zk_case225(r, r_i, theta_M, z_bar_k):
-    t1 = np.sqrt((r + r_i) ** 2 + z_bar_k**2)
-    t1_coef = np.cos(theta_M) / r
-    t2 = np.arctanh((r + r_i) / t1)
-    t2_coef = -np.cos(theta_M)
+def Hphi_zk_case225(xp, r, r_i, theta_M, z_bar_k):
+    t1 = xp.sqrt((r + r_i) ** 2 + z_bar_k**2)
+    t1_coef = xp.cos(theta_M) / r
+    t2 = xp.atanh((r + r_i) / t1)
+    t2_coef = -xp.cos(theta_M)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hz_ri_case225(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+def Hz_ri_case225(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     t = r_bar_i**2 + z_bar_k**2
-    t1 = np.sqrt((r + r_i) ** 2 + z_bar_k**2) / r
-    t1_coef = np.sin(theta_M) * np.sin(phi_bar_M)
+    t1 = xp.sqrt((r + r_i) ** 2 + z_bar_k**2) / r
+    t1_coef = xp.sin(theta_M) * xp.sin(phi_bar_M)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / t)
-    E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.sqrt(t) / r
+    E_coef = xp.sin(theta_M) * xp.cos(phi_bar_M) * xp.sqrt(t) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / t)
     F_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * (r**2 + r_i**2 + z_bar_k**2)
-        / (r * np.sqrt(t))
+        / (r * xp.sqrt(t))
     )
     return t1_coef * t1 + E_coef * E + F_coef * F
 
 
-def Hz_phij_case225(r, r_i, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.arctanh((r + r_i) / np.sqrt((r + r_i) ** 2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M)
+def Hz_phij_case225(xp, r, r_i, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.atanh((r + r_i) / xp.sqrt((r + r_i) ** 2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M)
     return t1_coef * t1
 
 
-def Hz_zk_case225(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
-    t = np.sqrt(r**2 + z_bar_k**2)
+def Hz_zk_case225(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
+    t = xp.sqrt(r**2 + z_bar_k**2)
 
     def Pi(sign):
         return el3_angle(
@@ -1223,10 +1227,10 @@ def Hz_zk_case225(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
 
     def Pi_coef(sign):
         return (
-            np.cos(theta_M)
+            xp.cos(theta_M)
             * z_bar_k
             * (r_i + sign * t)
-            / (np.sqrt(r_bar_i**2 + z_bar_k**2) * (r + sign * t))
+            / (xp.sqrt(r_bar_i**2 + z_bar_k**2) * (r + sign * t))
         )
 
     return Pi_coef(1) * Pi(1) + Pi_coef(-1) * Pi(-1)
@@ -1235,119 +1239,119 @@ def Hz_zk_case225(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
 # 231 ##############
 
 
-def Hr_phij_case231(phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+def Hr_phij_case231(xp, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
     return (
-        -np.sin(theta_M)
-        * np.sin(phi_bar_Mj)
-        * np.cos(phi_bar_j)
-        * np.sign(z_bar_k)
-        * np.log(np.abs(z_bar_k))
+        -xp.sin(theta_M)
+        * xp.sin(phi_bar_Mj)
+        * xp.cos(phi_bar_j)
+        * xp.sign(z_bar_k)
+        * xp.log(xp.abs(z_bar_k))
     )
 
 
-def Hphi_phij_case231(phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
-    t1 = np.log(np.abs(z_bar_k))
+def Hphi_phij_case231(xp, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+    t1 = xp.log(xp.abs(z_bar_k))
     t1_coef = (
-        np.sin(theta_M) * np.sin(phi_bar_Mj) * np.sin(phi_bar_j) * np.sign(z_bar_k)
+        xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.sin(phi_bar_j) * xp.sign(z_bar_k)
     )
     return t1_coef * t1
 
 
-def Hz_zk_case231(phi_j, theta_M, z_bar_k):
-    t1 = phi_j * np.sign(z_bar_k)
-    t1_coef = -np.cos(theta_M)
+def Hz_zk_case231(xp, phi_j, theta_M, z_bar_k):
+    t1 = phi_j * xp.sign(z_bar_k)
+    t1_coef = -xp.cos(theta_M)
     return t1_coef * t1
 
 
 # 232 ##############
 
 
-def Hr_ri_case232(r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k):
-    t1 = np.sin(theta_M) * z_bar_k / np.sqrt(r_i**2 + z_bar_k**2)
-    t2 = 1.0 / 2.0 * phi_j * np.cos(phi_bar_M)
-    t3 = 1.0 / 4.0 * np.sin(phi_bar_Mj + phi_bar_j)
+def Hr_ri_case232(xp, r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k):
+    t1 = xp.sin(theta_M) * z_bar_k / xp.sqrt(r_i**2 + z_bar_k**2)
+    t2 = 1.0 / 2.0 * phi_j * xp.cos(phi_bar_M)
+    t3 = 1.0 / 4.0 * xp.sin(phi_bar_Mj + phi_bar_j)
     return t1 * (t2 - t3)
 
 
-def Hr_phij_case232(r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
-    t1 = np.arctanh(z_bar_k / np.sqrt(r_i**2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_Mj) * np.cos(phi_bar_j)
+def Hr_phij_case232(xp, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+    t1 = xp.atanh(z_bar_k / xp.sqrt(r_i**2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.cos(phi_bar_j)
     return t1_coef * t1
 
 
-def Hr_zk_case232(r_i, phi_bar_j, theta_M, z_bar_k):
-    t1 = r_i / np.sqrt(r_i**2 + z_bar_k**2)
-    t1_coef = -np.cos(theta_M) * np.sin(phi_bar_j)
-    t2 = np.arctanh(t1)
-    t2_coef = np.cos(theta_M) * np.sin(phi_bar_j)
+def Hr_zk_case232(xp, r_i, phi_bar_j, theta_M, z_bar_k):
+    t1 = r_i / xp.sqrt(r_i**2 + z_bar_k**2)
+    t1_coef = -xp.cos(theta_M) * xp.sin(phi_bar_j)
+    t2 = xp.atanh(t1)
+    t2_coef = xp.cos(theta_M) * xp.sin(phi_bar_j)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hphi_ri_case232(r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k):
-    t1 = np.sin(theta_M) * z_bar_k / np.sqrt(r_i**2 + z_bar_k**2)
-    t2 = 1.0 / 4.0 * np.cos(phi_bar_Mj + phi_bar_j)
-    t3 = 1.0 / 2.0 * phi_j * np.sin(phi_bar_M)
+def Hphi_ri_case232(xp, r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k):
+    t1 = xp.sin(theta_M) * z_bar_k / xp.sqrt(r_i**2 + z_bar_k**2)
+    t2 = 1.0 / 4.0 * xp.cos(phi_bar_Mj + phi_bar_j)
+    t3 = 1.0 / 2.0 * phi_j * xp.sin(phi_bar_M)
     return t1 * (-t2 + t3)
 
 
-def Hphi_phij_case232(r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
-    t1 = np.arctanh(z_bar_k / np.sqrt(r_i**2 + z_bar_k**2))
-    t1_coef = np.sin(theta_M) * np.sin(phi_bar_Mj) * np.sin(phi_bar_j)
+def Hphi_phij_case232(xp, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+    t1 = xp.atanh(z_bar_k / xp.sqrt(r_i**2 + z_bar_k**2))
+    t1_coef = xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.sin(phi_bar_j)
     return t1_coef * t1
 
 
-def Hphi_zk_case232(r_i, phi_bar_j, theta_M, z_bar_k):
-    t1 = r_i / np.sqrt(r_i**2 + z_bar_k**2)
-    t1_coef = -np.cos(theta_M) * np.cos(phi_bar_j)
-    t2 = np.arctanh(t1)
-    t2_coef = np.cos(theta_M) * np.cos(phi_bar_j)
+def Hphi_zk_case232(xp, r_i, phi_bar_j, theta_M, z_bar_k):
+    t1 = r_i / xp.sqrt(r_i**2 + z_bar_k**2)
+    t1_coef = -xp.cos(theta_M) * xp.cos(phi_bar_j)
+    t2 = xp.atanh(t1)
+    t2_coef = xp.cos(theta_M) * xp.cos(phi_bar_j)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hz_ri_case232(r_i, phi_bar_Mj, theta_M, z_bar_k):
-    t1 = r_i / np.sqrt(r_i**2 + z_bar_k**2)
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_Mj)
+def Hz_ri_case232(xp, r_i, phi_bar_Mj, theta_M, z_bar_k):
+    t1 = r_i / xp.sqrt(r_i**2 + z_bar_k**2)
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_Mj)
     return t1_coef * t1
 
 
-def Hz_phij_case232(r_i, phi_bar_Mj, theta_M, z_bar_k):
-    t1 = np.arctanh(r_i / np.sqrt(r_i**2 + z_bar_k**2))
-    t1_coef = np.sin(theta_M) * np.sin(phi_bar_Mj)
+def Hz_phij_case232(xp, r_i, phi_bar_Mj, theta_M, z_bar_k):
+    t1 = xp.atanh(r_i / xp.sqrt(r_i**2 + z_bar_k**2))
+    t1_coef = xp.sin(theta_M) * xp.sin(phi_bar_Mj)
     return t1_coef * t1
 
 
-def Hz_zk_case232(r_i, phi_j, theta_M, z_bar_k):
-    t1 = z_bar_k / np.sqrt(r_i**2 + z_bar_k**2)
-    t1_coef = -np.cos(theta_M) * phi_j
+def Hz_zk_case232(xp, r_i, phi_j, theta_M, z_bar_k):
+    t1 = z_bar_k / xp.sqrt(r_i**2 + z_bar_k**2)
+    t1_coef = -xp.cos(theta_M) * phi_j
     return t1_coef * t1
 
 
 # 233 ##############
 
 
-def Hr_phij_case233(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
-    t1 = np.arctanh(z_bar_k / np.sqrt(r**2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_Mj) * np.cos(phi_bar_j)
-    t2 = np.arctan(
-        z_bar_k * np.cos(phi_bar_j) / np.sin(phi_bar_j) / np.sqrt(r**2 + z_bar_k**2)
+def Hr_phij_case233(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+    t1 = xp.atanh(z_bar_k / xp.sqrt(r**2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.cos(phi_bar_j)
+    t2 = xp.atan(
+        z_bar_k * xp.cos(phi_bar_j) / xp.sin(phi_bar_j) / xp.sqrt(r**2 + z_bar_k**2)
     )
-    t2_coef = np.sin(theta_M) * np.sin(phi_bar_Mj) * np.sin(phi_bar_j)
+    t2_coef = xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.sin(phi_bar_j)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hr_zk_case233(r, phi_bar_j, theta_M, z_bar_k):
-    t = np.sqrt(r**2 + z_bar_k**2)
-    t1 = np.sin(phi_bar_j)
-    t1_coef = -np.cos(theta_M)
-    t2 = np.log(-r * np.cos(phi_bar_j) + t)
-    t2_coef = np.cos(theta_M) * np.sin(phi_bar_j)
-    t3 = np.arctan(r * np.sin(phi_bar_j) / z_bar_k)
-    t3_coef = np.cos(theta_M) * z_bar_k / r
-    t4 = arctan_k_tan_2(t / np.abs(z_bar_k), 2.0 * phi_bar_j)
+def Hr_zk_case233(xp, r, phi_bar_j, theta_M, z_bar_k):
+    t = xp.sqrt(r**2 + z_bar_k**2)
+    t1 = xp.sin(phi_bar_j)
+    t1_coef = -xp.cos(theta_M)
+    t2 = xp.log(-r * xp.cos(phi_bar_j) + t)
+    t2_coef = xp.cos(theta_M) * xp.sin(phi_bar_j)
+    t3 = xp.atan(r * xp.sin(phi_bar_j) / z_bar_k)
+    t3_coef = xp.cos(theta_M) * z_bar_k / r
+    t4 = arctan_k_tan_2(t / xp.abs(z_bar_k), 2.0 * phi_bar_j)
     t4_coef = -t3_coef
 
     def t5(sign):
-        return arctan_k_tan_2(np.abs(z_bar_k) / np.abs(r + sign * t), phi_bar_j)
+        return arctan_k_tan_2(xp.abs(z_bar_k) / xp.abs(r + sign * t), phi_bar_j)
 
     t5_coef = t3_coef
     return (
@@ -1360,92 +1364,92 @@ def Hr_zk_case233(r, phi_bar_j, theta_M, z_bar_k):
     )
 
 
-def Hphi_phij_case233(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
-    t = np.sqrt(r**2 + z_bar_k**2)
-    t1 = np.arctan(z_bar_k * np.cos(phi_bar_j) / (np.sin(phi_bar_j) * t))
-    t1_coef = np.sin(theta_M) * np.sin(phi_bar_Mj) * np.cos(phi_bar_j)
-    t2 = np.arctanh(z_bar_k / t)
-    t2_coef = np.sin(theta_M) * np.sin(phi_bar_Mj) * np.sin(phi_bar_j)
+def Hphi_phij_case233(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+    t = xp.sqrt(r**2 + z_bar_k**2)
+    t1 = xp.atan(z_bar_k * xp.cos(phi_bar_j) / (xp.sin(phi_bar_j) * t))
+    t1_coef = xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.cos(phi_bar_j)
+    t2 = xp.atanh(z_bar_k / t)
+    t2_coef = xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.sin(phi_bar_j)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hphi_zk_case233(r, phi_bar_j, theta_M, z_bar_k):
-    t1 = np.sqrt(r**2 + z_bar_k**2)
-    t1_coef = np.cos(theta_M) / r
-    t2 = np.arctanh(r * np.cos(phi_bar_j) / t1)
-    t2_coef = -np.cos(theta_M) * np.cos(phi_bar_j)
+def Hphi_zk_case233(xp, r, phi_bar_j, theta_M, z_bar_k):
+    t1 = xp.sqrt(r**2 + z_bar_k**2)
+    t1_coef = xp.cos(theta_M) / r
+    t2 = xp.atanh(r * xp.cos(phi_bar_j) / t1)
+    t2_coef = -xp.cos(theta_M) * xp.cos(phi_bar_j)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hz_phij_case233(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
-    t1 = np.arctanh(r * np.cos(phi_bar_j) / np.sqrt(r**2 + z_bar_k**2))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_Mj)
+def Hz_phij_case233(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+    t1 = xp.atanh(r * xp.cos(phi_bar_j) / xp.sqrt(r**2 + z_bar_k**2))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_Mj)
     return t1_coef * t1
 
 
-def Hz_zk_case233(r, phi_bar_j, theta_M, z_bar_k):
-    t1 = arctan_k_tan_2(np.sqrt(r**2 + z_bar_k**2) / np.abs(z_bar_k), 2.0 * phi_bar_j)
-    t1_coef = np.cos(theta_M) * np.sign(z_bar_k)
+def Hz_zk_case233(xp, r, phi_bar_j, theta_M, z_bar_k):
+    t1 = arctan_k_tan_2(xp.sqrt(r**2 + z_bar_k**2) / xp.abs(z_bar_k), 2.0 * phi_bar_j)
+    t1_coef = xp.cos(theta_M) * xp.sign(z_bar_k)
     return t1_coef * t1
 
 
 # 234 ##############
 
 
-def Hr_ri_case234(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sqrt(2.0 * r**2 * (1.0 - np.cos(phi_bar_j)) + z_bar_k**2)
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M) * z_bar_k / (2.0 * r**2)
+def Hr_ri_case234(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sqrt(2.0 * r**2 * (1.0 - xp.cos(phi_bar_j)) + z_bar_k**2)
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M) * z_bar_k / (2.0 * r**2)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     E_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * z_bar_k**2
-        * np.sign(z_bar_k)
+        * xp.sign(z_bar_k)
         / (2.0 * r**2)
     )
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     F_coef = (
-        np.sin(theta_M)
-        * np.cos(phi_bar_M)
-        * np.sign(z_bar_k)
+        xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
+        * xp.sign(z_bar_k)
         * (2.0 * r**2 + z_bar_k**2)
         / (2.0 * r**2)
     )
     return t1_coef * t1 + E_coef * E + F_coef * F
 
 
-def Hr_phij_case234(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
-    t1 = np.arctanh(
-        z_bar_k / np.sqrt(2.0 * r**2 * (1.0 - np.cos(phi_bar_j)) + z_bar_k**2)
+def Hr_phij_case234(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+    t1 = xp.atanh(
+        z_bar_k / xp.sqrt(2.0 * r**2 * (1.0 - xp.cos(phi_bar_j)) + z_bar_k**2)
     )
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_Mj) * np.cos(phi_bar_j)
-    t2 = np.arctan(
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.cos(phi_bar_j)
+    t2 = xp.atan(
         z_bar_k
-        * (1.0 - np.cos(phi_bar_j))
+        * (1.0 - xp.cos(phi_bar_j))
         / (
-            np.sin(phi_bar_j)
-            * np.sqrt(2.0 * r**2 * (1.0 - np.cos(phi_bar_j)) + z_bar_k**2)
+            xp.sin(phi_bar_j)
+            * xp.sqrt(2.0 * r**2 * (1.0 - xp.cos(phi_bar_j)) + z_bar_k**2)
         )
     )
-    t2_coef = -np.sin(theta_M) * np.sin(phi_bar_Mj) * np.sin(phi_bar_j)
+    t2_coef = -xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.sin(phi_bar_j)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hr_zk_case234(r, phi_bar_j, theta_M, z_bar_k):
-    t1 = np.sin(phi_bar_j)
-    t1_coef = -np.cos(theta_M)
-    t2 = np.log(
-        r * (1.0 - np.cos(phi_bar_j))
-        + np.sqrt(2.0 * r**2 * (1.0 - np.cos(phi_bar_j)) + z_bar_k**2)
+def Hr_zk_case234(xp, r, phi_bar_j, theta_M, z_bar_k):
+    t1 = xp.sin(phi_bar_j)
+    t1_coef = -xp.cos(theta_M)
+    t2 = xp.log(
+        r * (1.0 - xp.cos(phi_bar_j))
+        + xp.sqrt(2.0 * r**2 * (1.0 - xp.cos(phi_bar_j)) + z_bar_k**2)
     )
-    t2_coef = np.cos(theta_M) * np.sin(phi_bar_j)
-    t3 = np.arctan(r * np.sin(phi_bar_j) / z_bar_k)
-    t3_coef = np.cos(theta_M) * z_bar_k / r
+    t2_coef = xp.cos(theta_M) * xp.sin(phi_bar_j)
+    t3 = xp.atan(r * xp.sin(phi_bar_j) / z_bar_k)
+    t3_coef = xp.cos(theta_M) * z_bar_k / r
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
-    E_coef = np.cos(theta_M) * np.abs(z_bar_k) / r
+    E_coef = xp.cos(theta_M) * xp.abs(z_bar_k) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
-    F_coef = -np.cos(theta_M) * (2.0 * r**2 + z_bar_k**2) / (r * np.abs(z_bar_k))
-    t = np.sqrt(r**2 + z_bar_k**2)
+    F_coef = -xp.cos(theta_M) * (2.0 * r**2 + z_bar_k**2) / (r * xp.abs(z_bar_k))
+    t = xp.sqrt(r**2 + z_bar_k**2)
 
     def Pi1(sign):
         return el3_angle(
@@ -1454,15 +1458,15 @@ def Hr_zk_case234(r, phi_bar_j, theta_M, z_bar_k):
 
     def Pi1_coef(sign):
         return (
-            -np.cos(theta_M)
-            / (r * np.sqrt((r**2 + z_bar_k**2) * z_bar_k**2))
+            -xp.cos(theta_M)
+            / (r * xp.sqrt((r**2 + z_bar_k**2) * z_bar_k**2))
             * (t - sign * r)
             * (r + sign * t) ** 2
         )
 
     def Pi2(sign):
         return el3_angle(
-            arctan_k_tan_2(np.sqrt((4.0 * r**2 + z_bar_k**2) / z_bar_k**2), phi_bar_j),
+            arctan_k_tan_2(xp.sqrt((4.0 * r**2 + z_bar_k**2) / z_bar_k**2), phi_bar_j),
             1.0 - z_bar_k**4 / ((4.0 * r**2 + z_bar_k**2) * (r + sign * t) ** 2),
             4.0 * r**2 / (4.0 * r**2 + z_bar_k**2),
         )
@@ -1470,11 +1474,11 @@ def Hr_zk_case234(r, phi_bar_j, theta_M, z_bar_k):
     def Pi2_coef(sign):
         return (
             sign
-            * np.cos(theta_M)
+            * xp.cos(theta_M)
             * z_bar_k**4
             / (
                 r
-                * np.sqrt((r**2 + z_bar_k**2) * (4.0 * r**2 + z_bar_k**2))
+                * xp.sqrt((r**2 + z_bar_k**2) * (4.0 * r**2 + z_bar_k**2))
                 * (r + sign * t)
             )
         )
@@ -1492,112 +1496,112 @@ def Hr_zk_case234(r, phi_bar_j, theta_M, z_bar_k):
     )
 
 
-def Hphi_ri_case234(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sqrt(2.0 * r**2 * (1.0 - np.cos(phi_bar_j)) + z_bar_k**2)
-    t1_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * z_bar_k / (2.0 * r**2)
-    t2 = np.arctanh(
-        z_bar_k / np.sqrt(2.0 * r**2 * (1.0 - np.cos(phi_bar_j)) + z_bar_k**2)
+def Hphi_ri_case234(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sqrt(2.0 * r**2 * (1.0 - xp.cos(phi_bar_j)) + z_bar_k**2)
+    t1_coef = -xp.sin(theta_M) * xp.cos(phi_bar_M) * z_bar_k / (2.0 * r**2)
+    t2 = xp.atanh(
+        z_bar_k / xp.sqrt(2.0 * r**2 * (1.0 - xp.cos(phi_bar_j)) + z_bar_k**2)
     )
-    t2_coef = -np.sin(theta_M) * np.cos(phi_bar_M)
+    t2_coef = -xp.sin(theta_M) * xp.cos(phi_bar_M)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     E_coef = (
-        np.sin(theta_M)
-        * np.sin(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
         * z_bar_k**2
-        * np.sign(z_bar_k)
+        * xp.sign(z_bar_k)
         / (2.0 * r**2)
     )
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     F_coef = (
-        -np.sin(theta_M)
-        * np.sin(phi_bar_M)
-        * np.sign(z_bar_k)
+        -xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
+        * xp.sign(z_bar_k)
         * (4.0 * r**2 + z_bar_k**2)
         / (2.0 * r**2)
     )
     return t1_coef * t1 + t2_coef * t2 + E_coef * E + F_coef * F
 
 
-def Hphi_phij_case234(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
-    t = np.sqrt(2.0 * r**2 * (1.0 - np.cos(phi_bar_j)) + z_bar_k**2)
-    t1 = np.arctan(z_bar_k * (1.0 - np.cos(phi_bar_j)) / (np.sin(phi_bar_j) * t))
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_Mj) * np.cos(phi_bar_j)
-    t2 = np.arctanh(z_bar_k / t)
-    t2_coef = np.sin(theta_M) * np.sin(phi_bar_Mj) * np.sin(phi_bar_j)
+def Hphi_phij_case234(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+    t = xp.sqrt(2.0 * r**2 * (1.0 - xp.cos(phi_bar_j)) + z_bar_k**2)
+    t1 = xp.atan(z_bar_k * (1.0 - xp.cos(phi_bar_j)) / (xp.sin(phi_bar_j) * t))
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.cos(phi_bar_j)
+    t2 = xp.atanh(z_bar_k / t)
+    t2_coef = xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.sin(phi_bar_j)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hphi_zk_case234(r, phi_bar_j, theta_M, z_bar_k):
-    t1 = np.sqrt(2.0 * r**2 * (1.0 - np.cos(phi_bar_j)) + z_bar_k**2)
-    t1_coef = np.cos(theta_M) / r
-    t2 = np.arctanh(r * (1.0 - np.cos(phi_bar_j)) / t1)
-    t2_coef = np.cos(theta_M) * np.cos(phi_bar_j)
+def Hphi_zk_case234(xp, r, phi_bar_j, theta_M, z_bar_k):
+    t1 = xp.sqrt(2.0 * r**2 * (1.0 - xp.cos(phi_bar_j)) + z_bar_k**2)
+    t1_coef = xp.cos(theta_M) / r
+    t2 = xp.atanh(r * (1.0 - xp.cos(phi_bar_j)) / t1)
+    t2_coef = xp.cos(theta_M) * xp.cos(phi_bar_j)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hz_ri_case234(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sqrt(2.0 * r**2 * (1.0 - np.cos(phi_bar_j)) + z_bar_k**2)
-    t1_coef = np.sin(theta_M) * np.sin(phi_bar_M) / r
+def Hz_ri_case234(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sqrt(2.0 * r**2 * (1.0 - xp.cos(phi_bar_j)) + z_bar_k**2)
+    t1_coef = xp.sin(theta_M) * xp.sin(phi_bar_M) / r
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
-    E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.abs(z_bar_k) / r
+    E_coef = xp.sin(theta_M) * xp.cos(phi_bar_M) * xp.abs(z_bar_k) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r**2 / z_bar_k**2)
     F_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * (2.0 * r**2 + z_bar_k**2)
-        / (r * np.abs(z_bar_k))
+        / (r * xp.abs(z_bar_k))
     )
     return t1_coef * t1 + E_coef * E + F_coef * F
 
 
-def Hz_phij_case234(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
-    t1 = np.arctanh(
+def Hz_phij_case234(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+    t1 = xp.atanh(
         r
-        * (1.0 - np.cos(phi_bar_j))
-        / np.sqrt(2.0 * r**2 * (1.0 - np.cos(phi_bar_j)) + z_bar_k**2)
+        * (1.0 - xp.cos(phi_bar_j))
+        / xp.sqrt(2.0 * r**2 * (1.0 - xp.cos(phi_bar_j)) + z_bar_k**2)
     )
-    t1_coef = np.sin(theta_M) * np.sin(phi_bar_Mj)
+    t1_coef = xp.sin(theta_M) * xp.sin(phi_bar_Mj)
     return t1_coef * t1
 
 
-def Hz_zk_case234(r, phi_bar_j, theta_M, z_bar_k):
-    t = np.sqrt(r**2 + z_bar_k**2)
+def Hz_zk_case234(xp, r, phi_bar_j, theta_M, z_bar_k):
+    t = xp.sqrt(r**2 + z_bar_k**2)
 
     def Pi(sign):
         return el3_angle(
             phi_bar_j / 2.0, 2.0 * r / (r + sign * t), -4.0 * r**2 / z_bar_k**2
         )
 
-    Pi_coef = np.cos(theta_M) * np.sign(z_bar_k)
+    Pi_coef = xp.cos(theta_M) * xp.sign(z_bar_k)
     return Pi_coef * Pi(1) + Pi_coef * Pi(-1)
 
 
 # 235 ##############
 
 
-def Hr_ri_case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2)
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_M) * z_bar_k / (2.0 * r**2)
-    t2 = np.arctanh(
+def Hr_ri_case235(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * xp.cos(phi_bar_j) + z_bar_k**2)
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_M) * z_bar_k / (2.0 * r**2)
+    t2 = xp.atanh(
         z_bar_k
-        / np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2)
+        / xp.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * xp.cos(phi_bar_j) + z_bar_k**2)
     )
-    t2_coef = np.sin(theta_M) * np.sin(phi_bar_M) / 2.0 * (1.0 - r_i**2 / r**2)
+    t2_coef = xp.sin(theta_M) * xp.sin(phi_bar_M) / 2.0 * (1.0 - r_i**2 / r**2)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     E_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * z_bar_k
-        * np.sqrt(r_bar_i**2 + z_bar_k**2)
+        * xp.sqrt(r_bar_i**2 + z_bar_k**2)
         / (2.0 * r**2)
     )
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     F_coef = (
-        np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * z_bar_k
         * (2.0 * r_i**2 + z_bar_k**2)
-        / (2.0 * r**2 * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (2.0 * r**2 * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
     Pi = el3_angle(
         phi_bar_j / 2.0,
@@ -1605,55 +1609,55 @@ def Hr_ri_case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
         -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2),
     )
     Pi_coef = (
-        np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * z_bar_k
         * (r**2 + r_i**2)
         * (r + r_i)
-        / (2.0 * r**2 * r_bar_i * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (2.0 * r**2 * r_bar_i * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
     return t1_coef * t1 + t2_coef * t2 + E_coef * E + F_coef * F + Pi_coef * Pi
 
 
-def Hr_phij_case235(r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
-    t1 = np.arctanh(
+def Hr_phij_case235(xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+    t1 = xp.atanh(
         z_bar_k
-        / np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2)
+        / xp.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * xp.cos(phi_bar_j) + z_bar_k**2)
     )
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_Mj) * np.cos(phi_bar_j)
-    t2 = np.arctan(
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.cos(phi_bar_j)
+    t2 = xp.atan(
         z_bar_k
-        * (r * np.cos(phi_bar_j) - r_i)
+        * (r * xp.cos(phi_bar_j) - r_i)
         / (
             r
-            * np.sin(phi_bar_j)
-            * np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2)
+            * xp.sin(phi_bar_j)
+            * xp.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * xp.cos(phi_bar_j) + z_bar_k**2)
         )
     )
-    t2_coef = np.sin(theta_M) * np.sin(phi_bar_Mj) * np.sin(phi_bar_j)
+    t2_coef = xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.sin(phi_bar_j)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hr_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
-    t1 = np.sin(phi_bar_j)
-    t1_coef = -np.cos(theta_M)
-    t2 = np.log(
+def Hr_zk_case235(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
+    t1 = xp.sin(phi_bar_j)
+    t1_coef = -xp.cos(theta_M)
+    t2 = xp.log(
         r_i
-        - r * np.cos(phi_bar_j)
-        + np.sqrt(r_i**2 + r**2 - 2.0 * r_i * r * np.cos(phi_bar_j) + z_bar_k**2)
+        - r * xp.cos(phi_bar_j)
+        + xp.sqrt(r_i**2 + r**2 - 2.0 * r_i * r * xp.cos(phi_bar_j) + z_bar_k**2)
     )
-    t2_coef = np.cos(theta_M) * np.sin(phi_bar_j)
-    t3 = np.arctan(r * np.sin(phi_bar_j) / z_bar_k)
-    t3_coef = np.cos(theta_M) * z_bar_k / r
+    t2_coef = xp.cos(theta_M) * xp.sin(phi_bar_j)
+    t3 = xp.atan(r * xp.sin(phi_bar_j) / z_bar_k)
+    t3_coef = xp.cos(theta_M) * z_bar_k / r
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
-    E_coef = np.cos(theta_M) * np.sqrt(r_bar_i**2 + z_bar_k**2) / r
+    E_coef = xp.cos(theta_M) * xp.sqrt(r_bar_i**2 + z_bar_k**2) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     F_coef = (
-        -np.cos(theta_M)
+        -xp.cos(theta_M)
         * (r**2 + r_i**2 + z_bar_k**2)
-        / (r * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (r * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
-    t = np.sqrt(r**2 + z_bar_k**2)
+    t = xp.sqrt(r**2 + z_bar_k**2)
 
     def Pi1(sign):
         return el3_angle(
@@ -1664,8 +1668,8 @@ def Hr_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
 
     def Pi1_coef(sign):
         return (
-            -np.cos(theta_M)
-            / (r * np.sqrt((r**2 + z_bar_k**2) * (r_bar_i**2 + z_bar_k**2)))
+            -xp.cos(theta_M)
+            / (r * xp.sqrt((r**2 + z_bar_k**2) * (r_bar_i**2 + z_bar_k**2)))
             * (t - sign * r)
             * (r_i + sign * t) ** 2
         )
@@ -1673,7 +1677,7 @@ def Hr_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
     def Pi2(sign):
         return el3_angle(
             arctan_k_tan_2(
-                np.sqrt(((r_i + r) ** 2 + z_bar_k**2) / (r_bar_i**2 + z_bar_k**2)),
+                xp.sqrt(((r_i + r) ** 2 + z_bar_k**2) / (r_bar_i**2 + z_bar_k**2)),
                 phi_bar_j,
             ),
             1.0
@@ -1686,12 +1690,12 @@ def Hr_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
     def Pi2_coef(sign):
         return (
             sign
-            * np.cos(theta_M)
+            * xp.cos(theta_M)
             * z_bar_k**2
             * (r_bar_i**2 + z_bar_k**2)
             / (
                 r
-                * np.sqrt((r**2 + z_bar_k**2) * ((r + r_i) ** 2 + z_bar_k**2))
+                * xp.sqrt((r**2 + z_bar_k**2) * ((r + r_i) ** 2 + z_bar_k**2))
                 * (r + sign * t)
             )
         )
@@ -1709,29 +1713,29 @@ def Hr_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
     )
 
 
-def Hphi_ri_case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    t1 = np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2)
-    t1_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * z_bar_k / (2.0 * r**2)
-    t2 = np.arctanh(
+def Hphi_ri_case235(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    t1 = xp.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * xp.cos(phi_bar_j) + z_bar_k**2)
+    t1_coef = -xp.sin(theta_M) * xp.cos(phi_bar_M) * z_bar_k / (2.0 * r**2)
+    t2 = xp.atanh(
         z_bar_k
-        / np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2)
+        / xp.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * xp.cos(phi_bar_j) + z_bar_k**2)
     )
-    t2_coef = -np.sin(theta_M) * np.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
+    t2_coef = -xp.sin(theta_M) * xp.cos(phi_bar_M) * (r**2 + r_i**2) / (2.0 * r**2)
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     E_coef = (
-        np.sin(theta_M)
-        * np.sin(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
         * z_bar_k
-        * np.sqrt(r_bar_i**2 + z_bar_k**2)
+        * xp.sqrt(r_bar_i**2 + z_bar_k**2)
         / (2.0 * r**2)
     )
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2))
     F_coef = (
-        -np.sin(theta_M)
-        * np.sin(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
         * z_bar_k
         * (2.0 * r**2 + 2.0 * r_i**2 + z_bar_k**2)
-        / (2.0 * r**2 * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (2.0 * r**2 * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
     Pi = el3_angle(
         phi_bar_j / 2.0,
@@ -1739,61 +1743,59 @@ def Hphi_ri_case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
         -4.0 * r * r_i / (r_bar_i**2 + z_bar_k**2),
     )
     Pi_coef = (
-        np.sin(theta_M)
-        * np.sin(phi_bar_M)
+        xp.sin(theta_M)
+        * xp.sin(phi_bar_M)
         * z_bar_k
         * (r + r_i) ** 2
-        / (2.0 * r**2 * np.sqrt(r_bar_i**2 + z_bar_k**2))
+        / (2.0 * r**2 * xp.sqrt(r_bar_i**2 + z_bar_k**2))
     )
     return t1_coef * t1 + t2_coef * t2 + E_coef * E + F_coef * F + Pi_coef * Pi
 
 
-def Hphi_phij_case235(r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
-    t = np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2)
-    t1 = np.arctan(
-        z_bar_k * (r * np.cos(phi_bar_j) - r_i) / (r * np.sin(phi_bar_j) * t)
-    )
-    t1_coef = np.sin(theta_M) * np.sin(phi_bar_Mj) * np.cos(phi_bar_j)
-    t2 = np.arctanh(z_bar_k / t)
-    t2_coef = np.sin(theta_M) * np.sin(phi_bar_Mj) * np.sin(phi_bar_j)
+def Hphi_phij_case235(xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+    t = xp.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * xp.cos(phi_bar_j) + z_bar_k**2)
+    t1 = xp.atan(z_bar_k * (r * xp.cos(phi_bar_j) - r_i) / (r * xp.sin(phi_bar_j) * t))
+    t1_coef = xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.cos(phi_bar_j)
+    t2 = xp.atanh(z_bar_k / t)
+    t2_coef = xp.sin(theta_M) * xp.sin(phi_bar_Mj) * xp.sin(phi_bar_j)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hphi_zk_case235(r, r_i, phi_bar_j, theta_M, z_bar_k):
-    t1 = np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2)
-    t1_coef = np.cos(theta_M) / r
-    t2 = np.arctanh((r * np.cos(phi_bar_j) - r_i) / t1)
-    t2_coef = -np.cos(theta_M) * np.cos(phi_bar_j)
+def Hphi_zk_case235(xp, r, r_i, phi_bar_j, theta_M, z_bar_k):
+    t1 = xp.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * xp.cos(phi_bar_j) + z_bar_k**2)
+    t1_coef = xp.cos(theta_M) / r
+    t2 = xp.atanh((r * xp.cos(phi_bar_j) - r_i) / t1)
+    t2_coef = -xp.cos(theta_M) * xp.cos(phi_bar_j)
     return t1_coef * t1 + t2_coef * t2
 
 
-def Hz_ri_case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+def Hz_ri_case235(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     t = r_bar_i**2 + z_bar_k**2
-    t1 = np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2)
-    t1_coef = np.sin(theta_M) * np.sin(phi_bar_M) / r
+    t1 = xp.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * xp.cos(phi_bar_j) + z_bar_k**2)
+    t1_coef = xp.sin(theta_M) * xp.sin(phi_bar_M) / r
     E = ellipeinc(phi_bar_j / 2.0, -4.0 * r * r_i / t)
-    E_coef = np.sin(theta_M) * np.cos(phi_bar_M) * np.sqrt(t) / r
+    E_coef = xp.sin(theta_M) * xp.cos(phi_bar_M) * xp.sqrt(t) / r
     F = ellipkinc(phi_bar_j / 2.0, -4.0 * r * r_i / t)
     F_coef = (
-        -np.sin(theta_M)
-        * np.cos(phi_bar_M)
+        -xp.sin(theta_M)
+        * xp.cos(phi_bar_M)
         * (r**2 + r_i**2 + z_bar_k**2)
-        / (r * np.sqrt(t))
+        / (r * xp.sqrt(t))
     )
     return t1_coef * t1 + E_coef * E + F_coef * F
 
 
-def Hz_phij_case235(r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
-    t1 = np.arctanh(
-        (r * np.cos(phi_bar_j) - r_i)
-        / np.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * np.cos(phi_bar_j) + z_bar_k**2)
+def Hz_phij_case235(xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+    t1 = xp.atanh(
+        (r * xp.cos(phi_bar_j) - r_i)
+        / xp.sqrt(r**2 + r_i**2 - 2.0 * r * r_i * xp.cos(phi_bar_j) + z_bar_k**2)
     )
-    t1_coef = -np.sin(theta_M) * np.sin(phi_bar_Mj)
+    t1_coef = -xp.sin(theta_M) * xp.sin(phi_bar_Mj)
     return t1_coef * t1
 
 
-def Hz_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
-    t = np.sqrt(r**2 + z_bar_k**2)
+def Hz_zk_case235(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
+    t = xp.sqrt(r**2 + z_bar_k**2)
 
     def Pi(sign):
         return el3_angle(
@@ -1804,10 +1806,10 @@ def Hz_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
 
     def Pi_coef(sign):
         return (
-            np.cos(theta_M)
+            xp.cos(theta_M)
             * z_bar_k
             * (r_i + sign * t)
-            / (np.sqrt(r_bar_i**2 + z_bar_k**2) * (r + sign * t))
+            / (xp.sqrt(r_bar_i**2 + z_bar_k**2) * (r + sign * t))
         )
 
     return Pi_coef(1) * Pi(1) + Pi_coef(-1) * Pi(-1)
@@ -1823,286 +1825,294 @@ def Hz_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
 # out: ndarray, shape (n,3,3) # (n)vector, (3)r_phi_z, (3)face
 
 
-def case112(r_i, phi_bar_M, theta_M):
-    results = np.zeros((len(r_i), 3, 3))
-    results[:, 1, 2] = Hphi_zk_case112(r_i, theta_M)
-    results[:, 2, 0] = Hz_ri_case112(phi_bar_M, theta_M)
-    results[:, 2, 1] = Hz_phij_case112(r_i, phi_bar_M, theta_M)
+def case112(xp, r_i, phi_bar_M, theta_M):
+    results = xp.zeros(((r_i.shape[0]), 3, 3))
+    results[:, 1, 2] = Hphi_zk_case112(xp, r_i, theta_M)
+    results[:, 2, 0] = Hz_ri_case112(xp, phi_bar_M, theta_M)
+    results[:, 2, 1] = Hz_phij_case112(xp, r_i, phi_bar_M, theta_M)
     return results
 
 
-def case113(r, phi_bar_M, theta_M):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 1, 2] = Hphi_zk_case113(r, theta_M)
-    results[:, 2, 1] = Hz_phij_case113(r, phi_bar_M, theta_M)
+def case113(xp, r, phi_bar_M, theta_M):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 1, 2] = Hphi_zk_case113(xp, r, theta_M)
+    results[:, 2, 1] = Hz_phij_case113(xp, r, phi_bar_M, theta_M)
     return results
 
 
-def case115(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 0, 2] = Hr_zk_case115(r, r_i, r_bar_i, phi_bar_j, theta_M)
-    results[:, 1, 2] = Hphi_zk_case115(r, r_i, r_bar_i, theta_M)
-    results[:, 2, 0] = Hz_ri_case115(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M)
-    results[:, 2, 1] = Hz_phij_case115(r_bar_i, phi_bar_M, theta_M)
+def case115(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 0, 2] = Hr_zk_case115(xp, r, r_i, r_bar_i, phi_bar_j, theta_M)
+    results[:, 1, 2] = Hphi_zk_case115(xp, r, r_i, r_bar_i, theta_M)
+    results[:, 2, 0] = Hz_ri_case115(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M)
+    results[:, 2, 1] = Hz_phij_case115(xp, r_bar_i, phi_bar_M, theta_M)
     return results
 
 
-def case122(r_i, phi_bar_M, theta_M):
-    results = np.zeros((len(r_i), 3, 3))
-    results[:, 1, 2] = Hphi_zk_case122(r_i, theta_M)
-    results[:, 2, 0] = Hz_ri_case122(phi_bar_M, theta_M)
-    results[:, 2, 1] = Hz_phij_case122(r_i, phi_bar_M, theta_M)
+def case122(xp, r_i, phi_bar_M, theta_M):
+    results = xp.zeros(((r_i.shape[0]), 3, 3))
+    results[:, 1, 2] = Hphi_zk_case122(xp, r_i, theta_M)
+    results[:, 2, 0] = Hz_ri_case122(xp, phi_bar_M, theta_M)
+    results[:, 2, 1] = Hz_phij_case122(xp, r_i, phi_bar_M, theta_M)
     return results
 
 
-def case123(r, phi_bar_M, theta_M):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 1, 2] = Hphi_zk_case123(r, theta_M)
-    results[:, 2, 1] = Hz_phij_case123(r, phi_bar_M, theta_M)
+def case123(xp, r, phi_bar_M, theta_M):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 1, 2] = Hphi_zk_case123(xp, r, theta_M)
+    results[:, 2, 1] = Hz_phij_case123(xp, r, phi_bar_M, theta_M)
     return results
 
 
-def case124(r, phi_bar_M, theta_M):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 1, 2] = Hphi_zk_case124(r, theta_M)
-    results[:, 2, 0] = Hz_ri_case124(phi_bar_M, theta_M)
-    results[:, 2, 1] = Hz_phij_case124(r, phi_bar_M, theta_M)
+def case124(xp, r, phi_bar_M, theta_M):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 1, 2] = Hphi_zk_case124(xp, r, theta_M)
+    results[:, 2, 0] = Hz_ri_case124(xp, phi_bar_M, theta_M)
+    results[:, 2, 1] = Hz_phij_case124(xp, r, phi_bar_M, theta_M)
     return results
 
 
-def case125(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 0, 2] = Hr_zk_case125(r, r_i, r_bar_i, phi_bar_j, theta_M)
-    results[:, 1, 2] = Hphi_zk_case125(r, r_i, theta_M)
-    results[:, 2, 0] = Hz_ri_case125(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M)
-    results[:, 2, 1] = Hz_phij_case125(r, r_i, phi_bar_M, theta_M)
+def case125(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 0, 2] = Hr_zk_case125(xp, r, r_i, r_bar_i, phi_bar_j, theta_M)
+    results[:, 1, 2] = Hphi_zk_case125(xp, r, r_i, theta_M)
+    results[:, 2, 0] = Hz_ri_case125(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M)
+    results[:, 2, 1] = Hz_phij_case125(xp, r, r_i, phi_bar_M, theta_M)
     return results
 
 
-def case132(r, r_i, phi_bar_j, phi_bar_Mj, theta_M):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 0, 2] = Hr_zk_case132(r_i, phi_bar_j, theta_M)
-    results[:, 1, 2] = Hphi_zk_case132(r_i, phi_bar_j, theta_M)
-    results[:, 2, 0] = Hz_ri_case132(phi_bar_Mj, theta_M)
-    results[:, 2, 1] = Hz_phij_case132(r_i, phi_bar_Mj, theta_M)
+def case132(xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 0, 2] = Hr_zk_case132(xp, r_i, phi_bar_j, theta_M)
+    results[:, 1, 2] = Hphi_zk_case132(xp, r_i, phi_bar_j, theta_M)
+    results[:, 2, 0] = Hz_ri_case132(xp, phi_bar_Mj, theta_M)
+    results[:, 2, 1] = Hz_phij_case132(xp, r_i, phi_bar_Mj, theta_M)
     return results
 
 
-def case133(r, phi_bar_j, phi_bar_Mj, theta_M):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 0, 2] = Hr_zk_case133(r, phi_bar_j, theta_M)
-    results[:, 1, 2] = Hphi_zk_case133(phi_bar_j, theta_M)
-    results[:, 2, 1] = Hz_phij_case133(phi_bar_j, phi_bar_Mj, theta_M)
+def case133(xp, r, phi_bar_j, phi_bar_Mj, theta_M):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 0, 2] = Hr_zk_case133(xp, r, phi_bar_j, theta_M)
+    results[:, 1, 2] = Hphi_zk_case133(xp, phi_bar_j, theta_M)
+    results[:, 2, 1] = Hz_phij_case133(xp, phi_bar_j, phi_bar_Mj, theta_M)
     return results
 
 
-def case134(r, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 0, 2] = Hr_zk_case134(r, phi_bar_j, theta_M)
-    results[:, 1, 2] = Hphi_zk_case134(phi_bar_j, theta_M)
-    results[:, 2, 0] = Hz_ri_case134(phi_bar_j, phi_bar_M, theta_M)
-    results[:, 2, 1] = Hz_phij_case134(phi_bar_j, phi_bar_Mj, theta_M)
+def case134(xp, r, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 0, 2] = Hr_zk_case134(xp, r, phi_bar_j, theta_M)
+    results[:, 1, 2] = Hphi_zk_case134(xp, phi_bar_j, theta_M)
+    results[:, 2, 0] = Hz_ri_case134(xp, phi_bar_j, phi_bar_M, theta_M)
+    results[:, 2, 1] = Hz_phij_case134(xp, phi_bar_j, phi_bar_Mj, theta_M)
     return results
 
 
-def case135(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 0, 2] = Hr_zk_case135(r, r_i, r_bar_i, phi_bar_j, theta_M)
-    results[:, 1, 2] = Hphi_zk_case135(r, r_i, phi_bar_j, theta_M)
-    results[:, 2, 0] = Hz_ri_case135(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M)
-    results[:, 2, 1] = Hz_phij_case135(r, r_i, phi_bar_j, phi_bar_Mj, theta_M)
+def case135(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 0, 2] = Hr_zk_case135(xp, r, r_i, r_bar_i, phi_bar_j, theta_M)
+    results[:, 1, 2] = Hphi_zk_case135(xp, r, r_i, phi_bar_j, theta_M)
+    results[:, 2, 0] = Hz_ri_case135(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M)
+    results[:, 2, 1] = Hz_phij_case135(xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M)
     return results
 
 
-def case211(phi_j, phi_bar_M, theta_M, z_bar_k):
-    results = np.zeros((len(phi_j), 3, 3))
-    results[:, 0, 1] = Hr_phij_case211(phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case211(phi_j, theta_M, z_bar_k)
+def case211(xp, phi_j, phi_bar_M, theta_M, z_bar_k):
+    results = xp.zeros(((phi_j.shape[0]), 3, 3))
+    results[:, 0, 1] = Hr_phij_case211(xp, phi_bar_M, theta_M, z_bar_k)
+    results[:, 2, 2] = Hz_zk_case211(xp, phi_j, theta_M, z_bar_k)
     return results
 
 
-def case212(r_i, phi_j, phi_bar_M, theta_M, z_bar_k):
-    results = np.zeros((len(r_i), 3, 3))
-    results[:, 0, 0] = Hr_ri_case212(r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 1] = Hr_phij_case212(r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 0] = Hphi_ri_case212(r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case212(r_i, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case212(r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case212(r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case212(r_i, phi_j, theta_M, z_bar_k)
+def case212(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k):
+    results = xp.zeros(((r_i.shape[0]), 3, 3))
+    results[:, 0, 0] = Hr_ri_case212(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
+    results[:, 0, 1] = Hr_phij_case212(xp, r_i, phi_bar_M, theta_M, z_bar_k)
+    results[:, 1, 0] = Hphi_ri_case212(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
+    results[:, 1, 2] = Hphi_zk_case212(xp, r_i, theta_M, z_bar_k)
+    results[:, 2, 0] = Hz_ri_case212(xp, r_i, phi_bar_M, theta_M, z_bar_k)
+    results[:, 2, 1] = Hz_phij_case212(xp, r_i, phi_bar_M, theta_M, z_bar_k)
+    results[:, 2, 2] = Hz_zk_case212(xp, r_i, phi_j, theta_M, z_bar_k)
     return results
 
 
-def case213(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 0, 1] = Hr_phij_case213(r, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case213(r, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case213(r, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case213(phi_bar_j, theta_M, z_bar_k)
+def case213(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 0, 1] = Hr_phij_case213(xp, r, phi_bar_M, theta_M, z_bar_k)
+    results[:, 1, 2] = Hphi_zk_case213(xp, r, theta_M, z_bar_k)
+    results[:, 2, 1] = Hz_phij_case213(xp, r, phi_bar_M, theta_M, z_bar_k)
+    results[:, 2, 2] = Hz_zk_case213(xp, phi_bar_j, theta_M, z_bar_k)
     return results
 
 
-def case214(r, phi_j, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 0, 0] = Hr_ri_case214(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 1] = Hr_phij_case214(phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case214(r, phi_bar_j, theta_M, z_bar_k)
-    results[:, 1, 0] = Hphi_ri_case214(r, phi_j, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case214(r, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case214(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case214(r, phi_bar_j, theta_M, z_bar_k)
+def case214(xp, r, phi_j, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 0, 0] = Hr_ri_case214(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    results[:, 0, 1] = Hr_phij_case214(xp, phi_bar_M, theta_M, z_bar_k)
+    results[:, 0, 2] = Hr_zk_case214(xp, r, phi_bar_j, theta_M, z_bar_k)
+    results[:, 1, 0] = Hphi_ri_case214(
+        xp, r, phi_j, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+    )
+    results[:, 1, 2] = Hphi_zk_case214(xp, r, theta_M, z_bar_k)
+    results[:, 2, 0] = Hz_ri_case214(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    results[:, 2, 2] = Hz_zk_case214(xp, r, phi_bar_j, theta_M, z_bar_k)
     return results
 
 
-def case215(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    results = np.zeros((len(r), 3, 3))
+def case215(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    results = xp.zeros(((r.shape[0]), 3, 3))
     results[:, 0, 0] = Hr_ri_case215(
-        r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
     )
-    results[:, 0, 1] = Hr_phij_case215(r_bar_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case215(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
+    results[:, 0, 1] = Hr_phij_case215(xp, r_bar_i, phi_bar_M, theta_M, z_bar_k)
+    results[:, 0, 2] = Hr_zk_case215(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
     results[:, 1, 0] = Hphi_ri_case215(
-        r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
     )
-    results[:, 1, 2] = Hphi_zk_case215(r, r_bar_i, theta_M, z_bar_k)
+    results[:, 1, 2] = Hphi_zk_case215(xp, r, r_bar_i, theta_M, z_bar_k)
     results[:, 2, 0] = Hz_ri_case215(
-        r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
     )
-    results[:, 2, 1] = Hz_phij_case215(r_bar_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case215(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
+    results[:, 2, 1] = Hz_phij_case215(xp, r_bar_i, phi_bar_M, theta_M, z_bar_k)
+    results[:, 2, 2] = Hz_zk_case215(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
     return results
 
 
-def case221(phi_j, phi_bar_M, theta_M, z_bar_k):
-    results = np.zeros((len(phi_j), 3, 3))
-    results[:, 0, 1] = Hr_phij_case221(phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case221(phi_j, theta_M, z_bar_k)
+def case221(xp, phi_j, phi_bar_M, theta_M, z_bar_k):
+    results = xp.zeros(((phi_j.shape[0]), 3, 3))
+    results[:, 0, 1] = Hr_phij_case221(xp, phi_bar_M, theta_M, z_bar_k)
+    results[:, 2, 2] = Hz_zk_case221(xp, phi_j, theta_M, z_bar_k)
     return results
 
 
-def case222(r_i, phi_j, phi_bar_M, theta_M, z_bar_k):
-    results = np.zeros((len(r_i), 3, 3))
-    results[:, 0, 0] = Hr_ri_case222(r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 1] = Hr_phij_case222(r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 0] = Hphi_ri_case222(r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case222(r_i, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case222(r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case222(r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case222(r_i, phi_j, theta_M, z_bar_k)
+def case222(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k):
+    results = xp.zeros(((r_i.shape[0]), 3, 3))
+    results[:, 0, 0] = Hr_ri_case222(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
+    results[:, 0, 1] = Hr_phij_case222(xp, r_i, phi_bar_M, theta_M, z_bar_k)
+    results[:, 1, 0] = Hphi_ri_case222(xp, r_i, phi_j, phi_bar_M, theta_M, z_bar_k)
+    results[:, 1, 2] = Hphi_zk_case222(xp, r_i, theta_M, z_bar_k)
+    results[:, 2, 0] = Hz_ri_case222(xp, r_i, phi_bar_M, theta_M, z_bar_k)
+    results[:, 2, 1] = Hz_phij_case222(xp, r_i, phi_bar_M, theta_M, z_bar_k)
+    results[:, 2, 2] = Hz_zk_case222(xp, r_i, phi_j, theta_M, z_bar_k)
     return results
 
 
-def case223(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 0, 1] = Hr_phij_case223(r, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case223(r, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case223(r, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case223(r, phi_bar_j, theta_M, z_bar_k)
+def case223(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 0, 1] = Hr_phij_case223(xp, r, phi_bar_M, theta_M, z_bar_k)
+    results[:, 1, 2] = Hphi_zk_case223(xp, r, theta_M, z_bar_k)
+    results[:, 2, 1] = Hz_phij_case223(xp, r, phi_bar_M, theta_M, z_bar_k)
+    results[:, 2, 2] = Hz_zk_case223(xp, r, phi_bar_j, theta_M, z_bar_k)
     return results
 
 
-def case224(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 0, 0] = Hr_ri_case224(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 1] = Hr_phij_case224(r, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case224(r, phi_bar_j, theta_M, z_bar_k)
-    results[:, 1, 0] = Hphi_ri_case224(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case224(r, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case224(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case224(r, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case224(r, phi_bar_j, theta_M, z_bar_k)
+def case224(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 0, 0] = Hr_ri_case224(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    results[:, 0, 1] = Hr_phij_case224(xp, r, phi_bar_M, theta_M, z_bar_k)
+    results[:, 0, 2] = Hr_zk_case224(xp, r, phi_bar_j, theta_M, z_bar_k)
+    results[:, 1, 0] = Hphi_ri_case224(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    results[:, 1, 2] = Hphi_zk_case224(xp, r, theta_M, z_bar_k)
+    results[:, 2, 0] = Hz_ri_case224(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    results[:, 2, 1] = Hz_phij_case224(xp, r, phi_bar_M, theta_M, z_bar_k)
+    results[:, 2, 2] = Hz_zk_case224(xp, r, phi_bar_j, theta_M, z_bar_k)
     return results
 
 
-def case225(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
-    results = np.zeros((len(r), 3, 3))
+def case225(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
+    results = xp.zeros(((r.shape[0]), 3, 3))
     results[:, 0, 0] = Hr_ri_case225(
-        r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
     )
-    results[:, 0, 1] = Hr_phij_case225(r, r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case225(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
+    results[:, 0, 1] = Hr_phij_case225(xp, r, r_i, phi_bar_M, theta_M, z_bar_k)
+    results[:, 0, 2] = Hr_zk_case225(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
     results[:, 1, 0] = Hphi_ri_case225(
-        r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
     )
-    results[:, 1, 2] = Hphi_zk_case225(r, r_i, theta_M, z_bar_k)
+    results[:, 1, 2] = Hphi_zk_case225(xp, r, r_i, theta_M, z_bar_k)
     results[:, 2, 0] = Hz_ri_case225(
-        r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
     )
-    results[:, 2, 1] = Hz_phij_case225(r, r_i, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case225(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
+    results[:, 2, 1] = Hz_phij_case225(xp, r, r_i, phi_bar_M, theta_M, z_bar_k)
+    results[:, 2, 2] = Hz_zk_case225(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
     return results
 
 
-def case231(phi_j, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
-    results = np.zeros((len(phi_j), 3, 3))
-    results[:, 0, 1] = Hr_phij_case231(phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 1, 1] = Hphi_phij_case231(phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case231(phi_j, theta_M, z_bar_k)
+def case231(xp, phi_j, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+    results = xp.zeros(((phi_j.shape[0]), 3, 3))
+    results[:, 0, 1] = Hr_phij_case231(xp, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    results[:, 1, 1] = Hphi_phij_case231(xp, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    results[:, 2, 2] = Hz_zk_case231(xp, phi_j, theta_M, z_bar_k)
     return results
 
 
-def case232(r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k):
-    results = np.zeros((len(r_i), 3, 3))
+def case232(xp, r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k):
+    results = xp.zeros(((r_i.shape[0]), 3, 3))
     results[:, 0, 0] = Hr_ri_case232(
-        r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k
+        xp, r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k
     )
-    results[:, 0, 1] = Hr_phij_case232(r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case232(r_i, phi_bar_j, theta_M, z_bar_k)
+    results[:, 0, 1] = Hr_phij_case232(xp, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    results[:, 0, 2] = Hr_zk_case232(xp, r_i, phi_bar_j, theta_M, z_bar_k)
     results[:, 1, 0] = Hphi_ri_case232(
-        r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k
+        xp, r_i, phi_j, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k
     )
-    results[:, 1, 1] = Hphi_phij_case232(r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case232(r_i, phi_bar_j, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case232(r_i, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case232(r_i, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case232(r_i, phi_j, theta_M, z_bar_k)
+    results[:, 1, 1] = Hphi_phij_case232(
+        xp, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k
+    )
+    results[:, 1, 2] = Hphi_zk_case232(xp, r_i, phi_bar_j, theta_M, z_bar_k)
+    results[:, 2, 0] = Hz_ri_case232(xp, r_i, phi_bar_Mj, theta_M, z_bar_k)
+    results[:, 2, 1] = Hz_phij_case232(xp, r_i, phi_bar_Mj, theta_M, z_bar_k)
+    results[:, 2, 2] = Hz_zk_case232(xp, r_i, phi_j, theta_M, z_bar_k)
     return results
 
 
-def case233(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 0, 1] = Hr_phij_case233(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case233(r, phi_bar_j, theta_M, z_bar_k)
-    results[:, 1, 1] = Hphi_phij_case233(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case233(r, phi_bar_j, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case233(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case233(r, phi_bar_j, theta_M, z_bar_k)
+def case233(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 0, 1] = Hr_phij_case233(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    results[:, 0, 2] = Hr_zk_case233(xp, r, phi_bar_j, theta_M, z_bar_k)
+    results[:, 1, 1] = Hphi_phij_case233(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    results[:, 1, 2] = Hphi_zk_case233(xp, r, phi_bar_j, theta_M, z_bar_k)
+    results[:, 2, 1] = Hz_phij_case233(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    results[:, 2, 2] = Hz_zk_case233(xp, r, phi_bar_j, theta_M, z_bar_k)
     return results
 
 
-def case234(r, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k):
-    results = np.zeros((len(r), 3, 3))
-    results[:, 0, 0] = Hr_ri_case234(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 0, 1] = Hr_phij_case234(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case234(r, phi_bar_j, theta_M, z_bar_k)
-    results[:, 1, 0] = Hphi_ri_case234(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 1, 1] = Hphi_phij_case234(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 1, 2] = Hphi_zk_case234(r, phi_bar_j, theta_M, z_bar_k)
-    results[:, 2, 0] = Hz_ri_case234(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
-    results[:, 2, 1] = Hz_phij_case234(r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case234(r, phi_bar_j, theta_M, z_bar_k)
+def case234(xp, r, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k):
+    results = xp.zeros(((r.shape[0]), 3, 3))
+    results[:, 0, 0] = Hr_ri_case234(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    results[:, 0, 1] = Hr_phij_case234(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    results[:, 0, 2] = Hr_zk_case234(xp, r, phi_bar_j, theta_M, z_bar_k)
+    results[:, 1, 0] = Hphi_ri_case234(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    results[:, 1, 1] = Hphi_phij_case234(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    results[:, 1, 2] = Hphi_zk_case234(xp, r, phi_bar_j, theta_M, z_bar_k)
+    results[:, 2, 0] = Hz_ri_case234(xp, r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    results[:, 2, 1] = Hz_phij_case234(xp, r, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
+    results[:, 2, 2] = Hz_zk_case234(xp, r, phi_bar_j, theta_M, z_bar_k)
     return results
 
 
-def case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k):
-    results = np.zeros((len(r), 3, 3))
+def case235(xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k):
+    results = xp.zeros(((r.shape[0]), 3, 3))
     results[:, 0, 0] = Hr_ri_case235(
-        r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
     )
-    results[:, 0, 1] = Hr_phij_case235(r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 0, 2] = Hr_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
+    results[:, 0, 1] = Hr_phij_case235(
+        xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k
+    )
+    results[:, 0, 2] = Hr_zk_case235(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
     results[:, 1, 0] = Hphi_ri_case235(
-        r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
     )
     results[:, 1, 1] = Hphi_phij_case235(
-        r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k
+        xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k
     )
-    results[:, 1, 2] = Hphi_zk_case235(r, r_i, phi_bar_j, theta_M, z_bar_k)
+    results[:, 1, 2] = Hphi_zk_case235(xp, r, r_i, phi_bar_j, theta_M, z_bar_k)
     results[:, 2, 0] = Hz_ri_case235(
-        r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+        xp, r, r_i, r_bar_i, phi_bar_j, phi_bar_M, theta_M, z_bar_k
     )
-    results[:, 2, 1] = Hz_phij_case235(r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k)
-    results[:, 2, 2] = Hz_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
+    results[:, 2, 1] = Hz_phij_case235(
+        xp, r, r_i, phi_bar_j, phi_bar_Mj, theta_M, z_bar_k
+    )
+    results[:, 2, 2] = Hz_zk_case235(xp, r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
     return results
 
 
@@ -2146,11 +2156,11 @@ def magnet_cylinder_segment_Hfield(
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> B = magpy.core.magnet_cylinder_segment_Hfield(
-    ...     observers=np.array([(1,1,2), (0,0,0)]),
-    ...     dimensions=np.array([(1,2,.1,.2,-1,1), (1,2,.3,.9,0,1)]),
-    ...     magnetizations=np.array([(1e7,.1,.2), (1e6,1.1,2.2)]),
+    ...     observers=xp.array([(1,1,2), (0,0,0)]),
+    ...     dimensions=xp.array([(1,2,.1,.2,-1,1), (1,2,.3,.9,0,1)]),
+    ...     magnetizations=xp.array([(1e7,.1,.2), (1e6,1.1,2.2)]),
     ... )
-    >>> with np.printoptions(precision=3):
+    >>> with xp.printoptions(precision=3):
     ...     print(B)
     [[-1948.144 32319.944 17616.886]
      [14167.65   1419.941 17921.646]]
@@ -2161,22 +2171,26 @@ def magnet_cylinder_segment_Hfield(
     Materials, Volume 559, 1 October 2022, 169482
     """
 
+    xp = array_namespace(observers, dimensions, magnetizations)
+    observers, dimensions, magnetizations = xp_promote(observers, dimensions, magnetizations, force_floating=True, xp=xp)
     # tile inputs into 8-stacks (boundary cases)
-    r, phi, z = np.repeat(observers, 8, axis=0).T
-    r_i = np.repeat(dimensions[:, :2], 4)
-    phi_j = np.repeat(np.tile(dimensions[:, 2:4], 2), 2)
-    z_k = np.ravel(np.tile(dimensions[:, 4:6], 4))
-    _, phi_M, theta_M = np.repeat(magnetizations, 8, axis=0).T
+    rphiz = xp.repeat(observers, 8, axis=0).T
+    r, phi, z = (rphiz[i, ...] for i in range(3))
+    r_i = xp.repeat(dimensions[:, :2], 4)
+    phi_j = xp.repeat(xp.tile(dimensions[:, 2:4], (2,)), 2)
+    z_k = xp.reshape(xp.tile(dimensions[:, 4:6], (4,)), (-1,))
+    rphiz_M = xp.repeat(magnetizations, 8, axis=0).T
+    _, phi_M, theta_M = (rphiz_M[i, ...] for i in range(3))
 
     # initialize results array with nan
-    result = np.empty((len(r), 3, 3))
-    result[:] = np.nan
+    result = xp.empty(((r.shape[0]), 3, 3))
+    result[:, ...] = xp.nan
 
     # cases to evaluate
     cases = determine_cases(r, phi, z, r_i, phi_j, z_k)
 
     # list of all possible cases - excluding the nan-cases 111, 114, 121, 131
-    case_id = np.array(
+    case_id = xp.asarray(
         [
             112,
             113,
@@ -2288,11 +2302,15 @@ def magnet_cylinder_segment_Hfield(
     for cid, cfkt, cargs in zip(case_id, case_fkt, case_args, strict=False):
         mask = cases == cid
         if any(mask):
-            result[mask] = cfkt(*[allargs[aid][mask] for aid in cargs])
+            result[mask] = cfkt(xp, *[allargs[aid][mask] for aid in cargs])
 
     # sum up contributions from different boundary cases (ax1) and different face types (ax3)
-    result = np.reshape(result, (-1, 8, 3, 3))
-    result = np.sum(result[:, (1, 2, 4, 7)] - result[:, (0, 3, 5, 6)], axis=(1, 3))
+    result = xp.reshape(result, (-1, 8, 3, 3))
+    result0 = result[:, 1, ...] - result[:, 0, ...]
+    result1 = result[:, 2, ...] - result[:, 3, ...]
+    result2 = result[:, 4, ...] - result[:, 5, ...]
+    result3 = result[:, 7, ...] - result[:, 6, ...]
+    result = xp.sum(result0 + result1 + result2 + result3, axis=2)
 
     # multiply with magnetization amplitude
     result = result.T * magnetizations[:, 0] * 1e-7 / MU0
@@ -2312,8 +2330,9 @@ def BHJM_cylinder_segment_internal(
     Falls back to magnet_cylinder_field whenever the section angles describe the full
     360° cylinder.
     """
+    xp = array_namespace(observers, polarization, dimension)
 
-    BHfinal = np.zeros_like(observers, dtype=float)
+    BHfinal = xp.zeros_like(observers, dtype=float)
 
     r1, r2, h, phi1, phi2 = dimension.T
 
@@ -2333,7 +2352,7 @@ def BHJM_cylinder_segment_internal(
         field=field,
         observers=observers[mask1x],
         polarization=polarization[mask1x],
-        dimension=np.c_[2 * r2[mask1x], h[mask1x]],
+        dimension=xp.c_[2 * r2[mask1x], h[mask1x]],
     )
 
     # case2a: hollow cylinder <- should be vectorized together with above
@@ -2342,7 +2361,7 @@ def BHJM_cylinder_segment_internal(
         field=field,
         observers=observers[mask2],
         polarization=polarization[mask2],
-        dimension=np.c_[2 * r1[mask2], h[mask2]],
+        dimension=xp.c_[2 * r1[mask2], h[mask2]],
     )
 
     return BHfinal

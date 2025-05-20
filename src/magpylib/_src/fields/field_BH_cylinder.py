@@ -6,13 +6,18 @@ homogeneously magnetized Cylinders. Computation details in function docstrings.
 # pylint: disable = no-name-in-module
 from __future__ import annotations
 
+import array_api_extra as xpx
 import numpy as np
+
+# from scipy.special import ellipe, ellipk
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
-from scipy.special import ellipe, ellipk
 
 from magpylib._src.fields.special_cel import cel
+from magpylib._src.fields.special_elliptic import ellipe, ellipk
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
+from magpylib._src.array_api_utils import xp_promote
 
 
 # CORE
@@ -58,22 +63,27 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
     -----
     Implementation based on Derby, American Journal of Physics 78.3 (2010): 229-235.
     """
-    n = len(z0)
+    xp = array_namespace(z0, r, z)
+    z0, r, z = xp_promote(z0, r, z, force_floating=True, xp=xp)
+    n = z0.shape[0]
+    z0 = xp.astype(z0, xp.float64)
+    r = xp.astype(r, xp.float64)
+    z = xp.astype(z, xp.float64)
 
     # some important quantities
     zph, zmh = z + z0, z - z0
     dpr, dmr = 1 + r, 1 - r
 
-    sq0 = np.sqrt(zmh**2 + dpr**2)
-    sq1 = np.sqrt(zph**2 + dpr**2)
+    sq0 = xp.sqrt(zmh**2 + dpr**2)
+    sq1 = xp.sqrt(zph**2 + dpr**2)
 
-    k1 = np.sqrt((zph**2 + dmr**2) / (zph**2 + dpr**2))
-    k0 = np.sqrt((zmh**2 + dmr**2) / (zmh**2 + dpr**2))
+    k1 = xp.sqrt((zph**2 + dmr**2) / (zph**2 + dpr**2))
+    k0 = xp.sqrt((zmh**2 + dmr**2) / (zmh**2 + dpr**2))
     gamma = dmr / dpr
-    one = np.ones(n)
+    one = xp.ones(n, dtype=xp.float64)
 
     # radial field (unit polarization)
-    Br = (cel(k1, one, one, -one) / sq1 - cel(k0, one, one, -one) / sq0) / np.pi
+    Br = (cel(k1, one, one, -one) / sq1 - cel(k0, one, one, -one) / sq0) / xp.pi
 
     # axial field (unit polarization)
     Bz = (
@@ -83,10 +93,10 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
             zph * cel(k1, gamma**2, one, gamma) / sq1
             - zmh * cel(k0, gamma**2, one, gamma) / sq0
         )
-        / np.pi
+        / xp.pi
     )
 
-    return np.vstack((Br, np.zeros(n), Bz))
+    return xp.stack((Br, xp.zeros(n), Bz))
 
 
 # CORE
@@ -145,11 +155,14 @@ def magnet_cylinder_diametral_Hfield(
     (unpublished).
     """
     # pylint: disable=too-many-statements
+    xp = array_namespace(z0, r, z, phi)
+    z0, r, z, phi = xp_promote(z0, r, z, phi, force_floating=True, xp=xp)
 
-    n = len(z0)
+    n = z0.shape[0]
 
     # allocate to treat small r special cases
-    Hr, Hphi, Hz = np.empty((3, n))
+    H = xp.empty((3, n))
+    Hr, Hphi, Hz = H[0, ...], H[1, ...], H[2, ...]
 
     # compute repeated quantities for all cases
     zp = z + z0
@@ -162,7 +175,7 @@ def magnet_cylinder_diametral_Hfield(
     # case small_r: numerical instability of general solution
     mask_small_r = r < 0.05
     mask_general = ~mask_small_r
-    if np.any(mask_small_r):
+    if xp.any(mask_small_r):
         phiX = phi[mask_small_r]
         zpX, zmX = zp[mask_small_r], zm[mask_small_r]
         zp2X, zm2X = zp2[mask_small_r], zm2[mask_small_r]
@@ -171,8 +184,8 @@ def magnet_cylinder_diametral_Hfield(
         # taylor series for small r
         zpp = zp2X + 1
         zmm = zm2X + 1
-        sqrt_p = np.sqrt(zpp)
-        sqrt_m = np.sqrt(zmm)
+        sqrt_p = xp.sqrt(zpp)
+        sqrt_m = xp.sqrt(zmm)
 
         frac1 = zpX / sqrt_p
         frac2 = zmX / sqrt_m
@@ -189,12 +202,12 @@ def magnet_cylinder_diametral_Hfield(
             * r4X
         )
 
-        Hr[mask_small_r] = -np.cos(phiX) / 4 * (term1 + 9 * term2 + 25 * term3)
+        Hr[mask_small_r] = -xp.cos(phiX) / 4 * (term1 + 9 * term2 + 25 * term3)
 
-        Hphi[mask_small_r] = np.sin(phiX) / 4 * (term1 + 3 * term2 + 5 * term3)
+        Hphi[mask_small_r] = xp.sin(phiX) / 4 * (term1 + 3 * term2 + 5 * term3)
 
         Hz[mask_small_r] = (
-            -np.cos(phiX)
+            -xp.cos(phiX)
             / 4
             * (
                 rX * (1 / zpp / sqrt_p - 1 / zmm / sqrt_m)
@@ -215,12 +228,12 @@ def magnet_cylinder_diametral_Hfield(
         # if there are small_r, select the general/case variables
         # when there are no small_r cases it is not necessary to slice with [True, True, Tue,...]
         phi = phi[mask_general]
-        n = len(phi)
+        n = phi.shape[0]
         zp, zm = zp[mask_general], zm[mask_general]
         zp2, zm2 = zp2[mask_general], zm2[mask_general]
         r, r2 = r[mask_general], r2[mask_general]
 
-    if np.any(mask_general):
+    if xp.any(mask_general):
         rp = r + 1
         rm = r - 1
         rp2 = rp**2
@@ -228,8 +241,8 @@ def magnet_cylinder_diametral_Hfield(
 
         ap2 = zp2 + rm**2
         am2 = zm2 + rm**2
-        ap = np.sqrt(ap2)
-        am = np.sqrt(am2)
+        ap = xp.sqrt(ap2)
+        am = xp.sqrt(am2)
 
         argp = -4 * r / ap2
         argm = -4 * r / am2
@@ -238,24 +251,24 @@ def magnet_cylinder_diametral_Hfield(
         #   result is numerically stable in the vicinity of of r=r0
         #   so only the special case must be caught (not the surroundings)
         mask_special = rm == 0
-        argc = np.ones(n) * 1e16  # should be np.Inf but leads to 1/0 problems in cel
+        argc = xp.ones(n) * 1e16  # should be np.Inf but leads to 1/0 problems in cel
         argc[~mask_special] = -4 * r[~mask_special] / rm2[~mask_special]
         # special case 1/rm
-        one_over_rm = np.zeros(n)
+        one_over_rm = xp.zeros(n)
         one_over_rm[~mask_special] = 1 / rm[~mask_special]
 
         elle_p = ellipe(argp)
         elle_m = ellipe(argm)
         ellk_p = ellipk(argp)
         ellk_m = ellipk(argm)
-        onez = np.ones(n)
-        ellpi_p = cel(np.sqrt(1 - argp), 1 - argc, onez, onez)  # elliptic_Pi
-        ellpi_m = cel(np.sqrt(1 - argm), 1 - argc, onez, onez)  # elliptic_Pi
+        onez = xp.ones(n)
+        ellpi_p = cel(xp.sqrt(1 - argp), 1 - argc, onez, onez)  # elliptic_Pi
+        ellpi_m = cel(xp.sqrt(1 - argm), 1 - argc, onez, onez)  # elliptic_Pi
 
         # compute fields
         Hr[mask_general] = (
-            -np.cos(phi)
-            / (4 * np.pi * r2)
+            -xp.cos(phi)
+            / (4 * xp.pi * r2)
             * (
                 -zm * am * elle_m
                 + zp * ap * elle_p
@@ -266,8 +279,8 @@ def magnet_cylinder_diametral_Hfield(
         )
 
         Hphi[mask_general] = (
-            np.sin(phi)
-            / (4 * np.pi * r2)
+            xp.sin(phi)
+            / (4 * xp.pi * r2)
             * (
                 +zm * am * elle_m
                 - zp * ap * elle_p
@@ -279,8 +292,8 @@ def magnet_cylinder_diametral_Hfield(
         )
 
         Hz[mask_general] = (
-            -np.cos(phi)
-            / (2 * np.pi * r)
+            -xp.cos(phi)
+            / (2 * xp.pi * r)
             * (
                 +am * elle_m
                 - ap * elle_p
@@ -289,7 +302,7 @@ def magnet_cylinder_diametral_Hfield(
             )
         )
 
-    return np.vstack((Hr, Hphi, Hz))
+    return xp.stack((Hr, Hphi, Hz))
 
 
 def BHJM_magnet_cylinder(

@@ -5,11 +5,15 @@ Implementations of analytical expressions of line current segments
 # pylint: disable=too-many-positional-arguments
 from __future__ import annotations
 
+from itertools import zip_longest
+
+import array_api_extra as xpx
 import numpy as np
-from numpy.linalg import norm
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
+from magpylib._src.array_api_utils import xp_promote
 
 
 def current_vertices_field(
@@ -124,72 +128,73 @@ def current_polyline_Hfield(
     Be careful with magnetic fields of discontinued segments. They are
     unphysical and can lead to unphysical effects.
     """
+    xp = array_namespace(observers, segments_start, segments_end, currents)
+    observers, segments_start, segments_end, currents = xp_promote(observers, segments_start, segments_end, currents, force_floating=True, xp=xp)
     # rename
     p1, p2, po = segments_start, segments_end, observers
-
     # make dimensionless (avoid all large/small input problems) by introducing
     # the segment length as characteristic length scale.
-    norm_12 = norm(p1 - p2, axis=1)
+    norm_12 = xp.linalg.vector_norm(p1 - p2, axis=-1)
     p1 = (p1.T / norm_12).T
     p2 = (p2.T / norm_12).T
     po = (po.T / norm_12).T
 
     # p4 = projection of pos_obs onto line p1-p2
-    t = np.sum((po - p1) * (p1 - p2), axis=1)
+    t = xp.sum((po - p1) * (p1 - p2), axis=1)
     p4 = p1 + (t * (p1 - p2).T).T
 
     # distance of observers from line
-    norm_o4 = norm(po - p4, axis=1)
+    norm_o4 = xp.linalg.vector_norm(po - p4, axis=-1)
 
     # separate on-line cases (-> B=0)
     mask1 = norm_o4 < 1e-15  # account for numerical issues
 
     # continue only with general off-line cases
-    if np.any(mask1):
-        not_mask1 = ~mask1
-        po = po[not_mask1]
-        p1 = p1[not_mask1]
-        p2 = p2[not_mask1]
-        p4 = p4[not_mask1]
-        norm_12 = norm_12[not_mask1]
-        norm_o4 = norm_o4[not_mask1]
-        currents = currents[not_mask1]
+    not_mask1 = ~mask1
+    po = po[not_mask1]
+    p1 = p1[not_mask1]
+    p2 = p2[not_mask1]
+    p4 = p4[not_mask1]
+    norm_12 = norm_12[not_mask1]
+    norm_o4 = norm_o4[not_mask1]
+    currents = currents[not_mask1]
 
     # determine field direction
-    cros_ = np.cross(p2 - p1, po - p4)
-    norm_cros = norm(cros_, axis=1)
+    cros_ = xp.linalg.cross(p2 - p1, po - p4)
+
+    norm_cros = xp.linalg.vector_norm(cros_, axis=-1)
     eB = (cros_.T / norm_cros).T
 
     # compute angles
-    norm_o1 = norm(
-        po - p1, axis=1
+    norm_o1 = xp.linalg.vector_norm(
+        po - p1, axis=-1
     )  # improve performance by computing all norms at once
-    norm_o2 = norm(po - p2, axis=1)
-    norm_41 = norm(p4 - p1, axis=1)
-    norm_42 = norm(p4 - p2, axis=1)
+    norm_o2 = xp.linalg.vector_norm(po - p2, axis=-1)
+    norm_41 = xp.linalg.vector_norm(p4 - p1, axis=-1)
+    norm_42 = xp.linalg.vector_norm(p4 - p2, axis=-1)
     sinTh1 = norm_41 / norm_o1
     sinTh2 = norm_42 / norm_o2
-    deltaSin = np.empty((len(po),))
+    deltaSin = xp.empty((po.shape[0],))
 
     # determine how p1,p2,p4 are sorted on the line (to get sinTH signs)
     # both points below
-    mask2 = (norm_41 > 1) * (norm_41 > norm_42)
-    deltaSin[mask2] = abs(sinTh1[mask2] - sinTh2[mask2])
+    mask2 = (norm_41 > 1) & (norm_41 > norm_42)
+    deltaSin = xpx.at(deltaSin)[mask2].set(xp.abs(sinTh1[mask2] - sinTh2[mask2]))
     # both points above
-    mask3 = (norm_42 > 1) * (norm_42 > norm_41)
-    deltaSin[mask3] = abs(sinTh2[mask3] - sinTh1[mask3])
+    mask3 = (norm_42 > 1) & (norm_42 > norm_41)
+    deltaSin = xpx.at(deltaSin)[mask3].set(xp.abs(sinTh2[mask3] - sinTh1[mask3]))
     # one above one below or one equals p4
-    mask4 = ~mask2 * ~mask3
-    deltaSin[mask4] = abs(sinTh1[mask4] + sinTh2[mask4])
+    mask4 = ~mask2 & ~mask3
+    deltaSin = xpx.at(deltaSin)[mask4].set(xp.abs(sinTh1[mask4] + sinTh2[mask4]))
 
     # B = (deltaSin / norm_o4 * eB.T / norm_12 * current * 1e-7).T
 
     # avoid array creation if possible
-    if np.any(mask1):
-        H = np.zeros_like(observers, dtype=float)
-        H[~mask1] = (deltaSin / norm_o4 * eB.T / norm_12 * currents / (4 * np.pi)).T
-        return H
-    return (deltaSin / norm_o4 * eB.T / norm_12 * currents / (4 * np.pi)).T
+    H = xp.zeros_like(observers, dtype=xp.float64)
+    H = xpx.at(H)[~mask1].set(
+        (deltaSin / norm_o4 * eB.T / norm_12 * currents / (4 * np.pi)).T
+    )
+    return H
 
 
 def BHJM_current_polyline(
