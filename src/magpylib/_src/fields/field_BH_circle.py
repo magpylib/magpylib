@@ -8,6 +8,8 @@ from __future__ import annotations
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
+from array_api_compat import array_namespace
+
 from magpylib._src.fields.special_cel import cel_iter
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
@@ -67,7 +69,8 @@ def current_circle_Hfield(
     efficient expression for the magnetic field of a current loop.", M.Ortner et al,
     Magnetism 2023, 3(1), 11-31.
     """
-    n5 = len(r)
+    xp = array_namespace(r0, r, z, i0)
+    n5 = r.shape[0]
 
     # express through ratios (make dimensionless, avoid large/small input values, stupid)
     r = r / r0
@@ -79,23 +82,23 @@ def current_circle_Hfield(
     k2 = 4 * r / x0
     q2 = (z2 + (r - 1) ** 2) / x0
 
-    k = np.sqrt(k2)
-    q = np.sqrt(q2)
+    k = xp.sqrt(k2)
+    q = xp.sqrt(q2)
     p = 1 + q
-    pf = k / np.sqrt(r) / q2 / 20 / r0 * 1e-6 * i0
+    pf = k / xp.sqrt(r) / q2 / 20 / r0 * 1e-6 * i0
 
     # cel* part
     cc = k2 * k2
     ss = 2 * cc * q / p
-    Hr = pf * z / r * cel_iter(q, p, np.ones(n5), cc, ss, p, q)
+    Hr = pf * z / r * cel_iter(q, p, xp.ones(n5), cc, ss, p, q)
 
     # cel** part
     cc = k2 * (k2 - (q2 + 1) / r)
     ss = 2 * k2 * q * (k2 / p - p / r)
-    Hz = -pf * cel_iter(q, p, np.ones(n5), cc, ss, p, q)
+    Hz = -pf * cel_iter(q, p, xp.ones(n5), cc, ss, p, q)
 
     # input is I -> output must be H-field
-    return np.vstack((Hr, np.zeros(n5), Hz)) * 795774.7154594767  # *1e7/4/np.pi
+    return xp.stack((Hr, xp.zeros(n5), Hz), axis=0) * 795774.7154594767  # *1e7/4/np.pi
 
 
 def BHJM_circle(
@@ -109,34 +112,39 @@ def BHJM_circle(
     - treat special cases
     """
 
+    xp = array_namespace(observers, diameter, current)
+    observers = xp.astype(observers, xp.float64)
+    diameter = xp.astype(diameter, xp.float64)
+    current = xp.astype(current, xp.float64)
+
     # allocate
-    BHJM = np.zeros_like(observers, dtype=float)
+    BHJM = xp.zeros_like(observers, dtype=xp.float64)
 
     check_field_input(field)
     if field in "MJ":
         return BHJM
 
     r, phi, z = cart_to_cyl_coordinates(observers)
-    r0 = np.abs(diameter / 2)
+    r0 = xp.abs(diameter / 2)
 
     # Special cases:
     # case1: loop radius is 0 -> return (0,0,0)
     mask1 = r0 == 0
     # case2: at singularity -> return (0,0,0)
-    mask2 = np.logical_and(abs(r - r0) < 1e-15 * r0, z == 0)
+    mask2 = xp.logical_and(xp.abs(r - r0) < 1e-15 * r0, z == 0)
     # case3: r=0
     mask3 = r == 0
-    if np.any(mask3):
-        mask4 = mask3 * ~mask1  # only relevant if not also case1
-        BHJM[mask4, 2] = (
+    if xp.any(mask3):
+        mask4 = mask3 & ~mask1  # only relevant if not also case1
+        BHJM[:, 2][mask4] = (
             (r0[mask4] ** 2 / (z[mask4] ** 2 + r0[mask4] ** 2) ** (3 / 2))
             * current[mask4]
             * 0.5
         )
 
     # general case
-    mask5 = ~np.logical_or(np.logical_or(mask1, mask2), mask3)
-    if np.any(mask5):
+    mask5 = ~xp.logical_or(xp.logical_or(mask1, mask2), mask3)
+    if xp.any(mask5):
         BHJM[mask5] = current_circle_Hfield(
             r0=r0[mask5],
             r=r[mask5],

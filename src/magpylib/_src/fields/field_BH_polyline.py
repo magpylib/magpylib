@@ -5,8 +5,11 @@ Implementations of analytical expressions of line current segments
 # pylint: disable=too-many-positional-arguments
 from __future__ import annotations
 
+from itertools import zip_longest
+
+import array_api_extra as xpx
 import numpy as np
-from numpy.linalg import norm
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
@@ -16,7 +19,7 @@ def current_vertices_field(
     field: str,
     observers: np.ndarray,
     current: np.ndarray,
-    vertices: np.ndarray = None,
+    vertices: np.ndarray | list[np.ndarray] | None = None,
     segment_start=None,  # list of mix3 ndarrays
     segment_end=None,
 ) -> np.ndarray:
@@ -34,6 +37,13 @@ def current_vertices_field(
     ### Returns:
     - B-field (ndarray nx3): B-field vectors at pos_obs in units of T
     """
+    arrs = [observers, current, segment_start, segment_end]
+    if vertices is np.ndarray:
+        arrs = arrs + [vertices]
+    elif vertices is list:
+        arrs = arrs + vertices
+    xp = array_namespace(*arrs)
+
     if vertices is None:
         return BHJM_current_polyline(
             field=field,
@@ -43,29 +53,35 @@ def current_vertices_field(
             segment_end=segment_end,
         )
 
-    nvs = np.array([f.shape[0] for f in vertices])  # lengths of vertices sets
+    nvs = xp.asarray([f.shape[0] for f in vertices])  # lengths of vertices sets
     if all(v == nvs[0] for v in nvs):  # if all vertices sets have the same lengths
         n0, n1, *_ = vertices.shape
         BH = BHJM_current_polyline(
             field=field,
-            observers=np.repeat(observers, n1 - 1, axis=0),
-            current=np.repeat(current, n1 - 1, axis=0),
-            segment_start=vertices[:, :-1].reshape(-1, 3),
-            segment_end=vertices[:, 1:].reshape(-1, 3),
+            observers=xp.repeat(observers, n1 - 1, axis=0),
+            current=xp.repeat(current, n1 - 1, axis=0),
+            segment_start=xp.reshape(vertices[:, :-1], (-1, 3)),
+            segment_end=xp.reshape(vertices[:, 1:], (-1, 3)),
         )
-        BH = BH.reshape((n0, n1 - 1, 3))
-        BH = np.sum(BH, axis=1)
+        BH = xp.reshape(BH, (n0, n1 - 1, 3))
+        BH = xp.sum(BH, axis=1)
     else:
-        split_indices = np.cumsum(nvs - 1)[:-1]  # remove last to avoid empty split
+        split_indices = xp.roll(
+            xp.cumulative_sum(nvs - 1), shift=1
+        )  # remove last to avoid empty split
+        split_indices[0, ...] = 0
+        ind1 = (split_indices[i] for i in range(split_indices.shape[0]))
+        ind2 = (split_indices[1:][i] for i in range(split_indices.shape[0] - 1))
         BH = BHJM_current_polyline(
             field=field,
-            observers=np.repeat(observers, nvs - 1, axis=0),
-            current=np.repeat(current, nvs - 1, axis=0),
-            segment_start=np.concatenate([vert[:-1] for vert in vertices]),
-            segment_end=np.concatenate([vert[1:] for vert in vertices]),
+            observers=xp.repeat(observers, nvs - 1, axis=0),
+            current=xp.repeat(current, nvs - 1, axis=0),
+            segment_start=xp.concat([vert[:-1, ...] for vert in vertices]),
+            segment_end=xp.concat([vert[1:, ...] for vert in vertices]),
         )
-        bh_split = np.split(BH, split_indices)
-        BH = np.array([np.sum(bh, axis=0) for bh in bh_split])
+        bh_split = list(BH[slice(i, j), ...] for i, j in zip_longest(ind1, ind2))
+        print(len(bh_split))
+        BH = xp.asarray([xp.sum(bh, axis=0) for bh in bh_split])
     return BH
 
 
@@ -124,72 +140,72 @@ def current_polyline_Hfield(
     Be careful with magnetic fields of discontinued segments. They are
     unphysical and can lead to unphysical effects.
     """
+    xp = array_namespace(observers, segments_start, segments_end, currents)
     # rename
     p1, p2, po = segments_start, segments_end, observers
-
     # make dimensionless (avoid all large/small input problems) by introducing
     # the segment length as characteristic length scale.
-    norm_12 = norm(p1 - p2, axis=1)
+    norm_12 = xp.linalg.vector_norm(p1 - p2, axis=-1)
     p1 = (p1.T / norm_12).T
     p2 = (p2.T / norm_12).T
     po = (po.T / norm_12).T
 
     # p4 = projection of pos_obs onto line p1-p2
-    t = np.sum((po - p1) * (p1 - p2), axis=1)
+    t = xp.sum((po - p1) * (p1 - p2), axis=1)
     p4 = p1 + (t * (p1 - p2).T).T
 
     # distance of observers from line
-    norm_o4 = norm(po - p4, axis=1)
+    norm_o4 = xp.linalg.vector_norm(po - p4, axis=-1)
 
     # separate on-line cases (-> B=0)
     mask1 = norm_o4 < 1e-15  # account for numerical issues
 
     # continue only with general off-line cases
-    if np.any(mask1):
-        not_mask1 = ~mask1
-        po = po[not_mask1]
-        p1 = p1[not_mask1]
-        p2 = p2[not_mask1]
-        p4 = p4[not_mask1]
-        norm_12 = norm_12[not_mask1]
-        norm_o4 = norm_o4[not_mask1]
-        currents = currents[not_mask1]
+    not_mask1 = ~mask1
+    po = po[not_mask1]
+    p1 = p1[not_mask1]
+    p2 = p2[not_mask1]
+    p4 = p4[not_mask1]
+    norm_12 = norm_12[not_mask1]
+    norm_o4 = norm_o4[not_mask1]
+    currents = currents[not_mask1]
 
     # determine field direction
-    cros_ = np.cross(p2 - p1, po - p4)
-    norm_cros = norm(cros_, axis=1)
+    cros_ = xp.linalg.cross(p2 - p1, po - p4)
+
+    norm_cros = xp.linalg.vector_norm(cros_, axis=-1)
     eB = (cros_.T / norm_cros).T
 
     # compute angles
-    norm_o1 = norm(
-        po - p1, axis=1
+    norm_o1 = xp.linalg.vector_norm(
+        po - p1, axis=-1
     )  # improve performance by computing all norms at once
-    norm_o2 = norm(po - p2, axis=1)
-    norm_41 = norm(p4 - p1, axis=1)
-    norm_42 = norm(p4 - p2, axis=1)
+    norm_o2 = xp.linalg.vector_norm(po - p2, axis=-1)
+    norm_41 = xp.linalg.vector_norm(p4 - p1, axis=-1)
+    norm_42 = xp.linalg.vector_norm(p4 - p2, axis=-1)
     sinTh1 = norm_41 / norm_o1
     sinTh2 = norm_42 / norm_o2
-    deltaSin = np.empty((len(po),))
+    deltaSin = xp.empty((po.shape[0],))
 
     # determine how p1,p2,p4 are sorted on the line (to get sinTH signs)
     # both points below
-    mask2 = (norm_41 > 1) * (norm_41 > norm_42)
-    deltaSin[mask2] = abs(sinTh1[mask2] - sinTh2[mask2])
+    mask2 = (norm_41 > 1) & (norm_41 > norm_42)
+    deltaSin = xpx.at(deltaSin)[mask2].set(xp.abs(sinTh1[mask2] - sinTh2[mask2]))
     # both points above
-    mask3 = (norm_42 > 1) * (norm_42 > norm_41)
-    deltaSin[mask3] = abs(sinTh2[mask3] - sinTh1[mask3])
+    mask3 = (norm_42 > 1) & (norm_42 > norm_41)
+    deltaSin = xpx.at(deltaSin)[mask3].set(xp.abs(sinTh2[mask3] - sinTh1[mask3]))
     # one above one below or one equals p4
-    mask4 = ~mask2 * ~mask3
-    deltaSin[mask4] = abs(sinTh1[mask4] + sinTh2[mask4])
+    mask4 = ~mask2 & ~mask3
+    deltaSin = xpx.at(deltaSin)[mask4].set(xp.abs(sinTh1[mask4] + sinTh2[mask4]))
 
     # B = (deltaSin / norm_o4 * eB.T / norm_12 * current * 1e-7).T
 
     # avoid array creation if possible
-    if np.any(mask1):
-        H = np.zeros_like(observers, dtype=float)
-        H[~mask1] = (deltaSin / norm_o4 * eB.T / norm_12 * currents / (4 * np.pi)).T
-        return H
-    return (deltaSin / norm_o4 * eB.T / norm_12 * currents / (4 * np.pi)).T
+    H = xp.zeros_like(observers, dtype=xp.float64)
+    H = xpx.at(H)[~mask1].set(
+        (deltaSin / norm_o4 * eB.T / norm_12 * currents / (4 * np.pi)).T
+    )
+    return H
 
 
 def BHJM_current_polyline(
@@ -206,24 +222,37 @@ def BHJM_current_polyline(
     # pylint: disable=too-many-statements
 
     check_field_input(field)
+    xp = array_namespace(observers, segment_start, segment_end, current)
 
-    BHJM = np.zeros_like(observers, dtype=float)
+    if not xp.isdtype(observers.dtype, kind=("real floating", "complex floating")):
+        observers = xp.astype(observers, xp.float64)
+
+    if not xp.isdtype(segment_start.dtype, kind=("real floating", "complex floating")):
+        segment_start = xp.astype(segment_start, xp.float64)
+
+    if not xp.isdtype(segment_end.dtype, kind=("real floating", "complex floating")):
+        segment_end = xp.astype(segment_end, xp.float64)
+
+    if not xp.isdtype(current.dtype, kind=("real floating", "complex floating")):
+        current = xp.astype(current, xp.float64)
+
+    BHJM = xp.zeros_like(observers, dtype=xp.float64)
 
     if field in "MJ":
         return BHJM
 
     # Check for zero-length segments (or discontinuous)
-    mask_nan_start = np.isnan(segment_start).all(axis=1)
-    mask_nan_end = np.isnan(segment_end).all(axis=1)
-    mask_equal = np.all(segment_start == segment_end, axis=1)
+    mask_nan_start = xp.all(xp.isnan(segment_start), axis=1)
+    mask_nan_end = xp.all(xp.isnan(segment_end), axis=1)
+    mask_equal = xp.all(segment_start == segment_end, axis=1)
     mask0 = mask_equal | mask_nan_start | mask_nan_end
     not_mask0 = ~mask0  # avoid multiple computation of ~mask
 
-    if np.all(mask0):
+    if xp.all(mask0):
         return BHJM
 
     # continue only with non-zero segments
-    if np.any(mask0):
+    if xp.any(mask0):
         current = current[not_mask0]
         segment_start = segment_start[not_mask0]
         segment_end = segment_end[not_mask0]
