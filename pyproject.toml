@@ -39,6 +39,7 @@ dependencies = [
     "plotly>=5.16",
     "array-api-compat>=1.11.2",
     "array-api-extra>=0.7.1",
+    "typing-extensions>=4.13.2",
 ]
 
 [dependency-groups]
@@ -71,6 +72,9 @@ test = [
   "jupyterlab",
   "anywidget",
   "array-api-strict>=2.3.1",
+  "jax",
+  "numpy",
+  "dask[array]",
 ]
 binder = [
     "jupytext",
