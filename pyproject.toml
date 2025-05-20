@@ -37,6 +37,8 @@ dependencies = [
     "scipy>=1.8",
     "matplotlib>=3.6",
     "plotly>=5.16",
+    "array-api-compat>=1.11.2",
+    "array-api-extra>=0.7.1",
 ]
 
 [project.optional-dependencies]
@@ -71,6 +73,7 @@ test = [
     "imageio[tifffile, ffmpeg]",
     "jupyterlab",
     "anywidget",
+    "array-api-strict>=2.3.1",
 ]
 binder = [
     "jupytext",
