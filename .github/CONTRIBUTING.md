@@ -33,7 +33,7 @@ You can set up a development environment by running:
 ```bash
 python3 -m venv .venv
 source ./.venv/bin/activate
-pip install -v -e .[dev]
+pip install --group dev -e .
 ```
 
 If you have the
@@ -42,7 +42,7 @@ can instead do:
 
 ```bash
 py -m venv .venv
-py -m install -v -e .[dev]
+py -m install --group dev -e .
 ```
 
 # Pre-commit
