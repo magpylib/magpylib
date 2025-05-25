@@ -39,39 +39,37 @@ dependencies = [
     "plotly>=5.16",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
-  "pytest>=7.4",
-  "pytest-cov >=3",
-  "pytest-regressions",
+  { include-group = "test" }
 ]
+
 docs = [
-    "pydata-sphinx-theme",
-    "sphinx>=7.0,<8.0",
-    "sphinx-design",
-    "sphinx-thebe",
-    "sphinx-favicon",
-    "sphinx-gallery",
-    "sphinx-copybutton",
-    "myst-nb",
-    "pandas",
-    "numpy-stl",
-    "pyvista",
-    "magpylib-material-response",
-    "magpylib-force",
-    "plotly>=5.16,<6.0", # v6 is not working properly as of 6.1.1
-    "kaleido==0.2.1", # ulterior versions don't ship chrome
+  "pydata-sphinx-theme",
+  "sphinx>=7.0,<8.0",
+  "sphinx-design",
+  "sphinx-thebe",
+  "sphinx-favicon",
+  "sphinx-gallery",
+  "sphinx-copybutton",
+  "myst-nb",
+  "pandas",
+  "numpy-stl",
+  "pyvista",
+  "magpylib-material-response",
+  "magpylib-force",
+  "plotly>=5.16,<6.0", # v6 is not working properly as of 6.1.1
+  "kaleido==0.2.1", # ulterior versions don't ship chrome
 ]
 test = [
-    "pytest>=7.4",
-    "pytest-cov >=3",
-    "pytest-regressions",
-    "pandas",
-    "pyvista",
-    "ipywidgets", # for plotly FigureWidget
-    "imageio[tifffile, ffmpeg]",
-    "jupyterlab",
-    "anywidget",
+  "pytest>=7.4",
+  "pytest-cov>=3",
+  "pandas",
+  "pyvista",
+  "imageio[tifffile,ffmpeg]",
+  "jupyterlab",
+  "ipywidgets",  # for plotly FigureWidget
+  "anywidget", # for plotly FigureWidget
 ]
 binder = [
     "jupytext",
@@ -96,11 +94,6 @@ installer = "uv"
 features = ["test"]
 scripts.test = "pytest {args}"
 
-
-[tool.uv]
-dev-dependencies = [
-  "magpylib[test]",
-]
 
 
 [tool.pytest.ini_options]
