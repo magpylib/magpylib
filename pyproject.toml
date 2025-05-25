@@ -41,37 +41,33 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-  "pytest >=6",
-  "pytest-cov >=3",
-  {include-group = "test"}
+  { include-group = "test" }
 ]
+
 docs = [
-    "pydata-sphinx-theme",
-    "sphinx>=7.0,<8.0",
-    "sphinx-design",
-    "sphinx-thebe",
-    "sphinx-favicon",
-    "sphinx-gallery",
-    "sphinx-copybutton",
-    "myst-nb",
-    "pandas",
-    "numpy-stl",
-    "pyvista",
-    "magpylib-material-response",
-    "magpylib-force",
+  "pydata-sphinx-theme",
+  "sphinx>=7.0,<8.0",
+  "sphinx-design",
+  "sphinx-thebe",
+  "sphinx-favicon",
+  "sphinx-gallery",
+  "sphinx-copybutton",
+  "myst-nb",
+  "pandas",
+  "numpy-stl",
+  "pyvista",
+  "magpylib-material-response",
+  "magpylib-force",
 ]
 test = [
-    "tox>=4.11",
-    "pytest >=6",
-    "pytest-cov >=3",
-    "pytest>=7.4",
-    "coverage",
-    "pandas",
-    "pyvista",
-    "ipywidgets", # for plotly FigureWidget
-    "imageio[tifffile, ffmpeg]",
-    "jupyterlab",
-    "anywidget",
+  "pytest>=7.4",
+  "pytest-cov>=3",
+  "pandas",
+  "pyvista",
+  "ipywidgets",  # for plotly FigureWidget
+  "imageio[tifffile,ffmpeg]",
+  "jupyterlab",
+  "anywidget",
 ]
 binder = [
     "jupytext",
