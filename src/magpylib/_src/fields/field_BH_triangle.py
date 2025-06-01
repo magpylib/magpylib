@@ -13,8 +13,26 @@ import numpy as np
 from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.input_checks import check_field_input
 from magpylib._src.array_api_utils import xp_promote
+from magpylib._src.input_checks import check_field_input
+
+
+def cross(a: np.ndarray, b: np.ndarray, xp=None):
+    if xp is None:
+        xp = array_namespace(a, b)
+    if hasattr(xp, "linalg") and hasattr(xp.linalg, "cross"):
+        return xp.linalg.cross(a, b)
+    return xpx.lazy_apply(
+        lambda a, b: xp.asarray(
+            [
+                a[..., 1] * b[..., 2] - a[..., 2] * b[..., 1],
+                a[..., 2] * b[..., 0] - a[..., 0] * b[..., 2],
+                a[..., 0] * b[..., 1] - a[..., 1] * b[..., 0],
+            ]
+        ).T,
+        a,
+        b,
+    )
 
 
 def vcross3(xp, a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -41,7 +59,7 @@ def norm_vector_xp(xp, v) -> np.ndarray:
     """
     a = v[:, 1, ...] - v[:, 0, ...]
     b = v[:, 2, ...] - v[:, 0, ...]
-    n = xp.linalg.cross(a, b)
+    n = cross(a, b)
     n_norm = xp.sqrt(xp.vecdot(n, n, axis=-1))
     return n / xp.expand_dims(n_norm, axis=-1)
 
@@ -66,7 +84,7 @@ def solid_angle_xp(xp, R: np.ndarray, r: np.ndarray) -> np.ndarray:
     # Calculates (oriented) volume of the parallelepiped in vectorized form.
     N = xp.vecdot(
         R2,
-        xp.linalg.cross(R1, R0),
+        cross(R1, R0),
     )
 
     D = (
@@ -233,7 +251,7 @@ def triangle_Bfield(
     I = xpx.at(I)[lr_mask & ~ind_mask].set(xp.nan)
 
     PQR = xp.vecdot(I[:, :, xp.newaxis], L, axis=-3)
-    B = sigma * (n.T * solid_angle(R, r) - xp.linalg.cross(n, PQR).T)
+    B = sigma * (n.T * solid_angle(R, r) - cross(n, PQR).T)
     B = B / xp.pi / 4.0
 
     return B.T
