@@ -13,11 +13,11 @@ import numpy as np
 from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
+from magpylib._src.array_api_utils import xp_promote
 from magpylib._src.fields.special_cel import cel
 from magpylib._src.fields.special_elliptic import ellipe, ellipk
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
-from magpylib._src.array_api_utils import xp_promote
 
 
 # CORE
@@ -65,10 +65,8 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
     """
     xp = array_namespace(z0, r, z)
     z0, r, z = xp_promote(z0, r, z, force_floating=True, xp=xp)
+    dtype = z0.dtype
     n = z0.shape[0]
-    z0 = xp.astype(z0, xp.float64)
-    r = xp.astype(r, xp.float64)
-    z = xp.astype(z, xp.float64)
 
     # some important quantities
     zph, zmh = z + z0, z - z0
@@ -80,7 +78,7 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
     k1 = xp.sqrt((zph**2 + dmr**2) / (zph**2 + dpr**2))
     k0 = xp.sqrt((zmh**2 + dmr**2) / (zmh**2 + dpr**2))
     gamma = dmr / dpr
-    one = xp.ones(n, dtype=xp.float64)
+    one = xp.ones(n, dtype=dtype)
 
     # radial field (unit polarization)
     Br = (cel(k1, one, one, -one) / sq1 - cel(k0, one, one, -one) / sq0) / xp.pi
@@ -159,9 +157,10 @@ def magnet_cylinder_diametral_Hfield(
     z0, r, z, phi = xp_promote(z0, r, z, phi, force_floating=True, xp=xp)
 
     n = z0.shape[0]
+    dtype = z0.dtype
 
     # allocate to treat small r special cases
-    H = xp.empty((3, n))
+    H = xp.empty((3, n), dtype=dtype)
     Hr, Hphi, Hz = H[0, ...], H[1, ...], H[2, ...]
 
     # compute repeated quantities for all cases
@@ -175,11 +174,12 @@ def magnet_cylinder_diametral_Hfield(
     # case small_r: numerical instability of general solution
     mask_small_r = r < 0.05
     mask_general = ~mask_small_r
-    if xp.any(mask_small_r):
-        phiX = phi[mask_small_r]
-        zpX, zmX = zp[mask_small_r], zm[mask_small_r]
-        zp2X, zm2X = zp2[mask_small_r], zm2[mask_small_r]
-        rX, r2X = r[mask_small_r], r2[mask_small_r]
+
+    def H_small_r_setup(phiX, zpX, zmX, zp2X, zm2X, rX, r2X):
+        # phiX = phi[mask_small_r]
+        # zpX, zmX = zp[mask_small_r], zm[mask_small_r]
+        # zp2X, zm2X = zp2[mask_small_r], zm2[mask_small_r]
+        # rX, r2X = r[mask_small_r], r2[mask_small_r]
 
         # taylor series for small r
         zpp = zp2X + 1
@@ -201,12 +201,25 @@ def magnet_cylinder_diametral_Hfield(
             / 64
             * r4X
         )
+        return (term1, term2, term3, zpp, sqrt_p, zmm, sqrt_m, r3X, r4X, r5X)
 
-        Hr[mask_small_r] = -xp.cos(phiX) / 4 * (term1 + 9 * term2 + 25 * term3)
+    def Hr_small_r(phiX, zpX, zmX, zp2X, zm2X, rX, r2X):
+        term1, term2, term3, zpp, sqrt_p, zmm, sqrt_m, r3X, r4X, r5X = H_small_r_setup(
+            phiX, zpX, zmX, zp2X, zm2X, rX, r2X
+        )
+        return -xp.cos(phiX) / 4 * (term1 + 9 * term2 + 25 * term3)
 
-        Hphi[mask_small_r] = xp.sin(phiX) / 4 * (term1 + 3 * term2 + 5 * term3)
+    def Hphi_small_r(phiX, zpX, zmX, zp2X, zm2X, rX, r2X):
+        term1, term2, term3, zpp, sqrt_p, zmm, sqrt_m, r3X, r4X, r5X = H_small_r_setup(
+            phiX, zpX, zmX, zp2X, zm2X, rX, r2X
+        )
+        return xp.sin(phiX) / 4 * (term1 + 3 * term2 + 5 * term3)
 
-        Hz[mask_small_r] = (
+    def Hz_small_r(phiX, zpX, zmX, zp2X, zm2X, rX, r2X):
+        term1, term2, term3, zpp, sqrt_p, zmm, sqrt_m, r3X, r4X, r5X = H_small_r_setup(
+            phiX, zpX, zmX, zp2X, zm2X, rX, r2X
+        )
+        return (
             -xp.cos(phiX)
             / 4
             * (
@@ -225,15 +238,15 @@ def magnet_cylinder_diametral_Hfield(
             )
         )
 
-        # if there are small_r, select the general/case variables
-        # when there are no small_r cases it is not necessary to slice with [True, True, Tue,...]
-        phi = phi[mask_general]
+    # if there are small_r, select the general/case variables
+    # when there are no small_r cases it is not necessary to slice with [True, True, Tue,...]
+    def H_general_setup(phi, zp, zm, zp2, zm2, r, r2):
+        # phi = phi[mask_general]
         n = phi.shape[0]
-        zp, zm = zp[mask_general], zm[mask_general]
-        zp2, zm2 = zp2[mask_general], zm2[mask_general]
-        r, r2 = r[mask_general], r2[mask_general]
+        # zp, zm = zp[mask_general], zm[mask_general]
+        # zp2, zm2 = zp2[mask_general], zm2[mask_general]
+        # r, r2 = r[mask_general], r2[mask_general]
 
-    if xp.any(mask_general):
         rp = r + 1
         rm = r - 1
         rp2 = rp**2
@@ -251,22 +264,56 @@ def magnet_cylinder_diametral_Hfield(
         #   result is numerically stable in the vicinity of of r=r0
         #   so only the special case must be caught (not the surroundings)
         mask_special = rm == 0
-        argc = xp.ones(n) * 1e16  # should be np.Inf but leads to 1/0 problems in cel
-        argc[~mask_special] = -4 * r[~mask_special] / rm2[~mask_special]
+        # should be np.Inf but leads to 1/0 problems in cel
+        argc = 1e16
+        argc = xpx.apply_where(
+            ~mask_special,
+            (r, rm2),
+            lambda r, rm2: -4 * r / rm2,
+            fill_value=argc,
+        )
         # special case 1/rm
-        one_over_rm = xp.zeros(n)
-        one_over_rm[~mask_special] = 1 / rm[~mask_special]
+        one_over_rm = xpx.apply_where(
+            ~mask_special, (rm,), lambda rm: 1 / rm, fill_value=0.0
+        )
 
         elle_p = ellipe(argp)
         elle_m = ellipe(argm)
         ellk_p = ellipk(argp)
         ellk_m = ellipk(argm)
-        onez = xp.ones(n)
-        ellpi_p = cel(xp.sqrt(1 - argp), 1 - argc, onez, onez)  # elliptic_Pi
-        ellpi_m = cel(xp.sqrt(1 - argm), 1 - argc, onez, onez)  # elliptic_Pi
+        ellpi_p = cel(xp.sqrt(1 - argp), 1 - argc, 1.0, 1.0)  # elliptic_Pi
+        ellpi_m = cel(xp.sqrt(1 - argm), 1 - argc, 1.0, 1.0)  # elliptic_Pi
+        return (
+            rp,
+            rp2,
+            am2,
+            ap,
+            am,
+            elle_p,
+            elle_m,
+            ellk_p,
+            ellk_m,
+            ellpi_p,
+            ellpi_m,
+            one_over_rm,
+        )
 
-        # compute fields
-        Hr[mask_general] = (
+    def Hr_general(phi, zp, zm, zp2, zm2, r, r2):
+        (
+            rp,
+            rp2,
+            am2,
+            ap,
+            am,
+            elle_p,
+            elle_m,
+            ellk_p,
+            ellk_m,
+            ellpi_p,
+            ellpi_m,
+            one_over_rm,
+        ) = H_general_setup(phi, zp, zm, zp2, zm2, r, r2)
+        return (
             -xp.cos(phi)
             / (4 * xp.pi * r2)
             * (
@@ -278,7 +325,22 @@ def magnet_cylinder_diametral_Hfield(
             )
         )
 
-        Hphi[mask_general] = (
+    def Hphi_general(phi, zp, zm, zp2, zm2, r, r2):
+        (
+            rp,
+            rp2,
+            am2,
+            ap,
+            am,
+            elle_p,
+            elle_m,
+            ellk_p,
+            ellk_m,
+            ellpi_p,
+            ellpi_m,
+            one_over_rm,
+        ) = H_general_setup(phi, zp, zm, zp2, zm2, r, r2)
+        return (
             xp.sin(phi)
             / (4 * xp.pi * r2)
             * (
@@ -291,7 +353,22 @@ def magnet_cylinder_diametral_Hfield(
             )
         )
 
-        Hz[mask_general] = (
+    def Hz_general(phi, zp, zm, zp2, zm2, r, r2):
+        (
+            rp,
+            rp2,
+            am2,
+            ap,
+            am,
+            elle_p,
+            elle_m,
+            ellk_p,
+            ellk_m,
+            ellpi_p,
+            ellpi_m,
+            one_over_rm,
+        ) = H_general_setup(phi, zp, zm, zp2, zm2, r, r2)
+        return (
             -xp.cos(phi)
             / (2 * xp.pi * r)
             * (
@@ -301,6 +378,18 @@ def magnet_cylinder_diametral_Hfield(
                 + (1 + zp2 + r2) / ap * ellk_p
             )
         )
+
+    # compute fields
+    Hr = xpx.apply_where(
+        mask_small_r, (phi, zp, zm, zp2, zm2, r, r2), Hr_small_r, Hr_general
+    )
+
+    Hphi = xpx.apply_where(
+        mask_small_r, (phi, zp, zm, zp2, zm2, r, r2), Hphi_small_r, Hphi_general
+    )
+    Hz = xpx.apply_where(
+        mask_small_r, (phi, zp, zm, zp2, zm2, r, r2), Hz_small_r, Hz_general
+    )
 
     return xp.stack((Hr, Hphi, Hz))
 
