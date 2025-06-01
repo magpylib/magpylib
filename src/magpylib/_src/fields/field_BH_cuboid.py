@@ -5,12 +5,13 @@ magnetized Cuboids. Computation details in function docstrings.
 
 from __future__ import annotations
 
+import array_api_extra as xpx
 import numpy as np
 from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.input_checks import check_field_input
 from magpylib._src.array_api_utils import xp_promote
+from magpylib._src.input_checks import check_field_input
 
 # pylint: disable=too-many-statements
 
@@ -97,9 +98,9 @@ def magnet_cuboid_Bfield(
     maskz = z > 0
 
     # change all positions to their bottQ4 counterparts
-    x[maskx] = x[maskx] * -1
-    y[masky] = y[masky] * -1
-    z[maskz] = z[maskz] * -1
+    x = xpx.apply_where(maskx, (x,), lambda x: x * -1, lambda x: x)
+    y = xpx.apply_where(masky, (y), lambda y: y * -1, lambda y: y)
+    z = xpx.apply_where(maskz, (z,), lambda z: (z * -1), lambda z: z)
 
     # create sign flips for position changes
     qsigns = xp.ones((pol_x.shape[0], 3, 3), dtype=xp.float32)
@@ -107,9 +108,9 @@ def magnet_cuboid_Bfield(
     qs_flipy = xp.asarray([[1, -1, 1], [-1, 1, -1], [1, -1, 1]], dtype=xp.float32)
     qs_flipz = xp.asarray([[1, 1, -1], [1, 1, -1], [-1, -1, 1]], dtype=xp.float32)
     # signs flips can be applied subsequently
-    qsigns[maskx] = qsigns[maskx] * qs_flipx
-    qsigns[masky] = qsigns[masky] * qs_flipy
-    qsigns[maskz] = qsigns[maskz] * qs_flipz
+    qsigns = xp.where(maskx[:, None, None], (qsigns * qs_flipx), qsigns)
+    qsigns = xp.where(masky[:, None, None], (qsigns * qs_flipy), qsigns)
+    qsigns = xp.where(maskz[:, None, None], (qsigns * qs_flipz), qsigns)
 
     # field computations --------------------------------------------
     # Note: in principle the computation for all three polarization-components can be
