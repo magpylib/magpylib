@@ -1,12 +1,19 @@
+from __future__ import annotations
+
+from types import ModuleType
+from typing import Any, Literal, TypeAlias
+
 import numpy as np
 import numpy.typing as npt
 from array_api_compat import (
-    is_numpy_namespace as is_numpy,
-    is_torch_namespace as is_torch,
     array_namespace,
 )
-from typing import Any, TypeAlias, Literal
-from types import ModuleType
+from array_api_compat import (
+    is_numpy_namespace as is_numpy,
+)
+from array_api_compat import (
+    is_torch_namespace as is_torch,
+)
 
 Array: TypeAlias = Any  # To be changed to a Protocol later (see array-api#589)
 ArrayLike: TypeAlias = Array | npt.ArrayLike
@@ -71,9 +78,8 @@ def xp_default_dtype(xp):
     if is_torch(xp):
         # historically, we allow pytorch to keep its default of float32
         return xp.get_default_dtype()
-    else:
-        # we default to float64
-        return xp.float64
+    # we default to float64
+    return xp.float64
 
 
 def xp_result_type(*args, force_floating=False, xp):
