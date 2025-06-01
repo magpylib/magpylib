@@ -9,8 +9,8 @@ import numpy as np
 from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.input_checks import check_field_input
 from magpylib._src.array_api_utils import xp_promote
+from magpylib._src.input_checks import check_field_input
 
 
 # CORE
