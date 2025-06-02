@@ -6,6 +6,7 @@ magnetized tetrahedra. Computation details in function docstrings.
 from __future__ import annotations
 
 import numpy as np
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
 from magpylib._src.fields.field_BH_triangle import BHJM_triangle
@@ -27,17 +28,17 @@ def check_chirality(points: np.ndarray) -> np.ndarray:
     new list of points, where p2 and p3 are possibly exchanged so that all
     tetrahedron is given in a right-handed system.
     """
-
-    vecs = np.zeros((len(points), 3, 3))
+    xp = array_namespace(points)
+    vecs = xp.zeros(((points.shape[0]), 3, 3))
     vecs[:, :, 0] = points[:, 1, :] - points[:, 0, :]
     vecs[:, :, 1] = points[:, 2, :] - points[:, 0, :]
     vecs[:, :, 2] = points[:, 3, :] - points[:, 0, :]
 
-    dets = np.linalg.det(vecs)
+    dets = xp.linalg.det(vecs)
     dets_neg = dets < 0
 
-    if np.any(dets_neg):
-        points[dets_neg, 2:, :] = points[dets_neg, 3:1:-1, :]
+    if xp.any(dets_neg):
+        points[:, 2:, :][dets_neg] = points[:, 3:1:-1, :][dets_neg]
 
     return points
 
@@ -47,22 +48,25 @@ def point_inside(points: np.ndarray, vertices: np.ndarray, in_out: str) -> np.nd
     Takes points, as well as the vertices of a tetrahedra.
     Returns boolean array indicating whether the points are inside the tetrahedra.
     """
+    xp = array_namespace(points, vertices)
     if in_out == "inside":
-        return np.array([True] * len(points))
+        return xp.repeat(True, (points.shape[0]))
 
     if in_out == "outside":
-        return np.array([False] * len(points))
+        return xp.repeat(False, (points.shape[0]))
 
-    mat = vertices[:, 1:].swapaxes(0, 1) - vertices[:, 0]
-    mat = np.transpose(mat.swapaxes(0, 1), (0, 2, 1))
+    mat = xp.moveaxis(vertices[:, 1:, ...], (0, 1), (1, 0)) - vertices[:, 0, ...]
+    mat = xp.moveaxis(mat, (0, 1, 2), (2, 0, 1))
 
-    tetra = np.linalg.inv(mat)
-    newp = np.matmul(tetra, np.reshape(points - vertices[:, 0, :], (*points.shape, 1)))
-    return (
-        np.all(newp >= 0, axis=1)
-        & np.all(newp <= 1, axis=1)
-        & (np.sum(newp, axis=1) <= 1)
-    ).flatten()
+    mat = xp.astype(mat, xp.float64)
+    tetra = xp.linalg.inv(mat)
+    newp = xp.matmul(tetra, xp.reshape(points - vertices[:, 0, :], (*points.shape, 1)))
+    return xp.reshape(
+        xp.all(newp >= 0, axis=1)
+        & xp.all(newp <= 1, axis=1)
+        & (xp.sum(newp, axis=1) <= 1),
+        (-1,),
+    )
 
 
 def BHJM_magnet_tetrahedron(
@@ -79,9 +83,10 @@ def BHJM_magnet_tetrahedron(
     """
 
     check_field_input(field)
+    xp = array_namespace(observers, vertices, polarization)
 
     # allocate - try not to generate more arrays
-    BHJM = polarization.astype(float)
+    BHJM = xp.astype(polarization, (xp.float64))
 
     if field == "J":
         mask_inside = point_inside(observers, vertices, in_out)
@@ -95,27 +100,27 @@ def BHJM_magnet_tetrahedron(
 
     vertices = check_chirality(vertices)
 
-    tri_vertices = np.concatenate(
+    tri_vertices = xp.concat(
         (
-            vertices[:, (0, 2, 1), :],
-            vertices[:, (0, 1, 3), :],
-            vertices[:, (1, 2, 3), :],
-            vertices[:, (0, 3, 2), :],
+            xp.concat(tuple(vertices[:, i : i + 1, :] for i in (0, 2, 1)), axis=1),
+            xp.concat(tuple(vertices[:, i : i + 1, :] for i in (0, 1, 3)), axis=1),
+            xp.concat(tuple(vertices[:, i : i + 1, :] for i in (1, 2, 3)), axis=1),
+            xp.concat(tuple(vertices[:, i : i + 1, :] for i in (0, 3, 2)), axis=1),
         ),
         axis=0,
     )
     tri_field = BHJM_triangle(
         field=field,
-        observers=np.tile(observers, (4, 1)),
+        observers=xp.tile(observers, (4, 1)),
         vertices=tri_vertices,
-        polarization=np.tile(polarization, (4, 1)),
+        polarization=xp.tile(polarization, (4, 1)),
     )
-    n = len(observers)
+    n = observers.shape[0]
     BHJM = (  # slightly faster than reshape + sum
-        tri_field[:n]
-        + tri_field[n : 2 * n]
-        + tri_field[2 * n : 3 * n]
-        + tri_field[3 * n :]
+        tri_field[:n, ...]
+        + tri_field[n : 2 * n, ...]
+        + tri_field[2 * n : 3 * n, ...]
+        + tri_field[3 * n :, ...]
     )
 
     if field == "H":
