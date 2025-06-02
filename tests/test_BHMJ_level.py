@@ -41,7 +41,7 @@ def helper_check_HBMJ_consistency(func, **kw):
 
 def test_BHJM_magnet_cuboid():
     """test cuboid field"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -51,7 +51,7 @@ def test_BHJM_magnet_cuboid():
             (1, 2, 3),
         ]
     )
-    dim = np.array(
+    dim = xp.asarray(
         [
             (1, 2, 3),
             (-1, -2, 2),
@@ -61,7 +61,7 @@ def test_BHJM_magnet_cuboid():
             (3, 3, 3),
         ]
     )
-    obs = np.array(
+    obs = xp.asarray(
         [
             (1, 2, 3),
             (1, -1, 0),
@@ -98,7 +98,7 @@ def test_BHJM_magnet_cuboid():
     ]
     np.testing.assert_allclose(H, Htest, rtol=1e-5)
 
-    Jtest = np.array([(0, 0, 0)] * 5 + [(1, 2, 3)])
+    Jtest = xp.asarray([(0, 0, 0)] * 5 + [(1, 2, 3)])
     np.testing.assert_allclose(J, Jtest, rtol=1e-5)
 
     # H_inout = BHJM_magnet_cuboid(field="H", in_out="outside", **kw)
@@ -108,7 +108,7 @@ def test_BHJM_magnet_cuboid():
 
 def test_BHJM_magnet_cylinder():
     """test cylinder field computation"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -116,7 +116,7 @@ def test_BHJM_magnet_cylinder():
             (1, 1, 1),
         ]
     )
-    dim = np.array(
+    dim = xp.asarray(
         [
             (1, 2),
             (2, 2),
@@ -124,7 +124,7 @@ def test_BHJM_magnet_cylinder():
             (3, 3),
         ]
     )
-    obs = np.array(
+    obs = xp.asarray(
         [
             (1, 2, 3),
             (1, -1, 0),
@@ -156,7 +156,7 @@ def test_BHJM_magnet_cylinder():
     ]
     np.testing.assert_allclose(H, Htest)
 
-    Jtest = np.array([(0, 0, 0), (0, 0, 0), (0, 0, 0), (1, 1, 1)])
+    Jtest = xp.asarray([(0, 0, 0), (0, 0, 0), (0, 0, 0), (1, 1, 1)])
     np.testing.assert_allclose(J, Jtest)
 
     # H_inout = BHJM_magnet_cylinder(field="H", in_out="outside", **kw)
@@ -166,7 +166,7 @@ def test_BHJM_magnet_cylinder():
 
 def test_BHJM_magnet_sphere():
     """test BHJM_magnet_sphere"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -174,8 +174,8 @@ def test_BHJM_magnet_sphere():
             (2, 3, -1),
         ]
     )
-    dia = np.array([1, 2, 3, 4])
-    obs = np.array(
+    dia = xp.asarray([1, 2, 3, 4])
+    obs = xp.asarray(
         [
             (1, 2, 3),
             (1, -1, 0),
@@ -213,7 +213,7 @@ def test_BHJM_magnet_sphere():
 
 def test_field_cylinder_segment_BH():
     """CylinderSegment field test"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -221,7 +221,7 @@ def test_field_cylinder_segment_BH():
             (2, 3, -1),
         ]
     )
-    dim = np.array(
+    dim = xp.asarray(
         [
             (1, 2, 3, 10, 20),
             (1, 2, 3, 10, 20),
@@ -229,7 +229,7 @@ def test_field_cylinder_segment_BH():
             (0.1, 5, 2, 20, 370),
         ]
     )
-    obs = np.array(
+    obs = xp.asarray(
         [
             (1, 2, 3),
             (1, -1, 0),
@@ -267,7 +267,7 @@ def test_field_cylinder_segment_BH():
 
 def test_BHJM_triangle_BH():
     """Test of triangle field core function"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -275,7 +275,7 @@ def test_BHJM_triangle_BH():
             (1, -1, 2),
         ]
     )
-    vert = np.array(
+    vert = xp.asarray(
         [
             [(0, 0, 0), (0, 1, 0), (1, 0, 0)],
             [(0, 0, 0), (0, 1, 0), (1, 0, 0)],
@@ -283,7 +283,7 @@ def test_BHJM_triangle_BH():
             [(1, 2, 2), (0, 1, -1), (3, -1, 1)],
         ]
     )
-    obs = np.array(
+    obs = xp.asarray(
         [
             (1, 1, 1),
             (1, 1, 1),
@@ -321,7 +321,7 @@ def test_BHJM_triangle_BH():
 
 def test_magnet_tetrahedron_field_BH():
     """Test of tetrahedron field core function"""
-    pol = np.array(
+    pol = xp.asarray(
         [
             (0, 0, 0),
             (1, 2, 3),
@@ -330,7 +330,7 @@ def test_magnet_tetrahedron_field_BH():
             (3, 2, 1),  # inside
         ]
     )
-    vert = np.array(
+    vert = xp.asarray(
         [
             [(0, 0, 0), (0, 1, 0), (1, 0, 0), (0, 0, 1)],
             [(0, 0, 0), (0, 1, 0), (1, 0, 0), (0, 0, 1)],
@@ -339,7 +339,7 @@ def test_magnet_tetrahedron_field_BH():
             [(-10, 0, -10), (10, 10, -10), (10, -10, -10), (0, 0, 10)],
         ]
     )
-    obs = np.array(
+    obs = xp.asarray(
         [
             (1, 1, 1),
             (1, 1, 1),
@@ -424,9 +424,9 @@ def test_BHJM_magnet_trimesh_BH():
             [-0.47620221972465515, -0.0791524201631546, 0.8757661581039429],
         ],
     ]
-    mesh = np.array([mesh1, mesh2])
-    pol = np.array([(1, 2, 3), (3, 2, 1)])
-    obs = np.array([(1, 2, 3), (0, 0, 0)])
+    mesh = xp.asarray([mesh1, mesh2])
+    pol = xp.asarray([(1, 2, 3), (3, 2, 1)])
+    obs = xp.asarray([(1, 2, 3), (0, 0, 0)])
     kw = {
         "observers": obs,
         "polarization": pol,
@@ -453,14 +453,14 @@ def test_BHJM_magnet_trimesh_BH():
 def test_BHJM_circle():
     """Test of current circle field core function"""
     kw = {
-        "observers": np.array([(1, 1, 1), (2, 2, 2), (3, 3, 3)]),
-        "current": np.array([1, 1, 2]) * 1e3,
-        "diameter": np.array([2, 4, 6]),
+        "observers": xp.asarray([(1, 1, 1), (2, 2, 2), (3, 3, 3)]),
+        "current": xp.asarray([1.0, 1.0, 2.0]) * 1e3,
+        "diameter": xp.asarray([2, 4, 6]),
     }
     H, B, M, _ = helper_check_HBMJ_consistency(BHJM_circle, **kw)
 
     Btest = (
-        np.array(
+        xp.asarray(
             [
                 [0.06235974, 0.06235974, 0.02669778],
                 [0.03117987, 0.03117987, 0.01334889],
@@ -472,7 +472,7 @@ def test_BHJM_circle():
     np.testing.assert_allclose(B, Btest)
 
     Htest = (
-        np.array(
+        xp.asarray(
             [
                 [49624.3033947, 49624.3033947, 21245.41908818],
                 [24812.15169735, 24812.15169735, 10622.70954409],
@@ -489,18 +489,18 @@ def test_BHJM_circle():
 
 def test_BHJM_current_polyline():
     """Test of current polyline field core function"""
-    vert = np.array([(-1.5, 0, 0), (-0.5, 0, 0), (0.5, 0, 0), (1.5, 0, 0)])
+    vert = xp.asarray([(-1.5, 0, 0), (-0.5, 0, 0), (0.5, 0, 0), (1.5, 0, 0)])
 
     kw = {
-        "observers": np.array([(0, 0, 1)] * 3),
-        "current": np.array([1, 1, 1]),
-        "segment_start": vert[:-1],
-        "segment_end": vert[1:],
+        "observers": xp.asarray([(0, 0, 1)] * 3),
+        "current": xp.asarray([1, 1, 1]),
+        "segment_start": vert[:-1, ...],
+        "segment_end": vert[1:, ...],
     }
     H, B, M, _ = helper_check_HBMJ_consistency(BHJM_current_polyline, **kw)
 
     Btest = (
-        np.array(
+        xp.asarray(
             [
                 [0.0, -0.03848367, 0.0],
                 [0.0, -0.08944272, 0.0],
@@ -512,7 +512,7 @@ def test_BHJM_current_polyline():
     np.testing.assert_allclose(B, Btest, rtol=0, atol=1e-7)
 
     Htest = (
-        np.array(
+        xp.asarray(
             [
                 [0.0, -30624.33145161, 0.0],
                 [0.0, -71176.25434172, 0.0],
@@ -529,11 +529,11 @@ def test_BHJM_current_polyline():
 
 def test_BHJM_dipole():
     """Test of dipole field core function"""
-    pol = np.array([(0, 0, 1), (1, 0, 1), (-1, 0.321, 0.123)])
+    pol = xp.asarray([(0, 0, 1), (1, 0, 1), (-1, 0.321, 0.123)])
 
     kw = {
-        "observers": np.array([(1, 2, 3), (-1, -2, -3), (3, 3, -1)]),
-        "moment": pol * 4 * np.pi / 3 / MU0,
+        "observers": xp.asarray([(1, 2, 3), (-1, -2, -3), (3, 3, -1)]),
+        "moment": pol * 4 * xp.pi / 3 / MU0,
     }
     H, B, M, _ = helper_check_HBMJ_consistency(BHJM_dipole, **kw)
 
@@ -564,9 +564,9 @@ def test_BHJM_dipole():
 
 def test_field_loop_specials():
     """test loop special cases"""
-    cur = np.array([1, 1, 1, 1, 0, 2])
-    dia = np.array([2, 2, 0, 0, 2, 2])
-    obs = np.array([(0, 0, 0), (1, 0, 0), (0, 0, 0), (1, 0, 0), (1, 0, 0), (0, 0, 0)])
+    cur = xp.asarray([1, 1, 1, 1, 0, 2])
+    dia = xp.asarray([2, 2, 0, 0, 2, 2])
+    obs = xp.asarray([(0, 0, 0), (1, 0, 0), (0, 0, 0), (1, 0, 0), (1, 0, 0), (0, 0, 0)])
 
     B = (
         BHJM_circle(
@@ -591,10 +591,10 @@ def test_field_loop_specials():
 def test_field_line_special_cases():
     """test line current for all cases"""
 
-    c1 = np.array([1])
-    po1 = np.array([(1, 2, 3)])
-    ps1 = np.array([(0, 0, 0)])
-    pe1 = np.array([(2, 2, 2)])
+    c1 = xp.asarray([1])
+    po1 = xp.asarray([(1, 2, 3)])
+    ps1 = xp.asarray([(0, 0, 0)])
+    pe1 = xp.asarray([(2, 2, 2)])
 
     # only normal
     B1 = (
@@ -607,11 +607,11 @@ def test_field_line_special_cases():
         )
         * 1e6
     )
-    x1 = np.array([[0.02672612, -0.05345225, 0.02672612]])
+    x1 = xp.asarray([[0.02672612, -0.05345225, 0.02672612]])
     assert_allclose(x1, B1, rtol=1e-6)
 
     # only on_line
-    po1b = np.array([(1, 1, 1)])
+    po1b = xp.asarray([(1, 1, 1)])
     B2 = (
         BHJM_current_polyline(
             field="B",
@@ -622,7 +622,7 @@ def test_field_line_special_cases():
         )
         * 1e6
     )
-    x2 = np.zeros((1, 3))
+    x2 = xp.zeros((1, 3))
     assert_allclose(x2, B2, rtol=1e-6)
 
     # only zero-segment
@@ -636,14 +636,14 @@ def test_field_line_special_cases():
         )
         * 1e6
     )
-    x3 = np.zeros((1, 3))
+    x3 = xp.zeros((1, 3))
     assert_allclose(x3, B3, rtol=1e-6)
 
     # only on_line and zero_segment
-    c2 = np.array([1] * 2)
-    ps2 = np.array([(0, 0, 0)] * 2)
-    pe2 = np.array([(0, 0, 0), (2, 2, 2)])
-    po2 = np.array([(1, 2, 3), (1, 1, 1)])
+    c2 = xp.asarray([1] * 2)
+    ps2 = xp.asarray([(0, 0, 0)] * 2)
+    pe2 = xp.asarray([(0, 0, 0), (2, 2, 2)])
+    po2 = xp.asarray([(1, 2, 3), (1, 1, 1)])
     B4 = (
         BHJM_current_polyline(
             field="B",
@@ -654,11 +654,11 @@ def test_field_line_special_cases():
         )
         * 1e6
     )
-    x4 = np.zeros((2, 3))
+    x4 = xp.zeros((2, 3))
     assert_allclose(x4, B4, rtol=1e-6)
 
     # normal + zero_segment
-    po2b = np.array([(1, 2, 3), (1, 2, 3)])
+    po2b = xp.asarray([(1, 2, 3), (1, 2, 3)])
     B5 = (
         BHJM_current_polyline(
             field="B",
@@ -669,11 +669,11 @@ def test_field_line_special_cases():
         )
         * 1e6
     )
-    x5 = np.array([[0, 0, 0], [0.02672612, -0.05345225, 0.02672612]])
+    x5 = xp.asarray([[0, 0, 0], [0.02672612, -0.05345225, 0.02672612]])
     assert_allclose(x5, B5, rtol=1e-6)
 
     # normal + on_line
-    pe2b = np.array([(2, 2, 2)] * 2)
+    pe2b = xp.asarray([(2, 2, 2)] * 2)
     B6 = (
         BHJM_current_polyline(
             field="B",
@@ -684,14 +684,14 @@ def test_field_line_special_cases():
         )
         * 1e6
     )
-    x6 = np.array([[0.02672612, -0.05345225, 0.02672612], [0, 0, 0]])
+    x6 = xp.asarray([[0.02672612, -0.05345225, 0.02672612], [0, 0, 0]])
     assert_allclose(x6, B6, rtol=1e-6)
 
     # normal + zero_segment + on_line
-    c4 = np.array([1] * 3)
-    ps4 = np.array([(0, 0, 0)] * 3)
-    pe4 = np.array([(0, 0, 0), (2, 2, 2), (2, 2, 2)])
-    po4 = np.array([(1, 2, 3), (1, 2, 3), (1, 1, 1)])
+    c4 = xp.asarray([1] * 3)
+    ps4 = xp.asarray([(0, 0, 0)] * 3)
+    pe4 = xp.asarray([(0, 0, 0), (2, 2, 2), (2, 2, 2)])
+    po4 = xp.asarray([(1, 2, 3), (1, 2, 3), (1, 1, 1)])
     B7 = (
         BHJM_current_polyline(
             field="B",
@@ -702,15 +702,15 @@ def test_field_line_special_cases():
         )
         * 1e6
     )
-    x7 = np.array([[0, 0, 0], [0.02672612, -0.05345225, 0.02672612], [0, 0, 0]])
+    x7 = xp.asarray([[0, 0, 0], [0.02672612, -0.05345225, 0.02672612], [0, 0, 0]])
     assert_allclose(x7, B7, rtol=1e-6)
 
 
 def test_field_loop2():
     """test if field function accepts correct inputs"""
-    curr = np.array([1])
-    dia = np.array([2])
-    obs = np.array([[0, 0, 0]])
+    curr = xp.asarray([1])
+    dia = xp.asarray([2])
+    obs = xp.asarray([[0, 0, 0]])
     B = BHJM_circle(
         field="B",
         observers=obs,
@@ -718,9 +718,9 @@ def test_field_loop2():
         diameter=dia,
     )
 
-    curr = np.array([1] * 2)
-    dia = np.array([2] * 2)
-    obs = np.array([[0, 0, 0]] * 2)
+    curr = xp.asarray([1] * 2)
+    dia = xp.asarray([2] * 2)
+    obs = xp.asarray([[0, 0, 0]] * 2)
     B2 = BHJM_circle(
         field="B",
         observers=obs,
@@ -728,25 +728,22 @@ def test_field_loop2():
         diameter=dia,
     )
 
-    assert_allclose(B, (B2[0],))
-    assert_allclose(B, (B2[1],))
+    assert_allclose(B, (B2[0, ...],))
+    assert_allclose(B, (B2[1, ...],))
 
 
 def test_field_line_from_vert():
     """test the Polyline field from vertex input"""
-    observers = np.array([(1, 2, 2), (1, 2, 3), (-1, 0, -3)])
-    current = np.array([1, 5, -3])
+    observers = xp.asarray([(1, 2, 2), (1, 2, 3), (-1, 0, -3)])
+    current = xp.asarray([1, 5, -3])
 
-    vertices = np.array(
-        [
-            np.array(
-                [(0, 0, 0), (1, 1, 1), (2, 2, 2), (3, 3, 3), (1, 2, 3), (-3, 4, -5)]
-            ),
-            np.array([(0, 0, 0), (3, 3, 3), (-3, 4, -5)]),
-            np.array([(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)]),
-        ],
-        dtype="object",
-    )
+    vertices = [
+        xp.asarray(
+            [(0, 0, 0), (1, 1, 1), (2, 2, 2), (3, 3, 3), (1, 2, 3), (-3, 4, -5)]
+        ),
+        xp.asarray([(0, 0, 0), (3, 3, 3), (-3, 4, -5)]),
+        xp.asarray([(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)]),
+    ]
 
     B_vert = current_vertices_field(
         field="B",
@@ -756,13 +753,17 @@ def test_field_line_from_vert():
     )
 
     B = []
-    for obs, vert, curr in zip(observers, vertices, current, strict=False):
-        p1 = vert[:-1]
-        p2 = vert[1:]
-        po = np.array([obs] * (len(vert) - 1))
-        cu = np.array([curr] * (len(vert) - 1))
+    for i_obs, vert, i_curr in zip(
+        range(observers.shape[0]), vertices, range(current.shape[0]), strict=False
+    ):
+        obs = observers[i_obs, ...]
+        curr = current[i_curr, ...]
+        p1 = vert[:-1, ...]
+        p2 = vert[1:, ...]
+        po = xp.asarray([obs] * ((vert.shape[0]) - 1))
+        cu = xp.asarray([curr] * ((vert.shape[0]) - 1))
         B += [
-            np.sum(
+            xp.sum(
                 BHJM_current_polyline(
                     field="B",
                     observers=po,
@@ -773,17 +774,17 @@ def test_field_line_from_vert():
                 axis=0,
             )
         ]
-    B = np.array(B)
+    B = xp.asarray(B)
 
     assert_allclose(B_vert, B)
 
 
 def test_field_line_v4():
     """test current_line_Bfield() for all cases"""
-    cur = np.array([1] * 7)
-    start = np.array([(-1, 0, 0)] * 7)
-    end = np.array([(1, 0, 0), (-1, 0, 0), (1, 0, 0), (-1, 0, 0)] + [(1, 0, 0)] * 3)
-    obs = np.array(
+    cur = xp.asarray([1] * 7)
+    start = xp.asarray([(-1, 0, 0)] * 7)
+    end = xp.asarray([(1, 0, 0), (-1, 0, 0), (1, 0, 0), (-1, 0, 0)] + [(1, 0, 0)] * 3)
+    obs = xp.asarray(
         [
             (0, 0, 1),
             (0, 0, 0),
@@ -804,7 +805,7 @@ def test_field_line_v4():
         )
         * 1e6
     )
-    Btest = np.array(
+    Btest = xp.asarray(
         [
             [0, -0.14142136, 0],
             [0, 0.0, 0],
@@ -847,11 +848,11 @@ def test_triangle5():
     ]
 
     n = 10
-    ts = np.linspace(-1, 6, n)
-    obs1 = np.array([(t, 0, 0) for t in ts])
-    obs2 = np.array([(0, t, 0) for t in ts])
-    mag = np.array([(111, 222, 333)] * n)
-    ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]] * n)
+    ts = xp.linspace(-1, 6, n)
+    obs1 = xp.asarray([(t, 0, 0) for t in ts])
+    obs2 = xp.asarray([(0, t, 0) for t in ts])
+    mag = xp.asarray([(111, 222, 333)] * n)
+    ver = xp.asarray([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]] * n)
 
     b1 = (
         BHJM_triangle(
@@ -877,11 +878,11 @@ def test_triangle5():
 
 def test_triangle6():
     """special case tests on corners - result is nan"""
-    obs1 = np.array([(0, 0, 0)])
-    obs2 = np.array([(0, 5, 0)])
-    obs3 = np.array([(5, 0, 0)])
-    mag = np.array([(1, 2, 3)])
-    ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]])
+    obs1 = xp.asarray([(0, 0, 0)])
+    obs2 = xp.asarray([(0, 5, 0)])
+    obs3 = xp.asarray([(5, 0, 0)])
+    mag = xp.asarray([(1, 2, 3)])
+    ver = xp.asarray([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]])
     b1 = BHJM_triangle(
         field="B",
         observers=obs1,
