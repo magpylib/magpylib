@@ -14,70 +14,133 @@ kernelspec:
 
 (examples-vis-vectorfield)=
 
-# Pixel Vector Field
-
+# Pixel Vector Field (Quiver Plot)
 
 :::{versionadded} 5.2
 Pixel Vector Field
 :::
 
-The `Sensor` object with its `pixel` can be conveniently used for visualizing vector fields!
-With this new capability, you can display the vector field for `"B"`, `"H"`, `"M"`, or `"J"` and overlay a magnitude (e.g., `"Bxy"`, `"Hz"`, etc.).
 
-This notebook provides examples of how to use these features effectively, along with explanations of the relevant parameters.
+The `Sensor` object with its `pixel` can be conveniently used for visualizing the vector fields `"B"`, `"H"`, `"M"`, or `"J"` in the form of quiver plots. A detailed documentaion of this functionlity is found in the [documentartion](styles-pixel-vectorfield). This notebook provides examples of how to use these features effectively, along with explanations of the relevant parameters.
 
+## Example 1:
 
-## Parameter Overview
+Simple example using pixel field functionality combined with magnet transparency displaying the B field on a surface that passes through the magnet.
 
-### `style.pixel.field` Parameters
+```{code-cell} ipython3
+:tags: [hide-input]
 
-- **`vectorsource`** (default=`None`): Defines the field source for vector visualization:
-  - `None`: No field direction is shown.
-  - `"B"`, `"H"`, `"J"`, `"M"`: Corresponding field vectors are displayed.
+import numpy as np
+import magpylib as magpy
 
-- **`colorsource`** (default=`None`): Defines the field source for the color scale:
-  - `None`: Field magnitude coloring is taken from the `vectorsource` input and shown via the magnitude of individual pixels.
-  - `"B"`, `"Hxy"`, `"Jxyz"`, etc.: Corresponding field magnitude is shown via magnitude coloring of individual pixels.
-  - `False`: No magnitude coloring is applied. Symbols are displayed with `pixel.color` if defined, otherwise `"black"`.
+# Define a magnet with opacity
+magnet = magpy.magnet.Cuboid(
+    polarization=(1, 1, 0),
+    dimension=(4e-3, 4e-3, 2e-3),
+    style_opacity=.5,
+)
 
-- **`symbol`** (default=`"cone"`): Defines the symbol used to represent valid and non-null vectors:
-  - `"cone"`: 3D cone representation.
-  - `"arrow3d"`: 3D arrow representation.
-  - `"arrow"`: 3D line representation.
-  - Null or invalid vectors are displayed as:
-    - A point (when `field.symbol` is `"arrow"`).
-    - A cuboid pixel (when `field.symbol` is `"cone"` or `"arrow3d"`).
+# Create a grid of pixel positions in the xy-plane
+xy_grid = np.mgrid[-4e-3:4e-3:15j, -4e-3:4e-3:15j, 0:0:1j].T[0]
 
-- **`shownull`** (default=`True`): Toggles the visibility of null vectors:
-  - `True`: Null vectors are displayed.
-  - `False`: Null vectors are hidden.
+# Create a sensor with pixel array and pixel field style
+sens = magpy.Sensor(
+    pixel=xy_grid,
+    style_pixel_field_vectorsource="B",
+    style_pixel_field_sizemode="log",
+)
 
-- **`sizemode`** (default=`"constant"`): Defines how arrows are sized relative to the `vectorsource` magnitude:
-  - `"constant"`: Uniform size.
-  - `"linear"`: Proportional to the magnitude.
-  - `"log"`: Proportional to the normalized logarithm of the magnitude.
-
-
-### Additional Features
-
-- **Color Scales**: Supports predefined color scales (e.g., `"Viridis"`, `"Inferno"`, `"Jet"`) or which are common to both `Plotly` and `Matplotlib`.
-- **Normalization**: Field vectors and magnitude normalization are applied per sensor path for each sensor individually.
-- **`style.pixel.symbol`** (default=`None`): Accepts valid scatter symbols (e.g., `"."`). Only applies if `pixel.field.vectorsource` is `None` or for invalid/null vectors.
-- **Pixel Hulls**: Hulls over pixels are shown only if no field values are provided.
-- **Backend Compatibility**: Works seamlessly with all supported backends:
-  - Matplotlib
-  - Plotly
-  - PyVista
-
-+++
-
-## Examples
-
-### Animated B-field
-
-```{note}
-Default is `"cone"` (can be set globally like any other style).
+# Display the sensor and magnet using the Plotly backend
+magpy.show([sens, magnet], backend='plotly')
 ```
+
+## Example 2: 
+
+Sensor pixels are not restricted to any specific grid structure and can be positioned freely to represent curved surfaces, lines, or individual points of interest. 
+
+The example below demonstrates the visualization of the magnetic field of a magnetic pole wheel evaluated along curved surfaces and lines.
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+from numpy import pi, sin, cos, linspace
+import magpylib as magpy
+
+# Create a pole wheel magnet composed of 12 alternating cylinder segments
+pole_wheel = magpy.Collection()
+for i in range(12):
+    zone = magpy.magnet.CylinderSegment(
+        dimension=(1.8, 2, 1, -15, 15),
+        polarization=((-1)**i, 0, 0),
+    ).rotate_from_angax(30*i, axis='z')
+    pole_wheel.add(zone)
+
+# Sensor 1: Pixel line along a circle in the xz-plane
+ang1 = linspace(0, 2*pi, endpoint=False)
+pixel_line = [(cos(a), 0, sin(a)) for a in ang1]
+
+sensor1 = magpy.Sensor(
+    pixel=pixel_line,
+    style_pixel_field_vectorsource="H",
+)
+
+# Sensor 2: Curved surface (vertical cylinder segment)
+z_values = linspace(-1, 1, 10)
+ang2 = linspace(-9*pi/8, -2*pi/8, 30)
+pixel_grid2 = [[(3.5*cos(a), 3.5*sin(a), z) for a in ang2] for z in z_values]
+
+sensor2 = magpy.Sensor(
+    pixel=pixel_grid2,
+    style_pixel_field = {
+        "vectorsource":"H",
+        "sizemode" : "constant",
+        "colorscale" : "Blues",
+        "symbol" : "arrow3d",
+    }
+)
+
+# Sensor 3: Curved surface (horizontal annular sector)
+r_values = linspace(3, 4, 5)
+ang3 = linspace(-pi/8, 6*pi/8, 30)
+pixel_grid3 = [[(r*cos(a), r*sin(a), 0) for a in ang3] for r in r_values]
+
+sensor3 = magpy.Sensor(
+    pixel=pixel_grid3,
+    style_pixel_field = {
+        "vectorsource":"H",
+        "sizemode" : "log",
+        "colorscale" : "Plasma",
+        "symbol" : "arrow3d",
+    }
+)
+
+# Display sensors and magnets using Plotly backend
+magpy.show(
+    [sensor1, sensor2, sensor3, pole_wheel],
+    backend='plotly',
+    style_arrows_x_show=False,
+    style_arrows_y_show=False,
+    style_arrows_z_show=False,
+)
+```
+
+## Quiver Plot Animation
+
+animation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```{code-cell} ipython3
 :tags: [hide-input]

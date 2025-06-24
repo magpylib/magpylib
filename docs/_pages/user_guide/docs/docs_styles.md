@@ -563,7 +563,7 @@ magpy.show(args, **kwargs, backend="plotly")
 ```
 
 (styles-pixel-vectorfield)=
-## Pixel Vectorfield (Quiver Plot)
+## Pixel Field
 
 :::{versionadded} 5.2
 Pixel Vector Field
@@ -607,9 +607,10 @@ The `pixel` of a `Sensor` object can be visualized as arrows representing the va
 ````{note}
 - Pixels with zero or invalid field values are rendered using the default representation (`point`/`box` or according to `style.pixel.symbol`).
 - Magnitude normalization is performed individually for each sensor along its path.
+- `style.pixel.size` controls also the arrow size.
 ````
 
-### Pixel Vector Field Example
+### Pixel Field Minimal Example
 The following example demonstrates how to visualize the `Sensor` pixel array as a vector field using the `style.pixel.field` settings.
 
 ```{code-cell} ipython3
@@ -624,8 +625,8 @@ cube = magpy.magnet.Cuboid(
     dimension=(1, 1, 1),
 )
 
-# Create a 2D grid of pixel positions in the xy-plane at z=2
-xy_grid = np.mgrid[-2:2:15j, -2:2:15j, 2:2:1j].T[0]
+# Create a 2D grid of pixel positions in the xy-plane
+xy_grid = np.mgrid[-2:2:15j, -2:2:15j, 0:0:1j].T[0]
 
 # Define pixel field style
 pixel_style = {
@@ -640,6 +641,7 @@ pixel_style = {
 # Create sensor with pixel array and applied style
 sens = magpy.Sensor(
     pixel=xy_grid,
+    position=(0,0,2),
     style_pixel_field=pixel_style,
 )
 
