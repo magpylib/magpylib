@@ -573,18 +573,18 @@ The `pixel` of a `Sensor` object can be visualized as arrows representing the va
 
 ### Parameters (`style.pixel.field`)
 
-- **`vectorsource`** *(default=`None`)*:  
+- **`vectorsource`** *(default=`None`)*:
   Controls whether `Sensor` pixels are visualized as arrows or as points/boxes (default).
   - `None`: Pixels are rendered as points/boxes.
   - `"B"`, `"H"`, `"J"`, `"M"`: Pixels are rendered as arrows representing the corresponding vector field.
 
-- **`colorsource`** *(default=`None`)*:  
+- **`colorsource`** *(default=`None`)*:
   Defines the coloring of arrows.
   - `None`: Colors are mapped to the magnitude of the `vectorsource` field.
   - `False`: Arrows are colored using `pixel.color` if defined; otherwise, `"black"`.
   - `"B"`, `"Hxy"`, `"Jxyz"`, etc.: Colors are mapped to the magnitude of the specified field.
 
-- **`symbol`** *(default=`"cone"`)*:  
+- **`symbol`** *(default=`"cone"`)*:
   Specifies the rendering symbol for arrows.
   - `"cone"`: 3D cone representation.
   - `"arrow3d"`: 3D arrow representation.
@@ -595,13 +595,13 @@ The `pixel` of a `Sensor` object can be visualized as arrows representing the va
   - `True`: Null vectors are displayed.
   - `False`: Null vectors are hidden.
 
-- **`sizemode`** *(default=`"constant"`)*:  
+- **`sizemode`** *(default=`"constant"`)*:
   Determines how arrow size relates to the `vectorsource` magnitude.
   - `"constant"`: Uniform arrow size.
   - `"linear"`: Size proportional to magnitude.
   - `"log"`: Size proportional to the normalized logarithm of the magnitude.
 
-- **`colorscale`** *(default=`"Viridis"`)*:  
+- **`colorscale`** *(default=`"Viridis"`)*:
   Specifies the colormap used for color mapping. Supports standard color maps (e.g., `"Viridis"`, `"Inferno"`, `"Magma"`, etc.) compatible with both Plotly and Matplotlib.
 
 ````{note}
