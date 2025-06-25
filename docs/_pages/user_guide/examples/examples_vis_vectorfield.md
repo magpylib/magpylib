@@ -55,7 +55,7 @@ magpy.show([sens, magnet], backend='plotly')
 
 ## Example 2: Complex Pixel Grids
 
-Sensor pixels are not restricted to any specific grid structure and can be positioned freely to represent curved surfaces, lines, or individual points of interest. 
+Sensor pixels are not restricted to any specific grid structure and can be positioned freely to represent curved surfaces, lines, or individual points of interest.
 
 The example below demonstrates the visualization of the magnetic field of a magnetic pole wheel evaluated along curved surfaces and lines using different color maps and arrow shapes.
 
