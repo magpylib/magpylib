@@ -27,7 +27,7 @@ def get_families(obj):
     # pylint: disable=import-outside-toplevel
     # pylint: disable=possibly-unused-variable
     # pylint: disable=redefined-outer-name
-    # ruff: noqa: F401, I001, I002
+    # ruff: noqa: F401, PLC0415
     from magpylib._src.display.traces_generic import MagpyMarkers as Markers
     from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent as Current
     from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet as Magnet
