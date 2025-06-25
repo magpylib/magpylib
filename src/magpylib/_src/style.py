@@ -1683,6 +1683,8 @@ class PixelField(MagicProperties):
     _allowed_sizemodes = ("constant", "linear", "log")
     _allowed_colorscales = (
         "Viridis",
+        "Jet",
+        "Rainbow",
         "Plasma",
         "Inferno",
         "Magma",
