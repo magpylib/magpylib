@@ -14,16 +14,15 @@ kernelspec:
 
 (examples-vis-vectorfield)=
 
-# Pixel Vector Field (Quiver Plot)
+# Pixel Field (Quiver Plot)
 
 :::{versionadded} 5.2
 Pixel Vector Field
 :::
 
-
 The `Sensor` object with its `pixel` can be conveniently used for visualizing the vector fields `"B"`, `"H"`, `"M"`, or `"J"` in the form of quiver plots. A detailed documentaion of this functionlity is found in the [documentartion](styles-pixel-vectorfield). This notebook provides examples of how to use these features effectively, along with explanations of the relevant parameters.
 
-## Example 1:
+## Example 1: Transparent Magnet
 
 Simple example using pixel field functionality combined with magnet transparency displaying the B field on a surface that passes through the magnet.
 
@@ -54,11 +53,11 @@ sens = magpy.Sensor(
 magpy.show([sens, magnet], backend='plotly')
 ```
 
-## Example 2: 
+## Example 2: Complex Pixel Grids
 
 Sensor pixels are not restricted to any specific grid structure and can be positioned freely to represent curved surfaces, lines, or individual points of interest. 
 
-The example below demonstrates the visualization of the magnetic field of a magnetic pole wheel evaluated along curved surfaces and lines.
+The example below demonstrates the visualization of the magnetic field of a magnetic pole wheel evaluated along curved surfaces and lines using different color maps and arrow shapes.
 
 ```{code-cell} ipython3
 :tags: [hide-input]
@@ -124,320 +123,39 @@ magpy.show(
 )
 ```
 
-## Quiver Plot Animation
+## Example 3: Pixel Field Animation
 
-animation
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+The pixel field can be combined with animation to create spectacular visualizations, such as displaying the magnetic field of rotating magnets.
 
 ```{code-cell} ipython3
 :tags: [hide-input]
 
 import numpy as np
-
 import magpylib as magpy
 
-path_len = 51
-pix_per_dim = 12
+# Create a cuboid magnet with vertical polarization
+magnet = magpy.magnet.Cuboid(
+    polarization=(0, 0, 1),
+    dimension=(1, 3, 1)
+)
 
-c1 = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1), style_opacity=0.2)
-c1.rotate_from_angax(np.linspace(0, 180, path_len), "z", start=0)
-c1.rotate_from_angax(np.linspace(0, 180, path_len), "x", start=0)
+# Apply a rotation to the Cuboid that generates a path with 51 steps
+magnet.rotate_from_angax(
+    angle=np.linspace(0, 360, 51),
+    axis="y",
+    start=0
+)
 
-ls = np.linspace(-1, 1, pix_per_dim)
-s1 = magpy.Sensor(pixel=[[x, y, 0] for x in ls for y in ls], position=(0, 0, 0))
+# Create a sensor with pixel grid in the xy-plane at z=1
+pixel_grid = np.mgrid[-2:2:12j, -2:2:12j, 1:1:1j].T[0]
+sensor = magpy.Sensor(pixel=pixel_grid)
 
+# Display as animation in the plotly backend
 magpy.show(
-    c1,
-    s1,
+    magnet,
+    sensor,
     animation=True,
     style_pixel_field_symbol="arrow3d",
     style_pixel_field_vectorsource="B",
+    backend="plotly",
 )
-```
-
-### Display B, H, J, or M Field
-
-```{note}
-Null or NaN field values are not displayed via a directional symbol but are visible by default.
-```
-
-```{code-cell} ipython3
-# Only 10 interactive 3d plots (Webgl contexts) can be displayed at time
-# The following will display subsequent plots as non-interative png images
-import plotly.io as pio
-pio.renderers.default = 'png'
-pio.templates["custom"] = pio.templates["plotly"]
-pio.templates["custom"].layout.update(
-    width=1400,  # Set default width
-    height=600  # Set default height
-)
-pio.templates.default = "custom"
-```
-
-```{code-cell} ipython3
-:tags: [hide-input]
-
-import numpy as np
-
-import magpylib as magpy
-
-path_len = 1
-pix_per_dim = 10
-
-c1 = magpy.magnet.Cuboid(
-    polarization=(1, 0, 0),
-    dimension=(1, 1, 1),
-    style_opacity=0.2,
-)
-ls = np.linspace(-1, 1, pix_per_dim)
-s0 = magpy.Sensor(
-    pixel=[[x, y, 0] for x in ls for y in ls],
-    position=(0, 0, 0),
-)
-objects = []
-for i, vectorsource in enumerate("BHJM"):
-    s1 = s0.copy(
-        style_pixel_field_vectorsource=vectorsource,
-    )
-    s1.style.label = f"{vectorsource}-field"
-    objects.append({"objects": (c1, s1), "col": i + 1})
-
-magpy.show(
-    *objects,
-    style_arrows_x_show=False,
-    style_arrows_y_show=False,
-    style_arrows_z_show=False,
-)
-```
-
-### Display Field Magnitude via Coloring
-
-```{note}
-Field coloring can be set independently of the field vector source. If not specified, it refers to the vector source magnitude. If set to `False`, no coloring is used, and symbols are displayed in black.
-```
-
-```{code-cell} ipython3
-:tags: [hide-input]
-
-import numpy as np
-
-import magpylib as magpy
-
-path_len = 1
-pix_per_dim = 10
-
-c1 = magpy.magnet.Cuboid(
-    polarization=(1, 0, 0),
-    dimension=(1, 1, 1),
-    style_opacity=0.2,
-)
-ls = np.linspace(-1, 1, pix_per_dim)
-s0 = magpy.Sensor(
-    pixel=[[x, y, 0] for x in ls for y in ls],
-    position=(0, 0, 0),
-)
-objects = []
-for i, colorsource in enumerate(("H", "Jxy", "Bz", False)):
-    s1 = s0.copy(
-        style_pixel_field_vectorsource="B",
-        style_pixel_field_colorsource=colorsource,
-    )
-    s1.style.label = f"B-field, color: {colorsource}"
-    objects.append({"objects": (c1, s1), "col": i + 1})
-
-magpy.show(
-    *objects,
-    style_arrows_x_show=False,
-    style_arrows_y_show=False,
-    style_arrows_z_show=False,
-)
-```
-
-### Use Different Directional Symbols
-
-```{note}
-Default is `"cone"` (can be set globally like any other style).
-```
-
-```{code-cell} ipython3
-:tags: [hide-input]
-
-import numpy as np
-
-import magpylib as magpy
-
-path_len = 1
-pix_per_dim = 10
-
-c1 = magpy.magnet.Cuboid(
-    polarization=(1, 0, 0),
-    dimension=(1, 1, 1),
-    style_opacity=0.2,
-)
-ls = np.linspace(-1, 1, pix_per_dim)
-s0 = magpy.Sensor(
-    pixel=[[x, y, 0] for x in ls for y in ls],
-    position=(0, 0, 0),
-)
-objects = []
-for i, symbol in enumerate(("cone", "arrow3d", "arrow")):
-    s1 = s0.copy(
-        style_pixel_field_vectorsource="B",
-        style_pixel_field_symbol=symbol,
-    )
-    s1.style.label = f"B-field, symbol: {symbol}"
-    objects.append({"objects": (c1, s1), "col": i + 1})
-
-magpy.show(
-    *objects,
-    style_arrows_x_show=False,
-    style_arrows_y_show=False,
-    style_arrows_z_show=False,
-)
-```
-
-### Set the Sizing Modes of Directional Symbols
-
-```{note}
-Default is `"constant"` (can be set globally like any other style).
-Like for coloring, sizing is normalized for the min-max values of the field values over the whole sensor path, but for each sensor individually.
-```
-
-```{code-cell} ipython3
-:tags: [hide-input]
-
-import numpy as np
-
-import magpylib as magpy
-
-path_len = 1
-pix_per_dim = 10
-
-c1 = magpy.magnet.Cuboid(
-    polarization=(1, 0, 0),
-    dimension=(1, 1, 1),
-    style_opacity=0.2,
-)
-ls = np.linspace(-1, 1, pix_per_dim)
-s0 = magpy.Sensor(
-    pixel=[[x, y, 0] for x in ls for y in ls],
-    position=(0, 0, 0),
-)
-objects = []
-for i, sizemode in enumerate(("constant", "log", "linear")):
-    s1 = s0.copy(
-        style_pixel_field_vectorsource="B",
-        style_pixel_field_sizemode=sizemode,
-    )
-    s1.style.label = f"B-field, sizemode: {sizemode}"
-    objects.append({"objects": (c1, s1), "col": i + 1})
-
-magpy.show(
-    *objects,
-    style_arrows_x_show=False,
-    style_arrows_y_show=False,
-    style_arrows_z_show=False,
-)
-```
-
-### Edge Cases: Hide `Null` or `NaN` Values
-
-```{note}
-Null and NaN values are treated the same. These pixels can be hidden if desired.
-```
-
-```{code-cell} ipython3
-:tags: [hide-input]
-
-import numpy as np
-
-import magpylib as magpy
-
-path_len = 1
-pix_per_dim = 5
-
-c1 = magpy.magnet.Cuboid(
-    polarization=(1, 0, 0),
-    dimension=(1, 1, 1),
-    style_opacity=0.2,
-)
-ls = np.linspace(-1, 1, pix_per_dim)
-s0 = magpy.Sensor(
-    pixel=[[x, y, 0] for x in ls for y in ls],
-    position=(0, 0, 0),
-)
-objects = []
-col = 0
-for vectorsource in "BJ":
-    for shownull in (True, False):
-        col += 1
-        s1 = s0.copy(
-            style_pixel_field_vectorsource=vectorsource,
-            style_pixel_field_shownull=shownull,
-        )
-        s1.style.label = f"{vectorsource}-field, shownull: {shownull}"
-        objects.append({"objects": (c1, s1), "col": col})
-
-magpy.show(
-    *objects,
-    style_arrows_x_show=False,
-    style_arrows_y_show=False,
-    style_arrows_z_show=False,
-)
-```
-
-### Color Scales
-
-```{note}
-Other color scales are available (a curated list of common sequential colors between Matplotlib and Plotly).
-```
-
-```{code-cell} ipython3
-:tags: [hide-input]
-
-import numpy as np
-
-import magpylib as magpy
-
-path_len = 1
-pix_per_dim = 10
-
-c1 = magpy.magnet.Cuboid(
-    polarization=(1, 0, 0),
-    dimension=(1, 1, 1),
-    style_opacity=0.2,
-)
-ls = np.linspace(-1, 1, pix_per_dim)
-s0 = magpy.Sensor(
-    pixel=[[x, y, 1] for x in ls for y in ls],
-    position=(0, 0, 0),
-)
-objects = []
-for i, colorscale in enumerate(("Viridis", "Inferno", "Oranges", "RdPu")):
-    s1 = s0.copy(
-        style_pixel_field_vectorsource="B",
-        style_pixel_field_colorscale=colorscale,
-    )
-    s1.style.label = f"B-field, colorscale: {colorscale}"
-    objects.append({"objects": (c1, s1), "col": i + 1})
-
-magpy.show(
-    *objects,
-    style_arrows_x_show=False,
-    style_arrows_y_show=False,
-    style_arrows_z_show=False,
-)
-```
