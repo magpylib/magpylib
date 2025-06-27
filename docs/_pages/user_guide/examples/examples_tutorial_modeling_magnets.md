@@ -22,7 +22,7 @@ This tutorial was supported by [BOMATEC](https://www.bomatec.com/de) by providin
 
 ## Remanence
 
-Magnet datasheets typically include a table of technical material specifications, including the remanence \( B_r \). This value corresponds to the `polarization` magnitude in Magpylib when no material response is modeled. The remanence is usually given as a range to account for manufacturing tolerances.
+Magnet datasheets typically include a table of technical material specifications, including the remanence $B_r$. This value corresponds to the `polarization` magnitude in Magpylib when no material response is modeled. The remanence is usually given as a range to account for manufacturing tolerances.
 
 ![data sheet snippet](../../../_static/images/examples_tutorial_magnet_table.png)
 
