@@ -57,7 +57,7 @@ The intrinsic Hysteresis loop relates the effective H-field in a material sample
 
 %Hysteresis loops relate the applied H-field to the resulting B-field, polarization J, or magnetization M of a material.
 %*within a defined volume*. This relationship strongly depends on the volume’s size, shape, and surrounding materials.
-%The B–H curve is known as the *normal loop*, while J–H (or M–H) curves are called *intrinsic loops*. The normal loops show the 
+%The B–H curve is known as the *normal loop*, while J–H (or M–H) curves are called *intrinsic loops*. The normal loops show the
 %In this tutorial, we focus on J–H loops; the discussion for M–H is analogous. Normal and intrinsic loops are related by \( B = \mu_0 H + J \). In free space, \( B = \mu_0 H \) is a straight line, but if the entire space is filled with magnetic material, the loop within any volume will show nonlinear behavior.
 
 %The B-H curve is called the "normal loop", while J-H (and M-H) curves are called "intrinsic loops". Hereon we only make use of the J-H loops, but the discussion is similar for M-H. Normal and intrinsic loops are connected via $B = \mu_0 H + J$. In free space the B-H connection is just a straight line defined via $B = \mu_0 H$. When the whole space is filled with magnetic material you will see something like this within an arbitrary volume:
@@ -72,13 +72,13 @@ The intrinsic Hysteresis loop relates the effective H-field in a material sample
 :::
 ::::
 
-**1st quadrant (create a magnet):**  
+**1st quadrant (create a magnet):**
 We start with \( J = 0 \) and \( H = 0 \); the material is unmagnetized and there is no magnetic field. As \( H \) increases, the polarization \( J \) follows the *virgin curve*—a nonlinear rise toward the saturation polarization \( J_s \). Beyond this point, further increases in \( H \) have no effect on \( J \); the material is saturated. We are now on the *major loop* and cannot return to the virgin curve, because as H is gradually reduced back to zero, the material retains a high level of polarization. At \( H = 0 \), the remaining polarization is called the *remanent polarization* \( J_r \), which equals the remanent flux density \( B_r \). We have now created a permanent magnet.
 
 **2nd quadrant (demagnetize a magnet):**
 Next, the H-field increases in magnitude but points opposite to the initial direction, acting against the existing polarization. Initially, \( J \) remains nearly unchanged, but as the opposing field strengthens, the response becomes nonlinear and \( J \) decreases rapidly. When \( J \) reaches zero, the H-field equals the *intrinsic coercive field* \( H_{c,J} \), a value that characterizes the material’s resistance to demagnetization. This quadrant—often called the *demagnetization curve*. Materials with a high \( H_{c,J} \) (also denoted \( H_{ci} \)) are referred to as *hard magnets*, capable of maintaining their magnetization even under strong opposing fields.
 
-**3rd and 4th quadrants:**  
+**3rd and 4th quadrants:**
 In the third quadrant, the behavior mirrors that of the first: as \( H \) increases beyond \( H_{c,J} \) in the negative direction, the polarization rapidly aligns with the field, reaching saturation at \( J = -J_s \). Reversing the field once more brings us through the fourth quadrant, completing the hysteresis loop.
 
 Magnetic hysteresis, as described here, is a macroscopic phenomenon arising from a complex interplay of dipole and exchange interactions, material anisotropy, and domain formation at the microscopic level. For a detailed treatment, see Aharoni’s classical textbook *Introduction to the Theory of Ferromagnetism*.
