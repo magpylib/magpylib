@@ -16,25 +16,21 @@ kernelspec:
 
 # Modeling a Real Magnet
 
-When comparing Magpylib simulations with experimental measurements, it's essential to set up your simulated magnet to match the real one. This tutorial explains how to configure Magpylib magnets using manufacturer datasheets and provides insights into the fundamental properties of permanent magnets.
-
-This tutorial was supported by [BOMATEC](https://www.bomatec.com/de) by providing excellent data sheets and by supplying magnets for the experimental demonstration below.
+This tutorial demonstrates how to configure Magpylib simulations to align with experimental measurements using datasheets provided by magnet manufacturers. It offers insights into the fundamental properties of permanent magnets. We gratefully acknowledge the support of [BOMATEC](https://www.bomatec.com/de), who provided high-quality datasheets and supplied the magnets used in the experimental demonstration below.
 
 ## Remanence
 
-Magnet datasheets typically include a table of technical material specifications, including the remanence $B_r$. This value corresponds to the `polarization` magnitude in Magpylib when no material response is modeled. The remanence is usually given as a range to account for manufacturing tolerances.
+Magnet datasheets typically include a table of technical material specifications, including the remanence $B_r$. This value corresponds to the `polarization` magnitude in Magpylib when no material response is modeled (typically 95% correct). The remanence is usually given as a range to account for material tolerances.
 
 ![data sheet snippet](../../../_static/images/examples_tutorial_magnet_table.png)
 
 ## Material Response
 
-Magpylib magnets represent bodies with homogeneous magnetic polarization. A real magnet, however, has material response and "demagnetizes" itself resulting in a polarization distribution throughout the magnet that is inhomogeneous and always lower than the remanence. A Magpylib magnet, beiing a homogeneous body, can only catch the mean of the reduced remanence. The following sections explain what happens, and how to estimate the reduced remanence value.
+Magpylib magnets represent bodies with homogeneous magnetic polarization. A real magnet, however, has material response and "demagnetizes" itself resulting in a polarization distribution throughout the magnet that is inhomogeneous and always lower than the remanence. A Magpylib magnet, beiing a homogeneous body, can only catch the mean of the reduced polarization. The following sections explain what happens, and how to estimate the correct value.
 
 %How much lower depends strongly on the shape of the magnet and its demagnetization curve, characterized in simple cases by material coercivity $H_{c,J}$ or permeability $\mu_r$.
 
-If you are interested in modelling inhomogenous magnets you can make use of the [magpylib-material-response](https://github.com/magpylib/magpylib-material-response) package.
-
-An excellent and more detailed explanation of these phenomena is found on the [Encyclopedia Magnetica](https://www.e-magnetica.pl/doku.php/coercivity).
+More detailed explanation of these phenomena are found on the [Encyclopedia Magnetica](https://www.e-magnetica.pl/doku.php/coercivity), or in the textbook [Introduction to the Theory of Ferromagnetism](https://books.google.at/books/about/Introduction_to_the_Theory_of_Ferromagne.html?id=9RvNuIDh0qMC&redir_esc=y). If you are interested in modelling inhomogenous magnets you can make use of the [magpylib-material-response](https://github.com/magpylib/magpylib-material-response) package.
 
 
 %and is expressed in the data sheet through the permeance coefficient lines (grey lines). The numbers at the end indicate the typical magnet length to diameter ratio (L/D). you should find B-H curves and J-H curves. These curves coincide at $H=0$, giving the intrinisic material remanence $B_r$. This is the `polarization` magnitude of a magpylib magnet when there is no material response.
@@ -53,7 +49,7 @@ An excellent and more detailed explanation of these phenomena is found on the [E
 
 ### Intrinsic Hysteresis Loop
 
-The intrinsic Hysteresis loop relates the effective H-field in a material sample volume to the resulting polarization J (or magnetization M) in that volume. It does not depend on sample volume size, shape, and surroundings, but only on the material properties and the history $H(t)$. With different histories the same H-field can result in different polarizations. They intrinsic hysteresis loop of a material used for permanent magnets typically looks like this:
+The intrinsic Hysteresis loop relates the controlled H-field to the resulting polarization $J$ (or magnetization M) in a material sample volume. The intrinsic loop does not depend on sample volume size, shape, and surroundings, but only on the material properties and the history $H(t)$ - with different histories the same H-field can result in different polarizations. The intrinsic hysteresis loop of a material used for permanent magnets typically looks like this.
 
 %Hysteresis loops relate the applied H-field to the resulting B-field, polarization J, or magnetization M of a material.
 %*within a defined volume*. This relationship strongly depends on the volume’s size, shape, and surrounding materials.
@@ -73,36 +69,36 @@ The intrinsic Hysteresis loop relates the effective H-field in a material sample
 ::::
 
 **1st quadrant (create a magnet):**
-We start with $ J = 0 $ and $ H = 0 $; the material is unmagnetized and there is no magnetic field. As $ H $ increases, the polarization $ J $ follows the *virgin curve*—a nonlinear rise toward the saturation polarization $ J_s $. Beyond this point, further increases in $ H $ have no effect on $ J $; the material is saturated. We are now on the *major loop* and cannot return to the virgin curve, because as H is gradually reduced back to zero, the material retains a high level of polarization. At $ H = 0 $, the remaining polarization is called the *remanent polarization* $ J_r $, which equals the remanent flux density $ B_r $. We have now created a permanent magnet.
+We start with $ J = 0 $ and $ H = 0 $; the material is unmagnetized and there is no magnetic field. We increase $H$ and the polarization $ J $ follows the *virgin curve*—a nonlinear rise toward the saturation polarization $ J_s $. Beyond this point, further increases in $ H $ have no effect on $ J $; the material is saturated. We are now on the *major loop* and cannot easily return to the virgin curve, because as we gradually reduce $H$ back to zero, the material retains a high level of polarization. At $ H = 0 $, the remaining polarization is called the *remanent polarization* $ J_r $, which equals the remanent flux density $ B_r $. We have now created a permanent magnet.
 
 **2nd quadrant (demagnetize a magnet):**
-Next, the H-field increases in magnitude but points opposite to the initial direction, acting against the existing polarization. Initially, $ J $ remains nearly unchanged, but as the opposing field strengthens, the response becomes nonlinear and $ J $ decreases rapidly. When $ J $ reaches zero, the H-field equals the *intrinsic coercive field* $ H_{c,J} $, a value that characterizes the material’s resistance to demagnetization. This quadrant—often called the *demagnetization curve*. Materials with a high $ H_{c,J} $ (also denoted $ H_{ci} $) are referred to as *hard magnets*, capable of maintaining their magnetization even under strong opposing fields.
+Next, we increase the H-field in magnitude but let it point opposite to the initial direction, thus acting against the existing polarization. Initially, $ J $ remains nearly unchanged, but as the opposing field strengthens, the response becomes nonlinear and $ J $ decreases rapidly. When $ J $ reaches zero, the H-field equals the *intrinsic coercive field* $ H_{c,J} $, a value that characterizes the material’s resistance to demagnetization. In this quadrant the hysteresis loop is often called the *demagnetization curve*. Materials with a large $ H_{c,J} $ (also denoted $ H_{ci} $) are referred to as *hard magnetic*, capable of maintaining their magnetization even under strong opposing fields.
 
 **3rd and 4th quadrants:**
 In the third quadrant, the behavior mirrors that of the first: as $ H $ increases beyond $ H_{c,J} $ in the negative direction, the polarization rapidly aligns with the field, reaching saturation at $ J = -J_s $. Reversing the field once more brings us through the fourth quadrant, completing the hysteresis loop.
 
-Magnetic hysteresis, as described here, is a macroscopic phenomenon arising from a complex interplay of dipole and exchange interactions, material anisotropy, and domain formation at the microscopic level. For a detailed treatment, see Aharoni’s classical textbook *Introduction to the Theory of Ferromagnetism*.
+Magnetic hysteresis, as described here, is a macroscopic phenomenon arising from a complex interplay of dipole and exchange interactions, material anisotropy, and domain formation at the microscopic level.
 
 ### The demagnetizing field
 
-If the applied H-field is zero in an experiment, it may seem intuitive to use the remanent flux density $ B_r $ as the magnetic polarization amplitude in a Magpylib simulation. However, this approach neglects the strong opposing field that the magnet generates within itself. Just as the polarization $ J $ produces a magnetic field outside the magnet (known as the *stray field*), it also induces an H-field on the inside which is mostly opposed to $J$ called the *demagnetizing field*. The effect is illustrated in the following figure:
+If the applied H-field is zero in an experiment, it may seem intuitive to use the remanent flux density $ B_r $ as the magnetic polarization amplitude in a Magpylib simulation. However, this approach neglects the strong opposing field that the magnet generates within itself. Just as the polarization $ J $ produces a magnetic field $H$ outside the magnet (known as the *stray field*), it also induces an H-field on the inside which is mostly opposed to $J$ called the *demagnetizing field*. This is illustrated by the following simulation:
 
 ![demagnetization field simulation](../../../_static/images/examples_tutorial_magnet_fieldcomparison.png)
 
-Building on the [streamplot example](examples-vis-mpl-streamplot), the left panel shows the cross-section of a cuboid magnet with uniform polarization, while the right panel illustrates the resulting H-field. Inside the magnet, the H-field is generally opposed to $J$. The average H-field inside the magnet is commonly referred to as the *working point*.
+Building on the [streamplot example](examples-vis-mpl-streamplot), the left panel shows the cross-section of a cuboid magnet with uniform polarization, while the right panel illustrates the H-field generated by this magnet. Inside the magnet, the H-field is opposed to $J$. The average H-field inside the magnet is commonly referred to as the *working point*.
 
 Consequently, the magnet’s mean polarization is not equal to $ B_r $, but is instead a lower value $ J $ on the *demagnetization curve* (2nd quadrant) corresponding to the working point.
 
 (examples-tutorial-modeling-magnets-findJ)=
 ### Finding the Correct Polarization
 
-To determine the correct mean polarization of a magnet, we must compute its *working point*—the average internal H-field—and then read the corresponding $ J $ from the provided J–H curve. However, calculating this internal field is not trivial, as it depends not only on the material's permeability but also on the magnet's geometry.
+To determine the correct mean polarization of a magnet, we must compute its *working point*—the average internal H-field—and then read the corresponding $ J $ from the respective J–H curve provided in the data sheet. However, calculating this internal field is not trivial, as it depends not only on the magnet geometry but also on it's material response.
 
 Fortunately, well-prepared datasheets often include working point information directly.
 
 ![data sheet snippet](../../../_static/images/examples_tutorial_magnet_datasheet.png)
 
-The snippet above shows the second quadrant of the J–H loop for two temperatures. The lower curves are the corresponding B–H loops. The working point is found at the intersection of the *permeance coefficient* lines (gray) with the B–H curves. The labels at the ends of these lines indicate the magnet’s length-to-diameter (L/D) ratio, a key geometric factor influencing internal demagnetization. Each line represents a different L/D value, enabling you to identify the correct working point for a specific magnet geometry.
+The snippet above shows the second quadrant of the J–H loop for two temperatures. The lower curves are the corresponding B–H loops (simply $B=J+\mu_0 H$). The working point is found at the intersection of the *permeance coefficient* lines (gray) with the B–H curves. The labels at the ends of these lines indicate the magnet’s length-to-diameter (L/D) ratio, a key geometric factor influencing internal demagnetization. Each line represents a different L/D value, enabling you to identify the correct working point for a specific magnet geometry.
 
 Once identified, the corresponding magnetic polarization $ J_W $ can be read directly from the J–H curve. The figure below illustrates how $ J_W $ varies with L/D for a cylindrical magnet:
 
@@ -194,7 +190,7 @@ To address this, we introduce seven tolerance parameters:
 - The sensor may be displaced in all six degrees of freedom: three translations and three rotations.
 - Additionally, the exact value of the magnet's polarization is not known precisely.
 
-Next, we incorporate these tolerances into our simulation model and estimate their values by fitting to the experimental data. To do this, we use a differential evolution algorithm that minimizes a cost function based on the squared differences between simulated and measured magnetic field values.
+We incorporate these tolerances into our simulation model and estimate their values by fitting to the experimental data. To do this, we use a differential evolution algorithm that minimizes a cost function based on the squared differences between simulated and measured magnetic field values.
 
 The following code demonstrates how this optimization is performed.
 
@@ -274,11 +270,11 @@ Let’s take a closer look at the fitted parameters:
 
 - The estimated sensor displacement is less than 1 mm in all directions—remarkably close, considering the positioning was done “by eye.” The rotational misalignments are also modest, below 1.5°. Yet, despite these relatively small deviations, they had a significant impact on the first simulation result. This highlights how sensitive magnetic field measurements can be to even subtle misalignments.
 
-- The fitted magnetic polarization is approximately **1126 mT**, which is notably below the specified minimum remanence value of $ B_{r,\mathrm{min}} = 1170\,\mathrm{mT} $. However, if we return to the [datasheet](examples-tutorial-modeling-magnets-findJ) and take demagnetization effects into account, this result becomes plausible. In fact, 1126 mT corresponds well to the polarization in the expected working point when the remanence is near its lower limit.
+- The fitted magnetic polarization is approximately **1126 mT**, which is notably below the specified minimum remanence value of $ B_{r,\mathrm{min}} = 1170\,\mathrm{mT} $. However, if we return to the [datasheet](examples-tutorial-modeling-magnets-findJ) and take demagnetization effects into account, this result becomes plausible. In fact, 1126 mT corresponds well to the polarization in the expected working point when the material remanence is near its lower limit.
 
 ![](../../../_static/images/examples_tutorial_magnet_exp02.png)
 
-In this datasheet snippet, the green curves are parallel-shifted versions of the 20 °C hysteresis loops, representing materials with lower remanence. The blue scale on the right offers finer resolution in the region of interest and helps confirm that the fitted polarization falls within a physically meaningful range.
+In this datasheet snippet, the green curves are parallel-shifted versions of the 20 °C hysteresis loops, representing materials with a remanence of about 1170 mT. The blue scale on the right offers finer resolution in the region of interest. The working point given by the 0.25-permeance line (D8H2) lies at about 720 kA/m, where $J$ is reduced to about 1125 mT confirming that the fitted polarization falls within a physically meaningful range.
 
 ## A Final Word of Caution
 
