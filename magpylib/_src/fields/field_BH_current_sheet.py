@@ -166,27 +166,34 @@ def elementar_current_sheet_Hfield(
     mask_plane = ~(mask0 | mask1 | mask2 | mask3) & in_plane
     mask_general = ~in_plane
 
-    # calculate fields
+    special_cases = not all(mask_general)
+
+    # allocate
     H = np.zeros_like(observers, dtype=float)
 
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(
-        observers, coordinates, current_densities, mask_general
-    )
+    # CASE: GENERAL ###############################################################
+    if special_cases:
+        x, y, z, u1, u2, v2, ju, jv = assign_masks(
+            observers, coordinates, current_densities, mask_general
+        )
+
+    sqrt1 = np.sqrt(x**2 + y**2 + z**2)
+    sqrt2 = np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2 + z**2)
+    sqrt3 = np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2 + z**2)
+    sqrt4 = np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+    sqrt5 = np.sqrt(u2**2 + v2**2)
+
     H[mask_general, 0] = (
         np.arctan(
-            (-u2 * (y**2 + z**2) + v2 * x * y) / (v2 * z * np.sqrt(x**2 + y**2 + z**2))
+            (-u2 * (y**2 + z**2) + v2 * x * y) / (v2 * z * sqrt1)
         )
         + np.arctan(
             (v2 * y * (u1 - x) - (u1 - u2) * (y**2 + z**2))
-            / (v2 * z * np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2 + z**2))
+            / (v2 * z * sqrt2)
         )
         - np.arctan(
             (-u2 * (y**2 + z**2) - v2**2 * x + v2 * y * (u2 + x))
-            / (
-                v2
-                * z
-                * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2 + z**2)
-            )
+            / (v2 * z * sqrt3)
         )
         - np.arctan(
             (
@@ -195,242 +202,232 @@ def elementar_current_sheet_Hfield(
                 + v2**2 * x
                 - v2 * y * (u2 + x)
             )
-            / (
-                v2
-                * z
-                * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2 + z**2)
-            )
+            / (v2 * z * sqrt3)
         )
     ) / (u1 * v2 * z)
     H[mask_general, 2] = -(
-        ju * np.arctanh(x / np.sqrt(x**2 + y**2 + z**2))
-        + ju * np.arctanh((u1 - x) / np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2 + z**2))
+        ju * np.arctanh(x / sqrt1)
+        + ju * np.arctanh((u1 - x) / sqrt2)
         - (ju * (u1 - u2) - jv * v2)
         * np.arctanh(
-            (u1**2 - u1 * (u2 + x) + u2 * x + v2 * y)
-            / (
-                np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-                * np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2 + z**2)
-            )
-        )
-        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+            (u1**2 - u1 * (u2 + x) + u2 * x + v2 * y) / (sqrt4 * sqrt2)
+        ) / sqrt4
         + (ju * (u1 - u2) - jv * v2)
         * np.arctanh(
-            (u1 * (u2 - x) - u2**2 + u2 * x + v2 * (-v2 + y))
-            / (
-                np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-                * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2 + z**2)
-            )
-        )
-        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+            (u1 * (u2 - x) - u2**2 + u2 * x + v2 * (-v2 + y)) / ( sqrt4 * sqrt3)
+        ) / sqrt4
         + (ju * u2 + jv * v2)
         * np.arctanh(
-            (-u2 * x - v2 * y) / (np.sqrt(u2**2 + v2**2) * np.sqrt(x**2 + y**2 + z**2))
-        )
-        / np.sqrt(u2**2 + v2**2)
+            (-u2 * x - v2 * y) / (sqrt5 * sqrt1)
+        ) / sqrt5
         - (ju * u2 + jv * v2)
         * np.arctanh(
-            (u2**2 - u2 * x + v2 * (v2 - y))
-            / (
-                np.sqrt(u2**2 + v2**2)
-                * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2 + z**2)
-            )
-        )
-        / np.sqrt(u2**2 + v2**2)
+            (u2**2 - u2 * x + v2 * (v2 - y)) / (sqrt5 * sqrt3)
+        ) / sqrt5
     ) / (u1 * v2)
 
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(
-        observers, coordinates, current_densities, mask_plane
-    )
-    H[mask_plane, 2] = -(
-        ju * np.arctanh(x / np.sqrt(x**2 + y**2))
-        + ju * np.arctanh((u1 - x) / np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2))
-        - (ju * (u1 - u2) - jv * v2)
-        * np.arctanh(
-            (u1**2 - u1 * (u2 + x) + u2 * x + v2 * y)
-            / (
-                np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-                * np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2)
-            )
-        )
-        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-        + (ju * (u1 - u2) - jv * v2)
-        * np.arctanh(
-            (u1 * (u2 - x) - u2**2 + u2 * x + v2 * (-v2 + y))
-            / (
-                np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-                * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2)
-            )
-        )
-        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-        + (ju * u2 + jv * v2)
-        * np.arctanh(
-            (-u2 * x - v2 * y) / (np.sqrt(u2**2 + v2**2) * np.sqrt(x**2 + y**2))
-        )
-        / np.sqrt(u2**2 + v2**2)
-        - (ju * u2 + jv * v2)
-        * np.arctanh(
-            (u2**2 - u2 * x + v2 * (v2 - y))
-            / (
-                np.sqrt(u2**2 + v2**2)
-                * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2)
-            )
-        )
-        / np.sqrt(u2**2 + v2**2)
-    ) / (u1 * v2)
+    if special_cases:
 
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(
-        observers, coordinates, current_densities, mask1
-    )
-    H[mask1, 2] = (
-        -ju * x * np.log(np.abs(x)) / np.sqrt(x**2)
-        - ju * (u1 - x) * np.log(np.abs(-u1 + x)) / np.sqrt((u1 - x) ** 2)
-        + (ju * (u1 - u2) - jv * v2)
-        * np.arctanh(
-            (u1 * (-u2 + x) + u2**2 - u2 * x + v2**2)
-            / (
-                np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-                * np.sqrt(u2**2 - 2 * u2 * x + v2**2 + x**2)
-            )
+        # CASE: Observer in plane ################################################################
+        x, y, z, u1, u2, v2, ju, jv = assign_masks(
+            observers, coordinates, current_densities, mask_plane
         )
-        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-        + (ju * (u1 - u2) - jv * v2)
-        * np.arctanh(
-            (u1 - u2)
-            * (u1 - x)
-            / (np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2) * np.sqrt((u1 - x) ** 2))
-        )
-        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-        + (ju * u2 + jv * v2)
-        * np.arctanh(
-            (u2**2 - u2 * x + v2**2)
-            / (np.sqrt(u2**2 + v2**2) * np.sqrt(u2**2 - 2 * u2 * x + v2**2 + x**2))
-        )
-        / np.sqrt(u2**2 + v2**2)
-        - (ju * u2 + jv * v2)
-        * np.arctanh(u2 * (u1 - x) / (np.sqrt(u2**2 + v2**2) * np.sqrt((u1 - x) ** 2)))
-        / np.sqrt(u2**2 + v2**2)
-    ) / (u1 * v2)
-
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(
-        observers, coordinates, current_densities, mask2
-    )
-    H[mask2, 2] = (
-        -ju
-        * np.arctanh(
-            (u1 * v2 - u2 * y)
-            / (v2 * np.sqrt(u1**2 - 2 * u1 * u2 * y / v2 + y**2 * (u2**2 / v2**2 + 1)))
-        )
-        + ju
-        * np.arctanh(
-            u2 * (v2 - y) / (v2 * np.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2))
-        )
-        + (ju * (u1 - u2) - jv * v2)
-        * np.arctanh(
-            (u1**2 * v2 - u1 * u2 * (v2 + y) + y * (u2**2 + v2**2))
-            / (
-                v2
-                * np.sqrt(u1**2 - 2 * u1 * u2 * y / v2 + y**2 * (u2**2 / v2**2 + 1))
-                * np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-            )
-        )
-        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-        + (ju * (u1 - u2) - jv * v2)
-        * np.arctanh(
-            (v2 - y)
-            * (-u1 * u2 + u2**2 + v2**2)
-            / (
-                v2
-                * np.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2)
-                * np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-            )
-        )
-        / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-        + y
-        * (ju * u2 + jv * v2)
-        * np.log(np.abs(y * (-(u2**2) - v2**2)))
-        / (v2 * np.sqrt(y**2 * (u2**2 + v2**2) / v2**2))
-        + (v2 - y)
-        * (ju * u2 + jv * v2)
-        * np.log(np.abs((u2**2 + v2**2) * (v2 - y)))
-        / (v2 * np.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2))
-    ) / (u1 * v2)
-
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(
-        observers, coordinates, current_densities, mask3
-    )
-    H[mask3, 2] = (
-        ju
-        * v2
-        * np.arctanh(
-            (u1 * (-v2 + y) - u2 * y)
-            / (
-                v2
-                * np.sqrt(
-                    (
-                        u1**2 * (v2 - y) ** 2
-                        + 2 * u1 * u2 * y * (v2 - y)
-                        + y**2 * (u2**2 + v2**2)
-                    )
-                    / v2**2
+        H[mask_plane, 2] = -(
+            ju * np.arctanh(x / np.sqrt(x**2 + y**2))
+            + ju * np.arctanh((u1 - x) / np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2))
+            - (ju * (u1 - u2) - jv * v2)
+            * np.arctanh(
+                (u1**2 - u1 * (u2 + x) + u2 * x + v2 * y)
+                / (
+                    np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+                    * np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2)
                 )
             )
-        )
-        + ju
-        * v2
-        * np.arctanh(
-            (u1 - u2)
-            * (v2 - y)
-            / (
-                v2
-                * np.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
-            )
-        )
-        - v2
-        * (ju * u2 + jv * v2)
-        * np.arctanh(
-            (u1 * u2 * (-v2 + y) + y * (-(u2**2) - v2**2))
-            / (
-                v2
-                * np.sqrt(
-                    (
-                        u1**2 * (v2 - y) ** 2
-                        + 2 * u1 * u2 * y * (v2 - y)
-                        + y**2 * (u2**2 + v2**2)
-                    )
-                    / v2**2
+            / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+            + (ju * (u1 - u2) - jv * v2)
+            * np.arctanh(
+                (u1 * (u2 - x) - u2**2 + u2 * x + v2 * (-v2 + y))
+                / (
+                    np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+                    * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2)
                 )
-                * np.sqrt(u2**2 + v2**2)
             )
-        )
-        / np.sqrt(u2**2 + v2**2)
-        + v2
-        * (ju * u2 + jv * v2)
-        * np.arctanh(
-            (v2 - y)
-            * (-u1 * u2 + u2**2 + v2**2)
-            / (
-                v2
-                * np.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
-                * np.sqrt(u2**2 + v2**2)
+            / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+            + (ju * u2 + jv * v2)
+            * np.arctanh(
+                (-u2 * x - v2 * y) / (np.sqrt(u2**2 + v2**2) * np.sqrt(x**2 + y**2))
             )
+            / np.sqrt(u2**2 + v2**2)
+            - (ju * u2 + jv * v2)
+            * np.arctanh(
+                (u2**2 - u2 * x + v2 * (v2 - y))
+                / (
+                    np.sqrt(u2**2 + v2**2)
+                    * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2)
+                )
+            )
+            / np.sqrt(u2**2 + v2**2)
+        ) / (u1 * v2)
+
+        # CASE: Observer on edge1 ##############################################################
+
+        x, y, z, u1, u2, v2, ju, jv = assign_masks(
+            observers, coordinates, current_densities, mask1
         )
-        / np.sqrt(u2**2 + v2**2)
-        - y
-        * (ju * (-u1 + u2) + jv * v2)
-        * np.log(np.abs(y * (-(u1**2) + 2 * u1 * u2 - u2**2 - v2**2)))
-        / np.sqrt(y**2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
-        - (v2 - y)
-        * (ju * (-u1 + u2) + jv * v2)
-        * np.log(np.abs((v2 - y) * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2)))
-        / np.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
-    ) / (u1 * v2**2)
+        H[mask1, 2] = (
+            -ju * x * np.log(np.abs(x)) / np.sqrt(x**2)
+            - ju * (u1 - x) * np.log(np.abs(-u1 + x)) / np.sqrt((u1 - x) ** 2)
+            + (ju * (u1 - u2) - jv * v2)
+            * np.arctanh(
+                (u1 * (-u2 + x) + u2**2 - u2 * x + v2**2)
+                / (
+                    np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+                    * np.sqrt(u2**2 - 2 * u2 * x + v2**2 + x**2)
+                )
+            )
+            / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+            + (ju * (u1 - u2) - jv * v2)
+            * np.arctanh(
+                (u1 - u2)
+                * (u1 - x)
+                / (np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2) * np.sqrt((u1 - x) ** 2))
+            )
+            / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+            + (ju * u2 + jv * v2)
+            * np.arctanh(
+                (u2**2 - u2 * x + v2**2)
+                / (np.sqrt(u2**2 + v2**2) * np.sqrt(u2**2 - 2 * u2 * x + v2**2 + x**2))
+            )
+            / np.sqrt(u2**2 + v2**2)
+            - (ju * u2 + jv * v2)
+            * np.arctanh(u2 * (u1 - x) / (np.sqrt(u2**2 + v2**2) * np.sqrt((u1 - x) ** 2)))
+            / np.sqrt(u2**2 + v2**2)
+        ) / (u1 * v2)
 
-    H[:, 1] = H[:, 0]  # copy?
+        # CASE: Observer on edges 2 ##############################################################
 
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(
-        observers, coordinates, current_densities, None
-    )
+        x, y, z, u1, u2, v2, ju, jv = assign_masks(
+            observers, coordinates, current_densities, mask2
+        )
+        H[mask2, 2] = (
+            -ju
+            * np.arctanh(
+                (u1 * v2 - u2 * y)
+                / (v2 * np.sqrt(u1**2 - 2 * u1 * u2 * y / v2 + y**2 * (u2**2 / v2**2 + 1)))
+            )
+            + ju
+            * np.arctanh(
+                u2 * (v2 - y) / (v2 * np.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2))
+            )
+            + (ju * (u1 - u2) - jv * v2)
+            * np.arctanh(
+                (u1**2 * v2 - u1 * u2 * (v2 + y) + y * (u2**2 + v2**2))
+                / (
+                    v2
+                    * np.sqrt(u1**2 - 2 * u1 * u2 * y / v2 + y**2 * (u2**2 / v2**2 + 1))
+                    * np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+                )
+            )
+            / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+            + (ju * (u1 - u2) - jv * v2)
+            * np.arctanh(
+                (v2 - y)
+                * (-u1 * u2 + u2**2 + v2**2)
+                / (
+                    v2
+                    * np.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2)
+                    * np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+                )
+            )
+            / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+            + y
+            * (ju * u2 + jv * v2)
+            * np.log(np.abs(y * (-(u2**2) - v2**2)))
+            / (v2 * np.sqrt(y**2 * (u2**2 + v2**2) / v2**2))
+            + (v2 - y)
+            * (ju * u2 + jv * v2)
+            * np.log(np.abs((u2**2 + v2**2) * (v2 - y)))
+            / (v2 * np.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2))
+        ) / (u1 * v2)
+
+        # CASE: Observer on edges 3 ##############################################################
+
+        x, y, z, u1, u2, v2, ju, jv = assign_masks(
+            observers, coordinates, current_densities, mask3
+        )
+        H[mask3, 2] = (
+            ju
+            * v2
+            * np.arctanh(
+                (u1 * (-v2 + y) - u2 * y)
+                / (
+                    v2
+                    * np.sqrt(
+                        (
+                            u1**2 * (v2 - y) ** 2
+                            + 2 * u1 * u2 * y * (v2 - y)
+                            + y**2 * (u2**2 + v2**2)
+                        )
+                        / v2**2
+                    )
+                )
+            )
+            + ju
+            * v2
+            * np.arctanh(
+                (u1 - u2)
+                * (v2 - y)
+                / (
+                    v2
+                    * np.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
+                )
+            )
+            - v2
+            * (ju * u2 + jv * v2)
+            * np.arctanh(
+                (u1 * u2 * (-v2 + y) + y * (-(u2**2) - v2**2))
+                / (
+                    v2
+                    * np.sqrt(
+                        (
+                            u1**2 * (v2 - y) ** 2
+                            + 2 * u1 * u2 * y * (v2 - y)
+                            + y**2 * (u2**2 + v2**2)
+                        )
+                        / v2**2
+                    )
+                    * np.sqrt(u2**2 + v2**2)
+                )
+            )
+            / np.sqrt(u2**2 + v2**2)
+            + v2
+            * (ju * u2 + jv * v2)
+            * np.arctanh(
+                (v2 - y)
+                * (-u1 * u2 + u2**2 + v2**2)
+                / (
+                    v2
+                    * np.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
+                    * np.sqrt(u2**2 + v2**2)
+                )
+            )
+            / np.sqrt(u2**2 + v2**2)
+            - y
+            * (ju * (-u1 + u2) + jv * v2)
+            * np.log(np.abs(y * (-(u1**2) + 2 * u1 * u2 - u2**2 - v2**2)))
+            / np.sqrt(y**2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
+            - (v2 - y)
+            * (ju * (-u1 + u2) + jv * v2)
+            * np.log(np.abs((v2 - y) * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2)))
+            / np.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
+        ) / (u1 * v2**2)
+
+        H[:, 1] = H[:, 0]  # copy?
+
+        # All cases again
+        x, y, z, u1, u2, v2, ju, jv = assign_masks(
+            observers, coordinates, current_densities, None
+        )
     H[:, 0] *= jv * z * u1 * v2 / (4 * np.pi)
     H[:, 1] *= -ju * z * u1 * v2 / (4 * np.pi)
     H[:, 2] *= u1 * v2 / (4 * np.pi)
@@ -455,7 +452,8 @@ def current_sheet_Hfield(
         coordinates.
 
     current_densities: ndarray, shape (n,3)
-        x-, y- and z-coordinates of electrical current densities in sheets.
+        x-, y- and z-coordinates of electrical current densities in sheets. The current density
+        is the in-plane projection of the current density vector onto the sheet. The unit is A/m.
 
     Returns
     -------
