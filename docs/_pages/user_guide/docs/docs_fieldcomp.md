@@ -138,6 +138,10 @@ At the heart of Magpylib lies a set of core functions that are our implementatio
 :::
 
 :::{grid-item}
+<span style="color: orange">**current_sheet_Hfield(**</span>`observers`, `vertices`, `current_densities`<span style="color: orange">**)**</span>
+:::
+
+:::{grid-item}
 <span style="color: orange">**dipole_Hfield(**</span>`observers`, `moments`<span style="color: orange">**)**</span>
 :::
 
