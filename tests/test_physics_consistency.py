@@ -1,7 +1,7 @@
 import numpy as np
 
 import magpylib as magpy
-
+from magpylib import mu_0
 
 def test_dipole_approximation():
     """test if all source fields converge towards the correct dipole field at distance"""
@@ -230,3 +230,84 @@ def test_Polyline_vs_Infinite():
     Binfs = np.array(Binfs) * 1e-6
 
     np.testing.assert_allclose(Bls, Binfs)
+
+
+def test_current_sheet_VS_current_loop():
+    """Compare the H-field of a current sheet with the H-field of a current loop.
+    """
+    PO = (.1,.2,.3)
+    obs = np.array([(PO)]*8)
+
+    h=0.00001
+
+    p1 = (-1,-1,-h)
+    p2 = ( 1,-1,-h)
+    p3 = ( 1, 1,-h)
+    p4 = (-1, 1,-h)
+    p5 = (-1,-1, h)
+    p6 = ( 1,-1, h)
+    p7 = ( 1, 1, h)
+    p8 = (-1, 1, h)
+
+    verts=np.array([(p1,p5,p6),(p1,p2,p6),(p2,p6,p7),(p2,p3,p7),
+                    (p3,p4,p8),(p3,p7,p8),(p4,p1,p5),(p4,p8,p5),])
+
+    cds=np.array([(1,0,0),(1,0,0),(0,1,0),(0,1,0),(-1,0,0),(-1,0,0),(0,-1,0),(0,-1,0)])
+
+    H = magpy.core.current_sheet_Hfield(
+        observers=obs,
+        vertices=verts,
+        current_densities=cds/(2*h),
+    )
+
+    H_sheet = np.sum(H, axis=0)
+
+    loop = magpy.current.Polyline(
+        current=1,
+        vertices=np.array([p1,p2,p3,p4,p1]),
+    )
+
+    err = np.linalg.norm(loop.getH(PO)-H_sheet)/np.linalg.norm(H_sheet)/2
+    
+    assert err < 1e-5
+
+
+# -> current_sheet, Cube current replacement picture
+def test():
+    """
+    Current replacement picture:
+    Jz = MU0 * I and holds for B and for H+M.
+    """
+
+    p1 = (-1,-1,-1)
+    p2 = ( 1,-1,-1)
+    p3 = ( 1, 1,-1)
+    p4 = (-1, 1,-1)
+    p5 = (-1,-1, 1)
+    p6 = ( 1,-1, 1)
+    p7 = ( 1, 1, 1)
+    p8 = (-1, 1, 1)
+
+    verts=np.array([(p1,p5,p6),(p1,p2,p6),(p2,p6,p7),(p2,p3,p7),
+                    (p3,p4,p8),(p3,p7,p8),(p4,p1,p5),(p4,p8,p5),])
+
+    cds=np.array([(1,0,0),(1,0,0),(0,1,0),(0,1,0),(-1,0,0),(-1,0,0),(0,-1,0),(0,-1,0)])
+
+    OBS = [(3,2,1), (.1,.2,.3), (-1.1,.2,.3), (0,0,0)]
+    for obs in OBS:
+        H = magpy.core.current_sheet_Hfield(
+            observers=np.array([obs]*8),
+            vertices=verts,
+            current_densities=cds,
+        )
+        Htest = np.sum(H, axis=0)
+
+        cube = magpy.magnet.Cuboid(
+            dimension=(2,2,2),
+            polarization=(0,0,mu_0),
+        )
+        Hcube = cube.getH(obs) + cube.getM(obs)
+        
+        err = np.linalg.norm(Htest - Hcube)/np.linalg.norm(Htest)/2
+        
+        assert err < 1e-10
