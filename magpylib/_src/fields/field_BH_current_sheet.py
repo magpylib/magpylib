@@ -143,7 +143,7 @@ def elementar_current_sheet_Hfield(
     in_plane = np.abs(z) < num_tol
 
     # critical value for condition, if observer within triangle or on the edges
-    critical_value01 = (x * v2 + y * u2) / (u1 * v2)  # within triangle
+    critical_value01 = (x * v2 - y * u2) / (u1 * v2)  # within triangle
     critical_value02 = y / v2  # within triangle
     critical_value1 = np.abs(y)  # edge1
     critical_value2 = np.abs(u2 * y - v2 * x)  # edge2
@@ -152,10 +152,9 @@ def elementar_current_sheet_Hfield(
     # separate on-sheet cases (-> B=0)
     mask0 = (
         in_plane
-        & (-num_tol <= critical_value01 + critical_value02)
         & (critical_value01 + critical_value02 <= 1 + num_tol)
-        & (critical_value01 >= 0)
-        & (critical_value02 >= 0)
+        & (critical_value01 >= -num_tol)
+        & (critical_value02 >= -num_tol)
     )
     # each condition account for numerical issues
 
@@ -422,12 +421,12 @@ def elementar_current_sheet_Hfield(
             / np.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
         ) / (u1 * v2**2)
 
-        H[:, 1] = H[:, 0]  # copy?
+    H[:, 1] = H[:, 0]  # copy?
 
-        # All cases again
-        x, y, z, u1, u2, v2, ju, jv = assign_masks(
-            observers, coordinates, current_densities, None
-        )
+    # All cases again
+    x, y, z, u1, u2, v2, ju, jv = assign_masks(
+        observers, coordinates, current_densities, None
+    )
     H[:, 0] *= jv * z * u1 * v2 / (4 * np.pi)
     H[:, 1] *= -ju * z * u1 * v2 / (4 * np.pi)
     H[:, 2] *= u1 * v2 / (4 * np.pi)
