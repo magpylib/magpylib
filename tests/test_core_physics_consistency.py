@@ -209,6 +209,7 @@ def test_core_physics_dipole_sphere():
     np.testing.assert_allclose(H1, H2, rtol=0, atol=1e-10)
 
 
+
 # -> Circle, Cylinder
 def test_core_physics_long_solenoid():
     """
@@ -220,8 +221,8 @@ def test_core_physics_long_solenoid():
     This can also be tested with magnets using the current replacement picture
         where Jz = MU0 * I * N / L, and holds for B and for H-M.
     """
-
-    I = 134
+    
+    I = 134    # noqa: E741
     N = 5000
     R = 1.543
     L = 1234
@@ -294,7 +295,7 @@ def test_core_physics_current_replacement():
     )[0, 2]
 
     N = 1000  # current discretization
-    I = Jz / MU0 / N * L
+    I = Jz / MU0 / N * L    # noqa: E741
     H = BHJM_circle(
         field="H",
         observers=np.linspace((0, 0, -L / 2), (0, 0, L / 2), N) + obs,
