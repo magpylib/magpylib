@@ -520,7 +520,7 @@ def BHJM_current_sheet(
 
     if field == "B":
         return BHJM * MU0
-    
+
     if field in ["J", "M"]:
         return observers*0.
 
