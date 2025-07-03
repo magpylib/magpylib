@@ -526,3 +526,45 @@ def BHJM_current_sheet(
     raise ValueError(  # pragma: no cover
         "`output_field_type` must be one of ('B', 'H', 'J', 'M'), " f"got {field!r}"
     )
+
+
+def BHJM_current_strip(
+    field: str,
+    observers: np.ndarray,
+    vertices: np.ndarray,
+    current: float,
+) -> np.ndarray:
+    """
+    - translate current sheet field to BHJM
+    """
+    # für jeder obs instanz returnieren.
+    # obs * path, verts, xyz
+    
+    BHJM = np.zeros_like(observers, dtype=float)
+
+    for ii, (vert, obs, curr) in enumerate(zip(vertices, observers, current)):
+        
+        # create triangles from vertices
+        tris = np.moveaxis(np.array([vert[:-2], vert[1:-1], vert[2:]]), 0, 1)
+
+        # calculate current density
+        v1 = (tris[:,1]-tris[:,0])
+        v2 = (tris[:,2]-tris[:,0])
+        v1v1 = np.sum(v1*v1, axis=1)
+        v2v2 = np.sum(v2*v2, axis=1)
+        v1v2 = np.sum(v1*v2, axis=1)
+        h = np.sqrt(v1v1 - (v1v2**2/v2v2))
+
+        curr_dens = (v2.T / np.sqrt(v2v2) / h * curr).T
+        obbs = np.tile(obs, (len(tris),1))
+
+        BHJM[ii] = np.sum(
+            BHJM_current_sheet(
+                field=field,
+                observers=obbs,
+                vertices=tris,
+                current_densities=curr_dens,
+            )
+        ,axis=0)
+
+    return BHJM
