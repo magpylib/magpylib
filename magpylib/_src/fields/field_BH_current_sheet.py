@@ -543,12 +543,13 @@ def BHJM_current_strip(
     
     # number of triangles per instance
     no_tris = [len(v)-2 for v in vertices]
+    n = sum(no_tris)
 
     # create obs input
     OBS = np.repeat(observers, no_tris, axis=0)
 
     # create triangles
-    VERT = np.zeros((sum(no_tris), 3, 3), dtype=float)
+    VERT = np.zeros((n, 3, 3), dtype=float)
     jj = 0
     for v in vertices:
         for i in range(len(v)-2):
@@ -563,22 +564,32 @@ def BHJM_current_strip(
     v1v1 = np.sum(v1*v1, axis=1)
     v2v2 = np.sum(v2*v2, axis=1)
     v1v2 = np.sum(v1*v2, axis=1)
-    h = np.sqrt(v1v1 - (v1v2**2/v2v2))
-    CD = v2 / (np.sqrt(v2v2) * h / np.repeat(current, no_tris, axis=0))[:,np.newaxis]
+    
+    # catch two times the same vertex in one triangle
+    mask = (v2v2!=0)*(v1v1!=0)
+    
+    h = np.sqrt(v1v1[mask] - (v1v2[mask]**2/v2v2[mask]))
+    CD = v2[mask] / (np.sqrt(v2v2[mask]) * h / np.repeat(current, no_tris, axis=0)[mask])[:,np.newaxis]
 
     # compute field for all instances
-    BBB = BHJM_current_sheet(
+    BB = BHJM_current_sheet(
         field=field,
-        observers=OBS,
-        vertices=VERT,
+        observers=OBS[mask],
+        vertices=VERT[mask],
         current_densities=CD,
     )
+    if np.any(~mask):
+        # if some triangles are degenerated, their field is zero
+        BBB = np.zeros((n,3))
+        BBB[mask] = BB
+        BB = BBB
 
     # sum over triangles of same strip
     B = np.zeros_like(observers, dtype=float)
+
     jj = 0
     for i,nn in enumerate(no_tris):
-        B[i] = np.sum(BBB[jj:jj+nn], axis=0)
+        B[i] = np.sum(BB[jj:jj+nn], axis=0)
         jj += nn
 
     return B

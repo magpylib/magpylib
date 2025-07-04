@@ -76,3 +76,27 @@ def test_TriangleStrip_repr():
     """TriangleStrip repr test"""
     ts = magpy.current.TriangleStrip()
     assert repr(ts)[:13] == "TriangleStrip", "TriangleStrip repr failed"
+
+
+def test_zero_surf_triangle_strip():
+    """Test if TriangleStrip with zero area returns zero field"""
+
+    strip1 = magpy.current.TriangleStrip(
+        vertices=[[0, 0, 0], [0, 1, 0], [1, 0, 0], [0, 1, 0], [2, 0, 0], [2,1,0]],
+        current=10.1,
+        position=([1,2,3])
+    )
+    strip2 = magpy.current.TriangleStrip(
+        vertices=[[0, 0, 0], [0, 1, 0], [2, 0, 0], [2, 1, 0]],
+        current=10.1,
+        position=([1,2,3])
+    )
+    H1 = magpy.getH(
+        sources = strip1,
+        observers = magpy.Sensor(pixel=[(2,3,4)]),
+    )
+    H2 = magpy.getH(
+        sources = strip2,
+        observers = magpy.Sensor(pixel=[(2,3,4)]),
+    )
+    assert np.linalg.norm(H1-H2)/np.linalg.norm(H1+H2) < 1e-8, "H-field of zero area TriangleStrip making problems"
