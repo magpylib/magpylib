@@ -70,3 +70,9 @@ def test_two_Strips():
     ])
 
     np.testing.assert_allclose(H, Htest, rtol=1e-6, atol=1e-6)
+
+
+def test_TriangleStrip_repr():
+    """TriangleStrip repr test"""
+    ts = magpy.current.TriangleStrip()
+    assert repr(ts)[:13] == "TriangleStrip", "TriangleStrip repr failed"
