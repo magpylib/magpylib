@@ -540,31 +540,30 @@ def BHJM_current_strip(
     # für jeder obs instanz returnieren.
     # obs * path, verts, xyz
     
-    BHJM = np.zeros_like(observers, dtype=float)
+    #BHJM = np.zeros_like(observers, dtype=float)
 
-    for ii, (vert, obs, curr) in enumerate(zip(vertices, observers, current)):
-        
-        # create triangles from vertices
-        tris = np.moveaxis(np.array([vert[:-2], vert[1:-1], vert[2:]]), 0, 1)
+    # create triangles from vertices
+    tris = np.moveaxis(np.moveaxis(np.array([vertices[:,:-2], vertices[:,1:-1], vertices[:,2:]]), 0, 1) , 1, 2)
 
-        # calculate current density
-        v1 = (tris[:,1]-tris[:,0])
-        v2 = (tris[:,2]-tris[:,0])
-        v1v1 = np.sum(v1*v1, axis=1)
-        v2v2 = np.sum(v2*v2, axis=1)
-        v1v2 = np.sum(v1*v2, axis=1)
-        h = np.sqrt(v1v1 - (v1v2**2/v2v2))
+    # calculate current density
+    v1 = (tris[:,:,1]-tris[:,:,0])
+    v2 = (tris[:,:,2]-tris[:,:,0])
+    v1v1 = np.sum(v1*v1, axis=2)
+    v2v2 = np.sum(v2*v2, axis=2)
+    v1v2 = np.sum(v1*v2, axis=2)
+    h = np.sqrt(v1v1 - (v1v2**2/v2v2))
 
-        curr_dens = (v2.T / np.sqrt(v2v2) / h * curr).T
-        obbs = np.tile(obs, (len(tris),1))
+    curr_dens = v2 / (np.sqrt(v2v2) * h / current[:,np.newaxis])[:,:,np.newaxis]
 
-        BHJM[ii] = np.sum(
-            BHJM_current_sheet(
-                field=field,
-                observers=obbs,
-                vertices=tris,
-                current_densities=curr_dens,
-            )
-        ,axis=0)
+    tshape = tris.shape
 
-    return BHJM
+    bhjm_all = BHJM_current_sheet(
+            field=field,
+            observers=np.repeat(observers, tshape[1], axis=0),
+            vertices=np.reshape(tris, (tshape[0]*tshape[1], *tshape[2:])),
+            current_densities=np.reshape(curr_dens, (tshape[0]*tshape[1], 3)),
+    )
+
+
+    bhjm = bhjm_all.reshape((tris.shape[0], tris.shape[1], 3))
+    return np.sum(bhjm, axis=1)
