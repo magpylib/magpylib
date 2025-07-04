@@ -535,35 +535,92 @@ def BHJM_current_strip(
     current: float,
 ) -> np.ndarray:
     """
-    - translate current sheet field to BHJM
-    """
-    # für jeder obs instanz returnieren.
-    # obs * path, verts, xyz
+    Translates TriangleStrip inputs to core BHJM current_sheet
     
-    #BHJM = np.zeros_like(observers, dtype=float)
+    Note: This is not easily vectorized, as vertices inputs can be ragged arrays
+    when two TriangleStrips with different vertex lengths are given.
+    """
+    
+    # number of triangles per instance
+    no_tris = [len(v)-2 for v in vertices]
 
-    # create triangles from vertices
-    tris = np.moveaxis(np.moveaxis(np.array([vertices[:,:-2], vertices[:,1:-1], vertices[:,2:]]), 0, 1) , 1, 2)
+    # create obs input
+    OBS = np.repeat(observers, no_tris, axis=0)
 
-    # calculate current density
-    v1 = (tris[:,:,1]-tris[:,:,0])
-    v2 = (tris[:,:,2]-tris[:,:,0])
-    v1v1 = np.sum(v1*v1, axis=2)
-    v2v2 = np.sum(v2*v2, axis=2)
-    v1v2 = np.sum(v1*v2, axis=2)
+    # create triangles
+    VERT = np.zeros((sum(no_tris), 3, 3), dtype=float)
+    jj = 0
+    for v in vertices:
+        for i in range(len(v)-2):
+            VERT[jj,0] = v[i]
+            VERT[jj,1] = v[i+1]
+            VERT[jj,2] = v[i+2]
+            jj += 1
+
+    # create current density input
+    v1 = (VERT[:,1] - VERT[:,0])
+    v2 = (VERT[:,2] - VERT[:,0])
+    v1v1 = np.sum(v1*v1, axis=1)
+    v2v2 = np.sum(v2*v2, axis=1)
+    v1v2 = np.sum(v1*v2, axis=1)
     h = np.sqrt(v1v1 - (v1v2**2/v2v2))
+    CD = v2 / (np.sqrt(v2v2) * h / np.repeat(current, no_tris, axis=0))[:,np.newaxis]
 
-    curr_dens = v2 / (np.sqrt(v2v2) * h / current[:,np.newaxis])[:,:,np.newaxis]
-
-    tshape = tris.shape
-
-    bhjm_all = BHJM_current_sheet(
-            field=field,
-            observers=np.repeat(observers, tshape[1], axis=0),
-            vertices=np.reshape(tris, (tshape[0]*tshape[1], *tshape[2:])),
-            current_densities=np.reshape(curr_dens, (tshape[0]*tshape[1], 3)),
+    # compute field for all instances
+    BBB = BHJM_current_sheet(
+        field=field,
+        observers=OBS,
+        vertices=VERT,
+        current_densities=CD,
     )
 
+    # sum over triangles of same strip
+    B = np.zeros_like(observers, dtype=float)
+    jj = 0
+    for i,nn in enumerate(no_tris):
+        B[i] = np.sum(BBB[jj:jj+nn], axis=0)
+        jj += nn
 
-    bhjm = bhjm_all.reshape((tris.shape[0], tris.shape[1], 3))
-    return np.sum(bhjm, axis=1)
+    return B
+
+
+# def BHJM_current_strip_noRagged(
+#     field: str,
+#     observers: np.ndarray,
+#     vertices: np.ndarray,
+#     current: float,
+# ) -> np.ndarray:
+#     """
+#     - translate TriangleStrip field to BHJM
+#     MISSING: If multiple TriangleStrips with different vertex lenghts are given
+#         - add function that tests this
+#         - compute for each "ragged instance" separately (its just an edge case - noone cares)
+#     """
+
+#     # create triangles from vertices
+#     tris = np.moveaxis(np.moveaxis(np.array([vertices[:,:-2], vertices[:,1:-1], vertices[:,2:]]), 0, 1) , 1, 2)
+
+#     # calculate current density
+#     v1 = (tris[:,:,1]-tris[:,:,0])
+#     v2 = (tris[:,:,2]-tris[:,:,0])
+#     v1v1 = np.sum(v1*v1, axis=2)
+#     v2v2 = np.sum(v2*v2, axis=2)
+#     v1v2 = np.sum(v1*v2, axis=2)
+#     h = np.sqrt(v1v1 - (v1v2**2/v2v2))
+
+#     curr_dens = v2 / (np.sqrt(v2v2) * h / current[:,np.newaxis])[:,:,np.newaxis]
+
+#     #store shape for later reshaping
+#     tshape = tris.shape
+
+#     # compute for all instances of observers x triangles
+#     bhjm_all = BHJM_current_sheet(
+#             field=field,
+#             observers=np.repeat(observers, tshape[1], axis=0),
+#             vertices=np.reshape(tris, (tshape[0]*tshape[1], *tshape[2:])),
+#             current_densities=np.reshape(curr_dens, (tshape[0]*tshape[1], 3)),
+#     )
+
+#     # sum over all triangles
+#     bhjm = bhjm_all.reshape((tris.shape[0], tris.shape[1], 3))
+#     return np.sum(bhjm, axis=1)

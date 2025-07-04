@@ -2,6 +2,37 @@ import numpy as np
 
 import magpylib as magpy
 
+
+def test_two_ragged_Strips():
+    """Tests if codes works for ragged strips"""
+
+    strip1 = magpy.current.TriangleStrip(
+    vertices=[[0, 0, 0], [0, 1, 0], [1, 0, 0], [1, 1, 0], [2,0,0]],
+    current=10.1,
+    position=([[1,2,3]]*2)
+    )
+    strip2 = magpy.current.TriangleStrip(
+        vertices=[[0, 0, 0], [0, 2, 0], [1, 0, 0], [1, 2, 0]],
+        current=10.1,
+    )
+    H = magpy.getH(
+        sources = [strip1, strip2],
+        observers = magpy.Sensor(pixel=[(2,3,4), (.1,.2,.3)]),
+    )
+
+    Htest = np.array([
+        [[[-1.93363166e-17, -6.31250000e-01,  3.01329491e-01],
+        [ 2.28321078e-18,  5.49844024e-02, -4.52367753e-02],],
+        [[-1.93363166e-17, -6.31250000e-01,  3.01329491e-01],
+        [ 2.28321078e-18,  5.49844024e-02, -4.52367753e-02],],],
+        [[[ 6.89279913e-19, -3.04597135e-02,  1.45698945e-02],
+        [ 2.97911957e-17, -9.07478634e-01, -5.58522415e-01],],
+        [[ 6.89279913e-19, -3.04597135e-02,  1.45698945e-02],
+        [ 2.97911957e-17, -9.07478634e-01, -5.58522415e-01],],],
+    ])
+    np.testing.assert_allclose(H, Htest, rtol=1e-8, atol=1e-8)
+
+
 def test_two_Strips():
     """Test if two TriangleStrips can be added to a Collection."""
 
