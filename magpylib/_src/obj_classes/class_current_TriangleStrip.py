@@ -37,8 +37,8 @@ class TriangleStrip(BaseCurrent):
         must be given, which define the first Triangle.
 
     current: float, default=`None`
-        Electrical current in units of A. It is transformed into a current density which
-        flows along the Triangles in direction: T1: V1->V3, T2: V2->V4, ...
+        Electrical current in units of A. It is transformed into a homogeneous current
+        density which flows along the Triangles in direction: T1: V1->V3, T2: V2->V4, ...
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -53,7 +53,19 @@ class TriangleStrip(BaseCurrent):
 
     Examples
     --------
-    ...
+    `TriangleStrip` objects are magnetic field sources. In this example we compute the H-field in A/m
+    of a square current sheet (two triangles) with 1 A current at the observer position (1,1,1) cm:
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> src = magpy.current.TriangleStrip(
+    ...    current=1,
+    ...    vertices=((0,0,0), (0,1,0), (1,0,0), (1,1,0)),
+    ... )
+    >>> H = src.getH((.01,.01,.01))
+    >>> with np.printoptions(precision=3):
+    ...     print(H)
+    [ 3.965e-17 -2.905e-01 -3.747e-01]
 
     """
 
