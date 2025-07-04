@@ -100,3 +100,18 @@ def test_zero_surf_triangle_strip():
         observers = magpy.Sensor(pixel=[(2,3,4)]),
     )
     assert np.linalg.norm(H1-H2)/np.linalg.norm(H1+H2) < 1e-8, "H-field of zero area TriangleStrip making problems"
+
+
+def test_zero_surf_triangle_strip2():
+    """Only zero-area Triangles"""
+
+    strip = magpy.current.TriangleStrip(
+        vertices=[[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
+        current=10.1,
+        position=([1,2,3])
+    )
+    H1 = magpy.getH(
+        sources = strip,
+        observers = magpy.Sensor(pixel=[(2,3,4)]),
+    )
+    assert np.all(H1==0)
