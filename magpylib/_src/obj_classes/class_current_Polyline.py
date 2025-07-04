@@ -55,8 +55,7 @@ class Polyline(BaseCurrent):
     Examples
     --------
     `Polyline` objects are magnetic field sources. In this example we compute the H-field in A/m
-    of a square-shaped line-current with 1 A current at the observer position (1,1,1) given in
-    units of m:
+    of a square-shaped line-current with 1 A current at the observer position (1,1,1) cm:
 
     >>> import numpy as np
     >>> import magpylib as magpy
