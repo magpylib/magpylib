@@ -112,7 +112,7 @@ Keep in mind that there are many factors that can cause discrepancies between yo
 
 1. **Sensor position errors:** Even small misalignments — less than 100 µm — can significantly affect the measurement. The sensitive element inside a sensor package may be offset by 10–100 µm or slightly rotated, introducing notable deviations.
 
-2. **Sensor errors:** The sensor may not be properly calibrated or may operate outside its optimal measurement range. Even well-calibrated sensors can exhibit systematic errors of several percent of their full scale. In addition, sensitive elements, e.g. Hall cells, are finite sized and return the mean field in their sensitive volume. In comparison, Magpylib considers ideal point-wise sensors with zero offset, infinite linear range and zero noise. 
+2. **Sensor errors:** The sensor may not be properly calibrated or may operate outside its optimal measurement range. Even well-calibrated sensors can exhibit systematic errors of several percent of their full scale. In addition, sensitive elements, e.g. Hall cells, are finite sized and return the mean field in their sensitive volume. In comparison, Magpylib considers ideal point-wise sensors with zero offset, infinite linear range and zero noise.
 
 3. **External stray fields:** Ambient magnetic fields — such as the geomagnetic field — or interference from nearby electronic equipment or magnetic objects (e.g. metal stands or tools) can distort the measurements.
 
