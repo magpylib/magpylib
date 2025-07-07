@@ -26,11 +26,11 @@ Magnet datasheets typically include a table of technical material specifications
 
 ## Material Response
 
-Magpylib magnets represent bodies with homogeneous magnetic polarization. A real magnet, however, has material response and "demagnetizes" itself resulting in a polarization distribution throughout the magnet that is inhomogeneous and always lower than the remanence. A Magpylib magnet, beiing a homogeneous body, can only catch the mean of the reduced polarization. The following sections explain what happens, and how to estimate the correct value.
+Magpylib magnets represent bodies with homogeneous magnetic polarization. A real magnet, however, has material response and "demagnetizes" itself resulting in a polarization distribution throughout the magnet that is inhomogeneous and always lower than the remanence. A Magpylib magnet, being a homogeneous body, can only model the mean of the reduced polarization. The following sections explain what happens, and how to estimate the correct value.
 
 %How much lower depends strongly on the shape of the magnet and its demagnetization curve, characterized in simple cases by material coercivity $H_{c,J}$ or permeability $\mu_r$.
 
-More detailed explanation of these phenomena are found on the [Encyclopedia Magnetica](https://www.e-magnetica.pl/doku.php/coercivity), or in the textbook [Introduction to the Theory of Ferromagnetism](https://books.google.at/books/about/Introduction_to_the_Theory_of_Ferromagne.html?id=9RvNuIDh0qMC&redir_esc=y). If you are interested in modelling inhomogenous magnets you can make use of the [magpylib-material-response](https://github.com/magpylib/magpylib-material-response) package.
+More detailed explanations of these phenomena are found on the [Encyclopedia Magnetica](https://www.e-magnetica.pl/doku.php/coercivity), or in the textbook [Introduction to the Theory of Ferromagnetism](https://books.google.at/books/about/Introduction_to_the_Theory_of_Ferromagne.html?id=9RvNuIDh0qMC&redir_esc=y). If you are interested in modelling inhomogenous magnets you can make use of the [magpylib-material-response](https://github.com/magpylib/magpylib-material-response) package.
 
 
 %and is expressed in the data sheet through the permeance coefficient lines (grey lines). The numbers at the end indicate the typical magnet length to diameter ratio (L/D). you should find B-H curves and J-H curves. These curves coincide at $H=0$, giving the intrinisic material remanence $B_r$. This is the `polarization` magnitude of a magpylib magnet when there is no material response.
@@ -49,7 +49,7 @@ More detailed explanation of these phenomena are found on the [Encyclopedia Magn
 
 ### Intrinsic Hysteresis Loop
 
-The intrinsic Hysteresis loop relates the controlled H-field to the resulting polarization $J$ (or magnetization M) in a material sample volume. The intrinsic loop does not depend on sample volume size, shape, and surroundings, but only on the material properties and the history $H(t)$ - with different histories the same H-field can result in different polarizations. The intrinsic hysteresis loop of a material used for permanent magnets typically looks like this.
+The intrinsic hysteresis loop relates the controlled external H-field to the resulting polarization $J$ (or magnetization $M$) in a material sample volume. The intrinsic loop does not depend on sample volume size, shape, and surroundings, but only on the material properties and the history $H(t)$ - with different histories the same H-field can result in different polarizations. The intrinsic hysteresis loop of a material used for permanent magnets typically looks like the following:
 
 %Hysteresis loops relate the applied H-field to the resulting B-field, polarization J, or magnetization M of a material.
 %*within a defined volume*. This relationship strongly depends on the volume’s size, shape, and surrounding materials.
@@ -69,10 +69,10 @@ The intrinsic Hysteresis loop relates the controlled H-field to the resulting po
 ::::
 
 **1st quadrant (create a magnet):**
-We start with $ J = 0 $ and $ H = 0 $; the material is unmagnetized and there is no magnetic field. We increase $H$ and the polarization $ J $ follows the *virgin curve*—a nonlinear rise toward the saturation polarization $ J_s $. Beyond this point, further increases in $ H $ have no effect on $ J $; the material is saturated. We are now on the *major loop* and cannot easily return to the virgin curve, because as we gradually reduce $H$ back to zero, the material retains a high level of polarization. At $ H = 0 $, the remaining polarization is called the *remanent polarization* $ J_r $, which equals the remanent flux density $ B_r $. We have now created a permanent magnet.
+We start with $ J = 0 $ and $ H = 0 $; the material is unmagnetized and there is no magnetic field. We increase $H$ and the polarization $ J $ follows the *virgin curve* — a nonlinear rise toward the saturation polarization $ J_s $. Beyond this point, further increases in $ H $ have no effect on $ J $; the material is saturated. We are now on the *major loop* and cannot easily return to the virgin curve, because as we gradually reduce $H$ back to zero, the material retains a high level of polarization. At $ H = 0 $, the remaining polarization is called the *remanent polarization* $ J_r $, which equals the remanent flux density $ B_r $. We have now created a permanent magnet.
 
 **2nd quadrant (demagnetize a magnet):**
-Next, we increase the H-field in magnitude but let it point opposite to the initial direction, thus acting against the existing polarization. Initially, $ J $ remains nearly unchanged, but as the opposing field strengthens, the response becomes nonlinear and $ J $ decreases rapidly. When $ J $ reaches zero, the H-field equals the *intrinsic coercive field* $ H_{c,J} $, a value that characterizes the material’s resistance to demagnetization. In this quadrant the hysteresis loop is often called the *demagnetization curve*. Materials with a large $ H_{c,J} $ (also denoted $ H_{ci} $) are referred to as *hard magnetic*, capable of maintaining their magnetization even under strong opposing fields.
+Next, we increase the H-field in magnitude but make it point opposite to the initial direction, thus acting against the existing polarization. Initially, $ J $ remains nearly unchanged, but as the opposing field strengthens, the response becomes nonlinear and $ J $ decreases rapidly. When $ J $ reaches zero, the H-field equals the *intrinsic coercive field* $ H_{c,J} $, a value that characterizes the material’s resistance to demagnetization. In this quadrant the hysteresis loop is often called the *demagnetization curve*. Materials with a large $ H_{c,J} $ (also denoted $ H_{ci} $) are referred to as *hard magnetic*, capable of maintaining their magnetization even under strong opposing fields.
 
 **3rd and 4th quadrants:**
 In the third quadrant, the behavior mirrors that of the first: as $ H $ increases beyond $ H_{c,J} $ in the negative direction, the polarization rapidly aligns with the field, reaching saturation at $ J = -J_s $. Reversing the field once more brings us through the fourth quadrant, completing the hysteresis loop.
@@ -85,14 +85,14 @@ If the applied H-field is zero in an experiment, it may seem intuitive to use th
 
 ![demagnetization field simulation](../../../_static/images/examples_tutorial_magnet_fieldcomparison.png)
 
-Building on the [streamplot example](examples-vis-mpl-streamplot), the left panel shows the cross-section of a cuboid magnet with uniform polarization, while the right panel illustrates the H-field generated by this magnet. Inside the magnet, the H-field is opposed to $J$. The average H-field inside the magnet is commonly referred to as the *working point*.
+Building on the [streamplot example](examples-vis-mpl-streamplot), the left panel shows the cross-section of a cuboid magnet with uniform polarization, while the right panel illustrates the H-field generated by this magnet. Inside the magnet, the H-field is opposed to $J$. The average H-field inside the magnet is commonly referred to as the *working point* of the magnet.
 
-Consequently, the magnet’s mean polarization is not equal to $ B_r $, but is instead a lower value $ J $ on the *demagnetization curve* (2nd quadrant) corresponding to the working point.
+Consequently, the magnet’s mean polarization is not equal to $ B_r $, but is instead a lower value $ J $ on the *demagnetization curve* (2nd quadrant, as the H-field is opposite to the polarization) corresponding to the working point.
 
 (examples-tutorial-modeling-magnets-findJ)=
 ### Finding the Correct Polarization
 
-To determine the correct mean polarization of a magnet, we must compute its *working point*—the average internal H-field—and then read the corresponding $ J $ from the respective J–H curve provided in the data sheet. However, calculating this internal field is not trivial, as it depends not only on the magnet geometry but also on it's material response.
+To determine the correct mean polarization of a magnet, we must compute its *working point* — the average internal H-field — and then read the corresponding $ J $ from the respective J–H curve provided in the data sheet. However, calculating this internal field is not trivial, as it depends not only on the magnet geometry but also on it's material response.
 
 Fortunately, well-prepared datasheets often include working point information directly.
 
@@ -110,11 +110,11 @@ Once identified, the corresponding magnetic polarization $ J_W $ can be read dir
 
 Keep in mind that there are many factors that can cause discrepancies between your simulation and experimental results. Below are some of the most common issues:
 
-1. **Sensor position errors:** Even small misalignments—less than 100 µm—can significantly affect the measurement. The sensitive element inside a sensor package may be offset by 10–100 µm or slightly rotated, introducing notable deviations.
+1. **Sensor position errors:** Even small misalignments — less than 100 µm — can significantly affect the measurement. The sensitive element inside a sensor package may be offset by 10–100 µm or slightly rotated, introducing notable deviations.
 
-2. **Sensor errors:** The sensor may not be properly calibrated or may operate outside its optimal measurement range. Even well-calibrated sensors can exhibit systematic errors of several percent of their full scale. In addition, sensitive elements, e.g. Hall cells, are finite sized and return the mean field in their sensitive volume.
+2. **Sensor errors:** The sensor may not be properly calibrated or may operate outside its optimal measurement range. Even well-calibrated sensors can exhibit systematic errors of several percent of their full scale. In addition, sensitive elements, e.g. Hall cells, are finite sized and return the mean field in their sensitive volume. In comparison, Magpylib considers ideal point-wise sensors with zero offset, infinite linear range and zero noise. 
 
-3. **External stray fields:** Ambient magnetic fields—such as the geomagnetic field—or interference from nearby electronic equipment or magnetic objects (e.g. metal stands or tools) can distort the measurements.
+3. **External stray fields:** Ambient magnetic fields — such as the geomagnetic field — or interference from nearby electronic equipment or magnetic objects (e.g. metal stands or tools) can distort the measurements.
 
 4. **Magnet quality deviations:** Off-the-shelf magnets often deviate from their datasheet specifications:
    - The magnetic polarization amplitude may vary by several percent due to prior demagnetization or lower material grade.
@@ -126,15 +126,15 @@ Keep in mind that there are many factors that can cause discrepancies between yo
 
 In this example, we demonstrate how to align theory and experiment by measuring and simulating the linear motion of a magnet above a sensor.
 
-We use a cylindrical Neodymium magnet from Bomatec with diameter $ D = 8\,\mathrm{mm} $, height $ H = 2\,\mathrm{mm} $, axial magnetization, and made of BMN35 material with a nominal remanence of $ B_{r,\mathrm{nom}} = 1220\,\mathrm{mT} $ and a minimum guaranteed value of $ B_{r,\mathrm{min}} = 1170\,\mathrm{mT} $. As the sensor, we use an Infineon TLE493D, a true 3D Hall sensor.
+We use a cylindrical neodymium magnet from Bomatec with diameter $ D = 8\,\mathrm{mm} $, height $ H = 2\,\mathrm{mm} $, axial magnetization, and made of BMN35 material with a nominal remanence of $ B_{r,\mathrm{nom}} = 1220\,\mathrm{mT} $ and a minimum guaranteed value of $ B_{r,\mathrm{min}} = 1170\,\mathrm{mT} $. As the sensor, we use an Infineon TLE493D, a true 3D Hall sensor.
 
 Both components are mounted on our custom test bench that allows precise relative positioning between the magnet and sensor in six degrees of freedom.
 
 ![](../../../_static/images/examples_tutorial_magnet_exp01.png)
 
-While the relative positioning is highly accurate—limited mainly by the motor resolution, typically a few micrometers and millidegrees—absolute positioning remains a challenge. Even with precise tools (e.g. touch probe, interferometer), achieving accurate 6D alignment between the sensor and the magnet is difficult. This is further complicated by unknown offsets or misalignments of the sensing element within the sensor package.
+While the relative positioning is highly accurate — limited mainly by the motor resolution, typically a few micrometers and millidegrees — absolute positioning remains a challenge. Even with precise tools (e.g. touch probe, interferometer), achieving accurate 6D alignment between the sensor and the magnet is difficult. This is further complicated by unknown offsets or misalignments of the sensing element within the sensor package.
 
-Due to the lack of a robust common reference, we position the magnet above the sensor by a combination of visual alignment and touch probing, estimating a surface-to-surface distance of 6 mm.
+Due to the lack of a robust common reference, we position the sensor below the magnet by a combination of visual alignment and touch probing, estimating a surface-to-surface distance of 6 mm.
 
 The magnet is then moved linearly along the x-axis from –15 mm to +15 mm in 61 steps. At each step, we perform 1000 measurements and average the results to reduce sensor noise.
 
@@ -184,7 +184,7 @@ def plot_field(Bsim, Bexp, xs):
 plot_field(Bsim, Bexp, xs)
 ```
 
-The figure shows general qualitative and quantitative agreement between simulation and measurement. However, the remaining discrepancies are still significant—unsurprising, as we have not yet accounted for any tolerances.
+The figure shows general qualitative and quantitative agreement between simulation and measurement. However, the remaining discrepancies are still significant — unsurprising, as we have not yet accounted for any tolerances.
 
 To address this, we introduce seven tolerance parameters:
 - The sensor may be displaced in all six degrees of freedom: three translations and three rotations.
@@ -192,7 +192,7 @@ To address this, we introduce seven tolerance parameters:
 
 We incorporate these tolerances into our simulation model and estimate their values by fitting to the experimental data. To do this, we use a differential evolution algorithm that minimizes a cost function based on the squared differences between simulated and measured magnetic field values.
 
-The following code demonstrates how this optimization is performed.
+The following code demonstrates how this optimization is performed:
 
 ```{code-cell} ipython3
 :tags: [hide-input]
@@ -268,7 +268,7 @@ Now we find excellent agreement between simulation and experiment.
 
 Let’s take a closer look at the fitted parameters:
 
-- The estimated sensor displacement is less than 1 mm in all directions—remarkably close, considering the positioning was done “by eye.” The rotational misalignments are also modest, below 1.5°. Yet, despite these relatively small deviations, they had a significant impact on the first simulation result. This highlights how sensitive magnetic field measurements can be to even subtle misalignments.
+- The estimated sensor displacement is less than 1 mm in all directions — remarkably close, considering the positioning was done “by eye.” The rotational misalignments are also modest, below 1.5°. Yet, despite these relatively small deviations, they had a significant impact on the first simulation result. This highlights how sensitive magnetic field measurements can be to even subtle misalignments.
 
 - The fitted magnetic polarization is approximately **1126 mT**, which is notably below the specified minimum remanence value of $ B_{r,\mathrm{min}} = 1170\,\mathrm{mT} $. However, if we return to the [datasheet](examples-tutorial-modeling-magnets-findJ) and take demagnetization effects into account, this result becomes plausible. In fact, 1126 mT corresponds well to the polarization in the expected working point when the material remanence is near its lower limit.
 
