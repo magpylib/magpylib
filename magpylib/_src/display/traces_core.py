@@ -100,6 +100,27 @@ def make_Polyline(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     return traces
 
 
+def make_TriangleStrip(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
+    """
+    Creates the plotly scatter3d parameters for a TriangleStrip current in a dictionary based on the
+    provided arguments.
+    """
+    style = obj.style
+    if obj.vertices is None:
+        trace = create_null_dim_trace(color=style.color)
+        return {**trace, **kwargs}
+
+    faces = [(i, i+1, i+2) for i in range(len(obj.vertices) - 2 )]
+    
+    traces = []
+    # get faces
+    trace = make_BaseTriangularMesh(
+            "plotly-dict", vertices=obj.vertices, faces=faces, color=style.color
+        )
+    traces.append(trace)
+    return traces
+
+
 def make_Circle(obj, base=72, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     """
     Creates the plotly scatter3d parameters for a Circle current in a dictionary based on the
