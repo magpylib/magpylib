@@ -256,7 +256,7 @@ def get_unit_factor(unit_input, *, target_unit, deci_centi=True):
             pref, *suff = unit_input_str
             suff = "".join(suff)
         if suff == target_unit:
-            factor_power = prefs.get(pref, None)
+            factor_power = prefs.get(pref)
 
     if factor_power is None or len(unit_input_str) > 2:
         valid_inputs = [f"{k}{target_unit}" for k in prefs]
