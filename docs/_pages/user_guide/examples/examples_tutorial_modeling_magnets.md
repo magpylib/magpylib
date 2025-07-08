@@ -30,7 +30,7 @@ Magpylib magnets represent bodies with homogeneous magnetic polarization. A real
 
 %How much lower depends strongly on the shape of the magnet and its demagnetization curve, characterized in simple cases by material coercivity $H_{c,J}$ or permeability $\mu_r$.
 
-More detailed explanations of these phenomena are found on the [Encyclopedia Magnetica](https://www.e-magnetica.pl/doku.php/coercivity), or in the textbook [Introduction to the Theory of Ferromagnetism](https://books.google.at/books/about/Introduction_to_the_Theory_of_Ferromagne.html?id=9RvNuIDh0qMC&redir_esc=y). If you are interested in modelling inhomogenous magnets you can make use of the [magpylib-material-response](https://github.com/magpylib/magpylib-material-response) package.
+More detailed explanations of these phenomena are found on the [Encyclopedia Magnetica](https://www.e-magnetica.pl/doku.php/coercivity), or in the textbook [Introduction to the Theory of Ferromagnetism](https://books.google.at/books/about/Introduction_to_the_Theory_of_Ferromagne.html?id=9RvNuIDh0qMC&redir_esc=y). If you are interested in modelling inhomogeneous magnets you can make use of the [magpylib-material-response](https://github.com/magpylib/magpylib-material-response) package.
 
 
 %and is expressed in the data sheet through the permeance coefficient lines (grey lines). The numbers at the end indicate the typical magnet length to diameter ratio (L/D). you should find B-H curves and J-H curves. These curves coincide at $H=0$, giving the intrinisic material remanence $B_r$. This is the `polarization` magnitude of a magpylib magnet when there is no material response.
