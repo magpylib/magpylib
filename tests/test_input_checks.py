@@ -80,7 +80,7 @@ def test_input_objects_pixel_good(pixel):
     """good input: magpy.Sensor(pixel=pixel)"""
 
     sens = magpy.Sensor(pixel=pixel)
-    np.testing.assert_allclose(sens.pixel, pixel)
+    np.testing.assert_allclose(sens.pixel, pixel) # type: ignore
 
 
 @pytest.mark.parametrize(
@@ -166,7 +166,7 @@ def test_input_objects_current_good(current):
     if current is None:
         assert src.current is None
     else:
-        np.testing.assert_allclose(src.current, current)
+        np.testing.assert_allclose(src.current, current) # type: ignore
 
 
 @pytest.mark.parametrize(
@@ -204,7 +204,7 @@ def test_input_objects_diameter_good(diameter):
     if diameter is None:
         assert src.diameter is None
     else:
-        np.testing.assert_allclose(src.diameter, diameter)
+        np.testing.assert_allclose(src.diameter, diameter) # type: ignore
 
 
 @pytest.mark.parametrize(
@@ -244,7 +244,7 @@ def test_input_objects_vertices_good(vertices):
     if vertices is None:
         assert src.vertices is None
     else:
-        np.testing.assert_allclose(src.vertices, vertices)
+        np.testing.assert_allclose(src.vertices, vertices) # type: ignore
 
 
 @pytest.mark.parametrize(
@@ -291,8 +291,8 @@ def test_input_objects_magnetization_moment_good(pol_or_mom):
         assert src.polarization is None
         assert src2.moment is None
     else:
-        np.testing.assert_allclose(src.polarization, pol_or_mom)
-        np.testing.assert_allclose(src2.moment, pol_or_mom)
+        np.testing.assert_allclose(src.polarization, pol_or_mom) # type: ignore
+        np.testing.assert_allclose(src2.moment, pol_or_mom) # type: ignore
 
 
 @pytest.mark.parametrize(
@@ -339,7 +339,7 @@ def test_input_objects_dimension_cuboid_good(dimension):
     if dimension is None:
         assert src.dimension is None
     else:
-        np.testing.assert_allclose(src.dimension, dimension)
+        np.testing.assert_allclose(src.dimension, dimension) # type: ignore
 
 
 @pytest.mark.parametrize(
@@ -381,7 +381,7 @@ def test_input_objects_dimension_cylinder_good(dimension):
     if dimension is None:
         assert src.dimension is None
     else:
-        np.testing.assert_allclose(src.dimension, dimension)
+        np.testing.assert_allclose(src.dimension, dimension) # type: ignore
 
 
 @pytest.mark.parametrize(
@@ -427,7 +427,7 @@ def test_input_objects_dimension_cylinderSegment_good(dimension):
     if dimension is None:
         assert src.dimension is None
     else:
-        np.testing.assert_allclose(src.dimension, dimension)
+        np.testing.assert_allclose(src.dimension, dimension) # type: ignore
 
 
 @pytest.mark.parametrize(
@@ -720,9 +720,9 @@ def test_input_rotate_axis_bad(axis):
 @pytest.mark.parametrize(
     "observers",
     [
-        magpy.Sensor(),
-        magpy.Collection(magpy.Sensor()),
-        magpy.Collection(magpy.Sensor(), magpy.Sensor()),
+        magpy.Sensor(position=(.1,-1,.3)),
+        magpy.Collection(magpy.Sensor(position=(.1,-1,.3))),
+        magpy.Collection(magpy.Sensor(position=(.1,-1,.3)), magpy.Sensor()),
         (1, 2, 3),
         [(1, 2, 3)] * 2,
         [[(1, 2, 3)] * 2] * 3,
@@ -1010,4 +1010,4 @@ def test_magnet_polarization_magnetization_input():
     c = magpy.magnet.Cuboid()
     c.magnetization = mag
     np.testing.assert_allclose(mag, c.magnetization)
-    np.testing.assert_allclose(mag * (4 * np.pi * 1e-7), c.polarization)
+    np.testing.assert_allclose(mag * (4 * np.pi * 1e-7), c.polarization) # type: ignore
