@@ -4,8 +4,6 @@ convenient creation of 3D traces for commonly used objects in the
 library.
 """
 
-from __future__ import annotations
-
 __all__ = [
     "make_Arrow",
     "make_Cuboid",

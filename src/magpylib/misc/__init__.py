@@ -2,8 +2,6 @@
 The `magpylib.misc` sub-package contains miscellaneous source objects.
 """
 
-from __future__ import annotations
-
 __all__ = ["CustomSource", "Dipole", "Triangle"]
 
 from magpylib._src.obj_classes.class_misc_CustomSource import CustomSource

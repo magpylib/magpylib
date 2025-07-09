@@ -3,7 +3,6 @@
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=protected-access
-from __future__ import annotations
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R

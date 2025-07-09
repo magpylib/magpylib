@@ -1,7 +1,5 @@
 """Display function codes"""
 
-from __future__ import annotations
-
 import warnings
 from contextlib import contextmanager
 from importlib import import_module

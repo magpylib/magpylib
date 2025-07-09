@@ -2,8 +2,6 @@
 
 """Magnet Cuboid class code"""
 
-from __future__ import annotations
-
 from typing import ClassVar
 
 from magpylib._src.display.traces_core import make_Cuboid
