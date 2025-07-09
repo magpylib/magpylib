@@ -45,11 +45,11 @@ class TriangularMesh(BaseMagnet):
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
 
-    vertices: ndarray, shape (n,3)
+    vertices: array_like, shape (n,3), default=`None`
         A set of points in units of m in the local object coordinates from which the
-        triangular faces of the mesh are constructed by the additional `faces`input.
+        triangular faces of the mesh are constructed by the additional `faces` input.
 
-    faces: ndarray, shape (n,3)
+    faces: array_like, shape (n,3), default=`None`
         Indices of vertices. Each triplet represents one triangle of the mesh.
 
     polarization: array_like, shape (3,), default=`None`
