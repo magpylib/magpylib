@@ -496,9 +496,7 @@ def current_sheet_Hfield(
         current_densities=current_densities,
     )
 
-    H = r.apply(H, inverse=True)
-
-    return H
+    return r.apply(H, inverse=True)
 
 
 def BHJM_current_sheet(
@@ -525,9 +523,8 @@ def BHJM_current_sheet(
     if field in ["J", "M"]:
         return observers * 0.0
 
-    raise ValueError(  # pragma: no cover
-        f"`output_field_type` must be one of ('B', 'H', 'J', 'M'), got {field!r}"
-    )
+    msg = f"`output_field_type` must be one of ('B', 'H', 'J', 'M'), got {field!r}"
+    raise ValueError(msg)  # pragma: no cover
 
 
 def BHJM_current_strip(
@@ -610,9 +607,9 @@ def BHJM_current_strip(
 # ) -> np.ndarray:
 #     """
 #     - translate TriangleStrip field to BHJM
-#     MISSING: If multiple TriangleStrips with different vertex lenghts are given
+#     MISSING: If multiple TriangleStrips with different vertex lengths are given
 #         - add function that tests this
-#         - compute for each "ragged instance" separately (its just an edge case - noone cares)
+#         - compute for each "ragged instance" separately (its just an edge case - no one cares)
 #     """
 
 #     # create triangles from vertices

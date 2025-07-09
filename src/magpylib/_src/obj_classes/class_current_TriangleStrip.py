@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from magpylib._src.display.traces_core import make_TriangleStrip
 from magpylib._src.fields.field_BH_current_sheet import BHJM_current_strip
 from magpylib._src.input_checks import check_format_input_vertices
@@ -74,7 +76,7 @@ class TriangleStrip(BaseCurrent):
 
     # pylint: disable=dangerous-default-value
     _field_func = staticmethod(BHJM_current_strip)
-    _field_func_kwargs_ndim = {
+    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "current": 1,
         "vertices": 3,
     }
