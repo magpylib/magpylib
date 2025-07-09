@@ -161,3 +161,6 @@ __temp*.py
 
 # uv
 uv.lock
+
+# VS Code settings
+.vscode/
