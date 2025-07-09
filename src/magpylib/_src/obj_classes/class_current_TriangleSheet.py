@@ -2,12 +2,13 @@
 
 """TriangleSheet current class code"""
 
-from magpylib._src.display.traces_core import make_TriangleSheet
-from magpylib._src.fields.field_BH_current_sheet import BHJM_current_sheet
+from __future__ import annotations
+
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.utility import unit_prefix
 
-class TriangleStrip():
+
+class TriangleStrip:
     """Surface current density flowing along triangular sheets.
 
     Can be used as `sources` input for magnetic field computation.
@@ -110,4 +111,3 @@ class TriangleStrip():
         if self.vertices is None:
             return "no vertices"
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
-

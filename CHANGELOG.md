@@ -1,10 +1,15 @@
 # Changelog
 
 ## [Unreleased] - YYYY-MM-DD
-- Added the `current_sheet_Hfield` core computation function, and the classes `TriangleStrip` and `TriangleSheet` enabling current sheets in the object oriented interface. ([#788](https://github.com/magpylib/magpylib/issues/788))
-- Improved docstrings by adding examples where missing and by using rounding in all examples to avoid doctest fails.
+
+- Added the `current_sheet_Hfield` core computation function, and the classes
+  `TriangleStrip` and `TriangleSheet` enabling current sheets in the object
+  oriented interface. ([#788](https://github.com/magpylib/magpylib/issues/788))
+- Improved docstrings by adding examples where missing and by using rounding in
+  all examples to avoid doctest fails.
 - Fixed a bug where a core getH would return the B-field.
-- Input `in_out` is by default set to `"auto"` for collections to avoiding ambiguities.
+- Input `in_out` is by default set to `"auto"` for collections to avoiding
+  ambiguities.
 - Improve documentation
   ([#829](https://github.com/magpylib/magpylib/issues/829))
 

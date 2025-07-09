@@ -1,6 +1,7 @@
 """
 The `magpylib.current` subpackage contains all electric current classes.
 """
+
 from __future__ import annotations
 
 __all__ = ["Circle", "Line", "Loop", "Polyline", "TriangleStrip"]

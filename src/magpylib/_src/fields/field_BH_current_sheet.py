@@ -3,6 +3,7 @@ Implementations of analytical expressions of current sheet
 """
 
 # pylint: disable=too-many-positional-arguments
+from __future__ import annotations
 
 import numpy as np
 from scipy.constants import mu_0 as MU0
@@ -183,16 +184,10 @@ def elementar_current_sheet_Hfield(
     sqrt5 = np.sqrt(u2**2 + v2**2)
 
     H[mask_general, 0] = (
-        np.arctan(
-            (-u2 * (y**2 + z**2) + v2 * x * y) / (v2 * z * sqrt1)
-        )
-        + np.arctan(
-            (v2 * y * (u1 - x) - (u1 - u2) * (y**2 + z**2))
-            / (v2 * z * sqrt2)
-        )
+        np.arctan((-u2 * (y**2 + z**2) + v2 * x * y) / (v2 * z * sqrt1))
+        + np.arctan((v2 * y * (u1 - x) - (u1 - u2) * (y**2 + z**2)) / (v2 * z * sqrt2))
         - np.arctan(
-            (-u2 * (y**2 + z**2) - v2**2 * x + v2 * y * (u2 + x))
-            / (v2 * z * sqrt3)
+            (-u2 * (y**2 + z**2) - v2**2 * x + v2 * y * (u2 + x)) / (v2 * z * sqrt3)
         )
         - np.arctan(
             (
@@ -208,25 +203,20 @@ def elementar_current_sheet_Hfield(
         ju * np.arctanh(x / sqrt1)
         + ju * np.arctanh((u1 - x) / sqrt2)
         - (ju * (u1 - u2) - jv * v2)
-        * np.arctanh(
-            (u1**2 - u1 * (u2 + x) + u2 * x + v2 * y) / (sqrt4 * sqrt2)
-        ) / sqrt4
+        * np.arctanh((u1**2 - u1 * (u2 + x) + u2 * x + v2 * y) / (sqrt4 * sqrt2))
+        / sqrt4
         + (ju * (u1 - u2) - jv * v2)
         * np.arctanh(
-            (u1 * (u2 - x) - u2**2 + u2 * x + v2 * (-v2 + y)) / ( sqrt4 * sqrt3)
-        ) / sqrt4
-        + (ju * u2 + jv * v2)
-        * np.arctanh(
-            (-u2 * x - v2 * y) / (sqrt5 * sqrt1)
-        ) / sqrt5
+            (u1 * (u2 - x) - u2**2 + u2 * x + v2 * (-v2 + y)) / (sqrt4 * sqrt3)
+        )
+        / sqrt4
+        + (ju * u2 + jv * v2) * np.arctanh((-u2 * x - v2 * y) / (sqrt5 * sqrt1)) / sqrt5
         - (ju * u2 + jv * v2)
-        * np.arctanh(
-            (u2**2 - u2 * x + v2 * (v2 - y)) / (sqrt5 * sqrt3)
-        ) / sqrt5
+        * np.arctanh((u2**2 - u2 * x + v2 * (v2 - y)) / (sqrt5 * sqrt3))
+        / sqrt5
     ) / (u1 * v2)
 
     if special_cases:
-
         # CASE: Observer in plane ################################################################
         x, y, z, u1, u2, v2, ju, jv = assign_masks(
             observers, coordinates, current_densities, mask_plane
@@ -289,7 +279,10 @@ def elementar_current_sheet_Hfield(
             * np.arctanh(
                 (u1 - u2)
                 * (u1 - x)
-                / (np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2) * np.sqrt((u1 - x) ** 2))
+                / (
+                    np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+                    * np.sqrt((u1 - x) ** 2)
+                )
             )
             / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
             + (ju * u2 + jv * v2)
@@ -299,7 +292,9 @@ def elementar_current_sheet_Hfield(
             )
             / np.sqrt(u2**2 + v2**2)
             - (ju * u2 + jv * v2)
-            * np.arctanh(u2 * (u1 - x) / (np.sqrt(u2**2 + v2**2) * np.sqrt((u1 - x) ** 2)))
+            * np.arctanh(
+                u2 * (u1 - x) / (np.sqrt(u2**2 + v2**2) * np.sqrt((u1 - x) ** 2))
+            )
             / np.sqrt(u2**2 + v2**2)
         ) / (u1 * v2)
 
@@ -312,7 +307,10 @@ def elementar_current_sheet_Hfield(
             -ju
             * np.arctanh(
                 (u1 * v2 - u2 * y)
-                / (v2 * np.sqrt(u1**2 - 2 * u1 * u2 * y / v2 + y**2 * (u2**2 / v2**2 + 1)))
+                / (
+                    v2
+                    * np.sqrt(u1**2 - 2 * u1 * u2 * y / v2 + y**2 * (u2**2 / v2**2 + 1))
+                )
             )
             + ju
             * np.arctanh(
@@ -378,7 +376,9 @@ def elementar_current_sheet_Hfield(
                 * (v2 - y)
                 / (
                     v2
-                    * np.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
+                    * np.sqrt(
+                        (v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2
+                    )
                 )
             )
             - v2
@@ -406,7 +406,9 @@ def elementar_current_sheet_Hfield(
                 * (-u1 * u2 + u2**2 + v2**2)
                 / (
                     v2
-                    * np.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
+                    * np.sqrt(
+                        (v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2
+                    )
                     * np.sqrt(u2**2 + v2**2)
                 )
             )
@@ -521,10 +523,10 @@ def BHJM_current_sheet(
         return BHJM * MU0
 
     if field in ["J", "M"]:
-        return observers*0.
+        return observers * 0.0
 
     raise ValueError(  # pragma: no cover
-        "`output_field_type` must be one of ('B', 'H', 'J', 'M'), " f"got {field!r}"
+        f"`output_field_type` must be one of ('B', 'H', 'J', 'M'), got {field!r}"
     )
 
 
@@ -536,13 +538,13 @@ def BHJM_current_strip(
 ) -> np.ndarray:
     """
     Translates TriangleStrip inputs to core BHJM current_sheet
-    
+
     Note: This is not easily vectorized, as vertices inputs can be ragged arrays
     when two TriangleStrips with different vertex lengths are given.
     """
-    
+
     # number of triangles per instance
-    no_tris = [len(v)-2 for v in vertices]
+    no_tris = [len(v) - 2 for v in vertices]
     n = sum(no_tris)
 
     # create obs input
@@ -552,24 +554,29 @@ def BHJM_current_strip(
     VERT = np.zeros((n, 3, 3), dtype=float)
     jj = 0
     for v in vertices:
-        for i in range(len(v)-2):
-            VERT[jj,0] = v[i]
-            VERT[jj,1] = v[i+1]
-            VERT[jj,2] = v[i+2]
+        for i in range(len(v) - 2):
+            VERT[jj, 0] = v[i]
+            VERT[jj, 1] = v[i + 1]
+            VERT[jj, 2] = v[i + 2]
             jj += 1
 
     # create current density input
-    v1 = (VERT[:,1] - VERT[:,0])
-    v2 = (VERT[:,2] - VERT[:,0])
-    v1v1 = np.sum(v1*v1, axis=1)
-    v2v2 = np.sum(v2*v2, axis=1)
-    v1v2 = np.sum(v1*v2, axis=1)
-    
+    v1 = VERT[:, 1] - VERT[:, 0]
+    v2 = VERT[:, 2] - VERT[:, 0]
+    v1v1 = np.sum(v1 * v1, axis=1)
+    v2v2 = np.sum(v2 * v2, axis=1)
+    v1v2 = np.sum(v1 * v2, axis=1)
+
     # catch two times the same vertex in one triangle
-    mask = (v2v2!=0)*(v1v1!=0)
-    
-    h = np.sqrt(v1v1[mask] - (v1v2[mask]**2/v2v2[mask]))
-    CD = v2[mask] / (np.sqrt(v2v2[mask]) * h / np.repeat(current, no_tris, axis=0)[mask])[:,np.newaxis]
+    mask = (v2v2 != 0) * (v1v1 != 0)
+
+    h = np.sqrt(v1v1[mask] - (v1v2[mask] ** 2 / v2v2[mask]))
+    CD = (
+        v2[mask]
+        / (np.sqrt(v2v2[mask]) * h / np.repeat(current, no_tris, axis=0)[mask])[
+            :, np.newaxis
+        ]
+    )
 
     # compute field for all instances
     BB = BHJM_current_sheet(
@@ -580,7 +587,7 @@ def BHJM_current_strip(
     )
     if np.any(~mask):
         # if some triangles are degenerated, their field is zero
-        BBB = np.zeros((n,3))
+        BBB = np.zeros((n, 3))
         BBB[mask] = BB
         BB = BBB
 
@@ -588,8 +595,8 @@ def BHJM_current_strip(
     B = np.zeros_like(observers, dtype=float)
 
     jj = 0
-    for i,nn in enumerate(no_tris):
-        B[i] = np.sum(BB[jj:jj+nn], axis=0)
+    for i, nn in enumerate(no_tris):
+        B[i] = np.sum(BB[jj : jj + nn], axis=0)
         jj += nn
 
     return B

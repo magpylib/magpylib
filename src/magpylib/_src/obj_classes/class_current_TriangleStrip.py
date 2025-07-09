@@ -2,11 +2,14 @@
 
 """TriangleStrip current class code"""
 
+from __future__ import annotations
+
 from magpylib._src.display.traces_core import make_TriangleStrip
 from magpylib._src.fields.field_BH_current_sheet import BHJM_current_strip
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.utility import unit_prefix
+
 
 class TriangleStrip(BaseCurrent):
     """Current flowing in straight lines along a Ribbon made of adjacent Triangles.
@@ -111,4 +114,3 @@ class TriangleStrip(BaseCurrent):
         if self.vertices is None:
             return "no vertices"
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
-

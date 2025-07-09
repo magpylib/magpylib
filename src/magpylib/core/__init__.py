@@ -7,6 +7,7 @@ from __future__ import annotations
 __all__ = [
     "current_circle_Hfield",
     "current_polyline_Hfield",
+    "current_sheet_Hfield",
     "dipole_Hfield",
     "magnet_cuboid_Bfield",
     "magnet_cylinder_axial_Bfield",
@@ -14,7 +15,6 @@ __all__ = [
     "magnet_cylinder_segment_Hfield",
     "magnet_sphere_Bfield",
     "triangle_Bfield",
-    "current_sheet_Hfield",
 ]
 
 from magpylib._src.fields.field_BH_circle import current_circle_Hfield

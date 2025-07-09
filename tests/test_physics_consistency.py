@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+
 import magpylib as magpy
 
 
@@ -233,59 +234,55 @@ def test_Polyline_vs_Infinite():
     np.testing.assert_allclose(Bls, Binfs)
 
 
-
 def test_TriangleStrip_VS_Cuboid():
     """Test if TriangleStrip current gives same field as Cuboid magnet
     using the current replacement picture.
     """
-    obs = [(0,0,0), (.1,.2,.3), (-1,-2,.1), (.5,.1,.2)]
+    obs = [(0, 0, 0), (0.1, 0.2, 0.3), (-1, -2, 0.1), (0.5, 0.1, 0.2)]
 
-    p1 = (-1,-1,-1)
-    p2 = (-1,-1, 1)
-    p3 = ( 1,-1,-1)
-    p4 = ( 1,-1, 1)
-    p5 = ( 1, 1,-1)
-    p6 = ( 1, 1, 1)
-    p7 = (-1, 1,-1)
+    p1 = (-1, -1, -1)
+    p2 = (-1, -1, 1)
+    p3 = (1, -1, -1)
+    p4 = (1, -1, 1)
+    p5 = (1, 1, -1)
+    p6 = (1, 1, 1)
+    p7 = (-1, 1, -1)
     p8 = (-1, 1, 1)
 
     ribbon = magpy.current.TriangleStrip(
-        vertices=[p1,p2,p3,p4,p5,p6,p7,p8,p1,p2],
+        vertices=[p1, p2, p3, p4, p5, p6, p7, p8, p1, p2],
         current=2,
     )
-    ribbon.position = np.linspace((-.1,-.1,-.1), (.1,.2,.3), 10)
+    ribbon.position = np.linspace((-0.1, -0.1, -0.1), (0.1, 0.2, 0.3), 10)
     H1 = ribbon.getH(obs)
 
     cube = magpy.magnet.Cuboid(
-        dimension=(2,2,2),
-        polarization=(0,0,1),
+        dimension=(2, 2, 2),
+        polarization=(0, 0, 1),
     )
-    cube.position = np.linspace((-.1,-.1,-.1), (.1,.2,.3), 10)
+    cube.position = np.linspace((-0.1, -0.1, -0.1), (0.1, 0.2, 0.3), 10)
     H2 = cube.getB(obs)
 
-    err = np.linalg.norm(H1-H2, axis=1) / np.linalg.norm(H1+H2, axis=1)
+    err = np.linalg.norm(H1 - H2, axis=1) / np.linalg.norm(H1 + H2, axis=1)
     assert np.all(err < 1e-12), f"Error in B-field comparison: {err}"
-
-
 
 
 def test_TriangleStrip_VS_Polyline():
     """Test if TriangleStrip gives same field as Polyline"""
-    h=0.001
+    h = 0.001
 
     ribbon = magpy.current.TriangleStrip(
         vertices=[[0, 0, 0], [0, h, 0], [1, 0, 0], [1, h, 0]],
         current=10.1,
     )
     line = magpy.current.Polyline(
-        vertices=[[0, h/2, 0], [1, h/2, 0]],
+        vertices=[[0, h / 2, 0], [1, h / 2, 0]],
         current=10.1,
     )
 
-    obse = [(.1,.2,.3), (-1,-2,.1), (.5,.1,.2)]
+    obse = [(0.1, 0.2, 0.3), (-1, -2, 0.1), (0.5, 0.1, 0.2)]
     B1 = ribbon.getB(obse)
     B2 = line.getB(obse)
 
-    err = np.linalg.norm(B1-B2, axis=1) / np.linalg.norm(B1+B2, axis=1)
+    err = np.linalg.norm(B1 - B2, axis=1) / np.linalg.norm(B1 + B2, axis=1)
     assert np.all(err < 1e-6), f"Error in B-field comparison: {err}"
-

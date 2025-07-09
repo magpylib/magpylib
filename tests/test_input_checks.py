@@ -720,8 +720,8 @@ def test_input_rotate_axis_bad(axis):
 @pytest.mark.parametrize(
     "observers",
     [
-        magpy.Sensor(),
-        magpy.Collection(magpy.Sensor()),
+        magpy.Sensor(position=(1, 2, 3)),
+        magpy.Collection(magpy.Sensor(position=(1, 2, 3))),
         magpy.Collection(magpy.Sensor(), magpy.Sensor()),
         (1, 2, 3),
         [(1, 2, 3)] * 2,

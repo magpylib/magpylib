@@ -110,13 +110,13 @@ def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
         trace = create_null_dim_trace(color=style.color)
         return {**trace, **kwargs}
 
-    faces = [(i, i+1, i+2) for i in range(len(obj.vertices) - 2 )]
-    
+    faces = [(i, i + 1, i + 2) for i in range(len(obj.vertices) - 2)]
+
     traces = []
     # get faces
     trace = make_BaseTriangularMesh(
-            "plotly-dict", vertices=obj.vertices, faces=faces, color=style.color
-        )
+        "plotly-dict", vertices=obj.vertices, faces=faces, color=style.color
+    )
     traces.append(trace)
     return traces
 

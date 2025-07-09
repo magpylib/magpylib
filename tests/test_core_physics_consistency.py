@@ -215,7 +215,6 @@ def test_core_physics_dipole_sphere():
     np.testing.assert_allclose(H1, H2, rtol=0, atol=1e-10)
 
 
-
 # -> Circle, Cylinder
 def test_core_physics_long_solenoid():
     """
