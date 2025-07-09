@@ -1,5 +1,7 @@
-import os
+from __future__ import annotations
+
 import pickle
+from pathlib import Path
 
 import numpy as np
 
@@ -39,18 +41,18 @@ from magpylib._src.obj_classes.class_Sensor import Sensor
 def test_Cuboid_basics():
     """test Cuboid fundamentals"""
     # data generated in comment above
-    with open(os.path.abspath("./tests/testdata/testdata_Cuboid.p"), "rb") as f:
+    with Path("tests/testdata/testdata_Cuboid.p").resolve().open("rb") as f:
         data = pickle.load(f)
     mags, dims, posos, angs, axs, anchs, movs, B = data
 
     btest = []
     for mag, dim, ang, ax, anch, mov, poso in zip(
-        mags, dims, angs, axs, anchs, movs, posos
+        mags, dims, angs, axs, anchs, movs, posos, strict=False
     ):
         pm = magpy.magnet.Cuboid(polarization=mag, dimension=np.abs(dim))
 
         # 18 subsequent operations
-        for a, aa, aaa, mv in zip(ang, ax, anch, mov):
+        for a, aa, aaa, mv in zip(ang, ax, anch, mov, strict=False):
             pm.move(mv).rotate_from_angax(a, aa, aaa, start=-1)
 
         btest += [pm.getB(poso)]

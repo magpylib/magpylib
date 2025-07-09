@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 from copy import deepcopy
 
 import pytest
 
-from magpylib._src.defaults.defaults_utility import COLORS_SHORT_TO_LONG
-from magpylib._src.defaults.defaults_utility import MagicProperties
-from magpylib._src.defaults.defaults_utility import color_validator
-from magpylib._src.defaults.defaults_utility import get_defaults_dict
-from magpylib._src.defaults.defaults_utility import linearize_dict
-from magpylib._src.defaults.defaults_utility import magic_to_dict
-from magpylib._src.defaults.defaults_utility import update_nested_dict
+from magpylib._src.defaults.defaults_utility import (
+    COLORS_SHORT_TO_LONG,
+    MagicProperties,
+    color_validator,
+    get_defaults_dict,
+    linearize_dict,
+    magic_to_dict,
+    update_nested_dict,
+)
 
 
 def test_update_nested_dict():
@@ -96,7 +100,7 @@ def test_linearize_dict():
 
 
 @pytest.mark.parametrize(
-    "color, allow_None, color_expected",
+    ("color", "allow_None", "color_expected"),
     [
         (None, True, None),
         ("blue", True, "blue"),
@@ -118,7 +122,7 @@ def test_good_colors(color, allow_None, color_expected):
 
 
 @pytest.mark.parametrize(
-    "color, allow_None, expected_exception",
+    ("color", "allow_None", "expected_exception"),
     [
         (None, False, ValueError),
         (-1, False, ValueError),
@@ -170,7 +174,7 @@ def test_MagicProperties():
     # check setting attribute/property
     assert bp1.prop1 == 1, "`bp1.prop1` should be `1`"
     with pytest.raises(AttributeError):
-        getattr(bp1, "prop1e")  # only properties are allowed to be set
+        bp1.prop1e = "val"  # only properties are allowed to be set
 
     assert bp1.as_dict() == {"prop1": 1}, "`as_dict` method failed"
 
@@ -181,9 +185,9 @@ def test_MagicProperties():
     assert bp1.as_dict() == {"prop1": {"prop2": 2}}, "`as_dict` method failed"
 
     # check update method with different parameters
-    assert bp1.update(prop1_prop2=10).as_dict() == {
-        "prop1": {"prop2": 10}
-    }, "magic property setting failed"
+    assert bp1.update(prop1_prop2=10).as_dict() == {"prop1": {"prop2": 10}}, (
+        "magic property setting failed"
+    )
 
     with pytest.raises(AttributeError):
         bp1.update(prop1_prop2=10, prop3=4)
@@ -199,14 +203,14 @@ def test_MagicProperties():
 
     bp3 = bp2.copy()
     assert bp3 is not bp2, "failed copying, should return a different id"
-    assert (
-        bp3.as_dict() == bp2.as_dict()
-    ), "failed copying, should return the same property values"
+    assert bp3.as_dict() == bp2.as_dict(), (
+        "failed copying, should return the same property values"
+    )
 
     # check flatten dict
-    assert bp3.as_dict(flatten=True) == bp2.as_dict(
-        flatten=True
-    ), "failed copying, should return the same property values"
+    assert bp3.as_dict(flatten=True) == bp2.as_dict(flatten=True), (
+        "failed copying, should return the same property values"
+    )
 
     # check failing init
     with pytest.raises(AttributeError):

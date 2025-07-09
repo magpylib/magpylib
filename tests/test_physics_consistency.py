@@ -1,10 +1,8 @@
-"""
-object oriented physics consistency tests
-"""
+from __future__ import annotations
 
 import numpy as np
-
 import magpylib as magpy
+
 
 def test_dipole_approximation():
     """test if all source fields converge towards the correct dipole field at distance"""

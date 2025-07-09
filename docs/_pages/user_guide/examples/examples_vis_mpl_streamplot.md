@@ -122,7 +122,7 @@ ax.plot(.02*np.cos(ts), .02*np.sin(ts), "w-", lw=2, zorder=2)
 # Figure styling
 ax.set(
     xlabel="x-position (m)",
-    ylabel="z-position (m)",
+    ylabel="y-position (m)",
     aspect=1,
 )
 

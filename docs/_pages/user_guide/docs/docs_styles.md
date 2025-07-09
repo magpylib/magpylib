@@ -36,15 +36,15 @@ The default styles can be modified in three ways:
 
 ```python
 magpy.defaults.display.style.magnet.magnetization.show = True
-magpy.defaults.display.style.magnet.magnetization.color.mode = 'bicolor'
-magpy.defaults.display.style.magnet.magnetization.color.north = 'grey'
+magpy.defaults.display.style.magnet.magnetization.color.mode = "bicolor"
+magpy.defaults.display.style.magnet.magnetization.color.north = "grey"
 ```
 
 2. By assigning a style dictionary with equivalent keys,
 
 ```python
 magpy.defaults.display.style.magnet = {
-    'magnetization': {'show': True, 'color': {'north': 'grey', 'mode': 'tricolor'}}
+    "magnetization": {"show": True, "color": {"north": "grey", "mode": "tricolor"}}
 }
 ```
 
@@ -52,8 +52,7 @@ magpy.defaults.display.style.magnet = {
 
 ```python
 magpy.defaults.display.style.magnet.magnetization.update(
-    'show': True,
-    'color': {'north'='grey', mode='tricolor',}
+    show=True, color={"north": "grey", "mode": "tricolor"}
 )
 ```
 
@@ -119,10 +118,11 @@ With magic underscore notation, the previous examples can be written as:
 
 ```python
 import magpylib as magpy
+
 magpy.defaults.display.style.magnet = {
-    'magnetization_show': True,
-    'magnetization_color_middle': 'grey',
-    'magnetization_color_mode': 'tricolor',
+    "magnetization_show": True,
+    "magnetization_color_middle": "grey",
+    "magnetization_color_mode": "tricolor",
 }
 ```
 
@@ -130,10 +130,11 @@ or directly as named keywords in the `update` method as:
 
 ```python
 import magpylib as magpy
+
 magpy.defaults.display.style.magnet.update(
     magnetization_show=True,
-    magnetization_color_middle='grey',
-    magnetization_color_mode='tricolor',
+    magnetization_color_middle="grey",
+    magnetization_color_mode="tricolor",
 )
 ```
 
@@ -142,7 +143,7 @@ magpy.defaults.display.style.magnet.update(
 Any Magpylib object can have its own individual style that will take precedence over the default values when `show` is called. When setting individual styles, the object family specifier such as `magnet` or `current` can be omitted.
 
 ```{note}
-Users should be aware that the individual object style is organized in classes that take much longer to initialize than bare Magpylib objects, i.e. objects without individual style. This can lead to a computational bottleneck when setting individual styles of many Magpylib objects. For this reason Magpylib automatically defers style initialization until it is needed the first time, e.g. when calling the `show` function, so that object creatin time is not affected. However, this works only if style properties are set at initialization (e.g.: `magpy.magnet.Cuboid(..., style_label="MyCuboid")`). While this effect may not be noticeable for a small number of objects, it is best to avoid setting styles until it is plotting time.
+Users should be aware that the individual object style is organized in classes that take much longer to initialize than bare Magpylib objects, i.e. objects without individual style. This can lead to a computational bottleneck when setting individual styles of many Magpylib objects. For this reason Magpylib automatically defers style initialization until it is needed the first time, e.g. when calling the `show` function, so that object creation time is not affected. However, this works only if style properties are set at initialization (e.g.: `magpy.magnet.Cuboid(..., style_label="MyCuboid")`). While this effect may not be noticeable for a small number of objects, it is best to avoid setting styles until it is plotting time.
 ```
 
 In the following example `cube` has no individual style, so the default style is used. `cylinder` has an individual style set for `magnetization` which is a tricolor scheme that will display the object color in the middle. The individual style is set at object initialization (good practice), and it will be applied only when `show` is called at the end of the example. Finally, `sphere` is also given an individual style for `magnetization` that displays the latter using a 2-color scheme. In this case, however, the individual style is applied after object initialization (bad practice), which results in style initialization before it is needed.

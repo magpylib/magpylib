@@ -20,7 +20,7 @@ The analytical expressions implemented in Magpylib treat only simple homogeneous
 
 Here we show how to deal with inhomogeneous polarization based on a commonly misunderstood example of a cylindrical quadrupol magnet. While graphical representations of such magnets usually depict only four poles, see {ref}`examples-vis-magnet-colors`, such magnets exhibit complex polarization given by the magnetization device that is used to magnetize them.
 
-The following code shows how the field of such a magnetization device would look like and what magnetization field it produces. To relize a Cylindrical Quadrupole magnert there are four coils with ferromagnetic cores involved, arranged in circle around the magnet. In the example, coils and cores are modeled by Cuboid magnets.
+The following code shows how the field of such a magnetization device would look like and what magnetization field it produces. To realize a Cylindrical Quadrupole magnert there are four coils with ferromagnetic cores involved, arranged in circle around the magnet. In the example, coils and cores are modeled by Cuboid magnets.
 
 ```{note}
 While Magpylib uses SI units by default, in this example we make use of [scaling invariance](guide-docs-io-scale-invariance) and consider arbitrary input length units. For this example millimeters are sensible.

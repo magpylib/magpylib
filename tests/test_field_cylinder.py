@@ -2,13 +2,15 @@
 Testing all cases against a large set of pre-computed values
 """
 
+from __future__ import annotations
+
 import numpy as np
 import pytest
 
 import magpylib as magpy
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
-from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
 from magpylib._src.fields.field_BH_cylinder_segment import (
+    BHJM_cylinder_segment,
     magnet_cylinder_segment_Hfield,
 )
 
@@ -193,7 +195,7 @@ DATA = np.load("tests/testdata/testdata_cy_cases.npy", allow_pickle=True).item()
 
 
 @pytest.mark.parametrize(
-    "inputs, H_expected",
+    ("inputs", "H_expected"),
     [[v["inputs"], v["H_expected"]] for v in DATA.values()],
     ids=list(DATA.keys()),
 )
@@ -215,10 +217,10 @@ def test_cylinder_field1():
     N = 100
     magg, dim, poso, B0 = np.load("tests/testdata/testdata_full_cyl.npy")
 
-    nulll = np.zeros(N)
+    null = np.zeros(N)
     eins = np.ones(N)
     d, h, _ = dim.T  # pylint: disable=no-member
-    dim5 = np.array([nulll, d / 2, h, nulll, eins * 360]).T
+    dim5 = np.array([null, d / 2, h, null, eins * 360]).T
     B1 = BHJM_cylinder_segment(
         field="B", observers=poso, polarization=magg, dimension=dim5
     )
@@ -284,7 +286,7 @@ def test_cylinder_slanovc_field3():
 
     hinn = np.array((-13.11018204, -15.87919449, -3.09467591)) * 1e6
     hout = np.array((0.01408664, 0.1016354, 0.21743108)) * 1e6
-    nulll = (0, 0, 0)
+    null = (0, 0, 0)
 
     # only inside
     htest = np.array([hinn] * 3)
@@ -292,7 +294,7 @@ def test_cylinder_slanovc_field3():
     np.testing.assert_allclose(H, htest)
 
     # only surf
-    htest = np.array([nulll] * 3)
+    htest = np.array([null] * 3)
     H = src.getH([[1, 0, 0]] * 3)
     np.testing.assert_allclose(H, htest)
 
@@ -302,12 +304,12 @@ def test_cylinder_slanovc_field3():
     np.testing.assert_allclose(H, htest)
 
     # surf + out
-    htest = np.array([nulll, nulll, hout])
+    htest = np.array([null, null, hout])
     H = src.getH([0.6, 0, 1], [1, 0, 0.5], [1, 2, 3])
     np.testing.assert_allclose(H, htest)
 
     # surf + in
-    htest = np.array([nulll, nulll, hinn])
+    htest = np.array([null, null, hinn])
     H = src.getH([0, 0.5, 1], [1, 0, 0.5], [0.5, 0.6, 0.3])
     np.testing.assert_allclose(H, htest)
 
@@ -317,7 +319,7 @@ def test_cylinder_slanovc_field3():
     np.testing.assert_allclose(H, htest)
 
     # in + out + surf
-    htest = np.array([nulll, nulll, hinn, hout, nulll, nulll])
+    htest = np.array([null, null, hinn, hout, null, null])
     H = src.getH(
         [0.5, 0.5, 1],
         [0, 1, 0.5],
@@ -477,7 +479,7 @@ def test_cylinder_scaling_invariance():
 def test_cylinder_diametral_small_r():
     """
     test if the transition from Taylor series to general case is smooth
-    test if the gneral case fluctuations are small
+    test if the general case fluctuations are small
     """
     B = BHJM_magnet_cylinder(
         field="B",

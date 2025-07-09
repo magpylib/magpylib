@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import pytest
 
@@ -123,7 +125,7 @@ def test_discontinous_line():
 
 
 def test_old_Line_deprecation_warning():
-    """test old calss deprecation warning"""
+    """test old class deprecation warning"""
     with pytest.warns(MagpylibDeprecationWarning):
         old_class = magpy.current.Line()
 

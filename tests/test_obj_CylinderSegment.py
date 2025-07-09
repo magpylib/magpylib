@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 
 import magpylib as magpy
@@ -20,7 +22,7 @@ def test_barycenter():
     expected_barycenter_squeezed = np.array([-0.86248133, 1.12400755, 0.0])
     np.testing.assert_allclose(cs.barycenter, expected_barycenter_squeezed)
 
-    cs.rotate_from_angax([76 * i for i in range(0, 5)], "x", anchor=(0, 0, 5), start=0)
+    cs.rotate_from_angax([76 * i for i in range(5)], "x", anchor=(0, 0, 5), start=0)
 
     expected_barycenter_path = np.array(
         [

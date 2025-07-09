@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+import itertools
+
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
@@ -180,7 +184,9 @@ def test_core_physics_dipole_sphere():
     obs = np.array([(1, 2, 3), (-2, -2, -2), (3, 5, -4), (5, 4, 0.1)])
     dia = np.array([2, 3, 0.1, 3.3])
     pol = np.array([(1, 2, 3), (0, 0, 1), (-1, -2, 0), (1, -1, 0.1)])
-    mom = np.array([4 * (d / 2) ** 3 * np.pi / 3 * p / MU0 for d, p in zip(dia, pol)])
+    mom = np.array(
+        [4 * (d / 2) ** 3 * np.pi / 3 * p / MU0 for d, p in zip(dia, pol, strict=False)]
+    )
 
     B1 = BHJM_magnet_sphere(
         field="B",
@@ -221,8 +227,8 @@ def test_core_physics_long_solenoid():
     This can also be tested with magnets using the current replacement picture
         where Jz = MU0 * I * N / L, and holds for B and for H-M.
     """
-    
-    I = 134    # noqa: E741
+
+    I = 134  # noqa: E741
     N = 5000
     R = 1.543
     L = 1234
@@ -295,12 +301,11 @@ def test_core_physics_current_replacement():
     )[0, 2]
 
     N = 1000  # current discretization
-    I = Jz / MU0 / N * L    # noqa: E741
     H = BHJM_circle(
         field="H",
         observers=np.linspace((0, 0, -L / 2), (0, 0, L / 2), N) + obs,
         diameter=np.array([2 * R] * N),
-        current=np.array([I] * N),
+        current=np.array([Jz / MU0 / N * L] * N),
     )
     Hz_curr = np.sum(H, axis=0)[2]
 
@@ -324,7 +329,7 @@ def test_core_physics_geometry_cylinder_from_segments():
     sections = np.array([-12, 65, 123, 180, 245, 348])
 
     Bseg = np.zeros((2, 3))
-    for phi1, phi2 in zip(sections[:-1], sections[1:]):
+    for phi1, phi2 in itertools.pairwise(sections):
         B_part = BHJM_cylinder_segment(
             field="B",
             observers=obs,
