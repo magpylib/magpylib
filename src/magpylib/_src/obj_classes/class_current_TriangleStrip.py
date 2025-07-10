@@ -108,7 +108,7 @@ class TriangleStrip(BaseCurrent):
     @vertices.setter
     def vertices(self, vert):
         """Set TriangleStrip vertices, array_like, meter."""
-        self._vertices = check_format_input_vertices(vert)
+        self._vertices = check_format_input_vertices(vert, minlength=3)
 
     @property
     def _default_style_description(self):
