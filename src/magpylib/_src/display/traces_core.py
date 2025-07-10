@@ -112,13 +112,22 @@ def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
 
     faces = [(i, i + 1, i + 2) for i in range(len(obj.vertices) - 2)]
 
-    traces = []
-    # get faces
     trace = make_BaseTriangularMesh(
         "plotly-dict", vertices=obj.vertices, faces=faces, color=style.color
     )
-    traces.append(trace)
-    return traces
+    return [{**trace, **kwargs}]
+
+
+def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+    """
+    Creates the plotly scatter3d parameters for a TriangleSheet current in a dictionary based on the
+    provided arguments.
+    """
+    style = obj.style
+    trace = make_BaseTriangularMesh(
+        "plotly-dict", vertices=obj.vertices, faces=obj.faces, color=style.color
+    )
+    return [{**trace, **kwargs}]
 
 
 def make_Circle(obj, base=72, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
