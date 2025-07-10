@@ -460,8 +460,8 @@ def check_format_input_observers(inp, pixel_agg=None):
     checks observers input and returns a list of sensor objects
     """
     # pylint: disable=raise-missing-from
-    from magpylib._src.obj_classes.class_Sensor import Sensor # noqa: PLC0415, I001
-    from magpylib._src.obj_classes.class_Collection import Collection # noqa: PLC0415
+    from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: I001
+    from magpylib._src.obj_classes.class_Collection import Collection
 
     # make bare Sensor, bare Collection into a list
     if isinstance(inp, Collection | Sensor):
@@ -538,9 +538,9 @@ def check_format_input_obj(
     recursive: bool
         Flatten Collection objects
     """
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource # noqa: PLC0415, I001
-    from magpylib._src.obj_classes.class_Collection import Collection # noqa: PLC0415
-    from magpylib._src.obj_classes.class_Sensor import Sensor # noqa: PLC0415
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001
+    from magpylib._src.obj_classes.class_Collection import Collection
+    from magpylib._src.obj_classes.class_Sensor import Sensor
 
     # select wanted
     wanted_types = ()

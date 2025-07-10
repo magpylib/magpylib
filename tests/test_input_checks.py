@@ -1015,9 +1015,9 @@ def test_magnet_polarization_magnetization_input():
 
 def test_current_sheet_init():
     """good inputs"""
-    cds = [(1,0,0)]*5
-    verts = ((0,0,0), (1,0,0), (0,1,0), (0,0,1))
-    facs = ((0,1,2), (0,2,3), (0,1,3), (1,2,3), (1,2,3))
+    cds = [(1, 0, 0)] * 5
+    verts = ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
+    facs = ((0, 1, 2), (0, 2, 3), (0, 1, 3), (1, 2, 3), (1, 2, 3))
 
     magpy.current.TriangleSheet(
         current_densities=cds,
@@ -1028,7 +1028,7 @@ def test_current_sheet_init():
 
 def test_current_strip_init():
     """good inputs"""
-    verts = ((0,0,0), (1,0,0), (0,1,0), (0,0,1))
+    verts = ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
     magpy.current.TriangleStrip(
         current=1,
         vertices=verts,
@@ -1037,13 +1037,13 @@ def test_current_strip_init():
 
 def test_current_sheet_init_bad():
     """bad inputs"""
-    
-    # verts.len < 3
-    cds = [(1,0,0)]*5
-    verts = ((0,0,0), (1,0,0))
-    facs = ((0,1,2), (0,2,3), (0,1,3), (1,2,3), (1,2,3))
 
-    with pytest.raises(ValueError): # noqa: PT011
+    # verts.len < 3
+    cds = [(1, 0, 0)] * 5
+    verts = ((0, 0, 0), (1, 0, 0))
+    facs = ((0, 1, 2), (0, 2, 3), (0, 1, 3), (1, 2, 3), (1, 2, 3))
+
+    with pytest.raises(ValueError):  # noqa: PT011
         magpy.current.TriangleSheet(
             current_densities=cds,
             vertices=verts,
@@ -1051,11 +1051,11 @@ def test_current_sheet_init_bad():
         )
 
     # faces.len != cds.len
-    cds = [(1,0,0)]*3
-    verts = ((0,0,0), (1,0,0), (0,1,0), (0,0,1))
-    facs = ((0,1,2), (0,2,3), (0,1,3), (1,2,3), (1,2,3))
+    cds = [(1, 0, 0)] * 3
+    verts = ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
+    facs = ((0, 1, 2), (0, 2, 3), (0, 1, 3), (1, 2, 3), (1, 2, 3))
 
-    with pytest.raises(ValueError): # noqa: PT011
+    with pytest.raises(ValueError):  # noqa: PT011
         magpy.current.TriangleSheet(
             current_densities=cds,
             vertices=verts,
@@ -1063,9 +1063,9 @@ def test_current_sheet_init_bad():
         )
 
     # bad face indices
-    cds = [(1,0,0)]*5
-    verts = ((0,0,0), (1,0,0), (0,1,0), (0,0,1))
-    facs = ((0,1,2), (0,2,3), (0,1,3), (1,2,3), (1,2,33))
+    cds = [(1, 0, 0)] * 5
+    verts = ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
+    facs = ((0, 1, 2), (0, 2, 3), (0, 1, 3), (1, 2, 3), (1, 2, 33))
 
     with pytest.raises(IndexError):
         magpy.current.TriangleSheet(
@@ -1076,8 +1076,8 @@ def test_current_sheet_init_bad():
 
     # bad input formats
     cds = 1
-    verts = ((0,0,0), (1,0,0), (0,1,0), (0,0,1))
-    facs = ((0,1,2), (0,2,3), (0,1,3), (1,2,3), (1,2,33))
+    verts = ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
+    facs = ((0, 1, 2), (0, 2, 3), (0, 1, 3), (1, 2, 3), (1, 2, 33))
 
     with pytest.raises(MagpylibBadUserInput):
         magpy.current.TriangleSheet(
@@ -1087,9 +1087,9 @@ def test_current_sheet_init_bad():
         )
 
     # bad input formats
-    cds = [(1,2)]*5
-    verts = ((0,0,0), (1,0,0), (0,1,0), (0,0,1))
-    facs = ((0,1,2), (0,2,3), (0,1,3), (1,2,3), (1,2,33))
+    cds = [(1, 2)] * 5
+    verts = ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
+    facs = ((0, 1, 2), (0, 2, 3), (0, 1, 3), (1, 2, 3), (1, 2, 33))
 
     with pytest.raises(MagpylibBadUserInput):
         magpy.current.TriangleSheet(
@@ -1101,15 +1101,18 @@ def test_current_sheet_init_bad():
 
 def test_current_strip_init_bad():
     """bad inputs"""
-    verts = ((0,0,0), (1,0,0), (0,1,0), (0,0,1))
-    curr = [1]*4
+    verts = ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
+    curr = [1] * 4
     with pytest.raises(MagpylibBadUserInput):
         magpy.current.TriangleStrip(
             current=curr,
             vertices=verts,
         )
 
-    verts = ((0,0,0), (1,0,0), )
+    verts = (
+        (0, 0, 0),
+        (1, 0, 0),
+    )
     curr = 1
     with pytest.raises(MagpylibBadUserInput):
         magpy.current.TriangleStrip(

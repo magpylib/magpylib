@@ -556,6 +556,7 @@ def BHJM_current_trisheet(
     print(current_densities.shape)
 
     import sys
+
     sys.exit()
 
     return BHJM_current_sheet(field, observers, vertices, current_densities, faces)

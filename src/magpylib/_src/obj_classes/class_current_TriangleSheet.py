@@ -64,7 +64,7 @@ class TriangleSheet(BaseSource):
 
     # pylint: disable=dangerous-default-value
     _field_func = staticmethod(BHJM_current_trisheet)
-    _field_func_kwargs_ndim: ClassVar[dict[str, int]] =  {
+    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "current_densities": 3,
         "vertices": 3,
         "faces": 3,
@@ -112,9 +112,8 @@ class TriangleSheet(BaseSource):
             return "no vertices"
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
 
-
     def _input_check(self, current_densities, vertices, faces):
-        """ check and format user inputs """
+        """check and format user inputs"""
         cd = check_format_input_vector(
             current_densities,
             dims=(2,),
@@ -139,7 +138,7 @@ class TriangleSheet(BaseSource):
             sig_type="`None` or array_like (list, tuple, ndarray) with shape (n,3)",
             allow_None=False,
         ).astype(int)
-        
+
         if len(verts) < 3:
             msg = f"Parameter `vertices` of {self} must have at least 3 vertices."
             raise ValueError(msg)
