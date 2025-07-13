@@ -29,7 +29,7 @@ disp_args = set(get_defaults_dict("display"))
 class RegisteredBackend:
     """Base class for display backends"""
 
-    backends: ClassVar[dict[str, RegisteredBackend]] = {}
+    backends: ClassVar[dict[str, "RegisteredBackend"]] = {}
 
     def __init__(
         self,
