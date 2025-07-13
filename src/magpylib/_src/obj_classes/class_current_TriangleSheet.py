@@ -10,7 +10,6 @@ from magpylib._src.display.traces_core import make_TriangleSheet
 from magpylib._src.fields.field_BH_current_sheet import BHJM_current_trisheet
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
-from magpylib._src.utility import unit_prefix
 
 
 class TriangleSheet(BaseSource):
