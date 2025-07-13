@@ -623,9 +623,8 @@ def BHJM_current_tristrip(
     v2v2 = np.sum(v2 * v2, axis=1)
     v1v2 = np.sum(v1 * v2, axis=1)
 
-
     CD = np.zeros((n, 3), dtype=float)
-    
+
     # catch two times the same vertex in one triangle, and set CD to zero there
     mask = (v2v2 != 0) * (v1v1 != 0)
     h = np.sqrt(v1v1[mask] - (v1v2[mask] ** 2 / v2v2[mask]))
