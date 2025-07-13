@@ -65,13 +65,16 @@ class TriangleStrip(BaseCurrent):
     >>> import magpylib as magpy
     >>> src = magpy.current.TriangleStrip(
     ...    current=1,
-    ...    vertices=((0,0,0), (0,1,0), (1,0,0), (1,1,0)),
+    ...    vertices=((0,0,0), (0,1,0), (1,0,0), (1,1,1)),
     ... )
     >>> H = src.getH((.01,.01,.01))
     >>> with np.printoptions(precision=3):
     ...     print(H)
-    [ 3.965e-17 -2.905e-01 -3.747e-01]
+    [ 0.026 -0.307 -0.371]
 
+    Notes
+    -----
+    On the vertices the returned field is zero.
     """
 
     # pylint: disable=dangerous-default-value

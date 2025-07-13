@@ -14,7 +14,7 @@ from magpylib._src.utility import unit_prefix
 
 
 class TriangleSheet(BaseSource):
-    """Surface current density flowing along triangular sheets.
+    """Surface current density flowing along triangular faces.
 
     Can be used as `sources` input for magnetic field computation.
 
@@ -39,12 +39,12 @@ class TriangleSheet(BaseSource):
         triangular faces are constructed by the additional `faces` input.
 
     faces: array_like, shape (n,3), default=`None`
-        Indices of vertices. Each triplet represents one triangle of the mesh.
+        Triplets of vertex indices. Each triplet represents one triangle of the mesh.
 
     current_densities: array_like, shape (n,3), default=`None`
-        Electrical current densities flowing in the triangles in units of A/m.
+        Electrical current densities flowing on the faces in units of A/m.
         The effective current density is a projection of the given current density
-        vector into the triangle plane.
+        vector into the face-planes. Input must have same length as `faces`.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -59,7 +59,21 @@ class TriangleSheet(BaseSource):
 
     Examples
     --------
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> src = magpy.current.TriangleSheet(
+    >>> current_densities=[(1,0,0), (0,1,0)],
+    >>> vertices=((0,0,0), (0,1,0), (1,0,0), (1,1,1)),
+    >>> faces=((0,1,2), (1,2,3)),
+    >>> )
+    >>> H = src.getH((.01,.01,.01))
+    >>> with np.printoptions(precision=3):
+    ...     print(H)
+    [ 0.005 -0.311 -0.299]
 
+    Notes
+    -----
+    On the vertices the returned field is zero.
     """
 
     # pylint: disable=dangerous-default-value
