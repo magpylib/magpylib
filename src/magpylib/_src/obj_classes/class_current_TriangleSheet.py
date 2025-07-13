@@ -119,13 +119,6 @@ class TriangleSheet(BaseSource):
         """TriangleSheet CurrentDensities"""
         return self._current_densities
 
-    @property
-    def _default_style_description(self):
-        """Default style description text"""
-        if self.vertices is None:
-            return "no vertices"
-        return f"{unit_prefix(self.current)}A" if self.current else "no current"
-
     def _input_check(self, current_densities, vertices, faces):
         """check and format user inputs"""
         cd = check_format_input_vector(
