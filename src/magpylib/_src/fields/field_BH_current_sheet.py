@@ -623,11 +623,13 @@ def BHJM_current_tristrip(
     v2v2 = np.sum(v2 * v2, axis=1)
     v1v2 = np.sum(v1 * v2, axis=1)
 
-    # catch two times the same vertex in one triangle
-    mask = (v2v2 != 0) * (v1v1 != 0)
 
+    CD = np.zeros((n, 3), dtype=float)
+    
+    # catch two times the same vertex in one triangle, and set CD to zero there
+    mask = (v2v2 != 0) * (v1v1 != 0)
     h = np.sqrt(v1v1[mask] - (v1v2[mask] ** 2 / v2v2[mask]))
-    CD = (
+    CD[mask] = (
         v2[mask]
         / (np.sqrt(v2v2[mask]) * h / np.repeat(current, no_tris, axis=0)[mask])[
             :, np.newaxis
@@ -637,15 +639,10 @@ def BHJM_current_tristrip(
     # compute field for all instances
     BB = BHJM_current_sheet(
         field=field,
-        observers=OBS[mask],
-        vertices=VERT[mask],
+        observers=OBS,
+        vertices=VERT,
         current_densities=CD,
     )
-    if np.any(~mask):
-        # if some triangles are degenerated, their field is zero
-        BBB = np.zeros((n, 3))
-        BBB[mask] = BB
-        BB = BBB
 
     # sum over triangles of same strip
     B = np.zeros_like(observers, dtype=float)
