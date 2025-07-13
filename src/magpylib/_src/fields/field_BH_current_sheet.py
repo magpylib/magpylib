@@ -549,17 +549,41 @@ def BHJM_current_trisheet(
     -------
     field as shape (n_observers, 3)
     """
-    # pylint: disable=too-many-positional-arguments
-    print(observers.shape)
-    print(vertices.shape)
-    print(faces.shape)
-    print(current_densities.shape)
+    # number of triangles per instance
+    no_tris = [len(f) for f in faces]
+    n = sum(no_tris)
 
-    import sys
+    # create obs input
+    OBS = np.repeat(observers, no_tris, axis=0)
 
-    sys.exit()
+    # create triangles and current_density inputs
+    CDS = np.zeros((n, 3), dtype=float)
+    TRIAS = np.zeros((n, 3, 3), dtype=float)
+    ii = 0
+    for verts,facs,cds in zip(vertices, faces, current_densities, strict=True):
+        mesh = verts[facs]
+        for tria,cd in zip(mesh, cds, strict=True):
+            TRIAS[ii] = tria
+            CDS[ii] = cd
+            ii += 1
 
-    return BHJM_current_sheet(field, observers, vertices, current_densities, faces)
+    # compute field for all instances
+    BB = BHJM_current_sheet(
+        field=field,
+        observers=OBS,
+        vertices=TRIAS,
+        current_densities=CDS,
+    )
+
+    # sum over triangles of same strip
+    B = np.zeros_like(observers, dtype=float)
+
+    jj = 0
+    for i, nn in enumerate(no_tris):
+        B[i] = np.sum(BB[jj : jj + nn], axis=0)
+        jj += nn
+
+    return B
 
 
 def BHJM_current_tristrip(

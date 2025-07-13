@@ -5,7 +5,35 @@ import numpy as np
 import magpylib as magpy
 
 
-def test_two_ragged_Strips():
+def test_ragged_sheets():
+    """Tests if codes works for ragged sheets"""
+
+    sheet1 = magpy.current.TriangleSheet(
+        vertices=[[0, 0, 0], [0, 1, 0], [1, 0, 0], [1, 1, 0], [2, 0, 0]],
+        current_densities=[[10.1, 0, 0]] * 3,
+        faces=[(0,1,2), (1,2,3), (2,3,4)],
+    )
+    sheet2 = magpy.current.TriangleSheet(
+        vertices=[[0, 0, 0], [0, 2, 0], [1, 0, 0], [1, 2, 0]],
+        current_densities=[[10.1, 0, 0]] * 2,
+        faces=[(0,1,2), (1,2,3)],
+    )
+    obs = magpy.Sensor(pixel=[(2, 3, 4), (0.1, 0.2, 0.3)])
+    Htot = magpy.getH(
+        sources=[sheet1, sheet2],
+        observers=obs,
+    )
+
+    H1 = sheet1.getH(obs)
+    err = np.linalg.norm(Htot[0]-H1, axis=1) / np.linalg.norm(Htot[0]+H1, axis=1)
+    assert np.all(err < 1e-10), "H-field mismatch for TriangleSheet"
+    
+    H2 = sheet1.getH(obs)
+    err = np.linalg.norm(Htot[0]-H2, axis=1) / np.linalg.norm(Htot[0]+H2, axis=1)
+    assert np.all(err < 1e-10), "H-field mismatch for TriangleSheet"
+
+
+def test_ragged_Strips():
     """Tests if codes works for ragged strips"""
 
     strip1 = magpy.current.TriangleStrip(
@@ -102,6 +130,16 @@ def test_TriangleStrip_repr():
     """TriangleStrip repr test"""
     ts = magpy.current.TriangleStrip()
     assert repr(ts)[:13] == "TriangleStrip", "TriangleStrip repr failed"
+
+
+def test_TriangleSheet_repr():
+    """TriangleStrip repr test"""
+    ts = magpy.current.TriangleSheet(
+        current_densities=[[1, 0, 0], [0, 1, 0]],
+        vertices=[[0, 0, 0], [0, 1, 0], [1, 0, 0], [1, 1, 0]],
+        faces=[[0, 1, 2], [1, 2, 3]],
+    )
+    assert repr(ts)[:13] == "TriangleSheet", "TriangleSheet repr failed"
 
 
 def test_zero_surf_triangle_strip():
