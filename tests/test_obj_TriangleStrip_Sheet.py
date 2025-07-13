@@ -11,12 +11,12 @@ def test_ragged_sheets():
     sheet1 = magpy.current.TriangleSheet(
         vertices=[[0, 0, 0], [0, 1, 0], [1, 0, 0], [1, 1, 0], [2, 0, 0]],
         current_densities=[[10.1, 0, 0]] * 3,
-        faces=[(0,1,2), (1,2,3), (2,3,4)],
+        faces=[(0, 1, 2), (1, 2, 3), (2, 3, 4)],
     )
     sheet2 = magpy.current.TriangleSheet(
         vertices=[[0, 0, 0], [0, 2, 0], [1, 0, 0], [1, 2, 0]],
         current_densities=[[10.1, 0, 0]] * 2,
-        faces=[(0,1,2), (1,2,3)],
+        faces=[(0, 1, 2), (1, 2, 3)],
     )
     obs = magpy.Sensor(pixel=[(2, 3, 4), (0.1, 0.2, 0.3)])
     Htot = magpy.getH(
@@ -25,11 +25,11 @@ def test_ragged_sheets():
     )
 
     H1 = sheet1.getH(obs)
-    err = np.linalg.norm(Htot[0]-H1, axis=1) / np.linalg.norm(Htot[0]+H1, axis=1)
+    err = np.linalg.norm(Htot[0] - H1, axis=1) / np.linalg.norm(Htot[0] + H1, axis=1)
     assert np.all(err < 1e-10), "H-field mismatch for TriangleSheet"
-    
+
     H2 = sheet1.getH(obs)
-    err = np.linalg.norm(Htot[0]-H2, axis=1) / np.linalg.norm(Htot[0]+H2, axis=1)
+    err = np.linalg.norm(Htot[0] - H2, axis=1) / np.linalg.norm(Htot[0] + H2, axis=1)
     assert np.all(err < 1e-10), "H-field mismatch for TriangleSheet"
 
 

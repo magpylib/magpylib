@@ -560,9 +560,9 @@ def BHJM_current_trisheet(
     CDS = np.zeros((n, 3), dtype=float)
     TRIAS = np.zeros((n, 3, 3), dtype=float)
     ii = 0
-    for verts,facs,cds in zip(vertices, faces, current_densities, strict=True):
+    for verts, facs, cds in zip(vertices, faces, current_densities, strict=True):
         mesh = verts[facs]
-        for tria,cd in zip(mesh, cds, strict=True):
+        for tria, cd in zip(mesh, cds, strict=True):
             TRIAS[ii] = tria
             CDS[ii] = cd
             ii += 1

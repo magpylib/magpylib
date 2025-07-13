@@ -265,8 +265,20 @@ def test_TriangleStrip_VS_Cuboid_VS_TriangleSheet():
 
     sheet = magpy.current.TriangleSheet(
         vertices=[p1, p2, p3, p4, p5, p6, p7, p8],
-        faces=[(0,1,2), (1,2,3), (2,3,4), (3,4,5), (4,5,6), (5,6,7), (6,7,0), (7,0,1)],
-        current_densities=[(1,0,0)]*2 + [(0,1,0)]*2 + [(-1,0,0)]*2 + [(0,-1,0)]*2,
+        faces=[
+            (0, 1, 2),
+            (1, 2, 3),
+            (2, 3, 4),
+            (3, 4, 5),
+            (4, 5, 6),
+            (5, 6, 7),
+            (6, 7, 0),
+            (7, 0, 1),
+        ],
+        current_densities=[(1, 0, 0)] * 2
+        + [(0, 1, 0)] * 2
+        + [(-1, 0, 0)] * 2
+        + [(0, -1, 0)] * 2,
     )
     sheet.position = np.linspace((-0.1, -0.1, -0.1), (0.1, 0.2, 0.3), 10)
     H3 = sheet.getH(obs)
@@ -302,19 +314,32 @@ def test_TriangleStrip_VS_Polyline():
 def test_line_sheet_strip():
     """Compare Line, Polyline, TriangleSheet, TriangleStrip."""
 
-    obss = [(.1,.2,.3), (.5,-.1,-.2), (.6,.2,0), (.1,.2,0), (.1,.2,0.1), (.1,.2,0.2)]
-    rotvecs = np.array([(1,2,3), (5,-1,-2), (6,2,0), (1,2,0), (1,2,1), (1,2,2)])*1e-2
+    obss = [
+        (0.1, 0.2, 0.3),
+        (0.5, -0.1, -0.2),
+        (0.6, 0.2, 0),
+        (0.1, 0.2, 0),
+        (0.1, 0.2, 0.1),
+        (0.1, 0.2, 0.2),
+    ]
+    rotvecs = (
+        np.array([(1, 2, 3), (5, -1, -2), (6, 2, 0), (1, 2, 0), (1, 2, 1), (1, 2, 2)])
+        * 1e-2
+    )
 
     pl = magpy.current.Polyline(
         current=1,
-        vertices=((0,0,0), (1,0,0)),
+        vertices=((0, 0, 0), (1, 0, 0)),
     ).rotate_from_rotvec(rotvecs)
     B0 = pl.getH(obss)
 
     h = 1e-3
-    cds = [(1/h,0,0)]*2
-    verts = ((0,-h/2,0), (0,h/2,0), (1,-h/2,0), (1,h/2,0))
-    facs = ((0,1,2), (1,2,3),)
+    cds = [(1 / h, 0, 0)] * 2
+    verts = ((0, -h / 2, 0), (0, h / 2, 0), (1, -h / 2, 0), (1, h / 2, 0))
+    facs = (
+        (0, 1, 2),
+        (1, 2, 3),
+    )
 
     ts1 = magpy.current.TriangleSheet(
         current_densities=cds,
@@ -330,13 +355,13 @@ def test_line_sheet_strip():
     B2 = ts2.getH(obss)
 
     # line VS sheet
-    err = np.linalg.norm(B0-B1, axis=2)/np.linalg.norm(B0+B1, axis=2)
-    assert(np.sum(err)/len(err) < 1e-5)
+    err = np.linalg.norm(B0 - B1, axis=2) / np.linalg.norm(B0 + B1, axis=2)
+    assert np.sum(err) / len(err) < 1e-5
 
     # line VS strip
-    err = np.linalg.norm(B0-B2, axis=2)/np.linalg.norm(B0+B2, axis=2)
-    assert(np.sum(err)/len(err) < 1e-5)
+    err = np.linalg.norm(B0 - B2, axis=2) / np.linalg.norm(B0 + B2, axis=2)
+    assert np.sum(err) / len(err) < 1e-5
 
     # sheet VS strip
-    err = np.linalg.norm(B1-B2, axis=2)/np.linalg.norm(B1+B2, axis=2)
-    assert(np.sum(err)/len(err) < 1e-10)
+    err = np.linalg.norm(B1 - B2, axis=2) / np.linalg.norm(B1 + B2, axis=2)
+    assert np.sum(err) / len(err) < 1e-10
