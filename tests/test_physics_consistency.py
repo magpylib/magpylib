@@ -230,3 +230,136 @@ def test_Polyline_vs_Infinite():
     Binfs = np.array(Binfs) * 1e-6
 
     np.testing.assert_allclose(Bls, Binfs)
+
+
+def test_TriangleStrip_VS_Cuboid_VS_TriangleSheet():
+    """Test if TriangleStrip current gives same field as Cuboid magnet
+    using the current replacement picture.
+    """
+    obs = [(0, 0, 0), (0.1, 0.2, 0.3), (-1, -2, 0.1), (0.5, 0.1, 0.2)]
+
+    p1 = (-1, -1, -1)
+    p2 = (-1, -1, 1)
+    p3 = (1, -1, -1)
+    p4 = (1, -1, 1)
+    p5 = (1, 1, -1)
+    p6 = (1, 1, 1)
+    p7 = (-1, 1, -1)
+    p8 = (-1, 1, 1)
+
+    ribbon = magpy.current.TriangleStrip(
+        vertices=[p1, p2, p3, p4, p5, p6, p7, p8, p1, p2],
+        current=2,
+    )
+    ribbon.position = np.linspace((-0.1, -0.1, -0.1), (0.1, 0.2, 0.3), 10)
+    H1 = ribbon.getH(obs)
+
+    cube = magpy.magnet.Cuboid(
+        dimension=(2, 2, 2),
+        polarization=(0, 0, 1),
+    )
+    cube.position = np.linspace((-0.1, -0.1, -0.1), (0.1, 0.2, 0.3), 10)
+    H2 = cube.getB(obs)
+
+    sheet = magpy.current.TriangleSheet(
+        vertices=[p1, p2, p3, p4, p5, p6, p7, p8],
+        faces=[
+            (0, 1, 2),
+            (1, 2, 3),
+            (2, 3, 4),
+            (3, 4, 5),
+            (4, 5, 6),
+            (5, 6, 7),
+            (6, 7, 0),
+            (7, 0, 1),
+        ],
+        current_densities=[(1, 0, 0)] * 2
+        + [(0, 1, 0)] * 2
+        + [(-1, 0, 0)] * 2
+        + [(0, -1, 0)] * 2,
+    )
+    sheet.position = np.linspace((-0.1, -0.1, -0.1), (0.1, 0.2, 0.3), 10)
+    H3 = sheet.getH(obs)
+
+    err = np.linalg.norm(H1 - H2, axis=1) / np.linalg.norm(H1 + H2, axis=1)
+    assert np.all(err < 1e-12), f"Error in B-field comparison: {err}"
+
+    err = np.linalg.norm(H1 - H3, axis=1) / np.linalg.norm(H1 + H3, axis=1)
+    assert np.all(err < 1e-12), f"Error in B-field comparison: {err}"
+
+
+def test_TriangleStrip_VS_Polyline():
+    """Test if TriangleStrip gives same field as Polyline"""
+    h = 0.001
+
+    ribbon = magpy.current.TriangleStrip(
+        vertices=[[0, 0, 0], [0, h, 0], [1, 0, 0], [1, h, 0]],
+        current=10.1,
+    )
+    line = magpy.current.Polyline(
+        vertices=[[0, h / 2, 0], [1, h / 2, 0]],
+        current=10.1,
+    )
+
+    obse = [(0.1, 0.2, 0.3), (-1, -2, 0.1), (0.5, 0.1, 0.2)]
+    B1 = ribbon.getB(obse)
+    B2 = line.getB(obse)
+
+    err = np.linalg.norm(B1 - B2, axis=1) / np.linalg.norm(B1 + B2, axis=1)
+    assert np.all(err < 1e-6), f"Error in B-field comparison: {err}"
+
+
+def test_line_sheet_strip():
+    """Compare Line, Polyline, TriangleSheet, TriangleStrip."""
+
+    obss = [
+        (0.1, 0.2, 0.3),
+        (0.5, -0.1, -0.2),
+        (0.6, 0.2, 0),
+        (0.1, 0.2, 0),
+        (0.1, 0.2, 0.1),
+        (0.1, 0.2, 0.2),
+    ]
+    rotvecs = (
+        np.array([(1, 2, 3), (5, -1, -2), (6, 2, 0), (1, 2, 0), (1, 2, 1), (1, 2, 2)])
+        * 1e-2
+    )
+
+    pl = magpy.current.Polyline(
+        current=1,
+        vertices=((0, 0, 0), (1, 0, 0)),
+    ).rotate_from_rotvec(rotvecs)
+    B0 = pl.getH(obss)
+
+    h = 1e-3
+    cds = [(1 / h, 0, 0)] * 2
+    verts = ((0, -h / 2, 0), (0, h / 2, 0), (1, -h / 2, 0), (1, h / 2, 0))
+    facs = (
+        (0, 1, 2),
+        (1, 2, 3),
+    )
+
+    ts1 = magpy.current.TriangleSheet(
+        current_densities=cds,
+        vertices=verts,
+        faces=facs,
+    ).rotate_from_rotvec(rotvecs)
+    B1 = ts1.getH(obss)
+
+    ts2 = magpy.current.TriangleStrip(
+        current=1,
+        vertices=verts,
+    ).rotate_from_rotvec(rotvecs)
+    B2 = ts2.getH(obss)
+
+    # line VS sheet
+    err = np.linalg.norm(B0 - B1, axis=2) / np.linalg.norm(B0 + B1, axis=2)
+    assert np.sum(err) / len(err) < 1e-5
+
+    # line VS strip
+    err = np.linalg.norm(B0 - B2, axis=2) / np.linalg.norm(B0 + B2, axis=2)
+    assert np.sum(err) / len(err) < 1e-5
+
+    # sheet VS strip
+    err = np.linalg.norm(B1 - B2, axis=2) / np.linalg.norm(B1 + B2, axis=2)
+    assert np.sum(err) / len(err) < 1e-10
