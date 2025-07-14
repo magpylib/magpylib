@@ -296,7 +296,7 @@ magpylib.current.Polyline(
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`TriangleSheet` objects represent collections of triangular current sheets. The triangles are defined by the <span style="color: orange">**vertices**</span> attribute, an array of unique points $(\vec{V}_1, \vec{V}_2, ...)$ in units of meter, and the <span style="color: orange">**faces**</span> attribute, which is an array of index-triplets that define individual faces $(\vec{F}_1, \vec{F}_2, ...)$. The electrical current density flowing along the sheet is given by the attribute <span style="color: orange">**current_densities**</span>, which is a vector of current density vectors $(\vec{j}_1, \vec{j}_2, ...)$ in units of Ampere/meter that must be of the same length as the faces input. The effectice current density is the projection of the given current density vectors into the planes defined by the faces.
+`TriangleSheet` objects represent collections of triangular current sheets. The triangles are defined by the <span style="color: orange">**vertices**</span> attribute, an array of unique points $(\vec{V}_1, \vec{V}_2, ...)$ in units of meter, and the <span style="color: orange">**faces**</span> attribute, which is an array of index-triplets that define individual faces $(\vec{F}_1, \vec{F}_2, ...)$. The electrical current density flowing along the sheet is given by the attribute <span style="color: orange">**current_densities**</span>, which is a vector of current density vectors $(\vec{j}_1, \vec{j}_2, ...)$ in units of Ampere/meter that must be of the same length as the faces input. The effective current density is the projection of the given current density vectors into the planes defined by the faces.
 :::
 :::{grid-item}
 :columns: 3
