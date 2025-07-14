@@ -285,10 +285,6 @@ epub_exclude_files = ["search.html"]
 #     '.md': 'recommonmark.parser.CommonMarkParser',
 # }
 
-# html_js_files = [
-#    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
-# ]
-
 myst_enable_extensions = [
     "amsmath",
     "colon_fence",
