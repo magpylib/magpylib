@@ -4,8 +4,6 @@ Copyright (c) 2025 Michael Ortner. All rights reserved.
 magpylib: Python package for computation of magnetic fields of magnets, currents and moments.
 """
 
-from __future__ import annotations
-
 from scipy.constants import mu_0
 
 from magpylib import core, current, graphics, magnet, misc

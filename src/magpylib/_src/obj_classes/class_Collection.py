@@ -3,7 +3,6 @@
 # pylint: disable=redefined-builtin
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-positional-arguments
-from __future__ import annotations
 
 from collections import Counter
 

@@ -3,7 +3,6 @@
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-positional-arguments
-from __future__ import annotations
 
 import contextlib
 import os

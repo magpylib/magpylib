@@ -50,8 +50,6 @@ level4(getB_from_sensor, getH_from_sensor): <--- USER INTERFACE
 level5(sens.getB, sens.getH): <--- USER INTERFACE
 """
 
-from __future__ import annotations
-
 import numbers
 import warnings
 from collections.abc import Callable

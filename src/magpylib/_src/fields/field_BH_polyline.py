@@ -3,7 +3,6 @@ Implementations of analytical expressions of line current segments
 """
 
 # pylint: disable=too-many-positional-arguments
-from __future__ import annotations
 
 import numpy as np
 from numpy.linalg import norm

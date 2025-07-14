@@ -68,6 +68,7 @@ repos:
     rev: "v0.10.0.1"
     hooks:
       - id: shellcheck
+        exclude: ^.binder/ # messes up colon fences for grids in docs
 
   - repo: local
     hooks:

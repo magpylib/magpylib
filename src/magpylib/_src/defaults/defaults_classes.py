@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from magpylib._src.defaults.defaults_utility import (
     SUPPORTED_PLOTTING_BACKENDS,
     MagicProperties,
