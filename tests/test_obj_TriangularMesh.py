@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import re
 import sys
 import warnings
@@ -195,7 +193,7 @@ def test_open_mesh():
             check_open="ignore",
             reorient_faces="raise",
         )
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(UserWarning) as record:  # noqa: PT030, PT031
         magpy.magnet.TriangularMesh(
             polarization=(0, 0, 1),
             vertices=vertices,
@@ -206,7 +204,7 @@ def test_open_mesh():
         assert re.match(r"Open mesh detected in .*.", str(record[0].message))
         assert re.match(r"Open mesh in .* detected.", str(record[1].message))
 
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(UserWarning) as record:  # noqa: PT030, PT031
         magpy.magnet.TriangularMesh(
             polarization=(0, 0, 1),
             vertices=vertices,
@@ -232,27 +230,27 @@ def test_open_mesh():
             reorient_faces="ignore",
         )
 
+    mesh = magpy.magnet.TriangularMesh(
+        polarization=(0, 0, 1),
+        vertices=vertices,
+        faces=faces,
+        check_open="ignore",
+        reorient_faces="ignore",
+    )
     with pytest.warns(
         UserWarning,
         match=r"Open mesh of .* detected",
     ):
-        mesh = magpy.magnet.TriangularMesh(
-            polarization=(0, 0, 1),
-            vertices=vertices,
-            faces=faces,
-            check_open="ignore",
-            reorient_faces="ignore",
-        )
         mesh.getB((0, 0, 0))
 
+    mesh = magpy.magnet.TriangularMesh(
+        polarization=(0, 0, 1),
+        vertices=vertices,
+        faces=faces,
+        check_open="skip",
+        reorient_faces="skip",
+    )
     with pytest.warns(UserWarning, match=r"Unchecked mesh status of .* detected"):
-        mesh = magpy.magnet.TriangularMesh(
-            polarization=(0, 0, 1),
-            vertices=vertices,
-            faces=faces,
-            check_open="skip",
-            reorient_faces="skip",
-        )
         mesh.getB((0, 0, 0))
 
 

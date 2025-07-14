@@ -1,5 +1,4 @@
 # here all core functions should be tested properly - ideally against FEM
-from __future__ import annotations
 
 import numpy as np
 

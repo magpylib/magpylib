@@ -1,7 +1,6 @@
 """base traces building functions"""
 
 # pylint: disable=too-many-positional-arguments
-from __future__ import annotations
 
 from functools import partial
 

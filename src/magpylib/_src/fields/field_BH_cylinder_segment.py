@@ -4,7 +4,6 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-positional-arguments
-from __future__ import annotations
 
 import numpy as np
 from scipy.constants import mu_0 as MU0

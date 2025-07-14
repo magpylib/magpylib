@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from unittest.mock import patch
 
 import matplotlib.pyplot as plt
@@ -92,7 +90,7 @@ def test_infer_backend(canvas, is_notebook_result, backend):
     """test inferring auto backend"""
     with patch("magpylib._src.utility.is_notebook", return_value=is_notebook_result):
         # pylint: disable=import-outside-toplevel
-        from magpylib._src.display.display import infer_backend
+        from magpylib._src.display.display import infer_backend  # noqa: PLC0415
 
         assert infer_backend(canvas) == backend
 
