@@ -176,6 +176,14 @@
 :img-bottom: ../../../_static/images/examples_icon_misc_inhom.png
 :::
 
+:::{grid-item-card} {ref}`examples-misc-current-replacement`
+:text-align: center
+:link: examples-misc-current-replacement
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_misc_current_replacement.png
+:::
+
 ::::
 
 
