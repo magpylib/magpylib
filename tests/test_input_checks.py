@@ -718,8 +718,8 @@ def test_input_rotate_axis_bad(axis):
 @pytest.mark.parametrize(
     "observers",
     [
-        magpy.Sensor(),
-        magpy.Collection(magpy.Sensor()),
+        magpy.Sensor(position=(1, 1, 1)),
+        magpy.Collection(magpy.Sensor(position=(1, 1, 1))),
         magpy.Collection(magpy.Sensor(), magpy.Sensor()),
         (1, 2, 3),
         [(1, 2, 3)] * 2,
@@ -738,6 +738,7 @@ def test_input_observers_good(observers):
     """good observers input"""
     src = magpy.misc.Dipole(moment=(1, 2, 3))
     B = src.getB(observers)
+    print(B)
     assert isinstance(B, np.ndarray)
 
 
