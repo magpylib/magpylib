@@ -1,7 +1,5 @@
 """Package level config defaults"""
 
-from __future__ import annotations
-
 DEFAULTS = {
     "display": {
         "autosizefactor": 10,

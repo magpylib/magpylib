@@ -5,7 +5,6 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=wrong-import-position
 # pylint: disable=too-many-positional-arguments
-from __future__ import annotations
 
 import contextlib
 import os

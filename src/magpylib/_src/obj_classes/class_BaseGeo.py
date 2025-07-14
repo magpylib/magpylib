@@ -3,7 +3,6 @@
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=protected-access
-from __future__ import annotations
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -141,7 +140,7 @@ class BaseGeo(BaseTransform):
     @parent.setter
     def parent(self, inp):
         # pylint: disable=import-outside-toplevel
-        from magpylib._src.obj_classes.class_Collection import Collection
+        from magpylib._src.obj_classes.class_Collection import Collection  # noqa: I001, PLC0415
 
         if isinstance(inp, Collection):
             inp.add(self, override_parent=True)
@@ -288,7 +287,7 @@ class BaseGeo(BaseTransform):
         Collection: Collection
         """
         # pylint: disable=import-outside-toplevel
-        from magpylib import Collection
+        from magpylib import Collection  # noqa: PLC0415
 
         return Collection(self, obj)
 
@@ -346,7 +345,7 @@ class BaseGeo(BaseTransform):
         Instance sens2 with position [ 2.  6. 10.].
         """
         # pylint: disable=import-outside-toplevel
-        from copy import deepcopy
+        from copy import deepcopy  # noqa: PLC0415
 
         # avoid deepcopying the deep dependency upwards the tree structure
         if self.parent is not None:

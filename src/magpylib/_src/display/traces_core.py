@@ -5,7 +5,6 @@
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-nested-blocks
 # pylint: disable=cyclic-import
-from __future__ import annotations
 
 import warnings
 from itertools import cycle

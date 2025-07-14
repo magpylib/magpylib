@@ -1,7 +1,5 @@
 """CircularCircle current class code"""
 
-from __future__ import annotations
-
 import warnings
 from typing import ClassVar
 

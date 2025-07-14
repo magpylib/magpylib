@@ -41,7 +41,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-  { include-group = "test" }
+  { include-group = "test" },
+  { include-group = "docs" },
 ]
 
 docs = [
@@ -58,7 +59,7 @@ docs = [
   "pyvista",
   "magpylib-material-response",
   "magpylib-force",
-  "plotly>=5.16,<6.0", # v6 is not working properly as of 6.1.1
+  "plotly>=5.16,<6.0", # see https://github.com/executablebooks/myst-nb/issues/667
   "kaleido==0.2.1", # ulterior versions don't ship chrome
 ]
 test = [
@@ -163,7 +164,6 @@ ignore = [
   "PLR09",    # Too many <...>
   "PLR2004",  # Magic value used in comparison
 ]
-isort.required-imports = ["from __future__ import annotations"]
 # Uncomment if using a _compat.typing backport
 # typing-modules = ["magpylib._compat.typing"]
 

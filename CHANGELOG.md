@@ -527,7 +527,6 @@ This is a major update that includes
     the Sensor (in the Sensor local CS). `pixel` is an arbitrary array_like of
     the shape (N1, N2, ..., 3).
 - Geometry paths:
-
   - The `position` and `orientation` attributes can now store paths in the
     global CS. For a path of length M the attribute `position` is an array of
     the shape (M,3) and `orientation` is a Rotation object with length M. Each
@@ -565,7 +564,6 @@ This is a major update that includes
   - The top level function `displaySystem()` was renamed to `display()`.
 - Renamed attributes (parameters cannot be initialized in their short forms
   anymore):
-
   - `angle` and `axis` are replaced by `orientation`
   - `dimension` is replaced by `diameter` for Loop and Sphere classes.
   - `angle`&`axis` are replaced by `orientation`.

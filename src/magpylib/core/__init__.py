@@ -2,8 +2,6 @@
 The core sub-package gives direct access to our field implementations.
 """
 
-from __future__ import annotations
-
 __all__ = [
     "current_circle_Hfield",
     "current_polyline_Hfield",
