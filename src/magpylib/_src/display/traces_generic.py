@@ -6,7 +6,6 @@
 # pylint: disable=too-many-nested-blocks
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-positional-arguments
-from __future__ import annotations
 
 import numbers
 import warnings

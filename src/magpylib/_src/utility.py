@@ -3,7 +3,6 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
 # import numbers
-from __future__ import annotations
 
 import warnings
 from collections.abc import Callable, Sequence
