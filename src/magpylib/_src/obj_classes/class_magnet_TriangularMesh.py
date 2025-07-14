@@ -701,7 +701,7 @@ class TriangularMesh(BaseMagnet):
         """
         # pylint: disable=import-outside-toplevel
         try:
-            import pyvista
+            import pyvista  # noqa: PLC0415
         except ImportError as missing_module:  # pragma: no cover
             msg = """In order load pyvista Polydata objects, you first need to install pyvista via pip
                 or conda, see https://docs.pyvista.org/getting-started/installation.html"""

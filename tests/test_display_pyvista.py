@@ -2,6 +2,7 @@ import contextlib
 import os
 import sys
 import tempfile
+from pathlib import Path
 from unittest.mock import patch
 
 import numpy as np
@@ -97,7 +98,10 @@ def test_animation_warning():
     "animation not supported, should warn and display static"
     pl = pv.Plotter()
     src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning,
+        match=r"No path to be animated detected, displaying standard plot*.",
+    ):
         src.show(canvas=pl, animation=True, backend="pyvista")
 
 
@@ -124,8 +128,6 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
         patch("webbrowser.open"),
     ):
         try:
-            from pathlib import Path
-
             temp = Path(tempfile.gettempdir()) / os.urandom(24).hex()
             temp = temp.with_suffix(f".{extension}")
             animation_output = temp if filename else extension

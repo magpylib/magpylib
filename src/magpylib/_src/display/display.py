@@ -156,9 +156,9 @@ def infer_backend(canvas):
     in_notebook = False
     plotly_available = False
     try:
-        import plotly  # pylint: disable=unused-import
-
-        from magpylib._src.utility import is_notebook
+        # pylint: disable=unused-import
+        import plotly  # noqa: I001, PLC0415
+        from magpylib._src.utility import is_notebook  # noqa: PLC0415
 
         plotly_available = True
         in_notebook = is_notebook()
@@ -174,7 +174,8 @@ def infer_backend(canvas):
         backend = "plotly"
     else:
         try:
-            import pyvista  # pylint: disable=unused-import
+            # pylint: disable=unused-import
+            import pyvista  # noqa: PLC0415
 
             if isinstance(canvas, pyvista.Plotter):
                 backend = "pyvista"
