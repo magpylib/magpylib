@@ -6,7 +6,6 @@ Computation details in function docstrings.
 # pylint: disable=too-many-nested-blocks
 # pylint: disable=too-many-branches
 # pylance: disable=Code is unreachable
-from __future__ import annotations
 
 import numpy as np
 import scipy.spatial

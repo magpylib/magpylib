@@ -4,7 +4,6 @@
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-positional-arguments
-from __future__ import annotations
 
 import numpy as np
 

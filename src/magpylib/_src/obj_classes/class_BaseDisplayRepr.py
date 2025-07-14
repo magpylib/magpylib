@@ -2,7 +2,6 @@
 
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-branches
-from __future__ import annotations
 
 import numpy as np
 from scipy.spatial.transform import Rotation

@@ -2,8 +2,6 @@
 Testing all cases against a large set of pre-computed values
 """
 
-from __future__ import annotations
-
 import numpy as np
 import pytest
 
