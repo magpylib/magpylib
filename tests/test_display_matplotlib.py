@@ -228,7 +228,7 @@ def test_TriangularMesh_display():
         return_fig=True,
     )
 
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(UserWarning) as record:  # noqa: PT030, PT031
         magpy.magnet.TriangularMesh(
             polarization=(0, 0, 1000),
             vertices=vertices,
@@ -264,7 +264,7 @@ def test_TriangularMesh_display():
     }
     vertices = np.array([v for k, v in selfintersecting_mesh3d.items() if k in "xyz"]).T
     faces = np.array([v for k, v in selfintersecting_mesh3d.items() if k in "ijk"]).T
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(UserWarning) as record:  # noqa: PT030, PT031
         magpy.magnet.TriangularMesh(
             polarization=(0, 0, 1000),
             vertices=vertices,
@@ -545,13 +545,13 @@ def test_bad_show_inputs():
             s.show(cyl1, sensor, col=1)
 
     # test unsupported specific args for some backends
+    sensor = magpy.Sensor(
+        position=np.linspace((0, 0, -0.2), (0, 0, 0.2), 200), style_size=1.5
+    )
     with pytest.warns(
         UserWarning,
         match=r"The 'plotly' backend does not support 'animation_output'.*",
     ):
-        sensor = magpy.Sensor(
-            position=np.linspace((0, 0, -0.2), (0, 0, 0.2), 200), style_size=1.5
-        )
         magpy.show(
             sensor,
             backend="plotly",

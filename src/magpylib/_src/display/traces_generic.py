@@ -272,7 +272,7 @@ def get_traces_2D(
 ):
     """draws and animates sensor values over a path in a subplot"""
     # pylint: disable=import-outside-toplevel
-    from magpylib._src.fields.field_wrap_BH import getBH_level2
+    from magpylib._src.fields.field_wrap_BH import getBH_level2  # noqa: PLC0415
 
     sources = format_obj_input(objects, allow="sources+collections")
     sources = [
@@ -704,7 +704,7 @@ def extract_animation_properties(
 ):
     """Extract animation properties"""
     # pylint: disable=import-outside-toplevel
-    from magpylib._src.obj_classes.class_Collection import Collection
+    from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
 
     path_lengths = []
     for obj in objs:
