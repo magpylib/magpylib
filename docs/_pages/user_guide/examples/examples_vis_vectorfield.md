@@ -20,11 +20,11 @@ kernelspec:
 Pixel Vector Field
 :::
 
-The `Sensor` object with its `pixel` can be conveniently used for visualizing the vector fields `"B"`, `"H"`, `"M"`, or `"J"` in the form of quiver plots. A detailed documentation of this functionality is found in the [documentation](styles-pixel-vectorfield). This notebook provides examples of how to use these features effectively, along with explanations of the relevant parameters.
+The `Sensor` object with its `pixel` attribute can be conveniently used to visualize vector fields `"B"`, `"H"`, `"M"`, or `"J"` as quiver plots. Detailed documentation is available in the [styles-pixel-vectorfield](styles-pixel-vectorfield) section. This notebook provides practical examples and explanations of relevant parameters for effective usage.
 
 ## Example 1: Transparent Magnet
 
-Simple example using pixel field functionality combined with magnet transparency displaying the B field on a surface that passes through the magnet.
+A simple example using pixel field functionality, combined with magnet transparency, displays the B field on a surface passing through the magnet.
 
 ```{code-cell} ipython3
 :tags: [hide-input]
@@ -36,7 +36,7 @@ import magpylib as magpy
 magnet = magpy.magnet.Cuboid(
     polarization=(1, 1, 0),
     dimension=(4e-3, 4e-3, 2e-3),
-    style_opacity=.5,
+    style_opacity=0.5,
 )
 
 # Create a grid of pixel positions in the xy-plane
@@ -50,14 +50,14 @@ sens = magpy.Sensor(
 )
 
 # Display the sensor and magnet using the Plotly backend
-magpy.show([sens, magnet], backend='plotly')
+magpy.show([sens, magnet], backend="plotly")
 ```
 
 ## Example 2: Complex Pixel Grids
 
 Sensor pixels are not restricted to any specific grid structure and can be positioned freely to represent curved surfaces, lines, or individual points of interest.
 
-The example below demonstrates the visualization of the magnetic field of a magnetic pole wheel evaluated along curved surfaces and lines using different color maps and arrow shapes.
+The following example demonstrates visualization of the magnetic field of a magnetic pole wheel, evaluated along curved surfaces and lines, using different color maps and arrow shapes.
 
 ```{code-cell} ipython3
 :tags: [hide-input]
@@ -71,7 +71,7 @@ for i in range(12):
     zone = magpy.magnet.CylinderSegment(
         dimension=(1.8, 2, 1, -15, 15),
         polarization=((-1)**i, 0, 0),
-    ).rotate_from_angax(30*i, axis='z')
+    ).rotate_from_angax(30*i, axis="z")
     pole_wheel.add(zone)
 
 # Sensor 1: Pixel line along a circle in the xz-plane
@@ -90,11 +90,11 @@ pixel_grid2 = [[(3.5*cos(a), 3.5*sin(a), z) for a in ang2] for z in z_values]
 
 sensor2 = magpy.Sensor(
     pixel=pixel_grid2,
-    style_pixel_field = {
-        "vectorsource":"H",
-        "sizemode" : "constant",
-        "colorscale" : "Blues",
-        "symbol" : "arrow3d",
+    style_pixel_field={
+        "vectorsource": "H",
+        "sizemode": "constant",
+        "colorscale": "Blues",
+        "symbol": "arrow3d",
     }
 )
 
@@ -105,18 +105,18 @@ pixel_grid3 = [[(r*cos(a), r*sin(a), 0) for a in ang3] for r in r_values]
 
 sensor3 = magpy.Sensor(
     pixel=pixel_grid3,
-    style_pixel_field = {
-        "vectorsource":"H",
-        "sizemode" : "log",
-        "colorscale" : "Plasma",
-        "symbol" : "arrow3d",
+    style_pixel_field={
+        "vectorsource": "H",
+        "sizemode": "log",
+        "colorscale": "Plasma",
+        "symbol": "arrow3d",
     }
 )
 
 # Display sensors and magnets using Plotly backend
 magpy.show(
     [sensor1, sensor2, sensor3, pole_wheel],
-    backend='plotly',
+    backend="plotly",
     style_arrows_x_show=False,
     style_arrows_y_show=False,
     style_arrows_z_show=False,
@@ -125,7 +125,7 @@ magpy.show(
 
 ## Example 3: Pixel Field Animation
 
-The pixel field can be combined with animation to create spectacular visualizations, such as displaying the magnetic field of rotating magnets.
+Pixel fields can be combined with animation to create spectacular visualizations, such as displaying the magnetic field of rotating magnets.
 
 ```{code-cell} ipython3
 :tags: [hide-input]
@@ -150,7 +150,7 @@ magnet.rotate_from_angax(
 pixel_grid = np.mgrid[-2:2:12j, -2:2:12j, 1:1:1j].T[0]
 sensor = magpy.Sensor(pixel=pixel_grid)
 
-# Display as animation in the plotly backend
+# Display as animation in the Plotly backend
 magpy.show(
     magnet,
     sensor,
@@ -159,3 +159,4 @@ magpy.show(
     style_pixel_field_vectorsource="B",
     backend="plotly",
 )
+```
