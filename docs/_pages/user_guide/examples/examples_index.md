@@ -99,7 +99,7 @@
 ::::
 
 (examples-complex-magnet-shapes)=
-## Complex Magnet Shapes
+## Complex Shapes
 
 ::::{grid} 2 3 4 4
 :gutter: 4
@@ -142,6 +142,14 @@
 :link-type: ref
 :link-alt: link to example
 :img-bottom: ../../../_static/images/examples_icon_shapes_cad.png
+:::
+
+:::{grid-item-card} {ref}`examples-shapes-current-sheet`
+:text-align: center
+:link: examples-shapes-current-sheet
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_shapes_current_sheet.png
 :::
 
 ::::
