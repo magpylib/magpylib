@@ -20,7 +20,7 @@ kernelspec:
 Pixel Vector Field
 :::
 
-The `Sensor` object with its `pixel` can be conveniently used for visualizing the vector fields `"B"`, `"H"`, `"M"`, or `"J"` in the form of quiver plots. A detailed documentaion of this functionlity is found in the [documentartion](styles-pixel-vectorfield). This notebook provides examples of how to use these features effectively, along with explanations of the relevant parameters.
+The `Sensor` object with its `pixel` can be conveniently used for visualizing the vector fields `"B"`, `"H"`, `"M"`, or `"J"` in the form of quiver plots. A detailed documentaion of this functionality is found in the [documentation](styles-pixel-vectorfield). This notebook provides examples of how to use these features effectively, along with explanations of the relevant parameters.
 
 ## Example 1: Transparent Magnet
 
