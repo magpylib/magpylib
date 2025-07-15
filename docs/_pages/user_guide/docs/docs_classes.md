@@ -232,7 +232,7 @@ The method <span style="color: orange">**to_TriangleCollection()**</span> transf
 
 
 ---------------------------------------------
-
+(docs-classes-current)=
 
 ## Current classes
 
