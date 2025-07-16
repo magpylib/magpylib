@@ -192,6 +192,13 @@
 :img-bottom: ../../../_static/images/examples_icon_misc_current_replacement.png
 :::
 
+:::{grid-item-card} {ref}`examples-misc-mirror`
+:link: examples-misc-mirror
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_misc_mirror.png
+:::
+
 ::::
 
 
@@ -230,6 +237,14 @@
 :link-type: ref
 :link-alt: link to example
 :img-bottom: ../../../_static/images/examples_icon_WIP.png
+:::
+
+:::{grid-item-card} {ref}`examples-app-pcb`
+:text-align: center
+:link: examples-app-pcb
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_app_pcb.png
 :::
 
 ::::
