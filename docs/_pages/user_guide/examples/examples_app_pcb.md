@@ -107,6 +107,6 @@ plt.tight_layout()
 plt.show()
 ```
 
-Note that planar coil structures are often combined with a shielding layer or a **highly permeable** back-sheet (e.g., ferrite) to reduce electromagnetic interference or enhance inductance. While Magpylib does not simulate induced magnetization or solve for current density distributions in materials, in such cases the [magnetic mirror model](examples-misc-mirror) can be applied.
+Note that planar coil structures are often combined with a shielding layer or a **highly permeable** back-sheet (e.g., ferrite) to reduce electromagnetic interference or enhance inductance. While Magpylib does not simulate induced magnetization or solve for current density distributions in materials, in such cases the [Method of Images](examples-misc-mirror) can be applied.
 
 Keep in mind that real current distributions are typically **non-uniform**, especially near corners, sharp bends, or under high-frequency (AC) conditions where eddy currents become relevant. However, if the AC [penetration depth](https://en.wikipedia.org/wiki/Skin_effect) is significantly larger than the conductor dimensions, eddy current effects are minimal, and the static field models provided by Magpylib can still offer reasonable approximations.
