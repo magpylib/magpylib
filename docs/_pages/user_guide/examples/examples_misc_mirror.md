@@ -16,53 +16,44 @@ kernelspec:
 
 # Method of Images
 
+The method of images is a classical technique from electrostatics that can also be used in magnetostatics to obtain analytical solutions in the presence of highly permeable materials. In this example we show how it can be applied with Magpylib.
+
 ## Textbook Fundamentals
 
-The **method of images**, a classical technique from electrostatics, can also be used in **magnetostatics** to obtain analytical solutions in the presence of highly permeable materials.
+For the correct application of the method of images several requirements must be satisfied:
 
-To apply the method of images correctly, a few fundamental requirements must be satisfied:
-
-1. **Linearity of the Governing Equation**  
-   The scalar potential $ \phi $ must satisfy a linear partial differential equation such as the Poisson equation:
+1. **Linearity of the Governing Equation:** The scalar potential $ \phi $ must satisfy a linear partial differential equation such as the Poisson equation:
 
    $$\Delta \phi(\vec{r}) = -\frac{\rho(\vec{r})}{\varepsilon}$$
 
-   where $ \Delta = \nabla \cdot \nabla $ is the Laplace operator, $ \varepsilon $ is a constant permittivity, and $ \rho(\vec{r}) $ is the source distribution that generates the field.
+   where $ \Delta = \nabla \cdot \nabla $ is the Laplace operator, $ \varepsilon $ is a constant permittivity, and $ \rho(\vec{r}) $ is the source distribution (=charges) that generates the field.
 
-2. **Homogeneity in the Region of Interest**  
-   The method of images is only applicable in charge-free regions, where the equation reduces to Laplace’s equation:
-   \[
-   \Delta \phi(\vec{r}) = 0
-   \]
+2. **Homogeneity in the Region of Interest:** The method of images is only applicable in charge-free regions, where the governing equation reduces to Laplace’s equation:
+   
+   $$\Delta \phi(\vec{r}) = 0$$
 
-3. **Simple Geometry and Boundary Conditions**  
-   The boundary must be geometrically simple (typically a plane, sphere, or infinite cylinder), with well-defined boundary conditions such as a constant potential and satisfying natural boundaries at infinity. This implies that the resulting field $ \vec{F} = -\nabla \phi $ is normal to the boundary surface, and decays at infinity.
+3. **Simple Geometry and Boundary Conditions:** The boundary must be geometrically simple -- typically a plane, sphere, or infinite cylinder. On the surface a simple boundary condition, like constant potential, must hold, and natural boundaries must be satisfied at infinity. This implies that the resulting gradient field $ \vec{F} = -\nabla \phi $ is normal to the boundary surface, and decays at infinity.
 
-4. **Applicability of the Uniqueness Theorem**  
-   The method relies on the uniqueness theorem: if a solution satisfies both the differential equation and the boundary conditions, it is the only physically valid solution in that region.
-
----
+4. **Applicability of the Uniqueness Theorem:** The method relies on the uniqueness theorem: if a solution satisfies both the differential equation and the boundary conditions, it is the only physically valid solution in that region.
 
 When all of these criteria are satisfied, the potential field in the region of interest can be constructed as the superposition of the original source distribution $ \rho(\vec{r}) $ and an image source $ \rho^*(\vec{r}) $, which is a mirror reflection of the original source across the boundary.
 
 ## Method of Images in Magnetostatics
 
-In magnetostatics, the method of images can be applied in the presence of highly permeable soft magnetic materials that are classified by high permeabilities $\mu_r \gg 1$.
-
-In such materials, the magnetic moments can rotate freely and align in a way that completely suppresses the $ \vec{H} $-field inside the body. As a result, the field is forced to be normal to the material’s surface, making simple planar boundaries ideal for image constructions and satisfying condition (3).
+In magnetostatics, the method of images can be applied in the presence of highly permeable ($\mu_r \gg 1$) soft magnetic materials. In such materials, the magnetic moments can rotate freely and align in a way that completely suppresses the $ \vec{H} $-field inside the body. As a result, the field is forced to be normal to the material’s surface, making simple planar boundaries ideal for image constructions and satisfying condition (3).
 
 
 Furthermore:
 
 - In magnetostatics, the magnetic field $ \vec{H} $ can be expressed as the gradient of a magnetic scalar potential: $\vec{H} = -\nabla \phi_m $ satisfying condition (1), provided we are in regions without free currents.
 
-- Uniformly magnetized bodies, like the permanent magnets implemented in **Magpylib**, can be modeled using [magnetic surface charges](examples-misc-current-replacement). This means that condition (2) is fulfilled everywhere except on these surface sources.
+- Uniformly magnetized bodies, like the permanent magnets implemented in Magpylib, can be modeled using [magnetic surface charges](examples-misc-current-replacement). This means that condition (2) is fulfilled everywhere except on these surfaces.
 
 - The [uniqueness theorem](https://en.wikipedia.org/wiki/Electromagnetism_uniqueness_theorem) applies to all well-posed magnetostatic problems, satisfying condition (4).
 
 ---
 
-This means that magnets and currents can be mirrored across a highly permeable surface to compute the magnetic field outside the material. For magnetization, the normal component is preserved and the tangential components are inverted. For currents, the tangential component is preserved, while the normal component is inverted — as illustrated in the image below for planar surfaces.
+This means that magnets and currents can be mirrored across a highly permeable surface to compute the magnetic field outside the material. For magnetization, the normal component is preserved and the tangential components are inverted. For currents, the tangential component is preserved, while the normal component is inverted, as illustrated in the image below.
 
 ```{figure} ../../../_static/images/examples_misc_mirror.png
 :width: 100%
@@ -76,7 +67,7 @@ Sketch of how the image method works in magnetostatics
 
 ## Example Applications
 
-The method of images does not require an idealized, infinitely permeable half-space. In practice, even thin, finite soft-magnetic layers—such as the backs of inductors or magnetic shielding plates—can provide sufficient contrast for the image method to yield excellent approximations.
+The method of images does not require an idealized, infinitely permeable half-space. In practice, even thin (not too thin though), finite soft-magnetic layers—such as the soft-magnetic backs of inductors or magnetic shielding plates—can provide sufficient contrast for the image method. In addition, even relatively low permeabilities $\mu_r> 10$ or $\mu_r>100$ result in good agreement between experiment and theory.
 
 One practical use case is shown in the example on [magnetic scale structures](examples-app-scales), such as pole wheels, where a soft-magnetic backing enhances the field of out-of-plane magnetized patterns.
 
