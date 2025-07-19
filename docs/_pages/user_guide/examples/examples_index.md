@@ -236,7 +236,7 @@
 :link: examples-app-scales
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../../_static/images/examples_icon_WIP.png
+:img-bottom: ../../../_static/images/examples_icon_app_scales.png
 :::
 
 :::{grid-item-card} {ref}`examples-app-pcb`
