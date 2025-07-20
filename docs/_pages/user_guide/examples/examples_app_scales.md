@@ -34,16 +34,16 @@ Sketch of a rotary encoder with pole wheel and magnetic sensor. The sensor detec
 
 ## Encoder Terminology - INNOMAG Guideline
 
-The [INNOMAG e.V. Guideline](https://innomag.org/) is a revision of the [DIN SPEC 91411](https://www.dinmedia.de/en/technical-rule/din-spec-91411/354972979), a norm for unifying magnetic encoder technical represenation and nomenclature.
+The [INNOMAG e.V. Guideline](https://innomag.org/) is a revision of the [DIN SPEC 91411](https://www.dinmedia.de/en/technical-rule/din-spec-91411/354972979), a norm for unifying magnetic encoder technical representation and nomenclature.
 
 - The coordinates $p$ (wheel rotation angle or associated arc length), $o$ (axial length), and $n$ (radial distance from wheel surface) are used for relative positioning to the pole wheel.
 
 - The **magnetic field profile** $ B_\alpha(\vec{c}) $ refers to the $\alpha$-component of the \textit{B}-field, $ \alpha \in \{p, n, o\} $, along a path $\vec{c}$. Along a track it is commonly denoted by $ B_\alpha(p) $.
-    
+
 - **Magnetic poles** are regions above the wheel surface, where a component of the magnetic field does not change its sign in $p$ direction and does not undercut a threshold in $o$ direction.\footnote{This definition contrasts the classical physics usage, which vaguely refers to surface areas on a magnet.} The **pole length** $\ell_P$ denotes the distance between subsequent zero-crossings along $p$ direction. Poles are typically characterized by single **magnetic peaks** corresponding to the $i$th minima and maxima of the field profile $B_\alpha(p)$ with magnitudes $B_{\alpha, A}^i$ and mean value $\bar{B}_{\alpha, A}$.
-    
+
 - **Magnetic zones** are volumes of permanently magnetized material with comparable magnetic polarization density vectors that reflect the magnetization periodicity. Their characteristic dimensions are termed **zone length** $\ell_Z$ in $p$ direction, **zone width** $w_Z$ in $o$ direction, both defined on the zone surface, and **zone~depth** $d_Z$ in $n$ direction.
-    
+
 The **magnetic working distance** $ n^{\text{mag}} $ is the distance between the surface of the magnetic zones and the sensor’s sensitive elements. It differs from the **air gap** $ n^{\text{mech}} $, defined as the distance between sensor housing and wheel surface.
 
 The following figure provides a schematic overview of the terminology.
@@ -255,7 +255,7 @@ Quadrupole magnet cylinders are commonly used in [end-of-shaft](examples-app-end
 
 ## Magnetic scales with soft-magnetic back
 
-Soft-magnetic backs of magnetic scales can be modeled with Magpylib using the [method of images](examples-misc-image-method) with a high level of accuracy. This method was used in the [above model](example-app-scales-ideal-typical) prooving a high level of accuracy when the observer is close to the surface.
+Soft-magnetic backs of magnetic scales can be modeled with Magpylib using the [method of images](examples-misc-image-method) with a high level of accuracy. This method was used in the [above model](example-app-scales-ideal-typical) pronox -s testsving a high level of accuracy when the observer is close to the surface.
 
 ## Magnetic Scales with Soft-Magnetic Backing
 

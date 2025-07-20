@@ -29,7 +29,7 @@ For the correct application of the method of images several requirements must be
    where $ \Delta = \nabla \cdot \nabla $ is the Laplace operator, $ \varepsilon $ is a constant permittivity, and $ \rho(\vec{r}) $ is the source distribution (=charges) that generates the field.
 
 2. **Homogeneity in the Region of Interest:** The method of images is only applicable in charge-free regions, where the governing equation reduces to Laplace’s equation:
-   
+
    $$\Delta \phi(\vec{r}) = 0$$
 
 3. **Simple Geometry and Boundary Conditions:** The boundary must be geometrically simple -- typically a plane, sphere, or infinite cylinder. On the surface a simple boundary condition, like constant potential, must hold, and natural boundaries must be satisfied at infinity. This implies that the resulting gradient field $ \vec{F} = -\nabla \phi $ is normal to the boundary surface, and decays at infinity.
@@ -154,9 +154,3 @@ pl.add_mesh(disc, color='lightblue', show_edges=False)
 pl.camera.position = (5,15, 10)
 pl.show()
 ```
-
-
-
-
-
-
