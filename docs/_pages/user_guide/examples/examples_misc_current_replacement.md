@@ -25,16 +25,38 @@ Two commonly used approaches are:
 - **Equivalent Current Method**:
   This method replaces the magnetization with equivalent bound surface currents flowing around the prism’s side faces. The surface current density is given by $\vec{j} = \vec{M} \times \vec{n}$, where $\vec{n}$ is the outward-pointing normal vector of each side face. This is analogous to using the Biot–Savart law for current distributions.
 
-We demonstrate and compare these modeling techniques by computing the magnetic field of a `Cuboid` magnet using three representations:
-- a `Cuboid` object
-- a pair of charged top and bottom surfaces constructed using `Triangle`, and
-- a side-face current loop constructed with `TriangleStrip`.
+We demonstrate and compare these modeling techniques by computing the magnetic field of a cube magnet using three representations: First we use the `Cuboid` solution offered by Magpylib with a magnetization of 10 kA/m.
 
 ```{code-cell} ipython3
 :tags: [hide-input]
 
 import numpy as np
 import magpylib as magpy
+
+# Create a cube magnet
+cube = magpy.magnet.Cuboid(
+    dimension=(2, 2, 1),
+    magnetization=(0, 0, 1e4),
+    style_legend_text='Magnet',
+)
+
+# Sensor for observing the field
+sensor = magpy.Sensor(
+    position=np.linspace((-2,0,2), (2,0,2), 100),
+)
+
+# Display magnetic field and objects
+magpy.show(
+    {"objects": [sensor, cube],   "col": 1},
+    {"objects": [sensor, cube],   "output": "Hz", "col": 2},
+    backend="plotly",
+)
+```
+
+Then we construct a cube with the equivalent charge method by combining four `Triangle` surfaces to make up charged top and bottom of a cube. The surface charge density is 10 kA/m (Magpylib automatically projects the magnetization vector of `Triangle` onto the triangle plane).
+
+```{code-cell} ipython3
+:tags: [hide-input]
 
 # Vertices of a Cuboid
 p1 = (-1, -1, -.5)
@@ -47,7 +69,7 @@ p7 = (-1, 1, -.5)
 p8 = (-1, 1, .5)
 
 # Create charged top and bottom faces of cube
-charge = magpy.Collection()
+charge = magpy.Collection(style_legend_text='Charge')
 charge.add(
     magpy.misc.Triangle(vertices=(p1,p3,p5), magnetization=(0,0,-1e4)),
     magpy.misc.Triangle(vertices=(p1,p5,p7), magnetization=(0,0,-1e4)),
@@ -55,31 +77,29 @@ charge.add(
     magpy.misc.Triangle(vertices=(p2,p6,p8), magnetization=(0,0,1e4)),
 )
 
+# Display objects and field
+magpy.show(
+    {"objects": [sensor, charge], "col": 1},
+    {"objects": [sensor, charge], "output": "Hz", "col": 2},
+    backend="plotly",
+)
+```
+
+Finally we realize the equivalent current method creating a `TriangleStrip` current that flows along the edges of the cube.
+
+```{code-cell} ipython3
+:tags: [hide-input]
 # Create a current strip where the current flows along the cube edges
 strip = magpy.current.TriangleStrip(
     vertices=[p1, p2, p3, p4, p5, p6, p7, p8, p1, p2],
     current=1e4,
+    style_legend_text='Current',
 )
 
-# Create an actual cube magnet
-cube = magpy.magnet.Cuboid(
-    dimension=(2, 2, 1),
-    magnetization=(0, 0, 1e4),
-)
-
-# Sensor for observing the field
-sensor = magpy.Sensor(
-    position=np.linspace((-2,0,2), (2,0,2), 100),
-)
-
-# Display magnetic field and objects
+# Display objects and field
 magpy.show(
-    {"objects": [sensor, charge], "col": 1, "row": 1},
-    {"objects": [sensor, charge], "output": "Hz", "col": 2, "row": 1},
-    {"objects": [sensor, strip],  "col": 1, "row": 2},
-    {"objects": [sensor, strip],  "output": "Hz", "col": 2, "row": 2},
-    {"objects": [sensor, cube],   "col": 1, "row": 3},
-    {"objects": [sensor, cube],   "output": "Hz", "col": 2, "row": 3},
+    {"objects": [sensor, strip],  "col": 1},
+    {"objects": [sensor, strip],  "output": "Hz", "col": 2},
     backend="plotly",
 )
 ```
