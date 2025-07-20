@@ -68,6 +68,8 @@ This taxonomy provides an overview of the various types of commonly used magneti
 Taxonomy of magnetic scales as defined in DIN SPEC 91411.
 ```
 
+(example-app-scales-ideal-typical)=
+
 ## Ideal-Typical Models
 
 **Ideal-typical models** of magnetic scales refer to simplified magnetization patterns constructed from homogeneously magnetized geometric primitives. These models serve as idealized representations of real magnetic structures and can closely approximate the magnetic fields observed in practice. This is demonstrated in the figure below, which compares an experimental measurement of an incremental ROn scale with a simulation based on an ideal-typical model built using Magpylib.
@@ -250,3 +252,13 @@ plt.show()
 ## Quadrupole Magnet: Inhomogeneous Magnetization
 
 Quadrupole magnet cylinders are commonly used in [end-of-shaft](examples-app-end-of-shaft) configurations, where their unique field patterns enable robust angle detection. Unlike the ideal-typical magnets shown in earlier examples, quadrupoles exhibit a highly inhomogeneous magnetization, meaning they cannot be accurately represented by two or four homogeneous primitives. Modeling such magnets requires a more detailed approach, which is demonstrated in our example on [inhomogeneous magnetization](examples-misc-inhom).
+
+## Magnetic scales with soft-magnetic back
+
+Soft-magnetic backs of magnetic scales can be modeled with Magpylib using the [method of images](examples-misc-mirror) with a high level of accuracy. This method was used in the [above model](example-app-scales-ideal-typical) prooving a high level of accuracy when the observer is close to the surface.
+
+## Magnetic Scales with Soft-Magnetic Backing
+
+Magnetic scales that include a soft-magnetic backing layer—commonly used to enhance field strength or improve magnetization—can be accurately modeled in Magpylib using the [method of images](examples-misc-mirror).
+
+This technique offers a highly effective approximation by replacing the soft-magnetic layer with an equivalent image configuration. As demonstrated in the [ideal-typical scale model](example-app-scales-ideal-typical) above, this method yields accurate results, especially when the observer is located close to the surface compared to the distance from the mirror edges at the side.
