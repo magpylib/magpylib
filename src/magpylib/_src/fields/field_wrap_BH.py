@@ -183,8 +183,8 @@ def getBH_level2(
     # pylint: disable=too-many-statements
     # pylint: disable=import-outside-toplevel
 
-    from magpylib._src.obj_classes.class_Collection import Collection
-    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
+    from magpylib._src.obj_classes.class_Collection import Collection  # noqa: I001, PLC0415
+    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh  # noqa: PLC0415
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
@@ -218,7 +218,7 @@ def getBH_level2(
     # make sure that given in_out there is a Tetrahedron class or a TriangularMesh
     #   class in sources. Else throw a warning
     if in_out != "auto":
-        from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
+        from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron  # noqa: I001, PLC0415
 
         if not any(isinstance(src, Tetrahedron | TriangularMesh) for src in src_list):
             warnings.warn(
@@ -428,7 +428,7 @@ def getBH_level2(
     if output == "dataframe":
         # pylint: disable=import-outside-toplevel
         # pylint: disable=no-member
-        import pandas as pd
+        import pandas as pd  # noqa: PLC0415
 
         if sumup and len(sources) > 1:
             src_ids = [f"sumup ({len(sources)})"]

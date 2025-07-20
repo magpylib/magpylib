@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import plotly.graph_objects as go
 import pytest
@@ -265,12 +267,29 @@ def test_display_warnings():
     src.move(np.linspace((0.4, 0.4, 0.4), (4, 4, 4), 10), start=-1)
     fig = go.Figure()
 
-    with pytest.warns(UserWarning):  # animation_fps to big warning
+    with pytest.warns(UserWarning) as record:  # noqa: PT030, PT031
         src.show(canvas=fig, animation=5, animation_fps=3)
-    with pytest.warns(UserWarning):  # max frames surpassed
+        assert len(record) == 2
+        assert re.match(
+            r"The set `animation_fps` at 3 is greater than the max allowed of 2.*",
+            str(record[0].message),
+        )
+        assert re.match(
+            r"The number of frames \(10\) is greater than the max allowed of 2.*",
+            str(record[1].message),
+        )
+
+    with pytest.warns(
+        UserWarning,
+        match=r"The number of frames \(10\) is greater than the max allowed of 2.*",
+    ):
         src.show(canvas=fig, animation=True, animation_time=2, animation_fps=1)
+
     src = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
-    with pytest.warns(UserWarning):  # no object path detected
+    with pytest.warns(
+        UserWarning,
+        match=r"No path to be animated detected, displaying standard plot.*",
+    ):
         src.show(canvas=fig, style_path_frames=[], animation=True)
 
 

@@ -355,8 +355,8 @@ class BaseCollection(BaseDisplayRepr):
     def _update_src_and_sens(self):
         """updates sources, sensors and collections attributes from children"""
         # pylint: disable=protected-access
-        from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
-        from magpylib._src.obj_classes.class_Sensor import Sensor
+        from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
+        from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
 
         self._sources = [obj for obj in self._children if isinstance(obj, BaseSource)]
         self._sensors = [obj for obj in self._children if isinstance(obj, Sensor)]
