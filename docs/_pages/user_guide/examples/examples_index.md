@@ -189,14 +189,14 @@
 :link: examples-misc-equivalent
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../../_static/images/examples_icon_misc_current_replacement.png
+:img-bottom: ../../../_static/images/examples_icon_misc_equivalent.png
 :::
 
-:::{grid-item-card} {ref}`examples-misc-mirror`
-:link: examples-misc-mirror
+:::{grid-item-card} {ref}`examples-misc-image-method`
+:link: examples-misc-image-method
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../../_static/images/examples_icon_misc_mirror.png
+:img-bottom: ../../../_static/images/examples_icon_misc_image_method.png
 :::
 
 ::::

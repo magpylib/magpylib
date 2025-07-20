@@ -12,7 +12,7 @@ kernelspec:
   name: python3
 ---
 
-(examples-misc-mirror)=
+(examples-misc-image-method)=
 
 # Method of Images
 

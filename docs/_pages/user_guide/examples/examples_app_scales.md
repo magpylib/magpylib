@@ -255,10 +255,10 @@ Quadrupole magnet cylinders are commonly used in [end-of-shaft](examples-app-end
 
 ## Magnetic scales with soft-magnetic back
 
-Soft-magnetic backs of magnetic scales can be modeled with Magpylib using the [method of images](examples-misc-mirror) with a high level of accuracy. This method was used in the [above model](example-app-scales-ideal-typical) prooving a high level of accuracy when the observer is close to the surface.
+Soft-magnetic backs of magnetic scales can be modeled with Magpylib using the [method of images](examples-misc-image-method) with a high level of accuracy. This method was used in the [above model](example-app-scales-ideal-typical) prooving a high level of accuracy when the observer is close to the surface.
 
 ## Magnetic Scales with Soft-Magnetic Backing
 
-Magnetic scales that include a soft-magnetic backing layer—commonly used to enhance field strength or improve magnetization—can be accurately modeled in Magpylib using the [method of images](examples-misc-mirror).
+Magnetic scales that include a soft-magnetic backing layer—commonly used to enhance field strength or improve magnetization—can be accurately modeled in Magpylib using the [method of images](examples-misc-image-method).
 
 This technique offers a highly effective approximation by replacing the soft-magnetic layer with an equivalent image configuration. As demonstrated in the [ideal-typical scale model](example-app-scales-ideal-typical) above, this method yields accurate results, especially when the observer is located close to the surface compared to the distance from the mirror edges at the side.

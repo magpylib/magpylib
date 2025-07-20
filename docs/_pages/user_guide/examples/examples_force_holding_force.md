@@ -14,7 +14,7 @@ With Magpylib-force it is possible to compute the holding force of a magnet atta
 Sketch of holding force F that must be overcome to detach the magnet from a soft-magnetic plate.
 ```
 
-For this we make use of the [magnetic mirror](examples-misc-mirror) model, which is quite similar to the well-known electrostatic "mirror-charge" model. The magnetic field of a magnetic dipole moment that lies in front of a highly permeable surface is similar to the field of two dipole moments: the original one and one that is mirrored across the surface such that each "magnetic charge" that makes up the dipole moment is mirrored in both position and charge.
+For this we make use of the [magnetic mirror](examples-misc-image-method) model, which is quite similar to the well-known electrostatic "mirror-charge" model. The magnetic field of a magnetic dipole moment that lies in front of a highly permeable surface is similar to the field of two dipole moments: the original one and one that is mirrored across the surface such that each "magnetic charge" that makes up the dipole moment is mirrored in both position and charge.
 
 The following example computes the holding force of a Cuboid magnet using the magnetic mirror model.
 
