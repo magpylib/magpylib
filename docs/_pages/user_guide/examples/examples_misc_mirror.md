@@ -47,7 +47,7 @@ Furthermore:
 
 - In magnetostatics, the magnetic field $ \vec{H} $ can be expressed as the gradient of a magnetic scalar potential: $\vec{H} = -\nabla \phi_m $ satisfying condition (1), provided we are in regions without free currents.
 
-- Uniformly magnetized bodies, like the permanent magnets implemented in Magpylib, can be modeled using [magnetic surface charges](examples-misc-current-replacement). This means that condition (2) is fulfilled everywhere except on these surfaces.
+- Uniformly magnetized bodies, like the permanent magnets implemented in Magpylib, can be modeled using [magnetic surface charges](examples-misc-equivalent). This means that condition (2) is fulfilled everywhere except on these surfaces.
 
 - The [uniqueness theorem](https://en.wikipedia.org/wiki/Electromagnetism_uniqueness_theorem) applies to all well-posed magnetostatic problems, satisfying condition (4).
 

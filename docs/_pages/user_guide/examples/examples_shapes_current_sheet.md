@@ -90,7 +90,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-Current strips can also be used to create complex magnet prisms using the [Equivalent Current Method](examples-misc-current-replacement).
+Current strips can also be used to create complex magnet prisms using the [Equivalent Current Method](examples-misc-equivalent).
 
 ## TriangleSheet
 

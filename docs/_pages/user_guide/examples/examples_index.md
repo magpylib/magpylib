@@ -184,9 +184,9 @@
 :img-bottom: ../../../_static/images/examples_icon_misc_inhom.png
 :::
 
-:::{grid-item-card} {ref}`examples-misc-current-replacement`
+:::{grid-item-card} {ref}`examples-misc-equivalent`
 :text-align: center
-:link: examples-misc-current-replacement
+:link: examples-misc-equivalent
 :link-type: ref
 :link-alt: link to example
 :img-bottom: ../../../_static/images/examples_icon_misc_current_replacement.png

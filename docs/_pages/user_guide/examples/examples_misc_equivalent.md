@@ -12,8 +12,8 @@ kernelspec:
 orphan: true
 ---
 
-(examples-misc-current-replacement)=
-# Equivalent Current and Charge Method
+(examples-misc-equivalent)=
+# Equivalent Charge and Current Method
 
 The magnetic field of a prism-shaped permanent magnet with uniform magnetization $\vec{M}$ oriented normal to its top and bottom surfaces can be computed using **replacement models** instead of directly integrating over the magnet’s volume.
 
