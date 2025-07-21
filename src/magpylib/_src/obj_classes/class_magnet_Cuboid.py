@@ -1,8 +1,9 @@
 # pylint: disable=too-many-positional-arguments
 
 """Magnet Cuboid class code"""
-
 from typing import ClassVar
+
+import numpy as np
 
 from magpylib._src.display.traces_core import make_Cuboid
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
@@ -44,6 +45,9 @@ class Cuboid(BaseMagnet):
     magnetization: array_like, shape (3,), default=`None`
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
+
+    volume: float
+        Object physical volume in units of m^3.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -114,6 +118,14 @@ class Cuboid(BaseMagnet):
             allow_None=True,
             forbid_negative0=True,
         )
+
+    @property
+    def volume(self):
+        """Volume of object in units of m³."""
+        if self.dimension is None:
+            return 0.0
+
+        return np.prod(self.dimension)
 
     @property
     def _default_style_description(self):

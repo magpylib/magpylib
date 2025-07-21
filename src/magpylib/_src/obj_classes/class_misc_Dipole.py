@@ -38,6 +38,9 @@ class Dipole(BaseSource):
         For homogeneous magnets the relation moment=magnetization*volume holds. For
         current loops the relation moment = current*loop_surface holds.
 
+    volume: float
+        Object physical volume in units of m^3.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -101,6 +104,11 @@ class Dipole(BaseSource):
             sig_type="array_like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
         )
+
+    @property
+    def volume(self):
+        """Volume of object in units of m³."""
+        return 0
 
     @property
     def _default_style_description(self):

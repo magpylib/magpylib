@@ -32,6 +32,9 @@ class CustomSource(BaseSource):
         accept numpy ndarray inputs of shape (n,3), in which case the returned fields must
         be numpy ndarrays of shape (n,3) themselves.
 
+    volume: float
+        Object physical volume in units of m^3.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -72,3 +75,8 @@ class CustomSource(BaseSource):
     ):
         # init inheritance
         super().__init__(position, orientation, field_func, style, **kwargs)
+
+    @property
+    def volume(self):
+        """Volume of object in units of m³."""
+        return 0

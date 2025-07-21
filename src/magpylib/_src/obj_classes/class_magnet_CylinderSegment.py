@@ -52,6 +52,9 @@ class CylinderSegment(BaseMagnet):
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
 
+    volume: float
+        Object physical volume in units of m^3.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -135,6 +138,15 @@ class CylinderSegment(BaseMagnet):
     def barycenter(self):
         """Object barycenter."""
         return np.squeeze(self._barycenter)
+
+    @property
+    def volume(self):
+        """Volume of object in units of m³."""
+        if self.dimension is None:
+            return 0.0
+
+        r1, r2, h, phi1, phi2 = self.dimension
+        return (r2**2 - r1**2) * np.pi * h * (phi2 - phi1) / 360
 
     @staticmethod
     def _get_barycenter(position, orientation, dimension):

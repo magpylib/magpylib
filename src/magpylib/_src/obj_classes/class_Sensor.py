@@ -510,6 +510,11 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         )
 
     @property
+    def volume(self):
+        """Volume of object in units of m³."""
+        return 0
+
+    @property
     def _default_style_description(self):
         """Default style description text"""
         pix = self.pixel

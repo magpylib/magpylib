@@ -50,6 +50,9 @@ class Triangle(BaseMagnet):
         charge of the Triangle is given by the projection of the magnetization on the
         Triangle normal vector (right-hand-rule).
 
+    volume: float
+        Object physical volume in units of m^3.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -144,6 +147,11 @@ class Triangle(BaseMagnet):
             np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
         )
         return orientation.apply(centroid) + position
+
+    @property
+    def volume(self):
+        """Volume of object in units of m³."""
+        return 0
 
     @property
     def _default_style_description(self):

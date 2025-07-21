@@ -42,6 +42,9 @@ class Polyline(BaseCurrent):
     current: float, default=`None`
         Electrical current in units of A.
 
+    volume: float
+        Object physical volume in units of m^3.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -111,6 +114,11 @@ class Polyline(BaseCurrent):
     def vertices(self, vert):
         """Set Polyline vertices, array_like, meter."""
         self._vertices = check_format_input_vertices(vert)
+
+    @property
+    def volume(self):
+        """Volume of object in units of m³."""
+        return 0
 
     @property
     def _default_style_description(self):

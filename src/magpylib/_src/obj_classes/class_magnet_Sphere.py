@@ -1,8 +1,9 @@
 # pylint: disable=too-many-positional-arguments
 
 """Magnet Sphere class code"""
-
 from typing import ClassVar
+
+import numpy as np
 
 from magpylib._src.display.traces_core import make_Sphere
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
@@ -42,6 +43,9 @@ class Sphere(BaseMagnet):
     magnetization: array_like, shape (3,), default=`None`
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
+
+    volume: float
+        Object physical volume in units of m^3.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -111,6 +115,14 @@ class Sphere(BaseMagnet):
             allow_None=True,
             forbid_negative=True,
         )
+
+    @property
+    def volume(self):
+        """Volume of object in units of m³."""
+        if self.diameter is None:
+            return 0.0
+
+        return self.diameter**3 * np.pi / 6
 
     @property
     def _default_style_description(self):

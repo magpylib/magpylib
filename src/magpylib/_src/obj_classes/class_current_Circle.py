@@ -39,6 +39,9 @@ class Circle(BaseCurrent):
     current: float, default=`None`
         Electrical current in units of A.
 
+    volume: float
+        Object physical volume in units of m^3.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -101,6 +104,11 @@ class Circle(BaseCurrent):
             allow_None=True,
             forbid_negative=True,
         )
+
+    @property
+    def volume(self):
+        """Volume of object in units of m³."""
+        return 0
 
     @property
     def _default_style_description(self):

@@ -65,6 +65,9 @@ class TriangularMesh(BaseMagnet):
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
 
+    volume: float
+        Object physical volume in units of m^3.
+
     reorient_faces: bool or string, default=`True`
         In a properly oriented mesh, all faces must be oriented outwards.
         If `True`, check and fix the orientation of each triangle.
@@ -177,6 +180,11 @@ class TriangularMesh(BaseMagnet):
         return self._vertices[self._faces]
 
     @property
+    def volume(self):
+        """Volume of object in units of m³."""
+        return self._calculate_mesh_volume()
+
+    @property
     def status_open(self):
         """Return open status"""
         return self._status_open
@@ -190,6 +198,53 @@ class TriangularMesh(BaseMagnet):
     def status_reoriented(self):
         """Return reoriented status"""
         return self._status_reoriented
+
+    def _calculate_mesh_volume(self):
+        """
+        Calculate volume of triangular mesh using signed tetrahedra method.
+
+        Based on algorithm from: https://n-e-r-v-o-u-s.com/blog/?p=4415
+        For each triangle, compute the signed volume of tetrahedron from origin
+        to triangle using: V = (1/6) * (v1 x v2) . v3
+        Sum all signed volumes to get total mesh volume.
+
+        Returns
+        -------
+        float
+            Volume in units of m³.
+        """
+        if self._vertices is None or self._faces is None:
+            return 0.0
+        if self.status_open is None:
+            self.check_open()
+        if self.status_open is True:
+            msg = "Open mesh detected. Cannot compute volume."
+            raise ValueError(msg)
+
+        # Vectorized calculation: get all triangle vertices at once
+        # Shape: (n_faces, 3, 3) where each face has 3 vertices with 3 coordinates
+        triangles = self.mesh
+        
+        # Extract vertex arrays: v1, v2, v3 for all triangles
+        # Shape: (n_faces, 3) for each vertex array
+        v1 = triangles[:, 0]  # First vertex of each triangle
+        v2 = triangles[:, 1]  # Second vertex of each triangle  
+        v3 = triangles[:, 2]  # Third vertex of each triangle
+        
+        # Vectorized cross product: v1 x v2 for all triangles
+        # Shape: (n_faces, 3)
+        cross_products = np.cross(v1, v2)
+        
+        # Vectorized dot product: (v1 x v2) . v3 for all triangles
+        # Shape: (n_faces,)
+        dot_products = np.sum(cross_products * v3, axis=1)
+        
+        # Calculate signed volumes and sum them
+        signed_volumes = dot_products / 6.0
+        total_volume = np.sum(signed_volumes)
+
+        # Return absolute value to get positive volume
+        return abs(total_volume)
 
     @staticmethod
     def _validate_mode_arg(arg, arg_name="mode"):

@@ -225,6 +225,11 @@ class BaseCollection(BaseDisplayRepr):
         """An ordered list of all collection objects in the collection tree."""
         return check_format_input_obj(self, "collections")
 
+    @property
+    def volume(self):
+        """Volume of all objects in units of m³."""
+        return sum([child.volume for child in self.children_all])
+
     # dunders
     def __iter__(self):
         yield from self._children
@@ -856,6 +861,10 @@ class Collection(BaseGeo, BaseCollection):
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
 
+    volume: float
+        Total Collection volume in units of m^3. Consider that overlapping objects
+        may lead to double counting.
+
     override_parent: bool, default=False
         If False thrown an error when an attempt is made to add an object that
         has already a parent to a Collection. If True, allow adding the object
@@ -870,7 +879,6 @@ class Collection(BaseGeo, BaseCollection):
 
     collections: `Collection` objects
         An ordered list of all collection objects in the collection.
-
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
