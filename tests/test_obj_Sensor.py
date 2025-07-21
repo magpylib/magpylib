@@ -129,3 +129,11 @@ def test_pixel3():
             src.getB(magpy.Sensor(pixel=pos_vec), squeeze=False),
             src.getB(pos_vec, squeeze=False),
         )
+
+
+def test_Sensor_volume():
+    """Test Sensor volume calculation (should be 0)."""
+    sensor = magpy.Sensor()
+    calculated = sensor.volume
+    expected = 0
+    assert calculated == expected

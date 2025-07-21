@@ -157,3 +157,11 @@ def test_getJ():
     np.testing.assert_allclose(J1, Jtest)
     np.testing.assert_allclose(J2, Jtest)
     np.testing.assert_allclose(J3, Jtest)
+
+
+def test_Cuboid_volume():
+    """Test Cuboid volume calculation."""
+    cuboid = magpy.magnet.Cuboid(dimension=(2.0, 3.0, 4.0), polarization=(0, 0, 1))
+    calculated = cuboid.volume
+    expected = 2.0 * 3.0 * 4.0  # a*b*c
+    assert abs(calculated - expected) < 1e-10

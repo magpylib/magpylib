@@ -79,3 +79,12 @@ def test_tetra_in_out():
     Bauto = magpy.getB(tetra, obs_out)
     Bout = magpy.getB(tetra, obs_out, in_out="outside")
     np.testing.assert_allclose(Bauto, Bout)
+
+
+def test_Tetrahedron_volume():
+    """Test Tetrahedron volume calculation."""
+    vertices = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
+    tetrahedron = magpy.magnet.Tetrahedron(vertices=vertices, polarization=(0, 0, 1))
+    calculated = tetrahedron.volume
+    expected = 1.0 / 6.0
+    assert abs(calculated - expected) < 1e-10

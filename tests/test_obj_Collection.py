@@ -468,3 +468,73 @@ def test_col_getBH_input_format():
         shape1 = cube.getB(obs, squeeze=False).shape
         shape2 = coll.getB(obs, squeeze=False).shape
         assert np.all(shape1 == shape2)
+
+
+def test_Collection_volume():
+    """Test Collection volume calculation (sum of individual magnet volumes)."""
+    
+    # Create individual magnets with known volumes
+    sphere = magpy.magnet.Sphere(diameter=2.0, polarization=(0, 0, 1))  # volume = (4/3)π
+    cuboid = magpy.magnet.Cuboid(dimension=(1.0, 2.0, 3.0), polarization=(0, 0, 1))  # volume = 6
+    cylinder = magpy.magnet.Cylinder(dimension=(2.0, 1.0), polarization=(0, 0, 1))  # volume = π
+    
+    # Create collection
+    collection = magpy.Collection(sphere, cuboid, cylinder)
+    
+    # Calculate individual volumes
+    sphere_vol = (4/3) * np.pi * 1.0**3  # (4/3)π
+    cuboid_vol = 1.0 * 2.0 * 3.0  # 6
+    cylinder_vol = np.pi * 1.0**2 * 1.0  # π
+    
+    # Test individual volumes
+    assert abs(sphere.volume - sphere_vol) < 1e-10
+    assert abs(cuboid.volume - cuboid_vol) < 1e-10
+    assert abs(cylinder.volume - cylinder_vol) < 1e-10
+    
+    # Test collection total volume (should be sum of individual volumes)
+    calculated = collection.volume
+    expected = sphere_vol + cuboid_vol + cylinder_vol
+    assert abs(calculated - expected) < 1e-10
+
+
+def test_Collection_with_zero_volume_objects():
+    """Test Collection volume with objects that have zero volume."""
+    
+    # Create objects with zero volume
+    dipole = magpy.misc.Dipole(moment=(1, 0, 0))
+    triangle = magpy.misc.Triangle(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)], polarization=(0, 0, 1))
+    circle = magpy.current.Circle(current=1.0, diameter=2.0)
+    sensor = magpy.Sensor()
+    
+    # Create collection with zero-volume objects
+    collection = magpy.Collection(dipole, triangle, circle, sensor)
+    
+    # Test collection total volume (should be 0)
+    calculated = collection.volume
+    expected = 0
+    assert calculated == expected
+
+
+def test_Collection_mixed_volume():
+    """Test Collection volume with mix of volumetric and non-volumetric objects."""
+    
+    # Create volumetric objects
+    sphere = magpy.magnet.Sphere(diameter=2.0, polarization=(0, 0, 1))  # volume = (4/3)π
+    cuboid = magpy.magnet.Cuboid(dimension=(1.0, 2.0, 3.0), polarization=(0, 0, 1))  # volume = 6
+    
+    # Create non-volumetric objects
+    dipole = magpy.misc.Dipole(moment=(1, 0, 0))  # volume = 0
+    triangle = magpy.misc.Triangle(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)], polarization=(0, 0, 1))  # volume = 0
+    sensor = magpy.Sensor()  # volume = 0
+    
+    # Create mixed collection
+    collection = magpy.Collection(sphere, cuboid, dipole, triangle, sensor)
+    
+    # Calculate expected volume (only volumetric objects contribute)
+    sphere_vol = (4/3) * np.pi * 1.0**3  # (4/3)π
+    cuboid_vol = 1.0 * 2.0 * 3.0  # 6
+    expected = sphere_vol + cuboid_vol
+    
+    # Test collection total volume
+    calculated = collection.volume
+    assert abs(calculated - expected) < 1e-10

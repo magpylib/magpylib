@@ -130,3 +130,12 @@ def test_old_Line_deprecation_warning():
     new_class = magpy.current.Polyline()
     assert isinstance(old_class, magpy.current.Polyline)
     assert isinstance(new_class, magpy.current.Polyline)
+
+
+def test_Polyline_volume():
+    """Test Polyline (current) volume calculation (should be 0)."""
+    vertices = [(0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0), (0, 0, 0)]
+    polyline = magpy.current.Polyline(current=1.0, vertices=vertices)
+    calculated = polyline.volume
+    expected = 0
+    assert calculated == expected
