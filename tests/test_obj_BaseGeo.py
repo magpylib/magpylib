@@ -496,6 +496,7 @@ def test_describe_with_label():
         "  • dimension: None m",
         "  • magnetization: None A/m",
         "  • polarization: None T",
+        "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
 
@@ -517,6 +518,7 @@ def test_describe_with_parent():
         "  • dimension: None m",
         "  • magnetization: None A/m",
         "  • polarization: None T",
+        "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
 
@@ -533,6 +535,7 @@ def test_describe_with_path():
         "  • orientation (last): [0. 0. 0.] deg",
         "  • handedness: right",
         "  • pixel: None",
+        "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
 
@@ -558,6 +561,7 @@ def test_describe_with_exclude_None():
             " pixel=Pixel(color=None, size=1, sizemode=None, symbol=None), size=None,"
             " sizemode=None)"
         ),
+        "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(exclude=None, return_string=True))
 
@@ -573,6 +577,7 @@ def test_describe_with_many_pixels():
         "  • orientation: [0. 0. 0.] deg",
         "  • handedness: left",
         "  • pixel: 75 (3x5x5)",
+        "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
 
@@ -610,6 +615,7 @@ def test_describe_with_triangularmesh():
         "  • status_selfintersecting: None",
         "  • status_selfintersecting_data: None",
         "  • vertices: shape(5, 3)",
+        "  • volume: 2.6666666666666665",
     ]
 
     match_string_up_to_id(test, x.describe(return_string=True))

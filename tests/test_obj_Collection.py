@@ -434,18 +434,21 @@ def test_collection_describe():
         "Collection",
         "│   • position: [0. 0. 0.] m",
         "│   • orientation: [0. 0. 0.] deg",
+        "│   • volume: 0.0",
         "├── x",
         "│       • position: [0. 0. 0.] m",
         "│       • orientation: [0. 0. 0.] deg",
         "│       • dimension: None m",
         "│       • magnetization: None A/m",
         "│       • polarization: None T",
+        "│       • volume: 0.0",
         "└── y",
         "        • position: [0. 0. 0.] m",
         "        • orientation: [0. 0. 0.] deg",
         "        • dimension: None m",
         "        • magnetization: None A/m",
         "        • polarization: None T",
+        "        • volume: 0.0",
     ]
     assert "".join(test) == re.sub("id=*[0-9]*[0-9]", "id=REGEX", "".join(desc))
 

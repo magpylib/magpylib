@@ -108,7 +108,7 @@ class Dipole(BaseSource):
     @property
     def volume(self):
         """Volume of object in units of m³."""
-        return 0
+        return 0.0
 
     @property
     def _default_style_description(self):
