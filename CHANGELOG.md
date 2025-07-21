@@ -2,7 +2,8 @@
 
 ## [Unreleased] - YYYY-MM-DD
 
-- Adding the `volume` property to all Magpylib objects ([#864](https://github.com/magpylib/magpylib/issues/864))
+- Adding the `volume` property to all Magpylib objects
+  ([#864](https://github.com/magpylib/magpylib/issues/864))
 - Improved docstrings by adding examples where missing and by using rounding in
   all examples to avoid doctest fails
 - Fixed a bug where a core getH would return the B-field
