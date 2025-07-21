@@ -228,7 +228,7 @@ class BaseCollection(BaseDisplayRepr):
     @property
     def volume(self):
         """Volume of all objects in units of m³."""
-        return sum([child.volume for child in self.children_all])
+        return sum(child.volume for child in self.children_all)
 
     # dunders
     def __iter__(self):
