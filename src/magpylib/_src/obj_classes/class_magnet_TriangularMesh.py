@@ -224,21 +224,21 @@ class TriangularMesh(BaseMagnet):
         # Vectorized calculation: get all triangle vertices at once
         # Shape: (n_faces, 3, 3) where each face has 3 vertices with 3 coordinates
         triangles = self.mesh
-        
+
         # Extract vertex arrays: v1, v2, v3 for all triangles
         # Shape: (n_faces, 3) for each vertex array
         v1 = triangles[:, 0]  # First vertex of each triangle
-        v2 = triangles[:, 1]  # Second vertex of each triangle  
+        v2 = triangles[:, 1]  # Second vertex of each triangle
         v3 = triangles[:, 2]  # Third vertex of each triangle
-        
+
         # Vectorized cross product: v1 x v2 for all triangles
         # Shape: (n_faces, 3)
         cross_products = np.cross(v1, v2)
-        
+
         # Vectorized dot product: (v1 x v2) . v3 for all triangles
         # Shape: (n_faces,)
         dot_products = np.sum(cross_products * v3, axis=1)
-        
+
         # Calculate signed volumes and sum them
         signed_volumes = dot_products / 6.0
         total_volume = np.sum(signed_volumes)

@@ -68,9 +68,10 @@ def test_repr():
 
 def test_CustomSource_volume():
     """Test CustomSource volume calculation (should be 0)."""
+
     def my_field(_field, observers, **_kwargs):
         return np.zeros_like(observers)
-    
+
     custom = magpy.misc.CustomSource(field_func=my_field)
     calculated = custom.volume
     expected = 0

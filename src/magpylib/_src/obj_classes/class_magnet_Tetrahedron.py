@@ -144,13 +144,13 @@ class Tetrahedron(BaseMagnet):
         """Volume of object in units of m³."""
         if self.vertices is None:
             return 0.0
-        
+
         # Tetrahedron volume formula: |det(B-A, C-A, D-A)| / 6
         vertices = self.vertices
         v1 = vertices[1] - vertices[0]  # B - A
-        v2 = vertices[2] - vertices[0]  # C - A  
+        v2 = vertices[2] - vertices[0]  # C - A
         v3 = vertices[3] - vertices[0]  # D - A
-        
+
         # Create 3x3 matrix and compute determinant
         matrix = np.column_stack([v1, v2, v3])
         return abs(np.linalg.det(matrix)) / 6.0

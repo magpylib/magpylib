@@ -107,5 +107,5 @@ def test_Sphere_volume():
     """Test Sphere volume calculation."""
     sphere = magpy.magnet.Sphere(diameter=10.0, polarization=(0, 0, 1))
     calculated = sphere.volume
-    expected = (4/3) * np.pi * 5**3  # (4/3)*π*r³
+    expected = (4 / 3) * np.pi * 5**3  # (4/3)*π*r³
     assert abs(calculated - expected) < 1e-10

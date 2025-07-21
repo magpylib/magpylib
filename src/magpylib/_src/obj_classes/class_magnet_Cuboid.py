@@ -1,6 +1,7 @@
 # pylint: disable=too-many-positional-arguments
 
 """Magnet Cuboid class code"""
+
 from typing import ClassVar
 
 import numpy as np
