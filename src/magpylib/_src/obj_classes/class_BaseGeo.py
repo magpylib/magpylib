@@ -247,6 +247,7 @@ class BaseGeo(BaseTransform):
     @property
     def volume(self):
         """Volume of object in units of m³."""
+        # pylint: disable=no-member
         if hasattr(self, "_get_volume") and callable(self._get_volume):
             return self._get_volume()
         msg = f"{self.__class__.__name__} must implement the '_get_volume()' method"
