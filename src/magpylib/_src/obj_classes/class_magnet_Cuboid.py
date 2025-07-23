@@ -101,7 +101,7 @@ class Cuboid(BaseMagnet):
             position, orientation, magnetization, polarization, style, **kwargs
         )
 
-    # property getters and setters
+    # Properties
     @property
     def dimension(self):
         """Length of the cuboid sides [a,b,c] in arbitrary length units, e.g. in meter."""
@@ -121,17 +121,17 @@ class Cuboid(BaseMagnet):
         )
 
     @property
-    def volume(self):
-        """Volume of object in units of m³."""
-        if self.dimension is None:
-            return 0.0
-
-        return np.prod(self.dimension)
-
-    @property
     def _default_style_description(self):
         """Default style description text"""
         if self.dimension is None:
             return "no dimension"
         d = [unit_prefix(d) for d in self.dimension]
         return f"{d[0]}m|{d[1]}m|{d[2]}m"
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        if self.dimension is None:
+            return 0.0
+
+        return np.prod(self.dimension)

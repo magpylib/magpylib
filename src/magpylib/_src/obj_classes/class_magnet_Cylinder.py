@@ -100,7 +100,7 @@ class Cylinder(BaseMagnet):
             position, orientation, magnetization, polarization, style, **kwargs
         )
 
-    # property getters and setters
+    # Properties
     @property
     def dimension(self):
         """Dimension (d,h) denote diameter and height of the cylinder in units of m."""
@@ -120,18 +120,18 @@ class Cylinder(BaseMagnet):
         )
 
     @property
-    def volume(self):
-        """Volume of object in units of m³."""
-        if self.dimension is None:
-            return 0.0
-
-        d, h = self.dimension
-        return d**2 * np.pi * h / 4
-
-    @property
     def _default_style_description(self):
         """Default style description text"""
         if self.dimension is None:
             return "no dimension"
         d = [unit_prefix(d) for d in self.dimension]
         return f"D={d[0]}m, H={d[1]}m"
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        if self.dimension is None:
+            return 0.0
+
+        d, h = self.dimension
+        return d**2 * np.pi * h / 4

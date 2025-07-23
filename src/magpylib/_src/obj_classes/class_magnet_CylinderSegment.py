@@ -140,7 +140,15 @@ class CylinderSegment(BaseMagnet):
         return np.squeeze(self._barycenter)
 
     @property
-    def volume(self):
+    def _default_style_description(self):
+        """Default style description text"""
+        if self.dimension is None:
+            return "no dimension"
+        d = [unit_prefix(d) for d in self.dimension]
+        return f"r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°"
+
+    # Methods
+    def _get_volume(self):
         """Volume of object in units of m³."""
         if self.dimension is None:
             return 0.0
@@ -148,6 +156,7 @@ class CylinderSegment(BaseMagnet):
         r1, r2, h, phi1, phi2 = self.dimension
         return (r2**2 - r1**2) * np.pi * h * (phi2 - phi1) / 360
 
+    # Static methods
     @staticmethod
     def _get_barycenter(position, orientation, dimension):
         """Returns the barycenter of a cylinder segment.
@@ -168,11 +177,3 @@ class CylinderSegment(BaseMagnet):
             x, y, z = centroid_x * np.cos(phi), centroid_x * np.sin(phi), 0
             centroid = np.array([x, y, z])
         return orientation.apply(centroid) + position
-
-    @property
-    def _default_style_description(self):
-        """Default style description text"""
-        if self.dimension is None:
-            return "no dimension"
-        d = [unit_prefix(d) for d in self.dimension]
-        return f"r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°"

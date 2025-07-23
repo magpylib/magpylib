@@ -100,7 +100,7 @@ class Sphere(BaseMagnet):
             position, orientation, magnetization, polarization, style, **kwargs
         )
 
-    # property getters and setters
+    # Properties
     @property
     def diameter(self):
         """Diameter of the sphere in units of m."""
@@ -118,16 +118,16 @@ class Sphere(BaseMagnet):
         )
 
     @property
-    def volume(self):
-        """Volume of object in units of m³."""
-        if self.diameter is None:
-            return 0.0
-
-        return self.diameter**3 * np.pi / 6
-
-    @property
     def _default_style_description(self):
         """Default style description text"""
         if self.diameter is None:
             return "no dimension"
         return f"D={unit_prefix(self.diameter)}m"
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        if self.diameter is None:
+            return 0.0
+
+        return self.diameter**3 * np.pi / 6

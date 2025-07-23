@@ -87,7 +87,7 @@ class Dipole(BaseSource):
         # init inheritance
         super().__init__(position, orientation, style, **kwargs)
 
-    # property getters and setters
+    # Properties
     @property
     def moment(self):
         """Magnetic dipole moment in units of A·m² given in the local object coordinates."""
@@ -106,11 +106,6 @@ class Dipole(BaseSource):
         )
 
     @property
-    def volume(self):
-        """Volume of object in units of m³."""
-        return 0.0
-
-    @property
     def _default_style_description(self):
         """Default style description text"""
         moment = np.array([0.0, 0.0, 0.0]) if self.moment is None else self.moment
@@ -118,3 +113,8 @@ class Dipole(BaseSource):
         if moment_mag == 0:
             return "no moment"
         return f"moment={unit_prefix(moment_mag)}A·m²"
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        return 0.0

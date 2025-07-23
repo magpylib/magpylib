@@ -110,7 +110,7 @@ class Tetrahedron(BaseMagnet):
             position, orientation, magnetization, polarization, style, **kwargs
         )
 
-    # property getters and setters
+    # Properties
     @property
     def vertices(self):
         """Length of the Tetrahedron sides [a,b,c] in units of m."""
@@ -140,7 +140,14 @@ class Tetrahedron(BaseMagnet):
         return np.squeeze(self._barycenter)
 
     @property
-    def volume(self):
+    def _default_style_description(self):
+        """Default style description text"""
+        if self.vertices is None:
+            return "no vertices"
+        return ""
+
+    # Methods
+    def _get_volume(self):
         """Volume of object in units of m³."""
         if self.vertices is None:
             return 0.0
@@ -155,6 +162,7 @@ class Tetrahedron(BaseMagnet):
         matrix = np.column_stack([v1, v2, v3])
         return abs(np.linalg.det(matrix)) / 6.0
 
+    # Static methods
     @staticmethod
     def _get_barycenter(position, orientation, vertices):
         """Returns the barycenter of a tetrahedron."""
@@ -162,10 +170,3 @@ class Tetrahedron(BaseMagnet):
             np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
         )
         return orientation.apply(centroid) + position
-
-    @property
-    def _default_style_description(self):
-        """Default style description text"""
-        if self.vertices is None:
-            return "no vertices"
-        return ""

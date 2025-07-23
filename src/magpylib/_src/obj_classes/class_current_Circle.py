@@ -88,7 +88,7 @@ class Circle(BaseCurrent):
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
 
-    # property getters and setters
+    # Properties
     @property
     def diameter(self):
         """Diameter of the loop in units of m."""
@@ -106,16 +106,16 @@ class Circle(BaseCurrent):
         )
 
     @property
-    def volume(self):
-        """Volume of object in units of m³."""
-        return 0.0
-
-    @property
     def _default_style_description(self):
         """Default style description text"""
         if self.diameter is None:
             return "no dimension"
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        return 0.0
 
 
 class Loop(Circle):

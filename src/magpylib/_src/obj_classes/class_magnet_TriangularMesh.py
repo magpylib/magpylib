@@ -163,7 +163,7 @@ class TriangularMesh(BaseMagnet):
             position, orientation, magnetization, polarization, style, **kwargs
         )
 
-    # property getters and setters
+    # Properties
     @property
     def vertices(self):
         """Mesh vertices"""
@@ -180,11 +180,6 @@ class TriangularMesh(BaseMagnet):
         return self._vertices[self._faces]
 
     @property
-    def volume(self):
-        """Volume of object in units of m³."""
-        return self._calculate_mesh_volume()
-
-    @property
     def status_open(self):
         """Return open status"""
         return self._status_open
@@ -199,9 +194,9 @@ class TriangularMesh(BaseMagnet):
         """Return reoriented status"""
         return self._status_reoriented
 
-    def _calculate_mesh_volume(self):
-        """
-        Calculate volume of triangular mesh using signed tetrahedra method.
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³.
 
         Based on algorithm from: https://n-e-r-v-o-u-s.com/blog/?p=4415
         For each triangle, compute the signed volume of tetrahedron from origin

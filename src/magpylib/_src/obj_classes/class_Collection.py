@@ -133,7 +133,7 @@ class BaseCollection(BaseDisplayRepr):
         self._collections = []
         self.add(*children, override_parent=override_parent)
 
-    # property getters and setters
+    # Properties
     @property
     def children(self):
         """An ordered list of top level child objects."""
@@ -225,12 +225,7 @@ class BaseCollection(BaseDisplayRepr):
         """An ordered list of all collection objects in the collection tree."""
         return check_format_input_obj(self, "collections")
 
-    @property
-    def volume(self):
-        """Volume of all objects in units of m³."""
-        return sum(child.volume for child in self.children_all)
-
-    # dunders
+    # Dunders
     def __iter__(self):
         yield from self._children
 
@@ -250,6 +245,11 @@ class BaseCollection(BaseDisplayRepr):
         ):
             lines.append(line)
         return f"""<pre>{"<br>".join(lines)}</pre>"""
+
+    # Methods
+    def _get_volume(self):
+        """Volume of all objects in units of m³."""
+        return sum(child.volume for child in self.children_all)
 
     def describe(self, format="type+label+id", max_elems=10, return_string=False):
         # pylint: disable=arguments-differ
@@ -281,7 +281,6 @@ class BaseCollection(BaseDisplayRepr):
         print(output)  # noqa: T201
         return None
 
-    # methods -------------------------------------------------------
     def add(self, *children, override_parent=False):
         """Add sources, sensors or collections.
 

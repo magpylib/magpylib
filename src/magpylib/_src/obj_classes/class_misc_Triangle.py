@@ -112,7 +112,7 @@ class Triangle(BaseMagnet):
             position, orientation, magnetization, polarization, style, **kwargs
         )
 
-    # property getters and setters
+    # Properties
     @property
     def vertices(self):
         """Object faces"""
@@ -140,6 +140,19 @@ class Triangle(BaseMagnet):
         """Object barycenter."""
         return np.squeeze(self._barycenter)
 
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        if self.vertices is None:
+            return "no vertices"
+        return ""
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        return 0.0
+
+    # Static methods
     @staticmethod
     def _get_barycenter(position, orientation, vertices):
         """Returns the barycenter of the Triangle object."""
@@ -147,15 +160,3 @@ class Triangle(BaseMagnet):
             np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
         )
         return orientation.apply(centroid) + position
-
-    @property
-    def volume(self):
-        """Volume of object in units of m³."""
-        return 0.0
-
-    @property
-    def _default_style_description(self):
-        """Default style description text"""
-        if self.vertices is None:
-            return "no vertices"
-        return ""

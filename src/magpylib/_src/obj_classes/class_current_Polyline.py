@@ -100,7 +100,7 @@ class Polyline(BaseCurrent):
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
 
-    # property getters and setters
+    # Properties
     @property
     def vertices(self):
         """
@@ -116,16 +116,16 @@ class Polyline(BaseCurrent):
         self._vertices = check_format_input_vertices(vert)
 
     @property
-    def volume(self):
-        """Volume of object in units of m³."""
-        return 0.0
-
-    @property
     def _default_style_description(self):
         """Default style description text"""
         if self.vertices is None:
             return "no vertices"
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        return 0.0
 
 
 class Line(Polyline):

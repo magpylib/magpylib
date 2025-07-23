@@ -32,9 +32,29 @@ def pad_slice_path(path1, path2):
 
 
 class BaseGeo(BaseTransform):
-    """Initializes position and orientation properties
-    of an object in a global CS.
+    """Initializes basic properties inherited by ALL Magpylib objects
 
+    Inherited from BaseTransform
+    ----------------------------
+    - move()
+    - rotate()
+
+    Properties of BaseGeo
+    ---------------------
+    - parent
+    - position
+    - orientation
+    - volume
+    - style
+
+    Methods of BaseGeo
+    ------------------
+    - __add__()
+    - reset_path()
+    - copy()
+
+    Note
+    ----
     position is a ndarray with shape (3,).
 
     orientation is a scipy.spatial.transformation.Rotation
@@ -45,22 +65,6 @@ class BaseGeo(BaseTransform):
     Both attributes _position and _orientation.as_rotvec() are of shape (N,3),
     and describe a path of length N. (N=1 if there is only one
     object position).
-
-    Properties
-    ----------
-    position: array_like, shape (N,3)
-        Position path
-
-    orientation: scipy.Rotation, shape (N,)
-        Rotation path
-
-    Methods
-    -------
-
-    - show
-    - move
-    - rotate
-
     """
 
     _style_class = BaseStyle
@@ -239,6 +243,14 @@ class BaseGeo(BaseTransform):
             child.rotate(
                 self.orientation * old_ori_pad.inv(), anchor=self._position, start=0
             )
+
+    @property
+    def volume(self):
+        """Volume of object in units of m³."""
+        if hasattr(self, "_get_volume") and callable(self._get_volume):
+            return self._get_volume()
+        msg = f"{self.__class__.__name__} must implement the '_get_volume()' method"
+        raise NotImplementedError(msg)  # pragma: no cover
 
     @property
     def style(self):

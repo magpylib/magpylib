@@ -76,7 +76,7 @@ class CustomSource(BaseSource):
         # init inheritance
         super().__init__(position, orientation, field_func, style, **kwargs)
 
-    @property
-    def volume(self):
+    # Methods
+    def _get_volume(self):
         """Volume of object in units of m³."""
         return 0.0
