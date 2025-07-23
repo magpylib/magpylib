@@ -5,6 +5,8 @@
 import warnings
 from typing import ClassVar
 
+import numpy as np
+
 from magpylib._src.display.traces_core import make_Polyline
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
@@ -43,7 +45,10 @@ class Polyline(BaseCurrent):
         Electrical current in units of A.
 
     volume: float
-        Object physical volume in units of m^3.
+        Read-only. Object physical volume in units of m^3.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -126,6 +131,12 @@ class Polyline(BaseCurrent):
     def _get_volume(self):
         """Volume of object in units of m³."""
         return 0.0
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        if self.vertices is not None:
+            return np.mean(self.vertices, axis=0) + self.position
+        return self.position
 
 
 class Line(Polyline):

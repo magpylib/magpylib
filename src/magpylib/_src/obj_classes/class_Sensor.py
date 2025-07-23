@@ -50,6 +50,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
         using style underscore magic, e.g. `style_color='red'`.
 
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
+
     handedness: {"right", "left"}
         Object local coordinate system handedness. If "left", the x-axis is flipped.
 
@@ -526,3 +529,10 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     def _get_volume(self):
         """Volume of object in units of m³."""
         return 0.0
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        if self.pixel is not None:
+            pixel_mean = np.mean(self.pixel.reshape(-1, 3), axis=0)
+            return self.position + pixel_mean
+        return self.position

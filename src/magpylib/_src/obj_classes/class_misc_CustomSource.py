@@ -33,7 +33,10 @@ class CustomSource(BaseSource):
         be numpy ndarrays of shape (n,3) themselves.
 
     volume: float
-        Object physical volume in units of m^3.
+        Read-only. Object physical volume in units of m^3 is set to zero for CustomSource objects.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -80,3 +83,7 @@ class CustomSource(BaseSource):
     def _get_volume(self):
         """Volume of object in units of m³."""
         return 0.0
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return self.position

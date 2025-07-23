@@ -45,6 +45,7 @@ class BaseGeo(BaseTransform):
     - position
     - orientation
     - volume
+    - centroid
     - style
 
     Methods of BaseGeo
@@ -251,6 +252,15 @@ class BaseGeo(BaseTransform):
         if hasattr(self, "_get_volume") and callable(self._get_volume):
             return self._get_volume()
         msg = f"{self.__class__.__name__} must implement the '_get_volume()' method"
+        raise NotImplementedError(msg)  # pragma: no cover
+
+    @property
+    def centroid(self):
+        """Centroid of object in units of m."""
+        # pylint: disable=no-member
+        if hasattr(self, "_get_centroid") and callable(self._get_centroid):
+            return self._get_centroid()
+        msg = f"{self.__class__.__name__} must implement the '_get_centroid()' method"
         raise NotImplementedError(msg)  # pragma: no cover
 
     @property

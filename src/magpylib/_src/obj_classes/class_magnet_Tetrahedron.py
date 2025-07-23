@@ -49,7 +49,10 @@ class Tetrahedron(BaseMagnet):
         given in the local object coordinates (rotates with object).
 
     volume: float
-        Object physical volume in units of m^3.
+        Read-only. Object physical volume in units of m^3.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -161,6 +164,10 @@ class Tetrahedron(BaseMagnet):
         # Create 3x3 matrix and compute determinant
         matrix = np.column_stack([v1, v2, v3])
         return abs(np.linalg.det(matrix)) / 6.0
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return self.barycenter
 
     # Static methods
     @staticmethod

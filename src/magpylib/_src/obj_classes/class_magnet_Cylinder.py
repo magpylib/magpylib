@@ -47,7 +47,10 @@ class Cylinder(BaseMagnet):
         given in the local object coordinates (rotates with object).
 
     volume: float
-        Object physical volume in units of m^3.
+        Read-only. Object physical volume in units of m^3.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -135,3 +138,7 @@ class Cylinder(BaseMagnet):
 
         d, h = self.dimension
         return d**2 * np.pi * h / 4
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return self.position

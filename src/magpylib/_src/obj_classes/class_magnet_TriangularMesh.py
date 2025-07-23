@@ -66,7 +66,10 @@ class TriangularMesh(BaseMagnet):
         given in the local object coordinates (rotates with object).
 
     volume: float
-        Object physical volume in units of m^3.
+        Read-only. Object physical volume in units of m^3.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
 
     reorient_faces: bool or string, default=`True`
         In a properly oriented mesh, all faces must be oriented outwards.
@@ -240,6 +243,10 @@ class TriangularMesh(BaseMagnet):
 
         # Return absolute value to get positive volume
         return abs(total_volume)
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return self.barycenter
 
     @staticmethod
     def _validate_mode_arg(arg, arg_name="mode"):
