@@ -86,9 +86,5 @@ def test_Circle_volume():
 def test_Circle_centroid():
     """Test Circle centroid - should return position"""
     expected = (7, 8, 9)
-    circle = magpy.current.Circle(
-        diameter=2,
-        current=1,
-        position=expected
-    )
+    circle = magpy.current.Circle(diameter=2, current=1, position=expected)
     assert np.allclose(circle.centroid, expected)

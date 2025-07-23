@@ -49,8 +49,5 @@ def test_Dipole_volume():
 def test_Dipole_centroid():
     """Test Dipole centroid - should return position"""
     expected = (9, 10, 11)
-    dipole = magpy.misc.Dipole(
-        moment=(1, 0, 0),
-        position=expected
-    )
+    dipole = magpy.misc.Dipole(moment=(1, 0, 0), position=expected)
     assert np.allclose(dipole.centroid, expected)

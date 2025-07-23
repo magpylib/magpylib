@@ -151,8 +151,5 @@ def test_Sensor_centroid_with_pixels():
     position = (12, 13, 14)
     pixels = [(0, 0, 0), (1, 0, 0), (0, 1, 0)]
     expected = (12.333333, 13.333333, 14.0)  # position + mean(pixels)
-    sensor = magpy.Sensor(
-        position=position,
-        pixel=pixels
-    )
+    sensor = magpy.Sensor(position=position, pixel=pixels)
     assert np.allclose(sensor.centroid, expected)

@@ -144,9 +144,7 @@ def test_Polyline_volume():
 def test_Polyline_centroid():
     """Test Polyline centroid - placeholder implementation returns position"""
     polyline = magpy.current.Polyline(
-        vertices=[(0,0,0), (1,0,0), (2,0,0)],
-        current=1,
-        position=(8, 9, 10)
+        vertices=[(0, 0, 0), (1, 0, 0), (2, 0, 0)], current=1, position=(8, 9, 10)
     )
     expected = (9, 9, 10)
     assert np.allclose(polyline.centroid, expected)

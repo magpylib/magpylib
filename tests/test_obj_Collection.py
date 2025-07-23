@@ -571,9 +571,13 @@ def test_Collection_centroid_with_objects():
     """Test Collection centroid with objects - volume-weighted centroid"""
     # Volumes: Cuboid=1, Sphere=4.189
     expected = (0, 0, 1)  # volume-weighted centroid calculation
-    obj1 = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1), position=(0, 0, 0))
-    obj2 = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1), position=(0, 0, 2))
-    
+    obj1 = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1), polarization=(0, 0, 1), position=(0, 0, 0)
+    )
+    obj2 = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1), polarization=(0, 0, 1), position=(0, 0, 2)
+    )
+
     col = magpy.Collection(obj1, obj2, position=(1, 1, 1))
     assert np.allclose(col.centroid, expected)
 
@@ -583,7 +587,7 @@ def test_Collection_centroid_zero_volume():
     expected = (1, 1, 1)  # should return position when all children have zero volume
     obj1 = magpy.current.Circle(diameter=1, current=1, position=(0, 0, 0))
     obj2 = magpy.misc.Dipole(moment=(1, 0, 0), position=(2, 0, 0))
-    
+
     col = magpy.Collection(obj1, obj2, position=expected)
     assert np.allclose(col.centroid, expected)
 
@@ -592,8 +596,6 @@ def test_Collection_centroid_path_object():
     """Test object with path - centroid should match position path"""
     expected = [(0, 0, 0), (1, 1, 1), (2, 2, 2)]
     path_obj = magpy.magnet.Cuboid(
-        dimension=(1, 1, 1),
-        polarization=(0, 0, 1),
-        position=expected
+        dimension=(1, 1, 1), polarization=(0, 0, 1), position=expected
     )
     assert np.allclose(path_obj.centroid, expected)

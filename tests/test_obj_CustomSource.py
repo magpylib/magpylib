@@ -83,11 +83,10 @@ def test_CustomSource_volume():
 def test_CustomSource_centroid():
     """Test CustomSource centroid - should return position"""
     expected = (11, 12, 13)
+
     def custom_field(field, observers):
         assert isinstance(field, str)
         return np.array([[0.01, 0, 0]] * len(observers))
-    custom_source = magpy.misc.CustomSource(
-        field_func=custom_field,
-        position=expected
-    )
+
+    custom_source = magpy.misc.CustomSource(field_func=custom_field, position=expected)
     assert np.allclose(custom_source.centroid, expected)

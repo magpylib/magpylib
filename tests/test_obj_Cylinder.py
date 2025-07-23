@@ -174,8 +174,6 @@ def test_Cylinder_centroid():
     """Test Cylinder centroid - should return position (no barycenter)"""
     expected = (2, 3, 4)
     cylinder = magpy.magnet.Cylinder(
-        dimension=(2, 4), 
-        polarization=(0, 0, 1),
-        position=expected
+        dimension=(2, 4), polarization=(0, 0, 1), position=expected
     )
     assert np.allclose(cylinder.centroid, expected)

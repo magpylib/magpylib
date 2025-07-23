@@ -49,7 +49,7 @@ def test_CylinderSegment_centroid():
     cylinder_seg = magpy.magnet.CylinderSegment(
         dimension=(1, 2, 3, -145, 145),  # r1, r2, h, phi1, phi2
         polarization=(0, 0, 1),
-        position=(4, 5, 6)
+        position=(4, 5, 6),
     )
     expected = [4.35255872, 5.0, 6.0]
     assert np.allclose(cylinder_seg.centroid, expected)
