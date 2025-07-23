@@ -2,6 +2,9 @@
 
 ## [Unreleased] - YYYY-MM-DD
 
+- Adding the `centroid` property to all Magpylib objects. This gives the same as
+  the `barycenter` property for the objects that have it.
+  ([#864](https://github.com/magpylib/magpylib/issues/864))
 - Adding the `volume` property to all Magpylib objects
   ([#864](https://github.com/magpylib/magpylib/issues/864))
 - Improved docstrings by adding examples where missing and by using rounding in
