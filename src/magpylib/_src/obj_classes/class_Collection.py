@@ -267,7 +267,7 @@ class BaseCollection(BaseDisplayRepr):
 
         if total_volume > 0:
             return weighted_centroid / total_volume
-        return self.position # pylint: disable=no-member
+        return self.position  # pylint: disable=no-member
 
     def describe(self, format="type+label+id", max_elems=10, return_string=False):
         # pylint: disable=arguments-differ
