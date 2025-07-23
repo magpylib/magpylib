@@ -496,6 +496,7 @@ def test_describe_with_label():
         "  • dimension: None m",
         "  • magnetization: None A/m",
         "  • polarization: None T",
+        "  • centroid: [0. 0. 0.]",
         "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
@@ -518,6 +519,7 @@ def test_describe_with_parent():
         "  • dimension: None m",
         "  • magnetization: None A/m",
         "  • polarization: None T",
+        "  • centroid: [0. 0. 0.]",
         "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
@@ -533,6 +535,7 @@ def test_describe_with_path():
         "  • path length: 3",
         "  • position (last): [1. 2. 3.] m",
         "  • orientation (last): [0. 0. 0.] deg",
+        "  • centroid: shape(3, 3)",
         "  • handedness: right",
         "  • pixel: None",
         "  • volume: 0.0",
@@ -549,6 +552,7 @@ def test_describe_with_exclude_None():
         "  • parent: None",
         "  • position: [0. 0. 0.] m",
         "  • orientation: [0. 0. 0.] deg",
+        "  • centroid: [0. 0. 0.]",
         "  • handedness: right",
         "  • pixel: None",
         (
@@ -575,6 +579,7 @@ def test_describe_with_many_pixels():
         "  • parent: None",
         "  • position: [0. 0. 0.] m",
         "  • orientation: [0. 0. 0.] deg",
+        "  • centroid: [1. 2. 3.]",
         "  • handedness: left",
         "  • pixel: 75 (3x5x5)",
         "  • volume: 0.0",
@@ -605,6 +610,7 @@ def test_describe_with_triangularmesh():
         "  • magnetization: [     0.              0.         795774.71545948] A/m",
         "  • polarization: [0. 0. 1.] T",
         "  • barycenter: [0.         0.         0.46065534]",
+        "  • centroid: [0.         0.         0.46065534]",
         "  • faces: shape(6, 3)",
         "  • mesh: shape(6, 3, 3)",
         "  • status_disconnected: False",
