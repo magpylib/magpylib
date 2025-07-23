@@ -88,3 +88,14 @@ def test_Tetrahedron_volume():
     calculated = tetrahedron.volume
     expected = 1.0 / 6.0
     assert abs(calculated - expected) < 1e-10
+
+
+def test_Tetrahedron_centroid():
+    """Test Tetrahedron centroid - should return barycenter if available"""
+    tetrahedron = magpy.magnet.Tetrahedron(
+        vertices=[(0,0,0), (1,0,0), (0,1,0), (0,0,1)],
+        polarization=(0, 0, 1),
+        position=(5, 6, 7)
+    )
+    expected = (5.25, 6.25, 7.25)  # barycenter offset from position
+    assert np.allclose(tetrahedron.centroid, expected)

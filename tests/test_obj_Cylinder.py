@@ -168,3 +168,14 @@ def test_Cylinder_volume():
     calculated = cylinder.volume
     expected = np.pi * 5**2 * 3.0  # π*r²*h
     assert abs(calculated - expected) < 1e-10
+
+
+def test_Cylinder_centroid():
+    """Test Cylinder centroid - should return position (no barycenter)"""
+    expected = (2, 3, 4)
+    cylinder = magpy.magnet.Cylinder(
+        dimension=(2, 4), 
+        polarization=(0, 0, 1),
+        position=expected
+    )
+    assert np.allclose(cylinder.centroid, expected)

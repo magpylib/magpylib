@@ -88,3 +88,14 @@ def test_Triangle_volume():
     calculated = triangle.volume
     expected = 0
     assert calculated == expected
+
+
+def test_Triangle_centroid():
+    """Test Triangle centroid - placeholder implementation returns position"""
+    expected = (10, 11, 12)
+    triangle = magpy.misc.Triangle(
+        vertices=[(-1,0,0), (1,-1,0), (0,1,0)],
+        polarization=(0, 0, 1),
+        position=expected
+    )
+    assert np.allclose(triangle.centroid, expected)

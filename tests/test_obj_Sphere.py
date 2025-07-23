@@ -109,3 +109,14 @@ def test_Sphere_volume():
     calculated = sphere.volume
     expected = (4 / 3) * np.pi * 5**3  # (4/3)*π*r³
     assert abs(calculated - expected) < 1e-10
+
+
+def test_Sphere_centroid():
+    """Test Sphere centroid - should return position (no barycenter)"""
+    expected = (3, 4, 5)
+    sphere = magpy.magnet.Sphere(
+        diameter=2, 
+        polarization=(0, 0, 1),
+        position=expected
+    )
+    assert np.allclose(sphere.centroid, expected)

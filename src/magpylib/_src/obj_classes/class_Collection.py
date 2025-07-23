@@ -266,7 +266,7 @@ class BaseCollection(BaseDisplayRepr):
                 total_volume += child_volume
         
         if total_volume > 0:
-            return self.position + weighted_centroid / total_volume
+            return weighted_centroid / total_volume
         return self.position
 
     def describe(self, format="type+label+id", max_elems=10, return_string=False):

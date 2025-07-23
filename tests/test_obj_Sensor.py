@@ -137,3 +137,22 @@ def test_Sensor_volume():
     calculated = sensor.volume
     expected = 0
     assert calculated == expected
+
+
+def test_Sensor_centroid_no_pixels():
+    """Test Sensor centroid without pixels - should return position"""
+    expected = (12, 13, 14)
+    sensor = magpy.Sensor(position=expected)
+    assert np.allclose(sensor.centroid, expected)
+
+
+def test_Sensor_centroid_with_pixels():
+    """Test Sensor centroid with pixels - should return position + mean(pixels)"""
+    position = (12, 13, 14)
+    pixels = [(0, 0, 0), (1, 0, 0), (0, 1, 0)]
+    expected = (12.333333, 13.333333, 14.0)  # position + mean(pixels)
+    sensor = magpy.Sensor(
+        position=position,
+        pixel=pixels
+    )
+    assert np.allclose(sensor.centroid, expected)
