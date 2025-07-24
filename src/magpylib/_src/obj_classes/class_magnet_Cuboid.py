@@ -10,10 +10,13 @@ from magpylib._src.display.traces_core import make_Cuboid
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.utility import unit_prefix
 
+from magpylib._src.obj_classes.target_meshing import target_mesh_cuboid
+from magpylib._src.obj_classes.target_meshing import cells_from_dimension
 
-class Cuboid(BaseMagnet):
+class Cuboid(BaseMagnet, BaseTarget):
     """Cuboid magnet with homogeneous magnetization.
 
     Can be used as `sources` input for magnetic field computation.
@@ -46,6 +49,10 @@ class Cuboid(BaseMagnet):
     magnetization: array_like, shape (3,), default=`None`
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
+
+    meshing: dict or None, default=`None`
+        Parameters that define the mesh fineness for force computation.
+        Should contain mesh-specific parameters like resolution, method, etc.
 
     volume: float
         Read-only. Object physical volume in units of m^3.
@@ -93,6 +100,7 @@ class Cuboid(BaseMagnet):
         dimension=None,
         polarization=None,
         magnetization=None,
+        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -103,6 +111,9 @@ class Cuboid(BaseMagnet):
         super().__init__(
             position, orientation, magnetization, polarization, style, **kwargs
         )
+        
+        # Initialize BaseTarget
+        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -142,3 +153,24 @@ class Cuboid(BaseMagnet):
     def _get_centroid(self):
         """Centroid of object in units of m."""
         return self.position
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation.
+
+        Returns
+        -------
+        mesh : np.ndarray, shape (n, 3)
+        """
+        if np.isscalar(self.meshing):
+            n1, n2, n3 = cells_from_dimension(self.dimension, self.meshing)
+        elif isinstance (self.meshing, (list, tuple, np.ndarray)) and len(self.meshing) == 3:
+            n1, n2, n3 = self.meshing
+        else:
+            msg = (
+                "Parameter meshing must be explicitly set for force computation."
+                f" Parameter meshing missing for {self}."
+                " Cuboid meshing must be an integer or array_like of shape (3,)"
+            )
+            raise ValueError(msg)
+
+        return target_mesh_cuboid(n1, n2, n3, *self.dimension)
