@@ -36,3 +36,18 @@ def test_repr():
     """test __repr__"""
     dip = magpy.misc.Dipole(moment=(1, 2, 3))
     assert repr(dip)[:6] == "Dipole", "Dipole repr failed"
+
+
+def test_Dipole_volume():
+    """Test Dipole volume calculation (should be 0)."""
+    dipole = magpy.misc.Dipole(moment=(1, 0, 0))
+    calculated = dipole.volume
+    expected = 0
+    assert calculated == expected
+
+
+def test_Dipole_centroid():
+    """Test Dipole centroid - should return position"""
+    expected = (9, 10, 11)
+    dipole = magpy.misc.Dipole(moment=(1, 0, 0), position=expected)
+    assert np.allclose(dipole.centroid, expected)

@@ -4,6 +4,8 @@
 
 from typing import ClassVar
 
+import numpy as np
+
 from magpylib._src.display.traces_core import make_Cuboid
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.input_checks import check_format_input_vector
@@ -44,6 +46,12 @@ class Cuboid(BaseMagnet):
     magnetization: array_like, shape (3,), default=`None`
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
+
+    volume: float
+        Read-only. Object physical volume in units of m^3.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -96,7 +104,7 @@ class Cuboid(BaseMagnet):
             position, orientation, magnetization, polarization, style, **kwargs
         )
 
-    # property getters and setters
+    # Properties
     @property
     def dimension(self):
         """Length of the cuboid sides [a,b,c] in arbitrary length units, e.g. in meter."""
@@ -122,3 +130,15 @@ class Cuboid(BaseMagnet):
             return "no dimension"
         d = [unit_prefix(d) for d in self.dimension]
         return f"{d[0]}m|{d[1]}m|{d[2]}m"
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        if self.dimension is None:
+            return 0.0
+
+        return np.prod(self.dimension)
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return self.position

@@ -4,6 +4,8 @@
 
 from typing import ClassVar
 
+import numpy as np
+
 from magpylib._src.display.traces_core import make_Cylinder
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
 from magpylib._src.input_checks import check_format_input_vector
@@ -43,6 +45,12 @@ class Cylinder(BaseMagnet):
     magnetization: array_like, shape (3,), default=`None`
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
+
+    volume: float
+        Read-only. Object physical volume in units of m^3.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -95,7 +103,7 @@ class Cylinder(BaseMagnet):
             position, orientation, magnetization, polarization, style, **kwargs
         )
 
-    # property getters and setters
+    # Properties
     @property
     def dimension(self):
         """Dimension (d,h) denote diameter and height of the cylinder in units of m."""
@@ -121,3 +129,16 @@ class Cylinder(BaseMagnet):
             return "no dimension"
         d = [unit_prefix(d) for d in self.dimension]
         return f"D={d[0]}m, H={d[1]}m"
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        if self.dimension is None:
+            return 0.0
+
+        d, h = self.dimension
+        return d**2 * np.pi * h / 4
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return self.position

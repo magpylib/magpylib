@@ -50,6 +50,12 @@ class Triangle(BaseMagnet):
         charge of the Triangle is given by the projection of the magnetization on the
         Triangle normal vector (right-hand-rule).
 
+    volume: float
+        Read-only. Object physical volume in units of m^3.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -109,7 +115,7 @@ class Triangle(BaseMagnet):
             position, orientation, magnetization, polarization, style, **kwargs
         )
 
-    # property getters and setters
+    # Properties
     @property
     def vertices(self):
         """Object faces"""
@@ -137,6 +143,23 @@ class Triangle(BaseMagnet):
         """Object barycenter."""
         return np.squeeze(self._barycenter)
 
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        if self.vertices is None:
+            return "no vertices"
+        return ""
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        return 0.0
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return self.barycenter
+
+    # Static methods
     @staticmethod
     def _get_barycenter(position, orientation, vertices):
         """Returns the barycenter of the Triangle object."""
@@ -144,10 +167,3 @@ class Triangle(BaseMagnet):
             np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
         )
         return orientation.apply(centroid) + position
-
-    @property
-    def _default_style_description(self):
-        """Default style description text"""
-        if self.vertices is None:
-            return "no vertices"
-        return ""
