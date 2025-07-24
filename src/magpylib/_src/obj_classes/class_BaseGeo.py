@@ -4,6 +4,8 @@
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=protected-access
 
+from abc import ABC, abstractmethod
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
@@ -31,7 +33,7 @@ def pad_slice_path(path1, path2):
     return path2
 
 
-class BaseGeo(BaseTransform):
+class BaseGeo(BaseTransform, ABC):
     """Initializes basic properties inherited by ALL Magpylib objects
 
     Inherited from BaseTransform
@@ -135,6 +137,33 @@ class BaseGeo(BaseTransform):
         # set attributes
         self._position = pos
         self._orientation = R.from_quat(oriQ)
+
+    # abstract methods that must be implemented by subclasses ------
+    @abstractmethod
+    def _get_volume(self):
+        """
+        Calculate and return the volume of the object in units of m³.
+
+        This method must be implemented by all subclasses.
+
+        Returns
+        -------
+        float
+            Volume of the object in m³.
+        """
+
+    @abstractmethod
+    def _get_centroid(self):
+        """
+        Calculate and return the centroid of the object in units of m.
+
+        This method must be implemented by all subclasses.
+
+        Returns
+        -------
+        numpy.ndarray, shape (3,)
+            Centroid coordinates [x, y, z] in m.
+        """
 
     # properties ----------------------------------------------------
     @property
@@ -248,20 +277,12 @@ class BaseGeo(BaseTransform):
     @property
     def volume(self):
         """Volume of object in units of m³."""
-        # pylint: disable=no-member
-        if hasattr(self, "_get_volume") and callable(self._get_volume):
-            return self._get_volume()
-        msg = f"{self.__class__.__name__} must implement the '_get_volume()' method"
-        raise NotImplementedError(msg)  # pragma: no cover
+        return self._get_volume()
 
     @property
     def centroid(self):
         """Centroid of object in units of m."""
-        # pylint: disable=no-member
-        if hasattr(self, "_get_centroid") and callable(self._get_centroid):
-            return self._get_centroid()
-        msg = f"{self.__class__.__name__} must implement the '_get_centroid()' method"
-        raise NotImplementedError(msg)  # pragma: no cover
+        return self._get_centroid()
 
     @property
     def style(self):

@@ -249,26 +249,6 @@ class BaseCollection(BaseDisplayRepr):
         return f"""<pre>{"<br>".join(lines)}</pre>"""
 
     # Methods
-    def _get_volume(self):
-        """Volume of all objects in units of m³."""
-        return sum(child.volume for child in self.children_all)
-
-    def _get_centroid(self):
-        """Centroid of collection weighted by children volumes in units of m."""
-        total_volume = 0.0
-        weighted_centroid = np.array([0.0, 0.0, 0.0])
-
-        for child in self.children_all:
-            child_volume = child.volume
-            if child_volume > 0:
-                child_centroid = child.centroid
-                weighted_centroid += child_centroid * child_volume
-                total_volume += child_volume
-
-        if total_volume > 0:
-            return weighted_centroid / total_volume
-        return self.position  # pylint: disable=no-member
-
     def describe(self, format="type+label+id", max_elems=10, return_string=False):
         # pylint: disable=arguments-differ
         """Returns or prints a tree view of the collection.
@@ -984,3 +964,24 @@ class Collection(BaseGeo, BaseCollection):
             **kwargs,
         )
         BaseCollection.__init__(self, *args, override_parent=override_parent)
+
+    # Abstract methods implementation
+    def _get_volume(self):
+        """Volume of all objects in units of m³."""
+        return sum(child.volume for child in self.children_all)
+
+    def _get_centroid(self):
+        """Centroid of collection weighted by children volumes in units of m."""
+        total_volume = 0.0
+        weighted_centroid = np.array([0.0, 0.0, 0.0])
+
+        for child in self.children_all:
+            child_volume = child.volume
+            if child_volume > 0:
+                child_centroid = child.centroid
+                weighted_centroid += child_centroid * child_volume
+                total_volume += child_volume
+
+        if total_volume > 0:
+            return weighted_centroid / total_volume
+        return self.position

@@ -5,7 +5,6 @@ import pytest
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 
 # pylint: disable=no-member
 
@@ -39,7 +38,12 @@ def test_BaseGeo_basics():
 
     poss, rots = [], []
 
-    bgeo = BaseGeo((0, 0, 0), None)
+    bgeo = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(0, 0, 1),
+        position=(0, 0, 0),
+        orientation=None,
+    )
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
@@ -100,14 +104,24 @@ def test_rotate_vs_rotate_from():
         (0, -0.2, 0),
     ]
 
-    bg1 = BaseGeo(position=(3, 4, 5), orientation=R.from_quat((0, 0, 0, 1)))
+    bg1 = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(0, 0, 1),
+        position=(3, 4, 5),
+        orientation=R.from_quat((0, 0, 0, 1)),
+    )
     for ro in roz:
         rroz = R.from_rotvec((ro,))
         bg1.rotate(rotation=rroz, anchor=(-3, -2, 1))
     pos1 = bg1.position
     ori1 = bg1.orientation.as_quat()
 
-    bg2 = BaseGeo(position=(3, 4, 5), orientation=R.from_quat((0, 0, 0, 1)))
+    bg2 = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(0, 0, 1),
+        position=(3, 4, 5),
+        orientation=R.from_quat((0, 0, 0, 1)),
+    )
     angs = np.linalg.norm(roz, axis=1)
     for ang, ax in zip(angs, roz, strict=False):
         bg2.rotate_from_angax(angle=[ang], degrees=False, axis=ax, anchor=(-3, -2, 1))
@@ -121,7 +135,12 @@ def test_rotate_vs_rotate_from():
 def test_BaseGeo_reset_path():
     """testing reset path"""
     # pylint: disable=protected-access
-    bg = BaseGeo((0, 0, 0), R.from_quat((0, 0, 0, 1)))
+    bg = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(0, 0, 1),
+        position=(0, 0, 0),
+        orientation=R.from_quat((0, 0, 0, 1)),
+    )
     bg.move([(1, 1, 1)] * 11)
 
     assert len(bg._position) == 12, "bad path generation"
@@ -133,7 +152,12 @@ def test_BaseGeo_reset_path():
 def test_BaseGeo_anchor_None():
     """testing rotation with None anchor"""
     pos = np.array([1, 2, 3])
-    bg = BaseGeo(pos, R.from_quat((0, 0, 0, 1)))
+    bg = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(0, 0, 1),
+        position=pos,
+        orientation=R.from_quat((0, 0, 0, 1)),
+    )
     bg.rotate(R.from_rotvec([(0.1, 0.2, 0.3), (0.2, 0.4, 0.6)]))
 
     pos3 = np.array([pos] * 3)
@@ -161,11 +185,21 @@ def evall(obj):
 
 def test_attach():
     """test attach functionality"""
-    bg = BaseGeo([0, 0, 0], R.from_rotvec((0, 0, 0)))
+    bg = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(0, 0, 1),
+        position=[0, 0, 0],
+        orientation=R.from_rotvec((0, 0, 0)),
+    )
     rot_obj = R.from_rotvec([(x, 0, 0) for x in np.linspace(0, 10, 11)])
     bg.rotate(rot_obj, start=-1)
 
-    bg2 = BaseGeo([0, 0, 0], R.from_rotvec((0, 0, 0)))
+    bg2 = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(0, 0, 1),
+        position=[0, 0, 0],
+        orientation=R.from_rotvec((0, 0, 0)),
+    )
     roto = R.from_rotvec(((1, 0, 0),))
     for _ in range(10):
         bg2.rotate(roto)
@@ -196,25 +230,41 @@ def test_path_functionality1():
         [(1, 0, 0, 1), (1, 0, 0, 0.5), (1, 0, 0, 0.25), (1, 0, 0, 0.2), (1, 0, 0, 0.1)]
     )
 
-    pos, ori = evall(BaseGeo(pos0, rot0))
+    pos, ori = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        )
+    )
     P = np.array([b1, b2, b3, b4, b5])
     Q = np.array([q1, q2, q3, q4, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
-    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=0))
+    pos, ori = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=0)
+    )
     P = np.array([b1 + c1, b2 + c2, b3 + c3, b4, b5])
     Q = np.array([q1, q2, q3, q4, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
-    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=1))
+    pos, ori = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=1)
+    )
     P = np.array([b1, b2 + c1, b3 + c2, b4 + c3, b5])
     Q = np.array([q1, q2, q3, q4, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
-    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=2))
+    pos, ori = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=2)
+    )
     P = np.array([b1, b2, b3 + c1, b4 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5])
     np.testing.assert_allclose(pos, P)
@@ -235,31 +285,51 @@ def test_path_functionality2():
         [(1, 0, 0, 1), (1, 0, 0, 0.5), (1, 0, 0, 0.25), (1, 0, 0, 0.2), (1, 0, 0, 0.1)]
     )
 
-    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=3))
+    pos, ori = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=3)
+    )
     P = np.array([b1, b2, b3, b4 + c1, b5 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
-    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=4))
+    pos, ori = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=4)
+    )
     P = np.array([b1, b2, b3, b4, b5 + c1, b5 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5, q5, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
-    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=5))
+    pos, ori = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=5)
+    )
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
-    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=5))
+    pos, ori = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=5)
+    )
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
-    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath))
+    pos, ori = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath)
+    )
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
     np.testing.assert_allclose(pos, P)
@@ -274,28 +344,68 @@ def test_path_functionality3():
     )
     inpath = np.array([(0.1, 0.1, 0.1), (0.2, 0.2, 0.2), (0.3, 0.3, 0.3)])
 
-    pos1, ori1 = evall(BaseGeo(pos0, rot0).move(inpath, start=4))
-    pos2, ori2 = evall(BaseGeo(pos0, rot0).move(inpath, start=-1))
+    pos1, ori1 = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=4)
+    )
+    pos2, ori2 = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=-1)
+    )
     np.testing.assert_allclose(pos1, pos2)
     np.testing.assert_allclose(ori1, ori2)
 
-    pos1, ori1 = evall(BaseGeo(pos0, rot0).move(inpath, start=3))
-    pos2, ori2 = evall(BaseGeo(pos0, rot0).move(inpath, start=-2))
+    pos1, ori1 = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=3)
+    )
+    pos2, ori2 = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=-2)
+    )
     np.testing.assert_allclose(pos1, pos2)
     np.testing.assert_allclose(ori1, ori2)
 
-    pos1, ori1 = evall(BaseGeo(pos0, rot0).move(inpath, start=2))
-    pos2, ori2 = evall(BaseGeo(pos0, rot0).move(inpath, start=-3))
+    pos1, ori1 = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=2)
+    )
+    pos2, ori2 = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=-3)
+    )
     np.testing.assert_allclose(pos1, pos2)
     np.testing.assert_allclose(ori1, ori2)
 
-    pos1, ori1 = evall(BaseGeo(pos0, rot0).move(inpath, start=1))
-    pos2, ori2 = evall(BaseGeo(pos0, rot0).move(inpath, start=-4))
+    pos1, ori1 = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=1)
+    )
+    pos2, ori2 = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=-4)
+    )
     np.testing.assert_allclose(pos1, pos2)
     np.testing.assert_allclose(ori1, ori2)
 
-    pos1, ori1 = evall(BaseGeo(pos0, rot0).move(inpath, start=0))
-    pos2, ori2 = evall(BaseGeo(pos0, rot0).move(inpath, start=-5))
+    pos1, ori1 = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=0)
+    )
+    pos2, ori2 = evall(
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1), polarization=(0, 0, 1), position=pos0, orientation=rot0
+        ).move(inpath, start=-5)
+    )
     np.testing.assert_allclose(pos1, pos2)
     np.testing.assert_allclose(ori1, ori2)
 
@@ -399,7 +509,12 @@ def test_scipy_from_methods():
 
 def test_style():
     """test when setting wrong style class"""
-    bg = BaseGeo((0, 0, 0), None)
+    bg = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(0, 0, 1),
+        position=(0, 0, 0),
+        orientation=None,
+    )
     bg.style = {"color": "red"}
     bg.style = {"label": "mylabel"}
     assert bg.style.color == "red"
@@ -410,18 +525,47 @@ def test_style():
 
 def test_kwargs():
     """test kwargs inputs, only relevant for styles"""
-    bg = BaseGeo((0, 0, 0), None, style={"label": "label_01"}, style_label="label_02")
+    bg = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(0, 0, 1),
+        position=(0, 0, 0),
+        orientation=None,
+        style={"label": "label_01"},
+        style_label="label_02",
+    )
     assert bg.style.label == "label_02"
 
     with pytest.raises(TypeError):
-        BaseGeo((0, 0, 0), None, styl_label="label_02")
+        magpy.magnet.Cuboid(
+            dimension=(1, 1, 1),
+            polarization=(0, 0, 1),
+            position=(0, 0, 0),
+            orientation=None,
+            styl_label="label_02",
+        )
 
 
 def test_copy():
     """test copying object"""
-    bg1 = BaseGeo((0, 0, 0), None, style_label="label1")  # has style
-    bg2 = BaseGeo((1, 2, 3), None)  # has no style
-    bg3 = BaseGeo((4, 6, 8), style_color="blue")  # has style but label is None
+    bg1 = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(0, 0, 1),
+        position=(0, 0, 0),
+        orientation=None,
+        style_label="label1",
+    )  # has style
+    bg2 = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(0, 0, 1),
+        position=(1, 2, 3),
+        orientation=None,
+    )  # has no style
+    bg3 = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(0, 0, 1),
+        position=(4, 6, 8),
+        style_color="blue",
+    )  # has style but label is None
     bg1c = bg1.copy()
     bg2c = bg2.copy(position=(10, 0, 0), style={"color": "red"}, style_color="orange")
     bg3c = bg3.copy()
@@ -433,7 +577,7 @@ def test_copy():
     # check if label suffix iterated correctly
     assert bg1c.style.label == "label2"
     assert bg2c.style.label is None
-    assert bg3c.style.label == "BaseGeo_01"
+    assert bg3c.style.label == "Cuboid_01"
 
     # check if style is passed correctly
     assert bg2c.style.color == "orange"
