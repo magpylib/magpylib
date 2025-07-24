@@ -91,6 +91,7 @@ class BaseGeo(BaseTransform, ABC):
         if style is not None or kwargs:  # avoid style creation cost if not needed
             self._style_kwargs = self._process_style_kwargs(style=style, **kwargs)
 
+    # static methods ------------------------------------------------
     @staticmethod
     def _process_style_kwargs(style=None, **kwargs):
         if kwargs:
@@ -106,6 +107,7 @@ class BaseGeo(BaseTransform, ABC):
             style.update(**style_kwargs)
         return style
 
+    # private helper methods ----------------------------------------
     def _init_position_orientation(self, position, orientation):
         """tile up position and orientation input and set _position and
         _orientation at class init. Because position and orientation inputs
@@ -137,6 +139,19 @@ class BaseGeo(BaseTransform, ABC):
         # set attributes
         self._position = pos
         self._orientation = R.from_quat(oriQ)
+
+    def _validate_style(self, val=None):
+        val = {} if val is None else val
+        style = self.style  # triggers style creation
+        if isinstance(val, dict):
+            style.update(val)
+        elif not isinstance(val, self._style_class):
+            msg = (
+                f"Input parameter `style` must be of type {self._style_class}.\n"
+                f"Instead received type {type(val)}"
+            )
+            raise ValueError(msg)
+        return style
 
     # abstract methods that must be implemented by subclasses ------
     @abstractmethod
@@ -309,33 +324,7 @@ class BaseGeo(BaseTransform, ABC):
     def style(self, val):
         self._style = self._validate_style(val)
 
-    def _validate_style(self, val=None):
-        val = {} if val is None else val
-        style = self.style  # triggers style creation
-        if isinstance(val, dict):
-            style.update(val)
-        elif not isinstance(val, self._style_class):
-            msg = (
-                f"Input parameter `style` must be of type {self._style_class}.\n"
-                f"Instead received type {type(val)}"
-            )
-            raise ValueError(msg)
-        return style
-
-    # dunders -------------------------------------------------------
-    def __add__(self, obj):
-        """Add up sources to a Collection object.
-
-        Returns
-        -------
-        Collection: Collection
-        """
-        # pylint: disable=import-outside-toplevel
-        from magpylib import Collection  # noqa: PLC0415
-
-        return Collection(self, obj)
-
-    # methods -------------------------------------------------------
+    # public methods ------------------------------------------------
     def reset_path(self):
         """Set object position to (0,0,0) and orientation = unit rotation.
 
@@ -421,3 +410,16 @@ class BaseGeo(BaseTransform, ABC):
             style_kwargs = self._process_style_kwargs(**style_kwargs)
             obj_copy.style.update(style_kwargs)
         return obj_copy
+
+    # dunders -------------------------------------------------------
+    def __add__(self, obj):
+        """Add up sources to a Collection object.
+
+        Returns
+        -------
+        Collection: Collection
+        """
+        # pylint: disable=import-outside-toplevel
+        from magpylib import Collection  # noqa: PLC0415
+
+        return Collection(self, obj)
