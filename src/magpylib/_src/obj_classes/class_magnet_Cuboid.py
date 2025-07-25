@@ -8,6 +8,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Cuboid
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
+from magpylib._src.fields.field_FT import getFT_magnet
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
@@ -87,6 +88,7 @@ class Cuboid(BaseMagnet, BaseTarget):
     """
 
     _field_func = staticmethod(BHJM_magnet_cuboid)
+    _force_func = getFT_magnet
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 2,
         "dimension": 2,
@@ -155,12 +157,7 @@ class Cuboid(BaseMagnet, BaseTarget):
         return self.position
 
     def _generate_mesh(self):
-        """Generate mesh for force computation.
-
-        Returns
-        -------
-        mesh : np.ndarray, shape (n, 3)
-        """
+        """Generate mesh for force computation."""
         if np.isscalar(self.meshing):
             n1, n2, n3 = cells_from_dimension(self.dimension, self.meshing)
         elif isinstance (self.meshing, (list, tuple, np.ndarray)) and len(self.meshing) == 3:
@@ -173,4 +170,5 @@ class Cuboid(BaseMagnet, BaseTarget):
             )
             raise ValueError(msg)
 
-        return target_mesh_cuboid(n1, n2, n3, *self.dimension)
+        mesh = target_mesh_cuboid(n1, n2, n3, *self.dimension)
+        return self.orientation.apply(mesh) + self.position

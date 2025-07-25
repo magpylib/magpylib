@@ -3,15 +3,19 @@
 import warnings
 from typing import ClassVar
 
+import numpy as np
+
 from magpylib._src.display.traces_core import make_Circle
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_circle import BHJM_circle
+from magpylib._src.fields.field_FT import getFT_current
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.utility import unit_prefix
+from magpylib._src.obj_classes.target_meshing import target_mesh_circle
 
-
-class Circle(BaseCurrent):
+class Circle(BaseCurrent, BaseTarget):
     """Circular current loop.
 
     Can be used as `sources` input for magnetic field computation.
@@ -38,6 +42,10 @@ class Circle(BaseCurrent):
 
     current: float, default=`None`
         Electrical current in units of A.
+
+    meshing: dict or None, default=`None`
+        Parameters that define the mesh fineness for force computation.
+        Should contain mesh-specific parameters like resolution, method, etc.
 
     volume: float
         Read-only. Object physical volume in units of m^3.
@@ -72,6 +80,7 @@ class Circle(BaseCurrent):
     """
 
     _field_func = staticmethod(BHJM_circle)
+    _force_func = getFT_current
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"current": 1, "diameter": 1}
     get_trace = make_Circle
 
@@ -81,6 +90,7 @@ class Circle(BaseCurrent):
         orientation=None,
         diameter=None,
         current=None,
+        meshing=None,
         *,
         style=None,
         **kwargs,
@@ -90,6 +100,9 @@ class Circle(BaseCurrent):
 
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
+        
+        # Initialize BaseTarget
+        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -123,6 +136,23 @@ class Circle(BaseCurrent):
     def _get_centroid(self):
         """Centroid of object in units of m."""
         return self.position
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        if not np.isscalar(self.meshing):
+            msg = "Circle meshing must be a scalar value reflecting the target number of elements."
+            raise ValueError(msg)
+
+        if self.diameter is None:
+            msg = (
+                "Parameter diameter must be explicitly set for force computation."
+                f" Parameter diameter missing for {self}."
+            )
+            raise ValueError(msg)
+
+        mesh = target_mesh_circle(self.diameter/2, self.meshing)
+        return self.orientation.apply(mesh) + self.position
+
 
 
 class Loop(Circle):

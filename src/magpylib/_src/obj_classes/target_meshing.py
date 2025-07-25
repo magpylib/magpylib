@@ -111,8 +111,30 @@ def cells_from_dimension(
 
 def target_mesh_cuboid(n1, n2, n3, a, b, c):
     """
+    Cuboid mesh in the local object coordinates.
+
     Generates a point-cloud of n1 x n2 x n3 points inside a cuboid with sides a, b, c.
     The points are centers of cubical cells that fill the Cuboid.
+
+    Parameters
+    ----------
+    n1: int
+        Number of divisions along the x-axis.
+    n2: int
+        Number of divisions along the y-axis.
+    n3: int
+        Number of divisions along the z-axis.
+    a: float
+        Length of the cuboid along the x-axis.
+    b: float
+        Length of the cuboid along the y-axis.
+    c: float
+        Length of the cuboid along the z-axis.
+
+    Returns
+    -------
+    np.ndarray, shape (n1*n2*n3, 3)
+    
     """    
     xs = np.linspace(-a / 2, a / 2, n1 + 1)
     ys = np.linspace(-b / 2, b / 2, n2 + 1)
@@ -127,3 +149,91 @@ def target_mesh_cuboid(n1, n2, n3, a, b, c):
     zs_cent = zs[:-1] + dz / 2 if len(zs) > 1 else zs + dz / 2
 
     return np.array(list(itertools.product(xs_cent, ys_cent, zs_cent)))
+
+
+
+def target_mesh_cylinder(r1, r2, h, phi1, phi2, n):
+    """
+    Cylinder mesh in the local object coordinates.
+
+    Parameters
+    ----------
+    r1: float
+        Inner radius of the cylinder.
+    r2: float
+        Outer radius of the cylinder.
+    h: float
+        Height of the cylinder.
+    phi1: float
+        Start angle of the cylinder in degrees.
+    phi2: float
+        End angle of the cylinder in degrees.
+    n: int
+        Number of points in mesh.
+
+    Returns
+    -------
+    np.ndarray, shape (n, 3)
+    """
+    al = (r2 + r1) * 3.14 * (phi2 - phi1) / 360  # arclen = D*pi*arcratio
+    dim = al, r2 - r1, h
+    # "unroll" the cylinder and distribute the target number of elements along the
+    # circumference, radius and height.
+    nphi, nr, nh = cells_from_dimension(dim, n)
+
+    r = np.linspace(r1, r2, nr + 1)
+    dh = h / nh
+    cells = []
+    for r_ind in range(nr):
+        # redistribute number divisions proportionally to the radius
+        nphi_r = max(1, int(r[r_ind + 1] / ((r1 + r2) / 2) * nphi))
+        phi = np.linspace(phi1, phi2, nphi_r + 1)
+        for h_ind in range(nh):
+            pos_h = dh * h_ind - h / 2 + dh / 2
+            # use a cylinder for the innermost cells if there are at least 3 layers and
+            # if it is closed, use cylinder segments otherwise
+            if nr >= 3 and r[r_ind] == 0 and phi2 - phi1 == 360:
+                cell = (0, 0, pos_h)
+                cells.append(cell)
+            else:
+                for phi_ind in range(nphi_r):
+                    radial_coord = (r[r_ind] + r[r_ind + 1]) / 2
+                    angle_coord = (phi[phi_ind] + phi[phi_ind + 1]) / 2
+
+                    cell = (
+                        radial_coord * np.cos(np.deg2rad(angle_coord)),
+                        radial_coord * np.sin(np.deg2rad(angle_coord)),
+                        pos_h,
+                    )
+                    cells.append(cell)
+    # return _collection_from_obj_and_cells(cylinder, cells, **kwargs)
+    return np.array(cells)
+
+
+def target_mesh_circle(r, n):
+    """
+    Circle mesh in the local object coordinates
+
+    Parameters
+    ----------
+    r: float
+        Radius of the circle.
+    n: int
+        Number of points along the circle.
+
+    Returns
+    -------
+    np.ndarray, shape (n, 3)
+    """
+
+    if n < 3:
+        raise ValueError("Number of points must be at least 3 for a circle mesh.")
+
+    angles = np.linspace(0, 2 * np.pi, n, endpoint=False)
+
+    # Create circle points in x-y plane
+    x = r * np.cos(angles)
+    y = r * np.sin(angles)
+    z = np.zeros_like(x)
+
+    return np.column_stack([x, y, z])

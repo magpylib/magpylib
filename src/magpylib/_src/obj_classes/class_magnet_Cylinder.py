@@ -8,12 +8,14 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Cylinder
 from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
+from magpylib._src.fields.field_FT import getFT_magnet
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.target_meshing import target_mesh_cylinder
 from magpylib._src.utility import unit_prefix
 
-
-class Cylinder(BaseMagnet):
+class Cylinder(BaseMagnet, BaseTarget):
     """Cylinder magnet with homogeneous magnetization.
 
     Can be used as `sources` input for magnetic field computation.
@@ -79,6 +81,7 @@ class Cylinder(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_cylinder)
+    _force_func = getFT_magnet
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 2,
         "dimension": 2,
@@ -92,6 +95,7 @@ class Cylinder(BaseMagnet):
         dimension=None,
         polarization=None,
         magnetization=None,
+        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -102,6 +106,9 @@ class Cylinder(BaseMagnet):
         super().__init__(
             position, orientation, magnetization, polarization, style, **kwargs
         )
+
+        # Initialize BaseTarget
+        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -142,3 +149,15 @@ class Cylinder(BaseMagnet):
     def _get_centroid(self):
         """Centroid of object in units of m."""
         return self.position
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        if not np.isscalar(self.meshing):
+            msg = "Cylinder meshing must be a scalar value reflecting the target number of elements."
+            raise ValueError(msg)
+        
+        d, h = self.dimension
+        mesh = target_mesh_cylinder(0, d/2, h, 0, 360, self.meshing)
+        return self.orientation.apply(mesh) + self.position
+
+

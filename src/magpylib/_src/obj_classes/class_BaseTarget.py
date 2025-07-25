@@ -2,6 +2,15 @@
 
 from abc import ABC, abstractmethod
 
+from magpylib._src.fields.field_FT import getFT_magnet, getFT_dipole, getFT_current
+
+# Registry of valid force functions
+VALID_FORCE_FUNCTIONS = [
+    getFT_magnet,
+    getFT_dipole,
+    getFT_current,
+]
+
 class BaseTarget(ABC):
     """Base class for Magpylib objects that can be targets of force computation.
 
@@ -18,13 +27,29 @@ class BaseTarget(ABC):
 
     Methods
     -------
-    _get_mesh()
+    _generate_mesh()
         Abstract method to generate mesh for force computation.
         Must be implemented by subclasses.
     """
+    # This must be set by subclasses to one of the VALID_FORCE_FUNCTIONS values
+    _force_func = None
+
     def __init__(self, meshing=None):
         """Initialize BaseTarget with meshing parameters."""
         self._meshing = meshing
+
+        # Validate that subclass has set a valid _force_func
+        if self._force_func is None:
+            msg = f"Missing force function implementation in subclass of {self}"
+            raise NotImplementedError(msg)
+        
+        # Get the underlying function (handle both functions and bound methods)
+        #force_func = self._force_func
+        #if hasattr(force_func, '__func__'):  # It's a bound method
+        #    force_func = force_func.__func__
+        if self._force_func.__func__ not in VALID_FORCE_FUNCTIONS:
+            msg = f"Bad force function defined in {self}."
+            raise ValueError(msg)
 
     @property
     def meshing(self):
