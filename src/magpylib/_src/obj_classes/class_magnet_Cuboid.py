@@ -149,7 +149,6 @@ class Cuboid(BaseMagnet, BaseTarget):
         """Volume of object in units of m³."""
         if self.dimension is None:
             return 0.0
-
         return np.prod(self.dimension)
 
     def _get_centroid(self):
@@ -157,12 +156,15 @@ class Cuboid(BaseMagnet, BaseTarget):
         return self.position
 
     def _generate_mesh(self):
-        """Generate mesh for force computation."""
-        if np.isscalar(self.meshing):
-            n1, n2, n3 = cells_from_dimension(self.dimension, self.meshing)
-        elif isinstance (self.meshing, (list, tuple, np.ndarray)) and len(self.meshing) == 3:
-            n1, n2, n3 = self.meshing
-        else:
+        """
+        Generate mesh for force computation.
+        
+        Returns
+        -------
+        mesh : np.ndarray, shape (n, 3)
+        mom : np.ndarray, shape (n, 3)
+        """
+        if self.meshing is None:
             msg = (
                 "Parameter meshing must be explicitly set for force computation."
                 f" Parameter meshing missing for {self}."
@@ -170,5 +172,19 @@ class Cuboid(BaseMagnet, BaseTarget):
             )
             raise ValueError(msg)
 
-        mesh = target_mesh_cuboid(n1, n2, n3, *self.dimension)
-        return self.orientation.apply(mesh) + self.position
+        if np.isscalar(self.meshing):
+            n1, n2, n3 = cells_from_dimension(self.dimension, self.meshing)
+        elif isinstance (self.meshing, (list, tuple, np.ndarray)) and len(self.meshing) == 3:
+            n1, n2, n3 = self.meshing
+        else:
+            msg = (
+                f" Bad parameter meshing of {self}."
+                "Cuboid meshing must be an integer or array_like of shape (3,)"
+            )
+            raise ValueError(msg)
+
+        mesh, volumes = target_mesh_cuboid(n1, n2, n3, *self.dimension)
+        mesh = self.orientation.apply(mesh) + self.position
+        moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
+
+        return mesh, moments

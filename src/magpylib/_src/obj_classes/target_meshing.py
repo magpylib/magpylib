@@ -118,23 +118,16 @@ def target_mesh_cuboid(n1, n2, n3, a, b, c):
 
     Parameters
     ----------
-    n1: int
-        Number of divisions along the x-axis.
-    n2: int
-        Number of divisions along the y-axis.
-    n3: int
-        Number of divisions along the z-axis.
-    a: float
-        Length of the cuboid along the x-axis.
-    b: float
-        Length of the cuboid along the y-axis.
-    c: float
-        Length of the cuboid along the z-axis.
+    n1: int - Number of divisions along the x-axis.
+    n2: int - Number of divisions along the y-axis.
+    n3: int - Number of divisions along the z-axis.
+    a: float - Length of the cuboid along the x-axis.
+    b: float - Length of the cuboid along the y-axis.
+    c: float - Length of the cuboid along the z-axis.
 
     Returns
     -------
-    np.ndarray, shape (n1*n2*n3, 3)
-    
+    mesh (np.ndarray, shape (n, 3)), volumes (np.ndarray, shape (n,))
     """    
     xs = np.linspace(-a / 2, a / 2, n1 + 1)
     ys = np.linspace(-b / 2, b / 2, n2 + 1)
@@ -148,8 +141,10 @@ def target_mesh_cuboid(n1, n2, n3, a, b, c):
     ys_cent = ys[:-1] + dy / 2 if len(ys) > 1 else ys + dy / 2
     zs_cent = zs[:-1] + dz / 2 if len(zs) > 1 else zs + dz / 2
 
-    return np.array(list(itertools.product(xs_cent, ys_cent, zs_cent)))
+    mesh = np.array(list(itertools.product(xs_cent, ys_cent, zs_cent)))
+    volumes = np.tile(a*b*c/n1/n2/n3, (len(mesh), ))
 
+    return mesh, volumes
 
 
 def target_mesh_cylinder(r1, r2, h, phi1, phi2, n):
@@ -173,7 +168,7 @@ def target_mesh_cylinder(r1, r2, h, phi1, phi2, n):
 
     Returns
     -------
-    np.ndarray, shape (n, 3)
+    mesh (np.ndarray, shape (n, 3)), volumes (np.ndarray, shape (n,))
     """
     al = (r2 + r1) * 3.14 * (phi2 - phi1) / 360  # arclen = D*pi*arcratio
     dim = al, r2 - r1, h
@@ -184,6 +179,7 @@ def target_mesh_cylinder(r1, r2, h, phi1, phi2, n):
     r = np.linspace(r1, r2, nr + 1)
     dh = h / nh
     cells = []
+    volumes = []
     for r_ind in range(nr):
         # redistribute number divisions proportionally to the radius
         nphi_r = max(1, int(r[r_ind + 1] / ((r1 + r2) / 2) * nphi))
@@ -195,6 +191,7 @@ def target_mesh_cylinder(r1, r2, h, phi1, phi2, n):
             if nr >= 3 and r[r_ind] == 0 and phi2 - phi1 == 360:
                 cell = (0, 0, pos_h)
                 cells.append(cell)
+                volumes.append(np.pi * r[r_ind+1] ** 2 * dh)
             else:
                 for phi_ind in range(nphi_r):
                     radial_coord = (r[r_ind] + r[r_ind + 1]) / 2
@@ -206,8 +203,10 @@ def target_mesh_cylinder(r1, r2, h, phi1, phi2, n):
                         pos_h,
                     )
                     cells.append(cell)
-    # return _collection_from_obj_and_cells(cylinder, cells, **kwargs)
-    return np.array(cells)
+                    volumes.append(
+                        np.pi * (r[r_ind + 1] ** 2 - r[r_ind] ** 2) * dh / nphi_r * (phi2-phi1)/360
+                    )
+    return np.array(cells), np.array(volumes)
 
 
 def target_mesh_circle(r, n):

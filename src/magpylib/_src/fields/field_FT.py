@@ -1,3 +1,5 @@
+from itertools import compress
+
 import numpy as np
 import warnings
 from magpylib._src.fields.field_wrap_BH import getB
@@ -128,33 +130,138 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
     targets = check_input_targets(targets)
     pivot = check_input_pivot(pivot, targets)
     n = len(targets)
-    eps_vec = create_eps_vector(eps)
-    
+
+    mask_magnet = np.array([t._force_func.__func__ == getFT_magnet for t in targets], dtype=bool)
+    mask_current = np.array([t._force_func.__func__ == getFT_current for t in targets], dtype=bool)
+    tgt_types = ["magnet" if m1 else "current" if m2 else "bad" for m1,m2 in zip(mask_magnet, mask_current)]
+
     # The B-field is computed for all targets at once before-hand. This improves
     #    efficiency via vectorization (of the B-field computation) because each
     #    target is represented by a point-cloud of mesh vertices.
     # Later, for the force computation magnets and currents will be evaluated
     #    in separate groups.
 
-    # transform targets into observers
+    # transform targets into observers point clouds, store moments, lvec, currents
     observer = []
-    for tgt in targets:
-        mesh = tgt._generate_mesh()
+    mag_moments = []
+    eps_vec = create_eps_vector(eps)
+    for tgt, tgt_type in zip(targets, tgt_types):
 
-        # if target is a magnet add 6 finite difference steps for gradient computation
-        if tgt._force_func.__func__ == getFT_magnet:
+        if tgt_type == "magnet":
+            mesh, mom = tgt._generate_mesh()
+            # if target is a magnet add 6 finite difference steps for gradient computation
             mesh = (mesh[:, np.newaxis, :] + eps_vec[np.newaxis, :, :]).reshape(-1, 3)
+            mag_moments.append(mom)
+
+        if tgt_type == "current":
+            mesh = tgt._generate_mesh()
 
         observer.append(mesh)
 
-    # transform observer into a single array (-1, 3) and store slice indices for
-    #    different targets in slices
-    slices = np.cumsum([len(obs) for obs in observer])
+    # mesh info for later broadcasting
+    mesh_sizes = np.array([len(obs) for obs in observer])
+    obs_ends = np.cumsum(mesh_sizes)
+    obs_starts = np.r_[0, obs_ends[:-1]]
+
+    # compute field in one go
     observer = np.concatenate(observer, axis=0)
+    B_all = getB(sources, observer, squeeze=True)
 
-    B_all = getB(sources, observer)
+    print(B_all.shape)
 
-    return slices, B_all
+    import sys
+    sys.exit()
+
+    n_magnets = sum(mesh_sizes[mask_magnet]) // 7
+    n_currents = sum(mesh_sizes[mask_current])
+
+    # magnets
+    if n_magnets > 0:
+        # Array allocation for broadcasting
+        POS = np.zeros((n_magnets, 3))   # central location of each cell
+        B = np.zeros((n_magnets, 3))     # B-field at each cell
+        DB = np.zeros((n_magnets, 3, 3)) # B-field gradient at each cell
+        MOM = np.zeros((n_magnets, 3))  # magnetic moment of each cell
+
+        # Prepare index ranges for broadcasting
+        mesh_counts = mesh_sizes[mask_magnet] // 7
+        idx_ends = np.cumsum(mesh_counts)
+        idx_starts = np.r_[0, idx_ends[:-1]]
+
+        # BROADCASTING
+        for i, mom in enumerate(mag_moments):
+            ids, ide = idx_starts[i], idx_ends[i] # index range in broadcast arrays
+            start, end = obs_starts[mask_magnet][i], obs_ends[mask_magnet][i] # range in observer arrays
+
+            POS[ids : ide] = observer[start : end : 7]
+            B[ids : ide] = B_all[start : end : 7]
+
+            # ∂B/∂x
+            DB[ids : ide, :, 0] = B_all[start+1 : end : 7]
+            DB[ids : ide, :, 0] -= B_all[start+2 : end : 7]
+            DB[ids : ide, :, 0] /= (2*eps)
+
+            # ∂B/∂y
+            DB[ids : ide, :, 1] = B_all[start+3 : end : 7]
+            DB[ids : ide, :, 1] -= B_all[start+4 : end : 7]
+            DB[ids : ide, :, 1] /= (2*eps)
+            
+            # ∂B/∂z
+            DB[ids : ide, :, 2] = B_all[start+5 : end : 7]
+            DB[ids : ide, :, 2] -= B_all[start+6 : end : 7]
+            DB[ids : ide, :, 2] /= (2*eps)
+
+            MOM[ids : ide] = mom
+
+        # ACTUAL FORCE AND TORQUE COMPUTATION
+        force = np.einsum('ijk,ik->ij', DB, MOM) # this is faster than sum below
+        #force = np.sum(DB * MOM[:, np.newaxis, :], axis=2)
+        torque = np.cross(B, MOM)  # this is faster than einsum above
+        
+        F = np.add.reduceat(force, idx_starts, axis=0)
+        T = np.add.reduceat(torque, idx_starts, axis=0)
+
+    
+    
+    
+    
+    
+    # if anchor is not None:
+    #    Ts -= np.cross(POSS[:, 0] - anchor, Fs)
+        
+
+        return F,T
+    
+        Ts = np.cross(B[:, 0], MOM)
+        #print(mesh_sizes[mask_magnet]//4)
+        #print(len(B))
+        #print(len(force))
+        # import sys
+        # sys.exit()
+
+    if n_currents > 0:
+        # path vector of each cell
+        LVEC = np.zeros((n_currents, 3))
+        # central location of each cell
+        POSS = np.zeros((n_currents, 3))
+        # current of each cell
+        CURR = np.zeros((n_currents,))
+        # B-field at cell position
+        B = np.zeros((n_currents, 3))
+
+        # # force on every instance
+        # F = (CURR * np.cross(LVEC, B).T).T
+
+        # # torque on every instance + sumup for every target
+        # if anchor is not None:
+        #     T = np.cross(anchor - POSS, F)
+        #     T = np.array(
+        #         [np.sum(T[insti[i] : insti[i + 1]], axis=0) for i in range(tgt_number)]
+        #     )
+        # else:
+        #     T = np.zeros((tgt_number, 3))
+
+    return 0
 
 
     # # split targets into lists of similar types
