@@ -4,7 +4,24 @@ import numpy as np
 import warnings
 from magpylib._src.fields.field_wrap_BH import getB
 
-def check_input_targets(targets):
+
+def check_format_input_sources(sources):
+    """
+    Check and format sources input
+    """
+    if not isinstance(sources, list):
+        sources = [sources]
+    for s in sources:
+        if not hasattr(s, '_field_func'):
+            msg = (
+                "getFT bad source input. Sources can only be Magpylib source objects."
+                f" Instead received type {type(s)} source."
+            )
+            raise ValueError(msg)
+    return sources
+
+
+def check_format_input_targets(targets):
     """
     Check and format targets input
     - check if allowed instance
@@ -38,7 +55,7 @@ def check_input_targets(targets):
     return targets
 
 
-def check_input_pivot(pivot, targets):
+def check_format_input_pivot(pivot, targets):
     """
     Check and format pivot input
 
@@ -138,52 +155,18 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
     -------
     Force-Torque as ndarray of shape (2,3), or (t,2,3) when t targets are given
     """
+    # Input checks
+    targets = check_format_input_targets(targets)
+    pivot = check_format_input_pivot(pivot, targets)
+    sources = check_format_input_sources(sources)
 
-    targets = check_input_targets(targets)
-    pivot = check_input_pivot(pivot, targets)
+    # Get force types and create masks efficiently
+    mask_magnet = np.array([tgt._force_type == "magnet" for tgt in targets])
+    mask_current = np.array([tgt._force_type == "current" for tgt in targets])
 
-    mask_magnet = np.array([t._force_func.__func__ == getFT_magnet for t in targets], dtype=bool)
-    mask_current = np.array([t._force_func.__func__ == getFT_current for t in targets], dtype=bool)
-    tgt_types = ["magnet" if m1 else "current" if m2 else "bad" for m1,m2 in zip(mask_magnet, mask_current)]
-
-    # The B-field is computed for all targets at once before-hand. This improves
-    #    efficiency via vectorization (of the B-field computation) because each
-    #    target is represented by a point-cloud of mesh vertices.
-    # Later, for the force computation magnets and currents will be evaluated
-    #    in separate groups.
-
-    # Transform targets into observers point clouds, and compute moements, lvecs, ...
-    observer = []
-    mag_moments = []
-    eps_vec = create_eps_vector(eps)
-    for tgt, tgt_type in zip(targets, tgt_types):
-
-        if tgt_type == "magnet":
-            mesh, mom = tgt._generate_mesh()
-            # if target is a magnet add 6 finite difference steps for gradient computation
-            mesh = (mesh[:, np.newaxis, :] + eps_vec[np.newaxis, :, :]).reshape(-1, 3)
-            mag_moments.append(mom)
-
-        if tgt_type == "current":
-            mesh = tgt._generate_mesh()
-
-        observer.append(mesh)
-    
-    # some important quantities that need observer list
-    mesh_sizes = np.array([len(obs) for obs in observer])
-    obs_ends = np.cumsum(mesh_sizes)
-    obs_starts = np.r_[0, obs_ends[:-1]]
-
-    # Compute field in one go - get B performs the source input-check
-    observer = np.concatenate(observer, axis=0)
-    B_all = getB(sources, observer, squeeze=False)
-    # shape (n_src, 1, 1, n_obs, 3)
-
-    # some more important quantities
+    # Important numbers
     n_targets = len(targets)
-    n_sources = len(sources) if isinstance(sources, list) else 1
-    n_mesh_mag = sum(mesh_sizes[mask_magnet]) // 7
-    n_mesh_cur = sum(mesh_sizes[mask_current])
+    n_sources = len(sources)
     n_magnets = sum(mask_magnet)  # number of magnet targets
     n_currents = sum(mask_current)  # number of current targets
 
@@ -191,36 +174,72 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
     FOUT = np.zeros((n_sources, n_targets, 3))
     TOUT = np.zeros((n_sources, n_targets, 3))
 
+    # RUN MESHING FUNCTIONS ##############################################################
+    # Collect meshing function results - cannot separate mesh generation from generation 
+    #    of moments, lvecs, etc.
+    # Meshing functions are run now to collect all observers because the B-field is
+    #    computed for all targets at once, for efficiency reasons.
+    observer = []
+    mesh_sizes = []
+    mag_moments = []
+    eps_vec = create_eps_vector(eps)
+    for tgt in targets:
+
+        if tgt._force_type == "magnet":
+            mesh, mom = tgt._generate_mesh()
+            # if target is a magnet add 6 finite difference steps for gradient computation
+            mesh = (mesh[:, np.newaxis, :] + eps_vec[np.newaxis, :, :]).reshape(-1, 3)
+            mag_moments.append(mom)
+
+        if tgt._force_type == "current":
+            mesh = tgt._generate_mesh()
+
+        observer.append(mesh)
+        mesh_sizes.append(len(mesh))
+
+
+    # COMPUTE B FIELD ###################################################################
+    observer = np.concatenate(observer, axis=0)
+    B_all = getB(sources, observer, squeeze=False)
+    # shape (n_src, 1, 1, n_obs, 3)
+
+    # Indexing of observer and B_all arrays
+    mesh_sizes = np.array(mesh_sizes)
+    obs_ends = np.cumsum(mesh_sizes)
+    obs_starts = np.r_[0, obs_ends[:-1]]
+
     # COMPUTATION IDEA:
     #   The equations are very simple like F = DB.MOM, T = B x MOM.
     #   All we need to do is to broadcast into large computation arrays that
     #   contain DB, MOM, B, ... and apply the equations, sum over mesh cells,
     #   and reshape the output to the desired shape.
 
-    # MAGNETS
+    # MAGNETS ########################################################################
     if n_magnets > 0:
+        
+        # Prepare index ranges for broadcasting
+        n_mesh_mag = sum(mesh_sizes[mask_magnet]) // 7
+        mesh_counts = mesh_sizes[mask_magnet] // 7
+        idx_ends = np.cumsum(mesh_counts)
+        idx_starts = np.r_[0, idx_ends[:-1]]
 
-        # COMPUTATION ARRAY ALLOCATION
+        # Computation array allocations
         POS = np.zeros((n_mesh_mag*n_sources, 3))   # central location of each cell
         B = np.zeros((n_mesh_mag*n_sources, 3))     # B-field at each cell
         DB = np.zeros((n_mesh_mag*n_sources, 3, 3)) # B-field gradient at each cell
         MOM = np.zeros((n_mesh_mag*n_sources, 3))   # magnetic moment of each cell
 
-        # Prepare index ranges for broadcasting
-        mesh_counts = mesh_sizes[mask_magnet] // 7
-        idx_ends = np.cumsum(mesh_counts)
-        idx_starts = np.r_[0, idx_ends[:-1]]
-
-        # BROADCASTING into computation array:
+        # BROADCASTING into computation arrays:
         #   rule: (src1 mesh1, src1 mesh2, src1 mesh3, ... src2 mesh1, src2 mesh2, ... )
-        for j in range(n_sources):
-            for i, mom in enumerate(mag_moments):
+        for i, mom in enumerate(mag_moments):
+            # range in observer and B arrays
+            start = obs_starts[mask_magnet][i]
+            end = obs_ends[mask_magnet][i]
+            
+            for j in range(n_sources):
                 # range in computation arrays
                 ids = idx_starts[i] + n_mesh_mag*j
                 ide = idx_ends[i] + n_mesh_mag*j
-                # range in observer and B arrays
-                start = obs_starts[mask_magnet][i]
-                end = obs_ends[mask_magnet][i]
 
                 POS[ids : ide] = observer[start : end : 7]
                 B[ids : ide] = B_all[j, 0, 0, start : end : 7]
@@ -265,6 +284,28 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
         FOUT[:, mask_magnet] = F.reshape(n_sources, n_magnets, 3)
         TOUT[:, mask_magnet] = T.reshape(n_sources, n_magnets, 3)
 
+
+    # CURRENTS ########################################################################
+    if n_currents > 0:
+        n_mesh_cur = sum(mesh_sizes[mask_current])
+        
+        # path vector of each cell
+        LVEC = np.zeros((n_mesh_cur*n_sources, 3))
+        # central location of each cell
+        POSS = np.zeros((n_mesh_cur*n_sources, 3))
+        # current of each cell
+        CURR = np.zeros((n_mesh_cur*n_sources, 3))
+        # B-field at cell position
+        B = np.zeros((n_mesh_cur*n_sources, 3))
+
+
+
+
+
+
+    if squeeze:
+        return np.squeeze(FOUT), np.squeeze(TOUT)
+
     return FOUT, TOUT
 
 
@@ -280,15 +321,6 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
 
 
 
-    if n_currents > 0:
-        # path vector of each cell
-        LVEC = np.zeros((n_currents, 3))
-        # central location of each cell
-        POSS = np.zeros((n_currents, 3))
-        # current of each cell
-        CURR = np.zeros((n_currents,))
-        # B-field at cell position
-        B = np.zeros((n_currents, 3))
 
         # # force on every instance
         # F = (CURR * np.cross(LVEC, B).T).T

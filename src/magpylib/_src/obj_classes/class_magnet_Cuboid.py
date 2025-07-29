@@ -88,7 +88,7 @@ class Cuboid(BaseMagnet, BaseTarget):
     """
 
     _field_func = staticmethod(BHJM_magnet_cuboid)
-    _force_func = getFT_magnet
+    _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 2,
         "dimension": 2,

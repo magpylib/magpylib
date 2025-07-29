@@ -80,7 +80,7 @@ class Circle(BaseCurrent, BaseTarget):
     """
 
     _field_func = staticmethod(BHJM_circle)
-    _force_func = getFT_current
+    _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"current": 1, "diameter": 1}
     get_trace = make_Circle
 
