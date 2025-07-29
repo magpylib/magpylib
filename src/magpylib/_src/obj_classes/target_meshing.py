@@ -209,30 +209,39 @@ def target_mesh_cylinder(r1, r2, h, phi1, phi2, n):
     return np.array(cells), np.array(volumes)
 
 
-def target_mesh_circle(r, n):
+def target_mesh_circle(r, n, i0):
     """
-    Circle mesh in the local object coordinates
+    Circle meshing in the local object coordinates
 
     Parameters
     ----------
-    r: float
-        Radius of the circle.
-    n: int
-        Number of points along the circle.
+    r: float - Radius of the circle.
+    n: int - Number of points along the circle.
+    i0: float - electric current
 
     Returns
     -------
-    np.ndarray, shape (n, 3)
+    mesh np.ndarray, shape (n, 3), currents np.ndarray, shape (n,), lvecs np.ndarray, shape (n, 3)
     """
 
     if n < 3:
         raise ValueError("Number of points must be at least 3 for a circle mesh.")
 
-    angles = np.linspace(0, 2 * np.pi, n, endpoint=False)
+    # construct polygon with same area as circle
+    r1 = r * np.sqrt( (2*np.pi) / (n * np.sin(2*np.pi/n)) )
+    vx =  r1 * np.cos(2 * np.pi * np.arange(n+1) / n)
+    vy =  r1 * np.sin(2 * np.pi * np.arange(n+1) / n)
 
-    # Create circle points in x-y plane
-    x = r * np.cos(angles)
-    y = r * np.sin(angles)
-    z = np.zeros_like(x)
+    # compute midpoints and tangents of polygon edges
+    midx = (vx[:-1] + vx[1:]) / 2
+    midy = (vy[:-1] + vy[1:]) / 2
+    midz = np.zeros((n,))
 
-    return np.column_stack([x, y, z])
+    tanx = vx[1:] - vx[:-1]
+    tany = vy[1:] - vy[:-1]
+
+    mesh = np.column_stack((midx, midy, midz))
+    lvecs = np.column_stack((tanx, tany, midz))
+    currents = np.full(n, i0)
+
+    return mesh, currents, lvecs

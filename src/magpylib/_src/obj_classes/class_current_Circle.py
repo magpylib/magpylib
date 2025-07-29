@@ -8,7 +8,6 @@ import numpy as np
 from magpylib._src.display.traces_core import make_Circle
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_circle import BHJM_circle
-from magpylib._src.fields.field_FT import getFT_current
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
@@ -150,8 +149,11 @@ class Circle(BaseCurrent, BaseTarget):
             )
             raise ValueError(msg)
 
-        mesh = target_mesh_circle(self.diameter/2, self.meshing)
-        return self.orientation.apply(mesh) + self.position
+        mesh, curr, lvec = target_mesh_circle(self.diameter/2, self.meshing, self.current)
+        mesh = self.orientation.apply(mesh) + self.position
+        lvec = self.orientation.apply(lvec)
+
+        return mesh, curr, lvec
 
 
 
