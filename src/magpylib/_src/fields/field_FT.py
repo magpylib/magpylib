@@ -275,12 +275,12 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
 
         force = np.einsum('ijk,ik->ij', DB, MOM) # numpy only
         #force = np.sum(DB * MOM[:, np.newaxis, :], axis=2) # array API
-        torque = np.cross(B, MOM)
+        torque = np.cross(MOM, B)
 
         # Add pivot point contribution to torque
         if pivot is not None:
             PIV = np.tile(np.repeat(pivot[mask_magnet], mesh_sizes_mag, axis=0), (n_sources, 1))
-            torque -= np.cross(POS - PIV, force)
+            torque += np.cross(POS - PIV, force)
 
         # Sum over mesh cells
         idx_starts_all = np.concatenate([idx_starts + n_mesh_mag*j for j in range(n_sources)])
@@ -330,7 +330,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
         # Add pivot point contribution to torque
         if pivot is not None:
             PIV = np.tile(np.repeat(pivot[mask_current], mesh_sizes_cur, axis=0), (n_sources, 1))
-            torque -= np.cross(POS - PIV, force)
+            torque += np.cross(POS - PIV, force)
 
         # Sum over mesh cells
         idx_starts_all = np.concatenate([idx_starts + n_mesh_cur*j for j in range(n_sources)])

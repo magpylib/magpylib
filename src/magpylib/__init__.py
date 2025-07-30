@@ -10,7 +10,7 @@ from magpylib import core, current, graphics, magnet, misc
 from magpylib._src.defaults.defaults_classes import default_settings as defaults
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.display.display import show, show_context
-from magpylib._src.fields import getB, getH, getJ, getM
+from magpylib._src.fields import getB, getH, getJ, getM, getFT
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_Sensor import Sensor
 
@@ -28,6 +28,7 @@ __all__ = [
     "getH",
     "getJ",
     "getM",
+    "getFT",
     "graphics",
     "magnet",
     "misc",
