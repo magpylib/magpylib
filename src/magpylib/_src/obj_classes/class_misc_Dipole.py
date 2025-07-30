@@ -136,8 +136,8 @@ class Dipole(BaseSource):
             )
             raise ValueError(msg)
 
-        mesh = np.array([self.position])
-        moments = np.array([self.moment])
+        mesh = [(0,0,0)]
+        moments = [self.moment]
 
         # Apply orientation and position transformations
         mesh = self.orientation.apply(mesh) + self.position
