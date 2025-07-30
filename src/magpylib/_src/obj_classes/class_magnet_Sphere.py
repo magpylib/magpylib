@@ -170,6 +170,4 @@ class Sphere(BaseMagnet, BaseTarget):
         mesh = self.orientation.apply(mesh) + self.position
         moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
 
-        print(mesh.shape, moments.shape)
-
         return mesh, moments
