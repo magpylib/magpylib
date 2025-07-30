@@ -20,10 +20,10 @@ The magnetic field of a prism-shaped permanent magnet with uniform magnetization
 Two commonly used approaches are:
 
 - **Equivalent Surface Charge Method**:
-  This method models the magnet as a pair of fictitious magnetic surface charges located on its top and bottom faces. By analogy with electrostatics, a constant magnetization $\vec{M}$ gives rise to a uniform surface magnetic charge density of $\sigma = \pm |\vec{M}|$. The resulting magnetic field is computed similarly to the electric field of charged surfaces.
+  This method models the magnet as a pair of fictitious magnetic surface charges located on its top and bottom faces. By analogy with electrostatics, a constant magnetization $\vec{M}$ gives rise to a uniform surface magnetic charge density of $\sigma = \vec{M}\cdot \vec{n}$, where $\vec{n}$ is the outward-pointing normal vector of each side face. The resulting magnetic field is computed similarly to the electric field of charged surfaces.
 
 - **Equivalent Current Method**:
-  This method replaces the magnetization with equivalent bound surface currents flowing around the prism’s side faces. The surface current density is given by $\vec{j} = \vec{M} \times \vec{n}$, where $\vec{n}$ is the outward-pointing normal vector of each side face. This is analogous to using the Biot–Savart law for current distributions.
+  This method replaces the magnetization with equivalent bound surface currents flowing around the prism’s side faces. The surface current density is given by $\vec{j} = \vec{M} \times \vec{n}$. This is analogous to using the Biot–Savart law for current distributions.
 
 We demonstrate and compare these modeling techniques by computing the magnetic field of a cube magnet using three representations: First we use the `Cuboid` solution offered by Magpylib with a magnetization of 10 kA/m.
 
