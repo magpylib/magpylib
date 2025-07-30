@@ -12,10 +12,12 @@ from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.utility import unit_prefix
+from magpylib._src.obj_classes.target_meshing import target_mesh_polyline
 
 
-class Polyline(BaseCurrent):
+class Polyline(BaseCurrent, BaseTarget):
     """Line current flowing in straight paths from vertex to vertex.
 
     Can be used as `sources` input for magnetic field computation.
@@ -43,6 +45,10 @@ class Polyline(BaseCurrent):
 
     current: float, default=`None`
         Electrical current in units of A.
+
+    meshing: dict or None, default=`None`
+        Parameters that define the mesh fineness for force computation.
+        Should contain mesh-specific parameters like resolution, method, etc.
 
     volume: float
         Read-only. Object physical volume in units of m^3.
@@ -82,6 +88,7 @@ class Polyline(BaseCurrent):
 
     # pylint: disable=dangerous-default-value
     _field_func = staticmethod(current_vertices_field)
+    _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "current": 1,
         "vertices": 3,
@@ -96,6 +103,7 @@ class Polyline(BaseCurrent):
         vertices=None,
         position=(0, 0, 0),
         orientation=None,
+        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -104,6 +112,9 @@ class Polyline(BaseCurrent):
 
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
+        
+        # Initialize BaseTarget
+        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -137,6 +148,21 @@ class Polyline(BaseCurrent):
         if self.vertices is not None:
             return np.mean(self.vertices, axis=0) + self.position
         return self.position
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        if self.vertices is None:
+            msg = (
+                "Parameter vertices must be explicitly set for force computation."
+                f" Parameter vertices missing for {self}."
+            )
+            raise ValueError(msg)
+
+        mesh, curr, tvec = target_mesh_polyline(self.vertices, self.current, self.meshing)
+        mesh = self.orientation.apply(mesh) + self.position
+        tvec = self.orientation.apply(tvec)
+
+        return mesh, curr, tvec
 
 
 class Line(Polyline):

@@ -221,7 +221,9 @@ def target_mesh_circle(r, n, i0):
 
     Returns
     -------
-    mesh np.ndarray, shape (n, 3), currents np.ndarray, shape (n,), lvecs np.ndarray, shape (n, 3)
+    mesh np.ndarray, shape (n, 3) - central edge positions
+    currents np.ndarray, shape (n,) - electric current at each edge
+    tvecs np.ndarray, shape (n, 3) - tangent vectors (=edge vectors)
     """
 
     if n < 3:
@@ -237,11 +239,84 @@ def target_mesh_circle(r, n, i0):
     midy = (vy[:-1] + vy[1:]) / 2
     midz = np.zeros((n,))
 
-    tanx = vx[1:] - vx[:-1]
-    tany = vy[1:] - vy[:-1]
+    tx = vx[1:] - vx[:-1]
+    ty = vy[1:] - vy[:-1]
 
     mesh = np.column_stack((midx, midy, midz))
-    lvecs = np.column_stack((tanx, tany, midz))
+    tvecs = np.column_stack((tx, ty, midz))
     currents = np.full(n, i0)
 
-    return mesh, currents, lvecs
+    return mesh, currents, tvecs
+
+
+def target_mesh_polyline(vertices, i0, meshing):
+    """
+    Polyline meshing in the local object coordinates
+
+    Parameters
+    ----------
+    vertices: array_like, shape (n, 3) - vertices of the polyline
+    i0: float - electric current
+    meshing: int
+
+    If meshing is int, the algorithm trys to distribute these points evenly
+    over the polyline, enforcing at least one point per segment.
+
+    Returns
+    -------
+    mesh np.ndarray, shape (m, 3) - central edge positions
+    currents np.ndarray, shape (m,) - electric current at each edge
+    tvecs np.ndarray, shape (m, 3) - tangent vectors (=edge vectors)
+    """
+    if isinstance(meshing, int):
+        n_points = meshing
+
+    n_segments = len(vertices) - 1
+    
+    # Calculate segment lengths
+    segment_vectors = vertices[1:] - vertices[:-1]
+    segment_lengths = np.linalg.norm(segment_vectors, axis=1)
+    total_length = np.sum(segment_lengths)
+    
+    # if fewer points than segments
+    if n_points < n_segments:
+        import warnings
+        msg = (
+            "Bad meshing input - number of points is less than number of Polyline segments."
+            " Setting one point per segment in computation"
+        )
+        warnings.warn(msg)
+        n_points = n_segments
+
+    # DISTRIBUTE POINTS OVER SEGMENTS #######################################
+    # 1. one point per segment
+    points_per_segment = np.ones(n_segments, dtype=int)
+    
+    # 2. distribute remaining points proportionally to segment lengths
+    remaining_points = n_points - n_segments
+    if remaining_points > 0:
+        # Calculate how many extra points each segment should get
+        proportional_extra = (segment_lengths / total_length) * remaining_points
+        extra_points = np.round(proportional_extra).astype(int)
+        points_per_segment += extra_points
+        
+        # possibly there will now be n_segments too much or too few points
+        n_points = np.sum(points_per_segment)
+
+    # GENERATE MESH AND TVEC ##########################################
+    parts = np.empty(n_points)
+    idx = 0
+    for n_pts in points_per_segment:
+        parts[idx:idx+n_pts] = [(2*j + 1) / (2 * n_pts) for j in range(n_pts)]
+        idx += n_pts
+
+    mesh = np.repeat(segment_vectors, points_per_segment, axis=0)
+    mesh = mesh * parts[:, np.newaxis]
+    mesh += np.repeat(vertices[:-1], points_per_segment, axis=0)  # add starting point of each segment
+
+    tvecs = np.repeat(segment_vectors/points_per_segment[:, np.newaxis], points_per_segment, axis=0)
+
+    currents = np.full(n_points, i0)
+
+    return mesh, currents, tvecs
+

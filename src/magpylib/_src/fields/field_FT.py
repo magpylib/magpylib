@@ -36,21 +36,24 @@ def check_format_input_targets(targets):
 
     for t in targets:
 
-        # check if only allowed class instances (all allowed instances have meshing parameter)
-        if not hasattr(t, 'meshing'):
-            msg = (
-                "getFT bad target input. Targets can only be Magpylib objects Cuboid,..."
-                f" Instead received type {type(t)} target."
-            )
-            raise ValueError(msg)
+        # exclude Dipole from check
+        from magpylib._src.obj_classes.class_misc_Dipole import Dipole
+        if not isinstance(t, (Dipole,)):
 
-        # check if meshing parameter is explicitly set
-        if t.meshing is None:
-            msg = (
-                f"getFT missing meshing input for target {t}."
-                " All targets must have the meshing parameter explicitly set."
-            )
-            raise ValueError(msg)
+            if not hasattr(t, 'meshing'):
+                msg = (
+                    "getFT bad target input. Targets can only be Magpylib objects Cuboid,..."
+                    f" Instead received type {type(t)} target."
+                )
+                raise ValueError(msg)
+
+            # check if meshing parameter is explicitly set
+            if t.meshing is None:
+                msg = (
+                    f"getFT missing meshing input for target {t}."
+                    " All targets must have the meshing parameter explicitly set."
+                )
+                raise ValueError(msg)
 
     return targets
 
@@ -68,7 +71,7 @@ def check_format_input_pivot(pivot, targets):
         " It can also be (n,3) when there are n targets providing a different pivot for every target."
     )
 
-    if pivot is "centroid":
+    if isinstance(pivot, str) and pivot == "centroid":
         return np.array([t.centroid for t in targets])
 
     if pivot is None:
@@ -183,7 +186,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
     mesh_sizes = []
     mag_moments = []
     cur_currents = []
-    cur_lvecs = []
+    cur_tvecs = []
     eps_vec = create_eps_vector(eps)
     for tgt in targets:
 
@@ -194,9 +197,9 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
             mesh = (mesh[:, np.newaxis, :] + eps_vec[np.newaxis, :, :]).reshape(-1, 3)
 
         if tgt._force_type == "current":
-            mesh, curr, lvec = tgt._generate_mesh()
+            mesh, curr, tvec = tgt._generate_mesh()
             cur_currents.append(curr)
-            cur_lvecs.append(lvec)
+            cur_tvecs.append(tvec)
 
         observer.append(mesh)
         mesh_sizes.append(len(mesh))
@@ -300,13 +303,12 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
         # Computation array allocations
         POS = np.zeros((n_mesh_cur*n_sources, 3))  # central location of each cell
         B = np.zeros((n_mesh_cur*n_sources, 3))    # B-field at POS
-        LVEC = np.zeros((n_mesh_cur*n_sources, 3)) # current path tangential vectors
+        TVEC = np.zeros((n_mesh_cur*n_sources, 3)) # current path tangential vectors
         CURR = np.zeros((n_mesh_cur*n_sources,))   # current
 
         # BROADCASTING into computation arrays:
         #   rule: (src1 mesh1, src1 mesh2, src1 mesh3, ... src2 mesh1, src2 mesh2, ... )
-        
-        for i, (curr, lvec) in enumerate(zip(cur_currents, cur_lvecs)):
+        for i, (curr, tvec) in enumerate(zip(cur_currents, cur_tvecs)):
             # range in observer and B arrays
             start = obs_starts[mask_current][i]
             end = obs_ends[mask_current][i]
@@ -318,11 +320,11 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
 
                 POS[ids : ide] = observer[start : end]
                 B[ids : ide] = B_all[j, 0, 0, start : end]
-                LVEC[ids : ide] = lvec
+                TVEC[ids : ide] = tvec
                 CURR[ids : ide] = curr
 
         # ACTUAL FORCE AND TORQUE COMPUTATION
-        force = (CURR * np.cross(LVEC, B).T).T
+        force = (CURR * np.cross(TVEC, B).T).T
         torque = np.zeros_like(force)
 
         # Add pivot point contribution to torque

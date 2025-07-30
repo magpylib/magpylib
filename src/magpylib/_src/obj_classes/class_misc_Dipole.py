@@ -71,6 +71,7 @@ class Dipole(BaseSource):
     """
 
     _field_func = staticmethod(BHJM_dipole)
+    _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"moment": 2}
     _style_class = DipoleStyle
     get_trace = make_Dipole
@@ -125,3 +126,21 @@ class Dipole(BaseSource):
     def _get_centroid(self):
         """Centroid of object in units of m."""
         return self.position
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        if self.moment is None:
+            msg = (
+                "Parameter moment must be explicitly set for force computation."
+                f" Parameter moment missing for {self}."
+            )
+            raise ValueError(msg)
+
+        mesh = np.array([self.position])
+        moments = np.array([self.moment])
+
+        # Apply orientation and position transformations
+        mesh = self.orientation.apply(mesh) + self.position
+        moments = self.orientation.apply(moments)
+
+        return mesh, moments

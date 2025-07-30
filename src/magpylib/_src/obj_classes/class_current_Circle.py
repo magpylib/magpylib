@@ -149,11 +149,11 @@ class Circle(BaseCurrent, BaseTarget):
             )
             raise ValueError(msg)
 
-        mesh, curr, lvec = target_mesh_circle(self.diameter/2, self.meshing, self.current)
+        mesh, curr, tvec = target_mesh_circle(self.diameter/2, self.meshing, self.current)
         mesh = self.orientation.apply(mesh) + self.position
-        lvec = self.orientation.apply(lvec)
+        tvec = self.orientation.apply(tvec)
 
-        return mesh, curr, lvec
+        return mesh, curr, tvec
 
 
 
