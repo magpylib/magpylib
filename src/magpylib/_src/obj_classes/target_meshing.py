@@ -320,3 +320,53 @@ def target_mesh_polyline(vertices, i0, meshing):
 
     return mesh, currents, tvecs
 
+
+def target_mesh_sphere(r0, target_points):
+    """
+    Sphere meshing - dummy function for spherical magnets
+    
+    Parameters
+    ----------
+    r0: float
+        Radius of the sphere.
+    target_points: int
+        Desired number of points in the sphere.
+    
+    Returns
+    -------
+    mesh: np.ndarray, shape (n, 3)
+    volumes: np.ndarray, shape (n,)
+    """
+    # Estimate lattice spacing from desired density
+    sphere_volume = (4/3) * np.pi * r0**3
+    packing_fraction = np.pi / np.sqrt(18) #FCC
+    volume_per_point = sphere_volume / (target_points * packing_fraction)
+    lattice_spacing = (4 * volume_per_point)**(1/3)
+
+    # Build FCC grid
+    basis = np.array([
+        [0.0, 0.0, 0.0],
+        [0.5, 0.5, 0.0],
+        [0.5, 0.0, 0.5],
+        [0.0, 0.5, 0.5]
+    ])
+
+    n = int(np.ceil(r0 / lattice_spacing)) + 1
+    coords = np.arange(-n, n+1)
+
+    # Vectorized FCC grid generation
+    i, j, k = np.meshgrid(coords, coords, coords, indexing='ij')
+    cell_origins = lattice_spacing * np.stack([i.ravel(), j.ravel(), k.ravel()], axis=1)
+
+    # Generate all points by broadcasting basis over cell origins
+    all_points = cell_origins[:, np.newaxis, :] + lattice_spacing * basis[np.newaxis, :, :]
+    all_points = all_points.reshape(-1, 3)
+
+    # Filter points inside sphere
+    distances = np.linalg.norm(all_points, axis=1)
+    mesh = all_points[distances <= r0]
+    
+    n_mesh = len(mesh)
+    vols = np.full(n_mesh, sphere_volume / n_mesh)
+
+    return mesh, vols

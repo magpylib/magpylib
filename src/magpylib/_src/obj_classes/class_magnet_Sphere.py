@@ -10,10 +10,12 @@ from magpylib._src.display.traces_core import make_Sphere
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.utility import unit_prefix
+from magpylib._src.obj_classes.target_meshing import target_mesh_sphere
 
 
-class Sphere(BaseMagnet):
+class Sphere(BaseMagnet, BaseTarget):
     """Spherical magnet with homogeneous magnetization.
 
     Can be used as `sources` input for magnetic field computation.
@@ -44,6 +46,10 @@ class Sphere(BaseMagnet):
     magnetization: array_like, shape (3,), default=`None`
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
+
+    meshing: dict or None, default=`None`
+        Parameters that define the mesh fineness for force computation.
+        Should contain mesh-specific parameters like resolution, method, etc.
 
     volume: float
         Read-only. Object physical volume in units of m^3.
@@ -79,6 +85,7 @@ class Sphere(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_sphere)
+    _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 2,
         "diameter": 1,
@@ -92,6 +99,7 @@ class Sphere(BaseMagnet):
         diameter=None,
         polarization=None,
         magnetization=None,
+        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -102,6 +110,9 @@ class Sphere(BaseMagnet):
         super().__init__(
             position, orientation, magnetization, polarization, style, **kwargs
         )
+        
+        # Initialize BaseTarget
+        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -138,3 +149,27 @@ class Sphere(BaseMagnet):
     def _get_centroid(self):
         """Centroid of object in units of m."""
         return self.position
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        if self.diameter is None:
+            msg = (
+                "Parameter diameter must be explicitly set for force computation."
+                f" Parameter diameter missing for {self}."
+            )
+            raise ValueError(msg)
+
+        if self.polarization is None:
+            msg = (
+                "Parameter polarization must be explicitly set for force computation."
+                f" Parameter polarization missing for {self}."
+            )
+            raise ValueError(msg)
+
+        mesh, volumes = target_mesh_sphere(self.diameter/2, self.meshing)
+        mesh = self.orientation.apply(mesh) + self.position
+        moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
+
+        print(mesh.shape, moments.shape)
+
+        return mesh, moments
