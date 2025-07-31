@@ -166,7 +166,15 @@ class Sphere(BaseMagnet, BaseTarget):
             )
             raise ValueError(msg)
 
-        mesh, volumes = target_mesh_sphere(self.diameter/2, self.meshing)
+        if not isinstance(self.meshing, int):
+            if self.meshing <=1:
+                msg = (
+                    f"Bad parameter meshing for {self}."
+                    " Sphere meshing must be a positive integer greater than 0."
+                )
+                raise ValueError(msg)
+
+        mesh, volumes = target_mesh_sphere(self.diameter/2, self.meshing, self.volume)
         mesh = self.orientation.apply(mesh) + self.position
         moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
 
