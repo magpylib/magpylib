@@ -10,9 +10,11 @@ from magpylib._src.display.traces_core import make_Tetrahedron
 from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.target_meshing import target_mesh_tetrahedron
 
 
-class Tetrahedron(BaseMagnet):
+class Tetrahedron(BaseMagnet, BaseTarget):
     """Tetrahedron magnet with homogeneous magnetization.
 
     Can be used as `sources` input for magnetic field computation.
@@ -47,6 +49,10 @@ class Tetrahedron(BaseMagnet):
     magnetization: array_like, shape (3,), default=`None`
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
+
+    meshing: dict or None, default=`None`
+        Parameters that define the mesh fineness for force computation.
+        Should contain mesh-specific parameters like resolution, method, etc.
 
     volume: float
         Read-only. Object physical volume in units of m^3.
@@ -89,6 +95,7 @@ class Tetrahedron(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_tetrahedron)
+    _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 1,
         "vertices": 3,
@@ -102,6 +109,7 @@ class Tetrahedron(BaseMagnet):
         vertices=None,
         polarization=None,
         magnetization=None,
+        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -112,6 +120,9 @@ class Tetrahedron(BaseMagnet):
         super().__init__(
             position, orientation, magnetization, polarization, style, **kwargs
         )
+
+        # Initialize BaseTarget
+        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -168,6 +179,53 @@ class Tetrahedron(BaseMagnet):
     def _get_centroid(self):
         """Centroid of object in units of m."""
         return self.barycenter
+
+    def _generate_mesh(self):
+        """
+        Generate mesh for force computation.
+        
+        This is a dummy implementation that places a single mesh point
+        at the centroid of the tetrahedron with the total magnetic moment.
+        
+        Returns
+        -------
+        mesh : np.ndarray, shape (1, 3)
+        mom : np.ndarray, shape (1, 3)
+        """
+        if self.meshing is None:
+            msg = (
+                "Parameter meshing must be explicitly set for force computation."
+                f" Parameter meshing missing for {self}."
+            )
+            raise ValueError(msg)
+
+        if self.vertices is None:
+            msg = (
+                "Parameter vertices must be set for force computation."
+                f" Parameter vertices missing for {self}."
+            )
+            raise ValueError(msg)
+
+        if self.polarization is None:
+            msg = (
+                "Parameter polarization must be set for force computation."
+                f" Parameter polarization missing for {self}."
+            )
+            raise ValueError(msg)
+
+        if not isinstance(self.meshing, int):
+            if self.meshing <=1:
+                msg = (
+                    f"Bad parameter meshing for {self}."
+                    " Tetrahedron meshing must be a positive integer greater than 0."
+                )
+                raise ValueError(msg)
+
+        mesh, volumes = target_mesh_tetrahedron(self.meshing, self.vertices, self.volume)
+        mesh = self.orientation.apply(mesh) + self.position
+        moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
+
+        return mesh, moments
 
     # Static methods
     @staticmethod

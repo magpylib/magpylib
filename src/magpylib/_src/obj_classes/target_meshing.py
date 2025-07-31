@@ -321,9 +321,67 @@ def target_mesh_polyline(vertices, i0, meshing):
     return mesh, currents, tvecs
 
 
-def target_mesh_sphere(r0, target_points):
+def create_HCP_grid(dimensions, spacing):
     """
-    Sphere meshing - dummy function for spherical magnets
+    Create an HCP (Hexagonal Close Packed) grid that covers a cuboid volume defined by sides
+
+    Parameters
+    ----------
+    sides : array_like, shape (3,) - Dimensions of the cuboid (a, b, c) in units of length.
+    spacing : float - Desired lattice constant
+    
+    Returns
+    -------
+    mesh : np.ndarray, shape (n, 3) that covers the given cuboid, ready for inside_masks
+    """
+    x0, y0, z0, x1, y1, z1 = dimensions
+    center_loc = np.array([(x1+x0), (y1+y0), (z1+z0)])/2
+    side_x = x1-x0
+    side_y = y1-y0
+    side_z = z1-z0
+    
+    # HCP lattice constants
+    h = np.sqrt(2/3) * spacing       # Layer height
+    dy = np.sqrt(3)/2 * spacing      # Row spacing in hex grid
+    
+    # Calculate grid bounds more tightly
+    nx = int(np.ceil(side_x / 2 / spacing)) + 1
+    ny = int(np.ceil(side_y / 2 / dy)) + 1
+    nz = int(np.ceil(side_z / 2 / h)) + 1
+
+    # Generate all layer indices as float to avoid casting
+    k = np.arange(-nz, nz+1, dtype=float)
+    j = np.arange(-ny, ny+1, dtype=float)
+    i = np.arange(-nx, nx+1, dtype=float)
+
+    # Meshgrid for x/y plane (hex lattice)
+    jj, ii, kk = np.meshgrid(j, i, k, indexing='ij')
+
+    # Base coordinates
+    x = ii * spacing
+    y = jj * dy
+    z = kk * h
+
+    # Offset every odd row (hex staggering)
+    x += (jj % 2) * (spacing / 2)
+
+    # Offset for B-layers (every other layer)
+    x += (kk % 2) * (spacing / 2)
+    y += (kk % 2) * (dy / 3)
+
+    # Pre-allocate and fill output array efficiently
+    n_points = x.size
+    pts = np.empty((n_points, 3), dtype=float)
+    pts[:, 0] = x.ravel()
+    pts[:, 1] = y.ravel()
+    pts[:, 2] = z.ravel()
+
+    return pts + center_loc
+
+
+def target_mesh_sphere(r0, target_points, sphere_volume):
+    """
+    Sphere meshing using HCP grid with filtering
     
     Parameters
     ----------
@@ -337,36 +395,155 @@ def target_mesh_sphere(r0, target_points):
     mesh: np.ndarray, shape (n, 3)
     volumes: np.ndarray, shape (n,)
     """
-    # Estimate lattice spacing from desired density
-    sphere_volume = (4/3) * np.pi * r0**3
-    packing_fraction = np.pi / np.sqrt(18) #FCC
-    volume_per_point = sphere_volume / (target_points * packing_fraction)
-    lattice_spacing = (4 * volume_per_point)**(1/3)
-
-    # Build FCC grid
-    basis = np.array([
-        [0.0, 0.0, 0.0],
-        [0.5, 0.5, 0.0],
-        [0.5, 0.0, 0.5],
-        [0.0, 0.5, 0.5]
-    ])
-
-    n = int(np.ceil(r0 / lattice_spacing)) + 1
-    coords = np.arange(-n, n+1)
-
-    # Vectorized FCC grid generation
-    i, j, k = np.meshgrid(coords, coords, coords, indexing='ij')
-    cell_origins = lattice_spacing * np.stack([i.ravel(), j.ravel(), k.ravel()], axis=1)
-
-    # Generate all points by broadcasting basis over cell origins
-    all_points = cell_origins[:, np.newaxis, :] + lattice_spacing * basis[np.newaxis, :, :]
-    all_points = all_points.reshape(-1, 3)
-
-    # Filter points inside sphere
-    distances = np.linalg.norm(all_points, axis=1)
-    mesh = all_points[distances <= r0]
     
+    if target_points == 1:
+        # If only one point is requested, return the center of the sphere
+        return np.array([[0, 0, 0]]), np.array([sphere_volume])
+    
+    # Estimate spacing based on target points and HCP packing efficiency
+    # HCP packing efficiency is π/(3√2) ≈ 0.74048
+    packing_efficiency = np.pi / (3 * np.sqrt(2))
+    volume_per_point = sphere_volume / target_points
+    spacing = (volume_per_point / packing_efficiency)**(1/3)
+    
+    # Create bounding box dimensions for sphere
+    dimensions = [-r0, -r0, -r0, r0, r0, r0]
+    
+    # Generate HCP grid covering the bounding box
+    points = create_HCP_grid(dimensions, spacing)
+    
+    # Filter points inside sphere
+    mask_sphere = np.linalg.norm(points, axis=1) <= r0
+    mesh = points[mask_sphere]
+    
+    # Calculate volume per point
     n_mesh = len(mesh)
     vols = np.full(n_mesh, sphere_volume / n_mesh)
 
     return mesh, vols
+
+
+def points_in_tetrahedron_matrix(points, v0, v1, v2, v3):
+    # Pre-compute transformation matrix (inverse)
+    T = np.column_stack([v1 - v0, v2 - v0, v3 - v0])
+    try:
+        T_inv = np.linalg.inv(T)
+    except np.linalg.LinAlgError:
+        # Degenerate tetrahedron
+        return np.zeros(len(points), dtype=bool)
+    
+    # Transform all points at once
+    P = points - v0
+    coords = P @ T_inv.T  # (N, 3) - fastest matrix mult
+    
+    # Ultra-fast boolean operations
+    return ((coords >= 0) & (coords <= 1)).all(axis=1) & (coords.sum(axis=1) <= 1)
+
+
+def target_mesh_tetrahedron(n_points, vertices, tet_volume):
+    """
+    Generate mesh of tetrahedral body using HCP grid with filtering.
+    
+    Parameters
+    ----------
+    n_points : int
+        Target number of mesh points.
+    vertices : array_like, shape (4, 3)
+        Vertices of the tetrahedron.
+    tet_volume : float
+        Volume of the tetrahedron.
+    
+    Returns
+    -------
+    mesh : np.ndarray, shape (n, 3)
+        Mesh points inside the tetrahedron.
+    volumes : np.ndarray, shape (n,)
+        Volume associated with each mesh point.
+    """
+    if n_points == 1:
+        # If only one point is requested, return the centroid of the tetrahedron
+        centroid = np.mean(vertices, axis=0)
+        return np.array([centroid]), np.array([tet_volume])
+    
+    # Calculate bounding box dimensions
+    min_coords = np.min(vertices, axis=0)
+    max_coords = np.max(vertices, axis=0)
+    dimensions = [min_coords[0], min_coords[1], min_coords[2], 
+                  max_coords[0], max_coords[1], max_coords[2]]
+    
+    # Estimate spacing based on target points and HCP packing efficiency
+    packing_efficiency = np.pi / (3 * np.sqrt(2))
+    volume_per_point = tet_volume / n_points
+    spacing = (volume_per_point / packing_efficiency)**(1/3)
+    
+    # Generate HCP grid covering the bounding box
+    points = create_HCP_grid(dimensions, spacing)
+    
+    # Filter points inside tetrahedron
+    mask_tetrahedron = points_in_tetrahedron_matrix(points, *vertices)
+    mesh = points[mask_tetrahedron]
+    
+    # Calculate volume per point
+    n_mesh = len(mesh)
+    volumes = np.full(n_mesh, tet_volume / n_mesh)
+    
+    return mesh, volumes
+
+
+
+if __name__ == "__main__":
+    
+    # This function is a placeholder and should be implemented based on the specific
+    # requirements for tetrahedral meshing.
+    # It should return mesh points and volumes similar to other target mesh functions.
+    
+    # # sphere
+    r0 = 0.5
+    # dimensions = [-r0]*3 + [r0]*3
+    # spacing = 0.1
+    points, vols = target_mesh_sphere(r0, 350)
+    print(f"Number of points in sphere: {len(points)}")
+
+    # tetra
+    vertices = np.array([(0,0,0), (1,0,0), (0,1,0), (0,0,1)])
+    points, vols = target_mesh_tetrahedron(1, vertices, 1/6)
+    print(f"Number of points in tetrahedron: {len(points)}")
+
+    # mask_sphere = np.linalg.norm(points, axis=1) <= r0
+    # points = points[mask_sphere]
+    # print(f"Number of points in sphere: {len(points)}")
+
+    # # tetrahedron
+    # dimensions = [min(vertices[:,i]) for i in range(3)] + [max(vertices[:,i]) for i in range(3)]
+    # spacing = 0.1
+    # points = create_HCP_grid(dimensions, spacing)
+
+    # def points_in_tetrahedron_matrix(points, v0, v1, v2, v3):
+    #     """
+    #     Matrix operations optimized for maximum speed.
+    #     Pre-computes everything possible.
+    #     """
+    #     # Pre-compute transformation matrix (inverse)
+    #     T = np.column_stack([v1 - v0, v2 - v0, v3 - v0])
+    #     T_inv = np.linalg.inv(T)  # Compute once
+        
+    #     # Transform all points at once
+    #     P = points - v0
+    #     coords = P @ T_inv.T  # (N, 3) - fastest matrix mult
+        
+    #     # Ultra-fast boolean operations
+    #     return ((coords >= 0) & (coords <= 1)).all(axis=1) & (coords.sum(axis=1) <= 1)
+
+    # mask_tetrahedron = points_in_tetrahedron_matrix(points, *vertices)
+    # points = points[mask_tetrahedron]
+    # print(f"Number of points in tetrahedron: {len(points)}")
+
+
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    ax.scatter(points[:, 0], points[:, 1], points[:, 2], s=1)
+    
+    plt.show()
