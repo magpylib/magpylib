@@ -174,7 +174,7 @@ class Sphere(BaseMagnet, BaseTarget):
                 )
                 raise ValueError(msg)
 
-        mesh, volumes = target_mesh_sphere(self.diameter/2, self.meshing, self.volume)
+        mesh, volumes = target_mesh_sphere(self.diameter/2, self.meshing)
         mesh = self.orientation.apply(mesh) + self.position
         moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
 

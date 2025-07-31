@@ -379,7 +379,7 @@ def create_HCP_grid(dimensions, spacing):
     return pts + center_loc
 
 
-def target_mesh_sphere(r0, target_points, sphere_volume):
+def target_mesh_sphere(r0, target_points):
     """
     Sphere meshing using HCP grid with filtering
     
@@ -395,7 +395,7 @@ def target_mesh_sphere(r0, target_points, sphere_volume):
     mesh: np.ndarray, shape (n, 3)
     volumes: np.ndarray, shape (n,)
     """
-    
+    sphere_volume = (4/3) * np.pi * r0**3
     if target_points == 1:
         # If only one point is requested, return the center of the sphere
         return np.array([[0, 0, 0]]), np.array([sphere_volume])
@@ -440,9 +440,13 @@ def points_in_tetrahedron_matrix(points, v0, v1, v2, v3):
     return ((coords >= 0) & (coords <= 1)).all(axis=1) & (coords.sum(axis=1) <= 1)
 
 
-def target_mesh_tetrahedron(n_points, vertices, tet_volume):
+def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray):
     """
-    Generate mesh of tetrahedral body using HCP grid with filtering.
+    Generate mesh of tetrahedral body using uniform barycentric coordinate grid.
+    
+    This function creates a uniform grid of points inside the tetrahedron using
+    structured barycentric coordinates, ensuring homogeneous density distribution.
+    The actual number of points may differ slightly from the target for efficiency.
     
     Parameters
     ----------
@@ -450,8 +454,6 @@ def target_mesh_tetrahedron(n_points, vertices, tet_volume):
         Target number of mesh points.
     vertices : array_like, shape (4, 3)
         Vertices of the tetrahedron.
-    tet_volume : float
-        Volume of the tetrahedron.
     
     Returns
     -------
@@ -460,34 +462,72 @@ def target_mesh_tetrahedron(n_points, vertices, tet_volume):
     volumes : np.ndarray, shape (n,)
         Volume associated with each mesh point.
     """
+    
+    # Calculate tetrahedron volume
+    v1 = vertices[1] - vertices[0]
+    v2 = vertices[2] - vertices[0] 
+    v3 = vertices[3] - vertices[0]
+    tet_volume = abs(np.linalg.det(np.column_stack([v1, v2, v3]))) / 6.0
+    
     if n_points == 1:
-        # If only one point is requested, return the centroid of the tetrahedron
+        # Return centroid for single point
         centroid = np.mean(vertices, axis=0)
         return np.array([centroid]), np.array([tet_volume])
     
-    # Calculate bounding box dimensions
-    min_coords = np.min(vertices, axis=0)
-    max_coords = np.max(vertices, axis=0)
-    dimensions = [min_coords[0], min_coords[1], min_coords[2], 
-                  max_coords[0], max_coords[1], max_coords[2]]
+    # Find the optimal number of subdivisions to get closest to n_points
+    # For a tetrahedron with n_div divisions, the exact number of points is:
+    # (n_div+1)(n_div+2)(n_div+3)/6
+    def points_for_n_div(n):
+        return (n + 1) * (n + 2) * (n + 3) // 6
     
-    # Estimate spacing based on target points and HCP packing efficiency
-    packing_efficiency = np.pi / (3 * np.sqrt(2))
-    volume_per_point = tet_volume / n_points
-    spacing = (volume_per_point / packing_efficiency)**(1/3)
+    # Start with a rough estimate
+    n_div_estimate = max(1, int(np.round((6 * n_points)**(1/3) - 1.5)))
     
-    # Generate HCP grid covering the bounding box
-    points = create_HCP_grid(dimensions, spacing)
+    # Test a few values around the estimate to find the closest match
+    best_n_div = n_div_estimate
+    best_diff = abs(points_for_n_div(n_div_estimate) - n_points)
     
-    # Filter points inside tetrahedron
-    mask_tetrahedron = points_in_tetrahedron_matrix(points, *vertices)
-    mesh = points[mask_tetrahedron]
+    for test_n_div in range(max(1, n_div_estimate - 2), n_div_estimate + 4):
+        test_points = points_for_n_div(test_n_div)
+        diff = abs(test_points - n_points)
+        if diff < best_diff:
+            best_diff = diff
+            best_n_div = test_n_div
     
-    # Calculate volume per point
-    n_mesh = len(mesh)
-    volumes = np.full(n_mesh, tet_volume / n_mesh)
+    n_div = best_n_div
     
-    return mesh, volumes
+    # Generate structured barycentric coordinates
+    mesh_points = []
+    
+    # Create uniform grid in barycentric coordinates
+    # We need u1 + u2 + u3 + u4 = 1 and all ui >= 0
+    for i in range(n_div + 1):
+        for j in range(n_div + 1 - i):
+            for k in range(n_div + 1 - i - j):
+                l = n_div - i - j - k
+                if l >= 0:
+                    # Barycentric coordinates (normalized)
+                    u1 = i / n_div
+                    u2 = j / n_div
+                    u3 = k / n_div
+                    u4 = l / n_div
+                    
+                    # Convert to Cartesian coordinates
+                    point = u1 * vertices[0] + u2 * vertices[1] + u3 * vertices[2] + u4 * vertices[3]
+                    mesh_points.append(point)
+    
+    mesh_points = np.array(mesh_points)
+    
+    # Calculate volume per point based on actual number of points generated
+    volume_per_point = tet_volume / len(mesh_points)
+    volumes = np.full(len(mesh_points), volume_per_point)
+    
+    return mesh_points, volumes
+
+
+
+
+
 
 
 
@@ -501,13 +541,13 @@ if __name__ == "__main__":
     r0 = 0.5
     # dimensions = [-r0]*3 + [r0]*3
     # spacing = 0.1
-    points, vols = target_mesh_sphere(r0, 350)
+    points, vols = target_mesh_sphere(r0, 200)
     print(f"Number of points in sphere: {len(points)}")
 
     # tetra
-    vertices = np.array([(0,0,0), (1,0,0), (0,1,0), (0,0,1)])
-    points, vols = target_mesh_tetrahedron(1, vertices, 1/6)
-    print(f"Number of points in tetrahedron: {len(points)}")
+    #vertices = np.array([(0,0,0), (1,0,0), (0,1,0), (0,0,1)])
+    #    points, vols = target_mesh_tetrahedron(n, vertices)
+    #    print(f"Number of points in tetrahedron: {len(points)}")
 
     # mask_sphere = np.linalg.norm(points, axis=1) <= r0
     # points = points[mask_sphere]

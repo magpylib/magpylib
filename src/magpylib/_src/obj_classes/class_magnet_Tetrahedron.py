@@ -221,7 +221,7 @@ class Tetrahedron(BaseMagnet, BaseTarget):
                 )
                 raise ValueError(msg)
 
-        mesh, volumes = target_mesh_tetrahedron(self.meshing, self.vertices, self.volume)
+        mesh, volumes = target_mesh_tetrahedron(self.meshing, self.vertices)
         mesh = self.orientation.apply(mesh) + self.position
         moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
 
