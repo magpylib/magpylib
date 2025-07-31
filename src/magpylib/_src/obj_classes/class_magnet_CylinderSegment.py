@@ -12,10 +12,12 @@ from magpylib._src.fields.field_BH_cylinder_segment import (
 )
 from magpylib._src.input_checks import check_format_input_cylinder_segment
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.target_meshing import target_mesh_cylinder
 from magpylib._src.utility import unit_prefix
 
 
-class CylinderSegment(BaseMagnet):
+class CylinderSegment(BaseMagnet, BaseTarget):
     """Cylinder segment (ring-section) magnet with homogeneous magnetization.
 
     Can be used as `sources` input for magnetic field computation.
@@ -51,6 +53,10 @@ class CylinderSegment(BaseMagnet):
     magnetization: array_like, shape (3,), default=`None`
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
+
+    meshing: dict or None, default=`None`
+        Parameters that define the mesh fineness for force computation.
+        Should contain mesh-specific parameters like resolution, method, etc.
 
     volume: float
         Read-only. Object physical volume in units of m^3.
@@ -92,6 +98,7 @@ class CylinderSegment(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_cylinder_segment_internal)
+    _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 2,
         "dimension": 2,
@@ -105,6 +112,7 @@ class CylinderSegment(BaseMagnet):
         dimension=None,
         polarization=None,
         magnetization=None,
+        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -115,6 +123,9 @@ class CylinderSegment(BaseMagnet):
         super().__init__(
             position, orientation, magnetization, polarization, style, **kwargs
         )
+
+        # Initialize BaseTarget
+        BaseTarget.__init__(self, meshing)
 
     # property getters and setters
     @property
@@ -162,6 +173,37 @@ class CylinderSegment(BaseMagnet):
     def _get_centroid(self):
         """Centroid of object in units of m."""
         return self.barycenter
+
+    def _generate_mesh(self):
+        """
+        Generate mesh for force computation.
+        
+        Returns
+        -------
+        mesh : np.ndarray, shape (n, 3)
+        moments : np.ndarray, shape (n, 3)
+        """
+        if self.meshing is None:
+            msg = (
+                "Parameter meshing must be explicitly set for force computation."
+                f" Parameter meshing missing for {self}."
+                " CylinderSegment meshing must be an integer reflecting the target number of elements."
+            )
+            raise ValueError(msg)
+
+        if not isinstance(self.meshing, int):
+            msg = (
+                f"Bad input for meshing parameter for {self}."
+                " CylinderSegment meshing must be an integer reflecting the target number of elements."
+            )
+            raise ValueError(msg)
+        
+        r1, r2, h, phi1, phi2 = self.dimension
+        mesh, volumes = target_mesh_cylinder(r1, r2, h, phi1, phi2, self.meshing)
+        mesh = self.orientation.apply(mesh) + self.position
+        moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
+
+        return mesh, moments
 
     # Static methods
     @staticmethod
