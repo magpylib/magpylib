@@ -525,8 +525,66 @@ def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray):
     return mesh_points, volumes
 
 
+def target_mesh_triangularmesh(vertices, faces, target_points, volume=None):
+    """
+    Generate mesh points inside a triangular mesh volume for force computations.
+    
+    Uses HCP grid generation around the object and applies inside/outside masking
+    similar to the sphere approach. When target_points is 1, returns the 
+    barycenter of the mesh.
+    
+    Parameters
+    ----------
+    vertices : np.ndarray, shape (n, 3) - Mesh vertices
+    faces : np.ndarray, shape (m, 3) - Mesh faces (triangles) as vertex indices
+    target_points : int - Target number of mesh points
+    volume : float - Volume of the body
 
+    Returns
+    -------
+    mesh : np.ndarray, shape (k, 3) - Mesh points inside the triangular mesh
+    volumes : np.ndarray, shape (k,) - Volume associated with each mesh point
+    """
+    # Import the required functions from triangular mesh field module
+    from magpylib._src.fields.field_BH_triangularmesh import (
+        calculate_centroid,
+        mask_inside_trimesh,
+    )
 
+    if target_points == 1:
+        # Return barycenter (centroid) for single point
+        barycenter = calculate_centroid(vertices, faces)
+        return np.array([barycenter]), np.array([volume])
+    
+    # Generate HCP grid
+    # Estimate spacing based on target points and HCP packing efficiency
+    packing_efficiency = np.pi / (3 * np.sqrt(2))  # HCP packing efficiency ≈ 0.74048
+    volume_per_point = volume / target_points
+    spacing = (volume_per_point / packing_efficiency)**(1/3)
+    
+    # Generate HCP grid covering a bounding box
+    min_coords = np.min(vertices, axis=0)
+    max_coords = np.max(vertices, axis=0)
+    padding = spacing * 0.1 # padding to ensure coverage
+    dimensions = [
+        min_coords[0] - padding, min_coords[1] - padding, min_coords[2] - padding,
+        max_coords[0] + padding, max_coords[1] + padding, max_coords[2] + padding
+    ]
+    points = create_HCP_grid(dimensions, spacing)
+    
+    # Apply inside/outside mask
+    inside_mask = mask_inside_trimesh(points, vertices[faces])
+    
+    # Filter points that are inside the mesh
+    points = points[inside_mask]
+    
+    if len(points) == 0:
+        barycenter = calculate_centroid(vertices, faces)
+        return np.array([barycenter]), np.array([volume])
+    
+    volumes = np.full(len(points), volume / len(points))
+    
+    return points, volumes
 
 
 
@@ -536,13 +594,32 @@ if __name__ == "__main__":
     # This function is a placeholder and should be implemented based on the specific
     # requirements for tetrahedral meshing.
     # It should return mesh points and volumes similar to other target mesh functions.
-    
+
     # # sphere
-    r0 = 0.5
+    #r0 = 0.5
     # dimensions = [-r0]*3 + [r0]*3
     # spacing = 0.1
-    points, vols = target_mesh_sphere(r0, 200)
-    print(f"Number of points in sphere: {len(points)}")
+    #points, vols = target_mesh_sphere(r0, 200)
+    #print(f"Number of points in sphere: {len(points)}")
+
+    import pyvista as pv
+    import magpylib as magpy
+
+    # Create a complex Pyvista PolyData object using a boolean operation. Start with
+    # finer mesh and clean after operation
+    sphere = pv.Sphere(radius=0.6)
+    dodecahedron = pv.Dodecahedron().triangulate().subdivide(2)
+
+    # Construct magnet from PolyData object
+    magnet = magpy.magnet.TriangularMesh.from_pyvista(
+        polarization=(0, 0, .1),
+        polydata=dodecahedron,
+        style_label="magnet",
+        meshing = 1000
+    )
+    points, vols = target_mesh_triangularmesh(magnet.vertices, magnet.faces, target_points=1000, volume=magnet.volume)
+
+
 
     # tetra
     #vertices = np.array([(0,0,0), (1,0,0), (0,1,0), (0,0,1)])
