@@ -174,8 +174,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
     n_currents = sum(mask_current)  # number of current targets
 
     # Allocate output arrays
-    FOUT = np.zeros((n_sources, n_targets, 3))
-    TOUT = np.zeros((n_sources, n_targets, 3))
+    FTOUT = np.zeros((2, n_sources, n_targets, 3))
 
     # RUN MESHING FUNCTIONS ##############################################################
     # Collect meshing function results - cannot separate mesh generation from generation 
@@ -288,8 +287,8 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
         T = np.add.reduceat(torque, idx_starts_all, axis=0)
 
         # Broadcast into output arrays
-        FOUT[:, mask_magnet] = F.reshape(n_sources, n_magnets, 3)
-        TOUT[:, mask_magnet] = T.reshape(n_sources, n_magnets, 3)
+        FTOUT[0, :, mask_magnet] = F.reshape(n_sources, n_magnets, 3).transpose(1, 0, 2)
+        FTOUT[1, :, mask_magnet] = T.reshape(n_sources, n_magnets, 3).transpose(1, 0, 2)
 
 
     # CURRENTS ########################################################################
@@ -338,17 +337,13 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
         T = np.add.reduceat(torque, idx_starts_all, axis=0)
 
         # Broadcast into output arrays
-        FOUT[:, mask_current] = F.reshape(n_sources, n_currents, 3)
-        TOUT[:, mask_current] = T.reshape(n_sources, n_currents, 3)
+        FTOUT[0, :, mask_current] = F.reshape(n_sources, n_currents, 3).transpose(1, 0, 2)
+        FTOUT[1, :, mask_current] = T.reshape(n_sources, n_currents, 3).transpose(1, 0, 2)
 
     if squeeze:
-        return np.squeeze(FOUT), np.squeeze(TOUT)
+        return np.squeeze(FTOUT)
 
-    return FOUT, TOUT
-
-
-
-
+    return FTOUT
 
 
 
