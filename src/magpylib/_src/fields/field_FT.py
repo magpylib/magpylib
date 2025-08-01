@@ -24,17 +24,38 @@ def check_format_input_sources(sources):
 def check_format_input_targets(targets):
     """
     Check and format targets input
+    - flatten Collections
     - check if allowed instance
     - check if meshing parameter is set
     
     Returns
     -------
-    list of targets
+    flat list of targets , list of collection indices for summation
     """
     if not isinstance(targets, list):
         targets = [targets]
 
+    # flatten out collections, keep indices for later summation in getFT
+    flat_targets = []
+    coll_idx = []
+    idx = 0
     for t in targets:
+        from magpylib._src.obj_classes.class_Collection import Collection
+        if isinstance(t, Collection):
+            len_sources = len(t.sources_all)
+            if len_sources == 0:
+                msg = f"Given target Collection {t} has no target sources."
+                raise ValueError(msg)
+            flat_targets.extend(t.sources_all)
+            coll_idx.append(idx)
+            idx += len_sources
+        else:
+            flat_targets.append(t)
+            coll_idx.append(idx)
+            idx += 1
+
+    # check if all flat_targets are valid
+    for t in flat_targets:
 
         # exclude Dipole from check
         from magpylib._src.obj_classes.class_misc_Dipole import Dipole
@@ -55,7 +76,7 @@ def check_format_input_targets(targets):
                 )
                 raise ValueError(msg)
 
-    return targets
+    return flat_targets, coll_idx
 
 
 def check_format_input_pivot(pivot, targets):
@@ -159,7 +180,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
     Force-Torque as ndarray of shape (2,3), or (t,2,3) when t targets are given
     """
     # Input checks
-    targets = check_format_input_targets(targets)
+    targets, coll_idx = check_format_input_targets(targets)
     pivot = check_format_input_pivot(pivot, targets)
     sources = check_format_input_sources(sources)
 
@@ -339,6 +360,11 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
         # Broadcast into output arrays
         FTOUT[0, :, mask_current] = F.reshape(n_sources, n_currents, 3).transpose(1, 0, 2)
         FTOUT[1, :, mask_current] = T.reshape(n_sources, n_currents, 3).transpose(1, 0, 2)
+
+    # FINALIZE OUTPUT ##############################################################
+
+    # Sum up Collections
+    FTOUT = np.add.reduceat(FTOUT, coll_idx, axis=2)
 
     if squeeze:
         return np.squeeze(FTOUT)
