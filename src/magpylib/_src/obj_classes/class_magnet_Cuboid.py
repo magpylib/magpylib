@@ -155,35 +155,28 @@ class Cuboid(BaseMagnet, BaseTarget):
         return self.position
 
     def _generate_mesh(self):
-        """
-        Generate mesh for force computation.
+        """Generate mesh for force computation."""
+        # Tests in getFT ensure that meshing, dimension and excitation are set
         
-        Returns
-        -------
-        mesh : np.ndarray, shape (n, 3)
-        mom : np.ndarray, shape (n, 3)
-        """
-        if self.meshing is None:
-            msg = (
-                "Parameter meshing must be explicitly set for force computation."
-                f" Parameter meshing missing for {self}."
-                " Cuboid meshing must be an integer or array_like of shape (3,)"
-            )
-            raise ValueError(msg)
-
-        if np.isscalar(self.meshing):
+        if isinstance(self.meshing, int):
             n1, n2, n3 = cells_from_dimension(self.dimension, self.meshing)
-        elif isinstance (self.meshing, (list, tuple, np.ndarray)) and len(self.meshing) == 3:
+        elif isinstance(self.meshing, (list, tuple, np.ndarray)):
             n1, n2, n3 = self.meshing
-        else:
-            msg = (
-                f" Bad parameter meshing of {self}."
-                "Cuboid meshing must be an integer or array_like of shape (3,)"
-            )
-            raise ValueError(msg)
 
         mesh, volumes = target_mesh_cuboid(n1, n2, n3, *self.dimension)
         mesh = self.orientation.apply(mesh) + self.position
         moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
-
         return mesh, moments
+
+    def _validate_meshing(self, value):
+        """ Cuboid meshing must be a positive integer or array_like of shape (3,)."""
+        if isinstance(value, int) and value > 0:
+            pass
+        elif isinstance(value, (list, tuple, np.ndarray)) and len(value) == 3:
+            pass
+        else:
+            msg = (
+                f"Cuboid meshing parameter must be positive integer or array_like of shape"
+                " (3,) for {self}. Instead got {value}."
+            )
+            raise ValueError(msg)

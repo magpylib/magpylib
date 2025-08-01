@@ -257,28 +257,12 @@ class TriangularMesh(BaseMagnet, BaseTarget):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-
-        if self.meshing is None:
-            msg = (
-                "Parameter meshing must be explicitly set for force computation."
-                f" Parameter meshing missing for {self}."
-            )
-            raise ValueError(msg)
-
-        if not isinstance(self.meshing, int) or self.meshing <= 0:
-            msg = (
-                f"Bad parameter meshing for {self}."
-                " TriangularMesh meshing must be a positive integer greater than 0."
-            )
-            raise ValueError(msg)
-
-        # Generate mesh points inside the triangular mesh
+        # Tests in getFT ensure that meshing, dimension and excitation are set
         mesh, volumes = target_mesh_triangularmesh(
             self.vertices, self.faces, self.meshing, volume=self.volume
         )
         mesh = self.orientation.apply(mesh) + self.position
         moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
-
         return mesh, moments
 
     @staticmethod

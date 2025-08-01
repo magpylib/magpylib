@@ -3,7 +3,8 @@ from itertools import compress
 import numpy as np
 import warnings
 from magpylib._src.fields.field_wrap_BH import getB
-
+from magpylib._src.input_checks import check_excitations
+from magpylib._src.input_checks import check_dimensions
 
 def check_format_input_sources(sources):
     """
@@ -11,8 +12,10 @@ def check_format_input_sources(sources):
     """
     if not isinstance(sources, list):
         sources = [sources]
+    
+    from magpylib._src.obj_classes.class_Collection import Collection
     for s in sources:
-        if not hasattr(s, '_field_func'):
+        if not hasattr(s, '_field_func') and not isinstance(s, Collection):
             msg = (
                 "getFT bad source input. Sources can only be Magpylib source objects."
                 f" Instead received type {type(s)} source."
@@ -56,7 +59,11 @@ def check_format_input_targets(targets):
 
     # check if all flat_targets are valid
     for t in flat_targets:
-
+        
+        # check dimensions and excitations
+        check_dimensions(t, "getFT")
+        check_excitations(t, "getFT")
+        
         # exclude Dipole from check
         from magpylib._src.obj_classes.class_misc_Dipole import Dipole
         if not isinstance(t, (Dipole,)):

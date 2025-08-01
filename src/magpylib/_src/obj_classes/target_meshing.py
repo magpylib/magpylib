@@ -216,7 +216,7 @@ def target_mesh_circle(r, n, i0):
     Parameters
     ----------
     r: float - Radius of the circle.
-    n: int - Number of points along the circle.
+    n: int >= 4 - Number of points along the circle.
     i0: float - electric current
 
     Returns
@@ -225,9 +225,6 @@ def target_mesh_circle(r, n, i0):
     currents np.ndarray, shape (n,) - electric current at each edge
     tvecs np.ndarray, shape (n, 3) - tangent vectors (=edge vectors)
     """
-
-    if n < 3:
-        raise ValueError("Number of points must be at least 3 for a circle mesh.")
 
     # construct polygon with same area as circle
     r1 = r * np.sqrt( (2*np.pi) / (n * np.sin(2*np.pi/n)) )
@@ -257,7 +254,7 @@ def target_mesh_polyline(vertices, i0, meshing):
     ----------
     vertices: array_like, shape (n, 3) - vertices of the polyline
     i0: float - electric current
-    meshing: int
+    meshing: int >= n_segments
 
     If meshing is int, the algorithm trys to distribute these points evenly
     over the polyline, enforcing at least one point per segment.
@@ -278,16 +275,6 @@ def target_mesh_polyline(vertices, i0, meshing):
     segment_lengths = np.linalg.norm(segment_vectors, axis=1)
     total_length = np.sum(segment_lengths)
     
-    # if fewer points than segments
-    if n_points < n_segments:
-        import warnings
-        msg = (
-            "Bad meshing input - number of points is less than number of Polyline segments."
-            " Setting one point per segment in computation"
-        )
-        warnings.warn(msg)
-        n_points = n_segments
-
     # DISTRIBUTE POINTS OVER SEGMENTS #######################################
     # 1. one point per segment
     points_per_segment = np.ones(n_segments, dtype=int)

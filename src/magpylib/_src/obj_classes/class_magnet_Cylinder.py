@@ -150,26 +150,8 @@ class Cylinder(BaseMagnet, BaseTarget):
         return self.position
 
     def _generate_mesh(self):
-        """
-        Generate mesh for force computation.
-        
-        Returns
-        -------
-        mesh : np.ndarray, shape (n, 3)
-        mom : np.ndarray, shape (n, 3)
-        """
-        if self.meshing is None:
-            msg = (
-                "Parameter meshing must be explicitly set for force computation."
-                f" Parameter meshing missing for {self}."
-                " Cylinder meshing must be an integer reflecting the target number of elements."
-            )
-            raise ValueError(msg)
-
-        if not isinstance(self.meshing, int):
-            msg = "Cylinder meshing must be an integer reflecting the target number of elements."
-            raise ValueError(msg)
-        
+        """Generate mesh for force computation."""
+        # Tests in getFT ensure that meshing, dimension and excitation are set
         d, h = self.dimension
         mesh, volumes = target_mesh_cylinder(0, d/2, h, 0, 360, self.meshing)
         mesh = self.orientation.apply(mesh) + self.position

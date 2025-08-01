@@ -151,19 +151,23 @@ class Polyline(BaseCurrent, BaseTarget):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        if self.vertices is None:
-            msg = (
-                "Parameter vertices must be explicitly set for force computation."
-                f" Parameter vertices missing for {self}."
-            )
-            raise ValueError(msg)
+        # Tests in getFT ensure that meshing, dimension and excitation are set
 
-        mesh, curr, tvec = target_mesh_polyline(self.vertices, self.current, self.meshing)
+        # Special special case: fewer points than segments, cannot be caught in
+        #    meshing setter because vertices might not have been set yet
+        n_segments = len(self.vertices) - 1
+        if self.meshin < n_segments:
+            import warnings
+            msg = (
+                "getFT Polyline bad meshing input. number of points is less than"
+                " number of Polyline segments. Setting one point per segment in computation"
+            )
+            warnings.warn(msg)
+
+        mesh, curr, tvec = target_mesh_polyline(self.vertices, self.current, n_segments)
         mesh = self.orientation.apply(mesh) + self.position
         tvec = self.orientation.apply(tvec)
-
         return mesh, curr, tvec
-
 
 class Line(Polyline):
     """Line is deprecated, see Polyline"""

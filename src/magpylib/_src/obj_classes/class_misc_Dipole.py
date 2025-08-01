@@ -129,18 +129,11 @@ class Dipole(BaseSource):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        if self.moment is None:
-            msg = (
-                "Parameter moment must be explicitly set for force computation."
-                f" Parameter moment missing for {self}."
-            )
-            raise ValueError(msg)
-
+        # Tests in getFT ensure that meshing, dimension and excitation are set
         mesh = [(0,0,0)]
         moments = [self.moment]
 
-        # Apply orientation and position transformations
         mesh = self.orientation.apply(mesh) + self.position
         moments = self.orientation.apply(moments)
-
+        
         return mesh, moments

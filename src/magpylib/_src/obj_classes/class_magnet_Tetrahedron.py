@@ -181,50 +181,11 @@ class Tetrahedron(BaseMagnet, BaseTarget):
         return self.barycenter
 
     def _generate_mesh(self):
-        """
-        Generate mesh for force computation.
-        
-        This is a dummy implementation that places a single mesh point
-        at the centroid of the tetrahedron with the total magnetic moment.
-        
-        Returns
-        -------
-        mesh : np.ndarray, shape (1, 3)
-        mom : np.ndarray, shape (1, 3)
-        """
-        if self.meshing is None:
-            msg = (
-                "Parameter meshing must be explicitly set for force computation."
-                f" Parameter meshing missing for {self}."
-            )
-            raise ValueError(msg)
-
-        if self.vertices is None:
-            msg = (
-                "Parameter vertices must be set for force computation."
-                f" Parameter vertices missing for {self}."
-            )
-            raise ValueError(msg)
-
-        if self.polarization is None:
-            msg = (
-                "Parameter polarization must be set for force computation."
-                f" Parameter polarization missing for {self}."
-            )
-            raise ValueError(msg)
-
-        if not isinstance(self.meshing, int):
-            if self.meshing <=1:
-                msg = (
-                    f"Bad parameter meshing for {self}."
-                    " Tetrahedron meshing must be a positive integer greater than 0."
-                )
-                raise ValueError(msg)
-
+        """Generate mesh for force computation."""
+        # Tests in getFT ensure that meshing, dimension and excitation are set
         mesh, volumes = target_mesh_tetrahedron(self.meshing, self.vertices)
         mesh = self.orientation.apply(mesh) + self.position
         moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
-
         return mesh, moments
 
     # Static methods

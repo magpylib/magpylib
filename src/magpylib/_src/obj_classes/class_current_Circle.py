@@ -138,23 +138,19 @@ class Circle(BaseCurrent, BaseTarget):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        if not np.isscalar(self.meshing):
-            msg = "Circle meshing must be a scalar value reflecting the target number of elements."
-            raise ValueError(msg)
-
-        if self.diameter is None:
-            msg = (
-                "Parameter diameter must be explicitly set for force computation."
-                f" Parameter diameter missing for {self}."
-            )
-            raise ValueError(msg)
-
+        # Tests in getFT ensure that meshing, dimension and excitation are set
         mesh, curr, tvec = target_mesh_circle(self.diameter/2, self.meshing, self.current)
         mesh = self.orientation.apply(mesh) + self.position
         tvec = self.orientation.apply(tvec)
-
         return mesh, curr, tvec
 
+    def _validate_meshing(self, value):
+        """ Circle makes only sense with at least 4 mesh points."""
+        if isinstance(value, int) and value > 3:
+            pass
+        else:
+            msg = f"Circle meshing parameter must be integer > 3 for {self}. Instead got {value}."
+            raise ValueError(msg)
 
 
 class Loop(Circle):

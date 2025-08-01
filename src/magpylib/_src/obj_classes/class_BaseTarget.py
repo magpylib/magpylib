@@ -41,9 +41,21 @@ class BaseTarget(ABC):
     @meshing.setter
     def meshing(self, value):
         """Set mesh parameters for force computation."""
-        # meshing input checks happens at class level because
-        # each class may have different requirements
+        # Basic validation - subclasses override on demand for specific requirements
+        if value is not None:
+            self._validate_meshing(value)
         self._meshing = value
+
+    def _validate_meshing(self, value):
+        """
+        Basic meshing validation: allow positive integers
+        Subclasses should override for specific requirements.
+        """
+        if isinstance(value, int) and value > 0:
+            pass
+        else:
+            msg = f"Meshing parameter must be positive integer for {self}. Instead got {value}."
+            raise ValueError(msg)
 
     @abstractmethod
     def _generate_mesh(self):

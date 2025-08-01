@@ -175,34 +175,12 @@ class CylinderSegment(BaseMagnet, BaseTarget):
         return self.barycenter
 
     def _generate_mesh(self):
-        """
-        Generate mesh for force computation.
-        
-        Returns
-        -------
-        mesh : np.ndarray, shape (n, 3)
-        moments : np.ndarray, shape (n, 3)
-        """
-        if self.meshing is None:
-            msg = (
-                "Parameter meshing must be explicitly set for force computation."
-                f" Parameter meshing missing for {self}."
-                " CylinderSegment meshing must be an integer reflecting the target number of elements."
-            )
-            raise ValueError(msg)
-
-        if not isinstance(self.meshing, int):
-            msg = (
-                f"Bad input for meshing parameter for {self}."
-                " CylinderSegment meshing must be an integer reflecting the target number of elements."
-            )
-            raise ValueError(msg)
-        
+        """Generate mesh for force computation."""
+        # Tests in getFT ensure that meshing, dimension and excitation are set
         r1, r2, h, phi1, phi2 = self.dimension
         mesh, volumes = target_mesh_cylinder(r1, r2, h, phi1, phi2, self.meshing)
         mesh = self.orientation.apply(mesh) + self.position
         moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
-
         return mesh, moments
 
     # Static methods
