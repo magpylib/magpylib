@@ -58,12 +58,12 @@ def check_format_input_targets(targets):
             idx += 1
 
     # check if all flat_targets are valid
+    
+    # check if dimensions and excitations are initialized
+    check_dimensions(flat_targets)
+    check_excitations(flat_targets)
+    
     for t in flat_targets:
-        
-        # check dimensions and excitations
-        check_dimensions(t, "getFT")
-        check_excitations(t, "getFT")
-        
         # exclude Dipole from check
         from magpylib._src.obj_classes.class_misc_Dipole import Dipole
         if not isinstance(t, (Dipole,)):
@@ -146,7 +146,7 @@ def create_eps_vector(eps):
     )
 
 
-def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
+def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport=False):
     """
     Compute magnetic force and torque acting on the targets that are exposed
     to the magnetic field of the sources.
@@ -181,6 +181,9 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
     squeeze: bool, default=True
         The output of the computation has the shape (n,3) where n corresponds to the number
         of targets. By default this is reduced to (3,) when there is only one target.
+    
+    meshreport: bool, default=False
+        If True, a report of the mesh used for each target will be printed.
 
     Returns
     -------
@@ -231,6 +234,11 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True):
         observer.append(mesh)
         mesh_sizes.append(len(mesh))
 
+    if meshreport:
+        print("Mesh report:")
+        for t, m in zip(targets, mesh_sizes):
+            print(f"  Target {t}: {m} points")
+        print()
 
     # COMPUTE B FIELD ###################################################################
     observer = np.concatenate(observer, axis=0)
