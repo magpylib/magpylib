@@ -42,9 +42,9 @@ class Circle(BaseCurrent, BaseTarget):
     current: float, default=`None`
         Electrical current in units of A.
 
-    meshing: dict or None, default=`None`
-        Parameters that define the mesh fineness for force computation.
-        Should contain mesh-specific parameters like resolution, method, etc.
+    meshing: int, default=`None`
+        Parameter that defines the mesh fineness for force computation.
+        Must be an integer >= 4 specifying the target mesh size.
 
     volume: float
         Read-only. Object physical volume in units of m^3.
