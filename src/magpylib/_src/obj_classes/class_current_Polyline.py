@@ -158,15 +158,18 @@ class Polyline(BaseCurrent, BaseTarget):
         # Special special case: fewer points than segments, cannot be caught in
         #    meshing setter because vertices might not have been set yet
         n_segments = len(self.vertices) - 1
-        if self.meshin < n_segments:
+        if self.meshing < n_segments:
             import warnings
             msg = (
                 "getFT Polyline bad meshing input. number of points is less than"
                 " number of Polyline segments. Setting one point per segment in computation"
             )
             warnings.warn(msg)
+            n_target = n_segments
+        else:
+            n_target = self.meshing
 
-        mesh, curr, tvec = target_mesh_polyline(self.vertices, self.current, n_segments)
+        mesh, curr, tvec = target_mesh_polyline(self.vertices, self.current, n_target)
         mesh = self.orientation.apply(mesh) + self.position
         tvec = self.orientation.apply(tvec)
         return mesh, curr, tvec

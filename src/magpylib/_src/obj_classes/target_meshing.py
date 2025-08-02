@@ -109,7 +109,7 @@ def cells_from_dimension(
     return np.array(result).astype(int)
 
 
-def target_mesh_cuboid(n1, n2, n3, a, b, c):
+def target_mesh_cuboid(target_elems, dimension):
     """
     Cuboid mesh in the local object coordinates.
 
@@ -128,7 +128,26 @@ def target_mesh_cuboid(n1, n2, n3, a, b, c):
     Returns
     -------
     mesh (np.ndarray, shape (n, 3)), volumes (np.ndarray, shape (n,))
-    """    
+    """
+    a, b, c = dimension
+
+    # Scalar meshing input
+    if isinstance(target_elems, int):
+        if target_elems == 1:
+            n1, n2, n3 = (1, 1, 1)
+        else:
+            # estimate splitting with aspect ratio~1
+            cell_size = (a * b * c / target_elems) ** (1/3)
+            n1 = max(1, int(np.round(a / cell_size)))
+            n2 = max(1, int(np.round(b / cell_size)))
+            n3 = max(1, int(np.round(c / cell_size)))
+    else:
+        n1, n2, n3 = target_elems
+
+    # could improve auto-splitting by reducing the aspect error
+    #print(n1*n2*n3)
+    #print((a/n1)/(b/n2), (b/n2)/(c/n3), (c/n3)/(a/n1))
+
     xs = np.linspace(-a / 2, a / 2, n1 + 1)
     ys = np.linspace(-b / 2, b / 2, n2 + 1)
     zs = np.linspace(-c / 2, c / 2, n3 + 1)
@@ -521,3 +540,10 @@ def target_mesh_triangularmesh(vertices, faces, target_points, volume=None):
     volumes = np.full(len(points), volume / len(points))
     
     return points, volumes
+
+
+if __name__=="__main__":
+
+    for n in [1, 10, 50, 100, 500, 1000, 5000]:
+        target_mesh_cuboid(n, (1.1,2.2,1))
+

@@ -12,9 +12,7 @@ from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.utility import unit_prefix
-
 from magpylib._src.obj_classes.target_meshing import target_mesh_cuboid
-from magpylib._src.obj_classes.target_meshing import cells_from_dimension
 
 class Cuboid(BaseMagnet, BaseTarget):
     """Cuboid magnet with homogeneous magnetization.
@@ -159,13 +157,7 @@ class Cuboid(BaseMagnet, BaseTarget):
     def _generate_mesh(self):
         """Generate mesh for force computation."""
         # Tests in getFT ensure that meshing, dimension and excitation are set
-        
-        if isinstance(self.meshing, int):
-            n1, n2, n3 = cells_from_dimension(self.dimension, self.meshing)
-        elif isinstance(self.meshing, (list, tuple, np.ndarray)):
-            n1, n2, n3 = self.meshing
-
-        mesh, volumes = target_mesh_cuboid(n1, n2, n3, *self.dimension)
+        mesh, volumes = target_mesh_cuboid(self.meshing, self.dimension)
         mesh = self.orientation.apply(mesh) + self.position
         moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
         return mesh, moments
