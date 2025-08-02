@@ -2,6 +2,7 @@ import magpylib as magpy
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib import getFT
+import pytest
 
 
 def test_force_physics_ana_dipole():
@@ -1478,6 +1479,59 @@ def test_force_2sources():
     assert np.allclose(T[1,1], T[1,0]*2)
 
 
+def test_force_meshing_validation():
+    """Test meshing inputs"""
+    
+    # standard objects
+    objects = [
+        magpy.magnet.Cylinder(dimension=(3,3), polarization=(0,0,1)),
+        magpy.magnet.CylinderSegment(dimension=(1,2,3,0,360), polarization=(1,2,3)),
+        magpy.magnet.Sphere(diameter=3, polarization=(1,2,3)),
+        magpy.magnet.Tetrahedron(
+            vertices=[(1,1,-1), (1,1,1), (-1,1,1), (1,-1,1)], 
+            polarization=(0.111,0.222,0.333)
+        ),
+        magpy.current.Polyline(vertices=[(0,0,0), (1,1,1), (2,2,2)], current=1),
+        magpy.magnet.Cuboid(dimension=(3,3,3), polarization=(0,0,1)),
+    ]
+    for obj in objects:
+        with pytest.raises(ValueError):
+            obj.meshing = "bad"
+        
+        with pytest.raises(ValueError):
+            obj.meshing = -1
+        
+        obj.meshing = 1
+        assert obj.meshing == 1, f"Failed for {obj} with meshing=1"  
+        
+        obj.meshing = 100
+        assert obj.meshing == 100, f"Failed for {obj} with meshing=100"
+    
+    # circle
+    obj = magpy.current.Circle(diameter=3, current=1)
+    with pytest.raises(ValueError):
+            obj.meshing = "bad"
+
+    with pytest.raises(ValueError):
+        obj.meshing = 3
+    
+    obj.meshing = 4
+    assert obj.meshing == 4, f"Failed for {obj} with meshing=4"  
+    
+    obj.meshing = 100
+    assert obj.meshing == 100, f"Failed for {obj} with meshing=100"
+
+    cube = magpy.magnet.Cuboid(dimension=(3,3,3), polarization=(0,0,1))
+    cube.meshing = (10,10,10)
+    assert np.all(cube.meshing == (10,10,10))
+    
+    # polyline
+    poly = magpy.current.Polyline(vertices=[(0,0,0), (1,1,1), (2,2,2)], current=1)
+    poly.meshing = 1
+
+    with pytest.warns(UserWarning):
+        getFT(cube, poly)
+
 
 if __name__ == "__main__":
 
@@ -1491,6 +1545,7 @@ if __name__ == "__main__":
     test_force_obj_rotations1()
     test_force_obj_rotations2()
     test_force_2sources()
+    test_force_meshing_validation()
 
     # equivalence
     test_force_equiv_circle_dipole()    # Circle, step2: proofs current force + pivot torque

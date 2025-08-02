@@ -164,7 +164,7 @@ class Polyline(BaseCurrent, BaseTarget):
                 "getFT Polyline bad meshing input. number of points is less than"
                 " number of Polyline segments. Setting one point per segment in computation"
             )
-            warnings.warn(msg)
+            warnings.warn(msg, UserWarning)
             n_target = n_segments
         else:
             n_target = self.meshing
