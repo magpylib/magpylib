@@ -984,3 +984,24 @@ class Collection(BaseGeo, BaseCollection):
             **kwargs,
         )
         BaseCollection.__init__(self, *args, override_parent=override_parent)
+
+    # Abstract methods implementation
+    def _get_volume(self):
+        """Volume of all objects in units of m³."""
+        return sum(child.volume for child in self.children_all)
+
+    def _get_centroid(self):
+        """Centroid of collection weighted by children volumes in units of m."""
+        total_volume = 0.0
+        weighted_centroid = np.array([0.0, 0.0, 0.0])
+
+        for child in self.children_all:
+            child_volume = child.volume
+            if child_volume > 0:
+                child_centroid = child.centroid
+                weighted_centroid += child_centroid * child_volume
+                total_volume += child_volume
+
+        if total_volume > 0:
+            return weighted_centroid / total_volume
+        return self.position

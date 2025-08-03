@@ -4,6 +4,8 @@
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=protected-access
 
+from abc import ABC, abstractmethod
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
@@ -31,7 +33,7 @@ def pad_slice_path(path1, path2):
     return path2
 
 
-class BaseGeo(BaseTransform):
+class BaseGeo(BaseTransform, ABC):
     """Initializes basic properties inherited by ALL Magpylib objects
 
     Inherited from BaseTransform
@@ -89,6 +91,7 @@ class BaseGeo(BaseTransform):
         if style is not None or kwargs:  # avoid style creation cost if not needed
             self._style_kwargs = self._process_style_kwargs(style=style, **kwargs)
 
+    # static methods ------------------------------------------------
     @staticmethod
     def _process_style_kwargs(style=None, **kwargs):
         if kwargs:
@@ -104,6 +107,7 @@ class BaseGeo(BaseTransform):
             style.update(**style_kwargs)
         return style
 
+    # private helper methods ----------------------------------------
     def _init_position_orientation(self, position, orientation):
         """tile up position and orientation input and set _position and
         _orientation at class init. Because position and orientation inputs
@@ -135,6 +139,46 @@ class BaseGeo(BaseTransform):
         # set attributes
         self._position = pos
         self._orientation = R.from_quat(oriQ)
+
+    def _validate_style(self, val=None):
+        val = {} if val is None else val
+        style = self.style  # triggers style creation
+        if isinstance(val, dict):
+            style.update(val)
+        elif not isinstance(val, self._style_class):
+            msg = (
+                f"Input parameter `style` must be of type {self._style_class}.\n"
+                f"Instead received type {type(val)}"
+            )
+            raise ValueError(msg)
+        return style
+
+    # abstract methods that must be implemented by subclasses ------
+    @abstractmethod
+    def _get_volume(self):
+        """
+        Calculate and return the volume of the object in units of m³.
+
+        This method must be implemented by all subclasses.
+
+        Returns
+        -------
+        float
+            Volume of the object in m³.
+        """
+
+    @abstractmethod
+    def _get_centroid(self):
+        """
+        Calculate and return the centroid of the object in units of m.
+
+        This method must be implemented by all subclasses.
+
+        Returns
+        -------
+        numpy.ndarray, shape (3,)
+            Centroid coordinates [x, y, z] in m.
+        """
 
     # properties ----------------------------------------------------
     @property
@@ -248,20 +292,12 @@ class BaseGeo(BaseTransform):
     @property
     def volume(self):
         """Volume of object in units of m³."""
-        # pylint: disable=no-member
-        if hasattr(self, "_get_volume") and callable(self._get_volume):
-            return self._get_volume()
-        msg = f"{self.__class__.__name__} must implement the '_get_volume()' method"
-        raise NotImplementedError(msg)  # pragma: no cover
+        return self._get_volume()
 
     @property
     def centroid(self):
         """Centroid of object in units of m."""
-        # pylint: disable=no-member
-        if hasattr(self, "_get_centroid") and callable(self._get_centroid):
-            return self._get_centroid()
-        msg = f"{self.__class__.__name__} must implement the '_get_centroid()' method"
-        raise NotImplementedError(msg)  # pragma: no cover
+        return self._get_centroid()
 
     @property
     def style(self):
@@ -288,33 +324,7 @@ class BaseGeo(BaseTransform):
     def style(self, val):
         self._style = self._validate_style(val)
 
-    def _validate_style(self, val=None):
-        val = {} if val is None else val
-        style = self.style  # triggers style creation
-        if isinstance(val, dict):
-            style.update(val)
-        elif not isinstance(val, self._style_class):
-            msg = (
-                f"Input parameter `style` must be of type {self._style_class}.\n"
-                f"Instead received type {type(val)}"
-            )
-            raise ValueError(msg)
-        return style
-
-    # dunders -------------------------------------------------------
-    def __add__(self, obj):
-        """Add up sources to a Collection object.
-
-        Returns
-        -------
-        Collection: Collection
-        """
-        # pylint: disable=import-outside-toplevel
-        from magpylib import Collection  # noqa: PLC0415
-
-        return Collection(self, obj)
-
-    # methods -------------------------------------------------------
+    # public methods ------------------------------------------------
     def reset_path(self):
         """Set object position to (0,0,0) and orientation = unit rotation.
 
@@ -400,3 +410,16 @@ class BaseGeo(BaseTransform):
             style_kwargs = self._process_style_kwargs(**style_kwargs)
             obj_copy.style.update(style_kwargs)
         return obj_copy
+
+    # dunders -------------------------------------------------------
+    def __add__(self, obj):
+        """Add up sources to a Collection object.
+
+        Returns
+        -------
+        Collection: Collection
+        """
+        # pylint: disable=import-outside-toplevel
+        from magpylib import Collection  # noqa: PLC0415
+
+        return Collection(self, obj)
