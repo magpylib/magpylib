@@ -145,11 +145,16 @@ class Polyline(BaseCurrent, BaseTarget):
         """Volume of object in units of m³."""
         return 0.0
 
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        if self.vertices is not None:
-            return np.mean(self.vertices, axis=0) + self.position
-        return self.position
+        if squeeze:
+            if self.vertices is not None:
+                return np.mean(self.vertices, axis=0) + self.position
+            return self.position
+        else:
+            if self.vertices is not None:
+                return np.mean(self.vertices, axis=0) + self._position
+            return self._position
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""

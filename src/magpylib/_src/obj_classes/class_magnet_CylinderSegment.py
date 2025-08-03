@@ -170,9 +170,11 @@ class CylinderSegment(BaseMagnet, BaseTarget):
         r1, r2, h, phi1, phi2 = self.dimension
         return (r2**2 - r1**2) * np.pi * h * (phi2 - phi1) / 360
 
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return self.barycenter
+        if squeeze:
+            return self.barycenter
+        return self._barycenter
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""

@@ -1533,6 +1533,40 @@ def test_force_meshing_validation():
         getFT(cube, poly)
 
 
+def test_centroid():
+    """Test centroid calculation"""
+    circ = magpy.current.Circle(diameter=1, current=1)
+    np.testing.assert_allclose(circ.centroid, (0,0,0))
+    np.testing.assert_allclose(circ._centroid, [(0,0,0)])
+
+    poly = magpy.current.Polyline(vertices=[(0,0,0), (1,1,1)], current=1, position=(2,2,2))
+    np.testing.assert_allclose(poly.centroid, (2.5,2.5,2.5))
+    np.testing.assert_allclose(poly._centroid, [(2.5,2.5,2.5)])
+
+    poly = magpy.current.Polyline(vertices=[(0,0,0), (1,1,1)], current=1, position=[(2,2,2), (3,3,3)])
+    np.testing.assert_allclose(poly.centroid, [(2.5,2.5,2.5), (3.5,3.5,3.5)])
+    np.testing.assert_allclose(poly._centroid, [(2.5,2.5,2.5), (3.5,3.5,3.5)])
+
+    cube = magpy.magnet.Cuboid(dimension=(1,1,1), polarization=(1,0,0), position=(1,2,3))
+    np.testing.assert_allclose(cube.centroid, (1,2,3))
+    np.testing.assert_allclose(cube._centroid, [(1,2,3)])
+
+    cyl = magpy.magnet.Cylinder(dimension=(1,1), polarization=(1,0,0), position=(1,2,3))
+    np.testing.assert_allclose(cyl.centroid, (1,2,3))
+    np.testing.assert_allclose(cyl._centroid, [(1,2,3)])
+
+    seg = magpy.magnet.CylinderSegment(
+        dimension=(1, 2, 3, 0, 90), polarization=(1, 0, 0), position=[(1, 2, 3), (4, 5, 6)]
+    )
+    np.testing.assert_allclose(seg.centroid, seg._barycenter)
+    np.testing.assert_allclose(seg._centroid, seg._barycenter)
+
+    sph = magpy.magnet.Sphere(diameter=1, polarization=(1,0,0), position=(3,2,3))
+    np.testing.assert_allclose(sph.centroid, (3,2,3))
+    np.testing.assert_allclose(sph._centroid, [(3,2,3)])
+
+
+
 if __name__ == "__main__":
 
     # vs analytical solutions
@@ -1565,5 +1599,8 @@ if __name__ == "__main__":
     test_force_ANSYS_loop_loop()
     test_force_ANSYS_loop_magnet()
     test_force_ANSYS_magnet_current_close()
+
+    # other
+    test_centroid()
 
     print("All tests passed.")

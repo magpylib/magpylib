@@ -300,6 +300,11 @@ class BaseGeo(BaseTransform, ABC):
         return self._get_centroid()
 
     @property
+    def _centroid(self):
+        """Centroid of object in units of m."""
+        return self._get_centroid(squeeze=False)
+
+    @property
     def style(self):
         """
         Object style in the form of a BaseStyle object. Input must be

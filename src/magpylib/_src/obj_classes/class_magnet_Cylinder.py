@@ -149,9 +149,11 @@ class Cylinder(BaseMagnet, BaseTarget):
         d, h = self.dimension
         return d**2 * np.pi * h / 4
 
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return self.position
+        if squeeze:
+            return self.position
+        return self._position
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""

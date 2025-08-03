@@ -150,9 +150,11 @@ class Cuboid(BaseMagnet, BaseTarget):
             return 0.0
         return np.prod(self.dimension)
 
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return self.position
+        if squeeze:
+            return self.position
+        return self._position
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""

@@ -255,9 +255,11 @@ class TriangularMesh(BaseMagnet, BaseTarget):
         # Return absolute value to get positive volume
         return abs(total_volume)
 
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return self.barycenter
+        if squeeze:
+            return self.barycenter
+        return self._barycenter
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
