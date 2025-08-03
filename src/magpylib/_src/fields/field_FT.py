@@ -120,39 +120,6 @@ def check_format_input_pivot(pivot, targets):
     raise ValueError(msg)
 
 
-# def check_format_input_pivot2(pivot, targets, path_length):
-#     """
-#     Check and format pivot input
-
-#     Returns
-#     -------
-#     list of pivots with shape (n_target, ...) can be ragged if some tgts have path and others do not
-#     """
-#     msg = (
-#         "Bad getFT pivot input. Input pivot must be str 'centroid', None or array_like of shape (3,)."
-#         " It can also be (n,3) when there are n targets providing a different pivot for every target."
-#     )
-
-#     if isinstance(pivot, str) and pivot == "centroid":
-#         return [np.pad(t._centroid, ) for t in targets]
-
-#     if pivot is None:
-#         return None
-
-#     if isinstance(pivot, (list, tuple, np.ndarray)):
-#         try:
-#             pivot = np.array(pivot, dtype=float)
-#         except (ValueError, TypeError) as e:
-#             raise ValueError(msg) from e
-        
-#         if pivot.shape == (3,):
-#             return np.tile(pivot, (len(targets), 1))
-#         if pivot.shape == (len(targets), 3):
-#             return pivot
-
-#     raise ValueError(msg)
-
-
 def create_eps_vector(eps):
     """
     Create a vector of finite difference steps based on the input eps.
@@ -415,6 +382,48 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
     return FTOUT
 
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+
+def check_format_input_pivot2(pivot, targets, n_path):
+    """
+    Check and format pivot input
+
+    Returns
+    -------
+    array of pivots with shape (n_tgt, n_path, 3) or None
+    """
+    msg = (
+        "Bad getFT pivot input. Input pivot must be str 'centroid', `None`, or array_like of shape (3,)."
+        " It can also be (n,3) when there are n targets providing a different pivot for every target."
+        " It can also be (n,m,3) when there are n targets and pathlength is m."
+    )
+
+    if pivot is None:
+        return None
+
+    if isinstance(pivot, str) and pivot == "centroid":
+        return np.array([np.pad(t._centroid, ((0,n_path-len(t._centroid)),(0,0)), "edge") for t in targets])
+
+
+    if isinstance(pivot, (list, tuple, np.ndarray)):
+        try:
+            pivot = np.array(pivot, dtype=float)
+        except (ValueError, TypeError) as e:
+            raise ValueError(msg) from e
+        
+        n_tgt = len(targets)
+
+        if pivot.shape == (3,):
+            return np.tile(pivot, (n_tgt, n_path, 1))
+        if pivot.shape == (n_tgt, 3):
+            return np.repeat(pivot[:, np.newaxis, :], n_path, axis=1)
+        if pivot.shape == (n_tgt, n_path, 3):
+            return pivot
+
+    raise ValueError(msg)
 
 
 def getFT2(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport=False):
@@ -460,39 +469,48 @@ def getFT2(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshrepor
     -------
     Force-Torque as ndarray of shape (2,3), or (t,2,3) when t targets are given
     """
-    # Input checks
+    # Input check targets
     targets, coll_idx = check_format_input_targets(targets)
-    #pivot = check_format_input_pivot(pivot, targets) # PIVOT MUST ALSO BE TILE UP !!!!!!! <<<------
+    n_targets = len(targets)
+    
+    # Input checks sources
     sources = check_format_input_sources(sources)
+    n_sources = len(sources)
+
+    # Path tiling of tgt paths
+    tgt_path_lengths = [len(tgt._position) for tgt in targets]
+    src_path_lengths = [len(src._position) for src in sources]
+    path_length = max(tgt_path_lengths + src_path_lengths)
+
+    tgt_paths = np.zeros((n_targets, path_length, 3)) # shape (n_targets, path_length, 3)
+    for i,tgt in enumerate(targets):
+        padlength = path_length - len(tgt._position)
+        tgt_paths[i] = np.pad(tgt._position, ((0,padlength), (0,0)), 'edge')
+
+    # Pivot checks and tiling
+    pivot = check_format_input_pivot2(pivot, targets, path_length) # shape (n_targets, path_length, 3)
+
+    print(pivot)
+
+    import sys
+    sys.exit()
+
+
+
+
+
 
     # Get force types and create masks efficiently
     mask_magnet = np.array([tgt._force_type == "magnet" for tgt in targets])
     mask_current = np.array([tgt._force_type == "current" for tgt in targets])
 
     # Important numbers
-    n_targets = len(targets)
-    n_sources = len(sources)
     n_magnets = sum(mask_magnet)  # number of magnet targets
     n_currents = sum(mask_current)  # number of current targets
 
     # Allocate output arrays
     FTOUT = np.zeros((2, n_sources, n_targets, 3))
 
-    # PATH TILING ########################################################################
-    tgt_path_lengths = [len(tgt._position) for tgt in targets]
-    src_path_lengths = [len(src._position) for src in sources]
-    max_path_length = max(tgt_path_lengths + src_path_lengths)
-
-    # Allocate and broadcast into
-    tgt_paths = np.zeros((n_targets, max_path_length, 3))
-
-    for i,tgt in enumerate(targets):
-        padlength = max_path_length - len(tgt._position)
-        tgt_paths[i] = np.pad(tgt._position, ((0,padlength), (0,0)), 'edge')
-
-    print(tgt_paths)
-    import sys
-    sys.exit()
 
     # RUN MESHING FUNCTIONS ##############################################################
     # Collect meshing function results - cannot separate mesh generation from generation 
@@ -682,19 +700,23 @@ def getFT2(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshrepor
 
 
 
-
 if __name__ == "__main__":
     # Test the getFT function with some dummy data
     from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
     from magpylib._src.obj_classes.class_current_Polyline import Polyline
 
-    src = Tetrahedron(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)], magnetization=(1e6, 0, 0))
+    src1 = Tetrahedron(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)], magnetization=(1e6, 0, 0))
+    src2 = Tetrahedron(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)], magnetization=(0, 1e6, 0))
     tgt1 = Polyline(vertices=[(2, 2, 2), (3, 3, 3)], current=1.0, meshing=10)
-    tgt1.position = [(1,1,1)] * 4
-    
     tgt2 = Polyline(vertices=[(2, 2, 2), (3, 3, 3)], current=1.0, meshing=10)
 
+    src1.position = [(1,1,1)] * 5
+    src2.position = [(2,2,2)] * 3
+    tgt1.position = [(3,3,3),(2,2,2)]
+    tgt2.position = [(0,0,0),(3,3,3),(4,4,4)]
+
+    sources = [src1, src2]
     targets = [tgt1, tgt2]
     #print([t.centroid for t in targets])
 
-    getFT(src, targets)
+    getFT2(sources, targets, pivot=[[(1,2,3)]*5, [(4,5,6)]*5])
