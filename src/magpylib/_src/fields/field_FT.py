@@ -86,13 +86,13 @@ def check_format_input_targets(targets):
     return flat_targets, coll_idx
 
 
-def check_format_input_pivot(pivot, targets):
+def check_format_input_pivot(pivot, targets, path_length):
     """
     Check and format pivot input
 
     Returns
     -------
-    np.array of pivots with shape (n_target, 3)
+    list of pivots with shape (n_target, ...) can be ragged if some tgts have path and others do not
     """
     msg = (
         "Bad getFT pivot input. Input pivot must be str 'centroid', None or array_like of shape (3,)."
@@ -100,7 +100,7 @@ def check_format_input_pivot(pivot, targets):
     )
 
     if isinstance(pivot, str) and pivot == "centroid":
-        return np.array([t.centroid for t in targets])
+        return [np.pad(t._centroid, ) for t in targets]
 
     if pivot is None:
         return None
@@ -191,7 +191,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     """
     # Input checks
     targets, coll_idx = check_format_input_targets(targets)
-    pivot = check_format_input_pivot(pivot, targets)
+    #pivot = check_format_input_pivot(pivot, targets) # PIVOT MUST ALSO BE TILE UP !!!!!!! <<<------
     sources = check_format_input_sources(sources)
 
     # Get force types and create masks efficiently
@@ -207,12 +207,28 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     # Allocate output arrays
     FTOUT = np.zeros((2, n_sources, n_targets, 3))
 
+    # PATH TILING ########################################################################
+    tgt_path_lengths = [len(tgt._position) for tgt in targets]
+    src_path_lengths = [len(src._position) for src in sources]
+    max_path_length = max(tgt_path_lengths + src_path_lengths)
+
+    # Allocate and broadcast into
+    tgt_paths = np.zeros((n_targets, max_path_length, 3))
+
+    for i,tgt in enumerate(targets):
+        padlength = max_path_length - len(tgt._position)
+        tgt_paths[i] = np.pad(tgt._position, ((0,padlength), (0,0)), 'edge')
+
+    print(tgt_paths)
+    import sys
+    sys.exit()
+
     # RUN MESHING FUNCTIONS ##############################################################
     # Collect meshing function results - cannot separate mesh generation from generation 
     #    of moments, lvecs, etc.
     # Meshing functions are run now to collect all observers because the B-field is
     #    computed for all targets at once, for efficiency reasons.
-    observer = []
+    meshes = []
     mesh_sizes = []
     mag_moments = []
     cur_currents = []
@@ -231,7 +247,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
             cur_currents.append(curr)
             cur_tvecs.append(tvec)
 
-        observer.append(mesh)
+        meshes.append(mesh)
         mesh_sizes.append(len(mesh))
 
     if meshreport:
@@ -239,6 +255,12 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         for t, m in zip(targets, mesh_sizes):
             print(f"  Target {t}: {m} points")
         print()
+
+
+    # apply orientations and positions of paths to mesh
+    # tile up everything ?
+    # ...
+    # ...
 
     # COMPUTE B FIELD ###################################################################
     observer = np.concatenate(observer, axis=0)
@@ -388,159 +410,18 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
 
 
+if __name__ == "__main__":
+    # Test the getFT function with some dummy data
+    from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
+    from magpylib._src.obj_classes.class_current_Polyline import Polyline
 
-
-
-
-
-
-
-
-#         # # force on every instance
-#         # F = (CURR * np.cross(LVEC, B).T).T
-
-#         # # torque on every instance + sumup for every target
-#         # if anchor is not None:
-#         #     T = np.cross(anchor - POSS, F)
-#         #     T = np.array(
-#         #         [np.sum(T[insti[i] : insti[i + 1]], axis=0) for i in range(tgt_number)]
-#         #     )
-#         # else:
-#         #     T = np.zeros((tgt_number, 3))
-
-#     return 0
-
-
-#     # # split targets into lists of similar types
-#     # TARGET_TYPES = [Cuboid, Polyline, Sphere, Cylinder, CylinderSegment, Circle, Dipole]
-#     # getFT_FUNCS = [
-#     #     getFTmagnet,
-#     #     getFTcurrent,
-#     #     getFTmagnet,
-#     #     getFTmagnet,
-#     #     getFTmagnet,
-#     #     getFTcurrent_circ,
-#     #     getFTdipole,
-#     # ]
-#     # objects = [[] for _ in TARGET_TYPES]
-#     # orders = [[] for _ in TARGET_TYPES]
-
-#     # for i, tgt in enumerate(targets):
-#     #     for j, ttyp in enumerate(TARGET_TYPES):
-#     #         if isinstance(tgt, ttyp):
-#     #             objects[j].append(tgt)
-#     #             orders[j].append(i)
-
-#     # # allocate FT
-#     # FT = np.zeros((n, 2, 3))
-
-#     # # FT-computation and broadcasting
-#     # for i in range(len(TARGET_TYPES)):
-#     #     if objects[i]:
-#     #         ft_part = getFT_FUNCS[i](sources, objects[i], eps=eps, anchor=anchor)
-#     #         ft_part = np.swapaxes(ft_part, 0, 1)
-#     #         for ft, j in zip(ft_part, orders[i], strict=False):
-#     #             FT[j] = ft
-
-#     # if squeeze:
-#     #     return np.squeeze(FT)
-#     # return FT
-
-
-# def getFT_current():
-#     """
-#     Placeholder for force computation function.
-#     This should be replaced with the actual implementation.
-#     """
-#     """
-#     compute force acting on tgt Polyline
-#     eps is a dummy variable that is not used
-
-#     info:
-#     targets = Polyline objects
-#     segments = linear segments within Polyline objects
-#     instances = computation instances, each segment is split into `meshing` points
-#     """
-#     # number of Polylines
-#     tgt_number = len(targets)
-
-#     # segments of each Polyline
-#     seg_numbers = np.array([len(tgt.vertices) - 1 for tgt in targets])
-
-#     # number of mesh-points of each Polyline
-#     mesh_numbers = np.array([tgt.meshing for tgt in targets])
-
-#     # number of instances of each Polyline
-#     inst_numbers = seg_numbers * mesh_numbers
-
-#     # total number of instances
-#     no_inst = np.sum(inst_numbers)
-
-#     # cumsum of number of instances (used for indexing)
-#     insti = np.r_[0, np.cumsum(inst_numbers)]
-
-#     # path vector of each instance
-#     LVEC = np.zeros((no_inst, 3))
-#     # central location of each instance
-#     POSS = np.zeros((no_inst, 3))
-#     # current of each instance
-#     CURR = np.zeros((no_inst,))
-
-#     for i, tgt in enumerate(targets):
-#         verts = tgt.orientation.apply(tgt.vertices)
-#         mesh = mesh_numbers[i]
-
-#         lvec = np.repeat(verts[1:] - verts[:-1], mesh, axis=0) / mesh
-#         LVEC[insti[i] : insti[i + 1]] = lvec
-
-#         CURR[insti[i] : insti[i + 1]] = [tgt.current] * mesh * seg_numbers[i]
-
-#         for j in range(seg_numbers[i]):
-#             # pylint: disable=line-too-long
-#             poss = (
-#                 np.linspace(
-#                     verts[j] + lvec[j * mesh] / 2,
-#                     verts[j + 1] - lvec[j * mesh] / 2,
-#                     mesh,
-#                 )
-#                 + tgt.position
-#             )
-#             POSS[insti[i] + mesh * j : insti[i] + mesh * (j + 1)] = poss
-
-#     # field of every instance
-#     B = magpy.getB(sources, POSS, sumup=True)
-
-#     # force on every instance
-#     F = (CURR * np.cross(LVEC, B).T).T
-
-#     # torque on every instance + sumup for every target
-#     if anchor is not None:
-#         T = np.cross(anchor - POSS, F)
-#         T = np.array(
-#             [np.sum(T[insti[i] : insti[i + 1]], axis=0) for i in range(tgt_number)]
-#         )
-#     else:
-#         T = np.zeros((tgt_number, 3))
-
-#     # sumup force for every target
-#     F = np.array(
-#         [np.sum(F[insti[i] : insti[i + 1]], axis=0) for i in range(tgt_number)]
-#     )
-
-#     return np.array((F, -T))
+    src = Tetrahedron(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)], magnetization=(1e6, 0, 0))
+    tgt1 = Polyline(vertices=[(2, 2, 2), (3, 3, 3)], current=1.0, meshing=10)
+    tgt1.position = [(1,1,1)] * 4
     
-    
-    
-    
-    
-#     warnings.warn("FT_current is a placeholder and should be replaced with an actual implementation.")
-#     return np.zeros((1, 2, 3))  # Dummy return value
+    tgt2 = Polyline(vertices=[(2, 2, 2), (3, 3, 3)], current=1.0, meshing=10)
 
+    targets = [tgt1, tgt2]
+    #print([t.centroid for t in targets])
 
-# def getFT_dipole():
-#     """
-#     Placeholder for force computation function.
-#     This should be replaced with the actual implementation.
-#     """
-#     warnings.warn("FT_magnet is a placeholder and should be replaced with an actual implementation.")
-#     return np.zeros((1, 2, 3))  # Dummy return value
+    getFT(src, targets)
