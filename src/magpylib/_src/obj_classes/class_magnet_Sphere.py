@@ -4,6 +4,8 @@
 
 from typing import ClassVar
 
+import numpy as np
+
 from magpylib._src.display.traces_core import make_Sphere
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.input_checks import check_format_input_scalar
@@ -42,6 +44,12 @@ class Sphere(BaseMagnet):
     magnetization: array_like, shape (3,), default=`None`
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
+
+    volume: float
+        Read-only. Object physical volume in units of m^3.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -95,7 +103,7 @@ class Sphere(BaseMagnet):
             position, orientation, magnetization, polarization, style, **kwargs
         )
 
-    # property getters and setters
+    # Properties
     @property
     def diameter(self):
         """Diameter of the sphere in units of m."""
@@ -118,3 +126,15 @@ class Sphere(BaseMagnet):
         if self.diameter is None:
             return "no dimension"
         return f"D={unit_prefix(self.diameter)}m"
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        if self.diameter is None:
+            return 0.0
+
+        return self.diameter**3 * np.pi / 6
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return self.position

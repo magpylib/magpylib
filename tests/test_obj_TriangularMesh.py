@@ -485,3 +485,45 @@ def test_orientation_edge_case():
     )
 
     np.testing.assert_array_equal(cone1.faces, cone2.faces)
+
+
+def test_TriangularMesh_volume():
+    """Test TriangularMesh volume calculation."""
+    vertices = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
+    faces = [(0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)]
+    mesh = magpy.magnet.TriangularMesh(
+        vertices=vertices, faces=faces, polarization=(0, 0, 1)
+    )
+    calculated = mesh.volume
+    expected = 1.0 / 6.0
+    assert abs(calculated - expected) < 1e-10
+
+
+def test_TriangularMesh_volume_complex():
+    """Test TriangularMesh volume calculation with complex body."""
+    # Create a complex Pyvista PolyData object using a boolean operation
+    cyl = pv.Cylinder(radius=0.4, height=10.0, resolution=20).triangulate().subdivide(2)
+    cube = pv.Cube().triangulate().subdivide(2)
+    obj = cube.boolean_difference(cyl)
+    obj = obj.clean()
+
+    # Construct magnet from PolyData object
+    magnet = magpy.magnet.TriangularMesh.from_pyvista(
+        polarization=(0, 0, 0.1),
+        polydata=obj,
+        style_label="magnet",
+    )
+    calculated = magnet.volume
+    expected = obj.volume  # Pyvista calculates volume correctly
+    assert abs(calculated - expected) < 1e-10
+
+
+def test_TriangularMesh_centroid():
+    """Test TriangularMesh centroid - should return barycenter if available"""
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    faces = np.array([[0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3]])
+    tri_mesh = magpy.magnet.TriangularMesh(
+        vertices=vertices, faces=faces, polarization=(0, 0, 1), position=(6, 7, 8)
+    )
+    expected = [6.26289171, 7.26289171, 8.26289171]  # barycenter offset from position
+    assert np.allclose(tri_mesh.centroid, expected)

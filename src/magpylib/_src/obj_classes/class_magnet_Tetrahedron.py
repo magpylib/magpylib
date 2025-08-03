@@ -48,6 +48,12 @@ class Tetrahedron(BaseMagnet):
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
 
+    volume: float
+        Read-only. Object physical volume in units of m^3.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -107,7 +113,7 @@ class Tetrahedron(BaseMagnet):
             position, orientation, magnetization, polarization, style, **kwargs
         )
 
-    # property getters and setters
+    # Properties
     @property
     def vertices(self):
         """Length of the Tetrahedron sides [a,b,c] in units of m."""
@@ -136,6 +142,34 @@ class Tetrahedron(BaseMagnet):
         """Object barycenter."""
         return np.squeeze(self._barycenter)
 
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        if self.vertices is None:
+            return "no vertices"
+        return ""
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        if self.vertices is None:
+            return 0.0
+
+        # Tetrahedron volume formula: |det(B-A, C-A, D-A)| / 6
+        vertices = self.vertices
+        v1 = vertices[1] - vertices[0]  # B - A
+        v2 = vertices[2] - vertices[0]  # C - A
+        v3 = vertices[3] - vertices[0]  # D - A
+
+        # Create 3x3 matrix and compute determinant
+        matrix = np.column_stack([v1, v2, v3])
+        return abs(np.linalg.det(matrix)) / 6.0
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return self.barycenter
+
+    # Static methods
     @staticmethod
     def _get_barycenter(position, orientation, vertices):
         """Returns the barycenter of a tetrahedron."""
@@ -143,10 +177,3 @@ class Tetrahedron(BaseMagnet):
             np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
         )
         return orientation.apply(centroid) + position
-
-    @property
-    def _default_style_description(self):
-        """Default style description text"""
-        if self.vertices is None:
-            return "no vertices"
-        return ""

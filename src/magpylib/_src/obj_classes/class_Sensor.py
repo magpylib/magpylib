@@ -50,6 +50,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
         using style underscore magic, e.g. `style_color='red'`.
 
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
+
     handedness: {"right", "left"}
         Object local coordinate system handedness. If "left", the x-axis is flipped.
 
@@ -112,7 +115,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
         BaseDisplayRepr.__init__(self)
 
-    # property getters and setters
+    # Properties
     @property
     def pixel(self):
         """Sensor pixel (=sensing elements) positions in the local object coordinates
@@ -147,6 +150,20 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             raise MagpylibBadUserInput(msg)
         self._handedness = val
 
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        pix = self.pixel
+        desc = ""
+        if pix is not None:
+            px_shape = pix.shape[:-1]
+            nop = int(np.prod(px_shape))
+            if pix.ndim > 2:
+                desc += f"{'x'.join(str(p) for p in px_shape)}="
+            desc += f"{nop} pixel{'s'[: nop ^ 1]}"
+        return desc
+
+    # Methods
     def getB(
         self,
         *sources,
@@ -509,15 +526,13 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             in_out=in_out,
         )
 
-    @property
-    def _default_style_description(self):
-        """Default style description text"""
-        pix = self.pixel
-        desc = ""
-        if pix is not None:
-            px_shape = pix.shape[:-1]
-            nop = int(np.prod(px_shape))
-            if pix.ndim > 2:
-                desc += f"{'x'.join(str(p) for p in px_shape)}="
-            desc += f"{nop} pixel{'s'[: nop ^ 1]}"
-        return desc
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        return 0.0
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        if self.pixel is not None:
+            pixel_mean = np.mean(self.pixel.reshape(-1, 3), axis=0)
+            return self.position + pixel_mean
+        return self.position

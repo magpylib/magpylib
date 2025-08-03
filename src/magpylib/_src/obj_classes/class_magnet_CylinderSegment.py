@@ -52,6 +52,12 @@ class CylinderSegment(BaseMagnet):
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
 
+    volume: float
+        Read-only. Object physical volume in units of m^3.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -136,6 +142,28 @@ class CylinderSegment(BaseMagnet):
         """Object barycenter."""
         return np.squeeze(self._barycenter)
 
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        if self.dimension is None:
+            return "no dimension"
+        d = [unit_prefix(d) for d in self.dimension]
+        return f"r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°"
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        if self.dimension is None:
+            return 0.0
+
+        r1, r2, h, phi1, phi2 = self.dimension
+        return (r2**2 - r1**2) * np.pi * h * (phi2 - phi1) / 360
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return self.barycenter
+
+    # Static methods
     @staticmethod
     def _get_barycenter(position, orientation, dimension):
         """Returns the barycenter of a cylinder segment.
@@ -156,11 +184,3 @@ class CylinderSegment(BaseMagnet):
             x, y, z = centroid_x * np.cos(phi), centroid_x * np.sin(phi), 0
             centroid = np.array([x, y, z])
         return orientation.apply(centroid) + position
-
-    @property
-    def _default_style_description(self):
-        """Default style description text"""
-        if self.dimension is None:
-            return "no dimension"
-        d = [unit_prefix(d) for d in self.dimension]
-        return f"r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°"

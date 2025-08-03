@@ -434,18 +434,24 @@ def test_collection_describe():
         "Collection",
         "│   • position: [0. 0. 0.] m",
         "│   • orientation: [0. 0. 0.] deg",
+        "│   • centroid: [0. 0. 0.]",
+        "│   • volume: 0.0",
         "├── x",
         "│       • position: [0. 0. 0.] m",
         "│       • orientation: [0. 0. 0.] deg",
         "│       • dimension: None m",
         "│       • magnetization: None A/m",
         "│       • polarization: None T",
+        "│       • centroid: [0. 0. 0.]",
+        "│       • volume: 0.0",
         "└── y",
         "        • position: [0. 0. 0.] m",
         "        • orientation: [0. 0. 0.] deg",
         "        • dimension: None m",
         "        • magnetization: None A/m",
         "        • polarization: None T",
+        "        • centroid: [0. 0. 0.]",
+        "        • volume: 0.0",
     ]
     assert "".join(test) == re.sub("id=*[0-9]*[0-9]", "id=REGEX", "".join(desc))
 
@@ -468,3 +474,128 @@ def test_col_getBH_input_format():
         shape1 = cube.getB(obs, squeeze=False).shape
         shape2 = coll.getB(obs, squeeze=False).shape
         assert np.all(shape1 == shape2)
+
+
+def test_Collection_volume():
+    """Test Collection volume calculation (sum of individual magnet volumes)."""
+
+    # Create individual magnets with known volumes
+    sphere = magpy.magnet.Sphere(
+        diameter=2.0, polarization=(0, 0, 1)
+    )  # volume = (4/3)π
+    cuboid = magpy.magnet.Cuboid(
+        dimension=(1.0, 2.0, 3.0), polarization=(0, 0, 1)
+    )  # volume = 6
+    cylinder = magpy.magnet.Cylinder(
+        dimension=(2.0, 1.0), polarization=(0, 0, 1)
+    )  # volume = π
+
+    # Create collection
+    collection = magpy.Collection(sphere, cuboid, cylinder)
+
+    # Calculate individual volumes
+    sphere_vol = (4 / 3) * np.pi * 1.0**3  # (4/3)π
+    cuboid_vol = 1.0 * 2.0 * 3.0  # 6
+    cylinder_vol = np.pi * 1.0**2 * 1.0  # π
+
+    # Test individual volumes
+    assert abs(sphere.volume - sphere_vol) < 1e-10
+    assert abs(cuboid.volume - cuboid_vol) < 1e-10
+    assert abs(cylinder.volume - cylinder_vol) < 1e-10
+
+    # Test collection total volume (should be sum of individual volumes)
+    calculated = collection.volume
+    expected = sphere_vol + cuboid_vol + cylinder_vol
+    assert abs(calculated - expected) < 1e-10
+
+
+def test_Collection_with_zero_volume_objects():
+    """Test Collection volume with objects that have zero volume."""
+
+    # Create objects with zero volume
+    dipole = magpy.misc.Dipole(moment=(1, 0, 0))
+    triangle = magpy.misc.Triangle(
+        vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)], polarization=(0, 0, 1)
+    )
+    circle = magpy.current.Circle(current=1.0, diameter=2.0)
+    sensor = magpy.Sensor()
+
+    # Create collection with zero-volume objects
+    collection = magpy.Collection(dipole, triangle, circle, sensor)
+
+    # Test collection total volume (should be 0)
+    calculated = collection.volume
+    expected = 0
+    assert calculated == expected
+
+
+def test_Collection_mixed_volume():
+    """Test Collection volume with mix of volumetric and non-volumetric objects."""
+
+    # Create volumetric objects
+    sphere = magpy.magnet.Sphere(
+        diameter=2.0, polarization=(0, 0, 1)
+    )  # volume = (4/3)π
+    cuboid = magpy.magnet.Cuboid(
+        dimension=(1.0, 2.0, 3.0), polarization=(0, 0, 1)
+    )  # volume = 6
+
+    # Create non-volumetric objects
+    dipole = magpy.misc.Dipole(moment=(1, 0, 0))  # volume = 0
+    triangle = magpy.misc.Triangle(
+        vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)], polarization=(0, 0, 1)
+    )  # volume = 0
+    sensor = magpy.Sensor()  # volume = 0
+
+    # Create mixed collection
+    collection = magpy.Collection(sphere, cuboid, dipole, triangle, sensor)
+
+    # Calculate expected volume (only volumetric objects contribute)
+    sphere_vol = (4 / 3) * np.pi * 1.0**3  # (4/3)π
+    cuboid_vol = 1.0 * 2.0 * 3.0  # 6
+    expected = sphere_vol + cuboid_vol
+
+    # Test collection total volume
+    calculated = collection.volume
+    assert abs(calculated - expected) < 1e-10
+
+
+def test_Collection_centroid_empty():
+    """Test empty Collection centroid - should return position"""
+    expected = (13, 14, 15)
+    empty_col = magpy.Collection(position=expected)
+    assert np.allclose(empty_col.centroid, expected)
+
+
+def test_Collection_centroid_with_objects():
+    """Test Collection centroid with objects - volume-weighted centroid"""
+    # Volumes: Cuboid=1, Sphere=4.189
+    expected = (0, 0, 1)  # volume-weighted centroid calculation
+    obj1 = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1), polarization=(0, 0, 1), position=(0, 0, 0)
+    )
+    obj2 = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1), polarization=(0, 0, 1), position=(0, 0, 2)
+    )
+
+    col = magpy.Collection(obj1, obj2, position=(1, 1, 1))
+    assert np.allclose(col.centroid, expected)
+
+
+def test_Collection_centroid_zero_volume():
+    """Test Collection centroid with zero-volume objects"""
+    expected = (1, 1, 1)  # should return position when all children have zero volume
+    obj1 = magpy.current.Circle(diameter=1, current=1, position=(0, 0, 0))
+    obj2 = magpy.misc.Dipole(moment=(1, 0, 0), position=(2, 0, 0))
+
+    col = magpy.Collection(obj1, obj2, position=expected)
+    assert np.allclose(col.centroid, expected)
+
+
+def test_Collection_centroid_path_object():
+    """Test object with path - centroid should match position path"""
+    expected = [(0, 0, 0), (1, 1, 1), (2, 2, 2)]
+    path_obj = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1), polarization=(0, 0, 1), position=expected
+    )
+    assert np.allclose(path_obj.centroid, expected)
