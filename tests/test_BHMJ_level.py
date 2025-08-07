@@ -754,11 +754,15 @@ def test_field_line_from_vert():
     )
 
     B = []
-    for obs, vert, curr in zip(observers, vertices, current, strict=False):
-        p1 = vert[:-1]
-        p2 = vert[1:]
-        po = np.array([obs] * (len(vert) - 1))
-        cu = np.array([curr] * (len(vert) - 1))
+    for i_obs, vert, i_curr in zip(
+        range(observers.shape[0]), vertices, range(current.shape[0]), strict=False
+    ):
+        obs = observers[i_obs, ...]
+        curr = current[i_curr, ...]
+        p1 = vert[:-1, ...]
+        p2 = vert[1:, ...]
+        po = xp.asarray([obs] * ((vert.shape[0]) - 1))
+        cu = xp.asarray([curr] * ((vert.shape[0]) - 1))
         B += [
             np.sum(
                 BHJM_current_polyline(
