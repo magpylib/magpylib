@@ -37,6 +37,8 @@ dependencies = [
     "scipy>=1.8",
     "matplotlib>=3.6",
     "plotly>=5.16",
+    "anywidget",
+    "pandas"
 ]
 
 [dependency-groups]

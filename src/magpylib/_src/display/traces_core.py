@@ -6,6 +6,7 @@
 # pylint: disable=too-many-nested-blocks
 # pylint: disable=cyclic-import
 
+import numbers
 import warnings
 from itertools import combinations, cycle
 from typing import Any
@@ -127,8 +128,24 @@ def make_Circle(obj, base=72, **kwargs) -> dict[str, Any] | list[dict[str, Any]]
                 x, y, z = vertices.T
             else:
                 t = np.linspace(0, 2 * np.pi, base)
-                x = np.cos(t) * obj.diameter / 2
-                y = np.sin(t) * obj.diameter / 2
+                x = (
+                    np.cos(t)
+                    * (
+                        obj.diameter[0]
+                        if not isinstance(obj.diameter, numbers.Number)
+                        else obj.diameter
+                    )
+                    / 2
+                )
+                y = (
+                    np.sin(t)
+                    * (
+                        obj.diameter[1]
+                        if not isinstance(obj.diameter, numbers.Number)
+                        else obj.diameter
+                    )
+                    / 2
+                )
                 z = np.zeros(x.shape)
             trace = {
                 "type": "scatter3d",

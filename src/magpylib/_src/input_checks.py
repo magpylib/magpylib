@@ -577,6 +577,38 @@ def check_format_input_obj(
     return obj_list
 
 
+def check_format_scalar_or_vector(
+    inp,
+    dims=(1,),
+    shape_m1="any",
+    sig_name=None,
+    sig_type=None,
+    length=None,
+    allow_None=False,
+    forbid_negative0=False,
+):
+    """checks rotate anchor input and return in formatted form
+    - input must be array_like or None or 0
+    """
+    if isinstance(inp, numbers.Number):
+        return check_format_input_scalar(
+            inp,
+            sig_name=sig_name,
+            sig_type=sig_type,
+            allow_None=allow_None,
+            forbid_negative=forbid_negative0,
+        )
+    return check_format_input_vector(
+        inp,
+        dims=dims,
+        shape_m1=shape_m1,
+        sig_name=sig_name,
+        sig_type=sig_type,  # "`None` or  or array_like (list, tuple, ndarray) with shape (3,)",
+        length=length,
+        allow_None=allow_None,
+    )
+
+
 ############################################################################################
 ############################################################################################
 # SHOW AND GETB CHECKS

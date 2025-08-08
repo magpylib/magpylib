@@ -193,6 +193,9 @@ def test_input_objects_current_bad(current):
         1.2,
         np.array([1, 2, 3])[1],
         True,
+        (1, 2),
+        -1,
+        -1.24,
     ],
 )
 def test_input_objects_diameter_good(diameter):
@@ -202,19 +205,22 @@ def test_input_objects_diameter_good(diameter):
     if diameter is None:
         assert src.diameter is None
     else:
+        if (
+            str(diameter) != "None"
+            and str(diameter) != "True"
+            and str(diameter) != "False"
+        ):
+            diameter = abs(np.array(diameter))
         np.testing.assert_allclose(src.diameter, diameter)
 
 
 @pytest.mark.parametrize(
     "diameter",
     [
-        (1, 2),
         [(1, 2, 3, 4)] * 2,
         "x",
         ["x", "y", "z"],
         {"woot": 15},
-        -1,
-        -1.123,
     ],
 )
 def test_input_objects_diameter_bad(diameter):
