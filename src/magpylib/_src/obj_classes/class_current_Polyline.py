@@ -174,10 +174,7 @@ class Polyline(BaseCurrent, BaseTarget):
         else:
             n_target = self.meshing
 
-        mesh, curr, tvec = target_mesh_polyline(self.vertices, self.current, n_target)
-        mesh = self.orientation.apply(mesh) + self.position
-        tvec = self.orientation.apply(tvec)
-        return mesh, curr, tvec
+        return target_mesh_polyline(self.vertices, self.current, n_target)
 
 class Line(Polyline):
     """Line is deprecated, see Polyline"""

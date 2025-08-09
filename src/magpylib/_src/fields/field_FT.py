@@ -5,6 +5,8 @@ import warnings
 from magpylib._src.fields.field_wrap_BH import getB
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.input_checks import check_dimensions
+from scipy.spatial.transform import Rotation as R
+from magpylib._src.obj_classes.class_Sensor import Sensor
 
 def check_format_input_sources(sources):
     """
@@ -471,95 +473,109 @@ def getFT2(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshrepor
     """
     # Input check targets
     targets, coll_idx = check_format_input_targets(targets)
-    n_targets = len(targets)
+    n_tgt = len(targets)
     
     # Input checks sources
     sources = check_format_input_sources(sources)
-    n_sources = len(sources)
+    n_src = len(sources)
 
-    # Path tiling of tgt paths
+    # Collect and tile up TARGET PATHS
     tgt_path_lengths = [len(tgt._position) for tgt in targets]
     src_path_lengths = [len(src._position) for src in sources]
-    path_length = max(tgt_path_lengths + src_path_lengths)
+    n_path = max(tgt_path_lengths + src_path_lengths)
 
-    tgt_paths = np.zeros((n_targets, path_length, 3)) # shape (n_targets, path_length, 3)
+    #tgt_poss = np.zeros((n_tgt, n_path, 3)) # shape (n_tgt, path_length, 3)
+    tgt_oris = np.zeros((n_tgt, n_path, 4)) # shape (n_tgt, path_length, 4)
     for i,tgt in enumerate(targets):
-        padlength = path_length - len(tgt._position)
-        tgt_paths[i] = np.pad(tgt._position, ((0,padlength), (0,0)), 'edge')
+        padlength = n_path - len(tgt._position)
+        
+        #pos = tgt._position
+        #tgt_poss[i] = np.pad(pos, ((0,padlength), (0,0)), 'edge')
 
-    # Pivot checks and tiling
-    pivot = check_format_input_pivot2(pivot, targets, path_length) # shape (n_targets, path_length, 3)
+        ori = tgt.orientation.as_quat()
+        tgt_oris[i] = np.pad(ori, ((0,padlength), (0,0)), 'edge')
 
-    print(pivot)
+    # Collect and tile up PIVOTS
+    pivot = check_format_input_pivot2(pivot, targets, n_path) # shape (n_targets, path_length, 3)
 
-    import sys
-    sys.exit()
-
-
-
-
-
-
-    # Get force types and create masks efficiently
+    # Force type masks - 2 cases: magnets and currents
     mask_magnet = np.array([tgt._force_type == "magnet" for tgt in targets])
     mask_current = np.array([tgt._force_type == "current" for tgt in targets])
 
-    # Important numbers
     n_magnets = sum(mask_magnet)  # number of magnet targets
     n_currents = sum(mask_current)  # number of current targets
 
-    # Allocate output arrays
-    FTOUT = np.zeros((2, n_sources, n_targets, 3))
+    # Allocate output arrays - use n_tgt as first dim for masking
+    FTOUT = np.zeros((n_tgt, 2, n_src, n_path, 3))
 
 
     # RUN MESHING FUNCTIONS ##############################################################
-    # Collect meshing function results - cannot separate mesh generation from generation 
-    #    of moments, lvecs, etc.
-    # Meshing functions are run now to collect all observers because the B-field is
-    #    computed for all targets at once, for efficiency reasons.
-    meshes = []
-    mesh_sizes = []
+    # Collect all outputs - cannot meaningfuly separate mesh generation from
+    #    generation of moments, lvecs, etc.
+    # Meshing functions are run at this point to collect all observers for getB
+    #    which can be computed for all targets at once.
+    sensors = []
+    mesh_sizes_all = np.zeros(n_tgt, dtype=int)
     mag_moments = []
     cur_currents = []
     cur_tvecs = []
     eps_vec = create_eps_vector(eps)
-    for tgt in targets:
+    for i,tgt in enumerate(targets):
 
         if tgt._force_type == "magnet":
             mesh, mom = tgt._generate_mesh()
-            mag_moments.append(mom)
             # if target is a magnet add 6 finite difference steps for gradient computation
             mesh = (mesh[:, np.newaxis, :] + eps_vec[np.newaxis, :, :]).reshape(-1, 3)
+            mag_moments.append(mom)
 
         if tgt._force_type == "current":
             mesh, curr, tvec = tgt._generate_mesh()
-            cur_currents.append(curr)
-            cur_tvecs.append(tvec)
 
-        meshes.append(mesh)
-        mesh_sizes.append(len(mesh))
+            n_mesh = len(mesh)
+            
+            # Tile with n_path
+            curr = np.tile(curr, n_path)
+            tvec = np.tile(tvec, (n_path, 1))
+                           
+            # Apply path-tiled rotations
+            rot_ext = R.from_quat(np.repeat(tgt_oris[i], n_mesh, axis=0))
+            tvec = rot_ext.apply(tvec)
 
+            cur_currents.append(curr.reshape(n_path, n_mesh))
+            cur_tvecs.append(tvec.reshape(n_path, n_mesh, 3))
+
+        sensors.append(Sensor(
+                    pixel=mesh,
+                    position=tgt._position,
+                    orientation=R.from_quat(tgt_oris[i]),
+                ))
+        mesh_sizes_all[i] = n_mesh
+
+    # Meshreport
     if meshreport:
         print("Mesh report:")
-        for t, m in zip(targets, mesh_sizes):
+        for t, m in zip(targets, mesh_sizes_all):
             print(f"  Target {t}: {m} points")
         print()
 
 
-    # apply orientations and positions of paths to mesh
-    # tile up everything ?
-    # ...
-    # ...
-
     # COMPUTE B FIELD ###################################################################
-    observer = np.concatenate(observer, axis=0)
-    B_all = getB(sources, observer, squeeze=False)
-    # shape (n_src, 1, 1, n_obs, 3)
 
-    # Indexing of observer and B_all arrays
-    mesh_sizes = np.array(mesh_sizes)
-    obs_ends = np.cumsum(mesh_sizes)
-    obs_starts = np.r_[0, obs_ends[:-1]]
+    # Problem: meshes of multiple targets can have different sizes, but ragged
+    #     inputs are not supported by getB.
+    # Solution1: allow ragged inputs in getB (oo)
+    # Solution2: compute instance by instance (functional)
+
+    if len(set(mesh_sizes_all)) == 1:
+        B_all = getB(sources, sensors, squeeze=False)
+        B_all = np.moveaxis(B_all, 2, 0)
+    else: # ragged inputs - eval mesh by mesh
+        B_all = [np.squeeze(getB(sources, s, squeeze=False), axis=2) for s in sensors]
+
+    # shapes: [n_tgt (list dim in case 2), n_src, n_path, n_mesh, 3]
+
+    #mesh_ends = np.cumsum(mesh_sizes)
+    #mesh_starts = np.r_[0, mesh_ends[:-1]]
 
     # COMPUTATION IDEA:
     #   The equations are very simple like F = DB.MOM, T = B x MOM.
@@ -577,10 +593,10 @@ def getFT2(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshrepor
         idx_starts = np.r_[0, idx_ends[:-1]]
 
         # Computation array allocations
-        POS = np.zeros((n_mesh_mag*n_sources, 3))   # central location of each cell
-        B = np.zeros((n_mesh_mag*n_sources, 3))     # B-field at each cell
-        DB = np.zeros((n_mesh_mag*n_sources, 3, 3)) # B-field gradient at each cell
-        MOM = np.zeros((n_mesh_mag*n_sources, 3))   # magnetic moment of each cell
+        POS = np.zeros((n_mesh_mag*n_src, 3))   # central location of each cell
+        B = np.zeros((n_mesh_mag*n_src, 3))     # B-field at each cell
+        DB = np.zeros((n_mesh_mag*n_src, 3, 3)) # B-field gradient at each cell
+        MOM = np.zeros((n_mesh_mag*n_src, 3))   # magnetic moment of each cell
 
         # BROADCASTING into computation arrays:
         #   rule: (src1 mesh1, src1 mesh2, src1 mesh3, ... src2 mesh1, src2 mesh2, ... )
@@ -640,57 +656,75 @@ def getFT2(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshrepor
 
     # CURRENTS ########################################################################
     if n_currents > 0:
+        
         # Prepare index ranges for broadcasting
-        mesh_sizes_cur = mesh_sizes[mask_current]
-        n_mesh_cur = sum(mesh_sizes_cur)
-        idx_ends = np.cumsum(mesh_sizes_cur)
+        mesh_sizes = mesh_sizes_all[mask_current]
+        n_mesh = sum(mesh_sizes)
+        idx_ends = np.cumsum(mesh_sizes)
         idx_starts = np.r_[0, idx_ends[:-1]]
+        idx_bs = np.cumsum(mask_current, dtype=int)-1 # index of current tgt in B_all
+        
+        # Use broadcasting instead of concatenate (better memory and speed)
+        B = np.empty((n_src, n_path, n_mesh, 3))  # B-field at cell location
+        TVEC = np.empty((n_src, n_path, n_mesh, 3))  # current path tangential vectors       
+        CURR = np.empty((n_src, n_path, n_mesh))     # current
+        if pivot is not None:
+            POS = np.empty((n_src, n_path, n_mesh, 3))  # central location of each cell
+            PIV = np.empty((n_src, n_mesh, n_path, 3))  # pivot points
 
-        # Computation array allocations
-        POS = np.zeros((n_mesh_cur*n_sources, 3))  # central location of each cell
-        B = np.zeros((n_mesh_cur*n_sources, 3))    # B-field at POS
-        TVEC = np.zeros((n_mesh_cur*n_sources, 3)) # current path tangential vectors
-        CURR = np.zeros((n_mesh_cur*n_sources,))   # current
+        # loop over targets that are currents
+        for i in range(n_currents):
+            start = idx_starts[i]
+            end = idx_ends[i]
+            ib = idx_bs[i]  
+            tvec = cur_tvecs[i]    # tangential vectors of this tgt
+            curr = cur_currents[i] # current of this tgt
 
-        # BROADCASTING into computation arrays:
-        #   rule: (src1 mesh1, src1 mesh2, src1 mesh3, ... src2 mesh1, src2 mesh2, ... )
-        for i, (curr, tvec) in enumerate(zip(cur_currents, cur_tvecs)):
-            # range in observer and B arrays
-            start = obs_starts[mask_current][i]
-            end = obs_ends[mask_current][i]
+            B[:,:,start:end] = B_all[ib]
+            TVEC[:,:,start:end] = np.broadcast_to(tvec, (n_src, n_path, end-start, 3))
+            CURR[:,:,start:end] = np.broadcast_to(curr, (n_src, n_path, end-start))
 
-            for j in range(n_sources):
-                # range in computation arrays
-                ids = idx_starts[i] + n_mesh_cur*j
-                ide = idx_ends[i] + n_mesh_cur*j
+            if pivot is not None:
+                sens = sensors[ib]
+                for j in range(n_path):
+                    mesh = sens.orientation[j].apply(sens.pixel[j]) + sens.position[j]
+                    POS[:, j, start:end] = np.broadcast_to(mesh, (n_src, end-start, 3))
+                piv = pivot[mask_current][i]
+                PIV[:, start:end] = np.broadcast_to(piv, (n_src, end-start, n_path, 3))
+                # subtract piv directly from POS to avoid creating another array
 
-                POS[ids : ide] = observer[start : end]
-                B[ids : ide] = B_all[j, 0, 0, start : end]
-                TVEC[ids : ide] = tvec
-                CURR[ids : ide] = curr
+        # Reshape arrays for 2D computation
+        B = B.reshape(-1,3)
+        TVEC = TVEC.reshape(-1,3)
+        CURR = CURR.reshape(-1)
 
         # ACTUAL FORCE AND TORQUE COMPUTATION
-        force = (CURR * np.cross(TVEC, B).T).T
-        torque = np.zeros_like(force)
+        F = (CURR * np.cross(TVEC, B).T).T
+        T = np.zeros_like(F)
 
-        # Add pivot point contribution to torque
+        # Add pivot point contribution to torquw
         if pivot is not None:
-            PIV = np.tile(np.repeat(pivot[mask_current], mesh_sizes_cur, axis=0), (n_sources, 1))
-            torque += np.cross(POS - PIV, force)
+            PIV = PIV.swapaxes(1, 2) # shape (n_src, n_path, n_mesh, 3)
+            POS = POS.reshape(-1, 3)
+            PIV = PIV.reshape(-1, 3)
+            T += np.cross(POS - PIV, F)
 
-        # Sum over mesh cells
-        idx_starts_all = np.concatenate([idx_starts + n_mesh_cur*j for j in range(n_sources)])
-        F = np.add.reduceat(force, idx_starts_all, axis=0)
-        T = np.add.reduceat(torque, idx_starts_all, axis=0)
+        F = F.reshape(n_src, n_path, n_mesh, 3)
+        T = T.reshape(n_src, n_path, n_mesh, 3)
 
-        # Broadcast into output arrays
-        FTOUT[0, :, mask_current] = F.reshape(n_sources, n_currents, 3).transpose(1, 0, 2)
-        FTOUT[1, :, mask_current] = T.reshape(n_sources, n_currents, 3).transpose(1, 0, 2)
+        # Sum over mesh cells of each target
+        F = np.add.reduceat(F, idx_starts, axis=2)
+        T = np.add.reduceat(T, idx_starts, axis=2)
+
+        FTOUT[mask_current, 0] = np.moveaxis(F, 2, 0)
+        FTOUT[mask_current, 1] = np.moveaxis(T, 2, 0)
 
     # FINALIZE OUTPUT ##############################################################
 
+    FTOUT = np.moveaxis(FTOUT, 0, 3)
+
     # Sum up Collections
-    FTOUT = np.add.reduceat(FTOUT, coll_idx, axis=2)
+    FTOUT = np.add.reduceat(FTOUT, coll_idx, axis=3)
 
     if squeeze:
         return np.squeeze(FTOUT)
@@ -707,7 +741,7 @@ if __name__ == "__main__":
 
     src1 = Tetrahedron(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)], magnetization=(1e6, 0, 0))
     src2 = Tetrahedron(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)], magnetization=(0, 1e6, 0))
-    tgt1 = Polyline(vertices=[(2, 2, 2), (3, 3, 3)], current=1.0, meshing=10)
+    tgt1 = Polyline(vertices=[(2, 2, 2), (3, 3, 3), (3, 3, -3)], current=1.0, meshing=20)
     tgt2 = Polyline(vertices=[(2, 2, 2), (3, 3, 3)], current=1.0, meshing=10)
 
     src1.position = [(1,1,1)] * 5
