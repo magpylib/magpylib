@@ -141,10 +141,7 @@ class Circle(BaseCurrent, BaseTarget):
     def _generate_mesh(self):
         """Generate mesh for force computation."""
         # Tests in getFT ensure that meshing, dimension and excitation are set
-        mesh, curr, tvec = target_mesh_circle(self.diameter/2, self.meshing, self.current)
-        mesh = self.orientation.apply(mesh) + self.position
-        tvec = self.orientation.apply(tvec)
-        return mesh, curr, tvec
+        return target_mesh_circle(self.diameter/2, self.meshing, self.current)
 
     def _validate_meshing(self, value):
         """ Circle makes only sense with at least 4 mesh points."""

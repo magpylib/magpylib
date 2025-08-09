@@ -149,7 +149,7 @@ def create_eps_vector(eps):
     )
 
 
-def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport=False):
+def getFT_NOPATH(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport=False):
     """
     Compute magnetic force and torque acting on the targets that are exposed
     to the magnetic field of the sources.
@@ -428,7 +428,7 @@ def check_format_input_pivot2(pivot, targets, n_path):
     raise ValueError(msg)
 
 
-def getFT2(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport=False):
+def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport=False):
     """
     Compute magnetic force and torque acting on the targets that are exposed
     to the magnetic field of the sources.
@@ -486,14 +486,16 @@ def getFT2(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshrepor
 
     #tgt_poss = np.zeros((n_tgt, n_path, 3)) # shape (n_tgt, path_length, 3)
     tgt_oris = np.zeros((n_tgt, n_path, 4)) # shape (n_tgt, path_length, 4)
+    
+
     for i,tgt in enumerate(targets):
         padlength = n_path - len(tgt._position)
         
         #pos = tgt._position
         #tgt_poss[i] = np.pad(pos, ((0,padlength), (0,0)), 'edge')
 
-        ori = tgt.orientation.as_quat()
-        tgt_oris[i] = np.pad(ori, ((0,padlength), (0,0)), 'edge')
+        ori = np.atleast_2d(tgt.orientation.as_quat())
+        tgt_oris[i] = np.pad(ori, ((0,padlength), (0,0)), 'edge')    
 
     # Collect and tile up PIVOTS
     pivot = check_format_input_pivot2(pivot, targets, n_path) # shape (n_targets, path_length, 3)
@@ -687,7 +689,7 @@ def getFT2(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshrepor
             if pivot is not None:
                 sens = sensors[ib]
                 for j in range(n_path):
-                    mesh = sens.orientation[j].apply(sens.pixel[j]) + sens.position[j]
+                    mesh = sens._orientation[j].apply(sens.pixel) + sens._position[j]
                     POS[:, j, start:end] = np.broadcast_to(mesh, (n_src, end-start, 3))
                 piv = pivot[mask_current][i]
                 PIV[:, start:end] = np.broadcast_to(piv, (n_src, end-start, n_path, 3))
@@ -702,7 +704,7 @@ def getFT2(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshrepor
         F = (CURR * np.cross(TVEC, B).T).T
         T = np.zeros_like(F)
 
-        # Add pivot point contribution to torquw
+        # Add pivot point contribution to torque
         if pivot is not None:
             PIV = PIV.swapaxes(1, 2) # shape (n_src, n_path, n_mesh, 3)
             POS = POS.reshape(-1, 3)
@@ -753,4 +755,58 @@ if __name__ == "__main__":
     targets = [tgt1, tgt2]
     #print([t.centroid for t in targets])
 
-    getFT2(sources, targets, pivot=[[(1,2,3)]*5, [(4,5,6)]*5])
+    #getFT(sources, targets, pivot=[[(1,2,3)]*5, [(4,5,6)]*5])
+
+    import magpylib as magpy
+    def test_force_physics_ana_current_in_homo_field():
+        """
+        for a current loop in a homogeneous field the following holds
+        F = 0
+        T = current * loop_surface * field_normal_component
+        """
+        # circular loop
+        cloop = magpy.current.Circle(diameter=2, current=-1, meshing=20)
+
+        # homogeneous field
+        def func(field, observers):  # noqa:  ARG001
+            return np.zeros_like(observers, dtype=float) + np.array((1, 0, 0))
+
+        hom = magpy.misc.CustomSource(field_func=func)
+
+        # # without pivot
+        F, T = magpy.getFT(hom, cloop, pivot=None)
+        assert np.amax(abs(F)) < 1e-14
+        assert np.amax(abs(T)) == 0
+
+        # with pivot
+        F, T = magpy.getFT(hom, cloop, pivot=cloop.position)
+        assert np.amax(abs(F)) < 1e-14
+        assert abs(T[0]) < 1e-14
+        assert abs(T[1] + np.pi) < 1e-11
+        assert abs(T[2]) < 1e-14
+
+
+
+        ##############################################################
+
+        # rectangular loop
+        verts = [(-1, -1, 0), (1, -1, 0), (1, 1, 0), (-1, 1, 0), (-1, -1, 0)]
+        rloop = magpy.current.Polyline(
+            current=1,
+            vertices=verts,
+        )
+        rloop.meshing = 4
+
+        # without pivot
+        F, T = magpy.getFT(hom, rloop, pivot=None)
+        assert np.amax(abs(F)) < 1e-14
+        assert np.amax(abs(T)) == 0
+
+        # with pivot
+        F, T = magpy.getFT(hom, rloop, pivot=rloop.position)
+        T *= -1  # bad sign at initial test design
+        assert np.amax(abs(F)) < 1e-14
+        assert abs(T[0]) < 1e-14
+        assert abs(T[1] + 4) < 1e-12
+        assert abs(T[2]) < 1e-14
+    test_force_physics_ana_current_in_homo_field()

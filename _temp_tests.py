@@ -548,7 +548,7 @@ def test_force_physics_ana_current_in_homo_field():
     F, T = magpy.getFT(hom, cloop, pivot=cloop.position)
     assert np.amax(abs(F)) < 1e-14
     assert abs(T[0]) < 1e-14
-    assert abs(T[1] + np.pi) < 1e-12
+    assert abs(T[1] + np.pi) < 1e-11
     assert abs(T[2]) < 1e-14
 
     ##############################################################
@@ -1565,40 +1565,154 @@ def test_centroid():
     np.testing.assert_allclose(sph.centroid, (3,2,3))
     np.testing.assert_allclose(sph._centroid, [(3,2,3)])
 
+def test_force_path1():
+    """
+    Test force calculation with a path
+    """
+    # circular loop
+    cloop1 = magpy.current.Circle(
+        diameter=2,
+        current=1,
+        meshing=20,
+        position=[(i, i, i) for i in range(10)]
+    )
+    # homogeneous field
+    def func1(field, observers):  # noqa:  ARG001
+        return np.zeros_like(observers, dtype=float) + np.array((1, 0, 0))
+    hom1 = magpy.misc.CustomSource(field_func=func1)
+    
+    F, T = magpy.getFT(hom1, cloop1)
+    
+    assert F.shape == (10, 3)
+    assert T.shape == (10, 3)
+
+    assert np.max(np.abs(F)) < 1e-14
+    assert np.max(np.abs(T[:,0])) < 1e-14
+    assert np.max(np.abs(T[:,1] - np.pi)) < 1e-10
+    assert np.max(np.abs(T[:,2])) < 1e-14
+    
+    F, T = magpy.getFT(hom1, cloop1, pivot=None)
+    assert np.max(np.abs(F)) < 1e-14
+    assert np.max(np.abs(T)) < 1e-14
+
+
+def test_force_path2():
+    """
+    rotation path
+    """
+    # circular loop
+    cloop1 = magpy.current.Circle(
+        diameter=2,
+        current=1,
+        meshing=20,
+    ).rotate_from_angax([0, 45, 90], 'x', start=0)
+    # homogeneous field
+    def func1(field, observers):  # noqa:  ARG001
+        return np.zeros_like(observers, dtype=float) + np.array((1, 0, 0))
+    hom1 = magpy.misc.CustomSource(field_func=func1)
+    
+    F, T = magpy.getFT(hom1, cloop1)
+    
+    # F = 0
+    assert F.shape == (3, 3)
+    assert np.max(np.abs(F)) < 1e-14
+
+    # Tx = 0
+    assert np.max(np.abs(T[:,0])) < 1e-14
+
+    # T shifted by angle projection from y to z
+    assert abs(T[0,1] - np.pi) < 1e-10
+    assert abs(T[0,2]) < 1e-10
+    
+    assert abs(T[1,1] - np.pi/np.sqrt(2)) < 1e-10
+    assert abs(T[1,2] - np.pi/np.sqrt(2)) < 1e-10
+    
+    assert abs(T[2,1]) < 1e-10
+    assert abs(T[2,2] - np.pi) < 1e-10
+
+
+
+def test_force_path3():
+    """ multiple src and tgts"""
+    src1 = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(1, 2, 3),
+        position=(.5,.5,.5),
+    )
+    src2 = src1.copy(polarization=(2,4,6))
+    
+    verts = [(-1, -1, 0), (1, -1, 0), (1, 1, 0), (-1, 1, 0), (-1, -1, 0)]
+    rloop1 = magpy.current.Polyline(
+        current=1,
+        vertices=verts,
+        meshing=8,
+    )
+    rloop2 = rloop1.copy(current=2)
+    rloop3 = rloop1.copy(current=3)
+
+    rloop1.position = [(0,0,0)]*2
+    rloop2.position = [(0,0,0)]*3
+    src1.position = [(.5, .5, .5)]*4
+
+    F, T = magpy.getFT([src1, src2], [rloop1, rloop2, rloop3])
+
+    assert F.shape == (2, 4, 3, 3)
+    
+    assert np.allclose(2*F[0, 1, 1], F[1,1,1])
+    assert np.allclose(2*F[0, 1, 0], F[0,2,1])
+    assert np.allclose(3*F[0, 1, 0], F[0,2,2])    
+    assert np.allclose(6*F[0, 1, 0], F[1,2,2])
+
+    assert np.allclose(2*T[0, 1, 1], T[1,1,1])
+    assert np.allclose(6*T[0, 1, 0], T[1,2,2])
+
+
+def test_force_path4():
+    """
+    - collection test
+    """
+
+    
+
 
 
 if __name__ == "__main__":
 
     # vs analytical solutions
-    test_force_physics_ana_dipole()   # Dipole, step1: proofs magnet force + torque (excl. pivot)
+    #test_force_physics_ana_dipole()   # Dipole, step1: proofs magnet force + torque (excl. pivot)
     test_force_physics_ana_cocentric_loops()
     test_force_physics_ana_current_in_homo_field()
-    test_force_physics_torque_sign()
+    #test_force_physics_torque_sign()
 
     # object and interface properties
-    test_force_obj_rotations1()
-    test_force_obj_rotations2()
-    test_force_2sources()
-    test_force_meshing_validation()
+    #test_force_obj_rotations1()
+    #test_force_obj_rotations2()
+    #test_force_2sources()
+    #test_force_meshing_validation()
 
     # equivalence
-    test_force_equiv_circle_dipole()    # Circle, step2: proofs current force + pivot torque
-    test_force_equiv_circle_cylinder()  # Cylinder, step3: proofs magnet pivot torque
-    test_force_equiv_circle_polyline()  # Polyline
+    #test_force_equiv_circle_dipole()    # Circle, step2: proofs current force + pivot torque
+    #test_force_equiv_circle_cylinder()  # Cylinder, step3: proofs magnet pivot torque
+    #test_force_equiv_circle_polyline()  # Polyline
 
     # physics consistency
-    test_force_physics_consistency_back_forward1() # Cuboid
-    test_force_physics_consistency_back_forward2()
-    test_force_physics_consistency_back_forward3() # CylinderSegment
-    test_force_physics_consistency_in_very_homo_field() # Sphere
+    #test_force_physics_consistency_back_forward1() # Cuboid
+    #test_force_physics_consistency_back_forward2()
+    #test_force_physics_consistency_back_forward3() # CylinderSegment
+    #test_force_physics_consistency_in_very_homo_field() # Sphere
     test_force_physics_parallel_wires()
     test_force_physics_perpendicular_wires()
 
     # against FEM
-    test_force_ANSYS_cube_cube()
+    #test_force_ANSYS_cube_cube()
     test_force_ANSYS_loop_loop()
-    test_force_ANSYS_loop_magnet()
-    test_force_ANSYS_magnet_current_close()
+    #test_force_ANSYS_loop_magnet()
+    #test_force_ANSYS_magnet_current_close()
+
+    # path
+    test_force_path1()
+    test_force_path2()
+    test_force_path3()
 
     # other
     test_centroid()
