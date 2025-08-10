@@ -1669,11 +1669,38 @@ def test_force_path3():
 
 def test_force_path4():
     """
-    - collection test
+    with collection
     """
-
+    src1 = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(1, 2, 3),
+        position=(.5,.5,.5),
+    )
+    src2 = src1.copy(polarization=(2,4,6))
     
+    loop1 = magpy.current.Circle(
+        current=1,
+        diameter=3,
+        meshing=20,
+    )
+    loop2 = loop1.copy(current=2)
+    loop3 = loop1.copy(current=3)
+    loop4 = loop1.copy(current=4)
+    loop5 = loop1.copy(current=5)
 
+    coll1 = magpy.Collection(loop1, loop2)
+    coll1.position=[(0,0,0)]*4
+    
+    coll2 = magpy.Collection(loop3, loop4)
+    coll2.position=[(0,0,0)]*6
+
+    F,T = magpy.getFT([src1, src2], [coll1, loop1, coll2, loop5])
+
+    assert F.shape == (2, 6, 4, 3)
+    assert np.allclose(F[0, 0, 0]*2*1, 1*1*F[1,0,0])
+    assert np.allclose(F[0, 2, 0]*2*7, 1*3*F[1,4,2])
+    assert np.allclose(T[1, 2, 1]*1*5, 2*1*T[0,4,3])
+    
 
 
 if __name__ == "__main__":
@@ -1713,6 +1740,7 @@ if __name__ == "__main__":
     test_force_path1()
     test_force_path2()
     test_force_path3()
+    test_force_path4()
 
     # other
     test_centroid()

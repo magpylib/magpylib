@@ -244,7 +244,6 @@ def target_mesh_circle(r, n, i0):
     currents np.ndarray, shape (n,) - electric current at each edge
     tvecs np.ndarray, shape (n, 3) - tangent vectors (=edge vectors)
     """
-
     # construct polygon with same area as circle
     r1 = r * np.sqrt( (2*np.pi) / (n * np.sin(2*np.pi/n)) )
     vx =  r1 * np.cos(2 * np.pi * np.arange(n+1) / n)
@@ -265,7 +264,7 @@ def target_mesh_circle(r, n, i0):
     return mesh, currents, tvecs
 
 
-def target_mesh_polyline(vertices, i0, meshing):
+def target_mesh_polyline(vertices, i0, n_points):
     """
     Polyline meshing in the local object coordinates
 
@@ -273,9 +272,9 @@ def target_mesh_polyline(vertices, i0, meshing):
     ----------
     vertices: array_like, shape (n, 3) - vertices of the polyline
     i0: float - electric current
-    meshing: int >= n_segments
+    n_points: int >= n_segments
 
-    If meshing is int, the algorithm trys to distribute these points evenly
+    If n_points is int, the algorithm trys to distribute these points evenly
     over the polyline, enforcing at least one point per segment.
 
     Returns
@@ -284,11 +283,8 @@ def target_mesh_polyline(vertices, i0, meshing):
     currents np.ndarray, shape (m,) - electric current at each edge
     tvecs np.ndarray, shape (m, 3) - tangent vectors (=edge vectors)
     """
-    if isinstance(meshing, int):
-        n_points = meshing
-
     n_segments = len(vertices) - 1
-    
+
     # Calculate segment lengths
     segment_vectors = vertices[1:] - vertices[:-1]
     segment_lengths = np.linalg.norm(segment_vectors, axis=1)

@@ -85,7 +85,6 @@ class Polyline(BaseCurrent, BaseTarget):
     >>> with np.printoptions(precision=3):
     ...     print(H)
     [3.161 3.161 0.767]
-
     """
 
     # pylint: disable=dangerous-default-value
