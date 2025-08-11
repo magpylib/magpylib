@@ -535,9 +535,6 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     n_magnet = sum(mask_magnet)
     n_current = sum(mask_current)
 
-    # Allocate output arrays: use n_tgt as first dim for masking
-    FTOUT = np.zeros((n_tgt, 2, n_src, n_path, 3))
-
     # RUN MESHING FUNCTIONS ###################################################
     #  - collect all meshing infos for later broadcasting
     #  - compute getB in one go
@@ -586,6 +583,9 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         B_all = np.moveaxis(B_all, 2, 0)
     else: # ragged inputs - eval mesh by mesh
         B_all = [np.squeeze(getB(sources, s, squeeze=False), axis=2) for s in sensors]
+
+    # Allocate output array
+    FTOUT = np.zeros((n_tgt, 2, n_src, n_path, 3))
 
     # MAGNETS ########################################################################
     if n_magnet > 0:
@@ -662,44 +662,42 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     if n_current > 0:
         
         # Prepare index ranges for broadcasting
+        idx_of_currents = np.where(mask_current)[0]
         mesh_sizes = mesh_sizes_all[mask_current]
         n_mesh = sum(mesh_sizes)
         idx_ends = np.cumsum(mesh_sizes)
         idx_starts = np.r_[0, idx_ends[:-1]]
-        idx_bs = np.cumsum(mask_current, dtype=int)-1 # index of current tgt in B_all
         
-        # Use broadcasting instead of concatenate (better memory and speed)
-        B = np.empty((n_src, n_path, n_mesh, 3))  # B-field at cell location
-        TVEC = np.empty((n_src, n_path, n_mesh, 3))  # current path tangential vectors       
+        # Computation array allocation
+        #  - use broadcasting instead of concatenate (better memory and speed)
+        B = np.empty((n_src, n_path, n_mesh, 3))     # B-field at cell location
+        TVEC = np.empty((n_src, n_path, n_mesh, 3))  # current tangential vectors
         CURR = np.empty((n_src, n_path, n_mesh))     # current
         if pivot is not None:
-            POS = np.empty((n_src, n_path, n_mesh, 3))  # central location of each cell
-            PIV = np.empty((n_src, n_mesh, n_path, 3))  # pivot points
+            POS_PIV = np.empty((n_src, n_path, n_mesh, 3))  # relative cell position pos-piv
         
-        # Broadcast loop over targets that are currents
+        # Broadcasting
         for i in range(n_current):
-            start = idx_starts[i]
-            end = idx_ends[i]
-            ib = idx_bs[i]  
-            tvec = tangvecs[i]    # tangential vectors of this tgt
-            curr = currents[i] # current of this tgt
-            
-            sens = sensors[ib]
+            ii = idx_of_currents[i]
 
-            B[:,:,start:end] = B_all[ib]
+            start = idx_starts[i] # mesh start index
+            end = idx_ends[i]     # mesh end index
+
+            sens = sensors[ii] # sensor representing this mesh
+            tvec = tangvecs[i] # tangential vectors of this mesh
+            curr = currents[i] # currents of this mesh
+
+            B[:,:,start:end] = B_all[ii]
             CURR[:,:,start:end] = np.broadcast_to(curr, (n_src, n_path, end-start))
             
             for j in range(n_path):
                 tvec_rot = sens._orientation[j].apply(tvec)
                 TVEC[:, j, start:end] = np.broadcast_to(tvec_rot, (n_src, end-start, 3))
             
-            if pivot is not None:
-                for j in range(n_path):
+                if pivot is not None:
                     mesh = sens._orientation[j].apply(sens.pixel) + sens._position[j]
-                    POS[:, j, start:end] = np.broadcast_to(mesh, (n_src, end-start, 3))
-                piv = pivot[mask_current][i]
-                PIV[:, start:end] = np.broadcast_to(piv, (n_src, end-start, n_path, 3))
-                # subtract piv directly from POS to avoid creating another array
+                    pos_piv = mesh - pivot[ii,j]
+                    POS_PIV[:, j, start:end] = np.broadcast_to(pos_piv, (n_src, end-start, 3))
 
         # Reshape arrays for 2D computation
         B = B.reshape(-1,3)
@@ -708,21 +706,27 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
         # ACTUAL FORCE AND TORQUE COMPUTATION
         F = (CURR * np.cross(TVEC, B).T).T
-        T = np.zeros_like(F)
 
-        # Add pivot point contribution to torque
-        if pivot is not None:
-            PIV = PIV.swapaxes(1, 2) # shape (n_current, n_path, n_mesh, 3)
-            POS = POS.reshape(-1, 3)
-            PIV = PIV.reshape(-1, 3)
-            T += np.cross(POS - PIV, F)
+        if pivot is None:
+            T = np.zeros_like(F)
+        else:
+            POS_PIV = POS_PIV.reshape(-1, 3)
+            T = np.cross(POS_PIV, F)
 
         F = F.reshape(n_src, n_path, n_mesh, 3)
         T = T.reshape(n_src, n_path, n_mesh, 3)
 
-        # Sum over mesh cells of each target
+        # Sum over mesh cells of each target -> (n_src, n_path, n_tgt, 3)
         F = np.add.reduceat(F, idx_starts, axis=2)
         T = np.add.reduceat(T, idx_starts, axis=2)
+
+        #FTOUT2 = np.zeros((2, n_src, n_path, n_tgt, 3))
+
+        #print(FTOUT2.shape)
+        #print(FTOUT2[0, :, :, mask_current,:].shape)
+        #FTOUT2[0, :, :, mask_current,:] = F
+
+
 
         FTOUT[mask_current, 0] = np.moveaxis(F, 2, 0)
         FTOUT[mask_current, 1] = np.moveaxis(T, 2, 0)
