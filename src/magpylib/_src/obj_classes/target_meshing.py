@@ -240,9 +240,11 @@ def target_mesh_circle(r, n, i0):
 
     Returns
     -------
-    mesh np.ndarray, shape (n, 3) - central edge positions
-    currents np.ndarray, shape (n,) - electric current at each edge
-    tvecs np.ndarray, shape (n, 3) - tangent vectors (=edge vectors)
+    dict: {
+        "pts": np.ndarray, shape (n, 3) - central edge positions
+        "currents": np.ndarray, shape (n,) - electric current at each edge
+        "tvecs": np.ndarray, shape (n, 3) - tangent vectors (=edge vectors)
+    }
     """
     # construct polygon with same area as circle
     r1 = r * np.sqrt( (2*np.pi) / (n * np.sin(2*np.pi/n)) )
@@ -257,11 +259,17 @@ def target_mesh_circle(r, n, i0):
     tx = vx[1:] - vx[:-1]
     ty = vy[1:] - vy[:-1]
 
-    mesh = np.column_stack((midx, midy, midz))
+    pts = np.column_stack((midx, midy, midz))
     tvecs = np.column_stack((tx, ty, midz))
     currents = np.full(n, i0)
 
-    return mesh, currents, tvecs
+    mesh_dict = {
+        "pts": pts,
+        "currents": currents,
+        "tvecs": tvecs
+    }
+
+    return mesh_dict
 
 
 def target_mesh_polyline(vertices, i0, n_points):
@@ -279,9 +287,11 @@ def target_mesh_polyline(vertices, i0, n_points):
 
     Returns
     -------
-    mesh np.ndarray, shape (m, 3) - central edge positions
-    currents np.ndarray, shape (m,) - electric current at each edge
-    tvecs np.ndarray, shape (m, 3) - tangent vectors (=edge vectors)
+    dict: {
+        "pts": np.ndarray, shape (m, 3) - central segment positions
+        "currents": np.ndarray, shape (m,) - electric current at each segment
+        "tvecs": np.ndarray, shape (m, 3) - tangent vectors (=segment vectors)
+    }
     """
     n_segments = len(vertices) - 1
 
@@ -312,15 +322,21 @@ def target_mesh_polyline(vertices, i0, n_points):
         parts[idx:idx+n_pts] = [(2*j + 1) / (2 * n_pts) for j in range(n_pts)]
         idx += n_pts
 
-    mesh = np.repeat(segment_vectors, points_per_segment, axis=0)
-    mesh = mesh * parts[:, np.newaxis]
-    mesh += np.repeat(vertices[:-1], points_per_segment, axis=0)  # add starting point of each segment
+    pts = np.repeat(segment_vectors, points_per_segment, axis=0)
+    pts = pts * parts[:, np.newaxis]
+    pts += np.repeat(vertices[:-1], points_per_segment, axis=0)  # add starting point of each segment
 
     tvecs = np.repeat(segment_vectors/points_per_segment[:, np.newaxis], points_per_segment, axis=0)
 
     currents = np.full(n_points, i0)
 
-    return mesh, currents, tvecs
+    mesh_dict = {
+        "pts": pts,
+        "currents": currents,
+        "tvecs": tvecs
+    }
+
+    return mesh_dict
 
 
 def create_grid(dimensions, spacing):

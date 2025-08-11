@@ -528,51 +528,41 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     #  - return shape (n_tgt, n_path, 3)
     pivot = check_format_input_pivot(pivot, targets, n_path)
 
-    # Force type masks
-    mask_magnet = np.array([tgt._force_type == "magnet" for tgt in targets])
-    mask_current = np.array([tgt._force_type == "current" for tgt in targets])
-
-    n_magnet = sum(mask_magnet)
-    n_current = sum(mask_current)
-
     # RUN MESHING FUNCTIONS ###################################################
-    #  - collect all meshing infos for later broadcasting
-    #  - compute getB in one go
-    sensors, moments, currents, tangvecs = [], [], [], []
-    eps_vec = create_eps_vector(eps)
-    mesh_sizes_all = np.zeros(n_tgt, dtype=int)
+    #  - collect all meshing infos and prepare for later broadcasting
 
-    for i,tgt in enumerate(targets):
+    meshes = [tgt._generate_mesh() for tgt in targets]
 
-        if tgt._force_type == "magnet":
-            mesh, mom = tgt._generate_mesh()
-            # if target is a magnet add 6 finite difference steps for gradient computation
-            mesh = (mesh[:, np.newaxis, :] + eps_vec[np.newaxis, :, :]).reshape(-1, 3)
-            moments.append(mom)
-
-        if tgt._force_type == "current":
-            mesh, curr, tvec = tgt._generate_mesh()
-            # shapes: (n_mesh,3), (n_mesh,), (n_mesh,3)
-            tangvecs.append(tvec)
-            currents.append(curr)
-            # REPLACE WITH DICT ? ELIMINATE _force_type ?
-
-        # Mesh -> Sensor pixel: apply path padding
-        padlength = n_path - len(tgt._position)
-        padded_path = np.pad(tgt._position, ((0,padlength), (0,0)), 'edge')
-        sensors.append(Sensor(
-                    pixel=mesh,
-                    position=padded_path,
-                    orientation=tgt._orientation,
-                ))
-        mesh_sizes_all[i] = len(mesh)
-
-    # Meshreport
+    mesh_sizes_all = np.array([len(m["pts"]) for m in meshes])
     if meshreport:
         print("Mesh report:")
         for t, m in zip(targets, mesh_sizes_all):
             print(f"  Target {t}: {m} points")
         print()
+    
+    mask_current = np.array(["currents" in m for m in meshes])
+    mask_magnet = np.array(["moments" in m for m in meshes])
+
+    n_magnet = sum(mask_magnet)
+    n_current = sum(mask_current)
+    
+    # Add 6 FD steps for magnet gradient field computation
+    eps_vec = create_eps_vector(eps)
+    for i in np.where(mask_magnet)[0]:
+        meshes[i]["pts"] = (meshes[i]["pts"][:, np.newaxis, :] + eps_vec[np.newaxis, :, :]).reshape(-1, 3)
+
+    # Replace pts by sensor, transfer tgt path, apply padding
+    for tgt,m in zip(targets, meshes):
+        padlength = n_path - len(tgt._position)
+        padded_path = np.pad(tgt._position, ((0,padlength), (0,0)), 'edge')
+        m["pts"] = Sensor(
+                    pixel=m["pts"],
+                    position=padded_path,
+                    orientation=tgt._orientation,
+        )
+
+    # Allocate output array
+    FTOUT = np.zeros((2, n_src, n_path, n_tgt, 3))
 
     # COMPUTE B FIELD ###################################################################
     #  - B_all shape  (n_tgt, n_src, n_path, n_mesh, 3)
@@ -580,14 +570,13 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     #    sensor separately. in this case the first dim is a list
     #  - Improve this computation when getB allows ragged inputs
 
+    sensors = [m["pts"] for m in meshes]
+
     if len(set(mesh_sizes_all)) == 1:
         B_all = getB(sources, sensors, squeeze=False)
         B_all = np.moveaxis(B_all, 2, 0)
     else: # ragged inputs - eval mesh by mesh
         B_all = [np.squeeze(getB(sources, s, squeeze=False), axis=2) for s in sensors]
-
-    # Allocate output array
-    FTOUT = np.zeros((2, n_src, n_path, n_tgt, 3))
 
     # MAGNETS ########################################################################
     if n_magnet > 0:
@@ -662,34 +651,28 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
     # CURRENT COMPUTATION #########################################################
     if n_current > 0:
-        
-        # Prepare index ranges for broadcasting
-        idx_of_currents = np.where(mask_current)[0]
-        mesh_sizes = mesh_sizes_all[mask_current]
-        n_mesh = sum(mesh_sizes)
-        idx_ends = np.cumsum(mesh_sizes)
-        idx_starts = np.r_[0, idx_ends[:-1]]
-        
+
         # Computation array allocation
         #  - use broadcasting instead of concatenate (better memory and speed)
+        mesh_sizes = mesh_sizes_all[mask_current]
+        n_mesh = sum(mesh_sizes)
+
         B = np.empty((n_src, n_path, n_mesh, 3))     # B-field at cell location
         TVEC = np.empty((n_src, n_path, n_mesh, 3))  # current tangential vectors
         CURR = np.empty((n_src, n_path, n_mesh))     # current
         if pivot is not None:
-            POS_PIV = np.empty((n_src, n_path, n_mesh, 3))  # relative cell position pos-piv
+            POS_PIV = np.empty((n_src, n_path, n_mesh, 3))  # relative cell pos to pivot
         
-        # Broadcasting
-        for i in range(n_current):
-            ii = idx_of_currents[i]
+        # Broadcasting and application of pos & ori
+        idx_all = np.where(mask_current)[0]
+        idx_ends = np.cumsum(mesh_sizes)
+        idx_starts = np.r_[0, idx_ends[:-1]]
+        for start, end, i in zip(idx_starts, idx_ends, idx_all):
+            sens = meshes[i]["pts"]
+            tvec = meshes[i]["tvecs"]
+            curr = meshes[i]["currents"]
 
-            start = idx_starts[i] # mesh start index
-            end = idx_ends[i]     # mesh end index
-
-            sens = sensors[ii] # sensor representing this mesh
-            tvec = tangvecs[i] # tangential vectors of this mesh
-            curr = currents[i] # currents of this mesh
-
-            B[:,:,start:end] = B_all[ii]
+            B[:,:,start:end] = B_all[i]
             CURR[:,:,start:end] = np.broadcast_to(curr, (n_src, n_path, end-start))
             
             for j in range(n_path):
@@ -697,28 +680,19 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
                 TVEC[:, j, start:end] = np.broadcast_to(tvec_rot, (n_src, end-start, 3))
             
                 if pivot is not None:
-                    mesh = sens._orientation[j].apply(sens.pixel) + sens._position[j]
-                    pos_piv = mesh - pivot[ii,j]
+                    pts = sens._orientation[j].apply(sens.pixel) + sens._position[j]
+                    pos_piv = pts - pivot[i,j]
                     POS_PIV[:, j, start:end] = np.broadcast_to(pos_piv, (n_src, end-start, 3))
 
-        # Reshape arrays for 2D computation
-        B = B.reshape(-1,3)
-        TVEC = TVEC.reshape(-1,3)
-        CURR = CURR.reshape(-1)
-
-        # ACTUAL FORCE AND TORQUE COMPUTATION
-        F = (CURR * np.cross(TVEC, B).T).T
+        # Force and Torque computation
+        F = CURR[...,np.newaxis] * np.cross(TVEC, B)
 
         if pivot is None:
             T = np.zeros_like(F)
         else:
-            POS_PIV = POS_PIV.reshape(-1, 3)
             T = np.cross(POS_PIV, F)
 
-        F = F.reshape(n_src, n_path, n_mesh, 3)
-        T = T.reshape(n_src, n_path, n_mesh, 3)
-
-        # Sum over mesh cells of each target -> (n_src, n_path, n_tgt, 3)
+        # Reduce mesh to targets (sumover) -> (n_src, n_path, n_tgt, 3)
         F = np.add.reduceat(F, idx_starts, axis=2)
         T = np.add.reduceat(T, idx_starts, axis=2)
 
@@ -727,8 +701,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         FTOUT[1][:,:,mask_current,:] = T
 
     # FINALIZE OUTPUT ##############################################################
-
-    # Sum up Collections
+    # Sum up Target Collections
     FTOUT = np.add.reduceat(FTOUT, coll_idx, axis=3)
 
     if squeeze:
@@ -769,7 +742,7 @@ if __name__ == "__main__":
     rloop2.position = [(0,0,0)]*3
     src1.position = [(.5, .5, .5)]*4
 
-    F, T = magpy.getFT([src1, src2], [rloop1, rloop2, rloop3])
+    F, T = magpy.getFT([src1, src2], [rloop1, rloop2, rloop3], meshreport=True)
 
     assert F.shape == (2, 4, 3, 3)
 
