@@ -1702,6 +1702,47 @@ def test_force_path4():
     assert np.allclose(T[1, 2, 1]*1*5, 2*1*T[0,4,3])
     
 
+def test_force_path5():
+    """different meshings"""
+    src1 = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(1, 2, 3),
+        position=(.5,.5,.5),
+    )
+    src2 = src1.copy(polarization=(2,4,6))
+    
+    verts = [(-1, -1, 0), (1, -1, 0), (1, 1, 0), (-1, 1, 0), (-1, -1, 0)]
+    rloop1 = magpy.current.Polyline(
+        current=1,
+        vertices=verts,
+        meshing=512,
+    )
+    rloop2 = rloop1.copy(current=2, meshing=256)
+    rloop3 = rloop1.copy(current=3, meshing=1024)
+
+    rloop1.position = [(0,0,0)]*2
+    rloop2.position = [(0,0,0)]*3
+    src1.position = [(.5, .5, .5)]*4
+
+    F, T = magpy.getFT([src1, src2], [rloop1, rloop2, rloop3])
+
+    assert F.shape == (2, 4, 3, 3)
+
+    err = np.linalg.norm(2*F[0, 1, 1] - F[1,1,1]) / np.linalg.norm(F[1,1,1])
+    assert err < 1e-6
+    
+    err = np.linalg.norm(2*F[0, 1, 0] - F[0,2,1]) / np.linalg.norm(F[0,2,1])
+    assert err < 0.005
+    
+    err = np.linalg.norm(3*F[0, 1, 0] - F[0,2,2]) / np.linalg.norm(F[0,2,2])
+    assert err < 0.003
+
+    err = np.linalg.norm(2*T[0, 1, 1] - T[1,1,1]) / np.linalg.norm(T[1,1,1])
+    assert err < 1e-6
+
+    err = np.linalg.norm(2*T[0, 1, 0] - T[0,2,1]) / np.linalg.norm(T[0,2,1])
+    assert err < 0.02
+
 
 if __name__ == "__main__":
 
@@ -1741,6 +1782,7 @@ if __name__ == "__main__":
     test_force_path2()
     test_force_path3()
     test_force_path4()
+    test_force_path5()
 
     # other
     test_centroid()

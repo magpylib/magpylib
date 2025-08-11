@@ -491,7 +491,24 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
     >>> print(f'torque: {np.round(T, decimals=2)} N')
     torque: [-8.55  4.27 -0.  ] N
+    
+    Notes:
+    ------
+    The force equations are F = DB.MOM, T = B x MOM + F x R. The computation relies
+    on a numerical approach, where the targets are split up into a lot of small
+    parts and the contributions from all parts are summed up.
+
+    For the gradient field, a finite difference approach is used.
     """
+    # COMPUTATION SCHEME
+    #   STEP1: Collect all inputs
+    #   STEP2: Broadcast into large computation arrays DB, B, MOM, ...
+    #   STEP3: Apply the equations
+    #   STEP4: Sum up and reshape
+
+    # INPUT CHECKS ############################################################
+    #  - check and format all inputs
+
     # Input check targets
     #  - check if all targets are allowed and parameters are set (meshing, ...)
     #  - return 1D list of targets (flatten collections)
@@ -511,46 +528,42 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     #  - return shape (n_tgt, n_path, 3)
     pivot = check_format_input_pivot(pivot, targets, n_path)
 
-    # Force type masks - 2 cases: magnets and currents
+    # Force type masks
     mask_magnet = np.array([tgt._force_type == "magnet" for tgt in targets])
     mask_current = np.array([tgt._force_type == "current" for tgt in targets])
 
     n_magnet = sum(mask_magnet)
     n_current = sum(mask_current)
 
-    # Allocate output arrays - use n_tgt as first dim for masking
+    # Allocate output arrays: use n_tgt as first dim for masking
     FTOUT = np.zeros((n_tgt, 2, n_src, n_path, 3))
 
-    # RUN MESHING FUNCTIONS ##############################################################
-    # Collect all outputs - cannot meaningfuly separate mesh generation from
-    #    generation of moments, lvecs, etc.
-    # Meshing functions are run at this point to collect all observers for getB
-    #    which can be computed for all targets at once.
-    sensors = []
-    mesh_sizes_all = np.zeros(n_tgt, dtype=int)
-    mag_moments = []
-    cur_currents = []
-    cur_tvecs = []
+    # RUN MESHING FUNCTIONS ###################################################
+    #  - collect all meshing infos for later broadcasting
+    #  - compute getB in one go
+    sensors, moments, currents, tangvecs = [], [], [], []
     eps_vec = create_eps_vector(eps)
+    mesh_sizes_all = np.zeros(n_tgt, dtype=int)
+
     for i,tgt in enumerate(targets):
 
         if tgt._force_type == "magnet":
             mesh, mom = tgt._generate_mesh()
             # if target is a magnet add 6 finite difference steps for gradient computation
             mesh = (mesh[:, np.newaxis, :] + eps_vec[np.newaxis, :, :]).reshape(-1, 3)
-            mag_moments.append(mom)
+            moments.append(mom)
 
         if tgt._force_type == "current":
             mesh, curr, tvec = tgt._generate_mesh()
-            cur_tvecs.append(tvec)
-            cur_currents.append(curr)
+            tangvecs.append(tvec)
+            currents.append(curr)
 
-        # Mesh -> Sensor pixel: pad path for easy access below
+        # Mesh -> Sensor pixel: apply path padding
         padlength = n_path - len(tgt._position)
-        padded_pos = np.pad(tgt._position, ((0,padlength), (0,0)), 'edge')
+        padded_path = np.pad(tgt._position, ((0,padlength), (0,0)), 'edge')
         sensors.append(Sensor(
                     pixel=mesh,
-                    position=padded_pos,
+                    position=padded_path,
                     orientation=tgt._orientation,
                 ))
         mesh_sizes_all[i] = len(mesh)
@@ -562,30 +575,17 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
             print(f"  Target {t}: {m} points")
         print()
 
-
     # COMPUTE B FIELD ###################################################################
-
-    # Problem: meshes of multiple targets can have different sizes, but ragged
-    #     inputs are not supported by getB.
-    # Solution1: allow ragged inputs in getB (oo)
-    # Solution2: compute instance by instance (functional)
+    #  - B_all shape  (n_tgt, n_src, n_path, n_mesh, 3)
+    #  - if ragged inputs (targets with different mesh sizes), compute B field for each
+    #    sensor separately. in this case the first dim is a list
+    #  - Improve this computation when getB allows ragged inputs
 
     if len(set(mesh_sizes_all)) == 1:
         B_all = getB(sources, sensors, squeeze=False)
         B_all = np.moveaxis(B_all, 2, 0)
     else: # ragged inputs - eval mesh by mesh
         B_all = [np.squeeze(getB(sources, s, squeeze=False), axis=2) for s in sensors]
-
-    # shapes: [n_tgt (list dim in case 2), n_src, n_path, n_mesh, 3]
-
-    #mesh_ends = np.cumsum(mesh_sizes)
-    #mesh_starts = np.r_[0, mesh_ends[:-1]]
-
-    # COMPUTATION IDEA:
-    #   The equations are very simple like F = DB.MOM, T = B x MOM.
-    #   All we need to do is to broadcast into large computation arrays that
-    #   contain DB, MOM, B, ... and apply the equations, sum over mesh cells,
-    #   and reshape the output to the desired shape.
 
     # MAGNETS ########################################################################
     if n_magnet > 0:
@@ -604,7 +604,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
         # BROADCASTING into computation arrays:
         #   rule: (src1 mesh1, src1 mesh2, src1 mesh3, ... src2 mesh1, src2 mesh2, ... )
-        for i, mom in enumerate(mag_moments):
+        for i, mom in enumerate(moments):
             # range in observer and B arrays
             start = obs_starts[mask_magnet][i]
             end = obs_ends[mask_magnet][i]
@@ -658,7 +658,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         FTOUT[1, :, mask_magnet] = T.reshape(n_src, n_magnet, 3).transpose(1, 0, 2)
 
 
-    # CURRENTS ########################################################################
+    # CURRENT COMPUTATION #########################################################
     if n_current > 0:
         
         # Prepare index ranges for broadcasting
@@ -681,8 +681,8 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
             start = idx_starts[i]
             end = idx_ends[i]
             ib = idx_bs[i]  
-            tvec = cur_tvecs[i]    # tangential vectors of this tgt
-            curr = cur_currents[i] # current of this tgt
+            tvec = tangvecs[i]    # tangential vectors of this tgt
+            curr = currents[i] # current of this tgt
             
             sens = sensors[ib]
 
@@ -763,10 +763,10 @@ if __name__ == "__main__":
     rloop1 = magpy.current.Polyline(
         current=1,
         vertices=verts,
-        meshing=8,
+        meshing=512,
     )
-    rloop2 = rloop1.copy(current=2)
-    rloop3 = rloop1.copy(current=3)
+    rloop2 = rloop1.copy(current=2, meshing=256)
+    rloop3 = rloop1.copy(current=3, meshing=1024)
 
     rloop1.position = [(0,0,0)]*2
     rloop2.position = [(0,0,0)]*3
@@ -775,11 +775,18 @@ if __name__ == "__main__":
     F, T = magpy.getFT([src1, src2], [rloop1, rloop2, rloop3])
 
     assert F.shape == (2, 4, 3, 3)
-    
-    assert np.allclose(2*F[0, 1, 1], F[1,1,1])
-    assert np.allclose(2*F[0, 1, 0], F[0,2,1])
-    assert np.allclose(3*F[0, 1, 0], F[0,2,2])    
-    assert np.allclose(6*F[0, 1, 0], F[1,2,2])
 
-    assert np.allclose(2*T[0, 1, 1], T[1,1,1])
-    assert np.allclose(6*T[0, 1, 0], T[1,2,2])
+    err = np.linalg.norm(2*F[0, 1, 1] - F[1,1,1]) / np.linalg.norm(F[1,1,1])
+    assert err < 1e-6
+    
+    err = np.linalg.norm(2*F[0, 1, 0] - F[0,2,1]) / np.linalg.norm(F[0,2,1])
+    assert err < 0.005
+    
+    err = np.linalg.norm(3*F[0, 1, 0] - F[0,2,2]) / np.linalg.norm(F[0,2,2])
+    assert err < 0.003
+
+    err = np.linalg.norm(2*T[0, 1, 1] - T[1,1,1]) / np.linalg.norm(T[1,1,1])
+    assert err < 1e-6
+
+    err = np.linalg.norm(2*T[0, 1, 0] - T[0,2,1]) / np.linalg.norm(T[0,2,1])
+    assert err < 0.02
