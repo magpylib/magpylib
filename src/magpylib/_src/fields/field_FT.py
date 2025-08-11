@@ -552,8 +552,10 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
         if tgt._force_type == "current":
             mesh, curr, tvec = tgt._generate_mesh()
+            # shapes: (n_mesh,3), (n_mesh,), (n_mesh,3)
             tangvecs.append(tvec)
             currents.append(curr)
+            # REPLACE WITH DICT ? ELIMINATE _force_type ?
 
         # Mesh -> Sensor pixel: apply path padding
         padlength = n_path - len(tgt._position)
@@ -585,7 +587,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         B_all = [np.squeeze(getB(sources, s, squeeze=False), axis=2) for s in sensors]
 
     # Allocate output array
-    FTOUT = np.zeros((n_tgt, 2, n_src, n_path, 3))
+    FTOUT = np.zeros((2, n_src, n_path, n_tgt, 3))
 
     # MAGNETS ########################################################################
     if n_magnet > 0:
@@ -720,20 +722,11 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         F = np.add.reduceat(F, idx_starts, axis=2)
         T = np.add.reduceat(T, idx_starts, axis=2)
 
-        #FTOUT2 = np.zeros((2, n_src, n_path, n_tgt, 3))
-
-        #print(FTOUT2.shape)
-        #print(FTOUT2[0, :, :, mask_current,:].shape)
-        #FTOUT2[0, :, :, mask_current,:] = F
-
-
-
-        FTOUT[mask_current, 0] = np.moveaxis(F, 2, 0)
-        FTOUT[mask_current, 1] = np.moveaxis(T, 2, 0)
+        # Broadcast into output array
+        FTOUT[0][:,:,mask_current,:] = F
+        FTOUT[1][:,:,mask_current,:] = T
 
     # FINALIZE OUTPUT ##############################################################
-
-    FTOUT = np.moveaxis(FTOUT, 0, 3)
 
     # Sum up Collections
     FTOUT = np.add.reduceat(FTOUT, coll_idx, axis=3)
