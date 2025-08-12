@@ -572,81 +572,111 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
     sensors = [m["pts"] for m in meshes]
 
+
     if len(set(mesh_sizes_all)) == 1:
         B_all = getB(sources, sensors, squeeze=False)
         B_all = np.moveaxis(B_all, 2, 0)
     else: # ragged inputs - eval mesh by mesh
         B_all = [np.squeeze(getB(sources, s, squeeze=False), axis=2) for s in sensors]
 
+    # Transform B from local sensor coords into global coords !
+    for i,(b, s) in enumerate(zip(B_all, sensors)):
+        for j in range(n_path):
+            shp = b[:,j].shape
+            bb = np.reshape(b[:,j], (-1,3))
+            bb = s._orientation[j].apply(bb)
+            bb = np.reshape(bb, shp)
+            B_all[i][:,j] = bb
+
+
     # MAGNETS ########################################################################
     if n_magnet > 0:
-        
-        # Prepare index ranges for broadcasting
-        mesh_sizes_mag = mesh_sizes[mask_magnet] // 7
-        n_mesh_mag = sum(mesh_sizes_mag)
-        idx_ends = np.cumsum(mesh_sizes_mag)
-        idx_starts = np.r_[0, idx_ends[:-1]]
 
-        # Computation array allocations
-        POS = np.zeros((n_mesh_mag*n_src, 3))   # central location of each cell
-        B = np.zeros((n_mesh_mag*n_src, 3))     # B-field at each cell
-        DB = np.zeros((n_mesh_mag*n_src, 3, 3)) # B-field gradient at each cell
-        MOM = np.zeros((n_mesh_mag*n_src, 3))   # magnetic moment of each cell
+        # Computation array allocation
+        #  - use broadcasting instead of concatenate (better memory and speed)
+        mesh_sizes = mesh_sizes_all[mask_magnet]
+        n_mesh = sum(mesh_sizes)
 
-        # BROADCASTING into computation arrays:
-        #   rule: (src1 mesh1, src1 mesh2, src1 mesh3, ... src2 mesh1, src2 mesh2, ... )
-        for i, mom in enumerate(moments):
-            # range in observer and B arrays
-            start = obs_starts[mask_magnet][i]
-            end = obs_ends[mask_magnet][i]
-            
-            for j in range(n_sources):
-                # range in computation arrays
-                ids = idx_starts[i] + n_mesh_mag*j
-                ide = idx_ends[i] + n_mesh_mag*j
-
-                POS[ids : ide] = observer[start : end : 7]
-                B[ids : ide] = B_all[j, 0, 0, start : end : 7]
-
-                # ∂B/∂x
-                DB[ids : ide, :, 0] = B_all[j, 0, 0, start+1 : end : 7]
-                DB[ids : ide, :, 0] -= B_all[j, 0, 0, start+2 : end : 7]
-                DB[ids : ide, :, 0] /= (2*eps)
-
-                # ∂B/∂y
-                DB[ids : ide, :, 1] = B_all[j, 0, 0, start+3 : end : 7]
-                DB[ids : ide, :, 1] -= B_all[j, 0, 0, start+4 : end : 7]
-                DB[ids : ide, :, 1] /= (2*eps)
-                
-                # ∂B/∂z
-                DB[ids : ide, :, 2] = B_all[j, 0, 0, start+5 : end : 7]
-                DB[ids : ide, :, 2] -= B_all[j, 0, 0, start+6 : end : 7]
-                DB[ids : ide, :, 2] /= (2*eps)
-
-                MOM[ids : ide] = mom
-
-        # ACTUAL FORCE AND TORQUE COMPUTATION
-        #   !!Performance!!: cross few time faster than einsum few times faster than array API.
-        #   Torque computation relies on force computation.
-        #   Therefore it makes no sense to separate the force and torque computation.
-
-        force = np.einsum('ijk,ik->ij', DB, MOM) # numpy only
-        #force = np.sum(DB * MOM[:, np.newaxis, :], axis=2) # array API
-        torque = np.cross(MOM, B)
-
-        # Add pivot point contribution to torque
+        B = np.empty((n_src, n_path, n_mesh, 3))     # B-field at cell location
+        DB = np.empty((n_src, n_path, n_mesh, 3, 3)) # B-field gradient at cell location
+        MOM = np.empty((n_src, n_path, n_mesh, 3))   # magnetic moment of cells
         if pivot is not None:
-            PIV = np.tile(np.repeat(pivot[mask_magnet], mesh_sizes_mag, axis=0), (n_sources, 1))
-            torque += np.cross(POS - PIV, force)
+            POS_PIV = np.empty((n_src, n_path, n_mesh, 3))  # relative cell pos to pivot
 
-        # Sum over mesh cells
-        idx_starts_all = np.concatenate([idx_starts + n_mesh_mag*j for j in range(n_sources)])
-        F = np.add.reduceat(force, idx_starts_all, axis=0)
-        T = np.add.reduceat(torque, idx_starts_all, axis=0)
+        # Broadcasting and application of pos & ori
+        idx_all = np.where(mask_magnet)[0]
+        idx_ends = np.cumsum(mesh_sizes)
+        idx_starts = np.r_[0, idx_ends[:-1]]
+        for start, end, i in zip(idx_starts, idx_ends, idx_all):
+            sens = meshes[i]["pts"]
+            mom = meshes[i]["moments"]
 
-        # Broadcast into output arrays
-        FTOUT[0, :, mask_magnet] = F.reshape(n_src, n_magnet, 3).transpose(1, 0, 2)
-        FTOUT[1, :, mask_magnet] = T.reshape(n_src, n_magnet, 3).transpose(1, 0, 2)
+            # eliminate FD steps of pixel
+            sens.pixel = sens.pixel[::7]
+
+            B[:, :, start:end] = B_all[i][:, :, ::7]
+
+            # ∂B/∂x
+            DB[:, :, start:end, 0] = B_all[i][:, :, 1 :: 7]
+            DB[:, :, start:end, 0] -= B_all[i][:, :, 2 :: 7]
+            DB[:, :, start:end, 0] /= (2*eps)
+
+            # ∂B/∂y
+            DB[:, :, start:end, 1] = B_all[i][:, :, 3 :: 7]
+            DB[:, :, start:end, 1] -= B_all[i][:, :, 4 :: 7]
+            DB[:, :, start:end, 1] /= (2*eps)
+            
+            # ∂B/∂z
+            DB[:, :, start:end, 2] = B_all[i][:, :, 5 :: 7]
+            DB[:, :, start:end, 2] -= B_all[i][:, :, 6 :: 7]
+            DB[:, :, start:end, 2] /= (2*eps)
+
+            for j in range(n_path):
+                mom_rot = sens._orientation[j].apply(mom)
+                MOM[:, j, start:end] = np.broadcast_to(mom_rot, (n_src, end-start,3))
+
+                if pivot is not None:
+                    pts = sens._orientation[j].apply(sens.pixel) + sens._position[j]
+                    pos_piv = pts - pivot[i,j]
+                    POS_PIV[:, j, start:end] = np.broadcast_to(pos_piv, (n_src, end-start, 3))
+
+        # Force and Torque computation
+        #  - !!Performance!!: cross (torque) few time faster than einsum (force) few
+        #    times faster than array API force. Also, the torque computation relies on
+        #    the force computation. Therefore it makes no sense to separate the force
+        #    and torque computation.
+
+        F = np.einsum('abijk,abik->abij', DB, MOM)            # numpy only
+        #F = np.sum(DB * MOM[:, :, :, np.newaxis, :], axis=4) # array API
+        T = np.cross(MOM, B)
+
+        if pivot is not None:
+            T += np.cross(POS_PIV, F)
+
+        # Reduce mesh to targets (sumover) -> (n_src, n_path, n_tgt, 3)
+        F = np.add.reduceat(F, idx_starts, axis=2)
+        T = np.add.reduceat(T, idx_starts, axis=2)
+
+        # Broadcast into output array
+        FTOUT[0][:,:,mask_magnet,:] = F
+        FTOUT[1][:,:,mask_magnet,:] = T
+
+        # import sys
+        # sys.exit()
+
+        # # Add pivot point contribution to torque
+        # if pivot is not None:
+        #     PIV = np.tile(np.repeat(pivot[mask_magnet], mesh_sizes_mag, axis=0), (n_sources, 1))
+        #     torque += np.cross(POS - PIV, force)
+
+        # # Sum over mesh cells
+        # idx_starts_all = np.concatenate([idx_starts + n_mesh_mag*j for j in range(n_sources)])
+        # F = np.add.reduceat(force, idx_starts_all, axis=0)
+        # T = np.add.reduceat(torque, idx_starts_all, axis=0)
+
+        # # Broadcast into output arrays
+        # FTOUT[0, :, mask_magnet] = F.reshape(n_src, n_magnet, 3).transpose(1, 0, 2)
+        # FTOUT[1, :, mask_magnet] = T.reshape(n_src, n_magnet, 3).transpose(1, 0, 2)
 
 
     # CURRENT COMPUTATION #########################################################
@@ -672,16 +702,16 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
             tvec = meshes[i]["tvecs"]
             curr = meshes[i]["currents"]
 
-            B[:,:,start:end] = B_all[i]
+            B[:, :, start:end] = B_all[i]
             CURR[:,:,start:end] = np.broadcast_to(curr, (n_src, n_path, end-start))
-            
+
             for j in range(n_path):
                 tvec_rot = sens._orientation[j].apply(tvec)
                 TVEC[:, j, start:end] = np.broadcast_to(tvec_rot, (n_src, end-start, 3))
             
                 if pivot is not None:
                     pts = sens._orientation[j].apply(sens.pixel) + sens._position[j]
-                    pos_piv = pts - pivot[i,j]
+                    pos_piv = pts - pivot[i,j] #pivot shape (n_tgt, n_path, 3)
                     POS_PIV[:, j, start:end] = np.broadcast_to(pos_piv, (n_src, end-start, 3))
 
         # Force and Torque computation
@@ -701,6 +731,9 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         FTOUT[1][:,:,mask_current,:] = T
 
     # FINALIZE OUTPUT ##############################################################
+    
+    # Do pivot calc here for all targets ?!?
+    
     # Sum up Target Collections
     FTOUT = np.add.reduceat(FTOUT, coll_idx, axis=3)
 
@@ -713,14 +746,6 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
 if __name__ == "__main__":
     import magpylib as magpy
-    # src = magpy.magnet.Cuboid(dimension=(1, 2, 3), polarization=(0, 0, 1))
-    # tgt = magpy.current.Circle(
-    #     diameter=3,
-    #     current=1e3,
-    #     meshing=4,
-    # ).rotate_from_angax([10,20], 'x', start=0)
-    # F,T = getFT(src, tgt)
-
 
     src1 = magpy.magnet.Cuboid(
         dimension=(1, 1, 1),
@@ -742,7 +767,7 @@ if __name__ == "__main__":
     rloop2.position = [(0,0,0)]*3
     src1.position = [(.5, .5, .5)]*4
 
-    F, T = magpy.getFT([src1, src2], [rloop1, rloop2, rloop3], meshreport=True)
+    F, T = magpy.getFT([src1, src2], [rloop1, rloop2, rloop3])
 
     assert F.shape == (2, 4, 3, 3)
 
@@ -760,3 +785,35 @@ if __name__ == "__main__":
 
     err = np.linalg.norm(2*T[0, 1, 0] - T[0,2,1]) / np.linalg.norm(T[0,2,1])
     assert err < 0.02
+        
+        # print(np.around(T1, decimals=2))
+
+        # print('---')
+        # print(np.around(T, decimals=2))
+        
+        # print('---')
+        # loop.rotate_from_angax(90,'x')
+        # F,T = getFT(dip, loop, pivot=(0,0,0))
+        # print(np.around(T, decimals=2))
+        
+        # print('---')
+        # loop.rotate_from_angax(90,'x')
+        # F,T = getFT(dip, loop, pivot=(0,0,0))
+        # print(np.around(T, decimals=2))
+        
+        # print('---')
+        # loop.rotate_from_angax(90,'x')
+        # F,T = getFT(dip, loop, pivot=(0,0,0))
+        # print(np.around(T, decimals=2))
+
+    
+
+    #F1,T1 = getFT(dip, loop, pivot=(0,0,0))
+    
+    #F2,T2 = getFT(loop, cube, pivot=(0,0,0))
+
+    #print(F1)
+    #print(-F2)
+
+    #print(T1)
+    #print(-T2)

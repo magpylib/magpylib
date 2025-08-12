@@ -109,7 +109,7 @@ def cells_from_dimension(
     return np.array(result).astype(int)
 
 
-def target_mesh_cuboid(target_elems, dimension):
+def target_mesh_cuboid(target_elems, dimension, magnetization):
     """
     Cuboid mesh in the local object coordinates.
 
@@ -127,7 +127,10 @@ def target_mesh_cuboid(target_elems, dimension):
 
     Returns
     -------
-    mesh (np.ndarray, shape (n, 3)), volumes (np.ndarray, shape (n,))
+    dict: {
+        "pts": np.ndarray, shape (n, 3) - mesh points
+        "volumes": np.ndarray, shape (n,) - volumes associated with each point
+    }
     """
     a, b, c = dimension
 
@@ -160,10 +163,17 @@ def target_mesh_cuboid(target_elems, dimension):
     ys_cent = ys[:-1] + dy / 2 if len(ys) > 1 else ys + dy / 2
     zs_cent = zs[:-1] + dz / 2 if len(zs) > 1 else zs + dz / 2
 
-    mesh = np.array(list(itertools.product(xs_cent, ys_cent, zs_cent)))
-    volumes = np.tile(a*b*c/n1/n2/n3, (len(mesh), ))
+    pts = np.array(list(itertools.product(xs_cent, ys_cent, zs_cent)))
+    volumes = np.tile(a*b*c/n1/n2/n3, (len(pts), ))
 
-    return mesh, volumes
+    moments = volumes[:, np.newaxis] * magnetization
+
+    mesh_dict = {
+        "pts": pts,
+        "moments": moments
+    }
+
+    return mesh_dict
 
 
 def target_mesh_cylinder(r1, r2, h, phi1, phi2, n):
@@ -187,7 +197,10 @@ def target_mesh_cylinder(r1, r2, h, phi1, phi2, n):
 
     Returns
     -------
-    mesh (np.ndarray, shape (n, 3)), volumes (np.ndarray, shape (n,))
+    dict: {
+        "pts": np.ndarray, shape (n, 3) - mesh points
+        "volumes": np.ndarray, shape (n,) - volumes associated with each point
+    }
     """
     al = (r2 + r1) * 3.14 * (phi2 - phi1) / 360  # arclen = D*pi*arcratio
     dim = al, r2 - r1, h
@@ -225,7 +238,15 @@ def target_mesh_cylinder(r1, r2, h, phi1, phi2, n):
                     volumes.append(
                         np.pi * (r[r_ind + 1] ** 2 - r[r_ind] ** 2) * dh / nphi_r * (phi2-phi1)/360
                     )
-    return np.array(cells), np.array(volumes)
+    
+    pts = np.array(cells)
+    volumes = np.array(volumes)
+    
+    mesh_dict = {
+        "pts": pts,
+        "volumes": volumes
+    }
+    return mesh_dict
 
 
 def target_mesh_circle(r, n, i0):
@@ -389,14 +410,20 @@ def target_mesh_sphere(r0, target_points):
     
     Returns
     -------
-    mesh: np.ndarray, shape (n, 3)
-    volumes: np.ndarray, shape (n,)
+    dict: {
+        "pts": np.ndarray, shape (n, 3) - mesh points
+        "volumes": np.ndarray, shape (n,) - volumes associated with each point
+    }
     """
     sphere_volume = (4/3) * np.pi * r0**3
 
     # if only one point is requested, return the center of the sphere
     if target_points == 1:
-        return np.array([[0, 0, 0]]), np.array([sphere_volume])
+        mesh_dict = {
+            "pts": np.array([[0, 0, 0]]),
+            "volumes": np.array([sphere_volume])
+        }
+        return mesh_dict
     
     # cuboid grid
     spacing = (sphere_volume / target_points)**(1/3)
@@ -404,13 +431,18 @@ def target_mesh_sphere(r0, target_points):
     
     # mask inside
     mask_sphere = np.linalg.norm(points, axis=1) <= r0
-    mesh = points[mask_sphere]
+    pts = points[mask_sphere]
     
     # volume
-    n_mesh = len(mesh)
-    vols = np.full(n_mesh, sphere_volume / n_mesh)
+    n_mesh = len(pts)
+    volumes = np.full(n_mesh, sphere_volume / n_mesh)
 
-    return mesh, vols
+    mesh_dict = {
+        "pts": pts,
+        "volumes": volumes
+    }
+
+    return mesh_dict
 
 
 def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray):
@@ -430,10 +462,10 @@ def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray):
     
     Returns
     -------
-    mesh : np.ndarray, shape (n, 3)
-        Mesh points inside the tetrahedron.
-    volumes : np.ndarray, shape (n,)
-        Volume associated with each mesh point.
+    dict: {
+        "pts": np.ndarray, shape (n, 3) - mesh points inside the tetrahedron
+        "volumes": np.ndarray, shape (n,) - volume associated with each mesh point
+    }
     """
     
     # Calculate tetrahedron volume
@@ -445,7 +477,13 @@ def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray):
     # Return centroid for single point
     if n_points == 1:
         centroid = np.mean(vertices, axis=0)
-        return np.array([centroid]), np.array([tet_volume])
+        pts = np.array([centroid])
+        volumes = np.array([tet_volume])
+        mesh_dict = {
+            "pts": pts,
+            "volumes": volumes
+        }
+        return mesh_dict
     
     # Find the optimal number of subdivisions to get closest to n_points
     # For a tetrahedron with n_div divisions, the exact number of points is:
@@ -470,7 +508,7 @@ def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray):
     n_div = best_n_div
     
     # Generate structured barycentric coordinates
-    mesh_points = []
+    pts_list = []
     
     # Create uniform grid in barycentric coordinates
     # We need u1 + u2 + u3 + u4 = 1 and all ui >= 0
@@ -487,15 +525,20 @@ def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray):
                     
                     # Convert to Cartesian coordinates
                     point = u1 * vertices[0] + u2 * vertices[1] + u3 * vertices[2] + u4 * vertices[3]
-                    mesh_points.append(point)
+                    pts_list.append(point)
     
-    mesh_points = np.array(mesh_points)
+    pts = np.array(pts_list)
     
     # Calculate volume per point based on actual number of points generated
-    volume_per_point = tet_volume / len(mesh_points)
-    volumes = np.full(len(mesh_points), volume_per_point)
+    volume_per_point = tet_volume / len(pts)
+    volumes = np.full(len(pts), volume_per_point)
     
-    return mesh_points, volumes
+    mesh_dict = {
+        "pts": pts,
+        "volumes": volumes
+    }
+    
+    return mesh_dict
 
 
 def target_mesh_triangularmesh(vertices, faces, target_points, volume=None):
@@ -515,8 +558,10 @@ def target_mesh_triangularmesh(vertices, faces, target_points, volume=None):
 
     Returns
     -------
-    mesh : np.ndarray, shape (k, 3) - Mesh points inside the triangular mesh
-    volumes : np.ndarray, shape (k,) - Volume associated with each mesh point
+    dict: {
+        "pts": np.ndarray, shape (k, 3) - mesh points inside the triangular mesh
+        "volumes": np.ndarray, shape (k,) - volume associated with each mesh point
+    }
     """
     # Import the required functions from triangular mesh field module
     from magpylib._src.fields.field_BH_triangularmesh import (
@@ -527,7 +572,13 @@ def target_mesh_triangularmesh(vertices, faces, target_points, volume=None):
     # Return barycenter (centroid) if only one point is requested
     if target_points == 1:
         barycenter = calculate_centroid(vertices, faces)
-        return np.array([barycenter]), np.array([volume])
+        pts = np.array([barycenter])
+        volumes = np.array([volume])
+        mesh_dict = {
+            "pts": pts,
+            "volumes": volumes
+        }
+        return mesh_dict
     
     # Generate regular cubic grid
     spacing = (volume / target_points)**(1/3)
@@ -542,16 +593,27 @@ def target_mesh_triangularmesh(vertices, faces, target_points, volume=None):
     
     # Apply inside/outside mask
     inside_mask = mask_inside_trimesh(points, vertices[faces])
-    points = points[inside_mask]
+    pts = points[inside_mask]
     
-    if len(points) == 0:
+    if len(pts) == 0:
         barycenter = calculate_centroid(vertices, faces)
-        return np.array([barycenter]), np.array([volume])
+        pts = np.array([barycenter])
+        volumes = np.array([volume])
+        mesh_dict = {
+            "pts": pts,
+            "volumes": volumes
+        }
+        return mesh_dict
     
     # Volumes
-    volumes = np.full(len(points), volume / len(points))
+    volumes = np.full(len(pts), volume / len(pts))
     
-    return points, volumes
+    mesh_dict = {
+        "pts": pts,
+        "volumes": volumes
+    }
+    
+    return mesh_dict
 
 
 if __name__=="__main__":

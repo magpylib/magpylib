@@ -1743,17 +1743,60 @@ def test_force_path5():
     err = np.linalg.norm(2*T[0, 1, 0] - T[0,2,1]) / np.linalg.norm(T[0,2,1])
     assert err < 0.02
 
+def test_force_orientation_nightmare():
+
+    loop = magpy.current.Circle(
+        diameter=10,
+        current=1e6,
+        position=(0,0,0),
+        meshing=4,
+    )
+    dip = magpy.misc.Dipole(
+        moment=(1e3,0,0),
+        position=(0,0,0)
+    )
+
+    _,T1 = getFT(dip, loop, pivot=(0,0,0))
+    # must have positive torque about y-axis
+    assert T1[1] > 0
+
+    loop.rotate_from_angax(90,'x')
+    _,T2 = getFT(dip, loop, pivot=(0,0,0))
+    # positive y-torque becomes positive z-torque
+    assert abs(T1[1] - T2[2])/T1[1] < 1e-10
+
+    loop.rotate_from_angax(90,'x')
+    _,T3 = getFT(dip, loop, pivot=(0,0,0))
+    # positive y-torque becomes negative y-torque after 180° rot
+    assert abs(T1[1] + T3[1])/T1[1] < 1e-10
+
+    loop.rotate_from_angax(90,'x')
+    _,T4 = getFT(dip, loop, pivot=(0,0,0))
+    # positive z-torque becomes negative z-torque after 180° rot
+    assert abs(T2[2] + T4[2])/T1[1] < 1e-10
+
+    loop.rotate_from_angax(90,'x')
+    _,T5 = getFT(dip, loop, pivot=(0,0,0))
+    # back to initial values
+    assert abs(T1[1] - T5[1])/T1[1] < 1e-10
+
+    loop.rotate_from_angax(45,'x')
+    _,T6 = getFT(dip, loop, pivot=(0,0,0))
+    # torque must now be split over y and z component
+    assert abs(T6[1]**2 + T6[2]**2 - T1[1]**2) < 1e-10
+
+
 
 if __name__ == "__main__":
 
     # vs analytical solutions
-    #test_force_physics_ana_dipole()   # Dipole, step1: proofs magnet force + torque (excl. pivot)
+    test_force_physics_ana_dipole()   # Dipole, step1: proofs magnet force + torque (excl. pivot)
     test_force_physics_ana_cocentric_loops()
     test_force_physics_ana_current_in_homo_field()
-    #test_force_physics_torque_sign()
+    test_force_physics_torque_sign()
 
     # object and interface properties
-    #test_force_obj_rotations1()
+    test_force_obj_rotations1()
     #test_force_obj_rotations2()
     #test_force_2sources()
     #test_force_meshing_validation()
@@ -1770,6 +1813,7 @@ if __name__ == "__main__":
     #test_force_physics_consistency_in_very_homo_field() # Sphere
     test_force_physics_parallel_wires()
     test_force_physics_perpendicular_wires()
+    test_force_orientation_nightmare()
 
     # against FEM
     #test_force_ANSYS_cube_cube()
