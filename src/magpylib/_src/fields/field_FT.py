@@ -572,6 +572,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
     sensors = [m["pts"] for m in meshes]
 
+    sensors[0].pixel = sensors[0].orientation.inv().apply(sensors[0].pixel)
 
     if len(set(mesh_sizes_all)) == 1:
         B_all = getB(sources, sensors, squeeze=False)
@@ -579,7 +580,10 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     else: # ragged inputs - eval mesh by mesh
         B_all = [np.squeeze(getB(sources, s, squeeze=False), axis=2) for s in sensors]
 
-    # Transform B from local sensor coords into global coords !
+    print(sensors[0].orientation.apply(np.squeeze(B_all)))
+
+    # Transform B from local sensor coords into global coords ! :(((
+    #  - this is another major problem of this sensor-based approach
     for i,(b, s) in enumerate(zip(B_all, sensors)):
         for j in range(n_path):
             shp = b[:,j].shape
@@ -646,6 +650,8 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         #    the force computation. Therefore it makes no sense to separate the force
         #    and torque computation.
 
+        print(DB)
+
         F = np.einsum('abijk,abik->abij', DB, MOM)            # numpy only
         #F = np.sum(DB * MOM[:, :, :, np.newaxis, :], axis=4) # array API
         T = np.cross(MOM, B)
@@ -660,23 +666,6 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         # Broadcast into output array
         FTOUT[0][:,:,mask_magnet,:] = F
         FTOUT[1][:,:,mask_magnet,:] = T
-
-        # import sys
-        # sys.exit()
-
-        # # Add pivot point contribution to torque
-        # if pivot is not None:
-        #     PIV = np.tile(np.repeat(pivot[mask_magnet], mesh_sizes_mag, axis=0), (n_sources, 1))
-        #     torque += np.cross(POS - PIV, force)
-
-        # # Sum over mesh cells
-        # idx_starts_all = np.concatenate([idx_starts + n_mesh_mag*j for j in range(n_sources)])
-        # F = np.add.reduceat(force, idx_starts_all, axis=0)
-        # T = np.add.reduceat(torque, idx_starts_all, axis=0)
-
-        # # Broadcast into output arrays
-        # FTOUT[0, :, mask_magnet] = F.reshape(n_src, n_magnet, 3).transpose(1, 0, 2)
-        # FTOUT[1, :, mask_magnet] = T.reshape(n_src, n_magnet, 3).transpose(1, 0, 2)
 
 
     # CURRENT COMPUTATION #########################################################
@@ -745,75 +734,105 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
 
 if __name__ == "__main__":
+    import numpy as np
     import magpylib as magpy
+    from scipy.spatial.transform import Rotation as R
 
-    src1 = magpy.magnet.Cuboid(
-        dimension=(1, 1, 1),
-        polarization=(1, 2, 3),
-        position=(.5,.5,.5),
-    )
-    src2 = src1.copy(polarization=(2,4,6))
+    def FTana(p1, p2, m1, m2, src, piv):
+        # analytical force solution
+        r = p2 - p1
+        r_abs = np.linalg.norm(r)
+        r_unit = r / r_abs
+        F_ana = (
+            3
+            * magpy.mu_0
+            / (4 * np.pi * r_abs**4)
+            * (
+                np.cross(np.cross(r_unit, m1), m2)
+                + np.cross(np.cross(r_unit, m2), m1)
+                - 2 * r_unit * np.dot(m1, m2)
+                + 5 * r_unit * (np.dot(np.cross(r_unit, m1), np.cross(r_unit, m2)))
+            )
+        )
+        B = src.getB(p2)
+        T_ana = np.cross(m2, B) + np.cross(p2-piv, F_ana)
+        return F_ana, T_ana
+
+
+    m1, m2 = np.array((0.976, 4.304, 2.055))*1e3, np.array((0.878, -1.527, 2.918))*1e3
+    p1, p2 = np.array((-1.248, 7.835, 9.273)), np.array((-2.331, 5.835, 0.578))
+    piv = np.array((0.727, 5.152, 5.363))  # pivot point for torque calculation
+
+    m1, m2 = np.array([(1e3,0,0), (0,1e3,0)])
+    p1, p2 = np.array([(0,0,0), (1,0,0)])
+    piv = np.array((0.1, 0, 0))
+
+    rot = R.from_rotvec((0, 0, 10), degrees=True)
+    m2_rot = rot.apply(m2)
+
+    # magpylib
+    src = magpy.misc.Dipole(position=p1, moment=m1)
+    tgt1 = magpy.misc.Dipole(position=p2, moment=m2).rotate(rot)
+    tgt2 = magpy.misc.Dipole(position=p2, moment=m2_rot)
+
+    F1, T1 = magpy.getFT(src, tgt1, pivot=piv)
+    F2, T2 = magpy.getFT(src, tgt2, pivot=piv)
+    F3, T3 = FTana(p1, p2, m1, m2_rot, src, piv)
+
+    print(F1)
+    print(F2)
+    print(F3)
     
-    verts = [(-1, -1, 0), (1, -1, 0), (1, 1, 0), (-1, 1, 0), (-1, -1, 0)]
-    rloop1 = magpy.current.Polyline(
-        current=1,
-        vertices=verts,
-        meshing=512,
-    )
-    rloop2 = rloop1.copy(current=2, meshing=256)
-    rloop3 = rloop1.copy(current=3, meshing=1024)
-
-    rloop1.position = [(0,0,0)]*2
-    rloop2.position = [(0,0,0)]*3
-    src1.position = [(.5, .5, .5)]*4
-
-    F, T = magpy.getFT([src1, src2], [rloop1, rloop2, rloop3])
-
-    assert F.shape == (2, 4, 3, 3)
-
-    err = np.linalg.norm(2*F[0, 1, 1] - F[1,1,1]) / np.linalg.norm(F[1,1,1])
-    assert err < 1e-6
     
-    err = np.linalg.norm(2*F[0, 1, 0] - F[0,2,1]) / np.linalg.norm(F[0,2,1])
-    assert err < 0.005
     
-    err = np.linalg.norm(3*F[0, 1, 0] - F[0,2,2]) / np.linalg.norm(F[0,2,2])
-    assert err < 0.003
-
-    err = np.linalg.norm(2*T[0, 1, 1] - T[1,1,1]) / np.linalg.norm(T[1,1,1])
-    assert err < 1e-6
-
-    err = np.linalg.norm(2*T[0, 1, 0] - T[0,2,1]) / np.linalg.norm(T[0,2,1])
-    assert err < 0.02
-        
-        # print(np.around(T1, decimals=2))
-
-        # print('---')
-        # print(np.around(T, decimals=2))
-        
-        # print('---')
-        # loop.rotate_from_angax(90,'x')
-        # F,T = getFT(dip, loop, pivot=(0,0,0))
-        # print(np.around(T, decimals=2))
-        
-        # print('---')
-        # loop.rotate_from_angax(90,'x')
-        # F,T = getFT(dip, loop, pivot=(0,0,0))
-        # print(np.around(T, decimals=2))
-        
-        # print('---')
-        # loop.rotate_from_angax(90,'x')
-        # F,T = getFT(dip, loop, pivot=(0,0,0))
-        # print(np.around(T, decimals=2))
+    # import magpylib as magpy
 
     
+    # loop = magpy.current.Circle(
+    #     diameter=5,
+    #     current=1e6,
+    #     position=(0,0,0),
+    #     meshing=2400*4,
+    # )
+    # dip = magpy.misc.Dipole(
+    #     moment=(1e3,0,0),
+    #     position=(0,0,0)
+    # )
+    # F1,T1 = getFT(dip, loop, pivot=(0,0,0))
+    # print(T1)
+    # F2,T2 = getFT(loop, dip, pivot=(0,0,0))
+    # print(T2)
 
-    #F1,T1 = getFT(dip, loop, pivot=(0,0,0))
-    
-    #F2,T2 = getFT(loop, cube, pivot=(0,0,0))
+    # loop.rotate_from_angax(45, 'x')
 
-    #print(F1)
-    #print(-F2)
+    # F1,T1 = getFT(dip, loop, pivot=(0,0,0))
+    # print(T1)
+    # F2,T2 = getFT(loop, dip, pivot=(0,0,0))
+    # print(T2)
 
-    #print(T1)
-    #print(-T2)
+    # loop.orientation=None
+    # loop.rotate_from_angax(45, 'y')
+
+    # F1,T1 = getFT(dip, loop, pivot=(0,0,0))
+    # print(T1)
+    # F2,T2 = getFT(loop, dip, pivot=(0,0,0))
+    # print(T2)
+
+    # loop.orientation=None
+    # dip.rotate_from_angax(-45, 'y')
+
+    # F1,T1 = getFT(dip, loop, pivot=(0,0,0))
+    # print(T1)
+    # F2,T2 = getFT(loop, dip, pivot=(0,0,0))
+    # print(T2)
+
+    # from scipy.spatial.transform import Rotation as R
+    # loop.orientation=R.from_rotvec([22,-55,111], degrees=True)
+    # dip.orientation=R.from_rotvec([123,-321,-11], degrees=True)
+    # loop.position = (1, 2, 3)
+    # dip.position = (-1, -.4, 2)
+
+    # F1,T1 = getFT(dip, loop, pivot=(0,0,0))
+    # print(T1)
+    # F2,T2 = getFT(loop, dip, pivot=(0,0,0), eps=1e-7)
+    # print(T2)
