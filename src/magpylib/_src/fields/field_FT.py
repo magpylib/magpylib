@@ -529,33 +529,41 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     pivot = check_format_input_pivot(pivot, targets, n_path)
 
     # RUN MESHING FUNCTIONS ###################################################
-    #  - collect all meshing infos and prepare masks and idx for later broadcasting
+    #  - collect all meshing infos
+    #  - prepare masks and idx for later
 
     meshes = [tgt._generate_mesh() for tgt in targets]
 
-    mesh_sizes_all = np.array([len(m["pts"]) for m in meshes])
-    if meshreport:
-        print("Mesh report:")
-        for t, m in zip(targets, mesh_sizes_all):
-            print(f"  Target {t}: {m} points")
-        print()
-    
     mask_current = np.array(["currents" in m for m in meshes])
     mask_magnet = np.array(["moments" in m for m in meshes])
 
-    idx_mag = np.where(mask_magnet)[0]
-    idx_cur = np.where(mask_current)[0]
+    mesh_sizes_all = np.array([len(m["pts"]) for m in meshes])
 
     # Create mesh sizes for 7 FD steps in magnet calc
     mesh_sizes_all7 = mesh_sizes_all.copy()
     mesh_sizes_all7[idx_mag] *= 7
 
-    n_mesh7 = sum(mesh_sizes_all7)
+
+    idx_mag = np.where(mask_magnet)[0]
+    idx_cur = np.where(mask_current)[0]
+
+
+    n_mesh_all = sum(mesh_sizes_all)
+    n_mesh_all7 = sum(mesh_sizes_all7)
     n_magnet = sum(mask_magnet)
     n_current = sum(mask_current)
 
-    # Allocate output array
-    FTOUT = np.zeros((2, n_src, n_path, n_tgt, 3))
+    idx_ends_all = np.cumsum(mesh_sizes_all)
+    idx_starts_all = np.r_[0, idx_ends_all[:-1]]
+    idx_ends_all7 = np.cumsum(mesh_sizes_all7)
+    idx_starts_all7 = np.r_[0, idx_ends_all7[:-1]]
+
+
+    if meshreport:
+        print("Mesh report:")
+        for t, m in zip(targets, mesh_sizes_all):
+            print(f"  Target {t}: {m} points")
+        print()
 
     # PATH ####################################################################
     #  - pad paths
@@ -564,7 +572,14 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     # Extract and pad target path
     tgt_pos = np.empty((n_tgt, n_path, 3))
     tgt_ori = np.empty((n_tgt, n_path, 4))
+    
+    OBS = np.empty((n_path, n_mesh_all7, 3))
+    
+    eps_vec = create_eps_vector(eps)
+    
     for i, tgt in enumerate(targets):
+        
+        # Path padding
         n_pad = n_path - len(tgt._position)
         if n_pad == 0:                          # np.pad creates an overhead
             tgt_pos[i] = tgt._position
@@ -572,128 +587,34 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         else:
             tgt_pos[i] = np.pad(tgt._position, ((0,n_pad), (0,0)), 'edge')
             tgt_ori[i] = np.pad(tgt._orientation.as_quat(), ((0,n_pad), (0,0)), 'edge')
+        
+    for i in range(n_tgt):
+        pos = tgt_pos[i]
+        ori = R.from_quat(tgt_ori[i])
+        start = idx_starts_all7[i]
+        end = idx_ends_all7[i]
 
-    # Extract and pad source path
-    src_pos = np.empty((n_src, n_path, 3))
-    src_ori = np.empty((n_src, n_path, 4))
+        # use repeat instead of loop
+        for j in range(n_path):
+            pts = ori[j].apply(meshes[i]["pts"]) + pos[j]
+
+            if mask_magnet[i]:
+                    pts = (pts[:, np.newaxis, :] + eps_vec[np.newaxis, :, :]).reshape(-1, 3)
+
+            OBS[j, start : end] = pts
+
+    # B-field computation limited by getB no ragged inputs, and that sources must be path-wise associated with observers
+    # improve via:
+    #    if n_path == 1: B_all = getB(sources, OBS, squeeze=True)
+    # if n_path < n_src: cycle over paths
+    # if n_tgt < n_src, n_path: cycle over targets
+
+    B_all = np.empty((n_src, n_path, n_mesh_all7, 3))
     for i, src in enumerate(sources):
-        n_pad = n_path - len(src._position)
-        if n_pad == 0:                          # np.pad creates an overhead
-            src_pos[i] = src._position
-            src_ori[i] = src._orientation.as_quat()
-        else:
-            src_pos[i] = np.pad(src._position, ((0,n_pad), (0,0)), 'edge')
-            src_ori[i] = np.pad(src._orientation.as_quat(), ((0,n_pad), (0,0)), 'edge')
+        B_all[i] = getB(src, OBS, squeeze=True)
 
-    # Relative path "target - source" pointing from source to target
-    #  - shape (n_src, n_tgt, n_path, 3 und 4)
-    ts_pos = tgt_pos[np.newaxis,] - src_pos[:, np.newaxis] 
-    ts_ori = np.empty((n_src, n_tgt, n_path, 4))
-    for i in range(n_src):           # probably this can be improved
-        for j in range(n_tgt):
-            ts_ori[i,j] = (R.from_quat(tgt_ori[j]) * R.from_quat(src_ori[i]).inv()).as_quat()
-
-    # COMPUTE B FIELD ###################################################################
-
-    # Relative observer position between sources and target mesh points
-    REL_OBS = np.empty((n_src, n_path, n_mesh7, 3))
-    
-    idx_ends = np.cumsum(mesh_sizes_all7)
-    idx_starts = np.r_[0, idx_ends[:-1]]
-    eps_vec = create_eps_vector(eps)
-
-    for i in range(n_src):
-        for j in range(n_path):
-            for k in range(n_tgt):
-                start = idx_starts[k]
-                end = idx_ends[k]
-                rel_ori = R.from_quat(ts_ori[i, k, j])
-                rel_pos = ts_pos[i,k,j]
-                rel_pts = rel_ori.apply(meshes[k]["pts"]) + rel_pos
-                
-                if mask_magnet[k]:
-                    rel_pts = (rel_pts[:, np.newaxis, :] + eps_vec[np.newaxis, :, :]).reshape(-1, 3)
-                                
-                REL_OBS[i, j, start:end] = rel_pts
-
-    # Problem: Cannot associate a mesh with a source in getB(),
-    #     but I must hand over different mesh sizes
-    
-    # Remove source path for getB() calc
-    # for src in sources:
-    #     src_pos0 = src.position
-    #     src_ori0 = src.orientation
-    #     src.position = (0,0,0)
-    #     src.orientation = None
-
-    B_all = np.empty((n_src, n_path, n_mesh7, 3))
-    
-    if n_path == 1:
-        print(B_all.shape)
-        print(REL_OBS.shape)
-        B_all = getB(sources, REL_OBS, squeeze=False)
-        print(B_all.shape)
-
-    import sys
-    sys.exit()
-    
-    if n_tgt == 1:
-        # Special case where everything can be evaluated in one step
-        print(B_all.shape)
-    else:
-        # general case - loop over sources
-        for i,src in enumerate(sources):
-            B_all[i] = getB(src, REL_OBS[i], squeeze=False)
-    
-    # Give src path back
-    for src in sources:
-        src.position = src_pos0
-        src.orientation = src_ori0
-
-
-    print(REL_OBS.shape)
-    print(B_all.shape)
-
-
-
-    # Replace pts by sensor, transfer tgt path, apply padding
-    for tgt,m in zip(targets, meshes):
-        padded_path = np.pad(tgt._position, ((0,padlength), (0,0)), 'edge')
-        m["pts"] = Sensor(
-                    pixel=m["pts"],
-                    position=padded_path,
-                    orientation=tgt._orientation,
-        )
-
-
-    # COMPUTE B FIELD ###################################################################
-    #  - B_all shape  (n_tgt, n_src, n_path, n_mesh, 3)
-    #  - if ragged inputs (targets with different mesh sizes), compute B field for each
-    #    sensor separately. in this case the first dim is a list
-    #  - Improve this computation when getB allows ragged inputs
-
-    sensors = [m["pts"] for m in meshes]
-
-    sensors[0].pixel = sensors[0].orientation.inv().apply(sensors[0].pixel)
-
-    if len(set(mesh_sizes_all)) == 1:
-        B_all = getB(sources, sensors, squeeze=False)
-        B_all = np.moveaxis(B_all, 2, 0)
-    else: # ragged inputs - eval mesh by mesh
-        B_all = [np.squeeze(getB(sources, s, squeeze=False), axis=2) for s in sensors]
-
-    print(sensors[0].orientation.apply(np.squeeze(B_all)))
-
-    # Transform B from local sensor coords into global coords ! :(((
-    #  - this is another major problem of this sensor-based approach
-    for i,(b, s) in enumerate(zip(B_all, sensors)):
-        for j in range(n_path):
-            shp = b[:,j].shape
-            bb = np.reshape(b[:,j], (-1,3))
-            bb = s._orientation[j].apply(bb)
-            bb = np.reshape(bb, shp)
-            B_all[i][:,j] = bb
-
+    F_all = np.zeros((n_src, n_path, n_mesh_all, 3))
+    T_all = np.zeros((n_src, n_path, n_mesh_all, 3))
 
     # MAGNETS ########################################################################
     if n_magnet > 0:
@@ -706,45 +627,40 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         B = np.empty((n_src, n_path, n_mesh, 3))     # B-field at cell location
         DB = np.empty((n_src, n_path, n_mesh, 3, 3)) # B-field gradient at cell location
         MOM = np.empty((n_src, n_path, n_mesh, 3))   # magnetic moment of cells
-        if pivot is not None:
-            POS_PIV = np.empty((n_src, n_path, n_mesh, 3))  # relative cell pos to pivot
 
         # Broadcasting and application of pos & ori
-        idx_all = np.where(mask_magnet)[0]
         idx_ends = np.cumsum(mesh_sizes)
         idx_starts = np.r_[0, idx_ends[:-1]]
-        for start, end, i in zip(idx_starts, idx_ends, idx_all):
-            sens = meshes[i]["pts"]
-            mom = meshes[i]["moments"]
 
-            # eliminate FD steps of pixel
-            sens.pixel = sens.pixel[::7]
+        for i,ii in enumerate(idx_mag):
+            start = idx_starts[i]
+            end = idx_ends[i]
 
-            B[:, :, start:end] = B_all[i][:, :, ::7]
+            start_all = idx_starts_all7[ii]
+            end_all = idx_ends_all7[ii]
+
+            B[:, :, start:end] = B_all[:, :, start_all:end_all:7]
 
             # ∂B/∂x
-            DB[:, :, start:end, 0] = B_all[i][:, :, 1 :: 7]
-            DB[:, :, start:end, 0] -= B_all[i][:, :, 2 :: 7]
+            DB[:, :, start:end, 0]  = B_all[:, :, start_all+1:end_all:7]
+            DB[:, :, start:end, 0] -= B_all[:, :, start_all+2:end_all:7]
             DB[:, :, start:end, 0] /= (2*eps)
 
             # ∂B/∂y
-            DB[:, :, start:end, 1] = B_all[i][:, :, 3 :: 7]
-            DB[:, :, start:end, 1] -= B_all[i][:, :, 4 :: 7]
+            DB[:, :, start:end, 1]  = B_all[:, :, start_all+3:end_all:7]
+            DB[:, :, start:end, 1] -= B_all[:, :, start_all+4:end_all:7]
             DB[:, :, start:end, 1] /= (2*eps)
-            
+
             # ∂B/∂z
-            DB[:, :, start:end, 2] = B_all[i][:, :, 5 :: 7]
-            DB[:, :, start:end, 2] -= B_all[i][:, :, 6 :: 7]
+            DB[:, :, start:end, 2] = B_all[:, :, start_all+5:end_all:7]
+            DB[:, :, start:end, 2] -= B_all[:, :, start_all+6:end_all:7]
             DB[:, :, start:end, 2] /= (2*eps)
 
+            mom = meshes[ii]["moments"]
             for j in range(n_path):
-                mom_rot = sens._orientation[j].apply(mom)
+                ori = R.from_quat(tgt_ori[ii, j])
+                mom_rot = ori.apply(mom)
                 MOM[:, j, start:end] = np.broadcast_to(mom_rot, (n_src, end-start,3))
-
-                if pivot is not None:
-                    pts = sens._orientation[j].apply(sens.pixel) + sens._position[j]
-                    pos_piv = pts - pivot[i,j]
-                    POS_PIV[:, j, start:end] = np.broadcast_to(pos_piv, (n_src, end-start, 3))
 
         # Force and Torque computation
         #  - !!Performance!!: cross (torque) few time faster than einsum (force) few
@@ -752,22 +668,47 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         #    the force computation. Therefore it makes no sense to separate the force
         #    and torque computation.
 
-        print(DB)
-
         F = np.einsum('abijk,abik->abij', DB, MOM)            # numpy only
         #F = np.sum(DB * MOM[:, :, :, np.newaxis, :], axis=4) # array API
         T = np.cross(MOM, B)
 
-        if pivot is not None:
-            T += np.cross(POS_PIV, F)
+        # broadcast into B to save memory?
+        F_all[:,:,mask_magnet] = F
+        T_all[:,:,mask_magnet] = T
 
-        # Reduce mesh to targets (sumover) -> (n_src, n_path, n_tgt, 3)
-        F = np.add.reduceat(F, idx_starts, axis=2)
-        T = np.add.reduceat(T, idx_starts, axis=2)
+    if pivot is not None:
+        POS_PIV = np.zeros((n_src, n_path, n_mesh_all, 3))
+        for i in range(n_path):
+            for j in range(n_tgt):
+                start, end = idx_starts_all[j], idx_ends_all[j]
+                start7, end7 = idx_starts_all7[j], idx_ends_all7[j]
+                POS_PIV[:,i,start:end] = OBS[i, start7: end7 : 7] - pivot[j, i]
 
-        # Broadcast into output array
-        FTOUT[0][:,:,mask_magnet,:] = F
-        FTOUT[1][:,:,mask_magnet,:] = T
+        T_all += np.cross(POS_PIV, F_all)
+
+    # Reduce mesh to targets (sumover) -> (n_src, n_path, n_tgt, 3)
+    F_all = np.add.reduceat(F_all, idx_starts_all, axis=2)
+    T_all = np.add.reduceat(T_all, idx_starts_all, axis=2)
+
+    F_all = np.add.reduceat(F_all, coll_idx, axis=2)
+    T_all = np.add.reduceat(T_all, coll_idx, axis=2)
+    
+    FTOUT = np.array([F_all, T_all])
+
+    if squeeze:
+        return np.squeeze(FTOUT)
+
+    return FTOUT
+
+    
+    
+    # Sum up Target Collections
+    #FTOUT = np.add.reduceat(FTOUT, coll_idx, axis=3)
+    
+    
+    # Broadcast into output array
+    FTOUT[0][:,:,mask_magnet,:] = F
+    FTOUT[1][:,:,mask_magnet,:] = T
 
 
     # CURRENT COMPUTATION #########################################################
@@ -838,66 +779,69 @@ if __name__ == "__main__":
     import numpy as np
     import magpylib as magpy
 
-    src1 = magpy.misc.Dipole(moment=(0,0,1), position=(.1, .1, .1), orientation=R.from_quat((0,0,1,0)))
-    src2 = magpy.misc.Dipole(moment=(0,0,1), position=(.2, .2, .2))
+
+    ##############################################################
+    # src1 = magpy.misc.Dipole(moment=(0,0,1), position=(.1, .1, .1), orientation=R.from_quat((0,0,1,0)))
+    # src2 = magpy.misc.Dipole(moment=(0,0,1), position=(.2, .2, .2))
     
-    tgt1 = magpy.misc.Dipole(moment=(0,0,1), position=[(1,1,1)], orientation=R.from_quat([(0,0,-1,0), (0,0,0,1)]))
-    tgt2 = magpy.current.Polyline(current=1, vertices=[(-.1,0,0),(.1,0,0)], position=[(2,2,2)], meshing=1)
-    tgt3 = magpy.misc.Dipole(moment=(0,0,1), position=[(3,3,3)])
+    # tgt1 = magpy.misc.Dipole(moment=(0,0,1), position=[(1,1,1)], orientation=R.from_quat([(0,0,-1,0), (0,0,0,1)]))
+    # tgt2 = magpy.current.Polyline(current=1, vertices=[(-.1,0,0),(.1,0,0)], position=[(2,2,2)], meshing=1)
+    # tgt3 = magpy.misc.Dipole(moment=(0,0,1), position=[(3,3,3)]*4)
 
-    #getFT([src1, src2], [tgt1, tgt2, tgt3])
+    # getFT([src1, src2], [tgt1, tgt2, tgt3])
     
-    getFT([src1, src2], [tgt3])
+    # ft = getFT([src1, src2], [tgt3])
+    # print(ft.shape)
 
 
 
 
     
-    # DIPOLE EXAMPLE ########################################################
-    # def FTana(p1, p2, m1, m2, src, piv):
-    #     # analytical force solution
-    #     r = p2 - p1
-    #     r_abs = np.linalg.norm(r)
-    #     r_unit = r / r_abs
-    #     F_ana = (
-    #         3
-    #         * magpy.mu_0
-    #         / (4 * np.pi * r_abs**4)
-    #         * (
-    #             np.cross(np.cross(r_unit, m1), m2)
-    #             + np.cross(np.cross(r_unit, m2), m1)
-    #             - 2 * r_unit * np.dot(m1, m2)
-    #             + 5 * r_unit * (np.dot(np.cross(r_unit, m1), np.cross(r_unit, m2)))
-    #         )
-    #     )
-    #     B = src.getB(p2)
-    #     T_ana = np.cross(m2, B) + np.cross(p2-piv, F_ana)
-    #     return F_ana, T_ana
+    ## DIPOLE EXAMPLE ########################################################
+    def FTana(p1, p2, m1, m2, src, piv):
+        # analytical force solution
+        r = p2 - p1
+        r_abs = np.linalg.norm(r)
+        r_unit = r / r_abs
+        F_ana = (
+            3
+            * magpy.mu_0
+            / (4 * np.pi * r_abs**4)
+            * (
+                np.cross(np.cross(r_unit, m1), m2)
+                + np.cross(np.cross(r_unit, m2), m1)
+                - 2 * r_unit * np.dot(m1, m2)
+                + 5 * r_unit * (np.dot(np.cross(r_unit, m1), np.cross(r_unit, m2)))
+            )
+        )
+        B = src.getB(p2)
+        T_ana = np.cross(m2, B) + np.cross(p2-piv, F_ana)
+        return F_ana, T_ana
 
 
-    # m1, m2 = np.array((0.976, 4.304, 2.055))*1e3, np.array((0.878, -1.527, 2.918))*1e3
-    # p1, p2 = np.array((-1.248, 7.835, 9.273)), np.array((-2.331, 5.835, 0.578))
-    # piv = np.array((0.727, 5.152, 5.363))  # pivot point for torque calculation
+    m1, m2 = np.array((0.976, 4.304, 2.055))*1e3, np.array((0.878, -1.527, 2.918))*1e3
+    p1, p2 = np.array((-1.248, 7.835, 9.273)), np.array((-2.331, 5.835, 0.578))
+    piv = np.array((0.727, 5.152, 5.363))  # pivot point for torque calculation
 
-    # m1, m2 = np.array([(1e3,0,0), (0,1e3,0)])
-    # p1, p2 = np.array([(0,0,0), (1,0,0)])
-    # piv = np.array((0.1, 0, 0))
+    #m1, m2 = np.array([(1e3,0,0), (0,1e3,0)])
+    #p1, p2 = np.array([(0,0,0), (1,0,0)])
+    #piv = np.array((0.1, 0, 0))
 
-    # rot = R.from_rotvec((0, 0, 10), degrees=True)
-    # m2_rot = rot.apply(m2)
+    rot = R.from_rotvec((55, -126, 222), degrees=True)
+    m2_rot = rot.apply(m2)
 
-    # # magpylib
-    # src = magpy.misc.Dipole(position=p1, moment=m1)
-    # tgt1 = magpy.misc.Dipole(position=p2, moment=m2).rotate(rot)
-    # tgt2 = magpy.misc.Dipole(position=p2, moment=m2_rot)
+    # magpylib
+    src = magpy.misc.Dipole(position=p1, moment=m1)
+    tgt1 = magpy.misc.Dipole(position=[p2,p2], moment=m2).rotate(rot)
+    tgt2 = magpy.misc.Dipole(position=p2, moment=m2_rot)
 
-    # F1, T1 = magpy.getFT(src, tgt1, pivot=piv)
-    # F2, T2 = magpy.getFT(src, tgt2, pivot=piv)
-    # F3, T3 = FTana(p1, p2, m1, m2_rot, src, piv)
+    F1, T1 = magpy.getFT(src, tgt1, pivot=piv)
+    F2, T2 = magpy.getFT(src, tgt2, pivot=piv)
+    F3, T3 = FTana(p1, p2, m1, m2_rot, src, piv)
 
-    # print(F1)
-    # print(F2)
-    # print(F3)
+    print(F1)
+    print(F2)
+    print(F3)
     
     # COIL EXAMPLE ###############################################
     
