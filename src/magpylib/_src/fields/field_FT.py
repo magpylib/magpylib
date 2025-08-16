@@ -758,7 +758,8 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         F_all[:,:,mask_mesh_current] = F
         T_all[:,:,mask_mesh_current] = T
 
-    # Force adds to Torque via Pivot
+    # PIVOT ############################################################################
+    #  - force adds to torque via Pivot
     if pivot is not None:
         POS_PIV = np.zeros((n_src, n_path, n_mesh_all, 3))
         for i in range(n_path):
@@ -774,6 +775,8 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
         T_all += np.cross(POS_PIV, F_all)
 
+    # REDUCE AND PREP OUTPUT ###########################################################
+    
     # Reduce mesh to targets (sumover) -> (n_src, n_path, n_tgt, 3)
     F_all = np.add.reduceat(F_all, idx_starts_all, axis=2)
     T_all = np.add.reduceat(T_all, idx_starts_all, axis=2)
@@ -781,78 +784,11 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     # Sumup targets that are in Collections
     F_all = np.add.reduceat(F_all, coll_idx, axis=2)
     T_all = np.add.reduceat(T_all, coll_idx, axis=2)
-    
-    # Create output array (why would we do that rather than return F,T ?)
-    FTOUT = np.array([F_all, T_all])
 
     if squeeze:
-        return np.squeeze(FTOUT)
+        return np.squeeze(F_all), np.squeeze(T_all)
 
-    return FTOUT
-
-    
-    
-    # Sum up Target Collections
-    #FTOUT = np.add.reduceat(FTOUT, coll_idx, axis=3)
-    
-    
-    # Broadcast into output array
-    FTOUT[0][:,:,mask_magnet,:] = F
-    FTOUT[1][:,:,mask_magnet,:] = T
-
-
-    if pivot is not None:
-        POS_PIV = np.empty((n_src, n_path, n_mesh, 3))  # relative cell pos to pivot
-        
-        # Broadcasting and application of pos & ori
-        idx_all = np.where(mask_current)[0]
-        idx_ends = np.cumsum(mesh_sizes)
-        idx_starts = np.r_[0, idx_ends[:-1]]
-        for start, end, i in zip(idx_starts, idx_ends, idx_all):
-            sens = meshes[i]["pts"]
-            tvec = meshes[i]["tvecs"]
-            curr = meshes[i]["currents"]
-
-            B[:, :, start:end] = B_all[i]
-            CURR[:,:,start:end] = np.broadcast_to(curr, (n_src, n_path, end-start))
-
-            for j in range(n_path):
-                tvec_rot = sens._orientation[j].apply(tvec)
-                TVEC[:, j, start:end] = np.broadcast_to(tvec_rot, (n_src, end-start, 3))
-            
-                if pivot is not None:
-                    pts = sens._orientation[j].apply(sens.pixel) + sens._position[j]
-                    pos_piv = pts - pivot[i,j] #pivot shape (n_tgt, n_path, 3)
-                    POS_PIV[:, j, start:end] = np.broadcast_to(pos_piv, (n_src, end-start, 3))
-
-        # Force and Torque computation
-        F = CURR[...,np.newaxis] * np.cross(TVEC, B)
-
-        if pivot is None:
-            T = np.zeros_like(F)
-        else:
-            T = np.cross(POS_PIV, F)
-
-        # Reduce mesh to targets (sumover) -> (n_src, n_path, n_tgt, 3)
-        F = np.add.reduceat(F, idx_starts, axis=2)
-        T = np.add.reduceat(T, idx_starts, axis=2)
-
-        # Broadcast into output array
-        FTOUT[0][:,:,mask_current,:] = F
-        FTOUT[1][:,:,mask_current,:] = T
-
-    # FINALIZE OUTPUT ##############################################################
-    
-    # Do pivot calc here for all targets ?!?
-    
-    # Sum up Target Collections
-    FTOUT = np.add.reduceat(FTOUT, coll_idx, axis=3)
-
-    if squeeze:
-        return np.squeeze(FTOUT)
-
-    return FTOUT
-
+    return F_all, T_all
 
 if __name__ == "__main__":
     import numpy as np
@@ -902,10 +838,6 @@ if __name__ == "__main__":
     p1, p2 = np.array((-1.248, 7.835, 9.273)), np.array((-2.331, 5.835, 0.578))
     piv = np.array((0.727, 5.152, 5.363))  # pivot point for torque calculation
 
-    #m1, m2 = np.array([(1e3,0,0), (0,1e3,0)])
-    #p1, p2 = np.array([(0,0,0), (1,0,0)])
-    #piv = np.array((0.1, 0, 0))
-
     rot = R.from_rotvec((55, -126, 222), degrees=True)
     m2_rot = rot.apply(m2)
 
@@ -918,13 +850,6 @@ if __name__ == "__main__":
     tgt3 = magpy.current.Polyline(current=1, vertices=[(-.1,0,0),(.1,0,0)], position=[(2,2,2),(3,3,3),(4,4,4)], meshing=10)
     tgt4 = magpy.current.Polyline(current=1, vertices=[(-.1,0,0),(.1,0,0)], meshing=10)
 
-    # F1, T1 = magpy.getFT(src, tgt1, pivot=piv)
-    # F2, T2 = magpy.getFT(src, tgt2, pivot=piv)
-    # F3, T3 = FTana(p1, p2, m1, m2_rot, src, piv)
-
-    # print(F1)
-    # print(F2)
-    # print(F3)
     test = np.array([-1.03194605e-05,  1.65691874e-04,  1.06616733e-03])
 
     F,T = getFT([src1, src1], [tgt2, tgt2, tgt4, tgt2], pivot=(0,0,0), squeeze=False) # no path
@@ -937,28 +862,24 @@ if __name__ == "__main__":
     print(np.amax(abs(F[:,:,:3] - test)))
 
 
-
+    # loop - dipole backward forward
     loop = magpy.current.Circle(
         diameter=5,
         current=1e6,
         position=(0,0,0),
-        meshing=10000,
-    )
+        meshing=1000,
+    ).rotate_from_angax([10, 20, 55, 70, 20, 10, 15, 20], axis=(1,2,-3), anchor=(.1,.2,.3))
     dip = magpy.misc.Dipole(
         moment=(1e3,0,0),
-        position=(2,2,1)
+        position=np.linspace((-.5,-.4,-.3), (.3, .4, -.2), 10)
     )
     F1,T1 = getFT(dip, loop, pivot=(0,0,0))
     F2,T2 = getFT(loop,dip, pivot=(0,0,0))
 
-    print(F1)
-    print(F2)
-    
-    print(T1)
-    print(T2)
-
-
-
+    errF = np.max(np.linalg.norm(F1 + F2, axis=1) / np.linalg.norm(F1 - F2, axis=1))
+    print(errF)
+    errT = np.max(np.linalg.norm(T1 + T2, axis=1) / np.linalg.norm(T1 - T2, axis=1))
+    print(errT)
 
 
     # COIL EXAMPLE ###############################################
