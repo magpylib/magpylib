@@ -158,9 +158,38 @@ def test_force_path6():
 def test_force_backforward_dipole_circle():
     """
     test backward and forward force on dipole in circle
+    test meshing convergence
     """
     loop = magpy.current.Circle(
         diameter=5,
+        current=1e6,
+        position=(0,0,0),
+    ).rotate_from_angax([10, 20, 55, 70, 20, 10, 15, 20, -123.1234, 1234], axis=(1,2,-3), anchor=(.1,.2,.3))
+    dip = magpy.misc.Dipole(
+        moment=(1e3,0,0),
+        position=np.linspace((-.5,-.4,-.3), (.3, .4, -.2), 10)
+    )
+    
+    F0,T0 = getFT(loop, dip, pivot=(0,0,0))
+    
+    for meshing,err in zip([120, 360, 1080], [1e-3, 1e-4, 1e-5]):
+        loop.meshing = meshing
+        F1,T1 = getFT(dip, loop, pivot=(0,0,0))
+
+        errF = np.max(np.linalg.norm(F1 + F0, axis=1) / np.linalg.norm(F1 - F0, axis=1))
+        assert errF < err, f"Force mismatch: {errF}"
+        errT = np.max(np.linalg.norm(T1 + T0, axis=1) / np.linalg.norm(T1 - T0, axis=1))
+        assert errT < err, f"Torque mismatch: {errT}"
+
+
+def test_force_backforward_dipole_polyline():
+    """
+    test backward and forward force on dipole and closed polyline
+    test meshing convergence
+    """
+    vertices = ((-3,-3,-3), (3,3,-3), (3,3,2), (-2,-1,3), (-3,-3,-3))
+    loop = magpy.current.Polyline(
+        vertices=vertices,
         current=1e6,
         position=(0,0,0),
     ).rotate_from_angax([10, 20, 55, 70, 20, 10, 15, 20, -123.1234, 1234], axis=(1,2,-3), anchor=(.1,.2,.3))
@@ -559,17 +588,18 @@ def test_force_physics_consistency_back_forward3():
         assert errt < 1e-3, f"Torque mismatch: {errt}"
 
 
-def test_force_physics_ana_cocentric_loops():
+def test_force_analytic_cocentric_loops():
     """
     compare the numerical solution against the analytical solution of the force between two
     cocentric current loops.
     See e.g. IEEE TRANSACTIONS ON MAGNETICS, VOL. 49, NO. 8, AUGUST 2013
     """
+    # random numbers
     z1, z2 = 0.123, 1.321
     i1, i2 = 3.2, 5.1
     r1, r2 = 1.2, 2.3
 
-    # numerical solution
+    # magpylib
     loop1 = magpy.current.Circle(diameter=2 * r1, current=i1, position=(0, 0, z1))
     loop2 = magpy.current.Circle(diameter=2 * r2, current=i2, position=(0, 0, z2), meshing=1000)
     F,_ = magpy.getFT(loop1, loop2, pivot=(0, 0, 0))
@@ -585,7 +615,7 @@ def test_force_physics_ana_cocentric_loops():
     assert abs((F_num - F_ana) / (F_num + F_ana)) < 1e-5
 
 
-def test_force_physics_torque_sign():
+def test_force_analytic_torque_sign():
     """make sure that torque sign is in the right direction"""
 
     # Cuboid -> Cuboid
@@ -660,7 +690,7 @@ def test_force_physics_perpendicular_wires():
     assert np.max(abs(F)) < 1e-14
 
 
-def test_force_physics_ana_current_in_homo_field():
+def test_force_analytic_current_in_homo_field():
     """
     for a current loop in a homogeneous field the following holds
     F = 0
@@ -1928,12 +1958,15 @@ if __name__ == "__main__":
     # vs analytical solutions
     test_force_analytic_dipole()   # Dipole, step1: proofs magnet force + torque (excl. pivot)
     test_force_analytic_loop_projection()
-    #test_force_analytic_cocentric_loops()
-    #test_force_analytic_current_in_homo_field()
+    test_force_analytic_cocentric_loops()
+    test_force_analytic_current_in_homo_field()
     #test_force_analytic_torque_sign()
 
-    # backward forward
+    # backward forward & meshing convergence
     test_force_backforward_dipole_circle()
+    test_force_backforward_dipole_polyline()
+
+
 
 
     # object and interface properties
