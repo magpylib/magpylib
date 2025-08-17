@@ -537,7 +537,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     # Mesh sizes and Masks
     mask_magnet = np.array(["moments" in m for m in meshes])
     mask_current = ~mask_magnet
-    
+
     mesh_sizes_all = np.array([len(m["pts"]) for m in meshes])
     mesh_sizes_all7 = mesh_sizes_all * np.where(mask_magnet, 7, 1) # with FD steps
     
@@ -599,7 +599,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         n_mesh = mesh_sizes_all[i]
         n_mesh7 = mesh_sizes_all7[i]
 
-        # Apply pos+rot to meshes
+        # Apply path to meshes
         pos = np.repeat(pos, n_mesh, axis=0)
         ori = R.from_quat(np.repeat(ori, n_mesh, axis=0))
         mesh = np.tile(meshes[i]["pts"], (n_path,1))
@@ -608,7 +608,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
         # Extend meshes by FD steps
         if mask_magnet[i]:
-            mesh = (mesh[:, np.newaxis, :] + eps_vec[np.newaxis, :, :])
+            mesh = (mesh[:, :, np.newaxis, :] + eps_vec[np.newaxis, np.newaxis, :, :])
 
         # Broadcast into OBS7
         OBS7[:, start7 : end7] = mesh.reshape((n_path, n_mesh7, 3))
@@ -791,5 +791,31 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     return F_all, T_all
 
 if __name__ == "__main__":
-    import numpy as np
     import magpylib as magpy
+
+    # sphere = magpy.magnet.Sphere(
+    #     diameter=1,
+    #     polarization=(1,2,-3),
+    #     meshing = 5,
+    # )
+
+    # dip = magpy.misc.Dipole(
+    #     moment=(1e3,0,0),
+    #     position=(1,1,1),
+    # )
+    # dip2 = magpy.misc.Dipole(
+    #     moment=(1e3,0,0),
+    #     position=(1,1,2),
+    # )
+    # #F0,T0 = getFT(sphere, dip, pivot=(0,0,0))
+    # F1,T1 = getFT(dip, [dip2,sphere], pivot=(0,0,0), meshreport=True)
+
+    # import sys
+    # import os
+    
+    # # Add the repo root to Python path
+    # repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
+    # sys.path.insert(0, repo_root)
+    
+    # from _temp_tests import test_force_backforward_dipole_sphere
+    # test_force_backforward_dipole_sphere()

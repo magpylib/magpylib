@@ -399,7 +399,7 @@ def create_grid(dimensions, spacing):
     return points
 
 
-def target_mesh_sphere(r0, target_points):
+def target_mesh_sphere(r0, target_points, magnetization):
     """
     Sphere meshing using regular cubic grid with filtering
     
@@ -432,14 +432,16 @@ def target_mesh_sphere(r0, target_points):
     # mask inside
     mask_sphere = np.linalg.norm(points, axis=1) <= r0
     pts = points[mask_sphere]
-    
+
     # volume
     n_mesh = len(pts)
     volumes = np.full(n_mesh, sphere_volume / n_mesh)
 
+    moments = volumes[:, np.newaxis] * magnetization
+
     mesh_dict = {
         "pts": pts,
-        "volumes": volumes
+        "moments": moments
     }
 
     return mesh_dict

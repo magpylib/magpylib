@@ -136,6 +136,7 @@ def test_force_path6():
         tgt2 = magpy.misc.Dipole(position=p2[i], moment=m2_rot)
         tgt3 = magpy.current.Polyline(current=1, vertices=[(-.1,0,0),(.1,0,0)], position=[(2,2,2),(3,3,3),(4,4,4)], meshing=10)
         tgt4 = magpy.current.Polyline(current=1, vertices=[(-.1,0,0),(.1,0,0)], meshing=10)
+        tgt5 = magpy.magnet.Sphere(diameter=.2, polarization=(2,3,1), meshing=7)
 
         F0, T0 = FTana(p1[i], p2[i], m1[i], m2_rot, src1, piv[i])
 
@@ -149,8 +150,8 @@ def test_force_path6():
         assert np.amax(abs(F[:,:,:2] - F0)) / np.linalg.norm(F0) < 1e-9
         assert np.amax(abs(T[:,:,:2] - T0)) / np.linalg.norm(T0) < 1e-9
 
-        F,T = getFT([src2,src1], [tgt1, tgt2, tgt2, tgt3, tgt4, tgt2], pivot=piv[i]) # tgt_path + src_path
-        assert F.shape == (2, 4, 6, 3)
+        F,T = getFT([src2,src1], [tgt1, tgt2, tgt2, tgt5, tgt3, tgt4, tgt2, tgt5], pivot=piv[i]) # tgt_path + src_path
+        assert F.shape == (2, 4, 8, 3)
         assert np.amax(abs(F[:,:,:3] - F0)) / np.linalg.norm(F0) < 1e-9
         assert np.amax(abs(T[:,:,:3] - T0)) / np.linalg.norm(T0) < 1e-9
 
@@ -208,6 +209,35 @@ def test_force_backforward_dipole_polyline():
         assert errF < err, f"Force mismatch: {errF}"
         errT = np.max(np.linalg.norm(T1 + T0, axis=1) / np.linalg.norm(T1 - T0, axis=1))
         assert errT < err, f"Torque mismatch: {errT}"
+
+
+def test_force_backforward_dipole_sphere():
+    """
+    test backward and forward force on dipole and sphere
+    test meshing convergence
+    """
+    sphere = magpy.magnet.Sphere(
+        diameter=1,
+        polarization=(1,2,-3),
+    ).rotate_from_angax([11, 24.3, 55.2, 76, 20, 10, 15, 20, -123.1234, 1234], axis=(1,2,-3), anchor=(.1,.2,.3))
+    dip = magpy.misc.Dipole(
+        moment=(1e3,0,0),
+        position=np.linspace((-5,-.4,-1.3), (3, 1.4, -1.2), 10)
+    )
+    
+    F0,T0 = getFT(sphere, dip, pivot=(0,0,0))
+    
+    for meshing,err in zip([5, 120, 360], [1e-1, 1e-2, 1e-3]):
+        sphere.meshing = meshing
+        F1,T1 = getFT(dip, sphere, pivot=(0,0,0))
+
+        errF = np.max(np.linalg.norm(F1 + F0, axis=1) / np.linalg.norm(F1 - F0, axis=1))
+        assert errF < err, f"Force mismatch: {errF}"
+        errT = np.max(np.linalg.norm(T1 + T0, axis=1) / np.linalg.norm(T1 - T0, axis=1))
+        assert errT < err*2, f"Torque mismatch: {errT}"
+
+
+
 
 
 
@@ -1965,7 +1995,7 @@ if __name__ == "__main__":
     # backward forward & meshing convergence
     test_force_backforward_dipole_circle()
     test_force_backforward_dipole_polyline()
-
+    test_force_backforward_dipole_sphere()
 
 
 

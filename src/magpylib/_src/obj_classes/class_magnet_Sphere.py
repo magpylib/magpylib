@@ -155,8 +155,4 @@ class Sphere(BaseMagnet, BaseTarget):
     def _generate_mesh(self):
         """Generate mesh for force computation."""
         # Tests in getFT ensure that meshing, dimension and excitation are set
-        mesh, volumes = target_mesh_sphere(self.diameter/2, self.meshing)
-        mesh = self.orientation.apply(mesh) + self.position
-        moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
-
-        return mesh, moments
+        return target_mesh_sphere(self.diameter/2, self.meshing, self.magnetization)
