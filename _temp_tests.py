@@ -5,7 +5,43 @@ from magpylib import getFT
 import pytest
 
 
-def test_force_physics_ana_dipole():
+def test_force_analytic_loop_projection():
+    """
+    the torque of a rotated loop in a dipole field must fulfill certain geometric relations
+    """
+    loop = magpy.current.Circle(
+        diameter=5,
+        current=1e6,
+        position=(0,0,0),
+        meshing=400,
+    )
+    dip = magpy.misc.Dipole(
+        moment=(1e3,0,0),
+        position=(0,0,0)
+    )
+    _,T1 = getFT(dip, loop, pivot=(0,0,0))
+    TT0 = T1[1]
+
+    # geometric sum relation
+    loop.rotate_from_angax(45, 'x')
+    _,T1 = getFT(dip, loop, pivot=(0,0,0))
+    TT1 = T1[1]
+    assert TT0 - TT1*np.sqrt(2) < 1e-14
+
+    # reduced flux at 45° angle
+    loop.orientation=None
+    loop.rotate_from_angax(45, 'y')
+    _,T1 = getFT(dip, loop, pivot=(0,0,0))
+    assert abs(TT1 - T1[1]) < 1e-13
+
+    # reduced flux at -225° angle
+    loop.orientation=None
+    dip.rotate_from_angax(-225, 'y')
+    _,T1 = getFT(dip, loop, pivot=(0,0,0))
+    assert abs(TT1 + T1[1]) < 1e-12
+
+
+def test_force_analytic_dipole():
     """
     Compare force and torque between two magnetic Dipoles with well-known formula
     (e.g. https://en.wikipedia.org/wiki/Magnetic_dipole%E2%80%93dipole_interaction)
@@ -15,38 +51,138 @@ def test_force_physics_ana_dipole():
     --> DIPOLE is good
     --> magnet force & torque is good, pivot_torque = ?
     """
-    m1, m2 = np.array((0.976, 4.304, 2.055))*1e3, np.array((0.878, -1.527, 2.918))*1e3
-    p1, p2 = np.array((-1.248, 7.835, 9.273)), np.array((-2.331, 5.835, 0.578))
-
-    # numerical solution
-    dipole1 = magpy.misc.Dipole(position=p1, moment=m1)
-    dipole2 = magpy.misc.Dipole(position=p2, moment=m2)
-    F_num, T_num = magpy.getFT(dipole1, dipole2, pivot=None)
-    # F_num = getFT([dipole1], [dipole2, dipole2])
-
-    # analytical force solution
-    r = p2 - p1
-    r_abs = np.linalg.norm(r)
-    r_unit = r / r_abs
-    F_ana = (
-        3
-        * magpy.mu_0
-        / (4 * np.pi * r_abs**4)
-        * (
-            np.cross(np.cross(r_unit, m1), m2)
-            + np.cross(np.cross(r_unit, m2), m1)
-            - 2 * r_unit * np.dot(m1, m2)
-            + 5 * r_unit * (np.dot(np.cross(r_unit, m1), np.cross(r_unit, m2)))
+    def FTana(p1, p2, m1, m2, src, piv):
+        # analytical force solution
+        r = p2 - p1
+        r_abs = np.linalg.norm(r)
+        r_unit = r / r_abs
+        F_ana = (
+            3
+            * magpy.mu_0
+            / (4 * np.pi * r_abs**4)
+            * (
+                np.cross(np.cross(r_unit, m1), m2)
+                + np.cross(np.cross(r_unit, m2), m1)
+                - 2 * r_unit * np.dot(m1, m2)
+                + 5 * r_unit * (np.dot(np.cross(r_unit, m1), np.cross(r_unit, m2)))
+            )
         )
+        B = src.getB(p2)
+        T_ana = np.cross(m2, B) + np.cross(p2-piv, F_ana)
+        return F_ana, T_ana
+
+    # random numbers
+    m1 = np.array([(0.976, 4.304, 2.055), (1.432, 0.352, 2.345), (-1.234, 4.362, -4.765)])*1e3
+    m2 = np.array([(0.878, -1.527, 2.918), (3.142, -2.863, 1.742), (0.591, 3.218, -2.457)])*1e3
+    p1 = np.array([(-1.248, 7.835, 9.273), (2.164, -3.521, 4.896), (6.382, 1.947, -2.135)])
+    p2 = np.array([(-2.331, 5.835, 0.578), (1.829, -4.267, 7.093), (-0.516, 2.748, 3.921)])
+    piv = np.array([(0.727, 5.152, 5.363), (-1.635, 2.418, 8.091), (4.572, -3.864, 1.247)])
+    rot = R.from_rotvec([(55, -126, 222), (43, 165, -32), (94, 2, -23)], degrees=True)
+    for i in range(3):
+        m2_rot = rot[i].apply(m2[i])
+        src1 = magpy.misc.Dipole(position=p1[i], moment=m1[i])
+        tgt1 = magpy.misc.Dipole(position=p2[i], moment=m2[i]).rotate(rot[i])
+        tgt2 = magpy.misc.Dipole(position=p2[i], moment=m2_rot)
+
+        F0, T0 = FTana(p1[i], p2[i], m1[i], m2_rot, src1, piv[i])
+        F1, T1 = getFT(src1, tgt1, pivot=piv[i])
+        F2, T2 = getFT(src1, tgt2, pivot=piv[i])
+
+        assert np.linalg.norm(F0 - F1) / np.linalg.norm(F0 + F1) < 1e-10
+        assert np.linalg.norm(F0 - F2) / np.linalg.norm(F0 + F2) < 1e-10
+        assert np.linalg.norm(T0 - T1) / np.linalg.norm(T0 + T1) < 1e-10
+        assert np.linalg.norm(T0 - T2) / np.linalg.norm(T0 + T2) < 1e-10
+
+
+def test_force_path6():
+    """
+    CORE PATH TEST
+    orientation + all kinds of paths combined
+    """
+    def FTana(p1, p2, m1, m2, src, piv):
+        # analytical force solution
+        r = p2 - p1
+        r_abs = np.linalg.norm(r)
+        r_unit = r / r_abs
+        F_ana = (
+            3
+            * magpy.mu_0
+            / (4 * np.pi * r_abs**4)
+            * (
+                np.cross(np.cross(r_unit, m1), m2)
+                + np.cross(np.cross(r_unit, m2), m1)
+                - 2 * r_unit * np.dot(m1, m2)
+                + 5 * r_unit * (np.dot(np.cross(r_unit, m1), np.cross(r_unit, m2)))
+            )
+        )
+        B = src.getB(p2)
+        T_ana = np.cross(m2, B) + np.cross(p2-piv, F_ana)
+        return F_ana, T_ana
+
+    # random numbers
+    m1 = np.array([(0.976, 4.304, 2.055), (1.432, 0.352, 2.345), (-1.234, 4.362, -4.765)])*1e3
+    m2 = np.array([(0.878, -1.527, 2.918), (3.142, -2.863, 1.742), (0.591, 3.218, -2.457)])*1e3
+    p1 = np.array([(-1.248, 7.835, 9.273), (2.164, -3.521, 4.896), (6.382, 1.947, -2.135)])
+    p2 = np.array([(-2.331, 5.835, 0.578), (1.829, -4.267, 7.093), (-0.516, 2.748, 3.921)])
+    piv = np.array([(0.727, 5.152, 5.363), (-1.635, 2.418, 8.091), (4.572, -3.864, 1.247)])
+    rot = R.from_rotvec([(55, -126, 222), (43, 165, -32), (94, 2, -23)], degrees=True)
+    for i in range(3):
+        m2_rot = rot[i].apply(m2[i])
+
+        src1 = magpy.misc.Dipole(position=p1[i], moment=m1[i])
+        src2 = magpy.misc.Dipole(position=[p1[i]]*4, moment=m1[i])
+
+        tgt1 = magpy.misc.Dipole(position=[p2[i]]*4, moment=m2[i]).rotate(rot[i])
+        tgt2 = magpy.misc.Dipole(position=p2[i], moment=m2_rot)
+        tgt3 = magpy.current.Polyline(current=1, vertices=[(-.1,0,0),(.1,0,0)], position=[(2,2,2),(3,3,3),(4,4,4)], meshing=10)
+        tgt4 = magpy.current.Polyline(current=1, vertices=[(-.1,0,0),(.1,0,0)], meshing=10)
+
+        F0, T0 = FTana(p1[i], p2[i], m1[i], m2_rot, src1, piv[i])
+
+        F,T = getFT([src1, src1], [tgt2, tgt2, tgt4, tgt2], pivot=piv[i], squeeze=False) # no path
+        assert F.shape == (2, 1, 4, 3)
+        assert np.amax(abs(F[:,:,:2] - F0)) / np.linalg.norm(F0) < 1e-9
+        assert np.amax(abs(T[:,:,:2] - T0)) / np.linalg.norm(T0) < 1e-9
+
+        F,T = getFT([src1, src1], [tgt1, tgt2, tgt4, tgt2], pivot=piv[i], squeeze=False) # tgt_path, no src_path
+        assert F.shape == (2, 4, 4, 3)
+        assert np.amax(abs(F[:,:,:2] - F0)) / np.linalg.norm(F0) < 1e-9
+        assert np.amax(abs(T[:,:,:2] - T0)) / np.linalg.norm(T0) < 1e-9
+
+        F,T = getFT([src2,src1], [tgt1, tgt2, tgt2, tgt3, tgt4, tgt2], pivot=piv[i]) # tgt_path + src_path
+        assert F.shape == (2, 4, 6, 3)
+        assert np.amax(abs(F[:,:,:3] - F0)) / np.linalg.norm(F0) < 1e-9
+        assert np.amax(abs(T[:,:,:3] - T0)) / np.linalg.norm(T0) < 1e-9
+
+
+def test_force_backforward_dipole_circle():
+    """
+    test backward and forward force on dipole in circle
+    """
+    loop = magpy.current.Circle(
+        diameter=5,
+        current=1e6,
+        position=(0,0,0),
+    ).rotate_from_angax([10, 20, 55, 70, 20, 10, 15, 20, -123.1234, 1234], axis=(1,2,-3), anchor=(.1,.2,.3))
+    dip = magpy.misc.Dipole(
+        moment=(1e3,0,0),
+        position=np.linspace((-.5,-.4,-.3), (.3, .4, -.2), 10)
     )
-    errF = np.linalg.norm(F_num - F_ana) / np.linalg.norm(F_ana + F_num)
-    assert errF < 1e-9, f"Force mismatch: {errF}"
+    
+    F0,T0 = getFT(loop, dip, pivot=(0,0,0))
+    
+    for meshing,err in zip([120, 360, 1080], [1e-3, 1e-4, 1e-5]):
+        loop.meshing = meshing
+        F1,T1 = getFT(dip, loop, pivot=(0,0,0))
 
-    B = dipole1.getB(p2)
-    T_ana = np.cross(m2, B)
+        errF = np.max(np.linalg.norm(F1 + F0, axis=1) / np.linalg.norm(F1 - F0, axis=1))
+        assert errF < err, f"Force mismatch: {errF}"
+        errT = np.max(np.linalg.norm(T1 + T0, axis=1) / np.linalg.norm(T1 - T0, axis=1))
+        assert errT < err, f"Torque mismatch: {errT}"
 
-    errT = np.linalg.norm(T_num - T_ana) / np.linalg.norm(T_ana + T_num)
-    assert errT < 1e-9, f"Torque mismatch: {errT}"
+
+
+
 
 
 def test_force_equiv_circle_dipole():
@@ -1790,13 +1926,18 @@ def test_force_orientation_nightmare():
 if __name__ == "__main__":
 
     # vs analytical solutions
-    test_force_physics_ana_dipole()   # Dipole, step1: proofs magnet force + torque (excl. pivot)
-    test_force_physics_ana_cocentric_loops()
-    test_force_physics_ana_current_in_homo_field()
-    test_force_physics_torque_sign()
+    test_force_analytic_dipole()   # Dipole, step1: proofs magnet force + torque (excl. pivot)
+    test_force_analytic_loop_projection()
+    #test_force_analytic_cocentric_loops()
+    #test_force_analytic_current_in_homo_field()
+    #test_force_analytic_torque_sign()
+
+    # backward forward
+    test_force_backforward_dipole_circle()
+
 
     # object and interface properties
-    test_force_obj_rotations1()
+    #test_force_obj_rotations1()
     #test_force_obj_rotations2()
     #test_force_2sources()
     #test_force_meshing_validation()
@@ -1811,24 +1952,25 @@ if __name__ == "__main__":
     #test_force_physics_consistency_back_forward2()
     #test_force_physics_consistency_back_forward3() # CylinderSegment
     #test_force_physics_consistency_in_very_homo_field() # Sphere
-    test_force_physics_parallel_wires()
-    test_force_physics_perpendicular_wires()
-    test_force_orientation_nightmare()
+    #test_force_physics_parallel_wires()
+    #test_force_physics_perpendicular_wires()
+    #test_force_orientation_nightmare()
 
     # against FEM
     #test_force_ANSYS_cube_cube()
-    test_force_ANSYS_loop_loop()
+    #test_force_ANSYS_loop_loop()
     #test_force_ANSYS_loop_magnet()
     #test_force_ANSYS_magnet_current_close()
 
     # path
-    test_force_path1()
-    test_force_path2()
-    test_force_path3()
-    test_force_path4()
-    test_force_path5()
+    #test_force_path1()
+    #test_force_path2()
+    #test_force_path3()
+    #test_force_path4()
+    #test_force_path5()
+    test_force_path6()
 
     # other
-    test_centroid()
+    #test_centroid()
 
     print("All tests passed.")
