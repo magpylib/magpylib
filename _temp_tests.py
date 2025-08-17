@@ -704,7 +704,7 @@ def test_force_analytic_torque_sign():
     assert T[1] < 0
 
 
-def test_force_physics_parallel_wires():
+def test_force_analytic_parallel_wires():
     """
     The force between straight infinite parallel wires is
     F = 2*mu0/4/pi * i1*i2/r
@@ -727,7 +727,7 @@ def test_force_physics_parallel_wires():
     assert abs((F[2] + Fanalytic) / Fanalytic) < 1e-3
 
 
-def test_force_physics_perpendicular_wires():
+def test_force_analytic_perpendicular_wires():
     """
     The force between straight infinite perpendicular wires is 0
     """
@@ -2018,6 +2018,8 @@ if __name__ == "__main__":
     test_force_analytic_cocentric_loops()
     test_force_analytic_current_in_homo_field()
     test_force_analytic_torque_sign()
+    test_force_analytic_parallel_wires()
+    test_force_analytic_perpendicular_wires()
 
     # backward forward & meshing convergence
     test_force_backforward_dipole_circle()
@@ -2042,8 +2044,6 @@ if __name__ == "__main__":
     #test_force_physics_consistency_back_forward2()
     #test_force_physics_consistency_back_forward3() # CylinderSegment
     #test_force_physics_consistency_in_very_homo_field() # Sphere
-    #test_force_physics_parallel_wires()
-    #test_force_physics_perpendicular_wires()
     #test_force_orientation_nightmare()
 
     # against FEM
@@ -2053,12 +2053,12 @@ if __name__ == "__main__":
     #test_force_ANSYS_magnet_current_close()
 
     # path
-    #test_force_path1()
-    #test_force_path2()
-    #test_force_path3()
-    #test_force_path4()
-    #test_force_path5()
-    test_force_path6()
+    test_force_path1()
+    test_force_path2()
+    test_force_path3()
+    test_force_path4()
+    test_force_path5()
+    test_force_path6() #CORE PATH TEST
 
     # other
     #test_centroid()
