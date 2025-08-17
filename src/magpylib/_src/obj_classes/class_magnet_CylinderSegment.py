@@ -180,10 +180,7 @@ class CylinderSegment(BaseMagnet, BaseTarget):
         """Generate mesh for force computation."""
         # Tests in getFT ensure that meshing, dimension and excitation are set
         r1, r2, h, phi1, phi2 = self.dimension
-        mesh, volumes = target_mesh_cylinder(r1, r2, h, phi1, phi2, self.meshing)
-        mesh = self.orientation.apply(mesh) + self.position
-        moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
-        return mesh, moments
+        return target_mesh_cylinder(r1, r2, h, phi1, phi2, self.meshing, self.magnetization)
 
     # Static methods
     @staticmethod
