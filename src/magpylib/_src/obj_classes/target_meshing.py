@@ -176,7 +176,7 @@ def target_mesh_cuboid(target_elems, dimension, magnetization):
     return mesh_dict
 
 
-def target_mesh_cylinder(r1, r2, h, phi1, phi2, n):
+def target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
     """
     Cylinder mesh in the local object coordinates.
 
@@ -242,9 +242,11 @@ def target_mesh_cylinder(r1, r2, h, phi1, phi2, n):
     pts = np.array(cells)
     volumes = np.array(volumes)
     
+    moments = volumes[:, np.newaxis] * magnetization
+    
     mesh_dict = {
         "pts": pts,
-        "volumes": volumes
+        "moments": moments
     }
     return mesh_dict
 

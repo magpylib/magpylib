@@ -159,8 +159,4 @@ class Cylinder(BaseMagnet, BaseTarget):
         """Generate mesh for force computation."""
         # Tests in getFT ensure that meshing, dimension and excitation are set
         d, h = self.dimension
-        mesh, volumes = target_mesh_cylinder(0, d/2, h, 0, 360, self.meshing)
-        mesh = self.orientation.apply(mesh) + self.position
-        moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
-
-        return mesh, moments
+        return target_mesh_cylinder(0, d/2, h, 0, 360, self.meshing, self.magnetization)
