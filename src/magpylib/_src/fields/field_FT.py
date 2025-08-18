@@ -763,16 +763,17 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     #  - force adds to torque via Pivot
     if pivot is not None:
         POS_PIV = np.zeros((n_src, n_path, n_mesh_all, 3))
-        for i in range(n_path):
-            for j in range(n_tgt):
-                start, end = idx_starts_all[j], idx_ends_all[j]
-                start7, end7 = idx_starts_all7[j], idx_ends_all7[j]
-                if mask_magnet[j]:
-                    diff = OBS7[i, start7: end7 : 7] - pivot[j, i]
-                else:
-                    diff = OBS7[i, start7: end7] - pivot[j, i]
-                
-                POS_PIV[:,i,start:end] = diff
+
+        for j, piv in enumerate(pivot):
+            start, end = idx_starts_all[j], idx_ends_all[j]
+            start7, end7 = idx_starts_all7[j], idx_ends_all7[j]
+            
+            if mask_magnet[j]:
+                diff = OBS7[:, start7: end7 : 7] - piv[:, np.newaxis, :]
+            else:
+                diff = OBS7[:, start7: end7] - piv[:, np.newaxis, :]
+            
+            POS_PIV[:,:,start:end] = diff
 
         T_all += np.cross(POS_PIV, F_all)
 
@@ -793,25 +794,26 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
 if __name__ == "__main__":
     import magpylib as magpy
-    verts = [(0,0,-.5), (.5,0,0), (0,.5,0), (0,0,.5)]
-    tetra = magpy.magnet.Tetrahedron(
-        vertices=verts,
-        polarization=(1.2,2.3,-3.1),
-    ).rotate_from_angax([11, 24.3, 55.2, 76, 20, 10, 15, 20, -123.1234, 1234], axis=(1,2,-3), anchor=(.1,.2,.3))
+    loop = magpy.current.Circle(
+        diameter=5,
+        current=1e6,
+        position=(0,0,0),
+    ).rotate_from_angax([10, 20, 55, 70, 20, 10, 15, 20, -123.1234, 1234], axis=(1,2,-3), anchor=(.1,.2,.3))
     dip = magpy.misc.Dipole(
-        moment=(1.3e3,-1.1e3,2.2e3),
-        position=np.linspace((-5,-.4,-1.3), (3, 1.4, -1.2), 10)
+        moment=(1e3,0,0),
+        position=np.linspace((-.5,-.4,-.3), (.3, .4, -.2), 10)
     )
-
-    F0,T0 = getFT(tetra, dip, pivot=(0,0,0))
-
-    for meshing,err in zip([20, 1500], [1e-1, 1e-2]):
-        tetra.meshing = meshing
-        F1,T1 = getFT(dip, tetra, pivot=(0,0,0))
+    
+    F0,T0 = getFT(loop, dip, pivot=(0,0,0))
+    
+    for meshing,err in zip([120, 360, 1080], [1e-3, 1e-4, 1e-5]):
+        loop.meshing = meshing
+        F1,T1 = getFT(dip, loop, pivot=(0,0,0))
 
         errF = np.max(np.linalg.norm(F1 + F0, axis=1) / np.linalg.norm(F1 - F0, axis=1))
-        print(errF)
-
+        assert errF < err, f"Force mismatch: {errF}"
+        errT = np.max(np.linalg.norm(T1 + T0, axis=1) / np.linalg.norm(T1 - T0, axis=1))
+        assert errT < err, f"Torque mismatch: {errT}"
 
     # import sys
     # import os
