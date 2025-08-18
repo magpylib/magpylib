@@ -449,7 +449,7 @@ def target_mesh_sphere(r0, target_points, magnetization):
     return mesh_dict
 
 
-def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray):
+def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray, magnetization: np.ndarray):
     """
     Generate mesh of tetrahedral body using uniform barycentric coordinate grid.
     
@@ -482,10 +482,11 @@ def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray):
     if n_points == 1:
         centroid = np.mean(vertices, axis=0)
         pts = np.array([centroid])
-        volumes = np.array([tet_volume])
+        moments = np.array([tet_volume * magnetization])
+
         mesh_dict = {
             "pts": pts,
-            "volumes": volumes
+            "moments": moments
         }
         return mesh_dict
     
@@ -530,18 +531,20 @@ def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray):
                     # Convert to Cartesian coordinates
                     point = u1 * vertices[0] + u2 * vertices[1] + u3 * vertices[2] + u4 * vertices[3]
                     pts_list.append(point)
-    
+
     pts = np.array(pts_list)
-    
+
     # Calculate volume per point based on actual number of points generated
     volume_per_point = tet_volume / len(pts)
     volumes = np.full(len(pts), volume_per_point)
-    
+
+    moments = volumes[:, np.newaxis] * magnetization
+
     mesh_dict = {
         "pts": pts,
-        "volumes": volumes
+        "moments": moments
     }
-    
+
     return mesh_dict
 
 

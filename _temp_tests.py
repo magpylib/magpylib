@@ -315,6 +315,33 @@ def test_force_backforward_dipole_cylinderSegment():
         assert errT < err*2, f"Torque mismatch: {errT}"
 
 
+def test_force_backforward_Dipole_Tetrahedron():
+    """
+    test backward and forward force on dipole and tetrahedron
+    test meshing convergence
+    """
+    verts = [(0,0,-.5), (.5,0,0), (0,.5,0), (0,0,.5)]
+    tetra = magpy.magnet.Tetrahedron(
+        vertices=verts,
+        polarization=(1.2,2.3,-3.1),
+    ).rotate_from_angax([11, 24.3, 55.2, 76, 20, 10, 15, 20, -123.1234, 1234], axis=(1,2,-3), anchor=(.1,.2,.3))
+    dip = magpy.misc.Dipole(
+        moment=(1.3e3,-1.1e3,2.2e3),
+        position=np.linspace((-5,-.4,-1.3), (3, 1.4, -1.2), 10)
+    )
+
+    F0,T0 = getFT(tetra, dip, pivot=(0,0,0))
+
+    for meshing,err in zip([20, 1000], [0.1, 0.02]):
+        tetra.meshing = meshing
+        F1,T1 = getFT(dip, tetra, pivot=(0,0,0))
+
+        errF = np.max(np.linalg.norm(F1 + F0, axis=1) / np.linalg.norm(F1 - F0, axis=1))
+        assert errF < err, f"Force mismatch: {errF}"
+        errT = np.max(np.linalg.norm(T1 + T0, axis=1) / np.linalg.norm(T1 - T0, axis=1))
+        assert errT < err*2.1, f"Torque mismatch: {errT}"
+
+
 
 
 
@@ -1989,6 +2016,7 @@ if __name__ == "__main__":
     test_force_backforward_dipole_cuboid()
     test_force_backforward_dipole_cylinder()
     test_force_backforward_dipole_cylinderSegment()
+    test_force_backforward_Dipole_Tetrahedron()
 
 
     # object and interface properties
