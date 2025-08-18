@@ -131,7 +131,6 @@ class Dipole(BaseSource):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        # Tests in getFT ensure that meshing, dimension and excitation are set
         points = np.array([(0,0,0)])
         moments = np.array([self.moment])
         mesh_dict = {"pts": points, "moments": moments}

@@ -10,12 +10,10 @@ from magpylib._src.display.traces_core import make_Sphere
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
-from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.utility import unit_prefix
-from magpylib._src.obj_classes.target_meshing import target_mesh_sphere
 
 
-class Sphere(BaseMagnet, BaseTarget):
+class Sphere(BaseMagnet):
     """Spherical magnet with homogeneous magnetization.
 
     Can be used as `sources` input for magnetic field computation.
@@ -110,9 +108,6 @@ class Sphere(BaseMagnet, BaseTarget):
         super().__init__(
             position, orientation, magnetization, polarization, style, **kwargs
         )
-        
-        # Initialize BaseTarget
-        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -154,5 +149,7 @@ class Sphere(BaseMagnet, BaseTarget):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        # Tests in getFT ensure that meshing, dimension and excitation are set
-        return target_mesh_sphere(self.diameter/2, self.meshing, self.magnetization)
+        points = np.array([(0,0,0)])
+        moments = np.array([self.volume * self.magnetization])
+        mesh_dict = {"pts": points, "moments": moments}
+        return mesh_dict

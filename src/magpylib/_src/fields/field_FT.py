@@ -66,12 +66,13 @@ def check_format_input_targets(targets):
     for t in flat_targets:
         # exclude Dipole from check
         from magpylib._src.obj_classes.class_misc_Dipole import Dipole
-        if not isinstance(t, (Dipole,)):
+        from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
+        if not isinstance(t, (Dipole, Sphere)):
 
             if not hasattr(t, 'meshing'):
                 msg = (
                     "getFT bad target input. Targets can only be Magpylib objects Cuboid,..."
-                    f" Instead received type {type(t)} target."
+                    f" Instead received type {type(t)}."
                 )
                 raise ValueError(msg)
 

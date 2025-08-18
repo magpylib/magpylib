@@ -401,54 +401,6 @@ def create_grid(dimensions, spacing):
     return points
 
 
-def target_mesh_sphere(r0, target_points, magnetization):
-    """
-    Sphere meshing using regular cubic grid with filtering
-    
-    Parameters
-    ----------
-    r0: float - Radius of the sphere.
-    target_points: int - Desired number of points in the sphere.
-    
-    Returns
-    -------
-    dict: {
-        "pts": np.ndarray, shape (n, 3) - mesh points
-        "volumes": np.ndarray, shape (n,) - volumes associated with each point
-    }
-    """
-    sphere_volume = (4/3) * np.pi * r0**3
-
-    # if only one point is requested, return the center of the sphere
-    if target_points == 1:
-        mesh_dict = {
-            "pts": np.array([[0, 0, 0]]),
-            "volumes": np.array([sphere_volume])
-        }
-        return mesh_dict
-    
-    # cuboid grid
-    spacing = (sphere_volume / target_points)**(1/3)
-    points = create_grid([-r0, -r0, -r0, r0, r0, r0], spacing)
-    
-    # mask inside
-    mask_sphere = np.linalg.norm(points, axis=1) <= r0
-    pts = points[mask_sphere]
-
-    # volume
-    n_mesh = len(pts)
-    volumes = np.full(n_mesh, sphere_volume / n_mesh)
-
-    moments = volumes[:, np.newaxis] * magnetization
-
-    mesh_dict = {
-        "pts": pts,
-        "moments": moments
-    }
-
-    return mesh_dict
-
-
 def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray, magnetization: np.ndarray):
     """
     Generate mesh of tetrahedral body using uniform barycentric coordinate grid.

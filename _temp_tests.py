@@ -217,24 +217,23 @@ def test_force_backforward_dipole_sphere():
     test meshing convergence
     """
     sphere = magpy.magnet.Sphere(
-        diameter=1,
-        polarization=(1,2,-3),
-    ).rotate_from_angax([11, 24.3, 55.2, 76, 20, 10, 15, 20, -123.1234, 1234], axis=(1,2,-3), anchor=(.1,.2,.3))
+        diameter=2.2,
+        polarization=(1.1,2.1,-3.2),
+    ).rotate_from_angax([11, 24.3, 55.2, 76, 20, 10, 15, 20, -123.1234, 1234], axis=(1,2,-3), anchor=(.2,.3,.1))
     dip = magpy.misc.Dipole(
-        moment=(1e3,0,0),
-        position=np.linspace((-5,-.4,-1.3), (3, 1.4, -1.2), 10)
+        moment=(1e3,-1e3,2e3),
+        position=np.linspace((-.5,-.4,-1.3), (.3, .4, -1.2), 10)
     )
     
-    F0,T0 = getFT(sphere, dip, pivot=(0,0,0))
+    # SPECIAL CASE - FORCE ON SPHERE = FORCE ON DIPOLE MOMENT
     
-    for meshing,err in zip([5, 120, 360], [1e-1, 1e-2, 1e-3]):
-        sphere.meshing = meshing
-        F1,T1 = getFT(dip, sphere, pivot=(0,0,0))
+    F0,T0 = getFT(sphere, dip, pivot=(0,0,0))
+    F1,T1 = getFT(dip, sphere, pivot=(0,0,0))
 
-        errF = np.max(np.linalg.norm(F1 + F0, axis=1) / np.linalg.norm(F1 - F0, axis=1))
-        assert errF < err, f"Force mismatch: {errF}"
-        errT = np.max(np.linalg.norm(T1 + T0, axis=1) / np.linalg.norm(T1 - T0, axis=1))
-        assert errT < err*2, f"Torque mismatch: {errT}"
+    errF = np.max(np.linalg.norm(F1 + F0, axis=1) / np.linalg.norm(F1 - F0, axis=1))
+    assert errF < 1e-6, f"Force mismatch: {errF}"
+    errT = np.max(np.linalg.norm(T1 + T0, axis=1) / np.linalg.norm(T1 - T0, axis=1))
+    assert errT < 1e-6, f"Torque mismatch: {errT}"
 
 
 def test_force_backforward_dipole_cuboid():
@@ -279,7 +278,7 @@ def test_force_backforward_dipole_cylinder():
 
     F0,T0 = getFT(cylinder, dip, pivot=(0,0,0))
 
-    for meshing,err in zip([20, 360], [1e-1, 1e-2]):
+    for meshing,err in zip([1, 20, 360], [0.3, 1e-1, 1e-2]):
         cylinder.meshing = meshing
         F1,T1 = getFT(dip, cylinder, pivot=(0,0,0))
 
@@ -305,14 +304,14 @@ def test_force_backforward_dipole_cylinderSegment():
 
     F0,T0 = getFT(cylseg, dip, pivot=(0,0,0))
 
-    for meshing,err in zip([20, 360], [1e-1, 1e-2]):
+    for meshing,err in zip([1, 20, 360], [0.6, 1e-1, 1e-2]):
         cylseg.meshing = meshing
         F1,T1 = getFT(dip, cylseg, pivot=(0,0,0))
 
         errF = np.max(np.linalg.norm(F1 + F0, axis=1) / np.linalg.norm(F1 - F0, axis=1))
         assert errF < err, f"Force mismatch: {errF}"
         errT = np.max(np.linalg.norm(T1 + T0, axis=1) / np.linalg.norm(T1 - T0, axis=1))
-        assert errT < err*2, f"Torque mismatch: {errT}"
+        assert errT < err, f"Torque mismatch: {errT}"
 
 
 def test_force_backforward_Dipole_Tetrahedron():
@@ -332,7 +331,7 @@ def test_force_backforward_Dipole_Tetrahedron():
 
     F0,T0 = getFT(tetra, dip, pivot=(0,0,0))
 
-    for meshing,err in zip([20, 1000], [0.1, 0.02]):
+    for meshing,err in zip([1, 20, 1000], [0.08, 0.1, 0.02]):
         tetra.meshing = meshing
         F1,T1 = getFT(dip, tetra, pivot=(0,0,0))
 
@@ -360,7 +359,7 @@ def test_force_backforward_Dipole_Trimesh():
 
     F0,T0 = getFT(trimesh, dip, pivot=(0,0,0))
 
-    for meshing,err in zip([60, 100], [0.1, 0.01]): # achtung 100 ist ein sweetspot
+    for meshing,err in zip([1, 60, 100], [0.08, 0.1, 0.01]): # achtung 100 ist ein sweetspot
         trimesh.meshing = meshing
         F1,T1 = getFT(dip, trimesh, pivot=(0,0,0))
 
@@ -1725,7 +1724,6 @@ def test_force_meshing_validation():
     objects = [
         magpy.magnet.Cylinder(dimension=(3,3), polarization=(0,0,1)),
         magpy.magnet.CylinderSegment(dimension=(1,2,3,0,360), polarization=(1,2,3)),
-        magpy.magnet.Sphere(diameter=3, polarization=(1,2,3)),
         magpy.magnet.Tetrahedron(
             vertices=[(1,1,-1), (1,1,1), (-1,1,1), (1,-1,1)], 
             polarization=(0.111,0.222,0.333)
