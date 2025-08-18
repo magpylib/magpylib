@@ -488,7 +488,8 @@ def test_force_obj_rotations1():
 
 def test_force_obj_rotations2():
     """
-    test if dipole with orientation gives same result as rotated magnetic moment
+    test if dipole with orientation gives same result as
+    rotated magnetic moment
     """
     mm, md = np.array((0.976, 4.304, 2.055)), np.array((0.878, -1.527, 2.918))
     pm, pd = np.array((-1.248, 7.835, 9.273)), np.array((-2.331, 5.835, 0.578))
@@ -602,96 +603,6 @@ def test_force_physics_consistency_in_very_homo_field():
     assert errT4 < 1e-5, f"Torque mismatch cylinder: {errT4}"
     assert errT5 < 1e-5, f"Torque mismatch circle: {errT5}"
     assert errT6 < 1e-4, f"Torque mismatch tetrahedron: {errT6}"
-
-
-def test_force_physics_consistency_back_forward1():
-    """
-    check backward and forward Polyline Cube
-    """
-    loop = magpy.current.Polyline(
-        vertices=((-3, 0, 0), (0, -3, 0), (3, 0, 0), (0, 3, 0), (-3, 0, 0)),
-        current=1000,
-        position=(0, 0, -1),
-    )
-    loop.rotate_from_angax(-45, (1, 1, 1))
-    loop.meshing = 1000
-
-    cube = magpy.magnet.Cuboid(dimension=(2, 1, 1), polarization=(1, 2, 3))
-    cube.meshing = (20,10,10)
-
-    F1, T1 = magpy.getFT(cube, loop, pivot=cube.position)
-    F2, T2 = -magpy.getFT(loop, cube, pivot=cube.position)
-
-    errF = np.linalg.norm(F1 - F2) / np.linalg.norm(F1 + F2)
-    errT = np.linalg.norm(T1 - T2) / np.linalg.norm(T1 + T2)
-
-    assert errF < 1e-6, f"Force mismatch: {errF}"
-    assert errT < 1e-5, f"Torque mismatch: {errT}"
-
-    cube.rotate_from_angax(33, (1, 2, 3))
-
-    F1, T1 = magpy.getFT(cube, loop, pivot=cube.position)
-    F2, T2 = -magpy.getFT(loop, cube, pivot=cube.position)
-
-    errF = np.linalg.norm(F1 - F2) / np.linalg.norm(F1 + F2)
-    errT = np.linalg.norm(T1 - T2) / np.linalg.norm(T1 + T2)
-
-    assert errF < 1e-5, f"Force mismatch: {errF}"
-    assert errT < 1e-5, f"Torque mismatch: {errT}"
-
-
-def test_force_physics_consistency_back_forward2():
-    """
-    consistency between 2 arbitrary current loops
-    """
-    wire1 = magpy.current.Polyline(
-        current=1,
-        vertices=[(1, 0, 0), (0, 1, 0.2), (-1, 0, 0), (0, -1, 0.5), (1, 0, 0)],
-    )
-    wire1.meshing = 800
-    wire2 = magpy.current.Polyline(
-        current=1,
-        vertices=[(-1, -1, 0.5), (-1, 1, 1), (1, 1, 2), (1, -1, 1), (-1, -1, 0.5)],
-    )
-    wire2.meshing = 800
-    F1a, _ = magpy.getFT(wire1, wire2)
-    F2a, _ = magpy.getFT(wire2, wire1)
-    errFa = np.linalg.norm(F1a + F2a) / np.linalg.norm(F1a - F2a)
-    assert errFa < 1e-5
-
-    F1b, T1b = magpy.getFT(wire1, wire2, pivot=np.array((0, 0, 0)))
-    F2b, T2b = magpy.getFT(wire2, wire1, pivot=np.array((0, 0, 0)))
-    errFb = np.linalg.norm(F1b + F2b) / np.linalg.norm(F1b - F2b)
-    errTb = np.linalg.norm(T1b + T2b) / np.linalg.norm(T1b - T2b)
-    assert errFb < 1e-5
-    assert errTb < 1e-4
-
-
-def test_force_physics_consistency_back_forward3():
-    """
-    check backward-forward with CylinderSegment and Cuboid
-    """
-    cube = magpy.magnet.Cuboid(dimension=(1, 1, 2), polarization=(-1, -2, -1))
-    cube.meshing = (6, 6, 12)
-
-    dims = [(3, 4, 1, -20, 120), (3, 4, 2, 10, 50), (4, 5, 3, 50, 100)]
-    pols = [
-        (3, 2, 1),
-        (1, 2, 3),
-        (0, 0, 1),
-    ]
-    for dim, pol in zip(dims, pols, strict=False):
-        cyls = magpy.magnet.CylinderSegment(dimension=dim, polarization=pol)
-        cyls.rotate_from_angax(-45, (1, 1, 1))
-        cyls.meshing = 300
-        F1,T1 = magpy.getFT(cyls, cube, pivot=(1, 2, 1))
-        F2,T2 = -magpy.getFT(cube, cyls, pivot=(1, 2, 1))
-
-        errf = np.linalg.norm(F1 - F2) / np.linalg.norm(F1 + F2)
-        errt = np.linalg.norm(T1 - T2) / np.linalg.norm(T1 + T2)
-
-        assert errf < 1e-3, f"Force mismatch: {errf}"
-        assert errt < 1e-3, f"Torque mismatch: {errt}"
 
 
 def test_force_analytic_cocentric_loops():
@@ -2081,10 +1992,10 @@ if __name__ == "__main__":
 
 
     # object and interface properties
-    #test_force_obj_rotations1()
-    #test_force_obj_rotations2()
-    #test_force_2sources()
-    #test_force_meshing_validation()
+    test_force_obj_rotations1()
+    test_force_obj_rotations2()
+    test_force_2sources()
+    test_force_meshing_validation()
 
     # equivalence
     #test_force_equiv_circle_dipole()    # Circle, step2: proofs current force + pivot torque
@@ -2092,17 +2003,14 @@ if __name__ == "__main__":
     #test_force_equiv_circle_polyline()  # Polyline
 
     # physics consistency
-    #test_force_physics_consistency_back_forward1() # Cuboid
-    #test_force_physics_consistency_back_forward2()
-    #test_force_physics_consistency_back_forward3() # CylinderSegment
     #test_force_physics_consistency_in_very_homo_field() # Sphere
     #test_force_orientation_nightmare()
 
     # against FEM
-    #test_force_ANSYS_cube_cube()
-    #test_force_ANSYS_loop_loop()
-    #test_force_ANSYS_loop_magnet()
-    #test_force_ANSYS_magnet_current_close()
+    test_force_ANSYS_cube_cube()
+    test_force_ANSYS_loop_loop()
+    test_force_ANSYS_loop_magnet()
+    test_force_ANSYS_magnet_current_close()
 
     # path
     test_force_path1()
@@ -2113,6 +2021,6 @@ if __name__ == "__main__":
     test_force_path6() #CORE PATH TEST
 
     # other
-    #test_centroid()
+    test_centroid()
 
     print("All tests passed.")
