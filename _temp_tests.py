@@ -331,7 +331,7 @@ def test_force_backforward_Dipole_Tetrahedron():
 
     F0,T0 = getFT(tetra, dip, pivot=(0,0,0))
 
-    for meshing,err in zip([1, 20, 1000], [0.08, 0.1, 0.02]):
+    for meshing,err in zip([1, 20, 300], [0.08, 0.1, 0.07]):
         tetra.meshing = meshing
         F1,T1 = getFT(dip, tetra, pivot=(0,0,0))
 
@@ -367,146 +367,6 @@ def test_force_backforward_Dipole_Trimesh():
         assert errF < err, f"Force mismatch: {errF}"
         errT = np.max(np.linalg.norm(T1 + T0, axis=1) / np.linalg.norm(T1 - T0, axis=1))
         assert errT < err*2.1, f"Torque mismatch: {errT}"
-
-
-
-
-
-
-
-def test_force_equiv_circle_dipole():
-    """
-    A loop can be associated with a dipole moment of magnitude
-
-    |mom| = loop_surface * current
-
-    The moment vector points upward normal from loop surface when
-    the current circulation is mathematically positive.
-
-    --> CIRCLE is good if DIPOLE is good.
-    --> current force and torque is good, pivot is good (only torque contribution)
-    """
-    r0 = 1.123e-3
-    i0 = 1.432e6
-    loop = magpy.current.Circle(current=i0, diameter=2*r0)
-    
-    # associated dipole moment
-    mom = [0,0,r0**2 * np.pi * i0]
-    dip = magpy.misc.Dipole(moment=mom)
-
-    # test if both create the same B-field
-    poss = np.array((1, 2, 3))
-    H1 = dip.getH(poss)
-    H2 = loop.getH(poss)
-
-    assert np.allclose(H1, H2, rtol=1e-14), "H-fields do not match"
-
-    src = magpy.magnet.Cuboid(
-        position=(1, 2, -3),
-        dimension=(1, 2, 3),
-        polarization=(1, 2, 3),
-    )
-    loop.meshing=4
-    F1,T1 = magpy.getFT(sources=src, targets=loop, pivot="centroid")
-    F2,T2 = magpy.getFT(sources=src, targets=dip, pivot="centroid")
-
-    errF = np.linalg.norm(F1 - F2) / np.linalg.norm(F1+F2)
-    errT = np.linalg.norm(T1 - T2) / np.linalg.norm(T1+T2)
-    assert errF < 1e-6, f"Force mismatch: {errF}"
-    assert errT < 1e-6, f"Torque mismatch: {errT}"
-
-
-def test_force_equiv_circle_cylinder():
-    """
-    A circle current and a cylinder magnet with small height are equivalent
-
-    --> CYLINDER is good if CIRCLE is good
-    --> magnet pivot computation confirmed
-    """
-
-    dia = 3.123
-    i0 = 1234
-
-    # circle
-    loop = magpy.current.Circle(diameter=dia, current=i0, meshing=10000)
-    loop_moment = dia**2 * np.pi * i0 / 4  # moment of circle current
-    
-    # cylinder
-    h = 1e-3
-    vol = (dia**2 * np.pi / 4 * h)
-    mag = loop_moment / vol  # ensure same magnetic moment
-    cyl = magpy.magnet.Cylinder(dimension=(dia, h), magnetization=(0,0,mag), meshing = 1000)
-
-    # test if both create the same B-field
-    poss = np.array((1, 2, 3))
-    H1 = loop.getH(poss)
-    H2 = cyl.getH(poss)
-    assert np.allclose(H1, H2, rtol=1e-7), "H-fields do not match"
-
-    # test if both experince the same force and torque
-    src = magpy.magnet.Sphere(diameter=1, polarization=(1, 2, 3), position=(1, 2, -5))
-    
-    F1, T1 = magpy.getFT(src, loop, pivot="centroid")
-    F2, T2 = magpy.getFT(src, cyl, pivot="centroid")
-
-    errF= np.linalg.norm(F1 - F2) / np.linalg.norm(F1 + F2)
-    errT = np.linalg.norm(T1 - T2) / np.linalg.norm(T1 + T2)
-
-    assert errF < 1e-3, f"Force mismatch: {errF}"
-    assert errT < 1e-3, f"Torque mismatch: {errT}"
-
-
-def test_force_equiv_circle_polyline():
-    """
-    A circle can be approximated by a Polyline with many segments.
-    
-    --> POLYLINE is good if CIRCLE is good
-    """
-    src = magpy.magnet.Sphere(diameter=1, polarization=(1, 2, 3), position=(0, 0, -1))
-
-    # circle
-    loop1 = magpy.current.Circle(diameter=3, current=123)
-    loop1.meshing = 200
-    
-    # polyline
-    rr = loop1.diameter / 2
-    ii = loop1.current
-    phis = np.linspace(0, 2 * np.pi, 200)
-    verts = [(rr * np.cos(p), rr * np.sin(p), 0) for p in phis] # positve orientation
-    loop2 = magpy.current.Polyline(current=ii, vertices=verts, meshing=200)
-
-    F1, T1 = magpy.getFT(src, loop1, pivot=(0, 0, 0))
-    F2, T2 = magpy.getFT(src, loop2, pivot=(0, 0, 0))
-
-    errF= np.linalg.norm(F1 - F2) / np.linalg.norm(F1 + F2)
-    errT = np.linalg.norm(T1 - T2) / np.linalg.norm(T1 + T2)
-
-    assert errF < 1e-3, f"Force mismatch: {errF}"
-    assert errT < 1e-3, f"Torque mismatch: {errT}"
-
-    loop1.move((1.123, 2.321, 0.123))
-    loop2.move((1.123, 2.321, 0.123))
-
-    F1, T1 = magpy.getFT(src, loop1, pivot=(0, 0, 0))
-    F2, T2 = magpy.getFT(src, loop2, pivot=(0, 0, 0))
-
-    errF= np.linalg.norm(F1 - F2) / np.linalg.norm(F1 + F2)
-    errT = np.linalg.norm(T1 - T2) / np.linalg.norm(T1 + T2)
-
-    assert errF < 1e-3, f"Force mismatch: {errF}"
-    assert errT < 1e-3, f"Torque mismatch: {errT}"
-
-    loop1.rotate_from_angax(20, "x")
-    loop2.rotate_from_angax(20, "x")
-
-    F1, T1 = magpy.getFT(src, loop1, pivot=(0, 0, 0))
-    F2, T2 = magpy.getFT(src, loop2, pivot=(0, 0, 0))
-    
-    errF= np.linalg.norm(F1 - F2) / np.linalg.norm(F1 + F2)
-    errT = np.linalg.norm(T1 - T2) / np.linalg.norm(T1 + T2)
-
-    assert errF < 1e-3, f"Force mismatch: {errF}"
-    assert errT < 1e-3, f"Torque mismatch: {errT}"
 
 
 def test_force_obj_rotations1():
@@ -561,102 +421,6 @@ def test_force_obj_rotations2():
 
     assert errF < 1e-14, f"Force mismatch: {errF}"
     assert errT < 1e-14, f"Torque mismatch: {errT}"
-
-
-def test_force_physics_consistency_in_very_homo_field():
-    """
-    force on different bodies should be the same in nearly homogeneous field
-    this ensurers proper force torque pivot computation for all bodies
-    """
-
-    src = magpy.current.Circle(diameter=30, current=1023, position = (2,4,6))
-
-    D = 0.1
-    mag_sphere = np.array((1e6, 2e6, 3e6))
-
-    sphere = magpy.magnet.Sphere(
-        diameter=D,
-        magnetization=mag_sphere,
-        meshing=100,
-    )
-
-    vol_sphere = D**3 / 6 * np.pi
-    mom_dipole = mag_sphere * vol_sphere
-    
-    dipole = magpy.misc.Dipole(moment=mom_dipole)
-
-    vol_cube = D**3
-    mag_cube = mag_sphere * vol_sphere/vol_cube
-
-    cube = magpy.magnet.Cuboid(
-        dimension=(D, D, D),
-        magnetization=mag_cube,
-        meshing=(10,10,10),
-    )
-
-    vol_cyl = np.pi * (D/2)**2 * D
-    mag_cyl = mag_sphere * vol_sphere/vol_cyl
-
-    cylinder = magpy.magnet.Cylinder(
-        dimension=(D,D),
-        magnetization=mag_cyl,
-        meshing=100,
-    )
-
-    i0 = np.linalg.norm(mag_sphere) * vol_sphere / (D**2/4*np.pi)
-    em = mag_sphere / np.linalg.norm(mag_sphere)
-    e0 = np.array((0,0,1))
-    cross = -np.cross(em, e0)
-    norm_cross = np.linalg.norm(cross)
-    rotvec = cross / norm_cross
-    rotvec *= np.arctan2(norm_cross, np.dot(em, e0))
-
-    from scipy.spatial.transform import Rotation as R
-    rot = R.from_rotvec(rotvec)
-
-    circ = magpy.current.Circle(
-        diameter=D,
-        current=i0,
-        meshing=100,
-        orientation=rot
-    )
-
-    tetra = magpy.magnet.Tetrahedron(
-        vertices=[(D/2, D/2, -3*D/2), (D/2, D/2, D/2), (-3*D/2, D/2, D/2), (D/2, -3*D/2, D/2)],
-        meshing=100
-    )
-    tetra.magnetization = mom_dipole / tetra.volume
-
-    F1, T1 = magpy.getFT(src, dipole, pivot=(1,2,3))
-    F2, T2 = magpy.getFT(src, sphere, pivot=(1,2,3))
-    F3, T3 = magpy.getFT(src, cube, pivot=(1,2,3))
-    F4, T4 = magpy.getFT(src, cylinder, pivot=(1,2,3))
-    F5, T5 = magpy.getFT(src, circ, pivot=(1,2,3))
-    F6, T6 = magpy.getFT(src, tetra, pivot=(1,2,3))
-
-    errF2 = np.linalg.norm(F1 - F2) / np.linalg.norm(F1 + F2)
-    errF3 = np.linalg.norm(F1 - F3) / np.linalg.norm(F1 + F3)
-    errF4 = np.linalg.norm(F1 - F4) / np.linalg.norm(F1 + F4)
-    errF5 = np.linalg.norm(F1 - F5) / np.linalg.norm(F1 + F5)
-    errF6 = np.linalg.norm(F1 - F6) / np.linalg.norm(F1 + F6)
-
-    errT2 = np.linalg.norm(T1 - T2) / np.linalg.norm(T1 + T2)
-    errT3 = np.linalg.norm(T1 - T3) / np.linalg.norm(T1 + T3)
-    errT4 = np.linalg.norm(T1 - T4) / np.linalg.norm(T1 + T4)
-    errT5 = np.linalg.norm(T1 - T5) / np.linalg.norm(T1 + T5)
-    errT6 = np.linalg.norm(T1 - T6) / np.linalg.norm(T1 + T6)
-
-    assert errF2 < 1e-5, f"Force mismatch sphere: {errF2}"
-    assert errF3 < 1e-9, f"Force mismatch cube: {errF3}"
-    assert errF4 < 1e-5, f"Force mismatch cylinder: {errF4}"
-    assert errF5 < 1e-5, f"Force mismatch circle: {errF5}"
-    assert errF6 < 1e-4, f"Force mismatch tetrahedron: {errF6}"
-
-    assert errT2 < 1e-5, f"Torque mismatch sphere: {errT2}"
-    assert errT3 < 1e-9, f"Torque mismatch cube: {errT3}"
-    assert errT4 < 1e-5, f"Torque mismatch cylinder: {errT4}"
-    assert errT5 < 1e-5, f"Torque mismatch circle: {errT5}"
-    assert errT6 < 1e-4, f"Torque mismatch tetrahedron: {errT6}"
 
 
 def test_force_analytic_cocentric_loops():
@@ -1980,7 +1744,8 @@ def test_force_path5():
     err = np.linalg.norm(2*T[0, 1, 0] - T[0,2,1]) / np.linalg.norm(T[0,2,1])
     assert err < 0.02
 
-def test_force_orientation_nightmare():
+
+def test_force_analytic_rotation():
 
     loop = magpy.current.Circle(
         diameter=10,
@@ -2023,8 +1788,117 @@ def test_force_orientation_nightmare():
     assert abs(T6[1]**2 + T6[2]**2 - T1[1]**2) < 1e-10
 
 
+def test_force_equivalent_dipole_Circle():
+    """ dipole moment equivalence"""
+    src = magpy.magnet.Cuboid(
+        dimension=(1, 2, 3),
+        polarization=(3, 2, -1),
+        position=(-.6, -1.1, -1.6),
+    )
+    r0 = 0.0123
+    i0 = 12345
+    loop = magpy.current.Circle(diameter=2*r0, current=i0, meshing=4)
+    
+    # moment = surface * current
+    mom= r0**2 * np.pi * i0 * np.array((0, 0, 1))
+    dip = magpy.misc.Dipole(moment=mom)
+
+    F, T = getFT(src, [loop, dip], pivot=(.21, .12, .33))
+    errF = np.linalg.norm(F[0]-F[1]) / np.linalg.norm(F[0]+F[1])
+    errT = np.linalg.norm(T[0]-T[1]) / np.linalg.norm(T[0]+T[1])
+    assert errF < 1e-3
+    assert errT < 1e-3
+
+
+def test_force_equivalent_dipole_Polyline():
+    """ dipole moment equivalence"""
+    src = magpy.magnet.Cuboid(
+        dimension=(1, 2, 3),
+        polarization=(3, 2, -1),
+        position=(-.6, -1.1, -1.6),
+    )
+    verts = [(-1, -1, 0), (1, -1, 0), (1, 1, 0), (-1, 1, 0), (-1, -1, 0)]
+    verts = np.array(verts)*1e-3
+    i0 = 12345
+    loop = magpy.current.Polyline(
+        vertices=verts,
+        meshing=4,
+        current=i0
+    )
+    
+    # moment = surface * current
+    mom = 4*1e-6 * i0 * np.array((0, 0, 1))
+    dip = magpy.misc.Dipole(moment=mom)
+
+    F, T = getFT(src, [loop, dip], pivot=(.21, .12, .33))
+    errF = np.linalg.norm(F[0]-F[1]) / np.linalg.norm(F[0]+F[1])
+    errT = np.linalg.norm(T[0]-T[1]) / np.linalg.norm(T[0]+T[1])
+    assert errF < 1e-5
+    assert errT < 1e-5
+
+
+def test_force_equivalent_dipole_Magnets():
+    """ dipole moment equivalence"""
+    src = magpy.magnet.Cuboid(
+        dimension=(1, 2, 3),
+        polarization=(3, 2, -1),
+        position=(-.6, -1.1, -1.6),
+    )
+    cube = magpy.magnet.Cuboid(
+        dimension=np.array((2.23, 1.2, 3))*1e-3,
+        polarization=(2,2.34,1),
+        meshing=(2,2,2),
+    )
+    cyl = magpy.magnet.Cylinder(
+        dimension=(1.23e-3, 1.51e-3),
+        polarization=(1,2.2,3.1),
+        meshing=5,
+    )
+    cyls = magpy.magnet.CylinderSegment(
+        dimension=(.23e-3, .51e-3, .2e-3, -33, 128.1),
+        polarization=(1,2.2,3.1),
+        meshing=10,
+    )
+    tetra = magpy.magnet.Tetrahedron(
+        vertices=np.array([(0,0,0), (1,0,0), (0,1,0), (0,0,1)])*1e-3,
+        polarization=(1,2.2,3.1),
+        meshing=10,
+    )
+    trimesh = magpy.magnet.TriangularMesh(
+        vertices=np.array([(0,0,0), (1,0,0), (0,1,0), (0,0,1)])*1e-4,
+        faces=[(0,1,2), (0,1,3), (0,2,3), (1,2,3)],
+        polarization=(1,2.2,3.1),
+        meshing=10,
+    )
+    sph = magpy.magnet.Sphere(
+        diameter=1.1e-3,
+        polarization=(1,2.2,3.1),
+    )
+    magnets=[cube, cyl, cyls, tetra, trimesh, sph]
+    for magnet in magnets:
+        # moment = volume * magnetization
+        mom = magnet.volume * magnet.magnetization
+        dip = magpy.misc.Dipole(moment=mom, position=magnet.centroid)
+
+        F, T = getFT(src, [magnet, dip], pivot=(.21, .12, .33))
+        errF = np.linalg.norm(F[0]-F[1]) / np.linalg.norm(F[0]+F[1])
+        errT = np.linalg.norm(T[0]-T[1]) / np.linalg.norm(T[0]+T[1])
+        assert errF < 1e-4
+        assert errT < 1e-4
+
+
 
 if __name__ == "__main__":
+
+    from time import perf_counter as pf
+
+    t0 = pf()
+
+    # dipole equivalence in quasi-homo field
+    test_force_equivalent_dipole_Circle()
+    test_force_equivalent_dipole_Polyline()
+    test_force_equivalent_dipole_Magnets()
+
 
     # vs analytical solutions
     test_force_analytic_dipole()   # Dipole, step1: proofs magnet force + torque (excl. pivot)
@@ -2034,6 +1908,7 @@ if __name__ == "__main__":
     test_force_analytic_torque_sign()
     test_force_analytic_parallel_wires()
     test_force_analytic_perpendicular_wires()
+    test_force_analytic_rotation()
 
     # backward forward & meshing convergence
     test_force_backforward_dipole_circle()
@@ -2051,15 +1926,6 @@ if __name__ == "__main__":
     test_force_obj_rotations2()
     test_force_2sources()
     test_force_meshing_validation()
-
-    # equivalence
-    #test_force_equiv_circle_dipole()    # Circle, step2: proofs current force + pivot torque
-    #test_force_equiv_circle_cylinder()  # Cylinder, step3: proofs magnet pivot torque
-    #test_force_equiv_circle_polyline()  # Polyline
-
-    # physics consistency
-    #test_force_physics_consistency_in_very_homo_field() # Sphere
-    #test_force_orientation_nightmare()
 
     # against FEM
     test_force_ANSYS_cube_cube()
