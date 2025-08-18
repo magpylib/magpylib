@@ -548,7 +548,7 @@ def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray, magnetization: 
     return mesh_dict
 
 
-def target_mesh_triangularmesh(vertices, faces, target_points, volume=None):
+def target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetization):
     """
     Generate mesh points inside a triangular mesh volume for force computations.
     
@@ -580,10 +580,11 @@ def target_mesh_triangularmesh(vertices, faces, target_points, volume=None):
     if target_points == 1:
         barycenter = calculate_centroid(vertices, faces)
         pts = np.array([barycenter])
-        volumes = np.array([volume])
+        moments = np.array([volume*magnetization])
+        
         mesh_dict = {
             "pts": pts,
-            "volumes": volumes
+            "moments": moments
         }
         return mesh_dict
     
@@ -614,12 +615,14 @@ def target_mesh_triangularmesh(vertices, faces, target_points, volume=None):
     
     # Volumes
     volumes = np.full(len(pts), volume / len(pts))
-    
+
+    moments = volumes[:, np.newaxis] * magnetization
+
     mesh_dict = {
         "pts": pts,
-        "volumes": volumes
+        "moments": moments
     }
-    
+
     return mesh_dict
 
 

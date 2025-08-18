@@ -264,12 +264,13 @@ class TriangularMesh(BaseMagnet, BaseTarget):
     def _generate_mesh(self):
         """Generate mesh for force computation."""
         # Tests in getFT ensure that meshing, dimension and excitation are set
-        mesh, volumes = target_mesh_triangularmesh(
-            self.vertices, self.faces, self.meshing, volume=self.volume
+        return target_mesh_triangularmesh(
+            self.vertices,
+            self.faces,
+            self.meshing,
+            self.volume,
+            self.magnetization,
         )
-        mesh = self.orientation.apply(mesh) + self.position
-        moments = volumes[:, np.newaxis] * self.orientation.apply(self.magnetization)
-        return mesh, moments
 
     @staticmethod
     def _validate_mode_arg(arg, arg_name="mode"):
