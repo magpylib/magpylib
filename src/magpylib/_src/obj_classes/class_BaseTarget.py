@@ -5,19 +5,10 @@ from abc import ABC, abstractmethod
 class BaseTarget(ABC):
     """Base class for Magpylib objects that can be targets of force computation.
 
-    Properties
-    ----------
-    meshing : default=None
-        Mesh parameters for force computation targets.
-
-    Methods
-    -------
-    _generate_mesh()
-        Abstract method to generate mesh for force computation.
-        Must be implemented by subclasses.
-        
-    Notes
-    -----
+    - adds parameter meshing, default=None
+    - adds parameter meshing setter
+    - adds default method _validate_meshing()
+    - enforces _generate_mesh() as abstract method
     """
     _force_type: str = None
 
@@ -52,6 +43,6 @@ class BaseTarget(ABC):
     @abstractmethod
     def _generate_mesh(self):
         """
-        Generate mesh, moments, currents lvecs for respective subclasses
+        Generate meshing dictionary
         """
         pass

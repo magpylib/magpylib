@@ -118,18 +118,19 @@ def target_mesh_cuboid(target_elems, dimension, magnetization):
 
     Parameters
     ----------
-    n1: int - Number of divisions along the x-axis.
-    n2: int - Number of divisions along the y-axis.
-    n3: int - Number of divisions along the z-axis.
-    a: float - Length of the cuboid along the x-axis.
-    b: float - Length of the cuboid along the y-axis.
-    c: float - Length of the cuboid along the z-axis.
+    target_elems: int or tuple (n1,n2,n3)
+        Target number of elements in the mesh. If an integer is provided, it is treated as
+        the total number of elements.
+    dimension: array_like, shape (3,)
+        Dimensions of the cuboid (length, width, height).
+    magnetization: np.ndarray, shape (3,)
+        Magnetization vector for the mesh points.
 
     Returns
     -------
     dict: {
         "pts": np.ndarray, shape (n, 3) - mesh points
-        "volumes": np.ndarray, shape (n,) - volumes associated with each point
+        "moments": np.ndarray, shape (n,3) - moments associated with each point
     }
     """
     a, b, c = dimension
@@ -194,12 +195,14 @@ def target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
         End angle of the cylinder in degrees.
     n: int
         Number of points in mesh.
+    magnetization: np.ndarray, shape (3,)
+        Magnetization vector.
 
     Returns
     -------
     dict: {
         "pts": np.ndarray, shape (n, 3) - mesh points
-        "volumes": np.ndarray, shape (n,) - volumes associated with each point
+        "moments": np.ndarray, shape (n,3) - moments associated with each point
     }
     """
     al = (r2 + r1) * 3.14 * (phi2 - phi1) / 360  # arclen = D*pi*arcratio
@@ -415,12 +418,14 @@ def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray, magnetization: 
         Target number of mesh points.
     vertices : array_like, shape (4, 3)
         Vertices of the tetrahedron.
-    
+    magnetization : array_like, shape (3,)
+        Magnetization vector.
+
     Returns
     -------
-    dict: {
-        "pts": np.ndarray, shape (n, 3) - mesh points inside the tetrahedron
-        "volumes": np.ndarray, shape (n,) - volume associated with each mesh point
+     dict: {
+        "pts": np.ndarray, shape (n, 3) - mesh points
+        "moments": np.ndarray, shape (n,3) - moments associated with each point
     }
     """
     
@@ -514,12 +519,13 @@ def target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetiza
     faces : np.ndarray, shape (m, 3) - Mesh faces (triangles) as vertex indices
     target_points : int - Target number of mesh points
     volume : float - Volume of the body
+    magnetization : np.ndarray, shape (3,) - Magnetization vector for the mesh points
 
     Returns
     -------
     dict: {
-        "pts": np.ndarray, shape (k, 3) - mesh points inside the triangular mesh
-        "volumes": np.ndarray, shape (k,) - volume associated with each mesh point
+        "pts": np.ndarray, shape (n, 3) - mesh points
+        "moments": np.ndarray, shape (n,3) - moments associated with each point
     }
     """
     # Import the required functions from triangular mesh field module
@@ -582,4 +588,3 @@ if __name__=="__main__":
 
     for n in [1, 10, 50, 100, 500, 1000, 5000]:
         target_mesh_cuboid(n, (1.1,2.2,1))
-
