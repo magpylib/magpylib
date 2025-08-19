@@ -5,15 +5,9 @@ from abc import ABC, abstractmethod
 class BaseTarget(ABC):
     """Base class for Magpylib objects that can be targets of force computation.
 
-    Parameters
-    ----------
-    meshing : dict
-        Parameters that define the mesh fineness for force computation.
-        Should contain mesh-specific parameters like resolution, method, etc.
-
     Properties
     ----------
-    meshing : dict
+    meshing : default=None
         Mesh parameters for force computation targets.
 
     Methods
@@ -24,8 +18,6 @@ class BaseTarget(ABC):
         
     Notes
     -----
-    Subclasses must define a class attribute `_force_type` set to one of:
-    "magnet", "current", or "dipole".
     """
     _force_type: str = None
 
