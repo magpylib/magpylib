@@ -184,7 +184,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         The Force adds to the Torque via the pivot point. For a freely floating magnet
         this would be the barycenter (= centroid when the density is homogeneous).
         If pivot="centroid" the centroid is selected as the pivot point for all targets.
-        If pivot=None no pivot is used. This will give unphysical results.
+        If pivot=None no pivot is used. This will give nonphysical results.
         If pivot=array_like of shape (3,) the same pivot is used for all targets.
         Alternatively one can provide an individual pivot point for each target.
 
