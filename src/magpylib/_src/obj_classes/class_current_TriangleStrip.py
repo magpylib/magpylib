@@ -12,6 +12,7 @@ from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.utility import unit_prefix
 
+import numpy as np
 
 class TriangleStrip(BaseCurrent):
     """Current flowing in straight lines along a Ribbon made of adjacent Triangles.
@@ -119,3 +120,12 @@ class TriangleStrip(BaseCurrent):
         if self.vertices is None:
             return "no vertices"
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        return 0.0
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return np.mean(self.vertices, axis=0) + self.position

@@ -11,6 +11,7 @@ from magpylib._src.fields.field_BH_current_sheet import BHJM_current_trisheet
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 
+import numpy as np
 
 class TriangleSheet(BaseSource):
     """Surface current density flowing along triangular faces.
@@ -160,3 +161,12 @@ class TriangleSheet(BaseSource):
             raise IndexError(msg) from e
 
         return cd, verts, fac
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        return 0.0
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return np.mean(self.vertices, axis=0) + self.position
