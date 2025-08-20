@@ -175,7 +175,9 @@ def test_force_path6():
         tgt4 = magpy.current.Polyline(
             current=1, vertices=[(-0.1, 0, 0), (0.1, 0, 0)], meshing=10
         )
-        tgt5 = magpy.magnet.Sphere(diameter=0.2, polarization=(2, 3, 1), meshing=7)
+        tgt5 = magpy.magnet.Cylinder(
+            dimension=(0.2, 0.2), polarization=(2, 3, 1), meshing=7
+        )
 
         F0, T0 = FTana(p1[i], p2[i], m1[i], m2_rot, src1, piv[i])
 
@@ -438,7 +440,7 @@ def test_force_backforward_Dipole_Trimesh():
 
     for meshing, err in zip(
         [1, 60, 100], [0.08, 0.1, 0.01], strict=False
-    ):  # achtung 100 ist ein sweetspot
+    ):  # careful, 100 is a sweet spot
         trimesh.meshing = meshing
         F1, T1 = getFT(dip, trimesh, pivot=(0, 0, 0))
 
@@ -522,7 +524,7 @@ def test_force_analytic_cocentric_loops():
     F_num = F[2]  # force in z-direction
 
     # analytical solution
-    from scipy.special import ellipe, ellipk
+    from scipy.special import ellipe, ellipk  # noqa: PLC0415
 
     k2 = 4 * r1 * r2 / ((r1 + r2) ** 2 + (z1 - z2) ** 2)
     k = np.sqrt(k2)
@@ -1575,10 +1577,10 @@ def test_force_meshing_validation():
         magpy.magnet.Cuboid(dimension=(3, 3, 3), polarization=(0, 0, 1)),
     ]
     for obj in objects:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: PT011
             obj.meshing = "bad"
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: PT011
             obj.meshing = -1
 
         obj.meshing = 1
@@ -1589,10 +1591,10 @@ def test_force_meshing_validation():
 
     # circle
     obj = magpy.current.Circle(diameter=3, current=1)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         obj.meshing = "bad"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         obj.meshing = 3
 
     obj.meshing = 4
@@ -1609,7 +1611,7 @@ def test_force_meshing_validation():
     poly = magpy.current.Polyline(vertices=[(0, 0, 0), (1, 1, 1), (2, 2, 2)], current=1)
     poly.meshing = 1
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning):  # noqa: PT030
         getFT(cube, poly)
 
 

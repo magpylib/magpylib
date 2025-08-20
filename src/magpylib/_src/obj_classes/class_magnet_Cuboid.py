@@ -164,7 +164,7 @@ class Cuboid(BaseMagnet, BaseTarget):
     def _validate_meshing(self, value):
         """Cuboid meshing must be a positive integer or array_like of shape (3,)."""
         if (isinstance(value, int) and value > 0) or (
-            isinstance(value, (list, tuple, np.ndarray)) and len(value) == 3
+            isinstance(value, list | tuple | np.ndarray) and len(value) == 3
         ):
             pass
         else:

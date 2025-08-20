@@ -1,9 +1,15 @@
+# pylint: disable=import-outside-toplevel
+
+import logging
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.fields.field_wrap_BH import getB
 from magpylib._src.input_checks import check_dimensions, check_excitations
 from magpylib._src.utility import format_src_inputs
+
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
 def check_format_input_targets(targets):
@@ -25,7 +31,9 @@ def check_format_input_targets(targets):
     coll_idx = []
     idx = 0
     for t in targets:
-        from magpylib._src.obj_classes.class_Collection import Collection
+        from magpylib._src.obj_classes.class_Collection import (  # noqa: PLC0415
+            Collection,
+        )
 
         if isinstance(t, Collection):
             len_sources = len(t.sources_all)
@@ -48,10 +56,12 @@ def check_format_input_targets(targets):
 
     for t in flat_targets:
         # exclude Dipole from check
-        from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
-        from magpylib._src.obj_classes.class_misc_Dipole import Dipole
+        from magpylib._src.obj_classes.class_magnet_Sphere import (  # noqa: PLC0415
+            Sphere,
+        )
+        from magpylib._src.obj_classes.class_misc_Dipole import Dipole  # noqa: PLC0415
 
-        if not isinstance(t, (Dipole, Sphere)):
+        if not isinstance(t, Dipole | Sphere):
             if not hasattr(t, "meshing"):
                 msg = (
                     "getFT bad target input. Targets can only be Magpylib objects Cuboid,..."
@@ -122,7 +132,7 @@ def check_format_input_pivot(pivot, targets, n_path):
             ]
         )
 
-    if isinstance(pivot, (list, tuple, np.ndarray)):
+    if isinstance(pivot, list | tuple | np.ndarray):
         try:
             pivot = np.array(pivot, dtype=float)
         except (ValueError, TypeError) as e:
@@ -291,10 +301,10 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     # Meshreport - maybe add optional breakpoint here so that one can look at the
     #  mesh parameters before going into eval.
     if meshreport:
-        print("Mesh report:")
+        logging.info("Mesh report:")
         for t, m in zip(targets, mesh_sizes_all, strict=False):
-            print(f"  Target {t}: {m} points")
-        print()
+            logging.info("  Target %s: %d points", t, m)
+        logging.info("")
 
     # OBSERVER ARRAY ##########################################################
     # determine observer points for B-field evaluation
@@ -353,7 +363,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     #  - compute relative paths between all sources and targets requires source by source eval
 
     # Source path length
-    n_src_path = max([len(src._position) for src in sources])
+    n_src_path = max(len(src._position) for src in sources)
 
     # No source path (95% of cases)
     if n_src_path == 1:

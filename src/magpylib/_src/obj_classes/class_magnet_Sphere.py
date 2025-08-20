@@ -45,10 +45,6 @@ class Sphere(BaseMagnet):
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
 
-    meshing: int, default=`None`
-        Parameter that defines the mesh fineness for force computation.
-        Must be a positive integer specifying the target mesh size.
-
     volume: float
         Read-only. Object physical volume in units of m^3.
 
@@ -97,7 +93,6 @@ class Sphere(BaseMagnet):
         diameter=None,
         polarization=None,
         magnetization=None,
-        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -151,5 +146,4 @@ class Sphere(BaseMagnet):
         """Generate mesh for force computation."""
         points = np.array([(0, 0, 0)])
         moments = np.array([self.volume * self.magnetization])
-        mesh_dict = {"pts": points, "moments": moments}
-        return mesh_dict
+        return {"pts": points, "moments": moments}

@@ -3,6 +3,8 @@ from itertools import product
 
 import numpy as np
 
+# pylint: disable=import-outside-toplevel
+
 
 def apportion_triple(triple, min_val=1, max_iter=30):
     """Apportion values of a triple, so that the minimum value `min_val` is respected
@@ -169,9 +171,7 @@ def target_mesh_cuboid(target_elems, dimension, magnetization):
 
     moments = volumes[:, np.newaxis] * magnetization
 
-    mesh_dict = {"pts": pts, "moments": moments}
-
-    return mesh_dict
+    return {"pts": pts, "moments": moments}
 
 
 def target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
@@ -249,8 +249,7 @@ def target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
 
     moments = volumes[:, np.newaxis] * magnetization
 
-    mesh_dict = {"pts": pts, "moments": moments}
-    return mesh_dict
+    return {"pts": pts, "moments": moments}
 
 
 def target_mesh_circle(r, n, i0):
@@ -288,9 +287,7 @@ def target_mesh_circle(r, n, i0):
     tvecs = np.column_stack((tx, ty, midz))
     currents = np.full(n, i0)
 
-    mesh_dict = {"pts": pts, "currents": currents, "tvecs": tvecs}
-
-    return mesh_dict
+    return {"pts": pts, "currents": currents, "tvecs": tvecs}
 
 
 def target_mesh_polyline(vertices, i0, n_points):
@@ -303,7 +300,7 @@ def target_mesh_polyline(vertices, i0, n_points):
     i0: float - electric current
     n_points: int >= n_segments
 
-    If n_points is int, the algorithm trys to distribute these points evenly
+    If n_points is int, the algorithm tries to distribute these points evenly
     over the polyline, enforcing at least one point per segment.
 
     Returns
@@ -355,9 +352,7 @@ def target_mesh_polyline(vertices, i0, n_points):
 
     currents = np.full(n_points, i0)
 
-    mesh_dict = {"pts": pts, "currents": currents, "tvecs": tvecs}
-
-    return mesh_dict
+    return {"pts": pts, "currents": currents, "tvecs": tvecs}
 
 
 def create_grid(dimensions, spacing):
@@ -394,9 +389,7 @@ def create_grid(dimensions, spacing):
 
     xx, yy, zz = np.meshgrid(x, y, z, indexing="ij")
 
-    points = np.column_stack([xx.ravel(), yy.ravel(), zz.ravel()])
-
-    return points
+    return np.column_stack([xx.ravel(), yy.ravel(), zz.ravel()])
 
 
 def target_mesh_tetrahedron(
@@ -438,8 +431,7 @@ def target_mesh_tetrahedron(
         pts = np.array([centroid])
         moments = np.array([tet_volume * magnetization])
 
-        mesh_dict = {"pts": pts, "moments": moments}
-        return mesh_dict
+        return {"pts": pts, "moments": moments}
 
     # Find the optimal number of subdivisions to get closest to n_points
     # For a tetrahedron with n_div divisions, the exact number of points is:
@@ -471,7 +463,7 @@ def target_mesh_tetrahedron(
     for i in range(n_div + 1):
         for j in range(n_div + 1 - i):
             for k in range(n_div + 1 - i - j):
-                l = n_div - i - j - k
+                l = n_div - i - j - k  # noqa: E741
                 if l >= 0:
                     # Barycentric coordinates (normalized)
                     u1 = i / n_div
@@ -496,9 +488,7 @@ def target_mesh_tetrahedron(
 
     moments = volumes[:, np.newaxis] * magnetization
 
-    mesh_dict = {"pts": pts, "moments": moments}
-
-    return mesh_dict
+    return {"pts": pts, "moments": moments}
 
 
 def target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetization):
@@ -525,7 +515,7 @@ def target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetiza
     }
     """
     # Import the required functions from triangular mesh field module
-    from magpylib._src.fields.field_BH_triangularmesh import (
+    from magpylib._src.fields.field_BH_triangularmesh import (  # noqa: PLC0415
         calculate_centroid,
         mask_inside_trimesh,
     )
@@ -536,8 +526,7 @@ def target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetiza
         pts = np.array([barycenter])
         moments = np.array([volume * magnetization])
 
-        mesh_dict = {"pts": pts, "moments": moments}
-        return mesh_dict
+        return {"pts": pts, "moments": moments}
 
     # Generate regular cubic grid
     spacing = (volume / target_points) ** (1 / 3)
@@ -564,19 +553,11 @@ def target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetiza
         barycenter = calculate_centroid(vertices, faces)
         pts = np.array([barycenter])
         volumes = np.array([volume])
-        mesh_dict = {"pts": pts, "volumes": volumes}
-        return mesh_dict
+        return {"pts": pts, "volumes": volumes}
 
     # Volumes
     volumes = np.full(len(pts), volume / len(pts))
 
     moments = volumes[:, np.newaxis] * magnetization
 
-    mesh_dict = {"pts": pts, "moments": moments}
-
-    return mesh_dict
-
-
-if __name__ == "__main__":
-    for n in [1, 10, 50, 100, 500, 1000, 5000]:
-        target_mesh_cuboid(n, (1.1, 2.2, 1))
+    return {"pts": pts, "moments": moments}

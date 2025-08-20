@@ -1,8 +1,8 @@
-"""Collection class code"""
-
+# pylint: disable=too-many-lines
 # pylint: disable=redefined-builtin
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-positional-arguments
+# pylint: disable=arguments-differ
 
 from collections import Counter
 
