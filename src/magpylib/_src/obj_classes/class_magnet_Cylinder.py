@@ -14,6 +14,7 @@ from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.target_meshing import target_mesh_cylinder
 from magpylib._src.utility import unit_prefix
 
+
 class Cylinder(BaseMagnet, BaseTarget):
     """Cylinder magnet with homogeneous magnetization.
 
@@ -159,4 +160,6 @@ class Cylinder(BaseMagnet, BaseTarget):
         """Generate mesh for force computation."""
         # Tests in getFT ensure that meshing, dimension and excitation are set
         d, h = self.dimension
-        return target_mesh_cylinder(0, d/2, h, 0, 360, self.meshing, self.magnetization)
+        return target_mesh_cylinder(
+            0, d / 2, h, 0, 360, self.meshing, self.magnetization
+        )

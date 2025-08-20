@@ -13,8 +13,8 @@ from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
-from magpylib._src.utility import unit_prefix
 from magpylib._src.obj_classes.target_meshing import target_mesh_polyline
+from magpylib._src.utility import unit_prefix
 
 
 class Polyline(BaseCurrent, BaseTarget):
@@ -113,7 +113,7 @@ class Polyline(BaseCurrent, BaseTarget):
 
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
-        
+
         # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
 
@@ -150,10 +150,9 @@ class Polyline(BaseCurrent, BaseTarget):
             if self.vertices is not None:
                 return np.mean(self.vertices, axis=0) + self.position
             return self.position
-        else:
-            if self.vertices is not None:
-                return np.mean(self.vertices, axis=0) + self._position
-            return self._position
+        if self.vertices is not None:
+            return np.mean(self.vertices, axis=0) + self._position
+        return self._position
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
@@ -164,6 +163,7 @@ class Polyline(BaseCurrent, BaseTarget):
         n_segments = len(self.vertices) - 1
         if self.meshing < n_segments:
             import warnings
+
             msg = (
                 "getFT Polyline bad meshing input. number of points is less than"
                 " number of Polyline segments. Setting one point per segment in computation"
@@ -174,6 +174,7 @@ class Polyline(BaseCurrent, BaseTarget):
             n_target = self.meshing
 
         return target_mesh_polyline(self.vertices, self.current, n_target)
+
 
 class Line(Polyline):
     """Line is deprecated, see Polyline"""

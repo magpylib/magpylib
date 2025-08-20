@@ -137,12 +137,13 @@ def test_magnet_trimesh_func():
     dim = (10, 10, 10)
     cube = magpy.magnet.Cuboid(polarization=pol, dimension=dim)
     tmesh_cube = magpy.magnet.TriangularMesh.from_pyvista(
-        polarization=pol, polydata=pv.Cube(
+        polarization=pol,
+        polydata=pv.Cube(
             center=cube.position,
             x_length=dim[0],
             y_length=dim[1],
             z_length=dim[2],
-        )
+        ),
     )
 
     pts_inside = np.array([[0, 0, 1]])

@@ -1,8 +1,8 @@
 import numpy as np
-from magpylib._src.fields.field_wrap_BH import getB
-from magpylib._src.input_checks import check_excitations
-from magpylib._src.input_checks import check_dimensions
 from scipy.spatial.transform import Rotation as R
+
+from magpylib._src.fields.field_wrap_BH import getB
+from magpylib._src.input_checks import check_dimensions, check_excitations
 from magpylib._src.utility import format_src_inputs
 
 
@@ -12,7 +12,7 @@ def check_format_input_targets(targets):
     - flatten Collections
     - check if allowed instance
     - check if meshing parameter is set
-    
+
     Returns
     -------
     flat list of targets , list of collection indices for summation
@@ -26,6 +26,7 @@ def check_format_input_targets(targets):
     idx = 0
     for t in targets:
         from magpylib._src.obj_classes.class_Collection import Collection
+
         if isinstance(t, Collection):
             len_sources = len(t.sources_all)
             if len_sources == 0:
@@ -40,18 +41,18 @@ def check_format_input_targets(targets):
             idx += 1
 
     # check if all flat_targets are valid
-    
+
     # check if dimensions and excitations are initialized
     check_dimensions(flat_targets)
     check_excitations(flat_targets)
-    
+
     for t in flat_targets:
         # exclude Dipole from check
-        from magpylib._src.obj_classes.class_misc_Dipole import Dipole
         from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
-        if not isinstance(t, (Dipole, Sphere)):
+        from magpylib._src.obj_classes.class_misc_Dipole import Dipole
 
-            if not hasattr(t, 'meshing'):
+        if not isinstance(t, (Dipole, Sphere)):
+            if not hasattr(t, "meshing"):
                 msg = (
                     "getFT bad target input. Targets can only be Magpylib objects Cuboid,..."
                     f" Instead received type {type(t)}."
@@ -72,7 +73,7 @@ def check_format_input_targets(targets):
 def create_eps_vector(eps):
     """
     Create a vector of finite difference steps based on the input eps.
-    
+
     Parameters
     ----------
     eps : float
@@ -114,14 +115,19 @@ def check_format_input_pivot(pivot, targets, n_path):
         return None
 
     if isinstance(pivot, str) and pivot == "centroid":
-        return np.array([np.pad(t._centroid, ((0,n_path-len(t._centroid)),(0,0)), "edge") for t in targets])
+        return np.array(
+            [
+                np.pad(t._centroid, ((0, n_path - len(t._centroid)), (0, 0)), "edge")
+                for t in targets
+            ]
+        )
 
     if isinstance(pivot, (list, tuple, np.ndarray)):
         try:
             pivot = np.array(pivot, dtype=float)
         except (ValueError, TypeError) as e:
             raise ValueError(msg) from e
-        
+
         n_tgt = len(targets)
 
         if pivot.shape == (3,):
@@ -181,7 +187,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         The output of the computation has the shape (2,n,m,o,3) where n corresponds to the number
         of sources, m to the path length, and o to the number of targets. By default all dimensions
         of size 1 are eliminated.
-    
+
     meshreport: bool, default=False
         If True, a report of the mesh used for each target will be printed.
 
@@ -189,7 +195,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     -------
     tuple: (force, torque) as respective ndarrays of shape (n,p,m,3), when n sources, p path length,
     and m targets are given.
-    
+
     Examples
     --------
     >>> import numpy as np
@@ -235,7 +241,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     #  - return 1D list of targets (flatten collections)
     targets, coll_idx = check_format_input_targets(targets)
     n_tgt = len(targets)
-    
+
     # Input checks sources: from getB
     sources, _ = format_src_inputs(sources)
     n_src = len(sources)
@@ -263,8 +269,8 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     mask_current = ~mask_magnet
 
     mesh_sizes_all = np.array([len(m["pts"]) for m in meshes])
-    mesh_sizes_all7 = mesh_sizes_all * np.where(mask_magnet, 7, 1) # with FD steps
-    
+    mesh_sizes_all7 = mesh_sizes_all * np.where(mask_magnet, 7, 1)  # with FD steps
+
     mask_mesh_magnet = np.repeat(mask_magnet, mesh_sizes_all)
     mask_mesh_current = ~mask_mesh_magnet
 
@@ -273,20 +279,20 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     n_current = sum(mask_current)
     n_mesh_all = sum(mesh_sizes_all)
     n_mesh_all7 = sum(mesh_sizes_all7)
-    
+
     # Index lists
     idx_mag = np.where(mask_magnet)[0]
     idx_cur = np.where(mask_current)[0]
-    idx_ends_all = np.cumsum(mesh_sizes_all)        # All meshs are tiled to one big
-    idx_starts_all = np.r_[0, idx_ends_all[:-1]]    #  array. These are start and
-    idx_ends_all7 = np.cumsum(mesh_sizes_all7)      #  end indices of respective
+    idx_ends_all = np.cumsum(mesh_sizes_all)  # All meshs are tiled to one big
+    idx_starts_all = np.r_[0, idx_ends_all[:-1]]  #  array. These are start and
+    idx_ends_all7 = np.cumsum(mesh_sizes_all7)  #  end indices of respective
     idx_starts_all7 = np.r_[0, idx_ends_all7[:-1]]  #  meshes.
 
     # Meshreport - maybe add optional breakpoint here so that one can look at the
     #  mesh parameters before going into eval.
     if meshreport:
         print("Mesh report:")
-        for t, m in zip(targets, mesh_sizes_all):
+        for t, m in zip(targets, mesh_sizes_all, strict=False):
             print(f"  Target {t}: {m} points")
         print()
 
@@ -294,24 +300,23 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     # determine observer points for B-field evaluation
     #  - path padding
     #  - apply path transform to meshes
-    #  - add FD steps 
+    #  - add FD steps
     OBS7 = np.empty((n_path, n_mesh_all7, 3))
-    
+
     # For later rotations of moments etc.
     tgt_ori = np.empty((n_tgt, n_path, 4))
-    
+
     # Create transformed meshes and broadcast into OBS7
     eps_vec = create_eps_vector(eps)
     for i, tgt in enumerate(targets):
-
         # Path padding
         n_pad = n_path - len(tgt._position)
-        if n_pad == 0:                       # np.pad creates a relevant overhead
+        if n_pad == 0:  # np.pad creates a relevant overhead
             pos = tgt._position
             ori = tgt._orientation.as_quat()
         else:
-            pos = np.pad(tgt._position, ((0,n_pad), (0,0)), 'edge')
-            ori = np.pad(tgt._orientation.as_quat(), ((0,n_pad), (0,0)), 'edge')
+            pos = np.pad(tgt._position, ((0, n_pad), (0, 0)), "edge")
+            ori = np.pad(tgt._orientation.as_quat(), ((0, n_pad), (0, 0)), "edge")
 
         # Store orientations
         tgt_ori[i] = ori
@@ -326,17 +331,16 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         # Apply path to meshes
         pos = np.repeat(pos, n_mesh, axis=0)
         ori = R.from_quat(np.repeat(ori, n_mesh, axis=0))
-        mesh = np.tile(meshes[i]["pts"], (n_path,1))
+        mesh = np.tile(meshes[i]["pts"], (n_path, 1))
         mesh = ori.apply(mesh) + pos
         mesh = mesh.reshape(n_path, n_mesh, 3)
 
         # Extend meshes by FD steps
         if mask_magnet[i]:
-            mesh = (mesh[:, :, np.newaxis, :] + eps_vec[np.newaxis, np.newaxis, :, :])
+            mesh = mesh[:, :, np.newaxis, :] + eps_vec[np.newaxis, np.newaxis, :, :]
 
         # Broadcast into OBS7
         OBS7[:, start7:end7] = mesh.reshape((n_path, n_mesh7, 3))
-
 
     # B-FIELD COMPUTATION ############################################################
     # B-field computation limited by getB no ragged inputs, and that sources must be
@@ -347,32 +351,34 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     # Alternatives:
     #  - create sensor objects from meshes is limited by ragged inputs
     #  - compute relative paths between all sources and targets requires source by source eval
-    
+
     # Source path length
     n_src_path = max([len(src._position) for src in sources])
-    
+
     # No source path (95% of cases)
     if n_src_path == 1:
-        B_all = getB(sources, OBS7, squeeze=False)[:,:,0,0]
+        B_all = getB(sources, OBS7, squeeze=False)[:, :, 0, 0]
 
     # Annoying general case - cycle through path
     else:
         # Store original paths
         src_pos0 = [src._position for src in sources]
         src_ori0 = [src._orientation for src in sources]
-        
+
         # Extract an pad source paths
         src_pos = np.empty((n_src, n_path, 3))
         src_ori = np.empty((n_src, n_path, 4))
-        
+
         for i, src in enumerate(sources):
             n_pad = n_path - len(src._position)
-            if n_pad == 0:            # np.pad creates a relevant overhead
+            if n_pad == 0:  # np.pad creates a relevant overhead
                 src_pos[i] = src._position
                 src_ori[i] = src._orientation.as_quat()
             else:
-                src_pos[i] = np.pad(src._position, ((0,n_pad), (0,0)), 'edge')
-                src_ori[i] = np.pad(src._orientation.as_quat(), ((0,n_pad), (0,0)), 'edge')
+                src_pos[i] = np.pad(src._position, ((0, n_pad), (0, 0)), "edge")
+                src_ori[i] = np.pad(
+                    src._orientation.as_quat(), ((0, n_pad), (0, 0)), "edge"
+                )
 
         # Allocate
         B_all = np.empty((n_src, n_path, n_mesh_all7, 3))
@@ -394,20 +400,21 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
     # MAGNETS ########################################################################
     if n_magnet > 0:
-
         # Computation array allocation
         mesh_sizes = mesh_sizes_all[mask_magnet]
         n_mesh = sum(mesh_sizes)
 
-        B = np.empty((n_src, n_path, n_mesh, 3))     # B-field at cell location
-        DB = np.empty((n_src, n_path, n_mesh, 3, 3)) # B-field gradient at cell location
-        MOM = np.empty((n_src, n_path, n_mesh, 3))   # magnetic moment of cells
+        B = np.empty((n_src, n_path, n_mesh, 3))  # B-field at cell location
+        DB = np.empty(
+            (n_src, n_path, n_mesh, 3, 3)
+        )  # B-field gradient at cell location
+        MOM = np.empty((n_src, n_path, n_mesh, 3))  # magnetic moment of cells
 
         # Compute and Broadcast
         idx_ends = np.cumsum(mesh_sizes)
         idx_starts = np.r_[0, idx_ends[:-1]]
 
-        for start, end, ii in zip(idx_starts, idx_ends, idx_mag):
+        for start, end, ii in zip(idx_starts, idx_ends, idx_mag, strict=False):
             start_all = idx_starts_all7[ii]
             end_all = idx_ends_all7[ii]
 
@@ -415,10 +422,14 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
             B[:, :, start:end] = B_all[:, :, start_all:end_all:7]
 
             # DB - compute and broadcast
-            for i in range(3): # ∂B/∂x, ∂B/∂x, ∂B/∂z
-                DB[:, :, start:end, i]  = B_all[:, :, start_all+2*i+1:end_all:7]
-                DB[:, :, start:end, i] -= B_all[:, :, start_all+2*i+2:end_all:7]
-            DB[:, :, start:end] /= (2*eps) # div all by FD length
+            for i in range(3):  # ∂B/∂x, ∂B/∂x, ∂B/∂z
+                DB[:, :, start:end, i] = B_all[
+                    :, :, start_all + 2 * i + 1 : end_all : 7
+                ]
+                DB[:, :, start:end, i] -= B_all[
+                    :, :, start_all + 2 * i + 2 : end_all : 7
+                ]
+            DB[:, :, start:end] /= 2 * eps  # div all by FD length
 
             # MOM - apply rot and broadcast
             n = mesh_sizes_all[ii]
@@ -433,30 +444,29 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         #    the force computation. Therefore it makes no sense to separate the force
         #    and torque computation.
 
-        F = np.einsum('abijk,abik->abij', DB, MOM)            # numpy only
-        #F = np.sum(DB * MOM[:, :, :, np.newaxis, :], axis=4) # array API
+        F = np.einsum("abijk,abik->abij", DB, MOM)  # numpy only
+        # F = np.sum(DB * MOM[:, :, :, np.newaxis, :], axis=4) # array API
         T = np.cross(MOM, B)
 
         # broadcast into B (OBS7 needed below) to save memory? !!!!!!!!!!!!!!!!!!!!!!!!
-        F_all[:,:,mask_mesh_magnet] = F
-        T_all[:,:,mask_mesh_magnet] = T
+        F_all[:, :, mask_mesh_magnet] = F
+        T_all[:, :, mask_mesh_magnet] = T
 
     # CURRENT COMPUTATION #########################################################
     if n_current > 0:
-
         # Computation array allocation
         mesh_sizes = mesh_sizes_all[mask_current]
         n_mesh = sum(mesh_sizes)
 
-        B = np.empty((n_src, n_path, n_mesh, 3))     # B-field at cell location
+        B = np.empty((n_src, n_path, n_mesh, 3))  # B-field at cell location
         TVEC = np.empty((n_src, n_path, n_mesh, 3))  # current tangential vectors
-        CURR = np.empty((n_src, n_path, n_mesh))     # current
+        CURR = np.empty((n_src, n_path, n_mesh))  # current
 
         # Compute and Broadcast
         idx_ends = np.cumsum(mesh_sizes)
         idx_starts = np.r_[0, idx_ends[:-1]]
 
-        for start, end, ii in zip(idx_starts, idx_ends, idx_cur):
+        for start, end, ii in zip(idx_starts, idx_ends, idx_cur, strict=False):
             start_all = idx_starts_all7[ii]
             end_all = idx_ends_all7[ii]
 
@@ -465,7 +475,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
             # CURR - broadcast
             curr = meshes[ii]["currents"]
-            CURR[:, :, start:end] = np.broadcast_to(curr, (n_src, n_path, end-start))
+            CURR[:, :, start:end] = np.broadcast_to(curr, (n_src, n_path, end - start))
 
             # TVEC - apply rot and broadcast
             n = mesh_sizes_all[ii]
@@ -475,12 +485,12 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
             TVEC[:, :, start:end] = tvec_rot[np.newaxis, :]
 
         # Force and Torque computation
-        F = CURR[...,np.newaxis] * np.cross(TVEC, B)
+        F = CURR[..., np.newaxis] * np.cross(TVEC, B)
         T = np.zeros_like(F)
 
         # broadcast into B (OBS7 needed below) to save memory? !!!!!!!!!!!!!!!!!!!!!!!!
-        F_all[:,:,mask_mesh_current] = F
-        T_all[:,:,mask_mesh_current] = T
+        F_all[:, :, mask_mesh_current] = F
+        T_all[:, :, mask_mesh_current] = T
 
     # PIVOT ############################################################################
     #  - force adds to torque via Pivot
@@ -490,13 +500,13 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         for j, piv in enumerate(pivot):
             start, end = idx_starts_all[j], idx_ends_all[j]
             start7, end7 = idx_starts_all7[j], idx_ends_all7[j]
-            
+
             if mask_magnet[j]:
-                diff = OBS7[:, start7: end7 : 7] - piv[:, np.newaxis, :]
+                diff = OBS7[:, start7:end7:7] - piv[:, np.newaxis, :]
             else:
-                diff = OBS7[:, start7: end7] - piv[:, np.newaxis, :]
-            
-            POS_PIV[:,:,start:end] = diff
+                diff = OBS7[:, start7:end7] - piv[:, np.newaxis, :]
+
+            POS_PIV[:, :, start:end] = diff
 
         T_all += np.cross(POS_PIV, F_all)
 

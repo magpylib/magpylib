@@ -131,7 +131,7 @@ class Dipole(BaseSource):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        points = np.array([(0,0,0)])
+        points = np.array([(0, 0, 0)])
         moments = np.array([self.moment])
         mesh_dict = {"pts": points, "moments": moments}
         return mesh_dict

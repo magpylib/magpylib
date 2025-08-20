@@ -141,7 +141,7 @@ def target_mesh_cuboid(target_elems, dimension, magnetization):
             n1, n2, n3 = (1, 1, 1)
         else:
             # estimate splitting with aspect ratio~1
-            cell_size = (a * b * c / target_elems) ** (1/3)
+            cell_size = (a * b * c / target_elems) ** (1 / 3)
             n1 = max(1, int(np.round(a / cell_size)))
             n2 = max(1, int(np.round(b / cell_size)))
             n3 = max(1, int(np.round(c / cell_size)))
@@ -149,8 +149,8 @@ def target_mesh_cuboid(target_elems, dimension, magnetization):
         n1, n2, n3 = target_elems
 
     # could improve auto-splitting by reducing the aspect error
-    #print(n1*n2*n3)
-    #print((a/n1)/(b/n2), (b/n2)/(c/n3), (c/n3)/(a/n1))
+    # print(n1*n2*n3)
+    # print((a/n1)/(b/n2), (b/n2)/(c/n3), (c/n3)/(a/n1))
 
     xs = np.linspace(-a / 2, a / 2, n1 + 1)
     ys = np.linspace(-b / 2, b / 2, n2 + 1)
@@ -165,14 +165,11 @@ def target_mesh_cuboid(target_elems, dimension, magnetization):
     zs_cent = zs[:-1] + dz / 2 if len(zs) > 1 else zs + dz / 2
 
     pts = np.array(list(itertools.product(xs_cent, ys_cent, zs_cent)))
-    volumes = np.tile(a*b*c/n1/n2/n3, (len(pts), ))
+    volumes = np.tile(a * b * c / n1 / n2 / n3, (len(pts),))
 
     moments = volumes[:, np.newaxis] * magnetization
 
-    mesh_dict = {
-        "pts": pts,
-        "moments": moments
-    }
+    mesh_dict = {"pts": pts, "moments": moments}
 
     return mesh_dict
 
@@ -226,7 +223,7 @@ def target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
             if nr >= 3 and r[r_ind] == 0 and phi2 - phi1 == 360:
                 cell = (0, 0, pos_h)
                 cells.append(cell)
-                volumes.append(np.pi * r[r_ind+1] ** 2 * dh)
+                volumes.append(np.pi * r[r_ind + 1] ** 2 * dh)
             else:
                 for phi_ind in range(nphi_r):
                     radial_coord = (r[r_ind] + r[r_ind + 1]) / 2
@@ -239,18 +236,20 @@ def target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
                     )
                     cells.append(cell)
                     volumes.append(
-                        np.pi * (r[r_ind + 1] ** 2 - r[r_ind] ** 2) * dh / nphi_r * (phi2-phi1)/360
+                        np.pi
+                        * (r[r_ind + 1] ** 2 - r[r_ind] ** 2)
+                        * dh
+                        / nphi_r
+                        * (phi2 - phi1)
+                        / 360
                     )
-    
+
     pts = np.array(cells)
     volumes = np.array(volumes)
-    
+
     moments = volumes[:, np.newaxis] * magnetization
-    
-    mesh_dict = {
-        "pts": pts,
-        "moments": moments
-    }
+
+    mesh_dict = {"pts": pts, "moments": moments}
     return mesh_dict
 
 
@@ -273,9 +272,9 @@ def target_mesh_circle(r, n, i0):
     }
     """
     # construct polygon with same area as circle
-    r1 = r * np.sqrt( (2*np.pi) / (n * np.sin(2*np.pi/n)) )
-    vx =  r1 * np.cos(2 * np.pi * np.arange(n+1) / n)
-    vy =  r1 * np.sin(2 * np.pi * np.arange(n+1) / n)
+    r1 = r * np.sqrt((2 * np.pi) / (n * np.sin(2 * np.pi / n)))
+    vx = r1 * np.cos(2 * np.pi * np.arange(n + 1) / n)
+    vy = r1 * np.sin(2 * np.pi * np.arange(n + 1) / n)
 
     # compute midpoints and tangents of polygon edges
     midx = (vx[:-1] + vx[1:]) / 2
@@ -289,11 +288,7 @@ def target_mesh_circle(r, n, i0):
     tvecs = np.column_stack((tx, ty, midz))
     currents = np.full(n, i0)
 
-    mesh_dict = {
-        "pts": pts,
-        "currents": currents,
-        "tvecs": tvecs
-    }
+    mesh_dict = {"pts": pts, "currents": currents, "tvecs": tvecs}
 
     return mesh_dict
 
@@ -325,11 +320,11 @@ def target_mesh_polyline(vertices, i0, n_points):
     segment_vectors = vertices[1:] - vertices[:-1]
     segment_lengths = np.linalg.norm(segment_vectors, axis=1)
     total_length = np.sum(segment_lengths)
-    
+
     # DISTRIBUTE POINTS OVER SEGMENTS #######################################
     # 1. one point per segment
     points_per_segment = np.ones(n_segments, dtype=int)
-    
+
     # 2. distribute remaining points proportionally to segment lengths
     remaining_points = n_points - n_segments
     if remaining_points > 0:
@@ -337,7 +332,7 @@ def target_mesh_polyline(vertices, i0, n_points):
         proportional_extra = (segment_lengths / total_length) * remaining_points
         extra_points = np.round(proportional_extra).astype(int)
         points_per_segment += extra_points
-        
+
         # possibly there will now be n_segments too much or too few points
         n_points = np.sum(points_per_segment)
 
@@ -345,22 +340,22 @@ def target_mesh_polyline(vertices, i0, n_points):
     parts = np.empty(n_points)
     idx = 0
     for n_pts in points_per_segment:
-        parts[idx:idx+n_pts] = [(2*j + 1) / (2 * n_pts) for j in range(n_pts)]
+        parts[idx : idx + n_pts] = [(2 * j + 1) / (2 * n_pts) for j in range(n_pts)]
         idx += n_pts
 
     pts = np.repeat(segment_vectors, points_per_segment, axis=0)
     pts = pts * parts[:, np.newaxis]
-    pts += np.repeat(vertices[:-1], points_per_segment, axis=0)  # add starting point of each segment
+    pts += np.repeat(
+        vertices[:-1], points_per_segment, axis=0
+    )  # add starting point of each segment
 
-    tvecs = np.repeat(segment_vectors/points_per_segment[:, np.newaxis], points_per_segment, axis=0)
+    tvecs = np.repeat(
+        segment_vectors / points_per_segment[:, np.newaxis], points_per_segment, axis=0
+    )
 
     currents = np.full(n_points, i0)
 
-    mesh_dict = {
-        "pts": pts,
-        "currents": currents,
-        "tvecs": tvecs
-    }
+    mesh_dict = {"pts": pts, "currents": currents, "tvecs": tvecs}
 
     return mesh_dict
 
@@ -375,43 +370,45 @@ def create_grid(dimensions, spacing):
     ----------
     dimensions : array_like, shape (6,) - Bounding box [x0, y0, z0, x1, y1, z1]
     spacing : float - Desired lattice constant
-    
+
     Returns
     -------
     mesh : np.ndarray, shape (n, 3) that covers the given cuboid, ready for inside_masks
     """
     x0, y0, z0, x1, y1, z1 = dimensions
-    
+
     # Create centered grids to ensure symmetric distribution around origin
     # Calculate number of steps needed to cover the range
     nx = int(np.ceil((x1 - x0) / spacing))
     ny = int(np.ceil((y1 - y0) / spacing))
     nz = int(np.ceil((z1 - z0) / spacing))
-    
+
     # Create centered grids
     center_x = (x0 + x1) / 2
     center_y = (y0 + y1) / 2
     center_z = (z0 + z1) / 2
-    
+
     x = center_x + spacing * (np.arange(nx + 1) - nx // 2)
     y = center_y + spacing * (np.arange(ny + 1) - ny // 2)
     z = center_z + spacing * (np.arange(nz + 1) - nz // 2)
-    
-    xx, yy, zz = np.meshgrid(x, y, z, indexing='ij')
-    
+
+    xx, yy, zz = np.meshgrid(x, y, z, indexing="ij")
+
     points = np.column_stack([xx.ravel(), yy.ravel(), zz.ravel()])
-    
+
     return points
 
 
-def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray, magnetization: np.ndarray):
+def target_mesh_tetrahedron(
+    n_points: int, vertices: np.ndarray, magnetization: np.ndarray
+):
     """
     Generate mesh of tetrahedral body using uniform barycentric coordinate grid.
-    
+
     This function creates a uniform grid of points inside the tetrahedron using
     structured barycentric coordinates, ensuring homogeneous density distribution.
     The actual number of points may differ slightly from the target for efficiency.
-    
+
     Parameters
     ----------
     n_points : int
@@ -428,50 +425,47 @@ def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray, magnetization: 
         "moments": np.ndarray, shape (n,3) - moments associated with each point
     }
     """
-    
+
     # Calculate tetrahedron volume
     v1 = vertices[1] - vertices[0]
-    v2 = vertices[2] - vertices[0] 
+    v2 = vertices[2] - vertices[0]
     v3 = vertices[3] - vertices[0]
     tet_volume = abs(np.linalg.det(np.column_stack([v1, v2, v3]))) / 6.0
-    
+
     # Return centroid for single point
     if n_points == 1:
         centroid = np.mean(vertices, axis=0)
         pts = np.array([centroid])
         moments = np.array([tet_volume * magnetization])
 
-        mesh_dict = {
-            "pts": pts,
-            "moments": moments
-        }
+        mesh_dict = {"pts": pts, "moments": moments}
         return mesh_dict
-    
+
     # Find the optimal number of subdivisions to get closest to n_points
     # For a tetrahedron with n_div divisions, the exact number of points is:
     # (n_div+1)(n_div+2)(n_div+3)/6
     def points_for_n_div(n):
         return (n + 1) * (n + 2) * (n + 3) // 6
-    
+
     # Start with a rough estimate
-    n_div_estimate = max(1, int(np.round((6 * n_points)**(1/3) - 1.5)))
-    
+    n_div_estimate = max(1, int(np.round((6 * n_points) ** (1 / 3) - 1.5)))
+
     # Test a few values around the estimate to find the closest match
     best_n_div = n_div_estimate
     best_diff = abs(points_for_n_div(n_div_estimate) - n_points)
-    
+
     for test_n_div in range(max(1, n_div_estimate - 2), n_div_estimate + 4):
         test_points = points_for_n_div(test_n_div)
         diff = abs(test_points - n_points)
         if diff < best_diff:
             best_diff = diff
             best_n_div = test_n_div
-    
+
     n_div = best_n_div
-    
+
     # Generate structured barycentric coordinates
     pts_list = []
-    
+
     # Create uniform grid in barycentric coordinates
     # We need u1 + u2 + u3 + u4 = 1 and all ui >= 0
     for i in range(n_div + 1):
@@ -484,9 +478,14 @@ def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray, magnetization: 
                     u2 = j / n_div
                     u3 = k / n_div
                     u4 = l / n_div
-                    
+
                     # Convert to Cartesian coordinates
-                    point = u1 * vertices[0] + u2 * vertices[1] + u3 * vertices[2] + u4 * vertices[3]
+                    point = (
+                        u1 * vertices[0]
+                        + u2 * vertices[1]
+                        + u3 * vertices[2]
+                        + u4 * vertices[3]
+                    )
                     pts_list.append(point)
 
     pts = np.array(pts_list)
@@ -497,10 +496,7 @@ def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray, magnetization: 
 
     moments = volumes[:, np.newaxis] * magnetization
 
-    mesh_dict = {
-        "pts": pts,
-        "moments": moments
-    }
+    mesh_dict = {"pts": pts, "moments": moments}
 
     return mesh_dict
 
@@ -508,11 +504,11 @@ def target_mesh_tetrahedron(n_points: int, vertices: np.ndarray, magnetization: 
 def target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetization):
     """
     Generate mesh points inside a triangular mesh volume for force computations.
-    
+
     Uses regular cubic grid generation around the object and applies inside/outside masking
-    similar to the sphere approach. When target_points is 1, returns the 
+    similar to the sphere approach. When target_points is 1, returns the
     barycenter of the mesh.
-    
+
     Parameters
     ----------
     vertices : np.ndarray, shape (n, 3) - Mesh vertices
@@ -538,53 +534,49 @@ def target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetiza
     if target_points == 1:
         barycenter = calculate_centroid(vertices, faces)
         pts = np.array([barycenter])
-        moments = np.array([volume*magnetization])
-        
-        mesh_dict = {
-            "pts": pts,
-            "moments": moments
-        }
+        moments = np.array([volume * magnetization])
+
+        mesh_dict = {"pts": pts, "moments": moments}
         return mesh_dict
-    
+
     # Generate regular cubic grid
-    spacing = (volume / target_points)**(1/3)
+    spacing = (volume / target_points) ** (1 / 3)
     min_coords = np.min(vertices, axis=0)
     max_coords = np.max(vertices, axis=0)
-    padding = spacing * 0.5 # add half a cell size padding to ensure optimal homo loc-vol matching
+    padding = (
+        spacing * 0.5
+    )  # add half a cell size padding to ensure optimal homo loc-vol matching
     dimensions = [
-        min_coords[0] - padding, min_coords[1] - padding, min_coords[2] - padding,
-        max_coords[0] + padding, max_coords[1] + padding, max_coords[2] + padding
+        min_coords[0] - padding,
+        min_coords[1] - padding,
+        min_coords[2] - padding,
+        max_coords[0] + padding,
+        max_coords[1] + padding,
+        max_coords[2] + padding,
     ]
     points = create_grid(dimensions, spacing)
-    
+
     # Apply inside/outside mask
     inside_mask = mask_inside_trimesh(points, vertices[faces])
     pts = points[inside_mask]
-    
+
     if len(pts) == 0:
         barycenter = calculate_centroid(vertices, faces)
         pts = np.array([barycenter])
         volumes = np.array([volume])
-        mesh_dict = {
-            "pts": pts,
-            "volumes": volumes
-        }
+        mesh_dict = {"pts": pts, "volumes": volumes}
         return mesh_dict
-    
+
     # Volumes
     volumes = np.full(len(pts), volume / len(pts))
 
     moments = volumes[:, np.newaxis] * magnetization
 
-    mesh_dict = {
-        "pts": pts,
-        "moments": moments
-    }
+    mesh_dict = {"pts": pts, "moments": moments}
 
     return mesh_dict
 
 
-if __name__=="__main__":
-
+if __name__ == "__main__":
     for n in [1, 10, 50, 100, 500, 1000, 5000]:
-        target_mesh_cuboid(n, (1.1,2.2,1))
+        target_mesh_cuboid(n, (1.1, 2.2, 1))

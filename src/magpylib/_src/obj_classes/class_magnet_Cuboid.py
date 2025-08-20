@@ -11,8 +11,9 @@ from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
-from magpylib._src.utility import unit_prefix
 from magpylib._src.obj_classes.target_meshing import target_mesh_cuboid
+from magpylib._src.utility import unit_prefix
+
 
 class Cuboid(BaseMagnet, BaseTarget):
     """Cuboid magnet with homogeneous magnetization.
@@ -112,7 +113,7 @@ class Cuboid(BaseMagnet, BaseTarget):
         super().__init__(
             position, orientation, magnetization, polarization, style, **kwargs
         )
-        
+
         # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
 
@@ -161,14 +162,14 @@ class Cuboid(BaseMagnet, BaseTarget):
         return target_mesh_cuboid(self.meshing, self.dimension, self.magnetization)
 
     def _validate_meshing(self, value):
-        """ Cuboid meshing must be a positive integer or array_like of shape (3,)."""
-        if isinstance(value, int) and value > 0:
-            pass
-        elif isinstance(value, (list, tuple, np.ndarray)) and len(value) == 3:
+        """Cuboid meshing must be a positive integer or array_like of shape (3,)."""
+        if (isinstance(value, int) and value > 0) or (
+            isinstance(value, (list, tuple, np.ndarray)) and len(value) == 3
+        ):
             pass
         else:
             msg = (
-                f"Cuboid meshing parameter must be positive integer or array_like of shape"
+                "Cuboid meshing parameter must be positive integer or array_like of shape"
                 " (3,) for {self}. Instead got {value}."
             )
             raise ValueError(msg)

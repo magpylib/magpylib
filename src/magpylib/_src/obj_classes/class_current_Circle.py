@@ -3,16 +3,15 @@
 import warnings
 from typing import ClassVar
 
-import numpy as np
-
 from magpylib._src.display.traces_core import make_Circle
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_circle import BHJM_circle
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
-from magpylib._src.utility import unit_prefix
 from magpylib._src.obj_classes.target_meshing import target_mesh_circle
+from magpylib._src.utility import unit_prefix
+
 
 class Circle(BaseCurrent, BaseTarget):
     """Circular current loop.
@@ -99,7 +98,7 @@ class Circle(BaseCurrent, BaseTarget):
 
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
-        
+
         # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
 
@@ -139,11 +138,11 @@ class Circle(BaseCurrent, BaseTarget):
         return self._position
 
     def _generate_mesh(self):
-       """Generate mesh for force computation."""
-       return target_mesh_circle(self.diameter/2, self.meshing, self.current)
+        """Generate mesh for force computation."""
+        return target_mesh_circle(self.diameter / 2, self.meshing, self.current)
 
     def _validate_meshing(self, value):
-        """ Circle makes only sense with at least 4 mesh points."""
+        """Circle makes only sense with at least 4 mesh points."""
         if isinstance(value, int) and value > 3:
             pass
         else:

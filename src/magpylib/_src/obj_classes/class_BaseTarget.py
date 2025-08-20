@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 
+
 class BaseTarget(ABC):
     """Base class for Magpylib objects that can be targets of force computation.
 
@@ -10,6 +11,7 @@ class BaseTarget(ABC):
     - adds default method _validate_meshing()
     - enforces _generate_mesh() as abstract method
     """
+
     _force_type: str = None
 
     def __init__(self, meshing=None):
@@ -45,4 +47,3 @@ class BaseTarget(ABC):
         """
         Generate meshing dictionary
         """
-        pass
