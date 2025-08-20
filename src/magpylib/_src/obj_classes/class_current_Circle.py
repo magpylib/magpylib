@@ -40,7 +40,7 @@ class Circle(BaseCurrent):
         Electrical current in units of A.
 
     volume: float
-        Read-only. Object physical volume in units of m^3.
+        Read-only. Object physical volume in units of m^3 - set to 0 for this class.
 
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m.

@@ -6,6 +6,8 @@ Whenever you wish to compare Magpylib simulations with experimental data obtaine
 
 This tutorial was supported by [BOMATEC](https://www.bomatec.com/de) by providing excellent data sheets and by supplying magnets for the experimental demonstration below.
 
+The fact that you can model even complex magnet structures with high accuracy is demonstrated in our example on [magnetic scales](examples-app-scales).
+
 ## Short summary
 
 In a magnet data sheet, you should find B-H curves and J-H curves. These curves coincide at H=0, which gives the intrinsic material remanence $B_r$. As a result of material response and self-interaction, the magnet "demagnetizes" itself so that the mean magnetic polarization of a real magnet is always below the remanence. How much below depends strongly on the shape of the magnet and is expressed in the data sheet through the permeance coefficient lines (grey lines). The numbers at the end indicate the typical magnet length to diameter ratio (L/D).
