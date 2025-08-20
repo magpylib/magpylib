@@ -6,13 +6,14 @@ from __future__ import annotations
 
 from typing import ClassVar
 
+import numpy as np
+
 from magpylib._src.display.traces_core import make_TriangleStrip
 from magpylib._src.fields.field_BH_current_sheet import BHJM_current_tristrip
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.utility import unit_prefix
 
-import numpy as np
 
 class TriangleStrip(BaseCurrent):
     """Current flowing in straight lines along a Ribbon made of adjacent Triangles.
@@ -45,6 +46,12 @@ class TriangleStrip(BaseCurrent):
     current: float, default=`None`
         Electrical current in units of A. It is transformed into a homogeneous current
         density which flows along the Triangles in direction: T1: V1->V3, T2: V2->V4, ...
+
+    volume: float
+        Read-only. Object physical volume in units of m^3 - set to 0 for this class.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m - set to mean of vertices for this class.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.

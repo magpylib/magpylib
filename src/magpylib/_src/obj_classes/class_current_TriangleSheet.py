@@ -6,12 +6,13 @@ from __future__ import annotations
 
 from typing import ClassVar
 
+import numpy as np
+
 from magpylib._src.display.traces_core import make_TriangleSheet
 from magpylib._src.fields.field_BH_current_sheet import BHJM_current_trisheet
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 
-import numpy as np
 
 class TriangleSheet(BaseSource):
     """Surface current density flowing along triangular faces.
@@ -45,6 +46,12 @@ class TriangleSheet(BaseSource):
         Electrical current densities flowing on the faces in units of A/m.
         The effective current density is a projection of the given current density
         vector into the face-planes. Input must have same length as `faces`.
+
+    volume: float
+        Read-only. Object physical volume in units of m^3 - set to 0 for this class.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m - set to mean of vertices for this class.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
