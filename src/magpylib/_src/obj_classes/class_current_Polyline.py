@@ -53,10 +53,10 @@ class Polyline(BaseCurrent, BaseTarget):
         distributed evenly along the Polyline.
 
     volume: float
-        Read-only. Object physical volume in units of m^3.
+        Read-only. Object physical volume in units of m^3 - set to 0 for this class.
 
     centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m.
+        Read-only. Object centroid in units of m - set to mean of vertices for this class.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -72,8 +72,7 @@ class Polyline(BaseCurrent, BaseTarget):
     Examples
     --------
     `Polyline` objects are magnetic field sources. In this example we compute the H-field in A/m
-    of a square-shaped line-current with 1 A current at the observer position (1,1,1) given in
-    units of m:
+    of a square-shaped line-current with 1 A current at the observer position (1,1,1) cm:
 
     >>> import numpy as np
     >>> import magpylib as magpy

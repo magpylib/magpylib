@@ -12,7 +12,7 @@ repos:
         additional_dependencies: [black==24.*]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v5.0.0"
+    rev: "v6.0.0"
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -43,7 +43,7 @@ repos:
         exclude: ^docs/ # messes up colon fences for grids in docs
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.12.4"
+    rev: "v0.12.9"
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
@@ -65,7 +65,7 @@ repos:
       - id: codespell
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: "v0.10.0.1"
+    rev: "v0.11.0.1"
     hooks:
       - id: shellcheck
         exclude: ^.binder/ # messes up colon fences for grids in docs
@@ -85,7 +85,7 @@ repos:
         additional_dependencies: ["validate-pyproject-schema-store[all]"]
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: "0.33.2"
+    rev: "0.33.3"
     hooks:
       - id: check-dependabot
       - id: check-github-workflows
