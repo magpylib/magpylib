@@ -160,3 +160,20 @@ def test_getJ():
     np.testing.assert_allclose(J1, Jtest)
     np.testing.assert_allclose(J2, Jtest)
     np.testing.assert_allclose(J3, Jtest)
+
+
+def test_Cylinder_volume():
+    """Test Cylinder volume calculation."""
+    cylinder = magpy.magnet.Cylinder(dimension=(10.0, 3.0), polarization=(0, 0, 1))
+    calculated = cylinder.volume
+    expected = np.pi * 5**2 * 3.0  # π*r²*h
+    assert abs(calculated - expected) < 1e-10
+
+
+def test_Cylinder_centroid():
+    """Test Cylinder centroid - should return position (no barycenter)"""
+    expected = (2, 3, 4)
+    cylinder = magpy.magnet.Cylinder(
+        dimension=(2, 4), polarization=(0, 0, 1), position=expected
+    )
+    assert np.allclose(cylinder.centroid, expected)

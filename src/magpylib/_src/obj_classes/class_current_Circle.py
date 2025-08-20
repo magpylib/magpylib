@@ -39,6 +39,12 @@ class Circle(BaseCurrent):
     current: float, default=`None`
         Electrical current in units of A.
 
+    volume: float
+        Read-only. Object physical volume in units of m^3.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -85,7 +91,7 @@ class Circle(BaseCurrent):
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
 
-    # property getters and setters
+    # Properties
     @property
     def diameter(self):
         """Diameter of the loop in units of m."""
@@ -108,6 +114,15 @@ class Circle(BaseCurrent):
         if self.diameter is None:
             return "no dimension"
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        return 0.0
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return self.position
 
 
 class Loop(Circle):
