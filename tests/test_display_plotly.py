@@ -105,6 +105,15 @@ def test_Circle_display():
     x = src.show(canvas=fig, style_path_frames=3)
     assert x is None, "display test fail"
 
+    # Test New Ellipsoid support
+    src2 = magpy.current.Circle(current=1, diameter=(1, 2))
+    x = src2.show(canvas=fig)
+    assert x is None, "display test fail"
+
+    src2.rotate_from_angax([5] * 35, "x", anchor=(1, 2, 3))
+    x = src2.show(canvas=fig, style_path_frames=3)
+    assert x is None, "display test fail"
+
 
 def test_Triangle_display():
     """testing display for Triangle source"""

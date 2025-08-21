@@ -3,6 +3,7 @@
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-positional-arguments
 
+import numbers
 from collections import defaultdict
 from functools import lru_cache
 from itertools import chain, cycle
@@ -217,6 +218,11 @@ def draw_arrow_from_vertices(
 
 def draw_arrow_on_circle(sign, diameter, arrow_size, scaled=True, angle_pos_deg=0):
     """draws an oriented circle with an arrow"""
+    if not isinstance(diameter, numbers.Number):
+        diameter = diameter[
+            0
+        ]  # always pick such that the arrow is on the right of the centroid
+
     hy = 0.2 * arrow_size if scaled else arrow_size / diameter * 2
     hx = 0.6 * hy
     hy *= np.sign(sign)
