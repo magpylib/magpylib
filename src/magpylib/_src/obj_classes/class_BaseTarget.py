@@ -16,7 +16,7 @@ class BaseTarget(ABC):
 
     def __init__(self, meshing=None):
         """Initialize BaseTarget with meshing parameters."""
-        self._meshing = meshing
+        self.meshing = meshing
 
     @property
     def meshing(self):
