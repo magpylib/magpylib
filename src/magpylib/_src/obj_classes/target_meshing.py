@@ -411,11 +411,9 @@ def target_mesh_triangle_current(triangles:np.ndarray, n_target: int, cds:np.nda
     surfaces = np.repeat(surfaces, 2**splits)
     triangles = subdiv(triangles, splits)
     centroids = np.mean(triangles, axis=1)
+    tvecs = np.repeat(cds, 2**splits, axis=0)
 
-    currents = 1
-    tvecs=1
-
-    return {"pts": centroids, "currents": currents, "tvecs": tvecs}
+    return {"pts": centroids, "currents": surfaces, "tvecs": tvecs}
 
 
 def target_mesh_polyline(vertices, i0, n_points):
