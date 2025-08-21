@@ -12,9 +12,11 @@ from magpylib._src.display.traces_core import make_TriangleSheet
 from magpylib._src.fields.field_BH_current_sheet import BHJM_current_trisheet
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.target_meshing import target_mesh_triangle_current
 
 
-class TriangleSheet(BaseSource):
+class TriangleSheet(BaseSource, BaseTarget):
     """Surface current density flowing along triangular faces.
 
     Can be used as `sources` input for magnetic field computation.
@@ -46,6 +48,10 @@ class TriangleSheet(BaseSource):
         Electrical current densities flowing on the faces in units of A/m.
         The effective current density is a projection of the given current density
         vector into the face-planes. Input must have same length as `faces`.
+
+    meshing: int, default=`None`
+        Parameter that defines the mesh fineness for force computation.
+        Must be an integer >= number of faces specifying the target mesh size.
 
     volume: float
         Read-only. Object physical volume in units of m^3 - set to 0 for this class.
@@ -85,6 +91,7 @@ class TriangleSheet(BaseSource):
 
     # pylint: disable=dangerous-default-value
     _field_func = staticmethod(BHJM_current_trisheet)
+    _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "current_densities": 3,
         "vertices": 3,
@@ -94,11 +101,13 @@ class TriangleSheet(BaseSource):
 
     def __init__(
         self,
-        current_densities=None,
-        vertices=None,
-        faces=None,
         position=(0, 0, 0),
         orientation=None,
+        vertices=None,
+        faces=None,
+        current_densities=None,
+        meshing=None,
+        *,
         style=None,
         **kwargs,
     ):
@@ -107,8 +116,9 @@ class TriangleSheet(BaseSource):
             current_densities, vertices, faces
         )
 
-        # init inheritance
+        # Inherit
         super().__init__(position, orientation, style, **kwargs)
+        BaseTarget.__init__(self, meshing)
 
     # property getters and setters
     @property
@@ -177,3 +187,22 @@ class TriangleSheet(BaseSource):
     def _get_centroid(self):
         """Centroid of object in units of m."""
         return np.mean(self.vertices, axis=0) + self.position
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        return target_mesh_triangle_current(
+            self.vertices[self.faces],
+            self.meshing,
+            self.current_densities,
+        )
+
+    def _validate_meshing(self, value):
+        """Makes only sense with at least n_mesh = n_faces."""
+        if isinstance(value, int) and value >= len(self.faces):
+            pass
+        else:
+            msg = (
+                "TriangleSheet meshing parameter must be an integer >= number of faces"
+                f" for {self}. Instead got {value}."
+            )
+            raise ValueError(msg)

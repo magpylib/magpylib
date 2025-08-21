@@ -290,6 +290,134 @@ def target_mesh_circle(r, n, i0):
     return {"pts": pts, "currents": currents, "tvecs": tvecs}
 
 
+def subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
+    """
+    Subdivides the given triangles based on the specified number of splits
+    using bisection along longest edge.
+
+    Idea of this algorithm:
+    Loop over maximal number of splits. In each step select triangles to be split
+    from TRIA, split them and store them back into TRIA.
+
+    Returns: triangles np.ndarray shape (n,3,3)
+    """
+    n_sub = 2**splits             # subdivisions per tria
+    n_tot = np.sum(n_sub)         # total number of trias
+    
+    # Group indices in TRIA and MASK for broadcasting
+    ends = np.cumsum(n_sub)
+    starts = np.r_[0, ends[:-1]]
+    
+    # Store triangles only here
+    TRIA = np.empty((n_tot, 3, 3))
+    TRIA[starts] = triangles   # store input
+
+    # Masking TRIA for selection and broadcasting
+    MASK = np.zeros((n_tot), dtype=bool)
+
+    # Create initial selection mask
+    MASK[starts] = True
+
+    for i in range(max(splits)):
+        
+        # Reset selection MASK of completed groups
+        mask_split = (i == splits)
+        for start in starts[mask_split]:
+            MASK[start:start+2**i] = False
+
+        # Select all triangles that should be split
+        triangles = TRIA[MASK]
+        
+        # Create broadcasting mask
+        mask_split = (i < splits) # select triangle groups where further splitting is required
+        for start in starts[mask_split]:
+            MASK[start:start+2**(i+1)] = True
+
+        # Vectorized Bisection algorithm ########################################
+        A = triangles[:,0]
+        B = triangles[:,1]
+        C = triangles[:,2]
+
+        # Squared lengths of edges
+        d2_AB = np.sum((B - A)**2, axis=1)
+        d2_BC = np.sum((C - B)**2, axis=1)
+        d2_CA = np.sum((A - C)**2, axis=1)
+
+        case1 = (d2_AB >= d2_BC) * (d2_AB >= d2_CA)
+        case2 = (d2_BC >= d2_CA)
+        case3 = ~(case1 | case2)
+
+        # instead of creating this array, we could direvctly use TRIA
+        new_triangles = np.empty((len(triangles), 2, 3, 3), dtype=float)
+
+        if np.any(case1):
+            new_triangles[case1, 0, 0] = A[case1]
+            new_triangles[case1, 0, 1] = (A[case1] + B[case1]) / 2.0
+            new_triangles[case1, 0, 2] = C[case1]
+            new_triangles[case1, 1, 0] = (A[case1] + B[case1]) / 2.0
+            new_triangles[case1, 1, 1] = B[case1]
+            new_triangles[case1, 1, 2] = C[case1]
+
+        if np.any(case2):
+            new_triangles[case2, 0, 0] = B[case2]
+            new_triangles[case2, 0, 1] = (B[case2] + C[case2]) / 2.0
+            new_triangles[case2, 0, 2] = A[case2]
+            new_triangles[case2, 1, 0] = (B[case2] + C[case2]) / 2.0
+            new_triangles[case2, 1, 1] = C[case2]
+            new_triangles[case2, 1, 2] = A[case2]
+
+        if np.any(case3):
+            new_triangles[case3, 0, 0] = C[case3]
+            new_triangles[case3, 0, 1] = (C[case3] + A[case3]) / 2.0
+            new_triangles[case3, 0, 2] = B[case3]
+            new_triangles[case3, 1, 0] = (C[case3] + A[case3]) / 2.0
+            new_triangles[case3, 1, 1] = A[case3]
+            new_triangles[case3, 1, 2] = B[case3]
+
+        TRIA[MASK] = new_triangles.reshape(-1, 3, 3)
+
+    return TRIA
+
+
+def target_mesh_triangle_current(triangles:np.ndarray, n_target: int, cds:np.ndarray):
+    """
+    Refines input triangles into >n_target triangles using bisection along longest edge.
+    n_target must be at least number of input triangles in which case one mesh point
+    per triangle is created.
+
+    Parameters:
+    - triangles (n,3,3) array, triangles
+    - n_target: int, target number of mesh points
+    - cds: (n,3) array, current density vectors
+
+    Returns dict:
+    - mesh: centroids of refined triangles
+    - currents: currents associated with this mesh
+    - lvec: current tangential vectors
+    """
+    n_tria = len(triangles)
+    surfaces = 0.5 * np.linalg.norm(np.cross(triangles[:,1] - triangles[:,0], triangles[:,2] - triangles[:,0]), axis=1)
+
+    # longest edge bisection splits triangle surface always in half
+    # all triangles should in the end have somwhat similar surface
+    # so we can easily calculate which triangles we have to split how often
+    splits = np.zeros(n_tria, dtype=int)
+    while n_tria < n_target:
+        idx = np.argmax(surfaces)
+        surfaces[idx] /= 2.0
+        splits[idx] += 1
+        n_tria = np.sum(2**splits)
+
+    surfaces = np.repeat(surfaces, 2**splits)
+    triangles = subdiv(triangles, splits)
+    centroids = np.mean(triangles, axis=1)
+
+    currents = 1
+    tvecs=1
+
+    return {"pts": centroids, "currents": currents, "tvecs": tvecs}
+
+
 def target_mesh_polyline(vertices, i0, n_points):
     """
     Polyline meshing in the local object coordinates
