@@ -16,7 +16,8 @@ from magpylib._src.utility import unit_prefix
 class Sphere(BaseMagnet):
     """Spherical magnet with homogeneous magnetization.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation. No `meshing` parameter is required.
 
     When `position=(0,0,0)` and `orientation=None` the sphere center is located
     in the origin of the global coordinate system.

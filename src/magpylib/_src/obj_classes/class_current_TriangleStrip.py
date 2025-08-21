@@ -13,12 +13,15 @@ from magpylib._src.fields.field_BH_current_sheet import BHJM_current_tristrip
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.utility import unit_prefix
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.target_meshing import target_mesh_triangle_current
 
 
-class TriangleStrip(BaseCurrent):
+class TriangleStrip(BaseCurrent, BaseTarget):
     """Current flowing in straight lines along a Ribbon made of adjacent Triangles.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     The vertex positions are defined in the local object coordinates (rotate with object).
     When `position=(0,0,0)` and `orientation=None` global and local coordinates coincide.

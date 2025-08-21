@@ -34,7 +34,9 @@ from magpylib._src.style import TriangularMeshStyle
 
 class TriangularMesh(BaseMagnet, BaseTarget):
     """Magnet with homogeneous magnetization defined by triangular surface mesh.
-    Can be used as `sources` input for magnetic field computation.
+
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     When `position=(0,0,0)` and `orientation=None` the TriangularMesh vertices
     are the same as in the global coordinate system.

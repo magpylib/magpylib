@@ -15,7 +15,8 @@ from magpylib._src.utility import unit_prefix
 class Dipole(BaseSource):
     """Magnetic dipole moment.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation. No `meshing` parameter is required.
 
     When `position=(0,0,0)` and `orientation=None` the dipole is located in the origin of
     global coordinate system.

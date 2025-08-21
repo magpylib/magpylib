@@ -18,7 +18,8 @@ from magpylib._src.utility import unit_prefix
 class Cuboid(BaseMagnet, BaseTarget):
     """Cuboid magnet with homogeneous magnetization.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     When `position=(0,0,0)` and `orientation=None` the Cuboid sides are parallel
     to the global coordinate basis vectors and the geometric center of the Cuboid

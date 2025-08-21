@@ -20,7 +20,8 @@ from magpylib._src.utility import unit_prefix
 class Polyline(BaseCurrent, BaseTarget):
     """Line current flowing in straight paths from vertex to vertex.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     The vertex positions are defined in the local object coordinates (rotate with object).
     When `position=(0,0,0)` and `orientation=None` global and local coordinates coincide.

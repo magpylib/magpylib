@@ -20,7 +20,8 @@ from magpylib._src.utility import unit_prefix
 class CylinderSegment(BaseMagnet, BaseTarget):
     """Cylinder segment (ring-section) magnet with homogeneous magnetization.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     When `position=(0,0,0)` and `orientation=None` the geometric center of the
     cylinder lies in the origin of the global coordinate system and
@@ -55,7 +56,7 @@ class CylinderSegment(BaseMagnet, BaseTarget):
         given in the local object coordinates (rotates with object).
 
     meshing: int, default=`None`
-        Parameter that defines the mesh fineness for force computation.
+        Parameter that defines the mesh finesse for force computation.
         Must be a positive integer specifying the target mesh size.
 
     volume: float

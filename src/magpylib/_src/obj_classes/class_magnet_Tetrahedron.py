@@ -17,7 +17,8 @@ from magpylib._src.obj_classes.target_meshing import target_mesh_tetrahedron
 class Tetrahedron(BaseMagnet, BaseTarget):
     """Tetrahedron magnet with homogeneous magnetization.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     When `position=(0,0,0)` and `orientation=None` the Tetrahedron vertices coordinates
     are the same as in the global coordinate system. The geometric center of the Tetrahedron

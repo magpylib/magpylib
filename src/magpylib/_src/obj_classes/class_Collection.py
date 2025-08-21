@@ -857,10 +857,10 @@ class Collection(BaseGeo, BaseCollection):
     that reference frame when an operation (e.g. move, rotate, setter, ...) is applied
     to the collection.
 
-    Collections can be used as `sources` and `observers` input for magnetic field
-    computation. For magnetic field computation a collection that contains sources
-    functions like a single source. When the collection contains sensors
-    it functions like a list of all its sensors.
+    Collections can be used as `sources`, `observers`, and `targets` input for magnetic
+    field and force computation. For force and field computation a collection that
+    contains sources/targets functions like a single source/target. When the collection
+    contains sensors it functions like a list of all its sensors.
 
     SI units are used for all inputs and outputs.
 

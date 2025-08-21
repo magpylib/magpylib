@@ -16,7 +16,8 @@ from magpylib._src.utility import unit_prefix
 class Circle(BaseCurrent, BaseTarget):
     """Circular current loop.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     When `position=(0,0,0)` and `orientation=None` the current loop lies
     in the x-y plane of the global coordinate system, with its center in
@@ -43,7 +44,8 @@ class Circle(BaseCurrent, BaseTarget):
 
     meshing: int, default=`None`
         Parameter that defines the mesh fineness for force computation.
-        Must be an integer >= 4 specifying the target mesh size.
+        Must be an integer >= 4. Points will be equally distributed on the
+        circle.
 
     volume: float
         Read-only. Object physical volume in units of m^3 - set to 0 for this class.

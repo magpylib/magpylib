@@ -19,7 +19,8 @@ from magpylib._src.obj_classes.target_meshing import target_mesh_triangle_curren
 class TriangleSheet(BaseSource, BaseTarget):
     """Surface current density flowing along triangular faces.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     The vertex positions are defined in the local object coordinates (rotate with object).
     When `position=(0,0,0)` and `orientation=None` global and local coordinates coincide.
