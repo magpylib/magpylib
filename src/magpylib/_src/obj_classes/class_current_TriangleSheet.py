@@ -184,9 +184,12 @@ class TriangleSheet(BaseSource, BaseTarget):
         """Volume of object in units of m³."""
         return 0.0
 
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return np.mean(self.vertices, axis=0) + self.position
+        centr = np.mean(self.vertices, axis=0) + self._position
+        if squeeze:
+            return np.squeeze(centr)
+        return centr
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
