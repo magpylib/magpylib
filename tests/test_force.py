@@ -1972,35 +1972,39 @@ def test_force_equivalent_dipole_Magnets():
 
 
 def test_force_trisheet_polyline_equiv():
-    """ compare narrow tri sheet with polyline"""
+    """compare narrow tri sheet with polyline"""
     cube = magpy.magnet.Cuboid(
-        dimension=(1,1,1),
-        position=(4,5,4),
-        polarization=(1,2,3),
+        dimension=(1, 1, 1),
+        position=(4, 5, 4),
+        polarization=(1, 2, 3),
     )
 
     i0 = 100
-    cd = np.array((25,0,5))
-    cd = cd/np.linalg.norm(cd) * i0 / 0.02
+    cd = np.array((25, 0, 5))
+    cd = cd / np.linalg.norm(cd) * i0 / 0.02
 
     cs = magpy.current.TriangleSheet(
-        vertices=((-10,-.01,-3), (15,-.01,2), (-10,.01,-3), (15,.01,2)),
-        faces=((0,1,2), (1,2,3)),
+        vertices=((-10, -0.01, -3), (15, -0.01, 2), (-10, 0.01, -3), (15, 0.01, 2)),
+        faces=((0, 1, 2), (1, 2, 3)),
         current_densities=[cd, cd],
         meshing=1000,
-    ).rotate_from_angax([1,2,3,4], axis=(1,2,-1))
+    ).rotate_from_angax([1, 2, 3, 4], axis=(1, 2, -1))
     line = magpy.current.Polyline(
         current=i0,
-        vertices=((-10,0,-3), (15,0,2)),
+        vertices=((-10, 0, -3), (15, 0, 2)),
         meshing=100,
-    ).rotate_from_angax([1,2,3,4], axis=(1,2,-1))
+    ).rotate_from_angax([1, 2, 3, 4], axis=(1, 2, -1))
 
-    f,t = magpy.getFT(cube, [cs, line], meshreport=True)
+    f, t = magpy.getFT(cube, [cs, line], meshreport=True)
 
-    errf = np.linalg.norm(f[:,0]-f[:,1], axis=1) / np.linalg.norm(f[:,0]+f[:,1], axis=1)
+    errf = np.linalg.norm(f[:, 0] - f[:, 1], axis=1) / np.linalg.norm(
+        f[:, 0] + f[:, 1], axis=1
+    )
     assert max(errf) < 1e-4
 
-    errt = np.linalg.norm(t[:,0]-t[:,1], axis=1) / np.linalg.norm(t[:,0]+t[:,1], axis=1)
+    errt = np.linalg.norm(t[:, 0] - t[:, 1], axis=1) / np.linalg.norm(
+        t[:, 0] + t[:, 1], axis=1
+    )
     assert max(errt) < 1e-3
 
 

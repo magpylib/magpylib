@@ -12,9 +12,9 @@ from magpylib._src.display.traces_core import make_TriangleStrip
 from magpylib._src.fields.field_BH_current_sheet import BHJM_current_tristrip
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
-from magpylib._src.utility import unit_prefix
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.target_meshing import target_mesh_triangle_current
+from magpylib._src.utility import unit_prefix
 
 
 class TriangleStrip(BaseCurrent, BaseTarget):
@@ -160,18 +160,20 @@ class TriangleStrip(BaseCurrent, BaseTarget):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        triangles = np.array([self.vertices[i:i+3] for i in range(len(self.vertices) - 2)])
+        triangles = np.array(
+            [self.vertices[i : i + 3] for i in range(len(self.vertices) - 2)]
+        )
 
         # supress all triangles in computation that are ~1e-9 times
         # smaller than the total mesh surface
         mask_good = np.ones(len(triangles), dtype=bool)
 
-        sideA = triangles[:,1] - triangles[:,0]
-        sideB = triangles[:,2] - triangles[:,0]
+        sideA = triangles[:, 1] - triangles[:, 0]
+        sideB = triangles[:, 2] - triangles[:, 0]
 
-        sideAA = np.sum(sideA*sideA, axis=1)
-        sideBB = np.sum(sideB*sideB, axis=1)
-        sideAB = np.sum(sideA*sideB, axis=1)
+        sideAA = np.sum(sideA * sideA, axis=1)
+        sideBB = np.sum(sideB * sideB, axis=1)
+        sideAB = np.sum(sideA * sideB, axis=1)
         area2 = sideAA * sideBB - sideAB * sideAB
         area2_rel = area2 / np.sum(area2)
 
@@ -182,7 +184,12 @@ class TriangleStrip(BaseCurrent, BaseTarget):
         # compute current densities
         base_length = np.linalg.norm(sideB[mask_good], axis=1)
         height = np.sqrt(area2[mask_good]) / base_length
-        cds = sideB[mask_good] / base_length[:,np.newaxis] * self.current / height[:,np.newaxis]
+        cds = (
+            sideB[mask_good]
+            / base_length[:, np.newaxis]
+            * self.current
+            / height[:, np.newaxis]
+        )
 
         return target_mesh_triangle_current(
             triangles,

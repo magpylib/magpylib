@@ -301,16 +301,16 @@ def subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
 
     Returns: triangles np.ndarray shape (n,3,3)
     """
-    n_sub = 2**splits             # subdivisions per tria
-    n_tot = np.sum(n_sub)         # total number of trias
-    
+    n_sub = 2**splits  # subdivisions per tria
+    n_tot = np.sum(n_sub)  # total number of trias
+
     # Group indices in TRIA and MASK for broadcasting
     ends = np.cumsum(n_sub)
     starts = np.r_[0, ends[:-1]]
-    
+
     # Store triangles only here
     TRIA = np.empty((n_tot, 3, 3))
-    TRIA[starts] = triangles   # store input
+    TRIA[starts] = triangles  # store input
 
     # Masking TRIA for selection and broadcasting
     MASK = np.zeros((n_tot), dtype=bool)
@@ -319,32 +319,33 @@ def subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
     MASK[starts] = True
 
     for i in range(max(splits)):
-        
         # Reset selection MASK of completed groups
-        mask_split = (i == splits)
+        mask_split = i == splits
         for start in starts[mask_split]:
-            MASK[start:start+2**i] = False
+            MASK[start : start + 2**i] = False
 
         # Select all triangles that should be split
         triangles = TRIA[MASK]
-        
+
         # Create broadcasting mask
-        mask_split = (i < splits) # select triangle groups where further splitting is required
+        mask_split = (
+            i < splits
+        )  # select triangle groups where further splitting is required
         for start in starts[mask_split]:
-            MASK[start:start+2**(i+1)] = True
+            MASK[start : start + 2 ** (i + 1)] = True
 
         # Vectorized Bisection algorithm ########################################
-        A = triangles[:,0]
-        B = triangles[:,1]
-        C = triangles[:,2]
+        A = triangles[:, 0]
+        B = triangles[:, 1]
+        C = triangles[:, 2]
 
         # Squared lengths of edges
-        d2_AB = np.sum((B - A)**2, axis=1)
-        d2_BC = np.sum((C - B)**2, axis=1)
-        d2_CA = np.sum((A - C)**2, axis=1)
+        d2_AB = np.sum((B - A) ** 2, axis=1)
+        d2_BC = np.sum((C - B) ** 2, axis=1)
+        d2_CA = np.sum((A - C) ** 2, axis=1)
 
         case1 = (d2_AB >= d2_BC) * (d2_AB >= d2_CA)
-        case2 = (d2_BC >= d2_CA)
+        case2 = d2_BC >= d2_CA
         case3 = ~(case1 | case2)
 
         # instead of creating this array, we could direvctly use TRIA
@@ -379,7 +380,7 @@ def subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
     return TRIA
 
 
-def target_mesh_triangle_current(triangles:np.ndarray, n_target: int, cds:np.ndarray):
+def target_mesh_triangle_current(triangles: np.ndarray, n_target: int, cds: np.ndarray):
     """
     Refines input triangles into >n_target triangles using bisection along longest edge.
     n_target must be at least number of input triangles in which case one mesh point
@@ -396,7 +397,10 @@ def target_mesh_triangle_current(triangles:np.ndarray, n_target: int, cds:np.nda
     - lvec: current tangential vectors
     """
     n_tria = len(triangles)
-    surfaces = 0.5 * np.linalg.norm(np.cross(triangles[:,1] - triangles[:,0], triangles[:,2] - triangles[:,0]), axis=1)
+    surfaces = 0.5 * np.linalg.norm(
+        np.cross(triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0]),
+        axis=1,
+    )
 
     # longest edge bisection splits triangle surface always in half
     # all triangles should in the end have somwhat similar surface
