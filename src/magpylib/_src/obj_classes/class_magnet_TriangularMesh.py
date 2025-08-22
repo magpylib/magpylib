@@ -38,8 +38,9 @@ class TriangularMesh(BaseMagnet, BaseTarget):
     Can be used as `sources` input for magnetic field computation and `target`
     input for force computation.
 
-    When `position=(0,0,0)` and `orientation=None` the TriangularMesh vertices
-    are the same as in the global coordinate system.
+    The vertex positions are defined in the local object coordinates (rotate with object).
+    When `position=(0,0,0)` and `orientation=None` global and local coordinates coincide.
+
 
     SI units are used for all inputs and outputs.
 

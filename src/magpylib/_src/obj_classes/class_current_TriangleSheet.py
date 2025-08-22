@@ -51,14 +51,17 @@ class TriangleSheet(BaseSource, BaseTarget):
         vector into the face-planes. Input must have same length as `faces`.
 
     meshing: int, default=`None`
-        Parameter that defines the mesh fineness for force computation.
+        Parameter that defines the mesh finesse for force computation.
         Must be an integer >= number of faces specifying the target mesh size.
+        The mesh is generated via bisection along longest edges until target
+        number is reached.
 
     volume: float
         Read-only. Object physical volume in units of m^3 - set to 0 for this class.
 
     centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m - set to mean of vertices for this class.
+        Read-only. Object centroid in units of m given by mean of vertices.
+        m is the path length.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
