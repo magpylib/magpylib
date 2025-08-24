@@ -365,7 +365,6 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
     # Source path length
     n_src_path = max(len(src._position) for src in sources)
 
-
     # No source path (95% of cases)
     if n_src_path == 1:
         B_all = getB(sources, OBS7, squeeze=False)[:, 0, 0, :]
@@ -493,11 +492,11 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
             tvec = np.tile(meshes[ii]["tvecs"], (n_path, 1))
             rot = np.repeat(tgt_ori[ii], n, axis=0)
 
-            #print(rot)
-            #print(tvec)
+            # print(rot)
+            # print(tvec)
 
             tvec_rot = R.from_quat(rot).apply(tvec).reshape(n_path, n, 3)
-            #print(tvec_rot)
+            # print(tvec_rot)
             TVEC[:, :, start:end] = tvec_rot[np.newaxis, :]
 
         # Force and Torque computation
