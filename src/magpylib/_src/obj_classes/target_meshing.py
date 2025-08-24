@@ -4,6 +4,7 @@ from itertools import product
 import numpy as np
 
 # pylint: disable=import-outside-toplevel
+# pylint: disable=too-many-function-args
 
 
 def apportion_triple(triple, min_val=1, max_iter=30):
@@ -394,7 +395,7 @@ def target_mesh_triangle_current(triangles: np.ndarray, n_target: int, cds: np.n
     Returns dict:
     - mesh: centroids of refined triangles
     - currents: currents associated with this mesh
-    - lvec: current tangential vectors
+    - tvec: current tangential vectors
     """
     n_tria = len(triangles)
     surfaces = 0.5 * np.linalg.norm(
@@ -403,7 +404,7 @@ def target_mesh_triangle_current(triangles: np.ndarray, n_target: int, cds: np.n
     )
 
     # longest edge bisection splits triangle surface always in half
-    # all triangles should in the end have somwhat similar surface
+    # all triangles should in the end have somewhat similar surface
     # so we can easily calculate which triangles we have to split how often
     splits = np.zeros(n_tria, dtype=int)
     while n_tria < n_target:

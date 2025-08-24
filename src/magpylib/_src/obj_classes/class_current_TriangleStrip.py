@@ -164,7 +164,7 @@ class TriangleStrip(BaseCurrent, BaseTarget):
             [self.vertices[i : i + 3] for i in range(len(self.vertices) - 2)]
         )
 
-        # supress all triangles in computation that are ~1e-9 times
+        # suppress all triangles in computation that are ~1e-9 times
         # smaller than the total mesh surface
         mask_good = np.ones(len(triangles), dtype=bool)
 

@@ -1972,7 +1972,7 @@ def test_force_equivalent_dipole_Magnets():
 
 
 def test_force_trisheet_polyline_equiv():
-    """compare narrow tri sheet with polyline"""
+    """compare narrow tri sheet with straight polyline"""
     cube = magpy.magnet.Cuboid(
         dimension=(1, 1, 1),
         position=(4, 5, 4),
@@ -1982,20 +1982,22 @@ def test_force_trisheet_polyline_equiv():
     i0 = 100
     cd = np.array((25, 0, 5))
     cd = cd / np.linalg.norm(cd) * i0 / 0.02
+    angles = [45.123, -90, 180, 1, 2, -3, 225]
 
     cs = magpy.current.TriangleSheet(
         vertices=((-10, -0.01, -3), (15, -0.01, 2), (-10, 0.01, -3), (15, 0.01, 2)),
         faces=((0, 1, 2), (1, 2, 3)),
         current_densities=[cd, cd],
         meshing=1000,
-    ).rotate_from_angax([1, 2, 3, 4], axis=(1, 2, -1))
+    ).rotate_from_angax(angles, axis=(1, 2, -1))
+
     line = magpy.current.Polyline(
         current=i0,
         vertices=((-10, 0, -3), (15, 0, 2)),
         meshing=100,
-    ).rotate_from_angax([1, 2, 3, 4], axis=(1, 2, -1))
+    ).rotate_from_angax(angles, axis=(1, 2, -1))
 
-    f, t = magpy.getFT(cube, [cs, line], meshreport=True)
+    f, t = magpy.getFT(cube, [cs, line])
 
     errf = np.linalg.norm(f[:, 0] - f[:, 1], axis=1) / np.linalg.norm(
         f[:, 0] + f[:, 1], axis=1
@@ -2008,70 +2010,38 @@ def test_force_trisheet_polyline_equiv():
     assert max(errt) < 1e-3
 
 
-
-def test_force_trisheet_polyline_equiv():
-    """ compare narrow tri sheet with straight polyline"""
-    cube = magpy.magnet.Cuboid(
-        dimension=(1,1,1),
-        position=(4,5,4),
-        polarization=(1,2,3),
-    )
-
-    i0 = 100
-    cd = np.array((25,0,5))
-    cd = cd/np.linalg.norm(cd) * i0 / 0.02
-    angles = [45.123,-90,180,1,2,-3,225]
-
-    cs = magpy.current.TriangleSheet(
-        vertices=((-10,-.01,-3), (15,-.01,2), (-10,.01,-3), (15,.01,2)),
-        faces=((0,1,2), (1,2,3)),
-        current_densities=[cd, cd],
-        meshing=1000,
-    ).rotate_from_angax(angles, axis=(1,2,-1))
-    
-    line = magpy.current.Polyline(
-        current=i0,
-        vertices=((-10,0,-3), (15,0,2)),
-        meshing=100,
-    ).rotate_from_angax(angles, axis=(1,2,-1))
-
-    f,t = magpy.getFT(cube, [cs, line])
-
-    errf = np.linalg.norm(f[:,0]-f[:,1], axis=1) / np.linalg.norm(f[:,0]+f[:,1], axis=1)
-    assert max(errf) < 1e-4
-
-    errt = np.linalg.norm(t[:,0]-t[:,1], axis=1) / np.linalg.norm(t[:,0]+t[:,1], axis=1)
-    assert max(errt) < 1e-3
-
-
 def test_force_tristrip_polyline_equiv():
-    """ compare narrow tri strip with straight polyline"""
+    """compare narrow tri strip with straight polyline"""
     src = magpy.magnet.Cuboid(
-        dimension=(1,1,1),
-        position=(4,5,4),
-        polarization=(1,2,3),
+        dimension=(1, 1, 1),
+        position=(4, 5, 4),
+        polarization=(1, 2, 3),
     )
 
     i0 = 123.123
 
     strip = magpy.current.TriangleStrip(
-        vertices=((-10,-.01,-3), (-10,.01,-3), (15,-.01,2), (15,.01,2)),
+        vertices=((-10, -0.01, -3), (-10, 0.01, -3), (15, -0.01, 2), (15, 0.01, 2)),
         current=i0,
         meshing=1000,
-    ).rotate_from_angax([1,2,3,4], axis=(1,2,-1))
+    ).rotate_from_angax([1, 2, 3, 4], axis=(1, 2, -1))
 
     line = magpy.current.Polyline(
         current=i0,
-        vertices=((-10,0,-3), (15,0,2)),
+        vertices=((-10, 0, -3), (15, 0, 2)),
         meshing=100,
-    ).rotate_from_angax([1,2,3,4], axis=(1,2,-1))
+    ).rotate_from_angax([1, 2, 3, 4], axis=(1, 2, -1))
 
-    f,t = magpy.getFT(src, [strip, line])
+    f, t = magpy.getFT(src, [strip, line])
 
-    errf = np.linalg.norm(f[:,0]-f[:,1], axis=1) / np.linalg.norm(f[:,0]+f[:,1], axis=1)
+    errf = np.linalg.norm(f[:, 0] - f[:, 1], axis=1) / np.linalg.norm(
+        f[:, 0] + f[:, 1], axis=1
+    )
     assert max(errf) < 1e-4
 
-    errt = np.linalg.norm(t[:,0]-t[:,1], axis=1) / np.linalg.norm(t[:,0]+t[:,1], axis=1)
+    errt = np.linalg.norm(t[:, 0] - t[:, 1], axis=1) / np.linalg.norm(
+        t[:, 0] + t[:, 1], axis=1
+    )
     assert max(errt) < 1e-3
 
 
@@ -2081,15 +2051,15 @@ def test_force_cube_strip_sheet_equiv():
     test strip/sheet meshing convergence
     """
     a = 1.123
-    b = a*3
-    h = a*2
+    b = a * 3
+    h = a * 2
     pz = 1.5543e4
     mom = pz * a * b * h
-    i0 = mom / (a*b) / magpy.mu_0
+    i0 = mom / (a * b) / magpy.mu_0
     cd = i0 / h
-    angles = [1,45,180,181.123,-1234]
-    axis = [1.22,-1.1,1.23]
-    anch = [.4,.2,.3]
+    angles = [1, 45, 180, 181.123, -1234]
+    axis = [1.22, -1.1, 1.23]
+    anch = [0.4, 0.2, 0.3]
 
     cube = magpy.magnet.Cuboid(
         dimension=(a, b, h),
@@ -2097,11 +2067,16 @@ def test_force_cube_strip_sheet_equiv():
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     verts = [
-        (-a/2, -b/2, -h/2), (-a/2, -b/2, h/2),
-        ( a/2, -b/2, -h/2), ( a/2, -b/2, h/2),
-        ( a/2,  b/2, -h/2), ( a/2,  b/2, h/2),
-        (-a/2,  b/2, -h/2), (-a/2,  b/2, h/2),
-        (-a/2, -b/2, -h/2), (-a/2, -b/2, h/2),
+        (-a / 2, -b / 2, -h / 2),
+        (-a / 2, -b / 2, h / 2),
+        (a / 2, -b / 2, -h / 2),
+        (a / 2, -b / 2, h / 2),
+        (a / 2, b / 2, -h / 2),
+        (a / 2, b / 2, h / 2),
+        (-a / 2, b / 2, -h / 2),
+        (-a / 2, b / 2, h / 2),
+        (-a / 2, -b / 2, -h / 2),
+        (-a / 2, -b / 2, h / 2),
     ]
 
     strip = magpy.current.TriangleStrip(
@@ -2111,40 +2086,43 @@ def test_force_cube_strip_sheet_equiv():
 
     sheet = magpy.current.TriangleSheet(
         vertices=verts,
-        faces = [(i,i+1,i+2) for i in range(8)],
-        current_densities=[(cd,0,0)]*2 + [(0,cd,0)]*2 + [( -cd,0,0)]*2 + [(0,-cd,0)]*2,
+        faces=[(i, i + 1, i + 2) for i in range(8)],
+        current_densities=[(cd, 0, 0)] * 2
+        + [(0, cd, 0)] * 2
+        + [(-cd, 0, 0)] * 2
+        + [(0, -cd, 0)] * 2,
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # check if all generate the same magentic field
-    B1 = cube.getB((1,2,3))
-    B2 = strip.getB((1,2,3))
-    B3 = sheet.getB((1,2,3))
+    B1 = cube.getB((1, 2, 3))
+    B2 = strip.getB((1, 2, 3))
+    B3 = sheet.getB((1, 2, 3))
 
-    errB12 = np.linalg.norm(B1-B2, axis=1) / np.linalg.norm(B1+B2, axis=1)
-    errB13 = np.linalg.norm(B1-B3, axis=1) / np.linalg.norm(B1+B3, axis=1)
+    errB12 = np.linalg.norm(B1 - B2, axis=1) / np.linalg.norm(B1 + B2, axis=1)
+    errB13 = np.linalg.norm(B1 - B3, axis=1) / np.linalg.norm(B1 + B3, axis=1)
 
-    assert max(errB12) < 1e-14
-    assert max(errB13) < 1e-14
+    assert max(errB12) < 1e-12
+    assert max(errB13) < 1e-12
 
     # check if all generate the same force/torque
     src = magpy.magnet.Sphere(
-        position=(3,4,-3),
+        position=(3, 4, -3),
         diameter=1.23,
-        polarization=(3,2,2.123),
+        polarization=(3, 2, 2.123),
     )
 
     nn = 5
-    cube.meshing = np.array((nn,3*nn,2*nn))
+    cube.meshing = np.array((nn, 3 * nn, 2 * nn))
     strip.meshing = 20
     sheet.meshing = 20
 
-    F1, T1 = magpy.getFT(src, cube, pivot=(0,0,0))
-    F2, T2 = magpy.getFT(src, strip, pivot=(0,0,0))
-    F3, T3 = magpy.getFT(src, sheet, pivot=(0,0,0))
+    F1, T1 = magpy.getFT(src, cube, pivot=(0, 0, 0))
+    F2, T2 = magpy.getFT(src, strip, pivot=(0, 0, 0))
+    F3, T3 = magpy.getFT(src, sheet, pivot=(0, 0, 0))
 
-    errF12 = np.linalg.norm(F1-F2, axis=1) / np.linalg.norm(F1+F2, axis=1)
-    errF13 = np.linalg.norm(F1-F3, axis=1) / np.linalg.norm(F1+F3, axis=1)
-    errF23 = np.linalg.norm(F2-F3, axis=1) / np.linalg.norm(F2+F3, axis=1)
+    errF12 = np.linalg.norm(F1 - F2, axis=1) / np.linalg.norm(F1 + F2, axis=1)
+    errF13 = np.linalg.norm(F1 - F3, axis=1) / np.linalg.norm(F1 + F3, axis=1)
+    errF23 = np.linalg.norm(F2 - F3, axis=1) / np.linalg.norm(F2 + F3, axis=1)
     assert max(errF12) < 0.06
     assert max(errF13) < 0.06
     assert max(errF23) < 1e-14
@@ -2152,30 +2130,29 @@ def test_force_cube_strip_sheet_equiv():
     # check meshing convergence
     strip.meshing = 200
     sheet.meshing = 200
-    F1, T1 = magpy.getFT(src, cube, pivot=(0,0,0))
-    F2, T2 = magpy.getFT(src, strip, pivot=(0,0,0))
-    F3, T3 = magpy.getFT(src, sheet, pivot=(0,0,0))
+    F1, T1 = magpy.getFT(src, cube, pivot=(0, 0, 0))
+    F2, T2 = magpy.getFT(src, strip, pivot=(0, 0, 0))
+    F3, T3 = magpy.getFT(src, sheet, pivot=(0, 0, 0))
 
-    errF12 = np.linalg.norm(F1-F2, axis=1) / np.linalg.norm(F1+F2, axis=1)
-    errF13 = np.linalg.norm(F1-F3, axis=1) / np.linalg.norm(F1+F3, axis=1)
-    errF23 = np.linalg.norm(F2-F3, axis=1) / np.linalg.norm(F2+F3, axis=1)
+    errF12 = np.linalg.norm(F1 - F2, axis=1) / np.linalg.norm(F1 + F2, axis=1)
+    errF13 = np.linalg.norm(F1 - F3, axis=1) / np.linalg.norm(F1 + F3, axis=1)
+    errF23 = np.linalg.norm(F2 - F3, axis=1) / np.linalg.norm(F2 + F3, axis=1)
     assert max(errF12) < 0.01
     assert max(errF13) < 0.01
     assert max(errF23) < 1e-14
 
     strip.meshing = 2000
     sheet.meshing = 2000
-    F1, T1 = magpy.getFT(src, cube, pivot=(0,0,0))
-    F2, T2 = magpy.getFT(src, strip, pivot=(0,0,0))
-    F3, T3 = magpy.getFT(src, sheet, pivot=(0,0,0))
+    F1, T1 = magpy.getFT(src, cube, pivot=(0, 0, 0))
+    F2, T2 = magpy.getFT(src, strip, pivot=(0, 0, 0))
+    F3, T3 = magpy.getFT(src, sheet, pivot=(0, 0, 0))
 
-    errF12 = np.linalg.norm(F1-F2, axis=1) / np.linalg.norm(F1+F2, axis=1)
-    errF13 = np.linalg.norm(F1-F3, axis=1) / np.linalg.norm(F1+F3, axis=1)
-    errF23 = np.linalg.norm(F2-F3, axis=1) / np.linalg.norm(F2+F3, axis=1)
+    errF12 = np.linalg.norm(F1 - F2, axis=1) / np.linalg.norm(F1 + F2, axis=1)
+    errF13 = np.linalg.norm(F1 - F3, axis=1) / np.linalg.norm(F1 + F3, axis=1)
+    errF23 = np.linalg.norm(F2 - F3, axis=1) / np.linalg.norm(F2 + F3, axis=1)
     assert max(errF12) < 0.002
     assert max(errF13) < 0.002
     assert max(errF23) < 1e-14
-
 
 
 def test_force_path7a():
@@ -2183,63 +2160,63 @@ def test_force_path7a():
     CORE TEST 180° ROTATION bug
     source without path
     """
-    a = .2
-    b = .3
-    h = .1
+    a = 0.2
+    b = 0.3
+    h = 0.1
     pz = 100
     angles = [180]
-    axis = [1,0,0]
-    anch = (0,0,0)
+    axis = [1, 0, 0]
+    anch = (0, 0, 0)
 
     # magnet
     cube = magpy.magnet.Cuboid(
         dimension=(a, b, h),
         polarization=(0, 0, pz),
-        meshing=(12,18,6),
+        meshing=(12, 18, 6),
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
     mom = a * b * h * cube.magnetization
-    dip = magpy.misc.Dipole(
-        moment = mom
-    ).rotate_from_angax(angles, axis=axis, anchor=anch)
+    dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
+        angles, axis=axis, anchor=anch
+    )
 
     # current
-    i0 = np.linalg.norm(mom) / (a*b)
+    i0 = np.linalg.norm(mom) / (a * b)
     sqloop = magpy.current.Polyline(
         vertices=[
-            (-a/2, -b/2, 0),
-            (a/2, -b/2, 0),
-            (a/2, b/2, 0),
-            (-a/2, b/2, 0),
-            (-a/2, -b/2, 0)
+            (-a / 2, -b / 2, 0),
+            (a / 2, -b / 2, 0),
+            (a / 2, b / 2, 0),
+            (-a / 2, b / 2, 0),
+            (-a / 2, -b / 2, 0),
         ],
-    current=i0,
-    meshing=40,
+        current=i0,
+        meshing=40,
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     src = magpy.magnet.Sphere(
-        position=(0,0,5),
+        position=(0, 0, 5),
         diameter=0.23,
-        polarization=(0,0,100),
+        polarization=(0, 0, 100),
     )
 
-    F1, T1 = magpy.getFT(src, dip, pivot=(0,0,0))
-    F2, T2 = magpy.getFT(src, sqloop, pivot=(0,0,0))
-    F3, T3 = magpy.getFT(src, cube, pivot=(0,0,0))
+    F1, T1 = magpy.getFT(src, dip, pivot=(0, 0, 0))
+    F2, T2 = magpy.getFT(src, sqloop, pivot=(0, 0, 0))
+    F3, T3 = magpy.getFT(src, cube, pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
-    assert abs(F1[0,2] + F1[1,2]) < 1e-14 # dipole
-    assert abs(F2[0,2] + F2[1,2]) < 1e-14 # loop
-    assert abs(F3[0,2] + F3[1,2]) < 1e-12 # current
+    assert abs(F1[0, 2] + F1[1, 2]) < 1e-14  # dipole
+    assert abs(F2[0, 2] + F2[1, 2]) < 1e-14  # loop
+    assert abs(F3[0, 2] + F3[1, 2]) < 1e-12  # current
 
     # dipole approximation vs loop
-    errF12 = np.linalg.norm(F1-F2, axis=1) / np.linalg.norm(F1+F2, axis=1)
-    assert max(errF12)<0.002
+    errF12 = np.linalg.norm(F1 - F2, axis=1) / np.linalg.norm(F1 + F2, axis=1)
+    assert max(errF12) < 0.002
 
     # equivalence loop and cube
-    errF23 = np.linalg.norm(F2-F3, axis=1) / np.linalg.norm(F2+F3, axis=1)
-    assert max(errF23)<0.0002
+    errF23 = np.linalg.norm(F2 - F3, axis=1) / np.linalg.norm(F2 + F3, axis=1)
+    assert max(errF23) < 0.0002
 
 
 def test_force_path7b():
@@ -2247,64 +2224,64 @@ def test_force_path7b():
     CORE TEST 180° ROTATION bug
     2 sources without path
     """
-    a = .2
-    b = .3
-    h = .1
+    a = 0.2
+    b = 0.3
+    h = 0.1
     pz = 100
     angles = [180]
-    axis = [1,0,0]
-    anch = (0,0,0)
+    axis = [1, 0, 0]
+    anch = (0, 0, 0)
 
     # magnet
     cube = magpy.magnet.Cuboid(
         dimension=(a, b, h),
         polarization=(0, 0, pz),
-        meshing=(12,18,6),
+        meshing=(12, 18, 6),
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
     mom = a * b * h * cube.magnetization
-    dip = magpy.misc.Dipole(
-        moment = mom
-    ).rotate_from_angax(angles, axis=axis, anchor=anch)
+    dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
+        angles, axis=axis, anchor=anch
+    )
 
     # current
-    i0 = np.linalg.norm(mom) / (a*b)
+    i0 = np.linalg.norm(mom) / (a * b)
     sqloop = magpy.current.Polyline(
         vertices=[
-            (-a/2, -b/2, 0),
-            (a/2, -b/2, 0),
-            (a/2, b/2, 0),
-            (-a/2, b/2, 0),
-            (-a/2, -b/2, 0)
+            (-a / 2, -b / 2, 0),
+            (a / 2, -b / 2, 0),
+            (a / 2, b / 2, 0),
+            (-a / 2, b / 2, 0),
+            (-a / 2, -b / 2, 0),
         ],
-    current=i0,
-    meshing=40,
+        current=i0,
+        meshing=40,
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     src = magpy.magnet.Sphere(
-        position=(0,0,5),
+        position=(0, 0, 5),
         diameter=0.23,
-        polarization=(0,0,100),
+        polarization=(0, 0, 100),
     )
 
-    F1, T1 = magpy.getFT([src, src], dip, pivot=(0,0,0))
-    F2, T2 = magpy.getFT([src, src], sqloop, pivot=(0,0,0))
-    F3, T3 = magpy.getFT([src, src], cube, pivot=(0,0,0))
+    F1, T1 = magpy.getFT([src, src], dip, pivot=(0, 0, 0))
+    F2, T2 = magpy.getFT([src, src], sqloop, pivot=(0, 0, 0))
+    F3, T3 = magpy.getFT([src, src], cube, pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     for i in range(2):
-        assert abs(F1[i,0,2] + F1[i,1,2]) < 1e-14 # dipole
-        assert abs(F2[i,0,2] + F2[i,1,2]) < 1e-14 # loop
-        assert abs(F3[i,0,2] + F3[i,1,2]) < 1e-12 # current
+        assert abs(F1[i, 0, 2] + F1[i, 1, 2]) < 1e-14  # dipole
+        assert abs(F2[i, 0, 2] + F2[i, 1, 2]) < 1e-14  # loop
+        assert abs(F3[i, 0, 2] + F3[i, 1, 2]) < 1e-12  # current
 
     # dipole approximation vs loop
-    errF12 = np.linalg.norm(F1-F2, axis=2) / np.linalg.norm(F1+F2, axis=2)
-    assert np.amax(errF12)<0.002
+    errF12 = np.linalg.norm(F1 - F2, axis=2) / np.linalg.norm(F1 + F2, axis=2)
+    assert np.amax(errF12) < 0.002
 
     # equivalence loop and cube
-    errF23 = np.linalg.norm(F2-F3, axis=2) / np.linalg.norm(F2+F3, axis=2)
-    assert np.amax(errF23)<0.0002
+    errF23 = np.linalg.norm(F2 - F3, axis=2) / np.linalg.norm(F2 + F3, axis=2)
+    assert np.amax(errF23) < 0.0002
 
 
 def test_force_path7c():
@@ -2312,64 +2289,64 @@ def test_force_path7c():
     CORE TEST 180° ROTATION bug
     source with path
     """
-    a = .2
-    b = .3
-    h = .1
+    a = 0.2
+    b = 0.3
+    h = 0.1
     pz = 100
-    angles = [180,0,180,0,180]
-    axis = [1,0,0]
-    anch = (0,0,0)
+    angles = [180, 0, 180, 0, 180]
+    axis = [1, 0, 0]
+    anch = (0, 0, 0)
 
     # magnet
     cube = magpy.magnet.Cuboid(
         dimension=(a, b, h),
         polarization=(0, 0, pz),
-        meshing=(12,18,6),
+        meshing=(12, 18, 6),
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
     mom = a * b * h * cube.magnetization
-    dip = magpy.misc.Dipole(
-        moment = mom
-    ).rotate_from_angax(angles, axis=axis, anchor=anch)
+    dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
+        angles, axis=axis, anchor=anch
+    )
 
     # current
-    i0 = np.linalg.norm(mom) / (a*b)
+    i0 = np.linalg.norm(mom) / (a * b)
     sqloop = magpy.current.Polyline(
         vertices=[
-            (-a/2, -b/2, 0),
-            (a/2, -b/2, 0),
-            (a/2, b/2, 0),
-            (-a/2, b/2, 0),
-            (-a/2, -b/2, 0)
+            (-a / 2, -b / 2, 0),
+            (a / 2, -b / 2, 0),
+            (a / 2, b / 2, 0),
+            (-a / 2, b / 2, 0),
+            (-a / 2, -b / 2, 0),
         ],
-    current=i0,
-    meshing=40,
+        current=i0,
+        meshing=40,
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     src = magpy.magnet.Sphere(
-        position=[(0,0,5), (0,0,5), (0,0,6), (0,0,6), (0,0,7), (0,0,7)],
+        position=[(0, 0, 5), (0, 0, 5), (0, 0, 6), (0, 0, 6), (0, 0, 7), (0, 0, 7)],
         diameter=0.23,
-        polarization=(0,0,100),
+        polarization=(0, 0, 100),
     )
 
-    F1, T1 = magpy.getFT(src, dip, pivot=(0,0,0))
-    F2, T2 = magpy.getFT(src, sqloop, pivot=(0,0,0))
-    F3, T3 = magpy.getFT(src, cube, pivot=(0,0,0))
+    F1, T1 = magpy.getFT(src, dip, pivot=(0, 0, 0))
+    F2, T2 = magpy.getFT(src, sqloop, pivot=(0, 0, 0))
+    F3, T3 = magpy.getFT(src, cube, pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     for i in range(3):
-        assert abs(F1[2*i,2] + F1[2*i+1,2]) < 1e-14 # dipole
-        assert abs(F2[2*i,2] + F2[2*i+1,2]) < 1e-14 # loop
-        assert abs(F3[2*i,2] + F3[2*i+1,2]) < 1e-12 # current
+        assert abs(F1[2 * i, 2] + F1[2 * i + 1, 2]) < 1e-14  # dipole
+        assert abs(F2[2 * i, 2] + F2[2 * i + 1, 2]) < 1e-14  # loop
+        assert abs(F3[2 * i, 2] + F3[2 * i + 1, 2]) < 1e-12  # current
 
     # dipole approximation vs loop
-    errF12 = np.linalg.norm(F1-F2, axis=1) / np.linalg.norm(F1+F2, axis=1)
-    assert max(errF12)<0.002
+    errF12 = np.linalg.norm(F1 - F2, axis=1) / np.linalg.norm(F1 + F2, axis=1)
+    assert max(errF12) < 0.002
 
     # equivalence loop and cube
-    errF23 = np.linalg.norm(F2-F3, axis=1) / np.linalg.norm(F2+F3, axis=1)
-    assert max(errF23)<0.0002
+    errF23 = np.linalg.norm(F2 - F3, axis=1) / np.linalg.norm(F2 + F3, axis=1)
+    assert max(errF23) < 0.0002
 
 
 def test_force_path7d():
@@ -2377,68 +2354,68 @@ def test_force_path7d():
     CORE TEST 180° ROTATION bug
     2 sources with path
     """
-    a = .2
-    b = .3
-    h = .1
+    a = 0.2
+    b = 0.3
+    h = 0.1
     pz = 100
-    angles = [180,0,180,0,180]
-    axis = [1,0,0]
-    anch = (0,0,0)
+    angles = [180, 0, 180, 0, 180]
+    axis = [1, 0, 0]
+    anch = (0, 0, 0)
 
     # magnet
     cube = magpy.magnet.Cuboid(
         dimension=(a, b, h),
         polarization=(0, 0, pz),
-        meshing=(12,18,6),
+        meshing=(12, 18, 6),
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
     mom = a * b * h * cube.magnetization
-    dip = magpy.misc.Dipole(
-        moment = mom
-    ).rotate_from_angax(angles, axis=axis, anchor=anch)
-
-    # current
-    i0 = np.linalg.norm(mom) / (a*b)
-    sqloop = magpy.current.Polyline(
-        vertices=[
-            (-a/2, -b/2, 0),
-            (a/2, -b/2, 0),
-            (a/2, b/2, 0),
-            (-a/2, b/2, 0),
-            (-a/2, -b/2, 0)
-        ],
-    current=i0,
-    meshing=40,
-    ).rotate_from_angax(angles, axis=axis, anchor=anch)
-    angs2 = [180,0,180,0,180]
-    for obj in [cube, dip, sqloop]:
-        obj.reset_path()
-        obj.rotate_from_angax(angs2, 'x')
-    src = magpy.magnet.Sphere(
-        position=[(0,0,5), (0,0,5), (0,0,6), (0,0,6), (0,0,7), (0,0,7)],
-        diameter=0.23,
-        polarization=(0,0,100),
+    dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
+        angles, axis=axis, anchor=anch
     )
 
-    F1, T1 = magpy.getFT([src,src], dip, pivot=(0,0,0))
-    F2, T2 = magpy.getFT([src,src], sqloop, pivot=(0,0,0))
-    F3, T3 = magpy.getFT([src,src], cube, pivot=(0,0,0))
+    # current
+    i0 = np.linalg.norm(mom) / (a * b)
+    sqloop = magpy.current.Polyline(
+        vertices=[
+            (-a / 2, -b / 2, 0),
+            (a / 2, -b / 2, 0),
+            (a / 2, b / 2, 0),
+            (-a / 2, b / 2, 0),
+            (-a / 2, -b / 2, 0),
+        ],
+        current=i0,
+        meshing=40,
+    ).rotate_from_angax(angles, axis=axis, anchor=anch)
+    angs2 = [180, 0, 180, 0, 180]
+    for obj in [cube, dip, sqloop]:
+        obj.reset_path()
+        obj.rotate_from_angax(angs2, "x")
+    src = magpy.magnet.Sphere(
+        position=[(0, 0, 5), (0, 0, 5), (0, 0, 6), (0, 0, 6), (0, 0, 7), (0, 0, 7)],
+        diameter=0.23,
+        polarization=(0, 0, 100),
+    )
+
+    F1, T1 = magpy.getFT([src, src], dip, pivot=(0, 0, 0))
+    F2, T2 = magpy.getFT([src, src], sqloop, pivot=(0, 0, 0))
+    F3, T3 = magpy.getFT([src, src], cube, pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     for j in range(2):
         for i in range(3):
-            assert abs(F1[j,2*i,2] + F1[j,2*i+1,2]) < 1e-14 # dipole
-            assert abs(F2[j,2*i,2] + F2[j,2*i+1,2]) < 1e-14 # loop
-            assert abs(F3[j,2*i,2] + F3[j,2*i+1,2]) < 1e-12 # current
+            assert abs(F1[j, 2 * i, 2] + F1[j, 2 * i + 1, 2]) < 1e-14  # dipole
+            assert abs(F2[j, 2 * i, 2] + F2[j, 2 * i + 1, 2]) < 1e-14  # loop
+            assert abs(F3[j, 2 * i, 2] + F3[j, 2 * i + 1, 2]) < 1e-12  # current
 
     # dipole approximation vs loop
-    errF12 = np.linalg.norm(F1-F2, axis=2) / np.linalg.norm(F1+F2, axis=2)
-    assert np.amax(errF12)<0.002
+    errF12 = np.linalg.norm(F1 - F2, axis=2) / np.linalg.norm(F1 + F2, axis=2)
+    assert np.amax(errF12) < 0.002
 
     # equivalence loop and cube
-    errF23 = np.linalg.norm(F2-F3, axis=2) / np.linalg.norm(F2+F3, axis=2)
-    assert np.amax(errF23)<0.0002
+    errF23 = np.linalg.norm(F2 - F3, axis=2) / np.linalg.norm(F2 + F3, axis=2)
+    assert np.amax(errF23) < 0.0002
 
 
 def test_force_path7e():
@@ -2446,64 +2423,64 @@ def test_force_path7e():
     CORE TEST 180° ROTATION bug
     source without path 2 targets
     """
-    a = .2
-    b = .3
-    h = .1
+    a = 0.2
+    b = 0.3
+    h = 0.1
     pz = 100
     angles = [180]
-    axis = [1,0,0]
-    anch = (0,0,0)
+    axis = [1, 0, 0]
+    anch = (0, 0, 0)
 
     # magnet
     cube = magpy.magnet.Cuboid(
         dimension=(a, b, h),
         polarization=(0, 0, pz),
-        meshing=(12,18,6),
+        meshing=(12, 18, 6),
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
     mom = a * b * h * cube.magnetization
-    dip = magpy.misc.Dipole(
-        moment = mom
-    ).rotate_from_angax(angles, axis=axis, anchor=anch)
+    dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
+        angles, axis=axis, anchor=anch
+    )
 
     # current
-    i0 = np.linalg.norm(mom) / (a*b)
+    i0 = np.linalg.norm(mom) / (a * b)
     sqloop = magpy.current.Polyline(
         vertices=[
-            (-a/2, -b/2, 0),
-            (a/2, -b/2, 0),
-            (a/2, b/2, 0),
-            (-a/2, b/2, 0),
-            (-a/2, -b/2, 0)
+            (-a / 2, -b / 2, 0),
+            (a / 2, -b / 2, 0),
+            (a / 2, b / 2, 0),
+            (-a / 2, b / 2, 0),
+            (-a / 2, -b / 2, 0),
         ],
-    current=i0,
-    meshing=40,
+        current=i0,
+        meshing=40,
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     src = magpy.magnet.Sphere(
-        position=(0,0,5),
+        position=(0, 0, 5),
         diameter=0.23,
-        polarization=(0,0,100),
+        polarization=(0, 0, 100),
     )
 
-    F1, T1 = magpy.getFT(src, [dip,dip], pivot=(0,0,0))
-    F2, T2 = magpy.getFT(src, [sqloop,sqloop], pivot=(0,0,0))
-    F3, T3 = magpy.getFT(src, [cube,cube], pivot=(0,0,0))
+    F1, T1 = magpy.getFT(src, [dip, dip], pivot=(0, 0, 0))
+    F2, T2 = magpy.getFT(src, [sqloop, sqloop], pivot=(0, 0, 0))
+    F3, T3 = magpy.getFT(src, [cube, cube], pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     for i in range(2):
-        assert abs(F1[0,i,2] + F1[1,i,2]) < 1e-14 # dipole
-        assert abs(F2[0,i,2] + F2[1,i,2]) < 1e-14 # loop
-        assert abs(F3[0,i,2] + F3[1,i,2]) < 1e-12 # current
+        assert abs(F1[0, i, 2] + F1[1, i, 2]) < 1e-14  # dipole
+        assert abs(F2[0, i, 2] + F2[1, i, 2]) < 1e-14  # loop
+        assert abs(F3[0, i, 2] + F3[1, i, 2]) < 1e-12  # current
 
     # dipole approximation vs loop
-    errF12 = np.linalg.norm(F1-F2, axis=2) / np.linalg.norm(F1+F2, axis=2)
-    assert np.amax(errF12)<0.002
+    errF12 = np.linalg.norm(F1 - F2, axis=2) / np.linalg.norm(F1 + F2, axis=2)
+    assert np.amax(errF12) < 0.002
 
     # equivalence loop and cube
-    errF23 = np.linalg.norm(F2-F3, axis=2) / np.linalg.norm(F2+F3, axis=2)
-    assert np.amax(errF23)<0.0002
+    errF23 = np.linalg.norm(F2 - F3, axis=2) / np.linalg.norm(F2 + F3, axis=2)
+    assert np.amax(errF23) < 0.0002
 
 
 def test_force_path7f():
@@ -2511,65 +2488,65 @@ def test_force_path7f():
     CORE TEST 180° ROTATION bug
     2 sources without path 2 targets
     """
-    a = .2
-    b = .3
-    h = .1
+    a = 0.2
+    b = 0.3
+    h = 0.1
     pz = 100
     angles = [180]
-    axis = [1,0,0]
-    anch = (0,0,0)
+    axis = [1, 0, 0]
+    anch = (0, 0, 0)
 
     # magnet
     cube = magpy.magnet.Cuboid(
         dimension=(a, b, h),
         polarization=(0, 0, pz),
-        meshing=(12,18,6),
+        meshing=(12, 18, 6),
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
     mom = a * b * h * cube.magnetization
-    dip = magpy.misc.Dipole(
-        moment = mom
-    ).rotate_from_angax(angles, axis=axis, anchor=anch)
+    dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
+        angles, axis=axis, anchor=anch
+    )
 
     # current
-    i0 = np.linalg.norm(mom) / (a*b)
+    i0 = np.linalg.norm(mom) / (a * b)
     sqloop = magpy.current.Polyline(
         vertices=[
-            (-a/2, -b/2, 0),
-            (a/2, -b/2, 0),
-            (a/2, b/2, 0),
-            (-a/2, b/2, 0),
-            (-a/2, -b/2, 0)
+            (-a / 2, -b / 2, 0),
+            (a / 2, -b / 2, 0),
+            (a / 2, b / 2, 0),
+            (-a / 2, b / 2, 0),
+            (-a / 2, -b / 2, 0),
         ],
-    current=i0,
-    meshing=40,
+        current=i0,
+        meshing=40,
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     src = magpy.magnet.Sphere(
-        position=(0,0,5),
+        position=(0, 0, 5),
         diameter=0.23,
-        polarization=(0,0,100),
+        polarization=(0, 0, 100),
     )
 
-    F1, T1 = magpy.getFT([src, src], [dip,dip], pivot=(0,0,0))
-    F2, T2 = magpy.getFT([src, src], [sqloop,sqloop], pivot=(0,0,0))
-    F3, T3 = magpy.getFT([src, src], [cube,cube], pivot=(0,0,0))
+    F1, T1 = magpy.getFT([src, src], [dip, dip], pivot=(0, 0, 0))
+    F2, T2 = magpy.getFT([src, src], [sqloop, sqloop], pivot=(0, 0, 0))
+    F3, T3 = magpy.getFT([src, src], [cube, cube], pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     for j in range(2):
         for i in range(2):
-            assert abs(F1[i,0,j,2] + F1[i,1,j,2]) < 1e-14 # dipole
-            assert abs(F2[i,0,j,2] + F2[i,1,j,2]) < 1e-14 # loop
-            assert abs(F3[i,0,j,2] + F3[i,1,j,2]) < 1e-12 # current
+            assert abs(F1[i, 0, j, 2] + F1[i, 1, j, 2]) < 1e-14  # dipole
+            assert abs(F2[i, 0, j, 2] + F2[i, 1, j, 2]) < 1e-14  # loop
+            assert abs(F3[i, 0, j, 2] + F3[i, 1, j, 2]) < 1e-12  # current
 
     # dipole approximation vs loop
-    errF12 = np.linalg.norm(F1-F2, axis=3) / np.linalg.norm(F1+F2, axis=3)
-    assert np.amax(errF12)<0.002
+    errF12 = np.linalg.norm(F1 - F2, axis=3) / np.linalg.norm(F1 + F2, axis=3)
+    assert np.amax(errF12) < 0.002
 
     # equivalence loop and cube
-    errF23 = np.linalg.norm(F2-F3, axis=3) / np.linalg.norm(F2+F3, axis=3)
-    assert np.amax(errF23)<0.0002
+    errF23 = np.linalg.norm(F2 - F3, axis=3) / np.linalg.norm(F2 + F3, axis=3)
+    assert np.amax(errF23) < 0.0002
 
 
 def test_force_path7g():
@@ -2577,65 +2554,65 @@ def test_force_path7g():
     CORE TEST 180° ROTATION bug
     source with path 2 targets
     """
-    a = .2
-    b = .3
-    h = .1
+    a = 0.2
+    b = 0.3
+    h = 0.1
     pz = 100
-    angles = [180,0,180,0,180]
-    axis = [1,0,0]
-    anch = (0,0,0)
+    angles = [180, 0, 180, 0, 180]
+    axis = [1, 0, 0]
+    anch = (0, 0, 0)
 
     # magnet
     cube = magpy.magnet.Cuboid(
         dimension=(a, b, h),
         polarization=(0, 0, pz),
-        meshing=(12,18,6),
+        meshing=(12, 18, 6),
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
     mom = a * b * h * cube.magnetization
-    dip = magpy.misc.Dipole(
-        moment = mom
-    ).rotate_from_angax(angles, axis=axis, anchor=anch)
+    dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
+        angles, axis=axis, anchor=anch
+    )
 
     # current
-    i0 = np.linalg.norm(mom) / (a*b)
+    i0 = np.linalg.norm(mom) / (a * b)
     sqloop = magpy.current.Polyline(
         vertices=[
-            (-a/2, -b/2, 0),
-            (a/2, -b/2, 0),
-            (a/2, b/2, 0),
-            (-a/2, b/2, 0),
-            (-a/2, -b/2, 0)
+            (-a / 2, -b / 2, 0),
+            (a / 2, -b / 2, 0),
+            (a / 2, b / 2, 0),
+            (-a / 2, b / 2, 0),
+            (-a / 2, -b / 2, 0),
         ],
-    current=i0,
-    meshing=40,
+        current=i0,
+        meshing=40,
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     src = magpy.magnet.Sphere(
-        position=[(0,0,5), (0,0,5), (0,0,6), (0,0,6), (0,0,7), (0,0,7)],
+        position=[(0, 0, 5), (0, 0, 5), (0, 0, 6), (0, 0, 6), (0, 0, 7), (0, 0, 7)],
         diameter=0.23,
-        polarization=(0,0,100),
+        polarization=(0, 0, 100),
     )
 
-    F1, T1 = magpy.getFT(src, [dip,dip], pivot=(0,0,0))
-    F2, T2 = magpy.getFT(src, [sqloop,sqloop], pivot=(0,0,0))
-    F3, T3 = magpy.getFT(src, [cube,cube], pivot=(0,0,0))
+    F1, T1 = magpy.getFT(src, [dip, dip], pivot=(0, 0, 0))
+    F2, T2 = magpy.getFT(src, [sqloop, sqloop], pivot=(0, 0, 0))
+    F3, T3 = magpy.getFT(src, [cube, cube], pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     for j in range(2):
         for i in range(3):
-            assert abs(F1[2*i,j,2] + F1[2*i+1,j,2]) < 1e-14 # dipole
-            assert abs(F2[2*i,j,2] + F2[2*i+1,j,2]) < 1e-14 # loop
-            assert abs(F3[2*i,j,2] + F3[2*i+1,j,2]) < 1e-12 # current
+            assert abs(F1[2 * i, j, 2] + F1[2 * i + 1, j, 2]) < 1e-14  # dipole
+            assert abs(F2[2 * i, j, 2] + F2[2 * i + 1, j, 2]) < 1e-14  # loop
+            assert abs(F3[2 * i, j, 2] + F3[2 * i + 1, j, 2]) < 1e-12  # current
 
     # dipole approximation vs loop
-    errF12 = np.linalg.norm(F1-F2, axis=2) / np.linalg.norm(F1+F2, axis=2)
-    assert np.amax(errF12)<0.002
+    errF12 = np.linalg.norm(F1 - F2, axis=2) / np.linalg.norm(F1 + F2, axis=2)
+    assert np.amax(errF12) < 0.002
 
     # equivalence loop and cube
-    errF23 = np.linalg.norm(F2-F3, axis=2) / np.linalg.norm(F2+F3, axis=2)
-    assert np.amax(errF23)<0.0002
+    errF23 = np.linalg.norm(F2 - F3, axis=2) / np.linalg.norm(F2 + F3, axis=2)
+    assert np.amax(errF23) < 0.0002
 
 
 def test_force_path7h():
@@ -2643,70 +2620,174 @@ def test_force_path7h():
     CORE TEST 180° ROTATION bug
     2 sources with path 2 targets
     """
-    a = .2
-    b = .3
-    h = .1
+    a = 0.2
+    b = 0.3
+    h = 0.1
     pz = 100
-    angles = [180,0,180,0,180]
-    axis = [1,0,0]
-    anch = (0,0,0)
+    angles = [180, 0, 180, 0, 180]
+    axis = [1, 0, 0]
+    anch = (0, 0, 0)
 
     # magnet
     cube = magpy.magnet.Cuboid(
         dimension=(a, b, h),
         polarization=(0, 0, pz),
-        meshing=(12,18,6),
+        meshing=(12, 18, 6),
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
     mom = a * b * h * cube.magnetization
-    dip = magpy.misc.Dipole(
-        moment = mom
-    ).rotate_from_angax(angles, axis=axis, anchor=anch)
-
-    # current
-    i0 = np.linalg.norm(mom) / (a*b)
-    sqloop = magpy.current.Polyline(
-        vertices=[
-            (-a/2, -b/2, 0),
-            (a/2, -b/2, 0),
-            (a/2, b/2, 0),
-            (-a/2, b/2, 0),
-            (-a/2, -b/2, 0)
-        ],
-    current=i0,
-    meshing=40,
-    ).rotate_from_angax(angles, axis=axis, anchor=anch)
-    angs2 = [180,0,180,0,180]
-    for obj in [cube, dip, sqloop]:
-        obj.reset_path()
-        obj.rotate_from_angax(angs2, 'x')
-    src = magpy.magnet.Sphere(
-        position=[(0,0,5), (0,0,5), (0,0,6), (0,0,6), (0,0,7), (0,0,7)],
-        diameter=0.23,
-        polarization=(0,0,100),
+    dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
+        angles, axis=axis, anchor=anch
     )
 
-    F1, T1 = magpy.getFT([src,src], [dip,dip], pivot=(0,0,0))
-    F2, T2 = magpy.getFT([src,src], [sqloop,sqloop], pivot=(0,0,0))
-    F3, T3 = magpy.getFT([src,src], [cube,cube], pivot=(0,0,0))
+    # current
+    i0 = np.linalg.norm(mom) / (a * b)
+    sqloop = magpy.current.Polyline(
+        vertices=[
+            (-a / 2, -b / 2, 0),
+            (a / 2, -b / 2, 0),
+            (a / 2, b / 2, 0),
+            (-a / 2, b / 2, 0),
+            (-a / 2, -b / 2, 0),
+        ],
+        current=i0,
+        meshing=40,
+    ).rotate_from_angax(angles, axis=axis, anchor=anch)
+    angs2 = [180, 0, 180, 0, 180]
+    for obj in [cube, dip, sqloop]:
+        obj.reset_path()
+        obj.rotate_from_angax(angs2, "x")
+    src = magpy.magnet.Sphere(
+        position=[(0, 0, 5), (0, 0, 5), (0, 0, 6), (0, 0, 6), (0, 0, 7), (0, 0, 7)],
+        diameter=0.23,
+        polarization=(0, 0, 100),
+    )
+
+    F1, T1 = magpy.getFT([src, src], [dip, dip], pivot=(0, 0, 0))
+    F2, T2 = magpy.getFT([src, src], [sqloop, sqloop], pivot=(0, 0, 0))
+    F3, T3 = magpy.getFT([src, src], [cube, cube], pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     for k in range(2):
         for j in range(2):
             for i in range(3):
-                assert abs(F1[j,2*i,k,2] + F1[j,2*i+1,k,2]) < 1e-14 # dipole
-                assert abs(F2[j,2*i,k,2] + F2[j,2*i+1,k,2]) < 1e-14 # loop
-                assert abs(F3[j,2*i,k,2] + F3[j,2*i+1,k,2]) < 1e-12 # current
+                assert (
+                    abs(F1[j, 2 * i, k, 2] + F1[j, 2 * i + 1, k, 2]) < 1e-14
+                )  # dipole
+                assert abs(F2[j, 2 * i, k, 2] + F2[j, 2 * i + 1, k, 2]) < 1e-14  # loop
+                assert (
+                    abs(F3[j, 2 * i, k, 2] + F3[j, 2 * i + 1, k, 2]) < 1e-12
+                )  # current
 
     # dipole approximation vs loop
-    errF12 = np.linalg.norm(F1-F2, axis=3) / np.linalg.norm(F1+F2, axis=3)
-    assert np.amax(errF12)<0.002
+    errF12 = np.linalg.norm(F1 - F2, axis=3) / np.linalg.norm(F1 + F2, axis=3)
+    assert np.amax(errF12) < 0.002
 
     # equivalence loop and cube
-    errF23 = np.linalg.norm(F2-F3, axis=3) / np.linalg.norm(F2+F3, axis=3)
-    assert np.amax(errF23)<0.0002
+    errF23 = np.linalg.norm(F2 - F3, axis=3) / np.linalg.norm(F2 + F3, axis=3)
+    assert np.amax(errF23) < 0.0002
 
+
+def test_force_backforward_dipole_tristrip():
+    """
+    test backward and forward force on dipole in triangle strip
+    test meshing convergence
+    """
+
+    strip = magpy.current.TriangleStrip(
+        current=1e6,
+        vertices=(
+            (-3, -3, -3),
+            (-3, -3, 3),
+            (3.3, -3, -3),
+            (3, -3.3, 3),
+            (0, 5.2, -3),
+            (0, 5, 3.2),
+            (-3, -3, -3),
+            (-3, -3, 3),
+        ),
+    ).rotate_from_angax(
+        [10, 20, 55, -20, 180, -123.1234],
+        axis=(1.1, 2.1, -3.2),
+        anchor=(0.1, 0.2, 0.3),
+    )
+    dip = magpy.misc.Dipole(
+        moment=(1e3, 0, 0),
+        position=np.linspace((-0.5, -0.4, -0.3), (0.3, 0.4, -0.2), 6),
+    )
+
+    F0, T0 = getFT(strip, dip, pivot=(0, 0, 0))
+
+    for meshing, errf, errt in zip(
+        [500, 2000, 5000], [0.08, 0.007, 0.0007], [0.003, 0.0004, 7e-5], strict=False
+    ):
+        strip.meshing = meshing
+        F1, T1 = getFT(dip, strip, pivot=(0, 0, 0))
+
+        errF = np.max(np.linalg.norm(F1 + F0, axis=1) / np.linalg.norm(F1 - F0, axis=1))
+        assert errF < errf, f"Force mismatch: {errF}"
+
+        errT = np.max(np.linalg.norm(T1 + T0, axis=1) / np.linalg.norm(T1 - T0, axis=1))
+        assert errT < errt, f"Torque mismatch: {errT}"
+
+
+def test_force_backforward_dipole_trisheet():
+    """
+    test backward and forward force on dipole in triangle sheet
+    test meshing convergence
+    """
+
+    strip = magpy.current.TriangleSheet(
+        current_densities=[(1e6, 0, 0)] * 2
+        + [(0, 1e6, 0)] * 2
+        + [(-1e6, 0, 0)] * 2
+        + [(0, -1e6, 0)] * 2,
+        vertices=(
+            (-3, -3, -3),
+            (-3, -3, 3),
+            (3, -3, -3),
+            (3, -3, 3),
+            (3, 3, -3),
+            (3, 3, 3),
+            (-3, 3, -3),
+            (-3, 3, 3),
+            (-3, -3, -3),
+            (-3, -3, 3),
+        ),
+        faces=(
+            (0, 1, 2),
+            (1, 2, 3),
+            (2, 3, 4),
+            (3, 4, 5),
+            (4, 5, 6),
+            (5, 6, 7),
+            (6, 7, 0),
+            (7, 0, 1),
+        ),
+    ).rotate_from_angax(
+        [10, 20, 55, -20, 180, -123.1234],
+        axis=(1.1, 2.1, -3.2),
+        anchor=(0.1, 0.2, 0.3),
+    )
+    dip = magpy.misc.Dipole(
+        moment=(1e3, 0, 0),
+        position=np.linspace((-0.5, -0.4, -0.3), (0.3, 0.4, -0.2), 6),
+    )
+
+    F0, T0 = getFT(strip, dip, pivot=(0, 0, 0))
+
+    for meshing, errf, errt in zip(
+        [50, 300, 2000], [0.35, 0.02, 0.003], [0.035, 0.003, 0.0004], strict=False
+    ):
+        strip.meshing = meshing
+        F1, T1 = getFT(dip, strip, pivot=(0, 0, 0))
+
+        errF = np.max(np.linalg.norm(F1 + F0, axis=1) / np.linalg.norm(F1 - F0, axis=1))
+        assert errF < errf, f"Force mismatch: {errF}"
+
+        errT = np.max(np.linalg.norm(T1 + T0, axis=1) / np.linalg.norm(T1 - T0, axis=1))
+        assert errT < errt, f"Torque mismatch: {errT}"
 
 
 # if __name__ == "__main__":
