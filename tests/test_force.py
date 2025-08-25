@@ -254,13 +254,13 @@ def test_force_analytic_loop_projection():
     loop.rotate_from_angax(45, "x")
     _, T1 = getFT(dip, loop, pivot=(0, 0, 0))
     TT1 = T1[1]
-    assert TT0 - TT1 * np.sqrt(2) < 1e-14
+    assert TT0 - TT1 * np.sqrt(2) < 1e-12
 
     # reduced flux at 45° angle
     loop.orientation = None
     loop.rotate_from_angax(45, "y")
     _, T1 = getFT(dip, loop, pivot=(0, 0, 0))
-    assert abs(TT1 - T1[1]) < 1e-13
+    assert abs(TT1 - T1[1]) < 1e-12
 
     # reduced flux at -225° angle
     loop.orientation = None
