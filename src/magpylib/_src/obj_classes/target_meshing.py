@@ -267,8 +267,7 @@ def target_mesh_circle(r, n, i0):
     -------
     dict: {
         "pts": np.ndarray, shape (n, 3) - central edge positions
-        "currents": np.ndarray, shape (n,) - electric current at each edge
-        "tvecs": np.ndarray, shape (n, 3) - tangent vectors (=edge vectors)
+        "cvecs": np.ndarray, shape (n, 3) - current vectors
     }
     """
     # construct polygon with same area as circle
@@ -285,10 +284,9 @@ def target_mesh_circle(r, n, i0):
     ty = vy[1:] - vy[:-1]
 
     pts = np.column_stack((midx, midy, midz))
-    tvecs = np.column_stack((tx, ty, midz))
-    currents = np.full(n, i0)
-
-    return {"pts": pts, "currents": currents, "tvecs": tvecs}
+    
+    cvecs = np.column_stack((tx, ty, midz)) * i0
+    return {"pts": pts, "cvecs": cvecs}
 
 
 def subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
@@ -394,8 +392,7 @@ def target_mesh_triangle_current(triangles: np.ndarray, n_target: int, cds: np.n
 
     Returns dict:
     - mesh: centroids of refined triangles
-    - currents: currents associated with this mesh
-    - tvec: current tangential vectors
+    - cvecs: current vectors
     """
     n_tria = len(triangles)
     surfaces = 0.5 * np.linalg.norm(
@@ -416,9 +413,9 @@ def target_mesh_triangle_current(triangles: np.ndarray, n_target: int, cds: np.n
     surfaces = np.repeat(surfaces, 2**splits)
     triangles = subdiv(triangles, splits)
     centroids = np.mean(triangles, axis=1)
-    tvecs = np.repeat(cds, 2**splits, axis=0)
+    cvecs = np.repeat(cds, 2**splits, axis=0) * surfaces[:, np.newaxis]
 
-    return {"pts": centroids, "currents": surfaces, "tvecs": tvecs}
+    return {"pts": centroids, "cvecs": cvecs}
 
 
 def target_mesh_polyline(vertices, i0, n_points):
@@ -438,8 +435,7 @@ def target_mesh_polyline(vertices, i0, n_points):
     -------
     dict: {
         "pts": np.ndarray, shape (m, 3) - central segment positions
-        "currents": np.ndarray, shape (m,) - electric current at each segment
-        "tvecs": np.ndarray, shape (m, 3) - tangent vectors (=segment vectors)
+        "cvecs": np.ndarray, shape (m, 3) - current vectors
     }
     """
     n_segments = len(vertices) - 1
@@ -477,13 +473,11 @@ def target_mesh_polyline(vertices, i0, n_points):
         vertices[:-1], points_per_segment, axis=0
     )  # add starting point of each segment
 
-    tvecs = np.repeat(
+    cvecs = np.repeat(
         segment_vectors / points_per_segment[:, np.newaxis], points_per_segment, axis=0
-    )
+    )*i0
 
-    currents = np.full(n_points, i0)
-
-    return {"pts": pts, "currents": currents, "tvecs": tvecs}
+    return {"pts": pts, "cvecs": cvecs}
 
 
 def create_grid(dimensions, spacing):

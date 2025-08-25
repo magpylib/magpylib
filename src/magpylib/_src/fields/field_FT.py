@@ -469,8 +469,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
         n_mesh = sum(mesh_sizes)
 
         B = np.empty((n_src, n_path, n_mesh, 3))  # B-field at cell location
-        TVEC = np.empty((n_src, n_path, n_mesh, 3))  # current tangential vectors
-        CURR = np.empty((n_src, n_path, n_mesh))  # current
+        CVEC = np.empty((n_src, n_path, n_mesh, 3))  # current vectors
 
         # Compute and Broadcast
         idx_ends = np.cumsum(mesh_sizes)
@@ -483,24 +482,17 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
             # B - broadcast (better memory and speed than concatenate)
             B[:, :, start:end] = B_all[:, :, start_all:end_all]
 
-            # CURR - broadcast
-            curr = meshes[ii]["currents"]
-            CURR[:, :, start:end] = np.broadcast_to(curr, (n_src, n_path, end - start))
-
             # TVEC - apply rot and broadcast
             n = mesh_sizes_all[ii]
-            tvec = np.tile(meshes[ii]["tvecs"], (n_path, 1))
+            cvec = np.tile(meshes[ii]["cvecs"], (n_path, 1))
             rot = np.repeat(tgt_ori[ii], n, axis=0)
 
-            # print(rot)
-            # print(tvec)
-
-            tvec_rot = R.from_quat(rot).apply(tvec).reshape(n_path, n, 3)
-            # print(tvec_rot)
-            TVEC[:, :, start:end] = tvec_rot[np.newaxis, :]
+            cvec_rot = R.from_quat(rot).apply(cvec).reshape(n_path, n, 3)
+            # print(cvec_rot)
+            CVEC[:, :, start:end] = cvec_rot[np.newaxis, :]
 
         # Force and Torque computation
-        F = CURR[..., np.newaxis] * np.cross(TVEC, B)
+        F = np.cross(CVEC, B)
         T = np.zeros_like(F)
 
         # broadcast into B (OBS7 needed below) to save memory? !!!!!!!!!!!!!!!!!!!!!!!!
