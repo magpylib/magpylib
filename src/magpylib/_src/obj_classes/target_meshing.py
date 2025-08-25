@@ -284,7 +284,7 @@ def target_mesh_circle(r, n, i0):
     ty = vy[1:] - vy[:-1]
 
     pts = np.column_stack((midx, midy, midz))
-    
+
     cvecs = np.column_stack((tx, ty, midz)) * i0
     return {"pts": pts, "cvecs": cvecs}
 
@@ -473,9 +473,14 @@ def target_mesh_polyline(vertices, i0, n_points):
         vertices[:-1], points_per_segment, axis=0
     )  # add starting point of each segment
 
-    cvecs = np.repeat(
-        segment_vectors / points_per_segment[:, np.newaxis], points_per_segment, axis=0
-    )*i0
+    cvecs = (
+        np.repeat(
+            segment_vectors / points_per_segment[:, np.newaxis],
+            points_per_segment,
+            axis=0,
+        )
+        * i0
+    )
 
     return {"pts": pts, "cvecs": cvecs}
 
