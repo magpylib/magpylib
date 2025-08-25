@@ -12,13 +12,16 @@ from magpylib._src.display.traces_core import make_TriangleStrip
 from magpylib._src.fields.field_BH_current_sheet import BHJM_current_tristrip
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.target_meshing import target_mesh_triangle_current
 from magpylib._src.utility import unit_prefix
 
 
-class TriangleStrip(BaseCurrent):
+class TriangleStrip(BaseCurrent, BaseTarget):
     """Current flowing in straight lines along a Ribbon made of adjacent Triangles.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     The vertex positions are defined in the local object coordinates (rotate with object).
     When `position=(0,0,0)` and `orientation=None` global and local coordinates coincide.
@@ -44,14 +47,25 @@ class TriangleStrip(BaseCurrent):
         must be given, which define the first Triangle.
 
     current: float, default=`None`
-        Electrical current in units of A. It is transformed into a homogeneous current
-        density which flows along the Triangles in direction: T1: V1->V3, T2: V2->V4, ...
+        The total current flowing through the strip in units of A. It flows in the
+        direction V1->V3 in the first triangle, V2->V4 in the second, ...
+
+    meshing: int, default=`None`
+        Parameter that defines the mesh finesse for force computation.
+        Must be an integer >= number of triangles specifying the target mesh size.
+        The mesh is generated via bisection along longest edges until target
+        number is reached.
+
+    meshing: int, default=`None`
+        Parameter that defines the mesh fineness for force computation.
+        Must be a positive integer specifying the target mesh size.
 
     volume: float
         Read-only. Object physical volume in units of m^3 - set to 0 for this class.
 
     centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m - set to mean of vertices for this class.
+        Read-only. Object centroid in units of m given by mean of vertices.
+        m is the path length.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -87,6 +101,7 @@ class TriangleStrip(BaseCurrent):
 
     # pylint: disable=dangerous-default-value
     _field_func = staticmethod(BHJM_current_tristrip)
+    _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "current": 1,
         "vertices": 3,
@@ -99,14 +114,17 @@ class TriangleStrip(BaseCurrent):
         vertices=None,
         position=(0, 0, 0),
         orientation=None,
+        meshing=None,
+        *,
         style=None,
         **kwargs,
     ):
         # instance attributes
         self.vertices = vertices
 
-        # init inheritance
+        # Inherit
         super().__init__(position, orientation, current, style, **kwargs)
+        BaseTarget.__init__(self, meshing)
 
     # property getters and setters
     @property
@@ -133,6 +151,59 @@ class TriangleStrip(BaseCurrent):
         """Volume of object in units of m³."""
         return 0.0
 
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return np.mean(self.vertices, axis=0) + self.position
+        centr = np.mean(self.vertices, axis=0) + self._position
+        if squeeze:
+            return np.squeeze(centr)
+        return centr
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        triangles = np.array(
+            [self.vertices[i : i + 3] for i in range(len(self.vertices) - 2)]
+        )
+
+        # suppress all triangles in computation that are ~1e-9 times
+        # smaller than the total mesh surface
+        mask_good = np.ones(len(triangles), dtype=bool)
+
+        sideA = triangles[:, 1] - triangles[:, 0]
+        sideB = triangles[:, 2] - triangles[:, 0]
+
+        sideAA = np.sum(sideA * sideA, axis=1)
+        sideBB = np.sum(sideB * sideB, axis=1)
+        sideAB = np.sum(sideA * sideB, axis=1)
+        area2 = sideAA * sideBB - sideAB * sideAB
+        area2_rel = area2 / np.sum(area2)
+
+        mask_good[area2_rel < 1e-19] = False
+
+        triangles = triangles[mask_good]
+
+        # compute current densities
+        base_length = np.linalg.norm(sideB[mask_good], axis=1)
+        height = np.sqrt(area2[mask_good]) / base_length
+        cds = (
+            sideB[mask_good]
+            / base_length[:, np.newaxis]
+            * self.current
+            / height[:, np.newaxis]
+        )
+
+        return target_mesh_triangle_current(
+            triangles,
+            self.meshing,
+            cds,
+        )
+
+    def _validate_meshing(self, value):
+        """Makes only sense with at least n_mesh = n_faces."""
+        if isinstance(value, int) and value >= len(self.vertices) - 2:
+            pass
+        else:
+            msg = (
+                "TriangleStrip meshing parameter must be an integer >= number of faces"
+                f" for {self}. Instead got {value}."
+            )
+            raise ValueError(msg)

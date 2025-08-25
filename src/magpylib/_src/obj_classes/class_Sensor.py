@@ -1,4 +1,5 @@
 # pylint: disable=too-many-positional-arguments
+# pylint: disable=arguments-differ
 
 """Sensor class code"""
 

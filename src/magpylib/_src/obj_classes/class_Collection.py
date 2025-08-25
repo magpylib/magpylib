@@ -1,8 +1,8 @@
-"""Collection class code"""
-
+# pylint: disable=too-many-lines
 # pylint: disable=redefined-builtin
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-positional-arguments
+# pylint: disable=arguments-differ
 
 from collections import Counter
 
@@ -249,6 +249,26 @@ class BaseCollection(BaseDisplayRepr):
         return f"""<pre>{"<br>".join(lines)}</pre>"""
 
     # Methods
+    def _get_volume(self):
+        """Volume of all objects in units of m³."""
+        return sum(child.volume for child in self.children_all)
+
+    def _get_centroid(self):
+        """Centroid of collection weighted by children volumes in units of m."""
+        total_volume = 0.0
+        weighted_centroid = np.array([0.0, 0.0, 0.0])
+
+        for child in self.children_all:
+            child_volume = child.volume
+            if child_volume > 0:
+                child_centroid = child.centroid
+                weighted_centroid += child_centroid * child_volume
+                total_volume += child_volume
+
+        if total_volume > 0:
+            return weighted_centroid / total_volume
+        return self.position  # pylint: disable=no-member
+
     def describe(self, format="type+label+id", max_elems=10, return_string=False):
         # pylint: disable=arguments-differ
         """Returns or prints a tree view of the collection.
@@ -837,10 +857,10 @@ class Collection(BaseGeo, BaseCollection):
     that reference frame when an operation (e.g. move, rotate, setter, ...) is applied
     to the collection.
 
-    Collections can be used as `sources` and `observers` input for magnetic field
-    computation. For magnetic field computation a collection that contains sources
-    functions like a single source. When the collection contains sensors
-    it functions like a list of all its sensors.
+    Collections can be used as `sources`, `observers`, and `targets` input for magnetic
+    field and force computation. For force and field computation a collection that
+    contains sources/targets functions like a single source/target. When the collection
+    contains sensors it functions like a list of all its sensors.
 
     SI units are used for all inputs and outputs.
 
