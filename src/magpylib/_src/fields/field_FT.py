@@ -161,7 +161,7 @@ def check_eps(eps):
         raise ValueError(msg)
 
 
-def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport=False):
+def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport=False, returnmesh=False):
     """
     Compute magnetic force and torque acting on the targets that are exposed
     to the magnetic field of the sources. The computation is based on a simple meshing
@@ -200,11 +200,16 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
     meshreport: bool, default=False
         If True, a report of the mesh used for each target will be printed.
+    
+    returnmesh: bool, default=False
+        If True, the meshes will be returned as a list of dictionaries instead of force and torque.
 
     Returns
     -------
     tuple: (force, torque) as respective ndarrays of shape (n,p,m,3), when n sources, p path length,
     and m targets are given.
+
+    If returnmesh is True, the meshes will be returned as a list instead of force and torque.
 
     Examples
     --------
@@ -351,6 +356,10 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
         # Broadcast into OBS7
         OBS7[:, start7:end7] = mesh.reshape((n_path, n_mesh7, 3))
+
+    # Return mesh for analysis
+    if returnmesh:
+        return meshes
 
     # B-FIELD COMPUTATION ############################################################
     # B-field computation limited by getB no ragged inputs, and that sources must be
