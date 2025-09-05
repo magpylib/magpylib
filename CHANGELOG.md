@@ -2,7 +2,10 @@
 
 ## [Unreleased] - YYYY-MM-DD
 
-- Adding force computation `magpylib.getFT()` to the library. ([#887](https://github.com/magpylib/magpylib/issues/887), [#847](https://github.com/magpylib/magpylib/issues/847), [#787](https://github.com/magpylib/magpylib/issues/787))
+- Adding force computation `magpylib.getFT()` to the library.
+  ([#887](https://github.com/magpylib/magpylib/issues/887),
+  [#847](https://github.com/magpylib/magpylib/issues/847),
+  [#787](https://github.com/magpylib/magpylib/issues/787))
 - Added the `current_sheet_Hfield` core computation function, and the classes
   `TriangleStrip` and `TriangleSheet` enabling current sheets in the object
   oriented interface. ([#788](https://github.com/magpylib/magpylib/issues/788))
