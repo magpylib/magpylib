@@ -3,7 +3,7 @@
 (guide-docs-units)=
 ## Units
 
-The important vacuum permeability $\mu_0$ is provided at the package top-level <span style="color: orange">**mu_0**</span>. It's value is not $4 \pi 10^{-7}$ since [the redefinition of the SI base units](https://en.wikipedia.org/wiki/2019_redefinition_of_the_SI_base_units), but a value close to it.
+The important vacuum permeability $\mu_0$ is provided at the package top-level `magpylib.mu_0`. It's value is not $4 \pi 10^{-7}$ since [the redefinition of the SI base units](https://en.wikipedia.org/wiki/2019_redefinition_of_the_SI_base_units), but a value close to it.
 
 For historical reasons Magpylib used non-SI units until Version 4. Starting with version 5 all inputs and outputs are SI-based.
 

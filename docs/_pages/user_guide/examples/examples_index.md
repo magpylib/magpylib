@@ -1,7 +1,7 @@
 (examples)=
 # Examples
 
-## Tutorials
+## Fundamentals
 
 ::::{grid} 2 3 4 4
 :gutter: 4
@@ -155,7 +155,7 @@
 ::::
 
 
-## Miscellaneous
+## Advanced Models
 
 ::::{grid} 2 3 4 4
 :gutter: 4
@@ -249,17 +249,25 @@
 
 ::::
 
-## Magpylib-Force
+## Force and Torque
 
 ::::{grid} 2 3 4 4
 :gutter: 4
 
-:::{grid-item-card} {ref}`examples-force-force`
+:::{grid-item-card} {ref}`examples-force-intro`
 :text-align: center
-:link: examples-force-force
+:link: examples-force-intro
 :link-type: ref
 :link-alt: link to example
 :img-bottom: ../../../_static/images/examples_icon_force_force.png
+:::
+
+:::{grid-item-card} {ref}`examples-force-physics`
+:text-align: center
+:link: examples-force-physics
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_force_physics.png
 :::
 
 :::{grid-item-card} {ref}`examples-force-holding-force`
@@ -312,7 +320,8 @@ examples_app_halbach.md
 examples_app_coils.md
 examples_app_scales.md
 
-examples_force_force.md
+examples_force_intro.md
+examples_force_physics.md
 examples_force_holding_force.md
 examples_force_floating.md
 ```
