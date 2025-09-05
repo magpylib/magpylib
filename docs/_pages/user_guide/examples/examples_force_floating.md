@@ -146,7 +146,7 @@ In the following example we demonstrate a fully dynamic simulation with two magn
 Two freely moving magnets rotate around each other.
 ```
 
-Contrary to the simple case above, we apply the Euler scheme also to the rotation degrees of freedom, as the magnets will change their orientation while they circle around each other. Magnet positions and orientations are computed and vizualized.
+Contrary to the simple case above, we apply the Euler scheme also to the rotation degrees of freedom, as the magnets will change their orientation while they circle around each other. Magnet positions and orientations are computed and visualized.
 
 ```{code-cell} ipython3
 :tags: [hide-input]

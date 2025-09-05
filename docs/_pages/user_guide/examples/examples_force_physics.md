@@ -333,7 +333,7 @@ print(f'Analytical result: F/L = {mu_0/2/pi*i1*i2/d:.6e} N/m')
 
 Closed current loops and permanent magnets in homogeneous (uniform) magnetic fields $\vec{B}$ experience zero net force, but non-zero torque.
 
-- **Current loops**: Each wire segment $d\vec{l}$ carrying a current $i_0$ experiences a Lorentz force $\vec{F} = i_0 \, d\vec{l} \times \vec{B}$. For a closed loop: $\vec{F}_{\text{total}} = i_0 \oint d\vec{l} \times \vec{B} = - i_0 \vec{B} \times \oint d\vec{l} = 0$ (since $\oint d\vec{l} = 0$ for any closed path).
+- **Current loops**: Each wire segment $d\vec{l}$ carrying a current $i_0$ experiences a Lorentz force $\vec{F} = i_0 \, d\vec{l} \times \vec{B}$. For a closed loop: $\vec{F}_{\text{total}} = i_0 \oint d\vec{l} \times \vec{B} = - i_0 \vec{B} \times \oint d\vec{l} = 0$ (since $\oint d\vec{l} = 0$ for any closed path). <!-- codespell:ignore -->
 
 - **Magnets**: Each magnetic dipole element $\vec{m}$ of a permanent magnet experiences a force $d\vec{F} = \nabla(\vec{m} \cdot \vec{B}) = [(\vec{m} \cdot \nabla) \vec{B} + \vec{m} \times (\nabla \times \vec{B})] \, dV$. In a homogeneous field, $\nabla \vec{B} = 0$ and $\nabla \times \vec{B} = 0$, so the net force vanishes.
 
@@ -352,7 +352,7 @@ import numpy as np
 
 print("FORCE AND TORQUE IN HOMOGENEOUS FIELD")
 
-# Set Numpy print format
+# Set numpy print format
 np.set_printoptions(formatter={'float': '{:.2e}'.format})
 
 # Custom Source with homogeneous field
@@ -428,7 +428,7 @@ import numpy as np
 
 print('MODEL OF COMPASS NEEDLE IN EARTHS MAGNETIC FIELD')
 
-# Set Numpy print format
+# Set numpy print format
 np.set_printoptions(formatter={'float': '{:.1e}'.format})
 
 # Earth magnetic field model

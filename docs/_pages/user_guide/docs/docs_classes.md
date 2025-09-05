@@ -9,7 +9,7 @@ The following basic properties are shared by all Magpylib classes:
 
 **Position and orientation**
 
-* **`position`**: property that describes the object placement in the global coordinate system. Can also descibe a path, i.e. a vector of position vectors.
+* **`position`**: property that describes the object placement in the global coordinate system. Can also describe a path, i.e. a vector of position vectors.
 
 * **`orientation`**: property that describes the object orientation in the global coordinate system using the `scipy.spatial.transform.Rpotation` class. Can also describe a path, i.e. a vector of orientations.
 

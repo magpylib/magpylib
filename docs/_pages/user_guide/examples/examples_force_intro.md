@@ -35,7 +35,7 @@ The following example computes the force and torque acting on a current loop pos
 import numpy as np
 import magpylib as magpy
 
-# Set Numpy print format
+# Set numpy print format
 np.set_printoptions(formatter={"float": "{:.2e}".format})
 
 # Source
@@ -100,7 +100,7 @@ The following example demonstrates how pivot point selection affects torque calc
 import numpy as np
 import magpylib as magpy
 
-# Set Numpy print format
+# Set numpy print format
 np.set_printoptions(formatter={"float": "{:.2e}".format})
 
 # Rotor magnet
@@ -142,7 +142,7 @@ for pivot, label in zip(pivot_points, pivot_labels):
 **Key observations:**
 - The magnetic force is independent of the pivot point selection. It depends only on the relative position and orientation between source and target.
 - Lever arm effect: Moving the pivot further away from the force application points (each cell center) increases the force moment proportionally ($T = r \times F$).
-- With `pivot=None` we can compute the intrinsic torque excluding the force moment. This result is unphysical, but useful for comparison with other softwares.
+- With `pivot=None` we can compute the intrinsic torque excluding the force moment. This result is unphysical, but useful for comparison with other software.
 
 --------------------------------
 
@@ -253,7 +253,7 @@ A good value can be 0.1 % of the smallest length in your system, but it's best t
 import numpy as np
 import magpylib as magpy
 
-# Set Numpy print format
+# Set numpy print format
 np.set_printoptions(formatter={"float": "{:.5e}".format})
 
 # Example: magnet force computation with different eps values
