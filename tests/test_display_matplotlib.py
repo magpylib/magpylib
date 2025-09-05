@@ -134,6 +134,13 @@ def test_Circle_display():
     src.rotate_from_angax([5] * 35, "x", anchor=(1, 2, 3))
     src.show(canvas=ax, style_path_frames=3, return_fig=True)
 
+    # Test Ellipsoid support
+    src2 = magpy.current.Circle(current=1, diameter=(1, 2))
+    src2.show(canvas=ax, return_fig=True)
+
+    src2.rotate_from_angax([5] * 35, "x", anchor=(1, 2, 3))
+    src2.show(canvas=ax, style_path_frames=3, return_fig=True)
+
 
 def test_Triangle_display():
     """testing display for Triangle source built from vertices"""

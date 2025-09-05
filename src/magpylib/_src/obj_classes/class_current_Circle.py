@@ -6,7 +6,7 @@ from typing import ClassVar
 from magpylib._src.display.traces_core import make_Circle
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_circle import BHJM_circle
-from magpylib._src.input_checks import check_format_input_scalar
+from magpylib._src.input_checks import check_format_scalar_or_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.utility import unit_prefix
 
@@ -33,7 +33,7 @@ class Circle(BaseCurrent):
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
 
-    diameter: float, default=`None`
+    diameter: array_like, shape (2,), or float, default=`None`
         Diameter of the loop in units of m.
 
     current: float, default=`None`
@@ -86,7 +86,11 @@ class Circle(BaseCurrent):
         **kwargs,
     ):
         # instance attributes
-        self.diameter = diameter
+        self.diameter = check_format_scalar_or_vector(
+            diameter, allow_None=True, length=2
+        )
+        if str(self.diameter) != "None":
+            self.diameter = abs(self.diameter)
 
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
@@ -100,13 +104,15 @@ class Circle(BaseCurrent):
     @diameter.setter
     def diameter(self, dia):
         """Set Circle loop diameter, float, meter."""
-        self._diameter = check_format_input_scalar(
+        self._diameter = check_format_scalar_or_vector(
             dia,
             sig_name="diameter",
-            sig_type="`None` or a positive number (int, float)",
+            sig_type="`None`, a scalar (int, float), or a array_like (list, tuple, ndarray) of shape (1,) and length 2",
+            length=2,
             allow_None=True,
-            forbid_negative=True,
         )
+        if str(self._diameter) != "None":
+            self._diameter = abs(self._diameter)
 
     @property
     def _default_style_description(self):
