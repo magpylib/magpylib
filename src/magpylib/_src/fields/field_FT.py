@@ -161,7 +161,15 @@ def check_eps(eps):
         raise ValueError(msg)
 
 
-def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport=False, returnmesh=False):
+def getFT(
+    sources,
+    targets,
+    pivot="centroid",
+    eps=1e-5,
+    squeeze=True,
+    meshreport=False,
+    returnmesh=False,
+):
     """
     Compute magnetic force and torque acting on the targets that are exposed
     to the magnetic field of the sources. The computation is based on a simple meshing
@@ -200,7 +208,7 @@ def getFT(sources, targets, pivot="centroid", eps=1e-5, squeeze=True, meshreport
 
     meshreport: bool, default=False
         If True, a report of the mesh used for each target will be printed.
-    
+
     returnmesh: bool, default=False
         If True, the meshes will be returned as a list of dictionaries instead of force and torque.
 

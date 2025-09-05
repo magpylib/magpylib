@@ -36,7 +36,7 @@ import numpy as np
 import magpylib as magpy
 
 # Set Numpy print format
-np.set_printoptions(formatter={'float': '{:.2e}'.format})
+np.set_printoptions(formatter={"float": "{:.2e}".format})
 
 # Source
 cube = magpy.magnet.Cuboid(
@@ -46,19 +46,19 @@ cube = magpy.magnet.Cuboid(
 
 # Target
 loop = magpy.current.Circle(
-    diameter=0.02,                 # 2cm diameter
-    current=1e3,                   # 1000 A
-    position=(0, 0, 0.001),        # 1mm above magnet center
-    meshing=40,                    # discretization level
+    diameter=0.02,  # 2cm diameter
+    current=1e3,  # 1000 A
+    position=(0, 0, 0.001),  # 1mm above magnet center
+    meshing=40,  # discretization level
 )
 
 # Compute force and torque
 F, T = magpy.getFT(cube, loop)
 
-print(f'Force:  {F} N')
+print(f"Force:  {F} N")
 # Force:  [3.77e-01 3.77e-01 -7.53e-01] N
 
-print(f'Torque: {T} Nm')
+print(f"Torque: {T} Nm")
 # Torque: [-3.18e-02  3.18e-02  7.45e-20] Nm
 ```
 
@@ -101,13 +101,11 @@ import numpy as np
 import magpylib as magpy
 
 # Set Numpy print format
-np.set_printoptions(formatter={'float': '{:.2e}'.format})
+np.set_printoptions(formatter={"float": "{:.2e}".format})
 
 # Rotor magnet
 cube = magpy.magnet.Cuboid(
-    dimension=(0.2, 0.2, 0.2), 
-    polarization=(0, 0, 1), 
-    meshing=1000
+    dimension=(0.2, 0.2, 0.2), polarization=(0, 0, 1), meshing=1000
 )
 
 # Stator coils
@@ -121,12 +119,8 @@ pivot_labels = ["Intrinsic only", "Centroid", "Axle at z=-0.5", "Axle at z=-1.0"
 
 for pivot, label in zip(pivot_points, pivot_labels):
     F, T = magpy.getFT(stator, cube, pivot=pivot)
-    
-    print(
-        f'{label}:'
-        f'  Force:  {np.round(F, 1)} N'
-        f'  Torque: {np.round(T, 1)} Nm'
-    )
+
+    print(f"{label}:" f"  Force:  {np.round(F, 1)} N" f"  Torque: {np.round(T, 1)} Nm")
 
 # Intrinsic only:
 #   Force:  [80.6 -0.   0. ] N
@@ -208,8 +202,8 @@ dipole = magpy.misc.Dipole(moment=(0,0,1e6))
 # Targets with increasing mesh density
 i0 = 1
 t1 = magpy.current.Circle(diameter=1, current=i0, meshing=8)
-t2 = magpy.current.Circle(diameter=2, current=i0, meshing=24)  
-t3 = magpy.current.Circle(diameter=3, current=i0, meshing=64)  
+t2 = magpy.current.Circle(diameter=2, current=i0, meshing=24)
+t3 = magpy.current.Circle(diameter=3, current=i0, meshing=64)
 
 # Return mesh data instead of forces
 meshes = magpy.getFT(dipole, [t1, t2, t3], returnmesh=True)
@@ -260,11 +254,11 @@ import numpy as np
 import magpylib as magpy
 
 # Set Numpy print format
-np.set_printoptions(formatter={'float': '{:.5e}'.format})
+np.set_printoptions(formatter={"float": "{:.5e}".format})
 
 # Example: magnet force computation with different eps values
 cube1 = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(1, 0, 0))
-cube2 = cube1.copy(position=(.6, .7, .6), meshing=(4, 4, 4))
+cube2 = cube1.copy(position=(0.6, 0.7, 0.6), meshing=(4, 4, 4))
 
 # Test different eps values
 eps_values = [1e-2, 1e-3, 1e-4, 1e-5, 1e-20]
@@ -298,24 +292,24 @@ The following example shows a computation that converges quickly with increasing
 import numpy as np
 import magpylib as magpy
 
-dipole = magpy.misc.Dipole(moment=(0,0,1e6), position=(1,1,1))
+dipole = magpy.misc.Dipole(moment=(0, 0, 1e6), position=(1, 1, 1))
 loop = magpy.current.Circle(diameter=1, current=1)
 
 # Forward (exact)
-F0, T0 = magpy.getFT(loop, dipole, pivot=(0,0,0))
+F0, T0 = magpy.getFT(loop, dipole, pivot=(0, 0, 0))
 
 # Backward (numerical), has opposite sign
 for meshing in [8, 40, 200, 1000]:
-    
+
     # Set meshing parameter
     loop.meshing = meshing
 
     # Compute backward force and torque
-    F1, T1 = magpy.getFT(dipole, loop, pivot=(0,0,0))
+    F1, T1 = magpy.getFT(dipole, loop, pivot=(0, 0, 0))
 
     # Compute vectorwise relative error
-    errF = np.linalg.norm(F1+F0) / np.linalg.norm(F0)
-    errT = np.linalg.norm(T1+T0) / np.linalg.norm(T0)
+    errF = np.linalg.norm(F1 + F0) / np.linalg.norm(F0)
+    errT = np.linalg.norm(T1 + T0) / np.linalg.norm(T0)
 
     print(f"Meshing: {meshing:>4}, Force Error: {errF:.2e}, Torque Error: {errT:.2e}")
 
@@ -355,7 +349,7 @@ Memory usage scales with the total number of mesh points. The bottleneck is crea
 # Efficient: Use Dipole as target (1 mesh point)
 F, T = magpy.getFT(cube, dipole)
 
-# Less efficient: Use complex object as target (many mesh points)  
+# Less efficient: Use complex object as target (many mesh points)
 F, T = magpy.getFT(dipole, cube)  # Requires meshing the cube
 ```
 

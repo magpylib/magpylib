@@ -109,16 +109,13 @@ Detailed information on field computation is provided [here](docs-fieldcomp).
 
 ### Force and Torque (F, T)
 
-Force and torque between Magpylib objects is easily computed using the top-level function `getFT()`. 
+Force and torque between Magpylib objects is easily computed using the top-level function `getFT()`.
 
 ```python
 import numpy as np
 import magpylib as magpy
 
-cube = magpy.magnet.Cuboid(
-    dimension=(1, 1, 1),
-    polarization=(.1, .2, .3)
-)
+cube = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0.1, 0.2, 0.3))
 loop = magpy.current.Circle(
     diameter=2,
     current=1e3,
@@ -127,10 +124,10 @@ loop = magpy.current.Circle(
 )
 F, T = magpy.getFT(cube, loop)
 
-print(f'force: {np.round(F, decimals=2)} N')
+print(f"force: {np.round(F, decimals=2)} N")
 # force: [ 13.67  27.33 -82.  ] N
 
-print(f'torque: {np.round(T, decimals=2)} Nm')
+print(f"torque: {np.round(T, decimals=2)} Nm")
 # torque: [-8.54  4.27  0.  ] Nm
 ```
 

@@ -3,17 +3,17 @@
 
 ## Computation Idea
 
-Force and torque computation in Magpylib stands in contrast to the analytical models used for magnetic field computation. They are based on a numerical approach that solves the force integrals over the target objects by discretization, see also [Physics and Computation](guide-physics-force-computation). 
+Force and torque computation in Magpylib stands in contrast to the analytical models used for magnetic field computation. They are based on a numerical approach that solves the force integrals over the target objects by discretization, see also [Physics and Computation](guide-physics-force-computation).
 
 ## How it works
 
 Force and torque are computed via the top level function **`getFT()`**
 
 ```python
-F,T = magpylib.getFT(
+F, T = magpylib.getFT(
     sources,
     targets,
-    pivot='centroid',
+    pivot="centroid",
     squeeze=True,
     meshreport=False,
     eps=1e-5,
@@ -26,7 +26,7 @@ where F is the force in Newton and T is the torque in Newton*meter acting on the
 - **`targets`**: single or 1D list of targets (all Magpylib currents, magnets, and `Dipole`). All targets with exception of `Dipole` and `Sphere` objects must have the `meshing` parameter set (see below).
 - **`pivot`**: The torque is always defined relative to a pivot point $\vec{r}_\text{piv}$, and the force adds to it via $\vec{T}_F = \vec{F} \times (\vec{r}_\text{piv} - \vec{r}_\text{pos})$. For a freely floating magnet this would be the barycenter (= centroid when the density is homogeneous). If `pivot='centroid'` the centroid is selected as the pivot point for all targets. If `pivot=None` no pivot is used. This will give nonphysical results. If `pivot` is array_like of shape (3,) the same pivot is used for all targets. Alternatively one can provide an individual pivot point for each target.
 - **`eps`**: finite difference step size for computation of the magnetic field gradient (only needed for magnet targets). A good number is 1e-6 * characteristic source size.
-- **`meshreport`**: Set to `True` for printing the number of mesh points of each target giving you an idea of the involved computation effort. 
+- **`meshreport`**: Set to `True` for printing the number of mesh points of each target giving you an idea of the involved computation effort.
 - **`returnmesh`**: Set to `True` for returning the mesh instead of F and T. In this case, a list of mesh dictionaries will be returned which have keys `"pts"`, `"moments"` (only magnets), and `"cvecs"` (only currents).
 
 Each target must have the **`meshing`** parameter set to define the mesh discretization finesse. This is an integer number which defines the target number of mesh points. The meshing algorithms will not always create exactly the given target number, but aim to create uniform meshes with aspect ratio = 1 cells.
@@ -41,10 +41,7 @@ The following minimal example computes the force acting on a current loop, gener
 import numpy as np
 import magpylib as magpy
 
-cube = magpy.magnet.Cuboid(
-    dimension=(1, 1, 1),
-    polarization=(.1, .2, .3)
-)
+cube = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0.1, 0.2, 0.3))
 loop = magpy.current.Circle(
     diameter=2,
     current=1e3,
@@ -53,13 +50,9 @@ loop = magpy.current.Circle(
 )
 F, T = magpy.getFT(cube, loop)
 
-print(f'force: {np.round(F, decimals=2)} N')
+print(f"force: {np.round(F, decimals=2)} N")
 # force: [ 13.67  27.33 -82.  ] N
 
-print(f'torque: {np.round(T, decimals=2)} Nm')
+print(f"torque: {np.round(T, decimals=2)} Nm")
 # torque: [-8.54  4.27  0.  ] Nm
 ```
-
-
-
-

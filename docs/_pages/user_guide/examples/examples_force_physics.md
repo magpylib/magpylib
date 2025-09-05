@@ -76,7 +76,7 @@ print(f'  on sphere: {T_sphere} Nm')
 print(f'  summation: {np.linalg.norm(T_loop + T_sphere):.3e} Nm (should be zero)')
 ```
 
-**Key observations:** 
+**Key observations:**
 The results confirm Newton's third law—forces and torques are equal in magnitude but opposite in direction. The small discrepancy arises because the forward computation is exact (spheres require no meshing), while the backward computation uses numerical discretization. This error decreases with higher `meshing` values.
 
 ```{hint}
@@ -123,16 +123,16 @@ def analytical(ra, rb, ma, mb):
     Parameters:
     ra, rb: positions of dipoles [m]
     ma, mb: magnetic moments [Am²]
-    
+
     Returns:
     force: force on dipole b due to dipole a [N]
     """
     r = rb - ra
     r_abs = np.linalg.norm(r)
     r_unit = r / r_abs
-  
+
     force = (
-      3 * magpy.mu_0 / (4 * np.pi * r_abs**4) * 
+      3 * magpy.mu_0 / (4 * np.pi * r_abs**4) *
         (
             np.cross(np.cross(r_unit, ma), mb)
             + np.cross(np.cross(r_unit, mb), ma)
@@ -160,7 +160,7 @@ print(f'   Analytical: {F_ana}')
 print(f'   Magpylib:   {F_magpy}')
 ```
 
-**Key observations:** 
+**Key observations:**
 Magpylib matches the analytical solution to machine precision, demonstrating perfect agreement. Since `Dipole` (and `Sphere`) objects use analytical field calculations rather than discretization, there are no meshing errors.
 
 ```{hint}
@@ -257,7 +257,7 @@ print("Loop:\t Distance \tForce Error\tTorque Error")
 
 for distance in distances:
     source.position = (distance, 0, 0)
-  
+
     F0, T0 = magpy.getFT(loop, source)   # Full model
     F1, T1 = magpy.getFT(dipole, source) # Dipole approximation
 
