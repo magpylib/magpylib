@@ -15,7 +15,8 @@ from magpylib._src.utility import unit_prefix
 class Dipole(BaseSource):
     """Magnetic dipole moment.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation. No `meshing` parameter is required.
 
     When `position=(0,0,0)` and `orientation=None` the dipole is located in the origin of
     global coordinate system.
@@ -71,6 +72,7 @@ class Dipole(BaseSource):
     """
 
     _field_func = staticmethod(BHJM_dipole)
+    _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"moment": 2}
     _style_class = DipoleStyle
     get_trace = make_Dipole
@@ -122,6 +124,14 @@ class Dipole(BaseSource):
         """Volume of object in units of m³."""
         return 0.0
 
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return self.position
+        if squeeze:
+            return self.position
+        return self._position
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        points = np.array([(0, 0, 0)])
+        moments = np.array([self.moment])
+        return {"pts": points, "moments": moments}

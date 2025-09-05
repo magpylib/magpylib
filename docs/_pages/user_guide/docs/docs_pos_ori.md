@@ -29,12 +29,12 @@ Position and orientation of all Magpylib objects are defined by the two attribut
 :::{grid-item-card}
 :shadow: none
 :columns: 12 5 5 5
-<span style="color: orange">**position**</span> - a point $(x,y,z)$ in the global coordinates, or a set of such points $(\vec{P}_1, \vec{P}_2, ...)$. By default objects are created with `position=(0,0,0)`.
+**`position`** - a point $(x,y,z)$ in the global coordinates, or a set of such points $(\vec{P}_1, \vec{P}_2, ...)$. By default objects are created with `position=(0,0,0)`.
 :::
 :::{grid-item-card}
 :shadow: none
 :columns: 12 7 7 7
-<span style="color: orange">**orientation**</span> - a [Scipy Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html) which describes the object rotation relative to its default orientation (defined in {ref}`docs-classes`). By default, objects are created with unit rotation `orientation=None`.
+**`orientation`** - a [Scipy Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html) which describes the object rotation relative to its default orientation (defined in {ref}`docs-classes`). By default, objects are created with unit rotation `orientation=None`.
 :::
 ::::
 
@@ -54,12 +54,12 @@ Magpylib offers two powerful methods for object manipulation:
 :::{grid-item-card}
 :columns: 12 5 5 5
 :shadow: none
-<span style="color: orange">**move(**</span>`displacement`, `start="auto"`<span style="color: orange">**)**</span> -  move object by `displacement` input. `displacement` is a position vector (scalar input) or a set of position vectors (vector input).
+`move(displacement, start="auto")` -  move object by `displacement` input. `displacement` is a position vector (scalar input) or a set of position vectors (vector input).
 :::
 :::{grid-item-card}
 :columns: 12 7 7 7
 :shadow: none
-<span style="color: orange">**rotate(**</span>`rotation`, `anchor=None`, `start="auto"`<span style="color: orange">**)**</span> - rotates the object by the `rotation` input about an anchor point defined by the `anchor` input. `rotation` is a [Scipy Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html), and `anchor` is a position vector. Both can be scalar or vector inputs. With `anchor=None` the object is rotated about its `position`.
+`rotate(rotation, anchor=None, start="auto")` - rotates the object by the `rotation` input about an anchor point defined by the `anchor` input. `rotation` is a [Scipy Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html), and `anchor` is a position vector. Both can be scalar or vector inputs. With `anchor=None` the object is rotated about its `position`.
 :::
 ::::
 
@@ -102,7 +102,7 @@ Several extensions of the `rotate` method give a lot of flexibility with object 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
-<span style="color: orange">**rotate_from_angax(**</span>`angle`, `axis`, `anchor=None`, `start="auto"`, `degrees=True` <span style="color: orange">**)**</span>
+`rotate_from_angax(angle, axis, anchor=None, start="auto", degrees=True)`
 * `angle`: scalar or array with shape (n). Angle(s) of rotation.
 * `axis`: array of shape (3,) or string. The direction of the rotation axis. String input can be 'x', 'y' or 'z' to denote respective directions.
 * `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
@@ -111,7 +111,7 @@ Several extensions of the `rotate` method give a lot of flexibility with object 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
-<span style="color: orange">**rotate_from_rotvec(**</span>`rotvec`, `anchor=None`, `start="auto"`, `degrees=True` <span style="color: orange">**)**</span>
+`rotate_from_rotvec(rotvec, anchor=None, start="auto", degrees=True)`
 * `rotvec` : array with shape (n,3) or (3,). The rotation vector direction is the rotation axis and the vector length is the rotation angle in units of deg.
 * `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
 :::
@@ -119,7 +119,7 @@ Several extensions of the `rotate` method give a lot of flexibility with object 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
-<span style="color: orange">**rotate_from_euler(**</span> `angle`, `seq`, `anchor=None`, `start="auto"`, `degrees=True` <span style="color: orange">**)**</span>
+`rotate_from_euler(angle, seq, anchor=None, start="auto", degrees=True)`
 * `angle`: scalar or array with shape (n). Angle(s) of rotation in units of deg (by default).
 * `seq` : string. Specifies sequence of axes for rotations. Up to 3 characters belonging to the set {'X', 'Y', 'Z'} for intrinsic rotations, or {'x', 'y', 'z'} for extrinsic rotations. Extrinsic and intrinsic rotations cannot be mixed in one function call.
 * `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
@@ -128,21 +128,21 @@ Several extensions of the `rotate` method give a lot of flexibility with object 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
-<span style="color: orange">**rotate_from_quat(**</span>`quat`, `anchor=None`, `start="auto"` <span style="color: orange">**)**</span>
+`rotate_from_quat(quat, anchor=None, start="auto")`
 * `quat` : array with shape (n,4) or (4,). Rotation input in quaternion form.
 :::
 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
-<span style="color: orange">**rotate_from_mrp(**</span>`matrix`, `anchor=None`, `start="auto"` <span style="color: orange">**)**</span>
+`rotate_from_mrp(matrix, anchor=None, start="auto")`
 * `matrix` : array with shape (n,3,3) or (3,3). Rotation matrix. See scipy.spatial.transform.Rotation for details.
 :::
 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
-<span style="color: orange">**rotate_from_mrp(**</span>`mrp`, `anchor=None`, `start="auto"` <span style="color: orange">**)**</span>
+`rotate_from_mrp(mrp, anchor=None, start="auto")`
 * `mrp` : array with shape (n,3) or (3,). Modified Rodrigues parameter input. See scipy Rotation package for details.
 :::
 

@@ -641,6 +641,7 @@ def test_describe_with_label():
         "  • magnetization: None A/m",
         "  • polarization: None T",
         "  • centroid: [0. 0. 0.]",
+        "  • meshing: None",
         "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
@@ -664,6 +665,7 @@ def test_describe_with_parent():
         "  • magnetization: None A/m",
         "  • polarization: None T",
         "  • centroid: [0. 0. 0.]",
+        "  • meshing: None",
         "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
@@ -757,6 +759,7 @@ def test_describe_with_triangularmesh():
         "  • centroid: [0.         0.         0.46065534]",
         "  • faces: shape(6, 3)",
         "  • mesh: shape(6, 3, 3)",
+        "  • meshing: None",
         "  • status_disconnected: False",
         "  • status_disconnected_data: 1 part",
         "  • status_open: False",

@@ -12,13 +12,16 @@ from magpylib._src.fields.field_BH_cylinder_segment import (
 )
 from magpylib._src.input_checks import check_format_input_cylinder_segment
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.target_meshing import target_mesh_cylinder
 from magpylib._src.utility import unit_prefix
 
 
-class CylinderSegment(BaseMagnet):
+class CylinderSegment(BaseMagnet, BaseTarget):
     """Cylinder segment (ring-section) magnet with homogeneous magnetization.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     When `position=(0,0,0)` and `orientation=None` the geometric center of the
     cylinder lies in the origin of the global coordinate system and
@@ -51,6 +54,10 @@ class CylinderSegment(BaseMagnet):
     magnetization: array_like, shape (3,), default=`None`
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
+
+    meshing: int, default=`None`
+        Parameter that defines the mesh finesse for force computation.
+        Must be a positive integer specifying the target mesh size.
 
     volume: float
         Read-only. Object physical volume in units of m^3.
@@ -92,6 +99,7 @@ class CylinderSegment(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_cylinder_segment_internal)
+    _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 2,
         "dimension": 2,
@@ -105,6 +113,7 @@ class CylinderSegment(BaseMagnet):
         dimension=None,
         polarization=None,
         magnetization=None,
+        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -115,6 +124,9 @@ class CylinderSegment(BaseMagnet):
         super().__init__(
             position, orientation, magnetization, polarization, style, **kwargs
         )
+
+        # Initialize BaseTarget
+        BaseTarget.__init__(self, meshing)
 
     # property getters and setters
     @property
@@ -159,9 +171,19 @@ class CylinderSegment(BaseMagnet):
         r1, r2, h, phi1, phi2 = self.dimension
         return (r2**2 - r1**2) * np.pi * h * (phi2 - phi1) / 360
 
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return self.barycenter
+        if squeeze:
+            return self.barycenter
+        return self._barycenter
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        # Tests in getFT ensure that meshing, dimension and excitation are set
+        r1, r2, h, phi1, phi2 = self.dimension
+        return target_mesh_cylinder(
+            r1, r2, h, phi1, phi2, self.meshing, self.magnetization
+        )
 
     # Static methods
     @staticmethod

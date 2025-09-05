@@ -84,6 +84,8 @@ class CustomSource(BaseSource):
         """Volume of object in units of m³."""
         return 0.0
 
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return self.position
+        if squeeze:
+            return self.position
+        return self._position

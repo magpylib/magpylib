@@ -14,7 +14,7 @@ orphan: true
 
 (examples-tutorial-field-computation)=
 
-# Computing the Field
+# Computing the Field (B, H, J, M)
 
 ## Most basic Example
 

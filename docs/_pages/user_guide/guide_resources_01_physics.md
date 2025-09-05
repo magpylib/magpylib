@@ -90,6 +90,50 @@ The analytical solutions provide extreme performance. Single field evaluations t
 
 Many expressions provided in the literature have very questionable numerical stability. Many of these problems are fixed in Magpylib, but one should be aware that accuracy can be a problem very close to objects, close the z-axis in cylindrical symmetries, at edge extensions, and at large distances. We are working on fixing these problems. Some details can be found in [^12].
 
+(guide-physics-force-computation)=
+## Force computation
+
+### Force equations
+
+The force $\vec{F}_\text{tot}$ and torque $\vec{T}_\text{tot}$ acting on macroscopic magnetic and current-carrying objects in external magnetic fields $\vec{B}(\vec{r})$ are governed by fundamental electromagnetic principles.
+
+For **magnets** defined by a magnetization distribution $\vec{M}(\vec{r})$ we have:
+
+$$\vec{F}_\text{tot} = \int \nabla (\vec{M}(\vec{r})\cdot\vec{B}(\vec{r})) \ d^3 r.$$
+
+$$\vec{T}_\text{tot} = \int \vec{M}(\vec{r}) \times \vec{B}(\vec{r}) \ d^3r + \int (\vec{r} - \vec{r}_\text{piv}) \times \vec{F}(\vec{r}) \ d^3r.$$
+
+For **current-carrying objects** defined by a current distribution $\vec{j}(\vec{r})$ we have:
+
+$$\vec{F}_\text{tot} = \int \vec{j}(\vec{r})\times \vec{B}(\vec{r}) \ d^3r.$$
+$$\vec{T}_\text{tot} = \int (\vec{r} - \vec{r}_\text{piv}) \times \vec{F}(\vec{r}) \ d^3r$$
+
+Here $\vec{r}_\text{piv}$ denotes a pivot point about which the object rotates. This is the center of mass when the object is floating freely.
+
+### Computational approach
+
+In contrast to magnetic field computation the idea behind Magpylib force computation is working out the above integrals by numerical discretization. For this purpose the target bodies are split up into small cells and force and torque calculations are performed simultaneously for all cells using vectorized operations. For magnetized objects, the required magnetic field gradient $\nabla\vec{B}$ is computed using a finite difference scheme. This approach prioritizes computational speed through vectorization at the cost of higher memory usage.
+
+**Computation scheme:**
+
+1. **Mesh preparation:** Generate mesh points (OBS) and compute cell properties
+   - Current vectors (CVEC) for current-carrying objects
+   - Magnetic moments (MOM) for magnet and `Dipole` objects
+
+2. **B-field evaluation:** The B-field (B) is evaluated at all mesh points in a single vectorized operation, including the 6 additional points needed for finite difference gradient calculation (DB) for magnets.
+
+3. **Force computation:**
+   - Magnets: F = DB.MOM (dipole force)
+   - Currents: F = CVEC x B (Lorentz force)
+
+4. **Torque computation:**
+   - Magnets: T = MOM x B (intrinsic magnetic torque)
+   - Both: T += (OBS-PIV) x F (force moment)
+
+5. **Integration/Reduction:** We now have computed all forces and torques on each mesh cell. The final step is summation of contributions from all mesh cells of each target, and all targets of each collection.
+
+The computation is most accurate when the mesh is uniform with cell aspect ratios of 1 (the ideal cell is a sphere), which is what the meshing algorithms are trying to achieve.
+
 **References**
 
 [^1]: Z. J. Yang et al., "Potential and force between a magnet and a bulk Y1Ba2Cu3O7-d superconductor studied by a mechanical pendulum", Superconductor Science and Technology 3(12):591, 1990
