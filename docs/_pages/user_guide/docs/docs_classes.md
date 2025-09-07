@@ -3,7 +3,8 @@
 
 In Magpylib's [object oriented interface](docs-fieldcomp-oo) magnetic field **sources** (generate the field) and **observers** (read the field) are created as Python objects with various defining attributes and methods.
 
-## Base properties
+------------------------
+## Base Properties
 
 The following basic properties are shared by all Magpylib classes:
 
@@ -53,9 +54,7 @@ A detailed overview of the force computation is found in {ref}`docs-forcecomp`. 
 
 
 ---------------------------------------------
-
-
-## Local and global coordinates
+## Local and Global Coordinates
 
 ::::{grid} 2
 :::{grid-item}
@@ -71,10 +70,8 @@ Local and global coordinate systems are identical when `position=(0,0,0)` and `o
 
 
 ---------------------------------------------
-
-
 (docu-magnet-classes)=
-## Magnet classes
+## Magnet Classes
 
 All magnets are sources. They have the **`polarization`** attribute which is of the format $\vec{J}=(J_x, J_y, J_z)$ and denotes a homogeneous magnetic polarization vector in the local object coordinates in units of T. Alternatively, the magnetization vector can be set via the  **`magnetization`** attribute of the format $\vec{M}=(M_x, M_y, M_z)$. These two parameters are codependent and Magpylib ensures that they stay in sync via the relation $\vec{J}=\mu_0\cdot\vec{M}$. Information on how this is related to material properties from data sheets is found in {ref}`examples-tutorial-modeling-magnets`.
 
@@ -251,8 +248,7 @@ The method **`to_TriangleCollection()`** transforms a `TriangularMesh` object in
 
 ---------------------------------------------
 (docs-classes-current)=
-
-## Current classes
+## Current Classes
 
 All currents are sources. Current objects (except `TriangleSheet`) have the **`current`** attribute which is a scalar that denotes the electrical current in units of ampere.
 
@@ -323,8 +319,7 @@ magpylib.current.Polyline(
 ::::
 
 ---------------------------------------------
-
-## Miscellaneous classes
+## Miscellaneous Classes
 
 There are classes listed hereon that function as sources, but they do not represent physical magnets or current distributions.
 
@@ -395,8 +390,6 @@ The `CustomSource` class is used to create user defined sources provided with wi
 
 
 ---------------------------------------------
-
-
 ## Sensor
 ```python
 magpylib.Sensor(position, orientation, pixel, handedness, style)
@@ -419,8 +412,6 @@ magpylib.Sensor(position, orientation, pixel, handedness, style)
 
 
 ---------------------------------------------
-
-
 (guide-docs-classes-collections)=
 ## Collection
 ```python

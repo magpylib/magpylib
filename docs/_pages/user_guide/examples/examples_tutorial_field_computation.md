@@ -16,6 +16,8 @@ orphan: true
 
 # Computing the Field (B, H, J, M)
 
+----------------------------
+
 ## Most basic Example
 
 The v2 slogan was *"The magnetic field is only three lines of code away"*, which is demonstrated by the following most fundamental and self-explanatory example,
@@ -27,6 +29,8 @@ B = loop.getB((0, 0, 0))
 
 print(B)
 ```
+
+----------------------------
 
 ## Field on a Grid
 
@@ -88,8 +92,9 @@ plt.tight_layout()
 plt.show()
 ```
 
-(examples-tutorial-field-computation-sensors)=
+----------------------------
 
+(examples-tutorial-field-computation-sensors)=
 ## Using Sensors
 
 The `Sensor` class enables relative positioning of observer grids in the global coordinate system. The observer grid is stored in the `pixel` parameter of the sensor object which is `(0,0,0)` by default (sensor position = observer position).
@@ -125,6 +130,8 @@ with magpy.show_context(sensor, coll, animation=True, backend="plotly"):
     magpy.show(output="Bx", col=2, pixel_agg=None)
 ```
 
+----------------------------
+
 ## Multiple Inputs
 
 When `getBHJM` receive multiple inputs for sources and observers they will compute all possible combinations. It is still beneficial to call the field computation only a single time, because similar sources will be grouped, and the computation will be vectorized automatically.
@@ -158,6 +165,8 @@ B[1, 0, 2, 3, 2]
 ```
 
 A path will add another index. Every higher pixel dimension will add another index as well.
+
+----------------------------
 
 ## Field as Pandas Dataframe
 
@@ -210,8 +219,9 @@ fig = px.line(
 fig.show()
 ```
 
-(examples-tutorial-field-computation-functional-interface)=
+----------------------------
 
+(examples-tutorial-field-computation-functional-interface)=
 ## Functional Interface
 
 All above computations demonstrate the convenient object-oriented interface of Magpylib. However, there are instances when it is better to work with the functional interface instead.

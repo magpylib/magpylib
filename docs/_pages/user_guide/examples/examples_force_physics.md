@@ -18,6 +18,7 @@ kernelspec:
 
 We show a few classical physics examples that demonstrate Magpylib force and torque computation.
 
+----------------------------
 (examples-force-physics-reciprocity)=
 ## Newton's Third Law - Reciprocity
 

@@ -28,6 +28,8 @@ Magpylib can display the motion of objects along paths in the form of animations
 
 Detailed information about how to tune animations can be found in the [graphics documentation](guide-graphic-animations).
 
+----------------------------
+
 ## Simple Animations
 
 Animations are created with `show` by setting `animation=True`. It is also possible to hand over the animation time with this parameter.
@@ -56,8 +58,9 @@ sensor = magpy.Sensor(
 magpy.show(sensor, magnet, animation=True, backend="plotly")
 ```
 
-(examples-vis-animated-subplots)=
+----------------------------
 
+(examples-vis-animated-subplots)=
 ## Animated Subplots
 
 [Subplots](examples-vis-subplots) are a powerful tool to see the field along a path while viewing the 3D models at the same time. This is specifically illustrative as an animation where the field at the respective path position is indicated by a marker.
@@ -85,13 +88,14 @@ with magpy.show_context([magnet, sensor], backend="plotly", animation=True) as s
     sc.show(output="model3d", col=2, row=2)
 ```
 
-(examples-vis-exporting-animations)=
+----------------------------
 
+(examples-vis-exporting-animations)=
 ## Exporting Animations
 
 Animations are wonderful but can be quite difficult to export when they are needed, for example, in a presentation. Here we show how to creat and export animations using the *.gif format.
 
-### Built-in export
+### Built-In Export
 
 The easiest way to export an animation is via the Magpylib built-in command `animation_output` in the `show` function. It works only with the Pyvista backend. The following code will create a file "test4.gif".
 
@@ -118,7 +122,7 @@ magpy.show(
 
 <img src="../../../_static/videos/example_gif1.gif" width=50% align="center">
 
-### Custom export Pyvista
+### Custom Export Pyvista
 
 For customizing videos it is best to work directly in the respective graphic backends. Here we show how to transfer the Magpylib graphic objects to a Pyvista plotter, customize the plotting scene, export screen shots, and combine them in a *.gif. The following example also shows how to achieve transparency.
 
@@ -208,7 +212,7 @@ if __name__ == "__main__":
 
 Notice that when providing a canvas, no update to its layout is performed by Magpylib, unless explicitly specified by setting `canvas_update=True` in `show()`. By default `canvas_update="auto"` only updates the canvas if is not provided by the user. Details can be found in the [graphics documentation](guide-graphics-canvas).
 
-### Custom export Plotly
+### Custom Export Plotly
 
 The following examples shows how to work in the Plotly backend.
 

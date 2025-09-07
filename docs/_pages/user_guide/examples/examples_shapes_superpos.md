@@ -36,8 +36,9 @@ When two objects with opposing magnetization vectors of similar amplitude overla
 ::::
 :::::
 
+----------------------------
 
-## Union operation
+## Union Operation
 
 Geometric union by superposition is demonstrated in the following example where a wedge-shaped magnet with a round back is constructed from three base-forms: a CylinderSegment, a Cuboid and a TriangularMesh.
 
@@ -74,7 +75,9 @@ with magpy.show_context(magnet, sensor, backend="plotly", style_legend_show=Fals
     s.show(output="B", col=2)
 ```
 
-## Cut-out operation
+----------------------------
+
+## Cut-Out Operation
 
 When two objects with opposing magnetization vectors of similar amplitude overlap, they will just cancel in the overlap region. This enables geometric cut-out operations. In the following example we construct an exact hollow cylinder solution from two concentric cylinder shapes with opposite magnetizations and compare the result to the `CylinderSegment` class solution.
 
@@ -149,7 +152,9 @@ Note that it is faster to compute the `Cylinder` field two times than computing 
 
 Unfortunately, with respect to 3D-models, cut-out operations cannot be displayed graphically at this point in time, but {ref}`examples-own-3d-models` offer custom solutions.
 
-## Nice example
+----------------------------
+
+## Combination
 
 The following example combines union and cut-out to create a complex magnet shape which is then displayed by combining a streamplot with a contourplot in matplotlib.
 

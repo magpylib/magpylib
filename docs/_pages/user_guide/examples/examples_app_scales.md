@@ -18,6 +18,7 @@ kernelspec:
 
 The following examples we demonstrate how analytical models can be used to simulate magnetic scales. Some measurements and simulations are taken from the publication (review at IEEE Sensors in progress) [Radial Eccentricity in Rotary Magnetic Encoders](#), which provides a more in-depth discussion for those interested in the underlying theory and experimental validation.
 
+--------------------------
 ## Background
 
 Magnetic scales are patterned arrays of permanent magnets—typically with alternating magnetization directions—engineered to produce predictable magnetic fields along a line or surface. They are commonly implemented as pole wheels, magnetic strips, or tracks, and are used in combination with field sensors such as Hall-effect or magnetoresistive sensors for precise position and motion detection.
@@ -32,6 +33,8 @@ Typical applications include rotary and linear encoders in robotics and automati
 Sketch of a rotary encoder with pole wheel and magnetic sensor. The sensor detects an oscillating magnetic field, which is then transformed into a linear output by a microcontroller.
 ```
 
+--------------------------
+(examples-app-scales-IGL)=
 ## Encoder Terminology - INNOMAG Guideline
 
 The [INNOMAG e.V. Guideline](https://innomag.org/) is a revision of the [DIN SPEC 91411](https://www.dinmedia.de/en/technical-rule/din-spec-91411/354972979), a norm for unifying magnetic encoder technical representation and nomenclature.
@@ -56,6 +59,7 @@ The following figure provides a schematic overview of the terminology.
 Visualization of encoder terminology.
 ```
 
+--------------------------
 ## Magnetic Scale Taxonomy
 
 This taxonomy provides an overview of the various types of commonly used magnetic scales and classifies them according to their design and application. The diagram shown below is reproduced from the German standard **DIN SPEC 91411**, and a translated version is expected to be included in the upcoming **INNOMAG Guidelines**.
@@ -68,8 +72,8 @@ This taxonomy provides an overview of the various types of commonly used magneti
 Taxonomy of magnetic scales as defined in DIN SPEC 91411.
 ```
 
+--------------------------
 (example-app-scales-ideal-typical)=
-
 ## Ideal-Typical Models
 
 **Ideal-typical models** of magnetic scales refer to simplified magnetization patterns constructed from homogeneously magnetized geometric primitives. These models serve as idealized representations of real magnetic structures and can closely approximate the magnetic fields observed in practice. This is demonstrated in the figure below, which compares an experimental measurement of an incremental ROn scale with a simulation based on an ideal-typical model built using Magpylib.
@@ -89,6 +93,7 @@ The mean deviation between simulation and experiment is below $ 0.7\% \bar{B}_A$
 
 Despite their effectiveness for capturing key qualitative and quantitative effects in encoder systems, it is important to emphasize that ideal-typical models may not faithfully represent the true underlying polarization distribution.
 
+--------------------------
 ## Linear Scale Model
 
 In the following example, we construct a typical linear magnetic scale with 10 alternating zones, using ferrite material with a remanent flux density of approximately 0.3 T. See the [magnet modeling tutorial](examples-tutorial-modeling-magnets) for how remanence relates to the `polarization` input in Magpylib.
@@ -175,6 +180,7 @@ plt.tight_layout()
 plt.show()
 ```
 
+--------------------------
 ## Polewheel Model
 
 The following example demonstrates how to construct a RAn polewheel with an incremental track consisting of 18 magnetized zones. Each zone is modeled as a magnetized cylindrical segment with alternating out-of-plane polarization. Similar wheels are commonly used for rotary encoders.
@@ -249,11 +255,13 @@ plt.tight_layout()
 plt.show()
 ```
 
+--------------------------
 ## Quadrupole Magnet: Inhomogeneous Magnetization
 
 Quadrupole magnet cylinders are commonly used in [end-of-shaft](examples-app-end-of-shaft) configurations, where their unique field patterns enable robust angle detection. Unlike the ideal-typical magnets shown in earlier examples, quadrupoles exhibit a highly inhomogeneous magnetization, meaning they cannot be accurately represented by two or four homogeneous primitives. Modeling such magnets requires a more detailed approach, which is demonstrated in our example on [inhomogeneous magnetization](examples-misc-inhom).
 
-## Magnetic Scales with Soft-Magnetic Backing
+--------------------------
+## Magnetic Scales with Soft-Magnetic Back
 
 Magnetic scales that include a soft-magnetic backing layer—commonly used to enhance field strength or improve magnetization—can be accurately modeled in Magpylib using the [method of images](examples-misc-image-method).
 

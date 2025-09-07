@@ -13,7 +13,6 @@ kernelspec:
 ---
 
 (examples-force-holding-force)=
-
 # Magnetic Holding Force
 
 This example demonstrates how to compute the magnetic holding force experienced by a permanent magnet attached to a soft-ferromagnetic plate. The holding force represents the minimum pull force required to detach the magnet from the surface—a critical parameter for engineering applications involving magnetic fasteners, sensors, and actuators.

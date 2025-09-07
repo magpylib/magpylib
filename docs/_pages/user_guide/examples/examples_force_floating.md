@@ -19,7 +19,6 @@ kernelspec:
 Magpylib's efficient field and force computations make it ideal for dynamic simulations that require solving equations of motion through time-discretization methods. This example demonstrates how to implement numerical integration schemes to simulate the motion of magnetic objects under electromagnetic forces and torques.
 
 ------------------
-
 ## Mathematical Formalism
 
 The dynamics of magnetic objects are governed by the classical equations of motion: $\vec{F} = \dot{\vec{p}}$ for translation (with force $\vec{F}$ and momentum $\vec{p}$) and $\vec{T} = \dot{\vec{L}}$ for rotation (with torque $\vec{T}$ and angular momentum $\vec{L}$).
@@ -43,7 +42,6 @@ $$\vec{\varphi} (t + \Delta t) = \vec{\varphi}(t) + \Delta t \cdot \vec{\omega} 
 The semi-implicit nature (velocity updated before position) provides better numerical stability compared to explicit methods, making it well-suited for magnetic dynamics where forces can vary rapidly with distance.
 
 ------------------
-
 ## Magnet Accelerated by Coil
 
 This implementation demonstrates the proposed Euler scheme using a simplified scenario where cubical magnets are accelerated along the z-axis by a current loop, as shown in the following sketch:
@@ -133,8 +131,7 @@ This numerical algorithm accumulates discretization errors over time. For higher
 ```
 
 ------------------
-
-## Two-body problem
+## Two-Body Problem
 
 In the following example we demonstrate a fully dynamic simulation with two magnetic bodies that rotate around each other, attracted towards each other by the magnetic force, and repelled by the centrifugal force.
 

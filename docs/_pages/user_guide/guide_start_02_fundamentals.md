@@ -3,6 +3,8 @@
 
 In this section we present the most important Magpylib features, focussing on the intuitive object-oriented interface.
 
+----------------
+
 ## Basic Features
 
 Learn the Magpylib fundamentals (create magnets, view system, compute field, compute force) in 6 minutes. This requires a basic understanding of the Python programming language, the [NumPy array class](https://numpy.org/doc/stable/) and the [Scipy Rotation class](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html).
@@ -133,8 +135,7 @@ print(f"torque: {np.round(T, decimals=2)} Nm")
 
 Note that the target object (loop) on which the magnetic field acts must have a `meshing` parameter defined which is a discretizatione finesse for a numerical scheme. Detiled information on force computation is found [here](docs-forcecomp).
 
-
-
+--------------------------
 
 ## Advanced Features
 

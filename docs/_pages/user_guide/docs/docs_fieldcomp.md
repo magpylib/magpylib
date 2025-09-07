@@ -4,8 +4,9 @@
 The following is a detailed technical documentation of Magpylib field computation.
 The tutorial {ref}`examples-tutorial-field-computation` shows good practices and illustrative examples.
 
+-------------------------------------
 (docs-fieldcomp-oo)=
-## Object-oriented interface
+## Object-oriented Interface
 
 The object-oriented interface relies on the idea that sources of the magnetic field and observers thereof are created as Python objects which can be manipulated at will, and called for field computation. This is done via four top-level functions `getB`, `getH`, `getJ` and, `getM`,
 
@@ -64,8 +65,9 @@ Magpylib collects all inputs (object parameters), and vectorizes them for the co
 Try to make all field computations with as few calls to `getBHJM` as possible. Avoid Python loops at all costs!
 ```
 
+-------------------------------------
 (docs-field-functional)=
-## Functional interface
+## Functional Interface
 
 Users can bypass the object oriented functionality of Magpylib and instead compute the field for n given parameter sets. This is done by providing the following inputs to the top level functions `getB`, `getH`, `getJ` and, `getM`.
 
@@ -101,9 +103,9 @@ print(B)
 The functional interface is potentially faster than the object oriented one if users know how to generate the input arrays efficiently with numpy (e.g. `np.arange`, `np.linspace`, `np.tile`, `np.repeat`, ...).
 ```
 
-
+-------------------------------------
 (docs-field-core)=
-## Core interface
+## Core Interface
 
 At the heart of Magpylib lies a set of core functions that are our implementations of analytical field expressions found in the literature, see {ref}`guide-ressources-physics`. Direct access to these functions is given through the `magpylib.core` subpackage which includes,
 
@@ -174,7 +176,8 @@ print(B)
 #       [0.05561469 0.         0.06690167]]
 ```
 
-## Field computation workflow
+-------------------------------------
+## Computation Workflow (B, H, J, M)
 
 The Magpylib field computation internal workflow and different approaches of the three interfaces is outlined in the following sketch.
 

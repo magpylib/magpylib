@@ -1,13 +1,15 @@
 (docs-forcecomp)=
 # Force Computation (F, T)
 
+-------------------------------------
 ## Computation Idea
 
 Force and torque computation in Magpylib stands in contrast to the analytical models used for magnetic field computation. They are based on a numerical approach that solves the force integrals over the target objects by discretization, see also [Physics and Computation](guide-physics-force-computation).
 
-## How it works
+-------------------------------------
+## Force Interface
 
-Force and torque are computed via the top level function **`getFT()`**
+Force and torque are computed in the [object-oriented interface](docs-fieldcomp-oo) via the top level function **`getFT()`**
 
 ```python
 F, T = magpylib.getFT(

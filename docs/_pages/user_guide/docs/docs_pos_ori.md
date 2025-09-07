@@ -18,8 +18,9 @@ The analytical magnetic field expressions found in the literature, implemented i
 
 Here Magpylib helps. All Magpylib sources and observers lie in a global Cartesian coordinate system. Object position and orientation are defined by the attributes `position` and `orientation`, 😏. Objects can easily be moved around using the `move()` and `rotate()` methods. Eventually, the field is computed in the reference frame of the observers (e.g. Sensor objects). Positions are given in units of meter, and the default unit for orientation is °.
 
+--------------------------
 (docs-position-paths)=
-## Position and orientation attributes
+## Position and Orientation
 
 Position and orientation of all Magpylib objects are defined by the two attributes
 
@@ -44,6 +45,7 @@ The position and orientation attributes can be either **scalar**, i.e. a single 
 To enable vectorized field computation, paths should always be used when modeling multiple object positions. Avoid using Python loops at all costs for that purpose! If your path is difficult to realize, consider using the [functional interface](docs-field-functional) instead.
 ```
 
+--------------------------
 ## Move and Rotate
 
 Magpylib offers two powerful methods for object manipulation:
