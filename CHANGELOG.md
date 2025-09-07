@@ -2,6 +2,7 @@
 
 ## [Unreleased] - YYYY-MM-DD
 
+- Documentation update ([#876](https://github.com/magpylib/magpylib/issues/876))
 - Adding force computation `magpylib.getFT()` to the library.
   ([#887](https://github.com/magpylib/magpylib/issues/887),
   [#847](https://github.com/magpylib/magpylib/issues/847),
