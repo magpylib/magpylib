@@ -32,7 +32,7 @@ Detailed information about how to tune animations can be found in the [graphics 
 
 ## Simple Animations
 
-Animations are created with `show` by setting `animation=True`. It is also possible to hand over the animation time with this parameter.
+Animations are created with `show` by setting `animation=True`. It is also possible to hand over the animation time as a float with this parameter.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -127,10 +127,11 @@ magpy.show(
 For customizing videos it is best to work directly in the respective graphic backends. Here we show how to transfer the Magpylib graphic objects to a Pyvista plotter, customize the plotting scene, export screen shots, and combine them in a *.gif. The following example also shows how to achieve transparency.
 
 ```python
+:tags: [hide-input]
+
 import magpylib as magpy
 import pyvista as pv
 from PIL import Image
-
 
 def create_gif(images, frame_time, output_file):
     """Create a GIF from images"""
@@ -221,7 +222,6 @@ import magpylib as magpy
 from PIL import Image
 import io
 
-
 def create_gif(images, frame_time, output_file):
     """Create GIF from frames in the temporary directory."""
     frames = [Image.open(io.BytesIO(data)) for data in images]
@@ -298,5 +298,6 @@ def main():
 if __name__ == "__main__":
     main()
 ```
+
 
 <img src="../../../_static/videos/example_gif3.gif" width=50% align="center">
