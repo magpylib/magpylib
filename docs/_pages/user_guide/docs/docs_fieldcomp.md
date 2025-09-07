@@ -181,4 +181,10 @@ print(B)
 
 The Magpylib field computation internal workflow and different approaches of the three interfaces is outlined in the following sketch.
 
-![](../../../_static/images/docu_field_comp_flow.png)
+```{figure} ../../../_static/images/docu_field_comp_flow.png
+:width: 100%
+:align: center
+:alt: Magpylib computational flow chart.
+
+Magpylib computational flow chart.
+```

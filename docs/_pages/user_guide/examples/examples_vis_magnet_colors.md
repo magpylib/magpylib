@@ -1,4 +1,4 @@
----
+--
 orphan: true
 jupytext:
   text_representation:
@@ -15,9 +15,15 @@ kernelspec:
 (examples-vis-magnet-colors)=
 # Magnet Colors
 
-The polarization direction of a permanent magnet is often graphically displayed with the help of colors. However, there is no unified color scheme that everyone agrees on. The following image shows some color-examples from the web.
+The polarization direction of a permanent magnet is often graphically displayed with the help of colors. However, there is no unified color scheme that everyone agrees on.
 
-![](../../../_static/images/examples_vis_magnet_colors.png)
+```{figure} ../../../_static/images/examples_vis_magnet_colors.png
+:width: 100%
+:align: center
+:alt: Different magnets in different color schemes.
+
+Some magnet coloring examples taken from the web.
+```
 
 Magpylib uses the DIN Specification 91411 (soon [INNOMAG Guideline](examples-app-scales-IGL)) standard as default setting. The tri-color scheme has the advantage that for multi-pole elements it becomes clear which north is "connected" to which south.
 
