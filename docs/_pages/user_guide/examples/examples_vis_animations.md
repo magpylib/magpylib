@@ -127,11 +127,10 @@ magpy.show(
 For customizing videos it is best to work directly in the respective graphic backends. Here we show how to transfer the Magpylib graphic objects to a Pyvista plotter, customize the plotting scene, export screen shots, and combine them in a *.gif. The following example also shows how to achieve transparency.
 
 ```python
-:tags: [hide-input]
-
 import magpylib as magpy
 import pyvista as pv
 from PIL import Image
+
 
 def create_gif(images, frame_time, output_file):
     """Create a GIF from images"""
@@ -221,6 +220,7 @@ The following examples shows how to work in the Plotly backend.
 import magpylib as magpy
 from PIL import Image
 import io
+
 
 def create_gif(images, frame_time, output_file):
     """Create GIF from frames in the temporary directory."""
