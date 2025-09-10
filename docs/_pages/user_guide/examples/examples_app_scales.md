@@ -16,7 +16,7 @@ kernelspec:
 
 # Magnetic Scales
 
-The following examples we demonstrate how analytical models can be used to simulate magnetic scales. Some measurements and simulations are taken from the publication (review at IEEE Sensors in progress) [Radial Eccentricity in Rotary Magnetic Encoders](#), which provides a more in-depth discussion for those interested in the underlying theory and experimental validation.
+The following examples we demonstrate how analytical models can be used to simulate magnetic scales. Some measurements and simulations are taken from the publication (review at IEEE in progress) *Radial Eccentricity in Rotary Magnetic Encoders*, which provides a more in-depth discussion for those interested in the underlying theory and experimental validation.
 
 --------------------------
 ## Background

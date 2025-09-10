@@ -33,10 +33,10 @@ $$
 
 In some special cases (simple shapes, homogeneous magnetisations, and current distributions) the above integrals can be worked out directly to give analytical formulas (or simple, fast converging series). The derivations can be found in the respective references. A noteworthy comparison between the Coulombian approach and the Amperian current model is given in [^14].
 
-(guide-physics-demag)=
 
 ------------------------------------
 
+(guide-physics-demag)=
 ## Accuracy of the Solutions
 
 While Magpylib's analytical solutions are exact, the idealized assumptions of perfectly uniform current and magnetization distributions rarely match real-world conditions. Understanding these limitations is crucial for interpreting computational results and assessing their practical applicability.

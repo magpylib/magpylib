@@ -250,43 +250,40 @@ class BaseTransform:
     """Inherit this class to provide rotation() and move() methods."""
 
     def move(self, displacement, start="auto"):
-        """Move object by the displacement input. SI units are used for all inputs and outputs.
-
-        Terminology for move/rotate methods:
-
-        - `path` refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. one displacement vector or one angle)
-          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-          it as 'vector input'.
-
-        General move/rotate behavior:
-
-        - Scalar input is applied to the whole object path, starting with path index `start`.
-        - Vector input of length n applies the individual n operations to n object path
-          entries, starting with path index `start`.
-        - When an input extends beyond the object path, the object path will be padded by its
-          edge-entries before the operation is applied.
-        - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-          whole object path], and to `start=len(object path)` for vector input [=append to
-          existing object path].
+        """Translate the object by a displacement vector or path (SI units).
 
         Parameters
         ----------
-        displacement: array_like, shape (3,) or (n,3)
-            Displacement vector in units of m.
-
-        start: int or str, default=`'auto'`
-            Starting index when applying operations. See 'General move/rotate behavior' above
-            for details.
+        displacement : array-like
+            Displacement(s) in meters. A single 3-vector (shape ``(3,)``) is a
+            scalar input and is applied to the whole existing path (from
+            ``start`` onward). A sequence of vectors (shape ``(n, 3)``) is a
+            vector input and applies element-wise displacements along /
+            appended to the path.
+        start: int or str, optional
+            Starting index when applying operations. Default is ``'auto'``.
+            See Notes for details.
 
         Returns
         -------
-        self: Magpylib object
+        self : Self
+            The modified object (returned for chaining).
+
+        Notes
+        -----
+        ``path`` refers jointly to the position and orientation history of the
+        object. Scalar input applies a single operation. It is applied to the whole object
+        path, starting with path index ``start``. Vector input means a sequence of operations.
+        Vector input of length n applies the individual n operations to n object path
+        entries, starting with path index ``start``. When an input extends beyond the object
+        path, the object path will be padded by its edge-entries before the operation is applied.
+        By default (``start='auto'``) the index is set to ``start=0`` for scalar input [=move
+        whole object path], and to ``start=len(object path)`` for vector input [=append to
+        existing object path].
 
         Examples
         --------
-
-        Move objects around with scalar input:
+        Scalar input (single displacement):
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor(position=(1,1,1))
@@ -357,47 +354,38 @@ class BaseTransform:
     def rotate(self, rotation: R, anchor=None, start="auto"):
         """Rotate object about a given anchor.
 
-        Terminology for move/rotate methods:
-
-        - `path` refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. one displacement vector or one angle)
-          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-          it as 'vector input'.
-
-        General move/rotate behavior:
-
-        - Scalar input is applied to the whole object path, starting with path index `start`.
-        - Vector input of length n applies the individual n operations to n object path
-          entries, starting with path index `start`.
-        - When an input extends beyond the object path, the object path will be padded by its
-          edge-entries before the operation is applied.
-        - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-          whole object path], and to `start=len(object path)` for vector input [=append to
-          existing object path].
-
         Parameters
         ----------
-        rotation: `None` or scipy `Rotation` object
-            Rotation to be applied to the object. The scipy `Rotation` input can
-            be scalar or vector type (see terminology above). `None` input is interpreted
+        rotation: None or Rotation
+            Rotation to be applied to the object. The scipy ``Rotation`` input can
+            be scalar or vector type (see Notes). ``None`` input is interpreted
             as unit rotation.
-
-        anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
+        anchor: None or array-like, optional
             The axis of rotation passes through the anchor point given in units of m.
-            By default (`anchor=None`) the object will rotate about its own center.
-            `anchor=0` rotates the object about the origin `(0,0,0)`.
-
-        start: int or str, default=`'auto'`
-            Starting index when applying operations. See 'General move/rotate behavior' above
-            for details.
+            The default ``anchor=None`` will rotate the object about its position.
+        start: int or str, optional
+            Starting index when applying operations. Default is ``'auto'``.
+            See Notes for details.
 
         Returns
         -------
-        self: Magpylib object
+        self : Self
+            The modified object (returned for chaining).
+
+        Notes
+        -----
+        ``path`` refers jointly to the position and orientation history of the
+        object. Scalar input applies a single operation. It is applied to the whole object
+        path, starting with path index ``start``. Vector input means a sequence of operations.
+        Vector input of length n applies the individual n operations to n object path
+        entries, starting with path index ``start``. When an input extends beyond the object
+        path, the object path will be padded by its edge-entries before the operation is applied.
+        By default (``start='auto'``) the index is set to ``start=0`` for scalar input [=move
+        whole object path], and to ``start=len(object path)`` for vector input [=append to
+        existing object path].
 
         Examples
         --------
-
         Rotate an object about the origin:
 
         >>> from scipy.spatial.transform import Rotation as R
@@ -438,50 +426,39 @@ class BaseTransform:
         return self._rotate(rotation=rotation, anchor=anchor, start=start)
 
     def rotate_from_angax(self, angle, axis, anchor=None, start="auto", degrees=True):
-        """Rotates object using angle-axis input.
-
-        Terminology for move/rotate methods:
-
-        - `path` refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. one displacement vector or one angle)
-          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-          it as 'vector input'.
-
-        General move/rotate behavior:
-
-        - Scalar input is applied to the whole object path, starting with path index `start`.
-        - Vector input of length n applies the individual n operations to n object path
-          entries, starting with path index `start`.
-        - When an input extends beyond the object path, the object path will be padded by its
-          edge-entries before the operation is applied.
-        - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-          whole object path], and to `start=len(object path)` for vector input [=append to
-          existing object path].
+        """Rotate object using angle-axis input.
 
         Parameters
         ----------
-        angle: int, float or array_like with shape (n,)
-            Angle(s) of rotation in units of deg (by default).
-
-        axis: str or array_like, shape (3,)
-            The direction of the axis of rotation. Input can be a vector of shape (3,)
-            or a string 'x', 'y' or 'z' to denote respective directions.
-
-        anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of m.
-            By default (`anchor=None`) the object will rotate about its own center.
-            `anchor=0` rotates the object about the origin `(0,0,0)`.
-
-        start: int or str, default=`'auto'`
-            Starting index when applying operations. See 'General move/rotate behavior' above
-            for details.
-
-        degrees: bool, default=`True`
-            Interpret input in units of deg or rad.
+        angle : float or array-like
+            Rotation angle or sequence of angles (length n) in degrees by default (see ``degrees``).
+        axis : str or array-like
+            Rotation axis direction. Provide a length-3 vector or one of ``'x'``, ``'y'``,
+            ``'z'``.
+        anchor : None or array-like, optional
+            Anchor point(s) in meters, shape (3,) or (n,3). Default ``anchor=None`` rotates about the
+            object's position.
+        start : int or str, optional
+            Starting path index. Default ``'auto'`` (see Notes).
+        degrees : bool, optional
+            If True (default) interpret ``angle`` in degrees, else radians.
 
         Returns
         -------
-        self: Magpylib object
+        self : Self
+            The modified object.
+
+        Notes
+        -----
+        ``path`` refers jointly to the position and orientation history of the
+        object. Scalar input applies a single operation. It is applied to the whole object
+        path, starting with path index ``start``. Vector input means a sequence of operations.
+        Vector input of length n applies the individual n operations to n object path
+        entries, starting with path index ``start``. When an input extends beyond the object
+        path, the object path will be padded by its edge-entries before the operation is applied.
+        By default (``start='auto'``) the index is set to ``start=0`` for scalar input [=move
+        whole object path], and to ``start=len(object path)`` for vector input [=append to
+        existing object path].
 
         Examples
         --------
@@ -542,47 +519,37 @@ class BaseTransform:
         return self.rotate(rot, anchor, start)
 
     def rotate_from_rotvec(self, rotvec, anchor=None, start="auto", degrees=True):
-        """Rotates object using rotation vector input.
-
-        Terminology for move/rotate methods:
-
-        - `path` refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. one displacement vector or one angle)
-          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-          it as 'vector input'.
-
-        General move/rotate behavior:
-
-        - Scalar input is applied to the whole object path, starting with path index `start`.
-        - Vector input of length n applies the individual n operations to n object path
-          entries, starting with path index `start`.
-        - When an input extends beyond the object path, the object path will be padded by its
-          edge-entries before the operation is applied.
-        - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-          whole object path], and to `start=len(object path)` for vector input [=append to
-          existing object path].
+        """Rotate object using rotation vector(s).
 
         Parameters
         ----------
-        rotvec : array_like, shape (n,3) or (3,)
-            Rotation input. Rotation vector direction is the rotation axis, vector length is
-            the rotation angle in units of rad.
-
-        anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of m.
-            By default (`anchor=None`) the object will rotate about its own center.
-            `anchor=0` rotates the object about the origin `(0,0,0)`.
-
-        start: int or str, default=`'auto'`
-            Starting index when applying operations. See 'General move/rotate behavior' above
-            for details.
-
-        degrees: bool, default=`True`
-            Interpret input in units of deg or rad.
+        rotvec : array-like
+            Single rotation vector (shape (3,)) or sequence (shape (n,3)). Direction gives
+            axis, magnitude gives angle in radians.
+        anchor : None or array-like, optional
+            Anchor point(s) in meters, shape (3,) or (n,3). Default ``anchor=None`` rotates about the
+            object's position.
+        start : int or str, optional
+            Starting path index. Default ``'auto'`` (see Notes).
+        degrees : bool, optional
+            If True (default) interpret ``angle`` in degrees, else radians.
 
         Returns
         -------
-        self: Magpylib object
+        self : Self
+            The modified object.
+
+        Notes
+        -----
+        ``path`` refers jointly to the position and orientation history of the
+        object. Scalar input applies a single operation. It is applied to the whole object
+        path, starting with path index ``start``. Vector input means a sequence of operations.
+        Vector input of length n applies the individual n operations to n object path
+        entries, starting with path index ``start``. When an input extends beyond the object
+        path, the object path will be padded by its edge-entries before the operation is applied.
+        By default (``start='auto'``) the index is set to ``start=0`` for scalar input [=move
+        whole object path], and to ``start=len(object path)`` for vector input [=append to
+        existing object path].
 
         Examples
         --------
@@ -625,52 +592,43 @@ class BaseTransform:
         return self.rotate(rot, anchor=anchor, start=start)
 
     def rotate_from_euler(self, angle, seq, anchor=None, start="auto", degrees=True):
-        """Rotates object using Euler angle input.
-
-        Terminology for move/rotate methods:
-
-        - `path` refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. one displacement vector or one angle)
-          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-          it as 'vector input'.
-
-        General move/rotate behavior:
-
-        - Scalar input is applied to the whole object path, starting with path index `start`.
-        - Vector input of length n applies the individual n operations to n object path
-          entries, starting with path index `start`.
-        - When an input extends beyond the object path, the object path will be padded by its
-          edge-entries before the operation is applied.
-        - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-          whole object path], and to `start=len(object path)` for vector input [=append to
-          existing object path].
+        """Rotate object using Euler angle sequence.
 
         Parameters
         ----------
-        angle: int, float or array_like with shape (n,)
-            Angle(s) of rotation in units of deg (by default).
+        angle: float or array-like
+            Angle(s) of rotation (length n) in units of deg (by default).
 
-        seq : string
+        seq : str
             Specifies sequence of axes for rotations. Up to 3 characters
             belonging to the set {'X', 'Y', 'Z'} for intrinsic rotations, or
             {'x', 'y', 'z'} for extrinsic rotations. Extrinsic and intrinsic
             rotations cannot be mixed in one function call.
 
-        anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of m.
-            By default (`anchor=None`) the object will rotate about its own center.
-            `anchor=0` rotates the object about the origin `(0,0,0)`.
-
-        start: int or str, default=`'auto'`
-            Starting index when applying operations. See 'General move/rotate behavior' above
-            for details.
-
-        degrees: bool, default=`True`
-            Interpret input in units of deg or rad.
+        anchor : None or array-like, optional
+            Anchor point(s) in meters, shape (3,) or (n,3). Default ``anchor=None`` rotates about the
+            object's position.
+        start : int or str, optional
+            Starting path index. Default ``'auto'`` (see Notes).
+        degrees : bool, optional
+            If True (default) interpret ``angle`` in degrees, else radians.
 
         Returns
         -------
-        self: Magpylib object
+        self : Self
+            The modified object.
+
+        Notes
+        -----
+        ``path`` refers jointly to the position and orientation history of the
+        object. Scalar input applies a single operation. It is applied to the whole object
+        path, starting with path index ``start``. Vector input means a sequence of operations.
+        Vector input of length n applies the individual n operations to n object path
+        entries, starting with path index ``start``. When an input extends beyond the object
+        path, the object path will be padded by its edge-entries before the operation is applied.
+        By default (``start='auto'``) the index is set to ``start=0`` for scalar input [=move
+        whole object path], and to ``start=len(object path)`` for vector input [=append to
+        existing object path].
 
         Examples
         --------
@@ -713,48 +671,36 @@ class BaseTransform:
         return self.rotate(rot, anchor=anchor, start=start)
 
     def rotate_from_matrix(self, matrix, anchor=None, start="auto"):
-        """Rotates object using matrix input.
-
-        Terminology for move/rotate methods:
-
-        - `path` refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. one displacement vector or one angle)
-          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-          it as 'vector input'.
-
-        General move/rotate behavior:
-
-        - Scalar input is applied to the whole object path, starting with path index `start`.
-        - Vector input of length n applies the individual n operations to n object path
-          entries, starting with path index `start`.
-        - When an input extends beyond the object path, the object path will be padded by its
-          edge-entries before the operation is applied.
-        - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-          whole object path], and to `start=len(object path)` for vector input [=append to
-          existing object path].
-
+        """Rotate object using rotation matrix/matrices.
 
         Parameters
         ----------
-        matrix : array_like, shape (n,3,3) or (3,3)
-            Rotation input. See scipy.spatial.transform.Rotation for details.
-
-        anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of m.
-            By default (`anchor=None`) the object will rotate about its own center.
-            `anchor=0` rotates the object about the origin `(0,0,0)`.
-
-        start: int or str, default=`'auto'`
-            Starting index when applying operations. See 'General move/rotate behavior' above
-            for details.
+        matrix : array-like
+            Single rotation matrix (3,3) or sequence (n,3,3).
+        anchor : None or array-like, optional
+            Anchor point(s) in meters, shape (3,) or (n,3). Default ``anchor=None`` rotates about the
+            object's position.
+        start : int or str, optional
+            Starting path index. Default ``'auto'`` (see Notes).
+        degrees : bool, optional
+            If True (default) interpret ``angle`` in degrees, else radians.
 
         Returns
         -------
-        self: Magpylib object
+        self : Self
+            The modified object.
 
-        Examples
-        --------
-        Rotate an object about the origin:
+        Notes
+        -----
+        ``path`` refers jointly to the position and orientation history of the
+        object. Scalar input applies a single operation. It is applied to the whole object
+        path, starting with path index ``start``. Vector input means a sequence of operations.
+        Vector input of length n applies the individual n operations to n object path
+        entries, starting with path index ``start``. When an input extends beyond the object
+        path, the object path will be padded by its edge-entries before the operation is applied.
+        By default (``start='auto'``) the index is set to ``start=0`` for scalar input [=move
+        whole object path], and to ``start=len(object path)`` for vector input [=append to
+        existing object path].
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor(position=(1,0,0))
@@ -778,44 +724,36 @@ class BaseTransform:
         return self.rotate(rot, anchor=anchor, start=start)
 
     def rotate_from_mrp(self, mrp, anchor=None, start="auto"):
-        """Rotates object using Modified Rodrigues Parameters (MRPs) input.
-
-        Terminology for move/rotate methods:
-
-        - `path` refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. one displacement vector or one angle)
-          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-          it as 'vector input'.
-
-        General move/rotate behavior:
-
-        - Scalar input is applied to the whole object path, starting with path index `start`.
-        - Vector input of length n applies the individual n operations to n object path
-          entries, starting with path index `start`.
-        - When an input extends beyond the object path, the object path will be padded by its
-          edge-entries before the operation is applied.
-        - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-          whole object path], and to `start=len(object path)` for vector input [=append to
-          existing object path].
+        """Rotate object using Modified Rodrigues Parameters (MRPs).
 
         Parameters
         ----------
-        mrp : array_like, shape (n,3) or (3,)
-            Rotation input. See scipy Rotation package for details on Modified Rodrigues
-            Parameters (MRPs).
-
-        anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of m.
-            By default (`anchor=None`) the object will rotate about its own center.
-            `anchor=0` rotates the object about the origin `(0,0,0)`.
-
-        start: int or str, default=`'auto'`
-            Starting index when applying operations. See 'General move/rotate behavior' above
-            for details.
+        mrp : array-like
+            Modified Rodrigues Parameters vector (3,) or sequence (n,3).
+        anchor : None or array-like, optional
+            Anchor point(s) in meters, shape (3,) or (n,3). Default ``anchor=None`` rotates about the
+            object's position.
+        start : int or str, optional
+            Starting path index. Default ``'auto'`` (see Notes).
+        degrees : bool, optional
+            If True (default) interpret ``angle`` in degrees, else radians.
 
         Returns
         -------
-        self: Magpylib object
+        self : Self
+            The modified object.
+
+        Notes
+        -----
+        ``path`` refers jointly to the position and orientation history of the
+        object. Scalar input applies a single operation. It is applied to the whole object
+        path, starting with path index ``start``. Vector input means a sequence of operations.
+        Vector input of length n applies the individual n operations to n object path
+        entries, starting with path index ``start``. When an input extends beyond the object
+        path, the object path will be padded by its edge-entries before the operation is applied.
+        By default (``start='auto'``) the index is set to ``start=0`` for scalar input [=move
+        whole object path], and to ``start=len(object path)`` for vector input [=append to
+        existing object path].
 
         Examples
         --------
@@ -843,43 +781,36 @@ class BaseTransform:
         return self.rotate(rot, anchor=anchor, start=start)
 
     def rotate_from_quat(self, quat, anchor=None, start="auto"):
-        """Rotates object using quaternion input.
-
-        Terminology for move/rotate methods:
-
-        - `path` refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. one displacement vector or one angle)
-          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-          it as 'vector input'.
-
-        General move/rotate behavior:
-
-        - Scalar input is applied to the whole object path, starting with path index `start`.
-        - Vector input of length n applies the individual n operations to n object path
-          entries, starting with path index `start`.
-        - When an input extends beyond the object path, the object path will be padded by its
-          edge-entries before the operation is applied.
-        - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-          whole object path], and to `start=len(object path)` for vector input [=append to
-          existing object path].
+        """Rotate object using quaternion(s).
 
         Parameters
         ----------
-        quat : array_like, shape (n,4) or (4,)
-            Rotation input in quaternion form.
-
-        anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of m.
-            By default (`anchor=None`) the object will rotate about its own center.
-            `anchor=0` rotates the object about the origin `(0,0,0)`.
-
-        start: int or str, default=`'auto'`
-            Starting index when applying operations. See 'General move/rotate behavior' above
-            for details.
+        quat : array-like
+            Quaternion (4,) or sequence (n,4) in ``(x, y, z, w)`` format.
+        anchor : None or array-like, optional
+            Anchor point(s) in meters, shape (3,) or (n,3). Default ``anchor=None`` rotates about the
+            object's position.
+        start : int or str, optional
+            Starting path index. Default ``'auto'`` (see Notes).
+        degrees : bool, optional
+            If True (default) interpret ``angle`` in degrees, else radians.
 
         Returns
         -------
-        self: Magpylib object
+        self : Self
+            The modified object.
+
+        Notes
+        -----
+        ``path`` refers jointly to the position and orientation history of the
+        object. Scalar input applies a single operation. It is applied to the whole object
+        path, starting with path index ``start``. Vector input means a sequence of operations.
+        Vector input of length n applies the individual n operations to n object path
+        entries, starting with path index ``start``. When an input extends beyond the object
+        path, the object path will be padded by its edge-entries before the operation is applied.
+        By default (``start='auto'``) the index is set to ``start=0`` for scalar input [=move
+        whole object path], and to ``start=len(object path)`` for vector input [=append to
+        existing object path].
 
         Examples
         --------

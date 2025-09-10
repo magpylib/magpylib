@@ -319,12 +319,10 @@ class BaseGeo(BaseTransform, ABC):
 
         Returns
         -------
-        self: magpylib object
+        self: Self
 
         Examples
         --------
-        Demonstration of `reset_path` functionality:
-
         >>> import magpylib as magpy
         >>> obj = magpy.Sensor(position=(1,2,3))
         >>> obj.rotate_from_angax(45, 'z')
