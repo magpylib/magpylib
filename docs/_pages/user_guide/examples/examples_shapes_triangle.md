@@ -25,6 +25,8 @@ It is very common to approximate the surface of bodies by triangular meshes, whi
 3. The surface must not be self-intersecting.
 4. For the B-field magnetic polarization must be added on the inside of the body.
 
+----------------------------
+
 ## Cuboctahedron Magnet
 
 In this example `Triangle` is used to create a magnet with cuboctahedral shape. Notice that triangle orientation is displayed by default for convenience.
@@ -75,6 +77,8 @@ magpy.show(
 )
 ```
 
+----------------------------
+
 ## Triangular Prism Magnet
 
 Consider a prism with triangular base that is magnetized orthogonal to the base. All surface normals of the sides of the prism are orthogonal to the magnetization vector. As a result, the sides do not contribute to the magnetic field because their charge density disappears. Only the top and bottom surfaces contribute. One must be very careful when defining those surfaces in such a way that the surface normals point outwards.
@@ -101,7 +105,9 @@ prism = magpy.Collection(top, bott)
 magpy.show(*prism, backend="plotly", style_opacity=0.5, style_magnetization_show=False)
 ```
 
-## TriangularMesh class
+----------------------------
+
+## Triangular Mesh
 
 While `Triangle` simply provides the field of a charged triangle and can be used to construct complex forms, it is prone to error and tedious to work with when meshes become large. For this purpose, the `TriangularMesh` class ensures proper and convenient magnet creation by automatically checking mesh integrity and by orienting the faces at initialization.
 
@@ -150,7 +156,9 @@ The `TriangularMesh` class is extremely powerful as it enables almost arbitrary 
 * Meshing tools often create meshes with a lot of faces, especially when working with curved surfaces. Keep in mind that field computation takes of the order of a few microseconds per observer position per face, and that RAM is a limited resource.
 ```
 
-## Open TriangularMesh
+----------------------------
+
+## Open Triangular Mesh
 
 In some cases, it may be desirable to generate a `TriangularMesh` object from an open mesh (see Prism example above). In this case one must be extremely careful because one cannot rely on the checks. Not to generate warnings or error messages, these checks can be disabled with `"skip"` or their outcome can be ignored with `"ignore"`. The `show` function can be used to view open edges and disconnected parts. In the following example we generate such an open mesh directly from `Triangle` objects.
 

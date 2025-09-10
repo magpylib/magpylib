@@ -12,12 +12,15 @@ from magpylib._src.display.traces_core import make_TriangleSheet
 from magpylib._src.fields.field_BH_current_sheet import BHJM_current_trisheet
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.target_meshing import target_mesh_triangle_current
 
 
-class TriangleSheet(BaseSource):
+class TriangleSheet(BaseSource, BaseTarget):
     """Surface current density flowing along triangular faces.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     The vertex positions are defined in the local object coordinates (rotate with object).
     When `position=(0,0,0)` and `orientation=None` global and local coordinates coincide.
@@ -47,11 +50,15 @@ class TriangleSheet(BaseSource):
         The effective current density is a projection of the given current density
         vector into the face-planes. Input must have same length as `faces`.
 
-    volume: float
-        Read-only. Object physical volume in units of m^3 - set to 0 for this class.
+    meshing: int, default=`None`
+        Parameter that defines the mesh finesse for force computation.
+        Must be an integer >= number of faces specifying the target mesh size.
+        The mesh is generated via bisection along longest edges until target
+        number is reached.
 
     centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m - set to mean of vertices for this class.
+        Read-only. Object centroid in units of m given by mean of vertices.
+        m is the path length.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -85,6 +92,7 @@ class TriangleSheet(BaseSource):
 
     # pylint: disable=dangerous-default-value
     _field_func = staticmethod(BHJM_current_trisheet)
+    _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "current_densities": 3,
         "vertices": 3,
@@ -94,11 +102,13 @@ class TriangleSheet(BaseSource):
 
     def __init__(
         self,
-        current_densities=None,
-        vertices=None,
-        faces=None,
         position=(0, 0, 0),
         orientation=None,
+        vertices=None,
+        faces=None,
+        current_densities=None,
+        meshing=None,
+        *,
         style=None,
         **kwargs,
     ):
@@ -107,8 +117,9 @@ class TriangleSheet(BaseSource):
             current_densities, vertices, faces
         )
 
-        # init inheritance
+        # Inherit
         super().__init__(position, orientation, style, **kwargs)
+        BaseTarget.__init__(self, meshing)
 
     # property getters and setters
     @property
@@ -170,10 +181,28 @@ class TriangleSheet(BaseSource):
         return cd, verts, fac
 
     # Methods
-    def _get_volume(self):
-        """Volume of object in units of m³."""
-        return 0.0
-
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return np.mean(self.vertices, axis=0) + self.position
+        centr = np.mean(self.vertices, axis=0) + self._position
+        if squeeze:
+            return np.squeeze(centr)
+        return centr
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        return target_mesh_triangle_current(
+            self.vertices[self.faces],
+            self.meshing,
+            self.current_densities,
+        )
+
+    def _validate_meshing(self, value):
+        """Makes only sense with at least n_mesh = n_faces."""
+        if isinstance(value, int) and value >= len(self.faces):
+            pass
+        else:
+            msg = (
+                "TriangleSheet meshing parameter must be an integer >= number of faces"
+                f" for {self}. Instead got {value}."
+            )
+            raise ValueError(msg)

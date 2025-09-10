@@ -15,8 +15,9 @@ orphan: true
 (guide-graphics)=
 # Graphic output
 
+---------------------------------
 (guide-graphics-show)=
-## 3D graphics with show
+## 3D View
 
 Once all Magpylib objects and their paths have been created, `show` creates a 3D plot of the geometric arrangement using the Matplotlib (command line default) and Plotly (notebook default) packages. `show` generates a new figure which is automatically displayed.
 
@@ -47,8 +48,9 @@ Notice that objects and their paths are automatically assigned different colors.
 
 How objects are represented graphically (color, line thickness, etc.) is defined by their [style properties](guide-graphic-styles).
 
+---------------------------------
 (guide-graphic-backends)=
-## Graphic backends
+## Graphic Backends
 
 The graphic backend refers to the plotting library that is used for graphic output. A plotting canvas refers to the frame/window/canvas/axes object the graphic output is forwarded to.
 
@@ -125,9 +127,9 @@ There is a high level of **feature parity**, however, not all graphic features a
 
 `show` will also pass on all kwargs to the respective plotting backends. For example, in the [animation sample code](guide-graphic-animations) the kwarg `show_legend` is forwarded to the Plotly backend.
 
-
+---------------------------------
 (guide-graphics-canvas)=
-## Plotting canvas
+## Plotting Canvas
 
 When calling `show`, a figure is automatically generated and displayed. It is also possible to place the `show` output in a given figure using the `canvas` argument. Consider the following Magpylib field computation,
 
@@ -233,8 +235,9 @@ pl.add_lines(line, color="black")
 pl.show()
 ```
 
+---------------------------------
 (guide-graphics-return_fig)=
-## Return figure
+## Return Figure
 
 Instead of forwarding a figure to an existing canvas, it is also possible to return the figure object for further manipulation using the `return_fig` command. In the following example this is demonstrated for the pyvista backend.
 
@@ -259,6 +262,7 @@ pl.enable_anti_aliasing("ssaa")
 pl.show()
 ```
 
+---------------------------------
 (guide-graphic-animations)=
 ## Animation
 
@@ -297,6 +301,7 @@ magpy.show(
 Even with some implemented fail safes, such as a maximum frame rate and frame count, there is no guarantee that the animation will be rendered properly. This is particularly relevant when the user tries to animate many objects and/or many path positions at the same time.
 ```
 
+---------------------------------
 (guide-graphics-subplots)=
 ## Built-in Subplots
 
@@ -308,7 +313,7 @@ It is often tedious to integrate the Magpylib `show` output into sub-plots as sh
 
 For this, Magpylib offers the possibility to show the sensor output along a path in addition to the 3D-output, and to place 2D and 3D outputs in subplots.
 
-### With show
+### With `show`
 
 All of this is achieved via the `show` function by passing input objects as dictionaries with the arguments.
 
@@ -375,7 +380,7 @@ magpy.show(
 ```
 
 (guide-graphics-show_context)=
-### With show_context
+### With `show_context`
 
 To make the subplot syntax more convenient we introduced the `show_context` native Python context manager. It allows to defer calls to the `show` function while passing additional arguments. This is necessary for Magpylib to know how many rows and columns are requested by the user, which single `show` calls do not keep track of. All kwargs, e.g. `backend` are handed directly to the context manager.
 
@@ -449,7 +454,7 @@ with magpy.show_context(loop, sens, animation=True) as sc:
     sc.show(output="Hxyz", col=2, row=2)
 ```
 
-### Canvas length units
+### Canvas Length Units
 
 When displaying very small Magpylib objects, the axes scaling in meters might be inadequate and you may want to use other units that fit the system dimensions more nicely. The example below shows how to display an object (in this case the same) with different length units and zoom levels.
 

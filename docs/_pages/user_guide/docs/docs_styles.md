@@ -13,7 +13,7 @@ orphan: true
 ---
 
 (guide-graphic-styles)=
-# Graphic styles
+# Graphic Styles
 
 The graphic styles define how Magpylib objects are displayed visually when calling `show`. They can be fine-tuned and individualized to suit requirements and taste.
 
@@ -25,8 +25,9 @@ Graphic styles can be defined in various ways:
 
 The following sections describe these styling options and how to customize them.
 
+--------------------------
 (guide-graphic-styles-default)=
-## Default style
+## Default Style
 
 The default style is stored in `magpylib.defaults.display.style`. Note that the installation default styles differ slightly between different [graphic backends](guide-graphic-backends) depending on their respective capabilities. Specifically, the magnet magnetization in Matplotlib is displayed with arrows by default, while it is displayed using a color scheme in Plotly and Pyvista. The color scheme is also implemented in Matplotlib, but it is visually unsatisfactory.
 
@@ -109,8 +110,8 @@ The default Magpylib style abides by the tri-color scheme for ideal-typical magn
 
 A list of all style options can be found [here](examples-list-of-styles).
 
-
-## Magic underscore notation
+--------------------------
+## Magic Underscore Notation
 
 To facilitate working with deeply nested properties, all style constructors and object style methods support the "magic underscore notation". It enables referencing nested properties by joining together multiple property names with underscores. This feature mainly helps reduce the code verbosity and is heavily inspired by the [Plotly underscore notation](https://plotly.com/python/creating-and-updating-figures/#magic-underscore-notation)).
 
@@ -138,7 +139,8 @@ magpy.defaults.display.style.magnet.update(
 )
 ```
 
-## Individual style
+--------------------------
+## Individual Style
 
 Any Magpylib object can have its own individual style that will take precedence over the default values when `show` is called. When setting individual styles, the object family specifier such as `magnet` or `current` can be omitted.
 
@@ -180,7 +182,8 @@ sphere.style.magnetization.color.mode = "bicolor"
 magpy.show(cube, cylinder, sphere, backend="plotly")
 ```
 
-## Collection style
+--------------------------
+## Collection Style
 
 When displaying [Collection objects](guide-docs-classes-collections) their `color` property will be assigned to all its children override the default color cycle. In the following example this is demonstrated. Therefore, we make use of the [Matplotlib backend](guide-graphic-backends) which displays magnet color by default and shows the magnetization as an arrow rather than a color sequence.
 
@@ -214,7 +217,8 @@ magpy.show(coll, sphere, backend="plotly")
 
 The child-styles are individual style properties of the collection object and are not set as individual styles on each child-object. This means that when displayed individually with `show`, the above child-objects will have Magpylib default style.
 
-## Local style override
+--------------------------
+## Local Style Override
 
 Finally, it is possible to hand style input to the `show` function directly and locally override all style properties for this specific `show` output. Default or individual style attributes will not be modified. Such inputs must start with the `style` prefix and the object family specifier must be omitted. Naturally underscore magic is supported.
 
@@ -237,16 +241,17 @@ sphere = magpy.magnet.Sphere(
 magpy.show(cube, cylinder, sphere, backend="plotly", style_magnetization_show=False)
 ```
 
+--------------------------
 (examples-list-of-styles)=
-
-## List of style properties
+## List of Style Properties
 
 ```{code-cell} ipython3
 magpy.defaults.display.style.as_dict(flatten=True, separator=".")
 ```
 
+--------------------------
 (examples-own-3d-models)=
-## Custom 3D models
+## Custom 3D Models
 
 Each Magpylib object has a default 3D representation that is displayed with `show`. It is possible to disable the default model and to provide Magpylib with a custom model.
 
@@ -337,7 +342,7 @@ sensor.style.model3d.add_trace(trace2)
 magpy.show(sensor)
 ```
 
-### Matplotlib constructors
+### Matplotlib Constructors
 
 The following examples show how to construct traces with `plot`, `plot_surface` and `plot_trisurf`:
 
@@ -405,7 +410,8 @@ mobius.style.model3d.add_trace(trace_trisurf)
 magpy.show(magnet, ball, mobius, backend="matplotlib")
 ```
 
-## Pre-defined 3D models
+--------------------------
+## Pre-defined 3D Models
 
 Automatic trace generators are provided for several basic 3D models in `magpylib.graphics.model3d`. They can be used as follows,
 
@@ -470,8 +476,9 @@ obj5.style.model3d.add_trace(trace_arrow)
 obj0.show(obj1, obj2, obj3, obj4, obj5, backend="plotly")
 ```
 
+--------------------------
 ((guide-docs-style-cad))=
-## Adding a CAD model
+## Adding a CAD Model
 
 The following code sample shows how a standard CAD model (*.stl file) can be transformed into a Magpylib `Trace3d` object.
 

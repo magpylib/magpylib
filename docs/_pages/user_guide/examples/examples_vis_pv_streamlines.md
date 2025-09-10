@@ -14,7 +14,7 @@ orphan: true
 
 (examples-vis-pv-streamlines)=
 
-# Pyvista 3D field lines
+# Pyvista 3D Field Lines
 
 Pyvista offers field-line computation and visualization in 3D. In addition to the field computation, Magpylib offers magnet visualization that seamlessly integrates into a Pyvista plotting scene.
 

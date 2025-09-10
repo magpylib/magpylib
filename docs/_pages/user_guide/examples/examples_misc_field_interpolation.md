@@ -23,6 +23,7 @@ There are several reasons for working with field interpolations rather than comp
 
 Combining field interpolation and `CustomSource` enables integration of pre-computed solutions. In the following example we show how this can be done.
 
+----------------------------
 ## Interpolation
 
 We start by defining a 3D vector-field interpolation function relying on Scipy `RegularGridInterpolator`.
@@ -82,6 +83,7 @@ def interpolation(observer, data, method="linear", bounds_error=False, fill_valu
     return field_func
 ```
 
+----------------------------
 ## CustomSource with Interpolation Field
 
 In the second step we create a custom source with an interpolated field `field_func` input. The data for the interpolation is generated from the Magpylib `Cuboid` field, which makes it easy to verify the approach afterwards. To the custom source a nice 3D model is added that makes it possible to display it and the cuboid at the same time.
@@ -116,6 +118,7 @@ custom.style.model3d.showdefault = False
 magpy.show(custom, cube, zoom=1, backend="matplotlib")
 ```
 
+----------------------------
 ## Testing Interpolation Accuracy
 
 Finally, we compare the "exact" field of the cuboid source with the interpolated field of the custom source. For this purpose, a sensor is added and a generic rotation is applied to the sources. Naturally there is some error that can be reduced by increasing the interpolation grid finesse.

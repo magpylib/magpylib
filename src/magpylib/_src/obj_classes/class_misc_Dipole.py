@@ -8,14 +8,16 @@ from magpylib._src.display.traces_core import make_Dipole
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
 from magpylib._src.style import DipoleStyle
 from magpylib._src.utility import unit_prefix
 
 
-class Dipole(BaseSource):
+class Dipole(BaseSource, BaseDipoleMoment):
     """Magnetic dipole moment.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation. No `meshing` parameter is required.
 
     When `position=(0,0,0)` and `orientation=None` the dipole is located in the origin of
     global coordinate system.
@@ -37,9 +39,6 @@ class Dipole(BaseSource):
         Magnetic dipole moment in units of A·m² given in the local object coordinates.
         For homogeneous magnets the relation moment=magnetization*volume holds. For
         current loops the relation moment = current*loop_surface holds.
-
-    volume: float
-        Read-only. Object physical volume in units of m^3.
 
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m.
@@ -71,6 +70,7 @@ class Dipole(BaseSource):
     """
 
     _field_func = staticmethod(BHJM_dipole)
+    _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"moment": 2}
     _style_class = DipoleStyle
     get_trace = make_Dipole
@@ -118,10 +118,21 @@ class Dipole(BaseSource):
         return f"moment={unit_prefix(moment_mag)}A·m²"
 
     # Methods
-    def _get_volume(self):
-        """Volume of object in units of m³."""
-        return 0.0
-
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return self.position
+        if squeeze:
+            return self.position
+        return self._position
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        points = np.array([(0, 0, 0)])
+        moments = np.array([self.moment])
+        return {"pts": points, "moments": moments}
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        # test init
+        if self.moment is None:
+            return np.array((0.0, 0.0, 0.0))
+        return self.moment

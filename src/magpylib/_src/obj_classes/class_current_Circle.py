@@ -3,18 +3,24 @@
 import warnings
 from typing import ClassVar
 
+import numpy as np
+
 from magpylib._src.display.traces_core import make_Circle
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_circle import BHJM_circle
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
+from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.target_meshing import target_mesh_circle
 from magpylib._src.utility import unit_prefix
 
 
-class Circle(BaseCurrent):
+class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     """Circular current loop.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     When `position=(0,0,0)` and `orientation=None` the current loop lies
     in the x-y plane of the global coordinate system, with its center in
@@ -39,11 +45,16 @@ class Circle(BaseCurrent):
     current: float, default=`None`
         Electrical current in units of A.
 
-    volume: float
-        Read-only. Object physical volume in units of m^3 - set to 0 for this class.
+    meshing: int, default=`None`
+        Parameter that defines the mesh fineness for force computation.
+        Must be an integer >= 4. Points will be equally distributed on the
+        circle.
 
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m.
+
+    dipole_moment: np.ndarray, shape (3,)
+        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -72,6 +83,7 @@ class Circle(BaseCurrent):
     """
 
     _field_func = staticmethod(BHJM_circle)
+    _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"current": 1, "diameter": 1}
     get_trace = make_Circle
 
@@ -81,6 +93,7 @@ class Circle(BaseCurrent):
         orientation=None,
         diameter=None,
         current=None,
+        meshing=None,
         *,
         style=None,
         **kwargs,
@@ -90,6 +103,9 @@ class Circle(BaseCurrent):
 
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
+
+        # Initialize BaseTarget
+        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -116,13 +132,31 @@ class Circle(BaseCurrent):
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
 
     # Methods
-    def _get_volume(self):
-        """Volume of object in units of m³."""
-        return 0.0
-
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return self.position
+        if squeeze:
+            return self.position
+        return self._position
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        # test init
+        if self.diameter is None or self.current is None:
+            return np.array((0.0, 0.0, 0.0))
+
+        return self.diameter**2 / 4 * np.pi * self.current * np.array((0, 0, 1))
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        return target_mesh_circle(self.diameter / 2, self.meshing, self.current)
+
+    def _validate_meshing(self, value):
+        """Circle makes only sense with at least 4 mesh points."""
+        if isinstance(value, int) and value > 3:
+            pass
+        else:
+            msg = f"Circle meshing parameter must be integer > 3 for {self}. Instead got {value}."
+            raise ValueError(msg)
 
 
 class Loop(Circle):

@@ -22,7 +22,8 @@ Magpylib provides an implementation for computing the magnetic field generated b
 
 The object-oriented interface offers two dedicated classes for this purpose:
 
-## TriangleStrip
+----------------------------
+## Triangle Strip
 
 The `TriangleStrip` class provides a convenient way to construct a current-carrying strip, band, or ribbon by simply supplying a sequence of vertices. These vertices should follow the alternating top-and-bottom pattern described in the [class documentation](docs-classes-current).
 
@@ -92,7 +93,8 @@ plt.show()
 
 Current strips can also be used to create complex magnet prisms using the [Equivalent Current Method](examples-misc-equivalent).
 
-## TriangleSheet
+----------------------------
+## Triangle Sheet
 
 The `TriangleSheet` class is used to construct arbitrary current sheets from a collection of individual triangle elements, each carrying its own specified surface current density. This enables detailed modeling of complex surface current distributions with good control over geometry and current flow.
 

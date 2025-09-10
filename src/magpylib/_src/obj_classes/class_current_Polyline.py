@@ -12,13 +12,17 @@ from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
+from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.target_meshing import target_mesh_polyline
 from magpylib._src.utility import unit_prefix
 
 
-class Polyline(BaseCurrent):
+class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
     """Line current flowing in straight paths from vertex to vertex.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     The vertex positions are defined in the local object coordinates (rotate with object).
     When `position=(0,0,0)` and `orientation=None` global and local coordinates coincide.
@@ -44,11 +48,17 @@ class Polyline(BaseCurrent):
     current: float, default=`None`
         Electrical current in units of A.
 
-    volume: float
-        Read-only. Object physical volume in units of m^3 - set to 0 for this class.
+    meshing: int, default=`None`
+        Parameter that defines the mesh fineness for force computation.
+        Must be a positive integer at least the number of segments. Each segment
+        will have one mesh point in its center. All remaining mesh points are
+        distributed evenly along the Polyline.
 
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m - set to mean of vertices for this class.
+
+    dipole_moment: np.ndarray, shape (3,)
+        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -76,11 +86,11 @@ class Polyline(BaseCurrent):
     >>> with np.printoptions(precision=3):
     ...     print(H)
     [3.161 3.161 0.767]
-
     """
 
     # pylint: disable=dangerous-default-value
     _field_func = staticmethod(current_vertices_field)
+    _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "current": 1,
         "vertices": 3,
@@ -95,6 +105,7 @@ class Polyline(BaseCurrent):
         vertices=None,
         position=(0, 0, 0),
         orientation=None,
+        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -103,6 +114,9 @@ class Polyline(BaseCurrent):
 
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
+
+        # Initialize BaseTarget
+        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -127,15 +141,52 @@ class Polyline(BaseCurrent):
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
 
     # Methods
-    def _get_volume(self):
-        """Volume of object in units of m³."""
-        return 0.0
-
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
+        if squeeze:
+            if self.vertices is not None:
+                return np.mean(self.vertices, axis=0) + self.position
+            return self.position
         if self.vertices is not None:
-            return np.mean(self.vertices, axis=0) + self.position
-        return self.position
+            return np.mean(self.vertices, axis=0) + self._position
+        return self._position
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        # test init
+        if self.vertices is None or self.current is None:
+            return np.array((0.0, 0.0, 0.0))
+        # test for closed polyline
+        if (len(self.vertices) > 1) and (np.all(self.vertices[0] == self.vertices[-1])):
+            return (
+                self.current
+                / 2
+                * np.sum(np.cross(self.vertices[:-1], self.vertices[1:]), axis=0)
+            )
+        msg = (
+            f"Cannot compute dipole moment of {self}. Dipole moment is only defined for closed "
+            "Polylines (first and last vertex must be identical)."
+        )
+        raise ValueError(msg)
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        # Tests in getFT ensure that meshing, dimension and excitation are set
+
+        # Special special case: fewer points than segments, cannot be caught in
+        #    meshing setter because vertices might not have been set yet
+        n_segments = len(self.vertices) - 1
+        if self.meshing < n_segments:
+            msg = (
+                "getFT Polyline bad meshing input. number of points is less than"
+                " number of Polyline segments. Setting one point per segment in computation"
+            )
+            warnings.warn(msg, UserWarning, stacklevel=2)
+            n_target = n_segments
+        else:
+            n_target = self.meshing
+
+        return target_mesh_polyline(self.vertices, self.current, n_target)
 
 
 class Line(Polyline):

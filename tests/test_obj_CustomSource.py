@@ -66,20 +66,6 @@ def test_repr():
     assert repr(dip)[:12] == "CustomSource", "Custom_Source repr failed"
 
 
-def test_CustomSource_volume():
-    """Test CustomSource volume calculation (should be 0)."""
-
-    def my_field(field, observers):
-        if field == "B":
-            return np.zeros_like(observers)
-        return observers
-
-    custom = magpy.misc.CustomSource(field_func=my_field)
-    calculated = custom.volume
-    expected = 0
-    assert calculated == expected
-
-
 def test_CustomSource_centroid():
     """Test CustomSource centroid - should return position"""
     expected = (11, 12, 13)

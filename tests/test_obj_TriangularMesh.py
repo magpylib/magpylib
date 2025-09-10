@@ -140,9 +140,9 @@ def test_magnet_trimesh_func():
         polarization=pol,
         polydata=pv.Cube(
             center=cube.position,
-            x_length=10,
-            y_length=10,
-            z_length=10,
+            x_length=dim[0],
+            y_length=dim[1],
+            z_length=dim[2],
         ),
     )
 

@@ -3,6 +3,7 @@
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=protected-access
+# pylint: disable=import-outside-toplevel
 
 from abc import ABC, abstractmethod
 
@@ -48,6 +49,7 @@ class BaseGeo(BaseTransform, ABC):
     - orientation
     - volume
     - centroid
+    - moment
     - style
 
     Methods of BaseGeo
@@ -154,21 +156,9 @@ class BaseGeo(BaseTransform, ABC):
         return style
 
     # abstract methods that must be implemented by subclasses ------
-    @abstractmethod
-    def _get_volume(self):
-        """
-        Calculate and return the volume of the object in units of m³.
-
-        This method must be implemented by all subclasses.
-
-        Returns
-        -------
-        float
-            Volume of the object in m³.
-        """
 
     @abstractmethod
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """
         Calculate and return the centroid of the object in units of m.
 
@@ -176,8 +166,8 @@ class BaseGeo(BaseTransform, ABC):
 
         Returns
         -------
-        numpy.ndarray, shape (3,)
-            Centroid coordinates [x, y, z] in m.
+        numpy.ndarray, shape (n,3) when there is a path, or squeeze(1,3) when not
+            Centroid coordinates [(x, y, z), ...] in m.
         """
 
     # properties ----------------------------------------------------
@@ -188,7 +178,6 @@ class BaseGeo(BaseTransform, ABC):
 
     @parent.setter
     def parent(self, inp):
-        # pylint: disable=import-outside-toplevel
         from magpylib._src.obj_classes.class_Collection import Collection  # noqa: I001, PLC0415
 
         if isinstance(inp, Collection):
@@ -290,14 +279,14 @@ class BaseGeo(BaseTransform, ABC):
             )
 
     @property
-    def volume(self):
-        """Volume of object in units of m³."""
-        return self._get_volume()
-
-    @property
     def centroid(self):
         """Centroid of object in units of m."""
         return self._get_centroid()
+
+    @property
+    def _centroid(self):
+        """Centroid of object in units of m."""
+        return self._get_centroid(squeeze=False)
 
     @property
     def style(self):
@@ -330,12 +319,10 @@ class BaseGeo(BaseTransform, ABC):
 
         Returns
         -------
-        self: magpylib object
+        self: Self
 
         Examples
         --------
-        Demonstration of `reset_path` functionality:
-
         >>> import magpylib as magpy
         >>> obj = magpy.Sensor(position=(1,2,3))
         >>> obj.rotate_from_angax(45, 'z')

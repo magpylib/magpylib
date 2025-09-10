@@ -18,6 +18,7 @@ kernelspec:
 
 The method of images is a classical technique from electrostatics that can also be used in magnetostatics to obtain analytical solutions in the presence of highly permeable materials. In this example we show how it can be applied with Magpylib.
 
+----------------------------
 ## Textbook Fundamentals
 
 For the correct application of the method of images several requirements must be satisfied:
@@ -38,6 +39,7 @@ For the correct application of the method of images several requirements must be
 
 When all of these criteria are satisfied, the potential field in the region of interest can be constructed as the superposition of the original source distribution $ \rho(\vec{r}) $ and an image source $ \rho^*(\vec{r}) $, which is a mirror reflection of the original source across the boundary.
 
+----------------------------
 ## Method of Images in Magnetostatics
 
 In magnetostatics, the method of images can be applied in the presence of highly permeable ($\mu_r \gg 1$) soft magnetic materials. In such materials, the magnetic moments can rotate freely and align in a way that completely suppresses the $ \vec{H} $-field inside the body. As a result, the field is forced to be normal to the material’s surface, making simple planar boundaries ideal for image constructions and satisfying condition (3).
@@ -65,6 +67,7 @@ Sketch of how the image method works in magnetostatics
 
 **Note**: Do not confuse this with the case of [superconductors](https://www.imp.kiev.ua/~kord/wiki/method_of_images.html), where the method of images is also applicable — but for entirely different physical reasons (*perfect diamagnetism* rather than high permeability).
 
+----------------------------
 ## Example Applications
 
 The method of images does not require an idealized, infinitely permeable half-space. In practice, even thin (not too thin though), finite soft-magnetic layers—such as the soft-magnetic backs of inductors or magnetic shielding plates—can provide sufficient contrast for the image method. In addition, even relatively low permeabilities $\mu_r> 10$ or $\mu_r>100$ result in good agreement between experiment and theory.
@@ -73,6 +76,7 @@ One practical use case is shown in the example on [magnetic scale structures](ex
 
 Another application is the [computation of holding forces](examples-force-holding-force) between permanent magnets and soft magnetic surfaces.
 
+----------------------------
 ## Example of the Magnetic Image Method
 
 In the following example, a permanent magnet is placed above a planar magnetic shield located in the xy-plane. The mirror image is modeled as a second magnet, placed below the plane according to the method of images. We then compute the magnetic field in the upper half-space.

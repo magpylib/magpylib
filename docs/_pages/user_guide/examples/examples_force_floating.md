@@ -16,29 +16,35 @@ kernelspec:
 
 # Floating Magnets
 
-The examples here require installation of the [magpylib-force package](https://pypi.org/project/magpylib-force/). See also the [magpylib-force documentation](docs-magpylib-force).
+Magpylib's efficient field and force computations make it ideal for dynamic simulations that require solving equations of motion through time-discretization methods. This example demonstrates how to implement numerical integration schemes to simulate the motion of magnetic objects under electromagnetic forces and torques.
 
-## Formalism
+------------------
+## Mathematical Formalism
 
-With force and torque we can compute how a magnet moves in a magnetic field by solving the equations of motion,
+The dynamics of magnetic objects are governed by the classical equations of motion: $\vec{F} = \dot{\vec{p}}$ for translation (with force $\vec{F}$ and momentum $\vec{p}$) and $\vec{T} = \dot{\vec{L}}$ for rotation (with torque $\vec{T}$ and angular momentum $\vec{L}$).
 
-$$ \vec{F} = \dot{\vec{p}} \ \text{and} \ \vec{T} = \dot{\vec{L}}$$
+For numerical integration, we implement a first-order semi-implicit Euler method—a robust algorithm commonly used for [planetary motion](https://www.mgaillard.fr/2021/07/11/euler-integration.html) and other dynamic systems. This method discretizes time into small steps $\Delta t$ and updates the system state sequentially.
 
-with force $\vec{F}$, momentum $\vec{p}$, torque $\vec{T}$ and angular momentum $\vec{L}$.
-
-We implement a first order semi-implicit Euler method that is used to compute [planetary motion](https://www.mgaillard.fr/2021/07/11/euler-integration.html). The algorithm splits the computation into small subsequent time-steps $\Delta t$, resulting in the following equations for the position $\vec{s}$, the velocity $\vec{v} = \dot{\vec{s}}$, the rotation angle $\vec{\varphi}$ and the angular velocity $\vec{\omega}$,
+**Translation dynamics:**
+For position $\vec{s}$, velocity $\vec{v} = \dot{\vec{s}}$, and mass $m$:
 
 $$\vec{v}(t+\Delta t) = \vec{v}(t) + \frac{\Delta t}{m} \vec{F}(t)$$
 
 $$\vec{s}(t+\Delta t) = \vec{s}(t) + \Delta t \cdot \vec{v} (t + \Delta t)$$
 
+**Rotational dynamics:**
+For orientation angle $\vec{\varphi}$, angular velocity $\vec{\omega}$, and inertia tensor $J$:
+
 $$\vec{\omega} (t + \Delta t) = \vec{ω}(t) + \Delta t \cdot J^{-1} \cdot \vec{T}(t)$$
 
 $$\vec{\varphi} (t + \Delta t) = \vec{\varphi}(t) + \Delta t \cdot \vec{\omega} (t + \Delta t) $$
 
-## Magnet and Coil
+The semi-implicit nature (velocity updated before position) provides better numerical stability compared to explicit methods, making it well-suited for magnetic dynamics where forces can vary rapidly with distance.
 
-In the following example we show an implementation of the proposed Euler scheme. A cubical magnet is accelerated by a current loop along the z-axis as show in the following sketch:
+------------------
+## Magnet Accelerated by Coil
+
+This implementation demonstrates the proposed Euler scheme using a simplified scenario where cubical magnets are accelerated along the z-axis by a current loop, as shown in the following sketch:
 
 ```{figure} ../../../_static/images/examples_force_floating_coil-magnet.png
 :width: 40%
@@ -48,15 +54,16 @@ In the following example we show an implementation of the proposed Euler scheme.
 A cubical magnet is accelerated by a current loop.
 ```
 
-Due to the symmetry of the problem there is no torque so we solve only the translation part of the equations of motion.
+Due to the axial symmetry of this configuration, the net torque on the magnet is zero, allowing us to solve only the translational equations of motion while ignoring rotational dynamics.
 
-In the beginning, the magnet is at rest and slightly displaced in z-direction from the center of the current loop. With time the magnet is accelerated and it's z-position is displayed in the figure below.
+The simulation starts with two magnets (opposite magnetization) at rest, positioned slightly above the current loop center along the z-axis. As time progresses, magnetic forces accelerate the magnets, and their z-positions are computed and visualized to demonstrate the different behaviors based on magnetic moment orientation.
 
 ```{code-cell} ipython3
+:tags: [hide-input]
+
 import numpy as np
 import matplotlib.pyplot as plt
 import magpylib as magpy
-from magpylib_force import getFT
 from scipy.spatial.transform import Rotation as R
 
 def timestep(source, target, dt):
@@ -73,15 +80,14 @@ def timestep(source, target, dt):
 
     dt: Euler scheme length of timestep
     """
+    # Compute force
+    F, _ = magpy.getFT(source, target)
 
-    # compute force
-    F, _ = getFT(source, target)
-
-    # compute/set new velocity and position
+    # Set new velocity and position
     target.v = target.v + dt/target.m * F
     target.position = target.position + dt * target.v
 
-# Current loop that generates the field
+# Current loop
 loop = magpy.current.Circle(diameter=10e-3, current=10)
 
 # Magnets which are accelerated in the loop-field
@@ -89,19 +95,19 @@ cube1 = magpy.magnet.Cuboid(dimension=(5e-3,5e-3,5e-3), polarization=(0,0,1))
 cube1.meshing=(3,3,3)
 cube2 = cube1.copy(polarization=(0,0,-1))
 
-# Compute motion
+# Simulate motion of both cubes
 for cube, lab in zip([cube1, cube2], ["attractive", "repulsive"]):
 
-    # Set initial conditions
-    cube.m = 1e-3
-    cube.position=(0,0,3e-3)
-    cube.v = np.array([0,0,0])
+    # Set initial conditions (position, mass, velocity)
+    cube.position=(0,0,3e-3)    # m
+    cube.m = 1e-3               # kg
+    cube.v = np.array([0,0,0])  # m/s
 
     # Compute timesteps
     z = []
     for _ in range(100):
         z.append(cube.position[2]*1000)
-        timestep(loop, cube, dt=1e-3)
+        timestep(loop, cube, dt=1e-3)  # s
 
     plt.plot(z, marker='.', label=lab)
 
@@ -110,19 +116,22 @@ plt.gca().legend()
 plt.gca().grid()
 plt.gca().set(
     title="Magnet motion",
-    xlabel="timestep ()",
+    xlabel="timestep (dt=1e-3 s)",
     ylabel="z-Position (mm)",
 )
 plt.show()
 ```
 
-The simulation is made with two magnets with opposing polarizations. In the "repulsive" case (orange) the magnetic moment of magnet and coil are anti-parallel and the magnet is simply pushed away from the coil in positive z-direction. In the "attractive" case  (blue) the moments are parallel to each other, and the magnet is accelerated towards the coil center. Due to inertia it then comes out on the other side, and is again attracted towards the center resulting in an oscillation.
+**Key observations:**
+
+The simulation compares two magnets with opposite polarizations. In the **repulsive case** (orange), the magnetic moments of the magnet and coil are antiparallel, causing the magnet to be pushed away from the coil in the positive z-direction with monotonic acceleration. In the **attractive case** (blue), the moments are parallel, initially accelerating the magnet toward the coil center. Due to inertia, the magnet overshoots and emerges on the opposite side, where it is again attracted back toward the center, resulting in oscillatory motion around the equilibrium position.
 
 ```{warning}
-This algorithm accumulates its error over time, which can be avoided by choosing smaller timesteps.
+This numerical algorithm accumulates discretization errors over time. For higher accuracy or longer simulations, use smaller timesteps or higher-order integration methods.
 ```
 
-## Two-body problem
+------------------
+## Two-Body Problem
 
 In the following example we demonstrate a fully dynamic simulation with two magnetic bodies that rotate around each other, attracted towards each other by the magnetic force, and repelled by the centrifugal force.
 
@@ -134,13 +143,14 @@ In the following example we demonstrate a fully dynamic simulation with two magn
 Two freely moving magnets rotate around each other.
 ```
 
-Contrary to the simple case above, we apply the Euler scheme also to the rotation degrees of freedom, as the magnets will change their orientation while they circle around each other.
+Contrary to the simple case above, we apply the Euler scheme also to the rotation degrees of freedom, as the magnets will change their orientation while they circle around each other. Magnet positions and orientations are computed and visualized.
 
 ```{code-cell} ipython3
+:tags: [hide-input]
+
 import numpy as np
 import matplotlib.pyplot as plt
 import magpylib as magpy
-from magpylib_force import getFT
 from scipy.spatial.transform import Rotation as R
 
 def timestep(source, target, dt):
@@ -158,32 +168,37 @@ def timestep(source, target, dt):
 
     dt: Euler scheme length of timestep
     """
-    # compute force
-    F, T = getFT(source, target)
+    # Compute force
+    F, T = magpy.getFT(source, target)
 
-    # compute/set new velocity and position
+    # Set new velocity and position
     target.v = target.v + dt/target.m * F
     target.position = target.position + dt * target.v
 
-    # compute/set new angular velocity and rotation angle
+    # Set new angular velocity and rotation angle
     target.w = target.w + dt*target.orientation.apply(np.dot(target.I_inv, target.orientation.inv().apply(T)))
     target.orientation = R.from_rotvec(dt*target.w)*target.orientation
 
-
-v0 = 5.18   # init velocity
+# Simulation parameters
 steps=505   # number of timesteps
-dt = 1e-2   # timstep size
+dt = 1e-2   # timstep size (s)
+
+# Initial conditions
+pos0a, pos0b = (5,0,0), (-5,0,0)  # m
+v0 = np.array((0, 5.18, 0))       # m/s
+m0 = 2                            # kg
+w0 = np.array([0, 0, 0])          # rad/s
+I0 = 1 * np.eye(3)                # kg*m^2
 
 # Create the two magnets and set initial conditions
-sphere1 = magpy.magnet.Sphere(position=(5,0,0), diameter=1, polarization=(1,0,0))
-sphere1.meshing = 5
-sphere1.m = 2
-sphere1.v = np.array([0, v0, 0])
-sphere1.w = np.array([0, 0, 0])
-sphere1.I_inv = 1 * np.eye(3)
+sphere1 = magpy.magnet.Sphere(position=pos0a, diameter=1, polarization=(1,0,0))
+sphere1.m = m0
+sphere1.v = v0
+sphere1.w = w0
+sphere1.I_inv = I0
 
-sphere2 = sphere1.copy(position=(-5,0,0))
-sphere2.v = np.array([0,-v0, 0])
+sphere2 = sphere1.copy(position=pos0b)
+sphere2.v = -v0
 
 # Solve equations of motion
 data = np.zeros((4,steps,3))
@@ -198,7 +213,7 @@ for i in range(steps):
     data[3,i] = sphere2.orientation.as_euler('xyz')
 
 # Plot results
-fig, (ax1,ax2) = plt.subplots(2,1,figsize=(10,5))
+fig, (ax1,ax2) = plt.subplots(2,1,figsize=(8,4))
 
 for j,ls in enumerate(["-", "--"]):
 
@@ -212,7 +227,7 @@ for j,ls in enumerate(["-", "--"]):
 
 # Figure styling
 for ax in fig.axes:
-    ax.legend(fontsize=9, loc=6, facecolor='.8')
+    ax.legend(fontsize=9, loc=6, facecolor='.9')
     ax.grid()
 ax1.set(
     title="Floating Magnet Ringdown",
@@ -220,11 +235,13 @@ ax1.set(
 )
 ax2.set(
     ylabel="Orientations (rad)",
-    xlabel="timestep ()",
+    xlabel="timestep (0.01 s)",
 )
 plt.tight_layout()
 plt.show()
 ```
+
+**Key observations:**
 
 In the figure one can see, that the initial velocity is chosen so that the magnets approach each other in a ringdown-like behavior. The magnets are magnetically locked towards each other - both always show the same orientation. However, given no initial angular velocity, the rotation angle is oscillating several times while circling once.
 
@@ -236,4 +253,8 @@ A video is helpful in this case to understand what is going on. From the computa
 :alt: animation of simulated magnet ringdown.
 
 Animation of above simulated magnet ringdown.
+```
+
+```{note}
+Keep in mind that this simulation accounts only for magnetic forces. Time dependent magnetic fields induce **eddy currents** in conductive media which are not considered here.
 ```

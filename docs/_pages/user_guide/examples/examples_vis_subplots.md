@@ -39,7 +39,9 @@ sens = magpy.Sensor(
 
 In the following, we demonstrate various ways how to generate 2D/3D subplot combinations for this system.
 
-# Plotting canvas with own figure
+----------------------------
+
+## Plotting in Own Figure
 
 Customization is best done by adding the [Magpylib 3D-model](guide-graphics-show) to your own figure using the `canvas` kwarg.
 
@@ -63,8 +65,9 @@ plt.show()
 
 How to add and modify subplots in all three supported backends is demonstrated in the [canvas documentation](guide-graphics-canvas). It is also possible to customize the Magpylib 3D output by returning and editing the respective canvas using the `return_fig` kwarg, see [return figures](guide-graphics-return_fig).
 
+----------------------------
 
-# Built-in subplots
+## Built-in Subplots
 
 For maximal efficiency, Magpylib offers auto-generated subplots of 3D models and the field along paths by providing the `show` function with proper input dictionaries.
 
@@ -80,7 +83,10 @@ magpy.show(
 
 Detailed information on built-in subplots is provided in the [user guide](guide-graphics-subplots).
 
-# show_context
+
+----------------------------
+
+## With Context Manager
 
 With a built-in context manager this functionality can be accessed with maximal ease
 

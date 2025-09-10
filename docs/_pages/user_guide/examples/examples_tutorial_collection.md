@@ -23,6 +23,8 @@ The top-level class `Collection` allows users to group objects by reference for 
 3. All children inside the collection can be individually addressed and manipulated, which will automatically manipulate their state inside the parent collection.
 4. Collections have their own `style` attributes, their paths are displayed in `show`, and all children are automatically assigned their parent color.
 
+----------------------------
+
 ## Constructing Collections
 
 Collections have the attributes `children`, `sources`, `sensors` and `collections`. These attributes are ordered lists that contain objects that are added to the collection by reference (not copied). `children` returns a list of all objects in the collection. `sources` returns a list of the sources, `sensors` a list of the sensors and `collections` a list of "sub-collections" within the collection.
@@ -91,6 +93,8 @@ coll = x1 + s1
 coll.describe(format="label")
 ```
 
+----------------------------
+
 ## Child-Parent Relations
 
 Objects that are part of a collection become children of that collection, and the collection itself becomes their parent. Every Magpylib object has the `parent` attribute, which is `None` by default.
@@ -126,6 +130,8 @@ print("\nChange x1 parent to c2")
 x1.parent = c2
 c2.describe(format="label")
 ```
+
+----------------------------
 
 ## Accessing Children
 
@@ -167,6 +173,8 @@ coll.describe(format="label")
 # _all gives access to the whole tree
 print([s.style.label for s in coll.sensors_all])
 ```
+
+----------------------------
 
 ## Practical Example
 
@@ -224,6 +232,8 @@ plt.gca().legend()
 plt.show()
 ```
 
+----------------------------
+
 ## Efficient 3D Models
 
 The graphical backend libraries were not designed for complex 3D graphic output. As a result, it often becomes inconvenient and slow when attempting to display many 3D objects. One solution to this problem when dealing with large collections is to represent the latter by a single encompassing body, and to deactivate the individual 3D models of all children.
@@ -257,6 +267,8 @@ coll.set_children_styles(model3d_showdefault=False)
 coll.style.label = "Collection with hidden children"
 coll.show()
 ```
+
+----------------------------
 
 ## Compound Objects
 

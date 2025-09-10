@@ -1,8 +1,8 @@
-"""Collection class code"""
-
+# pylint: disable=too-many-lines
 # pylint: disable=redefined-builtin
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-positional-arguments
+# pylint: disable=arguments-differ
 
 from collections import Counter
 
@@ -14,6 +14,8 @@ from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_obj
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
+from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
 from magpylib._src.utility import format_obj_input, rec_obj_remover
 
 
@@ -248,7 +250,23 @@ class BaseCollection(BaseDisplayRepr):
             lines.append(line)
         return f"""<pre>{"<br>".join(lines)}</pre>"""
 
-    # Methods
+    # # Methods
+    # def _get_centroid(self):
+    #     """Centroid of collection weighted by children volumes in units of m."""
+    #     total_volume = 0.0
+    #     weighted_centroid = np.array([0.0, 0.0, 0.0])
+
+    #     for child in self.children_all:
+    #         child_volume = child.volume
+    #         if child_volume > 0:
+    #             child_centroid = child.centroid
+    #             weighted_centroid += child_centroid * child_volume
+    #             total_volume += child_volume
+
+    #     if total_volume > 0:
+    #         return weighted_centroid / total_volume
+    #     return self.position  # pylint: disable=no-member
+
     def describe(self, format="type+label+id", max_elems=10, return_string=False):
         # pylint: disable=arguments-differ
         """Returns or prints a tree view of the collection.
@@ -829,7 +847,7 @@ class BaseCollection(BaseDisplayRepr):
         return ", ".join(items)
 
 
-class Collection(BaseGeo, BaseCollection):
+class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
     """Group multiple children (sources, sensors and collections) in a collection for
     common manipulation.
 
@@ -837,10 +855,10 @@ class Collection(BaseGeo, BaseCollection):
     that reference frame when an operation (e.g. move, rotate, setter, ...) is applied
     to the collection.
 
-    Collections can be used as `sources` and `observers` input for magnetic field
-    computation. For magnetic field computation a collection that contains sources
-    functions like a single source. When the collection contains sensors
-    it functions like a list of all its sensors.
+    Collections can be used as `sources`, `observers`, and `targets` input for magnetic
+    field and force computation. For force and field computation a collection that
+    contains sources/targets functions like a single source/target. When the collection
+    contains sensors it functions like a list of all its sensors.
 
     SI units are used for all inputs and outputs.
 
@@ -859,12 +877,16 @@ class Collection(BaseGeo, BaseCollection):
         together represent an object path.
 
     volume: float
-        Read-only. Total Collection volume in units of m^3. Consider that overlapping objects
-        may lead to double counting.
+        Read-only. Total Collection volume (of all magnets) in units of m^3. Consider
+        that overlapping objects may lead to double counting.
 
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Collection centroid in units of m computed via the volume-weighted average of
         all child centroids.
+
+    dipole_moment: np.ndarray, shape (3,)
+        Read-only. Total Collection dipole moment in units of A*m² computes from the sum of all
+        child dipole moments.
 
     override_parent: bool, default=False
         If False thrown an error when an attempt is made to add an object that
@@ -968,7 +990,7 @@ class Collection(BaseGeo, BaseCollection):
     # Abstract methods implementation
     def _get_volume(self):
         """Volume of all objects in units of m³."""
-        return sum(child.volume for child in self.children_all)
+        return sum(getattr(child, "volume", 0.0) for child in self.children_all)
 
     def _get_centroid(self):
         """Centroid of collection weighted by children volumes in units of m."""
@@ -976,7 +998,7 @@ class Collection(BaseGeo, BaseCollection):
         weighted_centroid = np.array([0.0, 0.0, 0.0])
 
         for child in self.children_all:
-            child_volume = child.volume
+            child_volume = getattr(child, "volume", 0.0)
             if child_volume > 0:
                 child_centroid = child.centroid
                 weighted_centroid += child_centroid * child_volume
@@ -985,3 +1007,13 @@ class Collection(BaseGeo, BaseCollection):
         if total_volume > 0:
             return weighted_centroid / total_volume
         return self.position
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        return np.sum(
+            [
+                getattr(child, "dipole_moment", np.zeros(3))
+                for child in self.children_all
+            ],
+            axis=0,
+        )

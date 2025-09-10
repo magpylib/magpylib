@@ -20,7 +20,8 @@ In geometry the convex hull of a point cloud is the smallest convex shape that c
 
 Magpylib offers construction of convex hull magnets by combining the `magpylib.magnets.TriangularMesh` and the [scipy.spatial.ConvexHull](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html) classes via the class method `from_ConvexHull`. Note, that the Scipy method does not guarantee correct face orientations if `reorient_faces` is disabled.
 
-## Pyramid magnet
+----------------------------
+## Pyramid Magnet
 
 This is the fastest way to construct a pyramid magnet.
 

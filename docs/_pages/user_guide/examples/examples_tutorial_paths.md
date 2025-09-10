@@ -24,6 +24,8 @@ Always make use of paths when computing with multiple Magpylib object position a
 
 In this tutorial we show some good practice examples.
 
+----------------------------
+
 ## Assigning Absolute Paths
 
 Absolute object paths are assigned at initialization or through the object properties.
@@ -49,6 +51,8 @@ cube.orientation = ori
 # Display as animation
 magpy.show(sensor, cube, animation=True, backend="plotly")
 ```
+
+----------------------------
 
 ## Relative Paths
 
@@ -100,7 +104,9 @@ for _ in range(3):
 sphere.show()
 ```
 
-## Merging paths
+----------------------------
+
+## Merging Paths
 
 Complex paths can be created by merging multiple path operations. This is done with vector input for the `move` and `rotate` methods and choosing values for `start` that will make the paths overlap. In the following example we combine a linear path with a rotation about self (`anchor=None`) until path index 30. Thereon, a second rotation about the origin is applied, creating a spiral.
 
@@ -122,7 +128,9 @@ cube.rotate_from_rotvec(np.linspace((0, 0, 0), (0, 0, 360), 30), anchor=0, start
 cube.show(backend="plotly", animation=True)
 ```
 
-## Reset path
+----------------------------
+
+## Reset Path
 
 The `reset_path()` method allows users to reset an object path to `position=(0,0,0)` and `orientation=None`.
 
@@ -140,6 +148,8 @@ sensor.reset_path()
 print(sensor.position)
 print(sensor.orientation.as_quat())
 ```
+
+----------------------------
 
 (examples-tutorial-paths-edge-padding-end-slicing)=
 ## Edge-padding and end-slicing

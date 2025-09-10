@@ -75,14 +75,6 @@ def test_old_Loop_deprecation_warning():
     assert isinstance(new_class, magpy.current.Circle)
 
 
-def test_Circle_volume():
-    """Test Circle (current) volume calculation (should be 0)."""
-    circle = magpy.current.Circle(current=1.0, diameter=2.0)
-    calculated = circle.volume
-    expected = 0
-    assert calculated == expected
-
-
 def test_Circle_centroid():
     """Test Circle centroid - should return position"""
     expected = (7, 8, 9)

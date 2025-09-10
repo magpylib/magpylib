@@ -1,4 +1,8 @@
-"""Magnet TriangularMesh class code"""
+# pylint:disable=too-many-lines
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-public-methods
+# pylint: disable=too-many-positional-arguments
+# pylint: disable=arguments-differ
 
 import warnings
 from typing import ClassVar
@@ -21,21 +25,24 @@ from magpylib._src.input_checks import (
     check_format_input_vector2,
 )
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
+from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
+from magpylib._src.obj_classes.target_meshing import target_mesh_triangularmesh
 from magpylib._src.style import TriangularMeshStyle
 
-# pylint: disable=too-many-instance-attributes
-# pylint: disable=too-many-public-methods
-# pylint: disable=too-many-positional-arguments
 
-
-class TriangularMesh(BaseMagnet):
+class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     """Magnet with homogeneous magnetization defined by triangular surface mesh.
-    Can be used as `sources` input for magnetic field computation.
 
-    When `position=(0,0,0)` and `orientation=None` the TriangularMesh vertices
-    are the same as in the global coordinate system.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
+
+    The vertex positions are defined in the local object coordinates (rotate with object).
+    When `position=(0,0,0)` and `orientation=None` global and local coordinates coincide.
+
 
     SI units are used for all inputs and outputs.
 
@@ -65,11 +72,18 @@ class TriangularMesh(BaseMagnet):
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
 
+    meshing: int, default=`None`
+        Parameter that defines the mesh fineness for force computation.
+        Must be a positive integer specifying the target mesh size.
+
     volume: float
         Read-only. Object physical volume in units of m^3.
 
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m.
+
+    dipole_moment: np.ndarray, shape (3,)
+        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
 
     reorient_faces: bool or string, default=`True`
         In a properly oriented mesh, all faces must be oriented outwards.
@@ -129,6 +143,7 @@ class TriangularMesh(BaseMagnet):
 
     _field_func = staticmethod(BHJM_magnet_trimesh)
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"polarization": 2, "mesh": 3}
+    _force_type = "magnet"
     get_trace = make_TriangularMesh
     _style_class = TriangularMeshStyle
 
@@ -140,6 +155,7 @@ class TriangularMesh(BaseMagnet):
         faces=None,
         polarization=None,
         magnetization=None,
+        meshing=None,
         check_open="warn",
         check_disconnected="warn",
         check_selfintersecting="warn",
@@ -165,6 +181,8 @@ class TriangularMesh(BaseMagnet):
         super().__init__(
             position, orientation, magnetization, polarization, style, **kwargs
         )
+        # Initialize BaseTarget with meshing parameter
+        BaseTarget.__init__(self, meshing=meshing)
 
     # Properties
     @property
@@ -244,9 +262,29 @@ class TriangularMesh(BaseMagnet):
         # Return absolute value to get positive volume
         return abs(total_volume)
 
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return self.barycenter
+        if squeeze:
+            return self.barycenter
+        return self._barycenter
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        # test init
+        if self.magnetization is None or self.vertices is None or self.faces is None:
+            return np.array((0.0, 0.0, 0.0))
+        return self.magnetization * self.volume
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        # Tests in getFT ensure that meshing, dimension and excitation are set
+        return target_mesh_triangularmesh(
+            self.vertices,
+            self.faces,
+            self.meshing,
+            self.volume,
+            self.magnetization,
+        )
 
     @staticmethod
     def _validate_mode_arg(arg, arg_name="mode"):
@@ -598,6 +636,7 @@ class TriangularMesh(BaseMagnet):
         points=None,
         polarization=None,
         magnetization=None,
+        meshing=None,
         check_open="warn",
         check_disconnected="warn",
         reorient_faces=True,
@@ -673,6 +712,7 @@ class TriangularMesh(BaseMagnet):
             faces=ConvexHull(points).simplices,
             polarization=polarization,
             magnetization=magnetization,
+            meshing=meshing,
             reorient_faces=reorient_faces,
             check_open=check_open,
             check_disconnected=check_disconnected,
@@ -688,6 +728,7 @@ class TriangularMesh(BaseMagnet):
         polydata=None,
         polarization=None,
         magnetization=None,
+        meshing=None,
         check_open="warn",
         check_disconnected="warn",
         reorient_faces=True,
@@ -780,6 +821,7 @@ class TriangularMesh(BaseMagnet):
             faces=faces,
             polarization=polarization,
             magnetization=magnetization,
+            meshing=meshing,
             reorient_faces=reorient_faces,
             check_open=check_open,
             check_disconnected=check_disconnected,
@@ -795,6 +837,7 @@ class TriangularMesh(BaseMagnet):
         triangles=None,
         polarization=None,
         magnetization=None,
+        meshing=None,
         reorient_faces=True,
         check_open="warn",
         check_disconnected="warn",
@@ -887,6 +930,7 @@ class TriangularMesh(BaseMagnet):
             faces=faces,
             polarization=polarization,
             magnetization=magnetization,
+            meshing=meshing,
             reorient_faces=reorient_faces,
             check_open=check_open,
             check_disconnected=check_disconnected,
@@ -902,6 +946,7 @@ class TriangularMesh(BaseMagnet):
         mesh=None,
         polarization=None,
         magnetization=None,
+        meshing=None,
         reorient_faces=True,
         check_open="warn",
         check_disconnected="warn",
@@ -985,6 +1030,7 @@ class TriangularMesh(BaseMagnet):
             faces=faces,
             polarization=polarization,
             magnetization=magnetization,
+            meshing=meshing,
             reorient_faces=reorient_faces,
             check_open=check_open,
             check_disconnected=check_disconnected,

@@ -18,7 +18,8 @@ kernelspec:
 
 In this example we show how to model air-coils, then combine two coils into a Helmholtz-pair and visualize the homogeneity of the resulting magnetic field. A nice explanation of coils and the magnetic field is given [here](https://www.nagwa.com/en/explainers/186157825721/#:~:text=The%20magnetic%20field%20strength%2C%20%F0%9D%90%B5,%EF%8A%AD%20T%E2%8B%85m%2FA.). With the code examples below you can easily compare Magpylib results to results presented in this tutorial.
 
-## Coil models
+--------------------------
+## Coil Models
 
 **Model 1:** The coil consists of multiple windings, each of which can be modeled with a circular current loop which is realized by the `Circle` class. The individual windings are combined into a `Collection` which itself behaves like a single magnetic field source.
 
@@ -78,7 +79,8 @@ helmholtz = magpy.Collection(coil1, coil2)
 helmholtz.show()
 ```
 
-## Plotting the field
+--------------------------
+## Plotting the Field
 
 Streamplot from Matplotlib is a powerful tool to outline the field lines. However, it must be understood that streamplot shows only a projection of the field onto the observation plane. All field components that point out of the plane become invisible. In out example we choose symmetry planes, where the perpendicular component is negligible.
 
@@ -120,7 +122,8 @@ plt.tight_layout()
 plt.show()
 ```
 
-## Helmholtz field homogeneity
+--------------------------
+## Helmholtz Field Homogeneity
 
 While the optimal solution is given by two current loops, real world applications must deal with finite sizes and limited construction space. Here Magpylib enables fast analysis of different possible geometries.
 

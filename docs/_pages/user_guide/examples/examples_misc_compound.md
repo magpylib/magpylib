@@ -18,7 +18,8 @@ orphan: true
 
 The `Collection` class is a powerful tool for grouping and tracking object assemblies. However, it is often convenient to have assembly parameters themselves, like number of magnets, as variables. This is achieved by sub-classing `Collection`. We refer to such classes as "**Compounds**" and show how to seamlessly integrate them into Magpylib.
 
-## Subclassing collections
+----------------------------
+## Subclassing Collections
 
 In the following example we design a compound class `MagnetRing` which represents a ring of cuboid magnets with the parameter `cubes` that should refer to the number of magnets on the ring. The ring will automatically adjust its size when `cubes` is modified, including an additionally added encompassing 3D model that may, for example, represent a mechanical magnet holder.
 
@@ -122,7 +123,8 @@ print(f"B-field at sensor for modified ring → {ring.getB(sensor).round(3)}")
 magpy.show(ring, sensor, backend='plotly')
 ```
 
-## Postponed trace construction
+----------------------------
+## Postponed Trace Construction
 
 In the above example, the trace is constructed in `_update`, every time the parameter `cubes` is modified. This can lead to an unwanted computational overhead, especially as the construction is only necessary for graphical representation.
 
