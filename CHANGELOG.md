@@ -2,7 +2,10 @@
 
 ## [5.2.0] - 2024-MM-DD
 
-- General documentation update ([#876](https://github.com/magpylib/magpylib/issues/876), [#829](https://github.com/magpylib/magpylib/issues/829)), and adding/reviewing all force and torque docs.
+- General documentation update
+  ([#876](https://github.com/magpylib/magpylib/issues/876),
+  [#829](https://github.com/magpylib/magpylib/issues/829)), and adding/reviewing
+  all force and torque docs.
 - Adding force computation `magpylib.getFT()` to the library.
   ([#887](https://github.com/magpylib/magpylib/issues/887),
   [#847](https://github.com/magpylib/magpylib/issues/847),
