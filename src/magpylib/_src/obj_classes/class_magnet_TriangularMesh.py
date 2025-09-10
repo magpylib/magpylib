@@ -25,12 +25,12 @@ from magpylib._src.input_checks import (
     check_format_input_vector2,
 )
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
 from magpylib._src.obj_classes.target_meshing import target_mesh_triangularmesh
 from magpylib._src.style import TriangularMeshStyle
-from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
 
 
 class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume):

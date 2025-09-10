@@ -5,6 +5,7 @@ This is a separate class from BaseMagnet because Dipole has no volume property
 
 from abc import ABC, abstractmethod
 
+
 class BaseVolume(ABC):
     """Base class for Magpylib objects for inheriting the volume property."""
 
