@@ -14,6 +14,7 @@ from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_obj
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
 from magpylib._src.utility import format_obj_input, rec_obj_remover
 
 
@@ -248,26 +249,22 @@ class BaseCollection(BaseDisplayRepr):
             lines.append(line)
         return f"""<pre>{"<br>".join(lines)}</pre>"""
 
-    # Methods
-    def _get_volume(self):
-        """Volume of all objects in units of m³."""
-        return sum(child.volume for child in self.children_all)
+    # # Methods
+    # def _get_centroid(self):
+    #     """Centroid of collection weighted by children volumes in units of m."""
+    #     total_volume = 0.0
+    #     weighted_centroid = np.array([0.0, 0.0, 0.0])
 
-    def _get_centroid(self):
-        """Centroid of collection weighted by children volumes in units of m."""
-        total_volume = 0.0
-        weighted_centroid = np.array([0.0, 0.0, 0.0])
+    #     for child in self.children_all:
+    #         child_volume = child.volume
+    #         if child_volume > 0:
+    #             child_centroid = child.centroid
+    #             weighted_centroid += child_centroid * child_volume
+    #             total_volume += child_volume
 
-        for child in self.children_all:
-            child_volume = child.volume
-            if child_volume > 0:
-                child_centroid = child.centroid
-                weighted_centroid += child_centroid * child_volume
-                total_volume += child_volume
-
-        if total_volume > 0:
-            return weighted_centroid / total_volume
-        return self.position  # pylint: disable=no-member
+    #     if total_volume > 0:
+    #         return weighted_centroid / total_volume
+    #     return self.position  # pylint: disable=no-member
 
     def describe(self, format="type+label+id", max_elems=10, return_string=False):
         # pylint: disable=arguments-differ
@@ -849,7 +846,7 @@ class BaseCollection(BaseDisplayRepr):
         return ", ".join(items)
 
 
-class Collection(BaseGeo, BaseCollection):
+class Collection(BaseGeo, BaseCollection, BaseVolume):
     """Group multiple children (sources, sensors and collections) in a collection for
     common manipulation.
 
@@ -879,8 +876,8 @@ class Collection(BaseGeo, BaseCollection):
         together represent an object path.
 
     volume: float
-        Read-only. Total Collection volume in units of m^3. Consider that overlapping objects
-        may lead to double counting.
+        Read-only. Total Collection volume (of all magnets) in units of m^3. Consider
+        that overlapping objects may lead to double counting.
 
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Collection centroid in units of m computed via the volume-weighted average of
@@ -989,10 +986,12 @@ class Collection(BaseGeo, BaseCollection):
         )
         BaseCollection.__init__(self, *args, override_parent=override_parent)
 
+
     # Abstract methods implementation
     def _get_volume(self):
         """Volume of all objects in units of m³."""
-        return sum([child.volume for child in self.children_all])  # pylint: disable=consider-using-generator
+        return sum(getattr(child, "volume", 0.0) for child in self.children_all)
+
 
     def _get_centroid(self):
         """Centroid of collection weighted by children volumes in units of m."""
@@ -1000,7 +999,7 @@ class Collection(BaseGeo, BaseCollection):
         weighted_centroid = np.array([0.0, 0.0, 0.0])
 
         for child in self.children_all:
-            child_volume = child.volume
+            child_volume = getattr(child, "volume", 0.0)
             if child_volume > 0:
                 child_centroid = child.centroid
                 weighted_centroid += child_centroid * child_volume
@@ -1009,6 +1008,7 @@ class Collection(BaseGeo, BaseCollection):
         if total_volume > 0:
             return weighted_centroid / total_volume
         return self.position
+
 
     def _get_dipole_moment(self):
         """Magnetic moment of object in units Am²."""

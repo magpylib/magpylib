@@ -527,10 +527,6 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             in_out=in_out,
         )
 
-    def _get_volume(self):
-        """Volume of object in units of m³."""
-        return 0.0
-
     def _get_dipole_moment(self):
         """Magnetic moment of object in units Am²."""
         return np.zeros(3)

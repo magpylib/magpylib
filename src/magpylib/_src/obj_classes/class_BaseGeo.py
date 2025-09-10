@@ -156,18 +156,6 @@ class BaseGeo(BaseTransform, ABC):
         return style
 
     # abstract methods that must be implemented by subclasses ------
-    @abstractmethod
-    def _get_volume(self):
-        """
-        Calculate and return the volume of the object in units of m³.
-
-        This method must be implemented by all subclasses.
-
-        Returns
-        -------
-        float
-            Volume of the object in m³.
-        """
 
     @abstractmethod
     def _get_centroid(self, squeeze=True):
@@ -302,11 +290,6 @@ class BaseGeo(BaseTransform, ABC):
             child.rotate(
                 self.orientation * old_ori_pad.inv(), anchor=self._position, start=0
             )
-
-    @property
-    def volume(self):
-        """Volume of object in units of m³."""
-        return self._get_volume()
 
     @property
     def centroid(self):

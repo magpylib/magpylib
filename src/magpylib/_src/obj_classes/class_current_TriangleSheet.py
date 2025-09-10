@@ -57,9 +57,6 @@ class TriangleSheet(BaseSource, BaseTarget):
         The mesh is generated via bisection along longest edges until target
         number is reached.
 
-    volume: float
-        Read-only. Object physical volume in units of m^3 - set to 0 for this class.
-
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m given by mean of vertices.
         m is the path length.
@@ -185,10 +182,6 @@ class TriangleSheet(BaseSource, BaseTarget):
         return cd, verts, fac
 
     # Methods
-    def _get_volume(self):
-        """Volume of object in units of m³."""
-        return 0.0
-
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
         centr = np.mean(self.vertices, axis=0) + self._position

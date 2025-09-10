@@ -60,9 +60,6 @@ class TriangleStrip(BaseCurrent, BaseTarget):
         Parameter that defines the mesh fineness for force computation.
         Must be a positive integer specifying the target mesh size.
 
-    volume: float
-        Read-only. Object physical volume in units of m^3 - set to 0 for this class.
-
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m given by mean of vertices.
         m is the path length.
@@ -150,10 +147,6 @@ class TriangleStrip(BaseCurrent, BaseTarget):
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
 
     # Methods
-    def _get_volume(self):
-        """Volume of object in units of m³."""
-        return 0.0
-
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
         centr = np.mean(self.vertices, axis=0) + self._position

@@ -131,14 +131,6 @@ def test_pixel3():
         )
 
 
-def test_Sensor_volume():
-    """Test Sensor volume calculation (should be 0)."""
-    sensor = magpy.Sensor()
-    calculated = sensor.volume
-    expected = 0
-    assert calculated == expected
-
-
 def test_Sensor_centroid_no_pixels():
     """Test Sensor centroid without pixels - should return position"""
     expected = (12, 13, 14)

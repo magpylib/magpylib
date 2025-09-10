@@ -687,7 +687,6 @@ def test_describe_with_path():
         "  • dipole_moment: [0. 0. 0.]",
         "  • handedness: right",
         "  • pixel: None",
-        "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
 
@@ -715,7 +714,6 @@ def test_describe_with_exclude_None():
             " pixel=Pixel(color=None, size=1, sizemode=None, symbol=None), size=None,"
             " sizemode=None)"
         ),
-        "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(exclude=None, return_string=True))
 
@@ -733,7 +731,6 @@ def test_describe_with_many_pixels():
         "  • dipole_moment: [0. 0. 0.]",
         "  • handedness: left",
         "  • pixel: 75 (3x5x5)",
-        "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
 

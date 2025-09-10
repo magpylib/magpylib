@@ -13,9 +13,10 @@ from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.target_meshing import target_mesh_cylinder
 from magpylib._src.utility import unit_prefix
+from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
 
 
-class Cylinder(BaseMagnet, BaseTarget):
+class Cylinder(BaseMagnet, BaseTarget, BaseVolume):
     """Cylinder magnet with homogeneous magnetization.
 
     Can be used as `sources` input for magnetic field computation and `target`

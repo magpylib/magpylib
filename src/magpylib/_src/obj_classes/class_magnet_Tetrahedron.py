@@ -11,10 +11,11 @@ from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
 from magpylib._src.obj_classes.target_meshing import target_mesh_tetrahedron
 
 
-class Tetrahedron(BaseMagnet, BaseTarget):
+class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume):
     """Tetrahedron magnet with homogeneous magnetization.
 
     Can be used as `sources` input for magnetic field computation and `target`

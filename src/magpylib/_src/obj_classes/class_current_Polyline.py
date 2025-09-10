@@ -53,9 +53,6 @@ class Polyline(BaseCurrent, BaseTarget):
         will have one mesh point in its center. All remaining mesh points are
         distributed evenly along the Polyline.
 
-    volume: float
-        Read-only. Object physical volume in units of m^3 - set to 0 for this class.
-
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m - set to mean of vertices for this class.
 
@@ -143,10 +140,6 @@ class Polyline(BaseCurrent, BaseTarget):
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
 
     # Methods
-    def _get_volume(self):
-        """Volume of object in units of m³."""
-        return 0.0
-
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
         if squeeze:
