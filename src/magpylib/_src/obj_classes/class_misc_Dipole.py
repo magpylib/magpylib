@@ -123,13 +123,6 @@ class Dipole(BaseSource):
             return self.position
         return self._position
 
-    def _get_dipole_moment(self):
-        """Magnetic moment of object in units Am²."""
-        # test init
-        if self.moment is None:
-            return np.array((0.0, 0.0, 0.0))
-        return self.moment
-
     def _generate_mesh(self):
         """Generate mesh for force computation."""
         points = np.array([(0, 0, 0)])

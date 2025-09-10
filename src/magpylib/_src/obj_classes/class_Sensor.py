@@ -527,10 +527,6 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             in_out=in_out,
         )
 
-    def _get_dipole_moment(self):
-        """Magnetic moment of object in units Am²."""
-        return np.zeros(3)
-
     def _get_centroid(self):
         """Centroid of object in units of m."""
         if self.pixel is not None:

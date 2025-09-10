@@ -11,11 +11,12 @@ from magpylib._src.fields.field_BH_circle import BHJM_circle
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
 from magpylib._src.obj_classes.target_meshing import target_mesh_circle
 from magpylib._src.utility import unit_prefix
 
 
-class Circle(BaseCurrent, BaseTarget):
+class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     """Circular current loop.
 
     Can be used as `sources` input for magnetic field computation and `target`

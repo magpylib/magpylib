@@ -170,19 +170,6 @@ class BaseGeo(BaseTransform, ABC):
             Centroid coordinates [(x, y, z), ...] in m.
         """
 
-    @abstractmethod
-    def _get_dipole_moment(self):
-        """
-        Calculate and return the magnetic moment of the object in units Am² in the local object coordinates.
-
-        This method must be implemented by all subclasses.
-
-        Returns
-        -------
-        numpy.ndarray, shape (n,3) when there is a path, or squeeze(1,3) when not
-            Centroid coordinates [(x, y, z), ...] in m.
-        """
-
     # properties ----------------------------------------------------
     @property
     def parent(self):
@@ -300,11 +287,6 @@ class BaseGeo(BaseTransform, ABC):
     def _centroid(self):
         """Centroid of object in units of m."""
         return self._get_centroid(squeeze=False)
-
-    @property
-    def dipole_moment(self):
-        """Magnetic moment of object in units of Am²."""
-        return self._get_dipole_moment()
 
     @property
     def style(self):
