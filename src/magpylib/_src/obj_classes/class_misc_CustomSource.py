@@ -1,5 +1,7 @@
 """Custom class code"""
 
+import numpy as np
+
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 
 
@@ -83,6 +85,10 @@ class CustomSource(BaseSource):
     def _get_volume(self):
         """Volume of object in units of m³."""
         return 0.0
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        return np.zeros(3)
 
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""

@@ -59,6 +59,9 @@ class Polyline(BaseCurrent, BaseTarget):
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m - set to mean of vertices for this class.
 
+    dipole_moment: np.ndarray, shape (3,)
+        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -153,6 +156,24 @@ class Polyline(BaseCurrent, BaseTarget):
         if self.vertices is not None:
             return np.mean(self.vertices, axis=0) + self._position
         return self._position
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        # test init
+        if self.vertices is None or self.current is None:
+            return np.array((0.0, 0.0, 0.0))
+        # test for closed polyline
+        if (len(self.vertices) > 1) and (np.all(self.vertices[0] == self.vertices[-1])):
+            return (
+                self.current
+                / 2
+                * np.sum(np.cross(self.vertices[:-1], self.vertices[1:]), axis=0)
+            )
+        msg = (
+            f"Cannot compute dipole moment of {self}. Dipole moment is only defined for closed "
+            "Polylines (first and last vertex must be identical)."
+        )
+        raise ValueError(msg)
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""

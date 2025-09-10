@@ -52,6 +52,9 @@ class Sphere(BaseMagnet):
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m.
 
+    dipole_moment: np.ndarray, shape (3,)
+        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -142,6 +145,13 @@ class Sphere(BaseMagnet):
         if squeeze:
             return self.position
         return self._position
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        # test init
+        if self.magnetization is None or self.diameter is None:
+            return np.array((0.0, 0.0, 0.0))
+        return self.magnetization * self.volume
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""

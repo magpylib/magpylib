@@ -80,6 +80,9 @@ class TriangularMesh(BaseMagnet, BaseTarget):
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m.
 
+    dipole_moment: np.ndarray, shape (3,)
+        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
+
     reorient_faces: bool or string, default=`True`
         In a properly oriented mesh, all faces must be oriented outwards.
         If `True`, check and fix the orientation of each triangle.
@@ -262,6 +265,13 @@ class TriangularMesh(BaseMagnet, BaseTarget):
         if squeeze:
             return self.barycenter
         return self._barycenter
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        # test init
+        if self.magnetization is None or self.vertices is None or self.faces is None:
+            return np.array((0.0, 0.0, 0.0))
+        return self.magnetization * self.volume
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""

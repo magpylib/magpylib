@@ -155,6 +155,10 @@ class Triangle(BaseMagnet):
         """Volume of object in units of m³."""
         return 0.0
 
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        return np.zeros(3)
+
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
         if squeeze:

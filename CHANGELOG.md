@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased] - YYYY-MM-DD
+## [5.2.0] - 2024-MM-DD
 
 - Documentation update ([#876](https://github.com/magpylib/magpylib/issues/876))
 - Adding force computation `magpylib.getFT()` to the library.
@@ -10,11 +10,15 @@
 - Added the `current_sheet_Hfield` core computation function, and the classes
   `TriangleStrip` and `TriangleSheet` enabling current sheets in the object
   oriented interface. ([#788](https://github.com/magpylib/magpylib/issues/788))
-- Adding the `centroid` property to all Magpylib objects. This gives the same as
-  the `barycenter` property for the objects that have it.
-  ([#864](https://github.com/magpylib/magpylib/issues/864))
-- Adding the `volume` property to all Magpylib objects
-  ([#864](https://github.com/magpylib/magpylib/issues/864))
+- Adding new objects properties
+  - `centroid`: computes and returns object centroid. Gives the same as
+    `barycenter` for the objects that have it.
+    ([#864](https://github.com/magpylib/magpylib/issues/864))
+  - `volume` computes and returns magnet volumes
+    ([#864](https://github.com/magpylib/magpylib/issues/864))
+  - `dipole_moment` computes and returns object dipole moment (magnets and
+    closed currents only)
+    ([#886](https://github.com/magpylib/magpylib/issues/886))
 - Improved docstrings by adding examples where missing and by using rounding in
   all examples to avoid doctest fails.
 - Fixed a bug where a core getH would return the B-field.

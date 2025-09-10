@@ -531,6 +531,10 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         """Volume of object in units of m³."""
         return 0.0
 
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        return np.zeros(3)
+
     def _get_centroid(self):
         """Centroid of object in units of m."""
         if self.pixel is not None:

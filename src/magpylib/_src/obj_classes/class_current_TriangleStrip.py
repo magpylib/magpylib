@@ -67,6 +67,9 @@ class TriangleStrip(BaseCurrent, BaseTarget):
         Read-only. Object centroid in units of m given by mean of vertices.
         m is the path length.
 
+    dipole_moment: np.ndarray, shape (3,)
+        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -157,6 +160,53 @@ class TriangleStrip(BaseCurrent, BaseTarget):
         if squeeze:
             return np.squeeze(centr)
         return centr
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        # test init
+        if self.vertices is None or self.current is None:
+            return np.array((0.0, 0.0, 0.0))
+        # test closed
+        if not np.allclose(self.vertices[:2], self.vertices[-2:]):
+            msg = (
+                f"Cannot compute dipole moment of {self}. Dipole moment is only defined for closed "
+                "CurrentStrips (first two and last two vertices must be identical)."
+            )
+            raise ValueError(msg)
+
+        # number of triangles
+        no_tris = len(self.vertices) - 2
+
+        # create triangles
+        trias = np.array([self.vertices[:-2], self.vertices[1:-1], self.vertices[2:]])
+        trias = np.swapaxes(trias, 0, 1)
+
+        centroids = np.array([(t[0] + t[1] + t[2]) / 3 for t in trias])
+        areas = 0.5 * np.linalg.norm(
+            np.cross(trias[:, 1] - trias[:, 0], trias[:, 2] - trias[:, 0]), axis=1
+        )
+
+        # create current density input
+        v1 = trias[:, 1] - trias[:, 0]
+        v2 = trias[:, 2] - trias[:, 0]
+        v1v1 = np.sum(v1 * v1, axis=1)
+        v2v2 = np.sum(v2 * v2, axis=1)
+        v1v2 = np.sum(v1 * v2, axis=1)
+
+        curr_densities = np.zeros((no_tris, 3), dtype=float)
+        # catch two times the same vertex in one triangle, and set CD to zero there
+        mask = (v2v2 != 0) * (v1v1 != 0)
+        h = np.sqrt(v1v1[mask] - (v1v2[mask] ** 2 / v2v2[mask]))
+        curr_densities[mask] = (
+            v2[mask]
+            / (
+                np.sqrt(v2v2[mask]) * h / np.repeat(self.current, no_tris, axis=0)[mask]
+            )[:, np.newaxis]
+        )
+        # moment of one triangle: A / 2 * cent x curr_density
+        return np.sum(
+            areas[:, np.newaxis] / 2 * np.cross(centroids, curr_densities), axis=0
+        )
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""

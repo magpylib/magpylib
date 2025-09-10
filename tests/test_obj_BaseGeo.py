@@ -641,6 +641,7 @@ def test_describe_with_label():
         "  • magnetization: None A/m",
         "  • polarization: None T",
         "  • centroid: [0. 0. 0.]",
+        "  • dipole_moment: [0. 0. 0.]",
         "  • meshing: None",
         "  • volume: 0.0",
     ]
@@ -665,6 +666,7 @@ def test_describe_with_parent():
         "  • magnetization: None A/m",
         "  • polarization: None T",
         "  • centroid: [0. 0. 0.]",
+        "  • dipole_moment: [0. 0. 0.]",
         "  • meshing: None",
         "  • volume: 0.0",
     ]
@@ -682,6 +684,7 @@ def test_describe_with_path():
         "  • position (last): [1. 2. 3.] m",
         "  • orientation (last): [0. 0. 0.] deg",
         "  • centroid: shape(3, 3)",
+        "  • dipole_moment: [0. 0. 0.]",
         "  • handedness: right",
         "  • pixel: None",
         "  • volume: 0.0",
@@ -699,6 +702,7 @@ def test_describe_with_exclude_None():
         "  • position: [0. 0. 0.] m",
         "  • orientation: [0. 0. 0.] deg",
         "  • centroid: [0. 0. 0.]",
+        "  • dipole_moment: [0. 0. 0.]",
         "  • handedness: right",
         "  • pixel: None",
         (
@@ -726,6 +730,7 @@ def test_describe_with_many_pixels():
         "  • position: [0. 0. 0.] m",
         "  • orientation: [0. 0. 0.] deg",
         "  • centroid: [1. 2. 3.]",
+        "  • dipole_moment: [0. 0. 0.]",
         "  • handedness: left",
         "  • pixel: 75 (3x5x5)",
         "  • volume: 0.0",
@@ -757,6 +762,7 @@ def test_describe_with_triangularmesh():
         "  • polarization: [0. 0. 1.] T",
         "  • barycenter: [0.         0.         0.46065534]",
         "  • centroid: [0.         0.         0.46065534]",
+        "  • dipole_moment: [      0.               0.         2122065.90789194]",
         "  • faces: shape(6, 3)",
         "  • mesh: shape(6, 3, 3)",
         "  • meshing: None",

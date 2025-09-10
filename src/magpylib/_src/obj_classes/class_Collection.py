@@ -886,6 +886,10 @@ class Collection(BaseGeo, BaseCollection):
         Read-only. Collection centroid in units of m computed via the volume-weighted average of
         all child centroids.
 
+    dipole_moment: np.ndarray, shape (3,)
+        Read-only. Total Collection dipole moment in units of A*m² computes from the sum of all
+        child dipole moments.
+
     override_parent: bool, default=False
         If False thrown an error when an attempt is made to add an object that
         has already a parent to a Collection. If True, allow adding the object
@@ -988,7 +992,7 @@ class Collection(BaseGeo, BaseCollection):
     # Abstract methods implementation
     def _get_volume(self):
         """Volume of all objects in units of m³."""
-        return sum(child.volume for child in self.children_all)
+        return sum([child.volume for child in self.children_all])  # pylint: disable=consider-using-generator
 
     def _get_centroid(self):
         """Centroid of collection weighted by children volumes in units of m."""
@@ -1005,3 +1009,7 @@ class Collection(BaseGeo, BaseCollection):
         if total_volume > 0:
             return weighted_centroid / total_volume
         return self.position
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        return np.sum([child.dipole_moment for child in self.children_all], axis=0)

@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import ClassVar
 
 import numpy as np
@@ -194,6 +195,14 @@ class TriangleSheet(BaseSource, BaseTarget):
         if squeeze:
             return np.squeeze(centr)
         return centr
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        warnings.warn(
+            "Magnetic moment is not implemented for TriangleSheet. Return 0.",
+            stacklevel=1,
+        )
+        return np.zeros(3)
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
