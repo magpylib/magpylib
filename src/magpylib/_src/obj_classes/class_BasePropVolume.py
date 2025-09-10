@@ -15,9 +15,10 @@ class BaseVolume(ABC):
         return self._get_volume()
 
     @volume.setter
-    def volume(self, value):
+    def volume(self, _input):
         """Throw error when trying to set volume."""
-        raise AttributeError("Cannot set property `volume`. It is read-only.")
+        msg = "Cannot set property `volume`. It is read-only."
+        raise AttributeError(msg)
 
     @abstractmethod
     def _get_volume(self):

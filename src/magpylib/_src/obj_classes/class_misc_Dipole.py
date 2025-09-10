@@ -8,11 +8,12 @@ from magpylib._src.display.traces_core import make_Dipole
 from magpylib._src.fields.field_BH_dipole import BHJM_dipole
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
 from magpylib._src.style import DipoleStyle
 from magpylib._src.utility import unit_prefix
 
 
-class Dipole(BaseSource):
+class Dipole(BaseSource, BaseDipoleMoment):
     """Magnetic dipole moment.
 
     Can be used as `sources` input for magnetic field computation and `target`
@@ -128,3 +129,10 @@ class Dipole(BaseSource):
         points = np.array([(0, 0, 0)])
         moments = np.array([self.moment])
         return {"pts": points, "moments": moments}
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        # test init
+        if self.moment is None:
+            return np.array((0.0, 0.0, 0.0))
+        return self.moment

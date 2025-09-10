@@ -684,7 +684,6 @@ def test_describe_with_path():
         "  • position (last): [1. 2. 3.] m",
         "  • orientation (last): [0. 0. 0.] deg",
         "  • centroid: shape(3, 3)",
-        "  • dipole_moment: [0. 0. 0.]",
         "  • handedness: right",
         "  • pixel: None",
     ]
@@ -701,7 +700,6 @@ def test_describe_with_exclude_None():
         "  • position: [0. 0. 0.] m",
         "  • orientation: [0. 0. 0.] deg",
         "  • centroid: [0. 0. 0.]",
-        "  • dipole_moment: [0. 0. 0.]",
         "  • handedness: right",
         "  • pixel: None",
         (
@@ -728,7 +726,6 @@ def test_describe_with_many_pixels():
         "  • position: [0. 0. 0.] m",
         "  • orientation: [0. 0. 0.] deg",
         "  • centroid: [1. 2. 3.]",
-        "  • dipole_moment: [0. 0. 0.]",
         "  • handedness: left",
         "  • pixel: 75 (3x5x5)",
     ]

@@ -14,6 +14,7 @@ from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_obj
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
 from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
 from magpylib._src.utility import format_obj_input, rec_obj_remover
 
@@ -846,7 +847,7 @@ class BaseCollection(BaseDisplayRepr):
         return ", ".join(items)
 
 
-class Collection(BaseGeo, BaseCollection, BaseVolume):
+class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
     """Group multiple children (sources, sensors and collections) in a collection for
     common manipulation.
 
@@ -1009,4 +1010,10 @@ class Collection(BaseGeo, BaseCollection, BaseVolume):
 
     def _get_dipole_moment(self):
         """Magnetic moment of object in units Am²."""
-        return np.sum([child.dipole_moment for child in self.children_all], axis=0)
+        return np.sum(
+            [
+                getattr(child, "dipole_moment", np.zeros(3))
+                for child in self.children_all
+            ],
+            axis=0,
+        )

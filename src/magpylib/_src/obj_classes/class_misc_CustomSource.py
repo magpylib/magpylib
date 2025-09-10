@@ -1,7 +1,5 @@
 """Custom class code"""
 
-import numpy as np
-
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 
 

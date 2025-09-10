@@ -1,6 +1,5 @@
-import warnings
-
 import numpy as np
+import pytest
 
 import magpylib as magpy
 
@@ -27,21 +26,6 @@ def test_polyline_closed_dipole_moment():
         [0, 0, area * i0]
     )  # current loop in xy-plane gives z-directed dipole
     assert np.all(polyline.dipole_moment == moment)
-
-
-def test_triangle_sheet_dipole_moment():
-    """Test dipole moment calculation for TriangleSheet current source."""
-    sheet_vertices = np.array([(0, 0, 0), (1, 0, 0), (0, 1, 0)])
-    sheet_faces = np.array([(0, 1, 2)])
-    current_densities = np.array([(1.0, 0, 0)])  # A/m
-    triangle_sheet = magpy.current.TriangleSheet(
-        vertices=sheet_vertices, faces=sheet_faces, current_densities=current_densities
-    )
-    # TriangleSheet dipole moment implementation returns zeros (warning issued)
-    moment = np.zeros(3)
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        assert np.all(triangle_sheet.dipole_moment == moment)
 
 
 def test_cuboid_dipole_moment():
@@ -149,30 +133,6 @@ def test_dipole_dipole_moment():
     assert np.all(dipole.dipole_moment == moment)
 
 
-def test_triangle_dipole_moment():
-    """Test dipole moment calculation for Triangle source."""
-    pol = np.array([0.1, 0.2, 0.3])
-    triangle_vertices = np.array([(0, 0, 0), (1, 0, 0), (0, 1, 0)])
-    triangle = magpy.misc.Triangle(polarization=pol, vertices=triangle_vertices)
-    # Triangle (charged surface) dipole moment is zero (surface has no volume)
-    moment = np.zeros(3)
-    assert np.all(triangle.dipole_moment == moment)
-
-
-def test_custom_source_dipole_moment():
-    """Test dipole moment calculation for CustomSource."""
-
-    def custom_field_func(field, observers):
-        """Custom field function for testing CustomSource."""
-        # Simple constant field function for testing
-        return np.zeros((len(observers), 3))
-
-    custom_source = magpy.misc.CustomSource(field_func=custom_field_func)
-    # CustomSource dipole moment is zero (no physical properties defined)
-    moment = np.zeros(3)
-    assert np.all(custom_source.dipole_moment == moment)
-
-
 def test_collection_dipole_moment():
     """Test dipole moment calculation for Collection of sources."""
     # Create individual objects
@@ -220,15 +180,9 @@ def test_open_polyline_error():
         [(0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0)]
     )  # Open polyline
     curr_open = magpy.current.Polyline(current=i0_open, vertices=vertices_open)
-    try:
-        moment_open = curr_open.dipole_moment
-        # If we reach this line, the test failed (no error was thrown)
-        assert False, (
-            "Expected error for open polyline dipole_moment calculation, but no error was thrown"
-        )
-    except ValueError:
-        # Expected behavior - error should be thrown for open polyline
-        assert True  # Test passes if error is caught
+
+    with pytest.raises(ValueError):  # noqa: PT011
+        _ = curr_open.dipole_moment
 
 
 def test_dipole_moment_triangle_strip():
@@ -268,12 +222,5 @@ def test_open_triangle_strip_error():
         [(0, 0, 0), (1, 0, 0), (0, 1, 0), (1, 1, 0)]
     )  # Open triangle strip
     curr_open = magpy.current.TriangleStrip(current=i0_open, vertices=vertices_open)
-    try:
-        moment_open = curr_open.dipole_moment
-        # If we reach this line, the test failed (no error was thrown)
-        assert False, (
-            "Expected error for open triangle strip dipole_moment calculation, but no error was thrown"
-        )
-    except ValueError:
-        # Expected behavior - error should be thrown for open triangle strip
-        assert True  # Test passes if error is caught
+    with pytest.raises(ValueError):  # noqa: PT011
+        _ = curr_open.dipole_moment
