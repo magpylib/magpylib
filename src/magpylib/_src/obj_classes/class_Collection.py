@@ -986,12 +986,10 @@ class Collection(BaseGeo, BaseCollection, BaseVolume):
         )
         BaseCollection.__init__(self, *args, override_parent=override_parent)
 
-
     # Abstract methods implementation
     def _get_volume(self):
         """Volume of all objects in units of m³."""
         return sum(getattr(child, "volume", 0.0) for child in self.children_all)
-
 
     def _get_centroid(self):
         """Centroid of collection weighted by children volumes in units of m."""
@@ -1008,7 +1006,6 @@ class Collection(BaseGeo, BaseCollection, BaseVolume):
         if total_volume > 0:
             return weighted_centroid / total_volume
         return self.position
-
 
     def _get_dipole_moment(self):
         """Magnetic moment of object in units Am²."""

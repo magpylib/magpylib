@@ -12,9 +12,9 @@ from magpylib._src.fields.field_BH_cylinder_segment import (
 )
 from magpylib._src.input_checks import check_format_input_cylinder_segment
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
-from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
 from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.target_meshing import target_mesh_cylinder
 from magpylib._src.utility import unit_prefix
 
