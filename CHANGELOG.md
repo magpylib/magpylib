@@ -2,7 +2,7 @@
 
 ## [5.2.0] - 2024-MM-DD
 
-- Documentation update ([#876](https://github.com/magpylib/magpylib/issues/876))
+- General documentation update ([#876](https://github.com/magpylib/magpylib/issues/876), [#829](https://github.com/magpylib/magpylib/issues/829)), and adding/reviewing all force and torque docs.
 - Adding force computation `magpylib.getFT()` to the library.
   ([#887](https://github.com/magpylib/magpylib/issues/887),
   [#847](https://github.com/magpylib/magpylib/issues/847),
@@ -24,8 +24,6 @@
 - Fixed a bug where a core getH would return the B-field.
 - Input `in_out` is by default set to `"auto"` for collections to avoiding
   ambiguities.
-- Improve documentation
-  ([#829](https://github.com/magpylib/magpylib/issues/829))
 
 ## [5.1.1] - 2024-10-31
 
