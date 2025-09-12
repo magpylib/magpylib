@@ -1,4 +1,4 @@
-"""BaseGeo class code"""
+"""Base class containing geometric properties and manipulation."""
 
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-instance-attributes
@@ -20,7 +20,7 @@ from magpylib._src.style import BaseStyle
 from magpylib._src.utility import add_iteration_suffix
 
 
-def pad_slice_path(path1, path2):
+def _pad_slice_path(path1, path2):
     """edge-pads or end-slices path 2 to fit path 1 format
     path1: shape (N,x)
     path2: shape (M,x)
@@ -34,7 +34,7 @@ def pad_slice_path(path1, path2):
     return path2
 
 
-class BaseGeo(BaseTransform, ABC):
+class _BaseGeo(BaseTransform, ABC):
     """Initializes basic properties inherited by ALL Magpylib objects
 
     Inherited from BaseTransform
@@ -42,7 +42,7 @@ class BaseGeo(BaseTransform, ABC):
     - move()
     - rotate()
 
-    Properties of BaseGeo
+    Properties of _BaseGeo
     ---------------------
     - parent
     - position
@@ -52,7 +52,7 @@ class BaseGeo(BaseTransform, ABC):
     - moment
     - style
 
-    Methods of BaseGeo
+    Methods of _BaseGeo
     ------------------
     - __add__()
     - reset_path()
@@ -159,91 +159,92 @@ class BaseGeo(BaseTransform, ABC):
 
     @abstractmethod
     def _get_centroid(self, squeeze=True):
-        """
-        Calculate and return the centroid of the object in units of m.
+        """Calculate and return the centroid of the object in units of (m).
 
         This method must be implemented by all subclasses.
 
         Returns
         -------
         numpy.ndarray, shape (n,3) when there is a path, or squeeze(1,3) when not
-            Centroid coordinates [(x, y, z), ...] in m.
+            Centroid coordinates [(x, y, z), ...] in (m).
         """
 
     # properties ----------------------------------------------------
     @property
     def parent(self):
-        """The object is a child of it's parent collection."""
+        """Parent collection of the object."""
         return self._parent
 
     @parent.setter
-    def parent(self, inp):
+    def parent(self, parent):
+        """Set parent collection.
+        
+        Parameters
+        ----------
+        parent : Collection or None
+            New parent collection. Use ``None`` to detach.
+        """
         from magpylib._src.obj_classes.class_Collection import Collection  # noqa: I001, PLC0415
 
-        if isinstance(inp, Collection):
-            inp.add(self, override_parent=True)
-        elif inp is None:
+        if isinstance(parent, Collection):
+            parent.add(self, override_parent=True)
+        elif parent is None:
             if self._parent is not None:
                 self._parent.remove(self)
             self._parent = None
         else:
             msg = (
-                "Input `parent` must be `None` or a `Collection` object."
-                f"Instead received {type(inp)}."
+                "Input ``parent`` must be ``None`` or a ``Collection`` object."
+                f"Instead received {type(parent)}."
             )
             raise MagpylibBadUserInput(msg)
 
     @property
     def position(self):
-        """
-        Object position(s) in the global coordinates in units of m. For m>1, the
-        `position` and `orientation` attributes together represent an object path.
-        """
+        """Return object position in global coordinates (m)."""
         return np.squeeze(self._position)
 
     @position.setter
-    def position(self, inp):
-        """
-        Set object position-path.
+    def position(self, position):
+        """Set object position.
 
-        Use edge-padding and end-slicing to adjust orientation path
+        Edge-padding or end-slicing is applied to keep orientation path length consistent.
+        Child positions are updated to preserve relative offsets when part of a collection.
 
-        When a Collection position is set, then all children retain their
-        relative position to the Collection BaseGeo.
-
-        position: array_like, shape (3,) or (N,3)
-            Position-path of object.
+        Parameters
+        ----------
+        position : array-like, shape (3,) or (n,3)
+            New position(s) in units (m).
         """
         old_pos = self._position
 
         # check and set new position
         self._position = check_format_input_vector(
-            inp,
+            position,
             dims=(1, 2),
             shape_m1=3,
             sig_name="position",
-            sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
+            sig_type="array-like (list, tuple, ndarray) with shape (3,) or (n,3)",
             reshape=(-1, 3),
         )
 
         # pad/slice and set orientation path to same length
         oriQ = self._orientation.as_quat()
-        self._orientation = R.from_quat(pad_slice_path(self._position, oriQ))
+        self._orientation = R.from_quat(_pad_slice_path(self._position, oriQ))
 
         # when there are children include their relative position
         for child in getattr(self, "children", []):
-            old_pos = pad_slice_path(self._position, old_pos)
-            child_pos = pad_slice_path(self._position, child._position)
+            old_pos = _pad_slice_path(self._position, old_pos)
+            child_pos = _pad_slice_path(self._position, child._position)
             rel_child_pos = child_pos - old_pos
             # set child position (pad/slice orientation)
             child.position = self._position + rel_child_pos
 
     @property
     def orientation(self):
-        """
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation. For m>1, the `position` and `orientation` attributes
-        together represent an object path.
+        """Return object orientation.
+
+        ``None`` corresponds to unit rotation.
         """
         # cannot squeeze (its a Rotation object)
         if len(self._orientation) == 1:  # single path orientation - reduce dimension
@@ -251,49 +252,48 @@ class BaseGeo(BaseTransform, ABC):
         return self._orientation  # return full path
 
     @orientation.setter
-    def orientation(self, inp):
-        """Set object orientation-path.
+    def orientation(self, orientation):
+        """Set object orientation.
 
-        inp: None or scipy Rotation, shape (1,) or (N,)
-            Set orientation-path of object. None generates a unit orientation
-            for every path step.
+        Parameters
+        ----------
+        orientation : Rotation or None
+            New orientation as ``scipy.spatial.transform.Rotation``. ``None`` generates a unit
+            rotation for every path step.
         """
         old_oriQ = self._orientation.as_quat()
 
         # set _orientation attribute with ndim=2 format
-        oriQ = check_format_input_orientation(inp, init_format=True)
+        oriQ = check_format_input_orientation(orientation, init_format=True)
         self._orientation = R.from_quat(oriQ)
 
         # pad/slice position path to same length
-        self._position = pad_slice_path(oriQ, self._position)
+        self._position = _pad_slice_path(oriQ, self._position)
 
         # when there are children they rotate about self.position
         # after the old Collection orientation is rotated away.
         for child in getattr(self, "children", []):
             # pad/slice and set child path
-            child.position = pad_slice_path(self._position, child._position)
+            child.position = _pad_slice_path(self._position, child._position)
             # compute rotation and apply
-            old_ori_pad = R.from_quat(np.squeeze(pad_slice_path(oriQ, old_oriQ)))
+            old_ori_pad = R.from_quat(np.squeeze(_pad_slice_path(oriQ, old_oriQ)))
             child.rotate(
                 self.orientation * old_ori_pad.inv(), anchor=self._position, start=0
             )
 
     @property
     def centroid(self):
-        """Centroid of object in units of m."""
+        """Return centroid (m)."""
         return self._get_centroid()
 
     @property
     def _centroid(self):
-        """Centroid of object in units of m."""
+        """Return centroid without squeezing (internal)."""
         return self._get_centroid(squeeze=False)
 
     @property
     def style(self):
-        """
-        Object style in the form of a BaseStyle object. Input must be
-        in the form of a style dictionary.
-        """
+        """Return object style as a ``BaseStyle`` instance."""
         if getattr(self, "_style", None) is None:
             self._style = self._style_class()
         if self._style_kwargs:
@@ -310,16 +310,24 @@ class BaseGeo(BaseTransform, ABC):
         return self._style
 
     @style.setter
-    def style(self, val):
-        self._style = self._validate_style(val)
+    def style(self, style):
+        """Set object style.
+
+        Parameters
+        ----------
+        style : dict or BaseStyle
+            Style specification. Dict keys are mapped onto style attributes.
+        """
+        self._style = self._validate_style(style)
 
     # public methods ------------------------------------------------
     def reset_path(self):
-        """Set object position to (0,0,0) and orientation = unit rotation.
+        """Reset path: set position to ``(0,0,0)`` and orientation to unit rotation.
 
         Returns
         -------
-        self: Self
+        _BaseGeo
+            Self (allows chaining).
 
         Examples
         --------
@@ -344,17 +352,21 @@ class BaseGeo(BaseTransform, ABC):
         return self
 
     def copy(self, **kwargs):
-        """Returns a copy of the current object instance. The `copy` method returns a deep copy of
-        the object, that is independent of the original object.
+        """Return deep copy with optional modifications.
 
         Parameters
         ----------
-        kwargs: dict
-            Keyword arguments (for example `position=(1,2,3)`) are applied to the copy.
+        **kwargs
+            Attribute overrides applied to the copy (e.g. ``position=(1,2,3)``).
+
+        Returns
+        -------
+        _BaseGeo
+            Deep-copied object (same concrete subclass as original).
 
         Examples
         --------
-        Create a `Sensor` object and copy to an another position:
+        Create a ``Sensor`` object and copy to an another position:
 
         >>> import magpylib as magpy
         >>> sens1 = magpy.Sensor(style_label='sens1')
@@ -400,11 +412,17 @@ class BaseGeo(BaseTransform, ABC):
 
     # dunders -------------------------------------------------------
     def __add__(self, obj):
-        """Add up sources to a Collection object.
+        """Return ``Collection`` containing ``self`` and ``obj``.
+
+        Parameters
+        ----------
+        obj : Sensor or Source
+            Other operand.
 
         Returns
         -------
-        Collection: Collection
+        Collection
+            New collection with both operands.
         """
         # pylint: disable=import-outside-toplevel
         from magpylib import Collection  # noqa: PLC0415

@@ -302,7 +302,7 @@ def test_except_getBH_lev2():
 
 
 def test_except_bad_input_shape_basegeo():
-    """BaseGeo bad input shapes"""
+    """_BaseGeo bad input shapes"""
     with pytest.raises(MagpylibBadUserInput):
         bad_input_shape_basegeo_pos()
     with pytest.raises(MagpylibBadUserInput):

@@ -1,10 +1,9 @@
-"""
-Base class adding the DIPOLE_MOMENT property.
+"""Base class adding the DIPOLE_MOMENT property.
+
 This is a separate class because this property is inherited by a mix of different classes.
 """
 
 from abc import ABC, abstractmethod
-
 
 class BaseDipoleMoment(ABC):
     """Base class for Magpylib objects for inheriting the dipole_moment property."""
@@ -17,7 +16,7 @@ class BaseDipoleMoment(ABC):
     @dipole_moment.setter
     def dipole_moment(self, _input):
         """Throw error when trying to set dipole moment."""
-        msg = "Cannot set property `dipole_moment`. It is read-only."
+        msg = "Cannot set property ``dipole_moment``. It is read-only."
         raise AttributeError(msg)
 
     @abstractmethod

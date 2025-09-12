@@ -28,8 +28,8 @@ def get_families(obj):
     # pylint: disable=redefined-outer-name
     # ruff: noqa: F401
     from magpylib._src.display.traces_generic import MagpyMarkers as Markers  # noqa: I001, PLC0415
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent as Current  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet as Magnet  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_BaseExcitations import _BaseCurrent as Current  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_BaseExcitations import _BaseMagnet as Magnet  # noqa: PLC0415
     from magpylib._src.obj_classes.class_current_Circle import Circle  # noqa: PLC0415
     from magpylib._src.obj_classes.class_current_Polyline import Polyline  # noqa: PLC0415
     from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid  # noqa: PLC0415
@@ -154,7 +154,7 @@ class Line(MagicProperties):
 
 
 class BaseStyle(MagicProperties):
-    """Base class for display styling options of `BaseGeo` objects.
+    """Base class for display styling options of `_BaseGeo` objects.
 
     Parameters
     ----------

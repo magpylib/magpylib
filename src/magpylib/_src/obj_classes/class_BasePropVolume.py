@@ -1,6 +1,6 @@
 """
 Base class adding the VOLUME property.
-This is a separate class from BaseMagnet because Dipole has no volume property
+This is a separate class from _BaseMagnet because Dipole has no volume property
 """
 
 from abc import ABC, abstractmethod
@@ -17,7 +17,7 @@ class BaseVolume(ABC):
     @volume.setter
     def volume(self, _input):
         """Throw error when trying to set volume."""
-        msg = "Cannot set property `volume`. It is read-only."
+        msg = "Cannot set property ``volume``. It is read-only."
         raise AttributeError(msg)
 
     @abstractmethod

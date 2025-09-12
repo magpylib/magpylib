@@ -329,6 +329,7 @@ nitpick_ignore = [
     ("py:class", "Rotation"),
     ("py:class", "ndarray"),
     ("py:class", "DataFrame"),
+    ("py:class", "Copy"),
 ]
 
 

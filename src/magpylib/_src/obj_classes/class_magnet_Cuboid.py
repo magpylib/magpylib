@@ -9,7 +9,7 @@ import numpy as np
 from magpylib._src.display.traces_core import make_Cuboid
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.input_checks import check_format_input_vector
-from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_BaseExcitations import _BaseMagnet
 from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
 from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
@@ -17,7 +17,7 @@ from magpylib._src.obj_classes.target_meshing import target_mesh_cuboid
 from magpylib._src.utility import unit_prefix
 
 
-class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
+class Cuboid(_BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     """Cuboid magnet with homogeneous magnetization.
 
     Can be used as `sources` input for magnetic field computation and `target`

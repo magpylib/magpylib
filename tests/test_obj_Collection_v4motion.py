@@ -12,7 +12,7 @@ import magpylib as magpy
 
 
 def validate_pos_orient(obj, ppath, opath_as_rotvec):
-    """test position (ppath) and orientation (opath) of BaseGeo object (obj)"""
+    """test position (ppath) and orientation (opath) of _BaseGeo object (obj)"""
     sp = obj.position
     so = obj.orientation
     ppath = np.array(ppath)
@@ -318,7 +318,7 @@ def test_Collection_setter():
 ############################################################################
 # COLLECTION MOTION TESTS
 # An operation move() or rotate() applied to a Collection is
-# individually applied to BaseGeo and to each child:
+# individually applied to _BaseGeo and to each child:
 
 
 def test_compound_motion_00():

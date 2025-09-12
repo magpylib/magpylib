@@ -316,7 +316,7 @@ class BaseTransform:
         """
 
         # Idea: An operation applied to a Collection is individually
-        #    applied to its BaseGeo and to each child.
+        #    applied to its _BaseGeo and to each child.
 
         for child in getattr(self, "children", []):
             child.move(displacement, start=start)
@@ -338,7 +338,7 @@ class BaseTransform:
 
         """
         # Idea: An operation applied to a Collection is individually
-        #    applied to its BaseGeo and to each child.
+        #    applied to its _BaseGeo and to each child.
         #  -> this automatically generates the rotate-Compound behavior
 
         # pylint: disable=no-member

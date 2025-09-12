@@ -1,9 +1,9 @@
 """Custom class code"""
 
-from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+from magpylib._src.obj_classes.class_BaseExcitations import _BaseSource
 
 
-class CustomSource(BaseSource):
+class CustomSource(_BaseSource):
     """User-defined custom source.
 
     Can be used as `sources` input for magnetic field computation.

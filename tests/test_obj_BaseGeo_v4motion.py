@@ -12,7 +12,7 @@ import magpylib as magpy
 
 
 def validate_pos_orient(obj, ppath, opath_as_rotvec):
-    """test position (ppath) and orientation (opath) of BaseGeo object (obj)"""
+    """test position (ppath) and orientation (opath) of _BaseGeo object (obj)"""
     sp = obj.position
     so = obj.orientation
     ppath = np.array(ppath)
@@ -38,7 +38,7 @@ def validate_pos_orient(obj, ppath, opath_as_rotvec):
 
 ###############################################################################
 ###############################################################################
-# BASEGEO POS/ORI INIT TESTING
+# _BaseGeo POS/ORI INIT TESTING
 # at initialization position and orientation must have similar shape (N,3)
 # - if inputs are (N,3) and (3,) then the (3,) is tiled up to (N,3)
 # - if inputs are (N,3) and (M,3) then the smaller one is padded up
@@ -366,7 +366,7 @@ def test_BaseGeo_multianchor_rotation(
     expected_position,
     expected_orientation_rotvec,
 ):
-    """testing BaseGeo multi anchor rotations"""
+    """testing _BaseGeo multi anchor rotations"""
     print(description)
     # print(locals())
     if init_orientation_rotvec is None:

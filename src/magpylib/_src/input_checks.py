@@ -537,14 +537,14 @@ def check_format_input_obj(
     recursive: bool
         Flatten Collection objects
     """
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
+    from magpylib._src.obj_classes.class_BaseExcitations import _BaseSource  # noqa: I001, PLC0415
     from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
     from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
 
     # select wanted
     wanted_types = ()
     if "sources" in allow.split("+"):
-        wanted_types += (BaseSource,)
+        wanted_types += (_BaseSource,)
     if "sensors" in allow.split("+"):
         wanted_types += (Sensor,)
     if "collections" in allow.split("+"):
@@ -567,7 +567,7 @@ def check_format_input_obj(
 
         # typechecks
         # pylint disable possibly-used-before-assignment
-        if typechecks and not isinstance(obj, BaseSource | Sensor | Collection):
+        if typechecks and not isinstance(obj, _BaseSource | Sensor | Collection):
             msg = (
                 f"Input objects must be {allow} or a flat list thereof.\n"
                 f"Instead received {type(obj)!r}."
