@@ -92,7 +92,7 @@ sensor2 = magpy.Sensor(
     pixel=pixel_grid2,
     style_pixel_field={
         "source": "H",
-        "sizemode": "constant",
+        "sizescaling": "constant",
         "colorscale": "Blues",
         "symbol": "arrow3d",
     }
@@ -107,7 +107,7 @@ sensor3 = magpy.Sensor(
     pixel=pixel_grid3,
     style_pixel_field={
         "source": "H",
-        "sizemode": "log",
+        "sizescaling": "log",
         "colorscale": "Plasma",
         "symbol": "arrow3d",
     }
