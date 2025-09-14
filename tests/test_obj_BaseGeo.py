@@ -411,7 +411,7 @@ def test_path_functionality3():
 
 
 def test_scipy_from_methods():
-    """test all rotation methods inspired from scipy implemented in BaseTransform"""
+    """test all rotation methods inspired from scipy implemented in _BaseTransform"""
 
     def cube():
         return magpy.magnet.Cuboid(polarization=(11, 22, 33), dimension=(1, 1, 1))

@@ -14,8 +14,8 @@ from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_obj
 from magpylib._src.obj_classes.class_BaseDisplayRepr import _BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import _BaseGeo
-from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
-from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
+from magpylib._src.obj_classes.class_BaseProperties import _BaseDipoleMoment
+from magpylib._src.obj_classes.class_BaseProperties import _BaseVolume
 from magpylib._src.utility import format_obj_input, rec_obj_remover
 
 
@@ -831,7 +831,7 @@ class _BaseCollection(_BaseDisplayRepr):
         return ", ".join(items)
 
 
-class Collection(_BaseGeo, _BaseCollection, BaseVolume, BaseDipoleMoment):
+class Collection(_BaseGeo, _BaseCollection, _BaseVolume, _BaseDipoleMoment):
     """Group multiple children in a collection for common manipulation.
 
     Children can be sources (magnets, currents, misc), sensors, and other

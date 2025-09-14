@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 
 
-class BaseTarget(ABC):
+class _BaseTarget(ABC):
     """Base class for Magpylib objects that can be targets of force computation.
 
     - adds parameter meshing, default=None
@@ -15,26 +15,32 @@ class BaseTarget(ABC):
     _force_type: str = None
 
     def __init__(self, meshing=None):
-        """Initialize BaseTarget with meshing parameters."""
+        """Initialize _BaseTarget with meshing parameters."""
         self.meshing = meshing
 
     @property
     def meshing(self):
-        """Get mesh parameters for force computation."""
+        """Return meshing specification for force computation."""
         return self._meshing
 
     @meshing.setter
     def meshing(self, value):
-        """Set mesh parameters for force computation."""
-        # Basic validation - subclasses override on demand for specific requirements
+        """Set meshing specification.
+
+        Parameters
+        ----------
+        value : int or None
+            Meshing finesse parameter.
+        """
+        # Basic validation - subclasses may override for specific requirements
         if value is not None:
             self._validate_meshing(value)
         self._meshing = value
 
     def _validate_meshing(self, value):
-        """
-        Basic meshing validation: allow positive integers
-        Subclasses should override for specific requirements.
+        """Basic meshing validation: allow positive integers
+        
+        Subclasses override this method with class-specific requirements.
         """
         if isinstance(value, int) and value > 0:
             pass
@@ -44,6 +50,12 @@ class BaseTarget(ABC):
 
     @abstractmethod
     def _generate_mesh(self):
-        """
-        Generate meshing dictionary
+        """Return meshing data structure.
+
+        Returns
+        -------
+        dict
+            Meshing representation required for downstream force calculations. dict
+            contains keys 'pts' and 'cvecs' for currents, and 'pts' and 'moments' for
+            magnets.
         """

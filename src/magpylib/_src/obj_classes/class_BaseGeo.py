@@ -15,7 +15,7 @@ from magpylib._src.input_checks import (
     check_format_input_orientation,
     check_format_input_vector,
 )
-from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
+from magpylib._src.obj_classes.class_BaseTransform import _BaseTransform
 from magpylib._src.style import BaseStyle
 from magpylib._src.utility import add_iteration_suffix
 
@@ -34,10 +34,10 @@ def _pad_slice_path(path1, path2):
     return path2
 
 
-class _BaseGeo(BaseTransform, ABC):
+class _BaseGeo(_BaseTransform, ABC):
     """Initializes basic properties inherited by ALL Magpylib objects
 
-    Inherited from BaseTransform
+    Inherited from _BaseTransform
     ----------------------------
     - move()
     - rotate()

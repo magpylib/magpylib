@@ -12,13 +12,13 @@ from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import _BaseCurrent
-from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
-from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.class_BaseProperties import _BaseDipoleMoment
+from magpylib._src.obj_classes.class_BaseTarget import _BaseTarget
 from magpylib._src.obj_classes.target_meshing import target_mesh_polyline
 from magpylib._src.utility import unit_prefix
 
 
-class Polyline(_BaseCurrent, BaseTarget, BaseDipoleMoment):
+class Polyline(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     """Line current flowing in straight paths from vertex to vertex.
 
     Can be used as `sources` input for magnetic field computation and `target`
@@ -115,8 +115,8 @@ class Polyline(_BaseCurrent, BaseTarget, BaseDipoleMoment):
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
 
-        # Initialize BaseTarget
-        BaseTarget.__init__(self, meshing)
+        # Initialize _BaseTarget
+        _BaseTarget.__init__(self, meshing)
 
     # Properties
     @property

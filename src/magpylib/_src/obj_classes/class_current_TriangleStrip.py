@@ -12,13 +12,13 @@ from magpylib._src.display.traces_core import make_TriangleStrip
 from magpylib._src.fields.field_BH_current_sheet import BHJM_current_tristrip
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import _BaseCurrent
-from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
-from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.class_BaseProperties import _BaseDipoleMoment
+from magpylib._src.obj_classes.class_BaseTarget import _BaseTarget
 from magpylib._src.obj_classes.target_meshing import target_mesh_triangle_current
 from magpylib._src.utility import unit_prefix
 
 
-class TriangleStrip(_BaseCurrent, BaseTarget, BaseDipoleMoment):
+class TriangleStrip(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     """Current flowing in straight lines along a Ribbon made of adjacent Triangles.
 
     Can be used as `sources` input for magnetic field computation and `target`
@@ -125,7 +125,7 @@ class TriangleStrip(_BaseCurrent, BaseTarget, BaseDipoleMoment):
 
         # Inherit
         super().__init__(position, orientation, current, style, **kwargs)
-        BaseTarget.__init__(self, meshing)
+        _BaseTarget.__init__(self, meshing)
 
     # property getters and setters
     @property
