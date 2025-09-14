@@ -4,12 +4,20 @@
 
 - Added new `style.pixel.field` parameters to quickly represent vector fields
   ([#793](https://github.com/magpylib/magpylib/pull/793))
-- Input `in_out` is now by default set to `"auto"` for collections to avoiding
-  ambiguities.
-- Fixed a bug where a core getH would return the B-field
+- Added the `current_sheet_Hfield` core computation function, and the classes
+  `TriangleStrip` and `TriangleSheet` enabling current sheets in the object
+  oriented interface. ([#788](https://github.com/magpylib/magpylib/issues/788))
+- Adding the `centroid` property to all Magpylib objects. This gives the same as
+  the `barycenter` property for the objects that have it.
+  ([#864](https://github.com/magpylib/magpylib/issues/864))
+- Adding the `volume` property to all Magpylib objects
+  ([#864](https://github.com/magpylib/magpylib/issues/864))
 - Improved docstrings by adding examples where missing and by using rounding in
-  all examples to avoid doctest fails
-- Improved documentation
+  all examples to avoid doctest fails.
+- Fixed a bug where a core getH would return the B-field.
+- Input `in_out` is by default set to `"auto"` for collections to avoiding
+  ambiguities.
+- Improve documentation
   ([#829](https://github.com/magpylib/magpylib/issues/829))
 
 ## [5.1.1] - 2024-10-31

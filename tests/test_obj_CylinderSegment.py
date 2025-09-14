@@ -32,3 +32,24 @@ def test_barycenter():
         ]
     )
     np.testing.assert_allclose(cs.barycenter, expected_barycenter_path)
+
+
+def test_CylinderSegment_volume():
+    """Test CylinderSegment volume calculation."""
+    segment = magpy.magnet.CylinderSegment(
+        dimension=(1.0, 2.0, 3.0, 0, 90), polarization=(0, 0, 1)
+    )
+    calculated = segment.volume
+    expected = (2.0**2 - 1.0**2) * np.pi * 3.0 * 90 / 360  # (r2²-r1²)*π*h*φ/360
+    assert abs(calculated - expected) < 1e-10
+
+
+def test_CylinderSegment_centroid():
+    """Test CylinderSegment centroid - should return barycenter if available"""
+    cylinder_seg = magpy.magnet.CylinderSegment(
+        dimension=(1, 2, 3, -145, 145),  # r1, r2, h, phi1, phi2
+        polarization=(0, 0, 1),
+        position=(4, 5, 6),
+    )
+    expected = [4.35255872, 5.0, 6.0]
+    assert np.allclose(cylinder_seg.centroid, expected)

@@ -50,11 +50,11 @@ class TriangularMesh(BaseMagnet):
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
 
-    vertices: ndarray, shape (n,3)
+    vertices: array_like, shape (n,3), default=`None`
         A set of points in units of m in the local object coordinates from which the
-        triangular faces of the mesh are constructed by the additional `faces`input.
+        triangular faces of the mesh are constructed by the additional `faces` input.
 
-    faces: ndarray, shape (n,3)
+    faces: array_like, shape (n,3), default=`None`
         Indices of vertices. Each triplet represents one triangle of the mesh.
 
     polarization: array_like, shape (3,), default=`None`
@@ -64,6 +64,12 @@ class TriangularMesh(BaseMagnet):
     magnetization: array_like, shape (3,), default=`None`
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
+
+    volume: float
+        Read-only. Object physical volume in units of m^3.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
 
     reorient_faces: bool or string, default=`True`
         In a properly oriented mesh, all faces must be oriented outwards.
@@ -160,7 +166,7 @@ class TriangularMesh(BaseMagnet):
             position, orientation, magnetization, polarization, style, **kwargs
         )
 
-    # property getters and setters
+    # Properties
     @property
     def vertices(self):
         """Mesh vertices"""
@@ -190,6 +196,57 @@ class TriangularMesh(BaseMagnet):
     def status_reoriented(self):
         """Return reoriented status"""
         return self._status_reoriented
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³.
+
+        Based on algorithm from: https://n-e-r-v-o-u-s.com/blog/?p=4415
+        For each triangle, compute the signed volume of tetrahedron from origin
+        to triangle using: V = (1/6) * (v1 x v2) . v3
+        Sum all signed volumes to get total mesh volume.
+
+        Returns
+        -------
+        float
+            Volume in units of m³.
+        """
+        if self._vertices is None or self._faces is None:
+            return 0.0
+        if self.status_open is None:
+            self.check_open()
+        if self.status_open is True:
+            msg = "Open mesh detected. Cannot compute volume."
+            raise ValueError(msg)
+
+        # Vectorized calculation: get all triangle vertices at once
+        # Shape: (n_faces, 3, 3) where each face has 3 vertices with 3 coordinates
+        triangles = self.mesh
+
+        # Extract vertex arrays: v1, v2, v3 for all triangles
+        # Shape: (n_faces, 3) for each vertex array
+        v1 = triangles[:, 0]  # First vertex of each triangle
+        v2 = triangles[:, 1]  # Second vertex of each triangle
+        v3 = triangles[:, 2]  # Third vertex of each triangle
+
+        # Vectorized cross product: v1 x v2 for all triangles
+        # Shape: (n_faces, 3)
+        cross_products = np.cross(v1, v2)
+
+        # Vectorized dot product: (v1 x v2) . v3 for all triangles
+        # Shape: (n_faces,)
+        dot_products = np.sum(cross_products * v3, axis=1)
+
+        # Calculate signed volumes and sum them
+        signed_volumes = dot_products / 6.0
+        total_volume = np.sum(signed_volumes)
+
+        # Return absolute value to get positive volume
+        return abs(total_volume)
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return self.barycenter
 
     @staticmethod
     def _validate_mode_arg(arg, arg_name="mode"):

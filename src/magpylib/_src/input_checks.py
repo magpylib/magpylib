@@ -384,7 +384,7 @@ def check_format_input_vector2(
     return inp
 
 
-def check_format_input_vertices(inp):
+def check_format_input_vertices(inp, minlength=2):
     """checks vertices input and returns in formatted form
     - vector check with dim = (n,3) but n must be >=2
     """
@@ -397,7 +397,7 @@ def check_format_input_vertices(inp):
         allow_None=True,
     )
 
-    if inp is not None and inp.shape[0] < 2:
+    if inp is not None and inp.shape[0] < minlength:
         msg = "Input parameter `vertices` must have more than one vertex."
         raise MagpylibBadUserInput(msg)
     return inp

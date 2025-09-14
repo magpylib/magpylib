@@ -1,22 +1,22 @@
 # pylint: disable=too-many-positional-arguments
 
-"""Polyline current class code"""
+"""TriangleStrip current class code"""
 
-import warnings
+from __future__ import annotations
+
 from typing import ClassVar
 
 import numpy as np
 
-from magpylib._src.display.traces_core import make_Polyline
-from magpylib._src.exceptions import MagpylibDeprecationWarning
-from magpylib._src.fields.field_BH_polyline import current_vertices_field
+from magpylib._src.display.traces_core import make_TriangleStrip
+from magpylib._src.fields.field_BH_current_sheet import BHJM_current_tristrip
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.utility import unit_prefix
 
 
-class Polyline(BaseCurrent):
-    """Line current flowing in straight paths from vertex to vertex.
+class TriangleStrip(BaseCurrent):
+    """Current flowing in straight lines along a Ribbon made of adjacent Triangles.
 
     Can be used as `sources` input for magnetic field computation.
 
@@ -37,12 +37,15 @@ class Polyline(BaseCurrent):
         together represent an object path.
 
     vertices: array_like, shape (n,3), default=`None`
-        The current flows along the vertices which are given in units of m in the
-        local object coordinates (move/rotate with object). At least two vertices
-        must be given.
+        The current flows along a band which consists of Triangles {T1, T2, ...}
+        defined by the vertices {V1, V2, V3, V4, ...} as T1=(V1,V2,V3),
+        T2=(V2,V3,V4), ... The vertices are given in units of m in the local
+        object coordinates (move/rotate with object). At least three vertices
+        must be given, which define the first Triangle.
 
     current: float, default=`None`
-        Electrical current in units of A.
+        Electrical current in units of A. It is transformed into a homogeneous current
+        density which flows along the Triangles in direction: T1: V1->V3, T2: V2->V4, ...
 
     volume: float
         Read-only. Object physical volume in units of m^3 - set to 0 for this class.
@@ -59,35 +62,36 @@ class Polyline(BaseCurrent):
 
     Returns
     -------
-    current source: `Polyline` object
+    current source: `TriangleStrip` object
 
     Examples
     --------
-    `Polyline` objects are magnetic field sources. In this example we compute the H-field in A/m
-    of a square-shaped line-current with 1 A current at the observer position (1,1,1) cm:
+    `TriangleStrip` objects are magnetic field sources. In this example we compute the H-field in A/m
+    of a square current sheet (two triangles) with 1 A current at the observer position (1,1,1) cm:
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> src = magpy.current.Polyline(
-    ...     current=1,
-    ...     vertices=((.01,0,0), (0,.01,0), (-.01,0,0), (0,-.01,0), (.01,0,0)),
+    >>> src = magpy.current.TriangleStrip(
+    ...    current=1,
+    ...    vertices=((0,0,0), (0,1,0), (1,0,0), (1,1,1)),
     ... )
     >>> H = src.getH((.01,.01,.01))
     >>> with np.printoptions(precision=3):
     ...     print(H)
-    [3.161 3.161 0.767]
+    [ 0.026 -0.307 -0.371]
 
+    Notes
+    -----
+    On the vertices the returned field is zero.
     """
 
     # pylint: disable=dangerous-default-value
-    _field_func = staticmethod(current_vertices_field)
+    _field_func = staticmethod(BHJM_current_tristrip)
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "current": 1,
         "vertices": 3,
-        "segment_start": 2,
-        "segment_end": 2,
     }
-    get_trace = make_Polyline
+    get_trace = make_TriangleStrip
 
     def __init__(
         self,
@@ -104,20 +108,18 @@ class Polyline(BaseCurrent):
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
 
-    # Properties
+    # property getters and setters
     @property
     def vertices(self):
         """
-        The current flows along the vertices which are given in units of m in the
-        local object coordinates (move/rotate with object). At least two vertices
-        must be given.
+        The current flows along the triangles ...
         """
         return self._vertices
 
     @vertices.setter
     def vertices(self, vert):
-        """Set Polyline vertices, array_like, meter."""
-        self._vertices = check_format_input_vertices(vert)
+        """Set TriangleStrip vertices, array_like, meter."""
+        self._vertices = check_format_input_vertices(vert, minlength=3)
 
     @property
     def _default_style_description(self):
@@ -133,32 +135,4 @@ class Polyline(BaseCurrent):
 
     def _get_centroid(self):
         """Centroid of object in units of m."""
-        if self.vertices is not None:
-            return np.mean(self.vertices, axis=0) + self.position
-        return self.position
-
-
-class Line(Polyline):
-    """Line is deprecated, see Polyline"""
-
-    # pylint: disable=method-hidden
-    @staticmethod
-    def _field_func(*args, **kwargs):
-        """Catch Deprecation warning in getBH_dict"""
-        _deprecation_warn()
-        return current_vertices_field(*args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        _deprecation_warn()
-        super().__init__(*args, **kwargs)
-
-
-def _deprecation_warn():
-    warnings.warn(
-        (
-            "Line is deprecated and will be removed in a future version, "
-            "use Polyline instead."
-        ),
-        MagpylibDeprecationWarning,
-        stacklevel=2,
-    )
+        return np.mean(self.vertices, axis=0) + self.position
