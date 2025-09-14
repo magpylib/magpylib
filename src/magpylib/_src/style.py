@@ -1673,6 +1673,7 @@ class PixelField(MagicProperties):
     sizemode: {"constant", "linear", "log", "loglog"}
         Symbol size mode relative the the field magnitude.
     """
+
     _allowed_vectors = ("B", "H", "M", "J")
     _allowed_symbols = ("cone", "arrow", "arrow3d")
     _allowed_sizemodes = ("constant", "linear", "log", "loglog")
@@ -1716,7 +1717,9 @@ class PixelField(MagicProperties):
             field_str, *coords_str = val
             if not coords_str:
                 coords_str = list("xyz")
-            if field_str not in self._allowed_vectors and set(coords_str).difference(set("xyz")):
+            if field_str not in self._allowed_vectors and set(coords_str).difference(
+                set("xyz")
+            ):
                 valid = False
         assert valid, (
             f"The `source` property of {type(self).__name__} must be None or False or start"

@@ -732,7 +732,7 @@ def make_Sensor(
                 coords_str = coords_str if coords_str else "xyz"
                 coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
                 other_coords = [i for i in range(3) if i not in coords]
-                field_array[..., other_coords] = 0 # set other components to zero
+                field_array[..., other_coords] = 0  # set other components to zero
                 norms = np.linalg.norm(field_array, axis=-1)
                 is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
                 norms[is_null_mask] = np.nan  # avoid -inf
