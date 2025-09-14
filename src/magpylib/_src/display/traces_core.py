@@ -725,7 +725,7 @@ def make_Sensor(
             px_colors = "black" if px_color is None else px_color
             if field_values:
                 fsrc = style.pixel.field.source
-                sizemode = style.pixel.field.sizemode
+                sizescaling = style.pixel.field.sizescaling
                 field, *coords_str = fsrc
                 field_array = field_values[field]
                 px_vectors = field_values[field][path_ind]
@@ -736,12 +736,11 @@ def make_Sensor(
                 norms = np.linalg.norm(field_array, axis=-1)
                 is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
                 norms[is_null_mask] = np.nan  # avoid -inf
-                if sizemode != "constant":
+                if sizescaling != "constant":
                     snorms = norms.copy()
-                    if "log" in sizemode:
-                        for _ in range(sizemode.count("log")):
-                            snorms += np.nanmin(snorms) + 1  # shift to positive range
-                            snorms[~is_null_mask] = np.log(snorms[~is_null_mask])
+                    for _ in range(sizescaling.count("log")):
+                        snorms += np.nanmin(snorms) + 1  # shift to positive range
+                        snorms[~is_null_mask] = np.log(snorms[~is_null_mask])
                     px_sizes *= snorms[path_ind] / np.nanmax(snorms)
                 if fsrc:
                     cnorms = norms.copy()

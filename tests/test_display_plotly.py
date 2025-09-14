@@ -535,7 +535,7 @@ def test_pixel_field_sizing_modes():
     for i, sm in enumerate(sizemodes, 1):
         s = s0.copy(
             style_pixel_field_source="B",
-            style_pixel_field_sizemode=sm,
+            style_pixel_field_sizescaling=sm,
             style_description=str(sm),
         )
         subplots.append({"objects": [c1, s], "col": i})

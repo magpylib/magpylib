@@ -46,7 +46,7 @@ xy_grid = np.mgrid[-4e-3:4e-3:15j, -4e-3:4e-3:15j, 0:0:1j].T[0]
 sens = magpy.Sensor(
     pixel=xy_grid,
     style_pixel_field_source="B",
-    style_pixel_field_sizemode="log",
+    style_pixel_field_sizescaling="log",
 )
 
 # Display the sensor and magnet using the Plotly backend

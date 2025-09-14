@@ -1670,13 +1670,13 @@ class PixelField(MagicProperties):
     symbol: {"cone", "arrow", "arrow3d"}:
         Orientation symbol for field vector.
 
-    sizemode: {"constant", "linear", "log", "loglog"}
+    sizescaling: {"constant", "linear", "log", "loglog"}
         Symbol size mode relative the the field magnitude.
     """
 
     _allowed_vectors = ("B", "H", "M", "J")
     _allowed_symbols = ("cone", "arrow", "arrow3d")
-    _allowed_sizemodes = ("constant", "linear", "log", "loglog")
+    _allowed_scalings = ("constant", "linear", "log", "loglog")
     _allowed_colorscales = (
         "Viridis",
         "Jet",
@@ -1770,18 +1770,18 @@ class PixelField(MagicProperties):
         self._symbol = val
 
     @property
-    def sizemode(self):
-        """Pixel sizemode. Can be one of `{"constant", "linear", "log", "loglog"}`."""
-        return self._sizemode
+    def sizescaling(self):
+        """Pixel sizescaling. Can be one of `{"constant", "linear", "log", "loglog"}`."""
+        return self._sizescaling
 
-    @sizemode.setter
-    def sizemode(self, val):
-        assert val is None or val in self._allowed_sizemodes, (
-            f"The `sizemode` property of {type(self).__name__} must be one of"
-            f"{self._allowed_sizemodes},\n"
+    @sizescaling.setter
+    def sizescaling(self, val):
+        assert val is None or val in self._allowed_scalings, (
+            f"The `sizescaling` property of {type(self).__name__} must be one of"
+            f"{self._allowed_scalings},\n"
             f"but received {val!r} instead."
         )
-        self._sizemode = val
+        self._sizescaling = val
 
 
 class Pixel(MagicProperties):

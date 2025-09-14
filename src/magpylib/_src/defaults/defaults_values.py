@@ -100,7 +100,7 @@ DEFAULTS = {
                         "source": None,
                         "colorscale": "Viridis",
                         "shownull": True,
-                        "sizemode": "constant",
+                        "sizescaling": "constant",
                     },
                 },
                 "arrows": {
