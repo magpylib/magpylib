@@ -98,9 +98,10 @@ DEFAULTS = {
                     "field": {
                         "symbol": "cone",
                         "source": None,
-                        "colorscale": "Viridis",
+                        "colorscale": "Rainbow",
                         "shownull": True,
                         "sizescaling": "constant",
+                        "colorscaling": "linear",
                     },
                 },
                 "arrows": {

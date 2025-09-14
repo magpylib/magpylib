@@ -1671,7 +1671,10 @@ class PixelField(MagicProperties):
         Orientation symbol for field vector.
 
     sizescaling: {"constant", "linear", "log", "loglog"}
-        Symbol size mode relative the the field magnitude.
+        Symbol size scaling relative the the field magnitude.
+
+    colorscaling: {"constant", "linear", "log", "loglog"}
+        Color scale scaling relative the the field magnitude.
     """
 
     _allowed_vectors = ("B", "H", "M", "J")
@@ -1782,6 +1785,21 @@ class PixelField(MagicProperties):
             f"but received {val!r} instead."
         )
         self._sizescaling = val
+
+
+    @property
+    def colorscaling(self):
+        """Pixel colorscaling. Can be one of `{"constant", "linear", "log", "loglog"}`."""
+        return self._colorscaling
+
+    @colorscaling.setter
+    def colorscaling(self, val):
+        assert val is None or val in self._allowed_scalings, (
+            f"The `colorscaling` property of {type(self).__name__} must be one of"
+            f"{self._allowed_scalings},\n"
+            f"but received {val!r} instead."
+        )
+        self._colorscaling = val
 
 
 class Pixel(MagicProperties):
