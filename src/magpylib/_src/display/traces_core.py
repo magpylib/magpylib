@@ -724,15 +724,17 @@ def make_Sensor(
             px_vectors, null_thresh = None, 1e-12
             px_colors = "black" if px_color is None else px_color
             if field_values:
-                vsrc = style.pixel.field.vectorsource
-                csrc = style.pixel.field.colorsource
+                fsrc = style.pixel.field.source
                 sizemode = style.pixel.field.sizemode
-                csrc = vsrc if csrc is None else csrc
-                if vsrc is not None:
-                    px_vectors = field_values[vsrc][path_ind]
+                field, *coords_str = fsrc
+                field_array = field_values[field]
+                px_vectors = field_values[field][path_ind]
+                coords_str = coords_str if coords_str else "xyz"
+                coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
+                other_coords = [i for i in range(3) if i not in coords]
+                field_array[..., other_coords] = 0 # set other components to zero
                 if sizemode != "constant":
-                    vsrc = csrc if vsrc is None else vsrc
-                    norms = np.linalg.norm(field_values[vsrc], axis=-1)
+                    norms = np.linalg.norm(field_array, axis=-1)
                     if sizemode == "log":
                         is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
                         norms[is_null_mask] = np.min(norms[norms != 0])
@@ -748,12 +750,8 @@ def make_Sensor(
                         px_sizes *= norms[path_ind]
                     else:
                         px_sizes *= norms[path_ind] / np.max(norms)
-                if csrc is not False:
+                if fsrc:
                     # get cmin, cmax from whole path
-                    field_str, *coords_str = csrc
-                    coords_str = coords_str if coords_str else "xyz"
-                    coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
-                    field_array = field_values[field_str][..., coords]
                     field_mag = np.linalg.norm(field_array, axis=-1)
                     cmin, cmax = np.amin(field_mag), np.amax(field_mag)
                     field_mag = field_mag[path_ind]

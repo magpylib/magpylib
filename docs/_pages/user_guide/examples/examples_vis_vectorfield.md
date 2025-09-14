@@ -45,7 +45,7 @@ xy_grid = np.mgrid[-4e-3:4e-3:15j, -4e-3:4e-3:15j, 0:0:1j].T[0]
 # Create a sensor with pixel array and pixel field style
 sens = magpy.Sensor(
     pixel=xy_grid,
-    style_pixel_field_vectorsource="B",
+    style_pixel_field_source="B",
     style_pixel_field_sizemode="log",
 )
 
@@ -80,7 +80,7 @@ pixel_line = [(cos(a), 0, sin(a)) for a in ang1]
 
 sensor1 = magpy.Sensor(
     pixel=pixel_line,
-    style_pixel_field_vectorsource="H",
+    style_pixel_field_source="H",
 )
 
 # Sensor 2: Curved surface (vertical cylinder segment)
@@ -91,7 +91,7 @@ pixel_grid2 = [[(3.5*cos(a), 3.5*sin(a), z) for a in ang2] for z in z_values]
 sensor2 = magpy.Sensor(
     pixel=pixel_grid2,
     style_pixel_field={
-        "vectorsource": "H",
+        "source": "H",
         "sizemode": "constant",
         "colorscale": "Blues",
         "symbol": "arrow3d",
@@ -106,7 +106,7 @@ pixel_grid3 = [[(r*cos(a), r*sin(a), 0) for a in ang3] for r in r_values]
 sensor3 = magpy.Sensor(
     pixel=pixel_grid3,
     style_pixel_field={
-        "vectorsource": "H",
+        "source": "H",
         "sizemode": "log",
         "colorscale": "Plasma",
         "symbol": "arrow3d",
@@ -156,7 +156,7 @@ magpy.show(
     sensor,
     animation=True,
     style_pixel_field_symbol="arrow3d",
-    style_pixel_field_vectorsource="B",
+    style_pixel_field_source="B",
     backend="plotly",
 )
 ```

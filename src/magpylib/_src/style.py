@@ -1657,15 +1657,12 @@ class PixelField(MagicProperties):
 
     Parameters
     ----------
-    vectorsource: str, default=None
-        The pixel orientation vector source (one of "B", "H", "M", "J")
-
-    colorsource: str, default=None
+    source: str, default=None
         The pixel color source (e.g. "Bx", "Hxy", "J", etc.). If not specified,
-        the amplitude of the `vectorsource` value is used.
+        the amplitude of the `source` value is used.
 
     colorscale: str, default="Inferno",
-        The colorscale used with `colorsource`.
+        The colorscale used with `source`.
 
     shownull: bool, default=True
         Show/hide null or invalid field values
@@ -1676,8 +1673,7 @@ class PixelField(MagicProperties):
     sizemode: {"constant", "linear", "log"}
         Symbol size mode relative the the field magnitude.
     """
-
-    _allowed_vectorsources = ("B", "H", "J", "M")
+    _allowed_vectors = ("B", "H", "M", "J")
     _allowed_symbols = ("cone", "arrow", "arrow3d")
     _allowed_sizemodes = ("constant", "linear", "log")
     _allowed_colorscales = (
@@ -1709,39 +1705,25 @@ class PixelField(MagicProperties):
     )
 
     @property
-    def vectorsource(self):
+    def source(self):
         """Pixel vector source."""
-        return self._vectorsource
+        return self._source
 
-    @vectorsource.setter
-    def vectorsource(self, val):
-        assert val is None or val in self._allowed_vectorsources, (
-            f"The `vectorsource` property of {type(self).__name__} must be one of"
-            f"{self._allowed_vectorsources},\n"
-            f"but received {val!r} instead."
-        )
-        self._vectorsource = val
-
-    @property
-    def colorsource(self):
-        """Pixel vector source."""
-        return self._colorsource
-
-    @colorsource.setter
-    def colorsource(self, val):
+    @source.setter
+    def source(self, val):
         valid = True
         if val not in (None, False):
             field_str, *coords_str = val
             if not coords_str:
                 coords_str = list("xyz")
-            if field_str not in "BHMJ" and set(coords_str).difference(set("xyz")):
+            if field_str not in self._allowed_vectors and set(coords_str).difference(set("xyz")):
                 valid = False
         assert valid, (
-            f"The `colorsource` property of {type(self).__name__} must be None or False or start"
-            f" with either {self._allowed_vectorsources} and be followed by a combination of"
+            f"The `source` property of {type(self).__name__} must be None or False or start"
+            f" with either {self._allowed_vectors} and be followed by a combination of"
             f" 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') ) but received {val!r} instead."
         )
-        self._colorsource = val
+        self._source = val
 
     @property
     def colorscale(self):

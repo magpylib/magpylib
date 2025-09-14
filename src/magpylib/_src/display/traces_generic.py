@@ -509,9 +509,8 @@ def get_generic_traces3D(
     path_inds = path_inds_minimal = path_frames_to_indices(style.path.frames, path_len)
     if hasattr(style, "pixel"):
         make_func_kwargs["field_values"] = field_values
-        vsrc = style.pixel.field.vectorsource
-        csrc = style.pixel.field.colorsource
-        is_frame_dependent = (vsrc or csrc) and field_values
+        frsc = style.pixel.field.source
+        is_frame_dependent = frsc and field_values
         if is_frame_dependent:
             path_len = len(next(iter(field_values.values())))
             path_inds = path_frames_to_indices(style.path.frames, path_len)
@@ -848,37 +847,30 @@ def get_sensor_pixel_field(objects):
     ]
     has_pix_field = False
     for sens in sensors:
-        vsrc = sens.style.pixel.field.vectorsource
-        csrc = sens.style.pixel.field.colorsource
-        csrc = vsrc if csrc == "auto" else csrc
-        if vsrc or csrc:
+        fsrc = sens.style.pixel.field.source
+        if fsrc:
             field_by_sens[sens] = {}
-            fields_str = []
-            if vsrc:
-                fields_str.append(vsrc)
-            if csrc:
-                fields_str.append(csrc[0])
-            for field in set(fields_str):
-                if not has_pix_field:
-                    sources = format_obj_input(objects, allow="sources")
-                    sources = list(set(sources))  # remove duplicates
-                if sources:
-                    out = getBH_level2(
-                        sources,
-                        [sens],
-                        sumup=True,
-                        squeeze=False,
-                        field=field,
-                        pixel_agg=None,
-                        output="ndarray",
-                        in_out="auto",
-                    )
-                    # select first source (for sumup=True there is only one)
-                    # and path index + reshape pixel
-                    path_len = out.shape[1]
-                    out = out[0].reshape(path_len, -1, 3)
-                    field_by_sens[sens][field] = out
-                    has_pix_field = True
+            if not has_pix_field:
+                sources = format_obj_input(objects, allow="sources")
+                sources = list(set(sources))  # remove duplicates
+            if sources:
+                field = fsrc[0]
+                has_pix_field = True
+                out = getBH_level2(
+                    sources,
+                    [sens],
+                    sumup=True,
+                    squeeze=False,
+                    field=field,
+                    pixel_agg=None,
+                    output="ndarray",
+                    in_out="auto",
+                )
+                # select first source (for sumup=True there is only one)
+                # and path index + reshape pixel
+                path_len = out.shape[1]
+                out = out[0].reshape(path_len, -1, 3)
+                field_by_sens[sens][field] = out
     return field_by_sens
 
 

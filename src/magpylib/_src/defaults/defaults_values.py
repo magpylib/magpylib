@@ -97,8 +97,7 @@ DEFAULTS = {
                     "symbol": None,
                     "field": {
                         "symbol": "cone",
-                        "vectorsource": None,
-                        "colorsource": None,
+                        "source": None,
                         "colorscale": "Viridis",
                         "shownull": True,
                         "sizemode": "constant",

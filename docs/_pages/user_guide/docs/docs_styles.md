@@ -573,15 +573,9 @@ The `pixel` of a `Sensor` object can be visualized as arrows representing the va
 
 ### Parameters (`style.pixel.field`)
 
-- **`vectorsource`** *(default=`None`)*:
-  Controls whether `Sensor` pixels are visualized as arrows or as points/boxes (default).
-  - `None`: Pixels are rendered as points/boxes.
-  - `"B"`, `"H"`, `"J"`, `"M"`: Pixels are rendered as arrows representing the corresponding vector field.
-
-- **`colorsource`** *(default=`None`)*:
-  Defines the coloring of arrows.
-  - `None`: Colors are mapped to the magnitude of the `vectorsource` field.
-  - `False`: Arrows are colored using `pixel.color` if defined; otherwise, `"black"`.
+- **`source`** *(default=`None`)*:
+  Defines the field source of the vector field representation.
+  - `None`: No field representation is shown
   - `"B"`, `"Hxy"`, `"Jxyz"`, etc.: Colors are mapped to the magnitude of the specified field.
 
 - **`symbol`** *(default=`"cone"`)*:
@@ -596,10 +590,11 @@ The `pixel` of a `Sensor` object can be visualized as arrows representing the va
   - `False`: Null vectors are hidden.
 
 - **`sizemode`** *(default=`"constant"`)*:
-  Determines how arrow size relates to the `vectorsource` magnitude.
+  Determines how arrow size relates to the `source` magnitude.
   - `"constant"`: Uniform arrow size.
   - `"linear"`: Size proportional to magnitude.
   - `"log"`: Size proportional to the normalized logarithm of the magnitude.
+
 
 - **`colorscale`** *(default=`"Viridis"`)*:
   Specifies the colormap used for color mapping. Supports standard color maps (e.g., `"Viridis"`, `"Inferno"`, `"Magma"`, etc.) compatible with both Plotly and Matplotlib.
@@ -630,9 +625,8 @@ xy_grid = np.mgrid[-2:2:15j, -2:2:15j, 0:0:1j].T[0]
 
 # Define pixel field style
 pixel_style = {
-    "vectorsource" : "B",
+    "source" : "B",
     "symbol"       : "arrow3d",
-    "colorsource"  : None,
     "sizemode"     : "constant",
     "shownull"     : True,
     "colorscale"   : "Magma"
