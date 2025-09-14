@@ -1786,7 +1786,6 @@ class PixelField(MagicProperties):
         )
         self._sizescaling = val
 
-
     @property
     def colorscaling(self):
         """Pixel colorscaling. Can be one of `{"constant", "linear", "log", "loglog"}`."""
