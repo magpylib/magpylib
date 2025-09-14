@@ -594,6 +594,7 @@ The `pixel` of a `Sensor` object can be visualized as arrows representing the va
   - `"constant"`: Uniform arrow size.
   - `"linear"`: Size proportional to magnitude.
   - `"log"`: Size proportional to the normalized logarithm of the magnitude.
+  - `"loglog"`: Size proportional to the normalized logarithm of the logarithm of the magnitude.
 
 
 - **`colorscale`** *(default=`"Viridis"`)*:

@@ -733,35 +733,23 @@ def make_Sensor(
                 coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
                 other_coords = [i for i in range(3) if i not in coords]
                 field_array[..., other_coords] = 0 # set other components to zero
+                norms = np.linalg.norm(field_array, axis=-1)
+                is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
+                norms[is_null_mask] = np.nan  # avoid -inf
                 if sizemode != "constant":
-                    norms = np.linalg.norm(field_array, axis=-1)
-                    if sizemode == "log":
-                        is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
-                        norms[is_null_mask] = np.min(norms[norms != 0])
-                        norms = np.log10(norms)
-                        min_, max_ = np.min(norms), np.max(norms)
-                        ptp = max_ - min_
-                        norms = (
-                            (norms - min_ + 1) / (ptp + 1)
-                            if ptp != -1
-                            else norms * 0 + 0.5
-                        )
-                        norms[is_null_mask] = 0
-                        px_sizes *= norms[path_ind]
-                    else:
-                        px_sizes *= norms[path_ind] / np.max(norms)
+                    snorms = norms.copy()
+                    if "log" in sizemode:
+                        for _ in range(sizemode.count("log")):
+                            snorms += np.nanmin(snorms) + 1  # shift to positive range
+                            snorms[~is_null_mask] = np.log(snorms[~is_null_mask])
+                    px_sizes *= snorms[path_ind] / np.nanmax(snorms)
                 if fsrc:
-                    # get cmin, cmax from whole path
-                    field_mag = np.linalg.norm(field_array, axis=-1)
-                    cmin, cmax = np.amin(field_mag), np.amax(field_mag)
-                    field_mag = field_mag[path_ind]
-                    is_null = (np.abs(field_array[path_ind]) < null_thresh).all(axis=1)
-                    field_mag[is_null] = np.nan
+                    cnorms = norms.copy()
                     px_colors = get_hexcolors_from_scale(
-                        values=field_mag,
+                        values=cnorms[path_ind],
                         colorscale=style.pixel.field.colorscale,
-                        cmin=cmin,
-                        cmax=cmax,
+                        cmin=np.nanmin(cnorms),
+                        cmax=np.nanmax(cnorms),
                     )
             pixels_trace = make_Pixels(
                 positions=px_positions,

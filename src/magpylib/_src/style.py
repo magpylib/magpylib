@@ -1670,12 +1670,12 @@ class PixelField(MagicProperties):
     symbol: {"cone", "arrow", "arrow3d"}:
         Orientation symbol for field vector.
 
-    sizemode: {"constant", "linear", "log"}
+    sizemode: {"constant", "linear", "log", "loglog"}
         Symbol size mode relative the the field magnitude.
     """
     _allowed_vectors = ("B", "H", "M", "J")
     _allowed_symbols = ("cone", "arrow", "arrow3d")
-    _allowed_sizemodes = ("constant", "linear", "log")
+    _allowed_sizemodes = ("constant", "linear", "log", "loglog")
     _allowed_colorscales = (
         "Viridis",
         "Jet",
@@ -1768,7 +1768,7 @@ class PixelField(MagicProperties):
 
     @property
     def sizemode(self):
-        """Pixel sizemode. Can be one of `{"constant", "linear", "log"}`."""
+        """Pixel sizemode. Can be one of `{"constant", "linear", "log", "loglog"}`."""
         return self._sizemode
 
     @sizemode.setter
