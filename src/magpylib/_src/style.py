@@ -1670,16 +1670,16 @@ class PixelField(MagicProperties):
     symbol: {"cone", "arrow", "arrow3d"}:
         Orientation symbol for field vector.
 
-    sizescaling: {"constant", "linear", "log", "loglog"}
+    sizescaling: {"uniform", "linear", "log", "loglog"}
         Symbol size scaling relative the the field magnitude.
 
-    colorscaling: {"constant", "linear", "log", "loglog"}
+    colorscaling: {"uniform", "linear", "log", "loglog"}
         Color scale scaling relative the the field magnitude.
     """
 
     _allowed_vectors = ("B", "H", "M", "J")
     _allowed_symbols = ("cone", "arrow", "arrow3d")
-    _allowed_scalings = ("constant", "linear", "log", "loglog")
+    _allowed_scalings = ("uniform", "linear", "log", "loglog")
     _allowed_colorscales = (
         "Viridis",
         "Jet",
@@ -1774,7 +1774,7 @@ class PixelField(MagicProperties):
 
     @property
     def sizescaling(self):
-        """Pixel sizescaling. Can be one of `{"constant", "linear", "log", "loglog"}`."""
+        """Pixel sizescaling. Can be one of `{"uniform", "linear", "log", "loglog"}`."""
         return self._sizescaling
 
     @sizescaling.setter
@@ -1788,7 +1788,7 @@ class PixelField(MagicProperties):
 
     @property
     def colorscaling(self):
-        """Pixel colorscaling. Can be one of `{"constant", "linear", "log", "loglog"}`."""
+        """Pixel colorscaling. Can be one of `{"uniform", "linear", "log", "loglog"}`."""
         return self._colorscaling
 
     @colorscaling.setter

@@ -589,9 +589,9 @@ The `pixel` of a `Sensor` object can be visualized as arrows representing the va
   - `True`: Null vectors are displayed.
   - `False`: Null vectors are hidden.
 
-- **`sizemode`** *(default=`"constant"`)*:
+- **`sizemode`** *(default=`"uniform"`)*:
   Determines how arrow size relates to the `source` magnitude.
-  - `"constant"`: Uniform arrow size.
+  - `"uniform"`: Uniform arrow size.
   - `"linear"`: Size proportional to magnitude.
   - `"log"`: Size proportional to the normalized logarithm of the magnitude.
   - `"loglog"`: Size proportional to the normalized logarithm of the logarithm of the magnitude.
@@ -628,7 +628,7 @@ xy_grid = np.mgrid[-2:2:15j, -2:2:15j, 0:0:1j].T[0]
 pixel_style = {
     "source" : "B",
     "symbol"       : "arrow3d",
-    "sizemode"     : "constant",
+    "sizemode"     : "uniform",
     "shownull"     : True,
     "colorscale"   : "Magma"
 }

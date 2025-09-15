@@ -100,7 +100,7 @@ DEFAULTS = {
                         "source": None,
                         "colorscale": "Rainbow",
                         "shownull": True,
-                        "sizescaling": "constant",
+                        "sizescaling": "uniform",
                         "colorscaling": "linear",
                     },
                 },

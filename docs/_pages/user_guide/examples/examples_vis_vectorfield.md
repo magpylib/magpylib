@@ -92,7 +92,7 @@ sensor2 = magpy.Sensor(
     pixel=pixel_grid2,
     style_pixel_field={
         "source": "H",
-        "sizescaling": "constant",
+        "sizescaling": "uniform",
         "colorscale": "Blues",
         "symbol": "arrow3d",
     }

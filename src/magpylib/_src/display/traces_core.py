@@ -739,14 +739,14 @@ def make_Sensor(
                 ptp = nmax - nmin
                 norms = (norms - nmin) / ptp if ptp != 0 else norms * 0 + 0.5
                 sizescaling = style.pixel.field.sizescaling
-                if sizescaling != "constant":
+                if sizescaling != "uniform":
                     snorms = norms.copy()
                     for _ in range(sizescaling.count("log")):
                         snorms += np.nanmin(snorms) + 1  # shift to positive range
                         snorms[~is_null_mask] = np.log(snorms[~is_null_mask])
                     px_sizes *= snorms[path_ind] / np.nanmax(snorms)
                 colorscaling = style.pixel.field.colorscaling
-                if colorscaling != "constant":
+                if colorscaling != "uniform":
                     cnorms = norms.copy()
                     for _ in range(colorscaling.count("log")):
                         cnorms += np.nanmin(cnorms) + 1  # shift to positive range
