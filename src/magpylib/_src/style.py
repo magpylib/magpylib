@@ -1681,7 +1681,7 @@ class PixelField(MagicProperties):
 
     _allowed_scalings_pattern = r"^(uniform|linear|(log)+|log\^[2-9])$"
     _allowed_vectors = ("B", "H", "M", "J")
-    _allowed_symbols = ("cone", "arrow", "arrow3d")
+    _allowed_symbols = ("cone", "arrow", "arrow3d", "cube", "none")
     _allowed_colormaps = (
         "Viridis",
         "Jet",

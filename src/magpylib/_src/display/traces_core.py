@@ -606,7 +606,13 @@ def make_Pixels(
     pixels = []
     orientations = None
     is_null_vec = None
-    allowed_symbols = ("cone", "arrow", "arrow3d")
+    allowed_symbols = {
+        "cone": {"type": "mesh3d", "orientable": True},
+        "arrow": {"type": "scatter3d", "orientable": True},
+        "arrow3d": {"type": "mesh3d", "orientable": True},
+        "cube": {"type": "mesh3d", "orientable": False},
+        "none": {"type": "scatter3d", "orientable": False},
+    }
     if field_symbol not in allowed_symbols:  # pragma: no cover
         msg = (
             f"Invalid pixel field symbol (must be one of {allowed_symbols})"
@@ -627,7 +633,11 @@ def make_Pixels(
         }
         pix = None
         size = sizes[ind] if is_array_like(sizes) else sizes
-        if vectors is not None and not is_null_vec[ind]:
+        if (
+            allowed_symbols[field_symbol]["orientable"]
+            and vectors is not None
+            and not is_null_vec[ind]
+        ):
             orient = orientations[ind]
             kw.update(orientation=orient, base=5, diameter=size, height=size * 2)
             if field_symbol == "cone":
@@ -638,7 +648,7 @@ def make_Pixels(
                 pix = make_BaseArrow(**kw, **kw2d)
                 pix["marker_size"] = np.repeat(0.0, len(pix["x"]))
         elif vectors is None or shownull:
-            if field_symbol == "arrow":
+            if allowed_symbols[field_symbol]["type"] == "scatter3d":
                 x, y, z = pos[:, None]
                 pix = {
                     "x": x,
@@ -652,7 +662,7 @@ def make_Pixels(
         if pix is not None:
             if colors is not None:
                 color = colors[ind] if is_array_like(colors) else colors
-                if field_symbol == "arrow":
+                if allowed_symbols[field_symbol]["type"] == "scatter3d":
                     pix["line_color"] = np.repeat(color, len(pix["x"]))
                     pix["marker_color"] = pix["line_color"]
                 else:
