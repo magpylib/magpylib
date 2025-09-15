@@ -13,6 +13,7 @@ orphan: true
 ---
 
 (guide-graphic-styles)=
+
 # Graphic styles
 
 The graphic styles define how Magpylib objects are displayed visually when calling `show`. They can be fine-tuned and individualized to suit requirements and taste.
@@ -26,6 +27,7 @@ Graphic styles can be defined in various ways:
 The following sections describe these styling options and how to customize them.
 
 (guide-graphic-styles-default)=
+
 ## Default style
 
 The default style is stored in `magpylib.defaults.display.style`. Note that the installation default styles differ slightly between different [graphic backends](guide-graphic-backends) depending on their respective capabilities. Specifically, the magnet magnetization in Matplotlib is displayed with arrows by default, while it is displayed using a color scheme in Plotly and Pyvista. The color scheme is also implemented in Matplotlib, but it is visually unsatisfactory.
@@ -108,7 +110,6 @@ The default Magpylib style abides by the tri-color scheme for ideal-typical magn
 ```
 
 A list of all style options can be found [here](examples-list-of-styles).
-
 
 ## Magic underscore notation
 
@@ -246,6 +247,7 @@ magpy.defaults.display.style.as_dict(flatten=True, separator=".")
 ```
 
 (examples-own-3d-models)=
+
 ## Custom 3D models
 
 Each Magpylib object has a default 3D representation that is displayed with `show`. It is possible to disable the default model and to provide Magpylib with a custom model.
@@ -471,6 +473,7 @@ obj0.show(obj1, obj2, obj3, obj4, obj5, backend="plotly")
 ```
 
 ((guide-docs-style-cad))=
+
 ## Adding a CAD model
 
 The following code sample shows how a standard CAD model (*.stl file) can be transformed into a Magpylib `Trace3d` object.
@@ -563,6 +566,7 @@ magpy.show(args, **kwargs, backend="plotly")
 ```
 
 (styles-pixel-vectorfield)=
+
 ## Pixel Field
 
 :::{versionadded} 5.2
@@ -589,13 +593,19 @@ The `pixel` of a `Sensor` object can be visualized as arrows representing the va
   - `True`: Null vectors are displayed.
   - `False`: Null vectors are hidden.
 
-- **`sizemode`** *(default=`"uniform"`)*:
-  Determines how arrow size relates to the `source` magnitude.
-  - `"uniform"`: Uniform arrow size.
-  - `"linear"`: Size proportional to magnitude.
-  - `"log"`: Size proportional to the normalized logarithm of the magnitude.
-  - `"loglog"`: Size proportional to the normalized logarithm of the logarithm of the magnitude.
+**`sizescaling`** *(default=`"uniform"`)*:
+    Determines how arrow size relates to the `source` magnitude.
+    - `"uniform"`: Uniform arrow size.
+    - `"linear"`: Size proportional to magnitude.
+    - `"log"`: Size proportional to the normalized logarithm of the magnitude.
+    - `"loglog"`: Size proportional to the normalized logarithm of the logarithm of the magnitude.
 
+**`colorscaling`** *(default=`"uniform"`)*:
+    Determines how arrow color relates to the `source` magnitude.
+    - `"uniform"`: Uniform color for all arrows.
+    - `"linear"`: Color proportional to magnitude.
+    - `"log"`: Color proportional to the normalized logarithm of the magnitude.
+    - `"loglog"`: Color proportional to the normalized logarithm of the logarithm of the magnitude.
 
 - **`colorscale`** *(default=`"Viridis"`)*:
   Specifies the colormap used for color mapping. Supports standard color maps (e.g., `"Viridis"`, `"Inferno"`, `"Magma"`, etc.) compatible with both Plotly and Matplotlib.
@@ -607,6 +617,7 @@ The `pixel` of a `Sensor` object can be visualized as arrows representing the va
 ````
 
 ### Pixel Field Minimal Example
+
 The following example demonstrates how to visualize the `Sensor` pixel array as a vector field using the `style.pixel.field` settings.
 
 ```{code-cell} ipython3
