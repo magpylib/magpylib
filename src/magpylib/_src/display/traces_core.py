@@ -555,7 +555,7 @@ def make_TriangularMesh(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     return traces
 
 
-def _apply_scaling_transformation(norms, scaling_type, is_null_mask, path_ind):
+def _apply_scaling_transformation(norms, scaling_type, is_null_mask, path_ind, min_=None):
     scaled_norms = norms.copy()
     log_iterations = (
         int(scaling_type[4])
@@ -565,7 +565,10 @@ def _apply_scaling_transformation(norms, scaling_type, is_null_mask, path_ind):
     for _ in range(log_iterations):
         scaled_norms += np.nanmin(scaled_norms) + 1  # shift to positive range
         scaled_norms[~is_null_mask] = np.log(scaled_norms[~is_null_mask])
-    return scaled_norms[path_ind] / np.nanmax(scaled_norms)
+    scaled_norms /= np.nanmax(scaled_norms)
+    if min_ is not None:
+        scaled_norms = min_ + scaled_norms * (1 - min_)
+    return scaled_norms[path_ind]
 
 
 def make_Pixels(
@@ -759,9 +762,10 @@ def make_Sensor(
                 ptp = nmax - nmin
                 norms = (norms - nmin) / ptp if ptp != 0 else norms * 0 + 0.5
                 sizescaling = style.pixel.field.sizescaling
+                sizemin = style.pixel.field.sizemin
                 if sizescaling != "uniform":
                     snorms_scaled = _apply_scaling_transformation(
-                        norms, sizescaling, is_null_mask, path_ind
+                        norms, sizescaling, is_null_mask, path_ind, min_=sizemin
                     )
                     snorms_scaled[is_null_mask[path_ind]] = 1  # keep null sizes unscaled
                     px_sizes *= snorms_scaled

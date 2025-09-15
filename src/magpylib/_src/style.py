@@ -1675,6 +1675,9 @@ class PixelField(MagicProperties):
     sizescaling: {"uniform", "linear","log","log^[2-9]"}
         Symbol size scaling relative the the field magnitude.
 
+    sizemin: float, default=0.
+        Minimum relative size of field symbols (0 to 1).
+
     colorscaling: {"uniform", "linear","log","log^[2-9]"}
         Color scale scaling relative the the field magnitude.
     """
@@ -1782,6 +1785,19 @@ class PixelField(MagicProperties):
     @sizescaling.setter
     def sizescaling(self, val):
         self._sizescaling = self._validate_scaling(val, name="sizescaling")
+
+    @property
+    def sizemin(self):
+        """Minimum relative size of field symbols (0 to 1)."""
+        return self._sizemin
+
+    @sizemin.setter
+    def sizemin(self, val):
+        assert val is None or (isinstance(val, float | int) and 0 <= val <= 1), (
+            "The `sizemin` property must be a value between 0 and 1,\n"
+            f"but received {val!r} instead."
+        )
+        self._sizemin = val
 
     @property
     def colorscaling(self):

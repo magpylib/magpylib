@@ -101,6 +101,7 @@ DEFAULTS = {
                         "colormap": "Rainbow",
                         "shownull": True,
                         "sizescaling": "uniform",
+                        "sizemin": 0,
                         "colorscaling": "linear",
                     },
                 },
