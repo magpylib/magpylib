@@ -265,8 +265,8 @@ class _BaseTransform:
 
         Returns
         -------
-        _BaseTransform
-            Self (for chaining).
+        Self
+            Self (allows chaining).
 
         Notes
         -----
@@ -359,7 +359,7 @@ class _BaseTransform:
         rotation : Rotation or None
             Scalar or vector rotation in the form of a scipy Rotation object.
             ``None`` is interpreted as unit rotation.
-        anchor : array-like, shape (3,) or (n,3) or None, default None
+        anchor : None or array-like, shape (3,) or (n,3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the
             parent position.
@@ -431,12 +431,12 @@ class _BaseTransform:
 
         Parameters
         ----------
-        angle : float or array-like, shape (,n)
+        angle : float or array-like, shape (n,)
             Rotation angle or sequence of angles in degrees. See property ``degrees``.
         axis : str or array-like, shape (3,) or (n,3)
             Rotation axis direction. Provide a vector or one of ``'x'``, ``'y'``,
             ``'z'``.
-        anchor : array-like, shape (3,) or (n,3) or None, default None
+        anchor : None or array-like, shape (3,) or (n,3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the
             parent position.
@@ -530,7 +530,7 @@ class _BaseTransform:
         ----------
         rotvec : array-like, shape (3,) or (n,3)
             Rotation vector or sequence. Direction gives axis, magnitude gives angle in radians.
-        anchor : array-like, shape (3,) or (n,3) or None, default None
+        anchor : None or array-like, shape (3,) or (n,3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the
             parent position.
@@ -611,7 +611,7 @@ class _BaseTransform:
             belonging to the set {'X', 'Y', 'Z'} for intrinsic rotations, or
             {'x', 'y', 'z'} for extrinsic rotations. Extrinsic and intrinsic
             rotations cannot be mixed in one function call.
-        anchor : array-like, shape (3,) or (n,3) or None, default None
+        anchor : None or array-like, shape (3,) or (n,3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the
             parent position.
@@ -687,7 +687,7 @@ class _BaseTransform:
         ----------
         matrix : array-like, shape (3,3) or (n,3,3)
             Single rotation matrix or sequence.
-        anchor : array-like, shape (3,) or (n,3) or None, default None
+        anchor : None or array-like, shape (3,) or (n,3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the
             parent position.
@@ -695,8 +695,6 @@ class _BaseTransform:
             Starting index when applying operation. With ``'auto'`` scalar
             input sets ``start=0`` (modify whole path) and vector input sets
             ``start=len(path)`` (append). See Notes for details.
-        degrees : bool, default True
-            If ``True``, interpret ``angle`` input in degrees, else radians.
 
         Returns
         -------
@@ -744,7 +742,7 @@ class _BaseTransform:
         ----------
         mrp : array-like, shape (3,) or (n,3)
             Modified Rodrigues Parameters vector or sequence.
-        anchor : array-like, shape (3,) or (n,3) or None, default None
+        anchor : None or array-like, shape (3,) or (n,3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the
             parent position.
@@ -752,8 +750,6 @@ class _BaseTransform:
             Starting index when applying operation. With ``'auto'`` scalar
             input sets ``start=0`` (modify whole path) and vector input sets
             ``start=len(path)`` (append). See Notes for details.
-        degrees : bool, default True
-            If ``True``, interpret ``angle`` input in degrees, else radians.
 
         Returns
         -------
@@ -804,8 +800,8 @@ class _BaseTransform:
         Parameters
         ----------
         quat : array-like, shape (4,) or (n,4)
-            Quaternion or quternion sequence in ``(x, y, z, w)`` format.
-        anchor : array-like, shape (3,) or (n,3) or None, default None
+            Quaternion or quaternion sequence in ``(x, y, z, w)`` format.
+        anchor : None or array-like, shape (3,) or (n,3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the
             parent position.
@@ -813,8 +809,6 @@ class _BaseTransform:
             Starting index when applying operation. With ``'auto'`` scalar
             input sets ``start=0`` (modify whole path) and vector input sets
             ``start=len(path)`` (append). See Notes for details.
-        degrees : bool, default True
-            If ``True``, interpret ``angle`` input in degrees, else radians.
 
         Returns
         -------

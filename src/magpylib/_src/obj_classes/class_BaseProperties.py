@@ -17,13 +17,7 @@ class _BaseDipoleMoment(ABC):
 
     @dipole_moment.setter
     def dipole_moment(self, _input):
-        """Raise error on attempt to set read-only dipole moment.
-
-        Raises
-        ------
-        AttributeError
-            Always raised. Property is read-only.
-        """
+        """Raise error on attempt to set read-only dipole moment."""
         msg = "Cannot set property ``dipole_moment``. It is read-only."
         raise AttributeError(msg)
 
@@ -48,13 +42,7 @@ class _BaseVolume(ABC):
 
     @volume.setter
     def volume(self, _input):
-        """Raise error on attempt to set read-only volume.
-
-        Raises
-        ------
-        AttributeError
-            Always raised. Property is read-only.
-        """
+        """Raise error on attempt to set read-only volume."""
         msg = "Cannot set property ``volume``. It is read-only."
         raise AttributeError(msg)
 

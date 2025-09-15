@@ -326,8 +326,8 @@ class _BaseGeo(_BaseTransform, ABC):
 
         Returns
         -------
-        _BaseGeo
-            Self (allows chaining).
+        Self
+            Self (for chaining).
 
         Examples
         --------
@@ -361,7 +361,7 @@ class _BaseGeo(_BaseTransform, ABC):
 
         Returns
         -------
-        _BaseGeo
+        Self
             Deep-copied object (same concrete subclass as original).
 
         Examples

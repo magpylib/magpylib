@@ -41,7 +41,7 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
         The callable must accept the two positional arguments ``field`` and ``observers``.
         With ``field='B'`` or ``field='H'`` the function must return the B-field
         (T) or H-field (A/m) respectively. ``observers`` is an ``ndarray`` of
-        shape ``(n, 3)`` in units (m). The returned array must have shape ``(n, 3)``.
+        shape ``(n,3)`` in units (m). The returned array must have shape ``(n,3)``.
         """
         return self._field_func
 
