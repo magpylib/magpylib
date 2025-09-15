@@ -588,7 +588,6 @@ The `pixel` of a `Sensor` object can be visualized as arrows representing the va
   - `"cone"`: 3D cone representation.
   - `"arrow3d"`: 3D arrow representation.
   - `"arrow"`: 2D line-based arrow.
-  - `"cube"`: 2D line-based arrow (not orientable).
 
 - **`shownull`** *(default=`True`)*:
   Toggles the visibility of pixel with zero and invalid field vectors.

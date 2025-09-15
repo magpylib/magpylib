@@ -606,19 +606,16 @@ def make_Pixels(
     pixels = []
     orientations = None
     is_null_vec = None
+    if field_symbol in ("none", None):
+        field_symbol = symbol if symbol is not None else "cube"
     allowed_symbols = {
         "cone": {"type": "mesh3d", "orientable": True},
         "arrow": {"type": "scatter3d", "orientable": True},
         "arrow3d": {"type": "mesh3d", "orientable": True},
         "cube": {"type": "mesh3d", "orientable": False},
-        "none": {"type": "scatter3d", "orientable": False},
     }
-    if field_symbol not in allowed_symbols:  # pragma: no cover
-        msg = (
-            f"Invalid pixel field symbol (must be one of {allowed_symbols})"
-            f", got {field_symbol!r}"
-        )
-        raise ValueError(msg)
+    orientable = allowed_symbols.get(field_symbol, {"orientable": False}).get("orientable")
+    trace_type = allowed_symbols.get(field_symbol, {"type": "scatter3d"}).get("type")
     if vectors is not None:
         orientations = get_orientation_from_vec(vectors)
         is_null_vec = (np.abs(vectors) < null_thresh).all(axis=1)
@@ -634,7 +631,7 @@ def make_Pixels(
         pix = None
         size = sizes[ind] if is_array_like(sizes) else sizes
         if (
-            allowed_symbols[field_symbol]["orientable"]
+            orientable
             and vectors is not None
             and not is_null_vec[ind]
         ):
@@ -648,7 +645,7 @@ def make_Pixels(
                 pix = make_BaseArrow(**kw, **kw2d)
                 pix["marker_size"] = np.repeat(0.0, len(pix["x"]))
         elif vectors is None or shownull:
-            if allowed_symbols[field_symbol]["type"] == "scatter3d":
+            if trace_type == "scatter3d":
                 x, y, z = pos[:, None]
                 pix = {
                     "x": x,
@@ -662,7 +659,7 @@ def make_Pixels(
         if pix is not None:
             if colors is not None:
                 color = colors[ind] if is_array_like(colors) else colors
-                if allowed_symbols[field_symbol]["type"] == "scatter3d":
+                if trace_type == "scatter3d":
                     pix["line_color"] = np.repeat(color, len(pix["x"]))
                     pix["marker_color"] = pix["line_color"]
                 else:
@@ -766,6 +763,7 @@ def make_Sensor(
                     snorms_scaled = _apply_scaling_transformation(
                         norms, sizescaling, is_null_mask, path_ind
                     )
+                    snorms_scaled[is_null_mask[path_ind]] = 1  # keep null sizes unscaled
                     px_sizes *= snorms_scaled
                 colorscaling = style.pixel.field.colorscaling
                 if colorscaling != "uniform":

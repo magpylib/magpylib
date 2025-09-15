@@ -1681,7 +1681,7 @@ class PixelField(MagicProperties):
 
     _allowed_scalings_pattern = r"^(uniform|linear|(log)+|log\^[2-9])$"
     _allowed_vectors = ("B", "H", "M", "J")
-    _allowed_symbols = ("cone", "arrow", "arrow3d", "cube", "none")
+    _allowed_symbols = ("cone", "arrow", "arrow3d", "none")
     _allowed_colormaps = (
         "Viridis",
         "Jet",
@@ -1819,9 +1819,10 @@ class Pixel(MagicProperties):
         Defines the pixel color@property.
 
     symbol: str, default=None
-        Pixel symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`.
-        Only applies for matplotlib plotting backend.
+        Pixel symbol. Can be one of `['cube', '.', 'o', '+', 'D', 'd', 's', 'x']`.
     """
+
+    _allowed_symbols = ("cube", *ALLOWED_SYMBOLS)
 
     def __init__(self, size=1, sizemode=None, color=None, symbol=None, **kwargs):
         super().__init__(
@@ -1871,14 +1872,14 @@ class Pixel(MagicProperties):
 
     @property
     def symbol(self):
-        """Pixel symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`."""
+        """Pixel symbol. Can be one of `['cube', '.', 'o', '+', 'D', 'd', 's', 'x']`."""
         return self._symbol
 
     @symbol.setter
     def symbol(self, val):
-        assert val is None or val in ALLOWED_SYMBOLS, (
+        assert val is None or val in self._allowed_symbols, (
             f"The `symbol` property of {type(self).__name__} must be one of"
-            f"{ALLOWED_SYMBOLS},\n"
+            f"{self._allowed_symbols},\n"
             f"but received {val!r} instead."
         )
         self._symbol = val
