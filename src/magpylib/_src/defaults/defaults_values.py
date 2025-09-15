@@ -98,7 +98,7 @@ DEFAULTS = {
                     "field": {
                         "symbol": "cone",
                         "source": None,
-                        "colorscale": "Rainbow",
+                        "colormap": "Rainbow",
                         "shownull": True,
                         "sizescaling": "uniform",
                         "colorscaling": "linear",
