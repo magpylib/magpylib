@@ -735,6 +735,9 @@ def make_Sensor(
                 norms = np.linalg.norm(field_array, axis=-1)
                 is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
                 norms[is_null_mask] = np.nan  # avoid -inf
+                nmin, nmax = np.nanmin(norms), np.nanmax(norms)
+                ptp = nmax - nmin
+                norms = (norms - nmin) / ptp if ptp != 0 else norms * 0 + 0.5
                 sizescaling = style.pixel.field.sizescaling
                 if sizescaling != "constant":
                     snorms = norms.copy()

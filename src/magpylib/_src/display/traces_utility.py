@@ -930,8 +930,8 @@ def get_hexcolors_from_scale(
     values = np.array(values)
     nan_mask = np.isnan(values)
     valid = values[~nan_mask]
-    cmin = np.min(valid) if cmin is None else cmin
-    cmax = np.max(valid) if cmax is None else cmax
+    cmin = np.nanmin(valid) if cmin is None else cmin
+    cmax = np.nanmax(valid) if cmax is None else cmax
     ptp = cmax - cmin
     values = (values - cmin) / ptp if ptp != 0 else values * 0 + 0.5
     rgb_colors = sample_colorscale(colorscale, values[~nan_mask], colortype=None)
