@@ -555,7 +555,9 @@ def make_TriangularMesh(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     return traces
 
 
-def _apply_scaling_transformation(norms, scaling_type, is_null_mask, path_ind, min_=None):
+def _apply_scaling_transformation(
+    norms, scaling_type, is_null_mask, path_ind, min_=None
+):
     scaled_norms = norms.copy()
     log_iterations = (
         int(scaling_type[4])

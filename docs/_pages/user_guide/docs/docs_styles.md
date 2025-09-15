@@ -603,10 +603,10 @@ The `pixel` of a `Sensor` object can be visualized as arrows representing the va
 
 **`sizemin`** *(default=`0.1`)*
     Minimum relative size of field symbols. A float between 0 and 1.
-    When displaying field vectors this controls how small the symbols 
+    When displaying field vectors this controls how small the symbols
     can become relative to their maximum size. A value of 0 allows symbols to shrink to zero size,
     while 0.5 ensures symbols are at least 50% of their maximum size.
-    
+
 **`colorscaling`** *(default=`"uniform"`)*:
     Determines how arrow color relates to the `source` magnitude.
     - `"uniform"`: Uniform color for all arrows.
