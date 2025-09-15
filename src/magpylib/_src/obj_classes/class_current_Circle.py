@@ -19,59 +19,61 @@ from magpylib._src.utility import unit_prefix
 class Circle(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     """Circular current loop.
 
-    Can be used as `sources` input for magnetic field computation and `target`
+    Can be used as ``sources`` input for magnetic field computation and ``target``
     input for force computation.
 
-    When `position=(0,0,0)` and `orientation=None` the current loop lies
-    in the x-y plane of the global coordinate system, with its center in
-    the origin.
+    When ``position=(0, 0, 0)`` and ``orientation=None`` the current loop lies
+    in the x-y plane of the global coordinate system, with its center in the
+    origin.
 
     SI units are used for all inputs and outputs.
 
     Parameters
     ----------
-    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of m. For m>1, the
-        `position` and `orientation` attributes together represent an object path.
+    position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
+        Object position(s) in global coordinates in units (m). ``position`` and
+        ``orientation`` attributes define the object path.
+    orientation : None or Rotation, default None
+        Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
+        have length 1 or m. ``None`` generates a unit-rotation.
+    diameter : None or float, default None
+        Loop diameter (m).
+    current : None or float, default None
+        Electrical current (A).
+    meshing : None or int, default None
+        Mesh fineness for force computation. Must be an integer ``>= 4``. Points
+        are equally distributed on the circle.
+    style : None or dict, default None
+        Style dictionary. Can also be provided via style underscore magic, e.g.
+        ``style_color='red'``.
 
-    orientation: scipy `Rotation` object with length 1 or m, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation. For m>1, the `position` and `orientation` attributes
-        together represent an object path.
-
-    diameter: float, default=`None`
-        Diameter of the loop in units of m.
-
-    current: float, default=`None`
-        Electrical current in units of A.
-
-    meshing: int, default=`None`
-        Parameter that defines the mesh fineness for force computation.
-        Must be an integer >= 4. Points will be equally distributed on the
-        circle.
-
-    centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m.
-
-    dipole_moment: np.ndarray, shape (3,)
-        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
-
-    parent: `Collection` object or `None`
-        The object is a child of it's parent collection.
-
-    style: dict
-        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-        using style underscore magic, e.g. `style_color='red'`.
-
-    Returns
-    -------
-    current source: `Circle` object
+    Attributes
+    ----------
+    position : ndarray, shape (3,) or (m, 3)
+        Same as constructor parameter ``position``.
+    orientation : Rotation
+        Same as constructor parameter ``orientation``.
+    diameter : None or float
+        Same as constructor parameter ``diameter``.
+    current : None or float
+        Same as constructor parameter ``current``.
+    meshing : None or int
+        Same as constructor parameter ``meshing``.
+    centroid : ndarray, shape (3,) or (m, 3)
+        Read-only. Object centroid in units (m) in global coordinates.
+        Can be a path.
+    dipole_moment : ndarray, shape (3,)
+        Read-only. Object dipole moment (A·m²) in local object coordinates.
+    parent : Collection or None
+        Parent collection of the object.
+    style : dict
+        Style dictionary defining visual properties.
 
     Examples
     --------
-    `Circle` objects are magnetic field sources. In this example we compute the H-field in A/m
-    of such a current loop with 100 A current and a diameter of 2 meters at the observer position
-    (0.01,0.01,0.01) given in units of m:
+    ``Circle`` objects are magnetic field sources. In this example we compute the
+    H-field (A/m) of such a current loop with 100 A current and a diameter of
+    2 meters at the observer position (0.01, 0.01, 0.01) (m):
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -115,11 +117,17 @@ class Circle(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
 
     @diameter.setter
     def diameter(self, dia):
-        """Set Circle loop diameter, float, meter."""
+        """Set loop diameter.
+
+        Parameters
+        ----------
+        dia : None or float
+            Loop diameter in units (m).
+        """
         self._diameter = check_format_input_scalar(
             dia,
             sig_name="diameter",
-            sig_type="`None` or a positive number (int, float)",
+            sig_type="None or a positive number (int, float)",
             allow_None=True,
             forbid_negative=True,
         )

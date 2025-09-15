@@ -20,10 +20,10 @@ from magpylib._src.utility import unit_prefix
 class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     """Cuboid magnet with homogeneous magnetization.
 
-    Can be used as `sources` input for magnetic field computation and `target`
+    Can be used as ``sources`` input for magnetic field computation and ``target``
     input for force computation.
 
-    When `position=(0,0,0)` and `orientation=None` the Cuboid sides are parallel
+    When ``position=(0, 0, 0)`` and ``orientation=None`` the Cuboid sides are parallel
     to the global coordinate basis vectors and the geometric center of the Cuboid
     is located in the origin.
 
@@ -31,58 +31,60 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
     Parameters
     ----------
-    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of m.
-        For m>1, the `position` and `orientation` attributes together
-        represent an object path.
+    position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
+        Object position(s) in global coordinates in units (m). ``position`` and
+        ``orientation`` attributes define the object path.
+    orientation : None or Rotation, default None
+        Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
+        have length 1 or m. ``None`` generates a unit-rotation.
+    dimension : None or array-like, shape (3,), default None
+        Lengths of the cuboid sides ``(a, b, c)`` in units (m).
+    polarization : None or array-like, shape (3,), default None
+        Magnetic polarization vector J = mu0*M in units (T), given in the
+        local object coordinates. Sets also ``magnetization``.
+    magnetization : None or array-like, shape (3,), default None
+        Magnetization vector M = J/mu0 in units (A/m), given in the local
+        object coordinates. Sets also ``polarization``.
+    meshing : None or int or array-like, shape (3,), default None
+        Mesh fineness for force computation. Must be a positive integer specifying
+        the target mesh size or an explicit splitting of the cuboid into regular
+        cubic grid cells with shape ``(n1, n2, n3)``.
+    style : None or dict, default None
+        Style dictionary. Can also be provided via style underscore magic, e.g.
+        ``style_color='red'``.
 
-    orientation: scipy `Rotation` object with length 1 or m, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation. For m>1, the `position` and `orientation` attributes
-        together represent an object path.
-
-    dimension: array_like, shape (3,), default=`None`
-        Length of the cuboid sides [a,b,c] in meters.
-
-    polarization: array_like, shape (3,), default=`None`
-        Magnetic polarization vector J = mu0*M in units of T,
-        given in the local object coordinates (rotates with object).
-
-    magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector M = J/mu0 in units of A/m,
-        given in the local object coordinates (rotates with object).
-
-    meshing: int, array_like, shape (3,), default=`None`
-        Parameter that defines the mesh fineness for force computation.
-        Must be a positive integer specifying the target mesh size or an
-        explicit splitting of the cuboid into regular cubic grid cells with
-        shape (n1,n2,n3).
-
-    volume: float
-        Read-only. Object physical volume in units of m^3.
-
-    centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m.
-
-    dipole_moment: np.ndarray, shape (3,)
-        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
-
-    parent: `Collection` object or `None`
-        The object is a child of it's parent collection.
-
-    style: dict
-        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-        using style underscore magic, e.g. `style_color='red'`.
-
-    Returns
-    -------
-    magnet source: `Cuboid` object
+    Attributes
+    ----------
+    position : ndarray, shape (3,) or (m, 3)
+        Same as constructor parameter ``position``.
+    orientation : Rotation
+        Same as constructor parameter ``orientation``.
+    dimension : None or ndarray, shape (3,)
+        Same as constructor parameter ``dimension``.
+    polarization : None or ndarray, shape (3,)
+        Same as constructor parameter ``polarization``.
+    magnetization : None or ndarray, shape (3,)
+        Same as constructor parameter ``magnetization``.
+    meshing : None or int
+        Same as constructor parameter ``meshing``.
+    centroid : ndarray, shape (3,) or (m, 3)
+        Read-only. Object centroid in units (m) in global coordinates.
+        Can be a path.
+    dipole_moment : ndarray, shape (3,)
+        Read-only. Object dipole moment (A·m²) in local object coordinates.
+    volume : float
+        Read-only. Object physical volume in units (m³).
+    parent : Collection or None
+        Parent collection of the object.
+    style : dict
+        Style dictionary defining visual properties.
 
     Examples
     --------
-    `Cuboid` magnets are magnetic field sources. Below we compute the H-field in A/m of a
-    cubical magnet with magnetic polarization of (0.5,0.6,0.7) in units of T and
-    0.01 meter sides at the observer position (0.01,0.01,0.01) given in units of m:
+    ``Cuboid`` magnets are magnetic field sources. Below we compute the H-field in
+    (A/m) of a cubical magnet with magnetic polarization ``(0.5, 0.6, 0.7)`` in
+    units (T) and side lengths ``0.01 m`` at the observer position
+    ``(0.01, 0.01, 0.01)`` (m):
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -126,12 +128,18 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     # Properties
     @property
     def dimension(self):
-        """Length of the cuboid sides [a,b,c] in arbitrary length units, e.g. in meter."""
+    """Cuboid side lengths ``(a, b, c)`` in units (m)."""
         return self._dimension
 
     @dimension.setter
     def dimension(self, dim):
-        """Set Cuboid dimension (a,b,c), shape (3,)"""
+        """Set cuboid side lengths.
+
+        Parameters
+        ----------
+        dim : None or array-like, shape (3,)
+            Side lengths ``(a, b, c)`` in units (m).
+        """
         self._dimension = check_format_input_vector(
             dim,
             dims=(1,),

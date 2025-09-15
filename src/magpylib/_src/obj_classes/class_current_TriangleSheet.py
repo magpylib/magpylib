@@ -19,57 +19,61 @@ from magpylib._src.obj_classes.target_meshing import target_mesh_triangle_curren
 class TriangleSheet(_BaseSource, _BaseTarget):
     """Surface current density flowing along triangular faces.
 
-    Can be used as `sources` input for magnetic field computation and `target`
+    Can be used as ``sources`` input for magnetic field computation and ``target``
     input for force computation.
 
-    The vertex positions are defined in the local object coordinates (rotate with object).
-    When `position=(0,0,0)` and `orientation=None` global and local coordinates coincide.
+    The vertex positions are defined in the local object coordinates (rotate with
+    object). When ``position=(0, 0, 0)`` and ``orientation=None`` global and local
+    coordinates coincide.
 
     SI units are used for all inputs and outputs.
 
     Parameters
     ----------
-    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of m. For m>1, the
-        `position` and `orientation` attributes together represent an object path.
-
-    orientation: scipy `Rotation` object with length 1 or m, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation. For m>1, the `position` and `orientation` attributes
-        together represent an object path.
-
-    vertices: array_like, shape (n,3), default=`None`
-        A set of points in units of m in the local object coordinates from which the
-        triangular faces are constructed by the additional `faces` input.
-
-    faces: array_like, shape (n,3), default=`None`
+    position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
+        Object position(s) in global coordinates in units (m). ``position`` and
+        ``orientation`` attributes define the object path.
+    orientation : None or Rotation, default None
+        Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
+        have length 1 or m. ``None`` generates a unit-rotation.
+    vertices : array-like, shape (n, 3), default None
+        Points in units (m) in the local object coordinates from which the
+        triangular faces are constructed by the additional ``faces`` input.
+    faces : array-like, shape (n, 3), default None
         Triplets of vertex indices. Each triplet represents one triangle of the mesh.
+    current_densities : array-like, shape (n, 3), default None
+        Electrical current densities flowing on the faces in units (A/m). The
+        effective current density is a projection of the given current density
+        vector into the face planes. Input must have the same length as ``faces``.
+    meshing : None or int, default None
+        Mesh fineness for force computation. Must be an integer >= number of
+        faces specifying the target mesh size. The mesh is generated via bisection
+        along longest edges until target number is reached.
+    style : None or dict, default None
+        Style dictionary. Can also be provided via style underscore magic, e.g.
+        ``style_color='red'``.
 
-    current_densities: array_like, shape (n,3), default=`None`
-        Electrical current densities flowing on the faces in units of A/m.
-        The effective current density is a projection of the given current density
-        vector into the face-planes. Input must have same length as `faces`.
-
-    meshing: int, default=`None`
-        Parameter that defines the mesh finesse for force computation.
-        Must be an integer >= number of faces specifying the target mesh size.
-        The mesh is generated via bisection along longest edges until target
-        number is reached.
-
-    centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m given by mean of vertices.
-        m is the path length.
-
-    parent: `Collection` object or `None`
-        The object is a child of it's parent collection.
-
-    style: dict
-        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-        using style underscore magic, e.g. `style_color='red'`.
-
-    Returns
-    -------
-    current source: `TriangleSheet` object
+    Attributes
+    ----------
+    position : ndarray, shape (3,) or (m, 3)
+        Same as constructor parameter ``position``.
+    orientation : Rotation
+        Same as constructor parameter ``orientation``.
+    vertices : None or ndarray, shape (n, 3)
+        Same as constructor parameter ``vertices``.
+    faces : None or ndarray, shape (n, 3)
+        Same as constructor parameter ``faces``.
+    current_densities : None or ndarray, shape (n, 3)
+        Same as constructor parameter ``current_densities``.
+    meshing : None or int
+        Same as constructor parameter ``meshing``.
+    centroid : ndarray, shape (3,) or (m, 3)
+        Read-only. Object centroid computed via mean of vertices in units (m)
+        in global coordinates. Can be a path.
+    parent : Collection or None
+        Parent collection of the object.
+    style : dict
+        Style dictionary defining visual properties.
 
     Examples
     --------

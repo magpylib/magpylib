@@ -22,77 +22,71 @@ from magpylib._src.utility import unit_prefix
 class CylinderSegment(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     """Cylinder segment (ring-section) magnet with homogeneous magnetization.
 
-    Can be used as `sources` input for magnetic field computation and `target`
+    Can be used as ``sources`` input for magnetic field computation and ``target``
     input for force computation.
 
-    When `position=(0,0,0)` and `orientation=None` the geometric center of the
-    cylinder lies in the origin of the global coordinate system and
-    the cylinder axis coincides with the global z-axis. Section angle 0
-    corresponds to an x-z plane section of the cylinder.
+    When ``position=(0, 0, 0)`` and ``orientation=None`` the geometric center of the
+    cylinder lies in the origin of the global coordinate system and the cylinder axis
+    coincides with the global z-axis. Section angle 0 corresponds to an x–z plane
+    section of the cylinder.
 
     SI units are used for all inputs and outputs.
 
     Parameters
     ----------
-    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of m. For m>1, the
-        `position` and `orientation` attributes together represent an object path.
-
-    orientation: scipy `Rotation` object with length 1 or m, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation. For m>1, the `position` and `orientation` attributes
-        together represent an object path.
-
-    dimension: array_like, shape (5,), default=`None`
-        Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
-        where r1<r2 denote inner and outer radii in units of m, phi1<phi2 denote
-        the cylinder section angles in units of deg and h is the cylinder height
-        in units of m.
-
-    polarization: array_like, shape (3,), default=`None`
-        Magnetic polarization vector J = mu0*M in units of T,
-        given in the local object coordinates (rotates with object).
-
-    magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector M = J/mu0 in units of A/m,
-        given in the local object coordinates (rotates with object).
-
-    meshing: int, default=`None`
-        Parameter that defines the mesh finesse for force computation.
-        Must be a positive integer specifying the target mesh size.
-
-    volume: float
-        Read-only. Object physical volume in units of m^3.
-
-    centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m.
-
-    dipole_moment: np.ndarray, shape (3,)
-        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
-
-    parent: `Collection` object or `None`
-        The object is a child of it's parent collection.
-
-    style: dict
-        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-        using style underscore magic, e.g. `style_color='red'`.
+    position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
+        Object position(s) in global coordinates in units (m). ``position`` and
+        ``orientation`` attributes define the object path.
+    orientation : None or Rotation, default None
+        Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
+        have length 1 or m. ``None`` generates a unit-rotation.
+    dimension : None or array-like, shape (5,), default None
+        Cylinder segment size ``(r1, r2, h, phi1, phi2)`` where ``r1 < r2`` are inner
+        and outer radii in units (m), ``phi1 < phi2`` are section angles in units (deg),
+        and ``h`` is the height in units (m).
+    polarization : None or array-like, shape (3,), default None
+        Magnetic polarization vector J = mu0*M in units (T), given in the
+        local object coordinates. Sets also ``magnetization``.
+    magnetization : None or array-like, shape (3,), default None
+        Magnetization vector M = J/mu0 in units (A/m), given in the local
+        object coordinates. Sets also ``polarization``.
+    meshing : None or int, default None
+        Mesh fineness for force computation. Must be a positive integer specifying
+        the target mesh size.
+    style : None or dict, default None
+        Style dictionary. Can also be provided via style underscore magic, e.g.
+        ``style_color='red'``.
 
     Attributes
     ----------
-    barycenter: array_like, shape (3,)
-        Read only property that returns the geometric barycenter (=center of mass)
-        of the object.
-
-    Returns
-    -------
-    magnet source: `CylinderSegment` object
+    position : ndarray, shape (3,) or (m, 3)
+        Same as constructor parameter ``position``.
+    orientation : Rotation
+        Same as constructor parameter ``orientation``.
+    polarization : None or ndarray, shape (3,)
+        Same as constructor parameter ``polarization``.
+    magnetization : None or ndarray, shape (3,)
+        Same as constructor parameter ``magnetization``.
+    centroid : ndarray, shape (3,) or (m, 3)
+        Read-only. Object centroid in units (m) in global coordinates.
+        Can be a path.
+    dipole_moment : ndarray, shape (3,)
+        Read-only. Object dipole moment (A·m²) in local object coordinates.
+    volume : float
+        Read-only. Object physical volume in units (m³).
+    parent : Collection or None
+        Parent collection of the object.
+    style : dict
+        Style dictionary defining visual properties.
+    barycenter : ndarray, shape (3,)
+        Read-only. Geometric barycenter (= center of mass) of the object.
 
     Examples
     --------
-    `CylinderSegment` magnets are magnetic field sources. In this example we compute the
-    H-field in A/m of such a cylinder segment magnet with polarization (.1,.2,.3)
-    in units of T, inner radius 0.01 meter, outer radius 0.02 meter, height 0.01 meter, and
-    section angles 0 and 45 deg at the observer position (0.02,0.02,0.02) in units of m:
+    ``CylinderSegment`` magnets are magnetic field sources. In this example we compute the
+    H-field in (A/m) of such a cylinder segment magnet with polarization ``(0.1, 0.2, 0.3)``
+    in units (T), inner radius ``0.01 m``, outer radius ``0.02 m``, height ``0.01 m``, and
+    section angles ``0`` and ``45 deg`` at the observer position ``(0.02, 0.02, 0.02)`` (m):
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -136,17 +130,23 @@ class CylinderSegment(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     # property getters and setters
     @property
     def dimension(self):
-        """
-        Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
-        where r1<r2 denote inner and outer radii in units of m, phi1<phi2 denote
-        the cylinder section angles in units of deg and h is the cylinder height
-        in units of m.
-        """
+    """Cylinder segment size ``(r1, r2, h, phi1, phi2)``.
+
+    ``r1 < r2`` denote inner and outer radii in units (m), ``phi1 < phi2`` the
+    section angles in units (deg), and ``h`` the height in units (m).
+    """
         return self._dimension
 
     @dimension.setter
     def dimension(self, dim):
-        """Set Cylinder dimension (r1,r2,h,phi1,phi2), shape (5,), (meter, deg)."""
+        """Set cylinder segment size.
+
+        Parameters
+        ----------
+        dim : None or array-like, shape (5,)
+            Size ``(r1, r2, h, phi1, phi2)`` where ``r1 < r2`` are radii in (m),
+            ``phi1 < phi2`` are section angles in (deg), and ``h`` is the height (m).
+        """
         self._dimension = check_format_input_cylinder_segment(dim)
 
     @property

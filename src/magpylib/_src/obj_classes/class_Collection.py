@@ -142,7 +142,13 @@ class _BaseCollection(_BaseDisplayRepr):
 
     @children.setter
     def children(self, children):
-        """Set collection children."""
+        """Set collection children.
+
+        Parameters
+        ----------
+        children : list or Source or Sensor or Collection
+            New top-level children. Existing top-level children are removed.
+        """
         # pylint: disable=protected-access
         for child in self._children:
             child._parent = None
@@ -161,7 +167,13 @@ class _BaseCollection(_BaseDisplayRepr):
 
     @sources.setter
     def sources(self, sources):
-        """Set collection sources."""
+        """Set collection sources.
+
+        Parameters
+        ----------
+        sources : list or Source
+            New top-level sources. Existing top-level sources are removed.
+        """
         # pylint: disable=protected-access
         new_children = []
         for child in self._children:
@@ -185,7 +197,13 @@ class _BaseCollection(_BaseDisplayRepr):
 
     @sensors.setter
     def sensors(self, sensors):
-        """Set collection sensors."""
+        """Set collection sensors.
+
+        Parameters
+        ----------
+        sensors : list or Sensor
+            New top-level sensors. Existing top-level sensors are removed.
+        """
         # pylint: disable=protected-access
         new_children = []
         for child in self._children:
@@ -209,7 +227,14 @@ class _BaseCollection(_BaseDisplayRepr):
 
     @collections.setter
     def collections(self, collections):
-        """Set collections collections."""
+        """Set collection child collections.
+
+        Parameters
+        ----------
+        collections : list or Collection
+            New top-level child collections. Existing top-level child collections are
+            removed.
+        """
         # pylint: disable=protected-access
         new_children = []
         for child in self._children:
@@ -254,19 +279,19 @@ class _BaseCollection(_BaseDisplayRepr):
 
         Parameters
         ----------
-        format : str, optional
+        format : str, default 'type+label+id'
             Object description in tree view. Can be any combination of ``'type'``, ``'label'``
-            and ``'id'`` and ``'properties'``. Default is ``'type+label+id'``.
-        max_elems : int, optional
+            and ``'id'`` and ``'properties'``.
+        max_elems : int, default 10
             If number of children at any level is higher than ``max_elems``, elements are
-            replaced by counters. Default is 10.
-        return_string : bool, optional
-            If ``False`` print description with stdout, if `True` return as string. Default is ``False``.
+            replaced by counters.
+        return_string : bool, default False
+            If ``False`` print description with stdout, if ``True`` return as string.
 
         Returns
         -------
-        str | None
-            Tree view string if ``return_string`` is ``True``, else ``None``.
+        str or None
+            Tree view string if ``return_string=True``, else ``None``.
         """
         tree = _collection_tree_generator(
             self,
@@ -288,16 +313,16 @@ class _BaseCollection(_BaseDisplayRepr):
 
         Parameters
         ----------
-        *children : Source | Sensor | Collection
+        *children : Source or Sensor or Collection
             Add arbitrary sources, sensors or other collections to this collection.
-        override_parent : bool, optional
+        override_parent : bool, default False
             If ``False``, do not accept objects as children that already have parents. 
             If ``True`` automatically remove such objects from previous parent collection.
-            Default is ``False``.
 
         Returns
         -------
-        self : Collection
+        Self
+            Self (allows chaining).
 
         Examples
         --------
@@ -375,17 +400,18 @@ class _BaseCollection(_BaseDisplayRepr):
 
         Parameters
         ----------
-        *children : Source | Sensor | Collection
+        *children : Source or Sensor or Collection
             Remove the given children from the collection.
-        recursive : bool, optional
-            Remove children also when they are in child collections. Default is ``True``.
-        errors : str, optional
+        recursive : bool, default True
+            Remove children also when they are in child collections.
+        errors : str, default 'raise'
             Can be ``'raise'`` or ``'ignore'`` to toggle error output when child is
-            not found for removal. Default is ``'raise'``.
+            not found for removal.
 
         Returns
         -------
-        self : Collection
+        Self
+            Self (allows chaining).
 
         Examples
         --------
@@ -447,14 +473,15 @@ class _BaseCollection(_BaseDisplayRepr):
 
         Parameters
         ----------
-        arg : dict | str
+        arg : dict or str
             Style arguments to be applied in the form of a style dictionary or style underscore magic input.
-        recursive : bool, optional
-            Apply styles also to children of child collections. Default is ``True``.
+        recursive : bool, default True
+            Apply styles also to children of child collections.
 
         Returns
         -------
-        self : Collection
+        Self
+            Self (allows chaining).
 
         Examples
         --------
@@ -537,41 +564,35 @@ class _BaseCollection(_BaseDisplayRepr):
 
         return sources, sensors
 
-    def getB(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"):
+    def getB(self, *inputs, squeeze=True, pixel_agg=None, output='ndarray', in_out='auto'):
         """Return B-field (T) at observers generated by the sources.
 
         SI units are used for all inputs and outputs.
 
         Parameters
         ----------
-        *inputs : Source | Sensor | array-like
+        *inputs : Source or Sensor or array-like, shape (n1, n2, ...,3)
             Can be observers if the collection contains sources. In this case the
             collection behaves like a single source.
             Can be sources if the collection contains sensors. In this case the
             collection behaves like a list of all its sensors.
-        squeeze : bool, optional
-            If ``True`` squeezes the output, i.e. all axes of length 1 in the output (e.g.
-            only a single source) are eliminated. Default is ``True``.
-        pixel_agg : None | str, optional
-            Reference to a compatible numpy aggregator function like ``'min'`` or ``'mean'``,
-            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-            With this option, observers input with different (pixel) shapes is allowed.
-            Default is ``None``.
-        output : str, optional
-            Output type. Can be ``'ndarray'`` for returning a multi-dimensional array
-            or  ``'dataframe'`` for returning a Pandas DataFrame. Default is ``'ndarray'``.
-        in_out : str, optional
-            Observer location assumption relative to magnet bodies: ``'auto'`` (detect per observer;
-            safest but slower), ``'inside'`` (treat all inside; faster), ``'outside'`` (treat all
-            outside; faster). Default is ``'auto'``.
+        squeeze : bool, default True
+            If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
+        pixel_agg : str or None, default None
+            Name of a NumPy aggregation function (e.g. ``'mean'``, ``'min'``) applied over the
+            pixel axis of each sensor. Allows mixing sensors with different pixel shapes.
+        output : {'ndarray','dataframe'}, default 'ndarray'
+            Output container type. 'dataframe' returns a pandas DataFrame.
+        in_out : {'auto','inside','outside'}, default 'auto'
+            Assumption about observer locations relative to magnet bodies. ``'auto'`` detects per
+            observer (safest, slower). ``'inside'`` treats all inside (faster). ``'outside'`` treats
+            all outside (faster).
 
         Returns
         -------
-        ndarray | DataFrame
-            B-field (T) with shape squeeze(m, k, n1, n2, ..., 3) at each path position (index m)
-            for each sensor (index k) and each sensor pixel position (indices n1, n2, ...).
-            Sensor pixel positions are equivalent to simple observer positions. Paths of objects
-            that are shorter than index m are considered as static beyond their end.
+        ndarray or DataFrame
+            B-field (T) with squeezed shape ``(m, k, n1, n2, ..., 3)`` where ``m`` is path length
+            and ``k`` the number of sensors (or 1 when observers given as arrays).
 
         Examples
         --------
@@ -612,41 +633,35 @@ class _BaseCollection(_BaseDisplayRepr):
             in_out=in_out,
         )
 
-    def getH(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
+    def getH(self, *inputs, squeeze=True, pixel_agg=None, output='ndarray', in_out='auto'):
         """Return H-field (A/m) at observers generated by the sources.
 
         SI units are used for all inputs and outputs.
 
         Parameters
         ----------
-        *inputs : Source | Sensor | array-like
+        *inputs : Source or Sensor or array-like, shape (n1, n2, ...,3)
             Can be observers if the collection contains sources. In this case the
             collection behaves like a single source.
             Can be sources if the collection contains sensors. In this case the
             collection behaves like a list of all its sensors.
-        squeeze : bool, optional
-            If ``True`` squeezes the output, i.e. all axes of length 1 in the output (e.g.
-            only a single source) are eliminated. Default is ``True``.
-        pixel_agg : None | str, optional
-            Reference to a compatible numpy aggregator function like ``'min'`` or ``'mean'``,
-            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-            With this option, observers input with different (pixel) shapes is allowed.
-            Default is ``None``.
-        output : str, optional
-            Output type. Can be ``'ndarray'`` for returning a multi-dimensional array
-            or  ``'dataframe'`` for returning a Pandas DataFrame. Default is ``'ndarray'``.
-        in_out : str, optional
-            Observer location assumption relative to magnet bodies: ``'auto'`` (detect per observer;
-            safest but slower), ``'inside'`` (treat all inside; faster), ``'outside'`` (treat all
-            outside; faster). Default is ``'auto'``.
+        squeeze : bool, default True
+            If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
+        pixel_agg : str or None, default None
+            Name of a NumPy aggregation function (e.g. ``'mean'``, ``'min'``) applied over the
+            pixel axis of each sensor. Allows mixing sensors with different pixel shapes.
+        output : {'ndarray','dataframe'}, default 'ndarray'
+            Output container type. 'dataframe' returns a pandas DataFrame.
+        in_out : {'auto','inside','outside'}, default 'auto'
+            Assumption about observer locations relative to magnet bodies. ``'auto'`` detects per
+            observer (safest, slower). ``'inside'`` treats all inside (faster). ``'outside'`` treats
+            all outside (faster).
 
         Returns
         -------
-        ndarray | DataFrame
-            H-field (A/m) with shape squeeze(m, k, n1, n2, ..., 3) at each path position (index m)
-            for each sensor (index k) and each sensor pixel position (indices n1, n2, ...).
-            Sensor pixel positions are equivalent to simple observer positions. Paths of objects
-            that are shorter than index m are considered as static beyond their end.
+        ndarray or DataFrame
+            H-field (A/m) with squeezed shape ``(m, k, n1, n2, ..., 3)`` where ``m`` is path length
+            and ``k`` the number of sensors (or 1 when observers given as arrays).
 
         Examples
         --------
@@ -688,41 +703,35 @@ class _BaseCollection(_BaseDisplayRepr):
             in_out="auto",
         )
 
-    def getM(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
+    def getM(self, *inputs, squeeze=True, pixel_agg=None, output='ndarray', in_out='auto'):
         """Return magnetization (A/m) at observers generated by the sources.
 
         SI units are used for all inputs and outputs.
 
         Parameters
         ----------
-        *inputs : Source | Sensor | array-like
+        *inputs : Source or Sensor or array-like, shape (n1, n2, ...,3)
             Can be observers if the collection contains sources. In this case the
             collection behaves like a single source.
             Can be sources if the collection contains sensors. In this case the
             collection behaves like a list of all its sensors.
-        squeeze : bool, optional
-            If ``True`` squeezes the output, i.e. all axes of length 1 in the output (e.g.
-            only a single source) are eliminated. Default is ``True``.
-        pixel_agg : None | str, optional
-            Reference to a compatible numpy aggregator function like ``'min'`` or ``'mean'``,
-            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-            With this option, observers input with different (pixel) shapes is allowed.
-            Default is ``None``.
-        output : str, optional
-            Output type. Can be ``'ndarray'`` for returning a multi-dimensional array
-            or  ``'dataframe'`` for returning a Pandas DataFrame. Default is ``'ndarray'``.
-        in_out : str, optional
-            Observer location assumption relative to magnet bodies: ``'auto'`` (detect per observer;
-            safest but slower), ``'inside'`` (treat all inside; faster), ``'outside'`` (treat all
-            outside; faster). Default is ``'auto'``.
+        squeeze : bool, default True
+            If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
+        pixel_agg : str or None, default None
+            Name of a NumPy aggregation function (e.g. ``'mean'``, ``'min'``) applied over the
+            pixel axis of each sensor. Allows mixing sensors with different pixel shapes.
+        output : {'ndarray','dataframe'}, default 'ndarray'
+            Output container type. 'dataframe' returns a pandas DataFrame.
+        in_out : {'auto','inside','outside'}, default 'auto'
+            Assumption about observer locations relative to magnet bodies. ``'auto'`` detects per
+            observer (safest, slower). ``'inside'`` treats all inside (faster). ``'outside'`` treats
+            all outside (faster).
 
         Returns
         -------
-        ndarray | DataFrame
-            Magnetization (A/m) with shape squeeze(m, k, n1, n2, ..., 3) at each path position (index m)
-            for each sensor (index k) and each sensor pixel position (indices n1, n2, ...).
-            Sensor pixel positions are equivalent to simple observer positions. Paths of objects
-            that are shorter than index m are considered as static beyond their end.
+        ndarray or DataFrame
+            Magnetization (A/m) with squeezed shape ``(m, k, n1, n2, ..., 3)`` where ``m`` is path length
+            and ``k`` the number of sensors (or 1 when observers given as arrays).
 
         Examples
         --------
@@ -752,39 +761,33 @@ class _BaseCollection(_BaseDisplayRepr):
             in_out="auto",
         )
 
-    def getJ(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
+    def getJ(self, *inputs, squeeze=True, pixel_agg=None, output='ndarray', in_out='auto'):
         """Return magnetic polarization (T) at observers generated by the sources.
 
         Parameters
         ----------
-        *inputs : Source | Sensor | array-like
+        *inputs : Source or Sensor or array-like, shape (n1, n2, ...,3)
             Can be observers if the collection contains sources. In this case the
             collection behaves like a single source.
             Can be sources if the collection contains sensors. In this case the
             collection behaves like a list of all its sensors.
-        squeeze : bool, optional
-            If ``True`` squeezes the output, i.e. all axes of length 1 in the output (e.g.
-            only a single source) are eliminated. Default is ``True``.
-        pixel_agg : None | str, optional
-            Reference to a compatible numpy aggregator function like ``'min'`` or ``'mean'``,
-            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-            With this option, observers input with different (pixel) shapes is allowed.
-            Default is ``None``.
-        output : str, optional
-            Output type. Can be ``'ndarray'`` for returning a multi-dimensional array
-            or  ``'dataframe'`` for returning a Pandas DataFrame. Default is ``'ndarray'``.
-        in_out : str, optional
-            Observer location assumption relative to magnet bodies: ``'auto'`` (detect per observer;
-            safest but slower), ``'inside'`` (treat all inside; faster), ``'outside'`` (treat all
-            outside; faster). Default is ``'auto'``.
+        squeeze : bool, default True
+            If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
+        pixel_agg : str or None, default None
+            Name of a NumPy aggregation function (e.g. ``'mean'``, ``'min'``) applied over the
+            pixel axis of each sensor. Allows mixing sensors with different pixel shapes.
+        output : {'ndarray','dataframe'}, default 'ndarray'
+            Output container type. 'dataframe' returns a pandas DataFrame.
+        in_out : {'auto','inside','outside'}, default 'auto'
+            Assumption about observer locations relative to magnet bodies. ``'auto'`` detects per
+            observer (safest, slower). ``'inside'`` treats all inside (faster). ``'outside'`` treats
+            all outside (faster).
 
         Returns
         -------
-        ndarray | DataFrame
-            Polarization (T) with shape squeeze(m, k, n1, n2, ..., 3) at each path position (index m)
-            for each sensor (index k) and each sensor pixel position (indices n1, n2, ...).
-            Sensor pixel positions are equivalent to simple observer positions. Paths of objects
-            that are shorter than index m are considered as static beyond their end.
+        ndarray or DataFrame
+            Polarization (T) with squeezed shape ``(m, k, n1, n2, ..., 3)`` where ``m`` is path length
+            and ``k`` the number of sensors (or 1 when observers given as arrays).
 
         Examples
         --------
@@ -848,26 +851,22 @@ class Collection(_BaseGeo, _BaseCollection, _BaseVolume, _BaseDipoleMoment):
 
     Parameters
     ----------
-    *children : Source | Sensor | Collection
+    *children : Source or Sensor or Collection
         Sources, sensors, or collections that should be added to this collection.
-    position : array-like, optional
-        Object position(s) in the global coordinates (m). Has shape (3,)
-        or (m,3). For m>1, the ``position`` and ``orientation`` attributes together
-        represent an object path. Default is ``(0,0,0)``.
-    orientation : Rotation, optional
-        Object orientation(s) in the global coordinates in the form of a scipy ``Rotation``
-        object. Rotation can have length 1 or m. For m>1, the ``position`` and ``orientation``
-        attributes together represent an object path. Default is ``None`` which generates
-        a unit-rotation.
-    override_parent : bool, optional
-        If ``False`` thrown an error when an attempt is made to add an object that
-        has already a parent to a Collection. If ``True``, allow adding the object
-        and override the objects parent attribute thus removing it from its
-        previous collection. Default is ``False``.
-    style : dict, optional
-        Object style inputs must be in dictionary form, e.g. ``{'color':'red'}`` or
-        using style underscore magic, e.g. ``style_color='red'``. Default is an empty
-        dictionary.
+    position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
+        Object position(s) in global coordinates in units (m). ``position`` and
+        ``orientation`` attributes define the object path.
+    orientation : None or Rotation, default None
+        Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
+        have length 1 or m. ``None`` generates a unit-rotation.
+    override_parent : bool, default False
+        If ``False`` thrown an error when an attempt is made to add an object that has
+        already a parent to a Collection. If ``True``, allow adding the object and
+        override the objects parent attribute thus removing it from its previous
+        collection.
+    style : None or dict, default None
+        Object style inputs must be in dictionary form, e.g. ``{'color':'red'}`` or using
+        style underscore magic, e.g. ``style_color='red'``.
 
     Attributes
     ----------
@@ -875,7 +874,7 @@ class Collection(_BaseGeo, _BaseCollection, _BaseVolume, _BaseDipoleMoment):
         Orderedlist of children in the collection top level.
     children_all : list
         Read-only. Orderedlist of children in the collection including nested collections.
-    parent : Collection | None
+    parent : Collection or None
         Parent collection of the object.
     sensors : list
         Orderedlist of sensor objects in the collection top level.
@@ -889,17 +888,17 @@ class Collection(_BaseGeo, _BaseCollection, _BaseVolume, _BaseDipoleMoment):
         Orderedlist of collection objects in the collection top level.
     collections_all : list
         Read-only. Orderedlist of collection objects in the collection including nested collections.
-    position : ndarray
+    position : ndarray, shape (3,) or (m, 3)
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    centroid : ndarray
+    centroid : ndarray, shape (3,) or (n, 3)
         Read-only. Collection centroid (m) computed as the volume-weighted average of all child
-        centroids. Shape is (3,) for a single state or (m, 3) for a path of length m.
+        centroids.
     volume : float
         Read-only. Total Collection volume (m^3) of all magnets. Overlapping objects may lead
         to double counting.
-    dipole_moment : ndarray
+    dipole_moment : ndarray, shape (3,)
         Read-only. Total Collection dipole moment (A·m²) computed from the sum of all child
         dipole moments.
     style : dict

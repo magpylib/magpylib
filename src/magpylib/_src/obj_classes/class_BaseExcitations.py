@@ -64,7 +64,7 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
 
         Parameters
         ----------
-        *observers : Sensor or array-like
+        *observers : Sensor or array-like, shape (n1, n2, ...,3)
             Observer specifications. Each entry can be an array-like of positions in units (m)
             with shape ``(n1, n2, ..., 3)``, a ``Sensor`` object with pixel shape
             ``(n1, n2, ..., 3)`` or a list of such objects (all with identical pixel shape unless
@@ -86,12 +86,6 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
         ndarray or DataFrame
             B-field (T) with squeezed shape ``(m, k, n1, n2, ..., 3)`` where ``m`` is path length
             and ``k`` the number of sensors (or 1 when observers given as arrays).
-
-        Notes
-        -----
-        ``m``: path length of the source or sensors.
-        ``k``: number of sensors (or 1 for pure coordinate observers).
-        ``n1, n2, ...``: pixel (or array) dimensions of observers.
 
         Examples
         --------
@@ -141,7 +135,7 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
 
         Parameters
         ----------
-        *observers : Sensor or array-like
+        *observers : Sensor or array-like, shape (n1, n2, ...,3)
             Observer specifications. Each entry can be an array-like of positions in units (m)
             with shape ``(n1, n2, ..., 3)``, a ``Sensor`` object with pixel shape
             ``(n1, n2, ..., 3)`` or a list of such objects (all with identical pixel shape unless
@@ -163,12 +157,6 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
         ndarray or DataFrame
             H-field (A/m) with squeezed shape ``(m, k, n1, n2, ..., 3)`` where ``m`` is path length
             and ``k`` the number of sensors (or 1 when observers given as arrays).
-
-        Notes
-        -----
-        ``m``: path length of the source or sensors.
-        ``k``: number of sensors (or 1 for pure coordinate observers).
-        ``n1, n2, ...``: pixel (or array) dimensions of observers.
 
         Examples
         --------
@@ -219,7 +207,7 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
 
         Parameters
         ----------
-        *observers : Sensor or array-like
+        *observers : Sensor or array-like, shape (n1, n2, ...,3)
             Observer specifications. Each entry can be an array-like of positions in units (m)
             with shape ``(n1, n2, ..., 3)``, a ``Sensor`` object with pixel shape
             ``(n1, n2, ..., 3)`` or a list of such objects (all with identical pixel shape unless
@@ -241,12 +229,6 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
         ndarray or DataFrame
             Magnetization (A/m) with squeezed shape ``(m, k, n1, n2, ..., 3)`` where ``m`` is path length
             and ``k`` the number of sensors (or 1 when observers given as arrays).
-
-        Notes
-        -----
-        ``m``: path length of the source or sensors.
-        ``k``: number of sensors (or 1 for pure coordinate observers).
-        ``n1, n2, ...``: pixel (or array) dimensions of observers.
 
         Examples
         --------
@@ -284,7 +266,7 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
 
         Parameters
         ----------
-        *observers : Sensor or array-like
+        *observers : Sensor or array-like, shape (n1, n2, ...,3)
             Observer specifications. Each entry can be an array-like of positions in units (m)
             with shape ``(n1, n2, ..., 3)``, a ``Sensor`` object with pixel shape
             ``(n1, n2, ..., 3)`` or a list of such objects (all with identical pixel shape unless
@@ -306,12 +288,6 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
         ndarray or DataFrame
             Polarization (T) with squeezed shape ``(m, k, n1, n2, ..., 3)`` where ``m`` is path length
             and ``k`` the number of sensors (or 1 when observers given as arrays).
-
-        Notes
-        -----
-        ``m``: path length of the source or sensors.
-        ``k``: number of sensors (or 1 for pure coordinate observers).
-        ``n1, n2, ...``: pixel (or array) dimensions of observers.
 
         Examples
         --------
