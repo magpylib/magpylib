@@ -555,6 +555,19 @@ def make_TriangularMesh(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     return traces
 
 
+def _apply_scaling_transformation(norms, scaling_type, is_null_mask, path_ind):
+    scaled_norms = norms.copy()
+    log_iterations = (
+        int(scaling_type[4])
+        if scaling_type.startswith("log^")
+        else scaling_type.count("log")
+    )
+    for _ in range(log_iterations):
+        scaled_norms += np.nanmin(scaled_norms) + 1  # shift to positive range
+        scaled_norms[~is_null_mask] = np.log(scaled_norms[~is_null_mask])
+    return scaled_norms[path_ind] / np.nanmax(scaled_norms)
+
+
 def make_Pixels(
     *,
     positions,
@@ -740,23 +753,20 @@ def make_Sensor(
                 norms = (norms - nmin) / ptp if ptp != 0 else norms * 0 + 0.5
                 sizescaling = style.pixel.field.sizescaling
                 if sizescaling != "uniform":
-                    snorms = norms.copy()
-                    for _ in range(sizescaling.count("log")):
-                        snorms += np.nanmin(snorms) + 1  # shift to positive range
-                        snorms[~is_null_mask] = np.log(snorms[~is_null_mask])
-                    px_sizes *= snorms[path_ind] / np.nanmax(snorms)
+                    snorms_scaled = _apply_scaling_transformation(
+                        norms, sizescaling, is_null_mask, path_ind
+                    )
+                    px_sizes *= snorms_scaled
                 colorscaling = style.pixel.field.colorscaling
                 if colorscaling != "uniform":
-                    cnorms = norms.copy()
-                    for _ in range(colorscaling.count("log")):
-                        cnorms += np.nanmin(cnorms) + 1  # shift to positive range
-                        cnorms[~is_null_mask] = np.log(cnorms[~is_null_mask])
-                    cnorms = cnorms / np.nanmax(cnorms)
+                    cnorms_scaled = _apply_scaling_transformation(
+                        norms, colorscaling, is_null_mask, path_ind
+                    )
                     px_colors = get_hexcolors_from_colormap(
-                        values=cnorms[path_ind],
+                        values=cnorms_scaled,
                         colormap=style.pixel.field.colormap,
-                        cmin=np.nanmin(cnorms),
-                        cmax=np.nanmax(cnorms),
+                        cmin=0,  # scaled values are normalized to [0, 1]
+                        cmax=1,
                     )
             pixels_trace = make_Pixels(
                 positions=px_positions,

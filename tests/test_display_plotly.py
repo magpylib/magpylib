@@ -530,7 +530,7 @@ def test_pixel_field_sizing_modes():
     )
     ls = np.linspace(-1, 1, 3)
     s0 = magpy.Sensor(pixel=[[x, y, 0] for x in ls for y in ls], position=(0, 0, 0))
-    sizemodes = ["uniform", "linear", "log", "loglog"]
+    sizemodes = ["uniform", "linear", "log", "log^2", "log^9"]
     subplots = []
     for i, sm in enumerate(sizemodes, 1):
         s = s0.copy(

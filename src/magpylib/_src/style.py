@@ -5,6 +5,8 @@
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-positional-arguments
 
+import re
+
 import numpy as np
 
 from magpylib._src.defaults.defaults_utility import (
@@ -1670,16 +1672,16 @@ class PixelField(MagicProperties):
     symbol: {"cone", "arrow", "arrow3d"}:
         Orientation symbol for field vector.
 
-    sizescaling: {"uniform", "linear", "log", "loglog"}
+    sizescaling: {"uniform", "linear","log","log^[2-9]"}
         Symbol size scaling relative the the field magnitude.
 
-    colorscaling: {"uniform", "linear", "log", "loglog"}
+    colorscaling: {"uniform", "linear","log","log^[2-9]"}
         Color scale scaling relative the the field magnitude.
     """
 
+    _allowed_scalings_pattern = r"^(uniform|linear|(log)+|log\^[2-9])$"
     _allowed_vectors = ("B", "H", "M", "J")
     _allowed_symbols = ("cone", "arrow", "arrow3d")
-    _allowed_scalings = ("uniform", "linear", "log", "loglog")
     _allowed_colormaps = (
         "Viridis",
         "Jet",
@@ -1774,31 +1776,29 @@ class PixelField(MagicProperties):
 
     @property
     def sizescaling(self):
-        """Pixel sizescaling. Can be one of `{"uniform", "linear", "log", "loglog"}`."""
+        """Pixel sizescaling. Can be one of `{"uniform", "linear","log","log^[2-9]"}`."""
         return self._sizescaling
 
     @sizescaling.setter
     def sizescaling(self, val):
-        assert val is None or val in self._allowed_scalings, (
-            f"The `sizescaling` property of {type(self).__name__} must be one of"
-            f"{self._allowed_scalings},\n"
-            f"but received {val!r} instead."
-        )
-        self._sizescaling = val
+        self._sizescaling = self._validate_scaling(val, name="sizescaling")
 
     @property
     def colorscaling(self):
-        """Pixel colorscaling. Can be one of `{"uniform", "linear", "log", "loglog"}`."""
+        """Pixel colorscaling. Can be one of `{"uniform", "linear","log","log^[2-9]"}`."""
         return self._colorscaling
 
     @colorscaling.setter
     def colorscaling(self, val):
-        assert val is None or val in self._allowed_scalings, (
-            f"The `colorscaling` property of {type(self).__name__} must be one of"
-            f"{self._allowed_scalings},\n"
+        self._colorscaling = self._validate_scaling(val, name="colorscaling")
+
+    def _validate_scaling(self, val, name):
+        assert val is None or re.match(self._allowed_scalings_pattern, str(val)), (
+            f"The `{name}` property of {type(self).__name__} must match the regex pattern"
+            f" {self._allowed_scalings_pattern},\n"
             f"but received {val!r} instead."
         )
-        self._colorscaling = val
+        return val
 
 
 class Pixel(MagicProperties):

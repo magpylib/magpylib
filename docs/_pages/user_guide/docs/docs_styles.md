@@ -598,14 +598,14 @@ The `pixel` of a `Sensor` object can be visualized as arrows representing the va
     - `"uniform"`: Uniform arrow size.
     - `"linear"`: Size proportional to magnitude.
     - `"log"`: Size proportional to the normalized logarithm of the magnitude.
-    - `"loglog"`: Size proportional to the normalized logarithm of the logarithm of the magnitude.
+    - `"log^n"`: Size proportional to the normalized nth (2 to 9) logarithm of the magnitude.
 
 **`colorscaling`** *(default=`"uniform"`)*:
     Determines how arrow color relates to the `source` magnitude.
     - `"uniform"`: Uniform color for all arrows.
-    - `"linear"`: Color proportional to magnitude.
-    - `"log"`: Color proportional to the normalized logarithm of the magnitude.
-    - `"loglog"`: Color proportional to the normalized logarithm of the logarithm of the magnitude.
+    - `"linear"`: Color scaling proportional to magnitude.
+    - `"log"`: Color scaling proportional to the normalized logarithm of the magnitude.
+    - `"log^n"`: Color scaling proportional to the normalized nth (2 to 9) logarithm of the magnitude.
 
 - **`colormap`** *(default=`"Viridis"`)*:
   Specifies the colormap used for color mapping. Supports standard color maps (e.g., `"Viridis"`, `"Inferno"`, `"Magma"`, etc.) compatible with both Plotly and Matplotlib.
