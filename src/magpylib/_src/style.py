@@ -1661,8 +1661,8 @@ class PixelField(MagicProperties):
         The pixel color source (e.g. "Bx", "Hxy", "J", etc.). If not specified,
         the amplitude of the `source` value is used.
 
-    colorscale: str, default="Inferno",
-        The colorscale used with `source`.
+    colormap: str, default="Inferno",
+        The colormap used with `source`.
 
     shownull: bool, default=True
         Show/hide null or invalid field values
@@ -1680,7 +1680,7 @@ class PixelField(MagicProperties):
     _allowed_vectors = ("B", "H", "M", "J")
     _allowed_symbols = ("cone", "arrow", "arrow3d")
     _allowed_scalings = ("uniform", "linear", "log", "loglog")
-    _allowed_colorscales = (
+    _allowed_colormaps = (
         "Viridis",
         "Jet",
         "Rainbow",
@@ -1732,18 +1732,18 @@ class PixelField(MagicProperties):
         self._source = val
 
     @property
-    def colorscale(self):
+    def colormap(self):
         """Pixel vector source."""
-        return self._colorscale
+        return self._colormap
 
-    @colorscale.setter
-    def colorscale(self, val):
-        assert val is None or val in self._allowed_colorscales, (
-            f"The `colorscale` property of {type(self).__name__} must be one of"
-            f"{self._allowed_colorscales},\n"
+    @colormap.setter
+    def colormap(self, val):
+        assert val is None or val in self._allowed_colormaps, (
+            f"The `colormap` property of {type(self).__name__} must be one of"
+            f"{self._allowed_colormaps},\n"
             f"but received {val!r} instead."
         )
-        self._colorscale = val
+        self._colormap = val
 
     @property
     def shownull(self):

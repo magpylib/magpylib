@@ -918,9 +918,9 @@ def create_null_dim_trace(color=None, **kwargs):
     return {**trace, **kwargs}
 
 
-def get_hexcolors_from_scale(
+def get_hexcolors_from_colormap(
     values,
-    colorscale,
+    colormap,
     cmin=None,
     cmax=None,
     nan_color="#b2beb5",
@@ -934,7 +934,7 @@ def get_hexcolors_from_scale(
     cmax = np.nanmax(valid) if cmax is None else cmax
     ptp = cmax - cmin
     values = (values - cmin) / ptp if ptp != 0 else values * 0 + 0.5
-    rgb_colors = sample_colorscale(colorscale, values[~nan_mask], colortype=None)
+    rgb_colors = sample_colorscale(colormap, values[~nan_mask], colortype=None)
     hex_colors = [rgb2hex(rgb) for rgb in rgb_colors]
     out = np.array([""] * len(values), dtype="<U10")
     out[nan_mask] = nan_color

@@ -607,7 +607,7 @@ The `pixel` of a `Sensor` object can be visualized as arrows representing the va
     - `"log"`: Color proportional to the normalized logarithm of the magnitude.
     - `"loglog"`: Color proportional to the normalized logarithm of the logarithm of the magnitude.
 
-- **`colorscale`** *(default=`"Viridis"`)*:
+- **`colormap`** *(default=`"Viridis"`)*:
   Specifies the colormap used for color mapping. Supports standard color maps (e.g., `"Viridis"`, `"Inferno"`, `"Magma"`, etc.) compatible with both Plotly and Matplotlib.
 
 ````{note}
@@ -641,7 +641,7 @@ pixel_style = {
     "symbol"       : "arrow3d",
     "sizemode"     : "uniform",
     "shownull"     : True,
-    "colorscale"   : "Magma"
+    "colormap"   : "Magma"
 }
 
 # Create sensor with pixel array and applied style

@@ -32,7 +32,7 @@ from magpylib._src.display.traces_utility import (
     create_null_dim_trace,
     draw_arrow_from_vertices,
     draw_arrow_on_circle,
-    get_hexcolors_from_scale,
+    get_hexcolors_from_colormap,
     get_legend_label,
     get_orientation_from_vec,
     group_traces,
@@ -752,9 +752,9 @@ def make_Sensor(
                         cnorms += np.nanmin(cnorms) + 1  # shift to positive range
                         cnorms[~is_null_mask] = np.log(cnorms[~is_null_mask])
                     cnorms = cnorms / np.nanmax(cnorms)
-                    px_colors = get_hexcolors_from_scale(
+                    px_colors = get_hexcolors_from_colormap(
                         values=cnorms[path_ind],
-                        colorscale=style.pixel.field.colorscale,
+                        colormap=style.pixel.field.colormap,
                         cmin=np.nanmin(cnorms),
                         cmax=np.nanmax(cnorms),
                     )
