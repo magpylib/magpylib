@@ -617,7 +617,9 @@ def make_Pixels(
         "arrow3d": {"type": "mesh3d", "orientable": True},
         "cube": {"type": "mesh3d", "orientable": False},
     }
-    orientable = allowed_symbols.get(field_symbol, {"orientable": False}).get("orientable")
+    orientable = allowed_symbols.get(field_symbol, {"orientable": False}).get(
+        "orientable"
+    )
     trace_type = allowed_symbols.get(field_symbol, {"type": "scatter3d"}).get("type")
     if vectors is not None:
         orientations = get_orientation_from_vec(vectors)
@@ -633,11 +635,7 @@ def make_Pixels(
         }
         pix = None
         size = sizes[ind] if is_array_like(sizes) else sizes
-        if (
-            orientable
-            and vectors is not None
-            and not is_null_vec[ind]
-        ):
+        if orientable and vectors is not None and not is_null_vec[ind]:
             orient = orientations[ind]
             kw.update(orientation=orient, base=5, diameter=size, height=size * 2)
             if field_symbol == "cone":
@@ -767,7 +765,9 @@ def make_Sensor(
                     snorms_scaled = _apply_scaling_transformation(
                         norms, sizescaling, is_null_mask, path_ind, min_=sizemin
                     )
-                    snorms_scaled[is_null_mask[path_ind]] = 1  # keep null sizes unscaled
+                    snorms_scaled[is_null_mask[path_ind]] = (
+                        1  # keep null sizes unscaled
+                    )
                     px_sizes *= snorms_scaled
                 colorscaling = style.pixel.field.colorscaling
                 if colorscaling != "uniform":
