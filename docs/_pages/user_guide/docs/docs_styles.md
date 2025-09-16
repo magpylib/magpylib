@@ -594,34 +594,34 @@ The `pixel` of a `Sensor` object can be visualized as arrows representing the va
   - `True`: Null vectors are displayed.
   - `False`: Null vectors are hidden.
 
-**`sizescaling`** *(default=`"uniform"`)*:
+- **`sizescaling`** *(default=`"uniform"`)*:
     Determines how arrow size relates to the `source` magnitude.
-    - `"uniform"`: Uniform arrow size.
-    - `"linear"`: Size proportional to magnitude.
-    - `"log"`: Size proportional to the normalized logarithm of the magnitude.
-    - `"log^n"`: Size proportional to the normalized nth (2 to 9) logarithm of the magnitude.
+  - `"uniform"`: Uniform arrow size.
+  - `"linear"`: Size proportional to magnitude.
+  - `"log"`: Size proportional to the normalized logarithm of the magnitude.
+  - `"log^n"`: Size proportional to the normalized nth (2 to 9) logarithm of the magnitude.
 
-**`sizemin`** *(default=`0.1`)*
+- **`sizemin`** *(default=`0.1`)*
     Minimum relative size of field symbols. A float between 0 and 1.
     When displaying field vectors this controls how small the symbols
     can become relative to their maximum size. A value of 0 allows symbols to shrink to zero size,
     while 0.5 ensures symbols are at least 50% of their maximum size.
 
-**`colorscaling`** *(default=`"uniform"`)*:
+- **`colorscaling`** *(default=`"uniform"`)*:
     Determines how arrow color relates to the `source` magnitude.
-    - `"uniform"`: Uniform color for all arrows.
-    - `"linear"`: Color scaling proportional to magnitude.
-    - `"log"`: Color scaling proportional to the normalized logarithm of the magnitude.
-    - `"log^n"`: Color scaling proportional to the normalized nth (2 to 9) logarithm of the magnitude.
+  - `"uniform"`: Uniform color for all arrows.
+  - `"linear"`: Color scaling proportional to magnitude.
+  - `"log"`: Color scaling proportional to the normalized logarithm of the magnitude.
+  - `"log^n"`: Color scaling proportional to the normalized nth (2 to 9) logarithm of the magnitude.
 
 - **`colormap`** *(default=`"Viridis"`)*:
   Specifies the colormap used for color mapping. Supports standard color maps (e.g., `"Viridis"`, `"Inferno"`, `"Magma"`, etc.) compatible with both Plotly and Matplotlib.
 
-````{note}
+```{note}
 - Pixels with zero or invalid field values are rendered using the default representation (`point`/`box` or according to `style.pixel.symbol`).
 - Magnitude normalization is performed individually for each sensor along its path.
 - `style.pixel.size` controls also the arrow size.
-````
+```
 
 ### Pixel Field Minimal Example
 
