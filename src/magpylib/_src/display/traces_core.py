@@ -595,7 +595,19 @@ def make_Pixels(
     # markers plots must share the same kw types to be able to be merged with line plots!
 
     sizes_2dfactor = marker2d_default_size / np.max(sizes)
-    if symbol is not None and vectors is None:
+    allowed_symbols = {
+        "cone": {"type": "mesh3d", "orientable": True},
+        "arrow": {"type": "scatter3d", "orientable": True},
+        "arrow3d": {"type": "mesh3d", "orientable": True},
+        "cube": {"type": "mesh3d", "orientable": False},
+    }
+    field_symbol = symbol if field_symbol in ("none", None) else field_symbol
+    orientable = allowed_symbols.get(field_symbol, {"orientable": False}).get(
+        "orientable"
+    )
+    ttype = allowed_symbols.get(symbol, {"type": "scatter3d"}).get("type")
+    ttype_field = allowed_symbols.get(field_symbol, {"type": "scatter3d"}).get("type")
+    if ttype == "scatter3d" and vectors is None:
         x, y, z = positions.T
         sizes = sizes if is_array_like(sizes) else np.repeat(sizes, len(x))
         return {
@@ -611,18 +623,6 @@ def make_Pixels(
     pixels = []
     orientations = None
     is_null_vec = None
-    if field_symbol in ("none", None):
-        field_symbol = symbol if symbol is not None else "cube"
-    allowed_symbols = {
-        "cone": {"type": "mesh3d", "orientable": True},
-        "arrow": {"type": "scatter3d", "orientable": True},
-        "arrow3d": {"type": "mesh3d", "orientable": True},
-        "cube": {"type": "mesh3d", "orientable": False},
-    }
-    orientable = allowed_symbols.get(field_symbol, {"orientable": False}).get(
-        "orientable"
-    )
-    trace_type = allowed_symbols.get(field_symbol, {"type": "scatter3d"}).get("type")
     if vectors is not None:
         orientations = get_orientation_from_vec(vectors)
         is_null_vec = (np.abs(vectors) < null_thresh).all(axis=1)
@@ -648,7 +648,7 @@ def make_Pixels(
                 pix = make_BaseArrow(**kw, **kw2d)
                 pix["marker_size"] = np.repeat(0.0, len(pix["x"]))
         elif vectors is None or shownull:
-            if trace_type == "scatter3d":
+            if ttype_field == "scatter3d":
                 x, y, z = pos[:, None]
                 pix = {
                     "x": x,
@@ -662,7 +662,7 @@ def make_Pixels(
         if pix is not None:
             if colors is not None:
                 color = colors[ind] if is_array_like(colors) else colors
-                if trace_type == "scatter3d":
+                if ttype_field == "scatter3d":
                     pix["line_color"] = np.repeat(color, len(pix["x"]))
                     pix["marker_color"] = pix["line_color"]
                 else:

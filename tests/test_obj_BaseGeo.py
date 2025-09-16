@@ -706,8 +706,8 @@ def test_describe_with_exclude_None():
             " legend=Legend(show=None, text=None), model3d=Model3d(data=[], showdefault=True),"
             " opacity=None, path=Path(frames=None, line=Line(color=None, style=None, width=None),"
             " marker=Marker(color=None, size=None, symbol=None), numbering=None, show=None),"
-            " pixel=Pixel(color=None, field=PixelField(colorscale=None,"
-            " shownull=None, sizemode=None, symbol=None, source=None), size=1,"
+            " pixel=Pixel(color=None, field=PixelField(colormap=None, colorscaling=None, shownull=None,"
+            " sizemin=None, sizescaling=None, source=None, symbol=None), size=1,"
             " sizemode=None, symbol=None), size=None, sizemode=None)"
         ),
         "  • volume: 0.0",

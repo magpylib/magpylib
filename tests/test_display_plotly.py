@@ -573,7 +573,7 @@ def test_pixel_field_color_scales():
     for i, cs in enumerate(colorscales, 1):
         s = s0.copy(
             style_pixel_field_source="B",
-            style_pixel_field_colorscale=cs,
+            style_pixel_field_colormap=cs,
             style_description=str(cs),
         )
         subplots.append({"objects": [c1, s], "col": i})
