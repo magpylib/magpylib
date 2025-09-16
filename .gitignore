@@ -158,7 +158,7 @@ Thumbs.db
 *~
 *.swp
 __temp*.py
-__temp.ipynb
+__temp*.ipynb
 
 # uv
 uv.lock
