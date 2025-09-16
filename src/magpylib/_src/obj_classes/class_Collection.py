@@ -10,7 +10,7 @@ import numpy as np
 
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.fields.field_wrap_BH import getBH_level2
+from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import check_format_input_obj
 from magpylib._src.obj_classes.class_BaseDisplayRepr import _BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import _BaseGeo
@@ -415,7 +415,7 @@ class _BaseCollection(_BaseDisplayRepr):
 
         Examples
         --------
-        In this example we remove a child from a Collection:
+        In this example we remove a child from a collection:
 
         >>> import magpylib as magpy
         >>> x1 = magpy.Sensor(style_label='x1')
@@ -504,10 +504,10 @@ class _BaseCollection(_BaseDisplayRepr):
         >>> col.set_children_styles({'color': 'g'})
         Collection(id=...)
         >>>
-        >>> # Finally we create a separate sphere magnet to demonstrate the default style
-        >>> # the collection and the separate magnet with Matplotlib:
+        >>> # Finally we create a separate sphere magnet and show both the collection
+        >>> # and the separate magnet with Matplotlib:
         >>>
-        >>> src = magpy.magnet.Sphere(position=(3, 0, 0), diameter=1, polarization=(0, 0, .1))
+        >>> src = magpy.magnet.Sphere(position=(3, 0, 0), diameter=1, polarization=(0, 0, 0.1))
         >>> magpy.show(col, src) # doctest: +SKIP
         >>> # graphic output
         """
@@ -605,9 +605,9 @@ class _BaseCollection(_BaseDisplayRepr):
         >>> import numpy as np
         >>> import magpylib as magpy
         >>> # Create Collection with two sensors and two magnets
-        >>> src1 = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
+        >>> src1 = magpy.magnet.Sphere(polarization=(0, 0, 1), diameter=1)
         >>> src2 = src1.copy()
-        >>> sens1 = magpy.Sensor(position=(0,0,.6))
+        >>> sens1 = magpy.Sensor(position=(0, 0, 0.6))
         >>> sens2 = sens1.copy()
         >>> col = src1 + src2 + sens1 + sens2
         >>> # The following computations all give the same result
@@ -626,7 +626,7 @@ class _BaseCollection(_BaseDisplayRepr):
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
-        return getBH_level2(
+        return _getBH_level2(
             sources,
             sensors,
             field="B",
@@ -677,9 +677,9 @@ class _BaseCollection(_BaseDisplayRepr):
         >>> import numpy as np
         >>> import magpylib as magpy
         >>> # Create Collection with two sensors and two magnets
-        >>> src1 = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
+        >>> src1 = magpy.magnet.Sphere(polarization=(0, 0, 1.0), diameter=1)
         >>> src2 = src1.copy()
-        >>> sens1 = magpy.Sensor(position=(0,0,1))
+        >>> sens1 = magpy.Sensor(position=(0, 0, 1))
         >>> sens2 = sens1.copy()
         >>> col = src1 + src2 + sens1 + sens2
         >>> # The following computations all give the same result
@@ -699,7 +699,7 @@ class _BaseCollection(_BaseDisplayRepr):
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
 
-        return getBH_level2(
+        return _getBH_level2(
             sources,
             sensors,
             field="H",
@@ -748,11 +748,11 @@ class _BaseCollection(_BaseDisplayRepr):
         >>> import numpy as np
         >>> import magpylib as magpy
         >>> cube = magpy.magnet.Cuboid(
-        ...     dimension=(10,1,1),
-        ...     polarization=(1,0,0)
-        ... ).rotate_from_angax(45,'z')
+        ...     dimension=(10, 1, 1),
+        ...     polarization=(1, 0, 0)
+        ... ).rotate_from_angax(45, 'z')
         >>> coll = magpy.Collection(cube)
-        >>> M = coll.getM((3,3,0))
+        >>> M = coll.getM((3, 3, 0))
         >>> with np.printoptions(precision=0):
         ...    print(M)
         [562698. 562698.      0.]
@@ -760,7 +760,7 @@ class _BaseCollection(_BaseDisplayRepr):
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
 
-        return getBH_level2(
+        return _getBH_level2(
             sources,
             sensors,
             field="M",
@@ -807,11 +807,11 @@ class _BaseCollection(_BaseDisplayRepr):
         >>> import numpy as np
         >>> import magpylib as magpy
         >>> cube = magpy.magnet.Cuboid(
-        ...     dimension=(10,1,1),
-        ...     polarization=(1,0,0)
-        ... ).rotate_from_angax(45,'z')
+        ...     dimension=(10, 1, 1),
+        ...     polarization=(1, 0, 0)
+        ... ).rotate_from_angax(45, 'z')
         >>> coll = magpy.Collection(cube)
-        >>> J = coll.getJ((3,3,0))
+        >>> J = coll.getJ((3, 3, 0))
         >>> with np.printoptions(precision=3):
         ...    print(J)
         [0.707 0.707 0.   ]
@@ -819,7 +819,7 @@ class _BaseCollection(_BaseDisplayRepr):
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
 
-        return getBH_level2(
+        return _getBH_level2(
             sources,
             sensors,
             field="J",
@@ -919,15 +919,15 @@ class Collection(_BaseGeo, _BaseCollection, _BaseVolume, _BaseDipoleMoment):
 
     Examples
     --------
-    Collections function as groups of multiple magpylib objects. In this example
+    Collections function as groups of multiple Magpylib objects. In this example
     we create a collection with two sources and move the whole collection:
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> src1 = magpy.magnet.Sphere(position=(2,0,0), diameter=1,polarization=(.1,.2,.3))
-    >>> src2 = magpy.current.Circle(position=(-2,0,0), diameter=1, current=1)
+    >>> src1 = magpy.magnet.Sphere(position=(2, 0, 0), diameter=1, polarization=(0.1, 0.2, 0.3))
+    >>> src2 = magpy.current.Circle(position=(-2, 0, 0), diameter=1, current=1)
     >>> col = magpy.Collection(src1, src2)
-    >>> col.move(((0,0,2)))
+    >>> col.move((0, 0, 2))
     Collection(id=...)
     >>> print(src1.position)
     [2. 0. 2.]
@@ -938,9 +938,9 @@ class Collection(_BaseGeo, _BaseCollection, _BaseVolume, _BaseDipoleMoment):
 
     We can still directly access individual objects by name and by index:
 
-    >>> src1.move((2,0,0))
+    >>> src1.move((2, 0, 0))
     Sphere(id=...)
-    >>> col[1].move((-2,0,0))
+    >>> col[1].move((-2, 0, 0))
     Circle(id=...)
     >>> print(src1.position)
     [4. 0. 2.]
@@ -949,13 +949,13 @@ class Collection(_BaseGeo, _BaseCollection, _BaseVolume, _BaseDipoleMoment):
     >>> print(col.position)
     [0. 0. 2.]
 
-    The field can be computed at position (0,0,0) as if the collection was a single source:
+    The field can be computed at position (0, 0, 0) as if the collection was a single source:
 
-    >>> B = col.getB((0,0,0))
+    >>> B = col.getB((0, 0, 0))
     >>> print(B)
     [ 2.32922681e-04 -9.31694991e-05 -3.44484717e-10]
 
-    We add a sensor at position (0,0,0) to the collection:
+    We add a sensor at position (0, 0, 0) to the collection:
 
     >>> sens = magpy.Sensor()
     >>> col.add(sens)

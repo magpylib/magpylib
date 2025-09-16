@@ -9,7 +9,7 @@ from typing import ClassVar
 import numpy as np
 
 from magpylib._src.display.traces_core import make_TriangleSheet
-from magpylib._src.fields.field_BH_current_sheet import BHJM_current_trisheet
+from magpylib._src.fields.field_BH_current_sheet import _BHJM_current_trisheet
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import _BaseSource
 from magpylib._src.obj_classes.class_BaseTarget import _BaseTarget
@@ -80,11 +80,11 @@ class TriangleSheet(_BaseSource, _BaseTarget):
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> src = magpy.current.TriangleSheet(
-    >>> current_densities=[(1,0,0), (0,1,0)],
-    >>> vertices=((0,0,0), (0,1,0), (1,0,0), (1,1,1)),
-    >>> faces=((0,1,2), (1,2,3)),
-    >>> )
-    >>> H = src.getH((.01,.01,.01))
+    ...     current_densities=[(1, 0, 0), (0, 1, 0)],
+    ...     vertices=((0, 0, 0), (0, 1, 0), (1, 0, 0), (1, 1, 1)),
+    ...     faces=((0, 1, 2), (1, 2, 3)),
+    ... )
+    >>> H = src.getH((0.01, 0.01, 0.01))
     >>> with np.printoptions(precision=3):
     ...     print(H)
     [ 0.005 -0.311 -0.299]
@@ -95,7 +95,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
     """
 
     # pylint: disable=dangerous-default-value
-    _field_func = staticmethod(BHJM_current_trisheet)
+    _field_func = staticmethod(_BHJM_current_trisheet)
     _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "current_densities": 3,

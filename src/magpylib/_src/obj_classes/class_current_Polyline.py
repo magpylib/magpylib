@@ -9,7 +9,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Polyline
 from magpylib._src.exceptions import MagpylibDeprecationWarning
-from magpylib._src.fields.field_BH_polyline import current_vertices_field
+from magpylib._src.fields.field_BH_polyline import _current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import _BaseCurrent
 from magpylib._src.obj_classes.class_BaseProperties import _BaseDipoleMoment
@@ -78,22 +78,22 @@ class Polyline(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     --------
     ``Polyline`` objects are magnetic field sources. In this example we compute the
     H-field (A/m) of a square-shaped line current with 1 A at the observer position
-    (1, 1, 1) cm:
+    ``(1, 1, 1)`` (cm):
 
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> src = magpy.current.Polyline(
     ...     current=1,
-    ...     vertices=((.01,0,0), (0,.01,0), (-.01,0,0), (0,-.01,0), (.01,0,0)),
+    ...     vertices=((0.01, 0, 0), (0, 0.01, 0), (-0.01, 0, 0), (0, -0.01, 0), (0.01, 0, 0)),
     ... )
-    >>> H = src.getH((.01,.01,.01))
+    >>> H = src.getH((0.01, 0.01, 0.01))
     >>> with np.printoptions(precision=3):
     ...     print(H)
     [3.161 3.161 0.767]
     """
 
     # pylint: disable=dangerous-default-value
-    _field_func = staticmethod(current_vertices_field)
+    _field_func = staticmethod(_current_vertices_field)
     _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "current": 1,
@@ -209,7 +209,7 @@ class Line(Polyline):
     def _field_func(*args, **kwargs):
         """Catch Deprecation warning in getBH_dict"""
         _deprecation_warn()
-        return current_vertices_field(*args, **kwargs)
+        return _current_vertices_field(*args, **kwargs)
 
     def __init__(self, *args, **kwargs):
         _deprecation_warn()

@@ -7,7 +7,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_CylinderSegment
 from magpylib._src.fields.field_BH_cylinder_segment import (
-    BHJM_cylinder_segment_internal,
+    _BHJM_cylinder_segment_internal,
 )
 from magpylib._src.input_checks import check_format_input_cylinder_segment
 from magpylib._src.obj_classes.class_BaseExcitations import _BaseMagnet
@@ -83,20 +83,24 @@ class CylinderSegment(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     Examples
     --------
     ``CylinderSegment`` magnets are magnetic field sources. In this example we compute the
-    H-field in (A/m) of such a cylinder segment magnet with polarization ``(0.1, 0.2, 0.3)``
-    in units (T), inner radius ``0.01 m``, outer radius ``0.02 m``, height ``0.01 m``, and
-    section angles ``0`` and ``45 deg`` at the observer position ``(0.02, 0.02, 0.02)`` (m):
+    H-field in (A/m) of such a cylinder segment magnet with polarization
+    ``(0.1, 0.2, 0.3)`` (T), inner radius ``0.01`` (m), outer radius ``0.02`` (m),
+    height ``0.01`` (m), and section angles ``0`` and ``45`` (deg) at the observer
+    position ``(0.02, 0.02, 0.02)`` (m):
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> src = magpy.magnet.CylinderSegment(polarization=(.1,.2,.3), dimension=(.01,.02,.01,0,45))
-    >>> H = src.getH((.02,.02,.02))
+    >>> src = magpy.magnet.CylinderSegment(
+    ...     polarization=(0.1, 0.2, 0.3),
+    ...     dimension=(0.01, 0.02, 0.01, 0.0, 45.0),
+    ... )
+    >>> H = src.getH((0.02, 0.02, 0.02))
     >>> with np.printoptions(precision=3):
     ...     print(H)
     [ 807.847 1934.228 2741.168]
     """
 
-    _field_func = staticmethod(BHJM_cylinder_segment_internal)
+    _field_func = staticmethod(_BHJM_cylinder_segment_internal)
     _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 2,

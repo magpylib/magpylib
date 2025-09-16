@@ -272,7 +272,7 @@ def get_traces_2D(
 ):
     """draws and animates sensor values over a path in a subplot"""
     # pylint: disable=import-outside-toplevel
-    from magpylib._src.fields.field_wrap_BH import getBH_level2  # noqa: PLC0415
+    from magpylib._src.fields.field_BH import _getBH_level2  # noqa: PLC0415
 
     sources = format_obj_input(objects, allow="sources+collections")
     sources = [
@@ -311,7 +311,7 @@ def get_traces_2D(
     field_str_list = list(dict.fromkeys(field_str_list))
     BH_array = {}
     for field_str in field_str_list:
-        BH_array[field_str] = getBH_level2(
+        BH_array[field_str] = _getBH_level2(
             sources,
             sensors,
             sumup=sumup,

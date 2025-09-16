@@ -1,20 +1,17 @@
-"""
-Implementations of analytical expressions for the magnetic field of a triangular surface.
-Computation details in function docstrings.
-"""
-
-# pylint: disable=too-many-nested-blocks
-# pylint: disable=too-many-branches
-# pylance: disable=Code is unreachable
+"""Homogeneously magnetized triangular mesh body field implementation."""
 
 import numpy as np
 import scipy.spatial
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.fields.field_BH_triangle import BHJM_triangle
+from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
+
+# pylint: disable=too-many-nested-blocks
+# pylint: disable=too-many-branches
+# pylance: disable=Code is unreachable
 
 
-def calculate_centroid(vertices, faces):
+def _calculate_centroid(vertices, faces):
     """
     Calculates the centroid of a 3D triangular surface mesh.
 
@@ -44,7 +41,7 @@ def calculate_centroid(vertices, faces):
     )
 
 
-def v_norm2(a: np.ndarray) -> np.ndarray:
+def _v_norm2(a: np.ndarray) -> np.ndarray:
     """
     return |a|**2
     """
@@ -52,7 +49,7 @@ def v_norm2(a: np.ndarray) -> np.ndarray:
     return a[..., 0] + a[..., 1] + a[..., 2]
 
 
-def v_norm_proj(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+def _v_norm_proj(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     """
     return a_dot_b/|a||b|
     assuming that |a|, |b| > 0
@@ -60,10 +57,10 @@ def v_norm_proj(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     ab = a * b
     ab = ab[..., 0] + ab[..., 1] + ab[..., 2]
 
-    return ab / np.sqrt(v_norm2(a) * v_norm2(b))
+    return ab / np.sqrt(_v_norm2(a) * _v_norm2(b))
 
 
-def v_cross(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+def _v_cross(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     """
     a x b
     """
@@ -76,7 +73,7 @@ def v_cross(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     ).T
 
 
-def v_dot_cross3d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> np.ndarray:
+def _v_dot_cross3d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> np.ndarray:
     """
     a x b * c
     """
@@ -87,7 +84,7 @@ def v_dot_cross3d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> np.ndarray:
     )
 
 
-def get_disconnected_faces_subsets(faces: list) -> list:
+def _get_disconnected_faces_subsets(faces: list) -> list:
     """Return a list of disconnected faces sets"""
     subsets_inds = []
     tria_temp = faces.copy()
@@ -109,7 +106,7 @@ def get_disconnected_faces_subsets(faces: list) -> list:
     return [faces[np.isin(faces, list(ps)).all(axis=1)] for ps in subsets_inds]
 
 
-def get_open_edges(faces: np.ndarray) -> bool:
+def _get_open_edges(faces: np.ndarray) -> bool:
     """
     Check if given trimesh forms a closed surface.
 
@@ -128,7 +125,7 @@ def get_open_edges(faces: np.ndarray) -> bool:
     return edges_uniq[edge_counts != 2]
 
 
-def fix_trimesh_orientation(vertices: np.ndarray, faces: np.ndarray) -> np.ndarray:
+def _fix_trimesh_orientation(vertices: np.ndarray, faces: np.ndarray) -> np.ndarray:
     """Check if all faces are oriented outwards. Fix the ones that are not, and return an
     array of properly oriented faces.
 
@@ -147,13 +144,13 @@ def fix_trimesh_orientation(vertices: np.ndarray, faces: np.ndarray) -> np.ndarr
     """
     # use first triangle as a seed, this one needs to be oriented via inside check
     # compute facet orientation (normalized)
-    inwards_mask = get_inwards_mask(vertices, faces)
+    inwards_mask = _get_inwards_mask(vertices, faces)
     new_faces = faces.copy()
     new_faces[inwards_mask] = new_faces[inwards_mask][:, [0, 2, 1]]
     return new_faces
 
 
-def is_facet_inwards(face, faces):
+def _is_facet_inwards(face, faces):
     """Return boolean whether facet is pointing inwards, via ray tracing"""
     v1 = face[0] - face[1]
     v2 = face[1] - face[2]
@@ -165,10 +162,10 @@ def is_facet_inwards(face, faces):
     check_point = face.mean(axis=0) + orient * eps
 
     # find out if first point is inwards
-    return mask_inside_trimesh(np.array([check_point]), faces)[0]
+    return _mask_inside_trimesh(np.array([check_point]), faces)[0]
 
 
-def get_inwards_mask(
+def _get_inwards_mask(
     vertices: np.ndarray,
     triangles: np.ndarray,
 ) -> np.ndarray:
@@ -201,7 +198,7 @@ def get_inwards_mask(
     while indices:
         if not any_connected:
             free_edges = set()
-            is_inwards = is_facet_inwards(msh[indices[0]], msh[indices])
+            is_inwards = _is_facet_inwards(msh[indices[0]], msh[indices])
             mask[indices] = is_inwards
         for tri_ind in indices:
             tri = triangles[tri_ind]
@@ -231,7 +228,7 @@ def get_inwards_mask(
     return mask
 
 
-def lines_end_in_trimesh(lines: np.ndarray, faces: np.ndarray) -> np.ndarray:
+def _lines_end_in_trimesh(lines: np.ndarray, faces: np.ndarray) -> np.ndarray:
     """
     Check if 2-point lines, where the first point lies distinctly outside of a closed
     triangular mesh (no touch), ends on the inside of that mesh
@@ -266,7 +263,7 @@ def lines_end_in_trimesh(lines: np.ndarray, faces: np.ndarray) -> np.ndarray:
     """
 
     # Part 1 ---------------------------
-    normals = v_cross(faces[:, 0] - faces[:, 2], faces[:, 1] - faces[:, 2])
+    normals = _v_cross(faces[:, 0] - faces[:, 2], faces[:, 1] - faces[:, 2])
     normals = np.tile(normals, (len(lines), 1, 1))
 
     l0 = lines[:, 0][:, np.newaxis]  # outside points
@@ -277,15 +274,15 @@ def lines_end_in_trimesh(lines: np.ndarray, faces: np.ndarray) -> np.ndarray:
     # --> choose other reference points (faces[:,1]) in those specific cases
     ref_pts = np.tile(faces[:, 2], (len(lines), 1, 1))
     eps = 1e-16  # note: norm square !
-    coincide = v_norm2(l1 - ref_pts) < eps
+    coincide = _v_norm2(l1 - ref_pts) < eps
     if np.any(coincide):
         ref_pts2 = np.tile(
             faces[:, 1], (len(lines), 1, 1)
         )  # <--inefficient tile !!! only small part needed
         ref_pts[coincide] = ref_pts2[coincide]
 
-    proj0 = v_norm_proj(l0 - ref_pts, normals)
-    proj1 = v_norm_proj(l1 - ref_pts, normals)
+    proj0 = _v_norm_proj(l0 - ref_pts, normals)
+    proj1 = _v_norm_proj(l1 - ref_pts, normals)
 
     eps = 1e-7
     # no need to check proj0 for touch because line init pts are outside
@@ -303,9 +300,9 @@ def lines_end_in_trimesh(lines: np.ndarray, faces: np.ndarray) -> np.ndarray:
     b = faces[:, 1] - l0
     c = faces[:, 2] - l0
     d = l1 - l0
-    area1 = v_dot_cross3d(a, b, d)
-    area2 = v_dot_cross3d(b, c, d)
-    area3 = v_dot_cross3d(c, a, d)
+    area1 = _v_dot_cross3d(a, b, d)
+    area2 = _v_dot_cross3d(b, c, d)
+    area3 = _v_dot_cross3d(c, a, d)
 
     eps = 1e-12
     pass_through_boundary = (
@@ -333,7 +330,7 @@ def lines_end_in_trimesh(lines: np.ndarray, faces: np.ndarray) -> np.ndarray:
     return inside1 | inside2
 
 
-def segments_intersect_facets(segments, facets, eps=1e-6):
+def _segments_intersect_facets(segments, facets, eps=1e-6):
     """Pair-wise detect if set of segments intersect set of facets.
 
     Parameters
@@ -380,7 +377,7 @@ def segments_intersect_facets(segments, facets, eps=1e-6):
     return cross * same_volume
 
 
-def get_intersecting_triangles(vertices, triangles, r=None, r_factor=1.5, eps=1e-6):
+def _get_intersecting_triangles(vertices, triangles, r=None, r_factor=1.5, eps=1e-6):
     """Return intersecting triangles indices from a triangular mesh described
     by vertices and triangles indices.
 
@@ -425,11 +422,11 @@ def get_intersecting_triangles(vertices, triangles, r=None, r_factor=1.5, eps=1e
     f1, f2 = facets[pairs[:, 0]], facets[pairs[:, 1]]
     sums = 0
     for inds in [[0, 1], [1, 2], [2, 0]]:
-        sums += segments_intersect_facets(f1[:, inds], f2, eps=eps)
+        sums += _segments_intersect_facets(f1[:, inds], f2, eps=eps)
     return np.unique(pairs[sums > 0])
 
 
-def mask_inside_enclosing_box(points: np.ndarray, vertices: np.ndarray) -> np.ndarray:
+def _mask_inside_enclosing_box(points: np.ndarray, vertices: np.ndarray) -> np.ndarray:
     """
     Quick-check which points lie inside a bounding box of the mesh (defined by vertices).
     Returns True when inside, False when outside bounding box.
@@ -455,7 +452,7 @@ def mask_inside_enclosing_box(points: np.ndarray, vertices: np.ndarray) -> np.nd
     return mx & my & mz
 
 
-def mask_inside_trimesh(points: np.ndarray, faces: np.ndarray) -> np.ndarray:
+def _mask_inside_trimesh(points: np.ndarray, faces: np.ndarray) -> np.ndarray:
     """
     Check which points lie inside of a closed triangular mesh (defined by faces).
 
@@ -476,7 +473,7 @@ def mask_inside_trimesh(points: np.ndarray, faces: np.ndarray) -> np.ndarray:
     vertices = faces.reshape((-1, 3))
 
     # test-points inside of enclosing box
-    mask_inside = mask_inside_enclosing_box(points, vertices)
+    mask_inside = _mask_inside_enclosing_box(points, vertices)
     pts_in_box = points[mask_inside]
 
     # create test-lines from outside to test-points
@@ -487,14 +484,14 @@ def mask_inside_trimesh(points: np.ndarray, faces: np.ndarray) -> np.ndarray:
     test_lines[:, 1] = pts_in_box
 
     # check if test-points are inside using ray tracing
-    mask_inside2 = lines_end_in_trimesh(test_lines, faces)
+    mask_inside2 = _lines_end_in_trimesh(test_lines, faces)
 
     mask_inside[mask_inside] = mask_inside2
 
     return mask_inside
 
 
-def BHJM_magnet_trimesh(
+def _BHJM_magnet_trimesh(
     field: str,
     observers: np.ndarray,
     mesh: np.ndarray,
@@ -512,7 +509,7 @@ def BHJM_magnet_trimesh(
             vertices_tiled = mesh.reshape(-1, 3, 3)
             observers_tiled = np.repeat(observers, n1, axis=0)
             polarization_tiled = np.repeat(polarization, n1, axis=0)
-            BHJM = BHJM_triangle(
+            BHJM = _BHJM_triangle(
                 field="B",
                 observers=observers_tiled,
                 vertices=vertices_tiled,
@@ -526,7 +523,7 @@ def BHJM_magnet_trimesh(
             vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in mesh])
             observers_tiled = np.repeat(observers, nvs, axis=0)
             polarization_tiled = np.repeat(polarization, nvs, axis=0)
-            BHJM = BHJM_triangle(
+            BHJM = _BHJM_triangle(
                 field="B",
                 observers=observers_tiled,
                 vertices=vertices_tiled,
@@ -552,7 +549,7 @@ def BHJM_magnet_trimesh(
             ):
                 if new_ind == len(BHJM) - 1:
                     new_ind = len(BHJM)
-                mask_inside = mask_inside_trimesh(
+                mask_inside = _mask_inside_trimesh(
                     observers[prev_ind:new_ind], mesh[prev_ind]
                 )
                 # if inside magnet add polarization vector

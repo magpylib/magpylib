@@ -7,7 +7,7 @@ from typing import ClassVar
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Cuboid
-from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
+from magpylib._src.fields.field_BH_cuboid import _BHJM_magnet_cuboid
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import _BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import _BaseDipoleMoment
@@ -88,14 +88,14 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> src = magpy.magnet.Cuboid(polarization=(.5,.6,.7), dimension=(.01,.01,.01))
-    >>> H = src.getH((.01,.01,.01))
+    >>> src = magpy.magnet.Cuboid(polarization=(0.5, 0.6, 0.7), dimension=(0.01, 0.01, 0.01))
+    >>> H = src.getH((0.01, 0.01, 0.01))
     >>> with np.printoptions(precision=0):
     ...     print(H)
     [16149. 14907. 13665.]
     """
 
-    _field_func = staticmethod(BHJM_magnet_cuboid)
+    _field_func = staticmethod(_BHJM_magnet_cuboid)
     _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 2,

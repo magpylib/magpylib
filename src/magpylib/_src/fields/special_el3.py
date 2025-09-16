@@ -1,11 +1,13 @@
+"""Special functions el3."""
+
 import numpy as np
 
-from magpylib._src.fields.special_cel import cel
+from magpylib._src.fields.special_cel import _cel
 
 # ruff: noqa: E741  # Avoid ambiguity with variable names
 
 
-def el30(x, kc, p):
+def _el30(x, kc, p):
     """
     incomplete elliptic integral
 
@@ -233,7 +235,7 @@ def el30(x, kc, p):
     return e if (x > 0.0) else -e
 
 
-def el3v(x, kc, p):
+def _el3v(x, kc, p):
     """
     vectorized form of el3
 
@@ -555,19 +557,19 @@ def el3v(x, kc, p):
     return result0
 
 
-def el3(xv: np.ndarray, kcv: np.ndarray, pv: np.ndarray) -> np.ndarray:
+def _el3(xv: np.ndarray, kcv: np.ndarray, pv: np.ndarray) -> np.ndarray:
     """
     combine vectorized and non-vectorized implementations for improved performance
     """
     n_input = len(xv)
 
     if n_input < 10:
-        return np.array([el30(x, kc, p) for x, kc, p in zip(xv, kcv, pv, strict=False)])
+        return np.array([_el30(x, kc, p) for x, kc, p in zip(xv, kcv, pv, strict=False)])
 
-    return el3v(xv, kcv, pv)
+    return _el3v(xv, kcv, pv)
 
 
-def el3_angle(phi: np.ndarray, n: np.ndarray, m: np.ndarray) -> np.ndarray:
+def _el3_angle(phi: np.ndarray, n: np.ndarray, m: np.ndarray) -> np.ndarray:
     """
     vectorized implementation of incomplete elliptic integral for
     arbitrary integration boundaries
@@ -610,7 +612,7 @@ def el3_angle(phi: np.ndarray, n: np.ndarray, m: np.ndarray) -> np.ndarray:
 
         results3 = np.zeros(np.sum(mask3))
         onez = np.ones(np.sum(mask3))
-        cel3_res = cel(kc3, p3, onez, onez)  # 3rd kind cel
+        cel3_res = _cel(kc3, p3, onez, onez)  # 3rd kind cel
 
         mask3a = phi_red3 > np.pi / 2 - 10 ** (-D)
         mask3b = phi_red3 < -np.pi / 2 + 10 ** (-D)
@@ -621,7 +623,7 @@ def el3_angle(phi: np.ndarray, n: np.ndarray, m: np.ndarray) -> np.ndarray:
         if np.any(mask3b):
             results3[mask3b] = (2 * n3[mask3b] - 1) * cel3_res[mask3b]
         if np.any(mask3c):
-            el33_res = el3(np.tan(phi3[mask3c]), kc3[mask3c], p3[mask3c])
+            el33_res = _el3(np.tan(phi3[mask3c]), kc3[mask3c], p3[mask3c])
             results3[mask3c] = 2 * n3[mask3c] * cel3_res[mask3c] + el33_res
 
         results[mask3] = results3
@@ -637,16 +639,16 @@ def el3_angle(phi: np.ndarray, n: np.ndarray, m: np.ndarray) -> np.ndarray:
 
         if np.any(mask3xa):
             onez = np.ones(np.sum(mask3xa))
-            results3x[mask3xa] = cel(
+            results3x[mask3xa] = _cel(
                 kc3x[mask3xa], p3x[mask3xa], onez, onez
             )  # 3rd kind cel
         if np.any(mask3xb):
             onez = np.ones(np.sum(mask3xb))
-            results3x[mask3xb] = -cel(
+            results3x[mask3xb] = -_cel(
                 kc3x[mask3xb], p3x[mask3xb], onez, onez
             )  # 3rd kind cel
         if np.any(mask3xc):
-            results3x[mask3xc] = el3(
+            results3x[mask3xc] = _el3(
                 np.tan(phi3x[mask3xc]), kc3x[mask3xc], p3x[mask3xc]
             )
 

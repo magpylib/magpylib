@@ -15,12 +15,12 @@ from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 from magpylib._src.display.traces_core import make_TriangularMesh
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_triangularmesh import (
-    BHJM_magnet_trimesh,
-    calculate_centroid,
-    fix_trimesh_orientation,
-    get_disconnected_faces_subsets,
-    get_intersecting_triangles,
-    get_open_edges,
+    _BHJM_magnet_trimesh,
+    _calculate_centroid,
+    _fix_trimesh_orientation,
+    _get_disconnected_faces_subsets,
+    _get_intersecting_triangles,
+    _get_open_edges,
 )
 from magpylib._src.input_checks import (
     check_format_input_vector,
@@ -121,15 +121,17 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> vv = ((0,0,0), (.01,0,0), (0,.01,0), (0,0,.01))
-    >>> tt = ((0,1,2), (0,1,3), (0,2,3), (1,2,3))
-    >>> trim = magpy.magnet.TriangularMesh(polarization=(.1,.2,.3), vertices=vv, faces=tt)
+    >>> vv = ((0, 0, 0), (0.01, 0.0, 0.0), (0.0, 0.01, 0.0), (0.0, 0.0, 0.01))
+    >>> tt = ((0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3))
+    >>> trim = magpy.magnet.TriangularMesh(
+    ...     polarization=(0.1, 0.2, 0.3), vertices=vv, faces=tt,
+    ... )
     >>> with np.printoptions(precision=3):
-    ...     print(trim.getB((.01,.01,.01))*1000)
+    ...     print(trim.getB((0.01, 0.01, 0.01)) * 1000)
     [2.602 2.082 1.561]
     """
 
-    _field_func = staticmethod(BHJM_magnet_trimesh)
+    _field_func = staticmethod(_BHJM_magnet_trimesh)
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"polarization": 2, "mesh": 3}
     _force_type = "magnet"
     get_trace = make_TriangularMesh
@@ -303,7 +305,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         """
         mode = self._validate_mode_arg(mode, arg_name="check_open mode")
         if mode != "skip" and self._status_open is None:
-            self._status_open = len(self.get_open_edges()) > 0
+            self._status_open = len(self._get_open_edges()) > 0
             if self._status_open:
                 msg = (
                     f"Open mesh detected in {self!r}. Intrinsic inside-outside checks may "
@@ -419,7 +421,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
                 elif mode == "raise":
                     raise ValueError(msg)
 
-            self._faces = fix_trimesh_orientation(self._vertices, self._faces)
+            self._faces = _fix_trimesh_orientation(self._vertices, self._faces)
             self._status_reoriented = True
 
     def get_faces_subsets(self):
@@ -434,10 +436,10 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             List of ndarrays. Subsets of faces data.
         """
         if self._status_disconnected_data is None:
-            self._status_disconnected_data = get_disconnected_faces_subsets(self._faces)
+            self._status_disconnected_data = _get_disconnected_faces_subsets(self._faces)
         return self._status_disconnected_data
 
-    def get_open_edges(self):
+    def _get_open_edges(self):
         """Return open edges.
 
         If the mesh has n open edges, returns an array of shape (n, 2) of vertex
@@ -449,7 +451,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             Open edges as pairs of vertex indices.
         """
         if self._status_open_data is None:
-            self._status_open_data = get_open_edges(self._faces)
+            self._status_open_data = _get_open_edges(self._faces)
         return self._status_open_data
 
     def get_selfintersecting_faces(self):
@@ -464,7 +466,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             Indices of potentially self-intersecting faces.
         """
         if self._status_selfintersecting_data is None:
-            self._status_selfintersecting_data = get_intersecting_triangles(
+            self._status_selfintersecting_data = _get_intersecting_triangles(
                 self._vertices, self._faces
             )
         return self._status_selfintersecting_data
@@ -507,7 +509,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         centroid = (
             np.array([0.0, 0.0, 0.0])
             if vertices is None
-            else calculate_centroid(vertices, faces)
+            else _calculate_centroid(vertices, faces)
         )
         return orientation.apply(centroid) + position
 

@@ -37,12 +37,17 @@ class _BaseDisplayRepr:
         )
 
     def _get_description(self, exclude=None):
-        """Returns list of string describing the object properties.
+        """Return list of lines describing the object properties.
 
         Parameters
         ----------
-        exclude: bool, default=('style',)
-            properties to be excluded in the description view.
+        exclude : None | str | Sequence[str], default ('style',)
+            Property names to omit from the description.
+
+        Returns
+        -------
+        list of str
+            One line per entry ready to be joined with newlines.
         """
         if exclude is None:
             exclude = ()
@@ -97,7 +102,8 @@ class _BaseDisplayRepr:
         exclude : str | Sequence[str], default ('style', 'field_func')
             Property names to omit from the description.
         return_string : bool, default False
-            If ``True`` return the description string; if ``False`` print it and return ``None``.
+            If ``True`` return the description string; if ``False`` print it and
+            return ``None``.
 
         Returns
         -------
@@ -114,10 +120,12 @@ class _BaseDisplayRepr:
         return None
 
     def _repr_html_(self):
+        """Rich HTML representation for notebooks and other frontends."""
         lines = self._get_description(exclude=("style", "field_func"))
         return f"""<pre>{"<br>".join(lines)}</pre>"""
 
     def __repr__(self) -> str:
+        """Return concise string representation for terminals and logs."""
         name = getattr(self, "name", None)
         if name is None:
             style = getattr(self, "style", None)

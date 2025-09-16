@@ -646,13 +646,13 @@ def _target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetiz
     """
     # Import the required functions from triangular mesh field module
     from magpylib._src.fields.field_BH_triangularmesh import (  # noqa: PLC0415
-        calculate_centroid,
-        mask_inside_trimesh,
+        _calculate_centroid,
+        _mask_inside_trimesh,
     )
 
     # Return barycenter (centroid) if only one point is requested
     if target_points == 1:
-        barycenter = calculate_centroid(vertices, faces)
+        barycenter = _calculate_centroid(vertices, faces)
         pts = np.array([barycenter])
         moments = np.array([volume * magnetization])
 
@@ -676,11 +676,11 @@ def _target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetiz
     points = _create_grid(dimensions, spacing)
 
     # Apply inside/outside mask
-    inside_mask = mask_inside_trimesh(points, vertices[faces])
+    inside_mask = _mask_inside_trimesh(points, vertices[faces])
     pts = points[inside_mask]
 
     if len(pts) == 0:
-        barycenter = calculate_centroid(vertices, faces)
+        barycenter = _calculate_centroid(vertices, faces)
         pts = np.array([barycenter])
         volumes = np.array([volume])
         return {"pts": pts, "volumes": volumes}

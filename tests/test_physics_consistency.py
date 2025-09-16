@@ -47,7 +47,7 @@ def test_Circle_vs_Cylinder_field():
     magnetization (0, 0, 4pi/10*i0/h0) !!!
     """
 
-    # this set of position generates a strange error in celv
+    # this set of position generates a strange error in _celv
     # that is now fixed. (some k2<0.04, some larger)
     pos_obs = np.array(
         [

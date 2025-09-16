@@ -9,7 +9,7 @@ from typing import ClassVar
 import numpy as np
 
 from magpylib._src.display.traces_core import make_TriangleStrip
-from magpylib._src.fields.field_BH_current_sheet import BHJM_current_tristrip
+from magpylib._src.fields.field_BH_current_sheet import _BHJM_current_tristrip
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import _BaseCurrent
 from magpylib._src.obj_classes.class_BaseProperties import _BaseDipoleMoment
@@ -82,15 +82,15 @@ class TriangleStrip(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     --------
     ``TriangleStrip`` objects are magnetic field sources. In this example we compute
     the H-field in (A/m) of a square current sheet (two triangles) with 1 A current
-    at the observer position ``(1, 1, 1) cm``:
+    at the observer position ``(1, 1, 1)`` cm:
 
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> src = magpy.current.TriangleStrip(
     ...    current=1,
-    ...    vertices=((0,0,0), (0,1,0), (1,0,0), (1,1,1)),
+    ...    vertices=((0, 0, 0), (0, 1, 0), (1, 0, 0), (1, 1, 1)),
     ... )
-    >>> H = src.getH((.01,.01,.01))
+    >>> H = src.getH((0.01, 0.01, 0.01))
     >>> with np.printoptions(precision=3):
     ...     print(H)
     [ 0.026 -0.307 -0.371]
@@ -101,7 +101,7 @@ class TriangleStrip(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     """
 
     # pylint: disable=dangerous-default-value
-    _field_func = staticmethod(BHJM_current_tristrip)
+    _field_func = staticmethod(_BHJM_current_tristrip)
     _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "current": 1,

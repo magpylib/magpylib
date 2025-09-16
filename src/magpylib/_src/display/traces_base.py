@@ -8,7 +8,7 @@ import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
 from magpylib._src.display.traces_utility import merge_mesh3d, place_and_orient_model3d
-from magpylib._src.fields.field_BH_tetrahedron import check_chirality
+from magpylib._src.fields.field_BH_tetrahedron import _check_chirality
 
 
 def base_validator(name, value, conditions):
@@ -600,7 +600,7 @@ def make_Tetrahedron(
     """
     # create triangles implying right vertices chirality
     triangles = np.array([[0, 2, 1], [0, 3, 2], [1, 3, 0], [1, 2, 3]])
-    points = check_chirality(np.array([vertices]))[0]
+    points = _check_chirality(np.array([vertices]))[0]
     trace = dict(zip("xyzijk", [*points.T, *triangles.T], strict=False))
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)

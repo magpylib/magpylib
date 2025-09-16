@@ -5,7 +5,7 @@ from typing import ClassVar
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Dipole
-from magpylib._src.fields.field_BH_dipole import BHJM_dipole
+from magpylib._src.fields.field_BH_dipole import _BHJM_dipole
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import _BaseSource
 from magpylib._src.obj_classes.class_BaseProperties import _BaseDipoleMoment
@@ -66,14 +66,14 @@ class Dipole(_BaseSource, _BaseDipoleMoment):
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> src = magpy.misc.Dipole(moment=(10,10,10))
-    >>> H = src.getH((.01,.01,.01))
+    >>> src = magpy.misc.Dipole(moment=(10, 10, 10))
+    >>> H = src.getH((0.01, 0.01, 0.01))
     >>> with np.printoptions(precision=0):
     ...     print(H)
     [306294. 306294. 306294.]
     """
 
-    _field_func = staticmethod(BHJM_dipole)
+    _field_func = staticmethod(_BHJM_dipole)
     _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"moment": 2}
     _style_class = DipoleStyle

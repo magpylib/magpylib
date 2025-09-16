@@ -54,9 +54,9 @@ class CustomSource(_BaseSource):
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> def funcBH(field, observers):
-    ...     return np.array([(.01 if field=='B' else .08,0,0)]*len(observers))
+    ...     return np.array([(0.01 if field == 'B' else 0.08, 0, 0)] * len(observers))
     >>> src = magpy.misc.CustomSource(field_func=funcBH)
-    >>> H = src.getH((.01,.01,.01))
+    >>> H = src.getH((0.01, 0.01, 0.01))
     >>> print(H)
     [0.08 0.   0.  ]
     """

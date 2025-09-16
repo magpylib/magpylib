@@ -1,8 +1,5 @@
-"""
-Implementations of analytical expressions of current sheet
-"""
+"""Triangular current sheet field implementation."""
 
-# pylint: disable=too-many-positional-arguments
 from __future__ import annotations
 
 import numpy as np
@@ -11,8 +8,10 @@ from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.input_checks import check_field_input
 
+# pylint: disable=too-many-positional-arguments
 
-def coordinate_transformation(vertices):
+
+def _coordinate_transformation(vertices):
     """
     Function that transforms the triangle to elementar current sheet
 
@@ -24,7 +23,7 @@ def coordinate_transformation(vertices):
 
     Returns
     -------
-    elementar_coordinates: ndarray, shape (n,3)
+    ndarray, shape (n,3)
         Coordinates of elementar current sheet (0,0,0), (u1,0,0), (u2,v2,0)
         in the form ((u1, u2, v2), ....)
 
@@ -81,7 +80,7 @@ def coordinate_transformation(vertices):
     return (elementar_coordinates, translation, rotation)
 
 
-def assign_masks(observers, coordinates, current_densities, mask):
+def _assign_masks(observers, coordinates, current_densities, mask):
     """helpfunction that renames input"""
     if mask is None:
         x, y, z = observers.T
@@ -94,8 +93,7 @@ def assign_masks(observers, coordinates, current_densities, mask):
     return (x, y, z, u1, u2, v2, ju, jv)
 
 
-# CORE
-def elementar_current_sheet_Hfield(
+def _elementar_current_sheet_Hfield(
     observers: np.ndarray,
     coordinates: np.ndarray,
     current_densities: np.ndarray,
@@ -136,7 +134,7 @@ def elementar_current_sheet_Hfield(
     num_tol = 1e-10
 
     # rename
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(
+    x, y, z, u1, u2, v2, ju, jv = _assign_masks(
         observers, coordinates, current_densities, None
     )
 
@@ -173,7 +171,7 @@ def elementar_current_sheet_Hfield(
 
     # CASE: GENERAL ###############################################################
     if special_cases:
-        x, y, z, u1, u2, v2, ju, jv = assign_masks(
+        x, y, z, u1, u2, v2, ju, jv = _assign_masks(
             observers, coordinates, current_densities, mask_general
         )
 
@@ -218,7 +216,7 @@ def elementar_current_sheet_Hfield(
 
     if special_cases:
         # CASE: Observer in plane ################################################################
-        x, y, z, u1, u2, v2, ju, jv = assign_masks(
+        x, y, z, u1, u2, v2, ju, jv = _assign_masks(
             observers, coordinates, current_densities, mask_plane
         )
         H[mask_plane, 2] = -(
@@ -260,7 +258,7 @@ def elementar_current_sheet_Hfield(
 
         # CASE: Observer on edge1 ##############################################################
 
-        x, y, z, u1, u2, v2, ju, jv = assign_masks(
+        x, y, z, u1, u2, v2, ju, jv = _assign_masks(
             observers, coordinates, current_densities, mask1
         )
         H[mask1, 2] = (
@@ -300,7 +298,7 @@ def elementar_current_sheet_Hfield(
 
         # CASE: Observer on edges 2 ##############################################################
 
-        x, y, z, u1, u2, v2, ju, jv = assign_masks(
+        x, y, z, u1, u2, v2, ju, jv = _assign_masks(
             observers, coordinates, current_densities, mask2
         )
         H[mask2, 2] = (
@@ -349,7 +347,7 @@ def elementar_current_sheet_Hfield(
 
         # CASE: Observer on edges 3 ##############################################################
 
-        x, y, z, u1, u2, v2, ju, jv = assign_masks(
+        x, y, z, u1, u2, v2, ju, jv = _assign_masks(
             observers, coordinates, current_densities, mask3
         )
         H[mask3, 2] = (
@@ -426,7 +424,7 @@ def elementar_current_sheet_Hfield(
     H[:, 1] = H[:, 0]  # copy?
 
     # All cases again
-    x, y, z, u1, u2, v2, ju, jv = assign_masks(
+    x, y, z, u1, u2, v2, ju, jv = _assign_masks(
         observers, coordinates, current_densities, None
     )
     H[:, 0] *= jv * z * u1 * v2 / (4 * np.pi)
@@ -445,25 +443,46 @@ def current_sheet_Hfield(
 
     Parameters
     ----------
-    observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates.
-
-    vertices: ndarray, shape (n,3,3)
-        Triangle vertex positions ((P11,P12,P13), (P21, P22, P23), ...) in Cartesian
-        coordinates.
-
-    current_densities: ndarray, shape (n,3)
-        Electrical current density vectors. The current density in a sheet is the
-        projection of the current density vector onto the sheet.
+    observers : array-like, shape (n, 3)
+        Observer positions in Cartesian coordinates.
+    vertices : array-like, shape (n, 3, 3)
+        Triangle vertex positions ``((P11, P12, P13), (P21, P22, P23), ...)`` in
+        Cartesian coordinates.
+    current_densities : array-like, shape (n, 3)
+        Electrical current density vectors. The current density in a sheet is
+        the projection of the vector onto the sheet.
 
     Returns
     -------
-    H-Field: ndarray, shape (n,3)
-        H-field generated by current sheets at observer positions.
+    ndarray, shape (n, 3)
+        H-field in unit of ``current_densities`` input at observer positions.
+
+    Examples
+    --------
+    Compute the H-field generated by a single triangle sheet at one
+    observer position ``(0, 0, 1)``:
+
+    >>> import numpy as np
+    >>> from magpylib._src.fields.field_BH_current_sheet import current_sheet_Hfield
+    >>> np.set_printoptions(formatter={'float': '{:.2e}'.format})
+    >>> verts = np.array([[(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0)]])
+    >>> J = np.array([(1.0, 0.0, 0.0)])
+    >>> H = current_sheet_Hfield(np.array([(0.0, 0.0, 1.0)]), verts, J)
+    >>> print(H)
+    [[0.00e+00 -2.70e-02 -8.32e-03]]
+
+    Notes
+    -----
+    Field computation via law of Biot Savart. See also countless online resources.
+    eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
+    
+    Internally, each triangle is transformed to an elementar current sheet defined by
+    the vertices ``(0, 0, 0)``, ``(u1, 0, 0)``, and ``(u2, v2, 0)`` in a local frame;
+    computations are performed there and transformed back to the global frame.
     """
     # pylint: disable=too-many-statements
 
-    coordinates, t, r = coordinate_transformation(vertices.astype(float))
+    coordinates, t, r = _coordinate_transformation(vertices.astype(float))
 
     observers = np.copy(r.apply(observers - t))
     current_densities = np.copy(r.apply(current_densities)[:, :2])
@@ -490,7 +509,7 @@ def current_sheet_Hfield(
         coordinates = coordinates[not_mask0]
         current_densities = current_densities[not_mask0]
 
-    H[not_mask0] = elementar_current_sheet_Hfield(
+    H[not_mask0] = _elementar_current_sheet_Hfield(
         observers=observers,
         coordinates=coordinates,
         current_densities=current_densities,
@@ -499,7 +518,7 @@ def current_sheet_Hfield(
     return r.apply(H, inverse=True)
 
 
-def BHJM_current_sheet(
+def _BHJM_current_sheet(
     field: str,
     observers: np.ndarray,
     vertices: np.ndarray,
@@ -527,7 +546,7 @@ def BHJM_current_sheet(
     raise ValueError(msg)  # pragma: no cover
 
 
-def BHJM_current_trisheet(
+def _BHJM_current_trisheet(
     field: str,
     observers: float | np.ndarray,
     current_densities: float | np.ndarray,
@@ -568,7 +587,7 @@ def BHJM_current_trisheet(
             ii += 1
 
     # compute field for all instances
-    BB = BHJM_current_sheet(
+    BB = _BHJM_current_sheet(
         field=field,
         observers=OBS,
         vertices=TRIAS,
@@ -586,7 +605,7 @@ def BHJM_current_trisheet(
     return B
 
 
-def BHJM_current_tristrip(
+def _BHJM_current_tristrip(
     field: str,
     observers: np.ndarray,
     vertices: np.ndarray,
@@ -636,7 +655,7 @@ def BHJM_current_tristrip(
     )
 
     # compute field for all instances
-    BB = BHJM_current_sheet(
+    BB = _BHJM_current_sheet(
         field=field,
         observers=OBS,
         vertices=VERT,
@@ -652,45 +671,3 @@ def BHJM_current_tristrip(
         jj += nn
 
     return B
-
-
-# def BHJM_current_strip_noRagged(
-#     field: str,
-#     observers: np.ndarray,
-#     vertices: np.ndarray,
-#     current: float,
-# ) -> np.ndarray:
-#     """
-#     - translate TriangleStrip field to BHJM
-#     MISSING: If multiple TriangleStrips with different vertex lengths are given
-#         - add function that tests this
-#         - compute for each "ragged instance" separately (its just an edge case - no one cares)
-#     """
-
-#     # create triangles from vertices
-#     tris = np.moveaxis(np.moveaxis(np.array([vertices[:,:-2], vertices[:,1:-1], vertices[:,2:]]), 0, 1) , 1, 2)
-
-#     # calculate current density
-#     v1 = (tris[:,:,1]-tris[:,:,0])
-#     v2 = (tris[:,:,2]-tris[:,:,0])
-#     v1v1 = np.sum(v1*v1, axis=2)
-#     v2v2 = np.sum(v2*v2, axis=2)
-#     v1v2 = np.sum(v1*v2, axis=2)
-#     h = np.sqrt(v1v1 - (v1v2**2/v2v2))
-
-#     curr_dens = v2 / (np.sqrt(v2v2) * h / current[:,np.newaxis])[:,:,np.newaxis]
-
-#     #store shape for later reshaping
-#     tshape = tris.shape
-
-#     # compute for all instances of observers x triangles
-#     bhjm_all = BHJM_current_sheet(
-#             field=field,
-#             observers=np.repeat(observers, tshape[1], axis=0),
-#             vertices=np.reshape(tris, (tshape[0]*tshape[1], *tshape[2:])),
-#             current_densities=np.reshape(curr_dens, (tshape[0]*tshape[1], 3)),
-#     )
-
-#     # sum over all triangles
-#     bhjm = bhjm_all.reshape((tris.shape[0], tris.shape[1], 3))
-#     return np.sum(bhjm, axis=1)

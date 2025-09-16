@@ -10,9 +10,9 @@ import pyvista as pv
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.fields.field_BH_triangularmesh import (
-    BHJM_magnet_trimesh,
-    fix_trimesh_orientation,
-    lines_end_in_trimesh,
+    _BHJM_magnet_trimesh,
+    _fix_trimesh_orientation,
+    _lines_end_in_trimesh,
 )
 
 
@@ -149,7 +149,7 @@ def test_magnet_trimesh_func():
     pts_inside = np.array([[0, 0, 1]])
     B0 = cube.getB(pts_inside)
     B1 = tmesh_cube.getB(pts_inside)
-    B2 = BHJM_magnet_trimesh(
+    B2 = _BHJM_magnet_trimesh(
         field="B",
         observers=pts_inside,
         polarization=np.array([pol]),
@@ -442,7 +442,7 @@ def test_lines_ends_in_trimesh():
     msh = np.array([[[0, 0, 0], [0, 1, 0], [1, 0, 0]]])
     lines = np.array([[[-1, 1, -1], [1, 0, 0]]])
 
-    assert bool(lines_end_in_trimesh(lines, msh)[0]) is True
+    assert bool(_lines_end_in_trimesh(lines, msh)[0]) is True
 
 
 def test_reorient_on_closed_but_disconnected_mesh():
@@ -458,7 +458,7 @@ def test_reorient_on_closed_but_disconnected_mesh():
     bad_faces = faces.copy()
     bad_faces[::2] = bad_faces[::2, [0, 2, 1]]
 
-    fixed_faces = fix_trimesh_orientation(vertices, bad_faces)
+    fixed_faces = _fix_trimesh_orientation(vertices, bad_faces)
     np.testing.assert_array_equal(faces, fixed_faces)
 
 

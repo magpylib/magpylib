@@ -1,16 +1,13 @@
-"""
-Implementation for the magnetic field of homogeneously
-magnetized tetrahedra. Computation details in function docstrings.
-"""
+"""Homogeneously magnetized tetrahedron field implementation."""
 
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.fields.field_BH_triangle import BHJM_triangle
+from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
 from magpylib._src.input_checks import check_field_input
 
 
-def check_chirality(points: np.ndarray) -> np.ndarray:
+def _check_chirality(points: np.ndarray) -> np.ndarray:
     """
     Checks if quadruple of points (p0,p1,p2,p3) that forms tetrahedron is arranged in a way
     that the vectors p0p1, p0p2, p0p3 form a right-handed system
@@ -40,7 +37,7 @@ def check_chirality(points: np.ndarray) -> np.ndarray:
     return points
 
 
-def point_inside(points: np.ndarray, vertices: np.ndarray, in_out: str) -> np.ndarray:
+def _point_inside(points: np.ndarray, vertices: np.ndarray, in_out: str) -> np.ndarray:
     """
     Takes points, as well as the vertices of a tetrahedra.
     Returns boolean array indicating whether the points are inside the tetrahedra.
@@ -63,7 +60,7 @@ def point_inside(points: np.ndarray, vertices: np.ndarray, in_out: str) -> np.nd
     ).flatten()
 
 
-def BHJM_magnet_tetrahedron(
+def _BHJM_magnet_tetrahedron(
     field: str,
     observers: np.ndarray,
     vertices: np.ndarray,
@@ -82,16 +79,16 @@ def BHJM_magnet_tetrahedron(
     BHJM = polarization.astype(float)
 
     if field == "J":
-        mask_inside = point_inside(observers, vertices, in_out)
+        mask_inside = _point_inside(observers, vertices, in_out)
         BHJM[~mask_inside] = 0
         return BHJM
 
     if field == "M":
-        mask_inside = point_inside(observers, vertices, in_out)
+        mask_inside = _point_inside(observers, vertices, in_out)
         BHJM[~mask_inside] = 0
         return BHJM / MU0
 
-    vertices = check_chirality(vertices)
+    vertices = _check_chirality(vertices)
 
     tri_vertices = np.concatenate(
         (
@@ -102,7 +99,7 @@ def BHJM_magnet_tetrahedron(
         ),
         axis=0,
     )
-    tri_field = BHJM_triangle(
+    tri_field = _BHJM_triangle(
         field=field,
         observers=np.tile(observers, (4, 1)),
         vertices=tri_vertices,
@@ -120,7 +117,7 @@ def BHJM_magnet_tetrahedron(
         return BHJM
 
     if field == "B":
-        mask_inside = point_inside(observers, vertices, in_out)
+        mask_inside = _point_inside(observers, vertices, in_out)
         BHJM[mask_inside] += polarization[mask_inside]
         return BHJM
 

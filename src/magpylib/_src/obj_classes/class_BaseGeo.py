@@ -322,7 +322,7 @@ class _BaseGeo(_BaseTransform, ABC):
 
     # public methods ------------------------------------------------
     def reset_path(self):
-        """Reset path: set position to ``(0,0,0)`` and orientation to unit rotation.
+        """Reset path: set position to ``(0, 0, 0)`` and orientation to unit rotation.
 
         Returns
         -------
@@ -332,7 +332,7 @@ class _BaseGeo(_BaseTransform, ABC):
         Examples
         --------
         >>> import magpylib as magpy
-        >>> obj = magpy.Sensor(position=(1,2,3))
+        >>> obj = magpy.Sensor(position=(1, 2, 3))
         >>> obj.rotate_from_angax(45, 'z')
         Sensor...
         >>> print(obj.position)
@@ -370,7 +370,7 @@ class _BaseGeo(_BaseTransform, ABC):
 
         >>> import magpylib as magpy
         >>> sens1 = magpy.Sensor(style_label='sens1')
-        >>> sens2 = sens1.copy(position=(2,6,10), style_label='sens2')
+        >>> sens2 = sens1.copy(position=(2, 6, 10), style_label='sens2')
         >>> print(f'Instance {sens1.style.label} with position {sens1.position}.')
         Instance sens1 with position [0. 0. 0.].
         >>> print(f'Instance {sens2.style.label} with position {sens2.position}.')

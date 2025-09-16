@@ -7,7 +7,7 @@ from typing import ClassVar
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Triangle
-from magpylib._src.fields.field_BH_triangle import BHJM_triangle
+from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import _BaseMagnet
 from magpylib._src.style import TriangleStyle
@@ -81,7 +81,7 @@ class Triangle(_BaseMagnet):
     [18.889 18.889 19.546]
     """
 
-    _field_func = staticmethod(BHJM_triangle)
+    _field_func = staticmethod(_BHJM_triangle)
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 2,
         "vertices": 2,

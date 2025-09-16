@@ -9,7 +9,7 @@ from typing import ClassVar
 import numpy as np
 
 from magpylib._src.exceptions import MagpylibDeprecationWarning
-from magpylib._src.fields.field_wrap_BH import getBH_level2
+from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import (
     check_format_input_scalar,
     check_format_input_vector,
@@ -93,18 +93,18 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
 
         >>> import numpy as np
         >>> import magpylib as magpy
-        >>> src = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
-        >>> B = src.getB(((0,0,0), (1,0,0), (2,0,0)))
+        >>> src = magpy.magnet.Sphere(polarization=(0, 0, 1.0), diameter=1)
+        >>> B = src.getB(((0, 0, 0), (1, 0, 0), (2, 0, 0)))
         >>> with np.printoptions(precision=3):
         ...     print(B)
         [[ 0.     0.     0.667]
          [ 0.     0.    -0.042]
          [ 0.     0.    -0.005]]
 
-        Compute the B-field at two sensors, each one with two pixels
+        Compute the B-field at two sensors, each one with two pixels:
 
-        >>> sens1 = magpy.Sensor(position=(1,0,0), pixel=((0,0,.1), (0,0,-.1)))
-        >>> sens2 = sens1.copy(position=(2,0,0))
+        >>> sens1 = magpy.Sensor(position=(1, 0, 0), pixel=((0, 0, 0.1), (0, 0, -0.1)))
+        >>> sens2 = sens1.copy(position=(2, 0, 0))
         >>> B = src.getB(sens1, sens2)
         >>> with np.printoptions(precision=3):
         ...     print(B)
@@ -115,7 +115,7 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
           [-0.001  0.    -0.005]]]
         """
         observers = format_star_input(observers)
-        return getBH_level2(
+        return _getBH_level2(
             self,
             observers,
             field="B",
@@ -165,8 +165,8 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
         >>> import numpy as np
         >>> import magpylib as magpy
 
-        >>> src = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
-        >>> H = src.getH(((0,0,0), (1,0,0), (2,0,0)))
+        >>> src = magpy.magnet.Sphere(polarization=(0, 0, 1), diameter=1)
+        >>> H = src.getH(((0, 0, 0), (1, 0, 0), (2, 0, 0)))
         >>> with np.printoptions(precision=0):
         ...     print(H)
         [[      0.       0. -265258.]
@@ -175,8 +175,8 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
 
         Compute the H-field at two sensors, each one with two pixels
 
-        >>> sens1 = magpy.Sensor(position=(1,0,0), pixel=((0,0,.1), (0,0,-.1)))
-        >>> sens2 = sens1.copy(position=(2,0,0))
+        >>> sens1 = magpy.Sensor(position=(1, 0, 0), pixel=((0, 0, 0.1), (0, 0, -0.1)))
+        >>> sens2 = sens1.copy(position=(2, 0, 0))
         >>> H = src.getH(sens1, sens2)
         >>> with np.printoptions(precision=0):
         ...     print(H)
@@ -187,7 +187,7 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
           [  -618.      0.  -4098.]]]
         """
         observers = format_star_input(observers)
-        return getBH_level2(
+        return _getBH_level2(
             self,
             observers,
             field="H",
@@ -237,16 +237,16 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
         >>> import numpy as np
         >>> import magpylib as magpy
         >>> cube = magpy.magnet.Cuboid(
-        ...     dimension=(10,1,1),
-        ...     polarization=(1,0,0)
-        ... ).rotate_from_angax(45,'z')
-        >>> M = cube.getM((3,3,0))
+        ...     dimension=(10, 1, 1),
+        ...     polarization=(1, 0, 0)
+        ... ).rotate_from_angax(45, 'z')
+        >>> M = cube.getM((3, 3, 0))
         >>> with np.printoptions(precision=0):
         ...    print(M)
         [562698. 562698.      0.]
         """
         observers = format_star_input(observers)
-        return getBH_level2(
+        return _getBH_level2(
             self,
             observers,
             field="M",
@@ -296,16 +296,16 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
         >>> import numpy as np
         >>> import magpylib as magpy
         >>> cube = magpy.magnet.Cuboid(
-        ...     dimension=(10,1,1),
-        ...     polarization=(1,0,0)
-        ... ).rotate_from_angax(45,'z')
-        >>> J = cube.getJ((3,3,0))
+        ...     dimension=(10, 1, 1),
+        ...     polarization=(1, 0, 0)
+        ... ).rotate_from_angax(45, 'z')
+        >>> J = cube.getJ((3, 3, 0))
         >>> with np.printoptions(precision=3):
         ...    print(J)
         [0.707 0.707 0.   ]
         """
         observers = format_star_input(observers)
-        return getBH_level2(
+        return _getBH_level2(
             self,
             observers,
             field="J",

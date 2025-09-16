@@ -388,7 +388,7 @@ def make_mesh_lines(obj, mode, **kwargs) -> dict[str, Any]:
         if mode == "selfintersecting":
             tr = obj.faces[obj.get_selfintersecting_faces()]
         edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
-        edges = obj.get_open_edges() if mode == "open" else np.unique(edges, axis=0)
+        edges = obj._get_open_edges() if mode == "open" else np.unique(edges, axis=0)
         lines = vert[edges]
 
     if lines.size == 0:

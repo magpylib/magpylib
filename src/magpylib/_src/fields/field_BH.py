@@ -1,8 +1,4 @@
-# pylint: disable=cyclic-import
-# pylint: disable=too-many-lines
-# pylint: disable=too-many-positional-arguments
-
-"""Field computation structure:
+"""Magnetuic field computation structure:
 
 level_core:(field_BH_XXX.py files)
     - pure vectorized field computations from literature
@@ -14,7 +10,7 @@ level0a:(BHJM_XX)
 level0b:(BHJM_internal_XX)
     - connect BHJM-level to level1
 
-level1(getBH_level1):
+level1(_getBH_level1):
     - apply transformation to global CS
     - select correct level0 src_type computation
     - input dict, no input checks !
@@ -26,11 +22,11 @@ level2(getBHv_level2):  <--- DIRECT ACCESS TO FIELD COMPUTATION FORMULAS, INPUT 
     - set missing input variables to default values
     - tile 1D inputs
 
-level2(getBH_level2):   <--- COMPUTE FIELDS FROM SOURCES
+level2(_getBH_level2):   <--- COMPUTE FIELDS FROM SOURCES
     - input dict checks (unknowns)
     - secure user inputs
     - group similar sources for combined computation
-    - generate vector input format for getBH_level1
+    - generate vector input format for _getBH_level1
     - adjust Bfield output format to (pos_obs, path, sources) input format
 
 level3(getB, getH, getB_dict, getH_dict): <--- USER INTERFACE
@@ -74,8 +70,11 @@ from magpylib._src.utility import (
     has_parameter,
 )
 
+# pylint: disable=cyclic-import
+# pylint: disable=too-many-lines
+# pylint: disable=too-many-positional-arguments
 
-def tile_group_property(group: list, n_pp: int, prop_name: str):
+def _tile_group_property(group: list, n_pp: int, prop_name: str):
     """tile up group property"""
     out = [getattr(src, prop_name) for src in group]
     if not np.isscalar(out[0]) and any(o.shape != out[0].shape for o in out):
@@ -85,7 +84,7 @@ def tile_group_property(group: list, n_pp: int, prop_name: str):
     return np.repeat(out, n_pp, axis=0)
 
 
-def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
+def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     """create dictionaries for level1 input"""
     # pylint: disable=protected-access
     # pylint: disable=too-many-return-statements
@@ -119,12 +118,12 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
             "orientation",
             "observers",
         ):
-            kwargs[prop] = tile_group_property(group, n_pp, prop)
+            kwargs[prop] = _tile_group_property(group, n_pp, prop)
 
     return kwargs
 
 
-def getBH_level1(
+def _getBH_level1(
     *,
     field_func: Callable,
     field: str,
@@ -165,7 +164,7 @@ def getBH_level1(
     return BH
 
 
-def getBH_level2(
+def _getBH_level2(
     sources, observers, *, field, sumup, squeeze, pixel_agg, output, in_out, **kwargs
 ) -> np.ndarray:
     """Compute field for given sources and observers.
@@ -188,7 +187,7 @@ def getBH_level2(
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
-        return getBH_dict_level2(
+        return _getBH_dict_level2(
             source_type=sources,
             observers=observers,
             field=field,
@@ -347,9 +346,9 @@ def getBH_level2(
     for field_func, group in field_func_groups.items():
         lg = len(group["sources"])
         gr = group["sources"]
-        src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
+        src_dict = _get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
         # compute field
-        B_group = getBH_level1(
+        B_group = _getBH_level1(
             field_func=field_func, field=field, in_out=in_out, **src_dict
         )
         if B_group is None:
@@ -454,7 +453,7 @@ def getBH_level2(
     return B
 
 
-def getBH_dict_level2(
+def _getBH_dict_level2(
     source_type,
     observers,
     *,
@@ -490,7 +489,7 @@ def getBH_dict_level2(
     # generate dict of secured inputs for auto-tiling ---------------
     #  entries in this dict will be tested for input length, and then
     #  be automatically tiled up and stored back into kwargs for calling
-    #  getBH_level1().
+    #  _getBH_level1().
     #  To allow different input dimensions, the ndim argument is also given
     #  which tells the program which dimension it should tile up.
 
@@ -562,7 +561,7 @@ def getBH_dict_level2(
     kwargs["orientation"] = R.from_quat(kwargs["orientation"])
 
     # compute and return B
-    B = getBH_level1(field=field, field_func=field_func, in_out=in_out, **kwargs)
+    B = _getBH_level1(field=field, field_func=field_func, in_out=in_out, **kwargs)
 
     if B is not None and squeeze:
         return np.squeeze(B)
@@ -754,7 +753,7 @@ def getB(
      [ 7.970e-07  1.594e-06 -7.913e-07]
      [-1.374e-06 -1.374e-06 -1.366e-06]]
     """
-    return getBH_level2(
+    return _getBH_level2(
         sources,
         observers,
         field="B",
@@ -945,7 +944,7 @@ def getH(
      [ 6.342e-01  1.268e+00 -6.297e-01]
      [-1.093e+00 -1.093e+00 -1.087e+00]]
     """
-    return getBH_level2(
+    return _getBH_level2(
         sources,
         observers,
         field="H",
@@ -1098,7 +1097,7 @@ def getM(
     similar sources for optimal vectorization of the computation. For maximal performance
     call this function as little as possible and avoid using it in loops.
     """
-    return getBH_level2(
+    return _getBH_level2(
         sources,
         observers,
         field="M",
@@ -1263,7 +1262,7 @@ def getJ(
     call this function as little as possible and avoid using it in loops.
 
     """
-    return getBH_level2(
+    return _getBH_level2(
         sources,
         observers,
         field="J",
