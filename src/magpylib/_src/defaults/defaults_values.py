@@ -98,10 +98,10 @@ DEFAULTS = {
                     "field": {
                         "symbol": "cone",
                         "source": None,
-                        "colormap": "Rainbow",
+                        "colormap": "Viridis",
                         "shownull": True,
                         "sizescaling": "uniform",
-                        "sizemin": 0,
+                        "sizemin": 0.1,
                         "colorscaling": "linear",
                     },
                 },
