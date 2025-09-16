@@ -30,106 +30,95 @@ from magpylib._src.obj_classes.class_BaseProperties import _BaseVolume
 from magpylib._src.obj_classes.class_BaseTarget import _BaseTarget
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
-from magpylib._src.obj_classes.target_meshing import target_mesh_triangularmesh
+from magpylib._src.obj_classes.target_meshing import _target_mesh_triangularmesh
 from magpylib._src.style import TriangularMeshStyle
 
 
 class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
-    """Magnet with homogeneous magnetization defined by triangular surface mesh.
+    """Magnet with homogeneous magnetization defined by a triangular surface mesh.
 
-    Can be used as `sources` input for magnetic field computation and `target`
+    Can be used as ``sources`` input for magnetic field computation and ``target``
     input for force computation.
 
     The vertex positions are defined in the local object coordinates (rotate with object).
-    When `position=(0,0,0)` and `orientation=None` global and local coordinates coincide.
-
+    When ``position=(0, 0, 0)`` and ``orientation=None`` global and local coordinates coincide.
 
     SI units are used for all inputs and outputs.
 
     Parameters
     ----------
-    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of m. For m>1, the
-        `position` and `orientation` attributes together represent an object path.
+    position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
+        Object position(s) in global coordinates in units (m). ``position`` and
+        ``orientation`` attributes define the object path.
+    orientation : None or Rotation, default None
+        Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
+        have length 1 or m. ``None`` generates a unit-rotation.
+    vertices : array-like, shape (n, 3), default None
+        Points in units (m) in the local object coordinates from which the triangular
+        faces of the mesh are constructed by the additional ``faces`` input.
+    faces : array-like, shape (n, 3), default None
+        Triplets of vertex indices. Each triplet represents one triangle of the mesh.
+    polarization : None or array-like, shape (3,), default None
+        Magnetic polarization vector J = mu0*M in units (T), given in the
+        local object coordinates. Sets also ``magnetization``.
+    magnetization : None or array-like, shape (3,), default None
+        Magnetization vector M = J/mu0 in units (A/m), given in the local
+        object coordinates. Sets also ``polarization``.
+    meshing : None or int, default None
+        Mesh fineness for force computation. Must be a positive integer specifying
+        the target mesh size.
+    reorient_faces : bool or str, default True
+        In a properly oriented mesh, all faces must be oriented outwards. If ``True``,
+        check and fix the orientation of each triangle. Options are ``'skip'`` (``False``),
+        ``'warn'`` (``True``), ``'raise'``, ``'ignore'``.
+    check_open : bool or str, default True
+        Only a closed mesh guarantees correct B-field computation. If ``True``, check if the
+        mesh is open. Options are ``'skip'`` (``False``), ``'warn'`` (``True``), ``'raise'``,
+        ``'ignore'``.
+    check_disconnected : bool or str, default True
+        Individual magnets should be connected bodies to avoid confusion. If ``True``, check if
+        the mesh is disconnected. Options are ``'skip'`` (``False``), ``'warn'`` (``True``),
+        ``'raise'``, ``'ignore'``.
+    check_selfintersecting : bool or str, default True
+        A proper body cannot have a self-intersecting mesh. If ``True``, check if the mesh is
+        self-intersecting. Options are ``'skip'`` (``False``), ``'warn'`` (``True``), ``'raise'``,
+        ``'ignore'``.
+    style : None or dict, default None
+        Style dictionary. Can also be provided via style underscore magic, e.g.
+        ``style_color='red'``.
 
-    orientation: scipy `Rotation` object with length 1 or m, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation. For m>1, the `position` and `orientation` attributes
-        together represent an object path.
-
-    vertices: array_like, shape (n,3), default=`None`
-        A set of points in units of m in the local object coordinates from which the
-        triangular faces of the mesh are constructed by the additional `faces` input.
-
-    faces: array_like, shape (n,3), default=`None`
-        Indices of vertices. Each triplet represents one triangle of the mesh.
-
-    polarization: array_like, shape (3,), default=`None`
-        Magnetic polarization vector J = mu0*M in units of T,
-        given in the local object coordinates (rotates with object).
-
-    magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector M = J/mu0 in units of A/m,
-        given in the local object coordinates (rotates with object).
-
-    meshing: int, default=`None`
-        Parameter that defines the mesh fineness for force computation.
-        Must be a positive integer specifying the target mesh size.
-
-    volume: float
-        Read-only. Object physical volume in units of m^3.
-
-    centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m.
-
-    dipole_moment: np.ndarray, shape (3,)
-        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
-
-    reorient_faces: bool or string, default=`True`
-        In a properly oriented mesh, all faces must be oriented outwards.
-        If `True`, check and fix the orientation of each triangle.
-        Options are `'skip'`(=`False`), `'warn'`(=`True`), `'raise'`, `'ignore'`.
-
-    check_open: bool or string, default=`True`
-        Only a closed mesh guarantees correct B-field computation.
-        If `True`, check if mesh is open.
-        Options are `'skip'`(=`False`), `'warn'`(=`True`), `'raise'`, `'ignore'`.
-
-    check_disconnected: bool or string, default=`True`
-        Individual magnets should be connected bodies to avoid confusion.
-        If `True`, check if mesh is disconnected.
-        Options are `'skip'`(=`False`), `'warn'`(=`True`), `'raise'`, `'ignore'`.
-
-    check_selfintersecting: bool or string, default=`True`
-        a proper body cannot have a self-intersecting mesh.
-        If `True`, check if mesh is self-intersecting.
-        Options are `'skip'`(=`False`), `'warn'`(=`True`), `'raise'`, `'ignore'`.
-
-    check_selfintersecting: bool, optional
-        If `True`, the provided set of facets is validated by checking if the body is not
-        self-intersecting. Can be deactivated for performance reasons by setting it to `False`.
-
-    parent: `Collection` object or `None`
-        The object is a child of it's parent collection.
-
-    style: dict
-        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-        using style underscore magic, e.g. `style_color='red'`.
-
-    Notes
-    -----
-    Faces are automatically reoriented since `scipy.spatial.ConvexHull` objects do not
-    guarantee that the faces are all pointing outwards. A mesh validation is also performed.
-
-    Returns
-    -------
-    magnet source: `TriangularMesh` object
+    Attributes
+    ----------
+    position : ndarray, shape (3,) or (m, 3)
+        Same as constructor parameter ``position``.
+    orientation : Rotation
+        Same as constructor parameter ``orientation``.
+    vertices : ndarray, shape (n, 3)
+        Same as constructor parameter ``vertices``.
+    faces : ndarray, shape (n, 3)
+        Same as constructor parameter ``faces``.
+    polarization : None or ndarray, shape (3,)
+        Same as constructor parameter ``polarization``.
+    magnetization : None or ndarray, shape (3,)
+        Same as constructor parameter ``magnetization``.
+    meshing : None or int
+        Same as constructor parameter ``meshing``.
+    centroid : ndarray, shape (3,) or (m, 3)
+        Read-only. Object centroid.
+    dipole_moment : ndarray, shape (3,)
+        Read-only. Object dipole moment (A·m²) in local object coordinates.
+    volume : float
+        Read-only. Object physical volume in units (m³).
+    parent : Collection or None
+        Parent collection of the object.
+    style : dict
+        Style dictionary defining visual properties.
 
     Examples
     --------
-    We compute the B-field in units of T of a triangular mesh (4 vertices, 4 faces)
-    with polarization (0.1,0.2,0.3) in units of T at the observer position
-    (0.01,0.01,0.01) given in units of m:
+    We compute the B-field in units (T) of a triangular mesh (4 vertices, 4 faces)
+    with polarization ``(0.1, 0.2, 0.3)`` (T) at the observer position
+    ``(0.01, 0.01, 0.01)`` (m):
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -278,7 +267,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     def _generate_mesh(self):
         """Generate mesh for force computation."""
         # Tests in getFT ensure that meshing, dimension and excitation are set
-        return target_mesh_triangularmesh(
+        return _target_mesh_triangularmesh(
             self.vertices,
             self.faces,
             self.meshing,
@@ -292,44 +281,27 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         accepted_arg_vals = (True, False, "warn", "raise", "ignore", "skip")
         if arg not in accepted_arg_vals:
             msg = (
-                f"The `{arg_name}` argument must be one of {accepted_arg_vals}, "
+                f"The ``{arg_name}`` argument must be one of {accepted_arg_vals}, "
                 f"instead received {arg!r}."
-                f"\nNote that `True` translates to `'warn'` and `False` to `'skip'`"
+                f"\nNote that ``True`` translates to ``'warn'`` and ``False`` to ``'skip'``"
             )
             raise ValueError(msg)
         return "warn" if arg is True else "skip" if arg is False else arg
 
     def check_open(self, mode="warn"):
-        """
-        Check whether the mesh is closed.
-
-        This function checks if the mesh is closed. If the mesh is not closed,
-        it issues a warning or raises a ValueError, depending on the 'mode' parameter.
-        If 'mode' is set to 'ignore', it does not issue a warning or raise an error.
+        """Check whether the mesh is open.
 
         Parameters
         ----------
-        mode : str, optional
-            Controls how to handle if the mesh is not closed.
-            Accepted values are "warn", "raise", or "ignore".
-            If "warn", a warning is issued. If "raise", a ValueError is raised.
-            If "ignore", no action is taken. By default "warn".
+        mode : bool or str, default 'warn'
+            Controls how to handle open meshes. Can be one of {'warn', 'raise',
+            'ignore', 'skip'}. ``True`` translates to ``'warn'`` and ``False``
+            to ``'skip'``.
 
         Returns
         -------
         bool
-            True if the mesh is open, False otherwise.
-
-        Raises
-        ------
-        ValueError
-            If 'mode' is not one of the accepted values or if 'mode' is "raise" and the mesh
-            is open.
-
-        Warns
-        -----
-        UserWarning
-            If the mesh is open and 'mode' is "warn".
+            ``True`` if the mesh is open, ``False`` otherwise.
         """
         mode = self._validate_mode_arg(mode, arg_name="check_open mode")
         if mode != "skip" and self._status_open is None:
@@ -337,11 +309,12 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             if self._status_open:
                 msg = (
                     f"Open mesh detected in {self!r}. Intrinsic inside-outside checks may "
-                    "give bad results and subsequently getB() and reorient_faces() may give bad "
-                    "results as well. "
-                    "This check can be disabled at initialization with check_open='skip'. "
-                    "Open edges can be displayed in show() with style_mesh_open_show=True."
-                    "Open edges are stored in the status_open_data property."
+                    "give bad results and subsequently ``getB()`` and ``reorient_faces()`` may "
+                    "give bad results as well. "
+                    "This check can be disabled at initialization with ``check_open='skip'``. "
+                    "Open edges can be displayed in ``show()`` with "
+                    "``style_mesh_open_show=True``. "
+                    "Open edges are stored in the ``status_open_data`` property."
                 )
                 if mode == "warn":
                     warnings.warn(msg, stacklevel=2)
@@ -350,35 +323,18 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         return self._status_open
 
     def check_disconnected(self, mode="warn"):
-        """Check whether the mesh is connected.
-
-        This function checks if the mesh is connected. If the mesh is not connected,
-        it issues a warning or raises a ValueError, depending on the 'mode' parameter.
-        If 'mode' is set to 'ignore', it does not issue a warning or raise an error.
+        """Check whether the mesh is disconnected.
 
         Parameters
         ----------
-        mode : str, optional
-            Controls how to handle if the mesh is not connected.
-            Accepted values are "warn", "raise", or "ignore".
-            If "warn", a warning is issued. If "raise", a ValueError is raised.
-            If "ignore", no action is taken. By default "warn".
+        mode : bool or str, default 'warn'
+            Controls how to handle disconnected meshes. Can be one of {'warn', 'raise',
+            'ignore', 'skip'}. ``True`` translates to ``'warn'`` and ``False`` to ``'skip'``.
 
         Returns
         -------
         bool
-            True if the mesh is disconnected, False otherwise.
-
-        Raises
-        ------
-        ValueError
-            If 'mode' is not one of the accepted values or if 'mode' is "raise" and the mesh
-            is disconnected.
-
-        Warns
-        -----
-        UserWarning
-            If the mesh is disconnected and 'mode' is "warn".
+            ``True`` if the mesh is disconnected, ``False`` otherwise.
         """
         mode = self._validate_mode_arg(mode, arg_name="check_disconnected mode")
         if mode != "skip" and self._status_disconnected is None:
@@ -387,9 +343,11 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
                 msg = (
                     f"Disconnected mesh detected in {self!r}. Magnet consists of multiple "
                     "individual parts. "
-                    "This check can be disabled at initialization with check_disconnected='skip'. "
-                    "Parts can be displayed in show() with style_mesh_disconnected_show=True. "
-                    "Parts are stored in the status_disconnected_data property."
+                    "This check can be disabled at initialization with "
+                    "``check_disconnected='skip'``. "
+                    "Parts can be displayed in ``show()`` with "
+                    "``style_mesh_disconnected_show=True``. "
+                    "Parts are stored in the ``status_disconnected_data`` property."
                 )
                 if mode == "warn":
                     warnings.warn(msg, stacklevel=2)
@@ -400,33 +358,16 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     def check_selfintersecting(self, mode="warn"):
         """Check whether the mesh is self-intersecting.
 
-        This function checks if the mesh is self-intersecting. If the mesh is self-intersecting,
-        it issues a warning or raises a ValueError, depending on the 'mode' parameter.
-        If 'mode' is set to 'ignore', it does not issue a warning or raise an error.
-
         Parameters
         ----------
-        mode : str, optional
-            Controls how to handle if the mesh is self-intersecting.
-            Accepted values are "warn", "raise", or "ignore".
-            If "warn", a warning is issued. If "raise", a ValueError is raised.
-            If "ignore", no action is taken. By default "warn".
+        mode : bool or str, default 'warn'
+            Controls how to handle self-intersecting meshes. Can be one of {'warn', 'raise',
+            'ignore', 'skip'}. ``True`` translates to ``'warn'`` and ``False`` to ``'skip'``.
 
         Returns
         -------
         bool
-            True if the mesh is self-intersecting, False otherwise.
-
-        Raises
-        ------
-        ValueError
-            If 'mode' is not one of the accepted values or if 'mode' is "raise" and the mesh
-            is self-intersecting.
-
-        Warns
-        -----
-        UserWarning
-            If the mesh is self-intersecting and 'mode' is "warn".
+            ``True`` if the mesh is self-intersecting, ``False`` otherwise.
         """
         mode = self._validate_mode_arg(mode, arg_name="check_selfintersecting mode")
         if mode != "skip" and self._status_selfintersecting is None:
@@ -435,10 +376,10 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
                 msg = (
                     f"Self-intersecting mesh detected in {self!r}. "
                     "This check can be disabled at initialization with "
-                    "check_selfintersecting='skip'. "
-                    "Intersecting faces can be display in show() with "
-                    "style_mesh_selfintersecting_show=True. "
-                    "Parts are stored in the status_selfintersecting_data property."
+                    "``check_selfintersecting='skip'``. "
+                    "Intersecting faces can be displayed in ``show()`` with "
+                    "``style_mesh_selfintersecting_show=True``. "
+                    "Faces are stored in the ``status_selfintersecting_data`` property."
                 )
                 if mode == "warn":
                     warnings.warn(msg, stacklevel=2)
@@ -447,44 +388,29 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         return self._status_selfintersecting
 
     def reorient_faces(self, mode="warn"):
-        """Correctly reorients the mesh's faces.
+        """Reorient all faces to point outwards.
 
         In a properly oriented mesh, all faces must be oriented outwards. This function
-        fixes the orientation of each face. It issues a warning or raises a ValueError,
-        depending on the 'mode' parameter. If 'mode' is set to 'ignore', it does not issue
-        a warning or raise an error. Note that this parameter is passed on the check_closed()
-        function as the mesh is only orientable if it is closed.
+        fixes the orientation of each face. Note that ``mode`` is also considered in
+        ``check_open()`` because the mesh is only orientable if it is closed.
 
         Parameters
         ----------
-        mode : str, optional
-            Controls how to handle if the mesh is open and not orientable.
-            Accepted values are "warn", "raise", or "ignore".
-            If "warn", a warning is issued. If "raise", a ValueError is raised.
-            If "ignore", no action is taken. By default "warn".
+        mode : bool or str, default 'warn'
+            Controls how to handle open meshes during reorientation. Can be one of
+            {'warn', 'raise', 'ignore', 'skip'}. ``True`` translates to ``'warn'``
+            and ``False`` to ``'skip'``.
 
         Returns
         -------
-        bool
-            True if the mesh is connected, False otherwise.
-
-        Raises
-        ------
-        ValueError
-            If 'mode' is not one of the accepted values or if 'mode' is "raise" and the mesh
-            is open and not orientable.
-
-        Warns
-        -----
-        UserWarning
-            If the mesh is not connected and 'mode' is "warn".
+        None
         """
         mode = self._validate_mode_arg(mode, arg_name="reorient_faces mode")
         if mode != "skip":
             if self._status_open is None:
                 if mode in ["warn", "raise"]:
                     warnings.warn(
-                        f"Unchecked mesh status in {self!r} detected. Now applying check_open()",
+                        f"Unchecked mesh status in {self!r} detected. Now applying ``check_open``",
                         stacklevel=2,
                     )
                 self.check_open(mode=mode)
@@ -500,42 +426,45 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             self._status_reoriented = True
 
     def get_faces_subsets(self):
-        """
-        Obtain and return subsets of the mesh. If the mesh has n parts, returns and list of
-        length n of faces (m,3) vertices indices triplets corresponding to each part.
+        """Get subsets of faces for each disconnected part of the mesh.
+
+        If the mesh has ``k`` disconnected parts, returns a list of length ``k`` with
+        arrays of shape (m, 3) containing vertex index triplets for each part.
 
         Returns
         -------
-        status_disconnected_data : list of numpy.ndarray
-            Subsets of faces data.
+        list
+            List of ndarrays. Subsets of faces data.
         """
         if self._status_disconnected_data is None:
             self._status_disconnected_data = get_disconnected_faces_subsets(self._faces)
         return self._status_disconnected_data
 
     def get_open_edges(self):
-        """
-        Obtain and return the potential open edges. If the mesh has n open edges, returns an
-        corresponding (n,2) array of vertices indices doubles.
+        """Return open edges.
+
+        If the mesh has n open edges, returns an array of shape (n, 2) of vertex
+        indices forming those edges.
 
         Returns
         -------
-        status_open_data : numpy.ndarray
-            Open edges data.
+        ndarray, shape (n, 2)
+            Open edges as pairs of vertex indices.
         """
         if self._status_open_data is None:
             self._status_open_data = get_open_edges(self._faces)
         return self._status_open_data
 
     def get_selfintersecting_faces(self):
-        """
-        Obtain and return the potential self intersecting faces indices. If the mesh has n
-        intersecting faces, returns a corresponding 1D array length n faces indices.
+        """Return indices of potentially self-intersecting faces.
+
+        If the mesh has n intersecting faces, returns a 1D array of length n with
+        their face indices.
 
         Returns
         -------
-        status_open_data : numpy.ndarray
-            Open edges data.
+        ndarray, shape (n,)
+            Indices of potentially self-intersecting faces.
         """
         if self._status_selfintersecting_data is None:
             self._status_selfintersecting_data = get_intersecting_triangles(
@@ -602,19 +531,19 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             dims=(2,),
             shape_m1=3,
             sig_name="TriangularMesh.vertices",
-            sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
+            sig_type="array_like (list, tuple, ndarray) of shape (n, 3)",
         )
         trias = check_format_input_vector(
             faces,
             dims=(2,),
             shape_m1=3,
             sig_name="TriangularMesh.faces",
-            sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
+            sig_type="array_like (list, tuple, ndarray) of shape (n, 3)",
         ).astype(int)
         try:
             verts[trias]
         except IndexError as e:
-            msg = "Some `faces` indices do not match with `vertices` array"
+            msg = "Some ``faces`` indices do not match with ``vertices`` array"
             raise IndexError(msg) from e
         return verts, trias
 
@@ -649,61 +578,17 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
         Parameters
         ----------
-        position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of m. For m>1, the
-            `position` and `orientation` attributes together represent an object path.
-
-        orientation: scipy `Rotation` object with length 1 or m, default=`None`
-            Object orientation(s) in the global coordinates. `None` corresponds to
-            a unit-rotation. For m>1, the `position` and `orientation` attributes
-            together represent an object path.
-
-        points: ndarray, shape (n,3)
+        points : array-like, shape (n, 3)
             Point cloud from which the convex hull is computed.
 
-        polarization: array_like, shape (3,), default=`None`
-            Magnetic polarization vector J = mu0*M in units of T,
-            given in the local object coordinates (rotates with object).
-
-        magnetization: array_like, shape (3,), default=`None`
-            Magnetization vector M = J/mu0 in units of A/m,
-            given in the local object coordinates (rotates with object).
-
-        reorient_faces: bool, default=`True`
-            In a properly oriented mesh, all faces must be oriented outwards.
-            If `True`, check and fix the orientation of each triangle.
-
-        check_open: {'warn', 'raise', 'ignore'}, default='warn'
-            Only a closed mesh guarantees a physical magnet.
-            If the mesh is open and "warn", a warning is issued.
-            If the mesh is open and "raise", a ValueError is raised.
-            If "ignore", no mesh check is performed.
-
-        check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
-            If the mesh is disconnected and "warn", a warning is issued.
-            If the mesh is disconnected and "raise", a ValueError is raised.
-            If "ignore", no mesh check is performed.
-
-        check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
-            If the mesh is self-intersecting and "warn", a warning is issued.
-            If the mesh is self-intersecting and "raise", a ValueError is raised.
-            If "ignore", no mesh check is performed.
-
-        parent: `Collection` object or `None`
-            The object is a child of it's parent collection.
-
-        style: dict
-            Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-            using style underscore magic, e.g. `style_color='red'`.
-
-        Notes
-        -----
-        Faces are automatically reoriented since `scipy.spatial.ConvexHull` objects do not
-        guarantee that the faces are all pointing outwards. A mesh validation is also performed.
+        position, orientation, polarization, magnetization, meshing, reorient_faces,
+        check_open, check_disconnected, style :
+            See ``TriangularMesh`` for shared parameter semantics and defaults.
 
         Returns
         -------
-        magnet source: `TriangularMesh` object
+        TriangularMesh
+            New magnet instance defined by the convex hull of ``points``.
         """
         return cls(
             position=position,
@@ -741,72 +626,29 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
         Parameters
         ----------
-        position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of m. For m>1, the
-            `position` and `orientation` attributes together represent an object path.
+        polydata : pyvista.core.pointset.PolyData
+            A valid pyvista PolyData mesh object (e.g. ``pyvista.Sphere()``).
 
-        orientation: scipy `Rotation` object with length 1 or m, default=`None`
-            Object orientation(s) in the global coordinates. `None` corresponds to
-            a unit-rotation. For m>1, the `position` and `orientation` attributes
-            together represent an object path.
-
-        polydata: pyvista.core.pointset.PolyData object
-            A valid pyvista Polydata mesh object. (e.g. `pyvista.Sphere()`)
-
-        polarization: array_like, shape (3,), default=`None`
-            Magnetic polarization vector J = mu0*M in units of T,
-            given in the local object coordinates (rotates with object).
-
-        magnetization: array_like, shape (3,), default=`None`
-            Magnetization vector M = J/mu0 in units of A/m,
-            given in the local object coordinates (rotates with object).
-
-        reorient_faces: bool, default=`True`
-            In a properly oriented mesh, all faces must be oriented outwards.
-            If `True`, check and fix the orientation of each triangle.
-
-        check_open: {'warn', 'raise', 'ignore'}, default='warn'
-            Only a closed mesh guarantees a physical magnet.
-            If the mesh is open and "warn", a warning is issued.
-            If the mesh is open and "raise", a ValueError is raised.
-            If "ignore", no mesh check is performed.
-
-        check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
-            If the mesh is disconnected and "warn", a warning is issued.
-            If the mesh is disconnected and "raise", a ValueError is raised.
-            If "ignore", no mesh check is performed.
-
-        check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
-            If the mesh is self-intersecting and "warn", a warning is issued.
-            If the mesh is self-intersecting and "raise", a ValueError is raised.
-            If "ignore", no mesh check is performed.
-
-        parent: `Collection` object or `None`
-            The object is a child of it's parent collection.
-
-        style: dict
-            Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-            using style underscore magic, e.g. `style_color='red'`.
-
-        Notes
-        -----
-        Faces are automatically reoriented since `pyvista.core.pointset.PolyData` objects do not
-        guarantee that the faces are all pointing outwards. A mesh validation is also performed.
+        position, orientation, polarization, magnetization, meshing, reorient_faces,
+        check_open, check_disconnected, style :
+            See ``TriangularMesh`` for shared parameter semantics and defaults.
 
         Returns
         -------
-        magnet source: `TriangularMesh` object
+        TriangularMesh
+            New magnet instance defined by ``polydata``.
         """
         # pylint: disable=import-outside-toplevel
         try:
             import pyvista  # noqa: PLC0415
         except ImportError as missing_module:  # pragma: no cover
-            msg = """In order load pyvista Polydata objects, you first need to install pyvista via pip
+            msg = """In order load pyvista PolyData objects, you first need to install pyvista via pip
                 or conda, see https://docs.pyvista.org/getting-started/installation.html"""
             raise ModuleNotFoundError(msg) from missing_module
         if not isinstance(polydata, pyvista.core.pointset.PolyData):
             msg = (
-                "The `polydata` parameter must be an instance of `pyvista.core.pointset.PolyData`, "
+                "The ``polydata`` parameter must be an instance of "
+                "``pyvista.core.pointset.PolyData``, "
                 f"received {polydata!r} instead"
             )
             raise TypeError(msg)
@@ -850,72 +692,29 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
         Parameters
         ----------
-        position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of m. For m>1, the
-            `position` and `orientation` attributes together represent an object path.
+        triangles : list or Collection
+            Only ``vertices`` of ``Triangle`` objects in list or collection are taken,
+            ``magnetization`` is ignored.
 
-        orientation: scipy `Rotation` object with length 1 or m, default=`None`
-            Object orientation(s) in the global coordinates. `None` corresponds to
-            a unit-rotation. For m>1, the `position` and `orientation` attributes
-            together represent an object path.
-
-        triangles: list or Collection of Triangle objects
-            Only vertices of Triangle objects are taken, magnetization is ignored.
-
-        polarization: array_like, shape (3,), default=`None`
-            Magnetic polarization vector J = mu0*M in units of T,
-            given in the local object coordinates (rotates with object).
-
-        magnetization: array_like, shape (3,), default=`None`
-            Magnetization vector M = J/mu0 in units of A/m,
-            given in the local object coordinates (rotates with object).
-
-        reorient_faces: bool, default=`True`
-            In a properly oriented mesh, all faces must be oriented outwards.
-            If `True`, check and fix the orientation of each triangle.
-
-        check_open: {'warn', 'raise', 'ignore'}, default='warn'
-            Only a closed mesh guarantees a physical magnet.
-            If the mesh is open and "warn", a warning is issued.
-            If the mesh is open and "raise", a ValueError is raised.
-            If "ignore", no mesh check is performed.
-
-        check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
-            If the mesh is disconnected and "warn", a warning is issued.
-            If the mesh is disconnected and "raise", a ValueError is raised.
-            If "ignore", no mesh check is performed.
-
-        check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
-            If the mesh is self-intersecting and "warn", a warning is issued.
-            If the mesh is self-intersecting and "raise", a ValueError is raised.
-            If "ignore", no mesh check is performed.
-
-        parent: `Collection` object or `None`
-            The object is a child of it's parent collection.
-
-        style: dict
-            Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-            using style underscore magic, e.g. `style_color='red'`.
-
-        Notes
-        -----
-        Faces are automatically reoriented since `pyvista.core.pointset.PolyData` objects do not
-        guarantee that the faces are all pointing outwards. A mesh validation is also performed.
+        position, orientation, polarization, magnetization, meshing, reorient_faces,
+        check_open, check_disconnected, style :
+            See ``TriangularMesh`` for shared parameter semantics and defaults.
 
         Returns
         -------
-        magnet source: `TriangularMesh` object
+        TriangularMesh
+            New magnet instance defined by the provided ``triangles``.
         """
         if not isinstance(triangles, list | Collection):
             msg = (
-                "The `triangles` parameter must be a list or Collection of `Triangle` objects, "
+                "The ``triangles`` parameter must be a list or Collection of ``Triangle`` objects, "
                 f"\nreceived type {type(triangles)} instead"
             )
             raise TypeError(msg)
         for obj in triangles:
             if not isinstance(obj, Triangle):
                 msg = (
-                    "All elements of `triangles` must be `Triangle` objects, "
+                    "All elements of ``triangles`` must be ``Triangle`` objects, "
                     f"\nreceived type {type(obj)} instead"
                 )
                 raise TypeError(msg)
@@ -959,61 +758,17 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
         Parameters
         ----------
-        position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of m. For m>1, the
-            `position` and `orientation` attributes together represent an object path.
+        mesh : array-like, shape (n, 3, 3)
+            Triangular faces that make up a triangular mesh.
 
-        orientation: scipy `Rotation` object with length 1 or m, default=`None`
-            Object orientation(s) in the global coordinates. `None` corresponds to
-            a unit-rotation. For m>1, the `position` and `orientation` attributes
-            together represent an object path.
-
-        mesh: array_like, shape (n,3,3)
-            An array_like of triangular faces that make up a triangular mesh.
-
-        polarization: array_like, shape (3,), default=`None`
-            Magnetic polarization vector J = mu0*M in units of T,
-            given in the local object coordinates (rotates with object).
-
-        magnetization: array_like, shape (3,), default=`None`
-            Magnetization vector M = J/mu0 in units of A/m,
-            given in the local object coordinates (rotates with object).
-
-        reorient_faces: bool, default=`True`
-            In a properly oriented mesh, all faces must be oriented outwards.
-            If `True`, check and fix the orientation of each triangle.
-
-        check_open: {'warn', 'raise', 'ignore'}, default='warn'
-            Only a closed mesh guarantees a physical magnet.
-            If the mesh is open and "warn", a warning is issued.
-            If the mesh is open and "raise", a ValueError is raised.
-            If "ignore", no mesh check is performed.
-
-        check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
-            If the mesh is disconnected and "warn", a warning is issued.
-            If the mesh is disconnected and "raise", a ValueError is raised.
-            If "ignore", no mesh check is performed.
-
-        check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
-            If the mesh is self-intersecting and "warn", a warning is issued.
-            If the mesh is self-intersecting and "raise", a ValueError is raised.
-            If "ignore", no mesh check is performed.
-
-        parent: `Collection` object or `None`
-            The object is a child of it's parent collection.
-
-        style: dict
-            Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-            using style underscore magic, e.g. `style_color='red'`.
-
-        Notes
-        -----
-        Faces are automatically reoriented since `pyvista.core.pointset.PolyData` objects do not
-        guarantee that the faces are all pointing outwards. A mesh validation is also performed.
+        position, orientation, polarization, magnetization, meshing, reorient_faces,
+        check_open, check_disconnected, style :
+            See ``TriangularMesh`` for shared parameter semantics and defaults.
 
         Returns
         -------
-        magnet source: `TriangularMesh` object
+        TriangularMesh
+            New magnet instance defined by the provided ``mesh``.
         """
         mesh = check_format_input_vector2(
             mesh,

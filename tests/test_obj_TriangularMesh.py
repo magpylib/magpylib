@@ -220,7 +220,7 @@ def test_open_mesh():
         )
         assert len(record) == 3
         assert re.match(
-            r"Unchecked mesh status in .* detected. Now applying check_open()",
+            r"Unchecked mesh status in .* detected. Now applying ``check_open()``",
             str(record[0].message),
         )
         assert re.match(r"Open mesh detected in .*.", str(record[1].message))
@@ -343,13 +343,13 @@ def test_TriangularMesh_from_faces_bad_inputs():
     # good element type but not array-like
     with pytest.raises(
         TypeError,
-        match=r"The `triangles` parameter must be a list or Collection of `Triangle` objects*.",
+        match=r"The ``triangles`` parameter must be a list or Collection of ``Triangle`` objects*.",
     ):
         get_tri_from_triangles(triangle)
 
     # element in list has wrong type
     with pytest.raises(
-        TypeError, match=r"All elements of `triangles` must be `Triangle` objects*."
+        TypeError, match=r"All elements of ``triangles`` must be ``Triangle`` objects*."
     ):
         get_tri_from_triangles(["bad_type"])
 
@@ -359,12 +359,12 @@ def test_TriangularMesh_from_faces_bad_inputs():
 
     # bad shape input
     msh = [((0, 0), (1, 0), (0, 1))] * 2
-    with pytest.raises(ValueError, match=r"Input parameter `mesh` has bad shape*."):
+    with pytest.raises(ValueError, match=r"Input parameter `mesh` has bad shape."):
         get_tri_from_mesh(msh)
 
     # bad shape input
     msh = [((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))] * 2
-    with pytest.raises(ValueError, match=r"Input parameter `mesh` has bad shape*."):
+    with pytest.raises(ValueError, match=r"Input parameter `mesh` has bad shape."):
         get_tri_from_mesh(msh)
 
 
@@ -466,7 +466,7 @@ def test_bad_mode_input():
     """test bad mode input"""
     with pytest.raises(
         ValueError,
-        match=r"The `check_open mode` argument .*, instead received 'badinput'.",
+        match=r"The ``check_open mode`` argument.",
     ):
         magpy.magnet.TriangularMesh.from_pyvista(
             polarization=(0, 0, 1), polydata=pv.Octahedron(), check_open="badinput"

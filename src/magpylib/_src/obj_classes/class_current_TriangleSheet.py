@@ -13,7 +13,7 @@ from magpylib._src.fields.field_BH_current_sheet import BHJM_current_trisheet
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import _BaseSource
 from magpylib._src.obj_classes.class_BaseTarget import _BaseTarget
-from magpylib._src.obj_classes.target_meshing import target_mesh_triangle_current
+from magpylib._src.obj_classes.target_meshing import _target_mesh_triangle_current
 
 
 class TriangleSheet(_BaseSource, _BaseTarget):
@@ -194,7 +194,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        return target_mesh_triangle_current(
+        return _target_mesh_triangle_current(
             self.vertices[self.faces],
             self.meshing,
             self.current_densities,

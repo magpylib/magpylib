@@ -13,7 +13,7 @@ from magpylib._src.obj_classes.class_BaseExcitations import _BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import _BaseDipoleMoment
 from magpylib._src.obj_classes.class_BaseProperties import _BaseVolume
 from magpylib._src.obj_classes.class_BaseTarget import _BaseTarget
-from magpylib._src.obj_classes.target_meshing import target_mesh_tetrahedron
+from magpylib._src.obj_classes.target_meshing import _target_mesh_tetrahedron
 
 
 class Tetrahedron(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
@@ -132,7 +132,7 @@ class Tetrahedron(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     # Properties
     @property
     def vertices(self):
-    """Tetrahedron vertices in local object coordinates."""
+        """Tetrahedron vertices in local object coordinates."""
         return self._vertices
 
     @vertices.setter
@@ -202,7 +202,7 @@ class Tetrahedron(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        return target_mesh_tetrahedron(self.meshing, self.vertices, self.magnetization)
+        return _target_mesh_tetrahedron(self.meshing, self.vertices, self.magnetization)
 
     # Static methods
     @staticmethod

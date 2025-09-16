@@ -16,49 +16,53 @@ from magpylib._src.utility import unit_prefix
 class Dipole(_BaseSource, _BaseDipoleMoment):
     """Magnetic dipole moment.
 
-    Can be used as `sources` input for magnetic field computation and `target`
-    input for force computation. No `meshing` parameter is required.
+    Can be used as ``sources`` input for magnetic field computation and ``target``
+    input for force computation.
 
-    When `position=(0,0,0)` and `orientation=None` the dipole is located in the origin of
-    global coordinate system.
+    When ``position=(0, 0, 0)`` and ``orientation=None`` global and local coordinates
+    coincide.
 
     SI units are used for all inputs and outputs.
 
     Parameters
     ----------
-    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of m. For m>1, the
-        `position` and `orientation` attributes together represent an object path.
+    position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
+        Object position(s) in global coordinates in units (m). ``position`` and
+        ``orientation`` attributes define the object path.
+    orientation : None or Rotation, default None
+        Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
+        have length 1 or m. ``None`` generates a unit-rotation.
+    moment : None or array-like, shape (3,), default None
+        Magnetic dipole moment (A·m²) in local object coordinates. For homogeneous
+        magnets the relation ``moment = magnetization * volume`` holds. For current
+        loops the relation ``moment = current * loop_surface`` holds.
+    style : None or dict, default None
+        Style dictionary. Can also be provided via style underscore magic, e.g.
+        ``style_color='red'``.
 
-    orientation: scipy `Rotation` object with length 1 or m, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation. For m>1, the `position` and `orientation` attributes
-        together represent an object path.
-
-    moment: array_like, shape (3,), unit A·m², default=`None`
-        Magnetic dipole moment in units of A·m² given in the local object coordinates.
-        For homogeneous magnets the relation moment=magnetization*volume holds. For
-        current loops the relation moment = current*loop_surface holds.
-
-    centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m.
-
-    parent: `Collection` object or `None`
-        The object is a child of it's parent collection.
-
-    style: dict
-        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-        using style underscore magic, e.g. `style_color='red'`.
-
-    Returns
-    -------
-    source: `Dipole` object
+    Attributes
+    ----------
+    position : ndarray, shape (3,) or (m, 3)
+        Same as constructor parameter ``position``.
+    orientation : Rotation
+        Same as constructor parameter ``orientation``.
+    moment : None or ndarray, shape (3,)
+        Same as constructor parameter ``moment``.
+    centroid : ndarray, shape (3,) or (m, 3)
+        Read-only. Object centroid in units (m) in global coordinates.
+        Can be a path.
+    dipole_moment : ndarray, shape (3,)
+        Read-only. Object dipole moment (A·m²) in local object coordinates.
+    parent : Collection or None
+        Parent collection of the object.
+    style : dict
+        Style dictionary defining visual properties.
 
     Examples
     --------
-    `Dipole` objects are magnetic field sources. In this example we compute the H-field in A/m
-    of such a magnetic dipole with a moment of (100,100,100) in units of A·m² at an
-    observer position (.01,.01,.01) given in units of m:
+    ``Dipole`` objects are magnetic field sources. In this example we compute the H-field
+    (A/m) of a magnetic dipole with moment ``(10, 10, 10)`` (A·m²) at the observer
+    position ``(10, 10, 10)`` centimeters:
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -93,12 +97,18 @@ class Dipole(_BaseSource, _BaseDipoleMoment):
     # Properties
     @property
     def moment(self):
-        """Magnetic dipole moment in units of A·m² given in the local object coordinates."""
+        """Magnetic dipole moment (A·m²) in local object coordinates."""
         return self._moment
 
     @moment.setter
     def moment(self, mom):
-        """Set dipole moment vector, shape (3,), unit A·m²."""
+        """Set dipole moment.
+
+        Parameters
+        ----------
+        mom : array-like, shape (3,)
+            Dipole moment vector (A·m²) in local object coordinates.
+        """
         self._moment = check_format_input_vector(
             mom,
             dims=(1,),
@@ -119,7 +129,7 @@ class Dipole(_BaseSource, _BaseDipoleMoment):
 
     # Methods
     def _get_centroid(self, squeeze=True):
-        """Centroid of object in units of m."""
+        """Centroid of object in units (m)."""
         if squeeze:
             return self.position
         return self._position
@@ -131,7 +141,7 @@ class Dipole(_BaseSource, _BaseDipoleMoment):
         return {"pts": points, "moments": moments}
 
     def _get_dipole_moment(self):
-        """Magnetic moment of object in units Am²."""
+        """Magnetic moment of object (A·m²)."""
         # test init
         if self.moment is None:
             return np.array((0.0, 0.0, 0.0))

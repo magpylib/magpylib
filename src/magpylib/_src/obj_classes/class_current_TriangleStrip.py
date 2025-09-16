@@ -14,7 +14,7 @@ from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import _BaseCurrent
 from magpylib._src.obj_classes.class_BaseProperties import _BaseDipoleMoment
 from magpylib._src.obj_classes.class_BaseTarget import _BaseTarget
-from magpylib._src.obj_classes.target_meshing import target_mesh_triangle_current
+from magpylib._src.obj_classes.target_meshing import _target_mesh_triangle_current
 from magpylib._src.utility import unit_prefix
 
 
@@ -130,7 +130,7 @@ class TriangleStrip(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     # property getters and setters
     @property
     def vertices(self):
-    """Triangle strip vertices in local object coordinates."""
+        """Triangle strip vertices in local object coordinates."""
         return self._vertices
 
     @vertices.setter
@@ -240,7 +240,7 @@ class TriangleStrip(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
             / height[:, np.newaxis]
         )
 
-        return target_mesh_triangle_current(
+        return _target_mesh_triangle_current(
             triangles,
             self.meshing,
             cds,

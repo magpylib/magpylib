@@ -1,3 +1,4 @@
+"""Meshing functions"""
 import itertools
 from itertools import product
 
@@ -7,10 +8,10 @@ import numpy as np
 # pylint: disable=too-many-function-args
 
 
-def apportion_triple(triple, min_val=1, max_iter=30):
+def _apportion_triple(triple, min_val=1, max_iter=30):
     """Apportion values of a triple, so that the minimum value `min_val` is respected
     and the product of all values remains the same.
-    Example: apportion_triple([1,2,50], min_val=3)
+    Example: _apportion_triple([1,2,50], min_val=3)
     -> [ 2.99999999  3.         11.11111113]
     """
     triple = np.abs(np.array(triple, dtype=float))
@@ -25,7 +26,7 @@ def apportion_triple(triple, min_val=1, max_iter=30):
     return triple
 
 
-def cells_from_dimension(
+def _cells_from_dimension(
     dim,
     target_elems,
     min_val=1,
@@ -59,17 +60,17 @@ def cells_from_dimension(
 
     Examples
     --------
-    >>> cells_from_dimension([1, 2, 6], 926, parity=None, strict_max=True)
+    >>> _cells_from_dimension([1, 2, 6], 926, parity=None, strict_max=True)
     [ 4  9 25]  # Actual total: 900
-    >>> cells_from_dimension([1, 2, 6], 926, parity=None, strict_max=False)
+    >>> _cells_from_dimension([1, 2, 6], 926, parity=None, strict_max=False)
     [ 4  9 26]  # Actual total: 936
-    >>> cells_from_dimension([1, 2, 6], 926, parity='odd', strict_max=True)
+    >>> _cells_from_dimension([1, 2, 6], 926, parity='odd', strict_max=True)
     [ 3 11 27]  # Actual total: 891
-    >>> cells_from_dimension([1, 2, 6], 926, parity='odd', strict_max=False)
+    >>> _cells_from_dimension([1, 2, 6], 926, parity='odd', strict_max=False)
     [ 5  7 27]  # Actual total: 945
-    >>> cells_from_dimension([1, 2, 6], 926, parity='even', strict_max=True)
+    >>> _cells_from_dimension([1, 2, 6], 926, parity='even', strict_max=True)
     [ 4  8 26]  # Actual total: 832
-    >>> cells_from_dimension([1, 2, 6], 926, parity='even', strict_max=False)
+    >>> _cells_from_dimension([1, 2, 6], 926, parity='even', strict_max=False)
     [ 4 10 24]  # Actual total: 960
     """
     elems = np.prod(target_elems)  # in case target_elems is an iterable
@@ -94,7 +95,7 @@ def cells_from_dimension(
     a = x ** (2 / 3) * (elems / y / z) ** (1 / 3)
     b = y ** (2 / 3) * (elems / x / z) ** (1 / 3)
     c = z ** (2 / 3) * (elems / x / y) ** (1 / 3)
-    a, b, c = apportion_triple((a, b, c), min_val=min_val)
+    a, b, c = _apportion_triple((a, b, c), min_val=min_val)
     epsilon = elems
     # run all combinations of rounding methods, including parity matching to find the
     # closest triple with the target_elems constrain
@@ -112,9 +113,8 @@ def cells_from_dimension(
     return np.array(result).astype(int)
 
 
-def target_mesh_cuboid(target_elems, dimension, magnetization):
-    """
-    Cuboid mesh in the local object coordinates.
+def _target_mesh_cuboid(target_elems, dimension, magnetization):
+    """Cuboid mesh in the local object coordinates.
 
     Generates a point-cloud of n1 x n2 x n3 points inside a cuboid with sides a, b, c.
     The points are centers of cubical cells that fill the Cuboid.
@@ -175,7 +175,7 @@ def target_mesh_cuboid(target_elems, dimension, magnetization):
     return {"pts": pts, "moments": moments}
 
 
-def target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
+def _target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
     """
     Cylinder mesh in the local object coordinates.
 
@@ -207,7 +207,7 @@ def target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
     dim = al, r2 - r1, h
     # "unroll" the cylinder and distribute the target number of elements along the
     # circumference, radius and height.
-    nphi, nr, nh = cells_from_dimension(dim, n)
+    nphi, nr, nh = _cells_from_dimension(dim, n)
 
     r = np.linspace(r1, r2, nr + 1)
     dh = h / nh
@@ -253,7 +253,7 @@ def target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
     return {"pts": pts, "moments": moments}
 
 
-def target_mesh_circle(r, n, i0):
+def _target_mesh_circle(r, n, i0):
     """
     Circle meshing in the local object coordinates
 
@@ -289,7 +289,7 @@ def target_mesh_circle(r, n, i0):
     return {"pts": pts, "cvecs": cvecs}
 
 
-def subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
+def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
     """
     Subdivides the given triangles based on the specified number of splits
     using bisection along longest edge.
@@ -379,7 +379,7 @@ def subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
     return TRIA
 
 
-def target_mesh_triangle_current(triangles: np.ndarray, n_target: int, cds: np.ndarray):
+def _target_mesh_triangle_current(triangles: np.ndarray, n_target: int, cds: np.ndarray):
     """
     Refines input triangles into >n_target triangles using bisection along longest edge.
     n_target must be at least number of input triangles in which case one mesh point
@@ -411,14 +411,14 @@ def target_mesh_triangle_current(triangles: np.ndarray, n_target: int, cds: np.n
         n_tria = np.sum(2**splits)
 
     surfaces = np.repeat(surfaces, 2**splits)
-    triangles = subdiv(triangles, splits)
+    triangles = _subdiv(triangles, splits)
     centroids = np.mean(triangles, axis=1)
     cvecs = np.repeat(cds, 2**splits, axis=0) * surfaces[:, np.newaxis]
 
     return {"pts": centroids, "cvecs": cvecs}
 
 
-def target_mesh_polyline(vertices, i0, n_points):
+def _target_mesh_polyline(vertices, i0, n_points):
     """
     Polyline meshing in the local object coordinates
 
@@ -485,7 +485,7 @@ def target_mesh_polyline(vertices, i0, n_points):
     return {"pts": pts, "cvecs": cvecs}
 
 
-def create_grid(dimensions, spacing):
+def _create_grid(dimensions, spacing):
     """
     Create a regular cubic grid that covers a cuboid volume defined by dimensions
 
@@ -522,7 +522,7 @@ def create_grid(dimensions, spacing):
     return np.column_stack([xx.ravel(), yy.ravel(), zz.ravel()])
 
 
-def target_mesh_tetrahedron(
+def _target_mesh_tetrahedron(
     n_points: int, vertices: np.ndarray, magnetization: np.ndarray
 ):
     """
@@ -621,7 +621,7 @@ def target_mesh_tetrahedron(
     return {"pts": pts, "moments": moments}
 
 
-def target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetization):
+def _target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetization):
     """
     Generate mesh points inside a triangular mesh volume for force computations.
 
@@ -673,7 +673,7 @@ def target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetiza
         max_coords[1] + padding,
         max_coords[2] + padding,
     ]
-    points = create_grid(dimensions, spacing)
+    points = _create_grid(dimensions, spacing)
 
     # Apply inside/outside mask
     inside_mask = mask_inside_trimesh(points, vertices[faces])

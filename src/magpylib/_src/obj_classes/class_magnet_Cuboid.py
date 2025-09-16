@@ -13,7 +13,7 @@ from magpylib._src.obj_classes.class_BaseExcitations import _BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import _BaseDipoleMoment
 from magpylib._src.obj_classes.class_BaseProperties import _BaseVolume
 from magpylib._src.obj_classes.class_BaseTarget import _BaseTarget
-from magpylib._src.obj_classes.target_meshing import target_mesh_cuboid
+from magpylib._src.obj_classes.target_meshing import _target_mesh_cuboid
 from magpylib._src.utility import unit_prefix
 
 
@@ -128,7 +128,7 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     # Properties
     @property
     def dimension(self):
-    """Cuboid side lengths ``(a, b, c)`` in units (m)."""
+        """Cuboid side lengths ``(a, b, c)`` in units (m)."""
         return self._dimension
 
     @dimension.setter
@@ -180,7 +180,7 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        return target_mesh_cuboid(self.meshing, self.dimension, self.magnetization)
+        return _target_mesh_cuboid(self.meshing, self.dimension, self.magnetization)
 
     def _validate_meshing(self, value):
         """Cuboid meshing must be a positive integer or array_like of shape (3,)."""

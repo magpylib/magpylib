@@ -12,7 +12,7 @@ from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import _BaseCurrent
 from magpylib._src.obj_classes.class_BaseProperties import _BaseDipoleMoment
 from magpylib._src.obj_classes.class_BaseTarget import _BaseTarget
-from magpylib._src.obj_classes.target_meshing import target_mesh_circle
+from magpylib._src.obj_classes.target_meshing import _target_mesh_circle
 from magpylib._src.utility import unit_prefix
 
 
@@ -156,7 +156,7 @@ class Circle(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        return target_mesh_circle(self.diameter / 2, self.meshing, self.current)
+        return _target_mesh_circle(self.diameter / 2, self.meshing, self.current)
 
     def _validate_meshing(self, value):
         """Circle makes only sense with at least 4 mesh points."""

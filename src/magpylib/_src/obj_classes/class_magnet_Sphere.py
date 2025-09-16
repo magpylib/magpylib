@@ -112,7 +112,7 @@ class Sphere(_BaseMagnet, _BaseVolume, _BaseDipoleMoment):
     # Properties
     @property
     def diameter(self):
-    """Diameter of the sphere in units (m)."""
+        """Diameter of the sphere in units (m)."""
         return self._diameter
 
     @diameter.setter
