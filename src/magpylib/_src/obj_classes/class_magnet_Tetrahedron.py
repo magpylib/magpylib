@@ -1,6 +1,6 @@
-# pylint: disable=too-many-positional-arguments
-
 """Magnet Tetrahedron class code"""
+
+# pylint: disable=too-many-positional-arguments
 
 from typing import ClassVar
 
@@ -35,22 +35,22 @@ class Tetrahedron(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path. When setting ``vertices``,
         the initial position is set to the barycenter.
-    orientation : None or Rotation, default None
+    orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or m. ``None`` generates a unit-rotation.
-    vertices : None or array-like, shape (4, 3), default None
+    vertices : None | array-like, shape (4, 3), default None
         Vertices ``[(x1, y1, z1), (x2, y2, z2), (x3, y3, z3), (x4, y4, z4)]`` in the
         local object coordinates.
-    polarization : None or array-like, shape (3,), default None
+    polarization : None | array-like, shape (3,), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
-    magnetization : None or array-like, shape (3,), default None
+    magnetization : None | array-like, shape (3,), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
-    meshing : None or int, default None
+    meshing : int | None, default None
         Mesh fineness for force computation. Must be a positive integer specifying
         the target mesh size.
-    style : None or dict, default None
+    style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
 
@@ -62,11 +62,11 @@ class Tetrahedron(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         Same as constructor parameter ``orientation``.
     vertices : ndarray, shape (4, 3)
         Same as constructor parameter ``vertices``.
-    polarization : None or ndarray, shape (3,)
+    polarization : None | ndarray, shape (3,)
         Same as constructor parameter ``polarization``.
-    magnetization : None or ndarray, shape (3,)
+    magnetization : None | ndarray, shape (3,)
         Same as constructor parameter ``magnetization``.
-    meshing : None or int
+    meshing : int | None
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (m, 3)
         Read-only. Object centroid in units (m) in global coordinates.

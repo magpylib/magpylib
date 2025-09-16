@@ -29,14 +29,14 @@ class Dipole(_BaseSource, _BaseDipoleMoment):
     position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path.
-    orientation : None or Rotation, default None
+    orientation : None | Rotation, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or m. ``None`` generates a unit-rotation.
-    moment : None or array-like, shape (3,), default None
+    moment : None | array-like, shape (3,), default None
         Magnetic dipole moment (A·m²) in local object coordinates. For homogeneous
         magnets the relation ``moment = magnetization * volume`` holds. For current
         loops the relation ``moment = current * loop_surface`` holds.
-    style : None or dict, default None
+    style : None | dict, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
 
@@ -46,14 +46,14 @@ class Dipole(_BaseSource, _BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    moment : None or ndarray, shape (3,)
+    moment : None | ndarray, shape (3,)
         Same as constructor parameter ``moment``.
     centroid : ndarray, shape (3,) or (m, 3)
         Read-only. Object centroid in units (m) in global coordinates.
         Can be a path.
     dipole_moment : ndarray, shape (3,)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
-    parent : Collection or None
+    parent : Collection | None
         Parent collection of the object.
     style : dict
         Style dictionary defining visual properties.
@@ -106,7 +106,7 @@ class Dipole(_BaseSource, _BaseDipoleMoment):
 
         Parameters
         ----------
-        mom : array-like, shape (3,)
+        mom : None | array-like, shape (3,)
             Dipole moment vector (A·m²) in local object coordinates.
         """
         self._moment = check_format_input_vector(

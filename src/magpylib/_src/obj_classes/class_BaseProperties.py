@@ -27,7 +27,7 @@ class _BaseDipoleMoment(ABC):
 
         Returns
         -------
-        array-like, shape (3,)
+        ndarray, shape (3,)
             Dipole moment vector in units (A·m²).
         """
 

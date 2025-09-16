@@ -29,18 +29,18 @@ class Triangle(_BaseMagnet):
     position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path.
-    orientation : None or Rotation, default None
+    orientation : None | Rotation, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or m. ``None`` generates a unit-rotation.
-    vertices : None or array-like, shape (3, 3), default None
+    vertices : None | array-like, shape (3, 3), default None
         Triangle vertices in the local object coordinates in units (m).
-    polarization : None or array-like, shape (3,), default None
+    polarization : None | array-like, shape (3,), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
-    magnetization : None or array-like, shape (3,), default None
+    magnetization : None | array-like, shape (3,), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
-    style : None or dict, default None
+    style : None | dict, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
 
@@ -50,16 +50,16 @@ class Triangle(_BaseMagnet):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    vertices : None or ndarray, shape (3, 3)
+    vertices : None | ndarray, shape (3, 3)
         Same as constructor parameter ``vertices``.
-    polarization : None or ndarray, shape (3,)
+    polarization : None | ndarray, shape (3,)
         Same as constructor parameter ``polarization``.
-    magnetization : None or ndarray, shape (3,)
+    magnetization : None | ndarray, shape (3,)
         Same as constructor parameter ``magnetization``.
     centroid : ndarray, shape (3,) or (m, 3)
         Read-only. Object centroid in units (m) in global coordinates.
         Can be a path.
-    parent : Collection or None
+    parent : Collection | None
         Parent collection of the object.
     style : dict
         Style dictionary defining visual properties.
@@ -118,7 +118,7 @@ class Triangle(_BaseMagnet):
 
         Parameters
         ----------
-        val : None or array-like, shape (3, 3)
+        val : None | array-like, shape (3, 3)
             Triangle vertices in local object coordinates in units (m).
         """
         self._vertices = check_format_input_vector(

@@ -34,21 +34,21 @@ class Cylinder(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path.
-    orientation : None or Rotation, default None
+    orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or m. ``None`` generates a unit-rotation.
-    dimension : None or array-like, shape (2,), default None
+    dimension : None | array-like, shape (2,), default None
         Cylinder diameter and height ``(d, h)`` in units (m).
-    polarization : None or array-like, shape (3,), default None
+    polarization : None | array-like, shape (3,), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
-    magnetization : None or array-like, shape (3,), default None
+    magnetization : None | array-like, shape (3,), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
-    meshing : None or int, default None
+    meshing : int | None, default None
         Mesh fineness for force computation. Must be a positive integer specifying
         the target mesh size.
-    style : None or dict, default None
+    style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
 
@@ -58,9 +58,9 @@ class Cylinder(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    polarization : None or ndarray, shape (3,)
+    polarization : None | ndarray, shape (3,)
         Same as constructor parameter ``polarization``.
-    magnetization : None or ndarray, shape (3,)
+    magnetization : None | ndarray, shape (3,)
         Same as constructor parameter ``magnetization``.
     centroid : ndarray, shape (3,) or (m, 3)
         Read-only. Object centroid in units (m) in global coordinates.

@@ -35,23 +35,23 @@ class TriangleStrip(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path.
-    orientation : None or Rotation, default None
+    orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or m. ``None`` generates a unit-rotation.
-    vertices : None or array-like, shape (n, 3), default None
+    vertices : None | array-like, shape (n, 3), default None
         The current flows along a band that consists of triangles ``{T1, T2, ...}``
         defined by the vertices ``{V1, V2, V3, V4, ...}`` as ``T1=(V1, V2, V3)``,
         ``T2=(V2, V3, V4)``, ... The vertices are given in units (m) in the local
         object coordinates (move/rotate with object). At least three vertices
         must be given, which define the first triangle.
-    current : None or float, default None
+    current : float | None, default None
         Total current flowing through the strip in units (A). It flows in the
         direction ``V1→V3`` in the first triangle, ``V2→V4`` in the second, ...
-    meshing : None or int, default None
+    meshing : int | None, default None
         Mesh fineness for force computation. Must be an integer >= number of
         faces specifying the target mesh size. The mesh is generated via bisection
         along longest edges until target number is reached.
-    style : None or dict, default None
+    style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
 
@@ -73,7 +73,7 @@ class TriangleStrip(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     dipole_moment : ndarray, shape (3,)
         Read-only. Object dipole moment (A·m²) in local object coordinates. Can
         only be computed for a closed loop.
-    parent : Collection or None
+    parent : Collection | None
         Parent collection of the object.
     style : dict
         Style dictionary defining visual properties.

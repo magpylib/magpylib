@@ -249,7 +249,7 @@ def _apply_rotation(
 class _BaseTransform:
     """Inherit this class to provide rotation() and move() methods."""
 
-    def move(self, displacement, start="auto"):
+    def move(self, displacement, start='auto'):
         """Translate position by scalar or vector displacement.
 
         Parameters
@@ -258,7 +258,7 @@ class _BaseTransform:
             Displacement vector in meters. Scalar input applies one
             translation to the path starting at index ``start``. Vector
             input extends/appends element-wise. See Notes.
-        start : int or str, default 'auto'
+        start : int | str, default 'auto'
             Starting index when applying operation. With ``'auto'`` scalar
             input sets ``start=0`` (modify whole path) and vector input sets
             ``start=len(path)`` (append). See Notes for details.
@@ -318,14 +318,14 @@ class _BaseTransform:
         # Idea: An operation applied to a Collection is individually
         #    applied to its _BaseGeo and to each child.
 
-        for child in getattr(self, "children", []):
+        for child in getattr(self, 'children', []):
             child.move(displacement, start=start)
 
         _apply_move(self, displacement, start=start)
 
         return self
 
-    def _rotate(self, rotation: R, anchor=None, start="auto", parent_path=None):
+    def _rotate(self, rotation: R, anchor=None, start='auto', parent_path=None):
         """Rotate object about a given anchor.
 
         See `rotate` docstring for other parameters.
@@ -351,19 +351,19 @@ class _BaseTransform:
         )
         return self
 
-    def rotate(self, rotation: R, anchor=None, start="auto"):
+    def rotate(self, rotation: R, anchor=None, start='auto'):
         """Rotate about an anchor.
 
         Parameters
         ----------
-        rotation : Rotation or None
+        rotation : Rotation | None
             Scalar or vector rotation in the form of a scipy Rotation object.
             ``None`` is interpreted as unit rotation.
-        anchor : None or array-like, shape (3,) or (n, 3), default None
+        anchor : None | array-like, shape (3,) or (n, 3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the
             parent position.
-        start : int or str, default 'auto'
+        start : int | str, default 'auto'
             Starting index when applying operation. With ``'auto'`` scalar
             input sets ``start=0`` (modify whole path) and vector input sets
             ``start=len(path)`` (append). See Notes for details.
@@ -426,21 +426,21 @@ class _BaseTransform:
         """
         return self._rotate(rotation=rotation, anchor=anchor, start=start)
 
-    def rotate_from_angax(self, angle, axis, anchor=None, start="auto", degrees=True):
+    def rotate_from_angax(self, angle, axis, anchor=None, start='auto', degrees=True):
         """Rotate with scipy Rotation input.
 
         Parameters
         ----------
-        angle : float or array-like, shape (n,)
+        angle : float | array-like, shape (n,)
             Rotation angle or sequence of angles in degrees. See property ``degrees``.
-        axis : str or array-like, shape (3,) or (n, 3)
+        axis : str | array-like, shape (3,) or (n, 3)
             Rotation axis direction. Provide a vector or one of ``'x'``, ``'y'``,
             ``'z'``.
-        anchor : None or array-like, shape (3,) or (n, 3), default None
+        anchor : None | array-like, shape (3,) or (n, 3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the
             parent position.
-        start : int or str, default 'auto'
+        start : int | str, default 'auto'
             Starting index when applying operation. With ``'auto'`` scalar
             input sets ``start=0`` (modify whole path) and vector input sets
             ``start=len(path)`` (append). See Notes for details.
@@ -523,18 +523,18 @@ class _BaseTransform:
         rot = R.from_rotvec(axis)
         return self.rotate(rot, anchor, start)
 
-    def rotate_from_rotvec(self, rotvec, anchor=None, start="auto", degrees=True):
+    def rotate_from_rotvec(self, rotvec, anchor=None, start='auto', degrees=True):
         """Rotate with rotation vector input.
 
         Parameters
         ----------
         rotvec : array-like, shape (3,) or (n, 3)
             Rotation vector or sequence. Direction gives axis, magnitude gives angle in radians.
-        anchor : None or array-like, shape (3,) or (n, 3), default None
+        anchor : None | array-like, shape (3,) or (n, 3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the
             parent position.
-        start : int or str, default 'auto'
+        start : int | str, default 'auto'
             Starting index when applying operation. With ``'auto'`` scalar
             input sets ``start=0`` (modify whole path) and vector input sets
             ``start=len(path)`` (append). See Notes for details.
@@ -599,23 +599,23 @@ class _BaseTransform:
         rot = R.from_rotvec(rotvec, degrees=degrees)
         return self.rotate(rot, anchor=anchor, start=start)
 
-    def rotate_from_euler(self, angle, seq, anchor=None, start="auto", degrees=True):
+    def rotate_from_euler(self, angle, seq, anchor=None, start='auto', degrees=True):
         """Rotate with Euler angle sequence.
 
         Parameters
         ----------
-        angle : float or array-like, shape (n,)
+        angle : float | array-like, shape (n,)
             Angles of rotation (length n) in units of deg by default.
         seq : str
             Specifies sequence of axes for rotations. Up to 3 characters
             belonging to the set {'X', 'Y', 'Z'} for intrinsic rotations, or
             {'x', 'y', 'z'} for extrinsic rotations. Extrinsic and intrinsic
             rotations cannot be mixed in one function call.
-        anchor : None or array-like, shape (3,) or (n, 3), default None
+        anchor : None | array-like, shape (3,) or (n, 3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the
             parent position.
-        start : int or str, default 'auto'
+        start : int | str, default 'auto'
             Starting index when applying operation. With ``'auto'`` scalar
             input sets ``start=0`` (modify whole path) and vector input sets
             ``start=len(path)`` (append). See Notes for details.
@@ -680,18 +680,18 @@ class _BaseTransform:
         rot = R.from_euler(seq, angle, degrees=degrees)
         return self.rotate(rot, anchor=anchor, start=start)
 
-    def rotate_from_matrix(self, matrix, anchor=None, start="auto"):
+    def rotate_from_matrix(self, matrix, anchor=None, start='auto'):
         """Rotate with rotation matrix/matrices.
 
         Parameters
         ----------
         matrix : array-like, shape (3, 3) or (n, 3, 3)
             Single rotation matrix or sequence.
-        anchor : None or array-like, shape (3,) or (n, 3), default None
+        anchor : None | array-like, shape (3,) or (n, 3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the
             parent position.
-        start : int or str, default 'auto'
+        start : int | str, default 'auto'
             Starting index when applying operation. With ``'auto'`` scalar
             input sets ``start=0`` (modify whole path) and vector input sets
             ``start=len(path)`` (append). See Notes for details.
@@ -735,18 +735,18 @@ class _BaseTransform:
         rot = R.from_matrix(matrix)
         return self.rotate(rot, anchor=anchor, start=start)
 
-    def rotate_from_mrp(self, mrp, anchor=None, start="auto"):
+    def rotate_from_mrp(self, mrp, anchor=None, start='auto'):
         """Rotate with Modified Rodrigues Parameters (MRPs).
 
         Parameters
         ----------
         mrp : array-like, shape (3,) or (n, 3)
             Modified Rodrigues Parameters vector or sequence.
-        anchor : None or array-like, shape (3,) or (n, 3), default None
+        anchor : None | array-like, shape (3,) or (n, 3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the
             parent position.
-        start : int or str, default 'auto'
+        start : int | str, default 'auto'
             Starting index when applying operation. With ``'auto'`` scalar
             input sets ``start=0`` (modify whole path) and vector input sets
             ``start=len(path)`` (append). See Notes for details.
@@ -794,18 +794,18 @@ class _BaseTransform:
         rot = R.from_mrp(mrp)
         return self.rotate(rot, anchor=anchor, start=start)
 
-    def rotate_from_quat(self, quat, anchor=None, start="auto"):
+    def rotate_from_quat(self, quat, anchor=None, start='auto'):
         """Rotate with quaternion(s).
 
         Parameters
         ----------
-        quat : array-like, shape (4,) or (n,4)
+        quat : array-like, shape (4,) or (n, 4)
             Quaternion or quaternion sequence in ``(x, y, z, w)`` format.
-        anchor : None or array-like, shape (3,) or (n,3), default None
+        anchor : None | array-like, shape (3,) or (n, 3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the
             parent position.
-        start : int or str, default 'auto'
+        start : int | str, default 'auto'
             Starting index when applying operation. With ``'auto'`` scalar
             input sets ``start=0`` (modify whole path) and vector input sets
             ``start=len(path)`` (append). See Notes for details.

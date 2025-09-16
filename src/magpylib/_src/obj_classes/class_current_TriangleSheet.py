@@ -33,7 +33,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
     position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path.
-    orientation : None or Rotation, default None
+    orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or m. ``None`` generates a unit-rotation.
     vertices : array-like, shape (n, 3), default None
@@ -45,11 +45,11 @@ class TriangleSheet(_BaseSource, _BaseTarget):
         Electrical current densities flowing on the faces in units (A/m). The
         effective current density is a projection of the given current density
         vector into the face planes. Input must have the same length as ``faces``.
-    meshing : None or int, default None
+    meshing : int | None, default None
         Mesh fineness for force computation. Must be an integer >= number of
         faces specifying the target mesh size. The mesh is generated via bisection
         along longest edges until target number is reached.
-    style : None or dict, default None
+    style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
 
@@ -70,7 +70,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
     centroid : ndarray, shape (3,) or (m, 3)
         Read-only. Object centroid computed via mean of vertices in units (m)
         in global coordinates. Can be a path.
-    parent : Collection or None
+    parent : Collection | None
         Parent collection of the object.
     style : dict
         Style dictionary defining visual properties.

@@ -18,16 +18,16 @@ class CustomSource(_BaseSource):
     position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path.
-    orientation : None or Rotation, default None
+    orientation : None | Rotation, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or m. ``None`` generates a unit-rotation.
-    field_func : None or callable, default None
+    field_func : None | callable, default None
         Function for B- and H-field computation with the two positional arguments
         ``field`` and ``observers``. With ``field='B'`` or ``field='H'`` the function must
         return the B-field (T) or H-field (A/m) respectively. ``observers`` must accept
         an ``ndarray`` of shape ``(n, 3)`` in units (m) and the returned array must have
         shape ``(n, 3)``.
-    style : None or dict, default None
+    style : None | dict, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
 
@@ -37,9 +37,9 @@ class CustomSource(_BaseSource):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    field_func : None or callable
+    field_func : None | callable
         Same as constructor parameter ``field_func``.
-    parent : Collection or None
+    parent : Collection | None
         Parent collection of the object.
     style : dict
         Style dictionary defining visual properties.

@@ -33,17 +33,17 @@ class Circle(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path.
-    orientation : None or Rotation, default None
+    orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or m. ``None`` generates a unit-rotation.
-    diameter : None or float, default None
+    diameter : float | None, default None
         Loop diameter (m).
-    current : None or float, default None
+    current : float | None, default None
         Electrical current (A).
-    meshing : None or int, default None
+    meshing : int | None, default None
         Mesh fineness for force computation. Must be an integer ``>= 4``. Points
         are equally distributed on the circle.
-    style : None or dict, default None
+    style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
 
@@ -121,7 +121,7 @@ class Circle(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
 
         Parameters
         ----------
-        dia : None or float
+        dia : float | None
             Loop diameter in units (m).
         """
         self._diameter = check_format_input_scalar(

@@ -35,19 +35,19 @@ class Polyline(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path.
-    orientation : None or Rotation, default None
+    orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or m. ``None`` generates a unit-rotation.
-    vertices : None or array-like, shape (n, 3), default None
+    vertices : None | array-like, shape (n, 3), default None
         Current flows along the vertices in units (m) in the local object coordinates. At
         least two vertices must be given.
-    current : None or float, default None
+    current : float | None, default None
         Electrical current (A).
-    meshing : None or int, default None
+    meshing : int | None, default None
         Mesh fineness for force computation. Must be a positive integer at least the
         number of segments. Each segment gets one mesh point at its center. All
         remaining mesh points are distributed evenly along the polyline.
-    style : None or dict, default None
+    style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
 
@@ -125,7 +125,8 @@ class Polyline(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     # Properties
     @property
     def vertices(self):
-        """
+        """Polyline vertices.
+
         The current flows along the vertices which are given in units of m in the
         local object coordinates (move/rotate with object). At least two vertices
         must be given.
@@ -138,7 +139,7 @@ class Polyline(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
 
         Parameters
         ----------
-        vert : None or array-like, shape (n, 3)
+        vert : None | array-like, shape (n, 3)
             Vertex list (m) in local object coordinates. At least two vertices
             must be given.
         """
@@ -153,7 +154,7 @@ class Polyline(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
 
     # Methods
     def _get_centroid(self, squeeze=True):
-        """Centroid of object in units of m."""
+        """Centroid of object in units of (m)."""
         if squeeze:
             if self.vertices is not None:
                 return np.mean(self.vertices, axis=0) + self.position
@@ -163,7 +164,7 @@ class Polyline(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
         return self._position
 
     def _get_dipole_moment(self):
-        """Magnetic moment of object in units Am²."""
+        """Magnetic moment of object in units of (Am²)."""
         # test init
         if self.vertices is None or self.current is None:
             return np.array((0.0, 0.0, 0.0))

@@ -1,3 +1,5 @@
+"""TriangularMesh class code"""
+
 # pylint:disable=too-many-lines
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
@@ -50,7 +52,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path.
-    orientation : None or Rotation, default None
+    orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or m. ``None`` generates a unit-rotation.
     vertices : array-like, shape (n, 3), default None
@@ -58,32 +60,29 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         faces of the mesh are constructed by the additional ``faces`` input.
     faces : array-like, shape (n, 3), default None
         Triplets of vertex indices. Each triplet represents one triangle of the mesh.
-    polarization : None or array-like, shape (3,), default None
+    polarization : None | array-like, shape (3,), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
-    magnetization : None or array-like, shape (3,), default None
+    magnetization : None | array-like, shape (3,), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
-    meshing : None or int, default None
+    meshing : int | None, default None
         Mesh fineness for force computation. Must be a positive integer specifying
         the target mesh size.
-    reorient_faces : bool or str, default True
+    reorient_faces : bool | {'warn', 'raise', 'ignore', 'skip'}, default 'warn'
         In a properly oriented mesh, all faces must be oriented outwards. If ``True``,
-        check and fix the orientation of each triangle. Options are ``'skip'`` (``False``),
-        ``'warn'`` (``True``), ``'raise'``, ``'ignore'``.
-    check_open : bool or str, default True
+        check and fix the orientation of each triangle. ``True`` translates to ``'warn'``
+        and ``False`` to ``'skip'``.
+    check_open : bool | {'warn', 'raise', 'ignore', 'skip'}, default 'warn'
         Only a closed mesh guarantees correct B-field computation. If ``True``, check if the
-        mesh is open. Options are ``'skip'`` (``False``), ``'warn'`` (``True``), ``'raise'``,
-        ``'ignore'``.
-    check_disconnected : bool or str, default True
+        mesh is open. ``True`` translates to ``'warn'`` and ``False`` to ``'skip'``.
+    check_disconnected : bool | {'warn', 'raise', 'ignore', 'skip'}, default 'warn'
         Individual magnets should be connected bodies to avoid confusion. If ``True``, check if
-        the mesh is disconnected. Options are ``'skip'`` (``False``), ``'warn'`` (``True``),
-        ``'raise'``, ``'ignore'``.
-    check_selfintersecting : bool or str, default True
+        the mesh is disconnected. ``True`` translates to ``'warn'`` and ``False`` to ``'skip'``.
+    check_selfintersecting : bool | {'warn', 'raise', 'ignore', 'skip'}, default 'warn'
         A proper body cannot have a self-intersecting mesh. If ``True``, check if the mesh is
-        self-intersecting. Options are ``'skip'`` (``False``), ``'warn'`` (``True``), ``'raise'``,
-        ``'ignore'``.
-    style : None or dict, default None
+        self-intersecting. ``True`` translates to ``'warn'`` and ``False`` to ``'skip'``.
+    style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
 
@@ -97,11 +96,11 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         Same as constructor parameter ``vertices``.
     faces : ndarray, shape (n, 3)
         Same as constructor parameter ``faces``.
-    polarization : None or ndarray, shape (3,)
+    polarization : None | ndarray, shape (3,)
         Same as constructor parameter ``polarization``.
-    magnetization : None or ndarray, shape (3,)
+    magnetization : None | ndarray, shape (3,)
         Same as constructor parameter ``magnetization``.
-    meshing : None or int
+    meshing : int | None
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (m, 3)
         Read-only. Object centroid.
@@ -109,7 +108,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         Read-only. Object dipole moment (A·m²) in local object coordinates.
     volume : float
         Read-only. Object physical volume in units (m³).
-    parent : Collection or None
+    parent : Collection | None
         Parent collection of the object.
     style : dict
         Style dictionary defining visual properties.
@@ -288,15 +287,14 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             raise ValueError(msg)
         return "warn" if arg is True else "skip" if arg is False else arg
 
-    def check_open(self, mode="warn"):
+    def check_open(self, mode='warn'):
         """Check whether the mesh is open.
 
         Parameters
         ----------
-        mode : bool or str, default 'warn'
-            Controls how to handle open meshes. Can be one of {'warn', 'raise',
-            'ignore', 'skip'}. ``True`` translates to ``'warn'`` and ``False``
-            to ``'skip'``.
+        mode : bool | {'warn', 'raise', 'ignore', 'skip'}, default 'warn'
+            Controls how to handle open meshes. ``True`` translates to ``'warn'`` and
+            ``False`` to ``'skip'``.
 
         Returns
         -------
@@ -322,14 +320,14 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
                     raise ValueError(msg)
         return self._status_open
 
-    def check_disconnected(self, mode="warn"):
+    def check_disconnected(self, mode='warn'):
         """Check whether the mesh is disconnected.
 
         Parameters
         ----------
-        mode : bool or str, default 'warn'
-            Controls how to handle disconnected meshes. Can be one of {'warn', 'raise',
-            'ignore', 'skip'}. ``True`` translates to ``'warn'`` and ``False`` to ``'skip'``.
+        mode : bool | {'warn', 'raise', 'ignore', 'skip'}, default 'warn'
+            Controls how to handle disconnected meshes. ``True`` translates to ``'warn'`` and
+            ``False`` to ``'skip'``.
 
         Returns
         -------
@@ -355,14 +353,14 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
                     raise ValueError(msg)
         return self._status_disconnected
 
-    def check_selfintersecting(self, mode="warn"):
+    def check_selfintersecting(self, mode='warn'):
         """Check whether the mesh is self-intersecting.
 
         Parameters
         ----------
-        mode : bool or str, default 'warn'
-            Controls how to handle self-intersecting meshes. Can be one of {'warn', 'raise',
-            'ignore', 'skip'}. ``True`` translates to ``'warn'`` and ``False`` to ``'skip'``.
+        mode : bool | {'warn', 'raise', 'ignore', 'skip'}, default 'warn'
+            Controls how to handle self-intersecting meshes. ``True`` translates to ``'warn'`` and
+            ``False`` to ``'skip'``.
 
         Returns
         -------
@@ -387,7 +385,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
                     raise ValueError(msg)
         return self._status_selfintersecting
 
-    def reorient_faces(self, mode="warn"):
+    def reorient_faces(self, mode='warn'):
         """Reorient all faces to point outwards.
 
         In a properly oriented mesh, all faces must be oriented outwards. This function
@@ -396,10 +394,9 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
         Parameters
         ----------
-        mode : bool or str, default 'warn'
-            Controls how to handle open meshes during reorientation. Can be one of
-            {'warn', 'raise', 'ignore', 'skip'}. ``True`` translates to ``'warn'``
-            and ``False`` to ``'skip'``.
+        mode : bool | {'warn', 'raise', 'ignore', 'skip'}, default 'warn'
+            Controls how to handle open meshes during reorientation. ``True`` translates to
+            ``'warn'`` and ``False`` to ``'skip'``.
 
         Returns
         -------
@@ -566,8 +563,8 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         polarization=None,
         magnetization=None,
         meshing=None,
-        check_open="warn",
-        check_disconnected="warn",
+        check_open='warn',
+        check_disconnected='warn',
         reorient_faces=True,
         style=None,
         **kwargs,
@@ -614,8 +611,8 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         polarization=None,
         magnetization=None,
         meshing=None,
-        check_open="warn",
-        check_disconnected="warn",
+        check_open='warn',
+        check_disconnected='warn',
         reorient_faces=True,
         style=None,
         **kwargs,
@@ -681,8 +678,8 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         magnetization=None,
         meshing=None,
         reorient_faces=True,
-        check_open="warn",
-        check_disconnected="warn",
+        check_open='warn',
+        check_disconnected='warn',
         style=None,
         **kwargs,
     ):
@@ -747,8 +744,8 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         magnetization=None,
         meshing=None,
         reorient_faces=True,
-        check_open="warn",
-        check_disconnected="warn",
+        check_open='warn',
+        check_disconnected='warn',
         style=None,
         **kwargs,
     ):

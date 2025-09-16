@@ -257,7 +257,7 @@ class _BaseGeo(_BaseTransform, ABC):
 
         Parameters
         ----------
-        orientation : Rotation or None
+        orientation : Rotation | None
             New orientation as ``scipy.spatial.transform.Rotation``. ``None`` generates a unit
             rotation for every path step.
         """
@@ -315,7 +315,7 @@ class _BaseGeo(_BaseTransform, ABC):
 
         Parameters
         ----------
-        style : dict or BaseStyle
+        style : dict | BaseStyle
             Style specification. Dict keys are mapped onto style attributes.
         """
         self._style = self._validate_style(style)
@@ -371,9 +371,9 @@ class _BaseGeo(_BaseTransform, ABC):
         >>> import magpylib as magpy
         >>> sens1 = magpy.Sensor(style_label='sens1')
         >>> sens2 = sens1.copy(position=(2,6,10), style_label='sens2')
-        >>> print(f"Instance {sens1.style.label} with position {sens1.position}.")
+        >>> print(f'Instance {sens1.style.label} with position {sens1.position}.')
         Instance sens1 with position [0. 0. 0.].
-        >>> print(f"Instance {sens2.style.label} with position {sens2.position}.")
+        >>> print(f'Instance {sens2.style.label} with position {sens2.position}.')
         Instance sens2 with position [ 2.  6. 10.].
         """
         # pylint: disable=import-outside-toplevel
@@ -416,7 +416,7 @@ class _BaseGeo(_BaseTransform, ABC):
 
         Parameters
         ----------
-        obj : Sensor or Source
+        obj : Sensor | Source
             Other operand.
 
         Returns

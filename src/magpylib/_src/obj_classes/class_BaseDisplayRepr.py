@@ -41,7 +41,7 @@ class _BaseDisplayRepr:
 
         Parameters
         ----------
-        exclude: bool, default=("style",)
+        exclude: bool, default=('style',)
             properties to be excluded in the description view.
         """
         if exclude is None:
@@ -89,19 +89,19 @@ class _BaseDisplayRepr:
                 lines.append(f"  • {k}: {val}{unit_str}")
         return lines
 
-    def describe(self, *, exclude=("style", "field_func"), return_string=False):
+    def describe(self, *, exclude=('style', 'field_func'), return_string=False):
         """Return or print a formatted description of object properties.
 
         Parameters
         ----------
-        exclude : str or Sequence[str], default ("style", "field_func")
+        exclude : str | Sequence[str], default ('style', 'field_func')
             Property names to omit from the description.
         return_string : bool, default False
             If ``True`` return the description string; if ``False`` print it and return ``None``.
 
         Returns
         -------
-        str or None
+        str | None
             Description string if ``return_string=True`` else ``None``.
         """
         lines = self._get_description(exclude=exclude)

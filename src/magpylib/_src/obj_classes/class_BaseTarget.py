@@ -29,7 +29,7 @@ class _BaseTarget(ABC):
 
         Parameters
         ----------
-        value : int or None
+        value : int | None
             Meshing finesse parameter.
         """
         # Basic validation - subclasses may override for specific requirements
