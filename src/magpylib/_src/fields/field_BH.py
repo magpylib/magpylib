@@ -1,6 +1,6 @@
 """Magnetuic field computation structure:
 
-level_core:(field_BH_XXX.py files)
+level_core:(field_BH_XXX.py files)   <--- CORE INTERFACE
     - pure vectorized field computations from literature
     - all computations in source CS
 
@@ -15,35 +15,26 @@ level1(_getBH_level1):
     - select correct level0 src_type computation
     - input dict, no input checks !
 
-level2(getBHv_level2):  <--- DIRECT ACCESS TO FIELD COMPUTATION FORMULAS, INPUT = DICT OF ARRAYS
-    - input dict checks (unknowns)
-    - secure user inputs
-    - check input for mandatory information
-    - set missing input variables to default values
-    - tile 1D inputs
-
-level2(_getBH_level2):   <--- COMPUTE FIELDS FROM SOURCES
+level2(_getBH_level2):
     - input dict checks (unknowns)
     - secure user inputs
     - group similar sources for combined computation
     - generate vector input format for _getBH_level1
     - adjust Bfield output format to (pos_obs, path, sources) input format
 
-level3(getB, getH, getB_dict, getH_dict): <--- USER INTERFACE
+level 2b (func.getB_cuboid, ...)  <---FUNCTIONAL INTERFACE
+    - prepares vectorized input
+    - calls directly into level1
+
+level3(magpylib.getB/H):   <--- USER INTERFACE
     - docstrings
     - separated B and H
     - transform input into dict for level2
 
-level4(src.getB, src.getH):       <--- USER INTERFACE
+level4(src.getB/H, sensor.getB/H, collection.getB/H):   <--- USER INTERFACE
     - docstrings
     - calling level3 getB, getH directly from sources
 
-level3(getBH_from_sensor):
-    - adjust output format to (senors, path, sources) input format
-
-level4(getB_from_sensor, getH_from_sensor): <--- USER INTERFACE
-
-level5(sens.getB, sens.getH): <--- USER INTERFACE
 """
 
 import numbers
@@ -69,6 +60,7 @@ from magpylib._src.utility import (
     get_registered_sources,
     has_parameter,
 )
+from magpylib._src.fields.field_BHfunc import _getBH_dict_level2
 
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-lines
@@ -187,6 +179,11 @@ def _getBH_level2(
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
+        #warnings.warn(
+        #    "String input for sources is deprecated and will be removed in future versions.",
+        #    DeprecationWarning,
+        #    stacklevel=2,
+        #)
         return _getBH_dict_level2(
             source_type=sources,
             observers=observers,
@@ -453,121 +450,6 @@ def _getBH_level2(
     return B
 
 
-def _getBH_dict_level2(
-    source_type,
-    observers,
-    *,
-    field: str,
-    position=(0, 0, 0),
-    orientation=None,
-    squeeze=True,
-    in_out="auto",
-    **kwargs: dict,
-) -> np.ndarray:
-    """Functional interface access to vectorized computation
-
-    Parameters
-    ----------
-    kwargs: dict that describes the computation.
-
-    Returns
-    -------
-    field: ndarray, shape (N,3), field at obs_pos in tesla or A/m
-
-    Info
-    ----
-    - check inputs
-
-    - secures input types (list/tuple -> ndarray)
-    - test if mandatory inputs are there
-    - sets default input variables (e.g. pos, rot) if missing
-    - tiles 1D inputs vectors to correct dimension
-    """
-    # pylint: disable=protected-access
-    # pylint: disable=too-many-branches
-
-    # generate dict of secured inputs for auto-tiling ---------------
-    #  entries in this dict will be tested for input length, and then
-    #  be automatically tiled up and stored back into kwargs for calling
-    #  _getBH_level1().
-    #  To allow different input dimensions, the ndim argument is also given
-    #  which tells the program which dimension it should tile up.
-
-    # pylint: disable=import-outside-toplevel
-    if orientation is None:
-        orientation = R.identity()
-    try:
-        source_classes = get_registered_sources()
-        field_func = source_classes[source_type]._field_func
-        field_func_kwargs_ndim = {"position": 2, "orientation": 2, "observers": 2}
-        field_func_kwargs_ndim.update(
-            source_classes[source_type]._field_func_kwargs_ndim
-        )
-    except KeyError as err:
-        msg = (
-            f"Input parameter `sources` must be one of {list(source_classes)}"
-            " when using the functional interface."
-        )
-        raise MagpylibBadUserInput(msg) from err
-
-    kwargs["observers"] = observers
-    kwargs["position"] = position
-
-    # change orientation to Rotation numpy array for tiling
-    kwargs["orientation"] = orientation.as_quat()
-
-    # evaluation vector lengths
-    vec_lengths = {}
-    ragged_seq = {}
-    for key, val_item in kwargs.items():
-        val = val_item
-        try:
-            if (
-                not isinstance(val, numbers.Number)
-                and not isinstance(val[0], numbers.Number)
-                and any(len(o) != len(val[0]) for o in val)
-            ):
-                ragged_seq[key] = True
-                val = np.array([np.array(v, dtype=float) for v in val], dtype="object")
-            else:
-                ragged_seq[key] = False
-                val = np.array(val, dtype=float)
-        except TypeError as err:
-            msg = f"{key} input must be array-like.\nInstead received {val}"
-            raise MagpylibBadUserInput(msg) from err
-        expected_dim = field_func_kwargs_ndim.get(key, 1)
-        if val.ndim == expected_dim or ragged_seq[key]:
-            if len(val) == 1:
-                val = np.squeeze(val)
-            else:
-                vec_lengths[key] = len(val)
-
-        kwargs[key] = val
-
-    if len(set(vec_lengths.values())) > 1:
-        msg = (
-            "Input array lengths must be 1 or of a similar length.\n"
-            f"Instead received lengths {vec_lengths}"
-        )
-        raise MagpylibBadUserInput(msg)
-    vec_len = max(vec_lengths.values(), default=1)
-    # tile 1D inputs and replace original values in kwargs
-    for key, val in kwargs.items():
-        expected_dim = field_func_kwargs_ndim.get(key, 1)
-        if val.ndim < expected_dim and not ragged_seq[key]:
-            kwargs[key] = np.tile(val, (vec_len, *[1] * (expected_dim - 1)))
-
-    # change orientation back to Rotation object
-    kwargs["orientation"] = R.from_quat(kwargs["orientation"])
-
-    # compute and return B
-    B = _getBH_level1(field=field, field_func=field_func, in_out=in_out, **kwargs)
-
-    if B is not None and squeeze:
-        return np.squeeze(B)
-    return B
-
-
 def getB(
     sources=None,
     observers=None,
@@ -578,180 +460,65 @@ def getB(
     in_out="auto",
     **kwargs,
 ):
-    """Compute B-field in units of T for given sources and observers.
+    """Return B-field (T) of ``sources`` at ``observers``.
 
-    Field implementations can be directly accessed (avoiding the object oriented
-    Magpylib interface) by providing a string input `sources=source_type`, array_like
-    positions as `observers` input, and all other necessary input parameters (see below)
-    as kwargs.
+        SI units are used for all inputs and outputs.
 
-    Parameters
-    ----------
-    sources: source and collection objects or 1D list thereof
-        Sources that generate the magnetic field. Can be a single source (or collection)
-        or a 1D list of l sources and/or collection objects.
+        Parameters
+        ----------
+        sources : Source | list
+            Sources that generate the magnetic field. Can be a single source (or collection)
+            or a 1D list of l source and/or collection objects.
+        observers : Sensor | list[Sensor] | array-like, shape (n1, n2, ..., 3)
+            Input specifying where the field is evaluated. Multiple objects in a list
+            must have identical pixel shape unless ``pixel_agg`` is used.
+            All positions given in units (m)
+        sumup : bool, default False
+            If ``True``, sum the fields from all sources. If ``False``, keep the source axis.
+        squeeze : bool, default True
+            If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
+        pixel_agg : str | None, default None
+            Name of a NumPy aggregation function (e.g. ``'mean'``, ``'min'``) applied over the
+            pixel axis of each sensor. Allows mixing sensors with different pixel shapes.
+        output : {'ndarray', 'dataframe'}, default 'ndarray'
+            Output container type. ``'dataframe'`` returns a pandas DataFrame.
+        in_out : {'auto', 'inside', 'outside'}, default 'auto'
+            Assumption about observer locations relative to magnet bodies. ``'auto'`` detects per
+            observer (safest, slower). ``'inside'`` treats all inside (faster). ``'outside'`` treats
+            all outside (faster).
 
-        Functional interface: input must be one of (`Cuboid`, `Cylinder`, `CylinderSegment`,
-        `Sphere`, `Dipole`, `Circle` or `Polyline`).
+        Returns
+        -------
+        ndarray | DataFrame
+            B-field (T) with squeezed shape ``(l, m, 1, n1, n2, ..., 3)`` where ``m`` is path
+            length, and ``n1, n2, ...`` are the pixel dimensions.
 
-    observers: array_like or (list of) `Sensor` objects
-        Can be array_like positions of shape (n1, n2, ..., 3) where the field
-        should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
-        of such sensor objects (must all have similar pixel shapes). All positions
-        are given in units of m.
+        Examples
+        --------
+        B-field of a current loop and a spherical magnet at one observer:
 
-        Functional interface: Input must be array_like with shape (3,) or (n,3) corresponding
-        positions to observer positions in units of m.
+        >>> import numpy as np
+        >>> import magpylib as magpy
+        >>> loop = magpy.current.Circle(current=100, diameter=0.002)
+        >>> sph = magpy.magnet.Sphere(polarization=(0.0, 0.0, 0.1), diameter=0.001)
+        >>> B = magpy.getB([loop, sph], (0.01, 0.01, 0.01))
+        >>> with np.printoptions(precision=3):
+        ...     print(B)
+        [[ 6.054e-06  6.054e-06  2.357e-08]
+        [ 8.019e-07  8.019e-07 -9.056e-23]]
 
-    sumup: bool, default=`False`
-        If `True`, the fields of all sources are summed up.
+        With two sensors:
 
-    squeeze: bool, default=`True`
-        If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
-        a single sensor or only a single source) are eliminated.
-
-    pixel_agg: str, default=`None`
-        Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
-        which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-        With this option, observers input with different (pixel) shapes is allowed.
-
-    output: str, default=`'ndarray'`
-        Output type, which must be one of (`'ndarray'`, `'dataframe'`). By default a
-        `numpy.ndarray` object is returned. If `'dataframe'` is chosen, a `pandas.DataFrame`
-        object is returned (the Pandas library must be installed).
-
-    in_out: {'auto', 'inside', 'outside'}
-        This parameter only applies for magnet bodies. It specifies the location of the
-        observers relative to the magnet body, affecting the calculation of the magnetic field.
-        The options are:
-        - 'auto': The location (inside or outside the cuboid) is determined automatically for
-        each observer.
-        - 'inside': All observers are considered to be inside the cuboid; use this for
-            performance optimization if applicable.
-        - 'outside': All observers are considered to be outside the cuboid; use this for
-            performance optimization if applicable.
-        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-        locations is unknown.
-
-    See Also
-    --------
-    *Functional interface
-
-    position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
-        Source position(s) in the global coordinates in units of m.
-
-    orientation: scipy `Rotation` object with length 1 or n, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation.
-
-    polarization: array_like, shape (3,) or (n,3)
-        Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`, `Sphere`,
-        `Tetrahedron`, `Triangle`, `TriangularMesh`)!
-        Magnetic polarization vector J = mu0*M in units of T,
-        given in the local object coordinates (rotates with object).
-
-    magnetization: array_like, shape (3,) or (n,3)
-        Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`, `Sphere`,
-        `Tetrahedron`, `Triangle`, `TriangularMesh`)!
-        Magnetization vector M = J/mu0 in units of A/m,
-        given in the local object coordinates (rotates with object).
-
-    moment: array_like, shape (3) or (n,3), unit A·m²
-        Only source_type == `Dipole`!
-        Magnetic dipole moment(s) in units of A·m² given in the local object coordinates
-        (rotates with object). For homogeneous magnets the relation moment=magnetization*volume
-        holds.
-
-    current: array_like, shape (n,)
-        Only source_type == `Circle` or `Polyline`!
-        Electrical current in units of A.
-
-    dimension: array_like, shape (x,) or (n,x)
-        Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`)!
-        Magnet dimension input in units of m and deg. Dimension format x of sources is similar
-        as in object oriented interface.
-
-    diameter: array_like, shape (n,)
-        Only source_type == `Sphere` or `Circle`!
-        Diameter of source in units of m.
-
-    segment_start: array_like, shape (n,3)
-        Only source_type == `Polyline`!
-        Start positions of line current segments in units of m.
-
-    segment_end: array_like, shape (n,3)
-        Only source_type == `Polyline`!
-        End positions of line current segments in units of m.
-
-    Returns
-    -------
-    B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
-        B-field at each path position (index m) for each sensor (index k) and each sensor pixel
-        position (indices n1, n2, ...) in units of T. Sensor pixel positions are equivalent
-        to simple observer positions. Paths of objects that are shorter than index m are
-        considered as static beyond their end.
-
-    Functional interface: ndarray, shape (n,3)
-        B-field for every parameter set in units of T.
-
-    Notes
-    -----
-    This function automatically joins all sensor and position inputs together and groups
-    similar sources for optimal vectorization of the computation. For maximal performance
-    call this function as little as possible and avoid using it in loops.
-
-    Examples
-    --------
-    In this example we compute the B-field in T of a spherical magnet and a current
-    loop at the observer position (0.01,0.01,0.01) given in units of m:
-
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> src1 = magpy.current.Circle(current=100, diameter=.002)
-    >>> src2 = magpy.magnet.Sphere(polarization=(0,0,.1), diameter=.001)
-    >>> B = magpy.getB([src1, src2], (.01,.01,.01))
-    >>> with np.printoptions(precision=3):
-    ...     print(B)
-    [[ 6.054e-06  6.054e-06  2.357e-08]
-     [ 8.019e-07  8.019e-07 -9.056e-23]]
-
-    We can also use sensor objects as observers input:
-
-    >>> sens1 = magpy.Sensor(position=(.01,.01,.01))
-    >>> sens2 = sens1.copy(position=(.01,.01,-.01))
-    >>> B = magpy.getB([src1, src2], [sens1, sens2])
-    >>> with np.printoptions(precision=3):
-    ...     print(B)
-    [[[ 6.054e-06  6.054e-06  2.357e-08]
-      [-6.054e-06 -6.054e-06  2.357e-08]]
-    <BLANKLINE>
-     [[ 8.019e-07  8.019e-07 -9.056e-23]
-      [-8.019e-07 -8.019e-07 -9.056e-23]]]
-
-    Through the functional interface we can compute the same fields for the loop as:
-
-    >>> obs = [(.01,.01,.01), (.01,.01,-.01)]
-    >>> B = magpy.getB('Circle', obs, current=100, diameter=.002)
-    >>> with np.printoptions(precision=3):
-    ...     print(B)
-    [[ 6.054e-06  6.054e-06  2.357e-08]
-     [-6.054e-06 -6.054e-06  2.357e-08]]
-
-    But also for a set of four completely different instances:
-
-    >>> B = magpy.getB(
-    ...     'Circle',
-    ...     observers=((.01,.01,.01), (.01,.01,-.01), (.01,.02,.03), (.02,.02,.02)),
-    ...     current=(11, 22, 33, 44),
-    ...     diameter=(.001, .002, .003, .004),
-    ...     position=((0,0,0), (0,0,.01), (0,0,.02), (0,0,.03)),
-    ... )
-    >>> with np.printoptions(precision=3):
-    ...     print(B)
-    [[ 1.663e-07  1.663e-07  1.617e-10]
-     [-4.695e-07 -4.695e-07  4.707e-07]
-     [ 7.970e-07  1.594e-06 -7.913e-07]
-     [-1.374e-06 -1.374e-06 -1.366e-06]]
+        >>> s1 = magpy.Sensor(position=(0.01, 0.01, 0.01))
+        >>> s2 = s1.copy(position=(0.01, 0.01, -0.01))
+        >>> B = magpy.getB([loop, sph], [s1, s2])
+        >>> with np.printoptions(precision=3):
+        ...     print(B)
+        [[[ 6.054e-06  6.054e-06  2.357e-08]
+        [-6.054e-06 -6.054e-06  2.357e-08]]
+        <BLANKLINE>
+        [[ 8.019e-07  8.019e-07 -9.056e-23]
+        [-8.019e-07 -8.019e-07 -9.056e-23]]]
     """
     return _getBH_level2(
         sources,
@@ -776,173 +543,65 @@ def getH(
     in_out="auto",
     **kwargs,
 ):
-    """Compute H-field in units of A/m for given sources and observers.
+    """Return H-field (A/m) of ``sources`` at ``observers``.
 
-    Field implementations can be directly accessed (avoiding the object oriented
-    Magpylib interface) by providing a string input `sources=source_type`, array_like
-    positions as `observers` input, and all other necessary input parameters (see below)
-    as kwargs.
+        SI units are used for all inputs and outputs.
 
-    Parameters
-    ----------
-    sources: source and collection objects or 1D list thereof
-        Sources that generate the magnetic field. Can be a single source (or collection)
-        or a 1D list of l sources and/or collection objects.
+        Parameters
+        ----------
+        sources : Source | list
+            Sources that generate the magnetic field. Can be a single source (or collection)
+            or a 1D list of l source and/or collection objects.
+        observers : Sensor | list[Sensor] | array-like, shape (n1, n2, ..., 3)
+            Input specifying where the field is evaluated. Multiple objects in a list
+            must have identical pixel shape unless ``pixel_agg`` is used.
+            All positions given in units (m)
+        sumup : bool, default False
+            If ``True``, sum the fields from all sources. If ``False``, keep the source axis.
+        squeeze : bool, default True
+            If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
+        pixel_agg : str | None, default None
+            Name of a NumPy aggregation function (e.g. ``'mean'``, ``'min'``) applied over the
+            pixel axis of each sensor. Allows mixing sensors with different pixel shapes.
+        output : {'ndarray', 'dataframe'}, default 'ndarray'
+            Output container type. ``'dataframe'`` returns a pandas DataFrame.
+        in_out : {'auto', 'inside', 'outside'}, default 'auto'
+            Assumption about observer locations relative to magnet bodies. ``'auto'`` detects per
+            observer (safest, slower). ``'inside'`` treats all inside (faster). ``'outside'`` treats
+            all outside (faster).
 
-        Functional interface: input must be one of (`Cuboid`, `Cylinder`, `CylinderSegment`,
-        `Sphere`, `Dipole`, `Circle` or `Polyline`).
+        Returns
+        -------
+        ndarray | DataFrame
+            H-field (A/m) with squeezed shape ``(l, m, 1, n1, n2, ..., 3)`` where ``m`` is path
+            length, and ``n1, n2, ...`` are the pixel dimensions.
 
-    observers: array_like or (list of) `Sensor` objects
-        Can be array_like positions of shape (n1, n2, ..., 3) where the field
-        should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
-        of such sensor objects (must all have similar pixel shapes). All positions
-        are given in units of m.
+        Examples
+        --------
+        H-field of a current loop and a spherical magnet at one observer:
 
-        Functional interface: Input must be array_like with shape (3,) or (n,3) corresponding
-        positions to observer positions in units of m.
+        >>> import numpy as np
+        >>> import magpylib as magpy
+        >>> loop = magpy.current.Circle(current=100.0, diameter=0.002)
+        >>> sph = magpy.magnet.Sphere(polarization=(0.0, 0.0, 0.1), diameter=0.001)
+        >>> H = magpy.getH([loop, sph], (0.01, 0.01, 0.01))
+        >>> with np.printoptions(precision=3):
+        ...    print(H)
+        [[ 4.818e+00  4.818e+00  1.875e-02]
+        [ 6.381e-01  6.381e-01 -7.207e-17]]
 
-    sumup: bool, default=`False`
-        If `True`, the fields of all sources are summed up.
+        With two sensors:
 
-    squeeze: bool, default=`True`
-        If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
-        a single sensor or only a single source) are eliminated.
-
-    pixel_agg: str, default=`None`
-        Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
-        which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-        With this option, observers input with different (pixel) shapes is allowed.
-
-    output: str, default=`'ndarray'`
-        Output type, which must be one of (`'ndarray'`, `'dataframe'`). By default a
-        `numpy.ndarray` object is returned. If `'dataframe'` is chosen, a `pandas.DataFrame`
-        object is returned (the Pandas library must be installed).
-
-    in_out: {'auto', 'inside', 'outside'}
-        This parameter only applies for magnet bodies. It specifies the location of the
-        observers relative to the magnet body, affecting the calculation of the magnetic field.
-        The options are:
-        - 'auto': The location (inside or outside the cuboid) is determined automatically for
-        each observer.
-        - 'inside': All observers are considered to be inside the cuboid; use this for
-            performance optimization if applicable.
-        - 'outside': All observers are considered to be outside the cuboid; use this for
-            performance optimization if applicable.
-        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-        locations is unknown.
-
-    See Also
-    --------
-    *Functional interface
-
-    position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
-        Source position(s) in the global coordinates in units of m.
-
-    orientation: scipy `Rotation` object with length 1 or n, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation.
-
-    magnetization: array_like, shape (3,) or (n,3)
-        Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`, `Sphere`)!
-        Magnetization vector(s) (mu0*M, remanence field) in units of A/m given in
-        the local object coordinates (rotates with object).
-
-    moment: array_like, shape (3) or (n,3), unit A·m²
-        Only source_type == `Dipole`!
-        Magnetic dipole moment(s) in units of A·m² given in the local object coordinates
-        (rotates with object). For homogeneous magnets the relation moment=magnetization*volume
-        holds.
-
-    current: array_like, shape (n,)
-        Only source_type == `Circle` or `Polyline`!
-        Electrical current in units of A.
-
-    dimension: array_like, shape (x,) or (n,x)
-        Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`)!
-        Magnet dimension input in units of m and deg. Dimension format x of sources is similar
-        as in object oriented interface.
-
-    diameter: array_like, shape (n,)
-        Only source_type == `Sphere` or `Circle`!
-        Diameter of source in units of m.
-
-    segment_start: array_like, shape (n,3)
-        Only source_type == `Polyline`!
-        Start positions of line current segments in units of m.
-
-    segment_end: array_like, shape (n,3)
-        Only source_type == `Polyline`!
-        End positions of line current segments in units of m.
-
-    Returns
-    -------
-    H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
-        H-field at each path position (index m) for each sensor (index k) and each sensor pixel
-        position (indices n1, n2, ...) in units of A/m. Sensor pixel positions are equivalent
-        to simple observer positions. Paths of objects that are shorter than index m are
-        considered as static beyond their end.
-
-    Functional interface: ndarray, shape (n,3)
-        H-field for every parameter set in units of A/m.
-
-    Notes
-    -----
-    This function automatically joins all sensor and position inputs together and groups
-    similar sources for optimal vectorization of the computation. For maximal performance
-    call this function as little as possible and avoid using it in loops.
-
-    Examples
-    --------
-    In this example we compute the H-field in A/m of a spherical magnet and a current loop
-    at the observer position (0.01,0.01,0.01) given in units of m:
-
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> src1 = magpy.current.Circle(current=100, diameter=.002)
-    >>> src2 = magpy.magnet.Sphere(polarization=(0,0,.1), diameter=.001)
-    >>> H = magpy.getH([src1, src2], (.01,.01,.01))
-    >>> with np.printoptions(precision=3):
-    ...    print(H)
-    [[ 4.818e+00  4.818e+00  1.875e-02]
-     [ 6.381e-01  6.381e-01 -7.207e-17]]
-
-    We can also use sensor objects as observers input:
-
-    >>> sens1 = magpy.Sensor(position=(.01,.01,.01))
-    >>> sens2 = sens1.copy(position=(.01,.01,-.01))
-    >>> H = magpy.getH([src1, src2], [sens1, sens2])
-    >>> with np.printoptions(precision=3):
-    ...    print(H)
-    [[[ 4.818e+00  4.818e+00  1.875e-02]
-      [-4.818e+00 -4.818e+00  1.875e-02]]
-    <BLANKLINE>
-     [[ 6.381e-01  6.381e-01 -7.207e-17]
-      [-6.381e-01 -6.381e-01 -7.207e-17]]]
-
-    Through the functional interface we can compute the same fields for the loop as:
-
-    >>> obs = [(.01,.01,.01), (.01,.01,-.01)]
-    >>> H = magpy.getH('Circle', obs, current=100, diameter=.002)
-    >>> with np.printoptions(precision=3):
-    ...    print(H)
-    [[ 4.818  4.818  0.019]
-     [-4.818 -4.818  0.019]]
-
-    But also for a set of four completely different instances:
-
-    >>> H = magpy.getH(
-    ...     'Circle',
-    ...     observers=((.01,.01,.01), (.01,.01,-.01), (.01,.02,.03), (.02,.02,.02)),
-    ...     current=(11, 22, 33, 44),
-    ...     diameter=(.001, .002, .003, .004),
-    ...     position=((0,0,0), (0,0,.01), (0,0,.02), (0,0,.03)),
-    ... )
-    >>> with np.printoptions(precision=3):
-    ...     print(H)
-    [[ 1.324e-01  1.324e-01  1.287e-04]
-     [-3.736e-01 -3.736e-01  3.746e-01]
-     [ 6.342e-01  1.268e+00 -6.297e-01]
-     [-1.093e+00 -1.093e+00 -1.087e+00]]
+        >>> sens1 = magpy.Sensor(position=(0.01, 0.01, 0.01))
+        >>> sens2 = sens1.copy(position=(0.01, 0.01, -0.01))
+        >>> H = magpy.getH([src1, src2], [sens1, sens2])
+        >>> with np.printoptions(precision=3):
+        ...    print(H)
+        [[[ 4.818e+00  4.818e+00  1.875e-02]
+        [-4.818e+00 -4.818e+00  1.875e-02]]
+        <BLANKLINE>
+        [[ 6.381e-01  6.381e-01 -7.207e-17]
+        [-6.381e-01 -6.381e-01 -7.207e-17]]]
     """
     return _getBH_level2(
         sources,
@@ -967,135 +626,53 @@ def getM(
     in_out="auto",
     **kwargs,
 ):
-    """Compute M-field in units of A/m for given sources and observers.
+    """Return magnetization (A/m) of ``sources`` at ``observers``.
 
-    Field implementations can be directly accessed (avoiding the object oriented
-    Magpylib interface) by providing a string input `sources=source_type`, array_like
-    positions as `observers` input, and all other necessary input parameters (see below)
-    as kwargs.
+        SI units are used for all inputs and outputs.
 
-    Parameters
-    ----------
-    sources: source and collection objects or 1D list thereof
-        Sources that generate the magnetic field. Can be a single source (or collection)
-        or a 1D list of l sources and/or collection objects.
+        Parameters
+        ----------
+        sources : Source | list
+            Sources that generate the magnetic field. Can be a single source (or collection)
+            or a 1D list of l source and/or collection objects.
+        observers : Sensor | list[Sensor] | array-like, shape (n1, n2, ..., 3)
+            Input specifying where the field is evaluated. Multiple objects in a list
+            must have identical pixel shape unless ``pixel_agg`` is used.
+            All positions given in units (m)
+        sumup : bool, default False
+            If ``True``, sum the fields from all sources. If ``False``, keep the source axis.
+        squeeze : bool, default True
+            If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
+        pixel_agg : str | None, default None
+            Name of a NumPy aggregation function (e.g. ``'mean'``, ``'min'``) applied over the
+            pixel axis of each sensor. Allows mixing sensors with different pixel shapes.
+        output : {'ndarray', 'dataframe'}, default 'ndarray'
+            Output container type. ``'dataframe'`` returns a pandas DataFrame.
+        in_out : {'auto', 'inside', 'outside'}, default 'auto'
+            Assumption about observer locations relative to magnet bodies. ``'auto'`` detects per
+            observer (safest, slower). ``'inside'`` treats all inside (faster). ``'outside'`` treats
+            all outside (faster).
 
-        Functional interface: input must be one of (`Cuboid`, `Cylinder`, `CylinderSegment`,
-        `Sphere`, `Dipole`, `Circle` or `Polyline`).
+        Returns
+        -------
+        ndarray | DataFrame
+            Magnetization (A/m) with squeezed shape ``(l, m, 1, n1, n2, ..., 3)`` where ``m`` is path
+            length, and ``n1, n2, ...`` are the pixel dimensions.
 
-    observers: array_like or (list of) `Sensor` objects
-        Can be array_like positions of shape (n1, n2, ..., 3) where the field
-        should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
-        of such sensor objects (must all have similar pixel shapes). All positions
-        are given in units of m.
+        Examples
+        --------
+        Magnetization at one point (inside the magnet):
 
-        Functional interface: Input must be array_like with shape (3,) or (n,3) corresponding
-        positions to observer positions in units of m.
-
-    sumup: bool, default=`False`
-        If `True`, the fields of all sources are summed up.
-
-    squeeze: bool, default=`True`
-        If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
-        a single sensor or only a single source) are eliminated.
-
-    pixel_agg: str, default=`None`
-        Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
-        which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-        With this option, observers input with different (pixel) shapes is allowed.
-
-    output: str, default=`'ndarray'`
-        Output type, which must be one of (`'ndarray'`, `'dataframe'`). By default a
-        `numpy.ndarray` object is returned. If `'dataframe'` is chosen, a `pandas.DataFrame`
-        object is returned (the Pandas library must be installed).
-
-    in_out: {'auto', 'inside', 'outside'}
-        This parameter only applies for magnet bodies. It specifies the location of the
-        observers relative to the magnet body, affecting the calculation of the magnetic field.
-        The options are:
-        - 'auto': The location (inside or outside the cuboid) is determined automatically for
-        each observer.
-        - 'inside': All observers are considered to be inside the cuboid; use this for
-            performance optimization if applicable.
-        - 'outside': All observers are considered to be outside the cuboid; use this for
-            performance optimization if applicable.
-        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-        locations is unknown.
-
-    See Also
-    --------
-    *Functional interface
-
-    position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
-        Source position(s) in the global coordinates in units of m.
-
-    orientation: scipy `Rotation` object with length 1 or n, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation.
-
-    magnetization: array_like, shape (3,) or (n,3)
-        Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`, `Sphere`)!
-        Magnetization vector(s) (mu0*M, remanence field) in units of A/m given in
-        the local object coordinates (rotates with object).
-
-    moment: array_like, shape (3) or (n,3), unit A·m²
-        Only source_type == `Dipole`!
-        Magnetic dipole moment(s) in units of A·m² given in the local object coordinates
-        (rotates with object). For homogeneous magnets the relation moment=magnetization*volume
-        holds.
-
-    current: array_like, shape (n,)
-        Only source_type == `Circle` or `Polyline`!
-        Electrical current in units of A.
-
-    dimension: array_like, shape (x,) or (n,x)
-        Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`)!
-        Magnet dimension input in units of m and deg. Dimension format x of sources is similar
-        as in object oriented interface.
-
-    diameter: array_like, shape (n,)
-        Only source_type == `Sphere` or `Circle`!
-        Diameter of source in units of m.
-
-    segment_start: array_like, shape (n,3)
-        Only source_type == `Polyline`!
-        Start positions of line current segments in units of m.
-
-    segment_end: array_like, shape (n,3)
-        Only source_type == `Polyline`!
-        End positions of line current segments in units of m.
-
-    Returns
-    -------
-    M-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
-        M-field at each path position (index m) for each sensor (index k) and each sensor pixel
-        position (indices n1, n2, ...) in units of A/m. Sensor pixel positions are equivalent
-        to simple observer positions. Paths of objects that are shorter than index m are
-        considered as static beyond their end.
-
-    Functional interface: ndarray, shape (n,3)
-        M-field for every parameter set in units of A/m.
-
-    Examples
-    --------
-    In this example we test the magnetization at an observer point.
-
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> cube = magpy.magnet.Cuboid(
-    ...     dimension=(10,1,1),
-    ...     polarization=(1,0,0)
-    ... ).rotate_from_angax(45,'z')
-    >>> M = cube.getM((3,3,0))
-    >>> with np.printoptions(precision=0):
-    ...    print(M)
-    [562698. 562698.      0.]
-
-    Notes
-    -----
-    This function automatically joins all sensor and position inputs together and groups
-    similar sources for optimal vectorization of the computation. For maximal performance
-    call this function as little as possible and avoid using it in loops.
+        >>> import numpy as np
+        >>> import magpylib as magpy
+        >>> cube = magpy.magnet.Cuboid(
+        ...     dimension=(10, 1, 1),
+        ...     polarization=(1, 0, 0)
+        ... ).rotate_from_angax(45, 'z')
+        >>> M = cube.getM((3, 3, 0))
+        >>> with np.printoptions(precision=0):
+        ...    print(M)
+        [562698. 562698.      0.]
     """
     return _getBH_level2(
         sources,
@@ -1120,147 +697,53 @@ def getJ(
     in_out="auto",
     **kwargs,
 ):
-    """Compute J-field in units of T for given sources and observers.
+    """Return magnetic polarization (T) of ``sources`` at ``observers``.
 
-    Field implementations can be directly accessed (avoiding the object oriented
-    Magpylib interface) by providing a string input `sources=source_type`, array_like
-    positions as `observers` input, and all other necessary input parameters (see below)
-    as kwargs.
+        SI units are used for all inputs and outputs.
 
-    Parameters
-    ----------
-    sources: source and collection objects or 1D list thereof
-        Sources that generate the magnetic field. Can be a single source (or collection)
-        or a 1D list of l sources and/or collection objects.
+        Parameters
+        ----------
+        sources : Source | list
+            Sources that generate the magnetic field. Can be a single source (or collection)
+            or a 1D list of l source and/or collection objects.
+        observers : Sensor | list[Sensor] | array-like, shape (n1, n2, ..., 3)
+            Input specifying where the field is evaluated. Multiple objects in a list
+            must have identical pixel shape unless ``pixel_agg`` is used.
+            All positions given in units (m)
+        sumup : bool, default False
+            If ``True``, sum the fields from all sources. If ``False``, keep the source axis.
+        squeeze : bool, default True
+            If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
+        pixel_agg : str | None, default None
+            Name of a NumPy aggregation function (e.g. ``'mean'``, ``'min'``) applied over the
+            pixel axis of each sensor. Allows mixing sensors with different pixel shapes.
+        output : {'ndarray', 'dataframe'}, default 'ndarray'
+            Output container type. ``'dataframe'`` returns a pandas DataFrame.
+        in_out : {'auto', 'inside', 'outside'}, default 'auto'
+            Assumption about observer locations relative to magnet bodies. ``'auto'`` detects per
+            observer (safest, slower). ``'inside'`` treats all inside (faster). ``'outside'`` treats
+            all outside (faster).
 
-        Functional interface: input must be one of (`Cuboid`, `Cylinder`, `CylinderSegment`,
-        `Sphere`, `Dipole`, `Circle` or `Polyline`).
+        Returns
+        -------
+        ndarray | DataFrame
+            Polarization (T) with squeezed shape ``(l, m, 1, n1, n2, ..., 3)`` where ``m`` is path
+            length, and ``n1, n2, ...`` are the pixel dimensions.
 
-    observers: array_like or (list of) `Sensor` objects
-        Can be array_like positions of shape (n1, n2, ..., 3) where the field
-        should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
-        of such sensor objects (must all have similar pixel shapes). All positions
-        are given in units of m.
+        Examples
+        --------
+        Polarization at one point (inside the magnet):
 
-        Functional interface: Input must be array_like with shape (3,) or (n,3) corresponding
-        positions to observer positions in units of m.
-
-    sumup: bool, default=`False`
-        If `True`, the fields of all sources are summed up.
-
-    squeeze: bool, default=`True`
-        If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
-        a single sensor or only a single source) are eliminated.
-
-    pixel_agg: str, default=`None`
-        Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
-        which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-        With this option, observers input with different (pixel) shapes is allowed.
-
-    output: str, default=`'ndarray'`
-        Output type, which must be one of (`'ndarray'`, `'dataframe'`). By default a
-        `numpy.ndarray` object is returned. If `'dataframe'` is chosen, a `pandas.DataFrame`
-        object is returned (the Pandas library must be installed).
-
-    in_out: {'auto', 'inside', 'outside'}
-        This parameter only applies for magnet bodies. It specifies the location of the
-        observers relative to the magnet body, affecting the calculation of the magnetic field.
-        The options are:
-        - 'auto': The location (inside or outside the cuboid) is determined automatically for
-        each observer.
-        - 'inside': All observers are considered to be inside the cuboid; use this for
-            performance optimization if applicable.
-        - 'outside': All observers are considered to be outside the cuboid; use this for
-            performance optimization if applicable.
-        Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-        locations is unknown.
-
-    See Also
-    --------
-    *Functional interface
-
-    position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
-        Source position(s) in the global coordinates in units of m.
-
-    orientation: scipy `Rotation` object with length 1 or n, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation.
-
-    magnetization: array_like, shape (3,) or (n,3)
-        Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`, `Sphere`)!
-        Magnetization vector(s) (mu0*M, remanence field) in units of A/m given in
-        the local object coordinates (rotates with object).
-
-    moment: array_like, shape (3) or (n,3), unit A·m²
-        Only source_type == `Dipole`!
-        Magnetic dipole moment(s) in units of A·m² given in the local object coordinates
-        (rotates with object). For homogeneous magnets the relation moment=magnetization*volume
-        holds.
-
-    current: array_like, shape (n,)
-        Only source_type == `Circle` or `Polyline`!
-        Electrical current in units of A.
-
-    dimension: array_like, shape (x,) or (n,x)
-        Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`)!
-        Magnet dimension input in units of m and deg. Dimension format x of sources is similar
-        as in object oriented interface.
-
-    diameter: array_like, shape (n,)
-        Only source_type == `Sphere` or `Circle`!
-        Diameter of source in units of m.
-
-    segment_start: array_like, shape (n,3)
-        Only source_type == `Polyline`!
-        Start positions of line current segments in units of m.
-
-    segment_end: array_like, shape (n,3)
-        Only source_type == `Polyline`!
-        End positions of line current segments in units of m.
-
-    Returns
-    -------
-    J-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
-        J-field at each path position (index m) for each sensor (index k) and each sensor pixel
-        position (indices n1, n2, ...) in units of T. Sensor pixel positions are equivalent
-        to simple observer positions. Paths of objects that are shorter than index m are
-        considered as static beyond their end.
-
-    Functional interface: ndarray, shape (n,3)
-        J-field for every parameter set in units of T.
-
-    Returns
-    -------
-    M-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
-        M-field at each path position (index m) for each sensor (index k) and each sensor pixel
-        position (indices n1, n2, ...) in units of A/m. Sensor pixel positions are equivalent
-        to simple observer positions. Paths of objects that are shorter than index m are
-        considered as static beyond their end.
-
-    Functional interface: ndarray, shape (n,3)
-        M-field for every parameter set in units of A/m.
-
-    Examples
-    --------
-    In this example we test the polarization at an observer point.
-
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> cube = magpy.magnet.Cuboid(
-    ...     dimension=(10,1,1),
-    ...     polarization=(1,0,0)
-    ... ).rotate_from_angax(45,'z')
-    >>> J = cube.getJ((3,3,0))
-    >>> with np.printoptions(precision=3):
-    ...    print(J)
-    [0.707 0.707 0.   ]
-
-    Notes
-    -----
-    This function automatically joins all sensor and position inputs together and groups
-    similar sources for optimal vectorization of the computation. For maximal performance
-    call this function as little as possible and avoid using it in loops.
-
+        >>> import numpy as np
+        >>> import magpylib as magpy
+        >>> cube = magpy.magnet.Cuboid(
+        ...     dimension=(10, 1, 1),
+        ...     polarization=(1, 0, 0)
+        ... ).rotate_from_angax(45, 'z')
+        >>> J = cube.getJ((3, 3, 0))
+        >>> with np.printoptions(precision=3):
+        ...    print(J)
+        [0.707 0.707 0.   ]
     """
     return _getBH_level2(
         sources,

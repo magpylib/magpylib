@@ -64,11 +64,11 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
 
         Parameters
         ----------
-        *observers : Sensor | array-like, shape (n1, n2, ..., 3)
-            Observer specifications. Each entry can be an array-like of positions in units (m)
-            with shape ``(n1, n2, ..., 3)``, a ``Sensor`` object with pixel shape
-            ``(n1, n2, ..., 3)`` or a list of such objects (all with identical pixel shape unless
-            ``pixel_agg`` is used).
+        *observers : Sensor | list[Sensor] | array-like, shape (n1, n2, ..., 3)
+            Input specifying where the field is evaluated. Each entry can be an
+            array-like of positions in units (m), a ``Sensor`` object with pixel shape
+            ``(n1, n2, ..., 3)`` or a list of such objects (all with identical pixel
+            shape unless ``pixel_agg`` is used).
         squeeze : bool, default True
             If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
         pixel_agg : str | None, default None
@@ -136,10 +136,10 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
         Parameters
         ----------
         *observers : Sensor | array-like, shape (n1, n2, ..., 3)
-            Observer specifications. Each entry can be an array-like of positions in units (m)
-            with shape ``(n1, n2, ..., 3)``, a ``Sensor`` object with pixel shape
-            ``(n1, n2, ..., 3)`` or a list of such objects (all with identical pixel shape unless
-            ``pixel_agg`` is used).
+            Input specifying where the field is evaluated. Each entry can be an
+            array-like of positions in units (m), a ``Sensor`` object with pixel shape
+            ``(n1, n2, ..., 3)`` or a list of such objects (all with identical pixel
+            shape unless ``pixel_agg`` is used).
         squeeze : bool, default True
             If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
         pixel_agg : str | None, default None
@@ -208,10 +208,10 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
         Parameters
         ----------
         *observers : Sensor | array-like, shape (n1, n2, ..., 3)
-            Observer specifications. Each entry can be an array-like of positions in units (m)
-            with shape ``(n1, n2, ..., 3)``, a ``Sensor`` object with pixel shape
-            ``(n1, n2, ..., 3)`` or a list of such objects (all with identical pixel shape unless
-            ``pixel_agg`` is used).
+            Input specifying where the field is evaluated. Each entry can be an
+            array-like of positions in units (m), a ``Sensor`` object with pixel shape
+            ``(n1, n2, ..., 3)`` or a list of such objects (all with identical pixel
+            shape unless ``pixel_agg`` is used).
         squeeze : bool, default True
             If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
         pixel_agg : str | None, default None
@@ -267,10 +267,10 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
         Parameters
         ----------
         *observers : Sensor | array-like, shape (n1, n2, ..., 3)
-            Observer specifications. Each entry can be an array-like of positions in units (m)
-            with shape ``(n1, n2, ..., 3)``, a ``Sensor`` object with pixel shape
-            ``(n1, n2, ..., 3)`` or a list of such objects (all with identical pixel shape unless
-            ``pixel_agg`` is used).
+            Input specifying where the field is evaluated. Each entry can be an
+            array-like of positions in units (m), a ``Sensor`` object with pixel shape
+            ``(n1, n2, ..., 3)`` or a list of such objects (all with identical pixel
+            shape unless ``pixel_agg`` is used).
         squeeze : bool, default True
             If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
         pixel_agg : str | None, default None
