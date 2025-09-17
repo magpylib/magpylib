@@ -5,90 +5,201 @@ from collections.abc import Callable
 from magpylib._src.utility import get_registered_sources
 from magpylib._src.utility import has_parameter
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.fields.field_BH_circle import _BHJM_circle
+from magpylib._src.fields.field_BH_polyline import _BHJM_current_polyline
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
+def current_circle_field(
+       field,
+       observers,
+       diameters,
+       currents,
+       positions=(0,0,0),
+       orientations=None,
+       squeeze=True,
+):
+    """Return B- or H-field of circular current loop for ``i`` given instances.
 
-def getB_cuboid():
-    """Return cuboid field for ``n`` given instances.
-
-    SI units are used for all inputs and outputs.
+    When ``position=(0,0,0)`` and ``orientation=None`` the loop lies in the
+    ``z=0`` plane with the coordinate origin at its center. A positive current
+    flows in mathematically positive direction (counter-clockwise).
 
     Parameters
     ----------
+    field : {'B', 'H'}
+        Select field that should be returned.
     observers : array-like, shape (3,) or (i, 3)
         Points where the field is evaluated in units (m).
     positions : array-like, shape (3,) or (i, 3), default (0, 0, 0)
         Positions of cuboid centroids in units (m).
-    orientations : Rotation, default None
-        Orientation of the sources. If None, unit rotation is applied
-        and cuboids axes are parallel to coordinate axes.
-    dimensions : array-like, shape (3,) or (i, 3)
-        Dimensions of the cuboids in units (m).
-    magnetizations : array-like, shape (3,) or (i, 3)
-        Magnetization of the cuboids in units (A/m).
-    polarizations : array-like, shape (3,) or (i, 3)
-        Polarization of the cuboids in units (T).
+    orientations : None | Rotation, default None
+        Orientation of the sources. If None, unit rotation is applied.
+    diameters : float | array-like, shape (i,)
+        Current loop diameters in units (m).
+    currents : float | array-like, shape (i,)
+        Electric currents in units (A).
     squeeze : bool, default True
         If ``True`` squeeze singleton axes (when ``i=1``).
-    in_out : {'auto', 'inside', 'outside'}, default 'auto'
-        Assumption about observer locations relative to magnet bodies. ``'auto'`` detects per
-        observer (safest, slower). ``'inside'`` treats all inside (faster). ``'outside'`` treats
-        all outside (faster).
-
-    Examples
-    --------
-    Through the functional interface we can compute the same fields for the loop as:
-
-    >>> obs = [(.01,.01,.01), (.01,.01,-.01)]
-    >>> B = magpy.getB('Circle', obs, current=100, diameter=.002)
-    >>> with np.printoptions(precision=3):
-    ...     print(B)
-    [[ 6.054e-06  6.054e-06  2.357e-08]
-     [-6.054e-06 -6.054e-06  2.357e-08]]
-
-    But also for a set of four completely different instances:
-
-    >>> B = magpy.getB(
-    ...     'Circle',
-    ...     observers=((.01,.01,.01), (.01,.01,-.01), (.01,.02,.03), (.02,.02,.02)),
-    ...     current=(11, 22, 33, 44),
-    ...     diameter=(.001, .002, .003, .004),
-    ...     position=((0,0,0), (0,0,.01), (0,0,.02), (0,0,.03)),
-    ... )
-    >>> with np.printoptions(precision=3):
-    ...     print(B)
-    [[ 1.663e-07  1.663e-07  1.617e-10]
-     [-4.695e-07 -4.695e-07  4.707e-07]
-     [ 7.970e-07  1.594e-06 -7.913e-07]
-     [-1.374e-06 -1.374e-06 -1.366e-06]]
+    
+    Returns
+    -------
+    ndarray, shape (3,) or (i, 3)
+        Magnetic field values at the observer locations.
     """
-    B = _getBH_dict_level2()
-    return 0
+    params = {
+        "observers": observers,
+        "diameter": diameters,
+        "current": currents,
+        "position": positions,
+        "orientation": orientations,
+    }
+    return _getBH_func(_BHJM_circle, field, params, squeeze)
 
 
-def _getBH_func(
-    source_type,
-    field_func,
-    observers,
-    *,
-    positions=(0,0,0),
-    orientations=None,
-    squeeze=True,
-    in_out="auto",
+def current_polyline_field(
+       field,
+       observers,
+       segments_start,
+       segments_end,
+       currents,
+       positions=(0,0,0),
+       orientations=None,
+       squeeze=True,
 ):
-    """Magnetic field computation functional interface"""
-    if orientation is None:
-        orientation = R.identity()
-    field_func_kwargs_ndim = {"position": 2, "orientation": 2, "observers": 2}
-    kwargs = {}
+    """Return B- or H-field of straight current segments for ``i`` instances.
+
+    When ``position=(0,0,0)`` and ``orientation=None`` local and
+    global coordinates conincide. The current flows from vertex
+    start to end positions. The field is set to (0,0,0) on a
+    line segment.    
+
+    Parameters
+    ----------
+    field : {'B', 'H'}
+        Select field that should be returned.
+    observers : array-like, shape (3,) or (i, 3)
+        Points where the field is evaluated in units (m).
+    positions : array-like, shape (3,) or (i, 3), default (0, 0, 0)
+        Positions of cuboid centroids in units (m).
+    orientations : None | Rotation, default None
+        Orientation of the sources. If None, unit rotation is applied.
+    diameters : float | array-like, shape (i,)
+        Current loop diameters in units (m).
+    currents : float | array-like, shape (i,)
+        Electric currents in units (A).
+    squeeze : bool, default True
+        If ``True`` squeeze singleton axes (when ``i=1``).
+    
+    Returns
+    -------
+    ndarray, shape (3,) or (i, 3)
+        Magnetic field values at the observer locations.
+    """
+    params = {
+        "observers": observers,
+        "segment_start": segments_start,
+        "segment_end": segments_end,
+        "current": currents,
+        "position": positions,
+        "orientation": orientations,
+    }
+    return _getBH_func(_BHJM_current_polyline, field, params, squeeze)
 
 
+DIM = {
+    "position": 2,
+    "orientation": 2,
+    "observers": 2,
+    "diameter": 1,
+    "current": 1,
+    "segment_start": 2,
+    "segment_end": 2
+}
+SHAPE = {
+    "position": (3,),
+    "orientation": (4,),
+    "observers": (3,),
+    "diameter": (),
+    "current": (),
+    "segment_start": (3,),
+    "segment_end": (3,)
+}
+
+def _getBH_func(field_func, field, params, squeeze):
+    """Functional interface for magnetic field computation
+    
+    field_func: callable
+    field: {"B", "H"}
+    params: dict
+        contains all kwargs required for field_func() call
+    """
+    # remove squeeze from params
+
+    # Check orientation input
+    if params['orientation'] is None:
+        params['orientation'] = R.identity()
+    if not isinstance(params['orientation'], R):
+        msg = "Input orientation must be a scipy Rotation instance or None."
+        raise TypeError(msg)
+
+    # Transform Rotation to Quat
+    params['orientation'] = params['orientation'].as_quat()
+
+    # Transform all inputs to ndarray
+    for key, val in params.items():
+        try:
+            if not isinstance(val, np.ndarray):
+                params[key] = np.array(val, dtype=float)
+        except ValueError as err:
+            msg = f"{key} input must be array-like.\nInstead received {val}."
+            raise ValueError(msg) from err
+
+    # Tile missing ndims, Find maxlength
+    nmax = 1
+    for key, val in params.items():
+        if val.ndim < DIM[key]:
+            params[key] = np.expand_dims(val, axis=0)
+        if val.ndim > DIM[key]:
+            msg = f"{key} input has too many dimensions ({val.ndim})."
+            raise ValueError(msg)
+        # store maxlength
+        n = params[key].shape[0]
+        nmax = n if n > nmax else nmax
+
+    # Check if shapes are correct, Tile to maxlength
+    for key, val in params.items():
+        if val.shape[1:] != SHAPE[key]:
+            msg = (
+                f"{key} input has incorrect shape {val.shape[1:]} in ndim>0."
+                f" Expected {SHAPE[key]}."
+            )
+            raise ValueError(msg)
+        if val.shape[0] not in (1, nmax):
+            msg = (
+                f"{key} input has incorrect number of instances {val.shape[0]}."
+                f" Must be 1 (will be tiled up) or {nmax} (given max)."
+            )
+            raise ValueError(msg)
+        # tile up to nmax if only 1 instance is given
+        if nmax>1 and val.shape[0]==1:
+            params[key] = np.tile(val, [nmax] + [1]*(val.ndim-1))
+
+    # Transform Quat to Rotation object
+    params['orientation'] = R.from_quat(params['orientation'])
+
+    # Call to level1, squeeze, return
+    field = _getBH_level1(field_func=field_func, field=field, **params)
+
+    if squeeze:
+        return np.squeeze(field)
+    return field
 
 
-
-
+# REMOVE IN FUTURE VERSIONS ############################################
+# REMOVE IN FUTURE VERSIONS ############################################
+# REMOVE IN FUTURE VERSIONS ############################################
 
 def _getBH_dict_level2(
     source_type,
@@ -204,12 +315,6 @@ def _getBH_dict_level2(
         return np.squeeze(B)
     return B
 
-# REMOVE IN FUTURE VERSIONS ############################################
-# REMOVE IN FUTURE VERSIONS ############################################
-# REMOVE IN FUTURE VERSIONS ############################################
-# This is here only to avoid circular imports with field_BH.
-# Once _getBH_dict_level2 is not called from field_BH, this can be removed
-# and can be called directly from field_BH.
 
 def _getBH_level1(
     *,
