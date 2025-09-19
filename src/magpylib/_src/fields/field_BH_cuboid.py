@@ -1,11 +1,11 @@
 """Homogeneously magnetized cuboid field implementation."""
 
+# pylint: disable=too-many-statements
+
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
-
-# pylint: disable=too-many-statements
 
 
 def magnet_cuboid_Bfield(
@@ -52,7 +52,7 @@ def magnet_cuboid_Bfield(
     Field computations use magnetic surface charge density; similar expressions
     were published repeatedly, e.g. Yang (Supercond. Sci. Technol. 3(12):591,
     1990), Engel-Herbert (J. Appl. Phys. 97(7):074504-4, 2005), and Camacho
-    (Rev. Mex. Fís. E 59 (2013) 8–17).
+    (Rev. Mex. Fís. E 59 (2013) 8-17).
 
     Avoiding indeterminate forms: at positions along extensions of edges (in all
     xyz-octants except the bottom negative-x/positive-y/positive-z quadrant),

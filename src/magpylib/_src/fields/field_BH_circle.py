@@ -58,7 +58,7 @@ def current_circle_Hfield(
     -----
     Implementation based on "Numerically stable and computationally efficient
     expression for the magnetic field of a current loop.", M. Ortner et al.,
-    Magnetism 2023, 3(1), 11–31.
+    Magnetism 2023, 3(1), 11-31.
     """
     n5 = len(r)
 

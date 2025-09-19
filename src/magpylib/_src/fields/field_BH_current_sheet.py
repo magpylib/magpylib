@@ -1,5 +1,7 @@
 """Triangular current sheet field implementation."""
 
+# pylint: disable=too-many-positional-arguments
+
 from __future__ import annotations
 
 import numpy as np
@@ -7,8 +9,6 @@ from scipy.constants import mu_0 as MU0
 from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.input_checks import check_field_input
-
-# pylint: disable=too-many-positional-arguments
 
 
 def _coordinate_transformation(vertices):
@@ -475,7 +475,7 @@ def current_sheet_Hfield(
     -----
     Field computation via law of Biot Savart. See also countless online resources.
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
-    
+
     Internally, each triangle is transformed to an elementar current sheet defined by
     the vertices ``(0, 0, 0)``, ``(u1, 0, 0)``, and ``(u2, v2, 0)`` in a local frame;
     computations are performed there and transformed back to the global frame.

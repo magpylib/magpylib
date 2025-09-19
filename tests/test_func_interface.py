@@ -1,100 +1,106 @@
-from magpylib._src.fields.field_BHfunc import _getBH_func
-from magpylib._src.fields.field_BH_circle import _BHJM_circle
-import pytest
 import numpy as np
+import pytest
 from scipy.spatial.transform import Rotation as R
+
 import magpylib as magpy
+from magpylib._src.fields.field_BH_circle import _BHJM_circle
+from magpylib._src.fields.field_BHfunc import _getBH_func
 from magpylib.func import (
     circle_field,
-    polyline_field,
     cuboid_field,
     cylinder_field,
     cylinder_segment_field,
+    dipole_field,
+    polyline_field,
     sphere_field,
     tetrahedron_field,
-    dipole_field,
     triangle_charge_field,
     triangle_current_field,
 )
 
+
 def test_getBHfunc_bad_inputs1():
     """test bad orientation input"""
     dic = {
-        'position': (0,0,0),
-        'orientation': 1,
-        'observers': (0,0,0),
-        'diameter': 3.123,
-        'current': 1.123,
+        "position": (0, 0, 0),
+        "orientation": 1,
+        "observers": (0, 0, 0),
+        "diameter": 3.123,
+        "current": 1.123,
     }
     with pytest.raises(TypeError):
-        _getBH_func(_BHJM_circle, 'B', dic, True, {})
+        _getBH_func(_BHJM_circle, "B", dic, True, {})
+
 
 def test_getBHfunc_bad_inputs2():
     """test bad orientation input"""
     dic = {
-        'position': (0,0,0),
-        'orientation': None,
-        'observers': (0,0,0),
-        'diameter': 'woot',
-        'current': 1.123,
+        "position": (0, 0, 0),
+        "orientation": None,
+        "observers": (0, 0, 0),
+        "diameter": "woot",
+        "current": 1.123,
     }
-    with pytest.raises(ValueError):
-        _getBH_func(_BHJM_circle, 'B', dic, True, {})
+    with pytest.raises(ValueError):  # noqa: PT011
+        _getBH_func(_BHJM_circle, "B", dic, True, {})
+
 
 def test_getBHfunc_bad_inputs3():
     """test bad orientation input"""
     dic = {
-        'position': (0,0,0),
-        'orientation': None,
-        'observers': (0,0,0),
-        'diameter': [(1,2,3), (1,2,3)],
-        'current': 1.123,
+        "position": (0, 0, 0),
+        "orientation": None,
+        "observers": (0, 0, 0),
+        "diameter": [(1, 2, 3), (1, 2, 3)],
+        "current": 1.123,
     }
-    with pytest.raises(ValueError):
-        _getBH_func(_BHJM_circle, 'B', dic, True, {})
+    with pytest.raises(ValueError):  # noqa: PT011
+        _getBH_func(_BHJM_circle, "B", dic, True, {})
+
 
 def test_getBHfunc_bad_inputs4():
     """test bad orientation input"""
     dic = {
-        'position': (0,0,0),
-        'orientation': None,
-        'observers': (0,0,0,0),
-        'diameter': (1,2,3),
-        'current': 1.123,
+        "position": (0, 0, 0),
+        "orientation": None,
+        "observers": (0, 0, 0, 0),
+        "diameter": (1, 2, 3),
+        "current": 1.123,
     }
-    with pytest.raises(ValueError):
-        _getBH_func(_BHJM_circle, 'B', dic, True, {})
+    with pytest.raises(ValueError):  # noqa: PT011
+        _getBH_func(_BHJM_circle, "B", dic, True, {})
+
 
 def test_getBHfunc_bad_inputs5():
     """test bad orientation input"""
     dic = {
-        'position': (0,0,0),
-        'orientation': None,
-        'observers': (0,0),
-        'diameter': (1,2,3),
-        'current': 1.123,
+        "position": (0, 0, 0),
+        "orientation": None,
+        "observers": (0, 0),
+        "diameter": (1, 2, 3),
+        "current": 1.123,
     }
-    with pytest.raises(ValueError):
-        _getBH_func(_BHJM_circle, 'B', dic, True, {})
+    with pytest.raises(ValueError):  # noqa: PT011
+        _getBH_func(_BHJM_circle, "B", dic, True, {})
 
 
 def test_func_circle():
     """test if Circle implementation gives correct output"""
-    B = circle_field('B', (0,0,0), 2, 1)
+    B = circle_field("B", (0, 0, 0), 2, 1)
     Btest = np.array([0, 0, 0.6283185307179586 * 1e-6])
     np.testing.assert_allclose(B, Btest)
 
-    H = circle_field('H', (0,0,0), 2, 1)
+    H = circle_field("H", (0, 0, 0), 2, 1)
     Htest = np.array([0, 0, 0.6283185307179586 * 10 / 4 / np.pi])
     np.testing.assert_allclose(H, Htest)
 
 
 def test_func_squeeze():
     """test if squeeze works"""
-    B1 = circle_field('B', (0, 0, 0), 2, 1)
-    B2 = circle_field('B', [(0, 0, 0)], 2, 1)
-    B3 = circle_field('B', [(0, 0, 0)], 2, 1, squeeze=False)
-    B4 = circle_field('B', [(0, 0, 0)]*2, 2, 1)
+    B1 = circle_field("B", (0, 0, 0), 2, 1)
+    B2 = circle_field("B", [(0, 0, 0)], 2, 1)
+    B3 = circle_field("B", [(0, 0, 0)], 2, 1, squeeze=False)
+    B4 = circle_field("B", [(0, 0, 0)] * 2, 2, 1)
 
     assert B1.ndim == 1
     assert B2.ndim == 1
@@ -105,7 +111,7 @@ def test_func_squeeze():
 def test_func_polyline1():
     """test getBHv with Polyline"""
     H = polyline_field(
-        'H',
+        "H",
         observers=[(1, 1, 1), (1, 2, 3), (2, 2, 2)],
         currents=1,
         segments_start=(0, 0, 0),
@@ -126,7 +132,7 @@ def test_func_polyline2():
 
     # z-line on x=1
     B1 = polyline_field(
-        'B',
+        "B",
         observers=[(0, 0, 0)],
         currents=1,
         segments_start=(1, 0, -1),
@@ -141,7 +147,7 @@ def test_func_polyline3():
     x = 0.14142136 * 1e-6
     # move z-line to x=-1
     B2 = polyline_field(
-        'B',
+        "B",
         positions=(-2, 0, 0),
         observers=[(0, 0, 0)],
         currents=1,
@@ -157,12 +163,12 @@ def test_func_polyline4():
     # rotate 1
     rot = R.from_euler("z", 90, degrees=True)
     B3 = polyline_field(
-        'B',
+        "B",
         observers=[(0, 0, 0)],
         currents=1,
         segments_start=(1, 0, -1),
         segments_end=(1, 0, 1),
-        orientations=rot
+        orientations=rot,
     )
     expected = np.array([x, 0, 0])
 
@@ -175,12 +181,12 @@ def test_func_polyline5():
     # rotate 1
     rot = R.from_euler("x", 90, degrees=True)
     B3 = polyline_field(
-        'B',
+        "B",
         observers=[(0, 0, 0)],
         currents=1,
         segments_start=(1, 0, -1),
         segments_end=(1, 0, 1),
-        orientations=rot
+        orientations=rot,
     )
     expected = np.array([0, 0, -x])
 
@@ -193,12 +199,12 @@ def test_func_polyline6():
     # rotate 1
     rot = R.from_euler("y", 90, degrees=True)
     B3 = polyline_field(
-        'B',
+        "B",
         observers=[(0, 0, 0)],
         currents=1,
         segments_start=(1, 0, -1),
         segments_end=(1, 0, 1),
-        orientations=rot
+        orientations=rot,
     )
     expected = np.array([0, -x, 0])
 
@@ -215,7 +221,7 @@ def test_func_cuboid():
     dim = [3, 3, 3]
     pos = np.array([0, 0, 0])
     rot = R.from_quat([(t, 0.2, 0.3, 0.4) for t in np.linspace(0, 0.1, n)])
-    
+
     B1 = cuboid_field("B", pos_obs, dim, mag, pos, rot)
 
     B2 = []
@@ -319,9 +325,9 @@ def test_func_cylinder_segment_FEM():
     )
 
     # compare against FEM
-    dim=(1, 2, 1, 90, 360),
-    pol=np.array((1, 2, 3)) * 1000 / np.sqrt(14),
-    pos=(0, 0, 0.5),
+    dim = ((1, 2, 1, 90, 360),)
+    pol = (np.array((1, 2, 3)) * 1000 / np.sqrt(14),)
+    pos = ((0, 0, 0.5),)
     B = cylinder_segment_field("B", obsp, dim, pol, pos)
     err = np.linalg.norm(B - Bfem * 1000, axis=1) / np.linalg.norm(B, axis=1)
     assert np.amax(err) < 0.01
@@ -373,21 +379,13 @@ def test_func_cylinder4():
     pos = pm.position
     rot = pm.orientation
 
-    dic = {
-        "sources": "Cylinder",
-        "observers": pos_obs,
-        "polarization": mag,
-        "dimension": dim,
-        "position": pos,
-        "orientation": rot,
-    }
     B1 = cylinder_field(
         field="B",
         observers=pos_obs,
         dimensions=dim,
         polarizations=mag,
         positions=pos,
-        orientations=rot
+        orientations=rot,
     )
 
     np.testing.assert_allclose(B1, B2, rtol=1e-12, atol=1e-12)
@@ -449,25 +447,30 @@ def test_func_triangle_charge():
         vertices=[(0, 0, 0), (1, 0, 0.5), (0, 1, -0.5)],
         polarization=(10, 10, 10),
         position=(1, 2, 3),
-    ).rotate_from_angax([45, 46, 147, 148], 'x', anchor=(-1, 2, 3))
+    ).rotate_from_angax([45, 46, 147, 148], "x", anchor=(-1, 2, 3))
     obs = (0.3, 0.1, 0.2)
     B1 = tria.getB(obs)
-    B2 = triangle_charge_field("B", obs, tria.vertices, tria.polarization, tria.position, tria.orientation)
+    B2 = triangle_charge_field(
+        "B", obs, tria.vertices, tria.polarization, tria.position, tria.orientation
+    )
     np.testing.assert_allclose(B1, B2, rtol=1e-12, atol=1e-12)
+
 
 def test_func_triangle_current():
     """test func triangle current"""
     tria = magpy.current.TriangleSheet(
         vertices=[(0, 0, 0), (1, 0, 0.5), (0, 1, -0.5)],
-        faces=(0,1,2),
+        faces=(0, 1, 2),
         current_densities=(10, 10, 10),
         position=(1, 2, 3),
-    ).rotate_from_angax([45, 46, 147, 148], 'x', anchor=(-1, 2, 3))
+    ).rotate_from_angax([45, 46, 147, 148], "x", anchor=(-1, 2, 3))
     obs = (0.3, 0.1, 0.2)
     B1 = tria.getB(obs)
 
     vert = tria.vertices[tria.faces]
-    B2 = triangle_current_field("B", obs, vert, tria.current_densities, tria.position, tria.orientation)
+    B2 = triangle_current_field(
+        "B", obs, vert, tria.current_densities, tria.position, tria.orientation
+    )
     np.testing.assert_allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
@@ -477,21 +480,10 @@ def test_func_tetrahedron():
         vertices=[(0, 0, 0), (1, 0, 0.5), (0, 1, -0.5), (0.1, 0, 1)],
         polarization=(10, 10, 10),
         position=(1, 2, 3),
-    ).rotate_from_angax([45, 46, 147, 148], 'x', anchor=(-1, 2, 3))
+    ).rotate_from_angax([45, 46, 147, 148], "x", anchor=(-1, 2, 3))
     obs = (0.3, 0.1, 0.2)
     B1 = tetra.getB(obs)
-    B2 = tetrahedron_field("B", obs, tetra.vertices, tetra.polarization, tetra.position, tetra.orientation)
-    np.testing.assert_allclose(B1, B2, rtol=1e-12, atol=1e-12)
-
-
-def test_func_tetrahedron():
-    """test func tetrahedron"""
-    tetra = magpy.magnet.Tetrahedron(
-        vertices=[(0, 0, 0), (1, 0, 0.5), (0, 1, -0.5), (0.1, 0, 1)],
-        polarization=(10, 10, 10),
-        position=(1, 2, 3),
-    ).rotate_from_angax([45, 46, 147, 148], 'x', anchor=(-1, 2, 3))
-    obs = (0.3, 0.1, 0.2)
-    B1 = tetra.getB(obs)
-    B2 = tetrahedron_field("B", obs, tetra.vertices, tetra.polarization, tetra.position, tetra.orientation)
+    B2 = tetrahedron_field(
+        "B", obs, tetra.vertices, tetra.polarization, tetra.position, tetra.orientation
+    )
     np.testing.assert_allclose(B1, B2, rtol=1e-12, atol=1e-12)

@@ -1,6 +1,6 @@
-# pylint: disable=too-many-positional-arguments
-
 """Magnet Triangle class"""
+
+# pylint: disable=too-many-positional-arguments
 
 from typing import ClassVar
 

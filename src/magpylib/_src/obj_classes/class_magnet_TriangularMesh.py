@@ -27,8 +27,10 @@ from magpylib._src.input_checks import (
     check_format_input_vector2,
 )
 from magpylib._src.obj_classes.class_BaseExcitations import _BaseMagnet
-from magpylib._src.obj_classes.class_BaseProperties import _BaseDipoleMoment
-from magpylib._src.obj_classes.class_BaseProperties import _BaseVolume
+from magpylib._src.obj_classes.class_BaseProperties import (
+    _BaseDipoleMoment,
+    _BaseVolume,
+)
 from magpylib._src.obj_classes.class_BaseTarget import _BaseTarget
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
@@ -289,7 +291,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             raise ValueError(msg)
         return "warn" if arg is True else "skip" if arg is False else arg
 
-    def check_open(self, mode='warn'):
+    def check_open(self, mode="warn"):
         """Check whether the mesh is open.
 
         Parameters
@@ -322,7 +324,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
                     raise ValueError(msg)
         return self._status_open
 
-    def check_disconnected(self, mode='warn'):
+    def check_disconnected(self, mode="warn"):
         """Check whether the mesh is disconnected.
 
         Parameters
@@ -355,7 +357,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
                     raise ValueError(msg)
         return self._status_disconnected
 
-    def check_selfintersecting(self, mode='warn'):
+    def check_selfintersecting(self, mode="warn"):
         """Check whether the mesh is self-intersecting.
 
         Parameters
@@ -387,7 +389,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
                     raise ValueError(msg)
         return self._status_selfintersecting
 
-    def reorient_faces(self, mode='warn'):
+    def reorient_faces(self, mode="warn"):
         """Reorient all faces to point outwards.
 
         In a properly oriented mesh, all faces must be oriented outwards. This function
@@ -436,7 +438,9 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             List of ndarrays. Subsets of faces data.
         """
         if self._status_disconnected_data is None:
-            self._status_disconnected_data = _get_disconnected_faces_subsets(self._faces)
+            self._status_disconnected_data = _get_disconnected_faces_subsets(
+                self._faces
+            )
         return self._status_disconnected_data
 
     def _get_open_edges(self):
@@ -565,8 +569,8 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         polarization=None,
         magnetization=None,
         meshing=None,
-        check_open='warn',
-        check_disconnected='warn',
+        check_open="warn",
+        check_disconnected="warn",
         reorient_faces=True,
         style=None,
         **kwargs,
@@ -613,8 +617,8 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         polarization=None,
         magnetization=None,
         meshing=None,
-        check_open='warn',
-        check_disconnected='warn',
+        check_open="warn",
+        check_disconnected="warn",
         reorient_faces=True,
         style=None,
         **kwargs,
@@ -680,8 +684,8 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         magnetization=None,
         meshing=None,
         reorient_faces=True,
-        check_open='warn',
-        check_disconnected='warn',
+        check_open="warn",
+        check_disconnected="warn",
         style=None,
         **kwargs,
     ):
@@ -746,8 +750,8 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         magnetization=None,
         meshing=None,
         reorient_faces=True,
-        check_open='warn',
-        check_disconnected='warn',
+        check_open="warn",
+        check_disconnected="warn",
         style=None,
         **kwargs,
     ):

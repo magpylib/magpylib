@@ -1,11 +1,11 @@
 """Charged triangle field implementation."""
 
+# pylance: disable=Code is unreachable
+
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
-
-# pylance: disable=Code is unreachable
 
 
 def _vcross3(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -122,7 +122,7 @@ def triangle_Bfield(
 
     Notes
     -----
-    Field computation follows Guptasarma, Geophysics, 1999, 64(1), 70–74. Corners
+    Field computation follows Guptasarma, Geophysics, 1999, 64(1), 70-74. Corners
     yield ``(nan, nan, nan)``. Edge points and in-plane perpendicular components are
     set to ``0``. Loss of precision occurs when approaching a triangle as
     ``(x - edge)**2`` and with distance from the triangle as ``distance**3``.

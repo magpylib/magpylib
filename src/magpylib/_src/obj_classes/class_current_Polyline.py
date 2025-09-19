@@ -1,6 +1,6 @@
-# pylint: disable=too-many-positional-arguments
-
 """Polyline current class code"""
+
+# pylint: disable=too-many-positional-arguments
 
 import warnings
 from typing import ClassVar

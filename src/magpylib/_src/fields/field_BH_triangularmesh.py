@@ -1,14 +1,14 @@
 """Homogeneously magnetized triangular mesh body field implementation."""
 
+# pylint: disable=too-many-nested-blocks
+# pylint: disable=too-many-branches
+# pylance: disable=Code is unreachable
+
 import numpy as np
 import scipy.spatial
 from scipy.constants import mu_0 as MU0
 
 from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
-
-# pylint: disable=too-many-nested-blocks
-# pylint: disable=too-many-branches
-# pylance: disable=Code is unreachable
 
 
 def _calculate_centroid(vertices, faces):

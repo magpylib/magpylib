@@ -249,7 +249,7 @@ def _apply_rotation(
 class _BaseTransform:
     """Inherit this class to provide rotation() and move() methods."""
 
-    def move(self, displacement, start='auto'):
+    def move(self, displacement, start="auto"):
         """Translate position by scalar or vector displacement.
 
         Parameters
@@ -318,14 +318,14 @@ class _BaseTransform:
         # Idea: An operation applied to a Collection is individually
         #    applied to its _BaseGeo and to each child.
 
-        for child in getattr(self, 'children', []):
+        for child in getattr(self, "children", []):
             child.move(displacement, start=start)
 
         _apply_move(self, displacement, start=start)
 
         return self
 
-    def _rotate(self, rotation: R, anchor=None, start='auto', parent_path=None):
+    def _rotate(self, rotation: R, anchor=None, start="auto", parent_path=None):
         """Rotate object about a given anchor.
 
         See `rotate` docstring for other parameters.
@@ -351,7 +351,7 @@ class _BaseTransform:
         )
         return self
 
-    def rotate(self, rotation: R, anchor=None, start='auto'):
+    def rotate(self, rotation: R, anchor=None, start="auto"):
         """Rotate about an anchor.
 
         Parameters
@@ -426,7 +426,7 @@ class _BaseTransform:
         """
         return self._rotate(rotation=rotation, anchor=anchor, start=start)
 
-    def rotate_from_angax(self, angle, axis, anchor=None, start='auto', degrees=True):
+    def rotate_from_angax(self, angle, axis, anchor=None, start="auto", degrees=True):
         """Rotate with scipy Rotation input.
 
         Parameters
@@ -523,7 +523,7 @@ class _BaseTransform:
         rot = R.from_rotvec(axis)
         return self.rotate(rot, anchor, start)
 
-    def rotate_from_rotvec(self, rotvec, anchor=None, start='auto', degrees=True):
+    def rotate_from_rotvec(self, rotvec, anchor=None, start="auto", degrees=True):
         """Rotate with rotation vector input.
 
         Parameters
@@ -599,7 +599,7 @@ class _BaseTransform:
         rot = R.from_rotvec(rotvec, degrees=degrees)
         return self.rotate(rot, anchor=anchor, start=start)
 
-    def rotate_from_euler(self, angle, seq, anchor=None, start='auto', degrees=True):
+    def rotate_from_euler(self, angle, seq, anchor=None, start="auto", degrees=True):
         """Rotate with Euler angle sequence.
 
         Parameters
@@ -680,7 +680,7 @@ class _BaseTransform:
         rot = R.from_euler(seq, angle, degrees=degrees)
         return self.rotate(rot, anchor=anchor, start=start)
 
-    def rotate_from_matrix(self, matrix, anchor=None, start='auto'):
+    def rotate_from_matrix(self, matrix, anchor=None, start="auto"):
         """Rotate with rotation matrix/matrices.
 
         Parameters
@@ -735,7 +735,7 @@ class _BaseTransform:
         rot = R.from_matrix(matrix)
         return self.rotate(rot, anchor=anchor, start=start)
 
-    def rotate_from_mrp(self, mrp, anchor=None, start='auto'):
+    def rotate_from_mrp(self, mrp, anchor=None, start="auto"):
         """Rotate with Modified Rodrigues Parameters (MRPs).
 
         Parameters
@@ -794,7 +794,7 @@ class _BaseTransform:
         rot = R.from_mrp(mrp)
         return self.rotate(rot, anchor=anchor, start=start)
 
-    def rotate_from_quat(self, quat, anchor=None, start='auto'):
+    def rotate_from_quat(self, quat, anchor=None, start="auto"):
         """Rotate with quaternion(s).
 
         Parameters

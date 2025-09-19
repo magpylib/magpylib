@@ -1,10 +1,10 @@
 """Special functions el3."""
 
+# ruff: noqa: E741  # Avoid ambiguity with variable names
+
 import numpy as np
 
 from magpylib._src.fields.special_cel import _cel
-
-# ruff: noqa: E741  # Avoid ambiguity with variable names
 
 
 def _el30(x, kc, p):
@@ -564,7 +564,9 @@ def _el3(xv: np.ndarray, kcv: np.ndarray, pv: np.ndarray) -> np.ndarray:
     n_input = len(xv)
 
     if n_input < 10:
-        return np.array([_el30(x, kc, p) for x, kc, p in zip(xv, kcv, pv, strict=False)])
+        return np.array(
+            [_el30(x, kc, p) for x, kc, p in zip(xv, kcv, pv, strict=False)]
+        )
 
     return _el3v(xv, kcv, pv)
 

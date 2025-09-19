@@ -178,7 +178,7 @@ class _BaseGeo(_BaseTransform, ABC):
     @parent.setter
     def parent(self, parent):
         """Set parent collection.
-        
+
         Parameters
         ----------
         parent : Collection or None

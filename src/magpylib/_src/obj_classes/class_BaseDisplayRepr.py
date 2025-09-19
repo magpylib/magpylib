@@ -94,7 +94,7 @@ class _BaseDisplayRepr:
                 lines.append(f"  • {k}: {val}{unit_str}")
         return lines
 
-    def describe(self, *, exclude=('style', 'field_func'), return_string=False):
+    def describe(self, *, exclude=("style", "field_func"), return_string=False):
         """Return or print a formatted description of object properties.
 
         Parameters

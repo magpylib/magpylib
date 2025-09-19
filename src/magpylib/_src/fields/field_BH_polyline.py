@@ -1,12 +1,13 @@
 """Line current segments field implementation."""
 
+# pylint: disable=too-many-positional-arguments
+
 import numpy as np
 from numpy.linalg import norm
 from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
 
-# pylint: disable=too-many-positional-arguments
 
 def _current_vertices_field(
     field: str,
@@ -110,7 +111,7 @@ def current_polyline_Hfield(
 
     Notes
     -----
-    Field computation via the Biot–Savart law. See also many resources, e.g.,
+    Field computation via the Biot-Savart law. See also many resources, e.g.,
     http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
 
     Be careful with magnetic fields of isolated, discontinuous segments; they

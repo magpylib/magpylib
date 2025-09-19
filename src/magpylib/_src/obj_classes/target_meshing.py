@@ -1,11 +1,12 @@
 """Meshing functions"""
+
+# pylint: disable=import-outside-toplevel
+# pylint: disable=too-many-function-args
+
 import itertools
 from itertools import product
 
 import numpy as np
-
-# pylint: disable=import-outside-toplevel
-# pylint: disable=too-many-function-args
 
 
 def _apportion_triple(triple, min_val=1, max_iter=30):
@@ -379,7 +380,9 @@ def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
     return TRIA
 
 
-def _target_mesh_triangle_current(triangles: np.ndarray, n_target: int, cds: np.ndarray):
+def _target_mesh_triangle_current(
+    triangles: np.ndarray, n_target: int, cds: np.ndarray
+):
     """
     Refines input triangles into >n_target triangles using bisection along longest edge.
     n_target must be at least number of input triangles in which case one mesh point

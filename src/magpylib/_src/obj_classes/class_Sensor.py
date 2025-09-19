@@ -1,7 +1,7 @@
+"""Sensor class code"""
+
 # pylint: disable=too-many-positional-arguments
 # pylint: disable=arguments-differ
-
-"""Sensor class code"""
 
 import numpy as np
 
@@ -101,7 +101,7 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         position=(0, 0, 0),
         orientation=None,
         pixel=None,
-        handedness='right',
+        handedness="right",
         style=None,
         **kwargs,
     ):
@@ -176,8 +176,8 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         sumup=False,
         squeeze=True,
         pixel_agg=None,
-        output='ndarray',
-        in_out='auto',
+        output="ndarray",
+        in_out="auto",
     ):
         """Return B-field (T) from sources as seen by the sensor.
 
@@ -259,8 +259,8 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         sumup=False,
         squeeze=True,
         pixel_agg=None,
-        output='ndarray',
-        in_out='auto',
+        output="ndarray",
+        in_out="auto",
     ):
         """Return H-field (A/m) from sources as seen by the sensor.
 
@@ -342,8 +342,8 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         sumup=False,
         squeeze=True,
         pixel_agg=None,
-        output='ndarray',
-        in_out='auto',
+        output="ndarray",
+        in_out="auto",
     ):
         """Return magnetization (A/m) from sources as seen by the sensor.
 
@@ -408,8 +408,8 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         sumup=False,
         squeeze=True,
         pixel_agg=None,
-        output='ndarray',
-        in_out='auto',
+        output="ndarray",
+        in_out="auto",
     ):
         """Return magnetic polarization (T) from sources as seen by the sensor.
 

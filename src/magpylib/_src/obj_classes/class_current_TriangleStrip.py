@@ -1,6 +1,6 @@
-# pylint: disable=too-many-positional-arguments
-
 """TriangleStrip current class code"""
+
+# pylint: disable=too-many-positional-arguments
 
 from __future__ import annotations
 

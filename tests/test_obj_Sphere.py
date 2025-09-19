@@ -95,7 +95,9 @@ def test_sphere_object_vs_lib():
     pol = np.array([(10, 20, 30)])
     dia = np.array([1])
     pos = np.array([(2, 2, 2)])
-    B1 = _BHJM_magnet_sphere(field="B", observers=pos, polarization=pol, diameter=dia)[0]
+    B1 = _BHJM_magnet_sphere(field="B", observers=pos, polarization=pol, diameter=dia)[
+        0
+    ]
 
     src = magpy.magnet.Sphere(polarization=pol[0], diameter=dia[0])
     B2 = src.getB(pos)

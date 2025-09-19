@@ -4,6 +4,7 @@ import pytest
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib.func import cuboid_field
+
 # pylint: disable=unnecessary-lambda-assignment
 
 
@@ -19,7 +20,7 @@ def test_getB_interfaces1():
         observers=(-1, -1, -1),
         positions=src.position,
         polarizations=(1, 2, 3),
-        dimensions=(1, 2, 3)
+        dimensions=(1, 2, 3),
     )
     B1 = np.tile(B, (2, 2, 1, 1))
     B1 = np.swapaxes(B1, 0, 2)
@@ -49,7 +50,7 @@ def test_getB_interfaces2():
         observers=(-1, -1, -1),
         positions=src.position,
         polarizations=(1, 2, 3),
-        dimensions=(1, 2, 3)
+        dimensions=(1, 2, 3),
     )
 
     B2 = np.tile(B, (2, 2, 2, 1, 1))
@@ -74,7 +75,7 @@ def test_getB_interfaces3():
         observers=(-1, -1, -1),
         positions=src.position,
         polarizations=(1, 2, 3),
-        dimensions=(1, 2, 3)
+        dimensions=(1, 2, 3),
     )
 
     B3 = np.tile(B, (2, 2, 2, 1, 1))
@@ -105,7 +106,7 @@ def test_getH_interfaces1():
         observers=(-1, -2, -3),
         positions=src.position,
         polarizations=mag,
-        dimensions=dim
+        dimensions=dim,
     )
     H1 = np.tile(H, (2, 2, 1, 1))
     H1 = np.swapaxes(H1, 0, 2)
@@ -145,7 +146,7 @@ def test_getH_interfaces2():
         observers=(-1, -2, -3),
         positions=src.position,
         polarizations=mag,
-        dimensions=dim
+        dimensions=dim,
     )
 
     H2 = np.tile(H, (2, 2, 2, 1, 1))
@@ -173,7 +174,7 @@ def test_getH_interfaces3():
         observers=(-1, -2, -3),
         positions=src.position,
         polarizations=mag,
-        dimensions=dim
+        dimensions=dim,
     )
 
     H3 = np.tile(H, (2, 2, 2, 1, 1))

@@ -1,5 +1,12 @@
 """Homogeneously magnetized cylinder segment field implementation."""
 
+# pylint: disable=too-many-lines
+# pylint: disable=line-too-long
+# pylint: disable=missing-function-docstring
+# pylint: disable=no-name-in-module
+# pylint: disable=too-many-statements
+# pylint: disable=too-many-positional-arguments
+
 import numpy as np
 from scipy.constants import mu_0 as MU0
 from scipy.special import ellipeinc, ellipkinc
@@ -7,13 +14,6 @@ from scipy.special import ellipeinc, ellipkinc
 from magpylib._src.fields.field_BH_cylinder import _BHJM_magnet_cylinder
 from magpylib._src.fields.special_el3 import _el3_angle
 from magpylib._src.input_checks import check_field_input
-
-# pylint: disable=too-many-lines
-# pylint: disable=line-too-long
-# pylint: disable=missing-function-docstring
-# pylint: disable=no-name-in-module
-# pylint: disable=too-many-statements
-# pylint: disable=too-many-positional-arguments
 
 
 def _arctan_k_tan_2(k, phi):
@@ -1948,7 +1948,9 @@ def _case214(r, phi_j, phi_bar_j, phi_bar_M, theta_M, z_bar_k):
     results[:, 0, 0] = _Hr_ri_case214(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
     results[:, 0, 1] = _Hr_phij_case214(phi_bar_M, theta_M, z_bar_k)
     results[:, 0, 2] = _Hr_zk_case214(r, phi_bar_j, theta_M, z_bar_k)
-    results[:, 1, 0] = _Hphi_ri_case214(r, phi_j, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
+    results[:, 1, 0] = _Hphi_ri_case214(
+        r, phi_j, phi_bar_j, phi_bar_M, theta_M, z_bar_k
+    )
     results[:, 1, 2] = _Hphi_zk_case214(r, theta_M, z_bar_k)
     results[:, 2, 0] = _Hz_ri_case214(r, phi_bar_j, phi_bar_M, theta_M, z_bar_k)
     results[:, 2, 2] = _Hz_zk_case214(r, phi_bar_j, theta_M, z_bar_k)
@@ -2126,7 +2128,7 @@ def magnet_cylinder_segment_Hfield(
         given in radians and positions.
     dimensions : array-like, shape (n, 6)
         Segment dimensions ``(r1, r2, φ1, φ2, z1, z2)`` where ``r1 < r2`` are inner
-        and outer radii (m), ``φ1 < φ2`` are azimuth section angles (rad), and
+        and outer radii, ``φ1 < φ2`` are azimuth section angles (rad), and
         ``z1 < z2`` are axial limits.
     magnetizations : array-like, shape (n, 3)
         Magnetization vectors in spherical coordinates ``(M, φ, θ)`` where ``M`` is

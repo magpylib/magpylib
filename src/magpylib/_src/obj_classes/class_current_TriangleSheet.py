@@ -1,6 +1,6 @@
-# pylint: disable=too-many-positional-arguments
-
 """TriangleSheet current class code"""
+
+# pylint: disable=too-many-positional-arguments
 
 from __future__ import annotations
 
@@ -145,7 +145,10 @@ class TriangleSheet(_BaseSource, _BaseTarget):
         """check and format user inputs"""
         cd = check_format_input_vector(
             current_densities,
-            dims=(1,2,),
+            dims=(
+                1,
+                2,
+            ),
             shape_m1=3,
             sig_name="TriangleSheet.current_densities",
             sig_type="`None` or array_like (list, tuple, ndarray) with shape (n,3)",
@@ -161,7 +164,10 @@ class TriangleSheet(_BaseSource, _BaseTarget):
         ).astype(float)
         fac = check_format_input_vector(
             faces,
-            dims=(1,2,),
+            dims=(
+                1,
+                2,
+            ),
             shape_m1=3,
             sig_name="TriangleSheet.faces",
             sig_type="`None` or array_like (list, tuple, ndarray) with shape (n,3)",

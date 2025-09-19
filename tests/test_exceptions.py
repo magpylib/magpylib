@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 import magpylib as magpy
@@ -14,6 +13,7 @@ GETBH_KWARGS = {
     "output": "ndarray",
     "in_out": "auto",
 }
+
 
 def getBH_level2_bad_input1():
     """test BadUserInput error at _getBH_level2"""
@@ -136,6 +136,7 @@ def test_except_utility():
         utility_format_src_inputs()
     with pytest.raises(MagpylibBadUserInput):
         utility_format_obs_inputs()
+
 
 def test_except_getBH_lev2():
     """_getBH_level2 exception testing"""

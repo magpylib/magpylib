@@ -39,7 +39,7 @@ class _BaseTarget(ABC):
 
     def _validate_meshing(self, value):
         """Basic meshing validation: allow positive integers
-        
+
         Subclasses override this method with class-specific requirements.
         """
         if isinstance(value, int) and value > 0:

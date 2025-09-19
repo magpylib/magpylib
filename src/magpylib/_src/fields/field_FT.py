@@ -1,5 +1,7 @@
 """Force implementation."""
 
+# pylint: disable=import-outside-toplevel
+
 import logging
 
 import numpy as np
@@ -8,8 +10,6 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._src.fields.field_BH import getB
 from magpylib._src.input_checks import check_dimensions, check_excitations
 from magpylib._src.utility import format_src_inputs
-
-# pylint: disable=import-outside-toplevel
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
@@ -195,7 +195,7 @@ def getFT(
     eps : float, default 1e-5
         Finite-difference step size for gradient-field computation for magnet
         targets. A good value is ``1e-5 * characteristic_system_size`` (e.g.,
-        magnet size or source–target distance).
+        magnet size or source-target distance).
     squeeze : bool, default True
         If ``True``, dimensions of size 1 in the output are removed.
     meshreport : bool, default False
@@ -235,7 +235,7 @@ def getFT(
     Notes
     -----
     The force and torque are computed via
-    ``F = (∇B) · MOM`` and ``T = B × MOM + r × F``. The gradient field is
+    ``F = (gradB) · MOM`` and ``T = B x MOM + r x F``. The gradient field is
     obtained using finite differences on the meshed targets.
     """
     # COMPUTATION SCHEME

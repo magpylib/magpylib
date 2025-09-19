@@ -10,6 +10,7 @@ from magpylib._src.fields.special_cel import _cel
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
 
+
 def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -> list:
     """B-field of axially magnetized cylinders in cylindrical coordinates.
 
@@ -52,7 +53,7 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
     Notes
     -----
     Implementation based on: Derby, American Journal of Physics 78(3) (2010),
-    229–235.
+    229-235.
     """
     n = len(z0)
 
@@ -83,6 +84,7 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
     )
 
     return np.vstack((Br, np.zeros(n), Bz))
+
 
 def magnet_cylinder_diametral_Hfield(
     z0: np.ndarray,
@@ -134,7 +136,7 @@ def magnet_cylinder_diametral_Hfield(
     Notes
     -----
     Implementation partially based on Caciagli, Journal of Magnetism and
-    Magnetic Materials 456 (2018): 423–432, and [Ortner, Leitner, Rauber]
+    Magnetic Materials 456 (2018): 423-432, and [Ortner, Leitner, Rauber]
     (unpublished).
     """
     # pylint: disable=too-many-statements
