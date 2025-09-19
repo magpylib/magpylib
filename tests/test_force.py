@@ -634,9 +634,9 @@ def test_force_path7a():
         polarization=(0, 0, 100),
     )
 
-    F1, T1 = magpy.getFT(src, dip, pivot=(0, 0, 0))
-    F2, T2 = magpy.getFT(src, sqloop, pivot=(0, 0, 0))
-    F3, T3 = magpy.getFT(src, cube, pivot=(0, 0, 0))
+    F1, _T1 = magpy.getFT(src, dip, pivot=(0, 0, 0))
+    F2, _T2 = magpy.getFT(src, sqloop, pivot=(0, 0, 0))
+    F3, _T3 = magpy.getFT(src, cube, pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     assert abs(F1[0, 2] + F1[1, 2]) < 1e-14  # dipole
@@ -698,9 +698,9 @@ def test_force_path7b():
         polarization=(0, 0, 100),
     )
 
-    F1, T1 = magpy.getFT([src, src], dip, pivot=(0, 0, 0))
-    F2, T2 = magpy.getFT([src, src], sqloop, pivot=(0, 0, 0))
-    F3, T3 = magpy.getFT([src, src], cube, pivot=(0, 0, 0))
+    F1, _T1 = magpy.getFT([src, src], dip, pivot=(0, 0, 0))
+    F2, _T2 = magpy.getFT([src, src], sqloop, pivot=(0, 0, 0))
+    F3, _T3 = magpy.getFT([src, src], cube, pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     for i in range(2):
@@ -763,9 +763,9 @@ def test_force_path7c():
         polarization=(0, 0, 100),
     )
 
-    F1, T1 = magpy.getFT(src, dip, pivot=(0, 0, 0))
-    F2, T2 = magpy.getFT(src, sqloop, pivot=(0, 0, 0))
-    F3, T3 = magpy.getFT(src, cube, pivot=(0, 0, 0))
+    F1, _T1 = magpy.getFT(src, dip, pivot=(0, 0, 0))
+    F2, _T2 = magpy.getFT(src, sqloop, pivot=(0, 0, 0))
+    F3, _T3 = magpy.getFT(src, cube, pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     for i in range(3):
@@ -831,9 +831,9 @@ def test_force_path7d():
         polarization=(0, 0, 100),
     )
 
-    F1, T1 = magpy.getFT([src, src], dip, pivot=(0, 0, 0))
-    F2, T2 = magpy.getFT([src, src], sqloop, pivot=(0, 0, 0))
-    F3, T3 = magpy.getFT([src, src], cube, pivot=(0, 0, 0))
+    F1, _T1 = magpy.getFT([src, src], dip, pivot=(0, 0, 0))
+    F2, _T2 = magpy.getFT([src, src], sqloop, pivot=(0, 0, 0))
+    F3, _T3 = magpy.getFT([src, src], cube, pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     for j in range(2):
@@ -897,9 +897,9 @@ def test_force_path7e():
         polarization=(0, 0, 100),
     )
 
-    F1, T1 = magpy.getFT(src, [dip, dip], pivot=(0, 0, 0))
-    F2, T2 = magpy.getFT(src, [sqloop, sqloop], pivot=(0, 0, 0))
-    F3, T3 = magpy.getFT(src, [cube, cube], pivot=(0, 0, 0))
+    F1, _T1 = magpy.getFT(src, [dip, dip], pivot=(0, 0, 0))
+    F2, _T2 = magpy.getFT(src, [sqloop, sqloop], pivot=(0, 0, 0))
+    F3, _T3 = magpy.getFT(src, [cube, cube], pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     for i in range(2):
@@ -962,9 +962,9 @@ def test_force_path7f():
         polarization=(0, 0, 100),
     )
 
-    F1, T1 = magpy.getFT([src, src], [dip, dip], pivot=(0, 0, 0))
-    F2, T2 = magpy.getFT([src, src], [sqloop, sqloop], pivot=(0, 0, 0))
-    F3, T3 = magpy.getFT([src, src], [cube, cube], pivot=(0, 0, 0))
+    F1, _T1 = magpy.getFT([src, src], [dip, dip], pivot=(0, 0, 0))
+    F2, _T2 = magpy.getFT([src, src], [sqloop, sqloop], pivot=(0, 0, 0))
+    F3, _T3 = magpy.getFT([src, src], [cube, cube], pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     for j in range(2):
@@ -1028,9 +1028,9 @@ def test_force_path7g():
         polarization=(0, 0, 100),
     )
 
-    F1, T1 = magpy.getFT(src, [dip, dip], pivot=(0, 0, 0))
-    F2, T2 = magpy.getFT(src, [sqloop, sqloop], pivot=(0, 0, 0))
-    F3, T3 = magpy.getFT(src, [cube, cube], pivot=(0, 0, 0))
+    F1, _T1 = magpy.getFT(src, [dip, dip], pivot=(0, 0, 0))
+    F2, _T2 = magpy.getFT(src, [sqloop, sqloop], pivot=(0, 0, 0))
+    F3, _T3 = magpy.getFT(src, [cube, cube], pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     for j in range(2):
@@ -1097,9 +1097,9 @@ def test_force_path7h():
         polarization=(0, 0, 100),
     )
 
-    F1, T1 = magpy.getFT([src, src], [dip, dip], pivot=(0, 0, 0))
-    F2, T2 = magpy.getFT([src, src], [sqloop, sqloop], pivot=(0, 0, 0))
-    F3, T3 = magpy.getFT([src, src], [cube, cube], pivot=(0, 0, 0))
+    F1, _T1 = magpy.getFT([src, src], [dip, dip], pivot=(0, 0, 0))
+    F2, _T2 = magpy.getFT([src, src], [sqloop, sqloop], pivot=(0, 0, 0))
+    F3, _T3 = magpy.getFT([src, src], [cube, cube], pivot=(0, 0, 0))
 
     # 180° rotated must give same values negative
     for k in range(2):
