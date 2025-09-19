@@ -145,7 +145,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
         """check and format user inputs"""
         cd = check_format_input_vector(
             current_densities,
-            dims=(2,),
+            dims=(1,2,),
             shape_m1=3,
             sig_name="TriangleSheet.current_densities",
             sig_type="`None` or array_like (list, tuple, ndarray) with shape (n,3)",
@@ -161,18 +161,24 @@ class TriangleSheet(_BaseSource, _BaseTarget):
         ).astype(float)
         fac = check_format_input_vector(
             faces,
-            dims=(2,),
+            dims=(1,2,),
             shape_m1=3,
             sig_name="TriangleSheet.faces",
             sig_type="`None` or array_like (list, tuple, ndarray) with shape (n,3)",
             allow_None=False,
         ).astype(int)
 
+        # allow init of single faces without extra dimension
+        if cd.ndim == 1:
+            cd = np.expand_dims(cd, 0)
+        if fac.ndim == 1:
+            fac = np.expand_dims(fac, 0)
+
         if len(verts) < 3:
             msg = f"Parameter `vertices` of {self} must have at least 3 vertices."
             raise ValueError(msg)
 
-        if len(faces) != len(cd):
+        if len(fac) != len(cd):
             msg = f"Parameters `current_densities` and `faces` of {self} must have same length."
             raise ValueError(msg)
 
