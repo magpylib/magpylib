@@ -168,7 +168,7 @@ def getFT(
     eps=1e-5,
     squeeze=True,
     meshreport=False,
-    returnmesh=False,
+    return_mesh=False,
 ):
     """
     Compute magnetic force and torque acting on the targets that are exposed
@@ -209,7 +209,7 @@ def getFT(
     meshreport: bool, default=False
         If True, a report of the mesh used for each target will be printed.
 
-    returnmesh: bool, default=False
+    return_mesh: bool, default=False
         If True, the meshes will be returned as a list of dictionaries instead of force and torque.
 
     Returns
@@ -217,7 +217,7 @@ def getFT(
     tuple: (force, torque) as respective ndarrays of shape (n,p,m,3), when n sources, p path length,
     and m targets are given.
 
-    If returnmesh is True, the meshes will be returned as a list instead of force and torque.
+    If return_mesh is True, the meshes will be returned as a list instead of force and torque.
 
     Examples
     --------
@@ -366,7 +366,7 @@ def getFT(
         OBS7[:, start7:end7] = mesh.reshape((n_path, n_mesh7, 3))
 
     # Return mesh for analysis
-    if returnmesh:
+    if return_mesh:
         return meshes
 
     # B-FIELD COMPUTATION ############################################################
