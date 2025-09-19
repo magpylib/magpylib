@@ -86,7 +86,7 @@ Keep in mind that there are still many reasons why your simulation might not fit
 :::
 :::{grid-item}
 :columns: 6
-![](../../../_static/images/examples_icon_WIP.png)
+![Work in Progress](../../../_static/images/examples_icon_WIP.png)
 :::
 ::::
 
