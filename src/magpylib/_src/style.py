@@ -4,7 +4,8 @@
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-positional-arguments
-from __future__ import annotations
+
+import re
 
 import numpy as np
 
@@ -27,22 +28,22 @@ def get_families(obj):
     # pylint: disable=import-outside-toplevel
     # pylint: disable=possibly-unused-variable
     # pylint: disable=redefined-outer-name
-    # ruff: noqa: F401, PLC0415
-    from magpylib._src.display.traces_generic import MagpyMarkers as Markers
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent as Current
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet as Magnet
-    from magpylib._src.obj_classes.class_current_Circle import Circle
-    from magpylib._src.obj_classes.class_current_Polyline import Polyline
-    from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid
-    from magpylib._src.obj_classes.class_magnet_Cylinder import Cylinder
-    from magpylib._src.obj_classes.class_magnet_CylinderSegment import CylinderSegment
-    from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
-    from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
-    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
-    from magpylib._src.obj_classes.class_misc_CustomSource import CustomSource
-    from magpylib._src.obj_classes.class_misc_Dipole import Dipole
-    from magpylib._src.obj_classes.class_misc_Triangle import Triangle
-    from magpylib._src.obj_classes.class_Sensor import Sensor
+    # ruff: noqa: F401
+    from magpylib._src.display.traces_generic import MagpyMarkers as Markers  # noqa: I001, PLC0415
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent as Current  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet as Magnet  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_current_Circle import Circle  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_current_Polyline import Polyline  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_magnet_Cylinder import Cylinder  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_magnet_CylinderSegment import CylinderSegment  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_magnet_Sphere import Sphere  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_misc_CustomSource import CustomSource  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_misc_Dipole import Dipole  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_misc_Triangle import Triangle  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
     # ruff: enable = F401, I001, I002
 
     loc = locals()
@@ -1658,15 +1659,12 @@ class PixelField(MagicProperties):
 
     Parameters
     ----------
-    vectorsource: str, default=None
-        The pixel orientation vector source (one of "B", "H", "M", "J")
-
-    colorsource: str, default=None
+    source: str, default=None
         The pixel color source (e.g. "Bx", "Hxy", "J", etc.). If not specified,
-        the amplitude of the `vectorsource` value is used.
+        the amplitude of the `source` value is used.
 
-    colorscale: str, default="Inferno",
-        The colorscale used with `colorsource`.
+    colormap: str, default="Inferno",
+        The colormap used with `source`.
 
     shownull: bool, default=True
         Show/hide null or invalid field values
@@ -1674,14 +1672,20 @@ class PixelField(MagicProperties):
     symbol: {"cone", "arrow", "arrow3d"}:
         Orientation symbol for field vector.
 
-    sizemode: {"constant", "linear", "log"}
-        Symbol size mode relative the the field magnitude.
+    sizescaling: {"uniform", "linear","log","log^[2-9]"}
+        Symbol size scaling relative the the field magnitude.
+
+    sizemin: float, default=0.
+        Minimum relative size of field symbols (0 to 1).
+
+    colorscaling: {"uniform", "linear","log","log^[2-9]"}
+        Color scale scaling relative the the field magnitude.
     """
 
-    _allowed_vectorsources = ("B", "H", "J", "M")
-    _allowed_symbols = ("cone", "arrow", "arrow3d")
-    _allowed_sizemodes = ("constant", "linear", "log")
-    _allowed_colorscales = (
+    _allowed_scalings_pattern = r"^(uniform|linear|(log)+|log\^[2-9])$"
+    _allowed_vectors = ("B", "H", "M", "J")
+    _allowed_symbols = ("cone", "arrow", "arrow3d", "none")
+    _allowed_colormaps = (
         "Viridis",
         "Jet",
         "Rainbow",
@@ -1710,53 +1714,41 @@ class PixelField(MagicProperties):
     )
 
     @property
-    def vectorsource(self):
+    def source(self):
         """Pixel vector source."""
-        return self._vectorsource
+        return self._source
 
-    @vectorsource.setter
-    def vectorsource(self, val):
-        assert val is None or val in self._allowed_vectorsources, (
-            f"The `vectorsource` property of {type(self).__name__} must be one of"
-            f"{self._allowed_vectorsources},\n"
-            f"but received {val!r} instead."
-        )
-        self._vectorsource = val
-
-    @property
-    def colorsource(self):
-        """Pixel vector source."""
-        return self._colorsource
-
-    @colorsource.setter
-    def colorsource(self, val):
+    @source.setter
+    def source(self, val):
         valid = True
         if val not in (None, False):
             field_str, *coords_str = val
             if not coords_str:
                 coords_str = list("xyz")
-            if field_str not in "BHMJ" and set(coords_str).difference(set("xyz")):
+            if field_str not in self._allowed_vectors and set(coords_str).difference(
+                set("xyz")
+            ):
                 valid = False
         assert valid, (
-            f"The `colorsource` property of {type(self).__name__} must be None or False or start"
-            f" with either {self._allowed_vectorsources} and be followed by a combination of"
+            f"The `source` property of {type(self).__name__} must be None or False or start"
+            f" with either {self._allowed_vectors} and be followed by a combination of"
             f" 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') ) but received {val!r} instead."
         )
-        self._colorsource = val
+        self._source = val
 
     @property
-    def colorscale(self):
+    def colormap(self):
         """Pixel vector source."""
-        return self._colorscale
+        return self._colormap
 
-    @colorscale.setter
-    def colorscale(self, val):
-        assert val is None or val in self._allowed_colorscales, (
-            f"The `colorscale` property of {type(self).__name__} must be one of"
-            f"{self._allowed_colorscales},\n"
+    @colormap.setter
+    def colormap(self, val):
+        assert val is None or val in self._allowed_colormaps, (
+            f"The `colormap` property of {type(self).__name__} must be one of"
+            f"{self._allowed_colormaps},\n"
             f"but received {val!r} instead."
         )
-        self._colorscale = val
+        self._colormap = val
 
     @property
     def shownull(self):
@@ -1786,18 +1778,43 @@ class PixelField(MagicProperties):
         self._symbol = val
 
     @property
-    def sizemode(self):
-        """Pixel sizemode. Can be one of `{"constant", "linear", "log"}`."""
-        return self._sizemode
+    def sizescaling(self):
+        """Pixel sizescaling. Can be one of `{"uniform", "linear","log","log^[2-9]"}`."""
+        return self._sizescaling
 
-    @sizemode.setter
-    def sizemode(self, val):
-        assert val is None or val in self._allowed_sizemodes, (
-            f"The `sizemode` property of {type(self).__name__} must be one of"
-            f"{self._allowed_sizemodes},\n"
+    @sizescaling.setter
+    def sizescaling(self, val):
+        self._sizescaling = self._validate_scaling(val, name="sizescaling")
+
+    @property
+    def sizemin(self):
+        """Minimum relative size of field symbols (0 to 1)."""
+        return self._sizemin
+
+    @sizemin.setter
+    def sizemin(self, val):
+        assert val is None or (isinstance(val, float | int) and 0 <= val <= 1), (
+            "The `sizemin` property must be a value between 0 and 1,\n"
             f"but received {val!r} instead."
         )
-        self._sizemode = val
+        self._sizemin = val
+
+    @property
+    def colorscaling(self):
+        """Pixel colorscaling. Can be one of `{"uniform", "linear","log","log^[2-9]"}`."""
+        return self._colorscaling
+
+    @colorscaling.setter
+    def colorscaling(self, val):
+        self._colorscaling = self._validate_scaling(val, name="colorscaling")
+
+    def _validate_scaling(self, val, name):
+        assert val is None or re.match(self._allowed_scalings_pattern, str(val)), (
+            f"The `{name}` property of {type(self).__name__} must match the regex pattern"
+            f" {self._allowed_scalings_pattern},\n"
+            f"but received {val!r} instead."
+        )
+        return val
 
 
 class Pixel(MagicProperties):
@@ -1818,9 +1835,10 @@ class Pixel(MagicProperties):
         Defines the pixel color@property.
 
     symbol: str, default=None
-        Pixel symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`.
-        Only applies for matplotlib plotting backend.
+        Pixel symbol. Can be one of `['cube', '.', 'o', '+', 'D', 'd', 's', 'x']`.
     """
+
+    _allowed_symbols = ("cube", *ALLOWED_SYMBOLS)
 
     def __init__(self, size=1, sizemode=None, color=None, symbol=None, **kwargs):
         super().__init__(
@@ -1870,14 +1888,14 @@ class Pixel(MagicProperties):
 
     @property
     def symbol(self):
-        """Pixel symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`."""
+        """Pixel symbol. Can be one of `['cube', '.', 'o', '+', 'D', 'd', 's', 'x']`."""
         return self._symbol
 
     @symbol.setter
     def symbol(self, val):
-        assert val is None or val in ALLOWED_SYMBOLS, (
+        assert val is None or val in self._allowed_symbols, (
             f"The `symbol` property of {type(self).__name__} must be one of"
-            f"{ALLOWED_SYMBOLS},\n"
+            f"{self._allowed_symbols},\n"
             f"but received {val!r} instead."
         )
         self._symbol = val

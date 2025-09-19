@@ -3,7 +3,6 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
 # import numbers
-from __future__ import annotations
 
 import warnings
 from collections.abc import Callable, Sequence
@@ -77,8 +76,8 @@ def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> 
     ### Info:
     - exits if invalid sources are given
     """
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
-    from magpylib._src.obj_classes.class_Sensor import Sensor
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
+    from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
 
     obj_list = []
     flatten_collection = "collections" not in allow.split("+")
@@ -112,8 +111,8 @@ def format_src_inputs(sources) -> list:
     - raises an error if sources format is bad
     """
 
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
-    from magpylib._src.obj_classes.class_Collection import Collection
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
+    from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
 
     # store all sources here
     src_list = []
@@ -196,9 +195,9 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
     """
     return only allowed objects - e.g. no sensors. Throw a warning when something is eliminated.
     """
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
-    from magpylib._src.obj_classes.class_Collection import Collection
-    from magpylib._src.obj_classes.class_Sensor import Sensor
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
+    from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
 
     # select wanted
     allowed_classes = ()
@@ -256,7 +255,7 @@ def get_unit_factor(unit_input, *, target_unit, deci_centi=True):
             pref, *suff = unit_input_str
             suff = "".join(suff)
         if suff == target_unit:
-            factor_power = prefs.get(pref, None)
+            factor_power = prefs.get(pref)
 
     if factor_power is None or len(unit_input_str) > 2:
         valid_inputs = [f"{k}{target_unit}" for k in prefs]
@@ -310,7 +309,7 @@ def add_iteration_suffix(name):
         'col_02' -> 'col_03'
     """
     # pylint: disable=import-outside-toplevel
-    import re
+    import re  # noqa: PLC0415
 
     m = re.search(r"\d+$", name)
     n = "00"
@@ -350,7 +349,7 @@ def cyl_field_to_cart(phi, Br, Bphi=None):
 def rec_obj_remover(parent, child):
     """remove known child from parent collection"""
     # pylint: disable=protected-access
-    from magpylib._src.obj_classes.class_Collection import Collection
+    from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
 
     for obj in parent:
         if obj == child:
@@ -375,7 +374,7 @@ def get_subclasses(cls, recursive=False):
 def get_registered_sources():
     """Return all registered sources"""
     # pylint: disable=import-outside-toplevel
-    from magpylib._src.obj_classes.class_BaseExcitations import (
+    from magpylib._src.obj_classes.class_BaseExcitations import (  # noqa: PLC0415
         BaseCurrent,
         BaseMagnet,
         BaseSource,
@@ -392,7 +391,7 @@ def is_notebook() -> bool:  # pragma: no cover
     """Check if execution is within a IPython environment"""
     # pylint: disable=import-outside-toplevel
     try:
-        from IPython import get_ipython
+        from IPython import get_ipython  # noqa: PLC0415
 
         shell = get_ipython().__class__.__name__
         if shell == "ZMQInteractiveShell":
@@ -409,19 +408,19 @@ def open_animation(filepath, embed=True):
     # pylint: disable=import-outside-toplevel
     if is_notebook():
         if str(filepath).lower().endswith(".gif"):
-            from IPython.display import Image as IPyImage
-            from IPython.display import display
+            from IPython.display import Image as IPyImage  # noqa: PLC0415
+            from IPython.display import display  # noqa: PLC0415
 
             display(IPyImage(data=filepath, embed=embed))
         elif str(filepath).lower().endswith(".mp4"):
-            from IPython.display import Video, display
+            from IPython.display import Video, display  # noqa: PLC0415
 
             display(Video(data=filepath, embed=embed))
         else:  # pragma: no cover
             msg = "Filetype not supported, only 'mp4 or 'gif' allowed"
             raise TypeError(msg)
     else:
-        import webbrowser
+        import webbrowser  # noqa: PLC0415
 
         webbrowser.open(filepath)
 

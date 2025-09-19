@@ -3,8 +3,6 @@ Implementations of analytical expressions for the magnetic field of
 a circular current loop. Computation details in function docstrings.
 """
 
-from __future__ import annotations
-
 import numpy as np
 from scipy.constants import mu_0 as MU0
 

@@ -3,9 +3,10 @@
 # pylint: disable=redefined-builtin
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-positional-arguments
-from __future__ import annotations
 
 from collections import Counter
+
+import numpy as np
 
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
@@ -134,7 +135,7 @@ class BaseCollection(BaseDisplayRepr):
         self._collections = []
         self.add(*children, override_parent=override_parent)
 
-    # property getters and setters
+    # Properties
     @property
     def children(self):
         """An ordered list of top level child objects."""
@@ -226,7 +227,7 @@ class BaseCollection(BaseDisplayRepr):
         """An ordered list of all collection objects in the collection tree."""
         return check_format_input_obj(self, "collections")
 
-    # dunders
+    # Dunders
     def __iter__(self):
         yield from self._children
 
@@ -247,6 +248,7 @@ class BaseCollection(BaseDisplayRepr):
             lines.append(line)
         return f"""<pre>{"<br>".join(lines)}</pre>"""
 
+    # Methods
     def describe(self, format="type+label+id", max_elems=10, return_string=False):
         # pylint: disable=arguments-differ
         """Returns or prints a tree view of the collection.
@@ -277,7 +279,6 @@ class BaseCollection(BaseDisplayRepr):
         print(output)  # noqa: T201
         return None
 
-    # methods -------------------------------------------------------
     def add(self, *children, override_parent=False):
         """Add sources, sensors or collections.
 
@@ -356,8 +357,8 @@ class BaseCollection(BaseDisplayRepr):
     def _update_src_and_sens(self):
         """updates sources, sensors and collections attributes from children"""
         # pylint: disable=protected-access
-        from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
-        from magpylib._src.obj_classes.class_Sensor import Sensor
+        from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
+        from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
 
         self._sources = [obj for obj in self._children if isinstance(obj, BaseSource)]
         self._sensors = [obj for obj in self._children if isinstance(obj, Sensor)]
@@ -857,6 +858,14 @@ class Collection(BaseGeo, BaseCollection):
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
 
+    volume: float
+        Read-only. Total Collection volume in units of m^3. Consider that overlapping objects
+        may lead to double counting.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Collection centroid in units of m computed via the volume-weighted average of
+        all child centroids.
+
     override_parent: bool, default=False
         If False thrown an error when an attempt is made to add an object that
         has already a parent to a Collection. If True, allow adding the object
@@ -871,7 +880,6 @@ class Collection(BaseGeo, BaseCollection):
 
     collections: `Collection` objects
         An ordered list of all collection objects in the collection.
-
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -956,3 +964,24 @@ class Collection(BaseGeo, BaseCollection):
             **kwargs,
         )
         BaseCollection.__init__(self, *args, override_parent=override_parent)
+
+    # Abstract methods implementation
+    def _get_volume(self):
+        """Volume of all objects in units of m³."""
+        return sum(child.volume for child in self.children_all)
+
+    def _get_centroid(self):
+        """Centroid of collection weighted by children volumes in units of m."""
+        total_volume = 0.0
+        weighted_centroid = np.array([0.0, 0.0, 0.0])
+
+        for child in self.children_all:
+            child_volume = child.volume
+            if child_volume > 0:
+                child_centroid = child.centroid
+                weighted_centroid += child_centroid * child_volume
+                total_volume += child_volume
+
+        if total_volume > 0:
+            return weighted_centroid / total_volume
+        return self.position

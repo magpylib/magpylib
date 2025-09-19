@@ -158,9 +158,10 @@ Thumbs.db
 *~
 *.swp
 __temp*.py
+__temp*.ipynb
 
 # uv
 uv.lock
 
-# VS Code settings
+# vscode
 .vscode/

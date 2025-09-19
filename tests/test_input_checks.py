@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R
@@ -740,6 +738,7 @@ def test_input_observers_good(observers):
     """good observers input"""
     src = magpy.misc.Dipole(moment=(1, 2, 3))
     B = src.getB(observers)
+    print(B)
     assert isinstance(B, np.ndarray)
 
 

@@ -4,12 +4,20 @@
 
 - Added new `style.pixel.field` parameters to quickly represent vector fields
   ([#793](https://github.com/magpylib/magpylib/pull/793))
-- Input `in_out` is now by default set to `"auto"` for collections to avoiding
-  ambiguities.
-- Fixed a bug where a core getH would return the B-field
+- Added the `current_sheet_Hfield` core computation function, and the classes
+  `TriangleStrip` and `TriangleSheet` enabling current sheets in the object
+  oriented interface. ([#788](https://github.com/magpylib/magpylib/issues/788))
+- Adding the `centroid` property to all Magpylib objects. This gives the same as
+  the `barycenter` property for the objects that have it.
+  ([#864](https://github.com/magpylib/magpylib/issues/864))
+- Adding the `volume` property to all Magpylib objects
+  ([#864](https://github.com/magpylib/magpylib/issues/864))
 - Improved docstrings by adding examples where missing and by using rounding in
-  all examples to avoid doctest fails
-- Improved documentation
+  all examples to avoid doctest fails.
+- Fixed a bug where a core getH would return the B-field.
+- Input `in_out` is by default set to `"auto"` for collections to avoiding
+  ambiguities.
+- Improve documentation
   ([#829](https://github.com/magpylib/magpylib/issues/829))
 
 ## [5.1.1] - 2024-10-31
@@ -527,7 +535,6 @@ This is a major update that includes
     the Sensor (in the Sensor local CS). `pixel` is an arbitrary array_like of
     the shape (N1, N2, ..., 3).
 - Geometry paths:
-
   - The `position` and `orientation` attributes can now store paths in the
     global CS. For a path of length M the attribute `position` is an array of
     the shape (M,3) and `orientation` is a Rotation object with length M. Each
@@ -565,7 +572,6 @@ This is a major update that includes
   - The top level function `displaySystem()` was renamed to `display()`.
 - Renamed attributes (parameters cannot be initialized in their short forms
   anymore):
-
   - `angle` and `axis` are replaced by `orientation`
   - `dimension` is replaced by `diameter` for Loop and Sphere classes.
   - `angle`&`axis` are replaced by `orientation`.

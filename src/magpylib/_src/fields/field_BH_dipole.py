@@ -2,8 +2,6 @@
 Core implementation of dipole field
 """
 
-from __future__ import annotations
-
 import numpy as np
 from scipy.constants import mu_0 as MU0
 

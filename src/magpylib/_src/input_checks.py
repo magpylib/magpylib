@@ -3,7 +3,6 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-positional-arguments
-from __future__ import annotations
 
 import inspect
 import numbers
@@ -385,7 +384,7 @@ def check_format_input_vector2(
     return inp
 
 
-def check_format_input_vertices(inp):
+def check_format_input_vertices(inp, minlength=2):
     """checks vertices input and returns in formatted form
     - vector check with dim = (n,3) but n must be >=2
     """
@@ -398,7 +397,7 @@ def check_format_input_vertices(inp):
         allow_None=True,
     )
 
-    if inp is not None and inp.shape[0] < 2:
+    if inp is not None and inp.shape[0] < minlength:
         msg = "Input parameter `vertices` must have more than one vertex."
         raise MagpylibBadUserInput(msg)
     return inp
@@ -460,8 +459,8 @@ def check_format_input_observers(inp, pixel_agg=None):
     checks observers input and returns a list of sensor objects
     """
     # pylint: disable=raise-missing-from
-    from magpylib._src.obj_classes.class_Collection import Collection
-    from magpylib._src.obj_classes.class_Sensor import Sensor
+    from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
 
     # make bare Sensor, bare Collection into a list
     if isinstance(inp, Collection | Sensor):
@@ -538,9 +537,9 @@ def check_format_input_obj(
     recursive: bool
         Flatten Collection objects
     """
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
-    from magpylib._src.obj_classes.class_Collection import Collection
-    from magpylib._src.obj_classes.class_Sensor import Sensor
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
+    from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
 
     # select wanted
     wanted_types = ()

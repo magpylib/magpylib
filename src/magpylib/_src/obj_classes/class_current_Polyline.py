@@ -2,10 +2,10 @@
 
 """Polyline current class code"""
 
-from __future__ import annotations
-
 import warnings
 from typing import ClassVar
+
+import numpy as np
 
 from magpylib._src.display.traces_core import make_Polyline
 from magpylib._src.exceptions import MagpylibDeprecationWarning
@@ -44,6 +44,12 @@ class Polyline(BaseCurrent):
     current: float, default=`None`
         Electrical current in units of A.
 
+    volume: float
+        Read-only. Object physical volume in units of m^3 - set to 0 for this class.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m - set to mean of vertices for this class.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -58,8 +64,7 @@ class Polyline(BaseCurrent):
     Examples
     --------
     `Polyline` objects are magnetic field sources. In this example we compute the H-field in A/m
-    of a square-shaped line-current with 1 A current at the observer position (1,1,1) given in
-    units of m:
+    of a square-shaped line-current with 1 A current at the observer position (1,1,1) cm:
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -99,7 +104,7 @@ class Polyline(BaseCurrent):
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
 
-    # property getters and setters
+    # Properties
     @property
     def vertices(self):
         """
@@ -120,6 +125,17 @@ class Polyline(BaseCurrent):
         if self.vertices is None:
             return "no vertices"
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        return 0.0
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        if self.vertices is not None:
+            return np.mean(self.vertices, axis=0) + self.position
+        return self.position
 
 
 class Line(Polyline):

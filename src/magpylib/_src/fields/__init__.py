@@ -1,7 +1,5 @@
 """_src.fields"""
 
-from __future__ import annotations
-
 __all__ = ["getB", "getH", "getJ", "getM"]
 
 # create interface to outside of package

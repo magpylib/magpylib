@@ -3,8 +3,6 @@ Implementations of analytical expressions for the magnetic field of homogeneousl
 magnetized Cuboids. Computation details in function docstrings.
 """
 
-from __future__ import annotations
-
 import numpy as np
 from scipy.constants import mu_0 as MU0
 

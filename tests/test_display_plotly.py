@@ -1,4 +1,4 @@
-from __future__ import annotations
+import re
 
 # pylint: disable=assignment-from-no-return
 # pylint: disable=no-member
@@ -266,12 +266,29 @@ def test_display_warnings():
     src.move(np.linspace((0.4, 0.4, 0.4), (4, 4, 4), 10), start=-1)
     fig = go.Figure()
 
-    with pytest.warns(UserWarning):  # animation_fps to big warning
+    with pytest.warns(UserWarning) as record:  # noqa: PT030, PT031
         src.show(canvas=fig, animation=5, animation_fps=3)
-    with pytest.warns(UserWarning):  # max frames surpassed
+        assert len(record) == 2
+        assert re.match(
+            r"The set `animation_fps` at 3 is greater than the max allowed of 2.*",
+            str(record[0].message),
+        )
+        assert re.match(
+            r"The number of frames \(10\) is greater than the max allowed of 2.*",
+            str(record[1].message),
+        )
+
+    with pytest.warns(
+        UserWarning,
+        match=r"The number of frames \(10\) is greater than the max allowed of 2.*",
+    ):
         src.show(canvas=fig, animation=True, animation_time=2, animation_fps=1)
+
     src = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
-    with pytest.warns(UserWarning):  # no object path detected
+    with pytest.warns(
+        UserWarning,
+        match=r"No path to be animated detected, displaying standard plot.*",
+    ):
         src.show(canvas=fig, style_path_frames=[], animation=True)
 
 
@@ -487,25 +504,6 @@ def test_units_length():
             assert ax.range == (-r, r)
 
 
-def test_field_coloring_subplot():
-    """Test field coloring in subplots for all colorsource options."""
-    c1 = magpy.magnet.Cuboid(
-        polarization=(1, 0, 0), dimension=(1, 1, 1), style_opacity=0.2
-    )
-    ls = np.linspace(-1, 1, 3)
-    s0 = magpy.Sensor(pixel=[[x, y, 0] for x in ls for y in ls], position=(0, 0, 0))
-    colorsources = ["H", "Jxy", "Bz", False]
-    subplots = []
-    for i, cs in enumerate(colorsources, 1):
-        s = s0.copy(
-            style_pixel_field_vectorsource="B",
-            style_pixel_field_colorsource=cs,
-            style_description=str(cs),
-        )
-        subplots.append({"objects": [c1, s], "col": i})
-    magpy.show(*subplots, backend="plotly", return_fig=True)
-
-
 def test_pixel_field_directional_symbols():
     """Test different directional symbols in subplots for all symbol options."""
     c1 = magpy.magnet.Cuboid(
@@ -517,7 +515,7 @@ def test_pixel_field_directional_symbols():
     subplots = []
     for i, sym in enumerate(symbols, 1):
         s = s0.copy(
-            style_pixel_field_vectorsource="B",
+            style_pixel_field_source="B",
             style_pixel_field_symbol=sym,
             style_description=str(sym),
         )
@@ -532,12 +530,12 @@ def test_pixel_field_sizing_modes():
     )
     ls = np.linspace(-1, 1, 3)
     s0 = magpy.Sensor(pixel=[[x, y, 0] for x in ls for y in ls], position=(0, 0, 0))
-    sizemodes = ["constant", "log", "linear"]
+    sizemodes = ["uniform", "linear", "log", "log^2", "log^9"]
     subplots = []
     for i, sm in enumerate(sizemodes, 1):
         s = s0.copy(
-            style_pixel_field_vectorsource="B",
-            style_pixel_field_sizemode=sm,
+            style_pixel_field_source="B",
+            style_pixel_field_sizescaling=sm,
             style_description=str(sm),
         )
         subplots.append({"objects": [c1, s], "col": i})
@@ -555,7 +553,7 @@ def test_pixel_field_null_values():
     subplots = []
     for i, sn in enumerate(shownulls, 1):
         s = s0.copy(
-            style_pixel_field_vectorsource="B",
+            style_pixel_field_source="B",
             style_pixel_field_shownull=sn,
             style_description=str(sn),
         )
@@ -574,8 +572,8 @@ def test_pixel_field_color_scales():
     subplots = []
     for i, cs in enumerate(colorscales, 1):
         s = s0.copy(
-            style_pixel_field_vectorsource="B",
-            style_pixel_field_colorscale=cs,
+            style_pixel_field_source="B",
+            style_pixel_field_colormap=cs,
             style_description=str(cs),
         )
         subplots.append({"objects": [c1, s], "col": i})

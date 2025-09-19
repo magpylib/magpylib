@@ -1,5 +1,4 @@
 # pylint: disable=too-many-positional-arguments
-from __future__ import annotations
 
 import math as m
 

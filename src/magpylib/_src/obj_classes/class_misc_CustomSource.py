@@ -1,7 +1,5 @@
 """Custom class code"""
 
-from __future__ import annotations
-
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 
 
@@ -33,6 +31,12 @@ class CustomSource(BaseSource):
         of T or A/m must be returned respectively. The `observers` argument must
         accept numpy ndarray inputs of shape (n,3), in which case the returned fields must
         be numpy ndarrays of shape (n,3) themselves.
+
+    volume: float
+        Read-only. Object physical volume in units of m^3 is set to zero for CustomSource objects.
+
+    centroid: np.ndarray, shape (3,) or (m,3)
+        Read-only. Object centroid in units of m.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -74,3 +78,12 @@ class CustomSource(BaseSource):
     ):
         # init inheritance
         super().__init__(position, orientation, field_func, style, **kwargs)
+
+    # Methods
+    def _get_volume(self):
+        """Volume of object in units of m³."""
+        return 0.0
+
+    def _get_centroid(self):
+        """Centroid of object in units of m."""
+        return self.position

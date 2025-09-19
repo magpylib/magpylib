@@ -1,7 +1,5 @@
 """Package level config defaults"""
 
-from __future__ import annotations
-
 DEFAULTS = {
     "display": {
         "autosizefactor": 10,
@@ -96,14 +94,15 @@ DEFAULTS = {
                     "size": 1,
                     "sizemode": "scaled",
                     "color": None,
-                    "symbol": None,
+                    "symbol": "cube",
                     "field": {
                         "symbol": "cone",
-                        "vectorsource": None,
-                        "colorsource": None,
-                        "colorscale": "Viridis",
+                        "source": None,
+                        "colormap": "Viridis",
                         "shownull": True,
-                        "sizemode": "constant",
+                        "sizescaling": "uniform",
+                        "sizemin": 0.1,
+                        "colorscaling": "linear",
                     },
                 },
                 "arrows": {

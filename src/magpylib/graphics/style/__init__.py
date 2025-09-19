@@ -2,8 +2,6 @@
 The `magpylib.display.style` sub-package provides different object styles.
 """
 
-from __future__ import annotations
-
 __all__ = [
     "CurrentStyle",
     "DipoleStyle",

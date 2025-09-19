@@ -232,11 +232,11 @@ The method <span style="color: orange">**to_TriangleCollection()**</span> transf
 
 
 ---------------------------------------------
-
+(docs-classes-current)=
 
 ## Current classes
 
-All currents are sources. Current objects have the <span style="color: orange">**current**</span> attribute which is a scalar that denotes the electrical current in units of ampere.
+All currents are sources. Current objects (except `TriangleSheet`) have the <span style="color: orange">**current**</span> attribute which is a scalar that denotes the electrical current in units of ampere.
 
 ### Circle
 ```python
@@ -267,6 +267,40 @@ magpylib.current.Polyline(position, orientation, vertices, current, style)
 :::{grid-item}
 :columns: 3
 ![](../../../_static/images/docu_classes_init_line.png)
+:::
+::::
+
+### TriangleStrip
+```python
+magpylib.current.TriangleStrip(position, orientation, vertices, current, style)
+```
+
+::::{grid} 2
+:::{grid-item}
+:columns: 9
+`TriangleStrip` objects represent triangular current sheets arranged in a strip. The current flows along a band which consists of Triangles {T1, T2, ...} defined by the vertices {V1, V2, V3, V4, ...} as T1=(V1,V2,V3), T2=(V2,V3,V4), and so on. The <span style="color: orange">**vertices**</span> attribute is a vector of all vertices $(\vec{V}_1, \vec{V}_2, ...)$ given in the local coordinates in units of meter. The given current is recomputed as a current density flowing in the direction $\vec{V}_3-\vec{V}_1$, in the first triangle, $\vec{V}_4-\vec{V}_2$ in the second triangle, and so on.
+:::
+:::{grid-item}
+:columns: 3
+![](../../../_static/images/docu_classes_init_trianglestrip.png)
+:::
+::::
+
+### TriangleSheet
+```python
+magpylib.current.Polyline(
+    position, orientation, vertices, faces, current_densities, style
+)
+```
+
+::::{grid} 2
+:::{grid-item}
+:columns: 9
+`TriangleSheet` objects represent collections of triangular current sheets. The triangles are defined by the <span style="color: orange">**vertices**</span> attribute, an array of unique points $(\vec{V}_1, \vec{V}_2, ...)$ in units of meter, and the <span style="color: orange">**faces**</span> attribute, which is an array of index-triplets that define individual faces $(\vec{F}_1, \vec{F}_2, ...)$. The electrical current density flowing along the sheet is given by the attribute <span style="color: orange">**current_densities**</span>, which is a vector of current density vectors $(\vec{j}_1, \vec{j}_2, ...)$ in units of Ampere/meter that must be of the same length as the faces input. The effective current density is the projection of the given current density vectors into the planes defined by the faces.
+:::
+:::{grid-item}
+:columns: 3
+![](../../../_static/images/docu_classes_init_trianglesheet.png)
 :::
 ::::
 

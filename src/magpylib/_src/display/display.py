@@ -1,7 +1,5 @@
 """Display function codes"""
 
-from __future__ import annotations
-
 import warnings
 from contextlib import contextmanager
 from importlib import import_module
@@ -30,7 +28,7 @@ disp_args = set(get_defaults_dict("display"))
 class RegisteredBackend:
     """Base class for display backends"""
 
-    backends: ClassVar[dict[str, RegisteredBackend]] = {}
+    backends: ClassVar[dict[str, "RegisteredBackend"]] = {}
 
     def __init__(
         self,
@@ -150,9 +148,9 @@ def infer_backend(canvas):
     in_notebook = False
     plotly_available = False
     try:
-        import plotly  # pylint: disable=unused-import
-
-        from magpylib._src.utility import is_notebook
+        # pylint: disable=unused-import
+        import plotly  # noqa: I001, PLC0415
+        from magpylib._src.utility import is_notebook  # noqa: PLC0415
 
         plotly_available = True
         in_notebook = is_notebook()
@@ -168,7 +166,8 @@ def infer_backend(canvas):
         backend = "plotly"
     else:
         try:
-            import pyvista  # pylint: disable=unused-import
+            # pylint: disable=unused-import
+            import pyvista  # noqa: PLC0415
 
             if isinstance(canvas, pyvista.Plotter):
                 backend = "pyvista"

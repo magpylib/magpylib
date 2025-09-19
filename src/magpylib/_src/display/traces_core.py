@@ -5,7 +5,6 @@
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-nested-blocks
 # pylint: disable=cyclic-import
-from __future__ import annotations
 
 import warnings
 from itertools import cycle
@@ -33,7 +32,7 @@ from magpylib._src.display.traces_utility import (
     create_null_dim_trace,
     draw_arrow_from_vertices,
     draw_arrow_on_circle,
-    get_hexcolors_from_scale,
+    get_hexcolors_from_colormap,
     get_legend_label,
     get_orientation_from_vec,
     group_traces,
@@ -103,6 +102,36 @@ def make_Polyline(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
             }
             traces.append({**trace, **kwargs})
     return traces
+
+
+def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+    """
+    Creates the plotly scatter3d parameters for a TriangleStrip current in a dictionary based on the
+    provided arguments.
+    """
+    style = obj.style
+    if obj.vertices is None:
+        trace = create_null_dim_trace(color=style.color)
+        return {**trace, **kwargs}
+
+    faces = [(i, i + 1, i + 2) for i in range(len(obj.vertices) - 2)]
+
+    trace = make_BaseTriangularMesh(
+        "plotly-dict", vertices=obj.vertices, faces=faces, color=style.color
+    )
+    return [{**trace, **kwargs}]
+
+
+def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+    """
+    Creates the plotly scatter3d parameters for a TriangleSheet current in a dictionary based on the
+    provided arguments.
+    """
+    style = obj.style
+    trace = make_BaseTriangularMesh(
+        "plotly-dict", vertices=obj.vertices, faces=obj.faces, color=style.color
+    )
+    return [{**trace, **kwargs}]
 
 
 def make_Circle(obj, base=72, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
@@ -526,6 +555,24 @@ def make_TriangularMesh(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     return traces
 
 
+def _apply_scaling_transformation(
+    norms, scaling_type, is_null_mask, path_ind, min_=None
+):
+    scaled_norms = norms.copy()
+    log_iterations = (
+        int(scaling_type[4])
+        if scaling_type.startswith("log^")
+        else scaling_type.count("log")
+    )
+    for _ in range(log_iterations):
+        scaled_norms += np.nanmin(scaled_norms) + 1  # shift to positive range
+        scaled_norms[~is_null_mask] = np.log(scaled_norms[~is_null_mask])
+    scaled_norms /= np.nanmax(scaled_norms)
+    if min_ is not None:
+        scaled_norms = min_ + scaled_norms * (1 - min_)
+    return scaled_norms[path_ind]
+
+
 def make_Pixels(
     *,
     positions,
@@ -548,7 +595,19 @@ def make_Pixels(
     # markers plots must share the same kw types to be able to be merged with line plots!
 
     sizes_2dfactor = marker2d_default_size / np.max(sizes)
-    if symbol is not None and vectors is None:
+    allowed_symbols = {
+        "cone": {"type": "mesh3d", "orientable": True},
+        "arrow": {"type": "scatter3d", "orientable": True},
+        "arrow3d": {"type": "mesh3d", "orientable": True},
+        "cube": {"type": "mesh3d", "orientable": False},
+    }
+    field_symbol = symbol if field_symbol in ("none", None) else field_symbol
+    orientable = allowed_symbols.get(field_symbol, {"orientable": False}).get(
+        "orientable"
+    )
+    ttype = allowed_symbols.get(symbol, {"type": "scatter3d"}).get("type")
+    ttype_field = allowed_symbols.get(field_symbol, {"type": "scatter3d"}).get("type")
+    if ttype == "scatter3d" and vectors is None:
         x, y, z = positions.T
         sizes = sizes if is_array_like(sizes) else np.repeat(sizes, len(x))
         return {
@@ -564,13 +623,6 @@ def make_Pixels(
     pixels = []
     orientations = None
     is_null_vec = None
-    allowed_symbols = ("cone", "arrow", "arrow3d")
-    if field_symbol not in allowed_symbols:  # pragma: no cover
-        msg = (
-            f"Invalid pixel field symbol (must be one of {allowed_symbols})"
-            f", got {field_symbol!r}"
-        )
-        raise ValueError(msg)
     if vectors is not None:
         orientations = get_orientation_from_vec(vectors)
         is_null_vec = (np.abs(vectors) < null_thresh).all(axis=1)
@@ -585,7 +637,7 @@ def make_Pixels(
         }
         pix = None
         size = sizes[ind] if is_array_like(sizes) else sizes
-        if vectors is not None and not is_null_vec[ind]:
+        if orientable and vectors is not None and not is_null_vec[ind]:
             orient = orientations[ind]
             kw.update(orientation=orient, base=5, diameter=size, height=size * 2)
             if field_symbol == "cone":
@@ -596,7 +648,7 @@ def make_Pixels(
                 pix = make_BaseArrow(**kw, **kw2d)
                 pix["marker_size"] = np.repeat(0.0, len(pix["x"]))
         elif vectors is None or shownull:
-            if field_symbol == "arrow":
+            if ttype_field == "scatter3d":
                 x, y, z = pos[:, None]
                 pix = {
                     "x": x,
@@ -610,7 +662,7 @@ def make_Pixels(
         if pix is not None:
             if colors is not None:
                 color = colors[ind] if is_array_like(colors) else colors
-                if field_symbol == "arrow":
+                if ttype_field == "scatter3d":
                     pix["line_color"] = np.repeat(color, len(pix["x"]))
                     pix["marker_color"] = pix["line_color"]
                 else:
@@ -695,46 +747,40 @@ def make_Sensor(
             px_vectors, null_thresh = None, 1e-12
             px_colors = "black" if px_color is None else px_color
             if field_values:
-                vsrc = style.pixel.field.vectorsource
-                csrc = style.pixel.field.colorsource
-                sizemode = style.pixel.field.sizemode
-                csrc = vsrc if csrc is None else csrc
-                if vsrc is not None:
-                    px_vectors = field_values[vsrc][path_ind]
-                if sizemode != "constant":
-                    vsrc = csrc if vsrc is None else vsrc
-                    norms = np.linalg.norm(field_values[vsrc], axis=-1)
-                    if sizemode == "log":
-                        is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
-                        norms[is_null_mask] = np.min(norms[norms != 0])
-                        norms = np.log10(norms)
-                        min_, max_ = np.min(norms), np.max(norms)
-                        ptp = max_ - min_
-                        norms = (
-                            (norms - min_ + 1) / (ptp + 1)
-                            if ptp != -1
-                            else norms * 0 + 0.5
-                        )
-                        norms[is_null_mask] = 0
-                        px_sizes *= norms[path_ind]
-                    else:
-                        px_sizes *= norms[path_ind] / np.max(norms)
-                if csrc is not False:
-                    # get cmin, cmax from whole path
-                    field_str, *coords_str = csrc
-                    coords_str = coords_str if coords_str else "xyz"
-                    coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
-                    field_array = field_values[field_str][..., coords]
-                    field_mag = np.linalg.norm(field_array, axis=-1)
-                    cmin, cmax = np.amin(field_mag), np.amax(field_mag)
-                    field_mag = field_mag[path_ind]
-                    is_null = (np.abs(field_array[path_ind]) < null_thresh).all(axis=1)
-                    field_mag[is_null] = np.nan
-                    px_colors = get_hexcolors_from_scale(
-                        values=field_mag,
-                        colorscale=style.pixel.field.colorscale,
-                        cmin=cmin,
-                        cmax=cmax,
+                fsrc = style.pixel.field.source
+                field, *coords_str = fsrc
+                field_array = field_values[field]
+                px_vectors = field_values[field][path_ind]
+                coords_str = coords_str if coords_str else "xyz"
+                coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
+                other_coords = [i for i in range(3) if i not in coords]
+                field_array[..., other_coords] = 0  # set other components to zero
+                norms = np.linalg.norm(field_array, axis=-1)
+                is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
+                norms[is_null_mask] = np.nan  # avoid -inf
+                nmin, nmax = np.nanmin(norms), np.nanmax(norms)
+                ptp = nmax - nmin
+                norms = (norms - nmin) / ptp if ptp != 0 else norms * 0 + 0.5
+                sizescaling = style.pixel.field.sizescaling
+                sizemin = style.pixel.field.sizemin
+                if sizescaling != "uniform":
+                    snorms_scaled = _apply_scaling_transformation(
+                        norms, sizescaling, is_null_mask, path_ind, min_=sizemin
+                    )
+                    snorms_scaled[is_null_mask[path_ind]] = (
+                        1  # keep null sizes unscaled
+                    )
+                    px_sizes *= snorms_scaled
+                colorscaling = style.pixel.field.colorscaling
+                if colorscaling != "uniform":
+                    cnorms_scaled = _apply_scaling_transformation(
+                        norms, colorscaling, is_null_mask, path_ind
+                    )
+                    px_colors = get_hexcolors_from_colormap(
+                        values=cnorms_scaled,
+                        colormap=style.pixel.field.colormap,
+                        cmin=0,  # scaled values are normalized to [0, 1]
+                        cmax=1,
                     )
             pixels_trace = make_Pixels(
                 positions=px_positions,
