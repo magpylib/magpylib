@@ -177,13 +177,14 @@ def _getBH_level2(
     from magpylib._src.obj_classes.class_Collection import Collection  # noqa: I001, PLC0415
     from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh  # noqa: PLC0415
 
-    # CHECK AND FORMAT INPUT ---------------------------------------------------
+    # DEPRECATED CALL TO FUNCTIONAL INTERFACE
     if isinstance(sources, str):
-        #warnings.warn(
-        #    "String input for sources is deprecated and will be removed in future versions.",
-        #    DeprecationWarning,
-        #    stacklevel=2,
-        #)
+        msg = (
+            "Calling the functional interface (string input for sources) from ``magpy.getB()``"
+            " is deprecated and will be removed in future versions. Functional interface was"
+            " moved to ``magpy.func`` subpackage."
+        )
+        warnings.warn(msg, DeprecationWarning, stacklevel=2)
         return _getBH_dict_level2(
             source_type=sources,
             observers=observers,
@@ -193,6 +194,7 @@ def _getBH_level2(
             **kwargs,
         )
 
+    # CHECK AND FORMAT INPUT ---------------------------------------------------
     # bad user inputs mixing getBH_dict kwargs with object oriented interface
     if kwargs:
         msg = (
