@@ -1,7 +1,7 @@
 import numpy as np
 
 import magpylib as magpy
-
+from magpylib.func import polyline_field
 
 def test_dipole_approximation():
     """test if all source fields converge towards the correct dipole field at distance"""
@@ -195,7 +195,7 @@ def test_Polyline_vs_Circle():
     # field from line currents
     Bls = []
     for p in po:
-        Bl = magpy.getB("Polyline", p, current=1, segment_start=ps, segment_end=pe)
+        Bl = polyline_field("B", observers=p, currents=1, segments_start=ps, segments_end=pe)
         Bls += [np.sum(Bl, axis=0)]
     Bls = np.array(Bls)
 
@@ -224,7 +224,7 @@ def test_Polyline_vs_Infinite():
     pe = (0, 0, 1000000)
     Bls, Binfs = [], []
     for p in pos_obs:
-        Bls += [magpy.getB("Polyline", p, current=1, segment_start=ps, segment_end=pe)]
+        Bls += [polyline_field("B", observers=p, currents=1, segments_start=ps, segments_end=pe)]
         Binfs += [Binf(1, p)]
     Bls = np.array(Bls)
     Binfs = np.array(Binfs) * 1e-6

@@ -15,20 +15,6 @@ GETBH_KWARGS = {
     "in_out": "auto",
 }
 
-
-def getBHv_unknown_source_type():
-    """unknown source type"""
-    _getBH_level2(
-        sources="badName",
-        observers=(0, 0, 0),
-        polarization=(1, 0, 0),
-        dimension=(0, 2, 1, 0, 360),
-        position=(0, 0, -0.5),
-        field="B",
-        **GETBH_KWARGS,
-    )
-
-
 def getBH_level2_bad_input1():
     """test BadUserInput error at _getBH_level2"""
     src = magpy.magnet.Cuboid(polarization=(1, 1, 2), dimension=(1, 1, 1))
@@ -51,117 +37,6 @@ def getBH_different_pixel_shapes():
     sens1 = magpy.Sensor()
     sens2 = magpy.Sensor(pixel=[(0, 0, 0), (0, 0, 1), (0, 0, 2)])
     magpy.getB(pm1, [sens1, sens2])
-
-
-# getBHv missing inputs ------------------------------------------------------
-def getBHv_missing_input1():
-    """missing field"""
-    x = np.array([(1, 2, 3)])
-    # pylint: disable=missing-kwoa
-    _getBH_level2(
-        sources="Cuboid", observers=x, polarization=x, dimension=x, **GETBH_KWARGS
-    )
-
-
-def getBHv_missing_input2():
-    """missing source_type"""
-    x = np.array([(1, 2, 3)])
-    _getBH_level2(observers=x, field="B", polarization=x, dimension=x, **GETBH_KWARGS)
-
-
-def getBHv_missing_input3():
-    """missing observer"""
-    x = np.array([(1, 2, 3)])
-    _getBH_level2(
-        sources="Cuboid", field="B", polarization=x, dimension=x, **GETBH_KWARGS
-    )
-
-
-def getBHv_missing_input4_cuboid():
-    """missing Cuboid mag"""
-    x = np.array([(1, 2, 3)])
-    _getBH_level2(sources="Cuboid", observers=x, field="B", dimension=x, **GETBH_KWARGS)
-
-
-def getBHv_missing_input5_cuboid():
-    """missing Cuboid dim"""
-    x = np.array([(1, 2, 3)])
-    _getBH_level2(
-        sources="Cuboid", observers=x, field="B", polarization=x, **GETBH_KWARGS
-    )
-
-
-def getBHv_missing_input4_cyl():
-    """missing Cylinder mag"""
-    x = np.array([(1, 2, 3)])
-    y = np.array([(1, 2)])
-    _getBH_level2(
-        sources="Cylinder", observers=x, field="B", dimension=y, **GETBH_KWARGS
-    )
-
-
-def getBHv_missing_input5_cyl():
-    """missing Cylinder dim"""
-    x = np.array([(1, 2, 3)])
-    _getBH_level2(
-        sources="Cylinder", observers=x, field="B", polarization=x, **GETBH_KWARGS
-    )
-
-
-def getBHv_missing_input4_sphere():
-    """missing Sphere mag"""
-    x = np.array([(1, 2, 3)])
-    _getBH_level2(sources="Sphere", observers=x, field="B", dimension=1, **GETBH_KWARGS)
-
-
-def getBHv_missing_input5_sphere():
-    """missing Sphere dim"""
-    x = np.array([(1, 2, 3)])
-    _getBH_level2(
-        sources="Sphere", observers=x, field="B", polarization=x, **GETBH_KWARGS
-    )
-
-
-# bad inputs -------------------------------------------------------------------
-def getBHv_bad_input1():
-    """different input lengths"""
-    x = np.array([(1, 2, 3)] * 3)
-    x2 = np.array([(1, 2, 3)] * 2)
-    _getBH_level2(
-        sources="Cuboid",
-        observers=x,
-        field="B",
-        polarization=x2,
-        dimension=x,
-        **GETBH_KWARGS,
-    )
-
-
-def getBHv_bad_input2():
-    """bad source_type string"""
-    x = np.array([(1, 2, 3)])
-    _getBH_level2(
-        sources="Cubooid",
-        observers=x,
-        field="B",
-        polarization=x,
-        dimension=x,
-        **GETBH_KWARGS,
-    )
-
-
-def getBHv_bad_input3():
-    """mixed input"""
-    x = np.array([(1, 2, 3)])
-    s = magpy.Sensor()
-    _getBH_level2(
-        sources="Cuboid",
-        observers=s,
-        field="B",
-        polarization=x,
-        dimension=x,
-        **GETBH_KWARGS,
-    )
 
 
 def utility_format_obj_input():
@@ -261,37 +136,6 @@ def test_except_utility():
         utility_format_src_inputs()
     with pytest.raises(MagpylibBadUserInput):
         utility_format_obs_inputs()
-
-
-def test_except_getBHv():
-    """getBHv"""
-    with pytest.raises(TypeError):
-        getBHv_missing_input1()
-    with pytest.raises(TypeError):
-        getBHv_missing_input2()
-    with pytest.raises(TypeError):
-        getBHv_missing_input3()
-    with pytest.raises(TypeError):
-        getBHv_missing_input4_cuboid()
-    with pytest.raises(TypeError):
-        getBHv_missing_input4_cyl()
-    with pytest.raises(TypeError):
-        getBHv_missing_input4_sphere()
-    with pytest.raises(TypeError):
-        getBHv_missing_input5_cuboid()
-    with pytest.raises(TypeError):
-        getBHv_missing_input5_cyl()
-    with pytest.raises(TypeError):
-        getBHv_missing_input5_sphere()
-    with pytest.raises(MagpylibBadUserInput):
-        getBHv_bad_input1()
-    with pytest.raises(MagpylibBadUserInput):
-        getBHv_bad_input2()
-    with pytest.raises(MagpylibBadUserInput):
-        getBHv_bad_input3()
-    with pytest.raises(MagpylibBadUserInput):
-        getBHv_unknown_source_type()
-
 
 def test_except_getBH_lev2():
     """_getBH_level2 exception testing"""

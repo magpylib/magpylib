@@ -1,6 +1,8 @@
 import numpy as np
 
 import magpylib as magpy
+from magpylib.func import cylinder_field
+from magpylib.func import cylinder_segment_field
 
 
 def test_Cylinder_add():
@@ -77,30 +79,29 @@ def test_Cylinder_getBH():
         B1 = src2.getB(poso)
         H1 = src2.getH(poso)
 
-        B2 = magpy.getB(
-            "Cylinder",
-            poso,
-            polarization=pol,
-            dimension=d2,
+        B2 = cylinder_field(
+            "B",
+            observers=poso,
+            polarizations=pol,
+            dimensions=d2
         )
-        H2 = magpy.getH(
-            "Cylinder",
-            poso,
-            polarization=pol,
-            dimension=d2,
+        H2 = cylinder_field(
+            "H",
+            observers=poso,
+            polarizations=pol,
+            dimensions=d2
         )
-
-        B3 = magpy.getB(
-            "CylinderSegment",
-            poso,
-            polarization=pol,
-            dimension=d5,
+        B3 = cylinder_segment_field(
+            "B",
+            observers=poso,
+            polarizations=pol,
+            dimensions=d5
         )
-        H3 = magpy.getH(
-            "CylinderSegment",
-            poso,
-            polarization=pol,
-            dimension=d5,
+        H3 = cylinder_segment_field(
+            "H",
+            observers=poso,
+            polarizations=pol,
+            dimensions=d5
         )
 
         np.testing.assert_allclose(B1, B2)
