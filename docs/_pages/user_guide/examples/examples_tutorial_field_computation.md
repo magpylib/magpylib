@@ -14,7 +14,7 @@ orphan: true
 
 (examples-tutorial-field-computation)=
 
-# Computing the Field (B, H, J, M)
+# Field Computation (B, H, J, M)
 
 ----------------------------
 
@@ -237,7 +237,7 @@ The functional interface will only outperform the object oriented interface if y
 
 ```{code-cell} ipython3
 import numpy as np
-import magpylib as magpy
+from magpylib.func import cuboid_field
 
 # Two different magnet dimensions
 dim1 = (0.02, 0.04, 0.04)
@@ -264,11 +264,11 @@ POS = np.vstack(
 )
 
 # Compute all instances with the functional interface
-B = magpy.getB(
-    sources="Cuboid",
+B = cuboid_field(
+    field="B",
     observers=POS,
-    polarization=POL,
-    dimension=DIM,
+    polarizations=POL,
+    dimensions=DIM,
 )
 
 B.round(decimals=2)

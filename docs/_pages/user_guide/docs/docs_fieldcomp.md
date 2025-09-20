@@ -69,38 +69,52 @@ Try to make all field computations with as few calls to `getBHJM` as possible. A
 (docs-field-functional)=
 ## Functional Interface
 
-Users can bypass the object oriented functionality of Magpylib and instead compute the field for n given parameter sets. This is done by providing the following inputs to the top level functions `getB`, `getH`, `getJ` and, `getM`.
+Users can bypass the object-oriented interface and compute fields for `i` parameter sets via the functional interface—functions provided in the `magpylib.func` subpackage. These functions offer field computation, including source position and orientation.
 
-1. `sources`: a string denoting the source type. Allowed values are the Magpylib source class names, see {ref}`docs-classes`.
-2. `observers`: array-like of shape (3,) or (n,3) giving the observer positions.
-3. `kwargs`: a dictionary with inputs of shape (x,) or (n,x). Must include all mandatory class-specific inputs. By default, `position=(0,0,0)` and `orientation=None`(=unit rotation).
+Inputs may be scalars or array-like of length `i`. Scalar inputs are automatically tiled to length `i`, creating `i` computation instances. The field is returned with shape `(i, 3)`; when `squeeze=True` and `i=1`, the shape is `(3,)`.
 
-All "scalar" inputs of shape (x,) are automatically tiled up to shape (n,x) to create a set of n computation instances. The field is returned in the shape (n,3). The following code demonstrates the functional interface.
+For all functions, set `field` to `'B'` or `'H'`. The common defaults are `positions=(0, 0, 0)`, `orientations=None`, and `squeeze=True`.
+
+The following functions, with their specific parameters (see individual docstrings), make up the subpackage:
+
+- `circle_field(field, observers, diameters, currents)`
+- `polyline_field(field, observers, segments_start, segments_end, currents)`
+- `cuboid_field(field, observers, dimensions, polarizations)`
+- `cylinder_field(field, observers, dimensions, polarizations)`
+- `cylinder_segment_field(field, observers, dimensions, polarizations)`
+- `sphere_field(field, observers, diameters, polarizations)`
+- `tetrahedron_field(field, observers, vertices, polarizations)`
+- `dipole_field(field, observers, moments)`
+- `triangle_charge_field(field, observers, vertices, polarizations)`
+- `triangle_current_field(field, observers, vertices, current_densities)`
+
+The following code demonstrates the functional interface.
 
 ```python
 import numpy as np
-import magpylib as magpy
+from magpylib.func import cuboid_field
 
 # All inputs and outputs in SI units
 
 # Compute the cuboid field for 3 input instances
-N = 3  # number of instances
-B = magpy.getB(
-    sources="Cuboid",
-    observers=np.linspace((0, 0, 1), (0, 0, 3), N),
-    dimension=np.linspace((1, 1, 1), (3, 3, 3), 3, N),
-    polarization=(0, 0, 1),
+i = 3  # number of instances
+
+B = cuboid_field(
+    field="B",
+    observers=np.linspace((0, 0, 1), (0, 0, 3), i),
+    dimensions=np.linspace((1, 1, 1), (3, 3, 3), 3, i),
+    polarizations=(0, 0, 1),
 )
 
-# This example demonstrates the scale invariance
-print(B)
-#  --> [[0.         0.         0.13478239]
-#       [0.         0.         0.13478239]
-#       [0.         0.         0.13478239]]
+print(B.round(3))
+#[[0.    0.    0.135] 
+# [0.    0.    0.135] 
+# [0.    0.    0.135]]
 ```
+This example demonstrates the scale invariance
 
 ```{note}
-The functional interface is potentially faster than the object oriented one if users know how to generate the input arrays efficiently with numpy (e.g. `np.arange`, `np.linspace`, `np.tile`, `np.repeat`, ...).
+The functional interface is potentially faster than the object oriented one if users generate the input arrays efficiently with numpy (e.g. `np.arange`, `np.linspace`, `np.tile`, `np.repeat`, ...).
 ```
 
 -------------------------------------
@@ -109,50 +123,16 @@ The functional interface is potentially faster than the object oriented one if u
 
 At the heart of Magpylib lies a set of core functions that are our implementations of analytical field expressions found in the literature, see {ref}`guide-ressources-physics`. Direct access to these functions is given through the `magpylib.core` subpackage which includes,
 
-::::{grid} 1
-:gutter: 1
-
-:::{grid-item}
-`magnet_cuboid_Bfield(observers, dimensions, polarizations)`
-:::
-
-:::{grid-item}
-`magnet_cylinder_axial_Bfield(z0, r, z)`
-:::
-
-:::{grid-item}
-`magnet_cylinder_diametral_Hfield(z0, r, z, phi)`
-:::
-
-:::{grid-item}
-`magnet_cylinder_segment_Hfield(observers, dimensions, magnetizations)`
-:::
-
-:::{grid-item}
-`magnet_sphere_Bfield(observers, diameters, polarizations)`
-:::
-
-:::{grid-item}
-`current_circle_Hfield(r0, r, z, i0)`
-:::
-
-:::{grid-item}
-`current_polyline_Hfield(observers, segments_start, segments_end, currents)`
-:::
-
-:::{grid-item}
-`current_sheet_Hfield(observers, vertices, current_densities)`
-:::
-
-:::{grid-item}
-`dipole_Hfield(observers, moments)`
-:::
-
-:::{grid-item}
-`triangle_Bfield(observers, vertices, polarizations)`
-:::
-
-::::
+- `magnet_cuboid_Bfield(observers, dimensions, polarizations)`
+- `magnet_cylinder_axial_Bfield(z0, r, z)`
+- `magnet_cylinder_diametral_Hfield(z0, r, z, phi)`
+- `magnet_cylinder_segment_Hfield(observers, dimensions, magnetizations)`
+- `magnet_sphere_Bfield(observers, diameters, polarizations)`
+- `current_circle_Hfield(r0, r, z, i0)`
+- `current_polyline_Hfield(observers, segments_start, segments_end, currents)`
+- `current_sheet_Hfield(observers, vertices, current_densities)`
+- `dipole_Hfield(observers, moments)`
+- `triangle_Bfield(observers, vertices, polarizations)`
 
 All inputs must be NumPy ndarrays of shape (n,x). Details can be found in the respective function docstrings. The following example demonstrates the core interface.
 
