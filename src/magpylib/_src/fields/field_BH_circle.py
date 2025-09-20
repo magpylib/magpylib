@@ -48,8 +48,7 @@ def current_circle_Hfield(
     ...     z=np.array([1, 2]),
     ...     i0=np.array([1, 3]),
     ... )
-    >>> with np.printoptions(precision=3):
-    ...     print(H)
+    >>> print(H.round(3))
     [[0.091 0.094]
      [0.    0.   ]
      [0.077 0.226]]

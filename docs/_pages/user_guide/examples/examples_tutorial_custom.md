@@ -48,7 +48,7 @@ def mono_field(field, observers):
     field: string, "B" or "H
         return B or H-field
 
-    observers: array_like of shape (n,3)
+    observers: array-like of shape (n,3)
         Observer positions
 
     Returns: np.ndarray, shape (n,3)

@@ -29,7 +29,7 @@ def all_same(lst: list) -> bool:
 
 
 def is_array_like(inp, msg: str):
-    """test if inp is array_like: type list, tuple or ndarray
+    """test if inp is array-like: type list, tuple or ndarray
     inp: test object
     msg: str, error msg
     """
@@ -208,7 +208,7 @@ def check_format_input_orientation(inp, init_format=False):
 
 def check_format_input_anchor(inp):
     """checks rotate anchor input and return in formatted form
-    - input must be array_like or None or 0
+    - input must be array-like or None or 0
     """
     if isinstance(inp, numbers.Number) and inp == 0:
         return np.array((0.0, 0.0, 0.0))
@@ -218,14 +218,14 @@ def check_format_input_anchor(inp):
         dims=(1, 2),
         shape_m1=3,
         sig_name="anchor",
-        sig_type="`None` or `0` or array_like (list, tuple, ndarray) with shape (3,)",
+        sig_type="`None` or `0` or array-like (list, tuple, ndarray) with shape (3,)",
         allow_None=True,
     )
 
 
 def check_format_input_axis(inp):
     """check rotate_from_angax axis input and return in formatted form
-    - input must be array_like or str
+    - input must be array-like or str
     - if string 'x'->(1,0,0), 'y'->(0,1,0), 'z'->(0,0,1)
     - convert inp to ndarray with dtype float
     - inp shape must be (3,)
@@ -240,7 +240,7 @@ def check_format_input_axis(inp):
         if inp == "z":
             return np.array((0, 0, 1))
         msg = (
-            "Input parameter `axis` must be array_like shape (3,) or one of ['x', 'y', 'z'].\n"
+            "Input parameter `axis` must be array-like shape (3,) or one of ['x', 'y', 'z'].\n"
             f"Instead received string {inp!r}.\n"
         )
         raise MagpylibBadUserInput(msg)
@@ -250,7 +250,7 @@ def check_format_input_axis(inp):
         dims=(1,),
         shape_m1=3,
         sig_name="axis",
-        sig_type="array_like (list, tuple, ndarray) with shape (3,) or one of ['x', 'y', 'z']",
+        sig_type="array-like (list, tuple, ndarray) with shape (3,) or one of ['x', 'y', 'z']",
     )
 
     if np.all(inp == 0):
@@ -261,10 +261,10 @@ def check_format_input_axis(inp):
 
 def check_format_input_angle(inp):
     """check rotate_from_angax angle input and return in formatted form
-    - must be scalar (int/float) or array_like
+    - must be scalar (int/float) or array-like
     - if scalar
         - return float
-    - if array_like
+    - if array-like
         - convert inp to ndarray with dtype float
         - inp shape must be (n,)
         - return as ndarray
@@ -277,7 +277,7 @@ def check_format_input_angle(inp):
         dims=(1,),
         shape_m1="any",
         sig_name="angle",
-        sig_type="int, float or array_like (list, tuple, ndarray) with shape (n,)",
+        sig_type="int, float or array-like (list, tuple, ndarray) with shape (n,)",
     )
 
 
@@ -318,7 +318,7 @@ def check_format_input_vector(
     forbid_negative0=False,
 ):
     """checks vector input and returns in formatted form
-    - inp must be array_like
+    - inp must be array-like
     - convert inp to ndarray with dtype float
     - inp shape must be given by dims and shape_m1
     - print error msg with signature arguments
@@ -345,7 +345,7 @@ def check_format_input_vector(
         length=length,
         msg=(
             f"Input parameter `{sig_name}` must be {sig_type}.\n"
-            f"Instead received array_like with shape {inp.shape}."
+            f"Instead received array-like with shape {inp.shape}."
         ),
     )
     if isinstance(reshape, tuple):
@@ -363,13 +363,13 @@ def check_format_input_vector2(
     param_name,
 ):
     """checks vector input and returns in formatted form
-    - inp must be array_like
+    - inp must be array-like
     - convert inp to ndarray with dtype float
     - make sure that inp.ndim = target_ndim, None dimensions are ignored
     """
     is_array_like(
         inp,
-        f"Input parameter `{param_name}` must be array_like.\n"
+        f"Input parameter `{param_name}` must be array-like.\n"
         f"Instead received type {type(inp)!r}.",
     )
     inp = make_float_array(
@@ -392,7 +392,7 @@ def check_format_input_vertices(inp, minlength=2):
         dims=(2,),
         shape_m1=3,
         sig_name="vertices",
-        sig_type="`None` or array_like (list, tuple, ndarray) with shape (n,3)",
+        sig_type="`None` or array-like (list, tuple, ndarray) with shape (n,3)",
         allow_None=True,
     )
 
@@ -415,7 +415,7 @@ def check_format_input_cylinder_segment(inp):
         shape_m1=5,
         sig_name="CylinderSegment.dimension",
         sig_type=(
-            "array_like of the form (r1, r2, h, phi1, phi2) with r1<r2,"
+            "array-like of the form (r1, r2, h, phi1, phi2) with r1<r2,"
             "phi1<phi2 and phi2-phi1<=360"
         ),
         allow_None=True,
@@ -431,7 +431,7 @@ def check_format_input_cylinder_segment(inp):
     case5 = (r1 < 0) | (r2 <= 0) | (h <= 0)
     if case2 | case3 | case4 | case5:
         msg = (
-            f"Input parameter `CylinderSegment.dimension` must be array_like of the form"
+            f"Input parameter `CylinderSegment.dimension` must be array-like of the form"
             f" (r1, r2, h, phi1, phi2) with 0<=r1<r2, h>0, phi1<phi2 and phi2-phi1<=360,"
             f"\nInstead received {inp!r}."
         )

@@ -141,7 +141,7 @@ class Cylinder(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             dims=(1,),
             shape_m1=2,
             sig_name="Cylinder.dimension",
-            sig_type="array_like (list, tuple, ndarray) with shape (2,) with positive values",
+            sig_type="array-like (list, tuple, ndarray) with shape (2,) with positive values",
             allow_None=True,
             forbid_negative0=True,
         )

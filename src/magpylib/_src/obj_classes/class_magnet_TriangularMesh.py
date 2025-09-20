@@ -534,14 +534,14 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             dims=(2,),
             shape_m1=3,
             sig_name="TriangularMesh.vertices",
-            sig_type="array_like (list, tuple, ndarray) of shape (n, 3)",
+            sig_type="array-like (list, tuple, ndarray) of shape (n, 3)",
         )
         trias = check_format_input_vector(
             faces,
             dims=(2,),
             shape_m1=3,
             sig_name="TriangularMesh.faces",
-            sig_type="array_like (list, tuple, ndarray) of shape (n, 3)",
+            sig_type="array-like (list, tuple, ndarray) of shape (n, 3)",
         ).astype(int)
         try:
             verts[trias]

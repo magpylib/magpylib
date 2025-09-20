@@ -7,7 +7,6 @@ from scipy.constants import mu_0 as MU0
 
 from magpylib._src.input_checks import check_field_input
 
-
 def magnet_cuboid_Bfield(
     observers: np.ndarray,
     dimensions: np.ndarray,

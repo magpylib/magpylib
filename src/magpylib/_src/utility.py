@@ -28,7 +28,7 @@ def get_allowed_sources_msg():
 
 
 ALLOWED_OBSERVER_MSG = """Observers must be either
-- array_like positions of shape (N1, N2, ..., 3)
+- array-like positions of shape (N1, N2, ..., 3)
 - Sensor object
 - Collection with at least one Sensor
 - 1D list of the above"""

@@ -118,7 +118,7 @@ def _check_format_input_pivot(pivot, targets, n_path):
     array of pivots with shape (n_tgt, n_path, 3) or None
     """
     msg = (
-        "Bad getFT pivot input. Input pivot must be str 'centroid', `None`, or array_like of shape (3,)."
+        "Bad getFT pivot input. Input pivot must be str 'centroid', `None`, or array-like of shape (3,)."
         " It can also be (n,3) when there are n targets providing a different pivot for every target."
         " It can also be (n,m,3) when there are n targets and pathlength is m."
     )
@@ -186,7 +186,7 @@ def getFT(
         Objects on which the magnetic field acts, generating force and torque.
         Can be a 1D list of ``m`` target objects. All targets (except Dipoles
         and Spheres) must have a valid ``meshing`` parameter set.
-    pivot : 'centroid' | None | array_like, shape (3,) or (m, 3) or (m, p, 3), default 'centroid'
+    pivot : 'centroid' | None | array-like, shape (3,) or (m, 3) or (m, p, 3), default 'centroid'
         Pivot point through which the force contributes to the torque. If
         ``'centroid'``, each target's centroid is used. If ``None``, no pivot
         is applied (may yield nonphysical results). If an array of shape

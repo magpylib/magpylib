@@ -216,7 +216,7 @@ def _show(
         dims=(2,),
         shape_m1=3,
         sig_name="markers",
-        sig_type="array_like of shape (n,3)",
+        sig_type="array-like of shape (n,3)",
         allow_None=True,
     )
 

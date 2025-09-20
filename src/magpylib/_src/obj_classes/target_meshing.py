@@ -40,7 +40,7 @@ def _cells_from_dimension(
 
     Parameters
     ----------
-    dim: array_like of length 3
+    dim: array-like of length 3
         Dimensions of the object to be divided.
     target_elems: int,
         Total number of elements as target for the procedure. Actual final number is
@@ -125,7 +125,7 @@ def _target_mesh_cuboid(target_elems, dimension, magnetization):
     target_elems: int or tuple (n1,n2,n3)
         Target number of elements in the mesh. If an integer is provided, it is treated as
         the total number of elements.
-    dimension: array_like, shape (3,)
+    dimension: array-like, shape (3,)
         Dimensions of the cuboid (length, width, height).
     magnetization: np.ndarray, shape (3,)
         Magnetization vector for the mesh points.
@@ -427,7 +427,7 @@ def _target_mesh_polyline(vertices, i0, n_points):
 
     Parameters
     ----------
-    vertices: array_like, shape (n, 3) - vertices of the polyline
+    vertices: array-like, shape (n, 3) - vertices of the polyline
     i0: float - electric current
     n_points: int >= n_segments
 
@@ -496,7 +496,7 @@ def _create_grid(dimensions, spacing):
 
     Parameters
     ----------
-    dimensions : array_like, shape (6,) - Bounding box [x0, y0, z0, x1, y1, z1]
+    dimensions : array-like, shape (6,) - Bounding box [x0, y0, z0, x1, y1, z1]
     spacing : float - Desired lattice constant
 
     Returns
@@ -539,9 +539,9 @@ def _target_mesh_tetrahedron(
     ----------
     n_points : int
         Target number of mesh points.
-    vertices : array_like, shape (4, 3)
+    vertices : array-like, shape (4, 3)
         Vertices of the tetrahedron.
-    magnetization : array_like, shape (3,)
+    magnetization : array-like, shape (3,)
         Magnetization vector.
 
     Returns

@@ -147,7 +147,7 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             dims=(1,),
             shape_m1=3,
             sig_name="Cuboid.dimension",
-            sig_type="array_like (list, tuple, ndarray) of shape (3,) with positive values",
+            sig_type="array-like (list, tuple, ndarray) of shape (3,) with positive values",
             allow_None=True,
             forbid_negative0=True,
         )
@@ -185,14 +185,14 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         return _target_mesh_cuboid(self.meshing, self.dimension, self.magnetization)
 
     def _validate_meshing(self, value):
-        """Cuboid meshing must be a positive integer or array_like of shape (3,)."""
+        """Cuboid meshing must be a positive integer or array-like of shape (3,)."""
         if (isinstance(value, int) and value > 0) or (
             isinstance(value, list | tuple | np.ndarray) and len(value) == 3
         ):
             pass
         else:
             msg = (
-                "Cuboid meshing parameter must be positive integer or array_like of shape"
+                "Cuboid meshing parameter must be positive integer or array-like of shape"
                 " (3,) for {self}. Instead got {value}."
             )
             raise ValueError(msg)

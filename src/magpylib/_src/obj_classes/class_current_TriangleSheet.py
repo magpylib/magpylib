@@ -151,7 +151,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
             ),
             shape_m1=3,
             sig_name="TriangleSheet.current_densities",
-            sig_type="`None` or array_like (list, tuple, ndarray) with shape (n,3)",
+            sig_type="`None` or array-like (list, tuple, ndarray) with shape (n,3)",
             allow_None=False,
         ).astype(float)
         verts = check_format_input_vector(
@@ -159,7 +159,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
             dims=(2,),
             shape_m1=3,
             sig_name="TriangleSheet.vertices",
-            sig_type="`None` or array_like (list, tuple, ndarray) with shape (n,3)",
+            sig_type="`None` or array-like (list, tuple, ndarray) with shape (n,3)",
             allow_None=False,
         ).astype(float)
         fac = check_format_input_vector(
@@ -170,7 +170,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
             ),
             shape_m1=3,
             sig_name="TriangleSheet.faces",
-            sig_type="`None` or array_like (list, tuple, ndarray) with shape (n,3)",
+            sig_type="`None` or array-like (list, tuple, ndarray) with shape (n,3)",
             allow_None=False,
         ).astype(int)
 

@@ -2101,10 +2101,10 @@ class Path(MagicProperties, MarkerLineProperties):
         `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
         key/value pairs.
 
-    frames: int or array_like, shape (n,), default=None
+    frames: int or array-like, shape (n,), default=None
         Show copies of the 3D-model along the given path indices.
         - integer i: Displays the object(s) at every i'th path position.
-        - array_like, shape (n,), dtype=int: Displays object(s) at given path indices.
+        - array-like, shape (n,), dtype=int: Displays object(s) at given path indices.
 
     numbering: bool, default=False
         Show/hide numbering on path positions.
@@ -2126,7 +2126,7 @@ class Path(MagicProperties, MarkerLineProperties):
     def frames(self):
         """Show copies of the 3D-model along the given path indices.
         - integer i: Displays the object(s) at every i'th path position.
-        - array_like shape (n,) of integers: Displays object(s) at given path indices.
+        - array-like shape (n,) of integers: Displays object(s) at given path indices.
         """
         return self._frames
 
@@ -2143,7 +2143,7 @@ class Path(MagicProperties, MarkerLineProperties):
             is_valid_path
         ), f"""The `frames` property of {type(self).__name__} must be either:
 - integer i: Displays the object(s) at every i'th path position.
-- array_like, shape (n,), dtype=int: Displays object(s) at given path indices.
+- array-like, shape (n,), dtype=int: Displays object(s) at given path indices.
 but received {val!r} instead"""
         self._frames = val
 

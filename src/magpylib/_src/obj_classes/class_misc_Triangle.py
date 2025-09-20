@@ -126,7 +126,7 @@ class Triangle(_BaseMagnet):
             dims=(2,),
             shape_m1=3,
             sig_name="Triangle.vertices",
-            sig_type="array_like (list, tuple, ndarray) of shape (3, 3)",
+            sig_type="array-like (list, tuple, ndarray) of shape (3, 3)",
             allow_None=True,
         )
 

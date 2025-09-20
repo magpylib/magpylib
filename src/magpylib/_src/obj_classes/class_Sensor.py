@@ -133,7 +133,7 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
             dims=range(1, 20),
             shape_m1=3,
             sig_name="pixel",
-            sig_type="array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3) or None",
+            sig_type="array-like (list, tuple, ndarray) with shape (n1, n2, ..., 3) or None",
             allow_None=True,
         )
 

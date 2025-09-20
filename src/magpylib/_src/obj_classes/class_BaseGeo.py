@@ -124,7 +124,7 @@ class _BaseGeo(_BaseTransform, ABC):
             dims=(1, 2),
             shape_m1=3,
             sig_name="position",
-            sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
+            sig_type="array-like (list, tuple, ndarray) with shape (3,) or (n,3)",
             reshape=(-1, 3),
         )
         oriQ = check_format_input_orientation(orientation, init_format=True)

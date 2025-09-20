@@ -540,7 +540,7 @@ This is a major update that includes
 - Sensor pixel:
   - The new `Sensor(position, pixel, orientation)` class has the argument
     `pixel` which is `(0,0,0)` by default and refers to pixel positions inside
-    the Sensor (in the Sensor local CS). `pixel` is an arbitrary array_like of
+    the Sensor (in the Sensor local CS). `pixel` is an arbitrary array-like of
     the shape (N1, N2, ..., 3).
 - Geometry paths:
   - The `position` and `orientation` attributes can now store paths in the
