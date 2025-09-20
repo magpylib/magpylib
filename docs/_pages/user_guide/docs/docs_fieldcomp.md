@@ -107,8 +107,8 @@ B = cuboid_field(
 )
 
 print(B.round(3))
-#[[0.    0.    0.135] 
-# [0.    0.    0.135] 
+# [[0.    0.    0.135]
+# [0.    0.    0.135]
 # [0.    0.    0.135]]
 ```
 This example demonstrates the scale invariance

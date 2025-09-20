@@ -76,7 +76,7 @@ In-built 3D graphic output helps to see if all Magpylib objects are positioned p
 # Use the show() function to view your system
 # through Matplotlib, Plotly or Pyvista backends.
 
-magpy.show(cube, sensor, backend='plotly')
+magpy.show(cube, sensor, backend="plotly")
 ```
 
 <img src="../../_static/images/getting_started_fundamentals1.png" width=50% align="center">
@@ -94,7 +94,7 @@ points = [(0, 0, -0.01), (0, 0, 0), (0, 0, 0.01)]  # in SI Units (m)
 B = magpy.getB(cube, points)
 
 print(B.round(2))
-#[[ 0.26  0.07  0.08]
+# [[ 0.26  0.07  0.08]
 # [ 0.28  0.05  0.  ]
 # [ 0.26  0.07 -0.08]] # in SI Units (T)
 
@@ -160,7 +160,7 @@ sphere.position = np.linspace((-0.02, 0, 0), (0.02, 0, 0), 7)
 B = sphere.getB((0, 0, 0.01))
 
 print(B.round(3))
-#[[ 0.004  0.    -0.001]
+# [[ 0.004  0.    -0.001]
 # [ 0.013  0.     0.001]
 # [ 0.033  0.     0.026]
 # [ 0.     0.     0.083]
@@ -288,7 +288,7 @@ B = cuboid_field(
 )
 
 print(B.round(3))
-#[[-0.043  0.     0.014]
+# [[-0.043  0.     0.014]
 # [ 0.     0.     0.135]
 # [ 0.154  0.     0.041]]
 ```
