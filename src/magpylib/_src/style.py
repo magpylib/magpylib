@@ -430,90 +430,70 @@ class Model3d(MagicProperties):
         return new_traces
 
     def add_trace(self, trace=None, **kwargs):
-        """Adds user-defined 3d model object which is positioned relatively to the main object to be
-        displayed and moved automatically with it. This feature also allows the user to replace the
-        original 3d representation of the object.
+        """Add a user-defined 3D trace that moves/rotates with this object.
 
-        trace: Trace3d instance, dict or callable
-            Trace object. Can be a `Trace3d` instance or an dictionary with equivalent key/values
-            pairs, or a callable returning the equivalent dictionary.
+        Parameters
+        ----------
+        trace : Trace3d | dict | callable | None, default None
+            A trace, a dict with equivalent key/value pairs, or a callable returning such a
+            dict. If a callable is given, it is used as ``updatefunc`` and a default
+            ``Trace3d`` is created.
+        backend : {'generic', 'matplotlib', 'plotly'} | None, default None
+            Plotting backend for the trace.
+        constructor : str | None, default None
+            Name of the constructor to build the 3D model (e.g., ``'plot_trisurf'``,
+            ``'Mesh3d'``). Must match the selected backend.
+        args : tuple | callable | None, default None
+            Positional arguments for the constructor, or a callable returning them.
+        kwargs : dict | callable | None, default None
+            Keyword arguments for the constructor, or a callable returning them.
+        coordsargs : dict | None, default None
+            Names of coordinate arrays to be transformed; by default
+            ``{"x": "x", "y": "y", "z": "z"}``. If ``False``, the object is not rotated.
+        show : bool | None, default None
+            Show or hide the resulting model3d trace.
+        scale : float | None, default 1
+            Multiplier applied to the trace vertex coordinates.
+        updatefunc : callable | None, default None
+            Callable with no arguments returning a dictionary of trace parameters to update
+            at ``show`` time.
 
-        backend: str
-            Plotting backend corresponding to the trace. Can be one of
-            `['generic', 'matplotlib', 'plotly']`.
-
-        constructor: str
-            Model constructor function or method to be called to build a 3D-model object
-            (e.g. 'plot_trisurf', 'Mesh3d). Must be in accordance with the given plotting backend.
-
-        args: tuple, default=None
-            Tuple or callable returning a tuple containing positional arguments for building a
-            3D-model object.
-
-        kwargs: dict or callable, default=None
-            Dictionary or callable returning a dictionary containing the keys/values pairs for
-            building a 3D-model object.
-
-        coordsargs: dict, default=None
-            Tells magpylib the name of the coordinate arrays to be moved or rotated,
-                by default: `{"x": "x", "y": "y", "z": "z"}`, if False, object is not rotated.
-
-        show: bool, default=None
-            Shows/hides model3d object based on provided trace.
-
-        scale: float, default=1
-            Scaling factor by which the trace vertices coordinates are multiplied.
-
-        updatefunc: callable, default=None
-            Callable object with no arguments. Should return a dictionary with keys from the
-            trace parameters. If provided, the function is called at `show` time and updates the
-            trace parameters with the output dictionary. This allows to update a trace dynamically
-            depending on class attributes, and postpone the trace construction to when the object is
-            displayed.
+        Returns
+        -------
+        Model3d
         """
         self._data += self._validate_data([trace], **kwargs)
         return self
 
 
 class Trace3d(MagicProperties):
-    """Defines properties for an additional user-defined 3d model object which is positioned
-    relatively to the main object to be displayed and moved automatically with it. This feature
-    also allows the user to replace the original 3d representation of the object.
+    """User-defined 3D model trace that moves/rotates with its parent object.
+
+    Use this to attach custom geometry to an object for display. Traces are positioned
+    relative to the object and transformed together with it; they can also replace the
+    default 3D representation if desired.
 
     Parameters
     ----------
-    backend: str
-        Plotting backend corresponding to the trace. Can be one of
-        `['generic', 'matplotlib', 'plotly']`.
-
-    constructor: str
-        Model constructor function or method to be called to build a 3D-model object
-        (e.g. 'plot_trisurf', 'Mesh3d). Must be in accordance with the given plotting backend.
-
-    args: tuple, default=None
-        Tuple or callable returning a tuple containing positional arguments for building a
-        3D-model object.
-
-    kwargs: dict or callable, default=None
-        Dictionary or callable returning a dictionary containing the keys/values pairs for
-        building a 3D-model object.
-
-    coordsargs: dict, default=None
-        Tells magpylib the name of the coordinate arrays to be moved or rotated,
-            by default: `{"x": "x", "y": "y", "z": "z"}`, if False, object is not rotated.
-
-    show: bool, default=True
-        Shows/hides model3d object based on provided trace.
-
-    scale: float, default=1
-        Scaling factor by which the trace vertices coordinates are multiplied.
-
-    updatefunc: callable, default=None
-        Callable object with no arguments. Should return a dictionary with keys from the
-        trace parameters. If provided, the function is called at `show` time and updates the
-        trace parameters with the output dictionary. This allows to update a trace dynamically
-        depending on class attributes, and postpone the trace construction to when the object is
-        displayed.
+    backend : {'generic', 'matplotlib', 'plotly'}, default 'generic'
+        Plotting backend for this trace.
+    constructor : str | None, default None
+        Name of the constructor function/method to build the 3D model (e.g.,
+        ``'plot_trisurf'``, ``'Mesh3d'``). Must match the selected backend.
+    args : tuple | callable | None, default None
+        Positional arguments for the constructor, or a callable returning them.
+    kwargs : dict | callable | None, default None
+        Keyword arguments for the constructor, or a callable returning them.
+    coordsargs : dict | None, default None
+        Names of coordinate arrays to be transformed; by default
+        ``{"x": "x", "y": "y", "z": "z"}``. If ``False``, the object is not rotated.
+    show : bool, default True
+        Show or hide the resulting model3d object.
+    scale : float, default 1
+        Multiplier applied to the trace vertex coordinates.
+    updatefunc : callable | None, default None
+        Callable with no arguments returning a dictionary of trace parameters to update
+        at ``show`` time. Enables dynamic, attribute-dependent trace updates.
     """
 
     def __init__(
@@ -542,8 +522,7 @@ class Trace3d(MagicProperties):
 
     @property
     def args(self):
-        """Tuple or callable returning a tuple containing positional arguments for building a
-        3D-model object."""
+        """Positional arguments for the constructor (``tuple`` or callable)."""
         return self._args
 
     @args.setter
@@ -560,8 +539,7 @@ class Trace3d(MagicProperties):
 
     @property
     def kwargs(self):
-        """Dictionary or callable returning a dictionary containing the keys/values pairs for
-        building a 3D-model object."""
+        """Keyword arguments for the constructor (``dict`` or callable)."""
         return self._kwargs
 
     @kwargs.setter
@@ -578,8 +556,8 @@ class Trace3d(MagicProperties):
 
     @property
     def constructor(self):
-        """Model constructor function or method to be called to build a 3D-model object
-        (e.g. 'plot_trisurf', 'Mesh3d). Must be in accordance with the given plotting backend.
+        """Constructor name to build the 3D model (e.g., ``'plot_trisurf'``, ``'Mesh3d'``).
+        Must match the selected backend.
         """
         return self._constructor
 
@@ -593,7 +571,7 @@ class Trace3d(MagicProperties):
 
     @property
     def show(self):
-        """If True, show default model3d object representation, else hide it."""
+        """Show or hide the model3d trace."""
         return self._show
 
     @show.setter
@@ -607,7 +585,7 @@ class Trace3d(MagicProperties):
 
     @property
     def scale(self):
-        """Scaling factor by which the trace vertices coordinates are multiplied."""
+        """Multiplier applied to the trace vertex coordinates."""
         return self._scale
 
     @scale.setter
@@ -620,8 +598,8 @@ class Trace3d(MagicProperties):
 
     @property
     def coordsargs(self):
-        """Tells magpylib the name of the coordinate arrays to be moved or rotated,
-        by default: `{"x": "x", "y": "y", "z": "z"}`, if False, object is not rotated.
+        """Names of coordinate arrays to transform; default ``{"x":"x","y":"y","z":"z"}``.
+        If ``False``, the object is not rotated.
         """
         return self._coordsargs
 
@@ -638,8 +616,7 @@ class Trace3d(MagicProperties):
 
     @property
     def backend(self):
-        """Plotting backend corresponding to the trace. Can be one of
-        `['generic', 'matplotlib', 'plotly']`."""
+        """Plotting backend for this trace. One of {'generic', 'matplotlib', 'plotly'}."""
         return self._backend
 
     @backend.setter
@@ -913,35 +890,28 @@ class DefaultMagnet(MagicProperties, MagnetProperties):
 
 
 class MagnetStyle(BaseStyle, MagnetProperties):
-    """Defines styling properties of homogeneous magnet classes.
+    """Styling properties for homogeneous magnet classes.
 
     Parameters
     ----------
-    label: str, default=None
-        Label of the class instance, e.g. to be displayed in the legend.
-
-    description: dict or `Description` object, default=None
+    label : str | None, default None
+        Label of the class instance, e.g., to be displayed in the legend.
+    description : dict | Description | None, default None
         Object description properties.
-
-    color: str, default=None
-        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
-
-    opacity: float, default=None
+    color : str | None, default None
+        A valid CSS color. May also be one of {'r', 'g', 'b', 'y', 'm', 'c', 'k', 'w'}.
+    opacity : float | None, default None
         Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
-
-    path: dict or `Path` object, default=None
-        An instance of `Path` or dictionary of equivalent key/value pairs, defining the object
-        path marker and path line properties.
-
-    model3d: list of `Trace3d` objects, default=None
-        A list of traces where each is an instance of `Trace3d` or dictionary of equivalent
-        key/value pairs. Defines properties for an additional user-defined model3d object which is
-        positioned relatively to the main object to be displayed and moved automatically with it.
-        This feature also allows the user to replace the original 3d representation of the object.
-
-    magnetization: dict or Magnetization, default=None
-        Magnetization styling with `'show'`, `'size'`, `'color'` properties
-        or a dictionary with equivalent key/value pairs.
+    path : dict | Path | None, default None
+        Instance of ``Path`` or dict with equivalent key/value pairs; defines path marker
+        and path line properties.
+    model3d : list[Trace3d | dict] | None, default None
+        List of traces where each is a ``Trace3d`` instance or dict of equivalent key/value
+        pairs. Defines an additional user-defined 3D model positioned relative to the main
+        object and transformed with it. Can replace the original 3D representation.
+    magnetization : dict | Magnetization | None, default None
+        Magnetization styling with keys ``'show'``, ``'size'``, ``'color'``, or a
+        ``Magnetization`` instance.
     """
 
     def __init__(self, **kwargs):
@@ -1612,40 +1582,31 @@ class DefaultSensor(MagicProperties, SensorProperties):
 
 
 class SensorStyle(BaseStyle, SensorProperties):
-    """Defines the styling properties of the Sensor class.
+    """Styling properties for the Sensor class.
 
     Parameters
     ----------
-    label: str, default=None
-        Label of the class instance, e.g. to be displayed in the legend.
-
-    description: dict or `Description` object, default=None
+    label : str | None, default None
+        Label of the class instance, e.g., to be displayed in the legend.
+    description : dict | Description | None, default None
         Object description properties.
-
-    color: str, default=None
-        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
-
-    opacity: float, default=None
+    color : str | None, default None
+        A valid CSS color. May also be one of {'r', 'g', 'b', 'y', 'm', 'c', 'k', 'w'}.
+    opacity : float | None, default None
         Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
-
-    path: dict or `Path` object, default=None
-        An instance of `Path` or dictionary of equivalent key/value pairs, defining the object
-        path marker and path line properties.
-
-    model3d: list of `Trace3d` objects, default=None
-        A list of traces where each is an instance of `Trace3d` or dictionary of equivalent
-        key/value pairs. Defines properties for an additional user-defined model3d object which is
-        positioned relatively to the main object to be displayed and moved automatically with it.
-        This feature also allows the user to replace the original 3d representation of the object.
-
-    size: float, default=None
-        Positive float for ratio of sensor size to canvas size.
-
-    pixel: dict, Pixel, default=None
-        `Pixel` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
-
-    arrows: dict, ArrowCS, default=None
-        `ArrowCS` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
+    path : dict | Path | None, default None
+        Instance of ``Path`` or dict with equivalent key/value pairs; defines path marker
+        and path line properties.
+    model3d : list[Trace3d | dict] | None, default None
+        List of traces where each is a ``Trace3d`` instance or dict of equivalent key/value
+        pairs. Defines an additional user-defined 3D model positioned relative to the main
+        object and transformed with it. Can replace the original 3D representation.
+    size : float | None, default None
+        Ratio of sensor size to canvas size (positive).
+    pixel : dict | Pixel | None, default None
+        ``Pixel`` instance or dict with equivalent key/value pairs (e.g., ``color``, ``size``).
+    arrows : dict | ArrowCS | None, default None
+        ``ArrowCS`` instance or dict with equivalent key/value pairs (e.g., ``color``, ``size``).
     """
 
     def __init__(self, **kwargs):
@@ -1780,34 +1741,27 @@ class DefaultCurrent(MagicProperties, CurrentProperties):
 
 
 class CurrentStyle(BaseStyle, CurrentProperties):
-    """Defines styling properties of line current classes.
+    """Styling properties for line current classes.
 
     Parameters
     ----------
-    label: str, default=None
-        Label of the class instance, e.g. to be displayed in the legend.
-
-    description: dict or `Description` object, default=None
+    label : str | None, default None
+        Label of the class instance, e.g., to be displayed in the legend.
+    description : dict | Description | None, default None
         Object description properties.
-
-    color: str, default=None
-        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
-
-    opacity: float, default=None
+    color : str | None, default None
+        A valid CSS color. May also be one of {'r', 'g', 'b', 'y', 'm', 'c', 'k', 'w'}.
+    opacity : float | None, default None
         Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
-
-    path: dict or `Path` object, default=None
-        An instance of `Path` or dictionary of equivalent key/value pairs, defining the object
-        path marker and path line properties.
-
-    model3d: list of `Trace3d` objects, default=None
-        A list of traces where each is an instance of `Trace3d` or dictionary of equivalent
-        key/value pairs. Defines properties for an additional user-defined model3d object which is
-        positioned relatively to the main object to be displayed and moved automatically with it.
-        This feature also allows the user to replace the original 3d representation of the object.
-
-    arrow: dict or `Arrow` object, default=None
-        `Arrow` object or dict with `'show'`, `'size'` properties/keys.
+    path : dict | Path | None, default None
+        Instance of ``Path`` or dict with equivalent key/value pairs; defines path marker
+        and path line properties.
+    model3d : list[Trace3d | dict] | None, default None
+        List of traces where each is a ``Trace3d`` instance or dict of equivalent key/value
+        pairs. Defines an additional user-defined 3D model positioned relative to the main
+        object and transformed with it. Can replace the original 3D representation.
+    arrow : dict | Arrow | None, default None
+        ``Arrow`` instance or dict with keys ``'show'``, ``'size'``.
     """
 
     def __init__(self, **kwargs):
@@ -2099,38 +2053,29 @@ class DefaultDipole(MagicProperties, DipoleProperties):
 
 
 class DipoleStyle(BaseStyle, DipoleProperties):
-    """Defines the styling properties of dipole objects.
+    """Styling properties for dipole objects.
 
     Parameters
     ----------
-    label: str, default=None
-        Label of the class instance, e.g. to be displayed in the legend.
-
-    description: dict or `Description` object, default=None
+    label : str | None, default None
+        Label of the class instance, e.g., to be displayed in the legend.
+    description : dict | Description | None, default None
         Object description properties.
-
-    color: str, default=None
-        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
-
-    opacity: float, default=None
+    color : str | None, default None
+        A valid CSS color. May also be one of {'r', 'g', 'b', 'y', 'm', 'c', 'k', 'w'}.
+    opacity : float | None, default None
         Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
-
-    path: dict or `Path` object, default=None
-        An instance of `Path` or dictionary of equivalent key/value pairs, defining the object
-        path marker and path line properties.
-
-    model3d: list of `Trace3d` objects, default=None
-        A list of traces where each is an instance of `Trace3d` or dictionary of equivalent
-        key/value pairs. Defines properties for an additional user-defined model3d object which is
-        positioned relatively to the main object to be displayed and moved automatically with it.
-        This feature also allows the user to replace the original 3d representation of the object.
-
-    size: float, default=None
-        Positive float for ratio of dipole size to canvas size.
-
-    pivot: str, default=None
-        The part of the arrow that is anchored to the X, Y grid.
-        The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`.
+    path : dict | Path | None, default None
+        Instance of ``Path`` or dict with equivalent key/value pairs; defines path marker
+        and path line properties.
+    model3d : list[Trace3d | dict] | None, default None
+        List of traces where each is a ``Trace3d`` instance or dict of equivalent key/value
+        pairs. Defines an additional user-defined 3D model positioned relative to the main
+        object and transformed with it. Can replace the original 3D representation.
+    size : float | None, default None
+        Ratio of dipole size to canvas size (positive).
+    pivot : {'tail', 'middle', 'tip'} | None, default None
+        The part of the arrow anchored to the grid about which it rotates.
     """
 
     def __init__(self, **kwargs):

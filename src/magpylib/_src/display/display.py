@@ -305,14 +305,13 @@ def show(
     pixel_agg : str, optional
         numpy reducer applied across sensor pixels for non ``'model3d'`` outputs.
         Default is ``'mean'``. Other options are ``'min'``, ``'max'``, ``'std'``.
-
     style : dict or None, optional
         Global style overrides, e.g. ``{'color': 'red'}`` or via underscore magic
         (``style_color='red'``). Applied to matching objects. Default is ``None``.
 
     Returns
     -------
-    fig : None or matplotlib.Figure or plotly.Figure or pyvista.Plotter
+    None or matplotlib.Figure or plotly.Figure or pyvista.Plotter
         The created/updated figure object if ``return_fig=True``; otherwise ``None``.
 
     Examples
@@ -423,11 +422,83 @@ def show_context(
     style=_DefaultValue,
     **kwargs,
 ):
-    """Context manager to temporarily set display settings in the `with` statement context.
+    """Context manager for grouping multiple ``show`` calls with shared settings.
 
-    You need to invoke as ``show_context(pattern1=value1, pattern2=value2)``.
+    Use this to apply common display options across several successive ``show``
+    calls and have them rendered together on a single canvas and/or subplot
+    layout. All supplied options are remembered during the context and applied
+    to the final combined render when the context exits.
 
-    See the `magpylib.show` docstrings for the parameter definitions.
+    Parameters
+    ----------
+    objects : Source | Sensor | Collection
+        One or more Magpylib objects to register up-front for display.
+    backend : str, default magpylib.defaults.display.backend
+        Plotting backend: ``'auto'``, ``'matplotlib'``, ``'plotly'``, or
+        ``'pyvista'``.
+    canvas : None | matplotlib.Figure | plotly.Figure | pyvista.Plotter, default None
+        Existing canvas to draw on. If ``None``, a new canvas is created.
+    animation : bool | float, default False
+        If ``True`` (and at least one object has a path) the path is animated.
+        A positive float sets total animation duration in seconds (Plotly only).
+    zoom : float, default 0.0
+        3D plot zoom level. ``0`` means tight bounds.
+    markers : array-like, shape (n, 3) | None, default None
+        Global position markers shown as points.
+    return_fig : bool, default False
+        If ``True``, return the underlying figure from the final render.
+    canvas_update : str | bool, default 'auto'
+        Layout update behaviour when using a provided canvas: ``'auto'``,
+        ``True``, or ``False``.
+    row : int | None, default None
+        Subplot row index for all enclosed ``show`` calls that omit ``row``.
+    col : int | None, default None
+        Subplot column index for all enclosed ``show`` calls that omit ``col``.
+    output : str | tuple[str, ...], default 'model3d'
+        Plot output type (e.g., ``'model3d'``, ``'Bx'``, ``'Bxy'``, ``'Hyz'``).
+    sumup : bool, default True
+        Sum source contributions when ``output != 'model3d'``.
+    pixel_agg : str, default 'mean'
+        NumPy reducer applied across sensor pixels for non-``'model3d'`` outputs
+        (e.g., ``'min'``, ``'max'``, ``'std'``).
+    style : dict | None, default None
+        Global style overrides (e.g., ``{'color': 'red'}``) or via underscore
+        magic (e.g., ``style_color='red'``).
+    **kwargs
+        Additional backend, figure (``fig_*``), and show (``show_*``) options.
+
+    Yields
+    ------
+    DisplayContext
+        The active display context. After the ``with`` block, the combined
+        render result is available as ``ctx.show_return_value``.
+
+    Returns
+    -------
+    None
+        The context manager does not return a value.
+
+    Notes
+    -----
+    - All ``show`` calls inside the context inherit unspecified options from
+      the context manager arguments.
+    - Objects passed to the context are combined with objects passed to each
+      inner ``show`` call.
+    - On exit, a single ``show`` is executed with the aggregated objects and
+      options.
+
+    Examples
+    --------
+    Create a 1x3 Plotly layout and render 3 outputs in one animation:
+
+    >>> import magpylib as magpy
+    >>> import plotly.graph_objects as go
+    >>> fig = go.Figure()
+    >>> with magpy.show_context(src1, src2, sensor, canvas=fig, backend='plotly', animation=True) as ctx:
+    ...     magpy.show(col=1, output='model3d')
+    ...     magpy.show(col=2, output='Bxy', sumup=True)
+    ...     magpy.show(col=3, output='Bz', sumup=False)
+    >>> fig  # doctest: +SKIP
     """
     # pylint: disable=protected-access
     kwargs.update(

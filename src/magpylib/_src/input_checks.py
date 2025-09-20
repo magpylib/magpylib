@@ -3,6 +3,7 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-positional-arguments
+# pylint: disable=no-member
 
 import inspect
 import numbers
@@ -16,8 +17,6 @@ from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibMissingInput
 from magpylib._src.utility import format_obj_input, wrong_obj_msg
-
-# pylint: disable=no-member
 
 #################################################################
 #################################################################

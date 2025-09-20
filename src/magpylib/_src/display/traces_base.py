@@ -58,40 +58,31 @@ def make_Cuboid(
     scale=1,
     **kwargs,
 ) -> dict:
-    """Provides the 3D-model parameters for a cuboid in dictionary form, based on
-    the given dimension. The zero position is in the barycenter of the vertices.
+    """Return a model3d dictionary for a cuboid.
 
     Parameters
     ----------
-    backend : str
-        Plotting backend corresponding to the trace. Can be one of
-        `['generic', 'matplotlib', 'plotly']`.
-
-    dimension : 3-tuple, default=(1,1,1)
-        Length of the cuboid sides `x,y,z`.
-
-    position : array_like, shape (3,), default=(0,0,0)
-        Reference position of the vertices in the global CS. The zero position is
-        in the barycenter of the vertices.
-
-    orientation : scipy `Rotation` object with length 1 or m, default=`identity`
-        Orientation of the vertices in the global CS.
-
-    show : bool, default=True
-        Shows/hides model3d object based on provided trace.
-
-    scale : float, default=1
-        Scaling factor by which the trace vertices coordinates are multiplied.
-
-    **kwargs : dict, optional
-        Additional keyword arguments to be passed to the trace constructor directly.
-        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
+    backend : {'generic', 'matplotlib', 'plotly'}, default 'generic'
+        Plotting backend.
+    dimension : tuple[float, float, float], default (1.0, 1.0, 1.0)
+        Side lengths along the ``x``, ``y``, and ``z`` axes.
+    position : array-like, shape (3,), default None
+        Reference position of the vertices in the global CS. The zero position is in
+        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+    orientation : scipy.spatial.transform.Rotation | None, default None
+        Orientation to apply in the global CS.
+    show : bool, default True
+        Show or hide the resulting ``model3d`` object.
+    scale : float, default 1
+        Factor by which the vertex coordinates are multiplied.
+    **kwargs : dict
+        Additional constructor kwargs passed to the backend trace
+        (e.g., ``opacity=0.5`` for Plotly or ``alpha=0.5`` for Matplotlib).
 
     Returns
     -------
-    3D-model: dict
-        A dictionary with necessary key/value pairs with the necessary information to construct
-        a 3D-model.
+    dict
+        Backend-agnostic ``model3d`` specification for rendering.
     """
     dimension = np.array(dimension, dtype=float)
     trace = {
@@ -118,47 +109,35 @@ def make_Prism(
     scale=1,
     **kwargs,
 ) -> dict:
-    """Provides the 3D-model parameters for a prism in dictionary form, based on
-    number of vertices of the base, diameter and height. The zero position is in the
-    barycenter of the vertices.
+    """Return a model3d dictionary for a right prism with a regular polygon base.
 
     Parameters
     ----------
-    backend : str
-        Plotting backend corresponding to the trace. Can be one of
-        `['generic', 'matplotlib', 'plotly']`.
-
-    base : int, default=6
-        Number of vertices of the base in the xy-plane.
-
-    diameter : float, default=1
-        Diameter dimension inscribing the base.
-
-    height : float, default=1
-        Prism height in the z-direction.
-
-    position : array_like, shape (3,), default=(0,0,0)
-        Reference position of the vertices in the global CS. The zero position is
-        in the barycenter of the vertices.
-
-    orientation : scipy Rotation object with length 1 or m, default=`identity`
-        Orientation of the vertices in the global CS.
-
-    show : bool, default=True
-        Shows/hides model3d object based on provided trace.
-
-    scale : float, default=1
-        Scaling factor by which the trace vertices coordinates are multiplied.
-
-    **kwargs : dict, optional
-        Additional keyword arguments to be passed to the trace constructor directly.
-        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
+    backend : {'generic', 'matplotlib', 'plotly'}, default 'generic'
+        Plotting backend.
+    base : int, default 3
+        Number of vertices of the base polygon in the ``xy``-plane.
+    diameter : float, default 1.0
+        Diameter of the circumscribed circle of the base polygon.
+    height : float, default 1.0
+        Prism height along the ``z``-direction.
+    position : array-like, shape (3,), default None
+        Reference position of the vertices in the global CS. The zero position is in
+        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+    orientation : scipy.spatial.transform.Rotation | None, default None
+        Orientation to apply in the global CS.
+    show : bool, default True
+        Show or hide the resulting ``model3d`` object.
+    scale : float, default 1
+        Factor by which the vertex coordinates are multiplied.
+    **kwargs : dict
+        Additional constructor kwargs passed to the backend trace
+        (e.g., ``opacity=0.5`` for Plotly or ``alpha=0.5`` for Matplotlib).
 
     Returns
     -------
-    3D-model: dict
-        A dictionary with necessary key/value pairs with the necessary information to construct
-        a 3D-model.
+    dict
+        Backend-agnostic ``model3d`` specification for rendering.
     """
     N = base
     t = np.linspace(0, 2 * np.pi, N, endpoint=False)
@@ -207,44 +186,33 @@ def make_Ellipsoid(
     scale=1,
     **kwargs,
 ) -> dict:
-    """Provides the 3D-model parameters for an ellipsoid in dictionary form, based
-    on number of vertices of the circumference, and the dimension. The zero position is in the
-    barycenter of the vertices.
+    """Return a model3d dictionary for an ellipsoid.
 
     Parameters
     ----------
-    backend : str
-        Plotting backend corresponding to the trace. Can be one of
-        `['generic', 'matplotlib', 'plotly']`.
-
-    dimension : tuple, default=(1.0, 1.0, 1.0)
-        Dimension in the `x,y,z` directions.
-
-    vert : int, default=15
-        Number of vertices along the circumference.
-
-    position : array_like, shape (3,), default=(0,0,0)
-        Reference position of the vertices in the global CS. The zero position is
-        in the barycenter of the vertices.
-
-    orientation : scipy Rotation object with length 1 or m, default=`identity`
-        Orientation of the vertices in the global CS.
-
-    show : bool, default=True
-        Shows/hides model3d object based on provided trace.
-
-    scale : float, default=1
-        Scaling factor by which the trace vertices coordinates are multiplied.
-
-    **kwargs : dict, optional
-        Additional keyword arguments to be passed to the trace constructor directly.
-        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
+    backend : {'generic', 'matplotlib', 'plotly'}, default 'generic'
+        Plotting backend.
+    dimension : tuple[float, float, float], default (1.0, 1.0, 1.0)
+        Principal axes lengths along ``x``, ``y``, and ``z``.
+    vert : int, default 15
+        Sampling density used to approximate the surface.
+    position : array-like, shape (3,), default None
+        Reference position of the vertices in the global CS. The zero position is in
+        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+    orientation : scipy.spatial.transform.Rotation | None, default None
+        Orientation to apply in the global CS.
+    show : bool, default True
+        Show or hide the resulting ``model3d`` object.
+    scale : float, default 1
+        Factor by which the vertex coordinates are multiplied.
+    **kwargs : dict
+        Additional constructor kwargs passed to the backend trace
+        (e.g., ``opacity=0.5`` for Plotly or ``alpha=0.5`` for Matplotlib).
 
     Returns
     -------
-    3D-model: dict
-        A dictionary with necessary key/value pairs with the necessary information to construct
-        a 3D-model.
+    dict
+        Backend-agnostic ``model3d`` specification for rendering.
     """
     N = vert
     phi = np.linspace(0, 2 * np.pi, vert, endpoint=False)
@@ -297,48 +265,36 @@ def make_CylinderSegment(
     scale=1,
     **kwargs,
 ) -> dict:
-    """Provides the 3D-model parameters for a cylinder segment in dictionary form, based on
-    inner and outer diameters, height, and section angles in degrees. The zero position is at
-    `z=0` at the center point of the arcs.
+    """Return a model3d dictionary for a hollow cylinder segment.
 
     Parameters
     ----------
-    backend : str
-        Plotting backend corresponding to the trace. Can be one of
-        `['generic', 'matplotlib', 'plotly']`.
-
-    dimension: array_like, shape (5,), default=`None`
-        Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
-        where r1<r2 denote inner and outer radii in units of m, phi1<phi2 denote
-        the cylinder section angles in units of deg and h is the cylinder height
-        in units of m.
-
-    vert : int, default=50
-        Number of vertices along a the complete 360 degrees arc. The number along the phi1-phi2-arc
-        is computed with `max(5, int(vert * abs(phi1 - phi2) / 360))`.
-
-    position : array_like, shape (3,), default=(0,0,0)
-        Reference position of the vertices in the global CS. The zero position is
-        in the barycenter of the vertices.
-
-    orientation : scipy Rotation object with length 1 or m, default=`identity`
-        Orientation of the vertices in the global CS.
-
-    show : bool, default=True
-        Shows/hides model3d object based on provided trace.
-
-    scale : float, default=1
-        Scaling factor by which the trace vertices coordinates are multiplied.
-
-    **kwargs : dict, optional
-        Additional keyword arguments to be passed to the trace constructor directly.
-        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
+    backend : {'generic', 'matplotlib', 'plotly'}, default 'generic'
+        Plotting backend.
+    dimension : tuple[float, float, float, float, float], default (1.0, 2.0, 1.0, 0.0, 90.0)
+        Cylinder parameters ``(r1, r2, h, phi1, phi2)``, where ``r1 < r2`` are inner and
+        outer radii, ``h`` is height, and ``phi1 < phi2`` are section angles in degrees.
+        The zero reference is at ``z=0`` at the arc center point.
+    vert : int, default 50
+        Sampling density along a full 360° arc. Along ``[phi1, phi2]`` it uses
+        ``max(5, int(vert * abs(phi2 - phi1) / 360))``.
+    position : array-like, shape (3,), default None
+        Reference position of the vertices in the global CS. The zero position is in
+        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+    orientation : scipy.spatial.transform.Rotation | None, default None
+        Orientation to apply in the global CS.
+    show : bool, default True
+        Show or hide the resulting ``model3d`` object.
+    scale : float, default 1
+        Factor by which the vertex coordinates are multiplied.
+    **kwargs : dict
+        Additional constructor kwargs passed to the backend trace
+        (e.g., ``opacity=0.5`` for Plotly or ``alpha=0.5`` for Matplotlib).
 
     Returns
     -------
-    3D-model: dict
-        A dictionary with necessary key/value pairs with the necessary information to construct
-        a 3D-model.
+    dict
+        Backend-agnostic ``model3d`` specification for rendering.
     """
     r1, r2, h, phi1, phi2 = dimension
     N = max(5, int(vert * abs(phi1 - phi2) / 360))
@@ -399,51 +355,37 @@ def make_Pyramid(
     scale=1,
     **kwargs,
 ) -> dict:
-    """Provides the 3D-model parameters for a pyramid in dictionary form, based on
-    number of vertices of the base, diameter and height. The zero position is in the
-    barycenter of the vertices.
+    """Return a model3d dictionary for a pyramid with a regular polygon base.
 
     Parameters
     ----------
-    backend : str
-        Plotting backend corresponding to the trace. Can be one of
-        `['generic', 'matplotlib', 'plotly']`.
-
-    base : int, default=30
-        Number of vertices of the cone base.
-
-    diameter : float, default=1
-        Diameter of the cone base.
-
-    height : int, default=1
+    backend : {'generic', 'matplotlib', 'plotly'}, default 'generic'
+        Plotting backend.
+    base : int, default 3
+        Number of vertices of the base polygon.
+    diameter : float, default 1.0
+        Diameter of the circumscribed circle of the base polygon.
+    height : float, default 1.0
         Pyramid height.
-
-    pivot : str, default='middle'
-        The part of the cone that is anchored to the grid and about which it rotates.
-        Can be one of `['tail', 'middle', 'tip']`.
-
-    position : array_like, shape (3,), default=(0,0,0)
-        Reference position of the vertices in the global CS. The zero position is
-        in the barycenter of the vertices.
-
-    orientation : scipy Rotation object with length 1 or m, default=`identity`
-        Orientation of the vertices in the global CS.
-
-    show : bool, default=True
-        Shows/hides model3d object based on provided trace.
-
-    scale : float, default=1
-        Scaling factor by which the trace vertices coordinates are multiplied.
-
-    **kwargs : dict, optional
-        Additional keyword arguments to be passed to the trace constructor directly.
-        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
+    pivot : {'tail', 'middle', 'tip'}, default 'middle'
+        Anchor point about which the pyramid rotates.
+    position : array-like, shape (3,), default None
+        Reference position of the vertices in the global CS. The zero position is in
+        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+    orientation : scipy.spatial.transform.Rotation | None, default None
+        Orientation to apply in the global CS.
+    show : bool, default True
+        Show or hide the resulting ``model3d`` object.
+    scale : float, default 1
+        Factor by which the vertex coordinates are multiplied.
+    **kwargs : dict
+        Additional constructor kwargs passed to the backend trace
+        (e.g., ``opacity=0.5`` for Plotly or ``alpha=0.5`` for Matplotlib).
 
     Returns
     -------
-    3D-model: dict
-        A dictionary with necessary key/value pairs with the necessary information to construct
-        a 3D-model.
+    dict
+        Backend-agnostic ``model3d`` specification for rendering.
     """
     pivot_conditions = {
         "tail": height / 2,
@@ -480,51 +422,37 @@ def make_Arrow(
     scale=1,
     **kwargs,
 ) -> dict:
-    """Provides the 3D-model parameters for an arrow in dictionary form, based on
-    number of vertices of the base, diameter and height. The zero position is in the
-    barycenter of the vertices.
+    """Return a model3d dictionary for an arrow (prism shaft + pyramid head).
 
     Parameters
     ----------
-    backend : str
-        Plotting backend corresponding to the trace. Can be one of
-        `['generic', 'matplotlib', 'plotly']`.
-
-    base : int, default=30
-        Number of vertices of the arrow base.
-
-    diameter : float, default=0.3
+    backend : {'generic', 'matplotlib', 'plotly'}, default 'generic'
+        Plotting backend.
+    base : int, default 3
+        Number of vertices of the regular polygon bases.
+    diameter : float, default 0.3
         Diameter of the arrow base.
-
-    height : int, default=1
+    height : float, default 1.0
         Arrow height.
-
-    pivot : str, default='middle'
-        The part of the arrow that is anchored to the grid and about which it rotates.
-        Can be one of `['tail', 'middle', 'tip']`.
-
-    position : array_like, shape (3,), default=(0,0,0)
-        Reference position of the vertices in the global CS. The zero position is
-        in the barycenter of the vertices.
-
-    orientation : scipy Rotation object with length 1 or m, default=`identity`
-        Orientation of the vertices in the global CS.
-
-    show : bool, default=True
-        Shows/hides model3d object based on provided trace.
-
-    scale : float, default=1
-        Scaling factor by which the trace vertices coordinates are multiplied.
-
-    **kwargs : dict, optional
-        Additional keyword arguments to be passed to the trace constructor directly.
-        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
+    pivot : {'tail', 'middle', 'tip'}, default 'middle'
+        Anchor point about which the arrow rotates.
+    position : array-like, shape (3,), default None
+        Reference position of the vertices in the global CS. The zero position is in
+        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+    orientation : scipy.spatial.transform.Rotation | None, default None
+        Orientation to apply in the global CS.
+    show : bool, default True
+        Show or hide the resulting ``model3d`` object.
+    scale : float, default 1
+        Factor by which the vertex coordinates are multiplied.
+    **kwargs : dict
+        Additional constructor kwargs passed to the backend trace
+        (e.g., ``opacity=0.5`` for Plotly or ``alpha=0.5`` for Matplotlib).
 
     Returns
     -------
-    3D-model: dict
-        A dictionary with necessary key/value pairs with the necessary information to construct
-        a 3D-model.
+    dict
+        Backend-agnostic ``model3d`` specification for rendering.
     """
 
     h, d, z = height, diameter, 0
@@ -562,41 +490,32 @@ def make_Tetrahedron(
     scale=1,
     **kwargs,
 ) -> dict:
-    """Provides the 3D-model parameters for a pyramid in dictionary form, based on
-    number of vertices of the base, diameter and height. The zero position is in the
-    barycenter of the vertices.
+    """Return a model3d dictionary for a tetrahedron.
 
     Parameters
     ----------
-    backend : str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
-
-    vertices: ndarray, shape (4,3)
-        Vertices (x1,y1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4), in the relative
-        coordinate system of the tetrahedron.
-
-    position : array_like, shape (3,), default=(0,0,0)
-        Reference position of the vertices in the global CS. The zero position is
-        in the barycenter of the vertices.
-
-    orientation : scipy Rotation object with length 1 or m, default=`identity`
-        Orientation of the vertices in the global CS.
-
-    show : bool, default=True
-        Shows/hides model3d object based on provided trace.
-
-    scale : float, default=1
-        Scaling factor by which the trace vertices coordinates are multiplied.
-
-    **kwargs : dict, optional
-        Additional keyword arguments to be passed to the trace constructor directly.
-        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
+    backend : {'generic', 'matplotlib', 'plotly'}, default 'generic'
+        Plotting backend.
+    vertices : array-like, shape (4, 3)
+        Vertex coordinates ``(x1, y1, z1), …, (x4, y4, z4)`` in the tetrahedron's
+        local coordinate system.
+    position : array-like, shape (3,), default None
+        Reference position of the vertices in the global CS. The zero position is in
+        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+    orientation : scipy.spatial.transform.Rotation | None, default None
+        Orientation to apply in the global CS.
+    show : bool, default True
+        Show or hide the resulting ``model3d`` object.
+    scale : float, default 1
+        Factor by which the vertex coordinates are multiplied.
+    **kwargs : dict
+        Additional constructor kwargs passed to the backend trace
+        (e.g., ``opacity=0.5`` for Plotly or ``alpha=0.5`` for Matplotlib).
 
     Returns
     -------
-    3D-model: dict
-        A dictionary with necessary key/value pairs with the necessary information to construct
-        a 3D-model.
+    dict
+        Backend-agnostic ``model3d`` specification for rendering.
     """
     # create triangles implying right vertices chirality
     triangles = np.array([[0, 2, 1], [0, 3, 2], [1, 3, 0], [1, 2, 3]])
@@ -616,46 +535,34 @@ def make_TriangularMesh(
     scale=1,
     **kwargs,
 ) -> dict:
-    """Provides the 3D-model parameters for a custom triangular mesh in dictionary form, based on
-    number of vertices of the base, diameter and height. The zero position is in the
-    barycenter of the vertices.
+    """Return a model3d dictionary for a custom triangular mesh.
 
     Parameters
     ----------
-    backend : str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
-
-    vertices: ndarray, shape (4,3)
-        Vertices (x1,y1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4), in the relative
-        coordinate system of the triangular mesh.
-
-    faces: ndarray, shape (4,3)
-        For each triangle, the indices of the three points that make up the triangle, ordered in an
-        anticlockwise manner. If not specified, a `scipy.spatial.ConvexHull` triangulation is
-        calculated.
-
-    position : array_like, shape (3,), default=(0,0,0)
-        Reference position of the vertices in the global CS. The zero position is
-        in the barycenter of the vertices.
-
-    orientation : scipy Rotation object with length 1 or m, default=`identity`
-        Orientation of the vertices in the global CS.
-
-    show : bool, default=True
-        Shows/hides model3d object based on provided trace.
-
-    scale : float, default=1
-        Scaling factor by which the trace vertices coordinates are multiplied.
-
-    **kwargs : dict, optional
-        Additional keyword arguments to be passed to the trace constructor directly.
-        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
+    backend : {'generic', 'matplotlib', 'plotly'}, default 'generic'
+        Plotting backend.
+    vertices : array-like, shape (n, 3)
+        Vertex coordinates in the local coordinate system of the mesh.
+    faces : array-like, shape (m, 3), default None
+        For each triangle, the indices of its three vertices in anticlockwise
+        order. If ``None``, a ``scipy.spatial.ConvexHull`` triangulation is used.
+    position : array-like, shape (3,), default None
+        Reference position of the vertices in the global CS. The zero position is in
+        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+    orientation : scipy.spatial.transform.Rotation | None, default None
+        Orientation to apply in the global CS.
+    show : bool, default True
+        Show or hide the resulting ``model3d`` object.
+    scale : float, default 1
+        Factor by which the vertex coordinates are multiplied.
+    **kwargs : dict
+        Additional constructor kwargs passed to the backend trace
+        (e.g., ``opacity=0.5`` for Plotly or ``alpha=0.5`` for Matplotlib).
 
     Returns
     -------
-    3D-model: dict
-        A dictionary with necessary key/value pairs with the necessary information to construct
-        a 3D-model.
+    dict
+        Backend-agnostic ``model3d`` specification for rendering.
     """
     vertices = np.array(vertices)
     x, y, z = vertices.T
