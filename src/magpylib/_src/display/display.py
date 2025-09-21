@@ -82,9 +82,10 @@ class RegisteredBackend:
                     else f"{supported[0]!r}"
                 )
                 warnings.warn(
-                    f"The {backend!r} backend does not support {name!r}, "
-                    f"you need to use {supported_str} instead."
-                    f"\nFalling back to: {params}",
+                    "Unsupported feature for selected backend: "
+                    f"the `{backend}` backend does not support `{name!r}`. "
+                    f"Use {supported_str} instead. "
+                    f"Falling back to: {params}",
                     stacklevel=2,
                 )
                 kwargs.update(params)
@@ -303,7 +304,7 @@ def show(
     sumup : bool, optional
         Sum field contributions of sources when ``output != 'model3d'``. Default is ``True``.
     pixel_agg : str, optional
-        numpy reducer applied across sensor pixels for non ``'model3d'`` outputs.
+        NumPy reducer applied across sensor pixels for non ``'model3d'`` outputs.
         Default is ``'mean'``. Other options are ``'min'``, ``'max'``, ``'std'``.
     style : dict or None, optional
         Global style overrides, e.g. ``{'color': 'red'}`` or via underscore magic

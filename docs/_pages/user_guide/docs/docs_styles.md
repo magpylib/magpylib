@@ -266,7 +266,7 @@ To enable visualization of custom objects with different graphic backends Magpyl
 A trace-dictionary has the following keys:
 
 1. `'backend'`: `'generic'`, `'matplotlib'` or `'plotly'`
-2. `'constructor'`: name of the plotting constructor from the respective backend, e.g. plotly `'Mesh3d'` or matplotlib `'plot_surface'`
+2. `'constructor'`: name of the plotting constructor from the respective backend, e.g. plotly `'Mesh3d'` or Matplotlib `'plot_surface'`
 3. `'args'`: default `None`, positional arguments handed to constructor
 4. `'kwargs'`: default `None`, keyword arguments handed to constructor
 5. `'coordsargs'`: tells Magpylib which input corresponds to which coordinate direction, so that geometric representation becomes possible. By default `{'x': 'x', 'y': 'y', 'z': 'z'}` for the `'generic'` backend and Plotly backend,  and `{'x': 'args[0]', 'y': 'args[1]', 'z': 'args[2]'}` for the Matplotlib backend.
@@ -558,7 +558,7 @@ magnet = magpy.magnet.Cylinder(polarization=(0, 0, 1), dimension=(0.015, 0.02))
 sensor.position = np.linspace((-0.015, 0, 0.008), (-0.015, 0, -0.004), 21)
 sensor.rotate_from_angax(np.linspace(0, 180, 21), "z", anchor=0, start=0)
 
-# Display with matplotlib and plotly backends
+# Display with Matplotlib and plotly backends
 args = (sensor, magnet)
 kwargs = dict(style_path_frames=5)
 magpy.show(args, **kwargs, backend="matplotlib")

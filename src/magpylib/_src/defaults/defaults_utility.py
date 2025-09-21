@@ -249,7 +249,7 @@ def color_validator(color_input, allow_None=True, parent_name=""):
         if len(color_new) == 4:  # trim opacity
             color_new = color_new[:-1]
         if len(color_new) == 3:
-            # transform matplotlib colors scaled from 0-1 to rgb colors
+            # transform Matplotlib colors scaled from 0-1 to rgb colors
             if all(isinstance(c, float) for c in color_new):
                 c = [int(255 * c) for c in color_new]
                 color_new = f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}"
@@ -298,9 +298,9 @@ def validate_property_class(val, name, class_, parent):
         val = class_()
     if not isinstance(val, class_):
         msg = (
-            f"the `{name}` property of `{type(parent).__name__}` must be an instance \n"
-            f"of `{class_}` or a dictionary with equivalent key/value pairs \n"
-            f"but received {val!r} instead"
+            f"The `{name}` property of `{type(parent).__name__}` must be an instance "
+            f"of `{class_}` or a dictionary with equivalent key/value pairs; "
+            f"instead received {val!r}."
         )
         raise ValueError(msg)
     return val
@@ -316,8 +316,8 @@ def validate_style_keys(style_kwargs):
     invalid_keys = {level0_style_keys[k] for k in kwargs_diff}
     if invalid_keys:
         msg = (
-            f"Following arguments are invalid style properties: `{invalid_keys}`\n"
-            f"\n Available style properties are: `{valid_keys}`"
+            f"The following style properties are invalid: `{invalid_keys}`. "
+            f"Available style properties are: `{valid_keys}`."
         )
         raise ValueError(msg)
     return style_kwargs
@@ -346,8 +346,8 @@ class MagicProperties:
             diff = set(magic_kwargs.keys()).difference(set(input_dict.keys()))
             for attr in diff:
                 msg = (
-                    f"{type(self).__name__} has no property '{attr}'"
-                    f"\n Available properties are: {list(self._property_names_generator())}"
+                    f"`{type(self).__name__}` has no property `{attr}`. "
+                    f"Available properties: {list(self._property_names_generator())}."
                 )
                 raise AttributeError(msg)
             input_dict.update(magic_kwargs)
@@ -358,8 +358,8 @@ class MagicProperties:
     def __setattr__(self, key, value):
         if self.__isfrozen and not hasattr(self, key):
             msg = (
-                f"{type(self).__name__} has no property '{key}'"
-                f"\n Available properties are: {list(self._property_names_generator())}"
+                f"`{type(self).__name__}` has no property `{key}`. "
+                f"Available properties: {list(self._property_names_generator())}."
             )
             raise AttributeError(msg)
         object.__setattr__(self, key, value)

@@ -89,7 +89,7 @@ def update_magnet_mesh(
     """
     Updates an existing plotly mesh3d dictionary of an object which has a magnetic vector. The
     object gets colorized, positioned and oriented based on provided arguments.
-    Slicing allows for matplotlib to show colorgradients approximations by slicing the mesh into
+    Slicing allows for Matplotlib to show colorgradients approximations by slicing the mesh into
     the colorscales colors, remesh it and merge with assigning facecolor for each part.
     """
     mag_color = mag_style.color
@@ -298,8 +298,8 @@ def get_traces_2D(
         if field_str not in "BHMJ" and set(coords_str).difference(set("xyz")):
             msg = (
                 "The `output` parameter must start with 'B', 'H', 'M', 'J' "
-                "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') )"
-                f"\nreceived {out!r} instead"
+                "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') ); "
+                f"instead received {out!r}."
             )
             raise ValueError(msg)
         field_str_list.append(field_str)
@@ -548,7 +548,10 @@ def get_generic_traces3D(
                     tr_non_generic["showscale"] = tr_non_generic.get("showscale", False)
                     tr_non_generic["color"] = tr_non_generic.get("color", style.color)
                 else:  # pragma: no cover
-                    msg = f"{ttype} is not supported, only 'scatter3d' and 'mesh3d' are"
+                    msg = (
+                        f"Unsupported extra model3d constructor {ttype!r}; "
+                        "only `scatter3d` and `mesh3d` are supported."
+                    )
                     raise ValueError(msg)
                 tr_non_generic.update(linearize_dict(obj_extr_trace, separator="_"))
                 traces_generic.append(tr_non_generic)
@@ -681,7 +684,7 @@ def process_animation_kwargs(obj_list, animation=False, **kwargs):
     ):  # check if some path exist for any object
         animation = False
         warnings.warn(
-            "No path to be animated detected, displaying standard plot", stacklevel=2
+            "No path to be animated detected, displaying standard plot.", stacklevel=2
         )
 
     # pylint: disable=no-member
@@ -719,10 +722,9 @@ def extract_animation_properties(
     if animation_fps > animation_maxfps:
         warnings.warn(
             f"The set `animation_fps` at {animation_fps} is greater than the max allowed of"
-            f" {animation_maxfps}. `animation_fps` will be set to"
-            f" {animation_maxfps}. "
-            f"You can modify the default value by setting it in "
-            "`magpylib.defaults.display.animation.maxfps`",
+            f" {animation_maxfps}. `animation_fps` will be set to {animation_maxfps}. "
+            "You can modify the default value by setting it in "
+            "`magpylib.defaults.display.animation.maxfps`.",
             stacklevel=2,
         )
         animation_fps = animation_maxfps
@@ -754,9 +756,9 @@ def extract_animation_properties(
     if max_pl > animation_maxframes:
         warnings.warn(
             f"The number of frames ({max_pl}) is greater than the max allowed "
-            f"of {animation_maxframes}. The `animation_fps` will be set to {new_fps}. "
+            f"of {animation_maxframes}. `animation_fps` will be set to {new_fps}. "
             f"You can modify the default value by setting it in "
-            "`magpylib.defaults.display.animation.maxframes`",
+            "`magpylib.defaults.display.animation.maxframes`.",
             stacklevel=2,
         )
 

@@ -394,7 +394,9 @@ def test_matplotlib_model3d_extra_bad_input():
     ax = plt.subplot(projection="3d")
     with pytest.raises(
         ValueError,
-        match=r"Rotating/Moving of provided model failed, trace dictionary has no argument 'z',.*",
+        match=(
+            r"Transforming model failed: missing coordinate 'z'.*Available keys:.*"
+        ),
     ):
         obj.show(canvas=ax, return_fig=True)
 
@@ -412,7 +414,7 @@ def test_matplotlib_model3d_extra_updatefunc():
 
     updatefunc = "not callable"
     with pytest.raises(
-        ValueError, match=(r"the `data` property of `Model3d` must be an instance.*")
+        ValueError, match=(r"The `data` property of `Model3d` must be an instance.*")
     ):
         obj.style.model3d.add_trace(updatefunc)
 
@@ -511,7 +513,7 @@ def test_bad_show_inputs():
     )
 
     # test bad canvas
-    with pytest.raises(TypeError, match=r"The `canvas` parameter must be one of .*"):
+    with pytest.raises(TypeError, match=r"The `canvas` parameter must be one of: None, matplotlib.axes.Axes, .*"):
         magpy.show(cyl1, canvas="bad_canvas_input", backend="matplotlib")
 
     # test bad axes canvas with rows

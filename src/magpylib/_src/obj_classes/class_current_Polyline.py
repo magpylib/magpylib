@@ -190,8 +190,9 @@ class Polyline(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
         n_segments = len(self.vertices) - 1
         if self.meshing < n_segments:
             msg = (
-                "getFT Polyline bad meshing input. number of points is less than"
-                " number of Polyline segments. Setting one point per segment in computation"
+                f"Input `meshing` of {self} must be an integer > number of `Polyline` "
+                f"segments ({n_segments}); instead received {self.meshing}. "
+                "Setting one point per segment in computation."
             )
             warnings.warn(msg, UserWarning, stacklevel=2)
             n_target = n_segments

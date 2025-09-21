@@ -114,7 +114,7 @@ print(B.round(3))
 This example demonstrates the scale invariance
 
 ```{note}
-The functional interface is potentially faster than the object oriented one if users generate the input arrays efficiently with numpy (e.g. `np.arange`, `np.linspace`, `np.tile`, `np.repeat`, ...).
+The functional interface is potentially faster than the object oriented one if users generate the input arrays efficiently with NumPy (e.g. `np.arange`, `np.linspace`, `np.tile`, `np.repeat`, ...).
 ```
 
 -------------------------------------

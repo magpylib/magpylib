@@ -120,7 +120,7 @@ class Display(MagicProperties):
             except TypeError as err:
                 msg = (
                     f"The `colorsequence` property of {name} must be an "
-                    f"iterable of colors but received {val!r} instead"
+                    f"iterable of colors; instead received {val!r}."
                 )
                 raise ValueError(msg) from err
 

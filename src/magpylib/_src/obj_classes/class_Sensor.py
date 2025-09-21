@@ -152,7 +152,10 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
             If ``'left'``, the x-axis is flipped.
         """
         if val not in {"right", "left"}:
-            msg = "Sensor `handedness` must be either `'right'` or `'left'`"
+            msg = (
+                f"Input `handedness` of {self} must be either `'right'` or `'left'`; "
+                f"instead received {val!r}."
+            )
             raise MagpylibBadUserInput(msg)
         self._handedness = val
 

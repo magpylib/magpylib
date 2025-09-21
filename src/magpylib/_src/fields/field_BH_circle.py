@@ -144,7 +144,10 @@ def _BHJM_circle(
     if field == "B":
         return BHJM * MU0
 
-    msg = f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
+    msg = (
+        "Input `output_field_type` must be one of ('B', 'H', 'M', 'J'); "
+        f"instead received {field!r}."
+    )
     raise ValueError(  # pragma: no cover
         msg
     )

@@ -149,8 +149,8 @@ class _BaseGeo(_BaseTransform, ABC):
             style.update(val)
         elif not isinstance(val, self._style_class):
             msg = (
-                f"Input parameter `style` must be of type {self._style_class}.\n"
-                f"Instead received type {type(val)}"
+                f"Input `style` must be an instance of `{self._style_class.__name__}`; "
+                f"instead received type {type(val).__name__}."
             )
             raise ValueError(msg)
         return style
@@ -194,8 +194,8 @@ class _BaseGeo(_BaseTransform, ABC):
             self._parent = None
         else:
             msg = (
-                "Input ``parent`` must be ``None`` or a ``Collection`` object."
-                f"Instead received {type(parent)}."
+                "Input `parent` must be `None` or a `Collection` instance; "
+                f"instead received type {type(parent).__name__}."
             )
             raise MagpylibBadUserInput(msg)
 
@@ -303,7 +303,7 @@ class _BaseGeo(_BaseTransform, ABC):
                 self._style.update(style_kwargs)
             except (AttributeError, ValueError) as e:
                 e.args = (
-                    f"{self!r} has been initialized with some invalid style arguments.\n"
+                    f"{self!r} has been initialized with some invalid style arguments."
                     + str(e),
                 )
                 raise

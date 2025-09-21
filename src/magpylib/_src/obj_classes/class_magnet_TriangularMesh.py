@@ -226,7 +226,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         if self.status_open is None:
             self.check_open()
         if self.status_open is True:
-            msg = "Open mesh detected. Cannot compute volume."
+            msg = f"Open mesh detected in {self!r}. Cannot compute volume."
             raise ValueError(msg)
 
         # Vectorized calculation: get all triangle vertices at once
@@ -284,9 +284,9 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         accepted_arg_vals = (True, False, "warn", "raise", "ignore", "skip")
         if arg not in accepted_arg_vals:
             msg = (
-                f"The ``{arg_name}`` argument must be one of {accepted_arg_vals}, "
-                f"instead received {arg!r}."
-                f"\nNote that ``True`` translates to ``'warn'`` and ``False`` to ``'skip'``"
+                f"Input `{arg_name}` must be one of {{'warn', 'raise', 'ignore', 'skip', True, False}}; "
+                f"instead received {arg!r}. "
+                "Note that `True` translates to `'warn'` and `False` to `'skip'`."
             )
             raise ValueError(msg)
         return "warn" if arg is True else "skip" if arg is False else arg
@@ -311,12 +311,12 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             if self._status_open:
                 msg = (
                     f"Open mesh detected in {self!r}. Intrinsic inside-outside checks may "
-                    "give bad results and subsequently ``getB()`` and ``reorient_faces()`` may "
+                    "give bad results and subsequently `getB()` and `reorient_faces()` may "
                     "give bad results as well. "
-                    "This check can be disabled at initialization with ``check_open='skip'``. "
-                    "Open edges can be displayed in ``show()`` with "
-                    "``style_mesh_open_show=True``. "
-                    "Open edges are stored in the ``status_open_data`` property."
+                    "This check can be disabled at initialization with `check_open='skip'`. "
+                    "Open edges can be displayed in `show()` with "
+                    "`style_mesh_open_show=True`. "
+                    "Open edges are stored in the `status_open_data` property."
                 )
                 if mode == "warn":
                     warnings.warn(msg, stacklevel=2)
@@ -346,10 +346,10 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
                     f"Disconnected mesh detected in {self!r}. Magnet consists of multiple "
                     "individual parts. "
                     "This check can be disabled at initialization with "
-                    "``check_disconnected='skip'``. "
-                    "Parts can be displayed in ``show()`` with "
-                    "``style_mesh_disconnected_show=True``. "
-                    "Parts are stored in the ``status_disconnected_data`` property."
+                    "`check_disconnected='skip'`. "
+                    "Parts can be displayed in `show()` with "
+                    "`style_mesh_disconnected_show=True`. "
+                    "Parts are stored in the `status_disconnected_data` property."
                 )
                 if mode == "warn":
                     warnings.warn(msg, stacklevel=2)
@@ -378,10 +378,10 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
                 msg = (
                     f"Self-intersecting mesh detected in {self!r}. "
                     "This check can be disabled at initialization with "
-                    "``check_selfintersecting='skip'``. "
-                    "Intersecting faces can be displayed in ``show()`` with "
-                    "``style_mesh_selfintersecting_show=True``. "
-                    "Faces are stored in the ``status_selfintersecting_data`` property."
+                    "`check_selfintersecting='skip'`. "
+                    "Intersecting faces can be displayed in `show()` with "
+                    "`style_mesh_selfintersecting_show=True`. "
+                    "Faces are stored in the `status_selfintersecting_data` property."
                 )
                 if mode == "warn":
                     warnings.warn(msg, stacklevel=2)
@@ -411,13 +411,13 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             if self._status_open is None:
                 if mode in ["warn", "raise"]:
                     warnings.warn(
-                        f"Unchecked mesh status in {self!r} detected. Now applying ``check_open``",
+                        f"Unchecked mesh status in {self!r} detected. Now applying `check_open()`.",
                         stacklevel=2,
                     )
                 self.check_open(mode=mode)
 
             if self._status_open:
-                msg = f"Open mesh in {self!r} detected. reorient_faces() can give bad results."
+                msg = f"Open mesh detected in {self!r}. `reorient_faces()` can give bad results."
                 if mode == "warn":
                     warnings.warn(msg, stacklevel=2)
                 elif mode == "raise":
@@ -524,10 +524,10 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         # unique vertices ?
         # do validation checks
         if vertices is None:
-            msg = f"Parameter `vertices` of {self} must be set."
+            msg = f"Parameter `vertices` of {self!r} must be set."
             raise MagpylibMissingInput(msg)
         if faces is None:
-            msg = f"Parameter `faces` of {self} must be set."
+            msg = f"Parameter `faces` of {self!r} must be set."
             raise MagpylibMissingInput(msg)
         verts = check_format_input_vector(
             vertices,
@@ -546,7 +546,7 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         try:
             verts[trias]
         except IndexError as e:
-            msg = "Some ``faces`` indices do not match with ``vertices`` array"
+            msg = "Some `faces` indices do not match the `vertices` array."
             raise IndexError(msg) from e
         return verts, trias
 
@@ -645,14 +645,16 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         try:
             import pyvista  # noqa: PLC0415
         except ImportError as missing_module:  # pragma: no cover
-            msg = """In order load pyvista PolyData objects, you first need to install pyvista via pip
-                or conda, see https://docs.pyvista.org/getting-started/installation.html"""
+            msg = (
+                "For loading `PolyData` objects, install PyVista. "
+                "See https://docs.pyvista.org/getting-started/installation.html."
+            )
             raise ModuleNotFoundError(msg) from missing_module
         if not isinstance(polydata, pyvista.core.pointset.PolyData):
             msg = (
-                "The ``polydata`` parameter must be an instance of "
-                "``pyvista.core.pointset.PolyData``, "
-                f"received {polydata!r} instead"
+                "Input `polydata` must be an instance of "
+                "`pyvista.core.pointset.PolyData`; "
+                f"instead received {polydata!r}."
             )
             raise TypeError(msg)
         polydata = polydata.triangulate()
@@ -710,15 +712,15 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         """
         if not isinstance(triangles, list | Collection):
             msg = (
-                "The ``triangles`` parameter must be a list or Collection of ``Triangle`` objects, "
-                f"\nreceived type {type(triangles)} instead"
+                "Input `triangles` must be a list or `Collection` of `Triangle` objects; "
+                f"instead received type {type(triangles).__name__!r}."
             )
             raise TypeError(msg)
         for obj in triangles:
             if not isinstance(obj, Triangle):
                 msg = (
-                    "All elements of ``triangles`` must be ``Triangle`` objects, "
-                    f"\nreceived type {type(obj)} instead"
+                    "Input `triangles` must be a list or `Collection` of `Triangle` objects; "
+                    f"instead received type {type(obj).__name__!r}."
                 )
                 raise TypeError(msg)
         mesh = np.array([tria.vertices for tria in triangles])

@@ -333,7 +333,7 @@ class _BaseMagnet(_BaseSource):
             self.magnetization = magnetization
             if polarization is not None:
                 msg = (
-                    "The attributes magnetization and polarization are dependent. "
+                    "The attributes `magnetization` and `polarization` are dependent. "
                     "Only one can be provided at magnet initialization."
                 )
                 raise ValueError(msg)
@@ -395,9 +395,9 @@ class _BaseMagnet(_BaseSource):
     def _magnetization_low_warning(self):
         warnings.warn(
             (
-                f"{self} received a very low magnetization. "
-                "In Magpylib v5 magnetization is given in units of A/m, "
-                "while polarization is given in units of T."
+                f"Low `magnetization` value detected for {self}. "
+                "In Magpylib v5 `magnetization` is given in units of (A/m), "
+                "while `polarization` is given in units of (T)."
             ),
             MagpylibDeprecationWarning,
             stacklevel=2,

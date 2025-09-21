@@ -192,7 +192,7 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             pass
         else:
             msg = (
-                "Cuboid meshing parameter must be positive integer or array-like of shape"
-                " (3,) for {self}. Instead got {value}."
+                f"Input `meshing` of {self} must be positive integer or array-like of shape "
+                "(3,); instead received {value}."
             )
             raise ValueError(msg)

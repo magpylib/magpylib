@@ -66,16 +66,16 @@ def _check_format_input_targets(targets):
         if not isinstance(t, Dipole | Sphere):
             if not hasattr(t, "meshing"):
                 msg = (
-                    "getFT bad target input. Targets can only be Magpylib objects Cuboid,..."
-                    f" Instead received type {type(t)}."
+                    "Input'targets' must be allowed Magpylib target objects; "
+                    f"instead received type {type(t)}."
                 )
                 raise ValueError(msg)
 
             # check if meshing parameter is explicitly set
             if t.meshing is None:
                 msg = (
-                    f"getFT missing meshing input for target {t}."
-                    " All targets must have the meshing parameter explicitly set."
+                    f"Missing `meshing` input for target {t}. "
+                    "All targets must have the meshing parameter explicitly set."
                 )
                 raise ValueError(msg)
 
@@ -118,9 +118,9 @@ def _check_format_input_pivot(pivot, targets, n_path):
     array of pivots with shape (n_tgt, n_path, 3) or None
     """
     msg = (
-        "Bad getFT pivot input. Input pivot must be str 'centroid', `None`, or array-like of shape (3,)."
-        " It can also be (n,3) when there are n targets providing a different pivot for every target."
-        " It can also be (n,m,3) when there are n targets and pathlength is m."
+        "Input `pivot` must be 'centroid', `None`, or array-like with shape "
+        "(3,), (n, 3), or (n, p, 3) when n targets with pathlength p are present; "
+        f"instead received {pivot!r}."
     )
 
     if pivot is None:
@@ -156,7 +156,10 @@ def _check_eps(eps):
     """
     check FD step
     """
-    msg = f"Finite difference step size (eps) must be a positive float. Instead received {eps}."
+    msg = (
+        "Input `eps` must be a positive float; "
+        f"instead received {eps!r}."
+    )
     if not isinstance(eps, float):
         raise ValueError(msg)
     if eps <= 0:
@@ -459,7 +462,7 @@ def getFT(
         #    the force computation. Therefore it makes no sense to separate the force
         #    and torque computation.
 
-        F = np.einsum("abijk,abik->abij", DB, MOM)  # numpy only
+        F = np.einsum("abijk,abik->abij", DB, MOM)  # NumPy only
         # F = np.sum(DB * MOM[:, :, :, np.newaxis, :], axis=4) # array API
         T = np.cross(MOM, B)
 

@@ -154,8 +154,8 @@ def triangle_Bfield(
     # The second problem is at corner and edge extensions where ind also computes
     #    as 0. Here one approaches a special case where another evaluation should
     #    be used. This problem is solved in the following lines.
-    # np.seterr must be used because of a numpy bug. It does not interpret where
-    #   correctly. The following code will raise a numpy warning - but obviously shouldn't
+    # np.seterr must be used because of a NumPy bug. It does not interpret where
+    #   correctly. The following code will raise a NumPy warning - but obviously shouldn't
     #
     # x = np.array([(0,1,2), (0,0,1)])
     # np.where(
@@ -212,5 +212,8 @@ def _BHJM_triangle(
     if field == "H":
         return BHJM / MU0
 
-    msg = f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
+    msg = (
+        "Input `output_field_type` must be one of {'B', 'H', 'M', 'J'}; "
+        f"instead received {field!r}"
+    )
     raise ValueError(msg)  # pragma: no cover

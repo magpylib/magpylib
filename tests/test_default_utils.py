@@ -134,7 +134,7 @@ def test_good_colors(color, allow_None, color_expected):
     ],
 )
 def test_bad_colors(color, allow_None, expected_exception):
-    """test color validator based on matplotlib validation"""
+    """test color validator based on Matplotlib validation"""
 
     with pytest.raises(expected_exception):
         color_validator(color, allow_None=allow_None)

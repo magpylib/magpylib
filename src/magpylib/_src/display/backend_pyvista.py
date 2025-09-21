@@ -15,9 +15,11 @@ import numpy as np
 try:
     import pyvista as pv
 except ImportError as missing_module:  # pragma: no cover
-    error_msg = """In order to use the pyvista plotting backend, you need to install pyvista via pip or
-        conda, see https://docs.pyvista.org/getting-started/installation.html"""
-    raise ModuleNotFoundError(error_msg) from missing_module
+    msg = (
+        "In order to use the pyvista plotting backend, you need to install PyVista, "
+        "see https://docs.pyvista.org/getting-started/installation.html"
+    )
+    raise ModuleNotFoundError(msg) from missing_module
 
 from matplotlib.colors import LinearSegmentedColormap
 from pyvista.plotting.colors import Color  # pylint: disable=import-error
@@ -62,7 +64,7 @@ LINESTYLES_TO_PYVISTA = {
 
 @lru_cache(maxsize=32)
 def colormap_from_colorscale(colorscale, name="plotly_to_mpl", N=256, gamma=1.0):
-    """Create matplotlib colormap from plotly colorscale"""
+    """Create Matplotlib colormap from plotly colorscale"""
 
     cs_rgb = [(v[0], Color(v[1]).float_rgb) for v in colorscale]
     cdict = {
@@ -191,7 +193,10 @@ def generic_trace_to_pyvista(trace):
                     }
                     traces_pv.append(tr)
     else:  # pragma: no cover
-        msg = f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
+        msg = (
+            "Unsupported trace type: "
+            f"{trace['type']!r} cannot be transformed into a PyVista trace."
+        )
         raise ValueError(msg)
     showlegend = trace.get("showlegend", False)
     for tr in traces_pv:

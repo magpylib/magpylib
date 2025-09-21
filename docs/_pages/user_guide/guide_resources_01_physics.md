@@ -72,7 +72,7 @@ Real permanent magnets exhibit several deviations from the ideal uniform magneti
 (docu-performance)=
 ## Computation Performance
 
-Magpylib code is fully [vectorized](https://en.wikipedia.org/wiki/Array_programming), written almost completely in numpy native. Magpylib automatically vectorizes computations with complex inputs (many sources, many observers, paths) and never falls back on using loops.
+Magpylib code is fully [vectorized](https://en.wikipedia.org/wiki/Array_programming), written almost completely in NumPy native. Magpylib automatically vectorizes computations with complex inputs (many sources, many observers, paths) and never falls back on using loops.
 
 ```{note}
 Maximal performance is achieved when `.getB(sources, observers)` is called only a single time in your program. Try not to use loops --- unless you run out of memory.

@@ -63,7 +63,7 @@ def mono_field(field, observers):
         H = B / magpy.mu_0  # unit A/m
         return H
     else:
-        raise ValueError("Field Value must be either B or H")
+        raise ValueError("Field Value must be either 'B' or 'H'.")
 
 # Create CustomSource with monopole field
 mono = magpy.misc.CustomSource(field_func=mono_field)
@@ -176,9 +176,9 @@ class Monopole(magpy.misc.CustomSource):
                 H = B / magpy.mu_0  # unit A/m
                 return H
             else:
-                raise ValueError("Field Value must be either B or H")
+                raise ValueError("Field Value must be either 'B' or 'H'")
 
-        self.style.label = f"Monopole (charge={self._charge} T·m²)"
+        self.style.label = f"Monopole (charge={self._charge} (T·m²))"
         self.field_func = mono_field
 
     @property

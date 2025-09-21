@@ -155,7 +155,7 @@ def _is_facet_inwards(face, faces):
     v1 = face[0] - face[1]
     v2 = face[1] - face[2]
     orient = np.cross(v1, v2)
-    orient /= np.linalg.norm(orient)  # for single facet numpy is fine
+    orient /= np.linalg.norm(orient)  # for single facet NumPy is fine
 
     # create a check point by displacing the facet center in facet orientation direction
     eps = 1e-5  # unfortunately this must be quite a 'large' number :(
@@ -346,7 +346,7 @@ def _segments_intersect_facets(segments, facets, eps=1e-6):
         otherwise some triangles may be detected as intersecting themselves.
     """
     if eps <= 0:  # pragma: no cover
-        msg = "eps must be strictly positive"
+        msg = f"Input `eps` must be strictly positive; instead received {eps}."
         raise ValueError(msg)
 
     s, t = segments.swapaxes(0, 1), facets.swapaxes(0, 1)
@@ -403,7 +403,7 @@ def _get_intersecting_triangles(vertices, triangles, r=None, r_factor=1.5, eps=1
         otherwise some triangles may be detected as intersecting themselves.
     """
     if r_factor < 1:  # pragma: no cover
-        msg = "r_factor must be greater or equal to 1"
+        msg = f"Input `r_factor` must be greater or equal to 1; instead received {r_factor}."
         raise ValueError(msg)
 
     vertices = vertices.astype(np.float32)
@@ -569,5 +569,8 @@ def _BHJM_magnet_trimesh(
     if field == "M":
         return BHJM / MU0
 
-    msg = f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
+    msg = (
+        "Input `output_field_type` must be one of {'B', 'H', 'M', 'J'}; "
+        f"instead received {field!r}"
+    )
     raise ValueError(msg)  # pragma: no cover

@@ -166,7 +166,7 @@ def check_duplicates(obj_list: Sequence) -> list:
             obj_list_new += [src]
 
     if len(obj_list_new) != len(obj_list):
-        warnings.warn("Eliminating duplicates", UserWarning, stacklevel=2)
+        warnings.warn("Eliminating duplicate objects in input list.", UserWarning, stacklevel=2)
 
     return obj_list_new
 
@@ -187,7 +187,7 @@ def check_path_format(inp):
     result = all(len(obj._position) == len(obj._orientation) for obj in inp)
 
     if not result:
-        msg = "Bad path format (rot-pos with different lengths)"
+        msg = "Bad path format: `position` and `orientation` have different lengths."
         raise MagpylibBadUserInput(msg)
 
 
@@ -212,7 +212,7 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
         if isinstance(obj, allowed_classes):
             new_list += [obj]
         elif warn:
-            msg = f"Warning, cannot add {obj!r} to Collection."
+            msg = f"Cannot add {obj!r} to `Collection`; object type is not allowed."
             warnings.warn(msg, UserWarning, stacklevel=2)
     return new_list
 
@@ -259,7 +259,10 @@ def get_unit_factor(unit_input, *, target_unit, deci_centi=True):
 
     if factor_power is None or len(unit_input_str) > 2:
         valid_inputs = [f"{k}{target_unit}" for k in prefs]
-        msg = f"Invalid unit input ({unit_input!r}), must be one of {valid_inputs}"
+        msg = (
+            f"Input `unit_input` must be one of {valid_inputs}; "
+            f"instead received {unit_input!r}."
+        )
         raise ValueError(msg)
     return 1 / (10**factor_power)
 

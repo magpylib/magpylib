@@ -45,7 +45,7 @@ class _BaseTarget(ABC):
         if isinstance(value, int) and value > 0:
             pass
         else:
-            msg = f"Meshing parameter must be positive integer for {self}. Instead got {value}."
+            msg = f"Input `meshing` must be positive integer for {self}; instead received {value}."
             raise ValueError(msg)
 
     @abstractmethod

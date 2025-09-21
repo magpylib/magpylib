@@ -169,7 +169,7 @@ class TriangleStrip(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
         if not np.allclose(self.vertices[:2], self.vertices[-2:]):
             msg = (
                 f"Cannot compute dipole moment of {self}. Dipole moment is only defined for closed "
-                "CurrentStrips (first two and last two vertices must be identical)."
+                "`CurrentStrip` where first two and last two vertices are identical."
             )
             raise ValueError(msg)
 
@@ -252,7 +252,7 @@ class TriangleStrip(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
             pass
         else:
             msg = (
-                "TriangleStrip meshing parameter must be an integer >= number of faces"
-                f" for {self}. Instead got {value}."
+                f"Input `meshing` of {self} must be an integer >= number of faces; "
+                f"instead received {value}."
             )
             raise ValueError(msg)

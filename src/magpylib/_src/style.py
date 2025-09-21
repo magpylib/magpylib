@@ -660,7 +660,7 @@ class Trace3d(MagicProperties):
 
         assert msg == "", (
             f"The `updatefunc` property of {type(self).__name__} must be a callable returning a "
-            f"dictionary with a subset of following keys: {valid_props} keys.\n"
+            f"dictionary with a subset of following keys: {valid_props} keys."
             f"{msg}"
         )
         self._updatefunc = val
@@ -1043,8 +1043,8 @@ class DisconnectedMesh(MagicProperties, MarkerLineProperties):
                 )
             except TypeError as err:
                 msg = (
-                    f"The `colorsequence` property of {name} must be an "
-                    f"iterable of colors but received {val!r} instead"
+                    f"Input `colorsequence` of {name} must be an "
+                    f"iterable of colors; instead received {val!r}."
                 )
                 raise ValueError(msg) from err
 
@@ -1620,7 +1620,7 @@ class Pixel(MagicProperties):
     ----------
     size: float, default=1
         Positive float for relative pixel size.
-        - matplotlib backend: Pixel size is the marker size.
+        - Matplotlib backend: Pixel size is the marker size.
         - plotly backend: Relative distance to nearest neighbor pixel.
 
     sizemode: {'scaled', 'absolute'}, default='scaled'
@@ -1632,7 +1632,7 @@ class Pixel(MagicProperties):
 
     symbol: str, default=None
         Pixel symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`.
-        Only applies for matplotlib plotting backend.
+        Only applies for Matplotlib plotting backend.
     """
 
     def __init__(self, size=1, sizemode=None, color=None, symbol=None, **kwargs):
@@ -1647,7 +1647,7 @@ class Pixel(MagicProperties):
     @property
     def size(self):
         """Positive float for relative pixel size.
-        - matplotlib backend: Pixel size is the marker size.
+        - Matplotlib backend: Pixel size is the marker size.
         - plotly backend: Relative distance to nearest neighbor pixel."""
         return self._size
 

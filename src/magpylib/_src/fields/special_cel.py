@@ -12,7 +12,7 @@ def _cel0(kc, p, c, s):
     complete elliptic integral algorithm vom Kirby2009
     """
     if kc == 0:
-        msg = "FAIL"
+        msg = "FAIL cel: kc=0 not allowed."
         raise RuntimeError(msg)
     errtol = 0.000001
     k = abs(kc)

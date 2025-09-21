@@ -91,7 +91,7 @@ class StripedHandler:
 
 
 def generic_trace_to_matplotlib(trace, antialiased=True):
-    """Transform a generic trace into a matplotlib trace"""
+    """Transform a generic trace into a Matplotlib trace"""
     traces_mpl = []
     leg_title = trace.get("legendgrouptitle_text", None)
     showlegend = trace.get("showlegend", True)
@@ -184,7 +184,7 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
         )
     else:  # pragma: no cover
         msg = (
-            f"Trace type {trace['type']!r} cannot be transformed into matplotlib trace"
+            f"Trace type {trace['type']!r} cannot be transformed into a Matplotlib trace."
         )
         raise ValueError(msg)
     for tr_mesh in traces_mpl:
@@ -250,7 +250,7 @@ def display_matplotlib(
     show_kwargs=None,
     **kwargs,  # noqa: ARG001
 ):
-    """Display objects and paths graphically using the matplotlib library."""
+    """Display objects and paths graphically using the Matplotlib library."""
     frames = data["frames"]
     ranges = data["ranges"]
     labels = data["labels"]
@@ -284,17 +284,16 @@ def display_matplotlib(
         fig = canvas.get_figure()
         if max_rows is not None or max_cols is not None:
             msg = (
-                "Provided canvas is an instance of `matplotlib.axes.Axes` and does not support "
-                "`rows` or `cols` attributes. Use an instance of `matplotlib.figure.Figure` "
-                "instead"
+                "Provided `canvas` is an instance of `matplotlib.axes.Axes` and does not support "
+                "`rows` or `cols` arguments. Use a `matplotlib.figure.Figure` instead."
             )
             raise ValueError(msg)
     elif isinstance(canvas, mpl.figure.Figure):
         fig = canvas
     else:
         msg = (
-            "The `canvas` parameter must be one of `[None, matplotlib.axes.Axes, "
-            f"matplotlib.figure.Figure]`. Received type {type(canvas)!r} instead"
+            "The `canvas` parameter must be one of: None, matplotlib.axes.Axes, "
+            f"matplotlib.figure.Figure; got type {type(canvas).__name__!r}."
         )
         raise TypeError(msg)
     if canvas is not None and canvas_update:

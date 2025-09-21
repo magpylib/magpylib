@@ -12,8 +12,10 @@ import numpy as np
 try:
     import plotly.graph_objects as go
 except ImportError as missing_module:  # pragma: no cover
-    msg = """In order to use the plotly plotting backend, you need to install plotly via pip or conda,
-        see https://github.com/plotly/plotly.py"""
+    msg = (
+        "In order to use the plotly plotting backend, you need to install Plotly, "
+        "see https://github.com/plotly/plotly.py"
+    )
     raise ModuleNotFoundError(msg) from missing_module
 
 from magpylib._src.defaults.defaults_utility import linearize_dict

@@ -366,7 +366,7 @@ class _BaseCollection(_BaseDisplayRepr):
             if isinstance(obj, Collection) and (
                 obj is self or self in obj.collections_all
             ):
-                msg = f"Cannot add {obj!r} because a Collection must not reference itself."
+                msg = f"Cannot add {obj!r} because a `Collection` must not reference itself."
                 raise MagpylibBadUserInput(msg)
             if obj._parent is None:
                 obj._parent = self
@@ -375,8 +375,8 @@ class _BaseCollection(_BaseDisplayRepr):
                 obj._parent = self
             else:
                 msg = (
-                    f"Cannot add {obj!r} to {self!r} because it already has a parent.\n"
-                    "Consider using ``override_parent=True``."
+                    f"Cannot add {obj!r} to {self!r} because it already has a parent. "
+                    "Consider using `override_parent=True`."
                 )
                 raise MagpylibBadUserInput(msg)
 
@@ -459,12 +459,12 @@ class _BaseCollection(_BaseDisplayRepr):
                 child._parent = None
             else:
                 if errors == "raise":
-                    msg = f"Cannot find and remove {child} from {self}."
+                    msg = f"Cannot find and remove {child!r} from {self!r}."
                     raise MagpylibBadUserInput(msg)
                 if errors != "ignore":
                     msg = (
-                        "Input ``errors`` must be one of (``'raise'``, ``'ignore'``).\n"
-                        f"Instead received {errors}."
+                        "Input `errors` must be one of {'raise', 'ignore'}; "
+                        f"instead received {errors!r}."
                     )
                     raise MagpylibBadUserInput(msg)
         return self

@@ -163,7 +163,10 @@ class Circle(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
         if isinstance(value, int) and value > 3:
             pass
         else:
-            msg = f"Circle meshing parameter must be integer > 3 for {self}. Instead got {value}."
+            msg = (
+                f"Input `meshing` must be an integer > 3 for {self!r}; "
+                f"instead received {value!r}."
+            )
             raise ValueError(msg)
 
 
@@ -185,8 +188,8 @@ class Loop(Circle):
 def _deprecation_warn():
     warnings.warn(
         (
-            "Loop is deprecated  and will be removed in a future version, "
-            "use Circle instead."
+            "Class `Loop` is deprecated and will be removed in a future version, "
+            "use `Circle` instead."
         ),
         MagpylibDeprecationWarning,
         stacklevel=2,

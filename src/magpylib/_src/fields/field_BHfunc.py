@@ -702,14 +702,20 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
     """
     # Check field input
     if field not in {"B", "H"}:
-        msg = f"Invalid field '{field}'. Must be 'B' or 'H'."
+        msg = (
+            "Input `field` must be one of {'B', 'H'}; "
+            f"instead received {field!r}."
+        )
         raise ValueError(msg)
 
     # Check orientation input
     if params["orientation"] is None:
         params["orientation"] = R.identity()
     if not isinstance(params["orientation"], R):
-        msg = "Input orientation must be a scipy Rotation instance or None."
+        msg = (
+            "Input `orientation` must be a SciPy `Rotation` instance or `None`; "
+            f"instead received type {type(params['orientation']).__name__}."
+        )
         raise TypeError(msg)
 
     # Transform Rotation to Quat
@@ -721,7 +727,9 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
             if not isinstance(val, np.ndarray):
                 params[key] = np.array(val, dtype=float)
         except ValueError as err:
-            msg = f"{key} input must be array-like.\nInstead received {val}."
+            msg = (
+                f"Input `{key}` must be array-like; instead received {val!r}."
+            )
             raise ValueError(msg) from err
 
     # Tile missing ndims, Find maxlength
@@ -730,7 +738,10 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
         if val.ndim < DIM[key]:
             params[key] = np.expand_dims(val, axis=0)
         if val.ndim > DIM[key]:
-            msg = f"{key} input has too many dimensions ({val.ndim})."
+            msg = (
+                f"Input `{key}` must have at most {DIM[key]} dimensions; "
+                f"instead received ndim {val.ndim}."
+            )
             raise ValueError(msg)
         # store maxlength
         n = params[key].shape[0]
@@ -742,14 +753,14 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
     for key, val in params.items():
         if val.shape[1:] != SHAPES[key]:
             msg = (
-                f"{key} input has incorrect shape {val.shape[1:]} in ndim>0."
-                f" Expected {SHAPES[key]}."
+                f"Input `{key}` must have shape {SHAPES[key]} for ndim>0; "
+                f"instead received shape {val.shape[1:]}"
             )
             raise ValueError(msg)
         if val.shape[0] not in (1, nmax):
             msg = (
-                f"{key} input has incorrect number of instances {val.shape[0]}."
-                f" Must be 1 (will be tiled up) or {nmax} (given max)."
+                f"Input `{key}` must have 1 or {nmax} instances; "
+                f"instead received {val.shape[0]}."
             )
             raise ValueError(msg)
         # tile up to nmax if only 1 instance is given
@@ -824,15 +835,15 @@ def _getBH_dict_level2(
         )
     except KeyError as err:
         msg = (
-            f"Input parameter `sources` must be one of {list(source_classes)}"
-            " when using the functional interface."
+            f"Input `source_type` must be one of {list(source_classes)}; "
+            f"instead received {source_type!r}."
         )
         raise MagpylibBadUserInput(msg) from err
 
     kwargs["observers"] = observers
     kwargs["position"] = position
 
-    # change orientation to Rotation numpy array for tiling
+    # change orientation to Rotation NumPy array for tiling
     kwargs["orientation"] = orientation.as_quat()
 
     # evaluation vector lengths
@@ -852,7 +863,9 @@ def _getBH_dict_level2(
                 ragged_seq[key] = False
                 val = np.array(val, dtype=float)
         except TypeError as err:
-            msg = f"{key} input must be array-like.\nInstead received {val}"
+            msg = (
+                f"Input `{key}` must be array-like; instead received {val!r}."
+            )
             raise MagpylibBadUserInput(msg) from err
         expected_dim = field_func_kwargs_ndim.get(key, 1)
         if val.ndim == expected_dim or ragged_seq[key]:
@@ -865,8 +878,8 @@ def _getBH_dict_level2(
 
     if len(set(vec_lengths.values())) > 1:
         msg = (
-            "Input array lengths must be 1 or of a similar length.\n"
-            f"Instead received lengths {vec_lengths}"
+            "Input arrays must have length 1 or the same length; "
+            f"instead received lengths {vec_lengths}."
         )
         raise MagpylibBadUserInput(msg)
     vec_len = max(vec_lengths.values(), default=1)

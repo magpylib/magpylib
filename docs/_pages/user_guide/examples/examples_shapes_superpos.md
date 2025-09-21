@@ -156,7 +156,7 @@ Unfortunately, with respect to 3D-models, cut-out operations cannot be displayed
 
 ## Combination
 
-The following example combines union and cut-out to create a complex magnet shape which is then displayed by combining a streamplot with a contourplot in matplotlib.
+The following example combines union and cut-out to create a complex magnet shape which is then displayed by combining a streamplot with a contourplot in Matplotlib.
 
 ```{code-cell} ipython3
 import numpy as np

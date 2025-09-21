@@ -107,5 +107,8 @@ def _BHJM_magnet_sphere(
         BHJM[~out] -= polarization[~out]
         return BHJM / MU0
 
-    msg = f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
+    msg = (
+        "Input `output_field_type` must be one of {'B', 'H', 'M', 'J'}; "
+        f"instead received {field!r}"
+    )
     raise ValueError(msg)  # pragma: no cover

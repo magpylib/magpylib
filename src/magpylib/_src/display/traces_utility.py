@@ -101,7 +101,7 @@ def place_and_orient_model3d(
 
 def get_vertices_from_model(model_kwargs, model_args=None, coordsargs=None):
     """get vertices from model kwargs and args"""
-    if model_args and coordsargs is None:  # matplotlib default
+    if model_args and coordsargs is None:  # Matplotlib default
         coordsargs = {"x": "args[0]", "y": "args[1]", "z": "args[2]"}
     vertices = []
     if coordsargs is None:
@@ -117,11 +117,9 @@ def get_vertices_from_model(model_kwargs, model_args=None, coordsargs=None):
             v = model_kwargs[key]
         else:
             msg = (
-                "Rotating/Moving of provided model failed, trace dictionary "
-                f"has no argument {k!r}, use `coordsargs` to specify the names of the "
-                "coordinates to be used.\n"
-                "Matplotlib backends will set up coordsargs automatically if "
-                "the `args=(xs,ys,zs)` argument is provided."
+                f"Transforming model failed: missing argument {k!r}. "
+                "Provide coordinate names via `coordsargs`, e.g. {'x': 'x', 'y': 'y', 'z': 'z'}. "
+                "For Matplotlib, `coordsargs` is set automatically when using `args=(xs, ys, zs)`."
             )
             raise ValueError(msg)
         vertices.append(v)
@@ -251,7 +249,10 @@ def get_rot_pos_from_path(obj, show_path=None):
     elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
         inds = np.array(show_path)
     else:  # pragma: no cover
-        msg = f"Invalid show_path value ({show_path})"
+        msg = (
+            "Input `show_path` must be `None`, `True`, `False`, `0`, an integer, or an iterable of indices; "
+            f"instead received {show_path!r} (type {type(show_path).__name__})."
+        )
         raise ValueError(msg)
     inds[inds >= path_len] = path_len - 1
     inds = np.unique(inds)

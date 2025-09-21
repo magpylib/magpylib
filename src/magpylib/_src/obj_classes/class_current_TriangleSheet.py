@@ -181,11 +181,14 @@ class TriangleSheet(_BaseSource, _BaseTarget):
             fac = np.expand_dims(fac, 0)
 
         if len(verts) < 3:
-            msg = f"Parameter `vertices` of {self} must have at least 3 vertices."
+            msg = (
+                f"Input `vertices` of {self} must have at least 3 vertices; "
+                f"instead received {len(verts)} vertices."
+            )
             raise ValueError(msg)
 
         if len(fac) != len(cd):
-            msg = f"Parameters `current_densities` and `faces` of {self} must have same length."
+            msg = f"Input `current_densities` and `faces` of {self} must have same length."
             raise ValueError(msg)
 
         try:
@@ -218,7 +221,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
             pass
         else:
             msg = (
-                "TriangleSheet meshing parameter must be an integer >= number of faces"
-                f" for {self}. Instead got {value}."
+                f"Input `meshing` of {self} must be an integer >= number of faces; "
+                f"instead received {value}."
             )
             raise ValueError(msg)

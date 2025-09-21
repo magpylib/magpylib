@@ -70,7 +70,7 @@ def _path_padding_param(scalar_input: bool, lenop: int, lenip: int, start: int):
     if start == "auto":
         start = 0 if scalar_input else lenop
 
-    # numpy convention with negative start indices
+    # NumPy convention with negative start indices
     if start < 0:
         start = lenop + start
         # if start smaller than -old_path_length: pad before

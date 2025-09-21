@@ -179,9 +179,9 @@ def _getBH_level2(
     # DEPRECATED CALL TO FUNCTIONAL INTERFACE
     if isinstance(sources, str):
         msg = (
-            "Calling the functional interface (string input for sources) from ``magpy.getB()``"
-            " is deprecated and will be removed in future versions. Functional interface was"
-            " moved to ``magpy.func`` subpackage."
+            "Calling the functional interface (string input for sources) from `magpy.getB()` "
+            "is deprecated and will be removed in future versions. The functional "
+            "interface was moved to the `magpy.func` subpackage."
         )
         warnings.warn(msg, DeprecationWarning, stacklevel=2)
         return _getBH_dict_level2(
@@ -194,13 +194,6 @@ def _getBH_level2(
         )
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
-    # bad user inputs mixing getBH_dict kwargs with object oriented interface
-    if kwargs:
-        msg = (
-            f"Keyword arguments {tuple(kwargs.keys())} are only allowed when the source "
-            "is defined by a string (e.g. sources='Cylinder')"
-        )
-        raise MagpylibBadUserInput(msg)
 
     # format sources input:
     #   input: allow only one bare src object or a 1D list/tuple of src and col
@@ -219,9 +212,8 @@ def _getBH_level2(
 
         if not any(isinstance(src, Tetrahedron | TriangularMesh) for src in src_list):
             warnings.warn(
-                "Argument `in_out` for field computation was set, but is ignored"
-                " in the computation. `in_out` has an effect only for magnet classes"
-                " Tetrahedron and TriangularMesh.",
+                "Parameter `in_out` was explicitly set but is ignored in the computation. "
+                "It applies only to classes `Tetrahedron` and `TriangularMesh`.",
                 UserWarning,
                 stacklevel=2,
             )
@@ -233,13 +225,13 @@ def _getBH_level2(
                 # unchecked mesh status - may be open
                 if src.status_open is None:
                     warnings.warn(
-                        f"Unchecked mesh status of {src} detected before B-field computation. "
+                        f"Unchecked open mesh status in {src!r} detected before B-field computation. "
                         "An open mesh may return bad results.",
                         stacklevel=2,
                     )
                 elif src.status_open:  # mesh is open
                     warnings.warn(
-                        f"Open mesh of {src} detected before B-field computation. "
+                        f"Open mesh detected in {src!r} before B-field computation. "
                         "An open mesh may return bad results.",
                         stacklevel=2,
                     )
