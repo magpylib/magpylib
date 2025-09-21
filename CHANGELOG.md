@@ -690,8 +690,8 @@ API changes New features Improved internal workings
   - displaySystem is now a top-level function, not a Collection method anymore.
   - getBsweep and multiprocessing options have been completely removed, this
     functionality should be overtaken by the new vector functionality which uses
-    the numpy native vectorized code paradigm. If mkl library is set (test by
-    numpy.show_config()) numpy will also automatically use multiprocessing. Code
+    the NumPy native vectorized code paradigm. If mkl library is set (test by
+    numpy.show_config()) NumPy will also automatically use multiprocessing. Code
     parallelization at magpylib level should be done by hand.
 - Docstrings are adjusted to work better with intellisense. (Problems with
   \*.rst code)
@@ -754,7 +754,7 @@ API changes New features Improved internal workings
 ### Changed
 
 - Change `Collection.displaySystem()` not having the `block=False` setting for
-  matplotlib's `pyplot.show()` by default, this meant that outside interactive
+  Matplotlib's `pyplot.show()` by default, this meant that outside interactive
   mode calling this function would hang the script until the plot was closed.
   - If for some reason you want to block the application, you may still use
     `Collection.displaySystem()`'s `suppress=True` kwarg then call pyplot.show()
