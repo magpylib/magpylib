@@ -57,6 +57,24 @@ project.
 We strongly suggest that you use the [Pre-Commit](https://pre-commit.com/) hooks
 that apply important code checks which each commit.
 
+## Documentation & Formatting
+
+### Code formatting
+- Private member names should have a trailing underscore.
+- Apply NumPyDoc / SciPy docstring style to all public members.
+- Use double backticks for inline code in docstrings, and single backticks for inline code in user-facing messages.
+- Maximum line length: 88 columns.
+
+### Docstring formatting
+- Use single quotes ('…') rather than double quotes ("…") in user-visible strings.
+- Units in prose should be written consistently, e.g., (m), (A/m).
+- In shape notation, include a space after the comma: (N, 3).
+- Type line format: 'name : A | B | C, default: X'. Include shape information when relevant, for example: 'name : None | array-like, shape (3,), default: X' or 'name : array-like, shape (N, 3) | B, default: X'. Do not use backticks in the type line. Put the default in the type line, not in the description. For string choices, use braces: 'name : A | {'choice1', 'choice2'}, default: X'.
+- Do not add a Raises section.
+- For chainable instance methods, document the return as: Returns Self Self (allows chaining). Do not name private helper classes that might be returned in subclasses.
+- Do not include a Returns section in class docstrings where the class instance is returned.
+- Prefer duplicating identical docstrings over referring to other members; ensure duplicates are exactly identical to avoid drift.
+
 ## For Your Orientation
 
 The Magpylib repository is structured as follows:
