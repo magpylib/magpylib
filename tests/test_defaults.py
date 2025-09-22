@@ -231,9 +231,7 @@ def test_bad_style_classes(style_class):
     c = DisplayStyle().reset()
     with pytest.raises(
         ValueError,
-        match=(
-            r"The `.*` property of `.*` must be an instance of"
-        ),
+        match=(r"The `.*` property of `.*` must be an instance of"),
     ):
         c.update(**{style_class: "bad class"})
 
@@ -242,7 +240,7 @@ def test_bad_default_classes():
     """testing properties which take classes as properties"""
     with pytest.raises(
         ValueError,
-    match=r"The `display` property of `DefaultSettings` must be",
+        match=r"The `display` property of `DefaultSettings` must be",
     ):
         magpy.defaults.display = "wrong input"
     with pytest.raises(

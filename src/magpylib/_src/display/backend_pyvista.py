@@ -193,11 +193,11 @@ def generic_trace_to_pyvista(trace):
                     }
                     traces_pv.append(tr)
     else:  # pragma: no cover
-        msg = (
+        msg2 = (
             "Unsupported trace type: "
             f"{trace['type']!r} cannot be transformed into a PyVista trace."
         )
-        raise ValueError(msg)
+        raise ValueError(msg2)
     showlegend = trace.get("showlegend", False)
     for tr in traces_pv:
         tr["row"] = trace.get("row", 1) - 1

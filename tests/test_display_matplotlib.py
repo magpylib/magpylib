@@ -394,9 +394,7 @@ def test_matplotlib_model3d_extra_bad_input():
     ax = plt.subplot(projection="3d")
     with pytest.raises(
         ValueError,
-        match=(
-            r"Transforming model failed: missing argument 'z'"
-        ),
+        match=(r"Transforming model failed: missing argument 'z'"),
     ):
         obj.show(canvas=ax, return_fig=True)
 
@@ -521,9 +519,7 @@ def test_bad_show_inputs():
     ax = fig.add_subplot(131, projection="3d")
     with pytest.raises(
         ValueError,
-        match=(
-            r"Provided `canvas` is an instance of"
-        ),
+        match=(r"Provided `canvas` is an instance of"),
     ):
         magpy.show(cyl1, canvas=ax, col=2, backend="matplotlib")
 
@@ -536,9 +532,7 @@ def test_bad_show_inputs():
     )
     with pytest.raises(  # noqa: PT012, SIM117
         ValueError,
-        match=(
-            r"Conflicting parameters detected for"
-        ),
+        match=(r"Conflicting parameters detected for"),
     ):
         with magpy.show_context(animation=False, sumup=True, pixel_agg="mean") as s:
             s.show(cyl1, sensor, col=1, output="Bx")

@@ -530,9 +530,7 @@ def test_input_objects_field_func_good():
 )
 def test_input_objects_field_func_bad(func):
     """bad input: magpy.misc.CustomSource(field_func=f)"""
-    with pytest.raises(
-    MagpylibBadUserInput, match=r"Input `field_func` must"
-    ):
+    with pytest.raises(MagpylibBadUserInput, match=r"Input `field_func` must"):
         magpy.misc.CustomSource(field_func=func)
 
 
@@ -990,13 +988,12 @@ def test_sensor_handedness():
 def test_magnet_polarization_magnetization_input1():
     """test codependency and magnetization polarization inputs"""
     # warning when magnetization is too low -> polarization confusion
-    mag = np.array([1, 2, 3]) * 1e6
-
     with pytest.warns(
         MagpylibDeprecationWarning,
         match="Low `magnetization` value detected for",
     ):
         magpy.magnet.Cuboid(magnetization=[1, 2, 3])
+
 
 def test_magnet_polarization_magnetization_input2():
     """test codependency and magnetization polarization inputs"""
@@ -1007,6 +1004,7 @@ def test_magnet_polarization_magnetization_input2():
         match="The attributes `magnetization` and `polarization` are dependent",
     ):
         magpy.magnet.Cuboid(polarization=[1, 2, 3], magnetization=mag)
+
 
 def test_magnet_polarization_magnetization_input3():
     """test codependency and magnetization polarization inputs"""

@@ -71,8 +71,7 @@ def check_input_zoom(inp):
     """check show zoom input"""
     if not (isinstance(inp, numbers.Number) and inp >= 0):
         msg = (
-            "Input `zoom` must be a positive number or zero; "
-            f"instead received {inp!r}."
+            f"Input `zoom` must be a positive number or zero; instead received {inp!r}."
         )
         raise MagpylibBadUserInput(msg)
 
@@ -99,10 +98,7 @@ def check_start_type(inp):
     if not (
         isinstance(inp, int | np.integer) or (isinstance(inp, str) and inp == "auto")
     ):
-        msg = (
-            "Input `start` must be an integer or `auto`; "
-            f"instead received {inp!r}."
-        )
+        msg = f"Input `start` must be an integer or `auto`; instead received {inp!r}."
         raise MagpylibBadUserInput(msg)
 
 
@@ -121,10 +117,7 @@ def check_field_input(inp):
     allowed = tuple("BHMJ")
     if not (isinstance(inp, str) and inp in allowed):
         opts = {"B", "H", "M", "J"}
-        msg = (
-            f"Input `field` must be one of {opts}; "
-            f"instead received {inp!r}."
-        )
+        msg = f"Input `field` must be one of {opts}; instead received {inp!r}."
         raise MagpylibBadUserInput(msg)
 
 
@@ -255,10 +248,7 @@ def check_format_input_axis(inp):
     )
 
     if np.all(inp == 0):
-        msg = (
-            "Input `axis` must be a non-zero vector; "
-            "instead received (0, 0, 0)."
-        )
+        msg = "Input `axis` must be a non-zero vector; instead received (0, 0, 0)."
         raise MagpylibBadUserInput(msg)
     return inp
 
@@ -296,9 +286,7 @@ def check_format_input_scalar(
     if allow_None and inp is None:
         return None
 
-    ERR_MSG = (
-        f"Input `{sig_name}` must be {sig_type}; instead received {inp!r}."
-    )
+    ERR_MSG = f"Input `{sig_name}` must be {sig_type}; instead received {inp!r}."
 
     if not isinstance(inp, numbers.Number):
         raise MagpylibBadUserInput(ERR_MSG)
@@ -335,8 +323,7 @@ def check_format_input_vector(
 
     is_array_like(
         inp,
-        f"Input `{sig_name}` must be {sig_type}; "
-        f"instead received type {type(inp)!r}.",
+        f"Input `{sig_name}` must be {sig_type}; instead received type {type(inp)!r}.",
     )
     inp = make_float_array(
         inp,

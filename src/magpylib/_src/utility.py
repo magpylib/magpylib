@@ -166,7 +166,9 @@ def check_duplicates(obj_list: Sequence) -> list:
             obj_list_new += [src]
 
     if len(obj_list_new) != len(obj_list):
-        warnings.warn("Eliminating duplicate objects in input list.", UserWarning, stacklevel=2)
+        warnings.warn(
+            "Eliminating duplicate objects in input list.", UserWarning, stacklevel=2
+        )
 
     return obj_list_new
 

@@ -702,10 +702,7 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
     """
     # Check field input
     if field not in {"B", "H"}:
-        msg = (
-            "Input `field` must be one of {'B', 'H'}; "
-            f"instead received {field!r}."
-        )
+        msg = f"Input `field` must be one of {{'B', 'H'}}; instead received {field!r}."
         raise ValueError(msg)
 
     # Check orientation input
@@ -727,9 +724,7 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
             if not isinstance(val, np.ndarray):
                 params[key] = np.array(val, dtype=float)
         except ValueError as err:
-            msg = (
-                f"Input `{key}` must be array-like; instead received {val!r}."
-            )
+            msg = f"Input `{key}` must be array-like; instead received {val!r}."
             raise ValueError(msg) from err
 
     # Tile missing ndims, Find maxlength
@@ -863,9 +858,7 @@ def _getBH_dict_level2(
                 ragged_seq[key] = False
                 val = np.array(val, dtype=float)
         except TypeError as err:
-            msg = (
-                f"Input `{key}` must be array-like; instead received {val!r}."
-            )
+            msg = f"Input `{key}` must be array-like; instead received {val!r}."
             raise MagpylibBadUserInput(msg) from err
         expected_dim = field_func_kwargs_ndim.get(key, 1)
         if val.ndim == expected_dim or ragged_seq[key]:

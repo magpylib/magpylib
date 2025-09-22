@@ -48,7 +48,7 @@ from itertools import product
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibMissingInput
+from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BHfunc import _getBH_dict_level2
 from magpylib._src.input_checks import (
     check_dimensions,

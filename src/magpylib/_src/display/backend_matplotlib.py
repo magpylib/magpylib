@@ -183,9 +183,7 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
             }
         )
     else:  # pragma: no cover
-        msg = (
-            f"Trace type {trace['type']!r} cannot be transformed into a Matplotlib trace."
-        )
+        msg = f"Trace type {trace['type']!r} cannot be transformed into a Matplotlib trace."
         raise ValueError(msg)
     for tr_mesh in traces_mpl:
         tr_mesh["row"] = trace.get("row", 1)

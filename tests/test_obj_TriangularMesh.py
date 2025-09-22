@@ -348,9 +348,7 @@ def test_TriangularMesh_from_faces_bad_inputs():
         get_tri_from_triangles(triangle)
 
     # element in list has wrong type
-    with pytest.raises(
-        TypeError, match="Input `triangles` must be a list"
-    ):
+    with pytest.raises(TypeError, match="Input `triangles` must be a list"):
         get_tri_from_triangles(["bad_type"])
 
     # bad type input
