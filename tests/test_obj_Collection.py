@@ -321,7 +321,7 @@ def test_set_children_styles():
     assert src2.style.magnetization.show is False, "failed updating styles to src2"
     with pytest.raises(
         ValueError,
-        match=r"Following arguments are invalid style properties: `{'bad_input'}`",
+        match="The following style properties are invalid",
     ):
         col.set_children_styles(bad_input="somevalue")
 

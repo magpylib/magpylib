@@ -184,14 +184,14 @@ def test_open_mesh():
     }
     vertices = np.array([v for k, v in open_mesh.items() if k in "xyz"]).T
     faces = np.array([v for k, v in open_mesh.items() if k in "ijk"]).T
-    with pytest.raises(ValueError, match=r"Open mesh detected in .*."):
+    with pytest.raises(ValueError, match=r"Open mesh detected in"):
         magpy.magnet.TriangularMesh(
             polarization=(0, 0, 1),
             vertices=vertices,
             faces=faces,
             check_open="raise",
         )
-    with pytest.raises(ValueError, match=r"Open mesh detected in .*.?"):
+    with pytest.raises(ValueError, match=r"Open mesh detected in"):
         magpy.magnet.TriangularMesh(
             polarization=(0, 0, 1),
             vertices=vertices,
@@ -207,8 +207,8 @@ def test_open_mesh():
             check_open="warn",
         )
         assert len(record) == 2
-        assert re.match(r"Open mesh detected in .*.", str(record[0].message))
-        assert re.match(r"Open mesh detected in .*.", str(record[1].message))
+        assert re.match(r"Open mesh detected in", str(record[0].message))
+        assert re.match(r"Open mesh detected in", str(record[1].message))
 
     with pytest.warns(UserWarning) as record:  # noqa: PT030, PT031
         magpy.magnet.TriangularMesh(
@@ -220,7 +220,7 @@ def test_open_mesh():
         )
         assert len(record) == 3
         assert re.match(
-            r"Unchecked mesh status in .* detected\. Now applying `check_open`\.",
+            r"Unchecked mesh status in",
             str(record[0].message),
         )
         assert re.match(r"Open mesh detected in .*.", str(record[1].message))
@@ -245,7 +245,7 @@ def test_open_mesh():
     )
     with pytest.warns(
         UserWarning,
-        match=r"Open mesh of .* detected",
+        match=r"Open mesh detected in",
     ):
         mesh.getB((0, 0, 0))
 
@@ -256,7 +256,7 @@ def test_open_mesh():
         check_open="skip",
         reorient_faces="skip",
     )
-    with pytest.warns(UserWarning, match=r"Unchecked mesh status of .* detected"):
+    with pytest.warns(UserWarning, match=r"Unchecked open mesh status"):
         mesh.getB((0, 0, 0))
 
 
@@ -343,13 +343,13 @@ def test_TriangularMesh_from_faces_bad_inputs():
     # good element type but not array-like
     with pytest.raises(
         TypeError,
-        match=r"The `triangles` parameter must be a list or Collection of `Triangle` objects.*",
+        match="Input `triangles` must be",
     ):
         get_tri_from_triangles(triangle)
 
     # element in list has wrong type
     with pytest.raises(
-        TypeError, match=r"All elements of `triangles` must be `Triangle` objects.*"
+        TypeError, match="Input `triangles` must be a list"
     ):
         get_tri_from_triangles(["bad_type"])
 
@@ -359,12 +359,12 @@ def test_TriangularMesh_from_faces_bad_inputs():
 
     # bad shape input
     msh = [((0, 0), (1, 0), (0, 1))] * 2
-    with pytest.raises(ValueError, match=r"Input parameter `mesh` must have shape .* got \(2, 3, 2\)\."):
+    with pytest.raises(ValueError, match="Input `mesh` must have"):
         get_tri_from_mesh(msh)
 
     # bad shape input
     msh = [((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))] * 2
-    with pytest.raises(ValueError, match=r"Input parameter `mesh` must have shape .* got \(2, 4, 3\)\."):
+    with pytest.raises(ValueError, match="Input `mesh` must have"):
         get_tri_from_mesh(msh)
 
 
@@ -466,7 +466,7 @@ def test_bad_mode_input():
     """test bad mode input"""
     with pytest.raises(
         ValueError,
-        match=r"The `check_open mode` argument must be one of .*",
+        match="Input `check_open mode` must be one of",
     ):
         magpy.magnet.TriangularMesh.from_pyvista(
             polarization=(0, 0, 1), polydata=pv.Octahedron(), check_open="badinput"

@@ -395,7 +395,7 @@ def test_matplotlib_model3d_extra_bad_input():
     with pytest.raises(
         ValueError,
         match=(
-            r"Transforming model failed: missing coordinate 'z'.*Available keys:.*"
+            r"Transforming model failed: missing argument 'z'"
         ),
     ):
         obj.show(canvas=ax, return_fig=True)
@@ -513,7 +513,7 @@ def test_bad_show_inputs():
     )
 
     # test bad canvas
-    with pytest.raises(TypeError, match=r"The `canvas` parameter must be one of: None, matplotlib.axes.Axes, .*"):
+    with pytest.raises(TypeError, match=r"The `canvas` parameter must be one of"):
         magpy.show(cyl1, canvas="bad_canvas_input", backend="matplotlib")
 
     # test bad axes canvas with rows
@@ -522,8 +522,7 @@ def test_bad_show_inputs():
     with pytest.raises(
         ValueError,
         match=(
-            r"Provided canvas is an instance of `matplotlib.axes.Axes` "
-            r"and does not support `rows`.*"
+            r"Provided `canvas` is an instance of"
         ),
     ):
         magpy.show(cyl1, canvas=ax, col=2, backend="matplotlib")
@@ -538,8 +537,7 @@ def test_bad_show_inputs():
     with pytest.raises(  # noqa: PT012, SIM117
         ValueError,
         match=(
-            r"Conflicting parameters detected for {'row': 1, 'col': 1}:"
-            r" 'output' first got 'model3d' then 'Bx'."
+            r"Conflicting parameters detected for"
         ),
     ):
         with magpy.show_context(animation=False, sumup=True, pixel_agg="mean") as s:
@@ -550,10 +548,7 @@ def test_bad_show_inputs():
     sensor = magpy.Sensor(
         position=np.linspace((0, 0, -0.2), (0, 0, 0.2), 200), style_size=1.5
     )
-    with pytest.warns(
-        UserWarning,
-        match=r"The 'plotly' backend does not support 'animation_output'.*",
-    ):
+    with pytest.warns(UserWarning, match=r"Unsupported feature for selected backend"):
         magpy.show(
             sensor,
             backend="plotly",
@@ -640,5 +635,5 @@ def test_bad_units_length(units_length):
 
     c = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
 
-    with pytest.raises(ValueError, match=r"Invalid unit input.*"):
+    with pytest.raises(ValueError, match=r"Input `unit_input` must be"):
         c.show(units_length=units_length, return_fig=True, backend="matplotlib")

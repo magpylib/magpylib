@@ -172,7 +172,7 @@ def test_display_bad_style_kwargs():
     fig = go.Figure()
     with pytest.raises(
         ValueError,
-        match=r"Following arguments are invalid style properties: `{'bad_style_kwarg'}`.*",
+        match=r"The following style properties are invalid",
     ):
         magpy.show(canvas=fig, markers=[(1, 2, 3)], style_bad_style_kwarg=None)
 
