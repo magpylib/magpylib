@@ -158,7 +158,7 @@ Magpylib will always make sure that object paths are in the right format, i.e., 
 
 The idea behind **edge-padding** is that, whenever path entries beyond the existing path length are needed, the edge-entries of the existing path are returned. This means that the object is static beyond its existing path.
 
-In the following example the orientation attribute is padded by its edge value `(0,0,.2)` as the position attribute length is increased.
+In the following example the orientation attribute is padded by its edge value (0, 0, .2) as the position attribute length is increased.
 
 ```{code-cell} ipython3
 from scipy.spatial.transform import Rotation as R

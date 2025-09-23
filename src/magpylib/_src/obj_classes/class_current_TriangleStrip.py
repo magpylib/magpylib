@@ -39,14 +39,14 @@ class TriangleStrip(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
     vertices : None | array-like, shape (n, 3), default None
-        The current flows along a band that consists of triangles ``{T1, T2, ...}``
-        defined by the vertices ``{V1, V2, V3, V4, ...}`` as ``T1=(V1, V2, V3)``,
-        ``T2=(V2, V3, V4)``, ... The vertices are given in units (m) in the local
+        The current flows along a band that consists of triangles {T1, T2, ...}
+        defined by the vertices {V1, V2, V3, V4, ...} as T1 = (V1, V2, V3),
+        T2 = (V2, V3, V4), ... The vertices are given in units (m) in the local
         object coordinates (move/rotate with object). At least three vertices
         must be given, which define the first triangle.
     current : float | None, default None
         Total current flowing through the strip in units (A). It flows in the
-        direction ``V1→V3`` in the first triangle, ``V2→V4`` in the second, ...
+        direction V1→V3 in the first triangle, V2→V4 in the second, ...
     meshing : int | None, default None
         Mesh fineness for force computation. Must be an integer >= number of
         faces specifying the target mesh size. The mesh is generated via bisection
@@ -82,7 +82,7 @@ class TriangleStrip(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     --------
     ``TriangleStrip`` objects are magnetic field sources. In this example we compute
     the H-field in (A/m) of a square current sheet (two triangles) with 1 A current
-    at the observer position ``(1, 1, 1)`` cm:
+    at the observer position (1, 1, 1) cm:
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -154,14 +154,14 @@ class TriangleStrip(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
 
     # Methods
     def _get_centroid(self, squeeze=True):
-        """Centroid of object in units of m."""
+        """Centroid of object in units (m)."""
         centr = np.mean(self.vertices, axis=0) + self._position
         if squeeze:
             return np.squeeze(centr)
         return centr
 
     def _get_dipole_moment(self):
-        """Magnetic moment of object in units Am²."""
+        """Magnetic moment of object in units (A*m²)."""
         # test init
         if self.vertices is None or self.current is None:
             return np.array((0.0, 0.0, 0.0))
@@ -169,7 +169,7 @@ class TriangleStrip(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
         if not np.allclose(self.vertices[:2], self.vertices[-2:]):
             msg = (
                 f"Cannot compute dipole moment of {self}. Dipole moment is only defined for closed "
-                "`CurrentStrip` where first two and last two vertices are identical."
+                "CurrentStrip where first two and last two vertices are identical."
             )
             raise ValueError(msg)
 
@@ -252,7 +252,7 @@ class TriangleStrip(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
             pass
         else:
             msg = (
-                f"Input `meshing` of {self} must be an integer >= number of faces; "
+                f"Input meshing of {self} must be an integer >= number of faces; "
                 f"instead received {value}."
             )
             raise ValueError(msg)

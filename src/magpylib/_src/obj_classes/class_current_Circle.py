@@ -73,7 +73,7 @@ class Circle(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     --------
     ``Circle`` objects are magnetic field sources. In this example we compute the
     H-field (A/m) of such a current loop with 100 A current and a diameter of
-    2 meters at the observer position ``(0.01, 0.01, 0.01)`` (m):
+    2 meters at the observer position (1, 1, 1) (cm):
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -141,13 +141,13 @@ class Circle(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
 
     # Methods
     def _get_centroid(self, squeeze=True):
-        """Centroid of object in units of m."""
+        """Centroid of object in units of (m)."""
         if squeeze:
             return self.position
         return self._position
 
     def _get_dipole_moment(self):
-        """Magnetic moment of object in units Am²."""
+        """Magnetic moment of object in units (A*m²)."""
         # test init
         if self.diameter is None or self.current is None:
             return np.array((0.0, 0.0, 0.0))
@@ -164,7 +164,7 @@ class Circle(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
             pass
         else:
             msg = (
-                f"Input `meshing` must be an integer > 3 for {self!r}; "
+                f"Input meshing must be an integer > 3 for {self!r}; "
                 f"instead received {value!r}."
             )
             raise ValueError(msg)
@@ -188,8 +188,8 @@ class Loop(Circle):
 def _deprecation_warn():
     warnings.warn(
         (
-            "Class `Loop` is deprecated and will be removed in a future version, "
-            "use `Circle` instead."
+            "Class Loop is deprecated and will be removed in a future version, "
+            "use Circle instead."
         ),
         MagpylibDeprecationWarning,
         stacklevel=2,

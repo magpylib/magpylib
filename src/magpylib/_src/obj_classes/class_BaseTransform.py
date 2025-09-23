@@ -255,7 +255,7 @@ class _BaseTransform:
         Parameters
         ----------
         displacement : array-like, shape (3,) or (n, 3)
-            Displacement vector in meters. Scalar input applies one
+            Displacement vector in units (m). Scalar input applies one
             translation to the path starting at index ``start``. Vector
             input extends/appends element-wise. See Notes.
         start : int | str, default 'auto'
@@ -605,7 +605,7 @@ class _BaseTransform:
         Parameters
         ----------
         angle : float | array-like, shape (n,)
-            Angles of rotation (length n) in units of deg by default.
+            Angles of rotation in units (deg) by default.
         seq : str
             Specifies sequence of axes for rotations. Up to 3 characters
             belonging to the set {'X', 'Y', 'Z'} for intrinsic rotations, or
@@ -800,7 +800,7 @@ class _BaseTransform:
         Parameters
         ----------
         quat : array-like, shape (4,) or (n, 4)
-            Quaternion or quaternion sequence in ``(x, y, z, w)`` format.
+            Quaternion or quaternion sequence in (x, y, z, w) format.
         anchor : None | array-like, shape (3,) or (n, 3), default None
             Anchor point(s) (m). ``None`` rotates about object position; for a
             child in a collection it implies compound rotation about the

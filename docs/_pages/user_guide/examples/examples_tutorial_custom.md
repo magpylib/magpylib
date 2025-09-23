@@ -54,13 +54,13 @@ def mono_field(field, observers):
     Returns: np.ndarray, shape (o, 3)
         Magnetic monopole field
     """
-    Qm = 1  # unit T·m²
-    obs = np.array(observers).T  # unit m
-    B = Qm * (obs / np.linalg.norm(obs, axis=0) ** 3).T  # unit T
+    Qm = 1  # unit (T·m²)
+    obs = np.array(observers).T  # unit (m)
+    B = Qm * (obs / np.linalg.norm(obs, axis=0) ** 3).T  # unit (T)
     if field == "B":
-        return B  # unit T
+        return B  # unit (T)
     elif field == "H":
-        H = B / magpy.mu_0  # unit A/m
+        H = B / magpy.mu_0  # unit (A/m)
         return H
     else:
         raise ValueError("Field Value must be either 'B' or 'H'.")
@@ -145,7 +145,7 @@ class Monopole(magpy.misc.CustomSource):
     Parameters
     ----------
     charge: float
-        Monopole charge in units of T·m²
+        Monopole charge in units of (T·m²)
     """
 
     def __init__(self, charge, **kwargs):
@@ -167,13 +167,13 @@ class Monopole(magpy.misc.CustomSource):
 
         def mono_field(field, observers):
             """monopole field"""
-            Qm = self._charge  # unit T·m²
-            obs = np.array(observers).T  # unit m
-            B = Qm * (obs / np.linalg.norm(obs, axis=0) ** 3).T  # unit T
+            Qm = self._charge  # unit (T·m²)
+            obs = np.array(observers).T  # unit (m)
+            B = Qm * (obs / np.linalg.norm(obs, axis=0) ** 3).T  # unit (T)
             if field == "B":
-                return B  # unit T
+                return B  # unit (T)
             elif field == "H":
-                H = B / magpy.mu_0  # unit A/m
+                H = B / magpy.mu_0  # unit (A/m)
                 return H
             else:
                 raise ValueError("Field Value must be either 'B' or 'H'")

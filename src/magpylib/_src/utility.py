@@ -214,7 +214,7 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
         if isinstance(obj, allowed_classes):
             new_list += [obj]
         elif warn:
-            msg = f"Cannot add {obj!r} to `Collection`; object type is not allowed."
+            msg = f"Cannot add {obj!r} to Collection; object type is not allowed."
             warnings.warn(msg, UserWarning, stacklevel=2)
     return new_list
 
@@ -262,7 +262,7 @@ def get_unit_factor(unit_input, *, target_unit, deci_centi=True):
     if factor_power is None or len(unit_input_str) > 2:
         valid_inputs = [f"{k}{target_unit}" for k in prefs]
         msg = (
-            f"Input `unit_input` must be one of {valid_inputs}; "
+            f"Input unit_input must be one of {valid_inputs}; "
             f"instead received {unit_input!r}."
         )
         raise ValueError(msg)
@@ -285,7 +285,7 @@ def unit_prefix(number, unit="", precision=3, char_between="", as_tuple=False) -
         character to insert between number of prefix. Can be " " or any string, if a space is wanted
         before the unit symbol , by default ""
     as_tuple: bool, optional
-        if True returns (new_number_str, char_between, prefix, unit) tuple
+        if``True``returns (new_number_str, char_between, prefix, unit) tuple
         else returns the joined string
     Returns
     -------

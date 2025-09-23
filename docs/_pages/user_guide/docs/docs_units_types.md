@@ -42,9 +42,9 @@ The connection between the magnetic polarization J, the magnetization M and the 
 ## Arbitrary Unit Convention
 
 ```{hint}
-All input and output units in Magpylib (version 5 and higher) are SI-based, see table above. However, for advanced use one should be aware that the analytical solutions are **scale invariant** - _"a magnet with 1 mm sides creates the same field at 1 mm distance as a magnet with 1 m sides at 1 m distance"_. The choice of length input unit is therefore not relevant, but it is critical to keep the same length unit for all inputs in one computation.
+All input and output units in Magpylib (version 5 and higher) are SI-based, see table above. However, for advanced use one should be aware that the analytical solutions are **scale invariant** - _"a magnet with 1 (mm) sides creates the same field at 1 (mm) distance as a magnet with 1 m sides at 1 m distance"_. The choice of length input unit is therefore not relevant, but it is critical to keep the same length unit for all inputs in one computation.
 
-In addition, `getB` returns the same unit as given by the `polarization` input. With polarization input in mT, `getB` will return mT as well. At the same time when the `magnetization` input is kA/m, then `getH` returns kA/m as well. The B/H-field outputs are related to a M/J-inputs via a factor of $µ_0$.
+In addition, `getB` returns the same unit as given by the `polarization` input. With polarization input in (mT), `getB` will return (mT) as well. At the same time when the `magnetization` input is (kA/m), then `getH` returns (kA/m) as well. The B/H-field outputs are related to a M/J-inputs via a factor of $µ_0$.
 ```
 
 --------------------------

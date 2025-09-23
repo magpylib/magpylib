@@ -456,7 +456,7 @@ with magpy.show_context(loop, sens, animation=True) as sc:
 
 ### Canvas Length Units
 
-When displaying very small Magpylib objects, the axes scaling in meters might be inadequate and you may want to use other units that fit the system dimensions more nicely. The example below shows how to display an object (in this case the same) with different length units and zoom levels.
+When displaying very small Magpylib objects, the axes scaling in units (m) might be inadequate and you may want to use other units that fit the system dimensions more nicely. The example below shows how to display an object (in this case the same) with different length units and zoom levels.
 
 ```{tip}
 Setting `units_length="auto"` will infer the most suitable units based on the maximum range of the system.

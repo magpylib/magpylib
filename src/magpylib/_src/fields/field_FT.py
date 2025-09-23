@@ -66,7 +66,7 @@ def _check_format_input_targets(targets):
         if not isinstance(t, Dipole | Sphere):
             if not hasattr(t, "meshing"):
                 msg = (
-                    "Input'targets' must be allowed Magpylib target objects; "
+                    "Input targets must be allowed Magpylib target objects; "
                     f"instead received type {type(t)}."
                 )
                 raise ValueError(msg)
@@ -74,7 +74,7 @@ def _check_format_input_targets(targets):
             # check if meshing parameter is explicitly set
             if t.meshing is None:
                 msg = (
-                    f"Missing `meshing` input for target {t}. "
+                    f"Missing meshing input for target {t}. "
                     "All targets must have the meshing parameter explicitly set."
                 )
                 raise ValueError(msg)
@@ -118,7 +118,7 @@ def _check_format_input_pivot(pivot, targets, n_path):
     array of pivots with shape (t, p, 3) or None
     """
     msg = (
-        "Input `pivot` must be 'centroid', `None`, or array-like with shape "
+        "Input pivot must be 'centroid', None, or array-like with shape "
         "(3,), (t, 3), or (t, p, 3) when t targets are present and path "
         f"length p are present; instead received {pivot!r}."
     )
@@ -156,7 +156,7 @@ def _check_eps(eps):
     """
     check FD step
     """
-    msg = f"Input `eps` must be a positive float; instead received {eps!r}."
+    msg = f"Input eps must be a positive float; instead received {eps!r}."
     if not isinstance(eps, float):
         raise ValueError(msg)
     if eps <= 0:
@@ -190,11 +190,11 @@ def getFT(
         Pivot point through which the force contributes to the torque. If
         ``'centroid'``, each target's centroid is used. If ``None``, no pivot
         is applied (may yield nonphysical results). If an array of shape
-        ``(3,)``, the same pivot is used for all targets. Shapes ``(t, 3)``
-        and ``(t, p, 3)`` provide per-target or per-target-per-path pivots.
+        (3,), the same pivot is used for all targets. Shapes (t, 3)
+        and (t, p, 3) provide per-target or per-target-per-path pivots.
     eps : float, default 1e-5
         Finite-difference step size for gradient-field computation for magnet
-        targets. A good value is ``1e-5 * characteristic_system_size`` (e.g.,
+        targets. A good value is 1e-5 * characteristic_system_size (e.g.,
         magnet size or source-target distance).
     squeeze : bool, default True
         If ``True``, dimensions of size 1 in the output are removed.
@@ -207,7 +207,7 @@ def getFT(
     Returns
     -------
     tuple[ndarray, ndarray]
-        Force and torque with shapes ``(s, p, t, 3)``, where s is the
+        Force and torque with shapes (s, p, t, 3), where s is the
         number of sources, p the path length, and t the number of
         targets. If ``squeeze`` is ``True``, dimensions of size 1 are removed.
         If ``returnmesh`` is ``True``, returns the meshes list instead.
@@ -235,7 +235,7 @@ def getFT(
     Notes
     -----
     The force and torque are computed via
-    ``F = (gradB) · MOM`` and ``T = B x MOM + r x F``. The gradient field is
+    F = (gradB) · MOM and T = B x MOM + r x F. The gradient field is
     obtained using finite differences on the meshed targets.
     """
     # COMPUTATION SCHEME

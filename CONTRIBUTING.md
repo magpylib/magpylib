@@ -59,20 +59,28 @@ that apply important code checks which each commit.
 
 ## Documentation & Formatting
 
-### Code formatting
-
-- Private member names should have a trailing underscore.
-- Apply NumPyDoc / SciPy docstring style to all public members.
-- Use double backticks for inline code in docstrings, and single backticks for
-  inline code in user-facing messages.
+### General
 - Maximum line length: 88 columns.
+- Apply NumPyDoc / SciPy docstring style to all public members.
+- SPOT index naming convention
+   - s sources
+   - p path
+   - o observers, o1, o2, ... pixel shape
+   - t targets
+   - n, m for all other generic indices
+- Indices and shapes are written in plain prosa like '... for n observers this
+  function returns an ndarray of shape (n, 3) ...'. (Applies to docstings, user
+  messeges, and documentation)
+- Units in prose should be written consistently, e.g., 'in units (m)'.
 
-### Docstring formatting
+### Code
+- Private member names should have a trailing underscore.
 
+### Docstrings
+- Double backticks for inline code, including True, False and None. Indices,
+  shapes, and vectors are written in prosa.
 - Use single quotes ('…') rather than double quotes ("…") in user-visible
   strings.
-- Units in prose should be written consistently, e.g., (m), (A/m).
-- In shape notation, include a space after the comma: (N, 3).
 - Type line format: 'name : A | B | C, default: X'. Include shape information
   when relevant, for example: 'name : None | array-like, shape (3,), default: X'
   or 'name : array-like, shape (N, 3) | B, default: X'. Do not use backticks in
@@ -86,6 +94,13 @@ that apply important code checks which each commit.
   is returned.
 - Prefer duplicating identical docstrings over referring to other members;
   ensure duplicates are exactly identical to avoid drift.
+
+### Runtime Messages
+- Messeges in pure prose. No backticks.
+
+### Documentation (MyST Markdown)
+- Single backticks for inline code, including True, False and None. Indices,
+  shapes, and vectors are written in prosa.
 
 ## For Your Orientation
 

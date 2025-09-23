@@ -149,7 +149,7 @@ class _BaseGeo(_BaseTransform, ABC):
             style.update(val)
         elif not isinstance(val, self._style_class):
             msg = (
-                f"Input `style` must be an instance of `{self._style_class.__name__}`; "
+                f"Input style must be an instance of {self._style_class.__name__}; "
                 f"instead received type {type(val).__name__}."
             )
             raise ValueError(msg)
@@ -194,7 +194,7 @@ class _BaseGeo(_BaseTransform, ABC):
             self._parent = None
         else:
             msg = (
-                "Input `parent` must be `None` or a `Collection` instance; "
+                "Input `parent` must be None or a `Collection` instance; "
                 f"instead received type {type(parent).__name__}."
             )
             raise MagpylibBadUserInput(msg)
@@ -322,7 +322,7 @@ class _BaseGeo(_BaseTransform, ABC):
 
     # public methods ------------------------------------------------
     def reset_path(self):
-        """Reset path: set position to ``(0, 0, 0)`` and orientation to unit rotation.
+        """Reset path: set position to (0, 0, 0) and orientation to unit rotation.
 
         Returns
         -------

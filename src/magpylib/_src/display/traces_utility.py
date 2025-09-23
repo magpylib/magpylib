@@ -118,8 +118,8 @@ def get_vertices_from_model(model_kwargs, model_args=None, coordsargs=None):
         else:
             msg = (
                 f"Transforming model failed: missing argument {k!r}. "
-                "Provide coordinate names via `coordsargs`, e.g. {'x': 'x', 'y': 'y', 'z': 'z'}. "
-                "For Matplotlib, `coordsargs` is set automatically when using `args=(xs, ys, zs)`."
+                "Provide coordinate names via coordsargs, e.g. {'x': 'x', 'y': 'y', 'z': 'z'}. "
+                "For Matplotlib, coordsargs is set automatically when using args=(xs, ys, zs)."
             )
             raise ValueError(msg)
         vertices.append(v)
@@ -250,7 +250,7 @@ def get_rot_pos_from_path(obj, show_path=None):
         inds = np.array(show_path)
     else:  # pragma: no cover
         msg = (
-            "Input `show_path` must be `None`, `True`, `False`, `0`, an integer, or an iterable of indices; "
+            "Input show_path must be None, True, False, 0, an integer, or an iterable of indices; "
             f"instead received {show_path!r} (type {type(show_path).__name__})."
         )
         raise ValueError(msg)

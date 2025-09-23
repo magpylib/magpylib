@@ -73,8 +73,8 @@ class Sphere(_BaseMagnet, _BaseVolume, _BaseDipoleMoment):
     Examples
     --------
     ``Sphere`` objects are magnetic field sources. In this example we compute the H-field in (A/m)
-    of a spherical magnet with polarization ``(0.1, 0.2, 0.3)`` in units (T) and diameter
-    ``0.01 m`` at the observer position ``(0.01, 0.01, 0.01)`` (m):
+    of a spherical magnet with polarization (0.1, 0.2, 0.3) in units (T) and diameter
+    0.01 m at the observer position (0.01, 0.01, 0.01) (m):
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -129,7 +129,7 @@ class Sphere(_BaseMagnet, _BaseVolume, _BaseDipoleMoment):
         self._diameter = check_format_input_scalar(
             dia,
             sig_name="diameter",
-            sig_type="`None` or a positive number (int, float)",
+            sig_type="None or a positive number (int, float)",
             allow_None=True,
             forbid_negative=True,
         )
@@ -143,20 +143,20 @@ class Sphere(_BaseMagnet, _BaseVolume, _BaseDipoleMoment):
 
     # Methods
     def _get_volume(self):
-        """Volume of object in units of m³."""
+        """Volume of object in units (m³)."""
         if self.diameter is None:
             return 0.0
 
         return self.diameter**3 * np.pi / 6
 
     def _get_centroid(self, squeeze=True):
-        """Centroid of object in units of m."""
+        """Centroid of object in units (m)."""
         if squeeze:
             return self.position
         return self._position
 
     def _get_dipole_moment(self):
-        """Magnetic moment of object in units Am²."""
+        """Magnetic moment of object in units (A*m²)."""
         # test init
         if self.magnetization is None or self.diameter is None:
             return np.array((0.0, 0.0, 0.0))

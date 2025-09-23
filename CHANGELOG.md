@@ -101,13 +101,13 @@
 
 - The Magpylib inputs and outputs are now in **SI Units**.
 - The `magnetization` parameter has also been redefined to reflect the true
-  physical magnetization quantity in units of A/m.
+  physical magnetization quantity in units (A/m).
 
 ### Other Improvements
 
 - The `magnetization` parameter is now codependent with the new `polarization`
   parameter that is the physical magnetic polarization
-  ([#712](https://github.com/magpylib/magpylib/issues/712)) in units of Tesla
+  ([#712](https://github.com/magpylib/magpylib/issues/712)) in units (T)
 - Added `getM` (magnetization) and `getJ` (polarization) top level functions and
   class methods reminiscent of `getB` and `getH`.
 - The `in_out` (inside/outside) parameter is added to all field functions
@@ -293,7 +293,7 @@ This is a major update that includes
   ([#350](https://github.com/magpylib/magpylib/issues/350))
 - `Circular` class renamed to `Loop`.
   ([#402](https://github.com/magpylib/magpylib/pull/402))
-- New `CylinderSegment` class with dimension `(r1,r2,h,phi1,phi2)` with the
+- New `CylinderSegment` class with dimension (r1,r2,h,phi1,phi2) with the
   inner radius `r1`, the outer radius `r2` the height `h` and the cylinder
   section angles `phi1 < phi2`.
   ([#386](https://github.com/magpylib/magpylib/issues/386),
@@ -328,7 +328,7 @@ This is a major update that includes
   - Scale invariant field evaluations.
   - Special cases caught within 1e-15 rtol and atol to account for numerical
     imprecision with positioning (e.g. object rotation).
-  - Suppress NumPy divide/invalid warnings. return `np.nan` as `(0,0,0)` (e.g.
+  - Suppress NumPy divide/invalid warnings. return `np.nan` as (0, 0, 0) (e.g.
     on magnet edges or on line currents) and allow return of `np.inf`.
   - New closed form implementation for `Cylinder` with diametral magnetization
     is much faster (100-1000x) and numerically stable for small `r`.
@@ -539,7 +539,7 @@ This is a major update that includes
     - combine subsequent rotations `R1 * R2 * R3`
 - Sensor pixel:
   - The new `Sensor(position, pixel, orientation)` class has the argument
-    `pixel` which is `(0,0,0)` by default and refers to pixel positions inside
+    `pixel` which is (0, 0, 0) by default and refers to pixel positions inside
     the Sensor (in the Sensor local CS). `pixel` is an arbitrary array-like of
     the shape (N1, N2, ..., 3).
 - Geometry paths:
@@ -592,8 +592,8 @@ This is a major update that includes
     `.rotate_from_angax(angle, axis, anchor, increment, start, degrees)`.
     - The argument `axis` can now easily be set to the global CS axes with
       `"x"`, `"y"`, `"z"`.
-    - The anchor argument `anchor=0` represents the origin `(0,0,0)`.
-    - `angle` argument is in units of deg by default. It can now be set to rad
+    - The anchor argument `anchor=0` represents the origin (0, 0, 0).
+    - `angle` argument is in units (deg) by default. It can now be set to rad
       using the `degrees` argument.
   - The "move"-class method is now `.move(displacement, increment, start)`
   - Rotation and move methods can now be used to generate paths using vector
@@ -604,8 +604,8 @@ This is a major update that includes
     handed to getB it will automatically execute vectorized code from the vector
     module.
   - In a finite region (size defined by `Config.EDGESIZE`) about magnet edges
-    and line currents the field evaluates to `(0,0,0)` instead of
-    `(NaN, NaN, NaN)`. Special case catching reduces performance slightly.
+    and line currents the field evaluates to (0, 0, 0) instead of
+    (NaN, NaN, NaN)`. Special case catching reduces performance slightly.
 
 ### Updated
 

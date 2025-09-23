@@ -151,7 +151,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
             ),
             shape_m1=3,
             sig_name="TriangleSheet.current_densities",
-            sig_type="`None` or array-like (list, tuple, ndarray) with shape (n, 3)",
+            sig_type="None or array-like (list, tuple, ndarray) with shape (n, 3)",
             allow_None=False,
         ).astype(float)
         verts = check_format_input_vector(
@@ -159,7 +159,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
             dims=(2,),
             shape_m1=3,
             sig_name="TriangleSheet.vertices",
-            sig_type="`None` or array-like (list, tuple, ndarray) with shape (n, 3)",
+            sig_type="None or array-like (list, tuple, ndarray) with shape (n, 3)",
             allow_None=False,
         ).astype(float)
         fac = check_format_input_vector(
@@ -170,7 +170,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
             ),
             shape_m1=3,
             sig_name="TriangleSheet.faces",
-            sig_type="`None` or array-like (list, tuple, ndarray) with shape (n, 3)",
+            sig_type="None or array-like (list, tuple, ndarray) with shape (n, 3)",
             allow_None=False,
         ).astype(int)
 
@@ -182,26 +182,26 @@ class TriangleSheet(_BaseSource, _BaseTarget):
 
         if len(verts) < 3:
             msg = (
-                f"Input `vertices` of {self} must have at least 3 vertices; "
+                f"Input vertices of {self} must have at least 3 vertices; "
                 f"instead received {len(verts)} vertices."
             )
             raise ValueError(msg)
 
         if len(fac) != len(cd):
-            msg = f"Input `current_densities` and `faces` of {self} must have same length."
+            msg = f"Input current_densities and faces of {self} must have same length."
             raise ValueError(msg)
 
         try:
             verts[fac]
         except IndexError as e:
-            msg = f"Some `faces` indices of {self} do not match with `vertices` array."
+            msg = f"Some faces indices of {self} do not match with vertices array."
             raise IndexError(msg) from e
 
         return cd, verts, fac
 
     # Methods
     def _get_centroid(self, squeeze=True):
-        """Centroid of object in units of m."""
+        """Centroid of object in units (m)."""
         centr = np.mean(self.vertices, axis=0) + self._position
         if squeeze:
             return np.squeeze(centr)
@@ -221,7 +221,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
             pass
         else:
             msg = (
-                f"Input `meshing` of {self} must be an integer >= number of faces; "
+                f"Input meshing of {self} must be an integer >= number of faces; "
                 f"instead received {value}."
             )
             raise ValueError(msg)

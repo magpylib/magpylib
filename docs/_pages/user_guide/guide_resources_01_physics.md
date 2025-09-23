@@ -80,7 +80,7 @@ Maximal performance is achieved when `.getB(sources, observers)` is called only 
 
 The object-oriented interface comes with an overhead. If you want to achieve maximal performance this overhead can be avoided with the {ref}`docs-field-functional`.
 
-The analytical solutions provide extreme performance. Single field evaluations take of the order of `100 µs`. For large input arrays (e.g. many observer positions or many similar magnets) the computation time can drop below `1 µs` per evaluation point on single state-of-the-art x86 mobile cores (tested on `Intel Core i5-8365U @ 1.60GHz`), depending on the expression complexity (e.g. Dipole is fast, CylinderSegment is slow).
+The analytical solutions provide extreme performance. Single field evaluations take of the order of 100 µs. For large input arrays (e.g. many observer positions or many similar magnets) the computation time can drop below 1 µs per evaluation point on single state-of-the-art x86 mobile cores (tested on *Intel Core i5-8365U @ 1.60GHz*), depending on the expression complexity (e.g. Dipole is fast, CylinderSegment is slow).
 
 ------------------------------------
 

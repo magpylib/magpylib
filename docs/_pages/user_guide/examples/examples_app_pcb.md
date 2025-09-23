@@ -80,7 +80,7 @@ import matplotlib.pyplot as plt
 
 # Create observer grid in the xy-plane, slightly above the coil
 n = 50 # discretization number
-z_obs = 0.01e-3  # observation height in meters
+z_obs = 0.01e-3  # observation height in (m)
 xs = np.linspace(-2.1e-3, 2.1e-3, n)
 ys = np.linspace(-3.1e-3, 2.1e-3, n)
 X, Y = np.meshgrid(xs, ys)

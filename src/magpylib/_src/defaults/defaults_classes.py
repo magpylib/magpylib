@@ -14,7 +14,7 @@ class DefaultSettings(MagicProperties):
     Parameters
     ----------
     display: dict or Display
-        `Display` class containing display settings. `('backend', 'animation', 'colorsequence' ...)`
+        `Display` class containing display settings. ('backend', 'animation', 'colorsequence' ...)`
     """
 
     def __init__(
@@ -36,7 +36,7 @@ class DefaultSettings(MagicProperties):
     @property
     def display(self):
         """`Display` class containing display settings.
-        `('backend', 'animation', 'colorsequence')`"""
+        ('backend', 'animation', 'colorsequence')`"""
         return self._display
 
     @display.setter
@@ -119,7 +119,7 @@ class Display(MagicProperties):
                 )
             except TypeError as err:
                 msg = (
-                    f"The `colorsequence` property of {name} must be an "
+                    f"The colorsequence property of {name} must be an "
                     f"iterable of colors; instead received {val!r}."
                 )
                 raise ValueError(msg) from err
@@ -249,7 +249,7 @@ class Animation(MagicProperties):
     @slider.setter
     def slider(self, val):
         assert val is None or isinstance(val, bool), (
-            f"The `slider` property of {type(self).__name__} must be a either `True` or `False`"
+            f"The `slider` property of {type(self).__name__} must be a either True or False"
             f" but received {val!r} instead."
         )
         self._slider = val

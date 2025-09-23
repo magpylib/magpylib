@@ -16,7 +16,7 @@ The analytical magnetic field expressions found in the literature, implemented i
 :::
 ::::
 
-Here Magpylib helps. All Magpylib sources and observers lie in a global Cartesian coordinate system. Object position and orientation are defined by the attributes `position` and `orientation`, 😏. Objects can easily be moved around using the `move()` and `rotate()` methods. Eventually, the field is computed in the reference frame of the observers (e.g. Sensor objects). Positions are given in units of meter, and the default unit for orientation is °.
+Here Magpylib helps. All Magpylib sources and observers lie in a global Cartesian coordinate system. Object position and orientation are defined by the attributes `position` and `orientation`, 😏. Objects can easily be moved around using the `move()` and `rotate()` methods. Eventually, the field is computed in the reference frame of the observers (e.g. Sensor objects). Positions are given in units (m), and the default unit for orientation is °.
 
 --------------------------
 (docs-position-paths)=
@@ -107,24 +107,24 @@ Several extensions of the `rotate` method give a lot of flexibility with object 
 `rotate_from_angax(angle, axis, anchor=None, start="auto", degrees=True)`
 * `angle`: scalar or array with shape (n,). Angle(s) of rotation.
 * `axis`: array of shape (3,) or string. The direction of the rotation axis. String input can be 'x', 'y' or 'z' to denote respective directions.
-* `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
+* `degrees`: bool, default=True. Interpret angle input in units (deg) if `True` or (rad) if `False`.
 :::
 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
 `rotate_from_rotvec(rotvec, anchor=None, start="auto", degrees=True)`
-* `rotvec` : array with shape (n, 3) or (3,). The rotation vector direction is the rotation axis and the vector length is the rotation angle in units of deg.
-* `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
+* `rotvec` : array with shape (n, 3) or (3,). The rotation vector direction is the rotation axis and the vector length is the rotation angle in units (deg).
+* `degrees`: bool, default=True. Interpret angle input in units (deg) if `True` or (rad) if `False`.
 :::
 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
 `rotate_from_euler(angle, seq, anchor=None, start="auto", degrees=True)`
-* `angle`: scalar or array with shape (n,). Angle(s) of rotation in units of deg (by default).
+* `angle`: scalar or array with shape (n,). Angle(s) of rotation in units (deg) by default.
 * `seq` : string. Specifies sequence of axes for rotations. Up to 3 characters belonging to the set {'X', 'Y', 'Z'} for intrinsic rotations, or {'x', 'y', 'z'} for extrinsic rotations. Extrinsic and intrinsic rotations cannot be mixed in one function call.
-* `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
+* `degrees`: bool, default=True. Interpret angle input in units (deg) if `True` or (rad) if `False`.
 :::
 
 :::{grid-item-card}

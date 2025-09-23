@@ -83,7 +83,7 @@ class RegisteredBackend:
                 )
                 warnings.warn(
                     "Unsupported feature for selected backend: "
-                    f"the `{backend}` backend does not support `{name!r}`. "
+                    f"the {backend} backend does not support {name!r}. "
                     f"Use {supported_str} instead. "
                     f"Falling back to: {params}",
                     stacklevel=2,
@@ -265,54 +265,47 @@ def show(
 
     Parameters
     ----------
-    objects : Source or Sensor or Collection
-        One or multiple Magpylib objects to be displayed (given as positional
-        arguments).
-    backend : str, optional
-        Plotting backend. can be ``'auto'``, ``'matplotlib'``, ``'plotly'``,
-        or ``'pyvista'``. The default is the value of
-        ``magpylib.defaults.display.backend`` (installation default ``'auto'``).
-        With ``'auto'`` the backend becomes ``'plotly'`` inside a notebook when
-        Plotly is installed, otherwise ``'matplotlib'``. If ``canvas`` is provided,
-        its type determines the backend.
-    canvas : None or matplotlib.Figure or plotly.Figure or pyvista.Plotter, optional
-        Existing canvas to draw on. If omitted a new canvas is created and
-        displayed. Default is ``None``.
-    animation : bool or float, optional
-        If ``True`` (and at least one object has a path) the path is animated.
+    *objects : Source | Sensor | Collection
+        One or multiple Magpylib objects to be displayed.
+    backend : {'auto', 'matplotlib', 'plotly', 'pyvista'}, default 'auto'
+        With ``'auto'`` the backend becomes ``'plotly'`` inside
+        a notebook when Plotly is installed, otherwise ``'matplotlib'``. If
+        ``canvas`` is provided, its type determines the backend.
+    canvas : None | matplotlib.Figure | plotly.Figure | pyvista.Plotter, default None
+        Existing canvas to draw on. If ``None``, a new canvas is created and
+        displayed.
+    animation : bool | float, default False
+        If ``True`` and at least one object has a path, the path is animated.
         A positive float sets the total animation duration in seconds (Plotly only).
-        Default is ``False``.
-    zoom : float, optional
-        3D plot zoom level. ``0`` means tight bounds. Default is ``0``.
-    markers : array-like, optional
-        Global position markers, shape (n, 3). Shown as points. Default is ``None``.
-    return_fig : bool, optional
-        If ``True`` return the underlying figure object (Figure / FigureWidget / Plotter).
-        Default is ``False``.
-    canvas_update : str or bool, optional
-        Layout update behaviour when using a provided canvas. Can be ``'auto'`` (default),
-        ``True`` or ``False``. With ``'auto'`` applies internal layout only for newly
-        created canvases. ``True`` forces update, ``False`` suppresses it.
-    row : int or None, optional
-        Subplot row index. Default is ``None``.
-    col : int or None, optional
-        Subplot column index. Default is ``None``.
-    output : str or tuple of str, optional
-        Plot output type. ``'model3d'`` (default) shows 3D geometry. Field plots are defined via
+    zoom : float, default 0.0
+        3D plot zoom level. 0 means tight bounds.
+    markers : array-like, shape (n, 3) | None, default None
+        Global position markers shown as points.
+    return_fig : bool, default False
+        If ``True``, return the underlying figure object (Figure / FigureWidget / Plotter).
+    canvas_update : str | bool, default 'auto'
+        Layout update behaviour when using a provided canvas. With ``'auto'``
+        applies internal layout only for newly created canvases. ``True`` forces
+        update, ``False`` suppresses it.
+    row : int | None, default None
+        Subplot row index.
+    col : int | None, default None
+        Subplot column index.
+    output : str | tuple[str, ...], default 'model3d'
+        Plot output type. ``'model3d'`` shows 3D geometry. Field plots are defined via
         component strings like ``'Bx'``, ``'Bxy'``, ``'Hyz'``. Multiple axes in a string
-        imply vector norm combination (e.g. ``'Bxy'`` => ``sqrt(Bx**2 + By**2)``).
-    sumup : bool, optional
-        Sum field contributions of sources when ``output != 'model3d'``. Default is ``True``.
-    pixel_agg : str, optional
-        NumPy reducer applied across sensor pixels for non ``'model3d'`` outputs.
-        Default is ``'mean'``. Other options are ``'min'``, ``'max'``, ``'std'``.
-    style : dict or None, optional
+        imply vector norm combination (e.g., ``'Bxy'`` => ``sqrt(Bx**2 + By**2)``).
+    sumup : bool, default True
+        Sum field contributions of sources.
+    pixel_agg : str, default 'mean'
+        NumPy reducer applied across sensor pixels (e.g., ``'min'``, ``'max'``, ``'std'``).
+    style : dict | None, default None
         Global style overrides, e.g. ``{'color': 'red'}`` or via underscore magic
-        (``style_color='red'``). Applied to matching objects. Default is ``None``.
+        (``style_color='red'``). Applied to matching objects.
 
     Returns
     -------
-    None or matplotlib.Figure or plotly.Figure or pyvista.Plotter
+    None | matplotlib.Figure | plotly.Figure | pyvista.Plotter
         The created/updated figure object if ``return_fig=True``; otherwise ``None``.
 
     Examples
@@ -443,7 +436,7 @@ def show_context(
         If ``True`` (and at least one object has a path) the path is animated.
         A positive float sets total animation duration in seconds (Plotly only).
     zoom : float, default 0.0
-        3D plot zoom level. ``0`` means tight bounds.
+        3D plot zoom level 0.0 means tight bounds.
     markers : array-like, shape (n, 3) | None, default None
         Global position markers shown as points.
     return_fig : bool, default False

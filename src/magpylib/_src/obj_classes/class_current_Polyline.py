@@ -78,7 +78,7 @@ class Polyline(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     --------
     ``Polyline`` objects are magnetic field sources. In this example we compute the
     H-field (A/m) of a square-shaped line current with 1 A at the observer position
-    ``(1, 1, 1)`` (cm):
+    (1, 1, 1) (cm):
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -127,7 +127,7 @@ class Polyline(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
     def vertices(self):
         """Polyline vertices.
 
-        The current flows along the vertices which are given in units of m in the
+        The current flows along the vertices which are given in units (m) in the
         local object coordinates (move/rotate with object). At least two vertices
         must be given.
         """
@@ -154,7 +154,7 @@ class Polyline(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
 
     # Methods
     def _get_centroid(self, squeeze=True):
-        """Centroid of object in units of (m)."""
+        """Centroid of object in units (m)."""
         if squeeze:
             if self.vertices is not None:
                 return np.mean(self.vertices, axis=0) + self.position
@@ -164,7 +164,7 @@ class Polyline(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
         return self._position
 
     def _get_dipole_moment(self):
-        """Magnetic moment of object in units of (Am²)."""
+        """Magnetic moment of object in units (A*m²)."""
         # test init
         if self.vertices is None or self.current is None:
             return np.array((0.0, 0.0, 0.0))
@@ -190,7 +190,7 @@ class Polyline(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
         n_segments = len(self.vertices) - 1
         if self.meshing < n_segments:
             msg = (
-                f"Input `meshing` of {self} must be an integer > number of `Polyline` "
+                f"Input meshing of {self} must be an integer > number of Polyline "
                 f"segments ({n_segments}); instead received {self.meshing}. "
                 "Setting one point per segment in computation."
             )

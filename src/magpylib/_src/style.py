@@ -1043,7 +1043,7 @@ class DisconnectedMesh(MagicProperties, MarkerLineProperties):
                 )
             except TypeError as err:
                 msg = (
-                    f"Input `colorsequence` of {name} must be an "
+                    f"Input colorsequence of {name} must be an "
                     f"iterable of colors; instead received {val!r}."
                 )
                 raise ValueError(msg) from err
@@ -1213,7 +1213,7 @@ class Orientation(MagicProperties):
 
     @property
     def symbol(self):
-        """Pixel symbol. Can be one of `("cone", "arrow3d")`."""
+        """Pixel symbol. Can be one of ("cone", "arrow3d")`."""
         return self._symbol
 
     @symbol.setter
@@ -1491,7 +1491,7 @@ class SensorProperties:
 
     sizemode: {'scaled', 'absolute'}, default='scaled'
         Defines the scale reference for the sensor size. If 'absolute', the `size` parameters
-        becomes the sensor size in meters.
+        becomes the sensor size in units (m).
 
     pixel: dict, Pixel, default=None
         `Pixel` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
@@ -1555,7 +1555,7 @@ class DefaultSensor(MagicProperties, SensorProperties):
 
     sizemode: {'scaled', 'absolute'}, default='scaled'
         Defines the scale reference for the sensor size. If 'absolute', the `size` parameters
-        becomes the sensor size in meters.
+        becomes the sensor size in units (m).
 
     pixel: dict, Pixel, default=None
         `Pixel` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
@@ -1625,7 +1625,7 @@ class Pixel(MagicProperties):
 
     sizemode: {'scaled', 'absolute'}, default='scaled'
         Defines the scale reference for the pixel size. If 'absolute', the `size` parameters
-        becomes the pixel size in meters.
+        becomes the pixel size in units (m).
 
     color: str, default=None
         Defines the pixel color@property.
@@ -1782,7 +1782,7 @@ class Arrow(Line):
 
     sizemode: {'scaled', 'absolute'}, default='scaled'
         Defines the scale reference for the arrow size. If 'absolute', the `size` parameters
-        becomes the arrow length in meters.
+        becomes the arrow length in units (m).
 
     offset: float, default=0.5
         Defines the arrow offset. `offset=0` results in the arrow head to be coincident to start
@@ -1978,7 +1978,7 @@ class DipoleProperties:
 
     sizemode: {'scaled', 'absolute'}, default='scaled'
         Defines the scale reference for the dipole size. If 'absolute', the `size` parameters
-        becomes the dipole size in meters.
+        becomes the dipole size in units (m).
 
     pivot: str
         The part of the arrow that is anchored to the X, Y grid.
@@ -2041,7 +2041,7 @@ class DefaultDipole(MagicProperties, DipoleProperties):
 
     sizemode: {'scaled', 'absolute'}, default='scaled'
         Defines the scale reference for the dipole size. If 'absolute', the `size` parameters
-        becomes the dipole size in meters.
+        becomes the dipole size in units (m).
 
     pivot: str, default=None
         The part of the arrow that is anchored to the X, Y grid.

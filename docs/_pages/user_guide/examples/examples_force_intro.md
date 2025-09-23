@@ -40,7 +40,7 @@ np.set_printoptions(formatter={"float": "{:.2e}".format})
 # Source
 cube = magpy.magnet.Cuboid(
     dimension=(0.01, 0.01, 0.01),  # 1cm cube
-    polarization=(0.7, 0.7, 0.7),  # Tesla
+    polarization=(0.7, 0.7, 0.7),  # units (T)
 )
 
 # Target
@@ -66,7 +66,7 @@ print(f"Torque: {T} Nm")
 - **Torque**: The asymmetric positioning creates a rotational moment about the x and y axes.
 
 ```{warning}
-**Units matter!** Forces are computed in Newtons [N] and torques in Newton⋅meters [Nm]. Unlike magnetic field calculations, [scaling invariance](guide-docs-io-scale-invariance) does not apply to force computations. Always use consistent SI units for all input parameters.
+**Units matter!** Forces are computed in (N) and torques in (N*m). Unlike magnetic field calculations, [scaling invariance](guide-docs-io-scale-invariance) does not apply to force computations. Always use consistent SI units for all input parameters.
 ```
 
 --------------------------------
@@ -237,7 +237,7 @@ plt.show()
 --------------------------------
 ## Finite Difference Gradient
 
-Magnet force computation requires the magnetic field gradient $\nabla\vec{B}$, which Magpylib calculates using a finite difference scheme. The finite difference step size (absolute value in meters) is controlled by the `eps` parameter in `getFT()`. It is `eps=1e-5` (meters) by default.
+Magnet force computation requires the magnetic field gradient $\nabla\vec{B}$, which Magpylib calculates using a finite difference scheme. The finite difference step size (absolute value in units (m)) is controlled by the `eps` parameter in `getFT()`. It is `eps=1e-5` (meters) by default.
 
 **Good value for `eps`**
 - as large as possible to avoid numerical cancellation

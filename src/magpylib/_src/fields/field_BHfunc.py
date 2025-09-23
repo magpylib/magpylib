@@ -96,7 +96,7 @@ def polyline_field(
 
     With ``positions=(0, 0, 0)`` and ``orientations=None`` local and global
     coordinates coincide. Current flows in straight lines from segment start
-    to end positions. The field is set to ``(0, 0, 0)`` on the segments.
+    to end positions. The field is set to (0, 0, 0) on the segments.
 
     Parameters
     ----------
@@ -171,7 +171,7 @@ def cuboid_field(
     observers : array-like, shape (3,) or (i, 3)
         Points where the field is evaluated in units (m).
     dimensions : array-like, shape (3,) or (i, 3)
-        Cuboid sides ``(a, b, c)`` in units (m).
+        Cuboid sides (a, b, c) in units (m).
     polarizations : array-like, shape (3,) or (i, 3)
         Magnetic polarization in units (T).
     positions : array-like, shape (3,) or (i, 3), default (0, 0, 0)
@@ -234,7 +234,7 @@ def cylinder_field(
     observers : array-like, shape (3,) or (i, 3)
         Points where the field is evaluated in units (m).
     dimensions : array-like, shape (2,) or (i, 2)
-        Cylinder dimensions ``(diameter, height)`` in units (m).
+        Cylinder dimensions (diameter, height) in units (m).
     polarizations : array-like, shape (3,) or (i, 3)
         Magnetic polarization in units (T).
     positions : array-like, shape (3,) or (i, 3), default (0, 0, 0)
@@ -297,9 +297,9 @@ def cylinder_segment_field(
     observers : array-like, shape (3,) or (i, 3)
         Points where the field is evaluated in units (m).
     dimensions : array-like, shape (5,) or (i, 5)
-        Segment dimensions ``(r1, r2, h, φ1, φ2)`` where ``r1 < r2`` are inner
-        and outer radii in units (m), ``h`` is the height in units (m), and
-        ``φ1 < φ2`` are azimuth section angles in radians (rad).
+        Segment dimensions (r1, r2, h, φ1, φ2) where r1 < r2 are inner
+        and outer radii in units (m), h is the height in units (m), and
+        φ1 < φ2 are azimuth section angles in radians (rad).
     polarizations : array-like, shape (3,) or (i, 3)
         Magnetic polarization in units (T).
     positions : array-like, shape (3,) or (i, 3), default (0, 0, 0)
@@ -702,7 +702,7 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
     """
     # Check field input
     if field not in {"B", "H"}:
-        msg = f"Input `field` must be one of {{'B', 'H'}}; instead received {field!r}."
+        msg = f"Input field must be one of {'B', 'H'}; instead received {field!r}."
         raise ValueError(msg)
 
     # Check orientation input
@@ -710,7 +710,7 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
         params["orientation"] = R.identity()
     if not isinstance(params["orientation"], R):
         msg = (
-            "Input `orientation` must be a SciPy `Rotation` instance or `None`; "
+            "Input orientation must be a SciPy Rotation instance or None; "
             f"instead received type {type(params['orientation']).__name__}."
         )
         raise TypeError(msg)
@@ -724,7 +724,7 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
             if not isinstance(val, np.ndarray):
                 params[key] = np.array(val, dtype=float)
         except ValueError as err:
-            msg = f"Input `{key}` must be array-like; instead received {val!r}."
+            msg = f"Input {key} must be array-like; instead received {val!r}."
             raise ValueError(msg) from err
 
     # Tile missing ndims, Find maxlength
@@ -734,7 +734,7 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
             params[key] = np.expand_dims(val, axis=0)
         if val.ndim > DIM[key]:
             msg = (
-                f"Input `{key}` must have at most {DIM[key]} dimensions; "
+                f"Input {key} must have at most {DIM[key]} dimensions; "
                 f"instead received ndim {val.ndim}."
             )
             raise ValueError(msg)
@@ -748,13 +748,13 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
     for key, val in params.items():
         if val.shape[1:] != SHAPES[key]:
             msg = (
-                f"Input `{key}` must have shape {SHAPES[key]} for ndim>0; "
+                f"Input {key} must have shape {SHAPES[key]} for ndim > 0; "
                 f"instead received shape {val.shape[1:]}"
             )
             raise ValueError(msg)
         if val.shape[0] not in (1, nmax):
             msg = (
-                f"Input `{key}` must have 1 or {nmax} instances; "
+                f"Input {key} must have 1 or {nmax} instances; "
                 f"instead received {val.shape[0]}."
             )
             raise ValueError(msg)
@@ -797,7 +797,7 @@ def _getBH_dict_level2(
 
     Returns
     -------
-    field: ndarray, shape (o,3), field at obs_pos in tesla or A/m
+    field: ndarray, shape (o, 3), field at obs_pos in (T) or (A/m)
 
     Info
     ----

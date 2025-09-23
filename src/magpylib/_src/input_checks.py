@@ -106,7 +106,7 @@ def check_degree_type(inp):
     """degrees input must be bool"""
     if not isinstance(inp, bool):
         msg = (
-            "Input `degrees` must be boolean (`True` or `False`); "
+            "Input `degrees` must be boolean (True or False); "
             f"instead received {inp!r}."
         )
         raise MagpylibBadUserInput(msg)
@@ -184,7 +184,7 @@ def check_format_input_orientation(inp, init_format=False):
     # check type
     if not isinstance(inp, Rotation | type(None)):
         msg = (
-            "Input `orientation` must be `None` or a SciPy `Rotation` object; "
+            "Input `orientation` must be None or a SciPy `Rotation` object; "
             f"instead received type {type(inp).__name__}."
         )
         raise MagpylibBadUserInput(msg)
@@ -212,7 +212,7 @@ def check_format_input_anchor(inp):
         dims=(1, 2),
         shape_m1=3,
         sig_name="anchor",
-        sig_type="`None` or `0` or array-like (list, tuple, ndarray) with shape (3,)",
+        sig_type="None or 0 or array-like (list, tuple, ndarray) with shape (3,)",
         allow_None=True,
     )
 
@@ -360,17 +360,17 @@ def check_format_input_vector2(
     """
     is_array_like(
         inp,
-        f"Input `{param_name}` must be array-like; "
+        f"Input {param_name} must be array-like; "
         f"instead received type {type(inp)!r}.",
     )
     inp = make_float_array(
         inp,
-        f"Input `{param_name}` must contain only float compatible entries.",
+        f"Input {param_name} must contain only float compatible entries.",
     )
     for d1, d2 in zip(inp.shape, shape, strict=False):
         if d2 is not None and d1 != d2:
             msg = (
-                f"Input `{param_name}` must have shape {shape}; "
+                f"Input {param_name} must have shape {shape}; "
                 f"instead received shape {inp.shape}."
             )
             raise ValueError(msg)
@@ -386,7 +386,7 @@ def check_format_input_vertices(inp, minlength=2):
         dims=(2,),
         shape_m1=3,
         sig_name="vertices",
-        sig_type="`None` or array-like (list, tuple, ndarray) with shape (n, 3)",
+        sig_type="None or array-like (list, tuple, ndarray) with shape (n, 3)",
         allow_None=True,
     )
 
@@ -507,7 +507,7 @@ def check_format_input_observers(inp, pixel_agg=None):
         ]
         if pixel_agg is None and not all_same(pix_shapes):
             msg = (
-                "Input `observers` must have similar shapes when `pixel_agg` is `None`; "
+                "Input `observers` must have similar shapes when `pixel_agg` is None; "
                 f"instead received shapes {pix_shapes}."
             )
             raise MagpylibBadUserInput(msg) from err
@@ -606,7 +606,7 @@ def check_format_pixel_agg(pixel_agg):
     """
 
     PIXEL_AGG_ERR_MSG = (
-        "Input `pixel_agg` must be a reference to a NumPy callable that reduces "
+        "Input pixel_agg must be a reference to a NumPy callable that reduces "
         "an array shape like 'mean', 'std', 'median', 'min', ...; "
         f"instead received {pixel_agg!r}."
     )
@@ -633,13 +633,13 @@ def check_getBH_output_type(output):
     acceptable = ("ndarray", "dataframe")
     if output not in acceptable:
         msg = (
-            f"The `output` argument must be one of {acceptable}; "
+            f"Input output must be one of {acceptable}; "
             f"instead received {output!r}."
         )
         raise ValueError(msg)
     if output == "dataframe" and find_spec("pandas") is None:  # pragma: no cover
         msg = (
-            "In order to use the `dataframe` output type, you need to install Pandas, "
+            "Input output='dataframe' requires Pandas installation, "
             "see https://pandas.pydata.org/docs/getting_started/install.html"
         )
         raise ModuleNotFoundError(msg)
@@ -651,7 +651,7 @@ def check_input_canvas_update(canvas_update, canvas):
     acceptable = (True, False, "auto", None)
     if canvas_update not in acceptable:
         msg = (
-            f"The `canvas_update` must be one of {acceptable}; "
+            f"The canvas_update must be one of {acceptable}; "
             f"instead received {canvas_update!r}."
         )
         raise ValueError(msg)

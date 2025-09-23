@@ -43,9 +43,9 @@ class CylinderSegment(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
     dimension : None | array-like, shape (5,), default None
-        Cylinder segment size ``(r1, r2, h, phi1, phi2)`` where ``r1 < r2`` are inner
-        and outer radii in units (m), ``phi1 < phi2`` are section angles in units (deg),
-        and ``h`` is the height in units (m).
+        Cylinder segment size (r1, r2, h, phi1, phi2) where r1 < r2 are inner
+        and outer radii in units (m), phi1 < phi2 are section angles in units (deg),
+        and h is the height in units (m).
     polarization : None | array-like, shape (3,), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
@@ -87,9 +87,9 @@ class CylinderSegment(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     --------
     ``CylinderSegment`` magnets are magnetic field sources. In this example we compute the
     H-field in (A/m) of such a cylinder segment magnet with polarization
-    ``(0.1, 0.2, 0.3)`` (T), inner radius ``0.01`` (m), outer radius ``0.02`` (m),
-    height ``0.01`` (m), and section angles ``0`` and ``45`` (deg) at the observer
-    position ``(0.02, 0.02, 0.02)`` (m):
+    (0.1, 0.2, 0.3) (T), inner radius 1 (cm), outer radius 2 (cm),
+    height 1 (cm), and section angles 0 and 45 (deg) at the observer
+    position (2, 2, 2) (cm):
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -136,10 +136,10 @@ class CylinderSegment(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     # property getters and setters
     @property
     def dimension(self):
-        """Cylinder segment size ``(r1, r2, h, phi1, phi2)``.
+        """Cylinder segment size (r1, r2, h, phi1, phi2).
 
-        ``r1 < r2`` denote inner and outer radii in units (m), ``phi1 < phi2`` the
-        section angles in units (deg), and ``h`` the height in units (m).
+        r1 < r2 denote inner and outer radii in units (m), phi1 < phi2 the
+        section angles in units (deg), and h the height in units (m).
         """
         return self._dimension
 
@@ -150,8 +150,8 @@ class CylinderSegment(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         Parameters
         ----------
         dim : None or array-like, shape (5,)
-            Size ``(r1, r2, h, phi1, phi2)`` where ``r1 < r2`` are radii in (m),
-            ``phi1 < phi2`` are section angles in (deg), and ``h`` is the height (m).
+            Size (r1, r2, h, phi1, phi2) where r1 < r2 are radii in (m),
+            phi1 < phi2 are section angles in (deg), and h is the height (m).
         """
         self._dimension = check_format_input_cylinder_segment(dim)
 
@@ -175,7 +175,7 @@ class CylinderSegment(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
     # Methods
     def _get_volume(self):
-        """Volume of object in units of m³."""
+        """Volume of object in units (m³)."""
         if self.dimension is None:
             return 0.0
 
@@ -183,13 +183,13 @@ class CylinderSegment(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         return (r2**2 - r1**2) * np.pi * h * (phi2 - phi1) / 360
 
     def _get_centroid(self, squeeze=True):
-        """Centroid of object in units of m."""
+        """Centroid of object in units (m)."""
         if squeeze:
             return self.barycenter
         return self._barycenter
 
     def _get_dipole_moment(self):
-        """Magnetic moment of object in units Am²."""
+        """Magnetic moment of object in units (A*m²)."""
         # test init
         if self.magnetization is None or self.dimension is None:
             return np.array((0.0, 0.0, 0.0))

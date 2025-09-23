@@ -47,7 +47,7 @@ class _DefaultType:
     """Special keyword value.
 
     The instance of this class may be used as the default value assigned to a
-    keyword if no other obvious default (e.g., `None`) is suitable,
+    keyword if no other obvious default (e.g., None) is suitable,
 
     """
 
@@ -93,10 +93,10 @@ def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False) -> d
     u : dict
         dictionary to update with
     same_keys_only : bool, optional
-        if `True`, only key found in `d` get updated and no new items are created,
+        if ``True``, only key found in `d` get updated and no new items are created,
         by default False
     replace_None_only : bool, optional
-        if `True`, only key/value pair from `d`where `value=None` get updated from `u`,
+        if ``True``, only key/value pair from `d`where `value=None` get updated from `u`,
         by default False
 
     Returns
@@ -298,8 +298,8 @@ def validate_property_class(val, name, class_, parent):
         val = class_()
     if not isinstance(val, class_):
         msg = (
-            f"The `{name}` property of `{type(parent).__name__}` must be an instance "
-            f"of `{class_}` or a dictionary with equivalent key/value pairs; "
+            f"The {name} property of {type(parent).__name__} must be an instance "
+            f"of {class_} or a dictionary with equivalent key/value pairs; "
             f"instead received {val!r}."
         )
         raise ValueError(msg)
@@ -316,8 +316,8 @@ def validate_style_keys(style_kwargs):
     invalid_keys = {level0_style_keys[k] for k in kwargs_diff}
     if invalid_keys:
         msg = (
-            f"The following style properties are invalid: `{invalid_keys}`. "
-            f"Available style properties are: `{valid_keys}`."
+            f"The following style properties are invalid: {invalid_keys}. "
+            f"Available style properties are: {valid_keys}."
         )
         raise ValueError(msg)
     return style_kwargs
@@ -346,7 +346,7 @@ class MagicProperties:
             diff = set(magic_kwargs.keys()).difference(set(input_dict.keys()))
             for attr in diff:
                 msg = (
-                    f"`{type(self).__name__}` has no property `{attr}`. "
+                    f"{type(self).__name__} has no property {attr}. "
                     f"Available properties: {list(self._property_names_generator())}."
                 )
                 raise AttributeError(msg)
@@ -358,7 +358,7 @@ class MagicProperties:
     def __setattr__(self, key, value):
         if self.__isfrozen and not hasattr(self, key):
             msg = (
-                f"`{type(self).__name__}` has no property `{key}`. "
+                f"{type(self).__name__} has no property {key}. "
                 f"Available properties: {list(self._property_names_generator())}."
             )
             raise AttributeError(msg)
@@ -418,11 +418,10 @@ class MagicProperties:
         _match_properties: bool
             If `True`, checks if provided properties over keyword arguments are matching the current
             object properties. An error is raised if a non-matching property is found.
-            If `False`, the `update` method does not raise any error when an argument is not
+            If ``False``, the ``update`` method does not raise any error when an argument is not
             matching a property.
-
         _replace_None_only:
-            updates matching properties that are equal to `None` (not already been set)
+            updates matching properties that are equal to ``None`` (not already been set)
 
 
         Returns

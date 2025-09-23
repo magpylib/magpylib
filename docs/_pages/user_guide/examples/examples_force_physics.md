@@ -122,11 +122,11 @@ def analytical(ra, rb, ma, mb):
     Analytical solution for the magnetic force between two dipoles.
 
     Parameters:
-    ra, rb: positions of dipoles [m]
-    ma, mb: magnetic moments [Am²]
+    ra, rb: positions of dipoles (m)
+    ma, mb: magnetic moments (A*m²)
 
     Returns:
-    force: force on dipole b due to dipole a [N]
+    force: force on dipole b due to dipole a (N)
     """
     r = rb - ra
     r_abs = np.linalg.norm(r)
@@ -216,7 +216,7 @@ moment = cube.magnetization * cube.volume
 dipole = magpy.misc.Dipole(moment=moment)
 
 # Test at increasing distances
-distances = [0.2, 0.5, 1.0, 2.0]  # meters
+distances = [0.2, 0.5, 1.0, 2.0]  # units (m)
 
 print("Cube:\t Distance \tForce Error\tTorque Error")
 

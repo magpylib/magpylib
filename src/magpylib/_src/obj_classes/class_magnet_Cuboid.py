@@ -40,7 +40,7 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
     dimension : None | array-like, shape (3,), default None
-        Lengths of the cuboid sides ``(a, b, c)`` in units (m).
+        Lengths of the cuboid sides (a, b, c) in units (m).
     polarization : None | array-like, shape (3,), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
@@ -50,7 +50,7 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     meshing : None | int | array-like, shape (3,), default None
         Mesh fineness for force computation. Must be a positive integer specifying
         the target mesh size or an explicit splitting of the cuboid into regular
-        cubic grid cells with shape ``(n1, n2, n3)``.
+        cubic grid cells with shape (n1, n2, n3).
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -84,9 +84,9 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     Examples
     --------
     ``Cuboid`` magnets are magnetic field sources. Below we compute the H-field in
-    (A/m) of a cubical magnet with magnetic polarization ``(0.5, 0.6, 0.7)`` in
-    units (T) and side lengths ``0.01 m`` at the observer position
-    ``(0.01, 0.01, 0.01)`` (m):
+    (A/m) of a cubical magnet with magnetic polarization (0.5, 0.6, 0.7) in
+    units (T) and side lengths (0.01, 0.01, 0.01) at the observer position
+    (0.01, 0.01, 0.01) (m):
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -130,7 +130,7 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     # Properties
     @property
     def dimension(self):
-        """Cuboid side lengths ``(a, b, c)`` in units (m)."""
+        """Cuboid side lengths (a, b, c) in units (m)."""
         return self._dimension
 
     @dimension.setter
@@ -140,7 +140,7 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         Parameters
         ----------
         dim : None or array-like, shape (3,)
-            Side lengths ``(a, b, c)`` in units (m).
+            Side lengths (a, b, c) in units (m).
         """
         self._dimension = check_format_input_vector(
             dim,
@@ -162,19 +162,19 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
     # Methods
     def _get_volume(self):
-        """Volume of object in units of m³."""
+        """Volume of object in units (m³)."""
         if self.dimension is None:
             return 0.0
         return np.prod(self.dimension)
 
     def _get_centroid(self, squeeze=True):
-        """Centroid of object in units of m."""
+        """Centroid of object in units (m)."""
         if squeeze:
             return self.position
         return self._position
 
     def _get_dipole_moment(self):
-        """Magnetic moment of object in units Am²."""
+        """Magnetic moment of object in units (A*m²)."""
         # test init
         if self.magnetization is None or self.dimension is None:
             return np.array((0.0, 0.0, 0.0))
@@ -192,7 +192,7 @@ class Cuboid(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             pass
         else:
             msg = (
-                f"Input `meshing` of {self} must be positive integer or array-like of shape "
+                f"Input meshing of {self} must be positive integer or array-like of shape "
                 "(3,); instead received {value}."
             )
             raise ValueError(msg)

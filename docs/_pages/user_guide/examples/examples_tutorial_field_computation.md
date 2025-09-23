@@ -34,7 +34,7 @@ print(B)
 
 ## Field on a Grid
 
-There are four field computation functions: `getB` will compute the B-field in T. `getH` computes the H-field in A/m. `getJ` computes the magnetic polarization in units of T. `getM` computes the magnetization in units of A/m.
+There are four field computation functions: `getB` will compute the B-field in (T). `getH` computes the H-field in (A/m). `getJ` computes the magnetic polarization in units (T). `getM` computes the magnetization in units of (A/m).
 
 All these functions will return the field in the shape of the input. In the following example, BHJM-fields of a diametrically magnetized cylinder magnet are computed on a position grid in the symmetry plane and are then displayed using Matplotlib.
 
@@ -97,7 +97,7 @@ plt.show()
 (examples-tutorial-field-computation-sensors)=
 ## Using Sensors
 
-The `Sensor` class enables relative positioning of observer grids in the global coordinate system. The observer grid is stored in the `pixel` parameter of the sensor object which is `(0,0,0)` by default (sensor position = observer position).
+The `Sensor` class enables relative positioning of observer grids in the global coordinate system. The observer grid is stored in the `pixel` parameter of the sensor object which is (0, 0, 0) by default (sensor position = observer position).
 
 The following example shows a moving and rotating sensor with two pixels. At the same time, the source objects are moving to demonstrate the versatility of the field computation.
 

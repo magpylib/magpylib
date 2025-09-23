@@ -87,9 +87,9 @@ class Tetrahedron(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
     Examples
     --------
     ``Tetrahedron`` magnets are magnetic field sources. Below we compute the H-field in (A/m) of a
-    tetrahedron magnet with polarization ``(0.1, 0.2, 0.3)`` in units (T) and dimensions defined
-    through the vertices ``(0, 0, 0)``, ``(0.01, 0, 0)``, ``(0, 0.01, 0)`` and ``(0, 0, 0.01)`` (m)
-    at the observer position ``(0.01, 0.01, 0.01)`` (m):
+    tetrahedron magnet with polarization (0.1, 0.2, 0.3) in units (T) and dimensions defined
+    through the vertices (0, 0, 0), (0.01, 0, 0), (0, 0.01, 0) and (0, 0, 0.01) (m)
+    at the observer position (0.01, 0.01, 0.01) (m):
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -175,7 +175,7 @@ class Tetrahedron(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
     # Methods
     def _get_volume(self):
-        """Volume of object in units of m³."""
+        """Volume of object in units (m³)."""
         if self.vertices is None:
             return 0.0
 
@@ -190,13 +190,13 @@ class Tetrahedron(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         return abs(np.linalg.det(matrix)) / 6.0
 
     def _get_centroid(self, squeeze=True):
-        """Centroid of object in units of m."""
+        """Centroid of object in units (m)."""
         if squeeze:
             return self.barycenter
         return self._barycenter
 
     def _get_dipole_moment(self):
-        """Magnetic moment of object in units Am²."""
+        """Magnetic moment of object in units (A*m²)."""
         # test init
         if self.magnetization is None or self.vertices is None:
             return np.array((0.0, 0.0, 0.0))

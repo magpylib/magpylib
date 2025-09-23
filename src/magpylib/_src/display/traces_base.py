@@ -68,7 +68,7 @@ def make_Cuboid(
         Side lengths along the ``x``, ``y``, and ``z`` axes.
     position : array-like, shape (3,), default None
         Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+        the centroid of the vertices. If ``None``, uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
         Orientation to apply in the global CS.
     show : bool, default True
@@ -123,7 +123,7 @@ def make_Prism(
         Prism height along the ``z``-direction.
     position : array-like, shape (3,), default None
         Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+        the centroid of the vertices. If ``None``, uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
         Orientation to apply in the global CS.
     show : bool, default True
@@ -198,7 +198,7 @@ def make_Ellipsoid(
         Sampling density used to approximate the surface.
     position : array-like, shape (3,), default None
         Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+        the centroid of the vertices. If ``None``, uses (0.0, 0.0, 0.0).
     orientation : scipy.spatial.transform.Rotation | None, default None
         Orientation to apply in the global CS.
     show : bool, default True
@@ -272,7 +272,7 @@ def make_CylinderSegment(
     backend : {'generic', 'matplotlib', 'plotly'}, default 'generic'
         Plotting backend.
     dimension : tuple[float, float, float, float, float], default (1.0, 2.0, 1.0, 0.0, 90.0)
-        Cylinder parameters ``(r1, r2, h, phi1, phi2)``, where ``r1 < r2`` are inner and
+        Cylinder parameters (r1, r2, h, phi1, phi2), where ``r1 < r2`` are inner and
         outer radii, ``h`` is height, and ``phi1 < phi2`` are section angles in degrees.
         The zero reference is at ``z=0`` at the arc center point.
     vert : int, default 50
@@ -280,7 +280,7 @@ def make_CylinderSegment(
         ``max(5, int(vert * abs(phi2 - phi1) / 360))``.
     position : array-like, shape (3,), default None
         Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+        the centroid of the vertices. If ``None``, uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
         Orientation to apply in the global CS.
     show : bool, default True
@@ -371,7 +371,7 @@ def make_Pyramid(
         Anchor point about which the pyramid rotates.
     position : array-like, shape (3,), default None
         Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+        the centroid of the vertices. If ``None``, uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
         Orientation to apply in the global CS.
     show : bool, default True
@@ -438,7 +438,7 @@ def make_Arrow(
         Anchor point about which the arrow rotates.
     position : array-like, shape (3,), default None
         Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+        the centroid of the vertices. If ``None``, uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
         Orientation to apply in the global CS.
     show : bool, default True
@@ -497,11 +497,11 @@ def make_Tetrahedron(
     backend : {'generic', 'matplotlib', 'plotly'}, default 'generic'
         Plotting backend.
     vertices : array-like, shape (4, 3)
-        Vertex coordinates ``(x1, y1, z1), …, (x4, y4, z4)`` in the tetrahedron's
+        Vertex coordinates (x1, y1, z1), …, (x4, y4, z4) in the tetrahedron's
         local coordinate system.
     position : array-like, shape (3,), default None
         Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+        the centroid of the vertices. If ``None``, uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
         Orientation to apply in the global CS.
     show : bool, default True
@@ -548,7 +548,7 @@ def make_TriangularMesh(
         order. If ``None``, a ``scipy.spatial.ConvexHull`` triangulation is used.
     position : array-like, shape (3,), default None
         Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses ``(0.0, 0.0, 0.0)``.
+        the centroid of the vertices. If ``None``, uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
         Orientation to apply in the global CS.
     show : bool, default True

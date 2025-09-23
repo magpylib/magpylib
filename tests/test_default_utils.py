@@ -170,7 +170,7 @@ def test_MagicProperties():
     bp1 = BPsub1(prop1=1)
 
     # check setting attribute/property
-    assert bp1.prop1 == 1, "`bp1.prop1` should be `1`"
+    assert bp1.prop1 == 1, "`bp1.prop1` should be 1"
     with pytest.raises(AttributeError):
         bp1.prop1e = "val"  # only properties are allowed to be set
 
@@ -195,7 +195,7 @@ def test_MagicProperties():
 
     assert bp1.update(prop1_prop2=20, _replace_None_only=True).as_dict() == {
         "prop1": {"prop2": 10}
-    }, "magic property setting failed, `prop2` should be remained unchanged `10`"
+    }, "magic property setting failed, `prop2` should be remained unchanged 10"
 
     # check copy method
 
