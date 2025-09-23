@@ -13,7 +13,7 @@ try:
     import plotly.graph_objects as go
 except ImportError as missing_module:  # pragma: no cover
     msg = (
-        "In order to use the plotly plotting backend, you need to install Plotly, "
+        "Backend 'plotly' requires installation of Plotly package, "
         "see https://github.com/plotly/plotly.py"
     )
     raise ModuleNotFoundError(msg) from missing_module

@@ -830,7 +830,7 @@ def _getBH_dict_level2(
         )
     except KeyError as err:
         msg = (
-            f"Input `source_type` must be one of {list(source_classes)}; "
+            f"Input source_type must be one of {list(source_classes)}; "
             f"instead received {source_type!r}."
         )
         raise MagpylibBadUserInput(msg) from err
@@ -858,7 +858,7 @@ def _getBH_dict_level2(
                 ragged_seq[key] = False
                 val = np.array(val, dtype=float)
         except TypeError as err:
-            msg = f"Input `{key}` must be array-like; instead received {val!r}."
+            msg = f"Input {key} must be array-like; instead received {val!r}."
             raise MagpylibBadUserInput(msg) from err
         expected_dim = field_func_kwargs_ndim.get(key, 1)
         if val.ndim == expected_dim or ragged_seq[key]:

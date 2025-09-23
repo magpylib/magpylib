@@ -21,7 +21,7 @@ def test_filter_objects():
     pm2 = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(1, 2))
     sens = magpy.Sensor()
     src_list = [pm1, pm2, sens]
-    with pytest.warns(UserWarning, match=r"Cannot add Sensor.* to `Collection`"):
+    with pytest.warns(UserWarning, match=r"Cannot add Sensor.* to Collection"):
         list_new = filter_objects(src_list, allow="sources")
     assert list_new == [pm1, pm2], "Failed to eliminate sensor"
 

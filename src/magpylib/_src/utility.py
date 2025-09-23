@@ -189,7 +189,7 @@ def check_path_format(inp):
     result = all(len(obj._position) == len(obj._orientation) for obj in inp)
 
     if not result:
-        msg = "Bad path format: `position` and `orientation` have different lengths."
+        msg = "Bad path format: position and orientation have different lengths."
         raise MagpylibBadUserInput(msg)
 
 
@@ -422,7 +422,7 @@ def open_animation(filepath, embed=True):
 
             display(Video(data=filepath, embed=embed))
         else:  # pragma: no cover
-            msg = "Filetype not supported, only 'mp4 or 'gif' allowed"
+            msg = "Filetype not supported, only 'mp4 or 'gif' allowed."
             raise TypeError(msg)
     else:
         import webbrowser  # noqa: PLC0415

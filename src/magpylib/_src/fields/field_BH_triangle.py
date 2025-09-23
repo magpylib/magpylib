@@ -91,9 +91,9 @@ def triangle_Bfield(
     Parameters
     ----------
     observers : ndarray, shape (i, 3)
-        Observer positions ``(x, y, z)`` in Cartesian coordinates.
+        Observer positions (x, y, z) in Cartesian coordinates.
     vertices : ndarray, shape (i, 3, 3)
-        Triangle vertex positions ``((P11, P12, P13), (P21, P22, P23), ...)`` in
+        Triangle vertex positions ((P11, P12, P13), (P21, P22, P23), ...) in
         Cartesian coordinates.
     polarizations : ndarray, shape (i, 3)
         Magnetic polarization vectors.
@@ -123,9 +123,9 @@ def triangle_Bfield(
     Notes
     -----
     Field computation follows Guptasarma, Geophysics, 1999, 64(1), 70-74. Corners
-    yield ``(nan, nan, nan)``. Edge points and in-plane perpendicular components are
-    set to ``0``. Loss of precision occurs when approaching a triangle as
-    ``(x - edge)**2`` and with distance from the triangle as ``distance**3``.
+    yield (nan, nan, nan). Edge points and in-plane perpendicular components are
+    set to (0). Loss of precision occurs when approaching a triangle as
+    (x - edge)**2 and with distance from the triangle as (distance**3).
     """
     n = _norm_vector(vertices)
     sigma = np.einsum("ij, ij->i", n, polarizations)  # vectorized inner product
@@ -213,7 +213,7 @@ def _BHJM_triangle(
         return BHJM / MU0
 
     msg = (
-        "Input `output_field_type` must be one of {'B', 'H', 'M', 'J'}; "
-        f"instead received {field!r}"
+        "Input output_field_type must be one of {'B', 'H', 'M', 'J'}; "
+        f"instead received {field!r}."
     )
     raise ValueError(msg)  # pragma: no cover

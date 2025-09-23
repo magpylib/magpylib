@@ -62,56 +62,35 @@ that apply important code checks which each commit.
 ### General
 - Maximum line length: 88 columns.
 - Apply NumPyDoc / SciPy docstring style to all public members.
-- SPOT index naming convention
+- SPOTIN index naming convention
    - s sources
    - p path
    - o observers, o1, o2, ... pixel shape
    - t targets
+   - i instances (func and core interfaces)
    - n, m for all other generic indices
 - Indices and shapes are written in plain prosa like '... for n observers this
   function returns an ndarray of shape (n, 3) ...'. (Applies to docstings, user
   messeges, and documentation)
-- Units in prose should be written consistently, e.g., 'in units (m)'.
+- Units in prosa, e.g., 'in units (m)' or 'in units (A*m²)'
 
 ### Code
 - Private member names should have a trailing underscore.
 
 ### Docstrings
-- Double backticks for inline code, including True, False and None. Indices,
-  shapes, and vectors are written in prosa.
-- Use single quotes ('…') rather than double quotes ("…") in user-visible
-  strings.
-- Type line format: 'name : A | B | C, default: X'. Include shape information
-  when relevant, for example: 'name : None | array-like, shape (3,), default: X'
-  or 'name : array-like, shape (N, 3) | B, default: X'. Do not use backticks in
-  the type line. Put the default in the type line, not in the description. For
-  string choices, use braces: 'name : A | {'choice1', 'choice2'}, default: X'.
+- Double backticks for inline code, including True, False and None. Indices, shapes, and vectors are written in prosa.
+- Use single quotes ('…') rather than double quotes ("…") in user-visible strings.
+- Type line format: 'name : A | B | C, default X'. Include shape information when relevant, for example: 'name : None | array-like, shape (3,), default X'
+  or 'name : array-like, shape (N, 3) | B, default X'. Do not use backticks in the type line. Put the default in the type line, not in the description. For
+  string choices, use braces: 'name : A | {'choice1', 'choice2'}, default X'.
 - Do not add a Raises section.
-- For chainable instance methods, document the return as: Returns Self Self
-  (allows chaining). Do not name private helper classes that might be returned
-  in subclasses.
-- Do not include a Returns section in class docstrings where the class instance
-  is returned.
-- Prefer duplicating identical docstrings over referring to other members;
-  ensure duplicates are exactly identical to avoid drift.
+- For chainable instance methods, document the return as: Returns Self Self (allows chaining). Do not name private helper classes that might be returned in subclasses.
+- Do not include a Returns section in class docstrings where the class instance is returned.
+- Prefer duplicating identical docstrings over referring to other members; ensure duplicates are exactly identical to avoid drift.
 
-### Runtime Messages
+### Runtime Messages (warn, raise, assert)
 - Messeges in pure prose. No backticks.
+- Typical message format: 'Input XXX of YYY must be ZZZ; instead received UUU.'
 
 ### Documentation (MyST Markdown)
-- Single backticks for inline code, including True, False and None. Indices,
-  shapes, and vectors are written in prosa.
-
-## For Your Orientation
-
-The Magpylib repository is structured as follows:
-
-- **magpylib**
-  - **magpylib**: the actual package.
-    - **\_src**: source code
-    - Other files generate the interface
-  - **docs**: documentation that is displayed on
-    [Read the Docs](https://readthedocs.org/) using
-    [Sphinx](https://www.sphinx-doc.org/en/master/).
-  - **tests**: unit tests
-  - Other files are project configuration files, Readme, ...
+- Single backticks for inline code, including True, False and None. Indices, shapes, and vectors are written in prosa.

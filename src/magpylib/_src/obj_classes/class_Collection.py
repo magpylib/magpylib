@@ -366,7 +366,7 @@ class _BaseCollection(_BaseDisplayRepr):
             if isinstance(obj, Collection) and (
                 obj is self or self in obj.collections_all
             ):
-                msg = f"Cannot add {obj!r} because a `Collection` must not reference itself."
+                msg = f"Cannot add {obj!r} because a Collection must not reference itself."
                 raise MagpylibBadUserInput(msg)
             if obj._parent is None:
                 obj._parent = self
@@ -376,7 +376,7 @@ class _BaseCollection(_BaseDisplayRepr):
             else:
                 msg = (
                     f"Cannot add {obj!r} to {self!r} because it already has a parent. "
-                    "Consider using `override_parent=True`."
+                    "Consider using override_parent=True."
                 )
                 raise MagpylibBadUserInput(msg)
 
@@ -463,7 +463,7 @@ class _BaseCollection(_BaseDisplayRepr):
                     raise MagpylibBadUserInput(msg)
                 if errors != "ignore":
                     msg = (
-                        "Input `errors` must be one of {'raise', 'ignore'}; "
+                        "Input errors must be one of {'raise', 'ignore'}; "
                         f"instead received {errors!r}."
                     )
                     raise MagpylibBadUserInput(msg)
@@ -551,8 +551,8 @@ class _BaseCollection(_BaseDisplayRepr):
             sources, sensors = self, self
             if inputs:
                 msg = (
-                    "Collections with sensors and sources do not allow `collection.getB()` inputs."
-                    "Consider using `magpy.getB()` instead."
+                    "Collections with sensors and sources do not allow collection.getB() inputs."
+                    "Consider using magpy.getB() instead."
                 )
                 raise MagpylibBadUserInput(msg)
         # if collection has no sources, *inputs must be the sources

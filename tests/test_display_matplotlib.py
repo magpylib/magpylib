@@ -511,7 +511,7 @@ def test_bad_show_inputs():
     )
 
     # test bad canvas
-    with pytest.raises(TypeError, match=r"The canvas parameter must be one of"):
+    with pytest.raises(TypeError, match=r"Input canvas must be one of"):
         magpy.show(cyl1, canvas="bad_canvas_input", backend="matplotlib")
 
     # test bad axes canvas with rows

@@ -271,7 +271,7 @@ def test_getBH_bad_output_type():
     src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
     with pytest.raises(
         ValueError,
-        match=r"The output argument must be one of ('ndarray', 'dataframe')*.",
+        match=r"Input output must be one of \('ndarray', 'dataframe'\); instead received",
     ):
         src.getB((0, 0, 0), output="bad_output_type")
 
@@ -330,7 +330,7 @@ def test_getB_on_missing_dimensions(module, class_, missing_arg):
     """test_getB_on_missing_dimensions"""
     with pytest.raises(
         MagpylibMissingInput,
-        match=rf"Parameter `{missing_arg}` of .* must be set.",
+        match=rf"Input {missing_arg} of .* must be set.",
     ):
         getattr(getattr(magpy, module), class_)().getB([0, 0, 0])
 
@@ -377,7 +377,7 @@ def test_getB_on_missing_excitations(module, class_, missing_arg, kwargs):
     """test_getB_on_missing_excitations"""
     with pytest.raises(
         MagpylibMissingInput,
-        match=rf"Parameter `{missing_arg}` of .* must be set.",
+        match=rf"Input {missing_arg} of .* must be set.",
     ):
         getattr(getattr(magpy, module), class_)(**kwargs).getB([0, 0, 0])
 

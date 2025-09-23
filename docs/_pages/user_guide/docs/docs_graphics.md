@@ -115,7 +115,7 @@ There is a high level of **feature parity**, however, not all graphic features a
 
 [2]: possible but not implemented at the moment.
 
-[3]: only `"scatter3d"`, and `"mesh3d"`. Gets "translated" to every other backend.
+[3]: only `'scatter3d'`, and `'mesh3d'`. Gets "translated" to every other backend.
 
 [4]: custom user defined trace constructors  allowed, which are specific to the backend.
 
@@ -179,7 +179,7 @@ plt.show()
 ```
 
 ```{attention}
-When providing a canvas, no update to its layout is performed by Magpylib, unless explicitly specified by setting `canvas_update=True` in `show()`. By default `canvas_update="auto"` only updates the canvas if is not provided by the user. The example above outputs a 3D scene with the default Matplotlib settings and will not match the standard Magpylib settings.
+When providing a canvas, no update to its layout is performed by Magpylib, unless explicitly specified by setting `canvas_update=True` in `show()`. By default `canvas_update='auto'` only updates the canvas if is not provided by the user. The example above outputs a 3D scene with the default Matplotlib settings and will not match the standard Magpylib settings.
 ```
 
 +++
@@ -322,8 +322,8 @@ All of this is achieved via the `show` function by passing input objects as dict
 3. `row`: int which selects the subplot row. Default is `row=1`.
 4. `output`: string which selects the type of output that should be displayed in this subplot. Options are
 
-    1. `"model3d"` is the default value and selects the 3D output.
-    2. `"Xa"` selects a 2D line-plot of a field component (combination) as seen by the sensor(s) along their path. The sensor(s) must be part of the `objects` input. Here "X" selects the field and must be one of "BHJM", and "a" selects the respective component combination and must be a subset of "xyz". For example, `output=Hx` displays the x-component of the H-field, or `output=Bxz` displays `sqrt(|Bx|² + |Bz|²)`. By default, source outputs are summed up (`sumup=True`) and sensor pixels, are aggregated by mean (`pixel_agg="mean"`).
+    1. `'model3d'` is the default value and selects the 3D output.
+    2. `'Xa'` selects a 2D line-plot of a field component (combination) as seen by the sensor(s) along their path. The sensor(s) must be part of the `objects` input. Here "X" selects the field and must be one of "BHJM", and "a" selects the respective component combination and must be a subset of "xyz". For example, `output=Hx` displays the x-component of the H-field, or `output=Bxz` displays `sqrt(|Bx|² + |Bz|²)`. By default, source outputs are summed up (`sumup=True`) and sensor pixels, are aggregated by mean (`pixel_agg='mean'`).
 
 The following code demonstrates these features.
 
@@ -459,7 +459,7 @@ with magpy.show_context(loop, sens, animation=True) as sc:
 When displaying very small Magpylib objects, the axes scaling in units (m) might be inadequate and you may want to use other units that fit the system dimensions more nicely. The example below shows how to display an object (in this case the same) with different length units and zoom levels.
 
 ```{tip}
-Setting `units_length="auto"` will infer the most suitable units based on the maximum range of the system.
+Setting `units_length='auto'` will infer the most suitable units based on the maximum range of the system.
 ```
 
 ```{code-cell} ipython3

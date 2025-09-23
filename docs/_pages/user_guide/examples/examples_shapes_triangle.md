@@ -149,7 +149,7 @@ The `TriangularMesh` class is extremely powerful as it enables almost arbitrary 
 ```{caution}
 * `getB` and `getH` compute the fields correctly only if the mesh is closed, not self-intersecting, and all faces are properly oriented outwards.
 
-* Input checks and face reorientation can be computationally expensive. The checks can individually be deactivated by setting `reorient_faces="skip"`, `check_open="skip"`, `check_disconnected="skip"`, and `check_selfintersecting="skip"` at initialization of `TriangularMesh` objects. The checks can also be performed by hand after initialization.
+* Input checks and face reorientation can be computationally expensive. The checks can individually be deactivated by setting `reorient_faces='skip'`, `check_open='skip'`, `check_disconnected='skip'`, and `check_selfintersecting='skip'` at initialization of `TriangularMesh` objects. The checks can also be performed by hand after initialization.
 
 * Meshing tools such as the [Pyvista](https://docs.pyvista.org/) library can be very convenient for building complex shapes, but often do not guarantee that the mesh is properly closed or connected - see {ref}`examples-shapes-pyvista`.
 
@@ -160,7 +160,7 @@ The `TriangularMesh` class is extremely powerful as it enables almost arbitrary 
 
 ## Open Triangular Mesh
 
-In some cases, it may be desirable to generate a `TriangularMesh` object from an open mesh (see Prism example above). In this case one must be extremely careful because one cannot rely on the checks. Not to generate warnings or error messages, these checks can be disabled with `"skip"` or their outcome can be ignored with `"ignore"`. The `show` function can be used to view open edges and disconnected parts. In the following example we generate such an open mesh directly from `Triangle` objects.
+In some cases, it may be desirable to generate a `TriangularMesh` object from an open mesh (see Prism example above). In this case one must be extremely careful because one cannot rely on the checks. Not to generate warnings or error messages, these checks can be disabled with `'skip'` or their outcome can be ignored with `'ignore'`. The `show` function can be used to view open edges and disconnected parts. In the following example we generate such an open mesh directly from `Triangle` objects.
 
 ```{code-cell} ipython3
 import magpylib as magpy

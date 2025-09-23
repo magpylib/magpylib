@@ -153,7 +153,7 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         """
         if val not in {"right", "left"}:
             msg = (
-                f"Input `handedness` of {self} must be either `'right'` or `'left'`; "
+                f"Input handedness of {self} must be either 'right' or 'left'; "
                 f"instead received {val!r}."
             )
             raise MagpylibBadUserInput(msg)

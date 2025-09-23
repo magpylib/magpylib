@@ -194,7 +194,7 @@ class _BaseGeo(_BaseTransform, ABC):
             self._parent = None
         else:
             msg = (
-                "Input `parent` must be None or a `Collection` instance; "
+                "Input parent must be None or a Collection instance; "
                 f"instead received type {type(parent).__name__}."
             )
             raise MagpylibBadUserInput(msg)

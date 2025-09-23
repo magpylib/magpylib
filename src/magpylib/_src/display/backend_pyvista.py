@@ -16,7 +16,7 @@ try:
     import pyvista as pv
 except ImportError as missing_module:  # pragma: no cover
     msg = (
-        "In order to use the pyvista plotting backend, you need to install PyVista, "
+        "Backend 'pyvista' requires installation of PyVista package, "
         "see https://docs.pyvista.org/getting-started/installation.html"
     )
     raise ModuleNotFoundError(msg) from missing_module

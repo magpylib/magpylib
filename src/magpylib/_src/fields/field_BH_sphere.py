@@ -20,7 +20,7 @@ def magnet_sphere_Bfield(
     Parameters
     ----------
     observers : ndarray, shape (i, 3)
-        Observer positions ``(x, y, z)`` in Cartesian coordinates.
+        Observer positions (x, y, z) in Cartesian coordinates.
     diameters : ndarray, shape (i,)
         Sphere diameters.
     polarizations : ndarray, shape (i, 3)
@@ -108,7 +108,7 @@ def _BHJM_magnet_sphere(
         return BHJM / MU0
 
     msg = (
-        "Input `output_field_type` must be one of {'B', 'H', 'M', 'J'}; "
-        f"instead received {field!r}"
+        "Input output_field_type must be one of {'B', 'H', 'M', 'J'}; "
+        f"instead received {field!r}."
     )
     raise ValueError(msg)  # pragma: no cover

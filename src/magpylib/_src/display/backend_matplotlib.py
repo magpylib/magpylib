@@ -282,16 +282,16 @@ def display_matplotlib(
         fig = canvas.get_figure()
         if max_rows is not None or max_cols is not None:
             msg = (
-                "Provided `canvas` is an instance of `matplotlib.axes.Axes` and does not support "
-                "`rows` or `cols` arguments. Use a `matplotlib.figure.Figure` instead."
+                "Provided canvas is an instance of matplotlib.axes.Axes and does not support "
+                "rows or cols arguments. Use a matplotlib.figure.Figure instead."
             )
             raise ValueError(msg)
     elif isinstance(canvas, mpl.figure.Figure):
         fig = canvas
     else:
         msg = (
-            "The `canvas` parameter must be one of: None, matplotlib.axes.Axes, "
-            f"matplotlib.figure.Figure; got type {type(canvas).__name__!r}."
+            "Input canvas must be one of: None, matplotlib.axes.Axes, "
+            f"matplotlib.figure.Figure; instead received type {type(canvas).__name__!r}."
         )
         raise TypeError(msg)
     if canvas is not None and canvas_update:

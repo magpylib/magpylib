@@ -179,9 +179,9 @@ def _getBH_level2(
     # DEPRECATED CALL TO FUNCTIONAL INTERFACE
     if isinstance(sources, str):
         msg = (
-            "Calling the functional interface (string input for sources) from `magpy.getB()` "
+            "Calling the functional interface (string input for sources) from magpy.getB() "
             "is deprecated and will be removed in future versions. The functional "
-            "interface was moved to the `magpy.func` subpackage."
+            "interface was moved to the magpy.func subpackage."
         )
         warnings.warn(msg, DeprecationWarning, stacklevel=2)
         return _getBH_dict_level2(
@@ -212,8 +212,8 @@ def _getBH_level2(
 
         if not any(isinstance(src, Tetrahedron | TriangularMesh) for src in src_list):
             warnings.warn(
-                "Parameter `in_out` was explicitly set but is ignored in the computation. "
-                "It applies only to classes `Tetrahedron` and `TriangularMesh`.",
+                "Parameter in_out was explicitly set but is ignored in the computation. "
+                "It applies only to classes Tetrahedron and TriangularMesh.",
                 UserWarning,
                 stacklevel=2,
             )
@@ -319,8 +319,8 @@ def _getBH_level2(
         group_key = src.field_func
         if group_key is None:
             msg = (
-                f"Cannot compute {field}-field because "
-                f"`field_func` of {src} has undefined {field}-field computation."
+                f"Cannot compute {field}-field because input "
+                f"field_func of {src} has undefined {field}-field computation."
             )
             raise MagpylibMissingInput(msg)
         if group_key not in field_func_groups:
@@ -343,8 +343,8 @@ def _getBH_level2(
         )
         if B_group is None:
             msg = (
-                f"Cannot compute {field}-field because "
-                f"`field_func` {field_func} has undefined {field}-field computation."
+                f"Cannot compute {field}-field because input "
+                f"field_func {field_func} has undefined {field}-field computation."
             )
             raise MagpylibMissingInput(msg)
         B_group = B_group.reshape(

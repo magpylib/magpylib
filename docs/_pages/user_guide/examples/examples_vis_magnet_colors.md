@@ -32,7 +32,7 @@ The color schemes often seem to represent homogeneous magnetic polarizations, al
 ```
 
 As described in the [style documentation](guide-graphic-styles) in detail, users can easily tune the magnet color schemes. The `style` options are:
-- `style_magnetization_color_mode` with options `"tricolor"` and `"bicolor"`
+- `style_magnetization_color_mode` with options `'tricolor'` and `'bicolor'`
 - `style_magnetization_color_north`, `middle`, and `south` with color inputs
 - `style_magnetization_color_transition` with float input setting the color-transition
 

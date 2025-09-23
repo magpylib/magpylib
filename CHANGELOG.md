@@ -25,7 +25,7 @@
 - Improved docstrings by adding examples where missing and by using rounding in
   all examples to avoid doctest fails.
 - Fixed a bug where a core getH would return the B-field.
-- Input `in_out` is by default set to `"auto"` for collections to avoiding
+- Input `in_out` is by default set to `'auto'` for collections to avoiding
   ambiguities.
 
 ## [5.1.1] - 2024-10-31
@@ -48,7 +48,7 @@
   feature which was not working until now.
   ([#798](https://github.com/magpylib/magpylib/pull/798))
 - Fixed canvas layout being modified even when user-provided. Also added a new
-  `canvas_update` parameter to choose the layout behavior (by default `"auto"`)
+  `canvas_update` parameter to choose the layout behavior (by default `'auto'`)
   ([#799](https://github.com/magpylib/magpylib/pull/799))
 - Improved documentation
   ([#766](https://github.com/magpylib/magpylib/issues/766),
@@ -591,7 +591,7 @@ This is a major update that includes
   - The original angle-axis-anchor rotation is now provided by the new method
     `.rotate_from_angax(angle, axis, anchor, increment, start, degrees)`.
     - The argument `axis` can now easily be set to the global CS axes with
-      `"x"`, `"y"`, `"z"`.
+      `'x'`, `'y'`, `'z'`.
     - The anchor argument `anchor=0` represents the origin (0, 0, 0).
     - `angle` argument is in units (deg) by default. It can now be set to rad
       using the `degrees` argument.

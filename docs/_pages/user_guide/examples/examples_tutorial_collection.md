@@ -78,7 +78,7 @@ c2.add(s2.copy())
 coll.describe(format="label+type")
 ```
 
-The parameter `format` can be any combination of `"type"`, `"label"`, `"id"` and `"properties"`.
+The parameter `format` can be any combination of `'type'`, `'label'`, `'id'` and `'properties'`.
 
 For convenience, any two Magpylib objects can be added up with `+` to form a collection.
 

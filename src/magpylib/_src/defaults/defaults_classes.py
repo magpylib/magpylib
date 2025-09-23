@@ -91,9 +91,8 @@ class Display(MagicProperties):
     def backend(self, val):
         backends = [*SUPPORTED_PLOTTING_BACKENDS, "auto"]
         assert val is None or val in backends, (
-            f"the `backend` property of {type(self).__name__} must be one of"
-            f"{backends}"
-            f" but received {val!r} instead"
+            f"Input backend of {type(self).__name__} must be one of "
+            f"{backends}; instead received {val!r}."
         )
         self._backend = val
 
@@ -145,8 +144,8 @@ class Display(MagicProperties):
     @autosizefactor.setter
     def autosizefactor(self, val):
         assert val is None or (isinstance(val, int | float) and val > 0), (
-            f"the `autosizefactor` property of {type(self).__name__} must be a strictly positive"
-            f" number but received {val!r} instead"
+            f"Input autosizefactor of {type(self).__name__} must be a strictly positive"
+            f" number; instead received {val!r}."
         )
         self._autosizefactor = val
 
@@ -197,8 +196,8 @@ class Animation(MagicProperties):
     @maxfps.setter
     def maxfps(self, val):
         assert val is None or (isinstance(val, int) and val > 0), (
-            f"The `maxfps` property of {type(self).__name__} must be a strictly positive"
-            f" integer but received {val!r} instead."
+            f"Input maxfps of {type(self).__name__} must be a strictly positive"
+            f" integer; instead received {val!r}."
         )
         self._maxfps = val
 
@@ -210,8 +209,8 @@ class Animation(MagicProperties):
     @fps.setter
     def fps(self, val):
         assert val is None or (isinstance(val, int) and val > 0), (
-            f"The `fps` property of {type(self).__name__} must be a strictly positive"
-            f" integer but received {val!r} instead."
+            f"Input fps of {type(self).__name__} must be a strictly positive"
+            f" integer; instead received {val!r}."
         )
         self._fps = val
 
@@ -223,8 +222,8 @@ class Animation(MagicProperties):
     @maxframes.setter
     def maxframes(self, val):
         assert val is None or (isinstance(val, int) and val > 0), (
-            f"The `maxframes` property of {type(self).__name__} must be a strictly positive"
-            f" integer but received {val!r} instead."
+            f"Input maxframes of {type(self).__name__} must be a strictly positive"
+            f" integer; instead received {val!r}."
         )
         self._maxframes = val
 
@@ -236,8 +235,8 @@ class Animation(MagicProperties):
     @time.setter
     def time(self, val):
         assert val is None or (isinstance(val, int) and val > 0), (
-            f"The `time` property of {type(self).__name__} must be a strictly positive"
-            f" integer but received {val!r} instead."
+            f"Input time of {type(self).__name__} must be a strictly positive"
+            f" integer; instead received {val!r}."
         )
         self._time = val
 
@@ -249,8 +248,8 @@ class Animation(MagicProperties):
     @slider.setter
     def slider(self, val):
         assert val is None or isinstance(val, bool), (
-            f"The `slider` property of {type(self).__name__} must be a either True or False"
-            f" but received {val!r} instead."
+            f"Input slider of {type(self).__name__} must be a either True or False"
+            f"; instead received {val!r}."
         )
         self._slider = val
 
@@ -265,9 +264,8 @@ class Animation(MagicProperties):
             val = str(val)
             valid = val.endswith(("mp4", "gif"))
             assert val is None or valid, (
-                f"The `output` property of {type(self).__name__} must be a either `mp4` or `gif` "
-                "or a valid path ending with `.mp4` or `.gif`"
-                f" but received {val!r} instead."
+                f"Input output of {type(self).__name__} must be a either 'mp4' or 'gif' "
+                f"; instead received {val!r}."
             )
         self._output = val
 

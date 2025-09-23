@@ -524,10 +524,10 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         # unique vertices ?
         # do validation checks
         if vertices is None:
-            msg = f"Parameter `vertices` of {self!r} must be set."
+            msg = f"Input vertices of {self!r} must be set."
             raise MagpylibMissingInput(msg)
         if faces is None:
-            msg = f"Parameter `faces` of {self!r} must be set."
+            msg = f"Input faces of {self!r} must be set."
             raise MagpylibMissingInput(msg)
         verts = check_format_input_vector(
             vertices,
@@ -583,7 +583,6 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         ----------
         points : array-like, shape (n, 3)
             Point cloud from which the convex hull is computed.
-
         position, orientation, polarization, magnetization, meshing, reorient_faces,
         check_open, check_disconnected, style :
             See ``TriangularMesh`` for shared parameter semantics and defaults.
@@ -631,7 +630,6 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         ----------
         polydata : pyvista.core.pointset.PolyData
             A valid pyvista PolyData mesh object (e.g. ``pyvista.Sphere()``).
-
         position, orientation, polarization, magnetization, meshing, reorient_faces,
         check_open, check_disconnected, style :
             See ``TriangularMesh`` for shared parameter semantics and defaults.
@@ -652,8 +650,8 @@ class TriangularMesh(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             raise ModuleNotFoundError(msg) from missing_module
         if not isinstance(polydata, pyvista.core.pointset.PolyData):
             msg = (
-                "Input `polydata` must be an instance of "
-                "`pyvista.core.pointset.PolyData`; "
+                "Input polydata must be an instance of "
+                "pyvista.core.pointset.PolyData; "
                 f"instead received {polydata!r}."
             )
             raise TypeError(msg)

@@ -124,9 +124,8 @@ class Line(MagicProperties):
     @style.setter
     def style(self, val):
         assert val is None or val in ALLOWED_LINESTYLES, (
-            f"The `style` property of {type(self).__name__} must be one of "
-            f"{ALLOWED_LINESTYLES},\n"
-            f"but received {val!r} instead."
+            f"Input style of {type(self).__name__} must be one of {ALLOWED_LINESTYLES}; "
+            f"instead received {val!r}."
         )
         self._style = val
 
@@ -147,8 +146,8 @@ class Line(MagicProperties):
     @width.setter
     def width(self, val):
         assert val is None or (isinstance(val, int | float) and val >= 0), (
-            f"The `width` property of {type(self).__name__} must be a positive number,\n"
-            f"but received {val!r} instead."
+            f"Input width of {type(self).__name__} must be a positive number; "
+            f"instead received {val!r}."
         )
         self._width = val
 
@@ -259,8 +258,8 @@ class BaseStyle(MagicProperties):
     @opacity.setter
     def opacity(self, val):
         assert val is None or (isinstance(val, float | int) and 0 <= val <= 1), (
-            "The `opacity` property must be a value between 0 and 1,\n"
-            f"but received {val!r} instead."
+            f"Input opacity of {type(self).__name__} must be a number between 0 and 1; "
+            f"instead received {val!r}."
         )
         self._opacity = val
 
@@ -307,8 +306,8 @@ class Description(MagicProperties):
     @text.setter
     def text(self, val):
         assert val is None or isinstance(val, str), (
-            f"The `show` property of {type(self).__name__} must be a string,\n"
-            f"but received {val!r} instead."
+            f"Input text of {type(self).__name__} must be a string; "
+            f"instead received {val!r}."
         )
         self._text = val
 
@@ -320,8 +319,8 @@ class Description(MagicProperties):
     @show.setter
     def show(self, val):
         assert val is None or isinstance(val, bool), (
-            f"The `show` property of {type(self).__name__} must be either True or False,\n"
-            f"but received {val!r} instead."
+            f"Input show of {type(self).__name__} must be either True or False; "
+            f"instead received {val!r}."
         )
         self._show = val
 
@@ -349,8 +348,8 @@ class Legend(MagicProperties):
     @text.setter
     def text(self, val):
         assert val is None or isinstance(val, str), (
-            f"The `show` property of {type(self).__name__} must be a string,\n"
-            f"but received {val!r} instead."
+            f"Input text of {type(self).__name__} must be a string; "
+            f"instead received {val!r}."
         )
         self._text = val
 
@@ -362,8 +361,8 @@ class Legend(MagicProperties):
     @show.setter
     def show(self, val):
         assert val is None or isinstance(val, bool), (
-            f"The `show` property of {type(self).__name__} must be either True or False,\n"
-            f"but received {val!r} instead."
+            f"Input show of {type(self).__name__} must be either True or False; "
+            f"instead received {val!r}."
         )
         self._show = val
 
@@ -394,9 +393,8 @@ class Model3d(MagicProperties):
     @showdefault.setter
     def showdefault(self, val):
         assert isinstance(val, bool), (
-            f"The `showdefault` property of {type(self).__name__} must be "
-            f"one of `[True, False]`,\n"
-            f"but received {val!r} instead."
+            f"Input showdefault of {type(self).__name__} must be either True or False; "
+            f"instead received {val!r}."
         )
         self._showdefault = val
 
@@ -532,8 +530,8 @@ class Trace3d(MagicProperties):
             if callable(val):
                 test_val = val()
             assert isinstance(test_val, tuple), (
-                "The `trace` input must be a dictionary or a callable returning a dictionary,\n"
-                f"but received {type(val).__name__} instead."
+                f"Input args of {type(self).__name__} must be a tuple or a callable returning a "
+                f"tuple; instead received {type(val).__name__}."
             )
         self._args = val
 
@@ -549,8 +547,8 @@ class Trace3d(MagicProperties):
             if callable(val):
                 test_val = val()
             assert isinstance(test_val, dict), (
-                "The `kwargs` input must be a dictionary or a callable returning a dictionary,\n"
-                f"but received {type(val).__name__} instead."
+                f"Input kwargs of {type(self).__name__} must be a dictionary or a callable "
+                f"returning a dictionary; instead received {type(val).__name__}."
             )
         self._kwargs = val
 
@@ -564,8 +562,7 @@ class Trace3d(MagicProperties):
     @constructor.setter
     def constructor(self, val):
         assert val is None or isinstance(val, str), (
-            f"The `constructor` property of {type(self).__name__} must be a string,"
-            f"\nbut received {val!r} instead."
+            f"Input constructor of {type(self).__name__} must be a string; instead received {val!r}."
         )
         self._constructor = val
 
@@ -577,9 +574,7 @@ class Trace3d(MagicProperties):
     @show.setter
     def show(self, val):
         assert isinstance(val, bool), (
-            f"The `show` property of {type(self).__name__} must be "
-            f"one of `[True, False]`,\n"
-            f"but received {val!r} instead."
+            f"Input show of {type(self).__name__} must be either True or False; instead received {val!r}."
         )
         self._show = val
 
@@ -591,8 +586,7 @@ class Trace3d(MagicProperties):
     @scale.setter
     def scale(self, val):
         assert isinstance(val, int | float) and val > 0, (  # noqa: PT018
-            f"The `scale` property of {type(self).__name__} must be a strictly positive number,\n"
-            f"but received {val!r} instead."
+            f"Input scale of {type(self).__name__} must be a positive number; instead received {val!r}."
         )
         self._scale = val
 
@@ -608,9 +602,8 @@ class Trace3d(MagicProperties):
         assert val is None or (
             isinstance(val, dict) and all(key in val for key in "xyz")
         ), (
-            f"The `coordsargs` property of {type(self).__name__} must be "
-            f"a dictionary with `'x', 'y', 'z'` keys,\n"
-            f"but received {val!r} instead."
+            f"Input coordsargs of {type(self).__name__} must be a dictionary with 'x', 'y', 'z' keys; "
+            f"instead received {val!r}."
         )
         self._coordsargs = val
 
@@ -623,9 +616,7 @@ class Trace3d(MagicProperties):
     def backend(self, val):
         backends = ["generic", *list(SUPPORTED_PLOTTING_BACKENDS)]
         assert val is None or val in backends, (
-            f"The `backend` property of {type(self).__name__} must be one of"
-            f"{backends},\n"
-            f"but received {val!r} instead."
+            f"Input backend of {type(self).__name__} must be one of {backends}; instead received {val!r}."
         )
         self._backend = val
 
@@ -648,20 +639,19 @@ class Trace3d(MagicProperties):
         msg = ""
         valid_props = list(self._property_names_generator())
         if not callable(val):
-            msg = f"Instead received {type(val)}"
+            msg = f"; instead received {type(val).__name__}."
         else:
             test_val = val()
             if not isinstance(test_val, dict):
-                msg = f"but callable returned type {type(test_val)}."
+                msg = f"; callable returned type {type(test_val).__name__}."
             else:
                 bad_keys = [k for k in test_val if k not in valid_props]
                 if bad_keys:
-                    msg = f"but invalid output dictionary keys received: {bad_keys}."
+                    msg = f"; invalid output dictionary keys received {bad_keys}."
 
         assert msg == "", (
-            f"The `updatefunc` property of {type(self).__name__} must be a callable returning a "
-            f"dictionary with a subset of following keys: {valid_props} keys."
-            f"{msg}"
+            f"Input updatefunc of {type(self).__name__} must be a callable returning a dictionary "
+            f"with a subset of these keys: {valid_props}{msg}"
         )
         self._updatefunc = val
 
@@ -698,8 +688,7 @@ class Magnetization(MagicProperties):
     @show.setter
     def show(self, val):
         assert val is None or isinstance(val, bool), (
-            "The `show` input must be either True or False,\n"
-            f"but received {val!r} instead."
+            f"Input show of {type(self).__name__} must be either True or False; instead received {val!r}."
         )
         self._show = val
 
@@ -745,8 +734,7 @@ class Magnetization(MagicProperties):
     def mode(self, val):
         allowed = ("auto", "arrow", "color", "arrow+color", "color+arrow")
         assert val is None or val in allowed, (
-            f"The `mode` input must None or be one of `{allowed}`,\n"
-            f"but received {val!r} instead."
+            f"Input mode of {type(self).__name__} must be one of {allowed} or None; instead received {val!r}."
         )
         self._mode = val
 
@@ -829,7 +817,8 @@ class MagnetizationColor(MagicProperties):
     @transition.setter
     def transition(self, val):
         assert val is None or (isinstance(val, float | int) and 0 <= val <= 1), (
-            "color transition must be a value between 0 and 1"
+            f"Input transition of {type(self).__name__} must be a number between 0 and 1; "
+            f"instead received {val!r}."
         )
         self._transition = val
 
@@ -846,9 +835,8 @@ class MagnetizationColor(MagicProperties):
     @mode.setter
     def mode(self, val):
         assert val is None or val in self._allowed_modes, (
-            f"The `mode` property of {type(self).__name__} must be one of"
-            f"{list(self._allowed_modes)},\n"
-            f"but received {val!r} instead."
+            f"Input mode of {type(self).__name__} must be one of {list(self._allowed_modes)}; "
+            f"instead received {val!r}."
         )
         self._mode = val
 
@@ -933,8 +921,7 @@ class MarkerLineProperties:
     @show.setter
     def show(self, val):
         assert val is None or isinstance(val, bool), (
-            f"The `show` property of {type(self).__name__} must be either True or False,\n"
-            f"but received {val!r} instead."
+            f"Input show of {type(self).__name__} must be either True or False; instead received {val!r}."
         )
         self._show = val
 
@@ -1169,8 +1156,7 @@ class Orientation(MagicProperties):
     @show.setter
     def show(self, val):
         assert val is None or isinstance(val, bool), (
-            f"The `show` property of {type(self).__name__} must be either True or False,\n"
-            f"but received {val!r} instead."
+            f"Input show of {type(self).__name__} must be either True or False; instead received {val!r}."
         )
         self._show = val
 
@@ -1182,8 +1168,7 @@ class Orientation(MagicProperties):
     @size.setter
     def size(self, val):
         assert val is None or (isinstance(val, int | float) and val >= 0), (
-            f"The `size` property of {type(self).__name__} must be a positive number,\n"
-            f"but received {val!r} instead."
+            f"Input size of {type(self).__name__} must be a positive number; instead received {val!r}."
         )
         self._size = val
 
@@ -1207,7 +1192,7 @@ class Orientation(MagicProperties):
     @offset.setter
     def offset(self, val):
         assert val is None or (isinstance(val, float | int)), (
-            f"The `offset` property must valid number\nbut received {val!r} instead."
+            f"Input offset of {type(self).__name__} must be a number; instead received {val!r}."
         )
         self._offset = val
 
@@ -1219,9 +1204,7 @@ class Orientation(MagicProperties):
     @symbol.setter
     def symbol(self, val):
         assert val is None or val in self._allowed_symbols, (
-            f"The `symbol` property of {type(self).__name__} must be one of"
-            f"{self._allowed_symbols},\n"
-            f"but received {val!r} instead."
+            f"Input symbol of {type(self).__name__} must be one of {self._allowed_symbols}; instead received {val!r}."
         )
         self._symbol = val
 
@@ -1466,8 +1449,7 @@ class ArrowSingle(MagicProperties):
     @show.setter
     def show(self, val):
         assert val is None or isinstance(val, bool), (
-            f"The `show` property of {type(self).__name__} must be either True or False,\n"
-            f"but received {val!r} instead."
+            f"Input show of {type(self).__name__} must be either True or False; instead received {val!r}."
         )
         self._show = val
 
@@ -1508,8 +1490,7 @@ class SensorProperties:
     @size.setter
     def size(self, val):
         assert val is None or (isinstance(val, int | float) and val >= 0), (
-            f"The `size` property of {type(self).__name__} must be a positive number,\n"
-            f"but received {val!r} instead."
+            f"Input size of {type(self).__name__} must be a positive number; instead received {val!r}."
         )
         self._size = val
 
@@ -1521,8 +1502,7 @@ class SensorProperties:
     @sizemode.setter
     def sizemode(self, val):
         assert val is None or val in ALLOWED_SIZEMODES, (
-            f"The `sizemode` property of {type(self).__name__} must be a one of "
-            f"{ALLOWED_SIZEMODES},\nbut received {val!r} instead."
+            f"Input sizemode of {type(self).__name__} must be one of {ALLOWED_SIZEMODES}; instead received {val!r}."
         )
         self._sizemode = val
 
@@ -1654,8 +1634,7 @@ class Pixel(MagicProperties):
     @size.setter
     def size(self, val):
         assert val is None or (isinstance(val, int | float) and val >= 0), (
-            f"the `size` property of {type(self).__name__} must be a positive number"
-            f"but received {val!r} instead."
+            f"Input size of {type(self).__name__} must be a positive number; instead received {val!r}."
         )
         self._size = val
 
@@ -1667,8 +1646,7 @@ class Pixel(MagicProperties):
     @sizemode.setter
     def sizemode(self, val):
         assert val is None or val in ALLOWED_SIZEMODES, (
-            f"The `sizemode` property of {type(self).__name__} must be a one of "
-            f"{ALLOWED_SIZEMODES},\nbut received {val!r} instead."
+            f"Input sizemode of {type(self).__name__} must be one of {ALLOWED_SIZEMODES}; instead received {val!r}."
         )
         self._sizemode = val
 
@@ -1689,9 +1667,7 @@ class Pixel(MagicProperties):
     @symbol.setter
     def symbol(self, val):
         assert val is None or val in ALLOWED_SYMBOLS, (
-            f"The `symbol` property of {type(self).__name__} must be one of"
-            f"{ALLOWED_SYMBOLS},\n"
-            f"but received {val!r} instead."
+            f"Input symbol of {type(self).__name__} must be one of {ALLOWED_SYMBOLS}; instead received {val!r}."
         )
         self._symbol = val
 
@@ -1811,8 +1787,7 @@ class Arrow(Line):
     @show.setter
     def show(self, val):
         assert val is None or isinstance(val, bool), (
-            f"The `show` property of {type(self).__name__} must be either True or False,"
-            f"but received {val!r} instead."
+            f"Input show of {type(self).__name__} must be either True or False; instead received {val!r}."
         )
         self._show = val
 
@@ -1824,8 +1799,7 @@ class Arrow(Line):
     @size.setter
     def size(self, val):
         assert val is None or (isinstance(val, int | float) and val >= 0), (
-            f"The `size` property of {type(self).__name__} must be a positive number,\n"
-            f"but received {val!r} instead."
+            f"Input size of {type(self).__name__} must be a positive number; instead received {val!r}."
         )
         self._size = val
 
@@ -1837,8 +1811,7 @@ class Arrow(Line):
     @sizemode.setter
     def sizemode(self, val):
         assert val is None or val in ALLOWED_SIZEMODES, (
-            f"The `sizemode` property of {type(self).__name__} must be a one of "
-            f"{ALLOWED_SIZEMODES},\nbut received {val!r} instead."
+            f"Input sizemode of {type(self).__name__} must be one of {ALLOWED_SIZEMODES}; instead received {val!r}."
         )
         self._sizemode = val
 
@@ -1852,8 +1825,7 @@ class Arrow(Line):
     @offset.setter
     def offset(self, val):
         assert val is None or ((isinstance(val, float | int)) and 0 <= val <= 1), (
-            "The `offset` property must valid number between 0 and 1\n"
-            f"but received {val!r} instead."
+            f"Input offset of {type(self).__name__} must be a number between 0 and 1; instead received {val!r}."
         )
         self._offset = val
 
@@ -1886,8 +1858,7 @@ class CurrentLine(Line):
     @show.setter
     def show(self, val):
         assert val is None or isinstance(val, bool), (
-            f"The `show` property of {type(self).__name__} must be either True or False,"
-            f"but received {val!r} instead."
+            f"Input show of {type(self).__name__} must be either True or False; instead received {val!r}."
         )
         self._show = val
 
@@ -1916,8 +1887,7 @@ class Marker(MagicProperties):
     @size.setter
     def size(self, val):
         assert val is None or (isinstance(val, int | float) and val >= 0), (
-            f"The `size` property of {type(self).__name__} must be a positive number,\n"
-            f"but received {val!r} instead."
+            f"Input size of {type(self).__name__} must be a positive number; instead received {val!r}."
         )
         self._size = val
 
@@ -1938,9 +1908,7 @@ class Marker(MagicProperties):
     @symbol.setter
     def symbol(self, val):
         assert val is None or val in ALLOWED_SYMBOLS, (
-            f"The `symbol` property of {type(self).__name__} must be one of"
-            f"{ALLOWED_SYMBOLS},\n"
-            f"but received {val!r} instead."
+            f"Input symbol of {type(self).__name__} must be one of {ALLOWED_SYMBOLS}; instead received {val!r}."
         )
         self._symbol = val
 
@@ -1995,8 +1963,7 @@ class DipoleProperties:
     @size.setter
     def size(self, val):
         assert val is None or (isinstance(val, int | float) and val >= 0), (
-            f"The `size` property of {type(self).__name__} must be a positive number,\n"
-            f"but received {val!r} instead."
+            f"Input size of {type(self).__name__} must be a positive number; instead received {val!r}."
         )
         self._size = val
 
@@ -2008,8 +1975,7 @@ class DipoleProperties:
     @sizemode.setter
     def sizemode(self, val):
         assert val is None or val in ALLOWED_SIZEMODES, (
-            f"The `sizemode` property of {type(self).__name__} must be a one of "
-            f"{ALLOWED_SIZEMODES},\nbut received {val!r} instead."
+            f"Input sizemode of {type(self).__name__} must be one of {ALLOWED_SIZEMODES}; instead received {val!r}."
         )
         self._sizemode = val
 
@@ -2023,9 +1989,7 @@ class DipoleProperties:
     @pivot.setter
     def pivot(self, val):
         assert val is None or val in (self._allowed_pivots), (
-            f"The `pivot` property of {type(self).__name__} must be one of "
-            f"{self._allowed_pivots},\n"
-            f"but received {val!r} instead."
+            f"Input pivot of {type(self).__name__} must be one of {self._allowed_pivots}; instead received {val!r}."
         )
         self._pivot = val
 
@@ -2141,10 +2105,12 @@ class Path(MagicProperties, MarkerLineProperties):
             is_valid_path = False
         assert (
             is_valid_path
-        ), f"""The `frames` property of {type(self).__name__} must be either:
-- integer i: Displays the object(s) at every i'th path position.
-- array-like, shape (n,), dtype=int: Displays object(s) at given path indices.
-but received {val!r} instead"""
+        ), (
+        f"Input frames of {type(self).__name__} must be either: "
+        "integer i (displays the objects at every i'th path position) or "
+        "array-like, shape (n,), dtype=int (displays objects at given path "
+        f"indices; instead received {val!r}."
+        )
         self._frames = val
 
     @property
@@ -2155,8 +2121,7 @@ but received {val!r} instead"""
     @numbering.setter
     def numbering(self, val):
         assert val is None or isinstance(val, bool), (
-            f"The `numbering` property of {type(self).__name__} must be one of (True, False),\n"
-            f"but received {val!r} instead."
+            f"Input numbering of {type(self).__name__} must be either True or False; instead received {val!r}."
         )
         self._numbering = val
 

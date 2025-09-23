@@ -45,19 +45,19 @@ B = sens.getB(loop)
 
 with the same result for `B`.
 
-By default, `getB` returns the B-field in units of T, `getH` the H-field in units of A/m, `getJ` the magnetic polarization in T and, `getM` the magnetization in A/m, assuming that all inputs are given in SI units as described in the docstrings.
+By default, `getB` returns the B-field in units (T), `getH` the H-field in units (A/m), `getJ` the magnetic polarization in (T) and, `getM` the magnetization in (A/m), assuming that all inputs are given in SI units as described in the docstrings.
 
 ```{hint}
-In reality, `getB` is proportional to the `polarization` input and therefore returns the same unit. For example, with polarization input in mT, `getB` will return mT as well. At the same time when the `magnetization` input is kA/m, then `getH` returns kA/m as well. The B/H-field outputs are related to a M/J-inputs via a factor of $µ_0$.
+In reality, `getB` is proportional to the `polarization` input and therefore returns the same unit. For example, with polarization input in mT, `getB` will return mT as well. At the same time when the `magnetization` input is in (kA/m), then `getH` returns (kA/m) as well. The B/H-field outputs are related to a M/J-inputs via a factor of $µ_0$.
 ```
 
 The output of a field computation `magpy.getB(sources, observers)` is by default a NumPy array of shape (s, p, o, o1, o2, ..., 3) where s is the number of input sources, p the (maximal) object path length, o the number of observers, o1, o2, ... the sensor pixel shape or the shape of the observer position array input and 3 the three magnetic field components $(B_x, B_y, B_z)$.
 
-* `squeeze`: If True (default) all axes of length 1 in the output (e.g. only a single source) are squeezed.
+* `squeeze`: If `True` (default) all axes of length 1 in the output (e.g. only a single source) are squeezed.
 
-* `pixel_agg`: Select a compatible NumPy aggregator function (e.g. `"min"`, `"mean"`) that is applied to the output. For example, with `pixel_agg="mean"` the mean field of all observer points is returned. With this option it is possible to supply `getBHJM` with multiple observers that have different pixel shapes.
+* `pixel_agg`: Select a compatible NumPy aggregator function (e.g. `'min'`, `'mean'`) that is applied to the output. For example, with `pixel_agg='mean'` the mean field of all observer points is returned. With this option it is possible to supply `getBHJM` with multiple observers that have different pixel shapes.
 
-* `output`: Change the output format. Options are `"ndarray"` (default, returns a NumPy ndarray) and `"dataframe"` (returns a 2D-table Pandas DataFrame).
+* `output`: Change the output format. Options are `'ndarray'` (default, returns a NumPy ndarray) and `'dataframe'` (returns a 2D-table Pandas DataFrame).
 
 ```{note}
 Magpylib collects all inputs (object parameters), and vectorizes them for the computation which reduces the computation time dramatically for large inputs.

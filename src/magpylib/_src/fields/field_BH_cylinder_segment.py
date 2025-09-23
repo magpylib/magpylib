@@ -2124,20 +2124,20 @@ def magnet_cylinder_segment_Hfield(
     Parameters
     ----------
     observers : array-like, shape (i, 3)
-        Observer positions ``(r, φ, z)`` in cylindrical coordinates where ``φ`` is
+        Observer positions (r, φ, z) in cylindrical coordinates where φ is
         given in radians and positions.
     dimensions : array-like, shape (i, 6)
-        Segment dimensions ``(r1, r2, φ1, φ2, z1, z2)`` where ``r1 < r2`` are inner
-        and outer radii, ``φ1 < φ2`` are azimuth section angles (rad), and
-        ``z1 < z2`` are axial limits.
+        Segment dimensions (r1, r2, φ1, φ2, z1, z2) where r1 < r2 are inner
+        and outer radii, φ1 < φ2 are azimuth section angles (rad), and
+        z1 < z2 are axial limits.
     magnetizations : array-like, shape (i, 3)
-        Magnetization vectors in spherical coordinates ``(M, φ, θ)`` where ``M`` is
-        the magnitude, and ``φ`` (azimuth) and ``θ`` (polar) are angles in radians.
+        Magnetization vectors in spherical coordinates (M, φ, θ) where M is
+        the magnitude, and φ (azimuth) and θ (polar) are angles in radians.
 
     Returns
     -------
     ndarray, shape (i, 3)
-        H-field in units of magnetization ``M`` at observer positions in Cartesian
+        H-field in units of magnetization M at observer positions in Cartesian
         coordinates.
 
     Examples
@@ -2458,7 +2458,7 @@ def _BHJM_cylinder_segment(
         return BHJM
 
     msg = (
-        "Input `output_field_type` must be one of {'B', 'H', 'M', 'J'}; "
+        "Input output_field_type must be one of {'B', 'H', 'M', 'J'}; "
         f"instead received {field!r}."
     )
     raise ValueError(msg)  # pragma: no cover

@@ -217,7 +217,7 @@ At initialization the mesh integrity is automatically checked, and all faces are
 * **`check_selfintersecting`**
 * **`reorient_faces`**
 
-which are all by default set to `"warn"`. Options are `"skip"` (don't perform check), `"ignore"` (ignore if check fails), `"warn"` (warn if check fails), `"raise"` (raise error if check fails).
+which are all by default set to `'warn'`. Options are `'skip'` (don't perform check), `'ignore'` (ignore if check fails), `'warn'` (warn if check fails), `'raise'` (raise error if check fails).
 
 Results of the checks are stored in the following object attributes
 * **`status_open`** can be `True`, `False` or `None` (unchecked)
@@ -378,7 +378,7 @@ magpylib.misc.CustomSource(field_func, position, orientation, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-The `CustomSource` class is used to create user defined sources provided with with custom field computation functions. The argument **`field_func`** takes a function that is then automatically called for the field computation. This custom field function is treated like a [core function](docs-field-core). It must have the positional arguments `field` with values `"B"` or `"H"`, and `observers` (must accept array with shape (o, 3)) and return the B-field and the H-field with a similar shape.
+The `CustomSource` class is used to create user defined sources provided with with custom field computation functions. The argument **`field_func`** takes a function that is then automatically called for the field computation. This custom field function is treated like a [core function](docs-field-core). It must have the positional arguments `field` with values `'B'` or `'H'`, and `observers` (must accept array with shape (o, 3)) and return the B-field and the H-field with a similar shape.
 :::
 :::{grid-item}
 :columns: 3
@@ -400,7 +400,7 @@ magpylib.Sensor(position, orientation, pixel, handedness, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Sensor` objects represent observers of the magnetic field and can be used as Magpylib `observers` input for magnetic field computation. The **`pixel`** attribute is an array of positions $(\vec{P}_1, \vec{P}_2, ...)$ provided in units (m) in the local sensor coordinates. A sensor returns the magnetic field at these pixel positions. By default `pixel=(0, 0, 0)` and the sensor simply returns the field at it's position. The **`handedness`** attribute can be `"left"` or `"right"` (default) to set a left- or right-handed sensor coordinate system for the field computation.
+`Sensor` objects represent observers of the magnetic field and can be used as Magpylib `observers` input for magnetic field computation. The **`pixel`** attribute is an array of positions $(\vec{P}_1, \vec{P}_2, ...)$ provided in units (m) in the local sensor coordinates. A sensor returns the magnetic field at these pixel positions. By default `pixel=(0, 0, 0)` and the sensor simply returns the field at it's position. The **`handedness`** attribute can be `'left'` or `'right'` (default) to set a left- or right-handed sensor coordinate system for the field computation.
 :::
 :::{grid-item}
 :columns: 3
@@ -445,7 +445,7 @@ Additional methods for adding and removing children:
 :columns: 12
 **Info:** A collection object has its own `position` and `orientation` attributes and spans a local reference frame for all its children. An operation applied to a collection moves the frame and is individually applied to all children such that their relative position in the local reference frame is maintained. This means that the collection functions as a container for manipulation, but child position and orientation are always updated in the global coordinate system. After being added to a collection, it is still possible to manipulate the individual children, which will also move them to a new relative position in the collection frame.
 
-Collections have **format** as an additional argument for **describe()** method. Default value is `format="type+id+label"`. Any combination of `"type"`, `"id"`, and `"label"` is allowed.
+Collections have **format** as an additional argument for **describe()** method. Default value is `format='type+id+label'`. Any combination of `'type'`, `'id'`, and `'label"` is allowed.
 
 A tutorial {ref}`examples-tutorial-collection` is provided in the example examples.
 :::
