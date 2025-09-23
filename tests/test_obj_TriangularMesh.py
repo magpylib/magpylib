@@ -343,12 +343,12 @@ def test_TriangularMesh_from_faces_bad_inputs():
     # good element type but not array-like
     with pytest.raises(
         TypeError,
-        match="Input `triangles` must be",
+        match="Input triangles must be",
     ):
         get_tri_from_triangles(triangle)
 
     # element in list has wrong type
-    with pytest.raises(TypeError, match="Input `triangles` must be a list"):
+    with pytest.raises(TypeError, match="Input triangles must be a list"):
         get_tri_from_triangles(["bad_type"])
 
     # bad type input
@@ -357,12 +357,12 @@ def test_TriangularMesh_from_faces_bad_inputs():
 
     # bad shape input
     msh = [((0, 0), (1, 0), (0, 1))] * 2
-    with pytest.raises(ValueError, match="Input `mesh` must have"):
+    with pytest.raises(ValueError, match="Input mesh must have"):
         get_tri_from_mesh(msh)
 
     # bad shape input
     msh = [((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))] * 2
-    with pytest.raises(ValueError, match="Input `mesh` must have"):
+    with pytest.raises(ValueError, match="Input mesh must have"):
         get_tri_from_mesh(msh)
 
 
@@ -464,7 +464,7 @@ def test_bad_mode_input():
     """test bad mode input"""
     with pytest.raises(
         ValueError,
-        match="Input `check_open mode` must be one of",
+        match="Input check_open mode must be one of",
     ):
         magpy.magnet.TriangularMesh.from_pyvista(
             polarization=(0, 0, 1), polydata=pv.Octahedron(), check_open="badinput"

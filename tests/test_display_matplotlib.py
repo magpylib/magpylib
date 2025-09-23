@@ -412,7 +412,7 @@ def test_matplotlib_model3d_extra_updatefunc():
 
     updatefunc = "not callable"
     with pytest.raises(
-        ValueError, match=(r"The `data` property of `Model3d` must be an instance.*")
+        ValueError, match=(r"The data property of Model3d must be an instance.*")
     ):
         obj.style.model3d.add_trace(updatefunc)
 
@@ -511,7 +511,7 @@ def test_bad_show_inputs():
     )
 
     # test bad canvas
-    with pytest.raises(TypeError, match=r"The `canvas` parameter must be one of"):
+    with pytest.raises(TypeError, match=r"The canvas parameter must be one of"):
         magpy.show(cyl1, canvas="bad_canvas_input", backend="matplotlib")
 
     # test bad axes canvas with rows
@@ -519,7 +519,7 @@ def test_bad_show_inputs():
     ax = fig.add_subplot(131, projection="3d")
     with pytest.raises(
         ValueError,
-        match=(r"Provided `canvas` is an instance of"),
+        match=(r"Provided canvas is an instance of"),
     ):
         magpy.show(cyl1, canvas=ax, col=2, backend="matplotlib")
 
@@ -629,5 +629,5 @@ def test_bad_units_length(units_length):
 
     c = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
 
-    with pytest.raises(ValueError, match=r"Input `unit_input` must be"):
+    with pytest.raises(ValueError, match=r"Input unit_input must be"):
         c.show(units_length=units_length, return_fig=True, backend="matplotlib")

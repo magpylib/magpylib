@@ -271,7 +271,7 @@ def test_getBH_bad_output_type():
     src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
     with pytest.raises(
         ValueError,
-        match=r"The `output` argument must be one of ('ndarray', 'dataframe')*.",
+        match=r"The output argument must be one of ('ndarray', 'dataframe')*.",
     ):
         src.getB((0, 0, 0), output="bad_output_type")
 
