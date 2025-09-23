@@ -133,9 +133,9 @@ def _apply_move(target_object, displacement, start="auto"):
     Parameters
     ----------
     target_object: object with position and orientation attributes
-    displacement: displacement vector/path, array-like, shape (3,) or (n,3).
+    displacement: displacement vector/path, array-like, shape (3,) or (n, 3).
         If the input is scalar (shape (3,)) the operation is applied to the
-        whole path. If the input is a vector (shape (n,3)), it is
+        whole path. If the input is a vector (shape (n, 3)), it is
         appended/merged with the existing path.
     start: int, str, default=`'auto'`
         start=i applies an operation starting at the i'th path index.
@@ -156,7 +156,7 @@ def _apply_move(target_object, displacement, start="auto"):
         dims=(1, 2),
         shape_m1=3,
         sig_name="displacement",
-        sig_type="array-like (list, tuple, ndarray) with shape (3,) or (n,3)",
+        sig_type="array-like (list, tuple, ndarray) with shape (3,) or (n, 3)",
     )
     check_start_type(start)
 
@@ -182,7 +182,7 @@ def _apply_rotation(
     target_object: object with position and orientation attributes
     rotation: a scipy Rotation object
         If the input is scalar (shape (3,)) the operation is applied to the
-        whole path. If the input is a vector (shape (n,3)), it is
+        whole path. If the input is a vector (shape (n, 3)), it is
         appended/merged with the existing path.
     anchor: array-like shape (3,)
         Rotation anchor

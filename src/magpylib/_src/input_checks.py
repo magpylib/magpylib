@@ -155,8 +155,8 @@ def validate_field_func(val):
                 raise MagpylibBadUserInput(msg)
             if out.shape != (2, 3):
                 msg = (
-                    "Input `field_func` must be a callable that returns B- and H-field as a NumPy ndarray with shape (n, 3) "
-                    "when the `observers` input has shape (n, 3); "
+                    "Input `field_func` must be a callable that returns B- and H-field as a NumPy ndarray with shape (o, 3) "
+                    "when the `observers` input has shape (o, 3); "
                     f"instead it returns shape {out.shape} for {field}-field for input shape (2, 3)."
                 )
                 raise MagpylibBadUserInput(msg)
@@ -176,9 +176,9 @@ def check_format_input_orientation(inp, init_format=False):
     if init_format: (for move method)
         return inp and inpQ
     else: (for init and setter)
-        return inpQ in shape (-1,4)
+        return inpQ in shape (-1, 4)
 
-    This function is used for setter and init only -> shape (1,4) and (4,) input
+    This function is used for setter and init only -> shape (1, 4) and (4,) input
     creates same behavior.
     """
     # check type
@@ -314,9 +314,9 @@ def check_format_input_vector(
     - convert inp to ndarray with dtype float
     - inp shape must be given by dims and shape_m1
     - print error msg with signature arguments
-    - if reshape=True: returns shape (n,3) - required for position init and setter
+    - if reshape=True: returns shape (n, 3) - required for position init and setter
     - if allow_None: return None
-    - if extend_dim_to2: add a dimension if input is only (1,2,3) - required for sensor pixel
+    - if extend_dim_to2: add a dimension if input is only (1, 2, 3) - required for sensor pixel
     """
     if allow_None and inp is None:
         return None

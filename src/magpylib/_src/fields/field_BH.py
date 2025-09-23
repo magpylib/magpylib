@@ -130,11 +130,11 @@ def _getBH_level1(
 
     Args
     ----
-    kwargs: dict of shape (N,x) input vectors that describes the computation.
+    kwargs: dict of shape (i, x) input vectors that describes the computation.
 
     Returns
     -------
-    field: ndarray, shape (N,3)
+    field: ndarray, shape (i, 3)
 
     """
 
@@ -453,16 +453,16 @@ def getB(
     in_out="auto",
     **kwargs,
 ):
-    """Return B-field (T) of ``sources`` at ``observers``.
+    """Return B-field (T) of s sources at o observers.
 
     SI units are used for all inputs and outputs.
 
     Parameters
     ----------
     sources : Source | list
-        Sources that generate the magnetic field. Can be a single source (or collection)
-        or a 1D list of l source and/or collection objects.
-    observers : Sensor | list[Sensor] | array-like, shape (n1, n2, ..., 3)
+        Sources that generate the magnetic field. Can be a single source
+        or a 1D list of s sources.
+    observers : Sensor | list[Sensor] | array-like, shape (o1, o2, ..., 3)
         Input specifying where the field is evaluated. Multiple objects in a list
         must have identical pixel shape unless ``pixel_agg`` is used.
         All positions given in units (m)
@@ -483,8 +483,9 @@ def getB(
     Returns
     -------
     ndarray | DataFrame
-        B-field (T) with squeezed shape ``(l, m, 1, n1, n2, ..., 3)`` where ``m`` is path
-        length, and ``n1, n2, ...`` are the pixel dimensions.
+        B-field (T) with squeezed shape (s, p, o, o1, o2, ..., 3) where s is the number
+        of sources, p is the number of paths, o the number of observers with (pixel)shape
+        o1, o2, ... .
 
     Examples
     --------
@@ -536,16 +537,16 @@ def getH(
     in_out="auto",
     **kwargs,
 ):
-    """Return H-field (A/m) of ``sources`` at ``observers``.
+    """Return H-field (A/m) of s sources at o observers.
 
     SI units are used for all inputs and outputs.
 
     Parameters
     ----------
     sources : Source | list
-        Sources that generate the magnetic field. Can be a single source (or collection)
-        or a 1D list of l source and/or collection objects.
-    observers : Sensor | list[Sensor] | array-like, shape (n1, n2, ..., 3)
+        Sources that generate the magnetic field. Can be a single source
+        or a 1D list of s sources.
+    observers : Sensor | list[Sensor] | array-like, shape (o1, o2, ..., 3)
         Input specifying where the field is evaluated. Multiple objects in a list
         must have identical pixel shape unless ``pixel_agg`` is used.
         All positions given in units (m)
@@ -566,8 +567,9 @@ def getH(
     Returns
     -------
     ndarray | DataFrame
-        H-field (A/m) with squeezed shape ``(l, m, 1, n1, n2, ..., 3)`` where ``m`` is path
-        length, and ``n1, n2, ...`` are the pixel dimensions.
+        H-field (A/m) with squeezed shape (s, p, o, o1, o2, ..., 3) where s is the number
+        of sources, p is the number of paths, o the number of observers with (pixel)shape
+        o1, o2, ... .
 
     Examples
     --------
@@ -619,16 +621,16 @@ def getM(
     in_out="auto",
     **kwargs,
 ):
-    """Return magnetization (A/m) of ``sources`` at ``observers``.
+    """Return magnetization (A/m) of s sources at o observers.
 
     SI units are used for all inputs and outputs.
 
     Parameters
     ----------
     sources : Source | list
-        Sources that generate the magnetic field. Can be a single source (or collection)
-        or a 1D list of l source and/or collection objects.
-    observers : Sensor | list[Sensor] | array-like, shape (n1, n2, ..., 3)
+        Sources that generate the magnetic field. Can be a single source
+        or a 1D list of s sources.
+    observers : Sensor | list[Sensor] | array-like, shape (o1, o2, ..., 3)
         Input specifying where the field is evaluated. Multiple objects in a list
         must have identical pixel shape unless ``pixel_agg`` is used.
         All positions given in units (m)
@@ -649,8 +651,9 @@ def getM(
     Returns
     -------
     ndarray | DataFrame
-        Magnetization (A/m) with squeezed shape ``(l, m, 1, n1, n2, ..., 3)`` where ``m`` is path
-        length, and ``n1, n2, ...`` are the pixel dimensions.
+        Magnetization (A/m) with squeezed shape (s, p, o, o1, o2, ..., 3) where s is the number
+        of sources, p is the number of paths, o the number of observers with (pixel)shape
+        o1, o2, ... .
 
     Examples
     --------
@@ -690,16 +693,16 @@ def getJ(
     in_out="auto",
     **kwargs,
 ):
-    """Return magnetic polarization (T) of ``sources`` at ``observers``.
+    """Return magnetic polarization (T) of s sources at o observers.
 
     SI units are used for all inputs and outputs.
 
     Parameters
     ----------
     sources : Source | list
-        Sources that generate the magnetic field. Can be a single source (or collection)
-        or a 1D list of l source and/or collection objects.
-    observers : Sensor | list[Sensor] | array-like, shape (n1, n2, ..., 3)
+        Sources that generate the magnetic field. Can be a single source
+        or a 1D list of s sources.
+    observers : Sensor | list[Sensor] | array-like, shape (o1, o2, ..., 3)
         Input specifying where the field is evaluated. Multiple objects in a list
         must have identical pixel shape unless ``pixel_agg`` is used.
         All positions given in units (m)
@@ -720,8 +723,9 @@ def getJ(
     Returns
     -------
     ndarray | DataFrame
-        Polarization (T) with squeezed shape ``(l, m, 1, n1, n2, ..., 3)`` where ``m`` is path
-        length, and ``n1, n2, ...`` are the pixel dimensions.
+        Polarization (T) with squeezed shape (s, p, o, o1, o2, ..., 3) where s is the number
+        of sources, p is the number of paths, o the number of observers with (pixel)shape
+        o1, o2, ... .
 
     Examples
     --------

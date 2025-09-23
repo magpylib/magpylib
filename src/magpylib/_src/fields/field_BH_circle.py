@@ -14,7 +14,7 @@ def current_circle_Hfield(
     z: np.ndarray,
     i0: np.ndarray,
 ) -> np.ndarray:
-    """H-field of circular line-current loops in cylindrical coordinates.
+    """H-field of i circular line-current loops in cylindrical coordinates.
 
     The loop lies in the ``z=0`` plane with the coordinate origin at its center.
     The output is proportional to the electrical current ``i0`` (A) and independent
@@ -23,18 +23,18 @@ def current_circle_Hfield(
 
     Parameters
     ----------
-    r0 : array-like, shape (n,)
+    r0 : array-like, shape (i,)
         Loop radii.
-    r : array-like, shape (n,)
+    r : array-like, shape (i,)
         Radial observer positions.
-    z : array-like, shape (n,)
+    z : array-like, shape (i,)
         Axial observer positions.
-    i0 : array-like, shape (n,)
+    i0 : array-like, shape (i,)
         Electrical currents in units of (A).
 
     Returns
     -------
-    ndarray, shape (3, n)
+    ndarray, shape (3, i)
         H-field in (A/m) at observer positions in cylindrical coordinates
         ``(H_r, H_φ, H_z)``. The azimuthal component is zero for symmetry.
 

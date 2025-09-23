@@ -13,7 +13,7 @@ def magnet_cuboid_Bfield(
     dimensions: np.ndarray,
     polarizations: np.ndarray,
 ):
-    """B-field of homogeneously magnetized cuboids in Cartesian coordinates.
+    """B-field of i homogeneously magnetized cuboids in Cartesian coordinates.
 
     Cuboid sides are parallel to the coordinate axes and the geometric center
     lies at the origin. The output is proportional to the polarization magnitude
@@ -21,16 +21,16 @@ def magnet_cuboid_Bfield(
 
     Parameters
     ----------
-    observers : array-like, shape (n, 3)
+    observers : array-like, shape (i, 3)
         Observer positions ``(x, y, z)`` in Cartesian coordinates.
-    dimensions : array-like, shape (n, 3)
+    dimensions : array-like, shape (i, 3)
         Lengths of the cuboid sides ``(a, b, c)``.
-    polarizations : array-like, shape (n, 3)
+    polarizations : array-like, shape (i, 3)
         Magnetic polarization vectors ``J``.
 
     Returns
     -------
-    ndarray, shape (n, 3)
+    ndarray, shape (i, 3)
         B-field in units of input polarization at the observer positions.
 
     Examples

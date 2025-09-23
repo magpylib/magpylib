@@ -27,13 +27,13 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
 
     Parameters
     ----------
-    position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
+    position : array-like, shape (3,) or (p, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path.
     orientation : None | Rotation, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
-        have length 1 or m. ``None`` generates a unit-rotation.
-    pixel : None | array-like, shape (3,) or (n1, n2, ..., 3), default None
+        have length 1 or p. ``None`` generates a unit-rotation.
+    pixel : None | array-like, shape (3,) or (o1, o2, ..., 3), default None
         Sensor pixel (= sensing element) positions in local object coordinates
         (rotate with object) in units (m).
     handedness : {'right', 'left'}, default 'right'
@@ -44,11 +44,11 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
 
     Attributes
     ----------
-    position : ndarray, shape (3,) or (m, 3)
+    position : ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    pixel : None | ndarray, shape (3,) or (n1, n2, ..., 3)
+    pixel : None | ndarray, shape (3,) or (o1, o2, ..., 3)
         Same as constructor parameter ``pixel``.
     handedness : str
         Same as constructor parameter ``handedness``.
@@ -125,7 +125,7 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
 
         Parameters
         ----------
-        pix : None | array-like, shape (3,) or (n1, n2, ..., 3)
+        pix : None | array-like, shape (3,) or (o1, o2, ..., 3)
             Sensor pixel positions in local object coordinates in units (m).
         """
         self._pixel = check_format_input_vector(
@@ -133,7 +133,7 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
             dims=range(1, 20),
             shape_m1=3,
             sig_name="pixel",
-            sig_type="array-like (list, tuple, ndarray) with shape (n1, n2, ..., 3) or None",
+            sig_type="array-like (list, tuple, ndarray) with shape (o1, o2, ..., 3) or None",
             allow_None=True,
         )
 
@@ -182,15 +182,15 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         output="ndarray",
         in_out="auto",
     ):
-        """Return B-field (T) from sources as seen by the sensor.
+        """Return B-field (T) from s sources as seen by the sensor.
 
         SI units are used for all inputs and outputs.
 
         Parameters
         ----------
         *sources : Source | list
-            Sources that generate the magnetic field. Can be a single source (or collection)
-            or a 1D list of l source and/or collection objects.
+            Sources that generate the magnetic field. Can be a single source
+            or a 1D list of s source objects.
         sumup : bool, default False
             If ``True``, sum the fields from all sources. If ``False``, keep the source axis.
         squeeze : bool, default True
@@ -208,8 +208,8 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         Returns
         -------
         ndarray | DataFrame
-            B-field (T) with squeezed shape ``(l, m, 1, n1, n2, ..., 3)`` where ``m`` is path
-            length, and ``n1, n2, ...`` are the pixel dimensions.
+            B-field (T) with squeezed shape (s, p, 1, o1, o2, ..., 3) where s is the number
+            of sources, p is the path length, and o1, o2, ... are sensor pixel dimensions.
 
         Examples
         --------
@@ -265,15 +265,15 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         output="ndarray",
         in_out="auto",
     ):
-        """Return H-field (A/m) from sources as seen by the sensor.
+        """Return H-field (A/m) from s sources as seen by the sensor.
 
         SI units are used for all inputs and outputs.
 
         Parameters
         ----------
         *sources : Source | list
-            Sources that generate the magnetic field. Can be a single source (or collection)
-            or a 1D list of l source and/or collection objects.
+            Sources that generate the magnetic field. Can be a single source
+            or a 1D list of s source objects.
         sumup : bool, default False
             If ``True``, sum the fields from all sources. If ``False``, keep the source axis.
         squeeze : bool, default True
@@ -291,8 +291,8 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         Returns
         -------
         ndarray | DataFrame
-            H-field (A/m) with squeezed shape ``(l, m, 1, n1, n2, ..., 3)`` where ``m`` is path
-            length, and ``n1, n2, ...`` are the pixel dimensions.
+            H-field (A/m) with squeezed shape (s, p, 1, o1, o2, ..., 3) where s is the number
+            of sources, p is the path length, and o1, o2, ... are sensor pixel dimensions.
 
         Examples
         --------
@@ -348,15 +348,15 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         output="ndarray",
         in_out="auto",
     ):
-        """Return magnetization (A/m) from sources as seen by the sensor.
+        """Return magnetization (A/m) from s sources as seen by the sensor.
 
         SI units are used for all inputs and outputs.
 
         Parameters
         ----------
         *sources : Source | list
-            Sources that generate the magnetic field. Can be a single source (or collection)
-            or a 1D list of l source and/or collection objects.
+            Sources that generate the magnetic field. Can be a single source
+            or a 1D list of s source objects.
         sumup : bool, default False
             If ``True``, sum the fields from all sources. If ``False``, keep the source axis.
         squeeze : bool, default True
@@ -374,8 +374,8 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         Returns
         -------
         ndarray | DataFrame
-            Magnetization (A/m) with squeezed shape ``(l, m, 1, n1, n2, ..., 3)`` where ``m`` is
-            path length, and ``n1, n2, ...`` are the pixel dimensions.
+            Magnetization (A/m) with squeezed shape (s, p, 1, o1, o2, ..., 3) where s is the number
+            of sources, p is the path length, and o1, o2, ... are sensor pixel dimensions.
 
         Examples
         --------
@@ -414,15 +414,15 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         output="ndarray",
         in_out="auto",
     ):
-        """Return magnetic polarization (T) from sources as seen by the sensor.
+        """Return magnetic polarization (T) from s sources as seen by the sensor.
 
         SI units are used for all inputs and outputs.
 
         Parameters
         ----------
         *sources : Source | list
-            Sources that generate the magnetic field. Can be a single source (or collection)
-            or a 1D list of l source and/or collection objects.
+            Sources that generate the magnetic field. Can be a single source
+            or a 1D list of s source objects.
         sumup : bool, default False
             If ``True``, sum the fields from all sources. If ``False``, keep the source axis.
         squeeze : bool, default True
@@ -440,8 +440,8 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         Returns
         -------
         ndarray | DataFrame
-            Magnetic polarization (T) with squeezed shape ``(l, m, 1, n1, n2, ..., 3)`` where
-            ``m`` is path length, and ``n1, n2, ...`` are the pixel dimensions.
+            Magnetic polarization (T) with squeezed shape (s, p, 1, o1, o2, ..., 3) where s is the number
+            of sources, p is the path length, and o1, o2, ... are sensor pixel dimensions.
 
         Examples
         --------

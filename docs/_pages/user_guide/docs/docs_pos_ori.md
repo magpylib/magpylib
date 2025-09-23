@@ -105,7 +105,7 @@ Several extensions of the `rotate` method give a lot of flexibility with object 
 :columns: 12
 :shadow: none
 `rotate_from_angax(angle, axis, anchor=None, start="auto", degrees=True)`
-* `angle`: scalar or array with shape (n). Angle(s) of rotation.
+* `angle`: scalar or array with shape (n,). Angle(s) of rotation.
 * `axis`: array of shape (3,) or string. The direction of the rotation axis. String input can be 'x', 'y' or 'z' to denote respective directions.
 * `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
 :::
@@ -114,7 +114,7 @@ Several extensions of the `rotate` method give a lot of flexibility with object 
 :columns: 12
 :shadow: none
 `rotate_from_rotvec(rotvec, anchor=None, start="auto", degrees=True)`
-* `rotvec` : array with shape (n,3) or (3,). The rotation vector direction is the rotation axis and the vector length is the rotation angle in units of deg.
+* `rotvec` : array with shape (n, 3) or (3,). The rotation vector direction is the rotation axis and the vector length is the rotation angle in units of deg.
 * `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
 :::
 
@@ -122,7 +122,7 @@ Several extensions of the `rotate` method give a lot of flexibility with object 
 :columns: 12
 :shadow: none
 `rotate_from_euler(angle, seq, anchor=None, start="auto", degrees=True)`
-* `angle`: scalar or array with shape (n). Angle(s) of rotation in units of deg (by default).
+* `angle`: scalar or array with shape (n,). Angle(s) of rotation in units of deg (by default).
 * `seq` : string. Specifies sequence of axes for rotations. Up to 3 characters belonging to the set {'X', 'Y', 'Z'} for intrinsic rotations, or {'x', 'y', 'z'} for extrinsic rotations. Extrinsic and intrinsic rotations cannot be mixed in one function call.
 * `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
 :::
@@ -131,21 +131,21 @@ Several extensions of the `rotate` method give a lot of flexibility with object 
 :columns: 12
 :shadow: none
 `rotate_from_quat(quat, anchor=None, start="auto")`
-* `quat` : array with shape (n,4) or (4,). Rotation input in quaternion form.
+* `quat` : array with shape (n, 4) or (4,). Rotation input in quaternion form.
 :::
 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
 `rotate_from_mrp(matrix, anchor=None, start="auto")`
-* `matrix` : array with shape (n,3,3) or (3,3). Rotation matrix. See scipy.spatial.transform.Rotation for details.
+* `matrix` : array with shape (n, 3, 3) or (3, 3). Rotation matrix. See scipy.spatial.transform.Rotation for details.
 :::
 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
 `rotate_from_mrp(mrp, anchor=None, start="auto")`
-* `mrp` : array with shape (n,3) or (3,). Modified Rodrigues parameter input. See scipy Rotation package for details.
+* `mrp` : array with shape (n, 3) or (3,). Modified Rodrigues parameter input. See scipy Rotation package for details.
 :::
 
 ::::

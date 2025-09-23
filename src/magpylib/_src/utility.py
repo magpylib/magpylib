@@ -330,7 +330,7 @@ def add_iteration_suffix(name):
 def cart_to_cyl_coordinates(observer):
     """
     cartesian observer positions to cylindrical coordinates
-    observer: ndarray, shape (n,3)
+    observer: ndarray, shape (n, 3)
     """
     x, y, z = observer.T
     r, phi = np.sqrt(x**2 + y**2), np.arctan2(y, x)

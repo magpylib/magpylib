@@ -2114,7 +2114,7 @@ def magnet_cylinder_segment_Hfield(
     dimensions: np.ndarray,
     magnetizations: np.ndarray,
 ) -> np.ndarray:
-    """H-field of homogeneously magnetized cylinder segments (ring sections).
+    """H-field of i homogeneously magnetized cylinder segments (ring sections).
 
     The cylinder axes coincide with the z-axis of the Cylindrical CS and the
     geometric center of the cylinder lies in the origin. The result is
@@ -2123,20 +2123,20 @@ def magnet_cylinder_segment_Hfield(
 
     Parameters
     ----------
-    observers : array-like, shape (n, 3)
+    observers : array-like, shape (i, 3)
         Observer positions ``(r, φ, z)`` in cylindrical coordinates where ``φ`` is
         given in radians and positions.
-    dimensions : array-like, shape (n, 6)
+    dimensions : array-like, shape (i, 6)
         Segment dimensions ``(r1, r2, φ1, φ2, z1, z2)`` where ``r1 < r2`` are inner
         and outer radii, ``φ1 < φ2`` are azimuth section angles (rad), and
         ``z1 < z2`` are axial limits.
-    magnetizations : array-like, shape (n, 3)
+    magnetizations : array-like, shape (i, 3)
         Magnetization vectors in spherical coordinates ``(M, φ, θ)`` where ``M`` is
         the magnitude, and ``φ`` (azimuth) and ``θ`` (polar) are angles in radians.
 
     Returns
     -------
-    ndarray, shape (n, 3)
+    ndarray, shape (i, 3)
         H-field in units of magnetization ``M`` at observer positions in Cartesian
         coordinates.
 

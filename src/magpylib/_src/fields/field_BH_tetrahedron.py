@@ -14,7 +14,7 @@ def _check_chirality(points: np.ndarray) -> np.ndarray:
 
     Parameters
     -----------
-    points: 3d-array of shape (m x 4 x 3)
+    points: 3d-array of shape (m, 4, 3)
             m...number of tetrahedrons
 
     Returns

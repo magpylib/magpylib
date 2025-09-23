@@ -25,7 +25,7 @@ def _current_vertices_field(
     ### Args:
     - bh (boolean): True=B, False=H
     - current (ndarray n): current on line in units of A
-    - vertex_sets (list of len n): n vertex sets (each of shape (mi,3))
+    - vertex_sets (list of len n): n vertex sets (each of shape (mi, 3))
     - pos_obs (ndarray nx3): n observer positions in units of m
 
     ### Returns:
@@ -72,7 +72,7 @@ def current_polyline_Hfield(
     segments_end: np.ndarray,
     currents: np.ndarray,
 ) -> np.ndarray:
-    """H-field of straight current segments in Cartesian coordinates.
+    """H-field of i straight current segments in Cartesian coordinates.
 
     The current flows from start to end positions. The field is set to (0,0,0) on a
     line segment. The output is proportional to the current and independent of the
@@ -80,18 +80,18 @@ def current_polyline_Hfield(
 
     Parameters
     ----------
-    observers : ndarray, shape (n, 3)
+    observers : ndarray, shape (i, 3)
         Observer positions ``(x, y, z)`` in Cartesian coordinates.
-    segments_start : ndarray, shape (n, 3)
+    segments_start : ndarray, shape (i, 3)
         Segment start positions ``(x, y, z)`` in Cartesian coordinates.
-    segments_end : ndarray, shape (n, 3)
+    segments_end : ndarray, shape (i, 3)
         Segment end positions ``(x, y, z)`` in Cartesian coordinates.
-    currents : ndarray, shape (n,)
+    currents : ndarray, shape (i,)
         Electrical currents (A) in the segments.
 
     Returns
     -------
-    ndarray, shape (n, 3)
+    ndarray, shape (i, 3)
         H-field in (A/m) at the observer positions.
 
     Examples

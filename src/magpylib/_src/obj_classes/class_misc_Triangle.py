@@ -26,12 +26,12 @@ class Triangle(_BaseMagnet):
 
     Parameters
     ----------
-    position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
+    position : array-like, shape (3,) or (p, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path.
     orientation : None | Rotation, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
-        have length 1 or m. ``None`` generates a unit-rotation.
+        have length 1 or p. ``None`` generates a unit-rotation.
     vertices : None | array-like, shape (3, 3), default None
         Triangle vertices in the local object coordinates in units (m).
     polarization : None | array-like, shape (3,), default None
@@ -46,7 +46,7 @@ class Triangle(_BaseMagnet):
 
     Attributes
     ----------
-    position : ndarray, shape (3,) or (m, 3)
+    position : ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
@@ -56,7 +56,7 @@ class Triangle(_BaseMagnet):
         Same as constructor parameter ``polarization``.
     magnetization : None | ndarray, shape (3,)
         Same as constructor parameter ``magnetization``.
-    centroid : ndarray, shape (3,) or (m, 3)
+    centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
         Can be a path.
     parent : Collection | None

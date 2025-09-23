@@ -378,7 +378,7 @@ magpylib.misc.CustomSource(field_func, position, orientation, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-The `CustomSource` class is used to create user defined sources provided with with custom field computation functions. The argument **`field_func`** takes a function that is then automatically called for the field computation. This custom field function is treated like a [core function](docs-field-core). It must have the positional arguments `field` with values `"B"` or `"H"`, and `observers` (must accept array with shape (n,3)) and return the B-field and the H-field with a similar shape.
+The `CustomSource` class is used to create user defined sources provided with with custom field computation functions. The argument **`field_func`** takes a function that is then automatically called for the field computation. This custom field function is treated like a [core function](docs-field-core). It must have the positional arguments `field` with values `"B"` or `"H"`, and `observers` (must accept array with shape (o, 3)) and return the B-field and the H-field with a similar shape.
 :::
 :::{grid-item}
 :columns: 3

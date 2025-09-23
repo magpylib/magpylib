@@ -22,8 +22,8 @@ from magpylib._src.utility import add_iteration_suffix
 
 def _pad_slice_path(path1, path2):
     """edge-pads or end-slices path 2 to fit path 1 format
-    path1: shape (N,x)
-    path2: shape (M,x)
+    path1: shape (N, x)
+    path2: shape (M, x)
     return: path2 with format (N,x)
     """
     delta_path = len(path1) - len(path2)
@@ -67,7 +67,7 @@ class _BaseGeo(_BaseTransform, ABC):
     init_state is defined by how the fields are implemented (e.g.
     cyl upright in xy-plane)
 
-    Both attributes _position and _orientation.as_rotvec() are of shape (N,3),
+    Both attributes _position and _orientation.as_rotvec() are of shape (N, 3),
     and describe a path of length N. (N=1 if there is only one
     object position).
     """
@@ -124,7 +124,7 @@ class _BaseGeo(_BaseTransform, ABC):
             dims=(1, 2),
             shape_m1=3,
             sig_name="position",
-            sig_type="array-like (list, tuple, ndarray) with shape (3,) or (n,3)",
+            sig_type="array-like (list, tuple, ndarray) with shape (3,) or (n, 3)",
             reshape=(-1, 3),
         )
         oriQ = check_format_input_orientation(orientation, init_format=True)
@@ -165,7 +165,7 @@ class _BaseGeo(_BaseTransform, ABC):
 
         Returns
         -------
-        numpy.ndarray, shape (n,3) when there is a path, or squeeze(1,3) when not
+        numpy.ndarray, shape (n, 3) when there is a path, or squeeze(1,3) when not
             Centroid coordinates [(x, y, z), ...] in (m).
         """
 
@@ -213,7 +213,7 @@ class _BaseGeo(_BaseTransform, ABC):
 
         Parameters
         ----------
-        position : array-like, shape (3,) or (n,3)
+        position : array-like, shape (3,) or (n, 3)
             New position(s) in units (m).
         """
         old_pos = self._position
@@ -224,7 +224,7 @@ class _BaseGeo(_BaseTransform, ABC):
             dims=(1, 2),
             shape_m1=3,
             sig_name="position",
-            sig_type="array-like (list, tuple, ndarray) with shape (3,) or (n,3)",
+            sig_type="array-like (list, tuple, ndarray) with shape (3,) or (n, 3)",
             reshape=(-1, 3),
         )
 

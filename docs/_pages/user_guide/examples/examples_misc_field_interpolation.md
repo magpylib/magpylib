@@ -38,28 +38,24 @@ def interpolation(observer, data, method="linear", bounds_error=False, fill_valu
 
     Parameters
     ----------
-    observer: ndarray, shape (n,3)
-        Array of n position vectors (x,y,z).
-
-    data: ndarray, shape (n,3)
-        Array of corresponding n interpolation data vectors.
-
-    method : str, optional
-        The method of interpolation to perform. Supported are "linear" and
-        "nearest". Default is "linear".
-
-    bounds_error : bool, optional
-        If True, when interpolated values are requested outside of the
-        domain of the input data, a ValueError is raised. If False,
-        then `fill_value` is returned.
-
-    fill_value : number, optional
+    observer : ndarray, shape (o, 3)
+        Array of o position vectors (x, y, z).
+    data : ndarray, shape (o, 3)
+        Array of corresponding o interpolation data vectors.
+    method : {'linear', 'nearest'}, default 'linear'
+        The method of interpolation to perform.
+    bounds_error : bool, default True
+        If ``True``, when interpolated values are requested outside of the
+        domain of the input data, a ValueError is raised. If ``False``,
+        then ``fill_value`` is returned.
+    fill_value : float, default np.nan
         Value returned when points outside the interpolation domain are
         sampled.
 
     Returns
     -------
-        callable: interpolating function for field values
+    callable
+        Interpolating function for field values.
     """
 
     # Condition input

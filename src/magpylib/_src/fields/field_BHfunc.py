@@ -29,7 +29,7 @@ def circle_field(
     orientations=None,
     squeeze=True,
 ):
-    """Return B- or H-field of circular current loops for ``i`` instances.
+    """Return B- or H-field of circular current loops for i instances.
 
     With ``positions=(0, 0, 0)`` and ``orientations=None`` a loop lies in the
     ``z=0`` plane with its center at the origin. Positive current flows in the
@@ -92,7 +92,7 @@ def polyline_field(
     orientations=None,
     squeeze=True,
 ):
-    """Return B- or H-field of straight current segments for ``i`` instances.
+    """Return B- or H-field of straight current segments for i instances.
 
     With ``positions=(0, 0, 0)`` and ``orientations=None`` local and global
     coordinates coincide. Current flows in straight lines from segment start
@@ -159,7 +159,7 @@ def cuboid_field(
     orientations=None,
     squeeze=True,
 ):
-    """Return B- or H-field of cuboid magnets for ``i`` instances.
+    """Return B- or H-field of cuboid magnets for i instances.
 
     With ``positions=(0, 0, 0)`` and ``orientations=None`` the cuboid sides are
     parallel to the coordinate axes and the geometric center lies at the origin.
@@ -221,7 +221,7 @@ def cylinder_field(
     orientations=None,
     squeeze=True,
 ):
-    """Return B- or H-field of solid cylinder magnets for ``i`` instances.
+    """Return B- or H-field of solid cylinder magnets for i instances.
 
     With ``positions=(0, 0, 0)`` and ``orientations=None`` the cylinder axis
     coincides with the global z-axis and the geometric center lies at the
@@ -284,7 +284,7 @@ def cylinder_segment_field(
     orientations=None,
     squeeze=True,
 ):
-    """Return B- or H-field of cylinder-segment magnets for ``i`` instances.
+    """Return B- or H-field of cylinder-segment magnets for i instances.
 
     With ``positions=(0, 0, 0)`` and ``orientations=None`` the segment's
     cylinder axis coincides with the global z-axis and the geometric center
@@ -349,7 +349,7 @@ def sphere_field(
     orientations=None,
     squeeze=True,
 ):
-    """Return B- or H-field of sphere magnets for ``i`` instances.
+    """Return B- or H-field of sphere magnets for i instances.
 
     With ``positions=(0, 0, 0)`` and ``orientations=None`` local and global
     coordinates coincide and the sphere center lies at the origin.
@@ -410,7 +410,7 @@ def tetrahedron_field(
     orientations=None,
     squeeze=True,
 ):
-    """Return B- or H-field of tetrahedron magnets for ``i`` instances.
+    """Return B- or H-field of tetrahedron magnets for i instances.
 
     With ``positions=(0, 0, 0)`` and ``orientations=None`` local and global
     coordinates coincide. The tetrahedron is defined by four vertices in the
@@ -476,7 +476,7 @@ def dipole_field(
     orientations=None,
     squeeze=True,
 ):
-    """Return B- or H-field of magnetic dipoles for ``i`` instances.
+    """Return B- or H-field of magnetic dipoles for i instances.
 
     With ``positions=(0, 0, 0)`` and ``orientations=None`` local and global
     coordinates coincide and the dipole lies at the origin.
@@ -534,7 +534,7 @@ def triangle_charge_field(
     orientations=None,
     squeeze=True,
 ):
-    """Return B- or H-field of magnetically charged triangles for ``i`` instances.
+    """Return B- or H-field of magnetically charged triangles for i instances.
 
     With ``positions=(0, 0, 0)`` and ``orientations=None`` local and global
     coordinates coincide. Triangles are defined by three vertices in the
@@ -602,7 +602,7 @@ def triangle_current_field(
     orientations=None,
     squeeze=True,
 ):
-    """Return B- or H-field of triangular current sheets for ``i`` instances.
+    """Return B- or H-field of triangular current sheets for i instances.
 
     With ``positions=(0, 0, 0)`` and ``orientations=None`` local and global
     coordinates coincide. Triangles are defined by three vertices in the
@@ -797,7 +797,7 @@ def _getBH_dict_level2(
 
     Returns
     -------
-    field: ndarray, shape (N,3), field at obs_pos in tesla or A/m
+    field: ndarray, shape (o,3), field at obs_pos in tesla or A/m
 
     Info
     ----

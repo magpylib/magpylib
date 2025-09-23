@@ -427,7 +427,7 @@ def getIntensity(vertices, axis) -> np.ndarray:
 
     Parameters
     ----------
-    vertices : ndarray, shape (n,3)
+    vertices : ndarray, shape (n, 3)
         The n vertices of the mesh object.
     axis : ndarray, shape (3,)
         Direction vector.
@@ -696,7 +696,7 @@ def process_show_input_objs(objs, **kwargs):
 
 
 def triangles_area(triangles):
-    """Return area of triangles of shape (n,3,3) into an array of shape n"""
+    """Return area of triangles of shape (n, 3, 3) into an array of shape n"""
     norm = np.cross(
         triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0], axis=1
     )

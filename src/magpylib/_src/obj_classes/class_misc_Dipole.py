@@ -26,12 +26,12 @@ class Dipole(_BaseSource, _BaseDipoleMoment):
 
     Parameters
     ----------
-    position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
+    position : array-like, shape (3,) or (p, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path.
     orientation : None | Rotation, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
-        have length 1 or m. ``None`` generates a unit-rotation.
+        have length 1 or p. ``None`` generates a unit-rotation.
     moment : None | array-like, shape (3,), default None
         Magnetic dipole moment (A·m²) in local object coordinates. For homogeneous
         magnets the relation ``moment = magnetization * volume`` holds. For current
@@ -42,13 +42,13 @@ class Dipole(_BaseSource, _BaseDipoleMoment):
 
     Attributes
     ----------
-    position : ndarray, shape (3,) or (m, 3)
+    position : ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
     moment : None | ndarray, shape (3,)
         Same as constructor parameter ``moment``.
-    centroid : ndarray, shape (3,) or (m, 3)
+    centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
         Can be a path.
     dipole_moment : ndarray, shape (3,)

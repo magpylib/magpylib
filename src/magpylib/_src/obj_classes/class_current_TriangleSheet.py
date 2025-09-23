@@ -30,12 +30,12 @@ class TriangleSheet(_BaseSource, _BaseTarget):
 
     Parameters
     ----------
-    position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
+    position : array-like, shape (3,) or (p, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path.
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
-        have length 1 or m. ``None`` generates a unit-rotation.
+        have length 1 or p. ``None`` generates a unit-rotation.
     vertices : array-like, shape (n, 3), default None
         Points in units (m) in the local object coordinates from which the
         triangular faces are constructed by the additional ``faces`` input.
@@ -55,7 +55,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
 
     Attributes
     ----------
-    position : ndarray, shape (3,) or (m, 3)
+    position : ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
@@ -67,7 +67,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
         Same as constructor parameter ``current_densities``.
     meshing : None or int
         Same as constructor parameter ``meshing``.
-    centroid : ndarray, shape (3,) or (m, 3)
+    centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid computed via mean of vertices in units (m)
         in global coordinates. Can be a path.
     parent : Collection | None
@@ -151,7 +151,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
             ),
             shape_m1=3,
             sig_name="TriangleSheet.current_densities",
-            sig_type="`None` or array-like (list, tuple, ndarray) with shape (n,3)",
+            sig_type="`None` or array-like (list, tuple, ndarray) with shape (n, 3)",
             allow_None=False,
         ).astype(float)
         verts = check_format_input_vector(
@@ -159,7 +159,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
             dims=(2,),
             shape_m1=3,
             sig_name="TriangleSheet.vertices",
-            sig_type="`None` or array-like (list, tuple, ndarray) with shape (n,3)",
+            sig_type="`None` or array-like (list, tuple, ndarray) with shape (n, 3)",
             allow_None=False,
         ).astype(float)
         fac = check_format_input_vector(
@@ -170,7 +170,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
             ),
             shape_m1=3,
             sig_name="TriangleSheet.faces",
-            sig_type="`None` or array-like (list, tuple, ndarray) with shape (n,3)",
+            sig_type="`None` or array-like (list, tuple, ndarray) with shape (n, 3)",
             allow_None=False,
         ).astype(int)
 

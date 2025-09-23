@@ -12,7 +12,7 @@ from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
 
 
 def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -> list:
-    """B-field of axially magnetized cylinders in cylindrical coordinates.
+    """B-field of i axially magnetized cylinders in cylindrical coordinates.
 
     The cylinder axes coincide with the z-axis of the Cylindrical CS and the
     geometric center of the cylinder lies in the origin. Length inputs are
@@ -21,16 +21,16 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
 
     Parameters
     ----------
-    z0 : ndarray, shape (n,)
+    z0 : ndarray, shape (i,)
         Ratios of half cylinder heights to cylinder radii.
-    r : ndarray, shape (n,)
+    r : ndarray, shape (i,)
         Ratios of radial observer positions to cylinder radii.
-    z : ndarray, shape (n,)
+    z : ndarray, shape (i,)
         Ratios of axial observer positions to cylinder radii.
 
     Returns
     -------
-    ndarray, shape (3, n)
+    ndarray, shape (3, i)
         B-field components ``(Br, Bphi, Bz)`` in tesla at the
         observer positions, for unit polarization. Values scale linearly with
         the polarization magnitude.
@@ -92,7 +92,7 @@ def magnet_cylinder_diametral_Hfield(
     z: np.ndarray,
     phi: np.ndarray,
 ) -> list:
-    """H-field of diametrally magnetized cylinders in cylindrical coordinates.
+    """H-field of i diametrally magnetized cylinders in cylindrical coordinates.
 
     The cylinder axes coincide with the z-axis of the Cylindrical CS and the
     geometric center of the cylinder lies in the origin. Length inputs are
@@ -101,18 +101,18 @@ def magnet_cylinder_diametral_Hfield(
 
     Parameters
     ----------
-    z0 : ndarray, shape (n,)
+    z0 : ndarray, shape (i,)
         Ratios of cylinder heights to cylinder radii.
-    r : ndarray, shape (n,)
+    r : ndarray, shape (i,)
         Ratios of radial observer positions to cylinder radii.
-    z : ndarray, shape (n,)
+    z : ndarray, shape (i,)
         Ratios of axial observer positions to cylinder radii.
-    phi : ndarray, shape (n,)
+    phi : ndarray, shape (i,)
         Azimuth angles between observers and magnetization directions (radians).
 
     Returns
     -------
-    ndarray, shape (3, n)
+    ndarray, shape (3, i)
         H-field components ``(Hr, Hphi, Hz)`` in (A/m) at the observer
         positions, for unit magnetization. Values scale linearly with the
         magnetization magnitude.

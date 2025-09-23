@@ -11,7 +11,7 @@ def magnet_sphere_Bfield(
     diameters: np.ndarray,
     polarizations: np.ndarray,
 ) -> np.ndarray:
-    """B-field of homogeneously magnetized spheres in Cartesian coordinates.
+    """B-field of i homogeneously magnetized spheres in Cartesian coordinates.
 
     The center of the spheres lie in the origin of the coordinate system. The output
     is proportional to the polarization magnitudes, and independent of the length
@@ -19,16 +19,16 @@ def magnet_sphere_Bfield(
 
     Parameters
     ----------
-    observers : ndarray, shape (n, 3)
+    observers : ndarray, shape (i, 3)
         Observer positions ``(x, y, z)`` in Cartesian coordinates.
-    diameters : ndarray, shape (n,)
+    diameters : ndarray, shape (i,)
         Sphere diameters.
-    polarizations : ndarray, shape (n, 3)
+    polarizations : ndarray, shape (i, 3)
         Magnetic polarization vectors.
 
     Returns
     -------
-    ndarray, shape (n, 3)
+    ndarray, shape (i, 3)
         B-field in units of ``polarization`` input at the observer positions.
 
     Examples

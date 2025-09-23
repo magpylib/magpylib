@@ -134,7 +134,7 @@ def _target_mesh_cuboid(target_elems, dimension, magnetization):
     -------
     dict: {
         "pts": np.ndarray, shape (n, 3) - mesh points
-        "moments": np.ndarray, shape (n,3) - moments associated with each point
+        "moments": np.ndarray, shape (n, 3) - moments associated with each point
     }
     """
     a, b, c = dimension
@@ -201,7 +201,7 @@ def _target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
     -------
     dict: {
         "pts": np.ndarray, shape (n, 3) - mesh points
-        "moments": np.ndarray, shape (n,3) - moments associated with each point
+        "moments": np.ndarray, shape (n, 3) - moments associated with each point
     }
     """
     al = (r2 + r1) * 3.14 * (phi2 - phi1) / 360  # arclen = D*pi*arcratio
@@ -299,7 +299,7 @@ def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
     Loop over maximal number of splits. In each step select triangles to be split
     from TRIA, split them and store them back into TRIA.
 
-    Returns: triangles np.ndarray shape (n,3,3)
+    Returns: triangles np.ndarray shape (n, 3, 3)
     """
     n_sub = 2**splits  # subdivisions per tria
     n_tot = np.sum(n_sub)  # total number of trias
@@ -548,7 +548,7 @@ def _target_mesh_tetrahedron(
     -------
      dict: {
         "pts": np.ndarray, shape (n, 3) - mesh points
-        "moments": np.ndarray, shape (n,3) - moments associated with each point
+        "moments": np.ndarray, shape (n, 3) - moments associated with each point
     }
     """
 
@@ -644,7 +644,7 @@ def _target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetiz
     -------
     dict: {
         "pts": np.ndarray, shape (n, 3) - mesh points
-        "moments": np.ndarray, shape (n,3) - moments associated with each point
+        "moments": np.ndarray, shape (n, 3) - moments associated with each point
     }
     """
     # Import the required functions from triangular mesh field module

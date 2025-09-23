@@ -10,7 +10,7 @@ def dipole_Hfield(
     observers: np.ndarray,
     moments: np.ndarray,
 ) -> np.ndarray:
-    """Magnetic field of dipole moments in Cartesian coordinates.
+    """Magnetic field of i dipole moments in Cartesian coordinates.
 
     The dipole moment lies in the origin of the coordinate system.
     The output is proportional to the moment input, and is independent
@@ -20,14 +20,14 @@ def dipole_Hfield(
 
     Parameters
     ----------
-    observers : ndarray, shape (n, 3)
+    observers : ndarray, shape (i, 3)
         Observer positions ``(x, y, z)`` in Cartesian coordinates.
-    moments : ndarray, shape (n, 3)
+    moments : ndarray, shape (i, 3)
         Dipole moment vectors at the origin.
 
     Returns
     -------
-    ndarray, shape (n, 3)
+    ndarray, shape (i, 3)
         H-field in units of ``moments`` input in Cartesian coordinates.
 
     Examples

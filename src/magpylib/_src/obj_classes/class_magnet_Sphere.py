@@ -30,12 +30,12 @@ class Sphere(_BaseMagnet, _BaseVolume, _BaseDipoleMoment):
 
     Parameters
     ----------
-    position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
+    position : array-like, shape (3,) or (p, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path.
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
-        have length 1 or m. ``None`` generates a unit-rotation.
+        have length 1 or p. ``None`` generates a unit-rotation.
     diameter : float | None, default None
         Diameter of the sphere in units (m).
     polarization : None | array-like, shape (3,), default None
@@ -50,7 +50,7 @@ class Sphere(_BaseMagnet, _BaseVolume, _BaseDipoleMoment):
 
     Attributes
     ----------
-    position : ndarray, shape (3,) or (m, 3)
+    position : ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
@@ -58,7 +58,7 @@ class Sphere(_BaseMagnet, _BaseVolume, _BaseDipoleMoment):
         Same as constructor parameter ``polarization``.
     magnetization : None | ndarray, shape (3,)
         Same as constructor parameter ``magnetization``.
-    centroid : ndarray, shape (3,) or (m, 3)
+    centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
         Can be a path.
     dipole_moment : ndarray, shape (3,)

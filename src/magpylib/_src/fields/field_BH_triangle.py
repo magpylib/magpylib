@@ -12,7 +12,7 @@ def _vcross3(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     """
     vectorized cross product for 3d vectors. Is ~4x faster than np.cross when
     arrays are smallish. Only slightly faster for large arrays.
-    input shape a,b: (n,3)
+    input shape a,b: (n, 3)
     returns: (n, 3)
     """
     # receives nan values at corners
@@ -76,7 +76,7 @@ def triangle_Bfield(
     vertices: np.ndarray,
     polarizations: np.ndarray,
 ) -> np.ndarray:
-    """B-field of magnetically charged triangular surfaces.
+    """B-field of i magnetically charged triangular surfaces.
 
     The charge is proportional to the projection of the polarization vectors onto the
     triangle surfaces. The order of the triangle vertices defines the sign of the
@@ -90,17 +90,17 @@ def triangle_Bfield(
 
     Parameters
     ----------
-    observers : ndarray, shape (n, 3)
+    observers : ndarray, shape (i, 3)
         Observer positions ``(x, y, z)`` in Cartesian coordinates.
-    vertices : ndarray, shape (n, 3, 3)
+    vertices : ndarray, shape (i, 3, 3)
         Triangle vertex positions ``((P11, P12, P13), (P21, P22, P23), ...)`` in
         Cartesian coordinates.
-    polarizations : ndarray, shape (n, 3)
+    polarizations : ndarray, shape (i, 3)
         Magnetic polarization vectors.
 
     Returns
     -------
-    ndarray, shape (n, 3)
+    ndarray, shape (i, 3)
         B-field in units of ``polarization`` input at the observer positions.
 
     Examples

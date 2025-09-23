@@ -110,7 +110,7 @@ def _get_open_edges(faces: np.ndarray) -> bool:
     """
     Check if given trimesh forms a closed surface.
 
-    Input: faces: np.ndarray, shape (n,3), dtype int
+    Input: faces: np.ndarray, shape (n, 3), dtype int
         triples of indices
 
     Output: open edges
@@ -131,15 +131,14 @@ def _fix_trimesh_orientation(vertices: np.ndarray, faces: np.ndarray) -> np.ndar
 
     Parameters
     ----------
-    vertices: np.ndarray, shape (n,3)
+    vertices: np.ndarray, shape (n, 3)
         Vertices of the mesh
-
-    faces: np.ndarray, shape (n,3), dtype int
+    faces: np.ndarray, shape (n, 3), dtype int
         Triples of indices
 
     Returns
     -------
-    faces: np.ndarray, shape (n,3), dtype int, or faces and 1D array of triples
+    faces: np.ndarray, shape (n, 3), dtype int, or faces and 1D array of triples
         Fixed faces
     """
     # use first triangle as a seed, this one needs to be oriented via inside check
@@ -176,10 +175,9 @@ def _get_inwards_mask(
 
     Parameters
     ----------
-    vertices: np.ndarray, shape (n,3)
+    vertices: np.ndarray, shape (n, 3)
         Vertices of the mesh
-
-    triangles: np.ndarray, shape (n,3), dtype int
+    triangles: np.ndarray, shape (n, 3), dtype int
         Triples of indices
 
     Returns
@@ -238,11 +236,10 @@ def _lines_end_in_trimesh(lines: np.ndarray, faces: np.ndarray) -> np.ndarray:
 
     Parameters
     ----------
-    lines: ndarray shape (n,2,3)
+    lines: ndarray shape (n, 2, 3)
         n line segments defined through respectively 2 (first index) positions with
         coordinates (x,y,z) (last index). The first point must lie outside of the mesh.
-
-    faces: ndarray, shape (m,3,3)
+    faces: ndarray, shape (m, 3, 3)
         m faces defined through respectively 3 (first index) positions with coordinates
         (x,y,z) (last index). The faces must define a closed mesh.
 
@@ -335,12 +332,10 @@ def _segments_intersect_facets(segments, facets, eps=1e-6):
 
     Parameters
     -----------
-    segments: np.ndarray, shape (n,3,3)
+    segments: np.ndarray, shape (n, 3, 3)
         Set of segments.
-
-    facets: np.ndarray, shape (n,3,3)
+    facets: np.ndarray, shape (n, 3, 3)
         Set of facets.
-
     eps: float
         Point to point tolerance detection. Must be strictly positive,
         otherwise some triangles may be detected as intersecting themselves.
@@ -383,21 +378,17 @@ def _get_intersecting_triangles(vertices, triangles, r=None, r_factor=1.5, eps=1
 
     Parameters
     ----------
-    vertices: np.ndarray, shape (n,3)
+    vertices: np.ndarray, shape (n, 3)
         Vertices/points of the mesh.
-
-    triangles: np.ndarray, shape (n,3), dtype int
+    triangles: np.ndarray, shape (n, 3), dtype int
         Triples of vertices indices that build each triangle of the mesh.
-
     r: float or None
         The radius of the ball-point query for the k-d tree. If None:
         r=max_distance_between_center_and_vertices*2
-
     r_factor: float
         The factor by which to multiply the radius `r` of the ball-point query.
         Note that increasing this value will drastically augment computation
         time.
-
     eps: float
         Point to point tolerance detection. Must be strictly positive,
         otherwise some triangles may be detected as intersecting themselves.
@@ -433,8 +424,8 @@ def _mask_inside_enclosing_box(points: np.ndarray, vertices: np.ndarray) -> np.n
 
     Parameters
     ----------
-    points, ndarray, shape (n,3)
-    vertices, ndarray, shape (m,3)
+    points, ndarray, shape (n, 3)
+    vertices, ndarray, shape (m, 3)
 
     Returns
     -------
@@ -458,8 +449,8 @@ def _mask_inside_trimesh(points: np.ndarray, faces: np.ndarray) -> np.ndarray:
 
     Parameters
     ----------
-    points, ndarray, shape (n,3)
-    faces, ndarray, shape (m,3,3)
+    points, ndarray, shape (n, 3)
+    faces, ndarray, shape (m, 3, 3)
 
     Returns
     -------

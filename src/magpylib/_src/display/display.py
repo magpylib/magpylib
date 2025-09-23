@@ -217,7 +217,7 @@ def _show(
         dims=(2,),
         shape_m1=3,
         sig_name="markers",
-        sig_type="array-like of shape (n,3)",
+        sig_type="array-like of shape (n, 3)",
         allow_None=True,
     )
 
@@ -285,7 +285,7 @@ def show(
     zoom : float, optional
         3D plot zoom level. ``0`` means tight bounds. Default is ``0``.
     markers : array-like, optional
-        Global position markers, shape ``(n, 3)``. Shown as points. Default is ``None``.
+        Global position markers, shape (n, 3). Shown as points. Default is ``None``.
     return_fig : bool, optional
         If ``True`` return the underlying figure object (Figure / FigureWidget / Plotter).
         Default is ``False``.

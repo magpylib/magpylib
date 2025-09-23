@@ -33,13 +33,13 @@ class Tetrahedron(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
     Parameters
     ----------
-    position : array-like, shape (3,) or (m, 3), default (0, 0, 0)
+    position : array-like, shape (3,) or (p, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path. When setting ``vertices``,
         the initial position is set to the barycenter.
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
-        have length 1 or m. ``None`` generates a unit-rotation.
+        have length 1 or p. ``None`` generates a unit-rotation.
     vertices : None | array-like, shape (4, 3), default None
         Vertices ``[(x1, y1, z1), (x2, y2, z2), (x3, y3, z3), (x4, y4, z4)]`` in the
         local object coordinates.
@@ -58,7 +58,7 @@ class Tetrahedron(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
 
     Attributes
     ----------
-    position : ndarray, shape (3,) or (m, 3)
+    position : ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
@@ -70,7 +70,7 @@ class Tetrahedron(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
         Same as constructor parameter ``magnetization``.
     meshing : int | None
         Same as constructor parameter ``meshing``.
-    centroid : ndarray, shape (3,) or (m, 3)
+    centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
         Can be a path.
     dipole_moment : ndarray, shape (3,)
