@@ -23,7 +23,7 @@ docs/docs_styles.md
 ```
 
 ```{toctree}
-:maxdepth: 2
+:maxdepth: 1
 :caption: Resources
 guide_resources_01_physics.md
 examples/examples_index.md

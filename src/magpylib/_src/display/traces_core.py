@@ -7,11 +7,12 @@
 # pylint: disable=cyclic-import
 
 import warnings
-from itertools import combinations, cycle
+from itertools import cycle
 from typing import Any
 
 import numpy as np
 from scipy.spatial import distance
+from scipy.spatial.distance import pdist
 from scipy.spatial.transform import Rotation as RotScipy
 
 from magpylib._src.display.sensor_mesh import get_sensor_mesh
@@ -31,11 +32,15 @@ from magpylib._src.display.traces_utility import (
     create_null_dim_trace,
     draw_arrow_from_vertices,
     draw_arrow_on_circle,
+    get_hexcolors_from_colormap,
     get_legend_label,
+    get_orientation_from_vec,
+    group_traces,
     merge_mesh3d,
     place_and_orient_model3d,
     triangles_area,
 )
+from magpylib._src.utility import is_array_like
 
 
 def make_DefaultTrace(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
@@ -550,19 +555,132 @@ def make_TriangularMesh(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     return traces
 
 
-def make_Pixels(positions, size=1) -> dict[str, Any]:
+def _apply_scaling_transformation(
+    norms, scaling_type, is_null_mask, path_ind, min_=None
+):
+    scaled_norms = norms.copy()
+    log_iterations = (
+        int(scaling_type[4])
+        if scaling_type.startswith("log^")
+        else scaling_type.count("log")
+    )
+    for _ in range(log_iterations):
+        scaled_norms += np.nanmin(scaled_norms) + 1  # shift to positive range
+        scaled_norms[~is_null_mask] = np.log(scaled_norms[~is_null_mask])
+    scaled_norms /= np.nanmax(scaled_norms)
+    if min_ is not None:
+        scaled_norms = min_ + scaled_norms * (1 - min_)
+    return scaled_norms[path_ind]
+
+
+def make_Pixels(
+    *,
+    positions,
+    vectors,
+    colors,
+    symbol,
+    field_symbol,
+    shownull,
+    sizes,
+    marker2d_default_size,
+    null_thresh=1e-12,
+) -> dict[str, Any]:
     """
-    Create the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
+    Create the plotly dict for Sensor pixels based on pixel positions and chosen size
     For now, only "cube" shape is provided.
     """
-    pixels = [
-        make_BaseCuboid("plotly-dict", position=p, dimension=[size] * 3)
-        for p in positions
-    ]
-    return merge_mesh3d(*pixels)
+    # Note: the function must return a single object after grouping
+    # This is relevant for animation in plotly where a different number of traces
+    # in each frame results in weird artifacts.
+    # markers plots must share the same kw types to be able to be merged with line plots!
+
+    sizes_2dfactor = marker2d_default_size / np.max(sizes)
+    allowed_symbols = {
+        "cone": {"type": "mesh3d", "orientable": True},
+        "arrow": {"type": "scatter3d", "orientable": True},
+        "arrow3d": {"type": "mesh3d", "orientable": True},
+        "cube": {"type": "mesh3d", "orientable": False},
+    }
+    field_symbol = symbol if field_symbol in ("none", None) else field_symbol
+    orientable = allowed_symbols.get(field_symbol, {"orientable": False}).get(
+        "orientable"
+    )
+    ttype = allowed_symbols.get(symbol, {"type": "scatter3d"}).get("type")
+    ttype_field = allowed_symbols.get(field_symbol, {"type": "scatter3d"}).get("type")
+    if ttype == "scatter3d" and vectors is None:
+        x, y, z = positions.T
+        sizes = sizes if is_array_like(sizes) else np.repeat(sizes, len(x))
+        return {
+            "type": "scatter3d",
+            "mode": "markers",
+            "x": x,
+            "y": y,
+            "z": z,
+            "marker_symbol": symbol,
+            "marker_color": colors,
+            "marker_size": sizes * sizes_2dfactor,
+        }
+    pixels = []
+    orientations = None
+    is_null_vec = None
+    if vectors is not None:
+        orientations = get_orientation_from_vec(vectors)
+        is_null_vec = (np.abs(vectors) < null_thresh).all(axis=1)
+    for ind, pos in enumerate(positions):
+        kw = {"backend": "plotly-dict", "position": pos}
+        kw2d = {
+            "type": "scatter3d",
+            "mode": "markers+lines",
+            "marker_symbol": symbol,
+            "marker_color": None,
+            "line_color": None,
+        }
+        pix = None
+        size = sizes[ind] if is_array_like(sizes) else sizes
+        if orientable and vectors is not None and not is_null_vec[ind]:
+            orient = orientations[ind]
+            kw.update(orientation=orient, base=5, diameter=size, height=size * 2)
+            if field_symbol == "cone":
+                pix = make_BasePyramid(**kw)
+            elif field_symbol == "arrow3d":
+                pix = make_BaseArrow(**kw)
+            elif field_symbol == "arrow":
+                pix = make_BaseArrow(**kw, **kw2d)
+                pix["marker_size"] = np.repeat(0.0, len(pix["x"]))
+        elif vectors is None or shownull:
+            if ttype_field == "scatter3d":
+                x, y, z = pos[:, None]
+                pix = {
+                    "x": x,
+                    "y": y,
+                    "z": z,
+                    "marker_size": [size * sizes_2dfactor],
+                    **kw2d,
+                }
+            else:
+                pix = make_BaseCuboid(dimension=[size] * 3, **kw)
+        if pix is not None:
+            if colors is not None:
+                color = colors[ind] if is_array_like(colors) else colors
+                if ttype_field == "scatter3d":
+                    pix["line_color"] = np.repeat(color, len(pix["x"]))
+                    pix["marker_color"] = pix["line_color"]
+                else:
+                    pix["facecolor"] = np.repeat(color, len(pix["i"]))
+            pixels.append(pix)
+    pixels = group_traces(*pixels)
+    if len(pixels) != 1:
+        msg = (
+            f"Expected exactly one pixel trace after grouping, but got {len(pixels)}. "
+            "This may indicate an issue with the input data or the grouping logic."
+        )
+        raise ValueError(msg)
+    return pixels[0]
 
 
-def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
+def make_Sensor(
+    obj, *, autosize, path_ind=None, field_values, **kwargs
+) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
     provided arguments.
@@ -573,23 +691,17 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
     style = obj.style
+    traces_to_merge = []
     dimension = getattr(obj, "dimension", style.size)
-    pixel = obj.pixel
-    no_pix = pixel is None
-    if not no_pix:
-        pixel = np.unique(np.array(pixel).reshape((-1, 3)), axis=0)
-    one_pix = not no_pix and pixel.shape[0] == 1
-    style_arrows = style.arrows.as_dict(flatten=True, separator="_")
-    sensor = get_sensor_mesh(
-        **style_arrows, center_color=style.color, handedness=obj.handedness
-    )
-    vertices = np.array([sensor[k] for k in "xyz"]).T
-    if style.color is not None:
-        sensor["facecolor"][sensor["facecolor"] == "rgb(238,238,238)"] = style.color
     dim = np.array(
         [dimension] * 3 if isinstance(dimension, float | int) else dimension[:3],
         dtype=float,
     )
+    pixel = obj.pixel
+    no_pix = pixel is None
+    if not no_pix:
+        pixel = np.array(pixel).reshape((-1, 3))
+    one_pix = not no_pix and pixel.shape[0] == 1
     if autosize is not None and style.sizemode == "scaled":
         dim *= autosize
     if no_pix:
@@ -599,35 +711,98 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
             pixel = np.concatenate([[[0, 0, 0]], pixel])
         hull_dim = pixel.max(axis=0) - pixel.min(axis=0)
         dim_ext = max(np.mean(dim), np.min(hull_dim))
-    cube_mask = (abs(vertices) < 1).all(axis=1)
-    vertices[cube_mask] = 0 * vertices[cube_mask]
-    vertices[~cube_mask] = dim_ext * vertices[~cube_mask]
-    vertices /= 2  # sensor_mesh vertices are of length 2
-    x, y, z = vertices.T
-    sensor.update(x=x, y=y, z=z)
-    meshes_to_merge = [sensor]
-    if not no_pix:
-        pixel_color = style.pixel.color
-        pixel_size = style.pixel.size
-        pixel_dim = 1
-        if style.pixel.sizemode == "scaled":
-            combs = np.array(list(combinations(pixel, 2)))
-            vecs = np.diff(combs, axis=1)
-            dists = np.linalg.norm(vecs, axis=2)
-            min_dist = np.min(dists)
-            pixel_dim = dim_ext / 5 if min_dist == 0 else min_dist / 2
-        if pixel_size > 0:
-            pixel_dim *= pixel_size
-            poss = pixel[1:] if one_pix else pixel
-            pixels_mesh = make_Pixels(positions=poss, size=pixel_dim)
-            pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
-            meshes_to_merge.append(pixels_mesh)
-        hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
-        hull_dim[hull_dim == 0] = pixel_dim / 2
-        hull_mesh = make_BaseCuboid(
-            "plotly-dict", position=hull_pos, dimension=hull_dim
+    style_arrows = style.arrows.as_dict(flatten=True, separator="_")
+    if any(style_arrows[f"{k}_show"] for k in "xyz"):
+        sens_mesh = get_sensor_mesh(
+            **style_arrows, center_color=style.color, handedness=obj.handedness
         )
-        hull_mesh["facecolor"] = np.repeat(style.color, len(hull_mesh["i"]))
-        meshes_to_merge.append(hull_mesh)
-    trace = merge_mesh3d(*meshes_to_merge)
-    return {**trace, **kwargs}
+        vertices = np.array([sens_mesh[k] for k in "xyz"]).T
+        if style.color is not None:
+            sens_mesh["facecolor"][sens_mesh["facecolor"] == "rgb(238,238,238)"] = (
+                style.color
+            )
+        cube_mask = (abs(vertices) < 1).all(axis=1)
+        vertices[cube_mask] = 0 * vertices[cube_mask]
+        vertices[~cube_mask] = dim_ext * vertices[~cube_mask]
+        vertices /= 2  # sensor_mesh vertices are of length 2
+        x, y, z = vertices.T
+        sens_mesh.update(x=x, y=y, z=z)
+        traces_to_merge.append(sens_mesh)
+    if not no_pix:
+        px_color = style.pixel.color
+        px_size = style.pixel.size
+        px_dim = 1
+        if style.pixel.sizemode == "scaled":
+            if len(pixel) < 1000:
+                min_dist = np.min(pdist(pixel))
+            else:
+                # when too many pixels, min_dist computation is too expensive (On^2)
+                # using volume/(side length) approximation instead
+                vol = np.prod(np.ptp(pixel, axis=0))
+                min_dist = (vol / len(pixel)) ** (1 / 3)
+            px_dim = dim_ext / 5 if min_dist == 0 else min_dist / 2
+        if px_size > 0:
+            px_sizes = px_dim = px_dim * px_size
+            px_positions = pixel[1:] if one_pix else pixel
+            px_vectors, null_thresh = None, 1e-12
+            px_colors = "black" if px_color is None else px_color
+            if field_values:
+                fsrc = style.pixel.field.source
+                field, *coords_str = fsrc
+                field_array = field_values[field]
+                px_vectors = field_values[field][path_ind]
+                coords_str = coords_str if coords_str else "xyz"
+                coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
+                other_coords = [i for i in range(3) if i not in coords]
+                field_array[..., other_coords] = 0  # set other components to zero
+                norms = np.linalg.norm(field_array, axis=-1)
+                is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
+                norms[is_null_mask] = np.nan  # avoid -inf
+                nmin, nmax = np.nanmin(norms), np.nanmax(norms)
+                ptp = nmax - nmin
+                norms = (norms - nmin) / ptp if ptp != 0 else norms * 0 + 0.5
+                sizescaling = style.pixel.field.sizescaling
+                sizemin = style.pixel.field.sizemin
+                if sizescaling != "uniform":
+                    snorms_scaled = _apply_scaling_transformation(
+                        norms, sizescaling, is_null_mask, path_ind, min_=sizemin
+                    )
+                    snorms_scaled[is_null_mask[path_ind]] = (
+                        1  # keep null sizes unscaled
+                    )
+                    px_sizes *= snorms_scaled
+                colorscaling = style.pixel.field.colorscaling
+                if colorscaling != "uniform":
+                    cnorms_scaled = _apply_scaling_transformation(
+                        norms, colorscaling, is_null_mask, path_ind
+                    )
+                    px_colors = get_hexcolors_from_colormap(
+                        values=cnorms_scaled,
+                        colormap=style.pixel.field.colormap,
+                        cmin=0,  # scaled values are normalized to [0, 1]
+                        cmax=1,
+                    )
+            pixels_trace = make_Pixels(
+                positions=px_positions,
+                vectors=px_vectors,
+                colors=px_colors,
+                sizes=px_sizes,
+                symbol=style.pixel.symbol,
+                field_symbol=style.pixel.field.symbol,
+                shownull=style.pixel.field.shownull,
+                null_thresh=null_thresh,
+                marker2d_default_size=10 * px_size,
+            )
+
+            traces_to_merge.append(pixels_trace)
+        # Show hull over pixels only if no field values are provided
+        if not field_values:
+            hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
+            hull_dim[hull_dim == 0] = px_dim / 2
+            hull_mesh = make_BaseCuboid(
+                "plotly-dict", position=hull_pos, dimension=hull_dim
+            )
+            hull_mesh["facecolor"] = np.repeat(style.color, len(hull_mesh["i"]))
+            traces_to_merge.append(hull_mesh)
+    traces = group_traces(*traces_to_merge)
+    return [{**tr, **kwargs} for tr in traces]
