@@ -53,6 +53,7 @@ docs = [
   "sphinx-favicon",
   "sphinx-gallery",
   "sphinx-copybutton",
+  "sphinxcontrib-bibtex",
   "myst-nb",
   "pandas",
   "numpy-stl",

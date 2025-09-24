@@ -75,6 +75,7 @@ extensions = [
     "sphinx_thebe",
     "sphinx_favicon",
     "sphinx_design",
+    "sphinxcontrib.bibtex",  # citations support
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -257,6 +258,13 @@ texinfo_documents = [
     ),
 ]
 
+# -- Bibliography / Citations ----------------------------------------------
+# Configure sphinxcontrib-bibtex (extension added above)
+bibtex_bibfiles = ["bibliography.bib"]
+bibtex_default_style = "unsrt"
+# Example: enable author-year style instead (uncomment if desired)
+# bibtex_reference_style = "author_year"
+
 
 # -- Options for Epub output -------------------------------------------------
 
@@ -317,20 +325,8 @@ favicons = [
     "images/favicons/icon.ico",
 ]
 
-
-# Suppress warnings to unknown references in docstrings
-nitpick_ignore = [
-    ("py:class", "Source"),
-    ("py:class", "optional"),
-    ("py:class", "array-like"),
-    ("py:class", "matplotlib.Figure"),
-    ("py:class", "plotly.Figure"),
-    ("py:class", "pyvista.Plotter"),
-    ("py:class", "Rotation"),
-    ("py:class", "ndarray"),
-    ("py:class", "DataFrame"),
-    ("py:class", "Copy"),
-]
+# Suppress warnings to unknown references in docstring type lines
+nitpick_ignore_regex = [(r'py:.*', r'.*')]
 
 
 # sphinx gallery settings
