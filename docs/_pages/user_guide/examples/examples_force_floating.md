@@ -188,7 +188,7 @@ pos0a, pos0b = (5, 0, 0), (-5, 0, 0)  # m
 v0 = np.array((0, 5.18, 0))       # m/s
 m0 = 2                            # kg
 w0 = np.array([0, 0, 0])          # rad/s
-I0 = 1 * np.eye(3)                # kg*m^2
+I0 = 1 * np.eye(3)                # kg*m²
 
 # Create the two magnets and set initial conditions
 sphere1 = magpy.magnet.Sphere(position=pos0a, diameter=1, polarization=(1, 0, 0))

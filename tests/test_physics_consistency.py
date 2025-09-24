@@ -9,17 +9,17 @@ def test_dipole_approximation():
     pol = np.array([0.111, 0.222, 0.333])
     pos = (1234, -234, 345)
 
-    # cuboid with volume = 1 m^3
+    # cuboid with volume = 1 m³
     src1 = magpy.magnet.Cuboid(polarization=pol, dimension=(1, 1, 1))
     B1 = src1.getB(pos)
 
-    # Cylinder with volume = 1 m^3
+    # Cylinder with volume = 1 m³
     dia = np.sqrt(4 / np.pi)
     src2 = magpy.magnet.Cylinder(polarization=pol, dimension=(dia, 1))
     B2 = src2.getB(pos)
     np.testing.assert_allclose(B1, B2, rtol=1e-05, atol=1e-08)
 
-    # Sphere with volume = 1 m^3
+    # Sphere with volume = 1 m³
     dia = (6 / np.pi) ** (1 / 3)
     src3 = magpy.magnet.Sphere(polarization=pol, diameter=dia)
     B3 = src3.getB(pos)
