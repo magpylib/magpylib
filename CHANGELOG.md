@@ -2,6 +2,8 @@
 
 ## [Unreleased] - YYYY-MM-DD
 
+- Added new `style.pixel.field` parameters to quickly represent vector fields
+  ([#793](https://github.com/magpylib/magpylib/pull/793))
 - Added the `current_sheet_Hfield` core computation function, and the classes
   `TriangleStrip` and `TriangleSheet` enabling current sheets in the object
   oriented interface. ([#788](https://github.com/magpylib/magpylib/issues/788))

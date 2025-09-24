@@ -94,7 +94,16 @@ DEFAULTS = {
                     "size": 1,
                     "sizemode": "scaled",
                     "color": None,
-                    "symbol": "o",
+                    "symbol": "cube",
+                    "field": {
+                        "symbol": "cone",
+                        "source": None,
+                        "colormap": "Viridis",
+                        "shownull": True,
+                        "sizescaling": "uniform",
+                        "sizemin": 0.1,
+                        "colorscaling": "linear",
+                    },
                 },
                 "arrows": {
                     "x": {"color": "red"},
