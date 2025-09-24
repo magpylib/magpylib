@@ -72,9 +72,9 @@ print(f'  on sphere: {F_sphere} N')
 print(f'  summation: {np.linalg.norm(F_loop + F_sphere):.3e} N (should be zero)')
 
 print(f'\nTorques:')
-print(f'  on loop:   {T_loop} Nm')
-print(f'  on sphere: {T_sphere} Nm')
-print(f'  summation: {np.linalg.norm(T_loop + T_sphere):.3e} Nm (should be zero)')
+print(f'  on loop:   {T_loop} N*m')
+print(f'  on sphere: {T_sphere} N*m')
+print(f'  summation: {np.linalg.norm(T_loop + T_sphere):.3e} N*m (should be zero)')
 ```
 
 **Key observations:**
@@ -378,7 +378,7 @@ F,T = magpy.getFT(source, loop)
 
 print('\nClosed current loop:')
 print(f'  force:  {F} N')
-print(f'  torque: {T} Nm')
+print(f'  torque: {T} N*m')
 
 # Force on magnet
 cube = magpy.magnet.Cuboid(
@@ -390,7 +390,7 @@ F,T = magpy.getFT(source, cube)
 
 print('\nCuboid magnet:')
 print(f'  force:  {F} N')
-print(f'  torque: {T} Nm')
+print(f'  torque: {T} N*m')
 ```
 **Key observations:**
 - The forces disappear, confirming theoretical predictions.
@@ -455,7 +455,7 @@ F,T = magpy.getFT(earth, needle)
 print('\nCompass Needle: ( 0° = pointing North)')
 print('\tAngle \t Force \t\t\t\t\t Torque:')
 for f, t, a in zip(F, T, angles):
-    print(f'\t{a:>4}° \t {f} N \t {t} Nm')
+    print(f'\t{a:>4}° \t {f} N \t {t} N*m')
 ```
 
 **Key observations:**

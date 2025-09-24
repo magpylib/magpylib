@@ -229,8 +229,8 @@ def getFT(
     >>> F, T = magpy.getFT(cube, circ)
     >>> print(f'force: {np.round(F, decimals=2)} N')
     force: [ 13.65  27.31 -81.93] N
-    >>> print(f'torque: {np.round(T, decimals=2)} Nm')
-    torque: [-8.55  4.27 -0.  ] Nm
+    >>> print(f'torque: {np.round(T, decimals=2)} N*m')
+    torque: [-8.55  4.27 -0.  ] N*m
 
     Notes
     -----

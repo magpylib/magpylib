@@ -57,8 +57,8 @@ F, T = magpy.getFT(cube, loop)
 print(f"Force:  {F} N")
 # Force:  [3.77e-01 3.77e-01 -7.53e-01] N
 
-print(f"Torque: {T} Nm")
-# Torque: [-3.18e-02  3.18e-02  7.45e-20] Nm
+print(f"Torque: {T} N*m")
+# Torque: [-3.18e-02  3.18e-02  7.45e-20] N*m
 ```
 
 **Understanding the results:**
@@ -118,23 +118,23 @@ pivot_labels = ["Intrinsic only", "Centroid", "Axle at z=-0.5", "Axle at z=-1.0"
 for pivot, label in zip(pivot_points, pivot_labels):
     F, T = magpy.getFT(stator, cube, pivot=pivot)
 
-    print(f"{label}:" f"  Force:  {np.round(F, 1)} N" f"  Torque: {np.round(T, 1)} Nm")
+    print(f"{label}:" f"  Force:  {np.round(F, 1)} N" f"  Torque: {np.round(T, 1)} N*m")
 
 # Intrinsic only:
 #   Force:  [80.6 -0.   0. ] N
-#   Torque: [0.  5.7 0. ] Nm
+#   Torque: [0.  5.7 0. ] N*m
 #
 # Centroid:
 #   Force:  [80.6 -0.   0. ] N
-#   Torque: [ 0.   3.4 -0. ] Nm
+#   Torque: [ 0.   3.4 -0. ] N*m
 #
 # Axle at z=-0.5:
 #   Force:  [80.6 -0.   0. ] N
-#   Torque: [ 0.  43.7 -0. ] Nm
+#   Torque: [ 0.  43.7 -0. ] N*m
 #
 # Axle at z=-1.0:
 #   Force:  [80.6 -0.   0. ] N
-#   Torque: [ 0. 84. -0.] Nm
+#   Torque: [ 0. 84. -0.] N*m
 ```
 
 **Key observations:**
