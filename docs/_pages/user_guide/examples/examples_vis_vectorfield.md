@@ -74,9 +74,9 @@ for i in range(12):
     ).rotate_from_angax(30*i, axis="z")
     pole_wheel.add(zone)
 
-# Sensor 1: Pixel line along a circle in the xz-plane
-ang1 = linspace(0, 2*pi, endpoint=False)
-pixel_line = [(cos(a), 0, sin(a)) for a in ang1]
+# Sensor 1: Disc inside the wheel
+ts = linspace(0.8, 1.6, 950, endpoint=False)
+pixel_line = [(t*cos(100*t), t*sin(100*t), 0) for t in ts]
 
 sensor1 = magpy.Sensor(
     pixel=pixel_line,
@@ -93,7 +93,7 @@ sensor2 = magpy.Sensor(
     style_pixel_field={
         "source": "H",
         "sizescaling": "uniform",
-        "colorscale": "Blues",
+        "colormap": "Blues",
         "symbol": "arrow3d",
     }
 )
@@ -108,7 +108,7 @@ sensor3 = magpy.Sensor(
     style_pixel_field={
         "source": "H",
         "sizescaling": "log",
-        "colorscale": "Plasma",
+        "colormap": "Plasma",
         "symbol": "arrow3d",
     }
 )
