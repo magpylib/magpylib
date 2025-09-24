@@ -72,7 +72,7 @@ that apply important code checks which each commit.
   - n, m generic indices
 - Indices and shapes are written in plain prose: '... for n observers this
   function returns an ndarray of shape (n, 3) ...'.
-- Units in prose, e.g., 'in units (m)' or 'in units (A*m²)'.
+- Units in prose, e.g., 'in units (m)' or 'in units (A\*m²)'.
 
 ### Docstrings
 
