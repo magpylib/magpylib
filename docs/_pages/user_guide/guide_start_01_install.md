@@ -8,20 +8,35 @@ Optionally, *Pyvista* is supported as graphical backend, as well as *Pandas* for
 
 ## Installation
 
-::::{grid} 1 1 2 2
+::::{grid} 2 2 1 1
 :margin: 4 4 0 0
 :gutter: 4
+
+:::{grid-item}
+:columns: 1
+:::
 
 :::{grid-item-card} Install with pip:
 :text-align: center
 :shadow: none
+:columns: 10
 ```console
 pip install magpylib
 ```
 :::
+
+:::{grid-item}
+:columns: 1
+:::
+
+:::{grid-item}
+:columns: 1
+:::
+
 :::{grid-item-card} Install with conda:
 :text-align: center
 :shadow: none
+:columns: 10
 ```console
 conda install -c conda-forge magpylib
 ```

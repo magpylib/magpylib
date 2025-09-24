@@ -14,13 +14,15 @@ orphan: true
 
 (examples-tutorial-custom)=
 
-# CustomSource
+# Custom Source
 
 The {ref}`guide-docs-classes-custom-source` class was implemented to offer easy integration of user field implementations into Magpylib's object-oriented interface.
 
 ```{note}
 Obviously, any field implementation can be integrated. Specifically, fields where superposition holds and interactions do not disturb the sources (e.g. electric, gravitational, ...) can benefit from Magpylib's position and orientation interface.
 ```
+
+----------------------------
 
 ## Magnetic Monopole
 
@@ -102,6 +104,8 @@ plt.tight_layout()
 plt.show()
 ```
 
+----------------------------
+
 ## Adding a 3D model
 
 While `CustomSource` is graphically represented by a simple marker by default, we can easily add a 3D model as described in {ref}`examples-own-3d-models`.
@@ -124,6 +128,8 @@ for mono in [mono1, mono2]:
 # Display models
 magpy.show(mono1, mono2)
 ```
+
+----------------------------
 
 ## Subclassing CustomSource
 

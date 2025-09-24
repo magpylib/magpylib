@@ -50,9 +50,6 @@ class Triangle(BaseMagnet):
         charge of the Triangle is given by the projection of the magnetization on the
         Triangle normal vector (right-hand-rule).
 
-    volume: float
-        Read-only. Object physical volume in units of m^3.
-
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m.
 
@@ -151,13 +148,11 @@ class Triangle(BaseMagnet):
         return ""
 
     # Methods
-    def _get_volume(self):
-        """Volume of object in units of m³."""
-        return 0.0
-
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return self.barycenter
+        if squeeze:
+            return self.barycenter
+        return self._barycenter
 
     # Static methods
     @staticmethod

@@ -1,17 +1,19 @@
 (getting-started)=
-# The Magpylib fundamentals
+# The Magpylib Fundamentals
 
 In this section we present the most important Magpylib features, focussing on the intuitive object-oriented interface.
 
-## Basic features
+----------------
 
-Learn the Magpylib fundamentals (create magnets, view system, compute field) in 5 minutes. This requires a basic understanding of the Python programming language, the [NumPy array class](https://numpy.org/doc/stable/) and the [Scipy Rotation class](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html).
+## Basic Features
+
+Learn the Magpylib fundamentals (create magnets, view system, compute field, compute force) in 6 minutes. This requires a basic understanding of the Python programming language, the [NumPy array class](https://numpy.org/doc/stable/) and the [Scipy Rotation class](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html).
 
 ```{hint}
 Since v5 all Magpylib inputs and outputs are by default in SI-units. See {ref}`guide-docs-io-scale-invariance` for convenient use.
 ```
 
-### Create sources and observers as Python objects
+### Sources and Observers as Python Objects
 
 In the object oriented interface sources of the magnetic field (magnets, currents, others) and observers of the magnetic field (sensors) are created as Python objects.
 
@@ -31,7 +33,7 @@ sensor = magpy.Sensor()
 
 Find detailed information on the Magpylib classes [here](docs-classes).
 
-### Position and orientation
+### Position and Orientation
 
 All Magpylib objects (sources and observers) have position and orientation in a global Cartesian coordinate system that can be manipulated.
 
@@ -65,7 +67,7 @@ print(sensor.orientation.as_rotvec(degrees=True))  # -> [ 0.  0. -45.]
 
 Find detailed information on position and orientation attributes and how to manipulate them [here](docs-position).
 
-### 3D view of objects
+### 3D View of Objects
 
 In-built 3D graphic output helps to see if all Magpylib objects are positioned properly. The magnet polarization is represented by default by a 3-color scheme, the sensor by an axes cross.
 
@@ -80,7 +82,7 @@ magpy.show(cube, sensor, backend="plotly")
 
 Detailed information on the graphical output with `show` is given [here](guide-graphics).
 
-### Computing the field
+### Field Computation (B, H, J, M)
 
 The field can be computed at sensor objects, or simply by specifying a position of interest.
 
@@ -107,7 +109,35 @@ Magpylib makes use of vectorized computation (massive speedup). This requires th
 
 Detailed information on field computation is provided [here](docs-fieldcomp).
 
-## Advanced features
+### Force and Torque (F, T)
+
+Force and torque between Magpylib objects is easily computed using the top-level function `getFT()`.
+
+```python
+import numpy as np
+import magpylib as magpy
+
+cube = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0.1, 0.2, 0.3))
+loop = magpy.current.Circle(
+    diameter=2,
+    current=1e3,
+    position=(0, 0, 1),
+    meshing=40,
+)
+F, T = magpy.getFT(cube, loop)
+
+print(f"force: {np.round(F, decimals=2)} N")
+# force: [ 13.67  27.33 -82.  ] N
+
+print(f"torque: {np.round(T, decimals=2)} Nm")
+# torque: [-8.54  4.27  0.  ] Nm
+```
+
+Note that the target object (loop) on which the magnetic field acts must have a `meshing` parameter defined which is a discretizatione finesse for a numerical scheme. Detiled information on force computation is found [here](docs-forcecomp).
+
+--------------------------
+
+## Advanced Features
 
 While most things can be achieved with the above, the following features will make your live much easier.
 
@@ -190,7 +220,6 @@ pyramid.show()
 
 There are several other possibilities to create complex magnet shapes. Some can be found in the [examples](examples-complex-magnet-shapes).
 
-
 ### Graphic Styles
 Magpylib offers many ways to customize the graphic output.
 
@@ -227,7 +256,6 @@ Object paths can be animated. For this feature the plotly graphic backend is rec
 import numpy as np
 import magpylib as magpy
 
-
 # Create magnet with path
 cube = magpy.magnet.Cuboid(
     magnetization=(0, 0, 1),
@@ -242,7 +270,7 @@ cube.show(animation=True, backend="plotly")
 
 Nice animation examples are shown [here](examples-vis-animations), and a detailed discussion is provided [here](guide-graphic-animations).
 
-### Functional interface
+### Functional Interface
 Magpylib's object oriented interface is convenient to work with but is also slowed down by object initialization and handling. The functional interface bypasses this load and enables fast field computation for an arbitrary set of input parameters.
 
 ```python

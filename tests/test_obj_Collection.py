@@ -435,6 +435,7 @@ def test_collection_describe():
         "│   • position: [0. 0. 0.] m",
         "│   • orientation: [0. 0. 0.] deg",
         "│   • centroid: [0. 0. 0.]",
+        "│   • dipole_moment: [0. 0. 0.]",
         "│   • volume: 0.0",
         "├── x",
         "│       • position: [0. 0. 0.] m",
@@ -443,6 +444,8 @@ def test_collection_describe():
         "│       • magnetization: None A/m",
         "│       • polarization: None T",
         "│       • centroid: [0. 0. 0.]",
+        "│       • dipole_moment: [0. 0. 0.]",
+        "│       • meshing: None",
         "│       • volume: 0.0",
         "└── y",
         "        • position: [0. 0. 0.] m",
@@ -451,6 +454,8 @@ def test_collection_describe():
         "        • magnetization: None A/m",
         "        • polarization: None T",
         "        • centroid: [0. 0. 0.]",
+        "        • dipole_moment: [0. 0. 0.]",
+        "        • meshing: None",
         "        • volume: 0.0",
     ]
     assert "".join(test) == re.sub("id=*[0-9]*[0-9]", "id=REGEX", "".join(desc))

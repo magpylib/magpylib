@@ -17,9 +17,9 @@ docs/docs_units_types.md
 docs/docs_classes.md
 docs/docs_pos_ori.md
 docs/docs_fieldcomp.md
+docs/docs_forcecomp.md
 docs/docs_graphics.md
 docs/docs_styles.md
-docs/docs_magpylib_force.md
 ```
 
 ```{toctree}

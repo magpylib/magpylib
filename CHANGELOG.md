@@ -1,25 +1,36 @@
 # Changelog
 
-## [Unreleased] - YYYY-MM-DD
+## [5.2.0] - 2024-MM-DD
 
-- Adding tutorial model magnet
+- General documentation update
+  ([#876](https://github.com/magpylib/magpylib/issues/876),
+  [#829](https://github.com/magpylib/magpylib/issues/829)), and adding/reviewing
+  all force and torque docs.
+- Adding force computation `magpylib.getFT()` to the library.
+  ([#887](https://github.com/magpylib/magpylib/issues/887),
+  [#847](https://github.com/magpylib/magpylib/issues/847),
+  [#787](https://github.com/magpylib/magpylib/issues/787))
+- Adding magnet modelling tutorial
+  ([#813](https://github.com/magpylib/magpylib/issues/813),)
 - Added new `style.pixel.field` parameters to quickly represent vector fields
   ([#793](https://github.com/magpylib/magpylib/pull/793))
 - Added the `current_sheet_Hfield` core computation function, and the classes
   `TriangleStrip` and `TriangleSheet` enabling current sheets in the object
   oriented interface. ([#788](https://github.com/magpylib/magpylib/issues/788))
-- Adding the `centroid` property to all Magpylib objects. This gives the same as
-  the `barycenter` property for the objects that have it.
-  ([#864](https://github.com/magpylib/magpylib/issues/864))
-- Adding the `volume` property to all Magpylib objects
-  ([#864](https://github.com/magpylib/magpylib/issues/864))
+- Adding new objects properties
+  - `centroid`: computes and returns object centroid. Gives the same as
+    `barycenter` for the objects that have it.
+    ([#864](https://github.com/magpylib/magpylib/issues/864))
+  - `volume` computes and returns magnet volumes
+    ([#864](https://github.com/magpylib/magpylib/issues/864))
+  - `dipole_moment` computes and returns object dipole moment (magnets and
+    closed currents only)
+    ([#886](https://github.com/magpylib/magpylib/issues/886))
 - Improved docstrings by adding examples where missing and by using rounding in
   all examples to avoid doctest fails.
 - Fixed a bug where a core getH would return the B-field.
 - Input `in_out` is by default set to `"auto"` for collections to avoiding
   ambiguities.
-- Improve documentation
-  ([#829](https://github.com/magpylib/magpylib/issues/829))
 
 ## [5.1.1] - 2024-10-31
 

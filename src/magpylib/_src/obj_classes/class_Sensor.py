@@ -1,4 +1,5 @@
 # pylint: disable=too-many-positional-arguments
+# pylint: disable=arguments-differ
 
 """Sensor class code"""
 
@@ -525,10 +526,6 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             output=output,
             in_out=in_out,
         )
-
-    def _get_volume(self):
-        """Volume of object in units of m³."""
-        return 0.0
 
     def _get_centroid(self):
         """Centroid of object in units of m."""

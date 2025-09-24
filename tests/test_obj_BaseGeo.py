@@ -641,6 +641,8 @@ def test_describe_with_label():
         "  • magnetization: None A/m",
         "  • polarization: None T",
         "  • centroid: [0. 0. 0.]",
+        "  • dipole_moment: [0. 0. 0.]",
+        "  • meshing: None",
         "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
@@ -664,6 +666,8 @@ def test_describe_with_parent():
         "  • magnetization: None A/m",
         "  • polarization: None T",
         "  • centroid: [0. 0. 0.]",
+        "  • dipole_moment: [0. 0. 0.]",
+        "  • meshing: None",
         "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
@@ -682,7 +686,6 @@ def test_describe_with_path():
         "  • centroid: shape(3, 3)",
         "  • handedness: right",
         "  • pixel: None",
-        "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
 
@@ -710,7 +713,6 @@ def test_describe_with_exclude_None():
             " sizemin=None, sizescaling=None, source=None, symbol=None), size=1,"
             " sizemode=None, symbol=None), size=None, sizemode=None)"
         ),
-        "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(exclude=None, return_string=True))
 
@@ -727,7 +729,6 @@ def test_describe_with_many_pixels():
         "  • centroid: [1. 2. 3.]",
         "  • handedness: left",
         "  • pixel: 75 (3x5x5)",
-        "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
 
@@ -756,8 +757,10 @@ def test_describe_with_triangularmesh():
         "  • polarization: [0. 0. 1.] T",
         "  • barycenter: [0.         0.         0.46065534]",
         "  • centroid: [0.         0.         0.46065534]",
+        "  • dipole_moment: [      0.               0.         2122065.90789194]",
         "  • faces: shape(6, 3)",
         "  • mesh: shape(6, 3, 3)",
+        "  • meshing: None",
         "  • status_disconnected: False",
         "  • status_disconnected_data: 1 part",
         "  • status_open: False",

@@ -256,78 +256,56 @@ def show(
 
     Parameters
     ----------
-    objects: Magpylib objects (sources, collections, sensors)
-        Objects to be displayed.
+    objects : Source or Sensor or Collection
+        One or multiple Magpylib objects to be displayed (given as positional
+        arguments).
+    backend : str, optional
+        Plotting backend. can be ``'auto'``, ``'matplotlib'``, ``'plotly'``,
+        or ``'pyvista'``. The default is the value of
+        ``magpylib.defaults.display.backend`` (installation default ``'auto'``).
+        With ``'auto'`` the backend becomes ``'plotly'`` inside a notebook when
+        Plotly is installed, otherwise ``'matplotlib'``. If ``canvas`` is provided,
+        its type determines the backend.
+    canvas : None or matplotlib.Figure or plotly.Figure or pyvista.Plotter, optional
+        Existing canvas to draw on. If omitted a new canvas is created and
+        displayed. Default is ``None``.
+    animation : bool or float, optional
+        If ``True`` (and at least one object has a path) the path is animated.
+        A positive float sets the total animation duration in seconds (Plotly only).
+        Default is ``False``.
+    zoom : float, optional
+        3D plot zoom level. ``0`` means tight bounds. Default is ``0``.
+    markers : array-like, optional
+        Global position markers, shape ``(n, 3)``. Shown as points. Default is ``None``.
+    return_fig : bool, optional
+        If ``True`` return the underlying figure object (Figure / FigureWidget / Plotter).
+        Default is ``False``.
+    canvas_update : str or bool, optional
+        Layout update behaviour when using a provided canvas. Can be ``'auto'`` (default),
+        ``True`` or ``False``. With ``'auto'`` applies internal layout only for newly
+        created canvases. ``True`` forces update, ``False`` suppresses it.
+    row : int or None, optional
+        Subplot row index. Default is ``None``.
+    col : int or None, optional
+        Subplot column index. Default is ``None``.
+    output : str or tuple of str, optional
+        Plot output type. ``'model3d'`` (default) shows 3D geometry. Field plots are defined via
+        component strings like ``'Bx'``, ``'Bxy'``, ``'Hyz'``. Multiple axes in a string
+        imply vector norm combination (e.g. ``'Bxy'`` => ``sqrt(Bx**2 + By**2)``).
+    sumup : bool, optional
+        Sum field contributions of sources when ``output != 'model3d'``. Default is ``True``.
+    pixel_agg : str, optional
+        numpy reducer applied across sensor pixels for non ``'model3d'`` outputs.
+        Default is ``'mean'``. Other options are ``'min'``, ``'max'``, ``'std'``.
 
-    backend: string, default=`None`
-        Define plotting backend. Must be one of `['auto', 'matplotlib', 'plotly', 'pyvista']`.
-        If not set, parameter will default to `magpylib.defaults.display.backend` which is
-        `'auto'` by installation default. With `'auto'`, the backend defaults to `'plotly'` if
-        plotly is installed and the function is called in an `IPython` environment, otherwise
-        defaults to `'matplotlib'` which comes installed with magpylib. If the `canvas` is set,
-        the backend defaults to the one corresponding to the canvas object (see canvas parameter).
-
-    canvas: matplotlib.pyplot `AxesSubplot` or plotly `Figure` object, default=`None`
-        Display graphical output on a given canvas:
-        - with matplotlib: `matplotlib.axes.Axes` with `projection=3d.
-        - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
-        - with pyvista: `pyvista.Plotter`.
-        By default a new canvas is created and immediately displayed.
-
-    animation: bool or float, default=`False`
-        If `True` and at least one object has a path, the paths are rendered.
-        If input is a positive float, the animation time is set to the given value.
-        This feature is only available for the plotly backend.
-
-    zoom: float, default=`0`
-        Adjust plot zoom-level. When zoom=0 3D-figure boundaries are tight.
-
-    markers: array_like, shape (n,3), default=`None`
-        Display position markers in the global coordinate system.
-
-    return_fig: bool, default=False
-        If True, the function call returns the figure object.
-
-        - with matplotlib: `matplotlib.figure.Figure`.
-        - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
-        - with pyvista: `pyvista.Plotter`.
-
-    canvas_update: bool, default="auto".
-        When no canvas is provided, Magpylib creates one and sets the layout to internally defined
-        settings (e.g. camera angle, aspect ratio). If a canvas is provided, no changes to the
-        layout are made. One can however explicitly force a behavior by setting `canvas_update`
-        to True or False.
-
-    row: int or None,
-        If provided specifies the row in which the objects will be displayed.
-
-    col: int or None,
-        If provided specifies the column in which the objects will be displayed.
-
-    output: tuple or string, default="model3d"
-        Can be a string or a tuple of strings specifying the plot output type. By default
-        `output='model3d'` displays the 3D representations of the objects. If output is a tuple of
-        strings it must be a combination of 'B', 'H', 'M' or 'J' and 'x', 'y' and/or 'z'. When
-        having multiple coordinates, the field value is the combined vector length
-        (e.g. `('Bx', 'Hxy', 'Byz')`) 'Bxy' is equivalent to sqrt(|Bx|^2 + |By|^2). A 2D line plot
-        is then represented accordingly if the objects contain at least one source and one sensor.
-
-    sumup: bool, default=True
-        If True, sums the field values of the sources. Applies only if `output` is not `'model3d'`.
-
-    pixel_agg: bool, default="mean"
-        Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
-        which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-        Applies only if `output` is not `'model3d'`.
-
-    style: dict
-        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-        using style underscore magic, e.g. `style_color='red'`. Applies to all objects matching the
-        given style properties.
+    style : dict or None, optional
+        Global style overrides, e.g. ``{'color': 'red'}`` or via underscore magic
+        (``style_color='red'``). Applied to matching objects. Default is ``None``.
 
     Returns
     -------
-    `None` or figure object
+    fig : None or matplotlib.Figure or plotly.Figure or pyvista.Plotter
+        The created/updated figure object if ``return_fig=True``; otherwise ``None``.
 
     Examples
     --------

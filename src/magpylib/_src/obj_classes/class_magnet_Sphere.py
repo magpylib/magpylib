@@ -10,13 +10,16 @@ from magpylib._src.display.traces_core import make_Sphere
 from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
+from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
 from magpylib._src.utility import unit_prefix
 
 
-class Sphere(BaseMagnet):
+class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
     """Spherical magnet with homogeneous magnetization.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation. No `meshing` parameter is required.
 
     When `position=(0,0,0)` and `orientation=None` the sphere center is located
     in the origin of the global coordinate system.
@@ -51,6 +54,9 @@ class Sphere(BaseMagnet):
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m.
 
+    dipole_moment: np.ndarray, shape (3,)
+        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -79,6 +85,7 @@ class Sphere(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_sphere)
+    _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 2,
         "diameter": 1,
@@ -135,6 +142,21 @@ class Sphere(BaseMagnet):
 
         return self.diameter**3 * np.pi / 6
 
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return self.position
+        if squeeze:
+            return self.position
+        return self._position
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        # test init
+        if self.magnetization is None or self.diameter is None:
+            return np.array((0.0, 0.0, 0.0))
+        return self.magnetization * self.volume
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        points = np.array([(0, 0, 0)])
+        moments = np.array([self.volume * self.magnetization])
+        return {"pts": points, "moments": moments}

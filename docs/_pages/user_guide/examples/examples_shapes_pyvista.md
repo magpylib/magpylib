@@ -22,6 +22,7 @@ orphan: true
 The Pyvista library used in the following examples is not automatically installed with Magpylib. A Pyvista installation guide is found [here](https://docs.pyvista.org/getting-started/installation.html).
 ```
 
+----------------------------
 ## Dodecahedron Magnet
 
 In this example a Magpylib magnet is generated directly from a Pyvista body.
@@ -48,7 +49,8 @@ with magpy.show_context(dodec, sens, backend='plotly') as s:
     s.show(col=2, output=['Bx', 'Bz'])
 ```
 
-## Boolean operations with Pyvista
+----------------------------
+## Boolean Operations with Pyvista
 
 With Pyvista it is possible to build complex shapes with boolean geometric operations. However, such operations often result in open and disconnected meshes that require some refinement to produce solid magnets. The following example demonstrates the problem, how to analyze and fix it.
 

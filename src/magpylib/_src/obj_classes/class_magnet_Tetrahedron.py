@@ -10,12 +10,17 @@ from magpylib._src.display.traces_core import make_Tetrahedron
 from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
+from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.target_meshing import target_mesh_tetrahedron
 
 
-class Tetrahedron(BaseMagnet):
+class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     """Tetrahedron magnet with homogeneous magnetization.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     When `position=(0,0,0)` and `orientation=None` the Tetrahedron vertices coordinates
     are the same as in the global coordinate system. The geometric center of the Tetrahedron
@@ -48,11 +53,18 @@ class Tetrahedron(BaseMagnet):
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
 
+    meshing: int, default=`None`
+        Parameter that defines the mesh fineness for force computation.
+        Must be a positive integer specifying the target mesh size.
+
     volume: float
         Read-only. Object physical volume in units of m^3.
 
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m.
+
+    dipole_moment: np.ndarray, shape (3,)
+        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -89,6 +101,7 @@ class Tetrahedron(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_tetrahedron)
+    _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 1,
         "vertices": 3,
@@ -102,6 +115,7 @@ class Tetrahedron(BaseMagnet):
         vertices=None,
         polarization=None,
         magnetization=None,
+        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -112,6 +126,9 @@ class Tetrahedron(BaseMagnet):
         super().__init__(
             position, orientation, magnetization, polarization, style, **kwargs
         )
+
+        # Initialize BaseTarget
+        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -165,9 +182,22 @@ class Tetrahedron(BaseMagnet):
         matrix = np.column_stack([v1, v2, v3])
         return abs(np.linalg.det(matrix)) / 6.0
 
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return self.barycenter
+        if squeeze:
+            return self.barycenter
+        return self._barycenter
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        # test init
+        if self.magnetization is None or self.vertices is None:
+            return np.array((0.0, 0.0, 0.0))
+        return self.magnetization * self.volume
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        return target_mesh_tetrahedron(self.meshing, self.vertices, self.magnetization)
 
     # Static methods
     @staticmethod

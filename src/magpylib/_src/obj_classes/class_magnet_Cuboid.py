@@ -10,13 +10,18 @@ from magpylib._src.display.traces_core import make_Cuboid
 from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
+from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.target_meshing import target_mesh_cuboid
 from magpylib._src.utility import unit_prefix
 
 
-class Cuboid(BaseMagnet):
+class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     """Cuboid magnet with homogeneous magnetization.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as `sources` input for magnetic field computation and `target`
+    input for force computation.
 
     When `position=(0,0,0)` and `orientation=None` the Cuboid sides are parallel
     to the global coordinate basis vectors and the geometric center of the Cuboid
@@ -47,11 +52,20 @@ class Cuboid(BaseMagnet):
         Magnetization vector M = J/mu0 in units of A/m,
         given in the local object coordinates (rotates with object).
 
+    meshing: int, array_like, shape (3,), default=`None`
+        Parameter that defines the mesh fineness for force computation.
+        Must be a positive integer specifying the target mesh size or an
+        explicit splitting of the cuboid into regular cubic grid cells with
+        shape (n1,n2,n3).
+
     volume: float
         Read-only. Object physical volume in units of m^3.
 
     centroid: np.ndarray, shape (3,) or (m,3)
         Read-only. Object centroid in units of m.
+
+    dipole_moment: np.ndarray, shape (3,)
+        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -80,6 +94,7 @@ class Cuboid(BaseMagnet):
     """
 
     _field_func = staticmethod(BHJM_magnet_cuboid)
+    _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 2,
         "dimension": 2,
@@ -93,6 +108,7 @@ class Cuboid(BaseMagnet):
         dimension=None,
         polarization=None,
         magnetization=None,
+        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -103,6 +119,9 @@ class Cuboid(BaseMagnet):
         super().__init__(
             position, orientation, magnetization, polarization, style, **kwargs
         )
+
+        # Initialize BaseTarget
+        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -136,9 +155,34 @@ class Cuboid(BaseMagnet):
         """Volume of object in units of m³."""
         if self.dimension is None:
             return 0.0
-
         return np.prod(self.dimension)
 
-    def _get_centroid(self):
+    def _get_centroid(self, squeeze=True):
         """Centroid of object in units of m."""
-        return self.position
+        if squeeze:
+            return self.position
+        return self._position
+
+    def _get_dipole_moment(self):
+        """Magnetic moment of object in units Am²."""
+        # test init
+        if self.magnetization is None or self.dimension is None:
+            return np.array((0.0, 0.0, 0.0))
+        return self.magnetization * self.volume
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        return target_mesh_cuboid(self.meshing, self.dimension, self.magnetization)
+
+    def _validate_meshing(self, value):
+        """Cuboid meshing must be a positive integer or array_like of shape (3,)."""
+        if (isinstance(value, int) and value > 0) or (
+            isinstance(value, list | tuple | np.ndarray) and len(value) == 3
+        ):
+            pass
+        else:
+            msg = (
+                "Cuboid meshing parameter must be positive integer or array_like of shape"
+                " (3,) for {self}. Instead got {value}."
+            )
+            raise ValueError(msg)
