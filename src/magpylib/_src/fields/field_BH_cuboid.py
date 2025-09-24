@@ -22,9 +22,9 @@ def magnet_cuboid_Bfield(
     Parameters
     ----------
     observers : array-like, shape (i, 3)
-        Observer positions ``(x, y, z)`` in Cartesian coordinates.
+        Observer positions (x, y, z) in Cartesian coordinates.
     dimensions : array-like, shape (i, 3)
-        Lengths of the cuboid sides ``(a, b, c)``.
+        Lengths of the cuboid sides (a, b, c).
     polarizations : array-like, shape (i, 3)
         Magnetic polarization vectors ``J``.
 
@@ -203,7 +203,7 @@ def _BHJM_magnet_cuboid(
     # allocate for output
     BHJM = polarization.astype(float)
 
-    # SPECIAL CASE 1: polarization = (0,0,0)
+    # SPECIAL CASE 1: polarization = (0, 0, 0)
     mask_pol_not_null = ~(
         (pol_x == 0) * (pol_y == 0) * (pol_z == 0)
     )  # 2x faster than np.all()
@@ -243,7 +243,7 @@ def _BHJM_magnet_cuboid(
         BHJM[~mask_inside] = 0
         return BHJM / MU0
 
-    BHJM *= 0  # return (0,0,0) for all special cases
+    BHJM *= 0  # return (0, 0, 0) for all special cases
     BHJM[mask_gen] = magnet_cuboid_Bfield(
         observers=observers[mask_gen],
         dimensions=dimension[mask_gen],
@@ -257,7 +257,7 @@ def _BHJM_magnet_cuboid(
         return BHJM / MU0
 
     msg = (
-        "Input `output_field_type` must be one of ('B', 'H', 'M', 'J'); "
+        "Input output_field_type must be one of {'B', 'H', 'M', 'J'}; "
         f"instead received {field!r}."
     )
     raise ValueError(  # pragma: no cover

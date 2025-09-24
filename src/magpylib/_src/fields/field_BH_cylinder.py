@@ -31,7 +31,7 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
     Returns
     -------
     ndarray, shape (3, i)
-        B-field components ``(Br, Bphi, Bz)`` in tesla at the
+        B-field components (Br, Bphi, Bz) in units (T) at the
         observer positions, for unit polarization. Values scale linearly with
         the polarization magnitude.
 
@@ -113,7 +113,7 @@ def magnet_cylinder_diametral_Hfield(
     Returns
     -------
     ndarray, shape (3, i)
-        H-field components ``(Hr, Hphi, Hz)`` in (A/m) at the observer
+        H-field components (Hr, Hphi, Hz) in (A/m) at the observer
         positions, for unit magnetization. Values scale linearly with the
         magnetization magnitude.
 
@@ -208,7 +208,7 @@ def magnet_cylinder_diametral_Hfield(
         )
 
         # if there are small_r, select the general/case variables
-        # when there are no small_r cases it is not necessary to slice with [True, True, Tue,...]
+        # when there are no small_r cases it is not necessary to slice with [True, True, Tue, ...]
         phi = phi[mask_general]
         n = len(phi)
         zp, zm = zp[mask_general], zm[mask_general]
@@ -391,7 +391,7 @@ def _BHJM_magnet_cylinder(
         return BHJM / MU0
 
     msg = (
-        "Input `output_field_type` must be one of ('B', 'H', 'M', 'J'); "
+        "Input output_field_type must be one of {'B', 'H', 'M', 'J'}; "
         f"instead received {field!r}."
     )
     raise ValueError(msg)  # pragma: no cover

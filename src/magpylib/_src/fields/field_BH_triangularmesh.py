@@ -238,10 +238,10 @@ def _lines_end_in_trimesh(lines: np.ndarray, faces: np.ndarray) -> np.ndarray:
     ----------
     lines: ndarray shape (n, 2, 3)
         n line segments defined through respectively 2 (first index) positions with
-        coordinates (x,y,z) (last index). The first point must lie outside of the mesh.
+        coordinates (x, y, z) (last index). The first point must lie outside of the mesh.
     faces: ndarray, shape (m, 3, 3)
         m faces defined through respectively 3 (first index) positions with coordinates
-        (x,y,z) (last index). The faces must define a closed mesh.
+        (x, y, z) (last index). The faces must define a closed mesh.
 
     Returns
     -------
@@ -341,7 +341,7 @@ def _segments_intersect_facets(segments, facets, eps=1e-6):
         otherwise some triangles may be detected as intersecting themselves.
     """
     if eps <= 0:  # pragma: no cover
-        msg = f"Input `eps` must be strictly positive; instead received {eps}."
+        msg = f"Input eps must be strictly positive; instead received {eps}."
         raise ValueError(msg)
 
     s, t = segments.swapaxes(0, 1), facets.swapaxes(0, 1)
@@ -394,7 +394,7 @@ def _get_intersecting_triangles(vertices, triangles, r=None, r_factor=1.5, eps=1
         otherwise some triangles may be detected as intersecting themselves.
     """
     if r_factor < 1:  # pragma: no cover
-        msg = f"Input `r_factor` must be greater or equal to 1; instead received {r_factor}."
+        msg = f"Input r_factor must be greater or equal to 1; instead received {r_factor}."
         raise ValueError(msg)
 
     vertices = vertices.astype(np.float32)
@@ -561,7 +561,7 @@ def _BHJM_magnet_trimesh(
         return BHJM / MU0
 
     msg = (
-        "Input `output_field_type` must be one of {'B', 'H', 'M', 'J'}; "
+        "Input output_field_type must be one of {'B', 'H', 'M', 'J'}; "
         f"instead received {field!r}"
     )
     raise ValueError(msg)  # pragma: no cover

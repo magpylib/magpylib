@@ -18,18 +18,18 @@ def _current_vertices_field(
     segment_end=None,
 ) -> np.ndarray:
     """
-    This function accepts n (mi,3) shaped vertex-sets, creates a single long
+    This function accepts n (mi, 3) shaped vertex-sets, creates a single long
     input array for field_BH_polyline(), computes, sums and returns a single field for each
     vertex-set at respective n observer positions.
 
     ### Args:
     - bh (boolean): True=B, False=H
-    - current (ndarray n): current on line in units of A
+    - current (ndarray n): current on line in units (A)
     - vertex_sets (list of len n): n vertex sets (each of shape (mi, 3))
-    - pos_obs (ndarray nx3): n observer positions in units of m
+    - pos_obs (ndarray nx3): n observer positions in units (m)
 
     ### Returns:
-    - B-field (ndarray nx3): B-field vectors at pos_obs in units of T
+    - B-field (ndarray nx3): B-field vectors at pos_obs in units (T)
     """
     if vertices is None:
         return _BHJM_current_polyline(
@@ -74,18 +74,18 @@ def current_polyline_Hfield(
 ) -> np.ndarray:
     """H-field of i straight current segments in Cartesian coordinates.
 
-    The current flows from start to end positions. The field is set to (0,0,0) on a
+    The current flows from start to end positions. The field is set to (0, 0, 0) on a
     line segment. The output is proportional to the current and independent of the
     length units chosen for observers and dimensions.
 
     Parameters
     ----------
     observers : ndarray, shape (i, 3)
-        Observer positions ``(x, y, z)`` in Cartesian coordinates.
+        Observer positions (x, y, z) in Cartesian coordinates.
     segments_start : ndarray, shape (i, 3)
-        Segment start positions ``(x, y, z)`` in Cartesian coordinates.
+        Segment start positions (x, y, z) in Cartesian coordinates.
     segments_end : ndarray, shape (i, 3)
-        Segment end positions ``(x, y, z)`` in Cartesian coordinates.
+        Segment end positions (x, y, z) in Cartesian coordinates.
     currents : ndarray, shape (i,)
         Electrical currents (A) in the segments.
 
@@ -164,7 +164,7 @@ def current_polyline_Hfield(
     sinTh2 = norm_42 / norm_o2
     deltaSin = np.empty((len(po),))
 
-    # determine how p1,p2,p4 are sorted on the line (to get sinTH signs)
+    # determine how p1, p2, p4 are sorted on the line (to get sinTH signs)
     # both points below
     mask2 = (norm_41 > 1) * (norm_41 > norm_42)
     deltaSin[mask2] = abs(sinTh1[mask2] - sinTh2[mask2])
@@ -236,7 +236,7 @@ def _BHJM_current_polyline(
         return BHJM * MU0
 
     msg = (
-        "Input `output_field_type` must be one of ('B', 'H', 'M', 'J'); "
+        "Input output_field_type must be one of {'B', 'H', 'M', 'J'}; "
         f"instead received {field!r}."
     )
     raise ValueError(msg)  # pragma: no cover

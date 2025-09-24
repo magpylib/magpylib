@@ -454,7 +454,7 @@ class Model3d(MagicProperties):
             Multiplier applied to the trace vertex coordinates.
         updatefunc : callable | None, default None
             Callable with no arguments returning a dictionary of trace parameters to update
-            at ``show`` time.
+            at show time.
 
         Returns
         -------
@@ -491,7 +491,7 @@ class Trace3d(MagicProperties):
         Multiplier applied to the trace vertex coordinates.
     updatefunc : callable | None, default None
         Callable with no arguments returning a dictionary of trace parameters to update
-        at ``show`` time. Enables dynamic, attribute-dependent trace updates.
+        at show time. Enables dynamic, attribute-dependent trace updates.
     """
 
     def __init__(
@@ -592,7 +592,7 @@ class Trace3d(MagicProperties):
 
     @property
     def coordsargs(self):
-        """Names of coordinate arrays to transform; default ``{"x":"x","y":"y","z":"z"}``.
+        """Names of coordinate arrays to transform; default ``{"x":"x", "y":"y", "z":"z"}``.
         If ``False``, the object is not rotated.
         """
         return self._coordsargs
@@ -623,7 +623,7 @@ class Trace3d(MagicProperties):
     @property
     def updatefunc(self):
         """Callable object with no arguments. Should return a dictionary with keys from the
-        trace parameters. If provided, the function is called at `show` time and updates the
+        trace parameters. If provided, the function is called at show time and updates the
         trace parameters with the output dictionary. This allows to update a trace dynamically
         depending on class attributes, and postpone the trace construction to when the object is
         displayed."""
@@ -662,15 +662,12 @@ class Magnetization(MagicProperties):
     Parameters
     ----------
     show : bool, default=None
-        If True show magnetization direction.
-
+        If ``True`` show magnetization direction.
     color: dict or MagnetizationColor object, default=None
         Color properties showing the magnetization direction (for the plotly backend).
         Only applies if `show=True`.
-
     arrow: dict or Arrow object, default=None,
         Arrow properties. Only applies if mode='arrow'.
-
     mode: {"auto", "arrow", "color", "arrow+color"}, default="auto"
         Magnetization can be displayed via arrows, color or both. By default `mode='auto'` means
         that the chosen backend determines which mode is applied by its capability. If the backend
@@ -1001,9 +998,9 @@ class DisconnectedMesh(MagicProperties, MarkerLineProperties):
         disconnected triangular mesh object.
         A color may be specified by
       - a hex string (e.g. '#ff0000')
-      - an rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - an hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - an hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - an rgb/rgba string (e.g. 'rgb(255, 0, 0)')
+      - an hsl/hsla string (e.g. 'hsl(0, 100%, 50%)')
+      - an hsv/hsva string (e.g. 'hsv(0, 100%, 100%)')
       - a named CSS color
     """
 
@@ -1013,9 +1010,9 @@ class DisconnectedMesh(MagicProperties, MarkerLineProperties):
         disconnected triangular mesh object.
           A color may be specified by
         - a hex string (e.g. '#ff0000')
-        - an rgb/rgba string (e.g. 'rgb(255,0,0)')
-        - an hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-        - an hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+        - an rgb/rgba string (e.g. 'rgb(255, 0, 0)')
+        - an hsl/hsla string (e.g. 'hsl(0, 100%, 50%)')
+        - an hsv/hsva string (e.g. 'hsv(0, 100%, 100%)')
         - a named CSS color"""
         return self._colorsequence
 
@@ -1139,7 +1136,7 @@ class Orientation(MagicProperties):
 
     offset: float, default=0.1
         Defines the orientation symbol offset, normal to the triangle surface. Must be a number
-        between [0,1], 0 resulting in the cone/arrow head to be coincident to the triangle surface
+        between [0, 1], 0 resulting in the cone/arrow head to be coincident to the triangle surface
         and 1 with the base.
 
     symbol: {"cone", "arrow3d"}:
@@ -1379,11 +1376,9 @@ class ArrowCS(MagicProperties):
     x: dict or `ArrowSingle` object, default=None
         x-direction `Arrowsingle` object or dict with equivalent key/value pairs
         (e.g. `color`, `show`).
-
     y: dict or `ArrowSingle` object, default=None
         y-direction `Arrowsingle` object or dict with equivalent key/value pairs
         (e.g. `color`, `show`).
-
     z: dict or `ArrowSingle` object, default=None
         z-direction `Arrowsingle` object or dict with equivalent key/value pairs
         (e.g. `color`, `show`).
@@ -2103,13 +2098,11 @@ class Path(MagicProperties, MarkerLineProperties):
                 is_valid_path = False
         elif not (val is None or np.issubdtype(type(val), int)):
             is_valid_path = False
-        assert (
-            is_valid_path
-        ), (
-        f"Input frames of {type(self).__name__} must be either: "
-        "integer i (displays the objects at every i'th path position) or "
-        "array-like, shape (n,), dtype=int (displays objects at given path "
-        f"indices; instead received {val!r}."
+        assert is_valid_path, (
+            f"Input frames of {type(self).__name__} must be either: "
+            "integer i (displays the objects at every i'th path position) or "
+            "array-like, shape (n,), dtype=int (displays objects at given path "
+            f"indices; instead received {val!r}."
         )
         self._frames = val
 

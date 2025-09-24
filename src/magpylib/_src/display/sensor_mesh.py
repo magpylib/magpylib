@@ -133,8 +133,8 @@ def get_sensor_mesh(
     handedness="right",
 ):
     """
-    returns a plotly mesh3d dictionary of a x,y,z arrows oriented in space accordingly
-    and  colored respectively in red,green,blue with a central cube of size 1
+    returns a plotly mesh3d dictionary of a x, y, z arrows oriented in space accordingly
+    and  colored respectively in red, green, blue with a central cube of size 1
     """
     x_color_tail = x_color
     y_color_tail = y_color

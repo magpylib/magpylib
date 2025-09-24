@@ -70,9 +70,7 @@ def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, length=None, 
 def check_input_zoom(inp):
     """check show zoom input"""
     if not (isinstance(inp, numbers.Number) and inp >= 0):
-        msg = (
-            f"Input zoom must be a positive number or zero; instead received {inp!r}."
-        )
+        msg = f"Input zoom must be a positive number or zero; instead received {inp!r}."
         raise MagpylibBadUserInput(msg)
 
 
@@ -105,10 +103,7 @@ def check_start_type(inp):
 def check_degree_type(inp):
     """degrees input must be bool"""
     if not isinstance(inp, bool):
-        msg = (
-            "Input degrees must be boolean; "
-            f"instead received {inp!r}."
-        )
+        msg = f"Input degrees must be boolean; instead received {inp!r}."
         raise MagpylibBadUserInput(msg)
 
 
@@ -172,7 +167,7 @@ def validate_field_func(val):
 def check_format_input_orientation(inp, init_format=False):
     """checks orientation input returns in formatted form
     - inp must be None or Rotation object
-    - transform None to unit rotation as quat (0,0,0,1)
+    - transform None to unit rotation as quat (0, 0, 0, 1)
     if init_format: (for move method)
         return inp and inpQ
     else: (for init and setter)
@@ -220,10 +215,10 @@ def check_format_input_anchor(inp):
 def check_format_input_axis(inp):
     """check rotate_from_angax axis input and return in formatted form
     - input must be array-like or str
-    - if string 'x'->(1,0,0), 'y'->(0,1,0), 'z'->(0,0,1)
+    - if string 'x'->(1, 0, 0), 'y'->(0, 1, 0), 'z'->(0, 0, 1)
     - convert inp to ndarray with dtype float
     - inp shape must be (3,)
-    - axis must not be (0,0,0)
+    - axis must not be (0, 0, 0)
     - return as ndarray shape (3,)
     """
     if isinstance(inp, str):
@@ -360,8 +355,7 @@ def check_format_input_vector2(
     """
     is_array_like(
         inp,
-        f"Input {param_name} must be array-like; "
-        f"instead received type {type(inp)!r}.",
+        f"Input {param_name} must be array-like; instead received type {type(inp)!r}.",
     )
     inp = make_float_array(
         inp,
@@ -379,7 +373,7 @@ def check_format_input_vector2(
 
 def check_format_input_vertices(inp, minlength=2):
     """checks vertices input and returns in formatted form
-    - vector check with dim = (n,3) but n must be >=2
+    - vector check with dim = (n, 3) but n must be >=2
     """
     inp = check_format_input_vector(
         inp,
@@ -443,10 +437,7 @@ def check_format_input_backend(inp):
         inp = default_settings.display.backend
     if inp in backends:
         return inp
-    msg = (
-        f"Input backend must be one of {[*backends, None]}; "
-        f"instead received {inp!r}."
-    )
+    msg = f"Input backend must be one of {[*backends, None]}; instead received {inp!r}."
     raise MagpylibBadUserInput(msg)
 
 
@@ -632,10 +623,7 @@ def check_getBH_output_type(output):
     """check if getBH output is acceptable"""
     acceptable = ("ndarray", "dataframe")
     if output not in acceptable:
-        msg = (
-            f"Input output must be one of {acceptable}; "
-            f"instead received {output!r}."
-        )
+        msg = f"Input output must be one of {acceptable}; instead received {output!r}."
         raise ValueError(msg)
     if output == "dataframe" and find_spec("pandas") is None:  # pragma: no cover
         msg = (

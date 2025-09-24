@@ -21,7 +21,7 @@ The top-level class `Collection` allows users to group objects by reference for 
 1. A collection spans its own local frame of reference with position and orientation, to which the children are added. Thus, any operation applied to the collection is individually applied to all its children.
 2. The collection itself behaves like a single Magpylib object (can be source and/or observer).
 3. All children inside the collection can be individually addressed and manipulated, which will automatically manipulate their state inside the parent collection.
-4. Collections have their own `style` attributes, their paths are displayed in `show`, and all children are automatically assigned their parent color.
+4. Collections have their own `style` attributes, their paths are displayed in `show()`, and all children are automatically assigned their parent color.
 
 ----------------------------
 
@@ -66,7 +66,7 @@ print(f"sensors:     {coll.sensors}")
 print(f"collections: {coll.collections}")
 ```
 
-The **`describe`** method is a very convenient way to view a Collection structure, especially when the collection is nested, i.e., when containing other collections.
+The **`describe()`** method is a very convenient way to view a Collection structure, especially when the collection is nested, i.e., when containing other collections.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed

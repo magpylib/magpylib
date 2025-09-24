@@ -41,7 +41,7 @@ dodec = magpy.magnet.TriangularMesh.from_pyvista(
 )
 
 # Add a sensor with path
-sens = magpy.Sensor(position=np.linspace((-2,0,1), (2,0,1), 100)/100)
+sens = magpy.Sensor(position=np.linspace((-2, 0, 1), (2, 0, 1), 100)/100)
 
 # Show system and field
 with magpy.show_context(dodec, sens, backend='plotly') as s:

@@ -51,10 +51,10 @@ spiral[1::2] = np.stack((r2 * sin_t, r2 * cos_t, np.zeros_like(ang)), axis=1)
 # Define connection legs
 spiral[1] -= np.array([width, 0, 0.0])
 leg1 = [
-    spiral[0] + np.array([0.0, -2,-depth]),
-    spiral[1] + np.array([0.0, -2+width,-depth]),
-    spiral[0] + np.array([0.0, 0,-depth]),
-    spiral[1] + np.array([0.0, 0,-depth]),
+    spiral[0] + np.array([0.0, -2, -depth]),
+    spiral[1] + np.array([0.0, -2+width, -depth]),
+    spiral[0] + np.array([0.0, 0, -depth]),
+    spiral[1] + np.array([0.0, 0, -depth]),
 ]
 spiral[-1] += np.array([2*width, 0, 0])
 spiral[-2] += np.array([width, 0, 0])

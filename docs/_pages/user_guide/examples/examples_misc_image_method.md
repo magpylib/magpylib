@@ -105,7 +105,7 @@ magnet = magpy.magnet.Cylinder(
 # Create mirror image of the magnet
 mirror_magnet = magnet.copy(
     position=(0, 0, -1),  # Mirror position
-    orientation=R.from_euler('y',-angle, degrees=True)  # Mirror orientation
+    orientation=R.from_euler('y', -angle, degrees=True)  # Mirror orientation
 )
 
 # Create a 3D grid with Pyvista
@@ -120,7 +120,7 @@ col = magnet + mirror_magnet
 grid["B"] = col.getB(grid.points)*1000 # Convert to mT
 
 # Compute the field lines
-seed = pv.Disc(center=(0,0,0), inner=2, outer=3, r_res=1, c_res=12)
+seed = pv.Disc(center=(0, 0, 0), inner=2, outer=3, r_res=1, c_res=12)
 strl = grid.streamlines_from_source(
     seed,
     vectors="B",
@@ -155,6 +155,6 @@ disc = pv.Disc(center=(0, 0, 0), inner=0.0, outer=4, normal=(0, 0, 1), r_res=1, 
 pl.add_mesh(disc, color='lightblue', show_edges=False)
 
 # Prepare and show scene
-pl.camera.position = (5,15, 10)
+pl.camera.position = (5, 15, 10)
 pl.show()
 ```

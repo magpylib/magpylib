@@ -384,8 +384,8 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         >>> import numpy as np
         >>> import magpylib as magpy
         >>> cube = magpy.magnet.Cuboid(
-        ...     dimension=(10,1,1),
-        ...     polarization=(1,0,0)
+        ...     dimension=(10, 1, 1),
+        ...     polarization=(1, 0, 0)
         ... )
         >>> sens = magpy.Sensor()
         >>> M = sens.getM(cube)
@@ -450,8 +450,8 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         >>> import numpy as np
         >>> import magpylib as magpy
         >>> cube = magpy.magnet.Cuboid(
-        ...     dimension=(10,1,1),
-        ...     polarization=(1,0,0)
+        ...     dimension=(10, 1, 1),
+        ...     polarization=(1, 0, 0)
         ... )
         >>> sens = magpy.Sensor()
         >>> J = sens.getJ(cube)

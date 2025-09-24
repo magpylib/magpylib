@@ -34,7 +34,7 @@ print(B)
 
 ## Field on a Grid
 
-There are four field computation functions: `getB` will compute the B-field in (T). `getH` computes the H-field in (A/m). `getJ` computes the magnetic polarization in units (T). `getM` computes the magnetization in units of (A/m).
+There are four field computation functions: `getB()` will compute the B-field in (T). `getH()` computes the H-field in (A/m). `getJ()` computes the magnetic polarization in units (T). `getM()` computes the magnetization in units of (A/m).
 
 All these functions will return the field in the shape of the input. In the following example, BHJM-fields of a diametrically magnetized cylinder magnet are computed on a position grid in the symmetry plane and are then displayed using Matplotlib.
 
@@ -76,13 +76,13 @@ ax2.set_title("H-Field")
 ax3.set_title("J-Field")
 ax4.set_title("M-Field")
 
-for ax in [ax1,ax2,ax3,ax4]:
+for ax in [ax1, ax2, ax3, ax4]:
     ax.set(
         xlabel="x-position",
         ylabel="y-position",
         aspect=1,
-        xlim=(-50,50),
-        ylim=(-50,50),
+        xlim=(-50, 50),
+        ylim=(-50, 50),
     )
     # Outline magnet boundary
     ts = np.linspace(0, 2 * np.pi, 50)

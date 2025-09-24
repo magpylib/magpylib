@@ -44,12 +44,12 @@ def test_format_getBH_class_inputs():
     np.testing.assert_allclose(
         B3,
         B4,
-        err_msg="sens,sens should give same as [sens,sens]",
+        err_msg="sens, sens should give same as [sens, sens]",
     )
     np.testing.assert_allclose(
         B3,
         B44,
-        err_msg="sens,sens should give same as (sens,sens)",
+        err_msg="sens, sens should give same as (sens, sens)",
     )
 
     B1 = sens.getH(pm1) * 4
@@ -60,7 +60,7 @@ def test_format_getBH_class_inputs():
     np.testing.assert_allclose(
         B1,
         B2,
-        err_msg="src,src should give same as [src,src]",
+        err_msg="src, src should give same as [src, src]",
     )
     np.testing.assert_allclose(
         B1,
@@ -70,7 +70,7 @@ def test_format_getBH_class_inputs():
     np.testing.assert_allclose(
         B1,
         B4,
-        err_msg="src,src should give same as [src,src]",
+        err_msg="src, src should give same as [src, src]",
     )
 
 

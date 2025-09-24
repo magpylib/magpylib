@@ -17,9 +17,9 @@ def current_circle_Hfield(
     """H-field of i circular line-current loops in cylindrical coordinates.
 
     The loop lies in the ``z=0`` plane with the coordinate origin at its center.
-    The output is proportional to the electrical current ``i0`` (A) and independent
+    The output is proportional to the electrical current ``i0`` in units (A) and independent
     of the length units chosen for observers and loop radii. The returned field
-    is in (A/m).
+    is in units (A/m).
 
     Parameters
     ----------
@@ -30,13 +30,13 @@ def current_circle_Hfield(
     z : array-like, shape (i,)
         Axial observer positions.
     i0 : array-like, shape (i,)
-        Electrical currents in units of (A).
+        Electrical currents in units (A).
 
     Returns
     -------
     ndarray, shape (3, i)
         H-field in (A/m) at observer positions in cylindrical coordinates
-        ``(H_r, H_φ, H_z)``. The azimuthal component is zero for symmetry.
+        (H_r, H_φ, H_z). The azimuthal component is zero for symmetry.
 
     Examples
     --------
@@ -112,9 +112,9 @@ def _BHJM_circle(
     r0 = np.abs(diameter / 2)
 
     # Special cases:
-    # case1: loop radius is 0 -> return (0,0,0)
+    # case1: loop radius is 0 -> return (0, 0, 0)
     mask1 = r0 == 0
-    # case2: at singularity -> return (0,0,0)
+    # case2: at singularity -> return (0, 0, 0)
     mask2 = np.logical_and(abs(r - r0) < 1e-15 * r0, z == 0)
     # case3: r=0
     mask3 = r == 0
@@ -145,7 +145,7 @@ def _BHJM_circle(
         return BHJM * MU0
 
     msg = (
-        "Input `output_field_type` must be one of ('B', 'H', 'M', 'J'); "
+        "Input output_field_type must be one of {'B', 'H', 'M', 'J'}; "
         f"instead received {field!r}."
     )
     raise ValueError(  # pragma: no cover

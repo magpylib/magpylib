@@ -61,10 +61,10 @@ loop = magpy.current.Circle(
 )
 
 # Forward
-F_sphere, T_sphere = magpy.getFT(loop, sphere, pivot=(0,0,0))
+F_sphere, T_sphere = magpy.getFT(loop, sphere, pivot=(0, 0, 0))
 
 # Backward
-F_loop, T_loop = magpy.getFT(sphere, loop, pivot=(0,0,0))
+F_loop, T_loop = magpy.getFT(sphere, loop, pivot=(0, 0, 0))
 
 print('\nForces:')
 print(f'  on loop:   {F_loop} N')
@@ -310,11 +310,11 @@ L = 1e6  # wire length (m)
 
 wire1 = Polyline(
     current=i1,
-    vertices=[(d,0,-L/2), (d,0,L/2)],
+    vertices=[(d, 0, -L/2), (d, 0, L/2)],
 )
 wire2 = Polyline(
     current=i2,
-    vertices=[(0,0,-L/2), (0,0,L/2)],
+    vertices=[(0, 0, -L/2), (0, 0, L/2)],
     meshing=10
 )
 F,_ = getFT(wire1, wire2)
@@ -371,7 +371,7 @@ source = magpy.misc.CustomSource(
 # Force on closed current loop
 loop = magpy.current.Polyline(
     current=1,
-    vertices=[(0, 0, 0), (1, 0, 0), (2,2,0), (3,-3,0), (0,0,0)],
+    vertices=[(0, 0, 0), (1, 0, 0), (2, 2, 0), (3, -3, 0), (0, 0, 0)],
     meshing=400,
 )
 F,T = magpy.getFT(source, loop)
@@ -454,7 +454,7 @@ F,T = magpy.getFT(earth, needle)
 
 print('\nCompass Needle: ( 0° = pointing North)')
 print('\tAngle \t Force \t\t\t\t\t Torque:')
-for f,t,a in zip(F, T, angles):
+for f, t, a in zip(F, T, angles):
     print(f'\t{a:>4}° \t {f} N \t {t} Nm')
 ```
 

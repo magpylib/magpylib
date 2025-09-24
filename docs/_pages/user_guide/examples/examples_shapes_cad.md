@@ -32,7 +32,7 @@ mesh = pv.read("logo.stl")
 # Transform into Magpylib magnet
 magnet = TriangularMesh.from_pyvista(
     polydata=mesh,
-    polarization=(1,-1,0),
+    polarization=(1, -1, 0),
     check_disconnected=False,
 )
 magnet.show(backend="plotly")

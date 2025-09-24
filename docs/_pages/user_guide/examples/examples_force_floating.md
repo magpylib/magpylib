@@ -91,17 +91,17 @@ def timestep(source, target, dt):
 loop = magpy.current.Circle(diameter=10e-3, current=10)
 
 # Magnets which are accelerated in the loop-field
-cube1 = magpy.magnet.Cuboid(dimension=(5e-3,5e-3,5e-3), polarization=(0,0,1))
-cube1.meshing=(3,3,3)
-cube2 = cube1.copy(polarization=(0,0,-1))
+cube1 = magpy.magnet.Cuboid(dimension=(5e-3, 5e-3, 5e-3), polarization=(0, 0, 1))
+cube1.meshing=(3, 3, 3)
+cube2 = cube1.copy(polarization=(0, 0, -1))
 
 # Simulate motion of both cubes
 for cube, lab in zip([cube1, cube2], ["attractive", "repulsive"]):
 
     # Set initial conditions (position, mass, velocity)
-    cube.position=(0,0,3e-3)    # m
+    cube.position=(0, 0, 3e-3)    # m
     cube.m = 1e-3               # kg
-    cube.v = np.array([0,0,0])  # m/s
+    cube.v = np.array([0, 0, 0])  # m/s
 
     # Compute timesteps
     z = []
@@ -184,14 +184,14 @@ steps=505   # number of timesteps
 dt = 1e-2   # timstep size (s)
 
 # Initial conditions
-pos0a, pos0b = (5,0,0), (-5,0,0)  # m
+pos0a, pos0b = (5, 0, 0), (-5, 0, 0)  # m
 v0 = np.array((0, 5.18, 0))       # m/s
 m0 = 2                            # kg
 w0 = np.array([0, 0, 0])          # rad/s
 I0 = 1 * np.eye(3)                # kg*m^2
 
 # Create the two magnets and set initial conditions
-sphere1 = magpy.magnet.Sphere(position=pos0a, diameter=1, polarization=(1,0,0))
+sphere1 = magpy.magnet.Sphere(position=pos0a, diameter=1, polarization=(1, 0, 0))
 sphere1.m = m0
 sphere1.v = v0
 sphere1.w = w0
@@ -201,7 +201,7 @@ sphere2 = sphere1.copy(position=pos0b)
 sphere2.v = -v0
 
 # Solve equations of motion
-data = np.zeros((4,steps,3))
+data = np.zeros((4, steps, 3))
 for i in range(steps):
     timestep(sphere1, sphere2, dt)
     timestep(sphere2, sphere1, dt)
@@ -213,7 +213,7 @@ for i in range(steps):
     data[3,i] = sphere2.orientation.as_euler('xyz')
 
 # Plot results
-fig, (ax1,ax2) = plt.subplots(2,1,figsize=(8,4))
+fig, (ax1,ax2) = plt.subplots(2,1,figsize=(8, 4))
 
 for j,ls in enumerate(["-", "--"]):
 

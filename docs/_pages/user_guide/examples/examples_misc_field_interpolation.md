@@ -86,9 +86,9 @@ In the second step we create a custom source with an interpolated field `field_f
 
 ```{code-cell} ipython3
 # Create data for interpolation
-cube = magpy.magnet.Cuboid(polarization=(0,0,1), dimension=(.02,.02,.02))
+cube = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(.02, .02, .02))
 ts = np.linspace(-.07, .07, 21)
-grid = np.array([(x,y,z) for x in ts for y in ts for z in ts])
+grid = np.array([(x, y, z) for x in ts for y in ts for z in ts])
 data = cube.getB(grid)
 
 # Create custom source with interpolation field
@@ -126,11 +126,11 @@ import matplotlib.pyplot as plt
 
 # Modify orientation of cube and custom
 for src in [cube, custom]:
-    src.rotate_from_angax(angle=45, axis=(1,1,1))
+    src.rotate_from_angax(angle=45, axis=(1, 1, 1))
 
 # Add a sensor for testing
-sensor = magpy.Sensor(position=(-.05,0,0))
-angs = np.linspace(3,150,49)
+sensor = magpy.Sensor(position=(-.05, 0, 0))
+angs = np.linspace(3, 150, 49)
 sensor.rotate_from_angax(angle=angs, axis="y", anchor=0)
 
 # Display system graphically

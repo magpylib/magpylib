@@ -63,9 +63,9 @@ class Display(MagicProperties):
         An iterable of color values used to cycle through for every object displayed.
         A color may be specified by
       - a hex string (e.g. '#ff0000')
-      - an rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - an hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - an hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - an rgb/rgba string (e.g. 'rgb(255, 0, 0)')
+      - an hsl/hsla string (e.g. 'hsl(0, 100%, 50%)')
+      - an hsv/hsva string (e.g. 'hsv(0, 100%, 100%)')
       - a named CSS color
 
     animation: dict or Animation
@@ -101,9 +101,9 @@ class Display(MagicProperties):
         """An iterable of color values used to cycle through for every object displayed.
           A color may be specified by
         - a hex string (e.g. '#ff0000')
-        - an rgb/rgba string (e.g. 'rgb(255,0,0)')
-        - an hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-        - an hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+        - an rgb/rgba string (e.g. 'rgb(255, 0, 0)')
+        - an hsl/hsla string (e.g. 'hsl(0, 100%, 50%)')
+        - an hsv/hsva string (e.g. 'hsv(0, 100%, 100%)')
         - a named CSS color"""
         return self._colorsequence
 
@@ -127,8 +127,8 @@ class Display(MagicProperties):
 
     @property
     def animation(self):
-        """Animation properties used by the `plotly` plotting backend when `animation=True`
-        in the `show` function."""
+        """Animation properties used by the ``plotly`` plotting backend when ``animation=True``
+        in the ``show()`` function."""
         return self._animation
 
     @animation.setter

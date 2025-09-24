@@ -9,7 +9,7 @@ from magpylib._src.input_checks import check_field_input
 
 def _check_chirality(points: np.ndarray) -> np.ndarray:
     """
-    Checks if quadruple of points (p0,p1,p2,p3) that forms tetrahedron is arranged in a way
+    Checks if quadruple of points (p0, p1, p2, p3) that forms tetrahedron is arranged in a way
     that the vectors p0p1, p0p2, p0p3 form a right-handed system
 
     Parameters
@@ -122,7 +122,7 @@ def _BHJM_magnet_tetrahedron(
         return BHJM
 
     msg = (
-        "Input `output_field_type` must be one of ('B', 'H', 'M', 'J'); "
+        "Input output_field_type must be one of {'B', 'H', 'M', 'J'}; "
         f"instead received {field!r}."
     )
     raise ValueError(msg)  # pragma: no cover

@@ -21,16 +21,16 @@ magpy.defaults.display.backend = "plotly"
 #         ("shorter position path", dict(position="np.array([[50, 0, 100]] * 2)")),
 #         (
 #             "shorter orientation path",
-#             dict(orientation="R.from_rotvec([[90,0,0],[0,90,0]], degrees=True)"),
+#             dict(orientation="R.from_rotvec([[90, 0, 0], [0, 90, 0]], degrees=True)"),
 #         ),
 #         (
 #             "longer position path",
-#             dict(position="np.array(np.linspace((280.,0.,0), (280.,0.,300), 8))"),
+#             dict(position="np.array(np.linspace((280., 0., 0), (280., 0., 300), 8))"),
 #         ),
 #         (
 #             "longer orientation path",
 #             dict(
-#                 orientation="R.from_rotvec([[0,90*i,0] for i in range(6)], degrees=True)"
+#                 orientation="R.from_rotvec([[0, 90*i, 0] for i in range(6)], degrees=True)"
 #             ),
 #         ),
 #     ]

@@ -85,7 +85,7 @@ def apply_fig_ranges(fig, ranges_rc, labels_rc, apply2d=True):
 
     Parameters
     ----------
-    ranges_rc: dict of arrays of dimension=(3,2)
+    ranges_rc: dict of arrays of dimension=(3, 2)
         min and max graph range
     labels_rc: dict of dicts
         contains a dict with 'x', 'y', 'z' keys and respective labels as strings for each subplot

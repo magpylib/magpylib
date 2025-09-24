@@ -16,7 +16,7 @@ The following basic properties are shared by all Magpylib classes:
 
 * **`centroid`**: property (read only) which returns the object barycenter assuming homogeneous mass density. It is often the same as the `position`.
 
-* **`move()`** and **`rotate()`**: methods that enable relative object positioning. There are multiple `rotate` methods allowing for all kinds of rotation inputs.
+* **`move()`** and **`rotate()`**: methods that enable relative object positioning. There are multiple `rotate()` methods allowing for all kinds of rotation inputs.
 
 * **`reset_path()`** method: Sets `position` and `orientation` to their default values.
 
@@ -68,7 +68,7 @@ Every Magpylib object has its own local coordinate system where its shape and pr
 ![](../../../_static/images/docu_classes_init_global_local.png)
 :::
 ::::
-Local and global coordinate systems are identical when `position=(0,0,0)` and `orientation=None`. The {ref}`docs-position` section provides a detailed overview about positioning and orienting objects.
+Local and global coordinate systems are identical when `position=(0, 0, 0)` and `orientation=None`. The {ref}`docs-position` section provides a detailed overview about positioning and orienting objects.
 
 
 ---------------------------------------------
@@ -88,7 +88,7 @@ magpylib.magnet.Cuboid(
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Cuboid` objects represent magnets with cuboid shape. The **`dimension`** attribute has the format $(a,b,c)$ and denotes the sides of the cuboid units (m). The center of the cuboid lies in the origin of the local coordinates, and the sides are parallel to the coordinate axes.
+`Cuboid` objects represent magnets with cuboid shape. The **`dimension`** attribute has the format $(a, b, c)$ and denotes the sides of the cuboid units (m). The center of the cuboid lies in the origin of the local coordinates, and the sides are parallel to the coordinate axes.
 :::
 :::{grid-item}
 :columns: 3
@@ -107,7 +107,7 @@ magpylib.magnet.Cylinder(
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Cylinder` objects represent magnets with cylindrical shape. The **`dimension`** attribute has the format $(d,h)$ and denotes diameter and height of the cylinder in units (m). The center of the cylinder lies in the origin of the local coordinates, and the cylinder axis coincides with the z-axis.
+`Cylinder` objects represent magnets with cylindrical shape. The **`dimension`** attribute has the format $(d, h)$ and denotes diameter and height of the cylinder in units (m). The center of the cylinder lies in the origin of the local coordinates, and the cylinder axis coincides with the z-axis.
 :::
 :::{grid-item}
 :columns: 3
@@ -126,7 +126,7 @@ magpylib.magnet.CylinderSegment(
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`CylinderSegment` objects represent magnets with the shape of a cylindrical ring section. The **`dimension`** attribute has the format $(r_1,r_2,h,\varphi_1,\varphi_2)$ and denotes inner radius, outer radius and height in units (m), and the two section angles $\varphi_1<\varphi_2$ in °. The center of the full cylinder lies in the origin of the local coordinates, and the cylinder axis coincides with the z-axis.
+`CylinderSegment` objects represent magnets with the shape of a cylindrical ring section. The **`dimension`** attribute has the format $(r_1, r_2, h, \varphi_1, \varphi_2)$ and denotes inner radius, outer radius and height in units (m), and the two section angles $\varphi_1<\varphi_2$ in °. The center of the full cylinder lies in the origin of the local coordinates, and the cylinder axis coincides with the z-axis.
 :::
 :::{grid-item}
 :columns: 3
@@ -229,10 +229,10 @@ Results of the checks are stored in the following object attributes
 * **`status_reoriented`** can be `True` or `False`
 
 The checks can also be performed after initialization using the methods
-* **`check_open()`**
-* **`check_disconnected()`**
-* **`check_selfintersecting()`**
-* **`reorient_faces()`**
+* **`check_open`**
+* **`check_disconnected`**
+* **`check_selfintersecting`**
+* **`reorient_faces`**
 
 The following class methods enable easy mesh creating and mesh loading.
 
@@ -294,7 +294,7 @@ magpylib.current.TriangleStrip(position, orientation, vertices, current, meshing
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`TriangleStrip` objects represent triangular current sheets arranged in a strip. The current flows along a band which consists of Triangles {T1, T2, ...} defined by the vertices {V1, V2, V3, V4, ...} as T1=(V1,V2,V3), T2=(V2,V3,V4), and so on. The **`vertices`** attribute is a vector of all vertices $(\vec{V}_1, \vec{V}_2, ...)$ given in the local coordinates in units (m). The given current is recomputed as a current density flowing in the direction $\vec{V}_3-\vec{V}_1$, in the first triangle, $\vec{V}_4-\vec{V}_2$ in the second triangle, and so on.
+`TriangleStrip` objects represent triangular current sheets arranged in a strip. The current flows along a band which consists of Triangles {T1, T2, ...} defined by the vertices {V1, V2, V3, V4, ...} as T1=(V1, V2, V3), T2=(V2, V3, V4), and so on. The **`vertices`** attribute is a vector of all vertices $(\vec{V}_1, \vec{V}_2, ...)$ given in the local coordinates in units (m). The given current is recomputed as a current density flowing in the direction $\vec{V}_3-\vec{V}_1$, in the first triangle, $\vec{V}_4-\vec{V}_2$ in the second triangle, and so on.
 :::
 :::{grid-item}
 :columns: 3
@@ -334,7 +334,7 @@ magpylib.misc.Dipole(position, orientation, moment, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Dipole` objects represent magnetic dipole moments with the **`moment`** attribute that describes the magnetic dipole moment $\vec{m}=(m_x,m_y,m_z)$ in SI-units (A*m²), which lies in the origin of the local coordinates.
+`Dipole` objects represent magnetic dipole moments with the **`moment`** attribute that describes the magnetic dipole moment $\vec{m}=(m_x, m_y, m_z)$ in SI-units (A*m²), which lies in the origin of the local coordinates.
 :::
 :::{grid-item}
 :columns: 3
@@ -445,7 +445,7 @@ Additional methods for adding and removing children:
 :columns: 12
 **Info:** A collection object has its own `position` and `orientation` attributes and spans a local reference frame for all its children. An operation applied to a collection moves the frame and is individually applied to all children such that their relative position in the local reference frame is maintained. This means that the collection functions as a container for manipulation, but child position and orientation are always updated in the global coordinate system. After being added to a collection, it is still possible to manipulate the individual children, which will also move them to a new relative position in the collection frame.
 
-Collections have **format** as an additional argument for **describe()** method. Default value is `format='type+id+label'`. Any combination of `'type'`, `'id'`, and `'label"` is allowed.
+Collections have **format** as an additional argument for **describe()** method. Default value is `format='type+id+label'`. Any combination of `'type'`, `'id'`, and `'label'` is allowed.
 
 A tutorial {ref}`examples-tutorial-collection` is provided in the example examples.
 :::

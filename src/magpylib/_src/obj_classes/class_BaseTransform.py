@@ -328,7 +328,7 @@ class _BaseTransform:
     def _rotate(self, rotation: R, anchor=None, start="auto", parent_path=None):
         """Rotate object about a given anchor.
 
-        See `rotate` docstring for other parameters.
+        See `rotate()` docstring for other parameters.
 
         Parameters
         ----------
@@ -715,7 +715,7 @@ class _BaseTransform:
         for vector input corresponding to appending to the existing path.
 
         >>> import magpylib as magpy
-        >>> sens = magpy.Sensor(position=(1,0,0))
+        >>> sens = magpy.Sensor(position=(1, 0, 0))
         >>> sens.rotate_from_matrix([(0, -1, 0), (1, 0, 0), (0, 0, 1)], anchor=0)
         Sensor(id=...)
         >>> print(sens.position)
@@ -725,7 +725,7 @@ class _BaseTransform:
 
         Rotate the object about itself:
 
-        >>> sens.rotate_from_matrix([(0,-1,0),(1,0,0),(0,0,1)])
+        >>> sens.rotate_from_matrix([(0, -1, 0), (1, 0, 0), (0, 0, 1)])
         Sensor(id=...)
         >>> print(sens.position)
         [0. 1. 0.]
@@ -774,8 +774,8 @@ class _BaseTransform:
         Rotate an object about the origin:
 
         >>> import magpylib as magpy
-        >>> sens = magpy.Sensor(position=(1,0,0))
-        >>> sens.rotate_from_mrp((0,0,1), anchor=0)
+        >>> sens = magpy.Sensor(position=(1, 0, 0))
+        >>> sens.rotate_from_mrp((0, 0, 1), anchor=0)
         Sensor(id=...)
         >>> print(sens.position)
         [-1.  0.  0.]
@@ -784,7 +784,7 @@ class _BaseTransform:
 
         Rotate the object about itself:
 
-        >>> sens.rotate_from_matrix([(0,-1,0),(1,0,0),(0,0,1)])
+        >>> sens.rotate_from_matrix([(0, -1, 0), (1, 0, 0), (0, 0, 1)])
         Sensor(id=...)
         >>> print(sens.position)
         [-1.  0.  0.]
@@ -833,8 +833,8 @@ class _BaseTransform:
         Rotate an object about the origin:
 
         >>> import magpylib as magpy
-        >>> sens = magpy.Sensor(position=(1,0,0))
-        >>> sens.rotate_from_quat((0,0,1,1), anchor=0)
+        >>> sens = magpy.Sensor(position=(1, 0, 0))
+        >>> sens.rotate_from_quat((0, 0, 1, 1), anchor=0)
         Sensor(id=...)
         >>> print(sens.position)
         [0. 1. 0.]
@@ -843,7 +843,7 @@ class _BaseTransform:
 
         Rotate the object about itself:
 
-        >>> sens.rotate_from_quat((0,0,1,1))
+        >>> sens.rotate_from_quat((0, 0, 1, 1))
         Sensor(id=...)
         >>> print(sens.position)
         [0. 1. 0.]

@@ -6,7 +6,7 @@
   ([#876](https://github.com/magpylib/magpylib/issues/876),
   [#829](https://github.com/magpylib/magpylib/issues/829)), and adding/reviewing
   all force and torque docs.
-- Adding force computation `magpylib.getFT()` to the library.
+- Adding force computation `magpylib.getFT` to the library.
   ([#887](https://github.com/magpylib/magpylib/issues/887),
   [#847](https://github.com/magpylib/magpylib/issues/847),
   [#787](https://github.com/magpylib/magpylib/issues/787))
@@ -38,7 +38,7 @@
 - Fixed a bug where the magnetization arrow graphical representation would be
   anchored badly after rotation
   ([#805](https://github.com/magpylib/magpylib/issues/805))
-- Added `units_length` input to the `show` function to allow displaying axes
+- Added `units_length` input to the `show()` function to allow displaying axes
   with different length units. This parameter can be set individually for each
   subplot. ([#786](https://github.com/magpylib/magpylib/pull/786))
 - Small documentation and Readme improvement. Change naming from "explicit
@@ -108,8 +108,8 @@
 - The `magnetization` parameter is now codependent with the new `polarization`
   parameter that is the physical magnetic polarization
   ([#712](https://github.com/magpylib/magpylib/issues/712)) in units (T)
-- Added `getM` (magnetization) and `getJ` (polarization) top level functions and
-  class methods reminiscent of `getB` and `getH`.
+- Added `getM()` (magnetization) and `getJ()` (polarization) top level functions
+  and class methods reminiscent of `getB()` and `getH()`.
 - The `in_out` (inside/outside) parameter is added to all field functions
   (`getBHJM`) to specify the location of the observers relative to the magnet
   body in order to increase performance
@@ -231,7 +231,7 @@
   ([#570](https://github.com/magpylib/magpylib/discussions/570),
   [#571](https://github.com/magpylib/magpylib/issues/571),
   [#572](https://github.com/magpylib/magpylib/pull/572))
-- Fixed cryptic `getB`/`getH` error message
+- Fixed cryptic `getB()`/`getH()` error message
   ([#562](https://github.com/magpylib/magpylib/issues/562),
   [#563](https://github.com/magpylib/magpylib/pull/563))
 
@@ -242,12 +242,12 @@
 
 ## [4.1.0] - 2022-08-08
 
-- Field computation `getB`/`getH` now supports 2D
+- Field computation `getB()`/`getH()` now supports 2D
   [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe)
   in addition to the `numpy.ndarray` as output type.
   ([#523](https://github.com/magpylib/magpylib/pull/523))
-- Internal `getB`/`getH` refactoring. The direct interface with `'Line'` source
-  argument now also accepts `'vertices'` as argument.
+- Internal `getB()`/`getH()` refactoring. The direct interface with `'Line'`
+  source argument now also accepts `'vertices'` as argument.
   ([#540](https://github.com/magpylib/magpylib/pull/540))
 - Complete plotting backend rework to prepare for easy implementation of new
   backends, with minimal maintenance.
@@ -259,7 +259,7 @@
 
 ## [4.0.4] - 2022-06-09
 
-- Exclude redundant properties with `_all` suffix in the `.describe()` method
+- Exclude redundant properties with `_all` suffix in the `.describe` method
   ([#534](https://github.com/magpylib/magpylib/pull/534))
 - Docstring improvements ([#535](https://github.com/magpylib/magpylib/pull/535))
 
@@ -293,7 +293,7 @@ This is a major update that includes
   ([#350](https://github.com/magpylib/magpylib/issues/350))
 - `Circular` class renamed to `Loop`.
   ([#402](https://github.com/magpylib/magpylib/pull/402))
-- New `CylinderSegment` class with dimension (r1,r2,h,phi1,phi2) with the
+- New `CylinderSegment` class with dimension (r1, r2, h, phi1, phi2) with the
   inner radius `r1`, the outer radius `r2` the height `h` and the cylinder
   section angles `phi1 < phi2`.
   ([#386](https://github.com/magpylib/magpylib/issues/386),
@@ -309,7 +309,7 @@ This is a major update that includes
   attributes.
 - All classes now have the `parent` attribute to reference to a collection they
   are part of. Any object can only have a single parent.
-- All classes have the `describe` method which gives a quick object property
+- All classes have the `describe()` method which gives a quick object property
   overview.
 
 ### Field computation changes/fixes:
@@ -319,7 +319,7 @@ This is a major update that includes
   position/orientation interface.
   ([#376](https://github.com/magpylib/magpylib/issues/376))
 - Direct interface functions `getBdict` and `getHdict` (previously `getBv` and
-  `getHv`) are now integrated into `getB` and `getH`. See docs for details
+  `getHv`) are now integrated into `getB()` and `getH()`. See docs for details
   ([#449](https://github.com/magpylib/magpylib/pull/449))
 - Generally improved field expressions:
   ([#374](https://github.com/magpylib/magpylib/issues/374))
@@ -339,17 +339,17 @@ This is a major update that includes
   - Fixed `Collection` of `Lines` field computation error.
     ([#368](https://github.com/magpylib/magpylib/issues/368))
 - Object oriented interface fixes and modifications:
-  - Improved performance of `getB` and `getH`.
+  - Improved performance of `getB()` and `getH()`.
   - Fixed array dimension wrongly reduced when `sumup=True` and `squeeze=False`
-    in `getB` and `getH` functions
+    in `getB()` and `getH()` functions
     ([#425](https://github.com/magpylib/magpylib/issues/425),
     [#426](https://github.com/magpylib/magpylib/pull/426))
-  - Minimal non-squeeze output shape is (1,1,1,1,3), meaning that a single pixel
-    is now also represented.
+  - Minimal non-squeeze output shape is (1, 1, 1, 1, 3), meaning that a single
+    pixel is now also represented.
     ([#493](https://github.com/magpylib/magpylib/pull/493))
 - With the new kwarg `pixel_agg` it is now possible to apply a NumPy function
   with reducing functionality (like `mean`, `min`, `average`) to the pixel
-  output. In this case, it is allowed to provide `getB` and `getH` with
+  output. In this case, it is allowed to provide `getB()` and `getH()` with
   different observer input shapes.
   ([#503](https://github.com/magpylib/magpylib/pull/503))
 
@@ -364,12 +364,12 @@ This is a major update that includes
     [#396](https://github.com/magpylib/magpylib/pull/396))
   - Possibility to add a custom 3D-model to any object.
     ([#416](https://github.com/magpylib/magpylib/pull/416))
-- `display` now called `show`, to be more in-line with standard graphic
+- `display` now called `show()`, to be more in-line with standard graphic
   backends. Functionality completely overhauled to function with styles.
   ([#453](https://github.com/magpylib/magpylib/pull/453),
   [#451](https://github.com/magpylib/magpylib/issues/451))
-  - New `show` arguments replace previous ones. Some are now handed over through
-    styles.
+  - New `show()` arguments replace previous ones. Some are now handed over
+    through styles.
     - `axis` ➡️ `canvas`
     - `show_direction` ➡️ `style_magnetization_show`
     - `show_path` ➡️ `style_path_show`
@@ -382,7 +382,7 @@ This is a major update that includes
   [#353](https://github.com/magpylib/magpylib/issues/353))
   - `plotly` is now automatically installed with Magpylib.
     ([#395](https://github.com/magpylib/magpylib/issues/395))
-  - Interactive path `animation` option in `show`.
+  - Interactive path `animation` option in `show()`.
     ([#453](https://github.com/magpylib/magpylib/pull/453))
   - Automatic Matplotlib <-> Plotly style input translations
     ([#452](https://github.com/magpylib/magpylib/issues/452),
@@ -394,7 +394,7 @@ This is a major update that includes
     ([#483](https://github.com/magpylib/magpylib/pull/483))
   - UI fix empty display
     ([#401](https://github.com/magpylib/magpylib/issues/401))
-  - Error msg when `show` is called without argument
+  - Error msg when `show()` is called without argument
     ([#448](https://github.com/magpylib/magpylib/issues/448))
 
 ### New documentation:
@@ -412,26 +412,26 @@ This is a major update that includes
 
 - Added all Scipy Rotation forms as rotation object methods.
   ([#427](https://github.com/magpylib/magpylib/pull/427))
-- `move` and `rotate` inputs differentiate between scalar and vector input.
+- `move()` and `rotate()` inputs differentiate between scalar and vector input.
   Scalar input is applied to the whole path vector input is merged.
   ([#438](https://github.com/magpylib/magpylib/discussions/438),
   [#444](https://github.com/magpylib/magpylib/issues/444),
   [#442](https://github.com/magpylib/magpylib/issues/443))
-- `move` and `rotate` methods have default `start='auto'` (scalar input:
+- `move()` and `rotate()` methods have default `start='auto'` (scalar input:
   `start=0`-> applied to whole path, vector input: `start=len_path`-> append)
   instead of `start=-1`.
-- `move` and `rotate` methods maintain collection geometry when applied to a
+- `move()` and `rotate()` methods maintain collection geometry when applied to a
   collection.
-- Improved `position` and `orientation` setter methods in line with `move` and
-  `rotate` functionality and maintain `Collection` geometry.
-- Removed `increment` argument from `move` and `rotate` functions
+- Improved `position` and `orientation` setter methods in line with `move()` and
+  `rotate()` functionality and maintain `Collection` geometry.
+- Removed `increment` argument from `move()` and `rotate()` functions
   ([#438](https://github.com/magpylib/magpylib/discussions/438),
   [#444](https://github.com/magpylib/magpylib/issues/444))
 
 ### Modifications to the `Collection` class
 
 - Collections can now contain `Source`, `Sensor` and other `Collection` objects
-  and can function as source and observer inputs in `getB` and `getH`.
+  and can function as source and observer inputs in `getB()` and `getH()`.
   ([#502](https://github.com/magpylib/magpylib/pull/502),
   [#410](https://github.com/magpylib/magpylib/issues/410),
   [#415](https://github.com/magpylib/magpylib/pull/415),
@@ -456,13 +456,13 @@ This is a major update that includes
   flat list or tuple of Magpylib objects.
 - `add` and `remove` have some additional functionality related to child-parent
   relations.
-- The `describe` method gives a great Collection tree overview.
+- The `describe()` method gives a great Collection tree overview.
 
 ### Other changes/fixes:
 
 - Magpylib error message improvement. Msg will now tell you what input is
   expected.
-- Magpylib object `copy` method now works properly
+- Magpylib object `copy()` method now works properly
   ([#477](https://github.com/magpylib/magpylib/pull/477),
   [#470](https://github.com/magpylib/magpylib/pull/470),
   [#476](https://github.com/magpylib/magpylib/issues/476))
@@ -534,8 +534,8 @@ This is a major update that includes
   - Calling the attribute `source.orientation` returns a Scipy Rotation object
     `R`.
   - Make use of all advantages of this great Scipy package:
-    - define `R.from_rotvec()` or `R.from_quat()` or ...
-    - view with `R.as_rotvec()` or `R.as_quat()` or ...
+    - define `R.from_rotvec` or `R.from_quat` or ...
+    - view with `R.as_rotvec` or `R.as_quat` or ...
     - combine subsequent rotations `R1 * R2 * R3`
 - Sensor pixel:
   - The new `Sensor(position, pixel, orientation)` class has the argument
@@ -545,21 +545,21 @@ This is a major update that includes
 - Geometry paths:
   - The `position` and `orientation` attributes can now store paths in the
     global CS. For a path of length M the attribute `position` is an array of
-    the shape (M,3) and `orientation` is a Rotation object with length M. Each
+    the shape (M, 3) and `orientation` is a Rotation object with length M. Each
     path position is associated with a respective rotation.
   - Field computations `getB()` and `getH()` will evaluate the field for all
     source path positions.
   - Paths can be set by hand `position = X`, `orientation = Y`, but they can
-    also conveniently be generated using the `rotate` and `move` methods.
-  - Paths can be shown via the `show_path=True` kwarg in `display()`. By setting
+    also conveniently be generated using the `rotate()` and `move()` methods.
+  - Paths can be shown via the `show_path=True` kwarg in `display`. By setting
     `show_path=x` the object will be displayed at every `x`'th path step. This
     helps to follow up on object rotation along the path.
   - All objects have a `reset_path()` method defined to set their paths to
-    `position=(0,0,0)` and `orientation=None`.
+    `position=(0, 0, 0)` and `orientation=None`.
 
 - Streamlining operation with all Magpylib objects:
   - All objects (Sensors, Sources, Collections) have additional direct access to
-    - `.display()` method for quick self-inspection.
+    - `.display` method for quick self-inspection.
     - `getB()` and `getH()` methods for fast field computations
     - `__repr__` attribute defined and will return their type and their `id`.
 - Other new features:
@@ -573,11 +573,11 @@ This is a major update that includes
   - The `.moment` sub-package was renamed to `.misc` and was moved to the top
     level.
   - The `.vector` sub-package was completely removed. Functionalities are mostly
-    replaced by new top-level function `getBv()`.
+    replaced by new top-level function `getBv`.
   - The `.math` sub-package was removed. Functionalities are mostly provided by
     the `scipy - Rotation` package.
 - Renamed functions:
-  - The top level function `displaySystem()` was renamed to `display()`.
+  - The top level function `displaySystem` was renamed to `display`.
 - Renamed attributes (parameters cannot be initialized in their short forms
   anymore):
   - `angle` and `axis` are replaced by `orientation`
@@ -604,8 +604,8 @@ This is a major update that includes
     handed to getB it will automatically execute vectorized code from the vector
     module.
   - In a finite region (size defined by `Config.EDGESIZE`) about magnet edges
-    and line currents the field evaluates to (0, 0, 0) instead of
-    (NaN, NaN, NaN)`. Special case catching reduces performance slightly.
+    and line currents the field evaluates to (0, 0, 0) instead of (NaN, NaN,
+    NaN)`. Special case catching reduces performance slightly.
 
 ### Updated
 
@@ -628,14 +628,14 @@ This is a major update that includes
     - Objects with shorter paths will be considered as static once their path
       ends while other paths continue.
     4. `magpylib.getBv(**kwargs)` gives direct access to the field formulas and
-       mostly replaces the `getBv_XXX()` functionality of v2. All inputs must be
+       mostly replaces the `getBv_XXX` functionality of v2. All inputs must be
        arrays of length N or of length 1 (constants will be tiled).
   - While `getBv` is the fastest way to compute the fields it is much more
     convenient to use `getB()` which mostly provides the same performance.
-    Specifically,the new `getB()` automatically groups all inputs for combined
+    Specifically, the new `getB()` automatically groups all inputs for combined
     vectorized evaluation. This leads to a massive speedup when dealing with
     large Collections of similar sources.
-  - In addition to `getB`, the new `getH` returns the field in kA/m.
+  - In addition to `getB()`, the new `getH()` returns the field in kA/m.
 
 ### Removed
 
@@ -649,8 +649,8 @@ This is a major update that includes
 
 ### Changed
 
-- Improved performance of `getB` for diametral magnetized Cylinders by 20%.
-- `getB` of Line current now uses vectorized code which leads to massive
+- Improved performance of `getB()` for diametral magnetized Cylinders by 20%.
+- `getB()` of Line current now uses vectorized code which leads to massive
   performance enhancement.
 - **IMPORTANT:** position arguments of `getBv` functions have been flipped!
   First comes the source position POSm THEN the observer position POSo!
@@ -691,12 +691,12 @@ API changes New features Improved internal workings
   - getBsweep and multiprocessing options have been completely removed, this
     functionality should be overtaken by the new vector functionality which uses
     the NumPy native vectorized code paradigm. If mkl library is set (test by
-    numpy.show_config()) NumPy will also automatically use multiprocessing. Code
-    parallelization at magpylib level should be done by hand.
+    `numpy.show_config()`) NumPy will also automatically use multiprocessing.
+    Code parallelization at magpylib level should be done by hand.
 - Docstrings are adjusted to work better with intellisense. (Problems with
   \*.rst code)
-- public rotatePosition() is now called angleAxisRotation(), former private
-  angleAxisRotation is now called angleAxisRotation_priv().
+- public `rotatePosition` is now called `angleAxisRotation`, former private
+  angleAxisRotation is now called `angleAxisRotation_priv`.
 - Major rework of the documentation and examples.
 
 ### Added
@@ -711,7 +711,7 @@ API changes New features Improved internal workings
 
 ### Changed
 
-- Optimized `getB` call (utility integrated)
+- Optimized `getB()` call (utility integrated)
 - Improved Documentation (added Sensor class v1)
 
 ---
@@ -753,21 +753,21 @@ API changes New features Improved internal workings
 
 ### Changed
 
-- Change `Collection.displaySystem()` not having the `block=False` setting for
-  Matplotlib's `pyplot.show()` by default, this meant that outside interactive
+- Change `Collection.displaySyste` not having the `block=False` setting for
+  Matplotlib's `pyplot.show` by default, this meant that outside interactive
   mode calling this function would hang the script until the plot was closed.
   - If for some reason you want to block the application, you may still use
-    `Collection.displaySystem()`'s `suppress=True` kwarg then call pyplot.show()
+    `Collection.displaySystem`'s `suppress=True` kwarg then call `pyplot.show`
     normally.
   - This should cause no API changes, if you have problems please notify us.
 
 ### Fixed
 
-- Fixed multiprocessing enabled `Collection.getBsweep()` for lots of objects
-  with few positions causing great performance loss. This functionality now
-  behaves as expected for the use case.
-- Fixed `Collection.displaySystem()`'s drawing of Dipole objects in external
-  axes (plots) using the `subplotAx` kwarg crashing the application. This
+- Fixed multiprocessing enabled `Collection.getBsweep` for lots of objects with
+  few positions causing great performance loss. This functionality now behaves
+  as expected for the use case.
+- Fixed `Collection.displaySystem`'s drawing of Dipole objects in external axes
+  (plots) using the `subplotAx` kwarg crashing the application. This
   functionality now behaves as expected for the use case.
 
 ---
@@ -783,8 +783,8 @@ API changes New features Improved internal workings
         Draw into a subplot axe that already exists. The subplot needs to be 3D projected
 
   This allows for creating side-by-side plots using `displaySystem`. Figure
-  information must be set manually in pyplot.figure() in order to not squash the
-  plots upon sub plotting.
+  information must be set manually in `pyplot.figure()` in order to not squash
+  the plots upon sub plotting.
 
     <details>
     <summary> Click here for Example </summary>
@@ -798,8 +798,8 @@ API changes New features Improved internal workings
 
 ### Changed
 
-- `getBsweep()` for Collections and Sources now always returns a NumPy array
-- Zero-length segments in Line sources now return `[0,0,0]` and a warning,
+- `getBsweep` for Collections and Sources now always returns a NumPy array
+- Zero-length segments in Line sources now return `[0, 0, 0]` and a warning,
   making it easier to draw spirals without letting users do this unaware.
 
 ### Fixed

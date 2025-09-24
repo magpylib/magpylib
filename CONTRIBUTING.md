@@ -57,40 +57,50 @@ project.
 We strongly suggest that you use the [Pre-Commit](https://pre-commit.com/) hooks
 that apply important code checks which each commit.
 
-## Documentation & Formatting
+## Documentation, Docstring, and User Message Formatting
 
-### General
+### General (applies to all three)
+
+- Apply NumPy/SciPy docstring style to all public members.
 - Maximum line length: 88 columns.
-- Apply NumPyDoc / SciPy docstring style to all public members.
-- SPOTIN index naming convention
-   - s sources
-   - p path
-   - o observers, o1, o2, ... pixel shape
-   - t targets
-   - i instances (func and core interfaces)
-   - n, m for all other generic indices
-- Indices and shapes are written in plain prosa like '... for n observers this
-  function returns an ndarray of shape (n, 3) ...'. (Applies to docstings, user
-  messeges, and documentation)
-- Units in prosa, e.g., 'in units (m)' or 'in units (A*m²)'
-
-### Code
-- Private member names should have a trailing underscore.
+- SPOTIN index naming convention:
+  - s sources
+  - p path
+  - o observers and o1, o2, ... pixel shape
+  - t targets
+  - i instances (functional and core interfaces)
+  - n, m generic indices
+- Indices and shapes are written in plain prose: '... for n observers this
+  function returns an ndarray of shape (n, 3) ...'.
+- Units in prose, e.g., 'in units (m)' or 'in units (A*m²)'.
 
 ### Docstrings
-- Double backticks for inline code, including True, False and None. Indices, shapes, and vectors are written in prosa.
-- Use single quotes ('…') rather than double quotes ("…") in user-visible strings.
-- Type line format: 'name : A | B | C, default X'. Include shape information when relevant, for example: 'name : None | array-like, shape (3,), default X'
-  or 'name : array-like, shape (N, 3) | B, default X'. Do not use backticks in the type line. Put the default in the type line, not in the description. For
-  string choices, use braces: 'name : A | {'choice1', 'choice2'}, default X'.
-- Do not add a Raises section.
-- For chainable instance methods, document the return as: Returns Self Self (allows chaining). Do not name private helper classes that might be returned in subclasses.
-- Do not include a Returns section in class docstrings where the class instance is returned.
-- Prefer duplicating identical docstrings over referring to other members; ensure duplicates are exactly identical to avoid drift.
 
-### Runtime Messages (warn, raise, assert)
-- Messeges in pure prose. No backticks.
-- Typical message format: 'Input XXX of YYY must be ZZZ; instead received UUU.'
+- Double backticks for inline code, including True, False, and None.
+- Use single quotes ('…') rather than double quotes ("…") in user-visible
+  strings.
+- Type line format:
+  - Standard pattern: 'name : A | B | C, default X'.
+  - Include shape information like 'name : None | array-like, shape (3,),
+    default X' or 'name : array-like, shape (n, 3) | B, default X'.
+  - No backticks in the type line.
+  - Default only in the type line (not repeated in the description).
+  - For string choices use braces: 'name : A | {'choice1', 'choice2'}, default
+    X'.
+- No obligation to add a Raises section.
+- Do not include a Returns section in class docstrings (the class instance is
+  implied).
+- For chainable instance methods: Returns \n Self \n Self (allows chaining).
+- Do not name private helper classes that might be returned instead of Self.
+- Prefer duplicating identical docstrings over referencing others; duplicates
+  must remain exactly identical.
+
+### Runtime messages (warnings, errors, assertions)
+
+- Messages in pure prose (no backticks).
+- Standard pattern: 'Input XXX of YYY must be ZZZ; instead received UUU.'
 
 ### Documentation (MyST Markdown)
-- Single backticks for inline code, including True, False and None. Indices, shapes, and vectors are written in prosa.
+
+- Single backticks for inline code, including True, False, and None. Indices,
+  shapes, and vectors are written in prose.

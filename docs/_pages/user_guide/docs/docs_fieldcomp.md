@@ -8,7 +8,7 @@ The tutorial {ref}`examples-tutorial-field-computation` shows good practices and
 (docs-fieldcomp-oo)=
 ## Object-oriented Interface
 
-The object-oriented interface relies on the idea that sources of the magnetic field and observers thereof are created as Python objects which can be manipulated at will, and called for field computation. This is done via four top-level functions `getB`, `getH`, `getJ` and, `getM`,
+The object-oriented interface relies on the idea that sources of the magnetic field and observers thereof are created as Python objects which can be manipulated at will, and called for field computation. This is done via four top-level functions `getB()`, `getH()`, `getJ()` and, `getM()`,
 
 ```python
 B = magpylib.getB(sources, observers, squeeze=True, pixel_agg=None, output="ndarray")
@@ -45,10 +45,10 @@ B = sens.getB(loop)
 
 with the same result for `B`.
 
-By default, `getB` returns the B-field in units (T), `getH` the H-field in units (A/m), `getJ` the magnetic polarization in (T) and, `getM` the magnetization in (A/m), assuming that all inputs are given in SI units as described in the docstrings.
+By default, `getB()` returns the B-field in units (T), `getH()` the H-field in units (A/m), `getJ()` the magnetic polarization in (T) and, `getM()` the magnetization in (A/m), assuming that all inputs are given in SI units as described in the docstrings.
 
 ```{hint}
-In reality, `getB` is proportional to the `polarization` input and therefore returns the same unit. For example, with polarization input in mT, `getB` will return mT as well. At the same time when the `magnetization` input is in (kA/m), then `getH` returns (kA/m) as well. The B/H-field outputs are related to a M/J-inputs via a factor of $µ_0$.
+In reality, `getB()` is proportional to the `polarization` input and therefore returns the same unit. For example, with polarization input in mT, `getB()` will return mT as well. At the same time when the `magnetization` input is in (kA/m), then `getH()` returns (kA/m) as well. The B/H-field outputs are related to a M/J-inputs via a factor of $µ_0$.
 ```
 
 The output of a field computation `magpy.getB(sources, observers)` is by default a NumPy array of shape (s, p, o, o1, o2, ..., 3) where s is the number of input sources, p the (maximal) object path length, o the number of observers, o1, o2, ... the sensor pixel shape or the shape of the observer position array input and 3 the three magnetic field components $(B_x, B_y, B_z)$.

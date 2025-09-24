@@ -484,20 +484,20 @@ def make_TriangularMesh(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
         if mode == "open" and show_mesh:
             if obj.status_open is None:
                 warnings.warn(
-                    f"Unchecked open mesh status in {obj!r} detected. Now applying `check_open`.",
+                    f"Unchecked open mesh status in {obj!r} detected. Now applying check_open().",
                     stacklevel=2,
                 )
                 obj.check_open()
         elif mode == "disconnected" and show_mesh:
             if obj.status_disconnected is None:
                 warnings.warn(
-                    f"Unchecked disconnected mesh status in {obj!r} detected. Now applying `check_disconnected`.",
+                    f"Unchecked disconnected mesh status in {obj!r} detected. Now applying check_disconnected().",
                     stacklevel=2,
                 )
             is_disconnected = obj.check_disconnected()
         elif mode == "selfintersecting" and obj._status_selfintersecting is None:
             warnings.warn(
-                f"Unchecked selfintersecting mesh status in {obj!r} detected. Now applying `check_selfintersecting`.",
+                f"Unchecked selfintersecting mesh status in {obj!r} detected. Now applying check_selfintersecting().",
                 stacklevel=2,
             )
             obj.check_selfintersecting()
@@ -579,7 +579,7 @@ def make_Sensor(obj, autosize=None, **kwargs) -> dict[str, Any]:
     )
     vertices = np.array([sensor[k] for k in "xyz"]).T
     if style.color is not None:
-        sensor["facecolor"][sensor["facecolor"] == "rgb(238,238,238)"] = style.color
+        sensor["facecolor"][sensor["facecolor"] == "rgb(238, 238, 238)"] = style.color
     dim = np.array(
         [dimension] * 3 if isinstance(dimension, float | int) else dimension[:3],
         dtype=float,

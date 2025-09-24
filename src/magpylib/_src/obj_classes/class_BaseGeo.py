@@ -165,7 +165,7 @@ class _BaseGeo(_BaseTransform, ABC):
 
         Returns
         -------
-        numpy.ndarray, shape (n, 3) when there is a path, or squeeze(1,3) when not
+        numpy.ndarray, shape (n, 3) when there is a path, or squeeze(1, 3) when not
             Centroid coordinates [(x, y, z), ...] in (m).
         """
 
@@ -357,7 +357,7 @@ class _BaseGeo(_BaseTransform, ABC):
         Parameters
         ----------
         **kwargs
-            Attribute overrides applied to the copy (e.g. ``position=(1,2,3)``).
+            Attribute overrides applied to the copy (e.g. ``position=(1, 2, 3)``).
 
         Returns
         -------

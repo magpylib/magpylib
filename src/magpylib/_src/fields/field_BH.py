@@ -166,7 +166,7 @@ def _getBH_level2(
     - combine all sensor pixel positions for joint evaluation
     - group similar source types for joint evaluation
     - compute field and store in allocated array
-    - rearrange the array in the shape squeeze((L, M, K, N1, N2, ...,3))
+    - rearrange the array in the shape squeeze((L, M, K, N1, N2, ..., 3))
     """
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches
@@ -371,7 +371,7 @@ def _getBH_level2(
         if not unrotated_sensors[sens_ind]:  # apply operations only to rotated sensors
             # select part where rot is applied
             Bpart = B[:, :, pix_slice]
-            # change shape to (P,3) for rot package
+            # change shape to (P, 3) for rot package
             Bpart_orig_shape = Bpart.shape
             Bpart_flat = np.reshape(Bpart, (-1, 3))
             # apply sensor rotation

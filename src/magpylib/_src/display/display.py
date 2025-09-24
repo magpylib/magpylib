@@ -196,7 +196,7 @@ def _show(
 ):
     """Display objects and paths graphically.
 
-    See `show` function for docstring details.
+    See `show()` function for docstring details.
     """
 
     # process input objs
@@ -314,13 +314,13 @@ def show(
     Display multiple objects, object paths, markers in 3D using Matplotlib or Plotly:
 
     >>> import magpylib as magpy
-    >>> src = magpy.magnet.Sphere(polarization=(0,0,1), diameter=1)
-    >>> src.move([(0.1*x,0,0) for x in range(50)])
+    >>> src = magpy.magnet.Sphere(polarization=(0, 0, 1), diameter=1)
+    >>> src.move([(0.1*x, 0, 0) for x in range(50)])
     Sphere...
-    >>> src.rotate_from_angax(angle=[*range(0,400,10)], axis='z', anchor=0, start=11)
+    >>> src.rotate_from_angax(angle=[*range(0, 400, 10)], axis='z', anchor=0, start=11)
     Sphere...
-    >>> ts = [-.4,0,.4]
-    >>> sens = magpy.Sensor(position=(0,0,2), pixel=[(x,y,0) for x in ts for y in ts])
+    >>> ts = [-.4, 0, .4]
+    >>> sens = magpy.Sensor(position=(0, 0, 2), pixel=[(x, y, 0) for x in ts for y in ts])
     >>> magpy.show(src, sens) # doctest: +SKIP
     >>> magpy.show(src, sens, backend='plotly') # doctest: +SKIP
     >>> # graphic output
@@ -330,8 +330,8 @@ def show(
     >>> import matplotlib.pyplot as plt
     >>> import magpylib as magpy
     >>> my_axis = plt.axes(projection='3d')
-    >>> magnet = magpy.magnet.Cuboid(polarization=(1,1,1), dimension=(1,2,3))
-    >>> sens = magpy.Sensor(position=(0,0,3))
+    >>> magnet = magpy.magnet.Cuboid(polarization=(1, 1, 1), dimension=(1, 2, 3))
+    >>> sens = magpy.Sensor(position=(0, 0, 3))
     >>> magpy.show(magnet, sens, canvas=my_axis, zoom=1)
     >>> plt.show() # doctest: +SKIP
     >>> # graphic output
@@ -340,11 +340,11 @@ def show(
     or as global style arguments in display.
 
     >>> import magpylib as magpy
-    >>> src1 = magpy.magnet.Sphere(position=[(0,0,0), (0,0,3)], diameter=1, polarization=(1,1,1))
+    >>> src1 = magpy.magnet.Sphere(position=[(0, 0, 0), (0, 0, 3)], diameter=1, polarization=(1, 1, 1))
     >>> src2 = magpy.magnet.Sphere(
-    ...     position=[(1,0,0), (1,0,3)],
+    ...     position=[(1, 0, 0), (1, 0, 3)],
     ...     diameter=1,
-    ...     polarization=(1,1,1),
+    ...     polarization=(1, 1, 1),
     ...     style_path_show=False
     ... )
     >>> magpy.defaults.display.style.magnet.magnetization.size = 2
@@ -416,9 +416,9 @@ def show_context(
     style=_DefaultValue,
     **kwargs,
 ):
-    """Context manager for grouping multiple ``show`` calls with shared settings.
+    """Context manager for grouping multiple ``show()`` calls with shared settings.
 
-    Use this to apply common display options across several successive ``show``
+    Use this to apply common display options across several successive ``show()``
     calls and have them rendered together on a single canvas and/or subplot
     layout. All supplied options are remembered during the context and applied
     to the final combined render when the context exits.
@@ -445,9 +445,9 @@ def show_context(
         Layout update behaviour when using a provided canvas: ``'auto'``,
         ``True``, or ``False``.
     row : int | None, default None
-        Subplot row index for all enclosed ``show`` calls that omit ``row``.
+        Subplot row index for all enclosed ``show()`` calls that omit ``row``.
     col : int | None, default None
-        Subplot column index for all enclosed ``show`` calls that omit ``col``.
+        Subplot column index for all enclosed ``show()`` calls that omit ``col``.
     output : str | tuple[str, ...], default 'model3d'
         Plot output type (e.g., ``'model3d'``, ``'Bx'``, ``'Bxy'``, ``'Hyz'``).
     sumup : bool, default True
@@ -474,11 +474,11 @@ def show_context(
 
     Notes
     -----
-    - All ``show`` calls inside the context inherit unspecified options from
+    - All ``show()`` calls inside the context inherit unspecified options from
       the context manager arguments.
     - Objects passed to the context are combined with objects passed to each
-      inner ``show`` call.
-    - On exit, a single ``show`` is executed with the aggregated objects and
+      inner ``show()`` call.
+    - On exit, a single ``show()`` is executed with the aggregated objects and
       options.
 
     Examples

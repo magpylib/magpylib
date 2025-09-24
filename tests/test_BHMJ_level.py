@@ -25,7 +25,7 @@ from magpylib._src.fields.field_BH_triangularmesh import _BHJM_magnet_trimesh
 
 def helper_check_HBMJ_consistency(func, **kw):
     """
-    helper function to check H,B,M,J field consistencies
+    helper function to check H, B, M, J field consistencies
     returns H, B, M, J
     """
     B = func(field="B", **kw)

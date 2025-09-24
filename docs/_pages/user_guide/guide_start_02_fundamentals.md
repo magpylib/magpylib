@@ -22,7 +22,7 @@ import magpylib as magpy
 
 # Create a Cuboid magnet with magnetic polarization
 # of 1 T pointing in x-direction and sides of
-# 1,2 and 3 cm respectively (notice the use of SI units).
+# 1, 2 and 3 cm respectively (notice the use of SI units).
 
 cube = magpy.magnet.Cuboid(polarization=(1, 0, 0), dimension=(0.01, 0.02, 0.03))
 
@@ -39,7 +39,7 @@ All Magpylib objects (sources and observers) have position and orientation in a 
 
 ```python
 # By default, the position of a Magpylib object is
-# (0,0,0) and its orientation is the unit rotation,
+# (0, 0, 0) and its orientation is the unit rotation,
 # given by a scipy rotation object.
 
 print(cube.position)  # -> [0. 0. 0.]
@@ -81,7 +81,7 @@ magpy.show(cube, sensor, backend="plotly")
 
 <img src="../../_static/images/getting_started_fundamentals1.png" width=50% align="center">
 
-Detailed information on the graphical output with `show` is given [here](guide-graphics).
+Detailed information on the graphical output with `show()` is given [here](guide-graphics).
 
 ### Field Computation (B, H, J, M)
 
@@ -106,7 +106,7 @@ print(H.round())  # -> [51017. 24210.     0.] # in SI Units (A/m)
 ```
 
 ```{hint}
-Magpylib makes use of vectorized computation (massive speedup). This requires that you hand over all field computation instances (multiple objects with multiple positions (=paths)) at the same time to `getB`, `getH`, `getJ` and `getM`. Avoid Python loops at all costs !!!
+Magpylib makes use of vectorized computation (massive speedup). This requires that you hand over all field computation instances (multiple objects with multiple positions (=paths)) at the same time to `getB()`, `getH()`, `getJ()` and `getM()`. Avoid Python loops at all costs !!!
 ```
 
 Detailed information on field computation is provided [here](docs-fieldcomp).
@@ -266,7 +266,7 @@ cube = magpy.magnet.Cuboid(
 )
 cube.rotate_from_angax(angle=np.linspace(10, 360, 18), axis="x")
 
-# Generate an animation with `show`
+# Generate an animation with `show()`
 cube.show(animation=True, backend="plotly")
 ```
 <img src="../../_static/images/getting_started_animation.png" width=50% align="center">

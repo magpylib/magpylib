@@ -912,11 +912,11 @@ def _getBH_level1(
 
     Args
     ----
-    kwargs: dict of shape (N,x) input vectors that describes the computation.
+    kwargs: dict of shape (N, x) input vectors that describes the computation.
 
     Returns
     -------
-    field: ndarray, shape (N,3)
+    field: ndarray, shape (N, 3)
 
     """
 

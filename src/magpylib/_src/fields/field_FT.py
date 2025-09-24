@@ -459,7 +459,7 @@ def getFT(
         #    the force computation. Therefore it makes no sense to separate the force
         #    and torque computation.
 
-        F = np.einsum("abijk,abik->abij", DB, MOM)  # NumPy only
+        F = np.einsum("abijk, abik->abij", DB, MOM)  # NumPy only
         # F = np.sum(DB * MOM[:, :, :, np.newaxis, :], axis=4) # array API
         T = np.cross(MOM, B)
 

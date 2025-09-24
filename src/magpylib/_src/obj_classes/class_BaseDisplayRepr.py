@@ -23,7 +23,7 @@ UNITS = {
 
 
 class _BaseDisplayRepr:
-    """Provide display (``show``) and textual representation (``__repr__``) helpers."""
+    """Provide display (``show()``) and textual representation (``__repr__``) helpers."""
 
     show = show
     get_trace = make_DefaultTrace

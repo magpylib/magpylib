@@ -62,7 +62,7 @@ def test_getB_level2_input_simple():
 
 def test_getB_level2_input_shape22():
     """test functionality of getB_level2 to combine various
-    inputs - position input with shape (2,2)
+    inputs - position input with shape (2, 2)
     """
     mag = (1, 2, 3)
     dim_cuboid = (1, 2, 3)
@@ -402,10 +402,10 @@ def test_pixel_agg():
         [[1, 0, 0]]
     )
     sens1 = magpy.Sensor(
-        position=(0, 0, 1), pixel=np.zeros((4, 5, 3)), style_label="sens1 pixel(4,5)"
+        position=(0, 0, 1), pixel=np.zeros((4, 5, 3)), style_label="sens1 pixel(4, 5)"
     )
-    sens2 = sens1.copy(position=(0, 0, 2), style_label="sens2 pixel(4,5)")
-    sens3 = sens1.copy(position=(0, 0, 3), style_label="sens3 pixel(4,5)")
+    sens2 = sens1.copy(position=(0, 0, 2), style_label="sens2 pixel(4, 5)")
+    sens3 = sens1.copy(position=(0, 0, 3), style_label="sens3 pixel(4, 5)")
     sens_col = magpy.Collection(sens1, sens2, sens3)
 
     B1 = magpy.getB(src1, sens_col, squeeze=False, pixel_agg=None)
@@ -439,7 +439,8 @@ def test_pixel_agg_heterogeneous_pixel_shapes():
         pixel=np.zeros((4, 5, 3)) + 1, style_label="sens5,  pixel.shape = (3,)"
     )
     sens6 = sens3.copy(
-        pixel=np.zeros((4, 5, 1, 3)) + 2, style_label="sens6,  pixel.shape = (4,5,1,3)"
+        pixel=np.zeros((4, 5, 1, 3)) + 2,
+        style_label="sens6,  pixel.shape = (4, 5, 1, 3)",
     )
     src_col = magpy.Collection(src1, src2)
     sens_col1 = magpy.Collection(sens1, sens2, sens3)

@@ -152,7 +152,7 @@ class Tetrahedron(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             shape_m1=3,
             length=4,
             sig_name="Tetrahedron.vertices",
-            sig_type="array-like (list, tuple, ndarray) of shape (4,3)",
+            sig_type="array-like (list, tuple, ndarray) of shape (4, 3)",
             allow_None=True,
         )
 

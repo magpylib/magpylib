@@ -39,10 +39,10 @@ def validate_pos_orient(obj, ppath, opath_as_rotvec):
 ###############################################################################
 ###############################################################################
 # _BaseGeo POS/ORI INIT TESTING
-# at initialization position and orientation must have similar shape (N,3)
-# - if inputs are (N,3) and (3,) then the (3,) is tiled up to (N,3)
-# - if inputs are (N,3) and (M,3) then the smaller one is padded up
-# - None orientation input is interpreted as (0,0,0) rotvec == (0,0,0,1) quat
+# at initialization position and orientation must have similar shape (N, 3)
+# - if inputs are (N,3) and (3,) then the (3,) is tiled up to (N, 3)
+# - if inputs are (N, 3) and (M, 3) then the smaller one is padded up
+# - None orientation input is interpreted as (0, 0, 0) rotvec == (0, 0, 0, 1) quat
 
 
 def get_init_pos_orient_test_data():

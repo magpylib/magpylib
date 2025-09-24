@@ -60,7 +60,7 @@ def wrong_obj_msg(*objs, allow="sources"):
 def format_star_input(inp):
     """
     *inputs are always wrapped in tuple. Formats *inputs of form "src", "src, src"
-    but also "[src, src]" or ""(src,src") so that 1D lists/tuples come out.
+    but also "[src, src]" or ""(src, src") so that 1D lists/tuples come out.
     """
     if len(inp) == 1:
         return inp[0]
@@ -339,7 +339,7 @@ def cart_to_cyl_coordinates(observer):
 
 def cyl_field_to_cart(phi, Br, Bphi=None):
     """
-    transform Br,Bphi to Bx, By
+    transform Br, Bphi to Bx, By
     """
     if Bphi is not None:
         Bx = Br * np.cos(phi) - Bphi * np.sin(phi)

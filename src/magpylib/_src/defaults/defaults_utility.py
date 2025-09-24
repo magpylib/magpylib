@@ -93,10 +93,10 @@ def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False) -> d
     u : dict
         dictionary to update with
     same_keys_only : bool, optional
-        if ``True``, only key found in `d` get updated and no new items are created,
+        if ``True``, only key found in d get updated and no new items are created,
         by default False
     replace_None_only : bool, optional
-        if ``True``, only key/value pair from `d`where `value=None` get updated from `u`,
+        if ``True``, only key/value pair from d where ``value=None`` get updated from u,
         by default False
 
     Returns
@@ -213,11 +213,11 @@ def color_validator(color_input, allow_None=True, parent_name=""):
     Parameters
     ----------
     color_input : str
-        color input as string
+        Color input as string.
     allow_None : bool, optional
-        if `True` `color_input` can be `None`, by default True
+        If ``True``, ``color_input`` can be ``None``, by default ``True``.
     parent_name : str, optional
-        name of the parent class of the validator, by default ""
+        name of the parent class of the validator, by default ''.
 
     Returns
     -------
@@ -281,8 +281,8 @@ def color_validator(color_input, allow_None=True, parent_name=""):
             f"\n   Received value: {color_input!r}"
             f"\n\nThe 'color' property is a color and may be specified as:\n"
             "    - A hex string (e.g. '#ff0000')\n"
-            "    - A rgb string (e.g. 'rgb(185,204,255)')\n"
-            "    - A rgb tuple (e.g. (120,125,126))\n"
+            "    - A rgb string (e.g. 'rgb(185, 204, 255)')\n"
+            "    - A rgb tuple (e.g. (120, 125, 126))\n"
             "    - A number between 0 and 1 (for grey scale) (e.g. '.5' or .8)\n"
             f"    - A named CSS color:\n{list(mcolors.keys())}"
         )
@@ -381,18 +381,16 @@ class MagicProperties:
         return f"{type(self).__name__}({dict_str})"
 
     def as_dict(self, flatten=False, separator="."):
-        """
-        returns recursively a nested dictionary with all properties objects of the class
+        """Returns recursively a nested dictionary with all properties objects of the class
 
         Parameters
         ----------
         flatten: bool
-            If `True`, the nested dictionary gets flatten out with provided separator for the
+            If ``True``, the nested dictionary gets flatten out with provided separator for the
             dictionary keys
-
         separator: str
             the separator to be used when flattening the dictionary. Only applies if
-            `flatten=True`
+            ``flatten=True``
         """
         params = self._property_names_generator()
         dict_ = {}
@@ -414,9 +412,8 @@ class MagicProperties:
 
         Parameters
         ----------
-
         _match_properties: bool
-            If `True`, checks if provided properties over keyword arguments are matching the current
+            If ``True``, checks if provided properties over keyword arguments are matching the current
             object properties. An error is raised if a non-matching property is found.
             If ``False``, the ``update`` method does not raise any error when an argument is not
             matching a property.

@@ -1821,7 +1821,7 @@ def _Hz_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k):
 # especially these function show, which inputs are needed for the calculation
 # full vectorization for all cases could be implemented here
 # input: ndarray, shape (n,)
-# out: ndarray, shape (n,3,3) # (n)vector, (3)r_phi_z, (3)face
+# out: ndarray, shape (n, 3, 3) # (n)vector, (3)r_phi_z, (3)face
 
 
 def _case112(r_i, phi_bar_M, theta_M):
@@ -2382,7 +2382,7 @@ def _BHJM_cylinder_segment(
 
     # mask_inside = None
     # if in_out == "auto":
-    # phip1 in [-2pi,0], phio2 in [0,2pi]
+    # phip1 in [-2pi, 0], phio2 in [0, 2pi]
     phio1 = phi
     phio2 = phi - np.sign(phi) * 2 * np.pi
 

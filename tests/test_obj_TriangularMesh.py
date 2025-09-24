@@ -88,7 +88,7 @@ def test_TriangularMesh_getBH():
 
 def test_TriangularMesh_getB_different_facet_shapes_mixed():
     """test different facet shapes, facet cube has
-    shape (12,3,3) vs (4,3,3) for facet tetrahedron"""
+    shape (12, 3, 3) vs (4, 3, 3) for facet tetrahedron"""
     tetra_pv = pv.Tetrahedron()
     tetra = (
         magpy.magnet.Tetrahedron(

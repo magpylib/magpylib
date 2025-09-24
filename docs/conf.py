@@ -222,7 +222,7 @@ latex_elements = {
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
-    "extraclassoptions": "openany,oneside"  # Remove empty pages from .PDF download
+    "extraclassoptions": "openany, oneside"  # Remove empty pages from .PDF download
 }
 
 # Grouping the document tree into LaTeX files. List of tuples

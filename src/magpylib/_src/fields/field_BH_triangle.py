@@ -12,7 +12,7 @@ def _vcross3(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     """
     vectorized cross product for 3d vectors. Is ~4x faster than np.cross when
     arrays are smallish. Only slightly faster for large arrays.
-    input shape a,b: (n, 3)
+    input shape a, b: (n, 3)
     returns: (n, 3)
     """
     # receives nan values at corners
@@ -42,7 +42,7 @@ def _solid_angle(R: np.ndarray, r: np.ndarray) -> np.ndarray:
     """
     Vectorized computation of the solid angle of triangles.
 
-    Triangle point indices are 1,2,3, different triangles are denoted by a,b,c,...
+    Triangle point indices are 1, 2, 3, different triangles are denoted by a, b, c, ...
     The first triangle is defined as R1a, R2a, R3a.
 
     Input:
@@ -157,7 +157,7 @@ def triangle_Bfield(
     # np.seterr must be used because of a NumPy bug. It does not interpret where
     #   correctly. The following code will raise a NumPy warning - but obviously shouldn't
     #
-    # x = np.array([(0,1,2), (0,0,1)])
+    # x = np.array([(0, 1, 2), (0, 0, 1)])
     # np.where(
     #     x>0,
     #     1/x,

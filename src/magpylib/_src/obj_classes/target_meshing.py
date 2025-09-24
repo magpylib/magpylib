@@ -12,7 +12,7 @@ import numpy as np
 def _apportion_triple(triple, min_val=1, max_iter=30):
     """Apportion values of a triple, so that the minimum value `min_val` is respected
     and the product of all values remains the same.
-    Example: _apportion_triple([1,2,50], min_val=3)
+    Example: _apportion_triple([1, 2, 50], min_val=3)
     -> [ 2.99999999  3.         11.11111113]
     """
     triple = np.abs(np.array(triple, dtype=float))
@@ -48,10 +48,10 @@ def _cells_from_dimension(
     min_val: int
         Minimum value of the number of divisions per dimension.
     strict_max: bool
-        If `True`, the `target_elem` value becomes a strict maximum and the product of
+        If ``True``, the ``target_elem`` value becomes a strict maximum and the product of
         the resulting triple will be strictly smaller than the target.
     parity: {None, 'odd', 'even'}
-        All elements of the resulting triple will match the given parity. If `None`, no
+        All elements of the resulting triple will match the given parity. If ``None``, no
         parity check is performed.
 
     Returns
@@ -122,7 +122,7 @@ def _target_mesh_cuboid(target_elems, dimension, magnetization):
 
     Parameters
     ----------
-    target_elems: int or tuple (n1,n2,n3)
+    target_elems: int or tuple (n1, n2, n3)
         Target number of elements in the mesh. If an integer is provided, it is treated as
         the total number of elements.
     dimension: array-like, shape (3,)
@@ -389,9 +389,9 @@ def _target_mesh_triangle_current(
     per triangle is created.
 
     Parameters:
-    - triangles (n,3,3) array, triangles
+    - triangles (n, 3, 3) array, triangles
     - n_target: int, target number of mesh points
-    - cds: (n,3) array, current density vectors
+    - cds: (n, 3) array, current density vectors
 
     Returns dict:
     - mesh: centroids of refined triangles

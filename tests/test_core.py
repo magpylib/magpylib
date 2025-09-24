@@ -219,8 +219,8 @@ def test_current_sheet_Bfield():
 
     n = len(observers)
 
-    # coordinates = np.tile(np.array((1,3,1)).T, (n,1))
-    # current_densities = np.tile(np.array((0,1)).T, (n,1))
+    # coordinates = np.tile(np.array((1, 3, 1)).T, (n, 1))
+    # current_densities = np.tile(np.array((0, 1)).T, (n, 1))
     vertices = np.tile(
         np.expand_dims(np.array(((0, 0, 0), (1, 0, 0), (3, 1, 0))), axis=0), (n, 1, 1)
     )
@@ -354,8 +354,8 @@ def test_current_sheet_Bfield():
 
     n = len(observers)
 
-    # coordinates = np.tile(np.array((1,3,1)).T, (n,1))
-    # current_densities = np.tile(np.array((0,1)).T, (n,1))
+    # coordinates = np.tile(np.array((1, 3, 1)).T, (n, 1))
+    # current_densities = np.tile(np.array((0, 1)).T, (n, 1))
     vertices = np.tile(
         np.expand_dims(np.array(((2, 5, -10), (-7, -7, -3), (-1, 9, 8))), axis=0),
         (n, 1, 1),

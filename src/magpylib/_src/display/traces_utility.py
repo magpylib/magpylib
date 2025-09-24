@@ -72,7 +72,7 @@ def place_and_orient_model3d(
         vertices, coordsargs, useargs = get_vertices_from_model(
             model_kwargs, model_args, coordsargs
         )
-        # sometimes traces come as (n,m,3) shape
+        # sometimes traces come as (n, m, 3) shape
         vert_shape = vertices.shape
         vertices = np.reshape(vertices.astype(float), (3, -1))
 
@@ -138,8 +138,8 @@ def draw_arrowed_line(
     include_line=True,
 ) -> tuple:
     """
-    Provides x,y,z coordinates of an arrow drawn in the x-y-plane (z=0), showing up the y-axis and
-    centered in x,y,z=(0,0,0). The arrow vertices are then turned in the direction of `vec` and
+    Provides x, y, z coordinates of an arrow drawn in the x-y-plane (z=0), showing up the y-axis and
+    centered in x, y, z=(0, 0, 0). The arrow vertices are then turned in the direction of `vec` and
     moved to position `pos`.
     """
     norm = np.linalg.norm(vec)
@@ -232,8 +232,8 @@ def get_rot_pos_from_path(obj, show_path=None):
     """
     subsets orientations and positions depending on `show_path` value.
     examples:
-    show_path = [1,2,8], path_len = 6 -> path_indices = [1,2,6]
-    returns rots[[1,2,6]], poss[[1,2,6]]
+    show_path = [1, 2, 8], path_len = 6 -> path_indices = [1, 2, 6]
+    returns rots[[1, 2, 6]], poss[[1, 2, 6]]
     """
     # pylint: disable=protected-access
     # pylint: disable=invalid-unary-operand-type
@@ -343,9 +343,9 @@ def get_flatten_objects_properties_recursive(
 
 
 def merge_mesh3d(*traces):
-    """Merges a list of plotly mesh3d dictionaries. The `i,j,k` index parameters need to cumulate
+    """Merges a list of plotly mesh3d dictionaries. The `i, j, k` index parameters need to cumulate
     the indices of each object in order to point to the right vertices in the concatenated
-    vertices. `x,y,z,i,j,k` are mandatory fields, the `intensity` and `facecolor` parameters also
+    vertices. `x, y, z, i, j, k` are mandatory fields, the `intensity` and `facecolor` parameters also
     get concatenated if they are present in all objects. All other parameter found in the
     dictionary keys are taken from the first object, other keys from further objects are ignored.
     """
@@ -368,7 +368,7 @@ def merge_mesh3d(*traces):
 
 
 def merge_scatter3d(*traces):
-    """Merges a list of plotly scatter3d. `x,y,z` are mandatory fields and are concatenated with a
+    """Merges a list of plotly scatter3d. `x, y, z` are mandatory fields and are concatenated with a
     `None` vertex to prevent line connection between objects to be concatenated. Keys are taken
     from the first object, other keys from further objects are ignored.
     """
@@ -440,7 +440,7 @@ def getIntensity(vertices, axis) -> np.ndarray:
     pos = np.mean(p, axis=1)
     m = np.array(axis)
     intensity = (p[0] - pos[0]) * m[0] + (p[1] - pos[1]) * m[1] + (p[2] - pos[2]) * m[2]
-    # normalize to interval [0,1] (necessary for when merging mesh3d traces)
+    # normalize to interval [0, 1] (necessary for when merging mesh3d traces)
     ptp = np.ptp(intensity)
     ptp = ptp if ptp != 0 else 1
     return (intensity - np.min(intensity)) / ptp
@@ -456,7 +456,7 @@ def getColorscale(
     """Provides the colorscale for a plotly mesh3d trace. The colorscale must be an array
     containing arrays mapping a normalized value to an rgb, rgba, hex, hsl, hsv, or named
     color string. At minimum, a mapping for the lowest (0) and highest (1) values is required.
-    For example, `[[0, 'rgb(0,0,255)'], [1,'rgb(255,0,0)']]`. In this case the colorscale
+    For example, `[[0, 'rgb(0, 0, 255)'], [1, 'rgb(255, 0, 0)']]`. In this case the colorscale
     is created depending on the north/middle/south poles colors. If the middle color is
     None, the colorscale will only have north and south pole colors.
 
@@ -498,8 +498,8 @@ def getColorscale(
 
 def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
     """
-    Returns 3x2 array of the min and max ranges in x,y,z directions of input traces. Traces can be
-    any plotly trace object or a dict, with x,y,z numbered parameters.
+    Returns 3x2 array of the min and max ranges in x, y, z directions of input traces. Traces can be
+    any plotly trace object or a dict, with x, y, z numbered parameters.
     """
     ranges_rc = {}
     tr_dim_count = {}
@@ -558,7 +558,7 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
 
 
 def rescale_traces(traces, factors):
-    """Rescale traces based on scale factors by (row,col) index"""
+    """Rescale traces based on scale factors by (row, col) index"""
     for ind, tr in enumerate(traces):
         if "constructor" in tr:
             kwex = tr["kwargs_extra"]

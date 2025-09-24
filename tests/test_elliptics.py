@@ -33,7 +33,7 @@ def test_el3_vs_original():
     # x11 = np.random.rand(N)*5
     # kc11 = (np.random.rand(N)-.5)*10
     # p11 = (np.random.rand(N)-.5)*10
-    # result0 = np.array([_el30(x, kc, p) for x,kc,p in zip(x11,kc11,p11)])
+    # result0 = np.array([_el30(x, kc, p) for x,kc,p in zip(x11, kc11, p11)])
     # np.save('data_test_el3', np.array([result0,x11,kc11,p11]))
 
     # load data from original implementation
@@ -58,7 +58,7 @@ def test_el3_angle_vs_original():
     # phis = np.random.rand(N) * np.pi/2
     # ms = (np.random.rand(N)-.9)*10
     # ns = (np.random.rand(N)-.5)*5
-    # result0 = np.array([_el3_angle0(phi, n, m) for phi,n,m in zip(phis,ns,ms)])
+    # result0 = np.array([_el3_angle0(phi, n, m) for phi,n,m in zip(phis, ns, ms)])
     # np.save('data_test_el3_angle', np.array([result0,phis,ns,ms]))
 
     # load data from original implementation
