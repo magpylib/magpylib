@@ -10,7 +10,8 @@
   ([#887](https://github.com/magpylib/magpylib/issues/887),
   [#847](https://github.com/magpylib/magpylib/issues/847),
   [#787](https://github.com/magpylib/magpylib/issues/787))
-- Adding magnet modelling tutorial ([#813](https://github.com/magpylib/magpylib/issues/813),)
+- Adding magnet modelling tutorial
+  ([#813](https://github.com/magpylib/magpylib/issues/813),)
 - Added new `style.pixel.field` parameters to quickly represent vector fields
   ([#793](https://github.com/magpylib/magpylib/pull/793))
 - Added the `current_sheet_Hfield` core computation function, and the classes
