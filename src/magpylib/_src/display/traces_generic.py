@@ -838,7 +838,7 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
 def get_sensor_pixel_field(objects):
     """get field_by_sens if sensor has style pixel field"""
     # pylint: disable=import-outside-toplevel
-    from magpylib._src.fields.field_wrap_BH import getBH_level2  # noqa: PLC0415
+    from magpylib._src.fields.field_BH import _getBH_level2  # noqa: PLC0415
 
     field_by_sens = {}
     sensors = format_obj_input(objects, allow="sensors+collections")
@@ -858,7 +858,7 @@ def get_sensor_pixel_field(objects):
             if sources:
                 field = fsrc[0]
                 has_pix_field = True
-                out = getBH_level2(
+                out = _getBH_level2(
                     sources,
                     [sens],
                     sumup=True,

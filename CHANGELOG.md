@@ -1,11 +1,21 @@
 # Changelog
 
 ## [5.2.0] - 2024-09-DD
-- Removed deprecated members `Line`, `Circle`, and ... ([#693](https://github.com/magpylib/magpylib/issues/693))
-- Major docstring review aligning with NuPyDoc/Scipy convention ([#876](https://github.com/magpylib/magpylib/issues/876), [#896](https://github.com/magpylib/magpylib/issues/896)).
+
+- Removed deprecated members `Line`, `Circle`, and ...
+  ([#693](https://github.com/magpylib/magpylib/issues/693))
+- Major docstring review aligning with NuPyDoc/Scipy convention
+  ([#876](https://github.com/magpylib/magpylib/issues/876),
+  [#896](https://github.com/magpylib/magpylib/issues/896)).
 - Aligning format of all Runtime Messages.
-- Major documentation update ([#876](https://github.com/magpylib/magpylib/issues/876), [#836](https://github.com/magpylib/magpylib/issues/836)).
-- Moving the functional interface from `getB("Cuboid")` to `func.cuboid_field()`. ([#896](https://github.com/magpylib/magpylib/issues/896), [#883](https://github.com/magpylib/magpylib/issues/883), [#704](https://github.com/magpylib/magpylib/issues/813))
+- Major documentation update
+  ([#876](https://github.com/magpylib/magpylib/issues/876),
+  [#836](https://github.com/magpylib/magpylib/issues/836)).
+- Moving the functional interface from `getB("Cuboid")` to
+  `func.cuboid_field()`.
+  ([#896](https://github.com/magpylib/magpylib/issues/896),
+  [#883](https://github.com/magpylib/magpylib/issues/883),
+  [#704](https://github.com/magpylib/magpylib/issues/813))
 - General documentation update
   ([#876](https://github.com/magpylib/magpylib/issues/876),
   [#829](https://github.com/magpylib/magpylib/issues/829)), and adding/reviewing
@@ -24,7 +34,9 @@
   oriented interface. ([#788](https://github.com/magpylib/magpylib/issues/788))
 - Adding new objects properties
   - `centroid`: computes and returns object centroid. Gives the same as
-    `barycenter` for the objects that have it. ([#879](https://github.com/magpylib/magpylib/issues/879), [#864](https://github.com/magpylib/magpylib/issues/864))
+    `barycenter` for the objects that have it.
+    ([#879](https://github.com/magpylib/magpylib/issues/879),
+    [#864](https://github.com/magpylib/magpylib/issues/864))
   - `volume` computes and returns magnet volumes
     ([#864](https://github.com/magpylib/magpylib/issues/864))
   - `dipole_moment` computes and returns object dipole moment (magnets and

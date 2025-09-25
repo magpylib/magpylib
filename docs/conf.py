@@ -326,7 +326,7 @@ favicons = [
 ]
 
 # Suppress warnings to unknown references in docstring type lines
-nitpick_ignore_regex = [(r'py:.*', r'.*')]
+nitpick_ignore_regex = [(r"py:.*", r".*")]
 
 
 # Suppress warnings to unknown references in docstrings

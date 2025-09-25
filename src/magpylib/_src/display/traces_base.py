@@ -8,9 +8,9 @@ import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
 from magpylib._src.display.traces_utility import (
+    draw_zarrow,
     merge_mesh3d,
     place_and_orient_model3d,
-    draw_zarrow,
 )
 from magpylib._src.fields.field_BH_tetrahedron import _check_chirality
 

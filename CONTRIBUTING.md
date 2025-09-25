@@ -93,8 +93,8 @@ that apply important code checks which each commit.
 - For chainable instance methods: Returns \n Self \n Self (allows chaining).
 - Do not name private helper classes that might be returned instead of Self.
 - Prefer duplicating identical docstrings over referencing others; duplicates
-  must remain exactly identical.
-  Capitalize docstring headers like '## List of Style Properties'
+  must remain exactly identical. Capitalize docstring headers like '## List of
+  Style Properties'
 
 ### Runtime messages (warnings, errors, assertions)
 
