@@ -7,13 +7,13 @@ import numpy as np
 from magpylib._src.display.traces_core import make_Dipole
 from magpylib._src.fields.field_BH_dipole import _BHJM_dipole
 from magpylib._src.input_checks import check_format_input_vector
-from magpylib._src.obj_classes.class_BaseExcitations import _BaseSource
-from magpylib._src.obj_classes.class_BaseProperties import _BaseDipoleMoment
+from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
 from magpylib._src.style import DipoleStyle
 from magpylib._src.utility import unit_prefix
 
 
-class Dipole(_BaseSource, _BaseDipoleMoment):
+class Dipole(BaseSource, BaseDipoleMoment):
     """Magnetic dipole moment.
 
     Can be used as ``sources`` input for magnetic field computation and ``target``

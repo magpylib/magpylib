@@ -15,13 +15,13 @@ from magpylib._src.input_checks import (
     check_format_input_vector,
     validate_field_func,
 )
-from magpylib._src.obj_classes.class_BaseDisplayRepr import _BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseGeo import _BaseGeo
+from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.style import CurrentStyle, MagnetStyle
 from magpylib._src.utility import format_star_input
 
 
-class _BaseSource(_BaseGeo, _BaseDisplayRepr):
+class BaseSource(BaseGeo, BaseDisplayRepr):
     """Base class for all source objects providing getBHJM and field function hook."""
 
     _field_func = None
@@ -31,8 +31,8 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
     def __init__(self, position, orientation, field_func=None, style=None, **kwargs):
         if field_func is not None:
             self.field_func = field_func
-        _BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
-        _BaseDisplayRepr.__init__(self)
+        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
+        BaseDisplayRepr.__init__(self)
 
     @property
     def field_func(self):
@@ -317,7 +317,7 @@ class _BaseSource(_BaseGeo, _BaseDisplayRepr):
         )
 
 
-class _BaseMagnet(_BaseSource):
+class BaseMagnet(BaseSource):
     """Provide magnetization and polarization attributes for magnet sources."""
 
     _style_class = MagnetStyle
@@ -404,7 +404,7 @@ class _BaseMagnet(_BaseSource):
         )
 
 
-class _BaseCurrent(_BaseSource):
+class BaseCurrent(BaseSource):
     """Provide scalar electric current attribute for current sources."""
 
     _style_class = CurrentStyle

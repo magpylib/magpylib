@@ -9,13 +9,13 @@ from magpylib._src.display.traces_core import make_Sensor
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import check_format_input_vector
-from magpylib._src.obj_classes.class_BaseDisplayRepr import _BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseGeo import _BaseGeo
+from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.style import SensorStyle
 from magpylib._src.utility import format_star_input
 
 
-class Sensor(_BaseGeo, _BaseDisplayRepr):
+class Sensor(BaseGeo, BaseDisplayRepr):
     """Magnetic field sensor.
 
     Can be used as ``observers`` input for magnetic field computation.
@@ -110,8 +110,8 @@ class Sensor(_BaseGeo, _BaseDisplayRepr):
         self.handedness = handedness
 
         # init inheritance
-        _BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
-        _BaseDisplayRepr.__init__(self)
+        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
+        BaseDisplayRepr.__init__(self)
 
     # Properties
     @property

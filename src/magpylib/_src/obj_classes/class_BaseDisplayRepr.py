@@ -22,7 +22,7 @@ UNITS = {
 }
 
 
-class _BaseDisplayRepr:
+class BaseDisplayRepr:
     """Provide display (``show()``) and textual representation (``__repr__``) helpers."""
 
     show = show

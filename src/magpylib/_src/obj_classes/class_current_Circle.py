@@ -9,14 +9,14 @@ from magpylib._src.display.traces_core import make_Circle
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_circle import _BHJM_circle
 from magpylib._src.input_checks import check_format_input_scalar
-from magpylib._src.obj_classes.class_BaseExcitations import _BaseCurrent
-from magpylib._src.obj_classes.class_BaseProperties import _BaseDipoleMoment
-from magpylib._src.obj_classes.class_BaseTarget import _BaseTarget
+from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
+from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.target_meshing import _target_mesh_circle
 from magpylib._src.utility import unit_prefix
 
 
-class Circle(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
+class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     """Circular current loop.
 
     Can be used as ``sources`` input for magnetic field computation and ``target``
@@ -106,8 +106,8 @@ class Circle(_BaseCurrent, _BaseTarget, _BaseDipoleMoment):
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
 
-        # Initialize _BaseTarget
-        _BaseTarget.__init__(self, meshing)
+        # Initialize BaseTarget
+        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property

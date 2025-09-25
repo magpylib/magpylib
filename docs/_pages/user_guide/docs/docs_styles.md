@@ -649,10 +649,9 @@ xy_grid = np.mgrid[-2:2:15j, -2:2:15j, 0:0:1j].T[0]
 # Define pixel field style
 pixel_style = {
     "source" : "B",
-    "symbol"       : "arrow3d",
-    "sizemode"     : "uniform",
-    "shownull"     : True,
-    "colormap"   : "Magma"
+    "symbol" : "arrow3d",
+    "shownull" : True,
+    "colormap" : "Magma"
 }
 
 # Create sensor with pixel array and applied style

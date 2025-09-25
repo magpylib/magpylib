@@ -11,17 +11,17 @@ from magpylib._src.fields.field_BH_cylinder_segment import (
     _BHJM_cylinder_segment_internal,
 )
 from magpylib._src.input_checks import check_format_input_cylinder_segment
-from magpylib._src.obj_classes.class_BaseExcitations import _BaseMagnet
+from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import (
-    _BaseDipoleMoment,
-    _BaseVolume,
+    BaseDipoleMoment,
+    BaseVolume,
 )
-from magpylib._src.obj_classes.class_BaseTarget import _BaseTarget
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.target_meshing import _target_mesh_cylinder
 from magpylib._src.utility import unit_prefix
 
 
-class CylinderSegment(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
+class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     """Cylinder segment (ring-section) magnet with homogeneous magnetization.
 
     Can be used as ``sources`` input for magnetic field computation and ``target``
@@ -130,8 +130,8 @@ class CylinderSegment(_BaseMagnet, _BaseTarget, _BaseVolume, _BaseDipoleMoment):
             position, orientation, magnetization, polarization, style, **kwargs
         )
 
-        # Initialize _BaseTarget
-        _BaseTarget.__init__(self, meshing)
+        # Initialize BaseTarget
+        BaseTarget.__init__(self, meshing)
 
     # property getters and setters
     @property

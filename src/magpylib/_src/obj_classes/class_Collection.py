@@ -14,11 +14,11 @@ from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import check_format_input_obj
-from magpylib._src.obj_classes.class_BaseDisplayRepr import _BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseGeo import _BaseGeo
+from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseProperties import (
-    _BaseDipoleMoment,
-    _BaseVolume,
+    BaseDipoleMoment,
+    BaseVolume,
 )
 from magpylib._src.utility import format_obj_input, rec_obj_remover
 
@@ -124,13 +124,13 @@ def _collection_tree_generator(
             )
 
 
-class _BaseCollection(_BaseDisplayRepr):
-    """Collection base class without _BaseGeo properties"""
+class BaseCollection(BaseDisplayRepr):
+    """Collection base class without BaseGeo properties"""
 
     get_trace = None
 
     def __init__(self, *children, override_parent=False):
-        _BaseDisplayRepr.__init__(self)
+        BaseDisplayRepr.__init__(self)
 
         self._children = []
         self._sources = []
@@ -389,10 +389,10 @@ class _BaseCollection(_BaseDisplayRepr):
     def _update_src_and_sens(self):
         """updates sources, sensors and collections attributes from children"""
         # pylint: disable=protected-access
-        from magpylib._src.obj_classes.class_BaseExcitations import _BaseSource  # noqa: I001, PLC0415
+        from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
         from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
 
-        self._sources = [obj for obj in self._children if isinstance(obj, _BaseSource)]
+        self._sources = [obj for obj in self._children if isinstance(obj, BaseSource)]
         self._sensors = [obj for obj in self._children if isinstance(obj, Sensor)]
         self._collections = [
             obj for obj in self._children if isinstance(obj, Collection)
@@ -890,7 +890,7 @@ class _BaseCollection(_BaseDisplayRepr):
         return ", ".join(items)
 
 
-class Collection(_BaseGeo, _BaseCollection, _BaseVolume, _BaseDipoleMoment):
+class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
     """Group multiple children in a collection for common manipulation.
 
     Children can be sources (magnets, currents, misc), sensors, and other
@@ -1024,14 +1024,14 @@ class Collection(_BaseGeo, _BaseCollection, _BaseVolume, _BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        _BaseGeo.__init__(
+        BaseGeo.__init__(
             self,
             position=position,
             orientation=orientation,
             style=style,
             **kwargs,
         )
-        _BaseCollection.__init__(self, *children, override_parent=override_parent)
+        BaseCollection.__init__(self, *children, override_parent=override_parent)
 
     # Abstract methods implementation
     def _get_volume(self):

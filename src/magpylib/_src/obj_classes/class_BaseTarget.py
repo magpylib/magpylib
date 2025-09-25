@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 
 
-class _BaseTarget(ABC):
+class BaseTarget(ABC):
     """Base class for Magpylib objects that can be targets of force computation.
 
     - adds parameter meshing, default=None
@@ -15,7 +15,7 @@ class _BaseTarget(ABC):
     _force_type: str = None
 
     def __init__(self, meshing=None):
-        """Initialize _BaseTarget with meshing parameters."""
+        """Initialize BaseTarget with meshing parameters."""
         self.meshing = meshing
 
     @property

@@ -76,14 +76,14 @@ def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> 
     ### Info:
     - exits if invalid sources are given
     """
-    from magpylib._src.obj_classes.class_BaseExcitations import _BaseSource  # noqa: I001, PLC0415
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
     from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
 
     obj_list = []
     flatten_collection = "collections" not in allow.split("+")
     for obj in objects:
         try:
-            if isinstance(obj, _BaseSource | Sensor):
+            if isinstance(obj, BaseSource | Sensor):
                 obj_list += [obj]
             elif flatten_collection or isinstance(obj, list | tuple):
                 obj_list += format_obj_input(
@@ -111,7 +111,7 @@ def format_src_inputs(sources) -> list:
     - raises an error if sources format is bad
     """
 
-    from magpylib._src.obj_classes.class_BaseExcitations import _BaseSource  # noqa: I001, PLC0415
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
     from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
 
     # store all sources here
@@ -130,7 +130,7 @@ def format_src_inputs(sources) -> list:
             if not child_sources:
                 raise MagpylibBadUserInput(wrong_obj_msg(src, allow="sources"))
             src_list += child_sources
-        elif isinstance(src, _BaseSource):
+        elif isinstance(src, BaseSource):
             src_list += [src]
         else:
             raise MagpylibBadUserInput(wrong_obj_msg(src, allow="sources"))
@@ -178,7 +178,7 @@ def check_path_format(inp):
     of obj.pos and obj.rot
     Parameters
     ----------
-    inp: single _BaseGeo or list of _BaseGeo objects
+    inp: single BaseGeo or list of BaseGeo objects
     Returns
     -------
     no return
@@ -197,14 +197,14 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
     """
     return only allowed objects - e.g. no sensors. Throw a warning when something is eliminated.
     """
-    from magpylib._src.obj_classes.class_BaseExcitations import _BaseSource  # noqa: I001, PLC0415
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
     from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
     from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
 
     # select wanted
     allowed_classes = ()
     if "sources" in allow.split("+"):
-        allowed_classes += (_BaseSource,)
+        allowed_classes += (BaseSource,)
     if "sensors" in allow.split("+"):
         allowed_classes += (Sensor,)
     if "collections" in allow.split("+"):
@@ -380,15 +380,15 @@ def get_registered_sources():
     """Return all registered sources"""
     # pylint: disable=import-outside-toplevel
     from magpylib._src.obj_classes.class_BaseExcitations import (  # noqa: PLC0415
-        _BaseCurrent,
-        _BaseMagnet,
-        _BaseSource,
+        BaseCurrent,
+        BaseMagnet,
+        BaseSource,
     )
 
     return {
         k: v
-        for k, v in get_subclasses(_BaseSource, recursive=True).items()
-        if v not in (_BaseCurrent, _BaseMagnet, _BaseSource)
+        for k, v in get_subclasses(BaseSource, recursive=True).items()
+        if v not in (BaseCurrent, BaseMagnet, BaseSource)
     }
 
 

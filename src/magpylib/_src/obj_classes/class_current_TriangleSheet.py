@@ -11,12 +11,12 @@ import numpy as np
 from magpylib._src.display.traces_core import make_TriangleSheet
 from magpylib._src.fields.field_BH_current_sheet import _BHJM_current_trisheet
 from magpylib._src.input_checks import check_format_input_vector
-from magpylib._src.obj_classes.class_BaseExcitations import _BaseSource
-from magpylib._src.obj_classes.class_BaseTarget import _BaseTarget
+from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.target_meshing import _target_mesh_triangle_current
 
 
-class TriangleSheet(_BaseSource, _BaseTarget):
+class TriangleSheet(BaseSource, BaseTarget):
     """Surface current density flowing along triangular faces.
 
     Can be used as ``sources`` input for magnetic field computation and ``target``
@@ -123,7 +123,7 @@ class TriangleSheet(_BaseSource, _BaseTarget):
 
         # Inherit
         super().__init__(position, orientation, style, **kwargs)
-        _BaseTarget.__init__(self, meshing)
+        BaseTarget.__init__(self, meshing)
 
     # property getters and setters
     @property

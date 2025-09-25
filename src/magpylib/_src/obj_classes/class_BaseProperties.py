@@ -1,14 +1,14 @@
 """Base class properties
 
-Dipole moment is a separate class from _BaseMagnet because this property is inherited by a mix of different classes.
+Dipole moment is a separate class from BaseMagnet because this property is inherited by a mix of different classes.
 
-Volume is a separate class from _BaseMagnet because Dipole has no volume property
+Volume is a separate class from BaseMagnet because Dipole has no volume property
 """
 
 from abc import ABC, abstractmethod
 
 
-class _BaseDipoleMoment(ABC):
+class BaseDipoleMoment(ABC):
     """Base class for Magpylib objects for inheriting the dipole_moment property."""
 
     @property
@@ -33,7 +33,7 @@ class _BaseDipoleMoment(ABC):
         """
 
 
-class _BaseVolume(ABC):
+class BaseVolume(ABC):
     """Base class for Magpylib objects for inheriting the volume property."""
 
     @property
