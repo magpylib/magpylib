@@ -16,8 +16,6 @@ orphan: true
 
 # Field Computation (B, H, J, M)
 
-----------------------------
-
 ## Most basic Example
 
 The v2 slogan was *"The magnetic field is only three lines of code away"*, which is demonstrated by the following most fundamental and self-explanatory example,

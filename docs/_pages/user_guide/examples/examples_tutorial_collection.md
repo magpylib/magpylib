@@ -25,8 +25,6 @@ The top-level class `Collection` allows users to group objects by reference for 
 
 ----------------------------
 
-----------------------------
-
 ## Constructing Collections
 
 Collections have the attributes `children`, `sources`, `sensors` and `collections`. These attributes are ordered lists that contain objects that are added to the collection by reference (not copied). `children` returns a list of all objects in the collection. `sources` returns a list of the sources, `sensors` a list of the sensors and `collections` a list of "sub-collections" within the collection.

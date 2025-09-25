@@ -1,6 +1,5 @@
 # Units and Types
 
---------------------------
 (guide-docs-units)=
 ## Units
 

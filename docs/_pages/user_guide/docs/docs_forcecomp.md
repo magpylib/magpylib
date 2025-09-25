@@ -1,7 +1,6 @@
 (docs-forcecomp)=
 # Force Computation (F, T)
 
--------------------------------------
 ## Computation Idea
 
 Force and torque computation in Magpylib stands in contrast to the analytical models used for magnetic field computation. They are based on a numerical approach that solves the force integrals over the target objects by discretization, see also [Physics and Computation](guide-physics-force-computation).

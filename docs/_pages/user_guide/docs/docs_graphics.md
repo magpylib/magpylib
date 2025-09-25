@@ -15,7 +15,6 @@ orphan: true
 (guide-graphics)=
 # Graphic output
 
----------------------------------
 (guide-graphics-show)=
 ## 3D View
 
