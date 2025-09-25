@@ -1828,8 +1828,8 @@ class Pixel(MagicProperties):
 
     @symbol.setter
     def symbol(self, val):
-        assert val is None or val in ALLOWED_SYMBOLS, (
-            f"Input symbol of {type(self).__name__} must be one of {ALLOWED_SYMBOLS}; instead received {val!r}."
+        assert val is None or val in self._allowed_symbols, (
+            f"Input symbol of {type(self).__name__} must be one of {self._allowed_symbols}; instead received {val!r}."
         )
         self._symbol = val
 
