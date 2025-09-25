@@ -329,6 +329,20 @@ favicons = [
 nitpick_ignore_regex = [(r'py:.*', r'.*')]
 
 
+# Suppress warnings to unknown references in docstrings
+nitpick_ignore = [
+    ("py:class", "Source"),
+    ("py:class", "optional"),
+    ("py:class", "array-like"),
+    ("py:class", "matplotlib.Figure"),
+    ("py:class", "plotly.Figure"),
+    ("py:class", "pyvista.Plotter"),
+    ("py:class", "Rotation"),
+    ("py:class", "ndarray"),
+    ("py:class", "DataFrame"),
+]
+
+
 # sphinx gallery settings
 # sphinx_gallery_conf = {
 #     # convert rst to md for ipynb

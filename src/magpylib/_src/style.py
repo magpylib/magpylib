@@ -5,6 +5,8 @@
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-positional-arguments
 
+import re
+
 import numpy as np
 
 from magpylib._src.defaults.defaults_utility import (
@@ -1588,6 +1590,169 @@ class SensorStyle(BaseStyle, SensorProperties):
         super().__init__(**kwargs)
 
 
+class PixelField(MagicProperties):
+    """Defines the styling properties of sensor pixels.
+
+    Parameters
+    ----------
+    source: str, default=None
+        The pixel color source (e.g. "Bx", "Hxy", "J", etc.). If not specified,
+        the amplitude of the `source` value is used.
+
+    colormap: str, default="Inferno",
+        The colormap used with `source`.
+
+    shownull: bool, default=True
+        Show/hide null or invalid field values
+
+    symbol: {"cone", "arrow", "arrow3d"}:
+        Orientation symbol for field vector.
+
+    sizescaling: {"uniform", "linear","log","log^[2-9]"}
+        Symbol size scaling relative the the field magnitude.
+
+    sizemin: float, default=0.
+        Minimum relative size of field symbols (0 to 1).
+
+    colorscaling: {"uniform", "linear","log","log^[2-9]"}
+        Color scale scaling relative the the field magnitude.
+    """
+
+    _allowed_scalings_pattern = r"^(uniform|linear|(log)+|log\^[2-9])$"
+    _allowed_vectors = ("B", "H", "M", "J")
+    _allowed_symbols = ("cone", "arrow", "arrow3d", "none")
+    _allowed_colormaps = (
+        "Viridis",
+        "Jet",
+        "Rainbow",
+        "Plasma",
+        "Inferno",
+        "Magma",
+        "Cividis",
+        "Greys",
+        "Purples",
+        "Blues",
+        "Greens",
+        "Oranges",
+        "Reds",
+        "YlOrBr",
+        "YlOrRd",
+        "OrRd",
+        "PuRd",
+        "RdPu",
+        "BuPu",
+        "GnBu",
+        "PuBu",
+        "YlGnBu",
+        "PuBuGn",
+        "BuGn",
+        "YlGn",
+    )
+
+    @property
+    def source(self):
+        """Pixel vector source."""
+        return self._source
+
+    @source.setter
+    def source(self, val):
+        valid = True
+        if val not in (None, False):
+            field_str, *coords_str = val
+            if not coords_str:
+                coords_str = list("xyz")
+            if field_str not in self._allowed_vectors and set(coords_str).difference(
+                set("xyz")
+            ):
+                valid = False
+        assert valid, (
+            f"The `source` property of {type(self).__name__} must be None or False or start"
+            f" with either {self._allowed_vectors} and be followed by a combination of"
+            f" 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') ) but received {val!r} instead."
+        )
+        self._source = val
+
+    @property
+    def colormap(self):
+        """Pixel vector source."""
+        return self._colormap
+
+    @colormap.setter
+    def colormap(self, val):
+        assert val is None or val in self._allowed_colormaps, (
+            f"The `colormap` property of {type(self).__name__} must be one of"
+            f"{self._allowed_colormaps},\n"
+            f"but received {val!r} instead."
+        )
+        self._colormap = val
+
+    @property
+    def shownull(self):
+        """Show/hide null or invalid field values"""
+        return self._shownull
+
+    @shownull.setter
+    def shownull(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"The `shownull` property of {type(self).__name__} must be either True or False,"
+            f"but received {val!r} instead."
+        )
+        self._shownull = val
+
+    @property
+    def symbol(self):
+        """Pixel symbol. Can be one of `{"cone", "arrow", "arrow3d"}`."""
+        return self._symbol
+
+    @symbol.setter
+    def symbol(self, val):
+        assert val is None or val in self._allowed_symbols, (
+            f"The `symbol` property of {type(self).__name__} must be one of"
+            f"{self._allowed_symbols},\n"
+            f"but received {val!r} instead."
+        )
+        self._symbol = val
+
+    @property
+    def sizescaling(self):
+        """Pixel sizescaling. Can be one of `{"uniform", "linear","log","log^[2-9]"}`."""
+        return self._sizescaling
+
+    @sizescaling.setter
+    def sizescaling(self, val):
+        self._sizescaling = self._validate_scaling(val, name="sizescaling")
+
+    @property
+    def sizemin(self):
+        """Minimum relative size of field symbols (0 to 1)."""
+        return self._sizemin
+
+    @sizemin.setter
+    def sizemin(self, val):
+        assert val is None or (isinstance(val, float | int) and 0 <= val <= 1), (
+            "The `sizemin` property must be a value between 0 and 1,\n"
+            f"but received {val!r} instead."
+        )
+        self._sizemin = val
+
+    @property
+    def colorscaling(self):
+        """Pixel colorscaling. Can be one of `{"uniform", "linear","log","log^[2-9]"}`."""
+        return self._colorscaling
+
+    @colorscaling.setter
+    def colorscaling(self, val):
+        self._colorscaling = self._validate_scaling(val, name="colorscaling")
+
+    def _validate_scaling(self, val, name):
+        assert val is None or re.match(self._allowed_scalings_pattern, str(val)), (
+            f"The `{name}` property of {type(self).__name__} must match the regex pattern"
+            f" {self._allowed_scalings_pattern},\n"
+            f"but received {val!r} instead."
+        )
+        return val
+
+
 class Pixel(MagicProperties):
     """Defines the styling properties of sensor pixels.
 
@@ -1609,6 +1774,8 @@ class Pixel(MagicProperties):
         Pixel symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`.
         Only applies for Matplotlib plotting backend.
     """
+
+    _allowed_symbols = ("cube", *ALLOWED_SYMBOLS)
 
     def __init__(self, size=1, sizemode=None, color=None, symbol=None, **kwargs):
         super().__init__(
@@ -1656,7 +1823,7 @@ class Pixel(MagicProperties):
 
     @property
     def symbol(self):
-        """Pixel symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`."""
+        """Pixel symbol. Can be one of `['cube', '.', 'o', '+', 'D', 'd', 's', 'x']`."""
         return self._symbol
 
     @symbol.setter
@@ -1665,6 +1832,15 @@ class Pixel(MagicProperties):
             f"Input symbol of {type(self).__name__} must be one of {ALLOWED_SYMBOLS}; instead received {val!r}."
         )
         self._symbol = val
+
+    @property
+    def field(self):
+        """`PixelField` object or dict."""
+        return self._field
+
+    @field.setter
+    def field(self, val):
+        self._field = validate_property_class(val, "pixel", PixelField, self)
 
 
 class CurrentProperties:

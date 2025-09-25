@@ -213,7 +213,7 @@ for i in range(steps):
     data[3,i] = sphere2.orientation.as_euler('xyz')
 
 # Plot results
-fig, (ax1,ax2) = plt.subplots(2,1,figsize=(8, 4))
+fig, (ax1,ax2) = plt.subplots(2, 1, figsize=(8, 4))
 
 for j,ls in enumerate(["-", "--"]):
 

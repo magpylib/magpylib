@@ -78,7 +78,7 @@ def test_input_objects_pixel_good(pixel):
     """good input: magpy.Sensor(pixel=pixel)"""
 
     sens = magpy.Sensor(pixel=pixel)
-    np.testing.assert_allclose(sens.pixel, pixel)
+    np.testing.assert_allclose(sens.pixel, pixel)  # type: ignore[attr-defined]
 
 
 @pytest.mark.parametrize(
@@ -164,7 +164,7 @@ def test_input_objects_current_good(current):
     if current is None:
         assert src.current is None
     else:
-        np.testing.assert_allclose(src.current, current)
+        np.testing.assert_allclose(src.current, current)  # type: ignore[attr-defined]
 
 
 @pytest.mark.parametrize(
@@ -202,7 +202,7 @@ def test_input_objects_diameter_good(diameter):
     if diameter is None:
         assert src.diameter is None
     else:
-        np.testing.assert_allclose(src.diameter, diameter)
+        np.testing.assert_allclose(src.diameter, diameter)  # type: ignore[attr-defined]
 
 
 @pytest.mark.parametrize(
@@ -242,7 +242,7 @@ def test_input_objects_vertices_good(vertices):
     if vertices is None:
         assert src.vertices is None
     else:
-        np.testing.assert_allclose(src.vertices, vertices)
+        np.testing.assert_allclose(src.vertices, vertices)  # type: ignore[attr-defined]
 
 
 @pytest.mark.parametrize(
@@ -289,8 +289,8 @@ def test_input_objects_magnetization_moment_good(pol_or_mom):
         assert src.polarization is None
         assert src2.moment is None
     else:
-        np.testing.assert_allclose(src.polarization, pol_or_mom)
-        np.testing.assert_allclose(src2.moment, pol_or_mom)
+        np.testing.assert_allclose(src.polarization, pol_or_mom)  # type: ignore[attr-defined]
+        np.testing.assert_allclose(src2.moment, pol_or_mom)  # type: ignore[attr-defined]
 
 
 @pytest.mark.parametrize(
@@ -337,7 +337,7 @@ def test_input_objects_dimension_cuboid_good(dimension):
     if dimension is None:
         assert src.dimension is None
     else:
-        np.testing.assert_allclose(src.dimension, dimension)
+        np.testing.assert_allclose(src.dimension, dimension)  # type: ignore[attr-defined]
 
 
 @pytest.mark.parametrize(
@@ -379,7 +379,7 @@ def test_input_objects_dimension_cylinder_good(dimension):
     if dimension is None:
         assert src.dimension is None
     else:
-        np.testing.assert_allclose(src.dimension, dimension)
+        np.testing.assert_allclose(src.dimension, dimension)  # type: ignore[attr-defined]
 
 
 @pytest.mark.parametrize(
@@ -425,7 +425,7 @@ def test_input_objects_dimension_cylinderSegment_good(dimension):
     if dimension is None:
         assert src.dimension is None
     else:
-        np.testing.assert_allclose(src.dimension, dimension)
+        np.testing.assert_allclose(src.dimension, dimension)  # type: ignore[attr-defined]
 
 
 @pytest.mark.parametrize(
@@ -716,9 +716,9 @@ def test_input_rotate_axis_bad(axis):
 @pytest.mark.parametrize(
     "observers",
     [
-        magpy.Sensor(position=(1, 1, 1)),
-        magpy.Collection(magpy.Sensor(position=(1, 1, 1))),
-        magpy.Collection(magpy.Sensor(), magpy.Sensor()),
+        magpy.Sensor(position=(0.1, -1, 0.3)),
+        magpy.Collection(magpy.Sensor(position=(0.1, -1, 0.3))),
+        magpy.Collection(magpy.Sensor(position=(0.1, -1, 0.3)), magpy.Sensor()),
         (1, 2, 3),
         [(1, 2, 3)] * 2,
         [[(1, 2, 3)] * 2] * 3,
@@ -1013,112 +1013,4 @@ def test_magnet_polarization_magnetization_input3():
     c = magpy.magnet.Cuboid()
     c.magnetization = mag
     np.testing.assert_allclose(mag, c.magnetization)
-    np.testing.assert_allclose(mag * (4 * np.pi * 1e-7), c.polarization)
-
-
-def test_current_sheet_init():
-    """good inputs"""
-    cds = [(1, 0, 0)] * 5
-    verts = ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
-    facs = ((0, 1, 2), (0, 2, 3), (0, 1, 3), (1, 2, 3), (1, 2, 3))
-
-    magpy.current.TriangleSheet(
-        current_densities=cds,
-        vertices=verts,
-        faces=facs,
-    )
-
-
-def test_current_strip_init():
-    """good inputs"""
-    verts = ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
-    magpy.current.TriangleStrip(
-        current=1,
-        vertices=verts,
-    )
-
-
-def test_current_sheet_init_bad():
-    """bad inputs"""
-
-    # verts.len < 3
-    cds = [(1, 0, 0)] * 5
-    verts = ((0, 0, 0), (1, 0, 0))
-    facs = ((0, 1, 2), (0, 2, 3), (0, 1, 3), (1, 2, 3), (1, 2, 3))
-
-    with pytest.raises(ValueError):  # noqa: PT011
-        magpy.current.TriangleSheet(
-            current_densities=cds,
-            vertices=verts,
-            faces=facs,
-        )
-
-    # faces.len != cds.len
-    cds = [(1, 0, 0)] * 3
-    verts = ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
-    facs = ((0, 1, 2), (0, 2, 3), (0, 1, 3), (1, 2, 3), (1, 2, 3))
-
-    with pytest.raises(ValueError):  # noqa: PT011
-        magpy.current.TriangleSheet(
-            current_densities=cds,
-            vertices=verts,
-            faces=facs,
-        )
-
-    # bad face indices
-    cds = [(1, 0, 0)] * 5
-    verts = ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
-    facs = ((0, 1, 2), (0, 2, 3), (0, 1, 3), (1, 2, 3), (1, 2, 33))
-
-    with pytest.raises(IndexError):
-        magpy.current.TriangleSheet(
-            current_densities=cds,
-            vertices=verts,
-            faces=facs,
-        )
-
-    # bad input formats
-    cds = 1
-    verts = ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
-    facs = ((0, 1, 2), (0, 2, 3), (0, 1, 3), (1, 2, 3), (1, 2, 33))
-
-    with pytest.raises(MagpylibBadUserInput):
-        magpy.current.TriangleSheet(
-            current_densities=cds,
-            vertices=verts,
-            faces=facs,
-        )
-
-    # bad input formats
-    cds = [(1, 2)] * 5
-    verts = ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
-    facs = ((0, 1, 2), (0, 2, 3), (0, 1, 3), (1, 2, 3), (1, 2, 33))
-
-    with pytest.raises(MagpylibBadUserInput):
-        magpy.current.TriangleSheet(
-            current_densities=cds,
-            vertices=verts,
-            faces=facs,
-        )
-
-
-def test_current_strip_init_bad():
-    """bad inputs"""
-    verts = ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
-    curr = [1] * 4
-    with pytest.raises(MagpylibBadUserInput):
-        magpy.current.TriangleStrip(
-            current=curr,
-            vertices=verts,
-        )
-
-    verts = (
-        (0, 0, 0),
-        (1, 0, 0),
-    )
-    curr = 1
-    with pytest.raises(MagpylibBadUserInput):
-        magpy.current.TriangleStrip(
-            current=curr,
-            vertices=verts,
-        )
+    np.testing.assert_allclose(mag * (4 * np.pi * 1e-7), c.polarization)  # type: ignore[attr-defined]

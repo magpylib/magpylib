@@ -184,9 +184,9 @@ F, T = magpy.getFT(dipole, [c1, c2, c3], meshreport=True)
 
 **Key insight:** The algorithm selects optimal cell distributions close to (but not exactly) your target `meshing` value.
 
-**Mesh analysis with `returnmesh`**
+**Mesh analysis with `return_mesh`**
 
-Use `meshes = getFT(..., returnmesh=True)` to inspect the generated meshes and verify proper discretization. In this case `getFT()` will return a list of dictionaries with keys `'pts'`, `'moments'` and `'cvecs'` containing the meshes of each target instead of (F, T).
+Use `meshes = getFT(..., return_mesh=True)` to inspect the generated meshes and verify proper discretization. In this case `getFT()` will return a list of dictionaries with keys `'pts'`, `'moments'` and `'cvecs'` containing the meshes of each target instead of (F, T).
 
 ```{code-cell} ipython3
 import numpy as np
@@ -203,7 +203,7 @@ t2 = magpy.current.Circle(diameter=2, current=i0, meshing=24)
 t3 = magpy.current.Circle(diameter=3, current=i0, meshing=64)
 
 # Return mesh data instead of forces
-meshes = magpy.getFT(dipole, [t1, t2, t3], returnmesh=True)
+meshes = magpy.getFT(dipole, [t1, t2, t3], return_mesh=True)
 
 # Visualize mesh
 fig, ax = plt.subplots(subplot_kw={'projection': '3d'}, dpi=130)
@@ -232,12 +232,12 @@ plt.tight_layout()
 plt.show()
 ```
 
-**Key insights:** `returnmesh=True` enables you to check the meshes in detail. Notice the uniform mesh point distribution and the finer finesse with increasing `meshing` parameter.
+**Key insights:** `return_mesh=True` enables you to check the meshes in detail. Notice the uniform mesh point distribution and the finer finesse with increasing `meshing` parameter.
 
 --------------------------------
 ## Finite Difference Gradient
 
-Magnet force computation requires the magnetic field gradient $\nabla\vec{B}$, which Magpylib calculates using a finite difference scheme. The finite difference step size (absolute value in units (m)) is controlled by the `eps` parameter in `getFT()`. It is `eps=1e-5` (meters) by default.
+Magnet force computation requires the magnetic field gradient $\nabla\vec{B}$, which Magpylib calculates using a finite difference scheme. The finite difference step size (absolute value in units (m)) is controlled by the `eps` parameter in `getFT()`. It is `eps=1e-5` by default.
 
 **Good value for `eps`**
 - as large as possible to avoid numerical cancellation

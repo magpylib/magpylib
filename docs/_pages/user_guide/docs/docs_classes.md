@@ -77,7 +77,6 @@ Local and global coordinate systems are identical when `position=(0, 0, 0)` and 
 
 All magnets are sources. They have the **`polarization`** attribute which is of the format $\vec{J}=(J_x, J_y, J_z)$ and denotes a homogeneous magnetic polarization vector in the local object coordinates in units (T). Alternatively, the magnetization vector can be set via the  **`magnetization`** attribute of the format $\vec{M}=(M_x, M_y, M_z)$. These two parameters are codependent and Magpylib ensures that they stay in sync via the relation $\vec{J}=\mu_0\cdot\vec{M}$. Information on how this is related to material properties from data sheets is found in {ref}`examples-tutorial-modeling-magnets`.
 
-
 ### Cuboid
 ```python
 magpylib.magnet.Cuboid(
@@ -229,10 +228,10 @@ Results of the checks are stored in the following object attributes
 * **`status_reoriented`** can be `True` or `False`
 
 The checks can also be performed after initialization using the methods
-* **`check_open`**
-* **`check_disconnected`**
-* **`check_selfintersecting`**
-* **`reorient_faces`**
+* **`check_open()`**
+* **`check_disconnected()`**
+* **`check_selfintersecting()`**
+* **`reorient_faces()`**
 
 The following class methods enable easy mesh creating and mesh loading.
 

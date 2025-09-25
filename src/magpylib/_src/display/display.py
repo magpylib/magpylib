@@ -12,7 +12,6 @@ from magpylib._src.defaults.defaults_utility import _DefaultValue, get_defaults_
 from magpylib._src.display.traces_generic import MagpyMarkers, get_frames
 from magpylib._src.display.traces_utility import (
     DEFAULT_ROW_COL_PARAMS,
-    linearize_dict,
     process_show_input_objs,
 )
 from magpylib._src.input_checks import (
@@ -92,15 +91,9 @@ class RegisteredBackend:
         display_kwargs = {
             k: v
             for k, v in kwargs.items()
-            if any(k.startswith(arg) for arg in disp_args - {"style"})
+            if any(k.startswith(arg) for arg in disp_args)
         }
-        style_kwargs = {k: v for k, v in kwargs.items() if k.startswith("style")}
-        style_kwargs = linearize_dict(style_kwargs, separator="_")
-        kwargs = {
-            k: v
-            for k, v in kwargs.items()
-            if (k not in display_kwargs and k not in style_kwargs)
-        }
+        kwargs = {k: v for k, v in kwargs.items() if k not in display_kwargs}
         backend_kwargs = {
             k[len(backend) + 1 :]: v
             for k, v in kwargs.items()
@@ -128,7 +121,6 @@ class RegisteredBackend:
             supports_colorgradient=self.supports["colorgradient"],
             backend=backend,
             title=title,
-            style_kwargs=style_kwargs,
             **display_kwargs,
         )
         return self.show_func(

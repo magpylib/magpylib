@@ -59,18 +59,18 @@ docs = [
   "numpy-stl",
   "pyvista",
   "magpylib-material-response",
-  "magpylib-force",
   "plotly>=5.16,<6.0", # see https://github.com/executablebooks/myst-nb/issues/667
+  "kaleido==0.2.1", # ulterior versions don't ship chrome
 ]
 test = [
   "pytest>=7.4",
   "pytest-cov>=3",
   "pandas",
   "pyvista",
-  "ipywidgets",  # for plotly FigureWidget
   "imageio[tifffile,ffmpeg]",
   "jupyterlab",
-  "anywidget",
+  "ipywidgets",  # for plotly FigureWidget
+  "anywidget", # for plotly FigureWidget
 ]
 binder = [
     "jupytext",
@@ -134,6 +134,7 @@ disallow_incomplete_defs = true
 
 
 [tool.ruff]
+target-version = "py311"
 
 [tool.ruff.lint]
 extend-select = [

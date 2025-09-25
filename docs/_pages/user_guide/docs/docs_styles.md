@@ -568,3 +568,100 @@ magpy.show(args, **kwargs, backend="plotly")
 ```{code-cell} ipython3
 
 ```
+
+(styles-pixel-vectorfield)=
+
+## Pixel Field
+
+:::{versionadded} 5.2
+Pixel Vector Field
+:::
+
+The `pixel` of a `Sensor` object can be visualized as arrows representing the values of the vector fields B, H, J, or M. This allows for quick and intuitive inspection of the field distributions.
+
+### Parameters (`style.pixel.field`)
+
+- **`source`** *(default=`None`)*:
+  Defines the field source of the vector field representation.
+  - `None`: No field representation is shown
+  - `"B"`, `"Hxy"`, `"Jxyz"`, etc.: Colors are mapped to the magnitude of the specified field.
+
+- **`symbol`** *(default=`"cone"`)*:
+  Specifies the rendering symbol for field values.
+  - `"none"`: `pixel.symbol` representation takes precedence of `pixel.field.symbol`.
+  - `"cone"`: 3D cone representation.
+  - `"arrow3d"`: 3D arrow representation.
+  - `"arrow"`: 2D line-based arrow.
+
+- **`shownull`** *(default=`True`)*:
+  Toggles the visibility of pixel with zero and invalid field vectors.
+  - `True`: Null vectors are displayed.
+  - `False`: Null vectors are hidden.
+
+- **`sizescaling`** *(default=`"uniform"`)*:
+    Determines how arrow size relates to the `source` magnitude.
+  - `"uniform"`: Uniform arrow size.
+  - `"linear"`: Size proportional to magnitude.
+  - `"log"`: Size proportional to the normalized logarithm of the magnitude.
+  - `"log^n"`: Size proportional to the normalized nth (2 to 9) logarithm of the magnitude.
+
+- **`sizemin`** *(default=`0.1`)*
+    Minimum relative size of field symbols. A float between 0 and 1.
+    When displaying field vectors this controls how small the symbols
+    can become relative to their maximum size. A value of 0 allows symbols to shrink to zero size,
+    while 0.5 ensures symbols are at least 50% of their maximum size.
+
+- **`colorscaling`** *(default=`"uniform"`)*:
+    Determines how arrow color relates to the `source` magnitude.
+  - `"uniform"`: Uniform color for all arrows.
+  - `"linear"`: Color scaling proportional to magnitude.
+  - `"log"`: Color scaling proportional to the normalized logarithm of the magnitude.
+  - `"log^n"`: Color scaling proportional to the normalized nth (2 to 9) logarithm of the magnitude.
+
+- **`colormap`** *(default=`"Viridis"`)*:
+  Specifies the colormap used for color mapping. Supports standard color maps (e.g., `"Viridis"`, `"Inferno"`, `"Magma"`, etc.) compatible with both Plotly and Matplotlib.
+
+```{note}
+- Pixels with zero or invalid field values are rendered using the default representation (`point`/`box` or according to `style.pixel.symbol`).
+- Magnitude normalization is performed individually for each sensor along its path.
+- `style.pixel.size` controls also the arrow size.
+```
+
+### Pixel Field Minimal Example
+
+The following example demonstrates how to visualize the `Sensor` pixel array as a vector field using the `style.pixel.field` settings.
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+import numpy as np
+import magpylib as magpy
+
+# Define a cuboid magnet
+cube = magpy.magnet.Cuboid(
+    polarization=(0, 0, 1),
+    dimension=(1, 1, 1),
+)
+
+# Create a 2D grid of pixel positions in the xy-plane
+xy_grid = np.mgrid[-2:2:15j, -2:2:15j, 0:0:1j].T[0]
+
+# Define pixel field style
+pixel_style = {
+    "source" : "B",
+    "symbol"       : "arrow3d",
+    "sizemode"     : "uniform",
+    "shownull"     : True,
+    "colormap"   : "Magma"
+}
+
+# Create sensor with pixel array and applied style
+sens = magpy.Sensor(
+    pixel=xy_grid,
+    position=(0,0,2),
+    style_pixel_field=pixel_style,
+)
+
+# Display the sensor and magnet using the Plotly backend
+magpy.show([sens, cube], backend='plotly')
+```

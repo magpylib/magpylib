@@ -6,7 +6,7 @@ exclude: ^.cruft.json|.copier-answers.yml$
 
 repos:
   - repo: https://github.com/adamchainz/blacken-docs
-    rev: "1.19.1"
+    rev: "1.20.0"
     hooks:
       - id: blacken-docs
         additional_dependencies: [black==24.*]
@@ -40,10 +40,12 @@ repos:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
         args: [--prose-wrap=always]
-        exclude: ^docs/ # messes up colon fences for grids in docs
+        # Exclude docs (messes up colon fences for grids)
+        # Excclude test YAML files from formatting (messes up fig data diffs)
+        exclude: ^docs/|^tests/.*\.ya?ml$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.12.9"
+    rev: "v0.13.1"
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
@@ -85,7 +87,7 @@ repos:
         additional_dependencies: ["validate-pyproject-schema-store[all]"]
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: "0.33.3"
+    rev: "0.34.0"
     hooks:
       - id: check-dependabot
       - id: check-github-workflows

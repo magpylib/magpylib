@@ -170,7 +170,7 @@ def getFT(
     eps=1e-5,
     squeeze=True,
     meshreport=False,
-    returnmesh=False,
+    return_mesh=False,
 ):
     """Compute magnetic force and torque on t ``targets`` from s ``sources``.
 
@@ -200,7 +200,7 @@ def getFT(
         If ``True``, dimensions of size 1 in the output are removed.
     meshreport : bool, default False
         If ``True``, prints a brief report of the mesh used for each target.
-    returnmesh : bool, default False
+    return_mesh : bool, default False
         If ``True``, returns the meshes as a list of dictionaries instead of
         force and torque.
 
@@ -210,7 +210,7 @@ def getFT(
         Force and torque with shapes (s, p, t, 3), where s is the
         number of sources, p the path length, and t the number of
         targets. If ``squeeze`` is ``True``, dimensions of size 1 are removed.
-        If ``returnmesh`` is ``True``, returns the meshes list instead.
+        If ``return_mesh`` is ``True``, returns the meshes list instead.
 
     Examples
     --------
@@ -354,7 +354,7 @@ def getFT(
         OBS7[:, start7:end7] = mesh.reshape((n_path, n_mesh7, 3))
 
     # Return mesh for analysis
-    if returnmesh:
+    if return_mesh:
         return meshes
 
     # B-FIELD COMPUTATION ############################################################

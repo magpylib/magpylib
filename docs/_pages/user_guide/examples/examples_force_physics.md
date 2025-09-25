@@ -126,7 +126,7 @@ def analytical(ra, rb, ma, mb):
     ma, mb: magnetic moments (A*m²)
 
     Returns:
-    force: force on dipole b due to dipole a (N)
+    force: force (N) on dipole b due to dipole a
     """
     r = rb - ra
     r_abs = np.linalg.norm(r)
