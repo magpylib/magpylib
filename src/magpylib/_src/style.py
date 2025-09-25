@@ -1666,9 +1666,9 @@ class PixelField(MagicProperties):
             ):
                 valid = False
         assert valid, (
-            f"The `source` property of {type(self).__name__} must be None or False or start"
+            f"Input source of {self} must be None or False or start"
             f" with either {self._allowed_vectors} and be followed by a combination of"
-            f" 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') ) but received {val!r} instead."
+            f" 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') ); instead received {val!r}."
         )
         self._source = val
 
@@ -1680,9 +1680,9 @@ class PixelField(MagicProperties):
     @colormap.setter
     def colormap(self, val):
         assert val is None or val in self._allowed_colormaps, (
-            f"The `colormap` property of {type(self).__name__} must be one of"
-            f"{self._allowed_colormaps},\n"
-            f"but received {val!r} instead."
+            f"Input colormap of {self} must be one of "
+            f"{self._allowed_colormaps}; "
+            f"instead received {val!r}."
         )
         self._colormap = val
 
@@ -1694,8 +1694,8 @@ class PixelField(MagicProperties):
     @shownull.setter
     def shownull(self, val):
         assert val is None or isinstance(val, bool), (
-            f"The `shownull` property of {type(self).__name__} must be either True or False,"
-            f"but received {val!r} instead."
+            f"Input shownull of {self} must be either True or False; "
+            f"instead received {val!r}."
         )
         self._shownull = val
 
@@ -1707,7 +1707,7 @@ class PixelField(MagicProperties):
     @symbol.setter
     def symbol(self, val):
         assert val is None or val in self._allowed_symbols, (
-            f"The `symbol` property of {type(self).__name__} must be one of"
+            f"Input symbol of {self} must be one of"
             f"{self._allowed_symbols},\n"
             f"but received {val!r} instead."
         )
@@ -1730,8 +1730,8 @@ class PixelField(MagicProperties):
     @sizemin.setter
     def sizemin(self, val):
         assert val is None or (isinstance(val, float | int) and 0 <= val <= 1), (
-            "The `sizemin` property must be a value between 0 and 1,\n"
-            f"but received {val!r} instead."
+            "Input sizemin must be a value between 0 and 1; "
+            f"instead received {val!r}."
         )
         self._sizemin = val
 
@@ -1746,9 +1746,9 @@ class PixelField(MagicProperties):
 
     def _validate_scaling(self, val, name):
         assert val is None or re.match(self._allowed_scalings_pattern, str(val)), (
-            f"The `{name}` property of {type(self).__name__} must match the regex pattern"
-            f" {self._allowed_scalings_pattern},\n"
-            f"but received {val!r} instead."
+            f"Input {name} of {self} must match the regex pattern"
+            f" {self._allowed_scalings_pattern}; "
+            f"instead received {val!r}."
         )
         return val
 

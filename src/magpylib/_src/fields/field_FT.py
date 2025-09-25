@@ -172,7 +172,7 @@ def getFT(
     meshreport=False,
     return_mesh=False,
 ):
-    """Compute magnetic force and torque on t ``targets`` from s ``sources``.
+    """Compute magnetic force and torque on t targets from s sources.
 
     The computation uses meshing and finite differences. SI units are assumed
     for all inputs and outputs.

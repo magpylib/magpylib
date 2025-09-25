@@ -281,7 +281,7 @@ def check_format_input_scalar(
     if allow_None and inp is None:
         return None
 
-    ERR_MSG = f"Input `{sig_name}` must be {sig_type}; instead received {inp!r}."
+    ERR_MSG = f"Input {sig_name} must be {sig_type}; instead received {inp!r}."
 
     if not isinstance(inp, numbers.Number):
         raise MagpylibBadUserInput(ERR_MSG)
@@ -318,11 +318,11 @@ def check_format_input_vector(
 
     is_array_like(
         inp,
-        f"Input `{sig_name}` must be {sig_type}; instead received type {type(inp)!r}.",
+        f"Input {sig_name} must be {sig_type}; instead received type {type(inp)!r}.",
     )
     inp = make_float_array(
         inp,
-        f"Input `{sig_name}` must contain only float compatible entries.",
+        f"Input {sig_name} must contain only float compatible entries.",
     )
     check_array_shape(
         inp,
@@ -330,7 +330,7 @@ def check_format_input_vector(
         shape_m1=shape_m1,
         length=length,
         msg=(
-            f"Input `{sig_name}` must be {sig_type}; "
+            f"Input {sig_name} must be {sig_type}; "
             f"instead received array-like with shape {inp.shape}."
         ),
     )
