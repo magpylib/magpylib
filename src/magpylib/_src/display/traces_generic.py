@@ -296,7 +296,7 @@ def get_traces_2D(
             coords_str = list("xyz")
         if field_str not in "BHMJ" and set(coords_str).difference(set("xyz")):
             msg = (
-                "The `output` parameter must start with 'B', 'H', 'M', 'J' "
+                "Input output must be a string starting with 'B', 'H', 'M', 'J' "
                 "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') ); "
                 f"instead received {out!r}."
             )
@@ -464,11 +464,11 @@ def get_generic_traces3D(
 
     - If the object has a path (multiple positions), the function will return both the object trace
     and the corresponding path trace. The legend entry of the path trace will be hidden but both
-    traces will share the same `legendgroup` so that a legend entry click will hide/show both traces
+    traces will share the same ``legendgroup`` so that a legend entry click will hide/show both traces
     at once. From the user's perspective, the traces will be merged.
 
     - The argument caught by the kwargs dictionary must all be arguments supported both by
-    `scatter3d` and `mesh3d` plotly objects, otherwise an error will be raised.
+    ``scatter3d`` and ``mesh3d`` plotly objects, otherwise an error will be raised.
     """
 
     # pylint: disable=too-many-branches
@@ -575,7 +575,7 @@ def get_generic_traces3D(
                 else:  # pragma: no cover
                     msg = (
                         f"Unsupported extra model3d constructor {ttype!r}; "
-                        "only `scatter3d` and `mesh3d` are supported."
+                        "only scatter3d and mesh3d are supported."
                     )
                     raise ValueError(msg)
                 tr_non_generic.update(linearize_dict(obj_extr_trace, separator="_"))
@@ -762,10 +762,10 @@ def extract_animation_properties(
     max_pl = max(path_lengths)
     if animation_fps > animation_maxfps:
         warnings.warn(
-            f"The set `animation_fps` at {animation_fps} is greater than the max allowed of"
-            f" {animation_maxfps}. `animation_fps` will be set to {animation_maxfps}. "
+            f"The set animation_fps at {animation_fps} is greater than the max allowed of"
+            f" {animation_maxfps}. animation_fps will be set to {animation_maxfps}. "
             "You can modify the default value by setting it in "
-            "`magpylib.defaults.display.animation.maxfps`.",
+            "magpylib.defaults.display.animation.maxfps.",
             stacklevel=2,
         )
         animation_fps = animation_maxfps
@@ -797,9 +797,9 @@ def extract_animation_properties(
     if max_pl > animation_maxframes:
         warnings.warn(
             f"The number of frames ({max_pl}) is greater than the max allowed "
-            f"of {animation_maxframes}. `animation_fps` will be set to {new_fps}. "
+            f"of {animation_maxframes}. animation_fps will be set to {new_fps}. "
             f"You can modify the default value by setting it in "
-            "`magpylib.defaults.display.animation.maxframes`.",
+            "magpylib.defaults.display.animation.maxframes.",
             stacklevel=2,
         )
 
@@ -878,8 +878,8 @@ def get_sensor_pixel_field(objects):
 
 def draw_frame(objs, *, rc_params, style_kwargs, **kwargs):
     """
-    Creates traces from input `objs` and provided parameters, updates the size of objects like
-    Sensors and Dipoles in `kwargs` depending on the canvas size.
+    Creates traces from input ``objs`` and provided parameters, updates the size of objects like
+    Sensors and Dipoles in ``kwargs`` depending on the canvas size.
 
     Returns
     -------
@@ -958,7 +958,7 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("animation")}
 
     if kwargs:
-        msg = f"`show` got unexpected keyword argument(s) {kwargs!r}"
+        msg = f"show() got unexpected keyword argument(s) {kwargs!r}"
         raise TypeError(msg)
 
     # infer title if necessary

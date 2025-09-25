@@ -18,9 +18,10 @@ from magpylib._src.fields.field_BH_tetrahedron import _check_chirality
 def base_validator(name, value, conditions):
     """Validates value based on dictionary of conditions"""
 
-    msg = f"""Input {name} must be one of `{tuple(conditions.keys())},`
-received {value!r} instead.
-"""
+    msg = (
+        f"Input {name} must be one of {tuple(conditions.keys())}; "
+        f"instead received {value!r}."
+    )
     assert value in conditions, msg
     return conditions[value]
 

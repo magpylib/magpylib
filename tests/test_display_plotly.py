@@ -270,7 +270,7 @@ def test_display_warnings():
         src.show(canvas=fig, animation=5, animation_fps=3)
         assert len(record) == 2
         assert re.match(
-            r"The set `animation_fps` at 3 is greater than the max allowed of 2.*",
+            r"The set animation_fps at 3 is greater than the max allowed of 2.*",
             str(record[0].message),
         )
         assert re.match(
@@ -334,7 +334,7 @@ def test_subplots():
 
     # bad output value
     with pytest.raises(
-        ValueError, match=r"The `output` parameter must start with 'B', 'H', 'M', 'J'.*"
+        ValueError, match=r"Input output must be a string starting with"
     ):
         magpy.show(*objs, canvas=fig, output="bad_output")
 

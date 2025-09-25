@@ -14,8 +14,8 @@ from magpylib._src.defaults.defaults_utility import (
 
 
 def test_update_nested_dict():
-    """test all argument combinations of `update_nested_dicts`"""
-    # `d` gets updated, that's why we deepcopy it
+    """test all argument combinations of update_nested_dicts"""
+    # d gets updated, that's why we deepcopy it
     d = {"a": 1, "b": {"c": 2, "d": None}, "f": None, "g": {"c": None, "d": 2}, "h": 1}
     u = {"a": 2, "b": 3, "e": 5, "g": {"c": 7, "d": 5}, "h": {"i": 3}}
     res = update_nested_dict(
@@ -63,7 +63,7 @@ def test_update_nested_dict():
 
 
 def test_magic_to_dict():
-    """test all argument combinations of `magic_to_dict`"""
+    """test all argument combinations of magic_to_dict"""
     d = {"a_b": 1, "c_d_e": 2, "a": 3, "c_d": {"e": 6}}
     res = magic_to_dict(d, separator="_")
     assert res == {"a": 3, "c": {"d": {"e": 6}}}
@@ -77,7 +77,7 @@ def test_magic_to_dict():
 
 
 def test_linearize_dict():
-    """test all argument combinations of `magic_to_dict`"""
+    """test all argument combinations of magic_to_dict"""
     mydict = {
         "line": {"width": 1, "style": "solid", "color": None},
         "marker": {"size": 1, "symbol": "o", "color": None},
@@ -170,17 +170,17 @@ def test_MagicProperties():
     bp1 = BPsub1(prop1=1)
 
     # check setting attribute/property
-    assert bp1.prop1 == 1, "`bp1.prop1` should be 1"
+    assert bp1.prop1 == 1, "bp1.prop1 should be 1"
     with pytest.raises(AttributeError):
         bp1.prop1e = "val"  # only properties are allowed to be set
 
-    assert bp1.as_dict() == {"prop1": 1}, "`as_dict` method failed"
+    assert bp1.as_dict() == {"prop1": 1}, "as_dict method failed"
 
     bp2 = BPsub2(prop2=2)
     bp1.prop1 = bp2  # assigning class to subproperty
 
     # check as_dict method
-    assert bp1.as_dict() == {"prop1": {"prop2": 2}}, "`as_dict` method failed"
+    assert bp1.as_dict() == {"prop1": {"prop2": 2}}, "as_dict method failed"
 
     # check update method with different parameters
     assert bp1.update(prop1_prop2=10).as_dict() == {"prop1": {"prop2": 10}}, (
@@ -191,11 +191,11 @@ def test_MagicProperties():
         bp1.update(prop1_prop2=10, prop3=4)
     assert bp1.update(prop1_prop2=10, prop3=4, _match_properties=False).as_dict() == {
         "prop1": {"prop2": 10}
-    }, "magic property setting failed, should ignore `'prop3'`"
+    }, "magic property setting failed, should ignore 'prop3'"
 
     assert bp1.update(prop1_prop2=20, _replace_None_only=True).as_dict() == {
         "prop1": {"prop2": 10}
-    }, "magic property setting failed, `prop2` should be remained unchanged 10"
+    }, "magic property setting failed, prop2 should be remained unchanged 10"
 
     # check copy method
 
@@ -212,7 +212,7 @@ def test_MagicProperties():
 
     # check failing init
     with pytest.raises(AttributeError):
-        BPsub1(a=0)  # `a` is not a property in the class
+        BPsub1(a=0)  # a is not a property in the class
 
     # check repr
     assert repr(MagicProperties()) == "MagicProperties()", "repr failed"
