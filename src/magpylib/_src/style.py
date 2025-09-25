@@ -1730,8 +1730,7 @@ class PixelField(MagicProperties):
     @sizemin.setter
     def sizemin(self, val):
         assert val is None or (isinstance(val, float | int) and 0 <= val <= 1), (
-            "Input sizemin must be a value between 0 and 1; "
-            f"instead received {val!r}."
+            f"Input sizemin must be a value between 0 and 1; instead received {val!r}."
         )
         self._sizemin = val
 
