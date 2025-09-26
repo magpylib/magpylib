@@ -192,3 +192,22 @@ messages_control.disable = [
 
 [tool.codespell]
 skip = 'src/magpylib/_src/fields/special_el3.py'
+
+[project.optional-dependencies]
+docs = [
+  "pydata-sphinx-theme",
+  "sphinx>=7.0,<8.0",
+  "sphinx-design",
+  "sphinx-thebe",
+  "sphinx-favicon",
+  "sphinx-gallery",
+  "sphinx-copybutton",
+  "sphinxcontrib-bibtex",
+  "myst-nb",
+  "pandas",
+  "numpy-stl",
+  "pyvista",
+  "magpylib-material-response",
+  "plotly>=5.16,<6.0",
+  "kaleido==0.2.1",
+]
