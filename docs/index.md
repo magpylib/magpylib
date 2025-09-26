@@ -37,7 +37,7 @@ Magpylib is an **open-source Python package** for calculating static **magnetic 
 ::::
 
 ```{important}
-**New in version 5.2**: Force computation `magpylib.getFT()` was added.
+**New in version 5.2**: Force and Torque computation `magpylib.getFT()` and functional interface `magpylib.func`.
 ```
 
 <h2> How it works</h2>
