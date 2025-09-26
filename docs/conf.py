@@ -1,8 +1,8 @@
 import importlib.metadata
 import os
-import sys
 import platform
 import shutil
+import sys
 from pathlib import Path
 
 import sphinx.ext.apidoc
@@ -334,4 +334,3 @@ favicons = [
 
 # Suppress warnings to unknown references in docstring type lines
 nitpick_ignore_regex = [(r"py:.*", r".*")]
-
