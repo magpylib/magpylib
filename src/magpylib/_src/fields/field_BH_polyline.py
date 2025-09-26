@@ -94,6 +94,14 @@ def current_polyline_Hfield(
     ndarray, shape (i, 3)
         H-field in (A/m) at the observer positions.
 
+    Notes
+    -----
+    Field computation via the Biot-Savart law. See also many resources, e.g.,
+    http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
+
+    Be careful with magnetic fields of isolated, discontinuous segments; they
+    are unphysical and can lead to unphysical effects.
+
     Examples
     --------
     >>> import numpy as np
@@ -108,14 +116,6 @@ def current_polyline_Hfield(
     ...     print(H)
     [[ 0.    -2.297  2.297]
      [ 0.     0.598 -0.598]]
-
-    Notes
-    -----
-    Field computation via the Biot-Savart law. See also many resources, e.g.,
-    http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
-
-    Be careful with magnetic fields of isolated, discontinuous segments; they
-    are unphysical and can lead to unphysical effects.
     """
     # rename
     p1, p2, po = segments_start, segments_end, observers

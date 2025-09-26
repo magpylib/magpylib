@@ -30,6 +30,12 @@ def dipole_Hfield(
     ndarray, shape (i, 3)
         H-field in units of ``moments`` input in Cartesian coordinates.
 
+    Notes
+    -----
+    - The moment of a magnet is given by its volume times magnetization.
+    - At ``r = 0``, non-zero moment components yield ``np.inf`` in the
+      corresponding field components.
+
     Examples
     --------
     >>> import numpy as np
@@ -42,12 +48,6 @@ def dipole_Hfield(
     ...     print(H)
     [[2.895e-13 1.531e+03 1.531e+03]
      [1.914e+02 1.914e+02 3.619e-14]]
-
-    Notes
-    -----
-    - The moment of a magnet is given by its volume times magnetization.
-    - At ``r = 0``, non-zero moment components yield ``np.inf`` in the
-      corresponding field components.
     """
 
     x, y, z = observers.T

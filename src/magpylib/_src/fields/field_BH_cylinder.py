@@ -35,6 +35,11 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
         observer positions, for unit polarization. Values scale linearly with
         the polarization magnitude.
 
+    Notes
+    -----
+    Implementation based on: Derby, American Journal of Physics 78(3) (2010),
+    229-235.
+
     Examples
     --------
     >>> import numpy as np
@@ -49,11 +54,6 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
     [[0.056 0.041]
      [0.    0.   ]
      [0.067 0.018]]
-
-    Notes
-    -----
-    Implementation based on: Derby, American Journal of Physics 78(3) (2010),
-    229-235.
     """
     n = len(z0)
 
@@ -117,6 +117,12 @@ def magnet_cylinder_diametral_Hfield(
         positions, for unit magnetization. Values scale linearly with the
         magnetization magnitude.
 
+    Notes
+    -----
+    Implementation partially based on Caciagli, Journal of Magnetism and
+    Magnetic Materials 456 (2018): 423-432, and [Ortner, Leitner, Rauber]
+    (unpublished).
+
     Examples
     --------
     >>> import numpy as np
@@ -132,12 +138,6 @@ def magnet_cylinder_diametral_Hfield(
     [[-0.021  0.007]
      [ 0.005  0.02 ]
      [ 0.055  0.029]]
-
-    Notes
-    -----
-    Implementation partially based on Caciagli, Journal of Magnetism and
-    Magnetic Materials 456 (2018): 423-432, and [Ortner, Leitner, Rauber]
-    (unpublished).
     """
     # pylint: disable=too-many-statements
 

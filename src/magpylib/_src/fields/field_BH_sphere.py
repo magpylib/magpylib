@@ -31,6 +31,11 @@ def magnet_sphere_Bfield(
     ndarray, shape (i, 3)
         B-field in units of ``polarization`` input at the observer positions.
 
+    Notes
+    -----
+    Outside the sphere, the field corresponds to a dipole field. Inside, it is
+    2/3 of the polarization (see e.g., "Theoretical Physics", Bertelmann).
+
     Examples
     --------
     >>> import numpy as np
@@ -44,11 +49,6 @@ def magnet_sphere_Bfield(
     ...     print(B)
     [[1.187e-18 8.019e-03 8.019e-03]
      [8.019e-03 8.019e-03 1.604e-02]]
-
-    Notes
-    -----
-    Outside the sphere, the field corresponds to a dipole field. Inside, it is
-    2/3 of the polarization (see e.g., "Theoretical Physics", Bertelmann).
     """
     return _BHJM_magnet_sphere(
         field="B",

@@ -212,6 +212,12 @@ def getFT(
         targets. If ``squeeze`` is ``True``, dimensions of size 1 are removed.
         If ``return_mesh`` is ``True``, returns the meshes list instead.
 
+    Notes
+    -----
+    The force and torque are computed via
+    F = (gradB) · MOM and T = B x MOM + r x F. The gradient field is
+    obtained using finite differences on the meshed targets.
+
     Examples
     --------
     >>> import numpy as np
@@ -231,12 +237,6 @@ def getFT(
     force: [ 13.65  27.31 -81.93] N
     >>> print(f'torque: {np.round(T, decimals=2)} N*m')
     torque: [-8.55  4.27 -0.  ] N*m
-
-    Notes
-    -----
-    The force and torque are computed via
-    F = (gradB) · MOM and T = B x MOM + r x F. The gradient field is
-    obtained using finite differences on the meshed targets.
     """
     # COMPUTATION SCHEME
     #   STEP1: Collect all inputs
