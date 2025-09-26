@@ -587,8 +587,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         ----------
         points : array-like, shape (n, 3)
             Point cloud from which the convex hull is computed.
-        position, orientation, polarization, magnetization, meshing, reorient_faces,
-        check_open, check_disconnected, style :
+        position, orientation, polarization, magnetization, meshing, reorient_faces, check_open, check_disconnected, style :
             See ``TriangularMesh`` for shared parameter semantics and defaults.
 
         Returns
@@ -634,8 +633,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         ----------
         polydata : pyvista.core.pointset.PolyData
             A valid pyvista PolyData mesh object (e.g. ``pyvista.Sphere()``).
-        position, orientation, polarization, magnetization, meshing, reorient_faces,
-        check_open, check_disconnected, style :
+        position, orientation, polarization, magnetization, meshing, reorient_faces, check_open, check_disconnected, style :
             See ``TriangularMesh`` for shared parameter semantics and defaults.
 
         Returns
@@ -702,9 +700,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         triangles : list or Collection
             Only ``vertices`` of ``Triangle`` objects in list or collection are taken,
             ``magnetization`` is ignored.
-
-        position, orientation, polarization, magnetization, meshing, reorient_faces,
-        check_open, check_disconnected, style :
+        position, orientation, polarization, magnetization, meshing, reorient_faces, check_open, check_disconnected, style :
             See ``TriangularMesh`` for shared parameter semantics and defaults.
 
         Returns
@@ -767,9 +763,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         ----------
         mesh : array-like, shape (n, 3, 3)
             Triangular faces that make up a triangular mesh.
-
-        position, orientation, polarization, magnetization, meshing, reorient_faces,
-        check_open, check_disconnected, style :
+        position, orientation, polarization, magnetization, meshing, reorient_faces, check_open, check_disconnected, style :
             See ``TriangularMesh`` for shared parameter semantics and defaults.
 
         Returns
