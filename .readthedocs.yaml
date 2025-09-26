@@ -5,17 +5,15 @@ build:
   tools:
     python: "3.12"
   apt_packages:
-    - libgl1-mesa-dev  # for pyvista/OpenGL
+    - libgl1-mesa-dev # for pyvista/OpenGL
   jobs:
     # Generate docs/_autogen/* before Sphinx runs
     pre_build:
-      - sphinx-apidoc -f -T -e -E -M \
-          -t docs/_templates/apidoc \
-          -o docs/_autogen \
-          src/magpylib
-          # If you still get duplicate-object warnings from the magnet package page,
-          # add this path at the end to exclude it:
-          # src/magpylib/magnet/__init__.py
+      - sphinx-apidoc -f -T -e -E -M \ -t docs/_templates/apidoc \ -o
+        docs/_autogen \ src/magpylib
+        # If you still get duplicate-object warnings from the magnet package page,
+        # add this path at the end to exclude it:
+        # src/magpylib/magnet/__init__.py
 
 sphinx:
   configuration: docs/conf.py
