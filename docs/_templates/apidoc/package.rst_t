@@ -1,0 +1,18 @@
+.. PACKAGE_TEMPLATE_MARKER ..
+
+{{ fullname }}
+{{ underline }}
+
+.. automodule:: {{ fullname }}
+   :show-inheritance:
+
+{% if subpackages or submodules %}
+.. toctree::
+   :maxdepth: 2
+{% for item in subpackages %}
+   {{ item }}
+{% endfor %}
+{% for item in submodules %}
+   {{ item }}
+{% endfor %}
+{% endif %}
