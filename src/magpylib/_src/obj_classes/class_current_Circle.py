@@ -1,12 +1,10 @@
 """CircularCircle current class code"""
 
-import warnings
 from typing import ClassVar
 
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Circle
-from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_circle import _BHJM_circle
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
@@ -172,29 +170,3 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
                 f"instead received {value!r}."
             )
             raise ValueError(msg)
-
-
-class Loop(Circle):
-    """Loop is deprecated, see Circle"""
-
-    # pylint: disable=method-hidden
-    @staticmethod
-    def _field_func(*args, **kwargs):
-        """Catch Deprecation warning in getBH_dict"""
-        _deprecation_warn()
-        return _BHJM_circle(*args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        _deprecation_warn()
-        super().__init__(*args, **kwargs)
-
-
-def _deprecation_warn():
-    warnings.warn(
-        (
-            "Class Loop is deprecated and will be removed in a future version, "
-            "use Circle instead."
-        ),
-        MagpylibDeprecationWarning,
-        stacklevel=2,
-    )

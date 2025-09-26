@@ -5,7 +5,6 @@ from scipy.spatial.transform import Rotation as R
 import magpylib as magpy
 from magpylib._src.exceptions import (
     MagpylibBadUserInput,
-    MagpylibDeprecationWarning,
     MagpylibMissingInput,
 )
 from magpylib._src.fields.field_BH_dipole import _BHJM_dipole
@@ -983,16 +982,6 @@ def test_sensor_handedness():
         match="Input handedness of",
     ):
         magpy.Sensor(handedness="not_right_or_left")
-
-
-def test_magnet_polarization_magnetization_input1():
-    """test codependency and magnetization polarization inputs"""
-    # warning when magnetization is too low -> polarization confusion
-    with pytest.warns(
-        MagpylibDeprecationWarning,
-        match="Low magnetization value detected for",
-    ):
-        magpy.magnet.Cuboid(magnetization=[1, 2, 3])
 
 
 def test_magnet_polarization_magnetization_input2():

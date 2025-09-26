@@ -8,7 +8,6 @@ from typing import ClassVar
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Polyline
-from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_polyline import _current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
@@ -204,29 +203,3 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
             n_target = self.meshing
 
         return _target_mesh_polyline(self.vertices, self.current, n_target)
-
-
-class Line(Polyline):
-    """Line is deprecated, see Polyline"""
-
-    # pylint: disable=method-hidden
-    @staticmethod
-    def _field_func(*args, **kwargs):
-        """Catch Deprecation warning in getBH_dict"""
-        _deprecation_warn()
-        return _current_vertices_field(*args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        _deprecation_warn()
-        super().__init__(*args, **kwargs)
-
-
-def _deprecation_warn():
-    warnings.warn(
-        (
-            "Line is deprecated and will be removed in a future version, "
-            "use Polyline instead."
-        ),
-        MagpylibDeprecationWarning,
-        stacklevel=2,
-    )

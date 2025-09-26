@@ -17,5 +17,5 @@ class MagpylibMissingInput(Exception):
     """catching missing user inputs"""
 
 
-class MagpylibDeprecationWarning(Warning):
-    """Non-suppressed Deprecation Warning."""
+# removed MagpylibDeprecationWarning - there is a built-in DeprecationWarning
+# other will be removed soon sticking to standards

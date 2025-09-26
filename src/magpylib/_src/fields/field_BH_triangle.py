@@ -124,9 +124,8 @@ def triangle_Bfield(
     -----
     Returns (0, 0, 0) at corners.
 
-    Field computation follows Guptasarma, Geophysics, 1999, 64(1), 70-74. Corners
-    yield (nan, nan, nan). Edge points and in-plane perpendicular components are
-    set to (0). Loss of precision occurs when approaching a triangle as
+    Field computation follows Guptasarma, Geophysics, 1999, 64(1), 70-74.
+    Loss of precision occurs when approaching a triangle as
     (x - edge)**2 and with distance from the triangle as (distance**3).
     """
     n = _norm_vector(vertices)
@@ -176,7 +175,7 @@ def triangle_Bfield(
     B = sigma * (n.T * _solid_angle(R, r) - _vcross3(n, PQR).T)
     B = B / np.pi / 4.0
 
-    B[np.isnan(B)] = 0.0 # set corners nan to 0
+    B[np.isnan(B)] = 0.0  # set corners nan to 0
 
     return B.T
 

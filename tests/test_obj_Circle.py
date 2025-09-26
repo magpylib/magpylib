@@ -1,8 +1,6 @@
 import numpy as np
-import pytest
 
 import magpylib as magpy
-from magpylib._src.exceptions import MagpylibDeprecationWarning
 
 
 def test_Circle_basic_B():
@@ -63,16 +61,6 @@ def test_repr():
     """test __repr__"""
     dip = magpy.current.Circle(current=1, diameter=1)
     assert repr(dip)[:6] == "Circle", "Circle repr failed"
-
-
-def test_old_Loop_deprecation_warning():
-    """test old class deprecation warning"""
-    with pytest.warns(MagpylibDeprecationWarning):
-        old_class = magpy.current.Loop()
-
-    new_class = magpy.current.Circle()
-    assert isinstance(old_class, magpy.current.Circle)
-    assert isinstance(new_class, magpy.current.Circle)
 
 
 def test_Circle_centroid():

@@ -874,7 +874,7 @@ def test_triangle5():
 
 
 def test_triangle6():
-    """special case tests on corners - result is nan"""
+    """special case tests on corners - result is 0"""
     obs1 = np.array([(0, 0, 0)])
     obs2 = np.array([(0, 5, 0)])
     obs3 = np.array([(5, 0, 0)])
@@ -899,4 +899,4 @@ def test_triangle6():
         vertices=ver,
     )
     for b in [b1, b2, b3]:
-        np.testing.assert_equal(b, np.array([[np.nan] * 3]))
+        np.testing.assert_equal(b, np.array([[0] * 3]))

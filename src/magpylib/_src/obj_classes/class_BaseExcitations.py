@@ -3,12 +3,10 @@
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-positional-arguments
 
-import warnings
 from typing import ClassVar
 
 import numpy as np
 
-from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import (
     check_format_input_scalar,
@@ -364,8 +362,6 @@ class BaseMagnet(BaseSource):
             allow_None=True,
         )
         self._polarization = self._magnetization * (4 * np.pi * 1e-7)
-        if np.linalg.norm(self._magnetization) < 2000:
-            self._magnetization_low_warning()
 
     @property
     def polarization(self):
@@ -391,17 +387,6 @@ class BaseMagnet(BaseSource):
             allow_None=True,
         )
         self._magnetization = self._polarization / (4 * np.pi * 1e-7)
-
-    def _magnetization_low_warning(self):
-        warnings.warn(
-            (
-                f"Low magnetization value detected for {self}. "
-                "In Magpylib v5 magnetization is given in units of (A/m), "
-                "while polarization is given in units of (T)."
-            ),
-            MagpylibDeprecationWarning,
-            stacklevel=2,
-        )
 
 
 class BaseCurrent(BaseSource):

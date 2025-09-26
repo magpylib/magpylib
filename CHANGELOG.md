@@ -2,7 +2,12 @@
 
 ## [5.2.0] - 2024-09-DD
 
-- Removed deprecated members `Line`, `Circle`, and ...
+- `Triangle`, `Tetrahedron`, and `TriangularMesh`, `func.triangle_charge_field`,
+  and `core.triangle_Bfield()` now return 0 on vertices instead of `nan` to avoid
+  confusion and to comply with all other classes. This behavior is now also
+  noted in the docstrings.
+  ([#836],(https://github.com/magpylib/magpylib/issues/836)).
+- Removed deprecated members `Line` and `Circle`.
   ([#693](https://github.com/magpylib/magpylib/issues/693))
 - Major docstring review aligning with NuPyDoc/Scipy convention
   ([#876](https://github.com/magpylib/magpylib/issues/876),
