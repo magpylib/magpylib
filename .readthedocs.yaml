@@ -1,26 +1,20 @@
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
 version: 2
 
 build:
-  os: ubuntu-24.04
+  os: ubuntu-22.04
   tools:
     python: "3.12"
   apt_packages:
-    - libgl1-mesa-dev # for pyvista/OpenGL
-  jobs:
-    # Generate docs/_autogen/* before Sphinx runs
-    pre_build:
-      - sphinx-apidoc -f -T -e -E -M \ -t docs/_templates/apidoc \ -o
-        docs/_autogen \ src/magpylib
-        # If you still get duplicate-object warnings from the magnet package page,
-        # add this path at the end to exclude it:
-        # src/magpylib/magnet/__init__.py
-
-sphinx:
-  configuration: docs/conf.py
-
-python:
-  install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - docs
+    # for pyvista
+    - libgl1-mesa-dev
+  commands:
+    - asdf plugin add uv
+    - asdf install uv latest
+    - asdf global uv latest
+    - uv venv
+    - uv sync --no-dev --no-default-groups --group docs
+    - .venv/bin/python -m sphinx -T -b html -d docs/_build/doctrees -D
+      language=en docs $READTHEDOCS_OUTPUT/html

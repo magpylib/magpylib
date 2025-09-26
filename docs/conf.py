@@ -1,9 +1,11 @@
 import importlib.metadata
 import os
+import sys
 import platform
 import shutil
-import sys
 from pathlib import Path
+
+import sphinx.ext.apidoc
 
 # This is for pyvista
 if platform.system() == "Linux":  # remove can't find directory error on windows build
@@ -19,16 +21,36 @@ os.environ["MAGPYLIB_MPL_SVG"] = "true"
 # Location of Sphinx files
 
 sys.path.insert(0, str(Path("./../").resolve()))  ##Add the folder one level above
+os.environ["SPHINX_APIDOC_OPTIONS"] = (
+    "members,show-inheritance"  ## Hide undocumented members
+)
 
 # from sphinx_gallery.sorting import FileNameSortKey
 
 # pio.renderers.default = "sphinx_gallery"
 
 
+autodoc_default_options = {
+    "private-members": False,
+    "inherited-members": True,
+}
+
+
 def setup(app):
     app.add_css_file("css/stylesheet.css")
     app.add_js_file("webcode/summaryOpen.js")
-    # apidoc generation is handled in noxfile.py before the Sphinx build
+    sphinx.ext.apidoc.main(
+        [
+            "-f",  # Overwrite existing files
+            "-T",  # Create table of contents
+            "-e",  # Give modules their own pages
+            "-E",  # user docstring headers
+            "-M",  # Modules first
+            "-o",  # Output the files to:
+            "./docs/_autogen/",  # Output Directory
+            "./src/magpylib",  # Main Module directory
+        ]
+    )
 
 
 # -- Project information -----------------------------------------------------
@@ -63,24 +85,13 @@ extensions = [
     "myst_nb",
 ]
 
-autoclass_content = "both"
-napoleon_use_ivar = True
-napoleon_attr_annotations = True
-
-autodoc_default_options = {
-    # Do not force :members: globally; module pages include members via templates.
-    # Keep inheritance display enabled when members are listed explicitly.
-    "show-inheritance": True,
-}
-
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = [".rst", ".md"]
+source_suffix = [".rst", ".md"]
 
 # The master toctree document.
 master_doc = "index"
@@ -324,45 +335,3 @@ favicons = [
 # Suppress warnings to unknown references in docstring type lines
 nitpick_ignore_regex = [(r"py:.*", r".*")]
 
-
-# Suppress warnings to unknown references in docstrings
-nitpick_ignore = [
-    ("py:class", "Source"),
-    ("py:class", "optional"),
-    ("py:class", "array-like"),
-    ("py:class", "matplotlib.Figure"),
-    ("py:class", "plotly.Figure"),
-    ("py:class", "pyvista.Plotter"),
-    ("py:class", "Rotation"),
-    ("py:class", "ndarray"),
-    ("py:class", "DataFrame"),
-]
-
-
-# sphinx gallery settings
-# sphinx_gallery_conf = {
-#     # convert rst to md for ipynb
-#     # "pypandoc": True,
-#     # path to your example scripts
-#     "examples_dirs": "../examples",
-#     # path to where to save gallery generated output
-#     "gallery_dirs": "auto_examples",
-#     # Remove the "Download all examples" button from the top level gallery
-#     "download_all_examples": False,
-#     # # Remove sphinx configuration comments from code blocks
-#     # "remove_config_comments": True,
-#     # # Sort gallery example by file name instead of number of lines (default)
-#     # "within_subsection_order": FileNameSortKey,
-#     # Modules for which function level galleries are created.  In
-#     "doc_module": "pyvista",
-#     "image_scrapers": ("pyvista", "matplotlib"),
-# }
-
-# import pyvista
-# pyvista.BUILDING_GALLERY = True
-
-# html_last_updated_fmt = ""
-# html_show_copyright = False
-# html_show_sphinx = False
-# show_authors = False
-# html_show_sourcelink = False
