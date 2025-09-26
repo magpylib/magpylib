@@ -1,19 +1,13 @@
 import importlib.metadata
 import os
-import platform
-import shutil
 import sys
 from pathlib import Path
 
 import sphinx.ext.apidoc
 
 # This is for pyvista
-if platform.system() == "Linux":  # remove can't find directory error on windows build
-    xvfb = shutil.which("Xvfb") or "/usr/bin/Xvfb"
-    if Path(xvfb).exists():
-        os.system(f"{xvfb} :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
-        os.environ["DISPLAY"] = ":99"
-
+os.system("/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
+os.environ["DISPLAY"] = ":99"
 os.environ["PYVISTA_OFF_SCREEN"] = "true"
 os.environ["PYVISTA_USE_IPYVTK"] = "true"
 os.environ["MAGPYLIB_MPL_SVG"] = "true"
@@ -28,7 +22,6 @@ os.environ["SPHINX_APIDOC_OPTIONS"] = (
 # from sphinx_gallery.sorting import FileNameSortKey
 
 # pio.renderers.default = "sphinx_gallery"
-
 
 autodoc_default_options = {
     "private-members": False,
@@ -71,18 +64,17 @@ needs_sphinx = "7.2"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    "sphinx.ext.autodoc",
     "sphinx.ext.coverage",
     "sphinx.ext.autosummary",
     "sphinx.ext.ifconfig",
     "matplotlib.sphinxext.plot_directive",
     "sphinx_copybutton",
+    "myst_nb",
     "sphinx_thebe",
     "sphinx_favicon",
     "sphinx_design",
-    "sphinxcontrib.bibtex",  # citations support
-    "myst_nb",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -230,7 +222,7 @@ latex_elements = {
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
-    "extraclassoptions": "openany, oneside"  # Remove empty pages from .PDF download
+    "extraclassoptions": "openany,oneside"  # Remove empty pages from .PDF download
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -264,13 +256,6 @@ texinfo_documents = [
         "Miscellaneous",
     ),
 ]
-
-# -- Bibliography / Citations ----------------------------------------------
-# Configure sphinxcontrib-bibtex (extension added above)
-bibtex_bibfiles = ["bibliography.bib"]
-bibtex_default_style = "unsrt"
-# Example: enable author-year style instead (uncomment if desired)
-# bibtex_reference_style = "author_year"
 
 
 # -- Options for Epub output -------------------------------------------------
@@ -332,5 +317,45 @@ favicons = [
     "images/favicons/icon.ico",
 ]
 
-# Suppress warnings to unknown references in docstring type lines
-nitpick_ignore_regex = [(r"py:.*", r".*")]
+
+# Suppress warnings to unknown references in docstrings
+nitpick_ignore = [
+    ("py:class", "Source"),
+    ("py:class", "optional"),
+    ("py:class", "array-like"),
+    ("py:class", "matplotlib.Figure"),
+    ("py:class", "plotly.Figure"),
+    ("py:class", "pyvista.Plotter"),
+    ("py:class", "Rotation"),
+    ("py:class", "ndarray"),
+    ("py:class", "DataFrame"),
+]
+
+
+# sphinx gallery settings
+# sphinx_gallery_conf = {
+#     # convert rst to md for ipynb
+#     # "pypandoc": True,
+#     # path to your example scripts
+#     "examples_dirs": "../examples",
+#     # path to where to save gallery generated output
+#     "gallery_dirs": "auto_examples",
+#     # Remove the "Download all examples" button from the top level gallery
+#     "download_all_examples": False,
+#     # # Remove sphinx configuration comments from code blocks
+#     # "remove_config_comments": True,
+#     # # Sort gallery example by file name instead of number of lines (default)
+#     # "within_subsection_order": FileNameSortKey,
+#     # Modules for which function level galleries are created.  In
+#     "doc_module": "pyvista",
+#     "image_scrapers": ("pyvista", "matplotlib"),
+# }
+
+# import pyvista
+# pyvista.BUILDING_GALLERY = True
+
+# html_last_updated_fmt = ""
+# html_show_copyright = False
+# html_show_sphinx = False
+# show_authors = False
+# html_show_sourcelink = False
