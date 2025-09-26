@@ -6,9 +6,9 @@ import sys
 from pathlib import Path
 
 # This is for pyvista
-if platform.system() == "Linux":  # remove cant find directory error on windows build
+if platform.system() == "Linux":  # remove can't find directory error on windows build
     xvfb = shutil.which("Xvfb") or "/usr/bin/Xvfb"
-    if os.path.exists(xvfb):
+    if Path(xvfb).exists():
         os.system(f"{xvfb} :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
         os.environ["DISPLAY"] = ":99"
 
