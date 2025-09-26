@@ -7,7 +7,7 @@
   confusion and to comply with all other classes. This behavior is now also
   noted in the docstrings.
   ([#836],(https://github.com/magpylib/magpylib/issues/836)).
-- Removed deprecated members `Line` and `Circle`.
+- Removed deprecated members `Line` and `Circle` and 'low magnetization' warning.
   ([#693](https://github.com/magpylib/magpylib/issues/693))
 - Major docstring review aligning with NuPyDoc/Scipy convention
   ([#876](https://github.com/magpylib/magpylib/issues/876),
