@@ -74,6 +74,10 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
     style : dict
         Style dictionary defining visual properties.
 
+    Notes
+    -----
+    Returns (0, 0, 0) on the line segments.
+
     Examples
     --------
     ``Polyline`` objects are magnetic field sources. In this example we compute the

@@ -38,6 +38,12 @@ def current_circle_Hfield(
         H-field in (A/m) at observer positions in cylindrical coordinates
         (H_r, H_φ, H_z). The azimuthal component is zero for symmetry.
 
+    Notes
+    -----
+    Implementation based on "Numerically stable and computationally efficient
+    expression for the magnetic field of a current loop.", M. Ortner et al.,
+    Magnetism 2023, 3(1), 11-31.
+
     Examples
     --------
     >>> import numpy as np
@@ -53,11 +59,6 @@ def current_circle_Hfield(
      [0.    0.   ]
      [0.077 0.226]]
 
-    Notes
-    -----
-    Implementation based on "Numerically stable and computationally efficient
-    expression for the magnetic field of a current loop.", M. Ortner et al.,
-    Magnetism 2023, 3(1), 11-31.
     """
     n5 = len(r)
 

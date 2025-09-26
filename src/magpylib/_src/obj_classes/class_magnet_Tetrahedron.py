@@ -84,6 +84,10 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     barycenter : ndarray, shape (3,)
         Read-only. Geometric barycenter (= center of mass) of the object.
 
+    Notes
+    -----
+    Returns (NaN, NaN, NaN) on corners.
+
     Examples
     --------
     ``Tetrahedron`` magnets are magnetic field sources. Below we compute the H-field in (A/m) of a

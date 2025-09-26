@@ -83,6 +83,10 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     barycenter : ndarray, shape (3,)
         Read-only. Geometric barycenter (= center of mass) of the object.
 
+    Notes
+    -----
+    Returns (0, 0, 0) on surface, edges, and corners.
+
     Examples
     --------
     ``CylinderSegment`` magnets are magnetic field sources. In this example we compute the

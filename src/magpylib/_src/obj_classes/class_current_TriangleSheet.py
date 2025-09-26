@@ -75,6 +75,10 @@ class TriangleSheet(BaseSource, BaseTarget):
     style : dict
         Style dictionary defining visual properties.
 
+    Notes
+    -----
+    Returns (0, 0, 0) on a sheet.
+
     Examples
     --------
     >>> import numpy as np

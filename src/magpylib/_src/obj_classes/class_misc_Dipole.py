@@ -58,6 +58,10 @@ class Dipole(BaseSource, BaseDipoleMoment):
     style : dict
         Style dictionary defining visual properties.
 
+    Notes
+    -----
+    Returns inf or nan at the dipole position.
+
     Examples
     --------
     ``Dipole`` objects are magnetic field sources. In this example we compute the H-field

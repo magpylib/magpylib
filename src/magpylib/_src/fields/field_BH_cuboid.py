@@ -33,6 +33,19 @@ def magnet_cuboid_Bfield(
     ndarray, shape (i, 3)
         B-field in units of input polarization at the observer positions.
 
+    Notes
+    -----
+    Field computations use magnetic surface charge density; similar expressions
+    were published repeatedly, e.g. Yang (Supercond. Sci. Technol. 3(12):591,
+    1990), Engel-Herbert (J. Appl. Phys. 97(7):074504-4, 2005), and Camacho
+    (Rev. Mex. Fís. E 59 (2013) 8-17).
+
+    Avoiding indeterminate forms: at positions along extensions of edges (in all
+    xyz-octants except the bottom negative-x/positive-y/positive-z quadrant),
+    direct evaluation becomes numerically unstable. We exploit symmetry to map
+    positions to their bottom-quadrant counterparts; see also Cichon, IEEE
+    Sensors Journal 19(7):2509, 2019.
+
     Examples
     --------
     >>> import numpy as np
@@ -47,18 +60,6 @@ def magnet_cuboid_Bfield(
     [[ 1.561e-02  1.561e-02 -3.534e-17]
      [ 7.732e-03  6.544e-03  1.048e-02]]
 
-    Notes
-    -----
-    Field computations use magnetic surface charge density; similar expressions
-    were published repeatedly, e.g. Yang (Supercond. Sci. Technol. 3(12):591,
-    1990), Engel-Herbert (J. Appl. Phys. 97(7):074504-4, 2005), and Camacho
-    (Rev. Mex. Fís. E 59 (2013) 8-17).
-
-    Avoiding indeterminate forms: at positions along extensions of edges (in all
-    xyz-octants except the bottom negative-x/positive-y/positive-z quadrant),
-    direct evaluation becomes numerically unstable. We exploit symmetry to map
-    positions to their bottom-quadrant counterparts; see also Cichon, IEEE
-    Sensors Journal 19(7):2509, 2019.
     """
     pol_x, pol_y, pol_z = polarizations.T
     a, b, c = dimensions.T / 2

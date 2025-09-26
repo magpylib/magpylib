@@ -64,6 +64,10 @@ class Triangle(BaseMagnet):
     style : dict
         Style dictionary defining visual properties.
 
+    Notes
+    -----
+    Returns (NaN, NaN, NaN) on corners.
+
     Examples
     --------
     ``Triangle`` objects are magnetic field sources. Below we compute the H-field in

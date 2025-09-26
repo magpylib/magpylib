@@ -69,6 +69,10 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     style : dict
         Style dictionary defining visual properties.
 
+    Notes
+    -----
+    Returns (0, 0, 0) on the loop.
+
     Examples
     --------
     ``Circle`` objects are magnetic field sources. In this example we compute the

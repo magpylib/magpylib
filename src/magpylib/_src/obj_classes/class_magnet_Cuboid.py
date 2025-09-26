@@ -81,6 +81,10 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     style : dict
         Style dictionary defining visual properties.
 
+    Notes
+    -----
+    Returns (0, 0, 0) on edges and corners.
+
     Examples
     --------
     ``Cuboid`` magnets are magnetic field sources. Below we compute the H-field in

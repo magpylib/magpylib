@@ -115,6 +115,10 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     style : dict
         Style dictionary defining visual properties.
 
+    Notes
+    -----
+    Returns (NaN, NaN, NaN) on corners.
+
     Examples
     --------
     We compute the B-field in units (T) of a triangular mesh (4 vertices, 4 faces)

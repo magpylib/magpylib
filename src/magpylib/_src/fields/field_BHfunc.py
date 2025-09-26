@@ -57,6 +57,10 @@ def circle_field(
     ndarray, shape (3,) or (i, 3)
         Field at the observer locations.
 
+    Notes
+    -----
+    Returns (0, 0, 0) on the loop.
+
     Examples
     --------
     >>> import numpy as np
@@ -117,6 +121,10 @@ def polyline_field(
         applied.
     squeeze : bool, default True
         If ``True``, squeeze singleton axis when ``i=1``.
+
+    Notes
+    -----
+    Returns (0, 0, 0) on the line segments.
 
     Returns
     -------
@@ -186,6 +194,10 @@ def cuboid_field(
     ndarray, shape (3,) or (i, 3)
         Field at the observer locations.
 
+    Notes
+    -----
+    Returns (0, 0, 0) on edges and corners.
+
     Examples
     --------
     >>> import numpy as np
@@ -248,6 +260,10 @@ def cylinder_field(
     -------
     ndarray, shape (3,) or (i, 3)
         Field at the observer locations.
+
+    Notes
+    -----
+    Returns (0, 0, 0) on edges.
 
     Examples
     --------
@@ -313,6 +329,10 @@ def cylinder_segment_field(
     -------
     ndarray, shape (3,) or (i, 3)
         Field at the observer locations.
+
+    Notes
+    -----
+    Returns (0, 0, 0) on surface, edges, and corners.
 
     Examples
     --------
@@ -439,6 +459,10 @@ def tetrahedron_field(
     ndarray, shape (3,) or (i, 3)
         Field at the observer locations.
 
+    Notes
+    -----
+    Returns (NaN, NaN, NaN) on corners.
+
     Examples
     --------
     >>> import numpy as np
@@ -502,6 +526,10 @@ def dipole_field(
     ndarray, shape (3,) or (i, 3)
         Field at the observer locations.
 
+    Notes
+    -----
+    Returns inf or nan at the dipole position.
+
     Examples
     --------
     >>> import numpy as np
@@ -563,6 +591,10 @@ def triangle_charge_field(
     -------
     ndarray, shape (3,) or (i, 3)
         Field at the observer locations.
+
+    Notes
+    -----
+    Returns (NaN, NaN, NaN) on corners.
 
     Examples
     --------
@@ -630,6 +662,10 @@ def triangle_current_field(
     -------
     ndarray, shape (3,) or (i, 3)
         Field at the observer locations.
+
+    Notes
+    -----
+    Returns (0, 0, 0) on a sheet.
 
     Examples
     --------
