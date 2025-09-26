@@ -86,7 +86,7 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
     Notes
     -----
-    Returns (NaN, NaN, NaN) on corners.
+    Returns (0, 0, 0) on corners.
 
     Examples
     --------

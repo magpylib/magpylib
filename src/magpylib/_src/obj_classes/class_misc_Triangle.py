@@ -66,7 +66,7 @@ class Triangle(BaseMagnet):
 
     Notes
     -----
-    Returns (NaN, NaN, NaN) on corners.
+    Returns (0, 0, 0) on corners.
 
     Examples
     --------

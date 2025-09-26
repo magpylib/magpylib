@@ -461,7 +461,7 @@ def tetrahedron_field(
 
     Notes
     -----
-    Returns (NaN, NaN, NaN) on corners.
+    Returns (0, 0, 0) on corners.
 
     Examples
     --------
@@ -594,7 +594,7 @@ def triangle_charge_field(
 
     Notes
     -----
-    Returns (NaN, NaN, NaN) on corners.
+    Returns (0, 0, 0) on corners.
 
     Examples
     --------
