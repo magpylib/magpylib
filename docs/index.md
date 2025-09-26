@@ -37,7 +37,7 @@ Magpylib is an **open-source Python package** for calculating static **magnetic 
 ::::
 
 ```{important}
-**New in version 5.2**: Compute force and torque: `magpylib.getFT()`; New functional interface: `magpylib.func...`; Quiver plot with pixel field: `style_pixel_field_...`; Current sheets `current.TriangleStrip()` and `current.TriangleSheet()`.
+**New in version 5.2**: compute **force and torque** with `magpylib.getFT()`; new **functional interface** at `magpylib.func...`; quiver plots with **pixel field** style `style_pixel_field_...`; **current sheet** classes `TriangleStrip()` and `TriangleSheet()`; and many **[new examples](examples)**.
 ```
 
 <h2> How it works</h2>
