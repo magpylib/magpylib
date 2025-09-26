@@ -1,18 +1,17 @@
 import importlib.metadata
-import os
 import sys
 from pathlib import Path
 
-import sphinx.ext.apidoc
+
+import os, platform, shutil
 
 # This is for pyvista
+if platform.system() == "Linux": # remove cant find directory error on windows build
+    xvfb = shutil.which("Xvfb") or "/usr/bin/Xvfb"
+    if os.path.exists(xvfb):
+        os.system(f"{xvfb} :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
+        os.environ["DISPLAY"] = ":99"
 
-
-import platform
-
-if platform.system() == "Linux":
-    os.system("/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
-    os.environ["DISPLAY"] = ":99"
 os.environ["PYVISTA_OFF_SCREEN"] = "true"
 os.environ["PYVISTA_USE_IPYVTK"] = "true"
 os.environ["MAGPYLIB_MPL_SVG"] = "true"
@@ -20,35 +19,16 @@ os.environ["MAGPYLIB_MPL_SVG"] = "true"
 # Location of Sphinx files
 
 sys.path.insert(0, str(Path("./../").resolve()))  ##Add the folder one level above
-os.environ["SPHINX_APIDOC_OPTIONS"] = (
-    "members,show-inheritance"  ## Hide undocumented members
-)
 
 # from sphinx_gallery.sorting import FileNameSortKey
 
 # pio.renderers.default = "sphinx_gallery"
 
-autodoc_default_options = {
-    "private-members": False,
-    "inherited-members": True,
-}
-
 
 def setup(app):
     app.add_css_file("css/stylesheet.css")
     app.add_js_file("webcode/summaryOpen.js")
-    sphinx.ext.apidoc.main(
-        [
-            "-f",  # Overwrite existing files
-            "-T",  # Create table of contents
-            "-e",  # Give modules their own pages
-            "-E",  # user docstring headers
-            "-M",  # Modules first
-            "-o",  # Output the files to:
-            "./docs/_autogen/",  # Output Directory
-            "./src/magpylib",  # Main Module directory
-        ]
-    )
+    # apidoc generation is handled in noxfile.py before the Sphinx build
 
 
 # -- Project information -----------------------------------------------------
@@ -69,19 +49,31 @@ needs_sphinx = "7.2"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
     "sphinx.ext.coverage",
     "sphinx.ext.autosummary",
     "sphinx.ext.ifconfig",
     "matplotlib.sphinxext.plot_directive",
     "sphinx_copybutton",
-    "myst_nb",
     "sphinx_thebe",
     "sphinx_favicon",
     "sphinx_design",
     "sphinxcontrib.bibtex",  # citations support
+    "myst_nb",
 ]
+
+autoclass_content = "both"
+napoleon_use_ivar = True
+napoleon_attr_annotations = True
+
+autodoc_default_options = {
+    # Do not force :members: globally; module pages include members via templates.
+    # Keep inheritance display enabled when members are listed explicitly.
+    "show-inheritance": True,
+}
+
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -89,7 +81,7 @@ templates_path = ["_templates"]
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_suffix = [".rst", ".md"]
+#source_suffix = [".rst", ".md"]
 
 # The master toctree document.
 master_doc = "index"

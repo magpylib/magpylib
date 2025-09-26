@@ -1,4 +1,5 @@
 import argparse
+import os
 import shutil
 from pathlib import Path
 
@@ -67,10 +68,33 @@ def docs(session: nox.Session) -> None:
         *posargs,
     )
 
+    # Regenerate API docs with templates before building
+    autogen_dir = DIR / "docs" / "_autogen"
+    if autogen_dir.exists():
+        shutil.rmtree(autogen_dir)
+    autogen_dir.mkdir(parents=True, exist_ok=True)
+
+    session.run(
+        "sphinx-apidoc",
+        "-f",
+        "-T",
+        "-e",
+        "-E",
+        "-M",
+        "-t",
+        str(DIR / "docs" / "_templates" / "apidoc"),
+        "-o",
+        str(autogen_dir),
+        str(DIR / "src" / "magpylib"),
+    )
+
+    # Skip apidoc generation inside conf.py during the build
+    env = {"MAGPYLIB_SKIP_APIDOC": "1", **os.environ}
+
     if serve:
-        session.run("sphinx-autobuild", "--open-browser", *shared_args)
+        session.run("sphinx-autobuild", "--open-browser", *shared_args, env=env)
     else:
-        session.run("sphinx-build", "--keep-going", *shared_args)
+        session.run("sphinx-build", "--keep-going", *shared_args, env=env)
 
 
 @nox.session
