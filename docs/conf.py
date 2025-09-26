@@ -1,12 +1,12 @@
 import importlib.metadata
+import os
+import platform
+import shutil
 import sys
 from pathlib import Path
 
-
-import os, platform, shutil
-
 # This is for pyvista
-if platform.system() == "Linux": # remove cant find directory error on windows build
+if platform.system() == "Linux":  # remove cant find directory error on windows build
     xvfb = shutil.which("Xvfb") or "/usr/bin/Xvfb"
     if os.path.exists(xvfb):
         os.system(f"{xvfb} :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
@@ -74,14 +74,13 @@ autodoc_default_options = {
 }
 
 
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-#source_suffix = [".rst", ".md"]
+# source_suffix = [".rst", ".md"]
 
 # The master toctree document.
 master_doc = "index"
