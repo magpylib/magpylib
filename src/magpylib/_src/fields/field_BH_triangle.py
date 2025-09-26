@@ -103,6 +103,14 @@ def triangle_Bfield(
     ndarray, shape (i, 3)
         B-field in units of ``polarization`` input at the observer positions.
 
+    Notes
+    -----
+    Returns (0, 0, 0) at corners.
+
+    Field computation follows Guptasarma, Geophysics, 1999, 64(1), 70-74.
+    Loss of precision occurs when approaching a triangle as
+    (x - edge)**2 and with distance from the triangle as (distance**3).
+
     Examples
     --------
     >>> import numpy as np
@@ -119,14 +127,6 @@ def triangle_Bfield(
     ...    print(B)
     [[7.452 4.62  3.136]
      [2.213 2.677 2.213]]
-
-    Notes
-    -----
-    Returns (0, 0, 0) at corners.
-
-    Field computation follows Guptasarma, Geophysics, 1999, 64(1), 70-74.
-    Loss of precision occurs when approaching a triangle as
-    (x - edge)**2 and with distance from the triangle as (distance**3).
     """
     n = _norm_vector(vertices)
     sigma = np.einsum("ij, ij->i", n, polarizations)  # vectorized inner product

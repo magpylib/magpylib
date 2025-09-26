@@ -92,10 +92,6 @@ class TriangleSheet(BaseSource, BaseTarget):
     >>> with np.printoptions(precision=3):
     ...     print(H)
     [ 0.005 -0.311 -0.299]
-
-    Notes
-    -----
-    On the vertices the returned field is zero.
     """
 
     # pylint: disable=dangerous-default-value

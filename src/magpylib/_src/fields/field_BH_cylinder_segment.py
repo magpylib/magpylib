@@ -2140,6 +2140,11 @@ def magnet_cylinder_segment_Hfield(
         H-field in units of magnetization M at observer positions in Cartesian
         coordinates.
 
+    Notes
+    -----
+    Implementation based on F. Slanovc, Journal of Magnetism and Magnetic
+    Materials 559 (2022): 169482.
+
     Examples
     --------
     >>> import numpy as np
@@ -2154,11 +2159,6 @@ def magnet_cylinder_segment_Hfield(
     ...     print(H)
     [[-1948.144 32319.944 17616.886]
      [14167.65   1419.941 17921.646]]
-
-    Notes
-    -----
-    Implementation based on F. Slanovc, Journal of Magnetism and Magnetic
-    Materials 559 (2022): 169482.
     """
 
     # tile inputs into 8-stacks (boundary cases)
