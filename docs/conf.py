@@ -6,8 +6,13 @@ from pathlib import Path
 import sphinx.ext.apidoc
 
 # This is for pyvista
-os.system("/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
-os.environ["DISPLAY"] = ":99"
+
+
+import platform
+
+if platform.system() == "Linux":
+    os.system("/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
+    os.environ["DISPLAY"] = ":99"
 os.environ["PYVISTA_OFF_SCREEN"] = "true"
 os.environ["PYVISTA_USE_IPYVTK"] = "true"
 os.environ["MAGPYLIB_MPL_SVG"] = "true"
