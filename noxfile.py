@@ -73,9 +73,16 @@ def docs(session: nox.Session) -> None:
     autogen_dir.mkdir(parents=True, exist_ok=True)
 
     # Build sphinx-apidoc args (use your template dir if it exists)
-    apidoc_args = ["-f", "-T", "-e", "-E", "-M",
-                "-o", str(autogen_dir),
-                str(DIR / "src" / "magpylib")]
+    apidoc_args = [
+        "-f",
+        "-T",
+        "-e",
+        "-E",
+        "-M",
+        "-o",
+        str(autogen_dir),
+        str(DIR / "src" / "magpylib"),
+    ]
 
     tmpl_dir = DIR / "docs" / "_templates" / "apidoc"
     if tmpl_dir.exists():
@@ -88,7 +95,8 @@ def docs(session: nox.Session) -> None:
         session.run(
             "sphinx-autobuild",
             "--open-browser",
-            "--watch", str(DIR / "src" / "magpylib"),
+            "--watch",
+            str(DIR / "src" / "magpylib"),
             *shared_args,
         )
     else:

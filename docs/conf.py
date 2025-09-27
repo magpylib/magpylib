@@ -80,9 +80,9 @@ extensions = [
 
 # Good defaults for NumPy style
 napoleon_numpy_docstring = True
-napoleon_google_docstring = False       # optional if you don’t use Google style
-napoleon_use_ivar = True                # <- IMPORTANT: render Attributes properly
-napoleon_attr_annotations = True        # show type annotations for attributes
+napoleon_google_docstring = False  # optional
+napoleon_use_ivar = True  # <- IMPORTANT: render Attributes properly
+napoleon_attr_annotations = True  # show type annotations for attributes
 
 # Optional: generate autosummary stub pages automatically when referenced
 autosummary_generate = True
