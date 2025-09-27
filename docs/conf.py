@@ -80,7 +80,12 @@ extensions = [
     "sphinx_thebe",
     "sphinx_favicon",
     "sphinx_design",
+    "sphinxcontrib.bibtex",
 ]
+
+# BIBTEX
+# path to bibliography
+bibtex_bibfiles = ["bibliography.bib"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -338,18 +343,7 @@ favicons = [
 ]
 
 
-# Suppress warnings to unknown references in docstrings
-nitpick_ignore = [
-    ("py:class", "Source"),
-    ("py:class", "optional"),
-    ("py:class", "array-like"),
-    ("py:class", "matplotlib.Figure"),
-    ("py:class", "plotly.Figure"),
-    ("py:class", "pyvista.Plotter"),
-    ("py:class", "Rotation"),
-    ("py:class", "ndarray"),
-    ("py:class", "DataFrame"),
-]
+nitpick_ignore_regex = [(r"py:.*", r".*")]
 
 
 # sphinx gallery settings
