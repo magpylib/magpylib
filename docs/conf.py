@@ -26,11 +26,6 @@ sys.path.insert(0, str(Path("./../").resolve()))  ##Add the folder one level abo
 
 # pio.renderers.default = "sphinx_gallery"
 
-autodoc_default_options = {
-    "private-members": False,
-    "inherited-members": True,
-}
-
 
 def setup(app):
     app.add_css_file("css/stylesheet.css")
@@ -83,6 +78,15 @@ extensions = [
     "sphinxcontrib.bibtex",
 ]
 
+# Good defaults for NumPy style
+napoleon_numpy_docstring = True
+napoleon_google_docstring = False       # optional if you don’t use Google style
+napoleon_use_ivar = True                # <- IMPORTANT: render Attributes properly
+napoleon_attr_annotations = True        # show type annotations for attributes
+
+# Optional: generate autosummary stub pages automatically when referenced
+autosummary_generate = True
+
 # BIBTEX
 # path to bibliography
 bibtex_bibfiles = ["bibliography.bib"]
@@ -94,7 +98,6 @@ templates_path = ["_templates"]
 # You can specify multiple suffix as a list of string:
 #
 ###source_suffix = [".rst", ".md"]
-
 
 nb_execution_mode = "auto"  # or "force" if you always want execution
 # nb_execution_timeout = 300      # adjust as needed (seconds)
@@ -108,6 +111,13 @@ autodoc_mock_imports = [
     "magpylib_material_response",
     "kaleido",
 ]
+autodoc_default_options = {
+    "members": True,
+    "private-members": False,
+    "inherited-members": True,
+    "show-inheritance": True,
+    "member-order": "groupwise",
+}
 
 
 # The master toctree document.
