@@ -1,3 +1,5 @@
+"""Special functions cel."""
+
 # pylint: disable=too-many-positional-arguments
 
 import math as m
@@ -5,12 +7,12 @@ import math as m
 import numpy as np
 
 
-def cel0(kc, p, c, s):
+def _cel0(kc, p, c, s):
     """
     complete elliptic integral algorithm vom Kirby2009
     """
     if kc == 0:
-        msg = "FAIL"
+        msg = "FAIL cel: kc=0 not allowed."
         raise RuntimeError(msg)
     errtol = 0.000001
     k = abs(kc)
@@ -51,7 +53,7 @@ def cel0(kc, p, c, s):
     return (np.pi / 2) * (ss + cc * em) / (em * (em + pp))
 
 
-def celv(kc, p, c, s):
+def _celv(kc, p, c, s):
     """
     vectorized version of the cel integral above
     """
@@ -114,7 +116,7 @@ def celv(kc, p, c, s):
     return (np.pi / 2) * (ss + cc * em) / (em * (em + pp))
 
 
-def cel(kcv: np.ndarray, pv: np.ndarray, cv: np.ndarray, sv: np.ndarray) -> np.ndarray:
+def _cel(kcv: np.ndarray, pv: np.ndarray, cv: np.ndarray, sv: np.ndarray) -> np.ndarray:
     """
     combine vectorized and non-vectorized implementations for improved performance
 
@@ -131,13 +133,13 @@ def cel(kcv: np.ndarray, pv: np.ndarray, cv: np.ndarray, sv: np.ndarray) -> np.n
 
     if n_input < 10:
         return np.array(
-            [cel0(kc, p, c, s) for kc, p, c, s in zip(kcv, pv, cv, sv, strict=False)]
+            [_cel0(kc, p, c, s) for kc, p, c, s in zip(kcv, pv, cv, sv, strict=False)]
         )
 
-    return celv(kcv, pv, cv, sv)
+    return _celv(kcv, pv, cv, sv)
 
 
-def cel_iter(qc, p, g, cc, ss, em, kk):
+def _cel_iter(qc, p, g, cc, ss, em, kk):
     """
     Iterative part of Bulirsch cel algorithm
     """
@@ -149,13 +151,13 @@ def cel_iter(qc, p, g, cc, ss, em, kk):
     if n_input < 15:
         result = np.zeros(n_input)
         for i in range(n_input):
-            result[i] = cel_iter0(qc[i], p[i], g[i], cc[i], ss[i], em[i], kk[i])
+            result[i] = _cel_iter0(qc[i], p[i], g[i], cc[i], ss[i], em[i], kk[i])
 
     # case3: vectorized evaluation
-    return cel_iterv(qc, p, g, cc, ss, em, kk)
+    return _cel_iterv(qc, p, g, cc, ss, em, kk)
 
 
-def cel_iter0(qc, p, g, cc, ss, em, kk):
+def _cel_iter0(qc, p, g, cc, ss, em, kk):
     """
     Iterative part of Bulirsch cel algorithm
     """
@@ -172,7 +174,7 @@ def cel_iter0(qc, p, g, cc, ss, em, kk):
     return 1.5707963267948966 * (ss + cc * em) / (em * (em + p))
 
 
-def cel_iterv(qc, p, g, cc, ss, em, kk):
+def _cel_iterv(qc, p, g, cc, ss, em, kk):
     """
     Iterative part of Bulirsch cel algorithm
     """

@@ -1,3 +1,5 @@
+"""Force implementation."""
+
 # pylint: disable=import-outside-toplevel
 
 import logging
@@ -5,14 +7,14 @@ import logging
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from magpylib._src.fields.field_wrap_BH import getB
+from magpylib._src.fields.field_BH import getB
 from magpylib._src.input_checks import check_dimensions, check_excitations
 from magpylib._src.utility import format_src_inputs
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def check_format_input_targets(targets):
+def _check_format_input_targets(targets):
     """
     Check and format targets input
     - flatten Collections
@@ -64,23 +66,23 @@ def check_format_input_targets(targets):
         if not isinstance(t, Dipole | Sphere):
             if not hasattr(t, "meshing"):
                 msg = (
-                    "getFT bad target input. Targets can only be Magpylib objects Cuboid,..."
-                    f" Instead received type {type(t)}."
+                    "Input targets must be allowed Magpylib target objects; "
+                    f"instead received type {type(t)}."
                 )
                 raise ValueError(msg)
 
             # check if meshing parameter is explicitly set
             if t.meshing is None:
                 msg = (
-                    f"getFT missing meshing input for target {t}."
-                    " All targets must have the meshing parameter explicitly set."
+                    f"Missing meshing input for target {t}. "
+                    "All targets must have the meshing parameter explicitly set."
                 )
                 raise ValueError(msg)
 
     return flat_targets, coll_idx
 
 
-def create_eps_vector(eps):
+def _create_eps_vector(eps):
     """
     Create a vector of finite difference steps based on the input eps.
 
@@ -107,18 +109,18 @@ def create_eps_vector(eps):
     )
 
 
-def check_format_input_pivot(pivot, targets, n_path):
+def _check_format_input_pivot(pivot, targets, n_path):
     """
     Check and format pivot input
 
     Returns
     -------
-    array of pivots with shape (n_tgt, n_path, 3) or None
+    array of pivots with shape (t, p, 3) or None
     """
     msg = (
-        "Bad getFT pivot input. Input pivot must be str 'centroid', `None`, or array_like of shape (3,)."
-        " It can also be (n,3) when there are n targets providing a different pivot for every target."
-        " It can also be (n,m,3) when there are n targets and pathlength is m."
+        "Input pivot must be 'centroid', None, or array-like with shape "
+        "(3,), (t, 3), or (t, p, 3) when t targets are present and path "
+        f"length p are present; instead received {pivot!r}."
     )
 
     if pivot is None:
@@ -150,11 +152,11 @@ def check_format_input_pivot(pivot, targets, n_path):
     raise ValueError(msg)
 
 
-def check_eps(eps):
+def _check_eps(eps):
     """
     check FD step
     """
-    msg = f"Finite difference step size (eps) must be a positive float. Instead received {eps}."
+    msg = f"Input eps must be a positive float; instead received {eps!r}."
     if not isinstance(eps, float):
         raise ValueError(msg)
     if eps <= 0:
@@ -170,85 +172,71 @@ def getFT(
     meshreport=False,
     return_mesh=False,
 ):
-    """
-    Compute magnetic force and torque acting on the targets that are exposed
-    to the magnetic field of the sources. The computation is based on a simple meshing
-    and finite differences approach.
+    """Compute magnetic force and torque on t targets from s sources.
 
-    SI units are assumed for all inputs and outputs.
+    The computation uses meshing and finite differences. SI units are assumed
+    for all inputs and outputs.
 
     Parameters
     ----------
-    sources: source object or list
-        Sources that generate the magnetic field. Can be a single source or a 1D list
-        of n source objects.
-
-    targets: target object or list
-        Objects on which the magnetic field acts, generating force and torque. Can be a
-        1D list of m target objects. All targets (except Dipoles and Spheres) must have
-        valid `meshing` parameters set.
-
-    pivot: str, None, or array_like, default="centroid"
-        The Force adds to the Torque via the pivot point. For a freely floating magnet
-        this would be the barycenter (= centroid when the density is homogeneous).
-        If pivot="centroid" the centroid is selected as the pivot point for all targets.
-        If pivot=None no pivot is used. This will give nonphysical results.
-        If pivot=array_like of shape (3,) the same pivot is used for all targets.
-        Alternatively one can provide an individual pivot point for each target.
-
-    eps: float, default=1e-5
-        Finite difference step size for gradient field computation required for magnet targets.
-        A good value is 1e-5 * characteristic_system_size (magnet size, distance between sources
-        and targets, ...).
-
-    squeeze: bool, default=True
-        The output of the computation has the shape (2,n,m,o,3) where n corresponds to the number
-        of sources, m to the path length, and o to the number of targets. By default all dimensions
-        of size 1 are eliminated.
-
-    meshreport: bool, default=False
-        If True, a report of the mesh used for each target will be printed.
-
-    return_mesh: bool, default=False
-        If True, the meshes will be returned as a list of dictionaries instead of force and torque.
+    sources : Source | list[Source]
+        Sources that generate the magnetic field. Can be a single source or a
+        1D list of s source objects.
+    targets : Target | list[Target]
+        Objects on which the magnetic field acts, generating force and torque.
+        Can be a 1D list of t target objects. All targets (except Dipoles
+        and Spheres) must have a valid ``meshing`` parameter set.
+    pivot : 'centroid' | None | array-like, shape (3,) or (t, 3) or (t, p, 3), default 'centroid'
+        Pivot point through which the force contributes to the torque. If
+        ``'centroid'``, each target's centroid is used. If ``None``, no pivot
+        is applied (may yield nonphysical results). If an array of shape
+        (3,), the same pivot is used for all targets. Shapes (t, 3)
+        and (t, p, 3) provide per-target or per-target-per-path pivots.
+    eps : float, default 1e-5
+        Finite-difference step size for gradient-field computation for magnet
+        targets. A good value is 1e-5 * characteristic_system_size (e.g.,
+        magnet size or source-target distance).
+    squeeze : bool, default True
+        If ``True``, dimensions of size 1 in the output are removed.
+    meshreport : bool, default False
+        If ``True``, prints a brief report of the mesh used for each target.
+    return_mesh : bool, default False
+        If ``True``, returns the meshes as a list of dictionaries instead of
+        force and torque.
 
     Returns
     -------
-    tuple: (force, torque) as respective ndarrays of shape (n,p,m,3), when n sources, p path length,
-    and m targets are given.
+    tuple[ndarray, ndarray]
+        Force and torque with shapes (s, p, t, 3), where s is the
+        number of sources, p the path length, and t the number of
+        targets. If ``squeeze`` is ``True``, dimensions of size 1 are removed.
+        If ``return_mesh`` is ``True``, returns the meshes list instead.
 
-    If return_mesh is True, the meshes will be returned as a list instead of force and torque.
+    Notes
+    -----
+    The force and torque are computed via
+    F = (gradB) · MOM and T = B x MOM + r x F. The gradient field is
+    obtained using finite differences on the meshed targets.
 
     Examples
     --------
     >>> import numpy as np
     >>> import magpylib as magpy
-
     >>> cube = magpy.magnet.Cuboid(
-    ...     dimension=(1, 1, 1),
-    ...     polarization=(.1, .2, .3)
+    ...     dimension=(1.0, 1.0, 1.0),
+    ...     polarization=(0.1, 0.2, 0.3),
     ... )
     >>> circ = magpy.current.Circle(
-    ...     diameter=2,
+    ...     diameter=2.0,
     ...     current=1e3,
-    ...     position=(0, 0, 1),
+    ...     position=(0.0, 0.0, 1.0),
     ...     meshing=50,
     ... )
     >>> F, T = magpy.getFT(cube, circ)
-
     >>> print(f'force: {np.round(F, decimals=2)} N')
     force: [ 13.65  27.31 -81.93] N
-
-    >>> print(f'torque: {np.round(T, decimals=2)} Nm')
-    torque: [-8.55  4.27 -0.  ] Nm
-
-    Notes:
-    ------
-    The force equations are F = DB.MOM, T = B x MOM + F x R. The computation relies
-    on a numerical approach, where the targets are split up into a lot of small
-    parts and the contributions from all parts are summed up.
-
-    For the gradient field, a finite difference approach is used.
+    >>> print(f'torque: {np.round(T, decimals=2)} N*m')
+    torque: [-8.55  4.27 -0.  ] N*m
     """
     # COMPUTATION SCHEME
     #   STEP1: Collect all inputs
@@ -262,7 +250,7 @@ def getFT(
     # Input check targets
     #  - check if all targets are allowed and parameters are set (meshing, ...)
     #  - return 1D list of targets (flatten collections)
-    targets, coll_idx = check_format_input_targets(targets)
+    targets, coll_idx = _check_format_input_targets(targets)
     n_tgt = len(targets)
 
     # Input checks sources: from getB
@@ -276,10 +264,10 @@ def getFT(
 
     # Input check pivot
     #  - return shape (n_tgt, n_path, 3)
-    pivot = check_format_input_pivot(pivot, targets, n_path)
+    pivot = _check_format_input_pivot(pivot, targets, n_path)
 
     # Input check eps
-    check_eps(eps)
+    _check_eps(eps)
 
     # RUN MESHING FUNCTIONS ###################################################
     #  - collect all meshing infos
@@ -330,7 +318,7 @@ def getFT(
     tgt_ori = np.empty((n_tgt, n_path, 4))
 
     # Create transformed meshes and broadcast into OBS7
-    eps_vec = create_eps_vector(eps)
+    eps_vec = _create_eps_vector(eps)
     for i, tgt in enumerate(targets):
         # Path padding
         n_pad = n_path - len(tgt._position)
@@ -471,7 +459,7 @@ def getFT(
         #    the force computation. Therefore it makes no sense to separate the force
         #    and torque computation.
 
-        F = np.einsum("abijk,abik->abij", DB, MOM)  # numpy only
+        F = np.einsum("abijk, abik->abij", DB, MOM)  # NumPy only
         # F = np.sum(DB * MOM[:, :, :, np.newaxis, :], axis=4) # array API
         T = np.cross(MOM, B)
 

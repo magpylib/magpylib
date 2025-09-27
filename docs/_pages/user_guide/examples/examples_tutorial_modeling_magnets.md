@@ -166,7 +166,7 @@ Bsim = sensor.getB(magnet)
 # Plotting function
 def plot_field(Bsim, Bexp, xs):
     """Plot results."""
-    fig, axes = plt.subplots(1, 3, figsize=(12,3.5), sharey=True)
+    fig, axes = plt.subplots(1, 3, figsize=(12, 3.5), sharey=True)
 
     labels = ['Bx Field (mT)', 'By Field (mT)', 'Bz Field (mT)']
     for i,ax in enumerate(axes):

@@ -57,16 +57,51 @@ project.
 We strongly suggest that you use the [Pre-Commit](https://pre-commit.com/) hooks
 that apply important code checks which each commit.
 
-## For Your Orientation
+## Documentation, Docstring, and User Message Formatting
 
-The Magpylib repository is structured as follows:
+### General (applies to all three)
 
-- **magpylib**
-  - **magpylib**: the actual package.
-    - **\_src**: source code
-    - Other files generate the interface
-  - **docs**: documentation that is displayed on
-    [Read the Docs](https://readthedocs.org/) using
-    [Sphinx](https://www.sphinx-doc.org/en/master/).
-  - **tests**: unit tests
-  - Other files are project configuration files, Readme, ...
+- Apply NumPy/SciPy docstring style to all public members.
+- Maximum line length: 88 columns.
+- SPOTIN index naming convention:
+  - s sources
+  - p path
+  - o observers and o1, o2, ... pixel shape
+  - t targets
+  - i instances (functional and core interfaces)
+  - n, m generic indices
+- Indices and shapes are written in plain prose: '... for n observers this
+  function returns an ndarray of shape (n, 3) ...'.
+- Units in prose, e.g., 'in units (m)' or 'in units (A\*m²)'.
+
+### Docstrings
+
+- Double backticks for inline code, including True, False, and None.
+- Use single quotes ('…') rather than double quotes ("…") in user-visible
+  strings.
+- Type line format:
+  - Standard pattern: 'name : A | B | C, default X'.
+  - Include shape information like 'name : None | array-like, shape (3,),
+    default X' or 'name : array-like, shape (n, 3) | B, default X'.
+  - No backticks in the type line.
+  - Default only in the type line (not repeated in the description).
+  - For string choices use braces: 'name : A | {'choice1', 'choice2'}, default
+    X'.
+- No obligation to add a Raises section.
+- Do not include a Returns section in class docstrings (the class instance is
+  implied).
+- For chainable instance methods: Returns \n Self \n Self (allows chaining).
+- Do not name private helper classes that might be returned instead of Self.
+- Prefer duplicating identical docstrings over referencing others; duplicates
+  must remain exactly identical. Capitalize docstring headers like '## List of
+  Style Properties'
+
+### Runtime messages (warnings, errors, assertions)
+
+- Messages in pure prose (no backticks).
+- Standard pattern: 'Input XXX of YYY must be ZZZ; instead received UUU.'
+
+### Documentation (MyST Markdown)
+
+- Single backticks for inline code, including True, False, and None. Indices,
+  shapes, and vectors are written in prose.

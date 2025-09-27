@@ -1,13 +1,13 @@
-# pylint: disable=too-many-positional-arguments
-
 """Magnet Triangle class"""
+
+# pylint: disable=too-many-positional-arguments
 
 from typing import ClassVar
 
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Triangle
-from magpylib._src.fields.field_BH_triangle import BHJM_triangle
+from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.style import TriangleStyle
@@ -16,78 +16,76 @@ from magpylib._src.style import TriangleStyle
 class Triangle(BaseMagnet):
     """Triangular surface with homogeneous magnetic surface charge.
 
-    Can be used as `sources` input for magnetic field computation.
+    Can be used as ``sources`` input for magnetic field computation and ``target``
+    input for force computation.
 
-    When `position=(0,0,0)` and `orientation=None` the local object coordinates of the
-    Triangle vertices coincide with the global coordinate system. The geometric
-    center of the Triangle is determined by its vertices.
+    When ``position=(0, 0, 0)`` and ``orientation=None`` the local object coordinates
+    of the Triangle vertices coincide with the global coordinate system.
 
     SI units are used for all inputs and outputs.
 
     Parameters
     ----------
-    position: array_like, shape (3,) or (m,3)
-        Object position(s) in the global coordinates in units of m. For m>1, the
-        `position` and `orientation` attributes together represent an object path.
-
-    orientation: scipy `Rotation` object with length 1 or m, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation. For m>1, the `position` and `orientation` attributes
-        together represent an object path.
-
-    vertices: ndarray, shape (3,3)
-        Triple of vertices in the local object coordinates.
-
-    polarization: array_like, shape (3,), default=`None`
-        Magnetic polarization vector J = mu0*M in units of T,
-        given in the local object coordinates (rotates with object).The homogeneous surface
-        charge of the Triangle is given by the projection of the polarization on the
-        Triangle normal vector (right-hand-rule).
-
-    magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector M = J/mu0 in units of A/m,
-        given in the local object coordinates (rotates with object).The homogeneous surface
-        charge of the Triangle is given by the projection of the magnetization on the
-        Triangle normal vector (right-hand-rule).
-
-    centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m.
-
-    parent: `Collection` object or `None`
-        The object is a child of it's parent collection.
-
-    style: dict
-        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-        using style underscore magic, e.g. `style_color='red'`.
+    position : array-like, shape (3,) or (p, 3), default (0, 0, 0)
+        Object position(s) in global coordinates in units (m). ``position`` and
+        ``orientation`` attributes define the object path.
+    orientation : None | Rotation, default None
+        Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
+        have length 1 or p. ``None`` generates a unit-rotation.
+    vertices : None | array-like, shape (3, 3), default None
+        Triangle vertices in the local object coordinates in units (m).
+    polarization : None | array-like, shape (3,), default None
+        Magnetic polarization vector J = mu0*M in units (T), given in the
+        local object coordinates. Sets also ``magnetization``.
+    magnetization : None | array-like, shape (3,), default None
+        Magnetization vector M = J/mu0 in units (A/m), given in the local
+        object coordinates. Sets also ``polarization``.
+    style : None | dict, default None
+        Style dictionary. Can also be provided via style underscore magic, e.g.
+        ``style_color='red'``.
 
     Attributes
     ----------
-    barycenter: array_like, shape (3,)
-        Read only property that returns the geometric barycenter (=center of mass)
-        of the object.
+    position : ndarray, shape (3,) or (p, 3)
+        Same as constructor parameter ``position``.
+    orientation : Rotation
+        Same as constructor parameter ``orientation``.
+    vertices : None | ndarray, shape (3, 3)
+        Same as constructor parameter ``vertices``.
+    polarization : None | ndarray, shape (3,)
+        Same as constructor parameter ``polarization``.
+    magnetization : None | ndarray, shape (3,)
+        Same as constructor parameter ``magnetization``.
+    centroid : ndarray, shape (3,) or (p, 3)
+        Read-only. Object centroid in units (m) in global coordinates.
+        Can be a path.
+    parent : Collection | None
+        Parent collection of the object.
+    style : dict
+        Style dictionary defining visual properties.
 
-    Returns
-    -------
-    magnet source: `Triangle` object
+    Notes
+    -----
+    Returns (0, 0, 0) on corners.
 
     Examples
     --------
-    `Triangle` objects are magnetic field sources. Below we compute the H-field in A/m of a
-    Triangle object with polarization (0.01,0.02,0.03) in units of T, dimensions defined
-    through the vertices (0,0,0), (0.01,0,0) and (0,0.01,0) in units of m at the
-    observer position (0.01,0.01,0.01) given in units of m:
+    ``Triangle`` objects are magnetic field sources. Below we compute the H-field in
+    (A/m) of a Triangle object with magnetic polarization ``(0.1, 0.2, 0.3)`` in units
+    (T), defined by the vertices ``(0, 0, 0)``, ``(0.01, 0, 0)`` and ``(0, 0.01, 0)``
+    (m) at the observer position ``(0.1, 0.1, 0.1)`` (m):
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> verts = [(0,0,0), (.01,0,0), (0,.01,0)]
-    >>> src = magpy.misc.Triangle(polarization=(.1,.2,.3), vertices=verts)
-    >>> H = src.getH((.1,.1,.1))
+    >>> verts = [(0, 0, 0), (0.01, 0, 0), (0, 0.01, 0)]
+    >>> src = magpy.misc.Triangle(polarization=(0.1, 0.2, 0.3), vertices=verts)
+    >>> H = src.getH((0.1, 0.1, 0.1))
     >>> with np.printoptions(precision=3):
     ...     print(H)
     [18.889 18.889 19.546]
     """
 
-    _field_func = staticmethod(BHJM_triangle)
+    _field_func = staticmethod(_BHJM_triangle)
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 2,
         "vertices": 2,
@@ -115,18 +113,24 @@ class Triangle(BaseMagnet):
     # Properties
     @property
     def vertices(self):
-        """Object faces"""
+        """Triangle vertices in local object coordinates in units (m)."""
         return self._vertices
 
     @vertices.setter
     def vertices(self, val):
-        """Set face vertices (a,b,c), shape (3,3), meter."""
+        """Set triangle vertices.
+
+        Parameters
+        ----------
+        val : None | array-like, shape (3, 3)
+            Triangle vertices in local object coordinates in units (m).
+        """
         self._vertices = check_format_input_vector(
             val,
             dims=(2,),
             shape_m1=3,
             sig_name="Triangle.vertices",
-            sig_type="array_like (list, tuple, ndarray) of shape (3,3)",
+            sig_type="array-like (list, tuple, ndarray) of shape (3, 3)",
             allow_None=True,
         )
 
@@ -137,7 +141,7 @@ class Triangle(BaseMagnet):
 
     @property
     def barycenter(self):
-        """Object barycenter."""
+        """Object barycenter in units (m) in global coordinates."""
         return np.squeeze(self._barycenter)
 
     @property
@@ -149,7 +153,7 @@ class Triangle(BaseMagnet):
 
     # Methods
     def _get_centroid(self, squeeze=True):
-        """Centroid of object in units of m."""
+        """Centroid of object in units (m)."""
         if squeeze:
             return self.barycenter
         return self._barycenter

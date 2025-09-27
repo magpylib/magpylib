@@ -59,7 +59,8 @@ docs = [
   "pyvista",
   "magpylib-material-response",
   "plotly>=5.16,<6.0", # see https://github.com/executablebooks/myst-nb/issues/667
-  "kaleido==0.2.1", # ulterior versions don't ship chrome
+  "kaleido==0.2.1", # ulterior versions don't ship chrome,
+  "sphinxcontrib-bibtex>=2.6",
 ]
 test = [
   "pytest>=7.4",

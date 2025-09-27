@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from magpylib._src.fields.field_BH_current_sheet import BHJM_current_sheet
+from magpylib._src.fields.field_BH_current_sheet import _BHJM_current_sheet
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_Bfield
 
 
@@ -112,7 +112,7 @@ def test_current_sheet_Bfield():
     )
     current_densities = np.tile(np.array((1, 1, 0)).T, (n, 1))
 
-    B_field_current_sheet = BHJM_current_sheet(
+    B_field_current_sheet = _BHJM_current_sheet(
         "B",
         observers,
         vertices,
@@ -219,14 +219,14 @@ def test_current_sheet_Bfield():
 
     n = len(observers)
 
-    # coordinates = np.tile(np.array((1,3,1)).T, (n,1))
-    # current_densities = np.tile(np.array((0,1)).T, (n,1))
+    # coordinates = np.tile(np.array((1, 3, 1)).T, (n, 1))
+    # current_densities = np.tile(np.array((0, 1)).T, (n, 1))
     vertices = np.tile(
         np.expand_dims(np.array(((0, 0, 0), (1, 0, 0), (3, 1, 0))), axis=0), (n, 1, 1)
     )
     current_densities = np.tile(np.array((0, 1, 0)).T, (n, 1))
 
-    B_field_current_sheet = BHJM_current_sheet(
+    B_field_current_sheet = _BHJM_current_sheet(
         "B",
         observers,
         vertices,
@@ -354,8 +354,8 @@ def test_current_sheet_Bfield():
 
     n = len(observers)
 
-    # coordinates = np.tile(np.array((1,3,1)).T, (n,1))
-    # current_densities = np.tile(np.array((0,1)).T, (n,1))
+    # coordinates = np.tile(np.array((1, 3, 1)).T, (n, 1))
+    # current_densities = np.tile(np.array((0, 1)).T, (n, 1))
     vertices = np.tile(
         np.expand_dims(np.array(((2, 5, -10), (-7, -7, -3), (-1, 9, 8))), axis=0),
         (n, 1, 1),
@@ -364,7 +364,7 @@ def test_current_sheet_Bfield():
         (np.array((-197796, -222080, 235402)) / 47813).T, (n, 1)
     )
 
-    B_field_current_sheet = BHJM_current_sheet(
+    B_field_current_sheet = _BHJM_current_sheet(
         "B",
         observers,
         vertices,

@@ -3,6 +3,7 @@ import pytest
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibMissingInput
+from magpylib.func import cuboid_field
 
 # pylint: disable=unnecessary-lambda-assignment
 
@@ -13,12 +14,13 @@ def test_getB_interfaces1():
     src.move(np.linspace((0.1, 0.2, 0.3), (1, 2, 3), 10), start=-1)
     poso = [[(-1, -1, -1)] * 2] * 2
     sens = magpy.Sensor(pixel=poso)
-    B = magpy.getB(
-        "Cuboid",
-        (-1, -1, -1),
-        position=src.position,
-        polarization=(1, 2, 3),
-        dimension=(1, 2, 3),
+
+    B = cuboid_field(
+        "B",
+        observers=(-1, -1, -1),
+        positions=src.position,
+        polarizations=(1, 2, 3),
+        dimensions=(1, 2, 3),
     )
     B1 = np.tile(B, (2, 2, 1, 1))
     B1 = np.swapaxes(B1, 0, 2)
@@ -42,12 +44,13 @@ def test_getB_interfaces2():
     src.move(np.linspace((0.1, 0.2, 0.3), (1, 2, 3), 10), start=-1)
     poso = [[(-1, -1, -1)] * 2] * 2
     sens = magpy.Sensor(pixel=poso)
-    B = magpy.getB(
-        "Cuboid",
-        (-1, -1, -1),
-        position=src.position,
-        polarization=(1, 2, 3),
-        dimension=(1, 2, 3),
+
+    B = cuboid_field(
+        "B",
+        observers=(-1, -1, -1),
+        positions=src.position,
+        polarizations=(1, 2, 3),
+        dimensions=(1, 2, 3),
     )
 
     B2 = np.tile(B, (2, 2, 2, 1, 1))
@@ -66,12 +69,13 @@ def test_getB_interfaces3():
     src.move(np.linspace((0.1, 0.2, 0.3), (1, 2, 3), 10), start=-1)
     poso = [[(-1, -1, -1)] * 2] * 2
     sens = magpy.Sensor(pixel=poso)
-    B = magpy.getB(
-        "Cuboid",
-        (-1, -1, -1),
-        position=src.position,
-        polarization=(1, 2, 3),
-        dimension=(1, 2, 3),
+
+    B = cuboid_field(
+        "B",
+        observers=(-1, -1, -1),
+        positions=src.position,
+        polarizations=(1, 2, 3),
+        dimensions=(1, 2, 3),
     )
 
     B3 = np.tile(B, (2, 2, 2, 1, 1))
@@ -97,12 +101,12 @@ def test_getH_interfaces1():
     poso = [[(-1, -2, -3)] * 2] * 2
     sens = magpy.Sensor(pixel=poso)
 
-    H = magpy.getH(
-        "Cuboid",
-        (-1, -2, -3),
-        position=src.position,
-        polarization=mag,
-        dimension=dim,
+    H = cuboid_field(
+        "H",
+        observers=(-1, -2, -3),
+        positions=src.position,
+        polarizations=mag,
+        dimensions=dim,
     )
     H1 = np.tile(H, (2, 2, 1, 1))
     H1 = np.swapaxes(H1, 0, 2)
@@ -130,12 +134,19 @@ def test_getH_interfaces2():
     poso = [[(-1, -2, -3)] * 2] * 2
     sens = magpy.Sensor(pixel=poso)
 
-    H = magpy.getH(
-        "Cuboid",
-        (-1, -2, -3),
-        position=src.position,
-        polarization=mag,
-        dimension=dim,
+    # H = magpy.getH(
+    #     "Cuboid",
+    #     (-1, -2, -3),
+    #     position=src.position,
+    #     polarization=mag,
+    #     dimension=dim,
+    # )
+    H = cuboid_field(
+        "H",
+        observers=(-1, -2, -3),
+        positions=src.position,
+        polarizations=mag,
+        dimensions=dim,
     )
 
     H2 = np.tile(H, (2, 2, 2, 1, 1))
@@ -158,12 +169,12 @@ def test_getH_interfaces3():
     poso = [[(-1, -2, -3)] * 2] * 2
     sens = magpy.Sensor(pixel=poso)
 
-    H = magpy.getH(
-        "Cuboid",
-        (-1, -2, -3),
-        position=src.position,
-        polarization=mag,
-        dimension=dim,
+    H = cuboid_field(
+        "H",
+        observers=(-1, -2, -3),
+        positions=src.position,
+        polarizations=mag,
+        dimensions=dim,
     )
 
     H3 = np.tile(H, (2, 2, 2, 1, 1))
@@ -260,7 +271,7 @@ def test_getBH_bad_output_type():
     src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
     with pytest.raises(
         ValueError,
-        match=r"The `output` argument must be one of ('ndarray', 'dataframe')*.",
+        match=r"Input output must be one of \('ndarray', 'dataframe'\); instead received",
     ):
         src.getB((0, 0, 0), output="bad_output_type")
 
@@ -319,7 +330,7 @@ def test_getB_on_missing_dimensions(module, class_, missing_arg):
     """test_getB_on_missing_dimensions"""
     with pytest.raises(
         MagpylibMissingInput,
-        match=rf"Parameter `{missing_arg}` of .* must be set.",
+        match=rf"Input {missing_arg} of .* must be set.",
     ):
         getattr(getattr(magpy, module), class_)().getB([0, 0, 0])
 
@@ -366,7 +377,7 @@ def test_getB_on_missing_excitations(module, class_, missing_arg, kwargs):
     """test_getB_on_missing_excitations"""
     with pytest.raises(
         MagpylibMissingInput,
-        match=rf"Parameter `{missing_arg}` of .* must be set.",
+        match=rf"Input {missing_arg} of .* must be set.",
     ):
         getattr(getattr(magpy, module), class_)(**kwargs).getB([0, 0, 0])
 

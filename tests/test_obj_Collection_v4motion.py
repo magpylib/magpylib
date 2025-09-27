@@ -268,18 +268,18 @@ def test_Collection_setter():
     # graphical test: is the Collection moving/rotating as a whole ?
     # col0 = magpy.Collection()
     # for poz,roz in zip(
-    #     [(0,0,0), (0,0,5), (5,0,0), (5,0,5), (10,0,0), (10,0,5)],
-    #     [(0,0,0), (1,0,0), (0,1,0), (0,0,1), (1,2,3), (-2,-1,3)]
+    #     [(0, 0, 0), (0, 0, 5), (5, 0, 0), (5, 0, 5), (10, 0, 0), (10, 0, 5)],
+    #     [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 2, 3), (-2, -1, 3)]
     #     ):
     #     col = magpy.Collection()
     #     for i,color in enumerate(['r', 'orange', 'gold', 'green', 'cyan']):
     #         src = magpy.magnet.Cuboid(
-    #             polarization=(1,0,0),
-    #             dimension=(.5,.5,.5),
-    #             position=(1,0,0),
+    #             polarization=(1, 0, 0),
+    #             dimension=(.5, .5, .5),
+    #             position=(1, 0, 0),
     #             style_color=color
     #         )
-    #         src.rotate_from_angax(72*i, 'z', (0,0,0))
+    #         src.rotate_from_angax(72*i, 'z', (0, 0, 0))
     #         col = col + src
     #     base = magpy.Sensor()
     #     col.position = poz

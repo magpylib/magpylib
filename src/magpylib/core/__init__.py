@@ -1,6 +1,4 @@
-"""
-The core sub-package gives direct access to our field implementations.
-"""
+"""Core interface"""
 
 __all__ = [
     "current_circle_Hfield",

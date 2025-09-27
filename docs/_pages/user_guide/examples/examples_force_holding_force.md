@@ -44,7 +44,7 @@ cube = magpy.magnet.Cuboid(
     polarization=(0, 0, 1.33),
     meshing = 100
 )
-mirror_image = cube.copy(position=(0,0,1e-3))
+mirror_image = cube.copy(position=(0, 0, 1e-3))
 
 # Compute force
 F,_ = magpy.getFT(mirror_image, cube)

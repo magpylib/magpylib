@@ -2335,7 +2335,7 @@ def test_force_ANSYS_magnet_current_close():
     )
 
     for d, t in zip(datF, datT, strict=False):
-        i0 = d[0] * 1e-3  # ampere
+        i0 = d[0] * 1e-3  # A
         pos = np.array((d[3] * 1e-3, d[1], d[2])) * 1e-3
         f2 = np.array((d[4], d[5], d[6])) * 1e-6
         # f1 = np.array((d[7], d[8], d[9])) * 1e-6 # TODO check if necessary

@@ -6,7 +6,7 @@ import magpylib as magpy
 def test_scaling_loop():
     """
     The field of a current loop must satisfy
-    B(i0,d,x,y,z) = B(a*i0,a*d,a*x,a*y,a*z)
+    B(i0, d, x, y, z) = B(a*i0, a*d, a*x, a*y, a*z)
     """
     c1 = magpy.current.Circle(current=123, diameter=10)
     B1 = c1.getB([1, 2, 3])

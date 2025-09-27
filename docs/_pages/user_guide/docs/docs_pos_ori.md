@@ -16,7 +16,7 @@ The analytical magnetic field expressions found in the literature, implemented i
 :::
 ::::
 
-Here Magpylib helps. All Magpylib sources and observers lie in a global Cartesian coordinate system. Object position and orientation are defined by the attributes `position` and `orientation`, 😏. Objects can easily be moved around using the `move()` and `rotate()` methods. Eventually, the field is computed in the reference frame of the observers (e.g. Sensor objects). Positions are given in units of meter, and the default unit for orientation is °.
+Here Magpylib helps. All Magpylib sources and observers lie in a global Cartesian coordinate system. Object position and orientation are defined by the attributes `position` and `orientation`, 😏. Objects can easily be moved around using the `move()` and `rotate()` methods. Eventually, the field is computed in the reference frame of the observers (e.g. Sensor objects). Positions are given in units (m), and the default unit for orientation is °.
 
 --------------------------
 (docs-position-paths)=
@@ -30,7 +30,7 @@ Position and orientation of all Magpylib objects are defined by the two attribut
 :::{grid-item-card}
 :shadow: none
 :columns: 12 5 5 5
-**`position`** - a point $(x,y,z)$ in the global coordinates, or a set of such points $(\vec{P}_1, \vec{P}_2, ...)$. By default objects are created with `position=(0,0,0)`.
+**`position`** - a point $(x, y, z)$ in the global coordinates, or a set of such points $(\vec{P}_1, \vec{P}_2, ...)$. By default objects are created with `position=(0, 0, 0)`.
 :::
 :::{grid-item-card}
 :shadow: none
@@ -65,8 +65,8 @@ Magpylib offers two powerful methods for object manipulation:
 :::
 ::::
 
-- **Scalar input** is applied to the whole object path, starting with path index `start`. With the default `start="auto"` the index is set to `start=0` and the functionality is **moving objects around** (incl. their whole paths).
-- **Vector input** of length $n$ applies the $n$ individual operations to $n$ object path entries, starting with path index `start`. Padding applies when the input exceeds the existing path length. With the default `start="auto"` the index is set to `start=len(object path)` and the functionality is **appending the input**.
+- **Scalar input** is applied to the whole object path, starting with path index `start`. With the default `start='auto'` the index is set to `start=0` and the functionality is **moving objects around** (incl. their whole paths).
+- **Vector input** of length $n$ applies the $n$ individual operations to $n$ object path entries, starting with path index `start`. Padding applies when the input exceeds the existing path length. With the default `start='auto` the index is set to `start=len(object path)` and the functionality is **appending the input**.
 
 The practical application of this formalism is best demonstrated by the following program
 
@@ -96,7 +96,7 @@ print(sensor.position)  # the input with the existing path
 #   --> [[ 1.  1.  1.]  [ 3.  3. 13.]  [ 4.  4. 24.]]     # starting at index 1.
 ```
 
-Several extensions of the `rotate` method give a lot of flexibility with object rotation. They all feature the arguments `anchor` and `start` which work as described above.
+Several extensions of the `rotate()` method give a lot of flexibility with object rotation. They all feature the arguments `anchor` and `start` which work as described above.
 
 ::::{grid} 1
 :gutter: 2
@@ -105,47 +105,47 @@ Several extensions of the `rotate` method give a lot of flexibility with object 
 :columns: 12
 :shadow: none
 `rotate_from_angax(angle, axis, anchor=None, start="auto", degrees=True)`
-* `angle`: scalar or array with shape (n). Angle(s) of rotation.
+* `angle`: scalar or array with shape (n,). Angle(s) of rotation.
 * `axis`: array of shape (3,) or string. The direction of the rotation axis. String input can be 'x', 'y' or 'z' to denote respective directions.
-* `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
+* `degrees`: bool, default `True`. Interpret angle input in units (deg) if `True` or (rad) if `False`.
 :::
 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
 `rotate_from_rotvec(rotvec, anchor=None, start="auto", degrees=True)`
-* `rotvec` : array with shape (n,3) or (3,). The rotation vector direction is the rotation axis and the vector length is the rotation angle in units of deg.
-* `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
+* `rotvec` : array with shape (n, 3) or (3,). The rotation vector direction is the rotation axis and the vector length is the rotation angle in units (deg).
+* `degrees`: bool, default `True`. Interpret angle input in units (deg) if `True` or (rad) if `False`.
 :::
 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
 `rotate_from_euler(angle, seq, anchor=None, start="auto", degrees=True)`
-* `angle`: scalar or array with shape (n). Angle(s) of rotation in units of deg (by default).
+* `angle`: scalar or array with shape (n,). Angle(s) of rotation in units (deg) by default.
 * `seq` : string. Specifies sequence of axes for rotations. Up to 3 characters belonging to the set {'X', 'Y', 'Z'} for intrinsic rotations, or {'x', 'y', 'z'} for extrinsic rotations. Extrinsic and intrinsic rotations cannot be mixed in one function call.
-* `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
+* `degrees`: bool, default `True`. Interpret angle input in units (deg) if `True` or (rad) if `False`.
 :::
 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
 `rotate_from_quat(quat, anchor=None, start="auto")`
-* `quat` : array with shape (n,4) or (4,). Rotation input in quaternion form.
+* `quat` : array with shape (n, 4) or (4,). Rotation input in quaternion form.
 :::
 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
 `rotate_from_mrp(matrix, anchor=None, start="auto")`
-* `matrix` : array with shape (n,3,3) or (3,3). Rotation matrix. See scipy.spatial.transform.Rotation for details.
+* `matrix` : array with shape (n, 3, 3) or (3, 3). Rotation matrix. See scipy.spatial.transform.Rotation for details.
 :::
 
 :::{grid-item-card}
 :columns: 12
 :shadow: none
 `rotate_from_mrp(mrp, anchor=None, start="auto")`
-* `mrp` : array with shape (n,3) or (3,). Modified Rodrigues parameter input. See scipy Rotation package for details.
+* `mrp` : array with shape (n, 3) or (3,). Modified Rodrigues parameter input. See scipy Rotation package for details.
 :::
 
 ::::

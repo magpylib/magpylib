@@ -42,7 +42,7 @@ cube = magpy.magnet.Cuboid(
 
 # Sensor for observing the field
 sensor = magpy.Sensor(
-    position=np.linspace((-2,0,2), (2,0,2), 100),
+    position=np.linspace((-2, 0, 2), (2, 0, 2), 100),
 )
 
 # Display magnetic field and objects
@@ -71,10 +71,10 @@ p8 = (-1, 1, .5)
 # Create charged top and bottom faces of cube
 charge = magpy.Collection(style_legend_text='Charge')
 charge.add(
-    magpy.misc.Triangle(vertices=(p1,p3,p5), magnetization=(0,0,-1e4)),
-    magpy.misc.Triangle(vertices=(p1,p5,p7), magnetization=(0,0,-1e4)),
-    magpy.misc.Triangle(vertices=(p2,p4,p6), magnetization=(0,0,1e4)),
-    magpy.misc.Triangle(vertices=(p2,p6,p8), magnetization=(0,0,1e4)),
+    magpy.misc.Triangle(vertices=(p1, p3, p5), magnetization=(0, 0, -1e4)),
+    magpy.misc.Triangle(vertices=(p1, p5, p7), magnetization=(0, 0, -1e4)),
+    magpy.misc.Triangle(vertices=(p2, p4, p6), magnetization=(0, 0, 1e4)),
+    magpy.misc.Triangle(vertices=(p2, p6, p8), magnetization=(0, 0, 1e4)),
 )
 
 # Display objects and field

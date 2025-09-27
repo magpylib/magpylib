@@ -15,11 +15,10 @@ orphan: true
 (guide-graphics)=
 # Graphic output
 
----------------------------------
 (guide-graphics-show)=
 ## 3D View
 
-Once all Magpylib objects and their paths have been created, `show` creates a 3D plot of the geometric arrangement using the Matplotlib (command line default) and Plotly (notebook default) packages. `show` generates a new figure which is automatically displayed.
+Once all Magpylib objects and their paths have been created, `show()` creates a 3D plot of the geometric arrangement using the Matplotlib (command line default) and Plotly (notebook default) packages. `show()` generates a new figure which is automatically displayed.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -54,7 +53,7 @@ How objects are represented graphically (color, line thickness, etc.) is defined
 
 The graphic backend refers to the plotting library that is used for graphic output. A plotting canvas refers to the frame/window/canvas/axes object the graphic output is forwarded to.
 
-The graphic backend is set via the kwarg `backend` in the `show` function, which is demonstrated in the following example
+The graphic backend is set via the kwarg `backend` in the `show()` function, which is demonstrated in the following example
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -115,7 +114,7 @@ There is a high level of **feature parity**, however, not all graphic features a
 
 [2]: possible but not implemented at the moment.
 
-[3]: only `"scatter3d"`, and `"mesh3d"`. Gets "translated" to every other backend.
+[3]: only `'scatter3d'`, and `'mesh3d'`. Gets "translated" to every other backend.
 
 [4]: custom user defined trace constructors  allowed, which are specific to the backend.
 
@@ -125,13 +124,13 @@ There is a high level of **feature parity**, however, not all graphic features a
 
 [7]: Matplotlib does not support color gradient. Instead magnetization is shown through object slicing and coloring.
 
-`show` will also pass on all kwargs to the respective plotting backends. For example, in the [animation sample code](guide-graphic-animations) the kwarg `show_legend` is forwarded to the Plotly backend.
+`show()` will also pass on all kwargs to the respective plotting backends. For example, in the [animation sample code](guide-graphic-animations) the kwarg `show_legend` is forwarded to the Plotly backend.
 
 ---------------------------------
 (guide-graphics-canvas)=
 ## Plotting Canvas
 
-When calling `show`, a figure is automatically generated and displayed. It is also possible to place the `show` output in a given figure using the `canvas` argument. Consider the following Magpylib field computation,
+When calling `show()`, a figure is automatically generated and displayed. It is also possible to place the `show()` output in a given figure using the `canvas` argument. Consider the following Magpylib field computation,
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -143,7 +142,7 @@ sens = magpy.Sensor(position=np.linspace((0, 0, -0.1), (0, 0, 0.1), 100))
 B = loop.getB(sens)
 ```
 
-The following examples demonstrate how to place the Magpylib `show` output in figures created with the three supported graphic backends.
+The following examples demonstrate how to place the Magpylib `show()` output in figures created with the three supported graphic backends.
 
 +++
 
@@ -179,7 +178,7 @@ plt.show()
 ```
 
 ```{attention}
-When providing a canvas, no update to its layout is performed by Magpylib, unless explicitly specified by setting `canvas_update=True` in `show()`. By default `canvas_update="auto"` only updates the canvas if is not provided by the user. The example above outputs a 3D scene with the default Matplotlib settings and will not match the standard Magpylib settings.
+When providing a canvas, no update to its layout is performed by Magpylib, unless explicitly specified by setting `canvas_update=True` in `show()`. By default `canvas_update='auto'` only updates the canvas if is not provided by the user. The example above outputs a 3D scene with the default Matplotlib settings and will not match the standard Magpylib settings.
 ```
 
 +++
@@ -266,9 +265,9 @@ pl.show()
 (guide-graphic-animations)=
 ## Animation
 
-The Magpylib [object paths](docs-position-paths) visualized with `show` can be animated by setting the kwarg `animation=True`. This synergize specifically well with the Plotly backend.
+The Magpylib [object paths](docs-position-paths) visualized with `show()` can be animated by setting the kwarg `animation=True`. This synergize specifically well with the Plotly backend.
 
-The animations can be fine-tuned with the following kwargs of `show`:
+The animations can be fine-tuned with the following kwargs of `show()`:
 1. `animation_time` (default=3), must be a positive number that gives the animation time in seconds.
 2. `animation_slider` (default=`True`), is boolean and sets if a slider should be displayed.
 3. `animation_fps` (default=30), sets the maximal frames per second.
@@ -309,21 +308,21 @@ Even with some implemented fail safes, such as a maximum frame rate and frame co
 Coupled subplots
 :::
 
-It is often tedious to integrate the Magpylib `show` output into sub-plots as shown above, especially when dealing with animations and combinations of 2D and 3D plots.
+It is often tedious to integrate the Magpylib `show()` output into sub-plots as shown above, especially when dealing with animations and combinations of 2D and 3D plots.
 
 For this, Magpylib offers the possibility to show the sensor output along a path in addition to the 3D-output, and to place 2D and 3D outputs in subplots.
 
 ### With `show`
 
-All of this is achieved via the `show` function by passing input objects as dictionaries with the arguments.
+All of this is achieved via the `show()` function by passing input objects as dictionaries with the arguments.
 
 1. `objects`: list of Magpylib objects
 2. `col`: int which selects the subplot column. Default is `col=1`.
 3. `row`: int which selects the subplot row. Default is `row=1`.
 4. `output`: string which selects the type of output that should be displayed in this subplot. Options are
 
-    1. `"model3d"` is the default value and selects the 3D output.
-    2. `"Xa"` selects a 2D line-plot of a field component (combination) as seen by the sensor(s) along their path. The sensor(s) must be part of the `objects` input. Here "X" selects the field and must be one of "BHJM", and "a" selects the respective component combination and must be a subset of "xyz". For example, `output=Hx` displays the x-component of the H-field, or `output=Bxz` displays `sqrt(|Bx|² + |Bz|²)`. By default, source outputs are summed up (`sumup=True`) and sensor pixels, are aggregated by mean (`pixel_agg="mean"`).
+    1. `'model3d'` is the default value and selects the 3D output.
+    2. `'Xa'` selects a 2D line-plot of a field component (combination) as seen by the sensor(s) along their path. The sensor(s) must be part of the `objects` input. Here "X" selects the field and must be one of "BHJM", and "a" selects the respective component combination and must be a subset of "xyz". For example, `output=Hx` displays the x-component of the H-field, or `output=Bxz` displays `sqrt(|Bx|² + |Bz|²)`. By default, source outputs are summed up (`sumup=True`) and sensor pixels, are aggregated by mean (`pixel_agg='mean'`).
 
 The following code demonstrates these features.
 
@@ -382,7 +381,7 @@ magpy.show(
 (guide-graphics-show_context)=
 ### With `show_context`
 
-To make the subplot syntax more convenient we introduced the `show_context` native Python context manager. It allows to defer calls to the `show` function while passing additional arguments. This is necessary for Magpylib to know how many rows and columns are requested by the user, which single `show` calls do not keep track of. All kwargs, e.g. `backend` are handed directly to the context manager.
+To make the subplot syntax more convenient we introduced the `show_context` native Python context manager. It allows to defer calls to the `show()` function while passing additional arguments. This is necessary for Magpylib to know how many rows and columns are requested by the user, which single `show()` calls do not keep track of. All kwargs, e.g. `backend` are handed directly to the context manager.
 
 The above example becomes:
 
@@ -456,10 +455,10 @@ with magpy.show_context(loop, sens, animation=True) as sc:
 
 ### Canvas Length Units
 
-When displaying very small Magpylib objects, the axes scaling in meters might be inadequate and you may want to use other units that fit the system dimensions more nicely. The example below shows how to display an object (in this case the same) with different length units and zoom levels.
+When displaying very small Magpylib objects, the axes scaling in units (m) might be inadequate and you may want to use other units that fit the system dimensions more nicely. The example below shows how to display an object (in this case the same) with different length units and zoom levels.
 
 ```{tip}
-Setting `units_length="auto"` will infer the most suitable units based on the maximum range of the system.
+Setting `units_length='auto'` will infer the most suitable units based on the maximum range of the system.
 ```
 
 ```{code-cell} ipython3

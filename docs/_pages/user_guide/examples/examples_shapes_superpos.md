@@ -81,7 +81,7 @@ with magpy.show_context(magnet, sensor, backend="plotly", style_legend_show=Fals
 
 When two objects with opposing magnetization vectors of similar amplitude overlap, they will just cancel in the overlap region. This enables geometric cut-out operations. In the following example we construct an exact hollow cylinder solution from two concentric cylinder shapes with opposite magnetizations and compare the result to the `CylinderSegment` class solution.
 
-Here the `getM` and `getJ` functions come in handy. They allow us to see the magnetization distribution that is the result of the superposition.
+Here the `getM()` and `getJ()` functions come in handy. They allow us to see the magnetization distribution that is the result of the superposition.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -115,16 +115,16 @@ ax1.set(
     xlabel="x-position",
     ylabel="y-position",
     aspect=1,
-    xlim=(-4,4),
-    ylim=(-4,4),
+    xlim=(-4, 4),
+    ylim=(-4, 4),
 )
 ax2.set(
     title="|M| in xz-plane",
     xlabel="x-position",
     ylabel="z-position",
     aspect=1,
-    xlim=(-4,4),
-    ylim=(-4,4),
+    xlim=(-4, 4),
+    ylim=(-4, 4),
 )
 
 plt.tight_layout()
@@ -148,7 +148,7 @@ print("CylinderSegment result:", ring1.getB((.01, .02, .03)))
 print("        Cut-out result:", ring0.getB((.01, .02, .03)))
 ```
 
-Note that it is faster to compute the `Cylinder` field two times than computing the `CylinderSegment` field one time. This is why Magpylib automatically falls back to the `Cylinder` solution whenever `CylinderSegment` is called with 360 deg section angles.
+Note that it is faster to compute the `Cylinder` field two times than computing the `CylinderSegment` field one time. This is why Magpylib automatically falls back to the `Cylinder` solution whenever `CylinderSegment` is called with 360 (deg) section angles.
 
 Unfortunately, with respect to 3D-models, cut-out operations cannot be displayed graphically at this point in time, but {ref}`examples-own-3d-models` offer custom solutions.
 
@@ -156,7 +156,7 @@ Unfortunately, with respect to 3D-models, cut-out operations cannot be displayed
 
 ## Combination
 
-The following example combines union and cut-out to create a complex magnet shape which is then displayed by combining a streamplot with a contourplot in matplotlib.
+The following example combines union and cut-out to create a complex magnet shape which is then displayed by combining a streamplot with a contourplot in Matplotlib.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -170,7 +170,7 @@ pt1 = magpy.magnet.Cuboid(
     polarization=(1, 0, 0), dimension=(4, 8, 2), position=(-2, 0, 0)
 )
 pt2 = magpy.magnet.CylinderSegment(
-    polarization=(1, 0, 0), dimension=(0, 4, 2,-90,90)
+    polarization=(1, 0, 0), dimension=(0, 4, 2, -90, 90)
 )
 pt3 = magpy.magnet.Cuboid(
     polarization=(-1/np.sqrt(2), 1/np.sqrt(2), 0), dimension=(4, 4, 2),

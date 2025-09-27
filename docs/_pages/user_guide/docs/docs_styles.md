@@ -15,13 +15,13 @@ orphan: true
 (guide-graphic-styles)=
 # Graphic Styles
 
-The graphic styles define how Magpylib objects are displayed visually when calling `show`. They can be fine-tuned and individualized to suit requirements and taste.
+The graphic styles define how Magpylib objects are displayed visually when calling `show()`. They can be fine-tuned and individualized to suit requirements and taste.
 
 Graphic styles can be defined in various ways:
 
 1. There is a **default style** setting which is applied when no other inputs are made.
 2. An **individual style** can be defined at object level. If the object is a [Collection](guide-docs-classes-collections) it will apply its color to all children.
-3. Finally, styles that are defined in the `show` function call will override all other settings. This is referred to as **local style override**.
+3. Finally, styles that are defined in the `show()` function call will override all other settings. This is referred to as **local style override**.
 
 The following sections describe these styling options and how to customize them.
 
@@ -142,13 +142,13 @@ magpy.defaults.display.style.magnet.update(
 --------------------------
 ## Individual Style
 
-Any Magpylib object can have its own individual style that will take precedence over the default values when `show` is called. When setting individual styles, the object family specifier such as `magnet` or `current` can be omitted.
+Any Magpylib object can have its own individual style that will take precedence over the default values when `show()` is called. When setting individual styles, the object family specifier such as `magnet` or `current` can be omitted.
 
 ```{note}
-Users should be aware that the individual object style is organized in classes that take much longer to initialize than bare Magpylib objects, i.e. objects without individual style. This can lead to a computational bottleneck when setting individual styles of many Magpylib objects. For this reason Magpylib automatically defers style initialization until it is needed the first time, e.g. when calling the `show` function, so that object creation time is not affected. However, this works only if style properties are set at initialization (e.g.: `magpy.magnet.Cuboid(..., style_label="MyCuboid")`). While this effect may not be noticeable for a small number of objects, it is best to avoid setting styles until it is plotting time.
+Users should be aware that the individual object style is organized in classes that take much longer to initialize than bare Magpylib objects, i.e. objects without individual style. This can lead to a computational bottleneck when setting individual styles of many Magpylib objects. For this reason Magpylib automatically defers style initialization until it is needed the first time, e.g. when calling the `show()` function, so that object creation time is not affected. However, this works only if style properties are set at initialization (e.g.: `magpy.magnet.Cuboid(..., style_label="MyCuboid")`). While this effect may not be noticeable for a small number of objects, it is best to avoid setting styles until it is plotting time.
 ```
 
-In the following example `cube` has no individual style, so the default style is used. `cylinder` has an individual style set for `magnetization` which is a tricolor scheme that will display the object color in the middle. The individual style is set at object initialization (good practice), and it will be applied only when `show` is called at the end of the example. Finally, `sphere` is also given an individual style for `magnetization` that displays the latter using a 2-color scheme. In this case, however, the individual style is applied after object initialization (bad practice), which results in style initialization before it is needed.
+In the following example `cube` has no individual style, so the default style is used. `cylinder` has an individual style set for `magnetization` which is a tricolor scheme that will display the object color in the middle. The individual style is set at object initialization (good practice), and it will be applied only when `show()` is called at the end of the example. Finally, `sphere` is also given an individual style for `magnetization` that displays the latter using a 2-color scheme. In this case, however, the individual style is applied after object initialization (bad practice), which results in style initialization before it is needed.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -192,13 +192,13 @@ import magpylib as magpy
 
 # Define 3 magnets
 cube = magpy.magnet.Cuboid(
-    polarization=(1,0,0), dimension=(1,1,1)
+    polarization=(1, 0, 0), dimension=(1, 1, 1)
 )
 cylinder = magpy.magnet.Cylinder(
-    polarization=(0,1,0), dimension=(1,1), position=(2,0,0)
+    polarization=(0, 1, 0), dimension=(1, 1), position=(2, 0, 0)
 )
 sphere = magpy.magnet.Sphere(
-    polarization=(0,1,1), diameter=1, position=(4,0,0)
+    polarization=(0, 1, 1), diameter=1, position=(4, 0, 0)
 )
 
 # Create collection from 2 magnets
@@ -215,12 +215,12 @@ coll.set_children_styles(magnetization_color_south="blue")
 magpy.show(coll, sphere, backend="plotly")
 ```
 
-The child-styles are individual style properties of the collection object and are not set as individual styles on each child-object. This means that when displayed individually with `show`, the above child-objects will have Magpylib default style.
+The child-styles are individual style properties of the collection object and are not set as individual styles on each child-object. This means that when displayed individually with `show()`, the above child-objects will have Magpylib default style.
 
 --------------------------
 ## Local Style Override
 
-Finally, it is possible to hand style input to the `show` function directly and locally override all style properties for this specific `show` output. Default or individual style attributes will not be modified. Such inputs must start with the `style` prefix and the object family specifier must be omitted. Naturally underscore magic is supported.
+Finally, it is possible to hand style input to the `show()` function directly and locally override all style properties for this specific `show()` output. Default or individual style attributes will not be modified. Such inputs must start with the `style` prefix and the object family specifier must be omitted. Naturally underscore magic is supported.
 
 In the following example the default `style.magnetization.show=True` is overridden locally, so that object colors become visible instead of magnetization colors in the Plotly backend.
 
@@ -253,7 +253,7 @@ magpy.defaults.display.style.as_dict(flatten=True, separator=".")
 (examples-own-3d-models)=
 ## Custom 3D Models
 
-Each Magpylib object has a default 3D representation that is displayed with `show`. It is possible to disable the default model and to provide Magpylib with a custom model.
+Each Magpylib object has a default 3D representation that is displayed with `show()`. It is possible to disable the default model and to provide Magpylib with a custom model.
 
 There are several reasons why this can be of interest. For example,  the integration of a [custom source](guide-docs-classes-custom-source) object that has its own geometry, to display a sensor in the form of a realistic package provided in CAD form, representation of a [Collection](guide-docs-classes-collections) as a parts holder, integration of environmental parts to the Magpylib 3D plotting scene, or simply highlighting an object when colors do not suffice.
 
@@ -266,13 +266,13 @@ To enable visualization of custom objects with different graphic backends Magpyl
 A trace-dictionary has the following keys:
 
 1. `'backend'`: `'generic'`, `'matplotlib'` or `'plotly'`
-2. `'constructor'`: name of the plotting constructor from the respective backend, e.g. plotly `'Mesh3d'` or matplotlib `'plot_surface'`
+2. `'constructor'`: name of the plotting constructor from the respective backend, e.g. plotly `'Mesh3d'` or Matplotlib `'plot_surface'`
 3. `'args'`: default `None`, positional arguments handed to constructor
 4. `'kwargs'`: default `None`, keyword arguments handed to constructor
 5. `'coordsargs'`: tells Magpylib which input corresponds to which coordinate direction, so that geometric representation becomes possible. By default `{'x': 'x', 'y': 'y', 'z': 'z'}` for the `'generic'` backend and Plotly backend,  and `{'x': 'args[0]', 'y': 'args[1]', 'z': 'args[2]'}` for the Matplotlib backend.
 6. `'show'`: default `True`, toggle if this trace should be displayed
 7. `'scale'`: default 1, object geometric scaling factor
-8. `'updatefunc'`: default `None`, updates the trace parameters when `show` is called. Used to generate dynamic traces.
+8. `'updatefunc'`: default `None`, updates the trace parameters when `show()` is called. Used to generate dynamic traces.
 
 The following example shows how a trace is constructed using the generic backend with the `Mesh3d` constructor. We create a `Sensor` object and replace its default 3d model by a tetrahedron.
 
@@ -558,7 +558,7 @@ magnet = magpy.magnet.Cylinder(polarization=(0, 0, 1), dimension=(0.015, 0.02))
 sensor.position = np.linspace((-0.015, 0, 0.008), (-0.015, 0, -0.004), 21)
 sensor.rotate_from_angax(np.linspace(0, 180, 21), "z", anchor=0, start=0)
 
-# Display with matplotlib and plotly backends
+# Display with Matplotlib and plotly backends
 args = (sensor, magnet)
 kwargs = dict(style_path_frames=5)
 magpy.show(args, **kwargs, backend="matplotlib")
@@ -649,10 +649,9 @@ xy_grid = np.mgrid[-2:2:15j, -2:2:15j, 0:0:1j].T[0]
 # Define pixel field style
 pixel_style = {
     "source" : "B",
-    "symbol"       : "arrow3d",
-    "sizemode"     : "uniform",
-    "shownull"     : True,
-    "colormap"   : "Magma"
+    "symbol" : "arrow3d",
+    "shownull" : True,
+    "colormap" : "Magma"
 }
 
 # Create sensor with pixel array and applied style

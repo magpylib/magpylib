@@ -81,9 +81,10 @@ class RegisteredBackend:
                     else f"{supported[0]!r}"
                 )
                 warnings.warn(
-                    f"The {backend!r} backend does not support {name!r}, "
-                    f"you need to use {supported_str} instead."
-                    f"\nFalling back to: {params}",
+                    "Unsupported feature for selected backend: "
+                    f"the {backend} backend does not support {name!r}. "
+                    f"Use {supported_str} instead. "
+                    f"Falling back to: {params}",
                     stacklevel=2,
                 )
                 kwargs.update(params)
@@ -187,7 +188,7 @@ def _show(
 ):
     """Display objects and paths graphically.
 
-    See `show` function for docstring details.
+    See `show()` function for docstring details.
     """
 
     # process input objs
@@ -208,7 +209,7 @@ def _show(
         dims=(2,),
         shape_m1=3,
         sig_name="markers",
-        sig_type="array_like of shape (n,3)",
+        sig_type="array-like of shape (n, 3)",
         allow_None=True,
     )
 
@@ -256,55 +257,47 @@ def show(
 
     Parameters
     ----------
-    objects : Source or Sensor or Collection
-        One or multiple Magpylib objects to be displayed (given as positional
-        arguments).
-    backend : str, optional
-        Plotting backend. can be ``'auto'``, ``'matplotlib'``, ``'plotly'``,
-        or ``'pyvista'``. The default is the value of
-        ``magpylib.defaults.display.backend`` (installation default ``'auto'``).
-        With ``'auto'`` the backend becomes ``'plotly'`` inside a notebook when
-        Plotly is installed, otherwise ``'matplotlib'``. If ``canvas`` is provided,
-        its type determines the backend.
-    canvas : None or matplotlib.Figure or plotly.Figure or pyvista.Plotter, optional
-        Existing canvas to draw on. If omitted a new canvas is created and
-        displayed. Default is ``None``.
-    animation : bool or float, optional
-        If ``True`` (and at least one object has a path) the path is animated.
+    *objects : Source | Sensor | Collection
+        One or multiple Magpylib objects to be displayed.
+    backend : {'auto', 'matplotlib', 'plotly', 'pyvista'}, default 'auto'
+        With ``'auto'`` the backend becomes ``'plotly'`` inside
+        a notebook when Plotly is installed, otherwise ``'matplotlib'``. If
+        ``canvas`` is provided, its type determines the backend.
+    canvas : None | matplotlib.Figure | plotly.Figure | pyvista.Plotter, default None
+        Existing canvas to draw on. If ``None``, a new canvas is created and
+        displayed.
+    animation : bool | float, default False
+        If ``True`` and at least one object has a path, the path is animated.
         A positive float sets the total animation duration in seconds (Plotly only).
-        Default is ``False``.
-    zoom : float, optional
-        3D plot zoom level. ``0`` means tight bounds. Default is ``0``.
-    markers : array-like, optional
-        Global position markers, shape ``(n, 3)``. Shown as points. Default is ``None``.
-    return_fig : bool, optional
-        If ``True`` return the underlying figure object (Figure / FigureWidget / Plotter).
-        Default is ``False``.
-    canvas_update : str or bool, optional
-        Layout update behaviour when using a provided canvas. Can be ``'auto'`` (default),
-        ``True`` or ``False``. With ``'auto'`` applies internal layout only for newly
-        created canvases. ``True`` forces update, ``False`` suppresses it.
-    row : int or None, optional
-        Subplot row index. Default is ``None``.
-    col : int or None, optional
-        Subplot column index. Default is ``None``.
-    output : str or tuple of str, optional
-        Plot output type. ``'model3d'`` (default) shows 3D geometry. Field plots are defined via
+    zoom : float, default 0.0
+        3D plot zoom level. 0 means tight bounds.
+    markers : array-like, shape (n, 3) | None, default None
+        Global position markers shown as points.
+    return_fig : bool, default False
+        If ``True``, return the underlying figure object (Figure / FigureWidget / Plotter).
+    canvas_update : str | bool, default 'auto'
+        Layout update behaviour when using a provided canvas. With ``'auto'``
+        applies internal layout only for newly created canvases. ``True`` forces
+        update, ``False`` suppresses it.
+    row : int | None, default None
+        Subplot row index.
+    col : int | None, default None
+        Subplot column index.
+    output : str | tuple[str, ...], default 'model3d'
+        Plot output type. ``'model3d'`` shows 3D geometry. Field plots are defined via
         component strings like ``'Bx'``, ``'Bxy'``, ``'Hyz'``. Multiple axes in a string
-        imply vector norm combination (e.g. ``'Bxy'`` => ``sqrt(Bx**2 + By**2)``).
-    sumup : bool, optional
-        Sum field contributions of sources when ``output != 'model3d'``. Default is ``True``.
-    pixel_agg : str, optional
-        numpy reducer applied across sensor pixels for non ``'model3d'`` outputs.
-        Default is ``'mean'``. Other options are ``'min'``, ``'max'``, ``'std'``.
-
-    style : dict or None, optional
+        imply vector norm combination (e.g., ``'Bxy'`` => ``sqrt(Bx**2 + By**2)``).
+    sumup : bool, default True
+        Sum field contributions of sources.
+    pixel_agg : str, default 'mean'
+        NumPy reducer applied across sensor pixels (e.g., ``'min'``, ``'max'``, ``'std'``).
+    style : dict | None, default None
         Global style overrides, e.g. ``{'color': 'red'}`` or via underscore magic
-        (``style_color='red'``). Applied to matching objects. Default is ``None``.
+        (``style_color='red'``). Applied to matching objects.
 
     Returns
     -------
-    fig : None or matplotlib.Figure or plotly.Figure or pyvista.Plotter
+    None | matplotlib.Figure | plotly.Figure | pyvista.Plotter
         The created/updated figure object if ``return_fig=True``; otherwise ``None``.
 
     Examples
@@ -313,13 +306,13 @@ def show(
     Display multiple objects, object paths, markers in 3D using Matplotlib or Plotly:
 
     >>> import magpylib as magpy
-    >>> src = magpy.magnet.Sphere(polarization=(0,0,1), diameter=1)
-    >>> src.move([(0.1*x,0,0) for x in range(50)])
+    >>> src = magpy.magnet.Sphere(polarization=(0, 0, 1), diameter=1)
+    >>> src.move([(0.1*x, 0, 0) for x in range(50)])
     Sphere...
-    >>> src.rotate_from_angax(angle=[*range(0,400,10)], axis='z', anchor=0, start=11)
+    >>> src.rotate_from_angax(angle=[*range(0, 400, 10)], axis='z', anchor=0, start=11)
     Sphere...
-    >>> ts = [-.4,0,.4]
-    >>> sens = magpy.Sensor(position=(0,0,2), pixel=[(x,y,0) for x in ts for y in ts])
+    >>> ts = [-.4, 0, .4]
+    >>> sens = magpy.Sensor(position=(0, 0, 2), pixel=[(x, y, 0) for x in ts for y in ts])
     >>> magpy.show(src, sens) # doctest: +SKIP
     >>> magpy.show(src, sens, backend='plotly') # doctest: +SKIP
     >>> # graphic output
@@ -329,8 +322,8 @@ def show(
     >>> import matplotlib.pyplot as plt
     >>> import magpylib as magpy
     >>> my_axis = plt.axes(projection='3d')
-    >>> magnet = magpy.magnet.Cuboid(polarization=(1,1,1), dimension=(1,2,3))
-    >>> sens = magpy.Sensor(position=(0,0,3))
+    >>> magnet = magpy.magnet.Cuboid(polarization=(1, 1, 1), dimension=(1, 2, 3))
+    >>> sens = magpy.Sensor(position=(0, 0, 3))
     >>> magpy.show(magnet, sens, canvas=my_axis, zoom=1)
     >>> plt.show() # doctest: +SKIP
     >>> # graphic output
@@ -339,11 +332,11 @@ def show(
     or as global style arguments in display.
 
     >>> import magpylib as magpy
-    >>> src1 = magpy.magnet.Sphere(position=[(0,0,0), (0,0,3)], diameter=1, polarization=(1,1,1))
+    >>> src1 = magpy.magnet.Sphere(position=[(0, 0, 0), (0, 0, 3)], diameter=1, polarization=(1, 1, 1))
     >>> src2 = magpy.magnet.Sphere(
-    ...     position=[(1,0,0), (1,0,3)],
+    ...     position=[(1, 0, 0), (1, 0, 3)],
     ...     diameter=1,
-    ...     polarization=(1,1,1),
+    ...     polarization=(1, 1, 1),
     ...     style_path_show=False
     ... )
     >>> magpy.defaults.display.style.magnet.magnetization.size = 2
@@ -415,11 +408,83 @@ def show_context(
     style=_DefaultValue,
     **kwargs,
 ):
-    """Context manager to temporarily set display settings in the `with` statement context.
+    """Context manager for grouping multiple ``show()`` calls with shared settings.
 
-    You need to invoke as ``show_context(pattern1=value1, pattern2=value2)``.
+    Use this to apply common display options across several successive ``show()``
+    calls and have them rendered together on a single canvas and/or subplot
+    layout. All supplied options are remembered during the context and applied
+    to the final combined render when the context exits.
 
-    See the `magpylib.show` docstrings for the parameter definitions.
+    Parameters
+    ----------
+    objects : Source | Sensor | Collection
+        One or more Magpylib objects to register up-front for display.
+    backend : str, default magpylib.defaults.display.backend
+        Plotting backend: ``'auto'``, ``'matplotlib'``, ``'plotly'``, or
+        ``'pyvista'``.
+    canvas : None | matplotlib.Figure | plotly.Figure | pyvista.Plotter, default None
+        Existing canvas to draw on. If ``None``, a new canvas is created.
+    animation : bool | float, default False
+        If ``True`` (and at least one object has a path) the path is animated.
+        A positive float sets total animation duration in seconds (Plotly only).
+    zoom : float, default 0.0
+        3D plot zoom level 0.0 means tight bounds.
+    markers : array-like, shape (n, 3) | None, default None
+        Global position markers shown as points.
+    return_fig : bool, default False
+        If ``True``, return the underlying figure from the final render.
+    canvas_update : str | bool, default 'auto'
+        Layout update behaviour when using a provided canvas: ``'auto'``,
+        ``True``, or ``False``.
+    row : int | None, default None
+        Subplot row index for all enclosed ``show()`` calls that omit ``row``.
+    col : int | None, default None
+        Subplot column index for all enclosed ``show()`` calls that omit ``col``.
+    output : str | tuple[str, ...], default 'model3d'
+        Plot output type (e.g., ``'model3d'``, ``'Bx'``, ``'Bxy'``, ``'Hyz'``).
+    sumup : bool, default True
+        Sum source contributions when ``output != 'model3d'``.
+    pixel_agg : str, default 'mean'
+        NumPy reducer applied across sensor pixels for non-``'model3d'`` outputs
+        (e.g., ``'min'``, ``'max'``, ``'std'``).
+    style : dict | None, default None
+        Global style overrides (e.g., ``{'color': 'red'}``) or via underscore
+        magic (e.g., ``style_color='red'``).
+    **kwargs
+        Additional backend, figure (``fig_*``), and show (``show_*``) options.
+
+    Yields
+    ------
+    DisplayContext
+        The active display context. After the ``with`` block, the combined
+        render result is available as ``ctx.show_return_value``.
+
+    Returns
+    -------
+    None
+        The context manager does not return a value.
+
+    Notes
+    -----
+    - All ``show()`` calls inside the context inherit unspecified options from
+      the context manager arguments.
+    - Objects passed to the context are combined with objects passed to each
+      inner ``show()`` call.
+    - On exit, a single ``show()`` is executed with the aggregated objects and
+      options.
+
+    Examples
+    --------
+    Create a 1x3 Plotly layout and render 3 outputs in one animation:
+
+    >>> import magpylib as magpy
+    >>> import plotly.graph_objects as go
+    >>> fig = go.Figure()
+    >>> with magpy.show_context(src1, src2, sensor, canvas=fig, backend='plotly', animation=True) as ctx:
+    ...     magpy.show(col=1, output='model3d')
+    ...     magpy.show(col=2, output='Bxy', sumup=True)
+    ...     magpy.show(col=3, output='Bz', sumup=False)
+    >>> fig  # doctest: +SKIP
     """
     # pylint: disable=protected-access
     kwargs.update(

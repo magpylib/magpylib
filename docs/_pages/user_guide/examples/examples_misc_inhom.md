@@ -42,7 +42,7 @@ tool1 = magpy.magnet.Cuboid(
     polarization=(1, 0, 0),
     position=(9, 0, 0)
 ).rotate_from_angax(50, 'z', anchor=0)
-tool2 = tool1.copy(polarization=(-1,0,0)).rotate_from_angax(-100, 'z', 0)
+tool2 = tool1.copy(polarization=(-1, 0, 0)).rotate_from_angax(-100, 'z', 0)
 tool3 = tool1.copy().rotate_from_angax(180, 'z', 0)
 tool4 = tool2.copy().rotate_from_angax(180, 'z', 0)
 tool = magpy.Collection(tool1, tool2, tool3, tool4)
@@ -73,7 +73,7 @@ ax2.streamplot(X, Y, Bx, By,
 )
 
 # Outline magnet boundary
-ts = np.linspace(0,2*np.pi,200)
+ts = np.linspace(0, 2*np.pi, 200)
 ax2.plot(2*np.sin(ts), 2*np.cos(ts), color='k', lw=2)
 ax2.plot(5*np.sin(ts), 5*np.cos(ts), color='k', lw=2)
 
@@ -102,7 +102,7 @@ ax1 = fig.add_subplot(121, projection='3d')
 ax2 = fig.add_subplot(122)
 
 # Show Cylinder cells
-mesh = mesh_Cylinder(cyl,30)
+mesh = mesh_Cylinder(cyl, 30)
 magpy.show(*mesh, canvas=ax1, style_magnetization_show=False)
 
 # Apply polarization
@@ -121,7 +121,7 @@ ax2.contourf(X, Y, Jangle, cmap="rainbow", levels=30)
 ax2.streamplot(X, Y, Jx, Jy, color='k')
 
 # Outline magnet boundary
-ts = np.linspace(0,2*np.pi,200)
+ts = np.linspace(0, 2*np.pi, 200)
 ax2.plot(2*np.sin(ts), 2*np.cos(ts), color='k', lw=2)
 ax2.plot(5*np.sin(ts), 5*np.cos(ts), color='k', lw=2)
 

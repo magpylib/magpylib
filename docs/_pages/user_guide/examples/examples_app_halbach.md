@@ -37,9 +37,9 @@ halbach = magpy.Collection()
 
 for a in angles:
     cube = magpy.magnet.Cuboid(
-        dimension=(1,1,1),
-        polarization=(1,0,0),
-        position=(2.3,0,0)
+        dimension=(1, 1, 1),
+        polarization=(1, 0, 0),
+        position=(2.3, 0, 0)
     )
     cube.rotate_from_angax(a, 'z', anchor=0)
     cube.rotate_from_angax(a, 'z')

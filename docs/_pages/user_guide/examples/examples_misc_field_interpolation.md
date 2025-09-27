@@ -38,28 +38,24 @@ def interpolation(observer, data, method="linear", bounds_error=False, fill_valu
 
     Parameters
     ----------
-    observer: ndarray, shape (n,3)
-        Array of n position vectors (x,y,z).
-
-    data: ndarray, shape (n,3)
-        Array of corresponding n interpolation data vectors.
-
-    method : str, optional
-        The method of interpolation to perform. Supported are "linear" and
-        "nearest". Default is "linear".
-
-    bounds_error : bool, optional
-        If True, when interpolated values are requested outside of the
-        domain of the input data, a ValueError is raised. If False,
-        then `fill_value` is returned.
-
-    fill_value : number, optional
+    observer : ndarray, shape (o, 3)
+        Array of o position vectors (x, y, z).
+    data : ndarray, shape (o, 3)
+        Array of corresponding o interpolation data vectors.
+    method : {'linear', 'nearest'}, default 'linear'
+        The method of interpolation to perform.
+    bounds_error : bool, default True
+        If ``True``, when interpolated values are requested outside of the
+        domain of the input data, a ValueError is raised. If ``False``,
+        then ``fill_value`` is returned.
+    fill_value : float, default np.nan
         Value returned when points outside the interpolation domain are
         sampled.
 
     Returns
     -------
-        callable: interpolating function for field values
+    callable
+        Interpolating function for field values.
     """
 
     # Condition input
@@ -90,9 +86,9 @@ In the second step we create a custom source with an interpolated field `field_f
 
 ```{code-cell} ipython3
 # Create data for interpolation
-cube = magpy.magnet.Cuboid(polarization=(0,0,1), dimension=(.02,.02,.02))
+cube = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(.02, .02, .02))
 ts = np.linspace(-.07, .07, 21)
-grid = np.array([(x,y,z) for x in ts for y in ts for z in ts])
+grid = np.array([(x, y, z) for x in ts for y in ts for z in ts])
 data = cube.getB(grid)
 
 # Create custom source with interpolation field
@@ -130,11 +126,11 @@ import matplotlib.pyplot as plt
 
 # Modify orientation of cube and custom
 for src in [cube, custom]:
-    src.rotate_from_angax(angle=45, axis=(1,1,1))
+    src.rotate_from_angax(angle=45, axis=(1, 1, 1))
 
 # Add a sensor for testing
-sensor = magpy.Sensor(position=(-.05,0,0))
-angs = np.linspace(3,150,49)
+sensor = magpy.Sensor(position=(-.05, 0, 0))
+angs = np.linspace(3, 150, 49)
 sensor.rotate_from_angax(angle=angs, axis="y", anchor=0)
 
 # Display system graphically

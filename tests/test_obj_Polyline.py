@@ -1,8 +1,6 @@
 import numpy as np
-import pytest
 
 import magpylib as magpy
-from magpylib._src.exceptions import MagpylibDeprecationWarning
 
 
 def test_Polyline_basic1():
@@ -120,16 +118,6 @@ def test_discontinous_line():
     B2 = line_12.getB((0, 0, 0))
 
     np.testing.assert_allclose(B1, B2)
-
-
-def test_old_Line_deprecation_warning():
-    """test old class deprecation warning"""
-    with pytest.warns(MagpylibDeprecationWarning):
-        old_class = magpy.current.Line()
-
-    new_class = magpy.current.Polyline()
-    assert isinstance(old_class, magpy.current.Polyline)
-    assert isinstance(new_class, magpy.current.Polyline)
 
 
 def test_Polyline_centroid():

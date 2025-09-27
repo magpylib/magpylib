@@ -1,4 +1,4 @@
-"""BaseGeo class code"""
+"""Base class for all display representation code"""
 
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-branches
@@ -23,7 +23,7 @@ UNITS = {
 
 
 class BaseDisplayRepr:
-    """Provides the show and repr methods for all objects"""
+    """Provide display (``show()``) and textual representation (``__repr__``) helpers."""
 
     show = show
     get_trace = make_DefaultTrace
@@ -37,12 +37,17 @@ class BaseDisplayRepr:
         )
 
     def _get_description(self, exclude=None):
-        """Returns list of string describing the object properties.
+        """Return list of lines describing the object properties.
 
         Parameters
         ----------
-        exclude: bool, default=("style",)
-            properties to be excluded in the description view.
+        exclude : None | str | Sequence[str], default ('style',)
+            Property names to omit from the description.
+
+        Returns
+        -------
+        list of str
+            One line per entry ready to be joined with newlines.
         """
         if exclude is None:
             exclude = ()
@@ -90,15 +95,20 @@ class BaseDisplayRepr:
         return lines
 
     def describe(self, *, exclude=("style", "field_func"), return_string=False):
-        """Returns a view of the object properties.
+        """Return or print a formatted description of object properties.
 
         Parameters
         ----------
-        exclude: bool, default=("style",)
-            Properties to be excluded in the description view.
+        exclude : str | Sequence[str], default ('style', 'field_func')
+            Property names to omit from the description.
+        return_string : bool, default False
+            If ``True`` return the description string; if ``False`` print it and
+            return ``None``.
 
-        return_string: bool, default=`False`
-            If `False` print description with stdout, if `True` return as string.
+        Returns
+        -------
+        str | None
+            Description string if ``return_string=True`` else ``None``.
         """
         lines = self._get_description(exclude=exclude)
         output = "\n".join(lines)
@@ -110,10 +120,12 @@ class BaseDisplayRepr:
         return None
 
     def _repr_html_(self):
+        """Rich HTML representation for notebooks and other frontends."""
         lines = self._get_description(exclude=("style", "field_func"))
         return f"""<pre>{"<br>".join(lines)}</pre>"""
 
     def __repr__(self) -> str:
+        """Return concise string representation for terminals and logs."""
         name = getattr(self, "name", None)
         if name is None:
             style = getattr(self, "style", None)

@@ -1,13 +1,15 @@
 import importlib.metadata
 import os
+import platform
+import shutil
 import sys
 from pathlib import Path
 
-import sphinx.ext.apidoc
-
-# This is for pyvista
-os.system("/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
-os.environ["DISPLAY"] = ":99"
+if platform.system() == "Linux":
+    xvfb = shutil.which("Xvfb")
+    if xvfb:
+        os.system(f"{xvfb} :99 -screen 0 1024x768x24 >/dev/null 2>&1 &")
+        os.environ["DISPLAY"] = ":99"
 os.environ["PYVISTA_OFF_SCREEN"] = "true"
 os.environ["PYVISTA_USE_IPYVTK"] = "true"
 os.environ["MAGPYLIB_MPL_SVG"] = "true"
@@ -15,35 +17,33 @@ os.environ["MAGPYLIB_MPL_SVG"] = "true"
 # Location of Sphinx files
 
 sys.path.insert(0, str(Path("./../").resolve()))  ##Add the folder one level above
-os.environ["SPHINX_APIDOC_OPTIONS"] = (
-    "members,show-inheritance"  ## Hide undocumented members
-)
+###os.environ["SPHINX_APIDOC_OPTIONS"] = (
+###    "members,show-inheritance"  ## Hide undocumented members
+###)
+
 
 # from sphinx_gallery.sorting import FileNameSortKey
 
 # pio.renderers.default = "sphinx_gallery"
 
-autodoc_default_options = {
-    "private-members": False,
-    "inherited-members": True,
-}
-
 
 def setup(app):
     app.add_css_file("css/stylesheet.css")
     app.add_js_file("webcode/summaryOpen.js")
-    sphinx.ext.apidoc.main(
-        [
-            "-f",  # Overwrite existing files
-            "-T",  # Create table of contents
-            "-e",  # Give modules their own pages
-            "-E",  # user docstring headers
-            "-M",  # Modules first
-            "-o",  # Output the files to:
-            "./docs/_autogen/",  # Output Directory
-            "./src/magpylib",  # Main Module directory
-        ]
-    )
+
+
+###    sphinx.ext.apidoc.main(
+###        [
+###            "-f",  # Overwrite existing files
+###            "-T",  # Create table of contents
+###            "-e",  # Give modules their own pages
+###            "-E",  # user docstring headers
+###            "-M",  # Modules first
+###            "-o",  # Output the files to:
+###            "./docs/_autogen/",  # Output Directory
+###            "./src/magpylib",  # Main Module directory
+###        ]
+###    )
 
 
 # -- Project information -----------------------------------------------------
@@ -75,7 +75,21 @@ extensions = [
     "sphinx_thebe",
     "sphinx_favicon",
     "sphinx_design",
+    "sphinxcontrib.bibtex",
 ]
+
+# Good defaults for NumPy style
+napoleon_numpy_docstring = True
+napoleon_google_docstring = False  # optional
+napoleon_use_ivar = True  # <- IMPORTANT: render Attributes properly
+napoleon_attr_annotations = True  # show type annotations for attributes
+
+# Optional: generate autosummary stub pages automatically when referenced
+autosummary_generate = True
+
+# BIBTEX
+# path to bibliography
+bibtex_bibfiles = ["bibliography.bib"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -83,7 +97,28 @@ templates_path = ["_templates"]
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_suffix = [".rst", ".md"]
+###source_suffix = [".rst", ".md"]
+
+nb_execution_mode = "auto"  # or "force" if you always want execution
+# nb_execution_timeout = 300      # adjust as needed (seconds)
+# nb_execution_allow_errors = False
+
+# Let autodoc import your package without heavy/GUI deps present
+autodoc_mock_imports = [
+    "pyvista",
+    "vtk",
+    "numpy_stl",
+    "magpylib_material_response",
+    "kaleido",
+]
+autodoc_default_options = {
+    "members": True,
+    "private-members": False,
+    "inherited-members": True,
+    "show-inheritance": True,
+    "member-order": "groupwise",
+}
+
 
 # The master toctree document.
 master_doc = "index"
@@ -318,18 +353,7 @@ favicons = [
 ]
 
 
-# Suppress warnings to unknown references in docstrings
-nitpick_ignore = [
-    ("py:class", "Source"),
-    ("py:class", "optional"),
-    ("py:class", "array-like"),
-    ("py:class", "matplotlib.Figure"),
-    ("py:class", "plotly.Figure"),
-    ("py:class", "pyvista.Plotter"),
-    ("py:class", "Rotation"),
-    ("py:class", "ndarray"),
-    ("py:class", "DataFrame"),
-]
+nitpick_ignore_regex = [(r"py:.*", r".*")]
 
 
 # sphinx gallery settings

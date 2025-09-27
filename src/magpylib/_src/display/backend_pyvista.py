@@ -15,9 +15,11 @@ import numpy as np
 try:
     import pyvista as pv
 except ImportError as missing_module:  # pragma: no cover
-    error_msg = """In order to use the pyvista plotting backend, you need to install pyvista via pip or
-        conda, see https://docs.pyvista.org/getting-started/installation.html"""
-    raise ModuleNotFoundError(error_msg) from missing_module
+    msg = (
+        "Backend 'pyvista' requires installation of PyVista package, "
+        "see https://docs.pyvista.org/getting-started/installation.html"
+    )
+    raise ModuleNotFoundError(msg) from missing_module
 
 from matplotlib.colors import LinearSegmentedColormap
 from pyvista.plotting.colors import Color  # pylint: disable=import-error
@@ -63,7 +65,7 @@ LINESTYLES_TO_PYVISTA = {
 
 @lru_cache(maxsize=32)
 def colormap_from_colorscale(colorscale, name="plotly_to_mpl", N=256, gamma=1.0):
-    """Create matplotlib colormap from plotly colorscale"""
+    """Create Matplotlib colormap from plotly colorscale"""
 
     cs_rgb = [(v[0], Color(v[1]).float_rgb) for v in colorscale]
     cdict = {
@@ -206,8 +208,11 @@ def generic_trace_to_pyvista(trace):
     elif trace["type"] in ("scatter", "scatter3d"):
         traces_pv.extend(scatter_to_pyvista(trace))
     else:  # pragma: no cover
-        msg = f"{trace['type']!r} trace type conversion not supported"
-        raise ValueError(msg)
+        msg2 = (
+            "Unsupported trace type: "
+            f"{trace['type']!r} cannot be transformed into a PyVista trace."
+        )
+        raise ValueError(msg2)
     showlegend = trace.get("showlegend", False)
     for tr in traces_pv:
         tr["row"] = trace.get("row", 1) - 1

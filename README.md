@@ -88,21 +88,21 @@ Here is an example on how to use Magpylib.
 ```python
 import magpylib as magpy
 
-# Create a Cuboid magnet with sides 1,2 and 3 cm respectively, and a polarization
+# Create a Cuboid magnet with sides 1, 2 and 3 cm respectively, and a polarization
 # of 1000 mT pointing in x-direction.
 cube = magpy.magnet.Cuboid(
     polarization=(1, 0, 0),  # in SI Units (T)
     dimension=(0.01, 0.02, 0.03),  # in SI Units (m)
 )
 
-# By default, the magnet position is (0,0,0) and its orientation is the unit
+# By default, the magnet position is (0, 0, 0) and its orientation is the unit
 # rotation (given by a scipy rotation object), which corresponds to magnet sided
 # parallel to global coordinate axes.
 print(cube.position)  # --> [0. 0. 0.]
 print(cube.orientation.as_rotvec())  # --> [0. 0. 0.]
 
 # Manipulate object position and orientation through the respective attributes,
-# or by using the powerful `move` and `rotate` methods.
+# or by using the powerful `move()` and `rotate()` methods.
 cube.move((0, 0, -0.02))  # in SI Units (m)
 cube.rotate_from_angax(angle=45, axis="z")
 print(cube.position)  # --> [0. 0. -0.02]
@@ -134,7 +134,7 @@ print(B.round(2))  # --> [[-0.12 -0.04 -0.02]
 #                         [ 0.   -0.    0.  ]] # in SI Units (T)
 
 # When several objects are involved and things are getting complex, make use of
-# the `show` function to view your system through Matplotlib, Plotly or Pyvista backends.
+# the `show()` function to view your system through Matplotlib, Plotly or Pyvista backends.
 magpy.show(cube, sensor, backend="pyvista")
 ```
 

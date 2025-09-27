@@ -1,13 +1,13 @@
+"""Sensor class code"""
+
 # pylint: disable=too-many-positional-arguments
 # pylint: disable=arguments-differ
-
-"""Sensor class code"""
 
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Sensor
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.fields.field_wrap_BH import getBH_level2
+from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
@@ -18,53 +18,50 @@ from magpylib._src.utility import format_star_input
 class Sensor(BaseGeo, BaseDisplayRepr):
     """Magnetic field sensor.
 
-    Can be used as `observers` input for magnetic field computation.
+    Can be used as ``observers`` input for magnetic field computation.
 
-    When `position=(0,0,0)` and `orientation=None` local object coordinates
+    When ``position=(0, 0, 0)`` and ``orientation=None`` the local object coordinates
     coincide with the global coordinate system.
-
-    A sensor is made up of pixel (sensing elements / positions) where the magnetic
-    field is evaluated.
 
     SI units are used for all inputs and outputs.
 
     Parameters
     ----------
+    position : array-like, shape (3,) or (p, 3), default (0, 0, 0)
+        Object position(s) in global coordinates in units (m). ``position`` and
+        ``orientation`` attributes define the object path.
+    orientation : None | Rotation, default None
+        Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
+        have length 1 or p. ``None`` generates a unit-rotation.
+    pixel : None | array-like, shape (3,) or (o1, o2, ..., 3), default None
+        Sensor pixel (= sensing element) positions in local object coordinates
+        (rotate with object) in units (m).
+    handedness : {'right', 'left'}, default 'right'
+        Object local coordinate system handedness. If ``'left'``, the x-axis is flipped.
+    style : None | dict, default None
+        Style dictionary. Can also be provided via style underscore magic, e.g.
+        ``style_color='red'``.
 
-    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of m. For m>1, the
-        `position` and `orientation` attributes together represent an object path.
-
-    pixel: array_like, shape (3,) or (n1,n2,...,3), default=`(0,0,0)`
-        Sensor pixel (=sensing elements) positions in the local object coordinates
-        (rotate with object), in units of m.
-
-    orientation: scipy `Rotation` object with length 1 or m, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation. For m>1, the `position` and `orientation` attributes
-        together represent an object path.
-
-    parent: `Collection` object or `None`
-        The object is a child of it's parent collection.
-
-    style: dict
-        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-        using style underscore magic, e.g. `style_color='red'`.
-
-    centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m.
-
-    handedness: {"right", "left"}
-        Object local coordinate system handedness. If "left", the x-axis is flipped.
-
-    Returns
-    -------
-    observer: `Sensor` object
+    Attributes
+    ----------
+    position : ndarray, shape (3,) or (p, 3)
+        Same as constructor parameter ``position``.
+    orientation : Rotation
+        Same as constructor parameter ``orientation``.
+    pixel : None | ndarray, shape (3,) or (o1, o2, ..., 3)
+        Same as constructor parameter ``pixel``.
+    handedness : str
+        Same as constructor parameter ``handedness``.
+    parent : Collection | None
+        Parent collection of the object.
+    style : dict
+        Style dictionary defining visual properties.
 
     Examples
     --------
-    `Sensor` objects are observers for magnetic field computation. In this example we compute the
-    B-field in units of T as seen by the sensor in the center of a circular current loop:
+    ``Sensor`` objects are observers for magnetic field computation. In this example we
+    compute the B-field in units (T) as seen by the sensor in the center of a circular
+    current loop:
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -77,16 +74,16 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     We rotate the sensor by 45 degrees and compute the field again:
 
-    >>> sens.rotate_from_rotvec((45,0,0))
+    >>> sens.rotate_from_rotvec((45, 0, 0))
     Sensor(id=...)
     >>> B = sens.getB(loop)
     >>> with np.printoptions(precision=3):
     ...     print(B)
     [0.000e+00 8.886e-05 8.886e-05]
 
-    Finally we set some sensor pixels and compute the field again:
+    Finally, we set some sensor pixels and compute the field again:
 
-    >>> sens.pixel=((0,0,0), (.001,0,0), (.002,0,0))
+    >>> sens.pixel = ((0, 0, 0), (0.001, 0, 0), (0.002, 0, 0))
     >>> B = sens.getB(loop)
     >>> with np.printoptions(precision=3):
     ...     print(B)
@@ -119,35 +116,46 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     # Properties
     @property
     def pixel(self):
-        """Sensor pixel (=sensing elements) positions in the local object coordinates
-        (rotate with object), in units of m.
-        """
+        """Sensor pixel positions in local object coordinates in units (m)."""
         return self._pixel
 
     @pixel.setter
     def pixel(self, pix):
-        """Set sensor pixel positions in the local sensor coordinates.
-        Must be an array_like, float compatible with shape (..., 3)
+        """Set sensor pixel positions in local object coordinates.
+
+        Parameters
+        ----------
+        pix : None | array-like, shape (3,) or (o1, o2, ..., 3)
+            Sensor pixel positions in local object coordinates in units (m).
         """
         self._pixel = check_format_input_vector(
             pix,
             dims=range(1, 20),
             shape_m1=3,
             sig_name="pixel",
-            sig_type="array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3) or None",
+            sig_type="array-like (list, tuple, ndarray) with shape (o1, o2, ..., 3) or None",
             allow_None=True,
         )
 
     @property
     def handedness(self):
-        """Sensor handedness in the local object coordinates."""
+        """Object local coordinate system handedness."""
         return self._handedness
 
     @handedness.setter
     def handedness(self, val):
-        """Set Sensor handedness in the local object coordinates."""
+        """Set object local coordinate system handedness.
+
+        Parameters
+        ----------
+        val : {'right', 'left'}
+            If ``'left'``, the x-axis is flipped.
+        """
         if val not in {"right", "left"}:
-            msg = "Sensor `handedness` must be either `'right'` or `'left'`"
+            msg = (
+                f"Input handedness of {self} must be either 'right' or 'left'; "
+                f"instead received {val!r}."
+            )
             raise MagpylibBadUserInput(msg)
         self._handedness = val
 
@@ -174,50 +182,34 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         output="ndarray",
         in_out="auto",
     ):
-        """Compute the B-field in units of T as seen by the sensor.
+        """Return B-field (T) from s sources as seen by the sensor.
+
+        SI units are used for all inputs and outputs.
 
         Parameters
         ----------
-        sources: source and collection objects or 1D list thereof
-            Sources that generate the magnetic field. Can be a single source (or collection)
-            or a 1D list of l source and/or collection objects.
-
-        sumup: bool, default=`False`
-            If `True`, the fields of all sources are summed up.
-
-        squeeze: bool, default=`True`
-            If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
-            a single sensor or only a single source) are eliminated.
-
-        pixel_agg: str, default=`None`
-            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
-            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-            With this option, observers input with different (pixel) shapes is allowed.
-
-        output: str, default='ndarray'
-            Output type, which must be one of `('ndarray', 'dataframe')`. By default a
-            `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
-            object is returned (the Pandas library must be installed).
-
-        in_out: {'auto', 'inside', 'outside'}
-            This parameter only applies for magnet bodies. It specifies the location of the
-            observers relative to the magnet body, affecting the calculation of the magnetic field.
-            The options are:
-            - 'auto': The location (inside or outside the cuboid) is determined automatically for
-            each observer.
-            - 'inside': All observers are considered to be inside the cuboid; use this for
-              performance optimization if applicable.
-            - 'outside': All observers are considered to be outside the cuboid; use this for
-              performance optimization if applicable.
-            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-            locations is unknown.
+        *sources : Source | list
+            Sources that generate the magnetic field. Can be a single source
+            or a 1D list of s source objects.
+        sumup : bool, default False
+            If ``True``, sum the fields from all sources. If ``False``, keep the source axis.
+        squeeze : bool, default True
+            If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
+        pixel_agg : str | None, default None
+            Name of a NumPy aggregation function (e.g. ``'mean'``, ``'min'``) applied over the
+            pixel axis of each sensor. Allows mixing sensors with different pixel shapes.
+        output : {'ndarray', 'dataframe'}, default 'ndarray'
+            Output container type. ``'dataframe'`` returns a pandas DataFrame.
+        in_out : {'auto', 'inside', 'outside'}, default 'auto'
+            Assumption about observer locations relative to magnet bodies. ``'auto'`` detects per
+            observer (safest, slower). ``'inside'`` treats all inside (faster). ``'outside'`` treats
+            all outside (faster).
 
         Returns
         -------
-        B-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
-            B-field of each source (index l) at each path position (index m) and each sensor pixel
-            position (indices n1,n2,...) in units of T. Paths of objects that are shorter than
-            index m are considered as static beyond their end.
+        ndarray | DataFrame
+            B-field (T) with squeezed shape (s, p, 1, o1, o2, ..., 3) where s is the number
+            of sources, p is the path length, and o1, o2, ... are sensor pixel dimensions.
 
         Examples
         --------
@@ -227,7 +219,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         >>> import numpy as np
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()
-        >>> loop = magpy.current.Circle(current=1, diameter=.01)
+        >>> loop = magpy.current.Circle(current=1, diameter=0.01)
         >>> B = sens.getB(loop)
         >>> with np.printoptions(precision=3):
         ...     print(B*1000)
@@ -235,7 +227,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         Then we rotate the sensor by 45 degrees and compute the field again:
 
-        >>> sens.rotate_from_rotvec((45,0,0))
+        >>> sens.rotate_from_rotvec((45, 0, 0))
         Sensor(id=...)
         >>> B = sens.getB(loop)
         >>> with np.printoptions(precision=3):
@@ -244,7 +236,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         Finally we set some sensor pixels and compute the field again:
 
-        >>> sens.pixel=((0,0,0), (.001,0,0), (.002,0,0))
+        >>> sens.pixel = ((0, 0, 0), (0.001, 0, 0), (0.002, 0, 0))
         >>> B = sens.getB(loop)
         >>> with np.printoptions(precision=3):
         ...     print(B)
@@ -253,7 +245,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
          [0.000e+00 1.014e-04 1.014e-04]]
         """
         sources = format_star_input(sources)
-        return getBH_level2(
+        return _getBH_level2(
             sources,
             self,
             field="B",
@@ -273,50 +265,34 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         output="ndarray",
         in_out="auto",
     ):
-        """Compute the H-field in units of A/m as seen by the sensor.
+        """Return H-field (A/m) from s sources as seen by the sensor.
+
+        SI units are used for all inputs and outputs.
 
         Parameters
         ----------
-        sources: source and collection objects or 1D list thereof
-            Sources that generate the magnetic field. Can be a single source (or collection)
-            or a 1D list of l source and/or collection objects.
-
-        sumup: bool, default=`False`
-            If `True`, the fields of all sources are summed up.
-
-        squeeze: bool, default=`True`
-            If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
-            a single sensor or only a single source) are eliminated.
-
-        pixel_agg: str, default=`None`
-            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
-            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-            With this option, observers input with different (pixel) shapes is allowed.
-
-        output: str, default='ndarray'
-            Output type, which must be one of `('ndarray', 'dataframe')`. By default a
-            `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
-            object is returned (the Pandas library must be installed).
-
-        in_out: {'auto', 'inside', 'outside'}
-            This parameter only applies for magnet bodies. It specifies the location of the
-            observers relative to the magnet body, affecting the calculation of the magnetic field.
-            The options are:
-            - 'auto': The location (inside or outside the cuboid) is determined automatically for
-            each observer.
-            - 'inside': All observers are considered to be inside the cuboid; use this for
-              performance optimization if applicable.
-            - 'outside': All observers are considered to be outside the cuboid; use this for
-              performance optimization if applicable.
-            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-            locations is unknown.
+        *sources : Source | list
+            Sources that generate the magnetic field. Can be a single source
+            or a 1D list of s source objects.
+        sumup : bool, default False
+            If ``True``, sum the fields from all sources. If ``False``, keep the source axis.
+        squeeze : bool, default True
+            If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
+        pixel_agg : str | None, default None
+            Name of a NumPy aggregation function (e.g. ``'mean'``, ``'min'``) applied over the
+            pixel axis of each sensor. Allows mixing sensors with different pixel shapes.
+        output : {'ndarray', 'dataframe'}, default 'ndarray'
+            Output container type. ``'dataframe'`` returns a pandas DataFrame.
+        in_out : {'auto', 'inside', 'outside'}, default 'auto'
+            Assumption about observer locations relative to magnet bodies. ``'auto'`` detects per
+            observer (safest, slower). ``'inside'`` treats all inside (faster). ``'outside'`` treats
+            all outside (faster).
 
         Returns
         -------
-        H-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
-            H-field of each source (index l) at each path position (index m) and each sensor pixel
-            position (indices n1,n2,...) in units of A/m. Paths of objects that are shorter than
-            index m are considered as static beyond their end.
+        ndarray | DataFrame
+            H-field (A/m) with squeezed shape (s, p, 1, o1, o2, ..., 3) where s is the number
+            of sources, p is the path length, and o1, o2, ... are sensor pixel dimensions.
 
         Examples
         --------
@@ -326,7 +302,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         >>> import numpy as np
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()
-        >>> loop = magpy.current.Circle(current=1, diameter=.01)
+        >>> loop = magpy.current.Circle(current=1, diameter=0.01)
         >>> H = sens.getH(loop)
         >>> with np.printoptions(precision=3):
         ...     print(H)
@@ -334,7 +310,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         Then we rotate the sensor by 45 degrees and compute the field again:
 
-        >>> sens.rotate_from_rotvec((45,0,0))
+        >>> sens.rotate_from_rotvec((45, 0, 0))
         Sensor(id=...)
         >>> H = sens.getH(loop)
         >>> with np.printoptions(precision=3):
@@ -343,7 +319,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         Finally we set some sensor pixels and compute the field again:
 
-        >>> sens.pixel=((0,0,0), (.001,0,0), (.002,0,0))
+        >>> sens.pixel = ((0, 0, 0), (0.001, 0, 0), (0.002, 0, 0))
         >>> H = sens.getH(loop)
         >>> with np.printoptions(precision=3):
         ...     print(H)
@@ -352,7 +328,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
          [ 0.    80.704 80.704]]
         """
         sources = format_star_input(sources)
-        return getBH_level2(
+        return _getBH_level2(
             sources,
             self,
             field="H",
@@ -372,50 +348,34 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         output="ndarray",
         in_out="auto",
     ):
-        """Compute the M-field in units of A/m as seen by the sensor.
+        """Return magnetization (A/m) from s sources as seen by the sensor.
+
+        SI units are used for all inputs and outputs.
 
         Parameters
         ----------
-        sources: source and collection objects or 1D list thereof
-            Sources that generate the magnetic field. Can be a single source (or collection)
-            or a 1D list of l source and/or collection objects.
-
-        sumup: bool, default=`False`
-            If `True`, the fields of all sources are summed up.
-
-        squeeze: bool, default=`True`
-            If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
-            a single sensor or only a single source) are eliminated.
-
-        pixel_agg: str, default=`None`
-            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
-            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-            With this option, observers input with different (pixel) shapes is allowed.
-
-        output: str, default='ndarray'
-            Output type, which must be one of `('ndarray', 'dataframe')`. By default a
-            `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
-            object is returned (the Pandas library must be installed).
-
-        in_out: {'auto', 'inside', 'outside'}
-            This parameter only applies for magnet bodies. It specifies the location of the
-            observers relative to the magnet body, affecting the calculation of the magnetic field.
-            The options are:
-            - 'auto': The location (inside or outside the cuboid) is determined automatically for
-            each observer.
-            - 'inside': All observers are considered to be inside the cuboid; use this for
-              performance optimization if applicable.
-            - 'outside': All observers are considered to be outside the cuboid; use this for
-              performance optimization if applicable.
-            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-            locations is unknown.
+        *sources : Source | list
+            Sources that generate the magnetic field. Can be a single source
+            or a 1D list of s source objects.
+        sumup : bool, default False
+            If ``True``, sum the fields from all sources. If ``False``, keep the source axis.
+        squeeze : bool, default True
+            If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
+        pixel_agg : str | None, default None
+            Name of a NumPy aggregation function (e.g. ``'mean'``, ``'min'``) applied over the
+            pixel axis of each sensor. Allows mixing sensors with different pixel shapes.
+        output : {'ndarray', 'dataframe'}, default 'ndarray'
+            Output container type. ``'dataframe'`` returns a pandas DataFrame.
+        in_out : {'auto', 'inside', 'outside'}, default 'auto'
+            Assumption about observer locations relative to magnet bodies. ``'auto'`` detects per
+            observer (safest, slower). ``'inside'`` treats all inside (faster). ``'outside'`` treats
+            all outside (faster).
 
         Returns
         -------
-        M-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
-            M-field of each source (index l) at each path position (index m) and each sensor pixel
-            position (indices n1,n2,...) in units of A/m. Paths of objects that are shorter than
-            index m are considered as static beyond their end.
+        ndarray | DataFrame
+            Magnetization (A/m) with squeezed shape (s, p, 1, o1, o2, ..., 3) where s is the number
+            of sources, p is the path length, and o1, o2, ... are sensor pixel dimensions.
 
         Examples
         --------
@@ -424,8 +384,8 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         >>> import numpy as np
         >>> import magpylib as magpy
         >>> cube = magpy.magnet.Cuboid(
-        ...     dimension=(10,1,1),
-        ...     polarization=(1,0,0)
+        ...     dimension=(10, 1, 1),
+        ...     polarization=(1, 0, 0)
         ... )
         >>> sens = magpy.Sensor()
         >>> M = sens.getM(cube)
@@ -434,7 +394,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         [795775.      0.      0.]
         """
         sources = format_star_input(sources)
-        return getBH_level2(
+        return _getBH_level2(
             sources,
             self,
             field="M",
@@ -454,50 +414,34 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         output="ndarray",
         in_out="auto",
     ):
-        """Compute the J-field in units of T as seen by the sensor.
+        """Return magnetic polarization (T) from s sources as seen by the sensor.
+
+        SI units are used for all inputs and outputs.
 
         Parameters
         ----------
-        sources: source and collection objects or 1D list thereof
-            Sources that generate the magnetic field. Can be a single source (or collection)
-            or a 1D list of l source and/or collection objects.
-
-        sumup: bool, default=`False`
-            If `True`, the fields of all sources are summed up.
-
-        squeeze: bool, default=`True`
-            If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
-            a single sensor or only a single source) are eliminated.
-
-        pixel_agg: str, default=`None`
-            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
-            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-            With this option, observers input with different (pixel) shapes is allowed.
-
-        output: str, default='ndarray'
-            Output type, which must be one of `('ndarray', 'dataframe')`. By default a
-            `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
-            object is returned (the Pandas library must be installed).
-
-        in_out: {'auto', 'inside', 'outside'}
-            This parameter only applies for magnet bodies. It specifies the location of the
-            observers relative to the magnet body, affecting the calculation of the magnetic field.
-            The options are:
-            - 'auto': The location (inside or outside the cuboid) is determined automatically for
-            each observer.
-            - 'inside': All observers are considered to be inside the cuboid; use this for
-              performance optimization if applicable.
-            - 'outside': All observers are considered to be outside the cuboid; use this for
-              performance optimization if applicable.
-            Choosing 'auto' is fail-safe but may be computationally intensive if the mix of observer
-            locations is unknown.
+        *sources : Source | list
+            Sources that generate the magnetic field. Can be a single source
+            or a 1D list of s source objects.
+        sumup : bool, default False
+            If ``True``, sum the fields from all sources. If ``False``, keep the source axis.
+        squeeze : bool, default True
+            If ``True`` squeeze singleton axes (e.g. a single source or a single sensor).
+        pixel_agg : str | None, default None
+            Name of a NumPy aggregation function (e.g. ``'mean'``, ``'min'``) applied over the
+            pixel axis of each sensor. Allows mixing sensors with different pixel shapes.
+        output : {'ndarray', 'dataframe'}, default 'ndarray'
+            Output container type. ``'dataframe'`` returns a pandas DataFrame.
+        in_out : {'auto', 'inside', 'outside'}, default 'auto'
+            Assumption about observer locations relative to magnet bodies. ``'auto'`` detects per
+            observer (safest, slower). ``'inside'`` treats all inside (faster). ``'outside'`` treats
+            all outside (faster).
 
         Returns
         -------
-        J-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
-            J-field of each source (index l) at each path position (index m) and each sensor pixel
-            position (indices n1,n2,...) in units of T. Paths of objects that are shorter than
-            index m are considered as static beyond their end.
+        ndarray | DataFrame
+            Magnetic polarization (T) with squeezed shape (s, p, 1, o1, o2, ..., 3) where s is the number
+            of sources, p is the path length, and o1, o2, ... are sensor pixel dimensions.
 
         Examples
         --------
@@ -506,8 +450,8 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         >>> import numpy as np
         >>> import magpylib as magpy
         >>> cube = magpy.magnet.Cuboid(
-        ...     dimension=(10,1,1),
-        ...     polarization=(1,0,0)
+        ...     dimension=(10, 1, 1),
+        ...     polarization=(1, 0, 0)
         ... )
         >>> sens = magpy.Sensor()
         >>> J = sens.getJ(cube)
@@ -516,7 +460,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         [1. 0. 0.]
         """
         sources = format_star_input(sources)
-        return getBH_level2(
+        return _getBH_level2(
             sources,
             self,
             field="J",
@@ -528,7 +472,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         )
 
     def _get_centroid(self):
-        """Centroid of object in units of m."""
+        """Centroid of object in units (m)."""
         if self.pixel is not None:
             pixel_mean = np.mean(self.pixel.reshape(-1, 3), axis=0)
             return self.position + pixel_mean

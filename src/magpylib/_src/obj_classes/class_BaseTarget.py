@@ -20,30 +20,42 @@ class BaseTarget(ABC):
 
     @property
     def meshing(self):
-        """Get mesh parameters for force computation."""
+        """Return meshing specification for force computation."""
         return self._meshing
 
     @meshing.setter
     def meshing(self, value):
-        """Set mesh parameters for force computation."""
-        # Basic validation - subclasses override on demand for specific requirements
+        """Set meshing specification.
+
+        Parameters
+        ----------
+        value : int | None
+            Meshing finesse parameter.
+        """
+        # Basic validation - subclasses may override for specific requirements
         if value is not None:
             self._validate_meshing(value)
         self._meshing = value
 
     def _validate_meshing(self, value):
-        """
-        Basic meshing validation: allow positive integers
-        Subclasses should override for specific requirements.
+        """Basic meshing validation: allow positive integers
+
+        Subclasses override this method with class-specific requirements.
         """
         if isinstance(value, int) and value > 0:
             pass
         else:
-            msg = f"Meshing parameter must be positive integer for {self}. Instead got {value}."
+            msg = f"Input meshing must be positive integer for {self}; instead received {value}."
             raise ValueError(msg)
 
     @abstractmethod
     def _generate_mesh(self):
-        """
-        Generate meshing dictionary
+        """Return meshing data structure.
+
+        Returns
+        -------
+        dict
+            Meshing representation required for downstream force calculations. dict
+            contains keys 'pts' and 'cvecs' for currents, and 'pts' and 'moments' for
+            magnets.
         """

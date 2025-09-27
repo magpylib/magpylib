@@ -51,10 +51,10 @@ spiral[1::2] = np.stack((r2 * sin_t, r2 * cos_t, np.zeros_like(ang)), axis=1)
 # Define connection legs
 spiral[1] -= np.array([width, 0, 0.0])
 leg1 = [
-    spiral[0] + np.array([0.0, -2,-depth]),
-    spiral[1] + np.array([0.0, -2+width,-depth]),
-    spiral[0] + np.array([0.0, 0,-depth]),
-    spiral[1] + np.array([0.0, 0,-depth]),
+    spiral[0] + np.array([0.0, -2, -depth]),
+    spiral[1] + np.array([0.0, -2+width, -depth]),
+    spiral[0] + np.array([0.0, 0, -depth]),
+    spiral[1] + np.array([0.0, 0, -depth]),
 ]
 spiral[-1] += np.array([2*width, 0, 0])
 spiral[-2] += np.array([width, 0, 0])
@@ -80,7 +80,7 @@ import matplotlib.pyplot as plt
 
 # Create observer grid in the xy-plane, slightly above the coil
 n = 50 # discretization number
-z_obs = 0.01e-3  # observation height in meters
+z_obs = 0.01e-3  # observation height in (m)
 xs = np.linspace(-2.1e-3, 2.1e-3, n)
 ys = np.linspace(-3.1e-3, 2.1e-3, n)
 X, Y = np.meshgrid(xs, ys)

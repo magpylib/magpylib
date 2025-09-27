@@ -17,7 +17,7 @@ class BaseDipoleMoment(ABC):
     @dipole_moment.setter
     def dipole_moment(self, _input):
         """Throw error when trying to set dipole moment."""
-        msg = "Cannot set property `dipole_moment`. It is read-only."
+        msg = "Cannot set property dipole_moment. It is read-only."
         raise AttributeError(msg)
 
     @abstractmethod

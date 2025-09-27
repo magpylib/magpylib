@@ -14,7 +14,7 @@ def test_show_with_missing_pyvista():
 
 
 def test_dataframe_output_missing_pandas():
-    """test if pandas is installed when using dataframe output in `getBH`"""
+    """test if pandas is installed when using dataframe output in getBH"""
     src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
     with patch.dict(sys.modules, {"pandas": None}), pytest.raises(ModuleNotFoundError):
         src.getB((0, 0, 0), output="dataframe")

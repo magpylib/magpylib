@@ -3,7 +3,7 @@ import pytest
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
-from magpylib._src.obj_classes.class_BaseTransform import apply_move, apply_rotation
+from magpylib._src.obj_classes.class_BaseTransform import _apply_move, _apply_rotation
 
 # pylint: disable=too-many-positional-arguments
 
@@ -85,7 +85,7 @@ def test_apply_move(description, old_position, displacement, new_position, start
     """v4 path functionality tests"""
     print(description)
     s = magpy.Sensor(position=old_position)
-    apply_move(s, displacement, start=start)
+    _apply_move(s, displacement, start=start)
     np.testing.assert_array_equal(s.position, np.array(new_position))
 
 
@@ -255,7 +255,7 @@ def test_apply_rotation(
     s = magpy.Sensor(
         position=old_position, orientation=R.from_rotvec(old_orientation_rotvec)
     )
-    apply_rotation(s, R.from_rotvec(rotvec_to_apply), start=start, anchor=anchor)
+    _apply_rotation(s, R.from_rotvec(rotvec_to_apply), start=start, anchor=anchor)
 
     np.testing.assert_allclose(
         s.position, np.array(new_position), rtol=1e-05, atol=1e-08

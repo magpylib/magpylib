@@ -1,90 +1,91 @@
-# pylint: disable=too-many-positional-arguments
-
 """Magnet Sphere class code"""
+
+# pylint: disable=too-many-positional-arguments
 
 from typing import ClassVar
 
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Sphere
-from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
+from magpylib._src.fields.field_BH_sphere import _BHJM_magnet_sphere
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
-from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
-from magpylib._src.obj_classes.class_BasePropVolume import BaseVolume
+from magpylib._src.obj_classes.class_BaseProperties import (
+    BaseDipoleMoment,
+    BaseVolume,
+)
 from magpylib._src.utility import unit_prefix
 
 
 class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
     """Spherical magnet with homogeneous magnetization.
 
-    Can be used as `sources` input for magnetic field computation and `target`
-    input for force computation. No `meshing` parameter is required.
+    Can be used as ``sources`` input for magnetic field computation and ``target``
+    input for force computation. No ``meshing`` parameter is required.
 
-    When `position=(0,0,0)` and `orientation=None` the sphere center is located
+    When ``position=(0, 0, 0)`` and ``orientation=None`` the sphere center is located
     in the origin of the global coordinate system.
 
     SI units are used for all inputs and outputs.
 
     Parameters
     ----------
-    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of m. For m>1, the
-        `position` and `orientation` attributes together represent an object path.
+    position : array-like, shape (3,) or (p, 3), default (0, 0, 0)
+        Object position(s) in global coordinates in units (m). ``position`` and
+        ``orientation`` attributes define the object path.
+    orientation : Rotation | None, default None
+        Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
+        have length 1 or p. ``None`` generates a unit-rotation.
+    diameter : float | None, default None
+        Diameter of the sphere in units (m).
+    polarization : None | array-like, shape (3,), default None
+        Magnetic polarization vector J = mu0*M in units (T), given in the
+        local object coordinates. Sets also ``magnetization``.
+    magnetization : None | array-like, shape (3,), default None
+        Magnetization vector M = J/mu0 in units (A/m), given in the local
+        object coordinates. Sets also ``polarization``.
+    style : dict | None, default None
+        Style dictionary. Can also be provided via style underscore magic, e.g.
+        ``style_color='red'``.
 
-    orientation: scipy `Rotation` object with length 1 or m, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation. For m>1, the `position` and `orientation` attributes
-        together represent an object path.
-
-    diameter: float, default=`None`
-        Diameter of the sphere in units of m.
-
-    polarization: array_like, shape (3,), default=`None`
-        Magnetic polarization vector J = mu0*M in units of T,
-        given in the local object coordinates (rotates with object).
-
-    magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector M = J/mu0 in units of A/m,
-        given in the local object coordinates (rotates with object).
-
-    volume: float
-        Read-only. Object physical volume in units of m^3.
-
-    centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m.
-
-    dipole_moment: np.ndarray, shape (3,)
-        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
-
-    parent: `Collection` object or `None`
-        The object is a child of it's parent collection.
-
-    style: dict
-        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-        using style underscore magic, e.g. `style_color='red'`.
-
-
-    Returns
-    -------
-    magnet source: `Sphere` object
+    Attributes
+    ----------
+    position : ndarray, shape (3,) or (p, 3)
+        Same as constructor parameter ``position``.
+    orientation : Rotation
+        Same as constructor parameter ``orientation``.
+    polarization : None | ndarray, shape (3,)
+        Same as constructor parameter ``polarization``.
+    magnetization : None | ndarray, shape (3,)
+        Same as constructor parameter ``magnetization``.
+    centroid : ndarray, shape (3,) or (p, 3)
+        Read-only. Object centroid in units (m) in global coordinates.
+        Can be a path.
+    dipole_moment : ndarray, shape (3,)
+        Read-only. Object dipole moment (A·m²) in local object coordinates.
+    volume : float
+        Read-only. Object physical volume in units (m³).
+    parent : Collection or None
+        Parent collection of the object.
+    style : dict
+        Style dictionary defining visual properties.
 
     Examples
     --------
-    `Sphere` objects are magnetic field sources. In this example we compute the H-field in A/m
-    of a spherical magnet with polarization (0.1,0.2,0.3) in units of T and diameter
-    of 0.01 meter at the observer position (0.01,0.01,0.01) given in units of m:
+    ``Sphere`` objects are magnetic field sources. In this example we compute the H-field in (A/m)
+    of a spherical magnet with polarization (0.1, 0.2, 0.3) in units (T) and diameter
+    0.01 m at the observer position (0.01, 0.01, 0.01) (m):
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> src = magpy.magnet.Sphere(polarization=(.1,.2,.3), diameter=.01)
-    >>> H = src.getH((.01,.01,.01))
+    >>> src = magpy.magnet.Sphere(polarization=(0.1, 0.2, 0.3), diameter=0.01)
+    >>> H = src.getH((0.01, 0.01, 0.01))
     >>> with np.printoptions(precision=3):
     ...     print(H)
     [3190.561 2552.449 1914.336]
     """
 
-    _field_func = staticmethod(BHJM_magnet_sphere)
+    _field_func = staticmethod(_BHJM_magnet_sphere)
     _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "polarization": 2,
@@ -113,16 +114,22 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
     # Properties
     @property
     def diameter(self):
-        """Diameter of the sphere in units of m."""
+        """Diameter of the sphere in units (m)."""
         return self._diameter
 
     @diameter.setter
     def diameter(self, dia):
-        """Set Sphere diameter, float, meter."""
+        """Set sphere diameter.
+
+        Parameters
+        ----------
+        dia : None or float
+            Diameter in units (m).
+        """
         self._diameter = check_format_input_scalar(
             dia,
             sig_name="diameter",
-            sig_type="`None` or a positive number (int, float)",
+            sig_type="None or a positive number (int, float)",
             allow_None=True,
             forbid_negative=True,
         )
@@ -136,20 +143,20 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
 
     # Methods
     def _get_volume(self):
-        """Volume of object in units of m³."""
+        """Volume of object in units (m³)."""
         if self.diameter is None:
             return 0.0
 
         return self.diameter**3 * np.pi / 6
 
     def _get_centroid(self, squeeze=True):
-        """Centroid of object in units of m."""
+        """Centroid of object in units (m)."""
         if squeeze:
             return self.position
         return self._position
 
     def _get_dipole_moment(self):
-        """Magnetic moment of object in units Am²."""
+        """Magnetic moment of object in units (A*m²)."""
         # test init
         if self.magnetization is None or self.diameter is None:
             return np.array((0.0, 0.0, 0.0))

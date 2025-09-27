@@ -71,26 +71,26 @@ def test_repr():
 
 def test_pixel1():
     """
-    squeeze=False Bfield minimal shape is (1,1,1,1,3)
+    squeeze=False Bfield minimal shape is (1, 1, 1, 1, 3)
     logic: single sensor, scalar path, single source all generate
     1 for squeeze=False Bshape. Bare pixel should do the same
     """
     src = magpy.misc.Dipole(moment=(1, 2, 3))
 
-    # squeeze=False Bshape of nbare pixel must be (1,1,1,1,3)
+    # squeeze=False Bshape of nbare pixel must be (1, 1, 1, 1, 3)
     np.testing.assert_allclose(
         src.getB(magpy.Sensor(pixel=(1, 2, 3)), squeeze=False).shape,
         (1, 1, 1, 1, 3),
     )
 
-    # squeeze=False Bshape of [(1,2,3)] must then also be (1,1,1,1,3)
+    # squeeze=False Bshape of [(1, 2, 3)] must then also be (1, 1, 1, 1, 3)
     src = magpy.misc.Dipole(moment=(1, 2, 3))
     np.testing.assert_allclose(
         src.getB(magpy.Sensor(pixel=[(1, 2, 3)]), squeeze=False).shape,
         (1, 1, 1, 1, 3),
     )
 
-    # squeeze=False Bshape of [[(1,2,3)]] must be (1,1,1,1,1,3)
+    # squeeze=False Bshape of [[(1, 2, 3)]] must be (1, 1, 1, 1, 1,3)
     np.testing.assert_allclose(
         src.getB(magpy.Sensor(pixel=[[(1, 2, 3)]]), squeeze=False).shape,
         (1, 1, 1, 1, 1, 3),
