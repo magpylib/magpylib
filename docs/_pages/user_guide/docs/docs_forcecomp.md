@@ -28,7 +28,7 @@ where F is the force in units (N) and T is the torque in units (N*m) acting on t
 - **`pivot`**: The torque is always defined relative to a pivot point $\vec{r}_\text{piv}$, and the force adds to it via $\vec{T}_F = \vec{F} \times (\vec{r}_\text{piv} - \vec{r}_\text{pos})$. For a freely floating magnet this would be the barycenter (= centroid when the density is homogeneous). If `pivot='centroid'` the centroid is selected as the pivot point for all targets. If `pivot=None` no pivot is used. This will give nonphysical results. If `pivot` is array-like of shape (3,) the same pivot is used for all targets. Alternatively one can provide an individual pivot point for each target.
 - **`eps`**: finite difference step size for computation of the magnetic field gradient (only needed for magnet targets). A good number is 1e-6 * characteristic source size.
 - **`meshreport`**: Set to `True` for printing the number of mesh points of each target giving you an idea of the involved computation effort.
-- **`returnmesh`**: Set to `True` for returning the mesh instead of F and T. In this case, a list of mesh dictionaries will be returned which have keys `"pts"`, `"moments"` (only magnets), and `"cvecs"` (only currents).
+- **`return_mesh`**: Set to `True` for returning the mesh instead of F and T. In this case, a list of mesh dictionaries will be returned which have keys `"pts"`, `"moments"` (only magnets), and `"cvecs"` (only currents).
 
 Each target must have the **`meshing`** parameter set to define the mesh discretization finesse. This is an integer number which defines the target number of mesh points. The meshing algorithms will not always create exactly the given target number, but aim to create uniform meshes with aspect ratio = 1 cells.
 
