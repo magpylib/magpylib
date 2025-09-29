@@ -5,10 +5,9 @@ from scipy.spatial.transform import Rotation as R
 import magpylib as magpy
 from magpylib._src.exceptions import (
     MagpylibBadUserInput,
-    MagpylibDeprecationWarning,
     MagpylibMissingInput,
 )
-from magpylib._src.fields.field_BH_dipole import BHJM_dipole
+from magpylib._src.fields.field_BH_dipole import _BHJM_dipole
 
 # pylint: disable=unnecessary-lambda-assignment
 
@@ -530,9 +529,7 @@ def test_input_objects_field_func_good():
 )
 def test_input_objects_field_func_bad(func):
     """bad input: magpy.misc.CustomSource(field_func=f)"""
-    with pytest.raises(
-        MagpylibBadUserInput, match=r"Input parameter `field_func` must .*."
-    ):
+    with pytest.raises(MagpylibBadUserInput, match=r"Input field_func must"):
         magpy.misc.CustomSource(field_func=func)
 
 
@@ -949,7 +946,7 @@ def test_input_getBH_field_good(field):
     """good getBH field inputs"""
     moms = np.array([[1, 2, 3]])
     obs = np.array([[1, 2, 3]])
-    B = BHJM_dipole(field=field, observers=obs, moment=moms)
+    B = _BHJM_dipole(field=field, observers=obs, moment=moms)
     assert isinstance(B, np.ndarray)
 
 
@@ -973,7 +970,7 @@ def test_input_getBH_field_bad(field):
     moms = np.array([[1, 2, 3]])
     obs = np.array([[1, 2, 3]])
     with pytest.raises(MagpylibBadUserInput):
-        BHJM_dipole(field=field, observers=obs, moment=moms)
+        _BHJM_dipole(field=field, observers=obs, moment=moms)
 
 
 def test_sensor_handedness():
@@ -982,30 +979,26 @@ def test_sensor_handedness():
     magpy.Sensor(handedness="left")
     with pytest.raises(
         MagpylibBadUserInput,
-        match=r"Sensor `handedness` must be either `'right'` or `'left'`",
+        match="Input handedness of",
     ):
         magpy.Sensor(handedness="not_right_or_left")
 
 
-def test_magnet_polarization_magnetization_input():
+def test_magnet_polarization_magnetization_input2():
     """test codependency and magnetization polarization inputs"""
-    # warning when magnetization is too low -> polarization confusion
-    mag = np.array([1, 2, 3]) * 1e6
-
-    with pytest.warns(
-        MagpylibDeprecationWarning,
-        match=r".* received a very low magnetization. .*",
-    ):
-        magpy.magnet.Cuboid(magnetization=[1, 2, 3])
-
     # both polarization and magnetization at the same time
+    mag = np.array([1, 2, 3]) * 1e6
     with pytest.raises(
         ValueError,
-        match=r"The attributes magnetization and polarization are dependent. .*",
+        match="The attributes magnetization and polarization are dependent",
     ):
         magpy.magnet.Cuboid(polarization=[1, 2, 3], magnetization=mag)
 
+
+def test_magnet_polarization_magnetization_input3():
+    """test codependency and magnetization polarization inputs"""
     # setting magnetization afterwards
+    mag = np.array([1, 2, 3]) * 1e6
     c = magpy.magnet.Cuboid()
     c.magnetization = mag
     np.testing.assert_allclose(mag, c.magnetization)

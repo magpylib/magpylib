@@ -1,6 +1,6 @@
-# pylint: disable=too-many-positional-arguments
-
 """TriangleStrip current class code"""
+
+# pylint: disable=too-many-positional-arguments
 
 from __future__ import annotations
 
@@ -9,99 +9,99 @@ from typing import ClassVar
 import numpy as np
 
 from magpylib._src.display.traces_core import make_TriangleStrip
-from magpylib._src.fields.field_BH_current_sheet import BHJM_current_tristrip
+from magpylib._src.fields.field_BH_current_sheet import _BHJM_current_tristrip
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
-from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
+from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
-from magpylib._src.obj_classes.target_meshing import target_mesh_triangle_current
+from magpylib._src.obj_classes.target_meshing import _target_mesh_triangle_current
 from magpylib._src.utility import unit_prefix
 
 
 class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
-    """Current flowing in straight lines along a Ribbon made of adjacent Triangles.
+    """Current flowing in straight lines along a ribbon made of adjacent triangles.
 
-    Can be used as `sources` input for magnetic field computation and `target`
+    Can be used as ``sources`` input for magnetic field computation and ``target``
     input for force computation.
 
-    The vertex positions are defined in the local object coordinates (rotate with object).
-    When `position=(0,0,0)` and `orientation=None` global and local coordinates coincide.
+    The vertex positions are defined in the local object coordinates (rotate with
+    object). When ``position=(0, 0, 0)`` and ``orientation=None`` global and local
+    coordinates coincide.
 
     SI units are used for all inputs and outputs.
 
     Parameters
     ----------
-    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of m. For m>1, the
-        `position` and `orientation` attributes together represent an object path.
-
-    orientation: scipy `Rotation` object with length 1 or m, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation. For m>1, the `position` and `orientation` attributes
-        together represent an object path.
-
-    vertices: array_like, shape (n,3), default=`None`
-        The current flows along a band which consists of Triangles {T1, T2, ...}
-        defined by the vertices {V1, V2, V3, V4, ...} as T1=(V1,V2,V3),
-        T2=(V2,V3,V4), ... The vertices are given in units of m in the local
+    position : array-like, shape (3,) or (p, 3), default (0, 0, 0)
+        Object position(s) in global coordinates in units (m). ``position`` and
+        ``orientation`` attributes define the object path.
+    orientation : Rotation | None, default None
+        Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
+        have length 1 or p. ``None`` generates a unit-rotation.
+    vertices : None | array-like, shape (n, 3), default None
+        The current flows along a band that consists of triangles {T1, T2, ...}
+        defined by the vertices {V1, V2, V3, V4, ...} as T1 = (V1, V2, V3),
+        T2 = (V2, V3, V4), ... The vertices are given in units (m) in the local
         object coordinates (move/rotate with object). At least three vertices
-        must be given, which define the first Triangle.
+        must be given, which define the first triangle.
+    current : float | None, default None
+        Total current flowing through the strip in units (A). It flows in the
+        direction V1→V3 in the first triangle, V2→V4 in the second, ...
+    meshing : int | None, default None
+        Mesh fineness for force computation. Must be an integer >= number of
+        faces specifying the target mesh size. The mesh is generated via bisection
+        along longest edges until target number is reached.
+    style : dict | None, default None
+        Style dictionary. Can also be provided via style underscore magic, e.g.
+        ``style_color='red'``.
 
-    current: float, default=`None`
-        The total current flowing through the strip in units of A. It flows in the
-        direction V1->V3 in the first triangle, V2->V4 in the second, ...
+    Attributes
+    ----------
+    position : ndarray, shape (3,) or (p, 3)
+        Same as constructor parameter ``position``.
+    orientation : Rotation
+        Same as constructor parameter ``orientation``.
+    vertices : None or ndarray, shape (n, 3)
+        Same as constructor parameter ``vertices``.
+    current : None or float
+        Same as constructor parameter ``current``.
+    meshing : None or int
+        Same as constructor parameter ``meshing``.
+    centroid : ndarray, shape (3,) or (p, 3)
+        Read-only. Object centroid computed via mean of vertices in units (m)
+        in global coordinates. Can be a path.
+    dipole_moment : ndarray, shape (3,)
+        Read-only. Object dipole moment (A·m²) in local object coordinates. Can
+        only be computed for a closed loop.
+    parent : Collection | None
+        Parent collection of the object.
+    style : dict
+        Style dictionary defining visual properties.
 
-    meshing: int, default=`None`
-        Parameter that defines the mesh finesse for force computation.
-        Must be an integer >= number of triangles specifying the target mesh size.
-        The mesh is generated via bisection along longest edges until target
-        number is reached.
-
-    meshing: int, default=`None`
-        Parameter that defines the mesh fineness for force computation.
-        Must be a positive integer specifying the target mesh size.
-
-    centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m given by mean of vertices.
-        m is the path length.
-
-    dipole_moment: np.ndarray, shape (3,)
-        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
-
-    parent: `Collection` object or `None`
-        The object is a child of it's parent collection.
-
-    style: dict
-        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-        using style underscore magic, e.g. `style_color='red'`.
-
-    Returns
-    -------
-    current source: `TriangleStrip` object
+    Notes
+    -----
+    Returns (0, 0, 0) on a sheet.
 
     Examples
     --------
-    `TriangleStrip` objects are magnetic field sources. In this example we compute the H-field in A/m
-    of a square current sheet (two triangles) with 1 A current at the observer position (1,1,1) cm:
+    ``TriangleStrip`` objects are magnetic field sources. In this example we compute
+    the H-field in (A/m) of a square current sheet (two triangles) with 1 A current
+    at the observer position (1, 1, 1) cm:
 
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> src = magpy.current.TriangleStrip(
     ...    current=1,
-    ...    vertices=((0,0,0), (0,1,0), (1,0,0), (1,1,1)),
+    ...    vertices=((0, 0, 0), (0, 1, 0), (1, 0, 0), (1, 1, 1)),
     ... )
-    >>> H = src.getH((.01,.01,.01))
+    >>> H = src.getH((0.01, 0.01, 0.01))
     >>> with np.printoptions(precision=3):
     ...     print(H)
     [ 0.026 -0.307 -0.371]
-
-    Notes
-    -----
-    On the vertices the returned field is zero.
     """
 
     # pylint: disable=dangerous-default-value
-    _field_func = staticmethod(BHJM_current_tristrip)
+    _field_func = staticmethod(_BHJM_current_tristrip)
     _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
         "current": 1,
@@ -130,14 +130,19 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
     # property getters and setters
     @property
     def vertices(self):
-        """
-        The current flows along the triangles ...
-        """
+        """Triangle strip vertices in local object coordinates."""
         return self._vertices
 
     @vertices.setter
     def vertices(self, vert):
-        """Set TriangleStrip vertices, array_like, meter."""
+        """Set triangle strip vertices.
+
+        Parameters
+        ----------
+        vert : array-like, shape (n, 3)
+            Vertices in local object coordinates in units (m). At least three
+            vertices must be provided.
+        """
         self._vertices = check_format_input_vertices(vert, minlength=3)
 
     @property
@@ -149,14 +154,14 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
 
     # Methods
     def _get_centroid(self, squeeze=True):
-        """Centroid of object in units of m."""
+        """Centroid of object in units (m)."""
         centr = np.mean(self.vertices, axis=0) + self._position
         if squeeze:
             return np.squeeze(centr)
         return centr
 
     def _get_dipole_moment(self):
-        """Magnetic moment of object in units Am²."""
+        """Magnetic moment of object in units (A*m²)."""
         # test init
         if self.vertices is None or self.current is None:
             return np.array((0.0, 0.0, 0.0))
@@ -164,7 +169,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         if not np.allclose(self.vertices[:2], self.vertices[-2:]):
             msg = (
                 f"Cannot compute dipole moment of {self}. Dipole moment is only defined for closed "
-                "CurrentStrips (first two and last two vertices must be identical)."
+                "CurrentStrip where first two and last two vertices are identical."
             )
             raise ValueError(msg)
 
@@ -235,7 +240,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
             / height[:, np.newaxis]
         )
 
-        return target_mesh_triangle_current(
+        return _target_mesh_triangle_current(
             triangles,
             self.meshing,
             cds,
@@ -247,7 +252,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
             pass
         else:
             msg = (
-                "TriangleStrip meshing parameter must be an integer >= number of faces"
-                f" for {self}. Instead got {value}."
+                f"Input meshing of {self} must be an integer >= number of faces; "
+                f"instead received {value}."
             )
             raise ValueError(msg)

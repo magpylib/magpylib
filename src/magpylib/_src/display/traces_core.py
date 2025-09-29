@@ -393,7 +393,7 @@ def make_mesh_lines(obj, mode, **kwargs) -> dict[str, Any]:
         if mode == "selfintersecting":
             tr = obj.faces[obj.get_selfintersecting_faces()]
         edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
-        edges = obj.get_open_edges() if mode == "open" else np.unique(edges, axis=0)
+        edges = obj._get_open_edges() if mode == "open" else np.unique(edges, axis=0)
         lines = vert[edges]
 
     if lines.size == 0:
@@ -489,26 +489,20 @@ def make_TriangularMesh(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
         if mode == "open" and show_mesh:
             if obj.status_open is None:
                 warnings.warn(
-                    f"Unchecked open mesh status in {obj!r} detected, before attempting "
-                    "to show potential open edges, which may take a while to compute "
-                    "when the mesh has many faces, now applying operation...",
+                    f"Unchecked open mesh status in {obj!r} detected. Now applying check_open().",
                     stacklevel=2,
                 )
                 obj.check_open()
         elif mode == "disconnected" and show_mesh:
             if obj.status_disconnected is None:
                 warnings.warn(
-                    f"Unchecked disconnected mesh status in {obj!r} detected, before "
-                    "attempting to show possible disconnected parts, which may take a while "
-                    "to compute when the mesh has many faces, now applying operation...",
+                    f"Unchecked disconnected mesh status in {obj!r} detected. Now applying check_disconnected().",
                     stacklevel=2,
                 )
             is_disconnected = obj.check_disconnected()
         elif mode == "selfintersecting" and obj._status_selfintersecting is None:
             warnings.warn(
-                f"Unchecked selfintersecting mesh status in {obj!r} detected, before "
-                "attempting to show possible disconnected parts, which may take a while "
-                "to compute when the mesh has many faces, now applying operation...",
+                f"Unchecked selfintersecting mesh status in {obj!r} detected. Now applying check_selfintersecting().",
                 stacklevel=2,
             )
             obj.check_selfintersecting()

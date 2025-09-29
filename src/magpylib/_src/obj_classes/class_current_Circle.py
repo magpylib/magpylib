@@ -1,88 +1,92 @@
 """CircularCircle current class code"""
 
-import warnings
 from typing import ClassVar
 
 import numpy as np
 
 from magpylib._src.display.traces_core import make_Circle
-from magpylib._src.exceptions import MagpylibDeprecationWarning
-from magpylib._src.fields.field_BH_circle import BHJM_circle
+from magpylib._src.fields.field_BH_circle import _BHJM_circle
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
-from magpylib._src.obj_classes.class_BasePropDipole import BaseDipoleMoment
+from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
-from magpylib._src.obj_classes.target_meshing import target_mesh_circle
+from magpylib._src.obj_classes.target_meshing import _target_mesh_circle
 from magpylib._src.utility import unit_prefix
 
 
 class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     """Circular current loop.
 
-    Can be used as `sources` input for magnetic field computation and `target`
+    Can be used as ``sources`` input for magnetic field computation and ``target``
     input for force computation.
 
-    When `position=(0,0,0)` and `orientation=None` the current loop lies
-    in the x-y plane of the global coordinate system, with its center in
-    the origin.
+    When ``position=(0, 0, 0)`` and ``orientation=None`` the current loop lies
+    in the x-y plane of the global coordinate system, with its center in the
+    origin.
 
     SI units are used for all inputs and outputs.
 
     Parameters
     ----------
-    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of m. For m>1, the
-        `position` and `orientation` attributes together represent an object path.
+    position : array-like, shape (3,) or (p, 3), default (0, 0, 0)
+        Object position(s) in global coordinates in units (m). ``position`` and
+        ``orientation`` attributes define the object path.
+    orientation : Rotation | None, default None
+        Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
+        have length 1 or p. ``None`` generates a unit-rotation.
+    diameter : float | None, default None
+        Loop diameter (m).
+    current : float | None, default None
+        Electrical current (A).
+    meshing : int | None, default None
+        Mesh fineness for force computation. Must be an integer ``>= 4``. Points
+        are equally distributed on the circle.
+    style : dict | None, default None
+        Style dictionary. Can also be provided via style underscore magic, e.g.
+        ``style_color='red'``.
 
-    orientation: scipy `Rotation` object with length 1 or m, default=`None`
-        Object orientation(s) in the global coordinates. `None` corresponds to
-        a unit-rotation. For m>1, the `position` and `orientation` attributes
-        together represent an object path.
+    Attributes
+    ----------
+    position : ndarray, shape (3,) or (p, 3)
+        Same as constructor parameter ``position``.
+    orientation : Rotation
+        Same as constructor parameter ``orientation``.
+    diameter : None or float
+        Same as constructor parameter ``diameter``.
+    current : None or float
+        Same as constructor parameter ``current``.
+    meshing : None or int
+        Same as constructor parameter ``meshing``.
+    centroid : ndarray, shape (3,) or (p, 3)
+        Read-only. Object centroid in units (m) in global coordinates.
+        Can be a path.
+    dipole_moment : ndarray, shape (3,)
+        Read-only. Object dipole moment (A·m²) in local object coordinates.
+    parent : Collection or None
+        Parent collection of the object.
+    style : dict
+        Style dictionary defining visual properties.
 
-    diameter: float, default=`None`
-        Diameter of the loop in units of m.
-
-    current: float, default=`None`
-        Electrical current in units of A.
-
-    meshing: int, default=`None`
-        Parameter that defines the mesh fineness for force computation.
-        Must be an integer >= 4. Points will be equally distributed on the
-        circle.
-
-    centroid: np.ndarray, shape (3,) or (m,3)
-        Read-only. Object centroid in units of m.
-
-    dipole_moment: np.ndarray, shape (3,)
-        Read-only. Object dipole moment in units of A*m² in the local object coordinates.
-
-    parent: `Collection` object or `None`
-        The object is a child of it's parent collection.
-
-    style: dict
-        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-        using style underscore magic, e.g. `style_color='red'`.
-
-    Returns
-    -------
-    current source: `Circle` object
+    Notes
+    -----
+    Returns (0, 0, 0) on the loop.
 
     Examples
     --------
-    `Circle` objects are magnetic field sources. In this example we compute the H-field in A/m
-    of such a current loop with 100 A current and a diameter of 2 meters at the observer position
-    (0.01,0.01,0.01) given in units of m:
+    ``Circle`` objects are magnetic field sources. In this example we compute the
+    H-field (A/m) of such a current loop with 100 A current and a diameter of
+    2 meters at the observer position (1, 1, 1) (cm):
 
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> src = magpy.current.Circle(current=100, diameter=2)
-    >>> H = src.getH((.01,.01,.01))
+    >>> H = src.getH((0.01, 0.01, 0.01))
     >>> with np.printoptions(precision=3):
     ...     print(H)
     [7.501e-03 7.501e-03 5.000e+01]
     """
 
-    _field_func = staticmethod(BHJM_circle)
+    _field_func = staticmethod(_BHJM_circle)
     _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"current": 1, "diameter": 1}
     get_trace = make_Circle
@@ -115,11 +119,17 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
 
     @diameter.setter
     def diameter(self, dia):
-        """Set Circle loop diameter, float, meter."""
+        """Set loop diameter.
+
+        Parameters
+        ----------
+        dia : float | None
+            Loop diameter in units (m).
+        """
         self._diameter = check_format_input_scalar(
             dia,
             sig_name="diameter",
-            sig_type="`None` or a positive number (int, float)",
+            sig_type="None or a positive number (int, float)",
             allow_None=True,
             forbid_negative=True,
         )
@@ -133,13 +143,13 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
 
     # Methods
     def _get_centroid(self, squeeze=True):
-        """Centroid of object in units of m."""
+        """Centroid of object in units of (m)."""
         if squeeze:
             return self.position
         return self._position
 
     def _get_dipole_moment(self):
-        """Magnetic moment of object in units Am²."""
+        """Magnetic moment of object in units (A*m²)."""
         # test init
         if self.diameter is None or self.current is None:
             return np.array((0.0, 0.0, 0.0))
@@ -148,38 +158,15 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        return target_mesh_circle(self.diameter / 2, self.meshing, self.current)
+        return _target_mesh_circle(self.diameter / 2, self.meshing, self.current)
 
     def _validate_meshing(self, value):
         """Circle makes only sense with at least 4 mesh points."""
         if isinstance(value, int) and value > 3:
             pass
         else:
-            msg = f"Circle meshing parameter must be integer > 3 for {self}. Instead got {value}."
+            msg = (
+                f"Input meshing must be an integer > 3 for {self!r}; "
+                f"instead received {value!r}."
+            )
             raise ValueError(msg)
-
-
-class Loop(Circle):
-    """Loop is deprecated, see Circle"""
-
-    # pylint: disable=method-hidden
-    @staticmethod
-    def _field_func(*args, **kwargs):
-        """Catch Deprecation warning in getBH_dict"""
-        _deprecation_warn()
-        return BHJM_circle(*args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        _deprecation_warn()
-        super().__init__(*args, **kwargs)
-
-
-def _deprecation_warn():
-    warnings.warn(
-        (
-            "Loop is deprecated  and will be removed in a future version, "
-            "use Circle instead."
-        ),
-        MagpylibDeprecationWarning,
-        stacklevel=2,
-    )

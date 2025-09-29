@@ -1,6 +1,4 @@
-"""
-The `magpylib.magnet` subpackage contains all magnet classes.
-"""
+"""Magnet classes."""
 
 __all__ = [
     "Cuboid",

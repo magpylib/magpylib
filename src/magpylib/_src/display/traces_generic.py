@@ -89,7 +89,7 @@ def update_magnet_mesh(
     """
     Updates an existing plotly mesh3d dictionary of an object which has a magnetic vector. The
     object gets colorized, positioned and oriented based on provided arguments.
-    Slicing allows for matplotlib to show colorgradients approximations by slicing the mesh into
+    Slicing allows for Matplotlib to show colorgradients approximations by slicing the mesh into
     the colorscales colors, remesh it and merge with assigning facecolor for each part.
     """
     mag_color = mag_style.color
@@ -271,7 +271,7 @@ def get_traces_2D(
 ):
     """draws and animates sensor values over a path in a subplot"""
     # pylint: disable=import-outside-toplevel
-    from magpylib._src.fields.field_wrap_BH import getBH_level2  # noqa: PLC0415
+    from magpylib._src.fields.field_BH import _getBH_level2  # noqa: PLC0415
 
     sources = format_obj_input(objects, allow="sources+collections")
     sources = [
@@ -296,9 +296,9 @@ def get_traces_2D(
             coords_str = list("xyz")
         if field_str not in "BHMJ" and set(coords_str).difference(set("xyz")):
             msg = (
-                "The `output` parameter must start with 'B', 'H', 'M', 'J' "
-                "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') )"
-                f"\nreceived {out!r} instead"
+                "Input output must be a string starting with 'B', 'H', 'M', 'J' "
+                "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') ); "
+                f"instead received {out!r}."
             )
             raise ValueError(msg)
         field_str_list.append(field_str)
@@ -310,7 +310,7 @@ def get_traces_2D(
     field_str_list = list(dict.fromkeys(field_str_list))
     BH_array = {}
     for field_str in field_str_list:
-        BH_array[field_str] = getBH_level2(
+        BH_array[field_str] = _getBH_level2(
             sources,
             sensors,
             sumup=sumup,
@@ -464,11 +464,11 @@ def get_generic_traces3D(
 
     - If the object has a path (multiple positions), the function will return both the object trace
     and the corresponding path trace. The legend entry of the path trace will be hidden but both
-    traces will share the same `legendgroup` so that a legend entry click will hide/show both traces
+    traces will share the same ``legendgroup`` so that a legend entry click will hide/show both traces
     at once. From the user's perspective, the traces will be merged.
 
     - The argument caught by the kwargs dictionary must all be arguments supported both by
-    `scatter3d` and `mesh3d` plotly objects, otherwise an error will be raised.
+    ``scatter3d`` and ``mesh3d`` plotly objects, otherwise an error will be raised.
     """
 
     # pylint: disable=too-many-branches
@@ -573,7 +573,10 @@ def get_generic_traces3D(
                     tr_non_generic["showscale"] = tr_non_generic.get("showscale", False)
                     tr_non_generic["color"] = tr_non_generic.get("color", style.color)
                 else:  # pragma: no cover
-                    msg = f"{ttype} is not supported, only 'scatter3d' and 'mesh3d' are"
+                    msg = (
+                        f"Unsupported extra model3d constructor {ttype!r}; "
+                        "only scatter3d and mesh3d are supported."
+                    )
                     raise ValueError(msg)
                 tr_non_generic.update(linearize_dict(obj_extr_trace, separator="_"))
                 traces_generic.append(tr_non_generic)
@@ -717,7 +720,7 @@ def process_animation_kwargs(obj_list, animation=False, **kwargs):
     ):  # check if some path exist for any object
         animation = False
         warnings.warn(
-            "No path to be animated detected, displaying standard plot", stacklevel=2
+            "No path to be animated detected, displaying standard plot.", stacklevel=2
         )
 
     # pylint: disable=no-member
@@ -759,11 +762,10 @@ def extract_animation_properties(
     max_pl = max(path_lengths)
     if animation_fps > animation_maxfps:
         warnings.warn(
-            f"The set `animation_fps` at {animation_fps} is greater than the max allowed of"
-            f" {animation_maxfps}. `animation_fps` will be set to"
-            f" {animation_maxfps}. "
-            f"You can modify the default value by setting it in "
-            "`magpylib.defaults.display.animation.maxfps`",
+            f"The set animation_fps at {animation_fps} is greater than the max allowed of"
+            f" {animation_maxfps}. animation_fps will be set to {animation_maxfps}. "
+            "You can modify the default value by setting it in "
+            "magpylib.defaults.display.animation.maxfps.",
             stacklevel=2,
         )
         animation_fps = animation_maxfps
@@ -795,9 +797,9 @@ def extract_animation_properties(
     if max_pl > animation_maxframes:
         warnings.warn(
             f"The number of frames ({max_pl}) is greater than the max allowed "
-            f"of {animation_maxframes}. The `animation_fps` will be set to {new_fps}. "
+            f"of {animation_maxframes}. animation_fps will be set to {new_fps}. "
             f"You can modify the default value by setting it in "
-            "`magpylib.defaults.display.animation.maxframes`",
+            "magpylib.defaults.display.animation.maxframes.",
             stacklevel=2,
         )
 
@@ -836,7 +838,7 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
 def get_sensor_pixel_field(objects):
     """get field_by_sens if sensor has style pixel field"""
     # pylint: disable=import-outside-toplevel
-    from magpylib._src.fields.field_wrap_BH import getBH_level2  # noqa: PLC0415
+    from magpylib._src.fields.field_BH import _getBH_level2  # noqa: PLC0415
 
     field_by_sens = {}
     sensors = format_obj_input(objects, allow="sensors+collections")
@@ -856,7 +858,7 @@ def get_sensor_pixel_field(objects):
             if sources:
                 field = fsrc[0]
                 has_pix_field = True
-                out = getBH_level2(
+                out = _getBH_level2(
                     sources,
                     [sens],
                     sumup=True,
@@ -876,8 +878,8 @@ def get_sensor_pixel_field(objects):
 
 def draw_frame(objs, *, rc_params, style_kwargs, **kwargs):
     """
-    Creates traces from input `objs` and provided parameters, updates the size of objects like
-    Sensors and Dipoles in `kwargs` depending on the canvas size.
+    Creates traces from input ``objs`` and provided parameters, updates the size of objects like
+    Sensors and Dipoles in ``kwargs`` depending on the canvas size.
 
     Returns
     -------
@@ -956,7 +958,7 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("animation")}
 
     if kwargs:
-        msg = f"`show` got unexpected keyword argument(s) {kwargs!r}"
+        msg = f"show() got unexpected keyword argument(s) {kwargs!r}"
         raise TypeError(msg)
 
     # infer title if necessary

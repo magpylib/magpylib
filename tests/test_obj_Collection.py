@@ -15,15 +15,15 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 
 # # # GENERATE TESTDATA
 # # N = 5
-# # mags = (np.random.rand(N,6,3)-0.5)*1000
-# # dims3 = np.random.rand(N,3,3)*5     # 5x cuboid
-# # dims2 = np.random.rand(N,3,2)*5     # 5x cylinder
-# # posos = (np.random.rand(N,23,3)-0.5)*10 #readout at 333 positions
+# # mags = (np.random.rand(N, 6, 3)-0.5)*1000
+# # dims3 = np.random.rand(N, 3, 3)*5     # 5x cuboid
+# # dims2 = np.random.rand(N, 3, 2)*5     # 5x cylinder
+# # posos = (np.random.rand(N, 23, 3)-0.5)*10 #readout at 333 positions
 
 # # angs =  (np.random.rand(N,18)-0.5)*2*10 # each step rote by max 10 deg
-# # axs =   (np.random.rand(N,18,3)-0.5)
-# # anchs = (np.random.rand(N,18,3)-0.5)*5.5
-# # movs =  (np.random.rand(N,18,3)-0.5)*0.5
+# # axs =   (np.random.rand(N, 18, 3)-0.5)
+# # anchs = (np.random.rand(N, 18, 3)-0.5)*5.5
+# # movs =  (np.random.rand(N, 18, 3)-0.5)*0.5
 # # rvs = (np.random.rand(N,3)-.5)*0.1
 
 # # B = []
@@ -40,7 +40,7 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 # #     # 18 subsequent operations
 # #     for a,aa,aaa,mv in zip(ang,ax,anch,mov):
 # #         for pm in [pm1b,pm2b,pm3b,pm4b,pm5b,pm6b]:
-# #             pm.move(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
+# #             pm.move(mv).rotate_from_angax(a, aa, aaa).rotate(rot,aaa)
 # #     B += [magpy.getB([pm1b,pm2b,pm3b,pm4b,pm5b,pm6b], poso, sumup=True)]
 # # B = np.array(B)
 # # inp = [mags,dims2,dims3,posos,angs,axs,anchs,movs,rvs,B]
@@ -103,18 +103,18 @@ def test_Collection_basics():
         ("src_col.getB(sens_col).shape", (4, 3)),
         ("mixed_col.getB().shape", (4, 3)),
         ("sens_col.getB(src1, src2).shape", (2, 4, 3)),
-        ("src_col.getB(sens1,sens2,sens3,sens4).shape", (4, 3)),
+        ("src_col.getB(sens1, sens2, sens3, sens4).shape", (4, 3)),
         ("src1.getB(sens_col).shape", (4, 3)),
         ("sens1.getB(src_col).shape", (3,)),
         ("sens1.getB(mixed_col).shape", (3,)),
         ("src1.getB(mixed_col).shape", (4, 3)),
         ("src_col.getB(mixed_col).shape", (4, 3)),
         ("sens_col.getB(mixed_col).shape", (4, 3)),
-        ("magpy.getB([src1, src2], [sens1,sens2,sens3,sens4]).shape", (2, 4, 3)),
+        ("magpy.getB([src1, src2], [sens1, sens2, sens3, sens4]).shape", (2, 4, 3)),
         ("magpy.getB(mixed_col,mixed_col).shape", (4, 3)),
-        ("magpy.getB([src1, src2], [[1,2,3],(2,3,4)]).shape", (2, 2, 3)),
-        ("src_col.getB([[1,2,3],(2,3,4)]).shape", (2, 3)),
-        ("src_col.getB([1,2,3]).shape", (3,)),
+        ("magpy.getB([src1, src2], [[1, 2, 3], (2, 3, 4)]).shape", (2, 2, 3)),
+        ("src_col.getB([[1, 2, 3], (2, 3, 4)]).shape", (2, 3)),
+        ("src_col.getB([1, 2, 3]).shape", (3,)),
         ("src1.getB(np.array([1,2,3])).shape", (3,)),
     ],
 )
@@ -157,37 +157,37 @@ def test_col_getB(test_input, expected):
     [
         "src1.getB()",
         "src1.getB(src1)",
-        "magpy.getB(src1,src1)",
+        "magpy.getB(src1, src1)",
         "src1.getB(src_col)",
-        "magpy.getB(src1,src_col)",
+        "magpy.getB(src1, src_col)",
         "sens1.getB()",
-        "magpy.getB(sens1,src1)",
+        "magpy.getB(sens1, src1)",
         "sens1.getB(sens1)",
-        "magpy.getB(sens1,sens1)",
-        "magpy.getB(sens1,mixed_col)",
-        "magpy.getB(sens1,src_col)",
+        "magpy.getB(sens1, sens1)",
+        "magpy.getB(sens1, mixed_col)",
+        "magpy.getB(sens1, src_col)",
         "sens1.getB(sens_col)",
-        "magpy.getB(sens1,sens_col)",
+        "magpy.getB(sens1, sens_col)",
         "mixed_col.getB(src1)",
-        "magpy.getB(mixed_col,src1)",
+        "magpy.getB(mixed_col, src1)",
         "mixed_col.getB(sens1)",
         "mixed_col.getB(mixed_col)",
         "mixed_col.getB(src_col)",
-        "magpy.getB(mixed_col,src_col)",
+        "magpy.getB(mixed_col, src_col)",
         "mixed_col.getB(sens_col)",
         "src_col.getB()",
         "src_col.getB(src1)",
-        "magpy.getB(src_col,src1)",
+        "magpy.getB(src_col, src1)",
         "src_col.getB(src_col)",
-        "magpy.getB(src_col,src_col)",
+        "magpy.getB(src_col, src_col)",
         "sens_col.getB()",
-        "magpy.getB(sens_col,src1)",
+        "magpy.getB(sens_col, src1)",
         "sens_col.getB(sens1)",
-        "magpy.getB(sens_col,sens1)",
-        "magpy.getB(sens_col,mixed_col)",
-        "magpy.getB(sens_col,src_col)",
+        "magpy.getB(sens_col, sens1)",
+        "magpy.getB(sens_col, mixed_col)",
+        "magpy.getB(sens_col, src_col)",
         "sens_col.getB(sens_col)",
-        "magpy.getB(sens_col,sens_col)",
+        "magpy.getB(sens_col, sens_col)",
     ],
 )
 def test_bad_col_getB_inputs(test_input):
@@ -321,7 +321,7 @@ def test_set_children_styles():
     assert src2.style.magnetization.show is False, "failed updating styles to src2"
     with pytest.raises(
         ValueError,
-        match=r"Following arguments are invalid style properties: `{'bad_input'}`",
+        match="The following style properties are invalid",
     ):
         col.set_children_styles(bad_input="somevalue")
 

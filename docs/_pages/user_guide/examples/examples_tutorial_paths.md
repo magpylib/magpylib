@@ -56,7 +56,7 @@ magpy.show(sensor, cube, animation=True, backend="plotly")
 
 ## Relative Paths
 
-`move` and `rotate` input is interpreted relative to the existing path. When the input is scalar the whole existing path is moved.
+`move()` and `rotate()` input is interpreted relative to the existing path. When the input is scalar the whole existing path is moved.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -108,7 +108,7 @@ sphere.show()
 
 ## Merging Paths
 
-Complex paths can be created by merging multiple path operations. This is done with vector input for the `move` and `rotate` methods and choosing values for `start` that will make the paths overlap. In the following example we combine a linear path with a rotation about self (`anchor=None`) until path index 30. Thereon, a second rotation about the origin is applied, creating a spiral.
+Complex paths can be created by merging multiple path operations. This is done with vector input for the `move()` and `rotate()` methods and choosing values for `start` that will make the paths overlap. In the following example we combine a linear path with a rotation about self (`anchor=None`) until path index 30. Thereon, a second rotation about the origin is applied, creating a spiral.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -132,7 +132,7 @@ cube.show(backend="plotly", animation=True)
 
 ## Reset Path
 
-The `reset_path()` method allows users to reset an object path to `position=(0,0,0)` and `orientation=None`.
+The `reset_path()` method allows users to reset an object path to `position=(0, 0, 0)` and `orientation=None`.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -158,7 +158,7 @@ Magpylib will always make sure that object paths are in the right format, i.e., 
 
 The idea behind **edge-padding** is that, whenever path entries beyond the existing path length are needed, the edge-entries of the existing path are returned. This means that the object is static beyond its existing path.
 
-In the following example the orientation attribute is padded by its edge value `(0,0,.2)` as the position attribute length is increased.
+In the following example the orientation attribute is padded by its edge value (0, 0, .2) as the position attribute length is increased.
 
 ```{code-cell} ipython3
 from scipy.spatial.transform import Rotation as R
@@ -185,7 +185,7 @@ B = magpy.getB([loop1, loop2], (0, 0, 0))
 print(B)
 ```
 
-The idea behind **end-slicing** is that, whenever a path is automatically reduced in length, Magpylib will slice to keep the ending of the path. While this occurs rarely, the following example shows how the `orientation` attribute is automatically end-sliced, keeping the values `[(0,0,.3), (0,0,.4)]`, when the `position` attribute is reduced in length:
+The idea behind **end-slicing** is that, whenever a path is automatically reduced in length, Magpylib will slice to keep the ending of the path. While this occurs rarely, the following example shows how the `orientation` attribute is automatically end-sliced, keeping the values `[(0, 0, .3), (0, 0, .4)]`, when the `position` attribute is reduced in length:
 
 ```{code-cell} ipython3
 from scipy.spatial.transform import Rotation as R

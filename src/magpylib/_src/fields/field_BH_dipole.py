@@ -1,6 +1,4 @@
-"""
-Core implementation of dipole field
-"""
+"""Dipole field implementation."""
 
 import numpy as np
 from scipy.constants import mu_0 as MU0
@@ -8,12 +6,11 @@ from scipy.constants import mu_0 as MU0
 from magpylib._src.input_checks import check_field_input
 
 
-# CORE
 def dipole_Hfield(
     observers: np.ndarray,
     moments: np.ndarray,
 ) -> np.ndarray:
-    """Magnetic field of a dipole moments.
+    """Magnetic field of i dipole moments in Cartesian coordinates.
 
     The dipole moment lies in the origin of the coordinate system.
     The output is proportional to the moment input, and is independent
@@ -23,33 +20,34 @@ def dipole_Hfield(
 
     Parameters
     ----------
-    observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates.
-
-    moments: ndarray, shape (n,3)
-        Dipole moment vector.
+    observers : ndarray, shape (i, 3)
+        Observer positions ``(x, y, z)`` in Cartesian coordinates.
+    moments : ndarray, shape (i, 3)
+        Dipole moment vectors at the origin.
 
     Returns
     -------
-    H-field: ndarray, shape (n,3)
-        H-field of Dipole in Cartesian coordinates.
+    ndarray, shape (i, 3)
+        H-field in units of ``moments`` input in Cartesian coordinates.
+
+    Notes
+    -----
+    - The moment of a magnet is given by its volume times magnetization.
+    - At ``r = 0``, non-zero moment components yield ``np.inf`` in the
+      corresponding field components.
 
     Examples
     --------
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> H = magpy.core.dipole_Hfield(
-    ...    observers=np.array([(1,1,1), (2,2,2)]),
-    ...    moments=np.array([(1e5,0,0), (0,0,1e5)]),
+    ...    observers=np.array([(1.0, 1.0, 1.0), (2.0, 2.0, 2.0)]),
+    ...    moments=np.array([(1e5, 0.0, 0.0), (0.0, 0.0, 1e5)]),
     ... )
     >>> with np.printoptions(precision=3):
     ...     print(H)
     [[2.895e-13 1.531e+03 1.531e+03]
      [1.914e+02 1.914e+02 3.619e-14]]
-
-    Notes
-    -----
-    The moment of a magnet is given by its volume*magnetization.
     """
 
     x, y, z = observers.T
@@ -76,7 +74,7 @@ def dipole_Hfield(
     return H
 
 
-def BHJM_dipole(
+def _BHJM_dipole(
     field: str,
     observers: np.ndarray,
     moment: np.ndarray,
@@ -100,5 +98,8 @@ def BHJM_dipole(
     if field == "B":
         return BHJM * MU0
 
-    msg = f"`output_field_type` must be one of ('B', 'H', 'M', 'J'), got {field!r}"
+    msg = (
+        "Input output_field_type must be one of ('B', 'H', 'M', 'J'); "
+        f"instead received {field!r}."
+    )
     raise ValueError(msg)  # pragma: no cover

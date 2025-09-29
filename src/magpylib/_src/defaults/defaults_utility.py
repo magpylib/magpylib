@@ -47,7 +47,7 @@ class _DefaultType:
     """Special keyword value.
 
     The instance of this class may be used as the default value assigned to a
-    keyword if no other obvious default (e.g., `None`) is suitable,
+    keyword if no other obvious default (e.g., None) is suitable,
 
     """
 
@@ -93,10 +93,10 @@ def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False) -> d
     u : dict
         dictionary to update with
     same_keys_only : bool, optional
-        if `True`, only key found in `d` get updated and no new items are created,
+        if ``True``, only key found in d get updated and no new items are created,
         by default False
     replace_None_only : bool, optional
-        if `True`, only key/value pair from `d`where `value=None` get updated from `u`,
+        if ``True``, only key/value pair from d where ``value=None`` get updated from u,
         by default False
 
     Returns
@@ -213,11 +213,11 @@ def color_validator(color_input, allow_None=True, parent_name=""):
     Parameters
     ----------
     color_input : str
-        color input as string
+        Color input as string.
     allow_None : bool, optional
-        if `True` `color_input` can be `None`, by default True
+        If ``True``, ``color_input`` can be ``None``, by default ``True``.
     parent_name : str, optional
-        name of the parent class of the validator, by default ""
+        name of the parent class of the validator, by default ''.
 
     Returns
     -------
@@ -249,7 +249,7 @@ def color_validator(color_input, allow_None=True, parent_name=""):
         if len(color_new) == 4:  # trim opacity
             color_new = color_new[:-1]
         if len(color_new) == 3:
-            # transform matplotlib colors scaled from 0-1 to rgb colors
+            # transform Matplotlib colors scaled from 0-1 to rgb colors
             if all(isinstance(c, float) for c in color_new):
                 c = [int(255 * c) for c in color_new]
                 color_new = f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}"
@@ -281,8 +281,8 @@ def color_validator(color_input, allow_None=True, parent_name=""):
             f"\n   Received value: {color_input!r}"
             f"\n\nThe 'color' property is a color and may be specified as:\n"
             "    - A hex string (e.g. '#ff0000')\n"
-            "    - A rgb string (e.g. 'rgb(185,204,255)')\n"
-            "    - A rgb tuple (e.g. (120,125,126))\n"
+            "    - A rgb string (e.g. 'rgb(185, 204, 255)')\n"
+            "    - A rgb tuple (e.g. (120, 125, 126))\n"
             "    - A number between 0 and 1 (for grey scale) (e.g. '.5' or .8)\n"
             f"    - A named CSS color:\n{list(mcolors.keys())}"
         )
@@ -298,9 +298,9 @@ def validate_property_class(val, name, class_, parent):
         val = class_()
     if not isinstance(val, class_):
         msg = (
-            f"the `{name}` property of `{type(parent).__name__}` must be an instance \n"
-            f"of `{class_}` or a dictionary with equivalent key/value pairs \n"
-            f"but received {val!r} instead"
+            f"The {name} property of {type(parent).__name__} must be an instance "
+            f"of {class_} or a dictionary with equivalent key/value pairs; "
+            f"instead received {val!r}."
         )
         raise ValueError(msg)
     return val
@@ -316,8 +316,8 @@ def validate_style_keys(style_kwargs):
     invalid_keys = {level0_style_keys[k] for k in kwargs_diff}
     if invalid_keys:
         msg = (
-            f"Following arguments are invalid style properties: `{invalid_keys}`\n"
-            f"\n Available style properties are: `{valid_keys}`"
+            f"The following style properties are invalid: {invalid_keys}. "
+            f"Available style properties are: {valid_keys}."
         )
         raise ValueError(msg)
     return style_kwargs
@@ -346,8 +346,8 @@ class MagicProperties:
             diff = set(magic_kwargs.keys()).difference(set(input_dict.keys()))
             for attr in diff:
                 msg = (
-                    f"{type(self).__name__} has no property '{attr}'"
-                    f"\n Available properties are: {list(self._property_names_generator())}"
+                    f"{type(self).__name__} has no property {attr}. "
+                    f"Available properties: {list(self._property_names_generator())}."
                 )
                 raise AttributeError(msg)
             input_dict.update(magic_kwargs)
@@ -358,8 +358,8 @@ class MagicProperties:
     def __setattr__(self, key, value):
         if self.__isfrozen and not hasattr(self, key):
             msg = (
-                f"{type(self).__name__} has no property '{key}'"
-                f"\n Available properties are: {list(self._property_names_generator())}"
+                f"{type(self).__name__} has no property {key}. "
+                f"Available properties: {list(self._property_names_generator())}."
             )
             raise AttributeError(msg)
         object.__setattr__(self, key, value)
@@ -381,18 +381,16 @@ class MagicProperties:
         return f"{type(self).__name__}({dict_str})"
 
     def as_dict(self, flatten=False, separator="."):
-        """
-        returns recursively a nested dictionary with all properties objects of the class
+        """Returns recursively a nested dictionary with all properties objects of the class
 
         Parameters
         ----------
         flatten: bool
-            If `True`, the nested dictionary gets flatten out with provided separator for the
+            If ``True``, the nested dictionary gets flatten out with provided separator for the
             dictionary keys
-
         separator: str
             the separator to be used when flattening the dictionary. Only applies if
-            `flatten=True`
+            ``flatten=True``
         """
         params = self._property_names_generator()
         dict_ = {}
@@ -414,15 +412,13 @@ class MagicProperties:
 
         Parameters
         ----------
-
         _match_properties: bool
-            If `True`, checks if provided properties over keyword arguments are matching the current
+            If ``True``, checks if provided properties over keyword arguments are matching the current
             object properties. An error is raised if a non-matching property is found.
-            If `False`, the `update` method does not raise any error when an argument is not
+            If ``False``, the ``update`` method does not raise any error when an argument is not
             matching a property.
-
         _replace_None_only:
-            updates matching properties that are equal to `None` (not already been set)
+            updates matching properties that are equal to ``None`` (not already been set)
 
 
         Returns

@@ -30,14 +30,6 @@
 :img-bottom: ../../../_static/images/examples_icon_tutorial_collection.png
 :::
 
-:::{grid-item-card} {ref}`examples-tutorial-custom`
-:text-align: center
-:link: examples-tutorial-custom
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../../_static/images/examples_icon_tutorial_custom.png
-:::
-
 :::{grid-item-card} {ref}`examples-tutorial-modeling-magnets`
 :text-align: center
 :link: examples-tutorial-modeling-magnets
@@ -167,6 +159,14 @@
 
 ::::{grid} 2 3 4 4
 :gutter: 4
+
+:::{grid-item-card} {ref}`examples-tutorial-custom`
+:text-align: center
+:link: examples-tutorial-custom
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_tutorial_custom.png
+:::
 
 :::{grid-item-card} {ref}`examples-misc-compound`
 :text-align: center

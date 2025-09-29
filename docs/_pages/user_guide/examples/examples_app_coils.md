@@ -32,7 +32,7 @@ for z in np.linspace(-8, 8, 16):
     winding = magpy.current.Circle(
         current=100,
         diameter=10,
-        position=(0,0,z),
+        position=(0, 0, z),
     )
     coil1.add(winding)
 
@@ -67,12 +67,12 @@ for z in np.linspace(-1, 1, 5):
         winding = magpy.current.Circle(
             current=10,
             diameter=2*r,
-            position=(0,0,z),
+            position=(0, 0, z),
         )
         coil1.add(winding)
 
-coil1.position = (0,0,5)
-coil2 = coil1.copy(position=(0,0,-5))
+coil1.position = (0, 0, 5)
+coil2 = coil1.copy(position=(0, 0, -5))
 
 helmholtz = magpy.Collection(coil1, coil2)
 
@@ -88,7 +88,7 @@ Streamplot from Matplotlib is a powerful tool to outline the field lines. Howeve
 # Continuation from above - ensure previous code is executed
 
 import matplotlib.pyplot as plt
-fig, ax = plt.subplots(1, 1, figsize=(6,5))
+fig, ax = plt.subplots(1, 1, figsize=(6, 5))
 
 # Compute field and plot the coil pair field on yz-grid
 grid = np.mgrid[0:0:1j, -13:13:20j, -13:13:20j].T[:,:,0]
@@ -106,7 +106,7 @@ sp = ax.streamplot(Y, Z, By, Bz, density=2, color=Bamp,
 
 # Plot coil outline
 from matplotlib.patches import Rectangle
-for loc in [(4,4), (4,-6), (-6,4), (-6,-6)]:
+for loc in [(4, 4), (4, -6), (-6, 4), (-6, -6)]:
     ax.add_patch(Rectangle(loc, 2, 2, color='k', zorder=10))
 
 # Figure styling
@@ -131,7 +131,7 @@ While the optimal solution is given by two current loops, real world application
 # Continuation from above - ensure previous code is executed
 
 import matplotlib.pyplot as plt
-fig, ax = plt.subplots(1, 1, figsize=(6,5))
+fig, ax = plt.subplots(1, 1, figsize=(6, 5))
 
 # Compute field of the coil pair on yz-grid
 grid = np.mgrid[0:0:1j, -3:3:20j, -3:3:20j].T[:,:,0]
@@ -140,7 +140,7 @@ _, Y, Z = np.moveaxis(grid, 2, 0)
 B = helmholtz.getB(grid)
 
 # Field at center
-B0 = helmholtz.getB((0,0,0))
+B0 = helmholtz.getB((0, 0, 0))
 B0amp = np.linalg.norm(B0)
 
 # Homogeneity error

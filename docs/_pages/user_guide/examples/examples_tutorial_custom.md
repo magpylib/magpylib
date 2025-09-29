@@ -34,7 +34,7 @@ $$
 
 Here the monopole lies in the origin of the local coordinates, $Q_m$ is the monopole charge and ${\bf r}$ is the observer position.
 
-We create this field as a Python function and hand it over to a CustomSource `field_func` argument. The `field_func` input must be a callable with two positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must accept ndarrays of shape (n,3)), and return the respective fields in units of T and A/m in the same shape.
+We create this field as a Python function and hand it over to a CustomSource `field_func` argument. The `field_func` input must be a callable with two positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must accept ndarrays of shape (o, 3)), and return the respective fields in units of (T) and (A/m) in the same shape.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -45,25 +45,25 @@ def mono_field(field, observers):
     """
     Monopole field
 
-    field: string, "B" or "H
+    field: string, 'B' or 'H'
         return B or H-field
 
-    observers: array_like of shape (n,3)
+    observers: array-like of shape (o, 3)
         Observer positions
 
-    Returns: np.ndarray, shape (n,3)
+    Returns: np.ndarray, shape (o, 3)
         Magnetic monopole field
     """
-    Qm = 1  # unit T·m²
-    obs = np.array(observers).T  # unit m
-    B = Qm * (obs / np.linalg.norm(obs, axis=0) ** 3).T  # unit T
+    Qm = 1  # unit (T·m²)
+    obs = np.array(observers).T  # unit (m)
+    B = Qm * (obs / np.linalg.norm(obs, axis=0) ** 3).T  # unit (T)
     if field == "B":
-        return B  # unit T
+        return B  # unit (T)
     elif field == "H":
-        H = B / magpy.mu_0  # unit A/m
+        H = B / magpy.mu_0  # unit (A/m)
         return H
     else:
-        raise ValueError("Field Value must be either B or H")
+        raise ValueError("Field Value must be either 'B' or 'H'.")
 
 # Create CustomSource with monopole field
 mono = magpy.misc.CustomSource(field_func=mono_field)
@@ -145,7 +145,7 @@ class Monopole(magpy.misc.CustomSource):
     Parameters
     ----------
     charge: float
-        Monopole charge in units of T·m²
+        Monopole charge in units of (T·m²)
     """
 
     def __init__(self, charge, **kwargs):
@@ -167,18 +167,18 @@ class Monopole(magpy.misc.CustomSource):
 
         def mono_field(field, observers):
             """monopole field"""
-            Qm = self._charge  # unit T·m²
-            obs = np.array(observers).T  # unit m
-            B = Qm * (obs / np.linalg.norm(obs, axis=0) ** 3).T  # unit T
+            Qm = self._charge  # unit (T·m²)
+            obs = np.array(observers).T  # unit (m)
+            B = Qm * (obs / np.linalg.norm(obs, axis=0) ** 3).T  # unit (T)
             if field == "B":
-                return B  # unit T
+                return B  # unit (T)
             elif field == "H":
-                H = B / magpy.mu_0  # unit A/m
+                H = B / magpy.mu_0  # unit (A/m)
                 return H
             else:
-                raise ValueError("Field Value must be either B or H")
+                raise ValueError("Field Value must be either 'B' or 'H'")
 
-        self.style.label = f"Monopole (charge={self._charge} T·m²)"
+        self.style.label = f"Monopole (charge={self._charge} (T·m²))"
         self.field_func = mono_field
 
     @property

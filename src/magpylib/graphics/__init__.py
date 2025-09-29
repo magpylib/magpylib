@@ -1,7 +1,4 @@
-"""
-The `magpylib.display` sub-package provides additional plotting
-features for independent use.
-"""
+"""Additional plotting features"""
 
 __all__ = ["Trace3d", "model3d", "style"]
 

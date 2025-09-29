@@ -16,7 +16,7 @@ kernelspec:
 
 # Magnetic Scales
 
-The following examples we demonstrate how analytical models can be used to simulate magnetic scales. Some measurements and simulations are taken from the publication (review at IEEE in progress) *Radial Eccentricity in Rotary Magnetic Encoders*, which provides a more in-depth discussion for those interested in the underlying theory and experimental validation.
+The following examples we demonstrate how analytical models can be used to simulate magnetic scales. Some measurements and simulations are taken from the publication {cite}`ortner2025`, which provides a more in-depth discussion for those interested in the underlying theory and experimental validation.
 
 --------------------------
 ## Background
@@ -37,7 +37,7 @@ Sketch of a rotary encoder with pole wheel and magnetic sensor. The sensor detec
 (examples-app-scales-IGL)=
 ## Encoder Terminology - INNOMAG Guideline
 
-The [INNOMAG e.V. Guideline](https://innomag.org/) is a revision of the [DIN SPEC 91411](https://www.dinmedia.de/en/technical-rule/din-spec-91411/354972979), a norm for unifying magnetic encoder technical representation and nomenclature.
+The [INNOMAG e.V. Guideline](https://innomag.org/) is a revision of the DIN SPEC 91411{cite}`DINspec91411`, a norm for unifying magnetic encoder technical representation and nomenclature.
 
 - The coordinates $p$ (wheel rotation angle or associated arc length), $o$ (axial length), and $n$ (radial distance from wheel surface) are used for relative positioning to the pole wheel.
 
@@ -62,7 +62,7 @@ Visualization of encoder terminology.
 --------------------------
 ## Magnetic Scale Taxonomy
 
-This taxonomy provides an overview of the various types of commonly used magnetic scales and classifies them according to their design and application. The diagram shown below is reproduced from the German standard **DIN SPEC 91411**, and a translated version is expected to be included in the upcoming **INNOMAG Guidelines**.
+This taxonomy provides an overview of the various types of commonly used magnetic scales and classifies them according to their design and application. The diagram shown below is reproduced from the German standard DIN SPEC 91411{cite}`DINspec91411`, and a translated version is expected to be included in the upcoming **INNOMAG Guidelines**.
 
 ```{figure} ../../../_static/images/examples_app_scales03b.png
 :width: 100%
@@ -266,3 +266,10 @@ Quadrupole magnet cylinders are commonly used in [end-of-shaft](examples-app-end
 Magnetic scales that include a soft-magnetic backing layer—commonly used to enhance field strength or improve magnetization—can be accurately modeled in Magpylib using the [method of images](examples-misc-image-method).
 
 This technique offers a highly effective approximation by replacing the soft-magnetic layer with an equivalent image configuration. As demonstrated in the [ideal-typical scale model](example-app-scales-ideal-typical) above, this method yields accurate results, especially when the observer is located close to the surface compared to the distance from the mirror edges at the side.
+
+------------------------------------
+
+```{bibliography}
+:filter: docname in docnames
+:labelprefix: P2-
+```

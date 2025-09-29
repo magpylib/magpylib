@@ -22,7 +22,7 @@ import magpylib as magpy
 
 # Create a Cuboid magnet with magnetic polarization
 # of 1 T pointing in x-direction and sides of
-# 1,2 and 3 cm respectively (notice the use of SI units).
+# 1, 2 and 3 cm respectively (notice the use of SI units).
 
 cube = magpy.magnet.Cuboid(polarization=(1, 0, 0), dimension=(0.01, 0.02, 0.03))
 
@@ -39,14 +39,15 @@ All Magpylib objects (sources and observers) have position and orientation in a 
 
 ```python
 # By default, the position of a Magpylib object is
-# (0,0,0) and its orientation is the unit rotation,
+# (0, 0, 0) and its orientation is the unit rotation,
 # given by a scipy rotation object.
 
 print(cube.position)  # -> [0. 0. 0.]
 print(cube.orientation.as_rotvec())  # -> [0. 0. 0.]
 
-# Manipulate object position and orientation through
-# the respective attributes (move 10 mm and rotate 45 deg):
+# Manipulate object position and orientation by
+# setting the respective attributes (10 mm in x
+# direction and rotate about z by 45 deg):
 
 from scipy.spatial.transform import Rotation as R
 
@@ -56,8 +57,8 @@ cube.orientation = R.from_rotvec((0, 0, 45), degrees=True)
 print(cube.position)  # -> [0.01 0.   0.  ]
 print(cube.orientation.as_rotvec(degrees=True))  # -> [0. 0. 45.]
 
-# Apply relative motion with the powerful `move`
-# and `rotate` methods.
+# Apply relative motion with the powerful move()
+# and rotate() methods.
 sensor.move((-0.01, 0, 0))
 sensor.rotate_from_angax(angle=-45, axis="z")
 
@@ -72,7 +73,7 @@ Find detailed information on position and orientation attributes and how to mani
 In-built 3D graphic output helps to see if all Magpylib objects are positioned properly. The magnet polarization is represented by default by a 3-color scheme, the sensor by an axes cross.
 
 ```python
-# Use the `show` function to view your system
+# Use the show() function to view your system
 # through Matplotlib, Plotly or Pyvista backends.
 
 magpy.show(cube, sensor, backend="plotly")
@@ -80,7 +81,7 @@ magpy.show(cube, sensor, backend="plotly")
 
 <img src="../../_static/images/getting_started_fundamentals1.png" width=50% align="center">
 
-Detailed information on the graphical output with `show` is given [here](guide-graphics).
+Detailed information on the graphical output with `show()` is given [here](guide-graphics).
 
 ### Field Computation (B, H, J, M)
 
@@ -92,9 +93,10 @@ The field can be computed at sensor objects, or simply by specifying a position 
 points = [(0, 0, -0.01), (0, 0, 0), (0, 0, 0.01)]  # in SI Units (m)
 B = magpy.getB(cube, points)
 
-print(B.round(2))  # -> [[ 0.26  0.07  0.08]
-#     [ 0.28  0.05  0.  ]
-#     [ 0.26  0.07 -0.08]] # in SI Units (T)
+print(B.round(2))
+# [[ 0.26  0.07  0.08]
+# [ 0.28  0.05  0.  ]
+# [ 0.26  0.07 -0.08]] # in SI Units (T)
 
 # Compute the H-field at the sensor.
 
@@ -104,7 +106,7 @@ print(H.round())  # -> [51017. 24210.     0.] # in SI Units (A/m)
 ```
 
 ```{hint}
-Magpylib makes use of vectorized computation (massive speedup). This requires that you hand over all field computation instances (multiple objects with multiple positions (=paths)) at the same time to `getB`, `getH`, `getJ` and `getM`. Avoid Python loops at all costs !!!
+Magpylib makes use of vectorized computation (massive speedup). This requires that you hand over all field computation instances (multiple objects with multiple positions (=paths)) at the same time to `getB()`, `getH()`, `getJ()` and `getM()`. Avoid Python loops at all costs !!!
 ```
 
 Detailed information on field computation is provided [here](docs-fieldcomp).
@@ -114,7 +116,6 @@ Detailed information on field computation is provided [here](docs-fieldcomp).
 Force and torque between Magpylib objects is easily computed using the top-level function `getFT()`.
 
 ```python
-import numpy as np
 import magpylib as magpy
 
 cube = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0.1, 0.2, 0.3))
@@ -126,11 +127,11 @@ loop = magpy.current.Circle(
 )
 F, T = magpy.getFT(cube, loop)
 
-print(f"force: {np.round(F, decimals=2)} N")
+print(f"force: {F.round(2)} N")
 # force: [ 13.67  27.33 -82.  ] N
 
-print(f"torque: {np.round(T, decimals=2)} Nm")
-# torque: [-8.54  4.27  0.  ] Nm
+print(f"torque: {T.round(2)} N*m")
+# torque: [-8.54  4.27  0.  ] N*m
 ```
 
 Note that the target object (loop) on which the magnetic field acts must have a `meshing` parameter defined which is a discretizatione finesse for a numerical scheme. Detiled information on force computation is found [here](docs-forcecomp).
@@ -157,7 +158,9 @@ sphere.position = np.linspace((-0.02, 0, 0), (0.02, 0, 0), 7)
 
 # The field is automatically computed for every path position
 B = sphere.getB((0, 0, 0.01))
-print(B.round(3))  # ->[[ 0.004  0.    -0.001]
+
+print(B.round(3))
+# [[ 0.004  0.    -0.001]
 # [ 0.013  0.     0.001]
 # [ 0.033  0.     0.026]
 # [ 0.     0.     0.083]
@@ -263,7 +266,7 @@ cube = magpy.magnet.Cuboid(
 )
 cube.rotate_from_angax(angle=np.linspace(10, 360, 18), axis="x")
 
-# Generate an animation with `show`
+# Generate an animation with `show()`
 cube.show(animation=True, backend="plotly")
 ```
 <img src="../../_static/images/getting_started_animation.png" width=50% align="center">
@@ -274,19 +277,20 @@ Nice animation examples are shown [here](examples-vis-animations), and a detaile
 Magpylib's object oriented interface is convenient to work with but is also slowed down by object initialization and handling. The functional interface bypasses this load and enables fast field computation for an arbitrary set of input parameters.
 
 ```python
-import magpylib as magpy
+from magpylib.func import cuboid_field
 
 # Compute the magnetic field via the functional interface.
-B = magpy.getB(
-    sources="Cuboid",
-    observers=[(-1, 0, 1), (0, 0, 1), (1, 0, 1)],
-    dimension=(1, 1, 1),
-    polarization=(0, 0, 1),
+B = cuboid_field(
+    field="B",
+    observers=[(-1, 0, 1), (0, 0, 2), (2, 0, 2)],
+    dimensions=[(1, 1, 1), (2, 2, 2), (3, 3, 3)],
+    polarizations=(0, 0, 1),
 )
 
-print(B.round(3))  # -> [[-0.043  0.     0.014]
+print(B.round(3))
+# [[-0.043  0.     0.014]
 # [ 0.     0.     0.135]
-# [ 0.043  0.     0.014]]
+# [ 0.154  0.     0.041]]
 ```
 
 Details on the functional interface are found [here](docs-field-functional).

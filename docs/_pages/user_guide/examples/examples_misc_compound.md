@@ -66,9 +66,9 @@ class MagnetRing(magpy.Collection):
         # Add children
         for i in range(cubes):
             child = magpy.magnet.Cuboid(
-                polarization=(0,0,1),
-                dimension=(.01,.01,.01),
-                position=(ring_radius,0,0)
+                polarization=(0, 0, 1),
+                dimension=(.01, .01, .01),
+                position=(ring_radius, 0, 0)
             )
             child.rotate_from_angax(360/cubes*i, 'z', anchor=0)
             self.add(child)
@@ -128,7 +128,7 @@ magpy.show(ring, sensor, backend='plotly')
 
 In the above example, the trace is constructed in `_update`, every time the parameter `cubes` is modified. This can lead to an unwanted computational overhead, especially as the construction is only necessary for graphical representation.
 
-To make our compounds ready for heavy computation, while retaining Magpylib graphic possibilities, it is possible to provide a trace which will only be constructed when `show` is called. The following modification of the above example demonstrates this:
+To make our compounds ready for heavy computation, while retaining Magpylib graphic possibilities, it is possible to provide a trace which will only be constructed when `show()` is called. The following modification of the above example demonstrates this:
 
 ```{code-cell} ipython3
 class MagnetRingAdv(magpy.Collection):
@@ -170,9 +170,9 @@ class MagnetRingAdv(magpy.Collection):
         # Add children
         for i in range(cubes):
             child = magpy.magnet.Cuboid(
-                polarization=(0,0,1),
-                dimension=(.01,.01,.01),
-                position=(ring_radius,0,0)
+                polarization=(0, 0, 1),
+                dimension=(.01, .01, .01),
+                position=(ring_radius, 0, 0)
             )
             child.rotate_from_angax(360/cubes*i, 'z', anchor=0)
             self.add(child)

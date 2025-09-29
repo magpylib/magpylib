@@ -14,9 +14,7 @@ orphan: true
 
 (examples-tutorial-field-computation)=
 
-# Computing the Field (B, H, J, M)
-
-----------------------------
+# Field Computation (B, H, J, M)
 
 ## Most basic Example
 
@@ -34,7 +32,7 @@ print(B)
 
 ## Field on a Grid
 
-There are four field computation functions: `getB` will compute the B-field in T. `getH` computes the H-field in A/m. `getJ` computes the magnetic polarization in units of T. `getM` computes the magnetization in units of A/m.
+There are four field computation functions: `getB()` will compute the B-field in (T). `getH()` computes the H-field in (A/m). `getJ()` computes the magnetic polarization in units (T). `getM()` computes the magnetization in units of (A/m).
 
 All these functions will return the field in the shape of the input. In the following example, BHJM-fields of a diametrically magnetized cylinder magnet are computed on a position grid in the symmetry plane and are then displayed using Matplotlib.
 
@@ -76,13 +74,13 @@ ax2.set_title("H-Field")
 ax3.set_title("J-Field")
 ax4.set_title("M-Field")
 
-for ax in [ax1,ax2,ax3,ax4]:
+for ax in [ax1, ax2, ax3, ax4]:
     ax.set(
         xlabel="x-position",
         ylabel="y-position",
         aspect=1,
-        xlim=(-50,50),
-        ylim=(-50,50),
+        xlim=(-50, 50),
+        ylim=(-50, 50),
     )
     # Outline magnet boundary
     ts = np.linspace(0, 2 * np.pi, 50)
@@ -97,7 +95,7 @@ plt.show()
 (examples-tutorial-field-computation-sensors)=
 ## Using Sensors
 
-The `Sensor` class enables relative positioning of observer grids in the global coordinate system. The observer grid is stored in the `pixel` parameter of the sensor object which is `(0,0,0)` by default (sensor position = observer position).
+The `Sensor` class enables relative positioning of observer grids in the global coordinate system. The observer grid is stored in the `pixel` parameter of the sensor object which is (0, 0, 0) by default (sensor position = observer position).
 
 The following example shows a moving and rotating sensor with two pixels. At the same time, the source objects are moving to demonstrate the versatility of the field computation.
 
@@ -237,7 +235,7 @@ The functional interface will only outperform the object oriented interface if y
 
 ```{code-cell} ipython3
 import numpy as np
-import magpylib as magpy
+from magpylib.func import cuboid_field
 
 # Two different magnet dimensions
 dim1 = (0.02, 0.04, 0.04)
@@ -264,11 +262,11 @@ POS = np.vstack(
 )
 
 # Compute all instances with the functional interface
-B = magpy.getB(
-    sources="Cuboid",
+B = cuboid_field(
+    field="B",
     observers=POS,
-    polarization=POL,
-    dimension=DIM,
+    polarizations=POL,
+    dimensions=DIM,
 )
 
 B.round(decimals=2)

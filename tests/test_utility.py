@@ -10,7 +10,7 @@ def test_duplicates():
     pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     pm2 = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(1, 2))
     src_list = [pm1, pm2, pm1]
-    with pytest.warns(UserWarning, match=r"Eliminating duplicates"):
+    with pytest.warns(UserWarning, match=r"Eliminating duplicate"):
         src_list_new = check_duplicates(src_list)
     assert src_list_new == [pm1, pm2], "duplicate elimination failed"
 
@@ -21,9 +21,7 @@ def test_filter_objects():
     pm2 = magpy.magnet.Cylinder(polarization=(1, 2, 3), dimension=(1, 2))
     sens = magpy.Sensor()
     src_list = [pm1, pm2, sens]
-    with pytest.warns(
-        UserWarning, match=r"Warning, cannot add Sensor.* to Collection."
-    ):
+    with pytest.warns(UserWarning, match=r"Cannot add Sensor.* to Collection"):
         list_new = filter_objects(src_list, allow="sources")
     assert list_new == [pm1, pm2], "Failed to eliminate sensor"
 
@@ -46,12 +44,12 @@ def test_format_getBH_class_inputs():
     np.testing.assert_allclose(
         B3,
         B4,
-        err_msg="sens,sens should give same as [sens,sens]",
+        err_msg="sens, sens should give same as [sens, sens]",
     )
     np.testing.assert_allclose(
         B3,
         B44,
-        err_msg="sens,sens should give same as (sens,sens)",
+        err_msg="sens, sens should give same as (sens, sens)",
     )
 
     B1 = sens.getH(pm1) * 4
@@ -62,7 +60,7 @@ def test_format_getBH_class_inputs():
     np.testing.assert_allclose(
         B1,
         B2,
-        err_msg="src,src should give same as [src,src]",
+        err_msg="src, src should give same as [src, src]",
     )
     np.testing.assert_allclose(
         B1,
@@ -72,7 +70,7 @@ def test_format_getBH_class_inputs():
     np.testing.assert_allclose(
         B1,
         B4,
-        err_msg="src,src should give same as [src,src]",
+        err_msg="src, src should give same as [src, src]",
     )
 
 

@@ -10,9 +10,9 @@ import pyvista as pv
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.fields.field_BH_triangularmesh import (
-    BHJM_magnet_trimesh,
-    fix_trimesh_orientation,
-    lines_end_in_trimesh,
+    _BHJM_magnet_trimesh,
+    _fix_trimesh_orientation,
+    _lines_end_in_trimesh,
 )
 
 
@@ -88,7 +88,7 @@ def test_TriangularMesh_getBH():
 
 def test_TriangularMesh_getB_different_facet_shapes_mixed():
     """test different facet shapes, facet cube has
-    shape (12,3,3) vs (4,3,3) for facet tetrahedron"""
+    shape (12, 3, 3) vs (4, 3, 3) for facet tetrahedron"""
     tetra_pv = pv.Tetrahedron()
     tetra = (
         magpy.magnet.Tetrahedron(
@@ -149,7 +149,7 @@ def test_magnet_trimesh_func():
     pts_inside = np.array([[0, 0, 1]])
     B0 = cube.getB(pts_inside)
     B1 = tmesh_cube.getB(pts_inside)
-    B2 = BHJM_magnet_trimesh(
+    B2 = _BHJM_magnet_trimesh(
         field="B",
         observers=pts_inside,
         polarization=np.array([pol]),
@@ -184,14 +184,14 @@ def test_open_mesh():
     }
     vertices = np.array([v for k, v in open_mesh.items() if k in "xyz"]).T
     faces = np.array([v for k, v in open_mesh.items() if k in "ijk"]).T
-    with pytest.raises(ValueError, match=r"Open mesh detected in .*."):
+    with pytest.raises(ValueError, match=r"Open mesh detected in"):
         magpy.magnet.TriangularMesh(
             polarization=(0, 0, 1),
             vertices=vertices,
             faces=faces,
             check_open="raise",
         )
-    with pytest.raises(ValueError, match=r"Open mesh in .* detected."):
+    with pytest.raises(ValueError, match=r"Open mesh detected in"):
         magpy.magnet.TriangularMesh(
             polarization=(0, 0, 1),
             vertices=vertices,
@@ -207,8 +207,8 @@ def test_open_mesh():
             check_open="warn",
         )
         assert len(record) == 2
-        assert re.match(r"Open mesh detected in .*.", str(record[0].message))
-        assert re.match(r"Open mesh in .* detected.", str(record[1].message))
+        assert re.match(r"Open mesh detected in", str(record[0].message))
+        assert re.match(r"Open mesh detected in", str(record[1].message))
 
     with pytest.warns(UserWarning) as record:  # noqa: PT030, PT031
         magpy.magnet.TriangularMesh(
@@ -220,11 +220,11 @@ def test_open_mesh():
         )
         assert len(record) == 3
         assert re.match(
-            r"Unchecked mesh status in .* detected. Now applying check_open()",
+            r"Unchecked mesh status in",
             str(record[0].message),
         )
         assert re.match(r"Open mesh detected in .*.", str(record[1].message))
-        assert re.match(r"Open mesh in .* detected.", str(record[2].message))
+        assert re.match(r"Open mesh detected in .*.", str(record[2].message))
 
     with warnings.catch_warnings():  # no warning should be issued!
         warnings.simplefilter("error")
@@ -245,7 +245,7 @@ def test_open_mesh():
     )
     with pytest.warns(
         UserWarning,
-        match=r"Open mesh of .* detected",
+        match=r"Open mesh detected in",
     ):
         mesh.getB((0, 0, 0))
 
@@ -256,7 +256,7 @@ def test_open_mesh():
         check_open="skip",
         reorient_faces="skip",
     )
-    with pytest.warns(UserWarning, match=r"Unchecked mesh status of .* detected"):
+    with pytest.warns(UserWarning, match=r"Unchecked open mesh status"):
         mesh.getB((0, 0, 0))
 
 
@@ -343,14 +343,12 @@ def test_TriangularMesh_from_faces_bad_inputs():
     # good element type but not array-like
     with pytest.raises(
         TypeError,
-        match=r"The `triangles` parameter must be a list or Collection of `Triangle` objects*.",
+        match="Input triangles must be",
     ):
         get_tri_from_triangles(triangle)
 
     # element in list has wrong type
-    with pytest.raises(
-        TypeError, match=r"All elements of `triangles` must be `Triangle` objects*."
-    ):
+    with pytest.raises(TypeError, match="Input triangles must be a list"):
         get_tri_from_triangles(["bad_type"])
 
     # bad type input
@@ -359,12 +357,12 @@ def test_TriangularMesh_from_faces_bad_inputs():
 
     # bad shape input
     msh = [((0, 0), (1, 0), (0, 1))] * 2
-    with pytest.raises(ValueError, match=r"Input parameter `mesh` has bad shape*."):
+    with pytest.raises(ValueError, match="Input mesh must have"):
         get_tri_from_mesh(msh)
 
     # bad shape input
     msh = [((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))] * 2
-    with pytest.raises(ValueError, match=r"Input parameter `mesh` has bad shape*."):
+    with pytest.raises(ValueError, match="Input mesh must have"):
         get_tri_from_mesh(msh)
 
 
@@ -442,7 +440,7 @@ def test_lines_ends_in_trimesh():
     msh = np.array([[[0, 0, 0], [0, 1, 0], [1, 0, 0]]])
     lines = np.array([[[-1, 1, -1], [1, 0, 0]]])
 
-    assert bool(lines_end_in_trimesh(lines, msh)[0]) is True
+    assert bool(_lines_end_in_trimesh(lines, msh)[0]) is True
 
 
 def test_reorient_on_closed_but_disconnected_mesh():
@@ -458,7 +456,7 @@ def test_reorient_on_closed_but_disconnected_mesh():
     bad_faces = faces.copy()
     bad_faces[::2] = bad_faces[::2, [0, 2, 1]]
 
-    fixed_faces = fix_trimesh_orientation(vertices, bad_faces)
+    fixed_faces = _fix_trimesh_orientation(vertices, bad_faces)
     np.testing.assert_array_equal(faces, fixed_faces)
 
 
@@ -466,7 +464,7 @@ def test_bad_mode_input():
     """test bad mode input"""
     with pytest.raises(
         ValueError,
-        match=r"The `check_open mode` argument .*, instead received 'badinput'.",
+        match="Input check_open mode must be one of",
     ):
         magpy.magnet.TriangularMesh.from_pyvista(
             polarization=(0, 0, 1), polydata=pv.Octahedron(), check_open="badinput"

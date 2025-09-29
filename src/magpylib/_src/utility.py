@@ -28,7 +28,7 @@ def get_allowed_sources_msg():
 
 
 ALLOWED_OBSERVER_MSG = """Observers must be either
-- array_like positions of shape (N1, N2, ..., 3)
+- array-like positions of shape (N1, N2, ..., 3)
 - Sensor object
 - Collection with at least one Sensor
 - 1D list of the above"""
@@ -60,7 +60,7 @@ def wrong_obj_msg(*objs, allow="sources"):
 def format_star_input(inp):
     """
     *inputs are always wrapped in tuple. Formats *inputs of form "src", "src, src"
-    but also "[src, src]" or ""(src,src") so that 1D lists/tuples come out.
+    but also "[src, src]" or ""(src, src") so that 1D lists/tuples come out.
     """
     if len(inp) == 1:
         return inp[0]
@@ -166,7 +166,9 @@ def check_duplicates(obj_list: Sequence) -> list:
             obj_list_new += [src]
 
     if len(obj_list_new) != len(obj_list):
-        warnings.warn("Eliminating duplicates", UserWarning, stacklevel=2)
+        warnings.warn(
+            "Eliminating duplicate objects in input list.", UserWarning, stacklevel=2
+        )
 
     return obj_list_new
 
@@ -187,7 +189,7 @@ def check_path_format(inp):
     result = all(len(obj._position) == len(obj._orientation) for obj in inp)
 
     if not result:
-        msg = "Bad path format (rot-pos with different lengths)"
+        msg = "Bad path format: position and orientation have different lengths."
         raise MagpylibBadUserInput(msg)
 
 
@@ -212,7 +214,7 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
         if isinstance(obj, allowed_classes):
             new_list += [obj]
         elif warn:
-            msg = f"Warning, cannot add {obj!r} to Collection."
+            msg = f"Cannot add {obj!r} to Collection; object type is not allowed."
             warnings.warn(msg, UserWarning, stacklevel=2)
     return new_list
 
@@ -259,7 +261,10 @@ def get_unit_factor(unit_input, *, target_unit, deci_centi=True):
 
     if factor_power is None or len(unit_input_str) > 2:
         valid_inputs = [f"{k}{target_unit}" for k in prefs]
-        msg = f"Invalid unit input ({unit_input!r}), must be one of {valid_inputs}"
+        msg = (
+            f"Input unit_input must be one of {valid_inputs}; "
+            f"instead received {unit_input!r}."
+        )
         raise ValueError(msg)
     return 1 / (10**factor_power)
 
@@ -280,7 +285,7 @@ def unit_prefix(number, unit="", precision=3, char_between="", as_tuple=False) -
         character to insert between number of prefix. Can be " " or any string, if a space is wanted
         before the unit symbol , by default ""
     as_tuple: bool, optional
-        if True returns (new_number_str, char_between, prefix, unit) tuple
+        if``True``returns (new_number_str, char_between, prefix, unit) tuple
         else returns the joined string
     Returns
     -------
@@ -325,7 +330,7 @@ def add_iteration_suffix(name):
 def cart_to_cyl_coordinates(observer):
     """
     cartesian observer positions to cylindrical coordinates
-    observer: ndarray, shape (n,3)
+    observer: ndarray, shape (n, 3)
     """
     x, y, z = observer.T
     r, phi = np.sqrt(x**2 + y**2), np.arctan2(y, x)
@@ -334,7 +339,7 @@ def cart_to_cyl_coordinates(observer):
 
 def cyl_field_to_cart(phi, Br, Bphi=None):
     """
-    transform Br,Bphi to Bx, By
+    transform Br, Bphi to Bx, By
     """
     if Bphi is not None:
         Bx = Br * np.cos(phi) - Bphi * np.sin(phi)
@@ -417,7 +422,7 @@ def open_animation(filepath, embed=True):
 
             display(Video(data=filepath, embed=embed))
         else:  # pragma: no cover
-            msg = "Filetype not supported, only 'mp4 or 'gif' allowed"
+            msg = "Filetype not supported, only 'mp4 or 'gif' allowed."
             raise TypeError(msg)
     else:
         import webbrowser  # noqa: PLC0415

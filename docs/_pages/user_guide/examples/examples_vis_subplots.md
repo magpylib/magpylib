@@ -26,7 +26,7 @@ import magpylib as magpy
 cyl = magpy.magnet.Cylinder(
     polarization=(1, 0, 0),
     dimension=(2, 1),
-    position=(4,0,0),
+    position=(4, 0, 0),
 )
 cyl.rotate_from_angax(angle=np.linspace(0, 300, 40), start=0, axis="z", anchor=0)
 
@@ -69,7 +69,7 @@ How to add and modify subplots in all three supported backends is demonstrated i
 
 ## Built-in Subplots
 
-For maximal efficiency, Magpylib offers auto-generated subplots of 3D models and the field along paths by providing the `show` function with proper input dictionaries.
+For maximal efficiency, Magpylib offers auto-generated subplots of 3D models and the field along paths by providing the `show()` function with proper input dictionaries.
 
 ```{code-cell} ipython3
 # Continuation from above - ensure previous code is executed

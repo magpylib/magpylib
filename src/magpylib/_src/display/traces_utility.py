@@ -78,7 +78,7 @@ def place_and_orient_model3d(
         vertices, coordsargs, useargs = get_vertices_from_model(
             model_kwargs, model_args, coordsargs
         )
-        # sometimes traces come as (n,m,3) shape
+        # sometimes traces come as (n, m, 3) shape
         vert_shape = vertices.shape
         vertices = np.reshape(vertices.astype(float), (3, -1))
 
@@ -107,7 +107,7 @@ def place_and_orient_model3d(
 
 def get_vertices_from_model(model_kwargs, model_args=None, coordsargs=None):
     """get vertices from model kwargs and args"""
-    if model_args and coordsargs is None:  # matplotlib default
+    if model_args and coordsargs is None:  # Matplotlib default
         coordsargs = {"x": "args[0]", "y": "args[1]", "z": "args[2]"}
     vertices = []
     if coordsargs is None:
@@ -123,11 +123,9 @@ def get_vertices_from_model(model_kwargs, model_args=None, coordsargs=None):
             v = model_kwargs[key]
         else:
             msg = (
-                "Rotating/Moving of provided model failed, trace dictionary "
-                f"has no argument {k!r}, use `coordsargs` to specify the names of the "
-                "coordinates to be used.\n"
-                "Matplotlib backends will set up coordsargs automatically if "
-                "the `args=(xs,ys,zs)` argument is provided."
+                f"Transforming model failed: missing argument {k!r}. "
+                "Provide coordinate names via coordsargs, e.g. {'x': 'x', 'y': 'y', 'z': 'z'}. "
+                "For Matplotlib, coordsargs is set automatically when using args=(xs, ys, zs)."
             )
             raise ValueError(msg)
         vertices.append(v)
@@ -242,8 +240,8 @@ def draw_arrowed_line(
     include_line=True,
 ) -> tuple:
     """
-    Provides x,y,z coordinates of an arrow drawn in the x-y-plane (z=0), showing up the y-axis and
-    centered in x,y,z=(0,0,0). The arrow vertices are then turned in the direction of `vec` and
+    Provides x, y, z coordinates of an arrow drawn in the x-y-plane (z=0), showing up the y-axis and
+    centered in x, y, z=(0, 0, 0). The arrow vertices are then turned in the direction of `vec` and
     moved to position `pos`.
     """
     norm = np.linalg.norm(vec)
@@ -345,7 +343,11 @@ def path_frames_to_indices(frames, path_len):
     elif hasattr(frames, "__iter__") and not isinstance(frames, str):
         inds = np.array(frames)
     else:  # pragma: no cover
-        msg = f"Invalid show_path value ({frames})"
+        msg = (
+            "Input frames (or show_path) must be None, True, False, 0, "
+            "an integer, or an iterable of indices; "
+            f"instead received {frames!r}."
+        )
         raise ValueError(msg)
     inds = inds[inds < path_len]
     if inds.size == 0:
@@ -433,9 +435,9 @@ def get_flatten_objects_properties_recursive(
 
 
 def merge_mesh3d(*traces):
-    """Merges a list of plotly mesh3d dictionaries. The `i,j,k` index parameters need to cumulate
+    """Merges a list of plotly mesh3d dictionaries. The `i, j, k` index parameters need to cumulate
     the indices of each object in order to point to the right vertices in the concatenated
-    vertices. `x,y,z,i,j,k` are mandatory fields, the `intensity` and `facecolor` parameters also
+    vertices. `x, y, z, i, j, k` are mandatory fields, the `intensity` and `facecolor` parameters also
     get concatenated if they are present in all objects. All other parameter found in the
     dictionary keys are taken from the first object, other keys from further objects are ignored.
     """
@@ -458,7 +460,7 @@ def merge_mesh3d(*traces):
 
 
 def merge_scatter3d(*traces):
-    """Merges a list of plotly scatter3d. `x,y,z` are mandatory fields and are concatenated with a
+    """Merges a list of plotly scatter3d. `x, y, z` are mandatory fields and are concatenated with a
     `None` vertex to prevent line connection between objects to be concatenated. Keys are taken
     from the first object, other keys from further objects are ignored.
     """
@@ -536,7 +538,7 @@ def getIntensity(vertices, axis) -> np.ndarray:
 
     Parameters
     ----------
-    vertices : ndarray, shape (n,3)
+    vertices : ndarray, shape (n, 3)
         The n vertices of the mesh object.
     axis : ndarray, shape (3,)
         Direction vector.
@@ -549,7 +551,7 @@ def getIntensity(vertices, axis) -> np.ndarray:
     pos = np.mean(p, axis=1)
     m = np.array(axis)
     intensity = (p[0] - pos[0]) * m[0] + (p[1] - pos[1]) * m[1] + (p[2] - pos[2]) * m[2]
-    # normalize to interval [0,1] (necessary for when merging mesh3d traces)
+    # normalize to interval [0, 1] (necessary for when merging mesh3d traces)
     ptp = np.ptp(intensity)
     ptp = ptp if ptp != 0 else 1
     return (intensity - np.min(intensity)) / ptp
@@ -565,7 +567,7 @@ def getColorscale(
     """Provides the colorscale for a plotly mesh3d trace. The colorscale must be an array
     containing arrays mapping a normalized value to an rgb, rgba, hex, hsl, hsv, or named
     color string. At minimum, a mapping for the lowest (0) and highest (1) values is required.
-    For example, `[[0, 'rgb(0,0,255)'], [1,'rgb(255,0,0)']]`. In this case the colorscale
+    For example, `[[0, 'rgb(0, 0, 255)'], [1, 'rgb(255, 0, 0)']]`. In this case the colorscale
     is created depending on the north/middle/south poles colors. If the middle color is
     None, the colorscale will only have north and south pole colors.
 
@@ -607,8 +609,8 @@ def getColorscale(
 
 def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
     """
-    Returns 3x2 array of the min and max ranges in x,y,z directions of input traces. Traces can be
-    any plotly trace object or a dict, with x,y,z numbered parameters.
+    Returns 3x2 array of the min and max ranges in x, y, z directions of input traces. Traces can be
+    any plotly trace object or a dict, with x, y, z numbered parameters.
     """
     ranges_rc = {}
     tr_dim_count = {}
@@ -667,7 +669,7 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
 
 
 def rescale_traces(traces, factors):
-    """Rescale traces based on scale factors by (row,col) index"""
+    """Rescale traces based on scale factors by (row, col) index"""
     for ind, tr in enumerate(traces):
         if "constructor" in tr:
             kwex = tr["kwargs_extra"]
@@ -802,7 +804,7 @@ def process_show_input_objs(objs, **kwargs):
 
 
 def triangles_area(triangles):
-    """Return area of triangles of shape (n,3,3) into an array of shape n"""
+    """Return area of triangles of shape (n, 3, 3) into an array of shape n"""
     norm = np.cross(
         triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0], axis=1
     )

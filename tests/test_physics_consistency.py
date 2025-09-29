@@ -1,6 +1,7 @@
 import numpy as np
 
 import magpylib as magpy
+from magpylib.func import polyline_field
 
 
 def test_dipole_approximation():
@@ -8,17 +9,17 @@ def test_dipole_approximation():
     pol = np.array([0.111, 0.222, 0.333])
     pos = (1234, -234, 345)
 
-    # cuboid with volume = 1 m^3
+    # cuboid with volume = 1 m³
     src1 = magpy.magnet.Cuboid(polarization=pol, dimension=(1, 1, 1))
     B1 = src1.getB(pos)
 
-    # Cylinder with volume = 1 m^3
+    # Cylinder with volume = 1 m³
     dia = np.sqrt(4 / np.pi)
     src2 = magpy.magnet.Cylinder(polarization=pol, dimension=(dia, 1))
     B2 = src2.getB(pos)
     np.testing.assert_allclose(B1, B2, rtol=1e-05, atol=1e-08)
 
-    # Sphere with volume = 1 m^3
+    # Sphere with volume = 1 m³
     dia = (6 / np.pi) ** (1 / 3)
     src3 = magpy.magnet.Sphere(polarization=pol, diameter=dia)
     B3 = src3.getB(pos)
@@ -47,7 +48,7 @@ def test_Circle_vs_Cylinder_field():
     magnetization (0, 0, 4pi/10*i0/h0) !!!
     """
 
-    # this set of position generates a strange error in celv
+    # this set of position generates a strange error in _celv
     # that is now fixed. (some k2<0.04, some larger)
     pos_obs = np.array(
         [
@@ -195,7 +196,9 @@ def test_Polyline_vs_Circle():
     # field from line currents
     Bls = []
     for p in po:
-        Bl = magpy.getB("Polyline", p, current=1, segment_start=ps, segment_end=pe)
+        Bl = polyline_field(
+            "B", observers=p, currents=1, segments_start=ps, segments_end=pe
+        )
         Bls += [np.sum(Bl, axis=0)]
     Bls = np.array(Bls)
 
@@ -224,7 +227,11 @@ def test_Polyline_vs_Infinite():
     pe = (0, 0, 1000000)
     Bls, Binfs = [], []
     for p in pos_obs:
-        Bls += [magpy.getB("Polyline", p, current=1, segment_start=ps, segment_end=pe)]
+        Bls += [
+            polyline_field(
+                "B", observers=p, currents=1, segments_start=ps, segments_end=pe
+            )
+        ]
         Binfs += [Binf(1, p)]
     Bls = np.array(Bls)
     Binfs = np.array(Binfs) * 1e-6

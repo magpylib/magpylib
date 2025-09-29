@@ -2,19 +2,19 @@ import numpy as np
 from numpy.testing import assert_allclose
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.fields.field_BH_circle import BHJM_circle
-from magpylib._src.fields.field_BH_cuboid import BHJM_magnet_cuboid
-from magpylib._src.fields.field_BH_cylinder import BHJM_magnet_cylinder
-from magpylib._src.fields.field_BH_cylinder_segment import BHJM_cylinder_segment
-from magpylib._src.fields.field_BH_dipole import BHJM_dipole
+from magpylib._src.fields.field_BH_circle import _BHJM_circle
+from magpylib._src.fields.field_BH_cuboid import _BHJM_magnet_cuboid
+from magpylib._src.fields.field_BH_cylinder import _BHJM_magnet_cylinder
+from magpylib._src.fields.field_BH_cylinder_segment import _BHJM_cylinder_segment
+from magpylib._src.fields.field_BH_dipole import _BHJM_dipole
 from magpylib._src.fields.field_BH_polyline import (
-    BHJM_current_polyline,
-    current_vertices_field,
+    _BHJM_current_polyline,
+    _current_vertices_field,
 )
-from magpylib._src.fields.field_BH_sphere import BHJM_magnet_sphere
-from magpylib._src.fields.field_BH_tetrahedron import BHJM_magnet_tetrahedron
-from magpylib._src.fields.field_BH_triangle import BHJM_triangle
-from magpylib._src.fields.field_BH_triangularmesh import BHJM_magnet_trimesh
+from magpylib._src.fields.field_BH_sphere import _BHJM_magnet_sphere
+from magpylib._src.fields.field_BH_tetrahedron import _BHJM_magnet_tetrahedron
+from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
+from magpylib._src.fields.field_BH_triangularmesh import _BHJM_magnet_trimesh
 
 #######################################################################################
 #######################################################################################
@@ -25,7 +25,7 @@ from magpylib._src.fields.field_BH_triangularmesh import BHJM_magnet_trimesh
 
 def helper_check_HBMJ_consistency(func, **kw):
     """
-    helper function to check H,B,M,J field consistencies
+    helper function to check H, B, M, J field consistencies
     returns H, B, M, J
     """
     B = func(field="B", **kw)
@@ -74,7 +74,7 @@ def test_BHJM_magnet_cuboid():
         "polarization": pol,
         "dimension": dim,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(BHJM_magnet_cuboid, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(_BHJM_magnet_cuboid, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -99,7 +99,7 @@ def test_BHJM_magnet_cuboid():
     Jtest = np.array([(0, 0, 0)] * 5 + [(1, 2, 3)])
     np.testing.assert_allclose(J, Jtest, rtol=1e-5)
 
-    # H_inout = BHJM_magnet_cuboid(field="H", in_out="outside", **kw)
+    # H_inout = _BHJM_magnet_cuboid(field="H", in_out="outside", **kw)
     # Htest_inout = Htest + Jtest / MU0
     # np.testing.assert_allclose(H_inout, Htest_inout, rtol=1e-5)
 
@@ -136,7 +136,7 @@ def test_BHJM_magnet_cylinder():
         "polarization": pol,
         "dimension": dim,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(BHJM_magnet_cylinder, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(_BHJM_magnet_cylinder, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -157,13 +157,13 @@ def test_BHJM_magnet_cylinder():
     Jtest = np.array([(0, 0, 0), (0, 0, 0), (0, 0, 0), (1, 1, 1)])
     np.testing.assert_allclose(J, Jtest)
 
-    # H_inout = BHJM_magnet_cylinder(field="H", in_out="outside", **kw)
+    # H_inout = _BHJM_magnet_cylinder(field="H", in_out="outside", **kw)
     # Htest_inout = Htest - Jtest / MU0
     # np.testing.assert_allclose(H_inout, Htest_inout, rtol=1e-5)
 
 
 def test_BHJM_magnet_sphere():
-    """test BHJM_magnet_sphere"""
+    """test _BHJM_magnet_sphere"""
     pol = np.array(
         [
             (0, 0, 0),
@@ -187,7 +187,7 @@ def test_BHJM_magnet_sphere():
         "polarization": pol,
         "diameter": dia,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(BHJM_magnet_sphere, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(_BHJM_magnet_sphere, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -241,7 +241,7 @@ def test_field_cylinder_segment_BH():
         "polarization": pol,
         "dimension": dim,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(BHJM_cylinder_segment, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(_BHJM_cylinder_segment, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -295,7 +295,7 @@ def test_BHJM_triangle_BH():
         "polarization": pol,
         "vertices": vert,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(BHJM_triangle, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(_BHJM_triangle, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -351,7 +351,7 @@ def test_magnet_tetrahedron_field_BH():
         "polarization": pol,
         "vertices": vert,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(BHJM_magnet_tetrahedron, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(_BHJM_magnet_tetrahedron, **kw)
 
     Btest = [
         [0.0, 0.0, 0.0],
@@ -376,7 +376,7 @@ def test_magnet_tetrahedron_field_BH():
 
 
 def test_BHJM_magnet_trimesh_BH():
-    """Test of BHJM_magnet_trimesh core-like function"""
+    """Test of _BHJM_magnet_trimesh core-like function"""
 
     mesh1 = [
         [
@@ -430,7 +430,7 @@ def test_BHJM_magnet_trimesh_BH():
         "polarization": pol,
         "mesh": mesh,
     }
-    H, B, _, J = helper_check_HBMJ_consistency(BHJM_magnet_trimesh, **kw)
+    H, B, _, J = helper_check_HBMJ_consistency(_BHJM_magnet_trimesh, **kw)
 
     Btest = [
         [1.54452002e-03, 3.11861149e-03, 4.68477835e-03],
@@ -455,7 +455,7 @@ def test_BHJM_circle():
         "current": np.array([1, 1, 2]) * 1e3,
         "diameter": np.array([2, 4, 6]),
     }
-    H, B, M, _ = helper_check_HBMJ_consistency(BHJM_circle, **kw)
+    H, B, M, _ = helper_check_HBMJ_consistency(_BHJM_circle, **kw)
 
     Btest = (
         np.array(
@@ -495,7 +495,7 @@ def test_BHJM_current_polyline():
         "segment_start": vert[:-1],
         "segment_end": vert[1:],
     }
-    H, B, M, _ = helper_check_HBMJ_consistency(BHJM_current_polyline, **kw)
+    H, B, M, _ = helper_check_HBMJ_consistency(_BHJM_current_polyline, **kw)
 
     Btest = (
         np.array(
@@ -533,7 +533,7 @@ def test_BHJM_dipole():
         "observers": np.array([(1, 2, 3), (-1, -2, -3), (3, 3, -1)]),
         "moment": pol * 4 * np.pi / 3 / MU0,
     }
-    H, B, M, _ = helper_check_HBMJ_consistency(BHJM_dipole, **kw)
+    H, B, M, _ = helper_check_HBMJ_consistency(_BHJM_dipole, **kw)
 
     Btest = [
         [4.09073329e-03, 8.18146659e-03, 5.90883698e-03],
@@ -567,7 +567,7 @@ def test_field_loop_specials():
     obs = np.array([(0, 0, 0), (1, 0, 0), (0, 0, 0), (1, 0, 0), (1, 0, 0), (0, 0, 0)])
 
     B = (
-        BHJM_circle(
+        _BHJM_circle(
             field="B",
             observers=obs,
             diameter=dia,
@@ -596,7 +596,7 @@ def test_field_line_special_cases():
 
     # only normal
     B1 = (
-        BHJM_current_polyline(
+        _BHJM_current_polyline(
             field="B",
             observers=po1,
             current=c1,
@@ -611,7 +611,7 @@ def test_field_line_special_cases():
     # only on_line
     po1b = np.array([(1, 1, 1)])
     B2 = (
-        BHJM_current_polyline(
+        _BHJM_current_polyline(
             field="B",
             observers=po1b,
             current=c1,
@@ -625,7 +625,7 @@ def test_field_line_special_cases():
 
     # only zero-segment
     B3 = (
-        BHJM_current_polyline(
+        _BHJM_current_polyline(
             field="B",
             observers=po1,
             current=c1,
@@ -643,7 +643,7 @@ def test_field_line_special_cases():
     pe2 = np.array([(0, 0, 0), (2, 2, 2)])
     po2 = np.array([(1, 2, 3), (1, 1, 1)])
     B4 = (
-        BHJM_current_polyline(
+        _BHJM_current_polyline(
             field="B",
             observers=po2,
             current=c2,
@@ -658,7 +658,7 @@ def test_field_line_special_cases():
     # normal + zero_segment
     po2b = np.array([(1, 2, 3), (1, 2, 3)])
     B5 = (
-        BHJM_current_polyline(
+        _BHJM_current_polyline(
             field="B",
             observers=po2b,
             current=c2,
@@ -673,7 +673,7 @@ def test_field_line_special_cases():
     # normal + on_line
     pe2b = np.array([(2, 2, 2)] * 2)
     B6 = (
-        BHJM_current_polyline(
+        _BHJM_current_polyline(
             field="B",
             observers=po2,
             current=c2,
@@ -691,7 +691,7 @@ def test_field_line_special_cases():
     pe4 = np.array([(0, 0, 0), (2, 2, 2), (2, 2, 2)])
     po4 = np.array([(1, 2, 3), (1, 2, 3), (1, 1, 1)])
     B7 = (
-        BHJM_current_polyline(
+        _BHJM_current_polyline(
             field="B",
             observers=po4,
             current=c4,
@@ -709,7 +709,7 @@ def test_field_loop2():
     curr = np.array([1])
     dia = np.array([2])
     obs = np.array([[0, 0, 0]])
-    B = BHJM_circle(
+    B = _BHJM_circle(
         field="B",
         observers=obs,
         current=curr,
@@ -719,7 +719,7 @@ def test_field_loop2():
     curr = np.array([1] * 2)
     dia = np.array([2] * 2)
     obs = np.array([[0, 0, 0]] * 2)
-    B2 = BHJM_circle(
+    B2 = _BHJM_circle(
         field="B",
         observers=obs,
         current=curr,
@@ -746,7 +746,7 @@ def test_field_line_from_vert():
         dtype="object",
     )
 
-    B_vert = current_vertices_field(
+    B_vert = _current_vertices_field(
         field="B",
         observers=observers,
         vertices=vertices,
@@ -761,7 +761,7 @@ def test_field_line_from_vert():
         cu = np.array([curr] * (len(vert) - 1))
         B += [
             np.sum(
-                BHJM_current_polyline(
+                _BHJM_current_polyline(
                     field="B",
                     observers=po,
                     current=cu,
@@ -793,7 +793,7 @@ def test_field_line_v4():
         ]
     )
     B = (
-        BHJM_current_polyline(
+        _BHJM_current_polyline(
             field="B",
             observers=obs,
             current=cur,
@@ -852,7 +852,7 @@ def test_triangle5():
     ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]] * n)
 
     b1 = (
-        BHJM_triangle(
+        _BHJM_triangle(
             field="H",
             observers=obs1,
             polarization=mag,
@@ -862,7 +862,7 @@ def test_triangle5():
     )
     np.testing.assert_allclose(btest1, b1)
     b2 = (
-        BHJM_triangle(
+        _BHJM_triangle(
             field="H",
             observers=obs2,
             polarization=mag,
@@ -874,29 +874,29 @@ def test_triangle5():
 
 
 def test_triangle6():
-    """special case tests on corners - result is nan"""
+    """special case tests on corners - result is 0"""
     obs1 = np.array([(0, 0, 0)])
     obs2 = np.array([(0, 5, 0)])
     obs3 = np.array([(5, 0, 0)])
     mag = np.array([(1, 2, 3)])
     ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]])
-    b1 = BHJM_triangle(
+    b1 = _BHJM_triangle(
         field="B",
         observers=obs1,
         polarization=mag,
         vertices=ver,
     )
-    b2 = BHJM_triangle(
+    b2 = _BHJM_triangle(
         field="B",
         observers=obs2,
         polarization=mag,
         vertices=ver,
     )
-    b3 = BHJM_triangle(
+    b3 = _BHJM_triangle(
         field="B",
         observers=obs3,
         polarization=mag,
         vertices=ver,
     )
     for b in [b1, b2, b3]:
-        np.testing.assert_equal(b, np.array([[np.nan] * 3]))
+        np.testing.assert_equal(b, np.array([[0] * 3]))
