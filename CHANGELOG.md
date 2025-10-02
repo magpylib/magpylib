@@ -1,6 +1,6 @@
 # Changelog
 
-## [5.2.0] - 2024-09-DD
+## [5.2.0] - 2025-10-02
 
 - `Triangle`, `Tetrahedron`, and `TriangularMesh`, `func.triangle_charge_field`,
   and `core.triangle_Bfield()` now return 0 on vertices instead of `nan` to
