@@ -114,7 +114,7 @@ def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     if obj.vertices is None:
         trace = create_null_dim_trace(color=style.color)
         return {**trace, **kwargs}
-    
+
     faces = []
     # every two consecutive triangles share an edge, so we alternate the vertex order
     # this allows to have all normals pointing in the same direction for a properly oriented mesh
@@ -128,7 +128,7 @@ def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     )
     traces = [{**trace, **kwargs}]
     obj.mesh = obj.vertices[faces]
-    if True: # if style.orientation.show:
+    if True:  # if style.orientation.show:
         traces.append(
             make_triangle_orientations(
                 obj,
@@ -150,7 +150,7 @@ def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     )
     traces = [{**trace, **kwargs}]
     obj.mesh = obj.vertices[obj.faces]
-    if obj.current_densities is not None: # and style.orientation.show:
+    if obj.current_densities is not None:  # and style.orientation.show:
         traces.append(
             make_triangle_orientations(
                 obj,
