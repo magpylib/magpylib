@@ -477,6 +477,7 @@ def test_colors_output2d():
     fig = magpy.show(objs, {**objs, **kw2d, "sumup": False, "pixel_agg": None}, **kw)
     assert get_scatters2d(fig) == [*["red"] * 4, *["blue"] * 4]
 
+
 def test_output2d_source_counts():
     """Tests if field values are consistent for each subplot when using same source in different both"""
     # see https://github.com/magpylib/magpylib/issues/872
