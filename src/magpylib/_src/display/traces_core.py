@@ -7,6 +7,7 @@
 # pylint: disable=cyclic-import
 
 import warnings
+from collections import namedtuple
 from itertools import cycle
 from typing import Any
 
@@ -131,7 +132,21 @@ def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     trace = make_BaseTriangularMesh(
         "plotly-dict", vertices=obj.vertices, faces=obj.faces, color=style.color
     )
-    return [{**trace, **kwargs}]
+    traces = [{**trace, **kwargs}]
+    obj.mesh = obj.vertices[obj.faces]
+    Orientation = namedtuple(
+        "Orientation", ["show", "size", "symbol", "offset", "color"]
+    )
+    style.orientation = Orientation(True, 2, "arrow", 0, "black")
+    if style.orientation.show and obj.current_densities is not None:
+        traces.append(
+            make_triangle_orientations(
+                obj,
+                vectors=obj.current_densities,
+                **{**kwargs, "legendgroup": trace.get("legendgroup")},
+            )
+        )
+    return traces
 
 
 def make_Circle(obj, base=72, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
@@ -301,7 +316,7 @@ def make_Tetrahedron(obj, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_triangle_orientations(obj, **kwargs) -> dict[str, Any]:
+def make_triangle_orientations(obj, vectors=None, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a triangle orientation cone or arrow3d in a dictionary
     based on the provided arguments.
@@ -315,10 +330,13 @@ def make_triangle_orientations(obj, **kwargs) -> dict[str, Any]:
     color = style.color if orient.color is None else orient.color
     vertices = obj.mesh if hasattr(obj, "mesh") else [obj.vertices]
     traces = []
-    for vert in vertices:
-        vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
+    for vert_ind, vert in enumerate(vertices):
+        if vectors is None:
+            vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
+        else:
+            vec = vectors[vert_ind]
         nvec = vec / np.linalg.norm(vec)
-        # arrow length proportional to square root of triangle
+        # arrow length proportional to square root of triangle area
         length = np.sqrt(triangles_area(np.expand_dims(vert, axis=0))[0]) * 0.2
         zaxis = np.array([0, 0, 1])
         cross = np.cross(nvec, zaxis)
