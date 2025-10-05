@@ -1,5 +1,6 @@
 """Display function codes"""
 
+# pylint: disable=too-many-lines
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-positional-arguments
 
