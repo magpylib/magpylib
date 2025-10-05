@@ -114,13 +114,29 @@ def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     if obj.vertices is None:
         trace = create_null_dim_trace(color=style.color)
         return {**trace, **kwargs}
-
-    faces = [(i, i + 1, i + 2) for i in range(len(obj.vertices) - 2)]
-
+    
+    faces = []
+    # every two consecutive triangles share an edge, so we alternate the vertex order
+    # this allows to have all normals pointing in the same direction for a properly oriented mesh
+    for i in range(len(obj.vertices) - 2):
+        if i % 2 == 0:
+            faces.append((i, i + 1, i + 2))
+        else:
+            faces.append((i + 1, i, i + 2))
     trace = make_BaseTriangularMesh(
         "plotly-dict", vertices=obj.vertices, faces=faces, color=style.color
     )
-    return [{**trace, **kwargs}]
+    traces = [{**trace, **kwargs}]
+    obj.mesh = obj.vertices[faces]
+    if True: # if style.orientation.show:
+        traces.append(
+            make_triangle_orientations(
+                obj,
+                vectors=obj.vertices[2:] - obj.vertices[:-2],
+                **{**kwargs, "legendgroup": trace.get("legendgroup")},
+            )
+        )
+    return traces
 
 
 def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
@@ -134,11 +150,7 @@ def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     )
     traces = [{**trace, **kwargs}]
     obj.mesh = obj.vertices[obj.faces]
-    Orientation = namedtuple(
-        "Orientation", ["show", "size", "symbol", "offset", "color"]
-    )
-    style.orientation = Orientation(True, 2, "arrow", 0, "black")
-    if style.orientation.show and obj.current_densities is not None:
+    if obj.current_densities is not None: # and style.orientation.show:
         traces.append(
             make_triangle_orientations(
                 obj,
@@ -323,7 +335,12 @@ def make_triangle_orientations(obj, vectors=None, **kwargs) -> dict[str, Any]:
     """
     # pylint: disable=protected-access
     style = obj.style
-    orient = style.orientation
+
+    Orientation = namedtuple(
+        "Orientation", ["show", "size", "symbol", "offset", "color"]
+    )
+    default_orient = Orientation(True, 2, "arrow", 0, "black")
+    orient = getattr(style, "orientation", default_orient)
     size = orient.size
     symbol = orient.symbol
     offset = orient.offset
