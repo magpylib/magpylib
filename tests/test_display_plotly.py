@@ -477,6 +477,24 @@ def test_colors_output2d():
     fig = magpy.show(objs, {**objs, **kw2d, "sumup": False, "pixel_agg": None}, **kw)
     assert get_scatters2d(fig) == [*["red"] * 4, *["blue"] * 4]
 
+def test_output2d_source_counts():
+    """Tests if field values are consistent for each subplot when using same source in different both"""
+    # see https://github.com/magpylib/magpylib/issues/872
+    cube = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
+    coll = magpy.Collection(cube)
+    sensor = magpy.Sensor(position=np.linspace((-2, 0, 2), (2, 0, 2), 10))
+
+    fig = magpy.show(
+        {"objects": [sensor], "output": "Hz", "col": 1},
+        {"objects": [coll], "output": "Hz", "col": 1},
+        {"objects": [sensor, cube], "output": "Hz", "col": 2},
+        backend="plotly",
+        return_fig=True,
+    )
+
+    assert len(fig.data) == 2
+    np.testing.assert_array_equal(fig.data[0].y, fig.data[1].y)
+
 
 def test_units_length():
     """test units lengths"""
