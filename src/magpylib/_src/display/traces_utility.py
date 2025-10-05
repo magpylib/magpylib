@@ -358,11 +358,18 @@ def path_frames_to_indices(frames, path_len):
 def get_objects_props_by_row_col(*objs, colorsequence, style_kwargs):
     """Return flat dict with objs as keys object properties as values.
     Properties include: row_cols, style, legendgroup, legendtext"""
+    # only model3d output needs the flattened object properties (e.g. extra model 3d for a Collection)
+    # otherwise for 2d output there may be duplicate sources (see issue #872)
     flat_objs_rc = {}
     rc_params_by_obj = {}
     obj_list_semi_flat = [o for obj in objs for o in obj["objects"]]
+    objs_by_rc = {}
     for obj in objs:
         rc_params = {k: v for k, v in obj.items() if k != "objects"}
+        rc = rc_params["row"], rc_params["col"]
+        if rc not in objs_by_rc:
+            objs_by_rc[rc] = []
+        objs_by_rc[rc].extend(obj["objects"])
         for subobj in obj["objects"]:
             children = getattr(subobj, "children_all", [])
             for child in chain([subobj], children):
@@ -379,7 +386,8 @@ def get_objects_props_by_row_col(*objs, colorsequence, style_kwargs):
             rc = rc_params["row"], rc_params["col"]
             if rc not in flat_objs_rc:
                 flat_objs_rc[rc] = {"objects": {}, "rc_params": rc_params}
-            flat_objs_rc[rc]["objects"][obj] = flat_sub_objs[obj]
+            if rc_params["output"] == "model3d" or obj in objs_by_rc[rc]:
+                flat_objs_rc[rc]["objects"][obj] = flat_sub_objs[obj]
     return flat_objs_rc
 
 
