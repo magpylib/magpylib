@@ -145,7 +145,7 @@ sheet = magpy.current.TriangleSheet(
 sheet.show(backend="plotly")
 ```
 
-This setup corresponds to a circular surface current with increasing amplitude towards the edges of a rectangular sheet. We again use the [Matplotlib streamplot example](examples-vis-mpl-streamplot) to visualize the resulting magnetic field, and observe that it closely resembles the field of a classical current loop.
+This setup corresponds to a circular surface current with increasing amplitude towards the edges of a rectangular sheet. Now we use a [pixel field quiver plot](examples-vis-vectorfield) to visualize the resulting magnetic field, and observe that it closely resembles the field of a classical current loop.
 
 ```{code-cell} ipython3
 :tags: [hide-input]
@@ -156,20 +156,21 @@ import matplotlib.pyplot as plt
 fig, ax = plt.subplots()
 
 # Create an observer grid in the xz-symmetry plane
-ts = np.linspace(-2, 2, 40)
-grid = np.array([[(x, 0, z) for x in ts] for z in ts])
-X, _, Z = np.moveaxis(grid, 2, 0)
+xs = np.linspace(-1.5, 1.5, 30)
+ys = np.linspace(-1, 1, 20)
+grid = np.array([[(x, 0, z) for x in xs] for z in ys])
 
-# Compute the B-field of the current sheet on the grid
-B = sheet.getB(grid)
-Bx, _, Bz = np.moveaxis(B, 2, 0)
-
-# Display the B-field with streamplot
-splt = ax.streamplot(X, Z, Bx, Bz,
-    density=1.5,
-    color=np.log10(np.linalg.norm(B, axis=2)),
-    cmap="cool",
+# Create a sensor with pixel array and pixel field style
+sens = magpy.Sensor(
+    pixel=grid,
+    style_pixel_field_source='B',
+    style_pixel_field_symbol='arrow3d',
+    style_pixel_field_sizescaling='uniform',
+    style_pixel_field_colormap='Plasma',
 )
+
+# Display the sensor and magnet using the Plotly backend
+magpy.show([sheet, sens], backend="plotly")
 
 # Figure styling
 ax.set(
