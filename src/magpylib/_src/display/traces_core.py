@@ -7,7 +7,6 @@
 # pylint: disable=cyclic-import
 
 import warnings
-from collections import namedtuple
 from itertools import cycle
 from typing import Any
 
@@ -128,11 +127,12 @@ def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     )
     traces = [{**trace, **kwargs}]
     obj.mesh = obj.vertices[faces]
-    if True:  # if style.orientation.show:
+    if obj.vertices is not None and style.orientation.show:
         traces.append(
             make_triangle_orientations(
                 obj,
                 vectors=obj.vertices[2:] - obj.vertices[:-2],
+                sizefactor=3,
                 **{**kwargs, "legendgroup": trace.get("legendgroup")},
             )
         )
@@ -172,13 +172,15 @@ def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
             * normals_safe[mask]
         )
         vectors_proj[mask] = vectors[mask] - proj
-    traces.append(
-        make_triangle_orientations(
-            obj,
-            vectors=vectors_proj,
-            **{**kwargs, "legendgroup": trace.get("legendgroup")},
+    if style.orientation.show:
+        traces.append(
+            make_triangle_orientations(
+                obj,
+                vectors=vectors_proj,
+                sizefactor=3,
+                **{**kwargs, "legendgroup": trace.get("legendgroup")},
+            )
         )
-    )
     return traces
 
 
@@ -349,19 +351,16 @@ def make_Tetrahedron(obj, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_triangle_orientations(obj, vectors=None, **kwargs) -> dict[str, Any]:
+def make_triangle_orientations(
+    obj, vectors=None, sizefactor=1, **kwargs
+) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a triangle orientation cone or arrow3d in a dictionary
     based on the provided arguments.
     """
     # pylint: disable=protected-access
     style = obj.style
-
-    Orientation = namedtuple(
-        "Orientation", ["show", "size", "symbol", "offset", "color"]
-    )
-    default_orient = Orientation(True, 2, "arrow", 0.5, "black")
-    orient = getattr(style, "orientation", default_orient)
+    orient = style.orientation
     size = orient.size
     symbol = orient.symbol
     offset = orient.offset
@@ -375,7 +374,9 @@ def make_triangle_orientations(obj, vectors=None, **kwargs) -> dict[str, Any]:
             vec = vectors[vert_ind]
         nvec = vec / np.linalg.norm(vec)
         # arrow length proportional to square root of triangle area
-        length = np.sqrt(triangles_area(np.expand_dims(vert, axis=0))[0]) * 0.2
+        length = (
+            np.sqrt(triangles_area(np.expand_dims(vert, axis=0))[0]) * 0.2 * sizefactor
+        )
         zaxis = np.array([0, 0, 1])
         cross = np.cross(nvec, zaxis)
         n = np.linalg.norm(cross)

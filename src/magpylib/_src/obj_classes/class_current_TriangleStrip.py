@@ -15,6 +15,7 @@ from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.target_meshing import _target_mesh_triangle_current
+from magpylib._src.style import CurrentSheetStyle
 from magpylib._src.utility import unit_prefix
 
 
@@ -108,6 +109,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         "vertices": 3,
     }
     get_trace = make_TriangleStrip
+    _style_class = CurrentSheetStyle
 
     def __init__(
         self,

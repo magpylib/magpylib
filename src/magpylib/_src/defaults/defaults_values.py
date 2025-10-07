@@ -87,6 +87,15 @@ DEFAULTS = {
                 },
                 "line": {"show": True, "width": 2, "style": "solid", "color": None},
             },
+            "currentsheet": {
+                "orientation": {
+                    "show": True,
+                    "size": 1,
+                    "color": "grey",
+                    "offset": 0.5,
+                    "symbol": "arrow3d",
+                },
+            },
             "sensor": {
                 "size": 1,
                 "sizemode": "scaled",
