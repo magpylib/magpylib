@@ -57,6 +57,7 @@ Then we construct a cube with the equivalent charge method by combining four `Tr
 
 ```{code-cell} ipython3
 :tags: [hide-input]
+# ...continuation from above
 
 # Vertices of a Cuboid
 p1 = (-1, -1, -.5)
@@ -89,6 +90,8 @@ Finally we realize the equivalent current method creating a `TriangleStrip` curr
 
 ```{code-cell} ipython3
 :tags: [hide-input]
+# ...continuation from above
+
 # Create a current strip where the current flows along the cube edges
 strip = magpy.current.TriangleStrip(
     vertices=[p1, p2, p3, p4, p5, p6, p7, p8, p1, p2],
