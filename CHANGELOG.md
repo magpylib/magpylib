@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased YYYY-MM-DD
+
+- Fixed source duplication in field calculation when using dynamic 2d subplots
+  with field output ([#905](https://github.com/magpylib/magpylib/pull/905))
+
 ## [5.2.0] - 2025-10-02
 
 - `Triangle`, `Tetrahedron`, and `TriangularMesh`, `func.triangle_charge_field`,
