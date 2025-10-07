@@ -128,7 +128,7 @@ faces = np.array(faces, dtype=int)
 def current_density(positions):
     """Return current density vectors for given positions."""
     x, y, _ = positions.T
-    return np.stack([np.cos(x), np.sin(y), np.zeros_like(x)], axis=1)
+    return np.stack([y, -x, np.zeros_like(x)], axis=1)
 
 # Compute current densities at triangle centers
 face_centers = np.mean(vertices[faces], axis=1)
@@ -145,7 +145,7 @@ sheet = magpy.current.TriangleSheet(
 sheet.show(backend="plotly")
 ```
 
-This setup corresponds to a circular surface current distributed across a rectangular sheet. We again use the [Matplotlib streamplot example](examples-vis-mpl-streamplot) to visualize the resulting magnetic field, and observe that it closely resembles the field of a classical current loop.
+This setup corresponds to a circular surface current with increasing amplitude towards the edges of a rectangular sheet. We again use the [Matplotlib streamplot example](examples-vis-mpl-streamplot) to visualize the resulting magnetic field, and observe that it closely resembles the field of a classical current loop.
 
 ```{code-cell} ipython3
 :tags: [hide-input]
