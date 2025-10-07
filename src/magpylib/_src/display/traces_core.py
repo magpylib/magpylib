@@ -154,7 +154,7 @@ def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
 
     if vectors is None:
         return traces
-    
+
     # Project vectors onto triangle surfaces
     tris = obj.mesh
     v1 = tris[:, 1] - tris[:, 0]
@@ -167,7 +167,10 @@ def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     normals_safe[~mask] = 0
     vectors_proj = vectors.copy()
     if np.any(mask):
-        proj = np.sum(vectors[mask] * normals_safe[mask], axis=1)[:, None] * normals_safe[mask]
+        proj = (
+            np.sum(vectors[mask] * normals_safe[mask], axis=1)[:, None]
+            * normals_safe[mask]
+        )
         vectors_proj[mask] = vectors[mask] - proj
     traces.append(
         make_triangle_orientations(
