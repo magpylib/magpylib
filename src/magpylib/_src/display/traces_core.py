@@ -150,14 +150,32 @@ def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     )
     traces = [{**trace, **kwargs}]
     obj.mesh = obj.vertices[obj.faces]
-    if obj.current_densities is not None:  # and style.orientation.show:
-        traces.append(
-            make_triangle_orientations(
-                obj,
-                vectors=obj.current_densities,
-                **{**kwargs, "legendgroup": trace.get("legendgroup")},
-            )
+    vectors = obj.current_densities
+
+    if vectors is None:
+        return traces
+    
+    # Project vectors onto triangle surfaces
+    tris = obj.mesh
+    v1 = tris[:, 1] - tris[:, 0]
+    v2 = tris[:, 2] - tris[:, 0]
+    normals = np.cross(v1, v2)
+    norms = np.linalg.norm(normals, axis=1)
+    mask = norms > 0
+    normals_safe = normals.copy()
+    normals_safe[mask] /= norms[mask][:, None]
+    normals_safe[~mask] = 0
+    vectors_proj = vectors.copy()
+    if np.any(mask):
+        proj = np.sum(vectors[mask] * normals_safe[mask], axis=1)[:, None] * normals_safe[mask]
+        vectors_proj[mask] = vectors[mask] - proj
+    traces.append(
+        make_triangle_orientations(
+            obj,
+            vectors=vectors_proj,
+            **{**kwargs, "legendgroup": trace.get("legendgroup")},
         )
+    )
     return traces
 
 
@@ -339,7 +357,7 @@ def make_triangle_orientations(obj, vectors=None, **kwargs) -> dict[str, Any]:
     Orientation = namedtuple(
         "Orientation", ["show", "size", "symbol", "offset", "color"]
     )
-    default_orient = Orientation(True, 2, "arrow", 0, "black")
+    default_orient = Orientation(True, 2, "arrow", 0.5, "black")
     orient = getattr(style, "orientation", default_orient)
     size = orient.size
     symbol = orient.symbol
