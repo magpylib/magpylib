@@ -95,6 +95,13 @@ DEFAULTS = {
                     "offset": 0.5,
                     "symbol": "arrow3d",
                 },
+                "mesh": {
+                    "grid": {
+                        "show": False,
+                        "line": {"width": 2, "style": "solid", "color": "black"},
+                        "marker": {"size": 1, "symbol": "o", "color": "black"},
+                    },
+                },
             },
             "sensor": {
                 "size": 1,

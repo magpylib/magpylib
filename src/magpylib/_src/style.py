@@ -1381,20 +1381,77 @@ class TriangularMeshStyle(MagnetStyle, TriangleProperties, TriangularMeshPropert
         super().__init__(orientation=orientation, **kwargs)
 
 
-class DefaultCurrentSheet(MagicProperties, TriangleProperties):
+class CurrentMesh(MagicProperties):
+    """Defines TriMesh mesh properties.
+
+    Parameters
+    ----------
+    grid: dict or GridMesh,  default=None
+        All mesh vertices and edges of a TriangularMesh object.
+    """
+
+    @property
+    def grid(self):
+        """GridMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._grid
+
+    @grid.setter
+    def grid(self, val):
+        self._grid = validate_property_class(val, "grid", CurrentGridMesh, self)
+
+
+class CurrentGridMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of CurrentGridMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+    """
+
+
+class CurrentMeshProperties:
+    """Defines CurrentMesh properties."""
+
+    @property
+    def mesh(self):
+        """`CurrentMesh` instance with `'show', 'markers', 'line'` properties
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._mesh
+
+    @mesh.setter
+    def mesh(self, val):
+        self._mesh = validate_property_class(val, "mesh", CurrentMesh, self)
+
+
+class DefaultCurrentSheet(MagicProperties, TriangleProperties, CurrentMeshProperties):
     """Defines styling properties of the DefaultCurrentSheet class.
 
     Parameters
     ----------
     orientation: dict or Orientation,  default=None
         Orientation styling of triangles.
+
+    mesh: dict or CurrentMesh, default=None
+        CurrentMesh styling properties (`'show', 'markers', 'line'`)
     """
 
-    def __init__(self, orientation=None, **kwargs):
-        super().__init__(orientation=orientation, **kwargs)
+    def __init__(self, orientation=None, mesh=None, **kwargs):
+        super().__init__(orientation=orientation, mesh=mesh, **kwargs)
 
 
-class CurrentSheetStyle(BaseStyle, TriangleProperties):
+class CurrentSheetStyle(BaseStyle, TriangleProperties, CurrentMeshProperties):
     """Defines styling properties of the CurrentSheet magnet class.
 
     Parameters
@@ -1423,10 +1480,13 @@ class CurrentSheetStyle(BaseStyle, TriangleProperties):
 
     orientation: dict or Orientation,  default=None,
         Orientation styling of triangles.
+
+    mesh: dict or CurrentMesh, default=None
+        CurrentMesh styling properties (`'show', 'markers', 'line'`)
     """
 
-    def __init__(self, orientation=None, **kwargs):
-        super().__init__(orientation=orientation, **kwargs)
+    def __init__(self, orientation=None, mesh=None, **kwargs):
+        super().__init__(orientation=orientation, mesh=mesh, **kwargs)
 
 
 class ArrowCS(MagicProperties):

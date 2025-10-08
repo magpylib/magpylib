@@ -114,19 +114,20 @@ def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
         trace = create_null_dim_trace(color=style.color)
         return {**trace, **kwargs}
 
-    faces = []
+    obj.faces = []
     # every two consecutive triangles share an edge, so we alternate the vertex order
     # this allows to have all normals pointing in the same direction for a properly oriented mesh
     for i in range(len(obj.vertices) - 2):
         if i % 2 == 0:
-            faces.append((i, i + 1, i + 2))
+            obj.faces.append((i, i + 1, i + 2))
         else:
-            faces.append((i + 1, i, i + 2))
+            obj.faces.append((i + 1, i, i + 2))
+    obj.faces = np.array(obj.faces)
     trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=obj.vertices, faces=faces, color=style.color
+        "plotly-dict", vertices=obj.vertices, faces=obj.faces, color=style.color
     )
     traces = [{**trace, **kwargs}]
-    obj.mesh = obj.vertices[faces]
+    obj.mesh = obj.vertices[obj.faces]
     if obj.vertices is not None and style.orientation.show:
         traces.append(
             make_triangle_orientations(
@@ -136,6 +137,13 @@ def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
                 **{**kwargs, "legendgroup": trace.get("legendgroup")},
             )
         )
+    for mode in ("grid",):
+        if getattr(style.mesh, mode).show:
+            kw = {**kwargs, "legendgroup": trace.get("legendgroup")}
+            kw["showlegend"] = False
+            trace = make_mesh_lines(obj, mode, **kw)
+            if trace:
+                traces.append(trace)
     return traces
 
 
@@ -181,6 +189,11 @@ def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
                 **{**kwargs, "legendgroup": trace.get("legendgroup")},
             )
         )
+    for mode in ("grid",):
+        if getattr(style.mesh, mode).show:
+            trace = make_mesh_lines(obj, mode, **kwargs)
+            if trace:
+                traces.append(trace)
     return traces
 
 
