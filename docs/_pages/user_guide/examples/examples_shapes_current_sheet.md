@@ -60,6 +60,8 @@ We visualize the magnetic field of this current strip in the x–z plane, follow
 ```{code-cell} ipython3
 :tags: [hide-input]
 
+# ... continuation from above
+
 import matplotlib.pyplot as plt
 
 # Create a Matplotlib figure
@@ -150,10 +152,7 @@ This setup corresponds to a circular surface current with increasing amplitude t
 ```{code-cell} ipython3
 :tags: [hide-input]
 
-import matplotlib.pyplot as plt
-
-# Create a Matplotlib figure
-fig, ax = plt.subplots()
+# ... continuation from above
 
 # Create an observer grid in the xz-symmetry plane
 xs = np.linspace(-1.5, 1.5, 30)
@@ -170,14 +169,5 @@ sens = magpy.Sensor(
 )
 
 # Display the sensor and magnet using the Plotly backend
-magpy.show([sheet, sens], backend="plotly")
-
-# Figure styling
-ax.set(
-    xlabel="x-position (m)",
-    ylabel="z-position (m)",
-)
-
-plt.tight_layout()
-plt.show()
+magpy.show([sheet, sens], backend="plotly", style_legend_show=False)
 ```
