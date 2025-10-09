@@ -133,7 +133,7 @@ def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
             make_triangle_orientations(
                 obj,
                 vectors=obj.vertices[2:] - obj.vertices[:-2],
-                sizefactor=3,
+                sizefactor=2.5,
                 **{**kwargs, "legendgroup": trace.get("legendgroup")},
             )
         )
@@ -185,7 +185,7 @@ def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
             make_triangle_orientations(
                 obj,
                 vectors=vectors_proj,
-                sizefactor=3,
+                sizefactor=2.5,
                 **{**kwargs, "legendgroup": trace.get("legendgroup")},
             )
         )
