@@ -49,7 +49,7 @@ verts[1::2] = mobis_strip_vertices(0.4)
 strip = magpy.current.TriangleStrip(
     vertices=verts,
     current=1,
-    style_label="Mobius Current Sheet"
+    style_label="Mobius Current Sheet",
 )
 
 strip.show(backend="plotly")
@@ -141,13 +141,19 @@ sheet = magpy.current.TriangleSheet(
     current_densities=cds,
     vertices=vertices,
     faces=faces,
+    style_mesh_grid_show=True,
+    style_mesh_grid_line_width=0.5,
+    style_orientation_color='b',
+    style_orientation_symbol='cone',
 )
 
 # Visualize in Plotly
 sheet.show(backend="plotly")
 ```
 
-This setup corresponds to a circular surface current with increasing amplitude towards the edges of a rectangular sheet. Now we use a [pixel field quiver plot](examples-vis-vectorfield) to visualize the resulting magnetic field, and observe that it closely resembles the field of a classical current loop.
+This setup corresponds to a circular surface current with increasing amplitude towards the edges of a rectangular sheet. Notice that we can tune the mesh styling.
+
+Now we use a [pixel field quiver plot](examples-vis-vectorfield) to visualize the resulting magnetic field with minimal effort:
 
 ```{code-cell} ipython3
 :tags: [hide-input]
@@ -171,3 +177,5 @@ sens = magpy.Sensor(
 # Display the sensor and magnet using the Plotly backend
 magpy.show([sheet, sens], backend="plotly", style_legend_show=False)
 ```
+
+We observe that the B-field closely resembles the field of a classical current loop. Possibly this is the result of the current's increase in amplitude with distance from the center of the sheet.
