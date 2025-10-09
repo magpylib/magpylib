@@ -123,7 +123,7 @@ for i in range(n - 1):
     for j in range(n - 1):
         idx = j + i * n
         faces.append((idx, idx + n, idx + n + 1))
-        faces.append((idx, idx + 1, idx + n + 1))
+        faces.append((idx, idx + n + 1, idx + 1))
 faces = np.array(faces, dtype=int)
 
 # Define a current density function
