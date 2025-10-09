@@ -191,7 +191,9 @@ def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
         )
     for mode in ("grid",):
         if getattr(style.mesh, mode).show:
-            trace = make_mesh_lines(obj, mode, **kwargs)
+            kw = {**kwargs, "legendgroup": trace.get("legendgroup")}
+            kw["showlegend"] = False
+            trace = make_mesh_lines(obj, mode, **kw)
             if trace:
                 traces.append(trace)
     return traces
