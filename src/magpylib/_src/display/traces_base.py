@@ -411,6 +411,10 @@ def make_Pyramid(
     j = i + 1
     j[-1] = 0
     k = np.array([N] * N, dtype=int)
+    if N > 2:
+        i = np.concatenate([i, np.zeros(N - 2, dtype=int)])
+        j = np.concatenate([j, np.arange(1, N - 1, dtype=int)])
+        k = np.concatenate([k, np.arange(2, N, dtype=int)])
     trace = {"type": "mesh3d", "x": x, "y": y, "z": z, "i": i, "j": j, "k": k}
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)

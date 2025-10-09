@@ -14,6 +14,7 @@ from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.target_meshing import _target_mesh_triangle_current
+from magpylib._src.style import CurrentSheetStyle
 
 
 class TriangleSheet(BaseSource, BaseTarget):
@@ -103,6 +104,7 @@ class TriangleSheet(BaseSource, BaseTarget):
         "faces": 3,
     }
     get_trace = make_TriangleSheet
+    _style_class = CurrentSheetStyle
 
     def __init__(
         self,
