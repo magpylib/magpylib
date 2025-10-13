@@ -375,7 +375,8 @@ def make_triangle_orientations(
     """
     # pylint: disable=protected-access
     style = obj.style
-    orient = getattr(style, "orientation", style.direction)
+    orient = getattr(style, "orientation", None)
+    orient = getattr(style, "direction", None) if orient is None else orient
     size = orient.size
     symbol = orient.symbol
     offset = getattr(orient, "offset", 0.5)
