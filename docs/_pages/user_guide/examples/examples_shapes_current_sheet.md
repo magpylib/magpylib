@@ -143,8 +143,8 @@ sheet = magpy.current.TriangleSheet(
     faces=faces,
     style_mesh_grid_show=True,
     style_mesh_grid_line_width=0.5,
-    style_orientation_color='b',
-    style_orientation_symbol='cone',
+    style_direction_color='b',
+    style_direction_symbol='cone',
 )
 
 # Visualize in Plotly

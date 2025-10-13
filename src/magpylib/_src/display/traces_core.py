@@ -128,7 +128,7 @@ def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     )
     traces = [{**trace, **kwargs}]
     obj.mesh = obj.vertices[obj.faces]
-    if obj.vertices is not None and style.orientation.show:
+    if obj.vertices is not None and style.direction.show:
         traces.append(
             make_triangle_orientations(
                 obj,
@@ -180,7 +180,7 @@ def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
             * normals_safe[mask]
         )
         vectors_proj[mask] = vectors[mask] - proj
-    if style.orientation.show:
+    if style.direction.show:
         traces.append(
             make_triangle_orientations(
                 obj,
@@ -375,10 +375,10 @@ def make_triangle_orientations(
     """
     # pylint: disable=protected-access
     style = obj.style
-    orient = style.orientation
+    orient = getattr(style, "orientation", style.direction)
     size = orient.size
     symbol = orient.symbol
-    offset = orient.offset
+    offset = getattr(orient, "offset", 0.5)
     color = style.color if orient.color is None else orient.color
     vertices = obj.mesh if hasattr(obj, "mesh") else [obj.vertices]
     traces = []

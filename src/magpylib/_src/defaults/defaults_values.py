@@ -88,11 +88,10 @@ DEFAULTS = {
                 "line": {"show": True, "width": 2, "style": "solid", "color": None},
             },
             "currentsheet": {
-                "orientation": {
+                "direction": {
                     "show": True,
                     "size": 1,
                     "color": "grey",
-                    "offset": 0.5,
                     "symbol": "arrow3d",
                 },
                 "mesh": {

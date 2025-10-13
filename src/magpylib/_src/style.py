@@ -1133,28 +1133,8 @@ class TriMesh(MagicProperties):
         )
 
 
-class Orientation(MagicProperties):
-    """Defines Triangle orientation properties.
-
-    Parameters
-    ----------
-    show: bool, default=True
-        Show/hide orientation symbol.
-
-    size: float, default=1,
-        Size of the orientation symbol
-
-    color: str, default=None
-        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
-
-    offset: float, default=0.1
-        Defines the orientation symbol offset, normal to the triangle surface. Must be a number
-        between [0, 1], 0 resulting in the cone/arrow head to be coincident to the triangle surface
-        and 1 with the base.
-
-    symbol: {"cone", "arrow3d"}:
-        Orientation symbol for the triangular faces.
-    """
+class DirectionProperties:
+    """Defines direction properties, common for CurrentSheet, Triangle and Triangularmesh."""
 
     _allowed_symbols = ("cone", "arrow3d")
 
@@ -1192,6 +1172,22 @@ class Orientation(MagicProperties):
         self._color = color_validator(val, parent_name=f"{type(self).__name__}")
 
     @property
+    def symbol(self):
+        """Pixel symbol. Can be one of ("cone", "arrow3d")`."""
+        return self._symbol
+
+    @symbol.setter
+    def symbol(self, val):
+        assert val is None or val in self._allowed_symbols, (
+            f"Input symbol of {type(self).__name__} must be one of {self._allowed_symbols}; instead received {val!r}."
+        )
+        self._symbol = val
+
+
+class OffsetProperties:
+    """Defines orientation properties, common for Triangle and Triangularmesh."""
+
+    @property
     def offset(self):
         """Defines the orientation symbol offset, normal to the triangle surface. `offset=0` results
         in the cone/arrow head to be coincident to the triangle surface and `offset=1` with the
@@ -1206,17 +1202,36 @@ class Orientation(MagicProperties):
         )
         self._offset = val
 
-    @property
-    def symbol(self):
-        """Pixel symbol. Can be one of ("cone", "arrow3d")`."""
-        return self._symbol
 
-    @symbol.setter
-    def symbol(self, val):
-        assert val is None or val in self._allowed_symbols, (
-            f"Input symbol of {type(self).__name__} must be one of {self._allowed_symbols}; instead received {val!r}."
+class Orientation(MagicProperties, DirectionProperties, OffsetProperties):
+    """Defines Triangle orientation properties.
+
+    Parameters
+    ----------
+    show: bool, default=True
+        Show/hide orientation symbol.
+
+    size: float, default=1,
+        Size of the orientation symbol
+
+    color: str, default=None
+        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
+
+    symbol: {"cone", "arrow3d"}:
+        Orientation symbol for the triangular faces.
+
+    offset: float, default=0.1
+        Defines the orientation symbol offset, normal to the triangle surface. Must be a number
+        between [0, 1], 0 resulting in the cone/arrow head to be coincident to the triangle surface
+        and 1 with the base.
+    """
+
+    def __init__(
+        self, show=None, size=None, color=None, symbol=None, offset=None, **kwargs
+    ):
+        super().__init__(
+            show=show, size=size, color=color, symbol=symbol, offset=offset, **kwargs
         )
-        self._symbol = val
 
 
 class TriangleProperties:
@@ -1420,7 +1435,28 @@ class CurrentGridMesh(MagicProperties, MarkerLineProperties):
     """
 
 
-class CurrentMeshProperties:
+class CurrentDirection(MagicProperties, DirectionProperties):
+    """Defines CurrentSheet direction properties.
+    Parameters
+    ----------
+    show: bool, default=True
+        Show/hide orientation symbol.
+
+    size: float, default=1,
+        Size of the orientation symbol
+
+    color: str, default=None
+        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
+
+    symbol: {"cone", "arrow3d"}:
+        Current direction symbol for the triangular faces.
+    """
+
+    def __init__(self, show=None, color=None, size=None, symbol=None, **kwargs):
+        super().__init__(show=show, color=color, size=size, symbol=symbol, **kwargs)
+
+
+class CurrentSheetProperties:
     """Defines CurrentMesh properties."""
 
     @property
@@ -1434,24 +1470,37 @@ class CurrentMeshProperties:
     def mesh(self, val):
         self._mesh = validate_property_class(val, "mesh", CurrentMesh, self)
 
+    @property
+    def direction(self):
+        """`CurrentDirection` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._direction
 
-class DefaultCurrentSheet(MagicProperties, TriangleProperties, CurrentMeshProperties):
+    @direction.setter
+    def direction(self, val):
+        self._direction = validate_property_class(
+            val, "direction", CurrentDirection, self
+        )
+
+
+class DefaultCurrentSheet(MagicProperties, CurrentSheetProperties):
     """Defines styling properties of the DefaultCurrentSheet class.
 
     Parameters
     ----------
-    orientation: dict or Orientation,  default=None
-        Orientation styling of triangles.
+    direction: dict or CurrentDirection,  default=None
+        CurrentDirection styling of triangles.
 
     mesh: dict or CurrentMesh, default=None
         CurrentMesh styling properties (`'show', 'markers', 'line'`)
     """
 
-    def __init__(self, orientation=None, mesh=None, **kwargs):
-        super().__init__(orientation=orientation, mesh=mesh, **kwargs)
+    def __init__(self, direction=None, mesh=None, **kwargs):
+        super().__init__(direction=direction, mesh=mesh, **kwargs)
 
 
-class CurrentSheetStyle(BaseStyle, TriangleProperties, CurrentMeshProperties):
+class CurrentSheetStyle(BaseStyle, CurrentSheetProperties):
     """Defines styling properties of the CurrentSheet magnet class.
 
     Parameters
@@ -1478,15 +1527,15 @@ class CurrentSheetStyle(BaseStyle, TriangleProperties, CurrentMeshProperties):
         positioned relatively to the main object to be displayed and moved automatically with it.
         This feature also allows the user to replace the original 3d representation of the object.
 
-    orientation: dict or Orientation,  default=None,
-        Orientation styling of triangles.
+    direction: dict or CurrentDirection,  default=None,
+        CurrentDirection styling of triangles.
 
     mesh: dict or CurrentMesh, default=None
         CurrentMesh styling properties (`'show', 'markers', 'line'`)
     """
 
-    def __init__(self, orientation=None, mesh=None, **kwargs):
-        super().__init__(orientation=orientation, mesh=mesh, **kwargs)
+    def __init__(self, direction=None, mesh=None, **kwargs):
+        super().__init__(direction=direction, mesh=mesh, **kwargs)
 
 
 class ArrowCS(MagicProperties):
