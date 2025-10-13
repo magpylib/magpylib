@@ -2,7 +2,8 @@
 
 ## Unreleased YYYY-MM-DD
 
-- Added current direction and styling to `TriangleStrip` and `TriangleSheet` visualizations ([#906](https://github.com/magpylib/magpylib/pull/906))
+- Added current direction and styling to `TriangleStrip` and `TriangleSheet`
+  visualizations ([#906](https://github.com/magpylib/magpylib/pull/906))
 - Fixed source duplication in field calculation when using dynamic 2d subplots
   with field output ([#905](https://github.com/magpylib/magpylib/pull/905))
 
@@ -12,7 +13,7 @@
   and `core.triangle_Bfield()` now return 0 on vertices instead of `nan` to
   avoid confusion and to comply with all other classes. This behavior is now
   also noted in the docstrings.
-  ([#836](<https://github.com/magpylib/magpylib/issues/836>)).
+  ([#836](https://github.com/magpylib/magpylib/issues/836)).
 - Removed deprecated members `Line` and `Circle` and 'low magnetization'
   warning. ([#693](https://github.com/magpylib/magpylib/issues/693))
 - Major docstring review aligning with NuPyDoc/Scipy convention
