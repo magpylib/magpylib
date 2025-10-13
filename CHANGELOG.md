@@ -2,6 +2,7 @@
 
 ## Unreleased YYYY-MM-DD
 
+- Added current direction and styling to `TriangleStrip` and `TriangleSheet` visualizations ([#906](https://github.com/magpylib/magpylib/pull/906))
 - Fixed source duplication in field calculation when using dynamic 2d subplots
   with field output ([#905](https://github.com/magpylib/magpylib/pull/905))
 
@@ -11,7 +12,7 @@
   and `core.triangle_Bfield()` now return 0 on vertices instead of `nan` to
   avoid confusion and to comply with all other classes. This behavior is now
   also noted in the docstrings.
-  ([#836],(https://github.com/magpylib/magpylib/issues/836)).
+  ([#836](<https://github.com/magpylib/magpylib/issues/836>)).
 - Removed deprecated members `Line` and `Circle` and 'low magnetization'
   warning. ([#693](https://github.com/magpylib/magpylib/issues/693))
 - Major docstring review aligning with NuPyDoc/Scipy convention
@@ -316,7 +317,7 @@ This is a major update that includes
 - New features
 - Improved internal workings
 
-### Magpylib class changes/fixes:
+### Magpylib class changes/fixes
 
 - `Box` class renamed to `Cuboid`.
   ([#350](https://github.com/magpylib/magpylib/issues/350))
@@ -341,7 +342,7 @@ This is a major update that includes
 - All classes have the `describe()` method which gives a quick object property
   overview.
 
-### Field computation changes/fixes:
+### Field computation changes/fixes
 
 - New computation core. Added top level subpackage `magpylib.core` where all
   field implementations can be accessed directly without the
@@ -382,7 +383,7 @@ This is a major update that includes
   different observer input shapes.
   ([#503](https://github.com/magpylib/magpylib/pull/503))
 
-### Major graphic output overhaul:
+### Major graphic output overhaul
 
 - Styles:
   - All object now have the `style` attribute for graphical output
@@ -426,7 +427,7 @@ This is a major update that includes
   - Error msg when `show()` is called without argument
     ([#448](https://github.com/magpylib/magpylib/issues/448))
 
-### New documentation:
+### New documentation
 
 - Completely new structure and layout.
   ([#399](https://github.com/magpylib/magpylib/issues/399),
@@ -487,7 +488,7 @@ This is a major update that includes
   relations.
 - The `describe()` method gives a great Collection tree overview.
 
-### Other changes/fixes:
+### Other changes/fixes
 
 - Magpylib error message improvement. Msg will now tell you what input is
   expected.
@@ -818,7 +819,7 @@ API changes New features Improved internal workings
     <details>
     <summary> Click here for Example </summary>
 
-  Code: https://gist.github.com/lucasgcb/77d55f2fda688e2fb8e1e4a68bb830b8
+  Code: <https://gist.github.com/lucasgcb/77d55f2fda688e2fb8e1e4a68bb830b8>
 
   **Output:**
   ![image](https://user-images.githubusercontent.com/7332704/58973138-86b4a600-87bf-11e9-9e63-35892b7a6713.png)
@@ -876,7 +877,6 @@ The first official release of the Magpylib library.
 
 ---
 
-[Unreleased]: https://github.com/magpylib/magpylib/compare/5.1.1...HEAD
 [5.1.1]: https://github.com/magpylib/magpylib/compare/5.1.0...5.1.1
 [5.1.0]: https://github.com/magpylib/magpylib/compare/5.0.4...5.1.0
 [5.0.4]: https://github.com/magpylib/magpylib/compare/5.0.3...5.0.4
