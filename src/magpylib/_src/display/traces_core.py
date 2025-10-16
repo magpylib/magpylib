@@ -114,12 +114,37 @@ def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
         trace = create_null_dim_trace(color=style.color)
         return {**trace, **kwargs}
 
-    faces = [(i, i + 1, i + 2) for i in range(len(obj.vertices) - 2)]
-
+    obj.faces = []
+    # every two consecutive triangles share an edge, so we alternate the vertex order
+    # this allows to have all normals pointing in the same direction for a properly oriented mesh
+    for i in range(len(obj.vertices) - 2):
+        if i % 2 == 0:
+            obj.faces.append((i, i + 1, i + 2))
+        else:
+            obj.faces.append((i + 1, i, i + 2))
+    obj.faces = np.array(obj.faces)
     trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=obj.vertices, faces=faces, color=style.color
+        "plotly-dict", vertices=obj.vertices, faces=obj.faces, color=style.color
     )
-    return [{**trace, **kwargs}]
+    traces = [{**trace, **kwargs}]
+    obj.mesh = obj.vertices[obj.faces]
+    if obj.vertices is not None and style.direction.show:
+        traces.append(
+            make_triangle_orientations(
+                obj,
+                vectors=obj.vertices[2:] - obj.vertices[:-2],
+                sizefactor=2.5,
+                **{**kwargs, "legendgroup": trace.get("legendgroup")},
+            )
+        )
+    for mode in ("grid",):
+        if getattr(style.mesh, mode).show:
+            kw = {**kwargs, "legendgroup": trace.get("legendgroup")}
+            kw["showlegend"] = False
+            trace = make_mesh_lines(obj, mode, **kw)
+            if trace:
+                traces.append(trace)
+    return traces
 
 
 def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
@@ -131,7 +156,47 @@ def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     trace = make_BaseTriangularMesh(
         "plotly-dict", vertices=obj.vertices, faces=obj.faces, color=style.color
     )
-    return [{**trace, **kwargs}]
+    traces = [{**trace, **kwargs}]
+    obj.mesh = obj.vertices[obj.faces]
+    vectors = obj.current_densities
+
+    if vectors is None:
+        return traces
+
+    # Project vectors onto triangle surfaces
+    tris = obj.mesh
+    v1 = tris[:, 1] - tris[:, 0]
+    v2 = tris[:, 2] - tris[:, 0]
+    normals = np.cross(v1, v2)
+    norms = np.linalg.norm(normals, axis=1)
+    mask = norms > 0
+    normals_safe = normals.copy()
+    normals_safe[mask] /= norms[mask][:, None]
+    normals_safe[~mask] = 0
+    vectors_proj = vectors.copy()
+    if np.any(mask):
+        proj = (
+            np.sum(vectors[mask] * normals_safe[mask], axis=1)[:, None]
+            * normals_safe[mask]
+        )
+        vectors_proj[mask] = vectors[mask] - proj
+    if style.direction.show:
+        traces.append(
+            make_triangle_orientations(
+                obj,
+                vectors=vectors_proj,
+                sizefactor=2.5,
+                **{**kwargs, "legendgroup": trace.get("legendgroup")},
+            )
+        )
+    for mode in ("grid",):
+        if getattr(style.mesh, mode).show:
+            kw = {**kwargs, "legendgroup": trace.get("legendgroup")}
+            kw["showlegend"] = False
+            trace = make_mesh_lines(obj, mode, **kw)
+            if trace:
+                traces.append(trace)
+    return traces
 
 
 def make_Circle(obj, base=72, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
@@ -301,25 +366,33 @@ def make_Tetrahedron(obj, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_triangle_orientations(obj, **kwargs) -> dict[str, Any]:
+def make_triangle_orientations(
+    obj, vectors=None, sizefactor=1, **kwargs
+) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a triangle orientation cone or arrow3d in a dictionary
     based on the provided arguments.
     """
     # pylint: disable=protected-access
     style = obj.style
-    orient = style.orientation
+    orient = getattr(style, "orientation", None)
+    orient = getattr(style, "direction", None) if orient is None else orient
     size = orient.size
     symbol = orient.symbol
-    offset = orient.offset
+    offset = getattr(orient, "offset", 0.5)
     color = style.color if orient.color is None else orient.color
     vertices = obj.mesh if hasattr(obj, "mesh") else [obj.vertices]
     traces = []
-    for vert in vertices:
-        vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
+    for vert_ind, vert in enumerate(vertices):
+        if vectors is None:
+            vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
+        else:
+            vec = vectors[vert_ind]
         nvec = vec / np.linalg.norm(vec)
-        # arrow length proportional to square root of triangle
-        length = np.sqrt(triangles_area(np.expand_dims(vert, axis=0))[0]) * 0.2
+        # arrow length proportional to square root of triangle area
+        length = (
+            np.sqrt(triangles_area(np.expand_dims(vert, axis=0))[0]) * 0.2 * sizefactor
+        )
         zaxis = np.array([0, 0, 1])
         cross = np.cross(nvec, zaxis)
         n = np.linalg.norm(cross)

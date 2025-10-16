@@ -49,7 +49,7 @@ verts[1::2] = mobis_strip_vertices(0.4)
 strip = magpy.current.TriangleStrip(
     vertices=verts,
     current=1,
-    style_label="Mobius Current Sheet"
+    style_label="Mobius Current Sheet",
 )
 
 strip.show(backend="plotly")
@@ -59,6 +59,8 @@ We visualize the magnetic field of this current strip in the x–z plane, follow
 
 ```{code-cell} ipython3
 :tags: [hide-input]
+
+# ... continuation from above
 
 import matplotlib.pyplot as plt
 
@@ -121,14 +123,14 @@ for i in range(n - 1):
     for j in range(n - 1):
         idx = j + i * n
         faces.append((idx, idx + n, idx + n + 1))
-        faces.append((idx, idx + 1, idx + n + 1))
+        faces.append((idx, idx + n + 1, idx + 1))
 faces = np.array(faces, dtype=int)
 
 # Define a current density function
 def current_density(positions):
     """Return current density vectors for given positions."""
     x, y, _ = positions.T
-    return np.stack([np.cos(x), np.sin(y), np.zeros_like(x)], axis=1)
+    return np.stack([y, -x, np.zeros_like(x)], axis=1)
 
 # Compute current densities at triangle centers
 face_centers = np.mean(vertices[faces], axis=1)
@@ -139,44 +141,41 @@ sheet = magpy.current.TriangleSheet(
     current_densities=cds,
     vertices=vertices,
     faces=faces,
+    style_mesh_grid_show=True,
+    style_mesh_grid_line_width=0.5,
+    style_direction_color='b',
+    style_direction_symbol='cone',
 )
 
 # Visualize in Plotly
 sheet.show(backend="plotly")
 ```
 
-This setup corresponds to a circular surface current distributed across a rectangular sheet. We again use the [Matplotlib streamplot example](examples-vis-mpl-streamplot) to visualize the resulting magnetic field, and observe that it closely resembles the field of a classical current loop.
+This setup corresponds to a circular surface current with increasing amplitude towards the edges of a rectangular sheet. Notice that we can tune the mesh styling.
+
+Now we use a [pixel field quiver plot](examples-vis-vectorfield) to visualize the resulting magnetic field with minimal effort:
 
 ```{code-cell} ipython3
 :tags: [hide-input]
 
-import matplotlib.pyplot as plt
-
-# Create a Matplotlib figure
-fig, ax = plt.subplots()
+# ... continuation from above
 
 # Create an observer grid in the xz-symmetry plane
-ts = np.linspace(-2, 2, 40)
-grid = np.array([[(x, 0, z) for x in ts] for z in ts])
-X, _, Z = np.moveaxis(grid, 2, 0)
+xs = np.linspace(-1.5, 1.5, 30)
+ys = np.linspace(-1, 1, 20)
+grid = np.array([[(x, 0, z) for x in xs] for z in ys])
 
-# Compute the B-field of the current sheet on the grid
-B = sheet.getB(grid)
-Bx, _, Bz = np.moveaxis(B, 2, 0)
-
-# Display the B-field with streamplot
-splt = ax.streamplot(X, Z, Bx, Bz,
-    density=1.5,
-    color=np.log10(np.linalg.norm(B, axis=2)),
-    cmap="cool",
+# Create a sensor with pixel array and pixel field style
+sens = magpy.Sensor(
+    pixel=grid,
+    style_pixel_field_source='B',
+    style_pixel_field_symbol='arrow3d',
+    style_pixel_field_sizescaling='uniform',
+    style_pixel_field_colormap='Plasma',
 )
 
-# Figure styling
-ax.set(
-    xlabel="x-position (m)",
-    ylabel="z-position (m)",
-)
-
-plt.tight_layout()
-plt.show()
+# Display the sensor and magnet using the Plotly backend
+magpy.show([sheet, sens], backend="plotly", style_legend_show=False)
 ```
+
+We observe that the B-field closely resembles the field of a classical current loop. Possibly this is the result of the current's increase in amplitude with distance from the center of the sheet.

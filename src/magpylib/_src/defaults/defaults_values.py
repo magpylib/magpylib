@@ -87,6 +87,21 @@ DEFAULTS = {
                 },
                 "line": {"show": True, "width": 2, "style": "solid", "color": None},
             },
+            "currentsheet": {
+                "direction": {
+                    "show": True,
+                    "size": 1,
+                    "color": "grey",
+                    "symbol": "arrow3d",
+                },
+                "mesh": {
+                    "grid": {
+                        "show": False,
+                        "line": {"width": 2, "style": "solid", "color": "black"},
+                        "marker": {"size": 1, "symbol": "o", "color": "black"},
+                    },
+                },
+            },
             "sensor": {
                 "size": 1,
                 "sizemode": "scaled",

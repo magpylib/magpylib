@@ -114,6 +114,49 @@ def test_Triangle_display():
     src.show(style_magnetization_mode="arrow", return_fig=True)
 
 
+def test_TriangleStrip_display():
+    """testing display for TriangleStrip source"""
+
+    def mobis_strip_vertices(w):
+        """Generate vertices for a Möbius strip at a given width w."""
+        U = np.linspace(0, 4 * np.pi, 100)
+        X = (1 + w * np.cos(U / 2)) * np.cos(U)
+        Y = (1 + w * np.cos(U / 2)) * np.sin(U)
+        Z = w * np.sin(U / 2)
+        return np.array([X, Y, Z]).T
+
+    # Create a mobius current strip
+    verts = np.zeros((200, 3))
+    verts[::2] = mobis_strip_vertices(0)
+    verts[1::2] = mobis_strip_vertices(0.4)
+
+    strip = magpy.current.TriangleStrip(
+        vertices=verts, current=1, style_label="Mobius Current Sheet"
+    )
+
+    strip.show(
+        backend="plotly",
+        style_direction_show=True,
+        style_direction_size=2,
+        style_direction_color="red",
+        style_direction_symbol="cone",
+        style_mesh_grid_show=True,
+        style_mesh_grid_line_width=1,
+        style_mesh_grid_line_color="lightgreen",
+        return_fig=True,
+    )
+
+
+def test_TriangleSheet_display():
+    """testing display for TriangleSheet source"""
+    src = magpy.current.TriangleSheet(
+        current_densities=[(1, 0, 0), (0, 1, 0)],
+        vertices=((0, 0, 0), (0, 1, 0), (1, 0, 0), (1, 1, 1)),
+        faces=((0, 1, 2), (1, 2, 3)),
+    )
+    src.show(style_direction_color="black", return_fig=True)
+
+
 def test_col_display():
     """testing display"""
     # pylint: disable=assignment-from-no-return
