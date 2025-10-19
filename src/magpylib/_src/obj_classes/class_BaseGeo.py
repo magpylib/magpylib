@@ -73,6 +73,7 @@ class BaseGeo(BaseTransform, ABC):
     """
 
     _style_class = BaseStyle
+    _properties_with_path_support = ()
 
     def __init__(
         self,
@@ -409,6 +410,17 @@ class BaseGeo(BaseTransform, ABC):
             style_kwargs = self._process_style_kwargs(**style_kwargs)
             obj_copy.style.update(style_kwargs)
         return obj_copy
+
+    def _sync_path_length(self, new_length):
+        """Pad path dependent attributes to new_length."""
+        # pad position, using public attribute which triggers orientation padding
+        n_path_new, n_path = new_length, len(self._position)
+        if n_path_new < n_path:
+            self.position = self._position[-n_path_new:]
+        elif n_path_new > n_path:
+            self.position = np.pad(
+                self._position, ((0, n_path_new - n_path), (0, 0)), "edge"
+            )
 
     # dunders -------------------------------------------------------
     def __add__(self, obj):

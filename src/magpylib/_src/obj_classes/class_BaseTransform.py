@@ -163,6 +163,7 @@ def _apply_move(target_object, displacement, start="auto"):
     # pad target_object path and compute start and end-index for rotation application
     ppath, opath, start, end, padded = _path_padding(inpath, start, target_object)
     if padded:
+        apply_edge_padding_to_properties(target_object, start, len(ppath))
         target_object._orientation = R.from_quat(opath)
 
     # apply move operation
@@ -170,6 +171,21 @@ def _apply_move(target_object, displacement, start="auto"):
     target_object._position = ppath
 
     return target_object
+
+
+def apply_edge_padding_to_properties(target_object, start, new_path_len):
+    for prop in target_object._properties_with_path_support:
+        prop_value = getattr(target_object, f"_{prop}")
+        pad_start = len(prop_value) if start < 0 else start
+        pad_end = max(0, new_path_len - len(prop_value) - pad_start)
+        if pad_start > 0 or pad_end > 0:
+            pad_width = (pad_start, pad_end)
+            if prop_value.ndim > 1:
+                pad_width = (pad_width, *((0, 0),) * (prop_value.ndim - 1))
+            prop_value = np.pad(prop_value, pad_width, "edge")
+        if len(prop_value) > new_path_len:
+            prop_value = prop_value[-new_path_len:]
+        setattr(target_object, f"_{prop}", prop_value)
 
 
 def _apply_rotation(
@@ -210,7 +226,7 @@ def _apply_rotation(
         anchor, inrotQ, rotation = _multi_anchor_behavior(anchor, inrotQ, rotation)
 
     # pad target_object path and compute start and end-index for rotation application
-    ppath, opath, newstart, end, _ = _path_padding(inrotQ, start, target_object)
+    ppath, opath, newstart, end, padded = _path_padding(inrotQ, start, target_object)
 
     # compute anchor when dealing with Compound rotation (target_object is a child
     #   that rotates about its parent). This happens when a rotation with anchor=None
@@ -242,6 +258,8 @@ def _apply_rotation(
     # pylint: disable=attribute-defined-outside-init
     target_object._orientation = R.from_quat(opath)
     target_object._position = ppath
+    if padded:
+        apply_edge_padding_to_properties(target_object, start, len(ppath))
 
     return target_object
 

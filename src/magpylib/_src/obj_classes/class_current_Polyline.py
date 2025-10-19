@@ -104,6 +104,7 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         "segment_start": 2,
         "segment_end": 2,
     }
+    _properties_with_path_support = ("current",)
     get_trace = make_Polyline
 
     def __init__(
@@ -149,11 +150,14 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         self._vertices = check_format_input_vertices(vert)
 
     @property
-    def _default_style_description(self):
+    def _default_style_description(self, path_index=-1):
         """Default style description text"""
         if self.vertices is None:
             return "no vertices"
-        return f"{unit_prefix(self.current)}A" if self.current else "no current"
+        curr = self._current[path_index]
+        if len(self._current) == 1 and curr == 0:
+            return "no current"
+        return f"{unit_prefix(curr)}A"
 
     # Methods
     def _get_centroid(self, squeeze=True):

@@ -401,7 +401,7 @@ class BaseCurrent(BaseSource):
     @property
     def current(self):
         """Electric current amplitude (A)."""
-        return self._current
+        return self._current[0] if len(self._current) == 1 else self._current
 
     @current.setter
     def current(self, current):
@@ -412,10 +412,22 @@ class BaseCurrent(BaseSource):
         current : None | float
             Electric current amplitude in units (A).
         """
-        # input type and init check
-        self._current = check_format_input_scalar(
-            current,
-            sig_name="current",
-            sig_type="None or a number (int, float)",
-            allow_None=True,
-        )
+        sig_type = "None or a number (int, float) or array-like (list, tuple, ndarray) with shape (n,)"
+        if np.isscalar(current):
+            self._current = check_format_input_scalar(
+                current,
+                sig_name="current",
+                sig_type=sig_type,
+                allow_None=True,
+            )
+            self._current = np.array([self._current], dtype=float)
+        else:
+            self._current = check_format_input_vector(
+                current,
+                dims=(1,),
+                shape_m1="any",
+                sig_name="current",
+                sig_type=sig_type,
+                allow_None=True,
+            )
+        self._sync_path_length(len(self._current))
