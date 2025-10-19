@@ -63,7 +63,7 @@ def make_DefaultTrace(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     return {**trace, **kwargs}
 
 
-def make_Polyline(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly scatter3d parameters for a Polyline current in a dictionary based on the
     provided arguments.
@@ -79,7 +79,8 @@ def make_Polyline(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
             if kind == "arrow":
-                current = 0 if obj.current is None else obj.current
+                current = 0 if obj._current is None else obj._current
+                current = current[path_ind]
                 x, y, z = draw_arrow_from_vertices(
                     vertices=obj.vertices,
                     sign=np.sign(current),

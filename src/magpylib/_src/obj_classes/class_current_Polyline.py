@@ -150,14 +150,17 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         self._vertices = check_format_input_vertices(vert)
 
     @property
-    def _default_style_description(self, path_index=-1):
+    def _default_style_description(self):
         """Default style description text"""
         if self.vertices is None:
             return "no vertices"
-        curr = self._current[path_index]
-        if len(self._current) == 1 and curr == 0:
-            return "no current"
-        return f"{unit_prefix(curr)}A"
+        curr = self._current
+        if len(curr) == 1:
+            if curr[0] == 0:
+                return "no current"
+            return f"{unit_prefix(curr[0])}A current"
+        cmin, cmax = np.nanmin(curr), np.nanmax(curr)
+        return f"{unit_prefix(cmin)}A..{unit_prefix(cmax)}A"
 
     # Methods
     def _get_centroid(self, squeeze=True):

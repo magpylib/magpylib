@@ -514,6 +514,14 @@ def get_generic_traces3D(
         if is_frame_dependent:
             path_len = len(next(iter(field_values.values())))
             path_inds = path_frames_to_indices(style.path.frames, path_len)
+    if input_obj._properties_with_path_support:
+        is_frame_dependent = not all(
+            np.unique(
+                o := getattr(input_obj, v), axis=None if np.isscalar(o) else 0
+            ).shape[0]
+            == 1
+            for v in input_obj._properties_with_path_support
+        )
 
     path_traces_extra_non_generic_backend = []
     if not has_path and make_func is not None:
