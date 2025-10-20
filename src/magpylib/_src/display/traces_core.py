@@ -79,13 +79,18 @@ def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
             if kind == "arrow":
-                current = 0 if obj._current is None else obj._current
-                current = current[path_ind]
+                current = [0] if obj._current is None else obj._current
+                offset = kind_style.offset
+                if getattr(kind_style, "animate", False):
+                    cs = np.cumsum(np.sign(current))
+                    cmin, cmax = np.nanmin(cs), np.nanmax(cs)
+                    offset_lst = (cs - cmin)/(cmax-cmin)
+                    offset = offset_lst[path_ind]
                 x, y, z = draw_arrow_from_vertices(
                     vertices=obj.vertices,
-                    sign=np.sign(current),
+                    sign=np.sign(current[path_ind]),
                     arrow_size=kind_style.size,
-                    arrow_pos=style.arrow.offset,
+                    arrow_pos=offset,
                     scaled=kind_style.sizemode == "scaled",
                     include_line=False,
                 ).T

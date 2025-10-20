@@ -401,7 +401,13 @@ class BaseCurrent(BaseSource):
     @property
     def current(self):
         """Electric current amplitude (A)."""
-        return self._current[0] if len(self._current) == 1 else self._current
+        return (
+            None
+            if self._current is None
+            else self._current[0]
+            if len(self._current) == 1
+            else self._current
+        )
 
     @current.setter
     def current(self, current):
@@ -430,4 +436,5 @@ class BaseCurrent(BaseSource):
                 sig_type=sig_type,
                 allow_None=True,
             )
-        self._sync_path_length(len(self._current))
+        if self._current is not None:
+            self._sync_path_length(len(self._current))
