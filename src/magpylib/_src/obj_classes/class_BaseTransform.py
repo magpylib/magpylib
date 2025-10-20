@@ -176,16 +176,17 @@ def _apply_move(target_object, displacement, start="auto"):
 def apply_edge_padding_to_properties(target_object, start, new_path_len):
     for prop in target_object._properties_with_path_support:
         prop_value = getattr(target_object, f"_{prop}")
-        pad_start = len(prop_value) if start < 0 else start
-        pad_end = max(0, new_path_len - len(prop_value) - pad_start)
-        if pad_start > 0 or pad_end > 0:
-            pad_width = (pad_start, pad_end)
-            if prop_value.ndim > 1:
-                pad_width = (pad_width, *((0, 0),) * (prop_value.ndim - 1))
-            prop_value = np.pad(prop_value, pad_width, "edge")
-        if len(prop_value) > new_path_len:
-            prop_value = prop_value[-new_path_len:]
-        setattr(target_object, f"_{prop}", prop_value)
+        if isinstance(prop_value, np.ndarray):
+            pad_start = len(prop_value) if start < 0 else start
+            pad_end = max(0, new_path_len - len(prop_value) - pad_start)
+            if pad_start > 0 or pad_end > 0:
+                pad_width = (pad_start, pad_end)
+                if prop_value.ndim > 1:
+                    pad_width = (pad_width, *((0, 0),) * (prop_value.ndim - 1))
+                prop_value = np.pad(prop_value, pad_width, "edge")
+            if len(prop_value) > new_path_len:
+                prop_value = prop_value[-new_path_len:]
+            setattr(target_object, f"_{prop}", prop_value)
 
 
 def _apply_rotation(

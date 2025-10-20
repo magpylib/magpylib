@@ -155,9 +155,9 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         if self.vertices is None:
             return "no vertices"
         curr = self._current
+        if curr is None:
+            return "no current"
         if len(curr) == 1:
-            if curr[0] == 0:
-                return "no current"
             return f"{unit_prefix(curr[0])}A current"
         cmin, cmax = np.nanmin(curr), np.nanmax(curr)
         return f"{unit_prefix(cmin)}A..{unit_prefix(cmax)}A"
