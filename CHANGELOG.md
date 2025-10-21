@@ -1,11 +1,12 @@
 # Changelog
 
-## Unreleased YYYY-MM-DD
+## [5.2.1] 2025-10-21
 
 - Added current direction and styling to `TriangleStrip` and `TriangleSheet`
   visualizations ([#906](https://github.com/magpylib/magpylib/pull/906))
 - Fixed source duplication in field calculation when using dynamic 2d subplots
   with field output ([#905](https://github.com/magpylib/magpylib/pull/905))
+- Bugfix adding the `func` subpackage to the interface.
 
 ## [5.2.0] - 2025-10-02
 
