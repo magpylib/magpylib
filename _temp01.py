@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import magpylib.func as func
 
 N = 5000
-eabs = np.linspace(-3,3,31)
-eacs = np.linspace(-3,3,31)
+eR1s = np.linspace(-3,3,31)
+eR2s = np.linspace(-3,3,31)
 
 
 if False:
