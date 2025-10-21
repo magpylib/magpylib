@@ -205,7 +205,7 @@ def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     return traces
 
 
-def make_Circle(obj, base=72, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+def make_Circle(obj, base=72, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly scatter3d parameters for a Circle current in a dictionary based on the
     provided arguments.
@@ -221,10 +221,16 @@ def make_Circle(obj, base=72, **kwargs) -> dict[str, Any] | list[dict[str, Any]]
             color = style.color if kind_style.color is None else kind_style.color
 
             if kind == "arrow":
-                angle_pos_deg = 360 * np.round(style.arrow.offset * base) / base
+                offset = style.arrow.offset
                 current = 0 if obj.current is None else obj.current
+                if True:#getattr(kind_style, "animate", False):
+                    cs = np.cumsum(np.sign(current))
+                    cmin, cmax = np.nanmin(cs), np.nanmax(cs)
+                    offset_lst = (cs - cmin)/(cmax-cmin)
+                    offset = offset_lst[path_ind]
+                angle_pos_deg = 360 * np.round(offset * base) / base
                 vertices = draw_arrow_on_circle(
-                    sign=np.sign(current),
+                    sign=np.sign(current[path_ind]),
                     diameter=obj.diameter,
                     arrow_size=style.arrow.size,
                     scaled=kind_style.sizemode == "scaled",

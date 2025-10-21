@@ -89,6 +89,7 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     _field_func = staticmethod(_BHJM_circle)
     _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"current": 1, "diameter": 1}
+    _properties_with_path_support = ("current",)
     get_trace = make_Circle
 
     def __init__(
@@ -139,7 +140,13 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         """Default style description text"""
         if self.diameter is None:
             return "no dimension"
-        return f"{unit_prefix(self.current)}A" if self.current else "no current"
+        curr = self._current
+        if curr is None:
+            return "no current"
+        if len(curr) == 1:
+            return f"{unit_prefix(curr[0])}A current"
+        cmin, cmax = np.nanmin(curr), np.nanmax(curr)
+        return f"{unit_prefix(cmin)}A..{unit_prefix(cmax)}A"
 
     # Methods
     def _get_centroid(self, squeeze=True):
