@@ -43,6 +43,18 @@ from magpylib._src.display.traces_utility import (
 from magpylib._src.utility import is_array_like
 
 
+def _get_current_arrow_offset(obj, style, path_ind):
+    offset = style.offset
+    current = [0] if obj._current is None else obj._current
+    if True:  # getattr(style, "animate", False):
+        cs = np.cumsum(np.sign(current))
+        cmin, cmax = np.nanmin(cs), np.nanmax(cs)
+        if (ptp := cmax - cmin) != 0:
+            offset_lst = (cs - cmin) / ptp
+            offset = offset_lst[path_ind]
+    return current, offset
+
+
 def make_DefaultTrace(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
@@ -79,13 +91,7 @@ def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
             if kind == "arrow":
-                current = [0] if obj._current is None else obj._current
-                offset = kind_style.offset
-                if getattr(kind_style, "animate", False):
-                    cs = np.cumsum(np.sign(current))
-                    cmin, cmax = np.nanmin(cs), np.nanmax(cs)
-                    offset_lst = (cs - cmin)/(cmax-cmin)
-                    offset = offset_lst[path_ind]
+                current, offset = _get_current_arrow_offset(obj, kind_style, path_ind)
                 x, y, z = draw_arrow_from_vertices(
                     vertices=obj.vertices,
                     sign=np.sign(current[path_ind]),
@@ -205,7 +211,9 @@ def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     return traces
 
 
-def make_Circle(obj, base=72, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+def make_Circle(
+    obj, base=72, path_ind=-1, **kwargs
+) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly scatter3d parameters for a Circle current in a dictionary based on the
     provided arguments.
@@ -219,15 +227,8 @@ def make_Circle(obj, base=72, path_ind=-1, **kwargs) -> dict[str, Any] | list[di
         kind_style = getattr(style, kind)
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
-
             if kind == "arrow":
-                offset = style.arrow.offset
-                current = 0 if obj.current is None else obj.current
-                if True:#getattr(kind_style, "animate", False):
-                    cs = np.cumsum(np.sign(current))
-                    cmin, cmax = np.nanmin(cs), np.nanmax(cs)
-                    offset_lst = (cs - cmin)/(cmax-cmin)
-                    offset = offset_lst[path_ind]
+                current, offset = _get_current_arrow_offset(obj, kind_style, path_ind)
                 angle_pos_deg = 360 * np.round(offset * base) / base
                 vertices = draw_arrow_on_circle(
                     sign=np.sign(current[path_ind]),

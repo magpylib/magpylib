@@ -164,6 +164,153 @@ def validate_field_func(val):
 # CHECK - FORMAT
 
 
+def match_shape(shape, pattern):
+    """
+    Return True if `shape` (tuple/list) matches `pattern` where pattern
+    elements are ints (exact), None or 'any' (wildcard matching any value),
+    and Ellipsis (...) matches any number (>=0) of elements.
+    """
+    shape = tuple(shape)
+    pattern = tuple(pattern)
+
+    def elem_matches(p, s):
+        if p is None or p == "any":
+            return True
+        return p == s
+
+    def helper(pi, si):
+        # advance while both have elements and current pattern is not Ellipsis
+        while pi < len(pattern) and si < len(shape) and pattern[pi] is not Ellipsis:
+            if not elem_matches(pattern[pi], shape[si]):
+                return False
+            pi += 1
+            si += 1
+
+        # if we've consumed the whole pattern, shape must also be consumed
+        if pi == len(pattern):
+            return si == len(shape)
+
+        # pattern[pi] is Ellipsis
+        # if ellipsis is the last pattern element it matches the rest (including empty)
+        if pi == len(pattern) - 1:
+            return True
+
+        # otherwise try all possible allocations of elements to the ellipsis (including zero)
+        next_pi = pi + 1
+        # try to align pattern[next_pi] with shape at positions si..len(shape)
+        for k in range(si, len(shape) + 1):
+            # quick check: ensure enough remaining shape elements for remaining non-ellipsis pattern items
+            remaining_non_ellipsis = [p for p in pattern[next_pi:] if p is not Ellipsis]
+            if len(shape) - k < len(remaining_non_ellipsis):
+                break
+            if helper(next_pi, k):
+                return True
+        return False
+
+    return helper(0, 0)
+
+
+def check_format_input_numeric(
+    inp,
+    dtype,
+    shapes=None,
+    name=None,
+    allow_None=False,
+    reshape=None,
+):
+    """Validate numeric input and return normalized form."""
+    if allow_None and inp is None:
+        return None
+
+    # build name for error messages
+    msg_name = "Input" + (f" {name}" if name is not None else "")
+
+    dims = []
+    if shapes is None:
+        shapes = (None,)
+    shapes_clean = []
+    for shape in shapes:
+        shape_clean = None
+        if shape is None:
+            dims.append(0)
+        elif isinstance(shape, int):
+            dims.append(1)
+            shape_clean = (shape,)
+        elif isinstance(shape, (list, tuple)):
+            shape_clean = shape
+            assert all(
+                (isinstance(s, int) and s >= 0) or s is None or s is Ellipsis
+                for s in shape
+            )
+            if Ellipsis in shape:
+                dims.append(None)
+            else:
+                dims.append(len(shape))
+        else:
+            msg = "shapes must be either None for scalar or a tuple for arrays"
+            raise AssertionError(msg)
+        if shape_clean is not None:
+            shapes_clean.append(shape_clean)
+    dims = tuple(dict.fromkeys(dims))
+    shapes = tuple(shapes_clean)
+
+    is_an_array = isinstance(inp, (list, tuple, np.ndarray))
+    is_a_number = isinstance(inp, numbers.Number)
+
+    # scalar case
+    if dims == (0,) and not is_a_number:
+        msg = f"{msg_name} must be a scalar of type {dtype}; instead received type {type(inp)}."
+        raise MagpylibBadUserInput(msg)
+
+    if 0 in dims and is_a_number:
+        return dtype(inp)
+
+    if 0 not in dims and is_a_number:
+        dims_str = " or ".join(str(d) for d in dims)
+        msg = f"{msg_name} must be an array of dimension {dims_str}; instead received type {type(inp)}."
+        raise MagpylibBadUserInput(msg)
+
+    # array-like case
+    if not is_an_array:
+        msg_scalar = "scalar or " if 0 in dims else ""
+        msg = f"{msg_name} must be {msg_scalar}array-like of type {dtype}; instead received type {type(inp)!r}."
+        raise MagpylibBadUserInput(msg)
+
+    try:
+        array = np.array(inp, dtype=dtype)
+    except Exception as err:
+        msg = f"{msg_name} cannot be transformed into a Numpy array. {err}"
+        raise MagpylibBadUserInput(msg) from err
+
+    if None not in dims and array.ndim not in dims:
+        msg_scalar = "scalar or " if 0 in dims else ""
+        dims_str = " or ".join(str(d) for d in dims if d != 0)
+        msg = f"{msg_name} must be {msg_scalar}array-like of dimension {dims_str}; instead received an input of dimension {array.ndim}."
+        raise MagpylibBadUserInput(msg)
+
+    if shapes == (None,):
+        return array
+
+    shape_match = False
+    for shape in shapes:
+        if match_shape(array.shape, shape):
+            shape_match = True
+            break
+
+    if not shape_match:
+        shapes_str = " or ".join(
+            str(d).replace("Ellipsis", "...").replace("None", "any") for d in shapes
+        )
+        msg = f"{msg_name} must be of shape {shapes_str}; instead received shape {array.shape}."
+        raise MagpylibBadUserInput(msg)
+
+    if reshape is not None:
+        assert isinstance(reshape, tuple), "reshape must be a tuple"
+        array = np.reshape(inp, reshape)
+
+    return array
+
+
 def check_format_input_orientation(inp, init_format=False):
     """checks orientation input returns in formatted form
     - inp must be None or Rotation object

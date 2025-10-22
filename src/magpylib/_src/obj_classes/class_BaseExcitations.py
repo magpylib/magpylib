@@ -11,6 +11,7 @@ from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import (
     check_format_input_scalar,
     check_format_input_vector,
+    check_format_input_numeric,
     validate_field_func,
 )
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
@@ -418,23 +419,14 @@ class BaseCurrent(BaseSource):
         current : None | float
             Electric current amplitude in units (A).
         """
-        sig_type = "None or a number (int, float) or array-like (list, tuple, ndarray) with shape (n,)"
+        self._current = check_format_input_numeric(
+            current,
+            dtype=float,
+            shapes = (None, (None,)),
+            name="current",
+            allow_None=True,
+        )
         if np.isscalar(current):
-            self._current = check_format_input_scalar(
-                current,
-                sig_name="current",
-                sig_type=sig_type,
-                allow_None=True,
-            )
             self._current = np.array([self._current], dtype=float)
-        else:
-            self._current = check_format_input_vector(
-                current,
-                dims=(1,),
-                shape_m1="any",
-                sig_name="current",
-                sig_type=sig_type,
-                allow_None=True,
-            )
         if self._current is not None:
             self._sync_path_length(len(self._current))
