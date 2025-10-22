@@ -411,16 +411,18 @@ class BaseGeo(BaseTransform, ABC):
             obj_copy.style.update(style_kwargs)
         return obj_copy
 
-    def _sync_path_length(self, new_length):
+    def _sync_path_length(self, obj):
         """Pad path dependent attributes to new_length."""
         # pad position, using public attribute which triggers orientation padding
-        n_path_new, n_path = new_length, len(self._position)
-        if n_path_new < n_path:
-            self.position = self._position[-n_path_new:]
-        elif n_path_new > n_path:
-            self.position = np.pad(
-                self._position, ((0, n_path_new - n_path), (0, 0)), "edge"
-            )
+        if obj is not None:
+            new_length = len(obj)
+            n_path_new, n_path = new_length, len(self._position)
+            if n_path_new < n_path:
+                self.position = self._position[-n_path_new:]
+            elif n_path_new > n_path:
+                self.position = np.pad(
+                    self._position, ((0, n_path_new - n_path), (0, 0)), "edge"
+                )
 
     # dunders -------------------------------------------------------
     def __add__(self, obj):

@@ -104,7 +104,7 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         "segment_start": 2,
         "segment_end": 2,
     }
-    _properties_with_path_support = ("current",)
+    _properties_with_path_support = ("current", "vertices")
     get_trace = make_Polyline
 
     def __init__(
@@ -117,14 +117,14 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.vertices = vertices
-
         # init inheritance
         super().__init__(position, orientation, current, style, **kwargs)
 
         # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
+
+        # instance attributes
+        self.vertices = vertices
 
     # Properties
     @property
@@ -135,7 +135,13 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         local object coordinates (move/rotate with object). At least two vertices
         must be given.
         """
-        return self._vertices
+        return (
+            None
+            if self._vertices is None
+            else self._vertices[0]
+            if len(self._vertices) == 1
+            else self._vertices
+        )
 
     @vertices.setter
     def vertices(self, vert):
@@ -148,6 +154,9 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
             must be given.
         """
         self._vertices = check_format_input_vertices(vert)
+        if self._vertices.ndim == 2:
+            self._vertices = np.array([self._vertices], dtype=float)
+        self._sync_path_length(self._vertices)
 
     @property
     def _default_style_description(self):

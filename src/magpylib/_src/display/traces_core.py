@@ -81,7 +81,8 @@ def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
     provided arguments.
     """
     style = obj.style
-    if obj.vertices is None:
+    vertices = obj._vertices
+    if vertices is None:
         trace = create_null_dim_trace(color=style.color)
         return {**trace, **kwargs}
 
@@ -93,7 +94,7 @@ def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
             if kind == "arrow":
                 current, offset = _get_current_arrow_offset(obj, kind_style, path_ind)
                 x, y, z = draw_arrow_from_vertices(
-                    vertices=obj.vertices,
+                    vertices=vertices[path_ind],
                     sign=np.sign(current[path_ind]),
                     arrow_size=kind_style.size,
                     arrow_pos=offset,
@@ -101,7 +102,7 @@ def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
                     include_line=False,
                 ).T
             else:
-                x, y, z = obj.vertices.T
+                x, y, z = vertices[path_ind].T
             trace = {
                 "type": "scatter3d",
                 "x": x,

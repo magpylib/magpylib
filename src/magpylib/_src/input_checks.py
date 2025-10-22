@@ -522,16 +522,15 @@ def check_format_input_vertices(inp, minlength=2):
     """checks vertices input and returns in formatted form
     - vector check with dim = (n, 3) but n must be >=2
     """
-    inp = check_format_input_vector(
+    inp = check_format_input_numeric(
         inp,
-        dims=(2,),
-        shape_m1=3,
-        sig_name="vertices",
-        sig_type="None or array-like (list, tuple, ndarray) with shape (n, 3)",
+        dtype=float,
+        shapes=((None, 3), (None, None, 3)),
+        name="vertices",
         allow_None=True,
     )
 
-    if inp is not None and inp.shape[0] < minlength:
+    if inp is not None and inp.shape[-2] < minlength:
         msg = (
             f"Input vertices must have at least {minlength} vertices; "
             f"instead received {inp.shape[0]}."

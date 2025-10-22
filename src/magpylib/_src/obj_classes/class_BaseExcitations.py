@@ -426,7 +426,6 @@ class BaseCurrent(BaseSource):
             name="current",
             allow_None=True,
         )
-        if np.isscalar(current):
+        if np.isscalar(self._current):
             self._current = np.array([self._current], dtype=float)
-        if self._current is not None:
-            self._sync_path_length(len(self._current))
+        self._sync_path_length(self._current)
