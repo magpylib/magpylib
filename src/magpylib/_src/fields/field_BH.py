@@ -68,12 +68,7 @@ from magpylib._src.utility import (
 def _tile_group_property_path(group: list, n_pix: int, prop_name: str):
     """tile up group property with path support"""
     props = np.array([getattr(src, f"_{prop_name}") for src in group])
-    propsv = np.tile(props, n_pix)
-    if props.ndim < 3:
-        propsv = propsv.reshape(-1)
-    else:
-        propsv = propsv.reshape(-1, props.shape[2])
-    return propsv
+    return np.tile(props, n_pix).reshape((-1, *props.shape[2:]))
 
 
 def _tile_group_property(group: list, n_pp: int, prop_name: str):
@@ -114,7 +109,7 @@ def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     prop_with_path = group[0]._properties_with_path_support
     for prop_name in group[0]._field_func_kwargs_ndim:
         if hasattr(group[0], prop_name) and prop_name not in prop_with_path:
-                kwargs[prop_name] = _tile_group_property(group, n_pp, prop_name)
+            kwargs[prop_name] = _tile_group_property(group, n_pp, prop_name)
 
     for prop_name in prop_with_path:
         if hasattr(group[0], prop_name):
