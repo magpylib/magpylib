@@ -2,7 +2,7 @@
 
 from scipy.constants import mu_0
 
-from magpylib import core, current, graphics, magnet, misc
+from magpylib import core, current, func, graphics, magnet, misc
 from magpylib._src.defaults.defaults_classes import default_settings as defaults
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.display.display import show, show_context
@@ -20,6 +20,7 @@ __all__ = [
     "core",
     "current",
     "defaults",
+    "func",
     "getB",
     "getFT",
     "getH",
