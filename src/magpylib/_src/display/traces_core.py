@@ -43,10 +43,10 @@ from magpylib._src.display.traces_utility import (
 from magpylib._src.utility import is_array_like
 
 
-def _get_current_arrow_offset(obj, style, path_ind):
-    offset = style.offset
+def _get_current_arrow_offset(obj, line_style, path_ind):
+    offset = line_style.offset
     current = [0] if obj._current is None else obj._current
-    if True:  # getattr(style, "animate", False):
+    if getattr(line_style, "animate", False):
         cs = np.cumsum(np.sign(current))
         cmin, cmax = np.nanmin(cs), np.nanmax(cs)
         if (ptp := cmax - cmin) != 0:
