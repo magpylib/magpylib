@@ -174,7 +174,7 @@ def _apply_move(target_object, displacement, start="auto"):
 
 
 def apply_edge_padding_to_properties(target_object, start, new_path_len):
-    for prop in target_object._properties_with_path_support:
+    for prop in target_object._path_properties:
         prop_value = getattr(target_object, f"_{prop}")
         if isinstance(prop_value, np.ndarray):
             pad_start = len(prop_value) if start < 0 else start

@@ -89,7 +89,6 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     _field_func = staticmethod(_BHJM_circle)
     _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"current": 1, "diameter": 1}
-    _properties_with_path_support = ("current",)
     get_trace = make_Circle
 
     def __init__(

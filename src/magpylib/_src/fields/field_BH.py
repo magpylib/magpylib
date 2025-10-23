@@ -106,7 +106,7 @@ def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         "observers": posov,
         "orientation": rotobj,
     }
-    prop_with_path = group[0]._properties_with_path_support
+    prop_with_path = group[0]._path_properties
     for prop_name in group[0]._field_func_kwargs_ndim:
         if hasattr(group[0], prop_name) and prop_name not in prop_with_path:
             kwargs[prop_name] = _tile_group_property(group, n_pp, prop_name)

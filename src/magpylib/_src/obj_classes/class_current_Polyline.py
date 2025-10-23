@@ -104,7 +104,7 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         "segment_start": 2,
         "segment_end": 2,
     }
-    _properties_with_path_support = ("current", "vertices")
+    _path_properties = ("vertices",)  # also inherits from parent class
     get_trace = make_Polyline
 
     def __init__(

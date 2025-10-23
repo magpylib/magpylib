@@ -73,7 +73,7 @@ class BaseGeo(BaseTransform, ABC):
     """
 
     _style_class = BaseStyle
-    _properties_with_path_support = ()
+    _path_properties = ()
 
     def __init__(
         self,
@@ -93,6 +93,19 @@ class BaseGeo(BaseTransform, ABC):
 
         if style is not None or kwargs:  # avoid style creation cost if not needed
             self._style_kwargs = self._process_style_kwargs(style=style, **kwargs)
+
+    def __init_subclass__(cls):
+        """Automatically aggregate '_path_properties' from parent classes when subclassing."""
+        super().__init_subclass__()
+        parent_attr = []
+        for base in cls.__mro__[1:]:
+            if hasattr(base, "_path_properties"):
+                parent_attr.extend(base._path_properties)
+                break  # only take first (nearest) base's attribute
+        if "_path_properties" in cls.__dict__:
+            cls._path_properties = tuple(dict.fromkeys([*parent_attr, *cls._path_properties]))
+        else:
+            cls._path_properties = tuple(parent_attr)
 
     # static methods ------------------------------------------------
     @staticmethod
