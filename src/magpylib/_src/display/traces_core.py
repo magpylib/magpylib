@@ -228,12 +228,13 @@ def make_Circle(
         kind_style = getattr(style, kind)
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
+            diameter = obj._diameter[path_ind]
             if kind == "arrow":
                 current, offset = _get_current_arrow_offset(obj, kind_style, path_ind)
                 angle_pos_deg = 360 * np.round(offset * base) / base
                 vertices = draw_arrow_on_circle(
                     sign=np.sign(current[path_ind]),
-                    diameter=obj.diameter,
+                    diameter=diameter,
                     arrow_size=style.arrow.size,
                     scaled=kind_style.sizemode == "scaled",
                     angle_pos_deg=angle_pos_deg,
@@ -241,8 +242,8 @@ def make_Circle(
                 x, y, z = vertices.T
             else:
                 t = np.linspace(0, 2 * np.pi, base)
-                x = np.cos(t) * obj.diameter / 2
-                y = np.sin(t) * obj.diameter / 2
+                x = np.cos(t) * diameter / 2
+                y = np.sin(t) * diameter / 2
                 z = np.zeros(x.shape)
             trace = {
                 "type": "scatter3d",

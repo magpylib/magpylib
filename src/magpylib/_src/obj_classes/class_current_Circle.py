@@ -6,7 +6,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Circle
 from magpylib._src.fields.field_BH_circle import _BHJM_circle
-from magpylib._src.input_checks import check_format_input_scalar
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
@@ -89,6 +89,8 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     _field_func = staticmethod(_BHJM_circle)
     _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"current": 1, "diameter": 1}
+    _path_properties = ("diameter",)  # also inherits from parent class
+
     get_trace = make_Circle
 
     def __init__(
@@ -103,35 +105,49 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         **kwargs,
     ):
         # init inheritance
-        super().__init__(position, orientation, current=current, style=style, **kwargs)
+        super().__init__(
+            position,
+            orientation,
+            diameter=diameter,
+            current=current,
+            style=style,
+            **kwargs,
+        )
 
         # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
-
-        self.diameter = diameter
 
     # Properties
     @property
     def diameter(self):
         """Diameter of the loop in units of m."""
-        return self._diameter
+        return (
+            None
+            if self._diameter is None
+            else self._diameter[0]
+            if len(self._diameter) == 1
+            else self._diameter
+        )
 
     @diameter.setter
-    def diameter(self, dia):
+    def diameter(self, diameter):
         """Set loop diameter.
 
         Parameters
         ----------
-        dia : float | None
+        diameter : float | None
             Loop diameter in units (m).
         """
-        self._diameter = check_format_input_scalar(
-            dia,
-            sig_name="diameter",
-            sig_type="None or a positive number (int, float)",
+        self._diameter = check_format_input_numeric(
+            diameter,
+            dtype=float,
+            shapes=(None, (None,)),
+            name="diameter",
             allow_None=True,
-            forbid_negative=True,
         )
+        if np.isscalar(self._diameter):
+            self._diameter = np.array([self._diameter], dtype=float)
+        self._sync_all_paths(len(self._diameter))
 
     @property
     def _default_style_description(self):
