@@ -124,7 +124,7 @@ class TriangleSheet(BaseSource, BaseTarget):
         )
 
         # Inherit
-        super().__init__(position, orientation, style, **kwargs)
+        super().__init__(position, orientation, style=style, **kwargs)
         BaseTarget.__init__(self, meshing)
 
     # property getters and setters

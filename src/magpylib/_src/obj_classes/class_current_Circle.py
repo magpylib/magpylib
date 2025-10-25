@@ -102,14 +102,13 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.diameter = diameter
-
         # init inheritance
-        super().__init__(position, orientation, current, style, **kwargs)
+        super().__init__(position, orientation, current=current, style=style, **kwargs)
 
         # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
+
+        self.diameter = diameter
 
     # Properties
     @property

@@ -6,6 +6,7 @@
 # pylint: disable=import-outside-toplevel
 
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -15,7 +16,10 @@ from magpylib._src.input_checks import (
     check_format_input_orientation,
     check_format_input_vector,
 )
-from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
+from magpylib._src.obj_classes.class_BaseTransform import (
+    BaseTransform,
+    pad_path_properties,
+)
 from magpylib._src.style import BaseStyle
 from magpylib._src.utility import add_iteration_suffix
 
@@ -74,15 +78,13 @@ class BaseGeo(BaseTransform, ABC):
 
     _style_class = BaseStyle
     _path_properties = ()
+    _path_sync_enabled = True
 
     def __init__(
         self,
-        position=(
-            0.0,
-            0.0,
-            0.0,
-        ),
+        position=(0.0, 0.0, 0.0),
         orientation=None,
+        *,
         style=None,
         **kwargs,
     ):
@@ -91,9 +93,17 @@ class BaseGeo(BaseTransform, ABC):
         # set _position and _orientation attributes
         self._init_position_orientation(position, orientation)
 
+        # set path properties while holding sync of path lengths
+        path_kwargs = {k: v for k, v in kwargs.items() if k in self._path_properties}
+        kwargs = {k: v for k, v in kwargs.items() if k not in path_kwargs}
+        with self.hold_path_sync(sync_on_exit=True):
+            for prop, val in path_kwargs.items():
+                setattr(self, prop, val)
+
         if style is not None or kwargs:  # avoid style creation cost if not needed
             self._style_kwargs = self._process_style_kwargs(style=style, **kwargs)
 
+    # path logic methods --------------------------------------------
     def __init_subclass__(cls):
         """Automatically aggregate '_path_properties' from parent classes when subclassing."""
         super().__init_subclass__()
@@ -103,9 +113,56 @@ class BaseGeo(BaseTransform, ABC):
                 parent_attr.extend(base._path_properties)
                 break  # only take first (nearest) base's attribute
         if "_path_properties" in cls.__dict__:
-            cls._path_properties = tuple(dict.fromkeys([*parent_attr, *cls._path_properties]))
+            cls._path_properties = tuple(
+                dict.fromkeys([*parent_attr, *cls._path_properties])
+            )
         else:
             cls._path_properties = tuple(parent_attr)
+
+    def _sync_pos_orient_recursive(self, target_len):
+        """
+        Pad position, using public attribute which triggers orientation
+        and recursive children padding.
+        """
+        n_path_new, n_path = target_len, len(self._position)
+        if n_path_new < n_path:
+            self.position = self._position[-n_path_new:]
+        elif n_path_new > n_path:
+            self.position = np.pad(
+                self._position, ((0, n_path_new - n_path), (0, 0)), "edge"
+            )
+
+    def _sync_all_paths(self, target_len=None, start=0):
+        if not self._path_sync_enabled:
+            return
+        lengths = [
+            len(arr)
+            for name in ("position", "orientation", *self._path_properties)
+            if (arr := getattr(self, f"_{name}", None)) is not None
+        ]
+        if not lengths:
+            return
+        if target_len is None:
+            target_len = max(lengths)
+        # sync private attributes of all additional path properties
+        pad_path_properties(self, target_len, start=start)
+        # now sync position and orientation including children for collection
+        self._sync_pos_orient_recursive(target_len)
+
+    @contextmanager
+    def hold_path_sync(self, *, sync_on_exit=True):
+        """
+        Temporarily disable auto-sync inside the block.
+        If auto_sync=True (default), performs one global sync on exit.
+        """
+        old_state = self._path_sync_enabled
+        self._path_sync_enabled = False
+        try:
+            yield
+        finally:
+            self._path_sync_enabled = old_state
+            if sync_on_exit and old_state:
+                self._sync_all_paths()
 
     # static methods ------------------------------------------------
     @staticmethod
@@ -423,19 +480,6 @@ class BaseGeo(BaseTransform, ABC):
             style_kwargs = self._process_style_kwargs(**style_kwargs)
             obj_copy.style.update(style_kwargs)
         return obj_copy
-
-    def _sync_path_length(self, obj):
-        """Pad path dependent attributes to new_length."""
-        # pad position, using public attribute which triggers orientation padding
-        if obj is not None:
-            new_length = len(obj)
-            n_path_new, n_path = new_length, len(self._position)
-            if n_path_new < n_path:
-                self.position = self._position[-n_path_new:]
-            elif n_path_new > n_path:
-                self.position = np.pad(
-                    self._position, ((0, n_path_new - n_path), (0, 0)), "edge"
-                )
 
     # dunders -------------------------------------------------------
     def __add__(self, obj):

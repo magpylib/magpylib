@@ -131,7 +131,12 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
         # init inheritance
         super().__init__(
-            position, orientation, magnetization, polarization, style, **kwargs
+            position,
+            orientation,
+            magnetization=magnetization,
+            polarization=polarization,
+            style=style,
+            **kwargs,
         )
 
         # Initialize BaseTarget

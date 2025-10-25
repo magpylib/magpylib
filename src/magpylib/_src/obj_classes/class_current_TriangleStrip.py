@@ -126,7 +126,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         self.vertices = vertices
 
         # Inherit
-        super().__init__(position, orientation, current, style, **kwargs)
+        super().__init__(position, orientation, current=current, style=style, **kwargs)
         BaseTarget.__init__(self, meshing)
 
     # property getters and setters

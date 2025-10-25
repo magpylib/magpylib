@@ -9,9 +9,8 @@ import numpy as np
 
 from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import (
-    check_format_input_scalar,
-    check_format_input_vector,
     check_format_input_numeric,
+    check_format_input_vector,
     validate_field_func,
 )
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
@@ -27,7 +26,7 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {}
     _editable_field_func = False
 
-    def __init__(self, position, orientation, field_func=None, style=None, **kwargs):
+    def __init__(self, position, orientation, *, field_func=None, style=None, **kwargs):
         if field_func is not None:
             self.field_func = field_func
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -322,7 +321,7 @@ class BaseMagnet(BaseSource):
     _style_class = MagnetStyle
 
     def __init__(
-        self, position, orientation, magnetization, polarization, style, **kwargs
+        self, position, orientation, *, magnetization, polarization, style, **kwargs
     ):
         super().__init__(position, orientation, style=style, **kwargs)
 
@@ -394,11 +393,7 @@ class BaseCurrent(BaseSource):
     """Provide scalar electric current attribute for current sources."""
 
     _style_class = CurrentStyle
-    _path_properties = ("current",) # also inherits from parent class
-
-    def __init__(self, position, orientation, current, style, **kwargs):
-        super().__init__(position, orientation, style=style, **kwargs)
-        self.current = current
+    _path_properties = ("current",)  # also inherits from parent class
 
     @property
     def current(self):
@@ -423,10 +418,10 @@ class BaseCurrent(BaseSource):
         self._current = check_format_input_numeric(
             current,
             dtype=float,
-            shapes = (None, (None,)),
+            shapes=(None, (None,)),
             name="current",
             allow_None=True,
         )
         if np.isscalar(self._current):
             self._current = np.array([self._current], dtype=float)
-        self._sync_path_length(self._current)
+        self._sync_all_paths(len(self._current))

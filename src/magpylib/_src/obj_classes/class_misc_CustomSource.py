@@ -72,7 +72,9 @@ class CustomSource(BaseSource):
         **kwargs,
     ):
         # init inheritance
-        super().__init__(position, orientation, field_func, style, **kwargs)
+        super().__init__(
+            position, orientation, field_func=field_func, style=style, **kwargs
+        )
 
     # Methods
     def _get_centroid(self, squeeze=True):

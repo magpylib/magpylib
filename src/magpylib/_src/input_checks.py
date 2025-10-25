@@ -247,6 +247,7 @@ def check_format_input_numeric(
             else:
                 dims.append(len(shape))
         else:
+            # internal check
             msg = "shapes must be either None for scalar or a tuple for arrays"
             raise AssertionError(msg)
         if shape_clean is not None:
@@ -259,7 +260,10 @@ def check_format_input_numeric(
 
     # scalar case
     if dims == (0,) and not is_a_number:
-        msg = f"{msg_name} must be a scalar of type {dtype}; instead received type {type(inp)}."
+        msg = (
+            f"{msg_name} must be a scalar of type {dtype};"
+            " instead received type {type(inp)}."
+        )
         raise MagpylibBadUserInput(msg)
 
     if 0 in dims and is_a_number:
@@ -267,25 +271,34 @@ def check_format_input_numeric(
 
     if 0 not in dims and is_a_number:
         dims_str = " or ".join(str(d) for d in dims)
-        msg = f"{msg_name} must be an array of dimension {dims_str}; instead received type {type(inp)}."
+        msg = (
+            f"{msg_name} must be an array of dimension {dims_str};"
+            " instead received type {type(inp)}."
+        )
         raise MagpylibBadUserInput(msg)
 
     # array-like case
     if not is_an_array:
         msg_scalar = "scalar or " if 0 in dims else ""
-        msg = f"{msg_name} must be {msg_scalar}array-like of type {dtype}; instead received type {type(inp)!r}."
+        msg = (
+            f"{msg_name} must be {msg_scalar}array-like of type {dtype};"
+            " instead received type {type(inp)!r}."
+        )
         raise MagpylibBadUserInput(msg)
 
     try:
         array = np.array(inp, dtype=dtype)
     except Exception as err:
-        msg = f"{msg_name} cannot be transformed into a Numpy array. {err}"
+        msg = f"{msg_name} cannot be transformed into a numpy array. {err}"
         raise MagpylibBadUserInput(msg) from err
 
     if None not in dims and array.ndim not in dims:
         msg_scalar = "scalar or " if 0 in dims else ""
         dims_str = " or ".join(str(d) for d in dims if d != 0)
-        msg = f"{msg_name} must be {msg_scalar}array-like of dimension {dims_str}; instead received an input of dimension {array.ndim}."
+        msg = (
+            f"{msg_name} must be {msg_scalar}array-like of dimension {dims_str};"
+            " instead received an input of dimension {array.ndim}."
+        )
         raise MagpylibBadUserInput(msg)
 
     if shapes == (None,):
@@ -301,7 +314,10 @@ def check_format_input_numeric(
         shapes_str = " or ".join(
             str(d).replace("Ellipsis", "...").replace("None", "any") for d in shapes
         )
-        msg = f"{msg_name} must be of shape {shapes_str}; instead received shape {array.shape}."
+        msg = (
+            f"{msg_name} must be of shape {shapes_str};"
+            " instead received shape {array.shape}."
+        )
         raise MagpylibBadUserInput(msg)
 
     if reshape is not None:

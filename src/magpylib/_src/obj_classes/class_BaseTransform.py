@@ -163,7 +163,7 @@ def _apply_move(target_object, displacement, start="auto"):
     # pad target_object path and compute start and end-index for rotation application
     ppath, opath, start, end, padded = _path_padding(inpath, start, target_object)
     if padded:
-        apply_edge_padding_to_properties(target_object, start, len(ppath))
+        pad_path_properties(target_object, len(ppath), start)
         target_object._orientation = R.from_quat(opath)
 
     # apply move operation
@@ -173,7 +173,7 @@ def _apply_move(target_object, displacement, start="auto"):
     return target_object
 
 
-def apply_edge_padding_to_properties(target_object, start, new_path_len):
+def pad_path_properties(target_object, new_path_len, start=0):
     for prop in target_object._path_properties:
         prop_value = getattr(target_object, f"_{prop}")
         if isinstance(prop_value, np.ndarray):
@@ -260,7 +260,7 @@ def _apply_rotation(
     target_object._orientation = R.from_quat(opath)
     target_object._position = ppath
     if padded:
-        apply_edge_padding_to_properties(target_object, start, len(ppath))
+        pad_path_properties(target_object, len(ppath), start)
 
     return target_object
 

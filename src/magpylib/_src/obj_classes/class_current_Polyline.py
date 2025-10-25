@@ -118,13 +118,17 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         **kwargs,
     ):
         # init inheritance
-        super().__init__(position, orientation, current, style, **kwargs)
+        super().__init__(
+            position,
+            orientation,
+            current=current,
+            vertices=vertices,
+            style=style,
+            **kwargs,
+        )
 
         # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
-
-        # instance attributes
-        self.vertices = vertices
 
     # Properties
     @property
@@ -156,7 +160,7 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         self._vertices = check_format_input_vertices(vert)
         if self._vertices.ndim == 2:
             self._vertices = np.array([self._vertices], dtype=float)
-        self._sync_path_length(self._vertices)
+        self._sync_all_paths(len(self._vertices))
 
     @property
     def _default_style_description(self):
