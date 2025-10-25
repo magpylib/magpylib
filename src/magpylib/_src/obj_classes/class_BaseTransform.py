@@ -41,7 +41,7 @@ def _multi_anchor_behavior(anchor, inrotQ, rotation):
     return anchor, inrotQ, rotation
 
 
-def _path_padding_param(scalar_input: bool, lenop: int, lenip: int, start: int):
+def _get_padding_params(scalar_input: bool, lenop: int, lenip: int, start: int):
     """compute path padding parameters
 
     Example: with start>0 and input path exceeds old_path
@@ -116,7 +116,7 @@ def _path_padding(inpath, start, target_object):
     lenip = 1 if scalar_input else len(inpath)
 
     # pad old path depending on input
-    padding, start = _path_padding_param(scalar_input, len(ppath), lenip, start)
+    padding, start = _get_padding_params(scalar_input, len(ppath), lenip, start)
     if padding:
         ppath = np.pad(ppath, (padding, (0, 0)), "edge")
         opath = np.pad(opath, (padding, (0, 0)), "edge")
@@ -173,20 +173,34 @@ def _apply_move(target_object, displacement, start="auto"):
     return target_object
 
 
+def pad_path_property(prop, new_path_len, start=0):
+    if prop is None:
+        return prop
+    is_rot = isinstance(prop, R)
+    if not isinstance(prop, np.ndarray) and not is_rot:
+        msg = "Internal error: path property is not a numpy array."
+        raise TypeError(msg)
+    if is_rot:
+        prop = prop.as_quat()
+    pad_start = len(prop) if start < 0 else start
+    pad_end = max(0, new_path_len - len(prop) - pad_start)
+    if pad_start > 0 or pad_end > 0:
+        pad_width = (pad_start, pad_end)
+        if prop.ndim > 1:
+            pad_width = (pad_width, *((0, 0),) * (prop.ndim - 1))
+        prop = np.pad(prop, pad_width, "edge")
+    if len(prop) > new_path_len:
+        prop = prop[-new_path_len:]
+    if is_rot:
+        prop = R.from_quat(prop)
+    return prop
+
+
 def pad_path_properties(target_object, new_path_len, start=0):
-    for prop in target_object._path_properties:
-        prop_value = getattr(target_object, f"_{prop}", None)
-        if isinstance(prop_value, np.ndarray):
-            pad_start = len(prop_value) if start < 0 else start
-            pad_end = max(0, new_path_len - len(prop_value) - pad_start)
-            if pad_start > 0 or pad_end > 0:
-                pad_width = (pad_start, pad_end)
-                if prop_value.ndim > 1:
-                    pad_width = (pad_width, *((0, 0),) * (prop_value.ndim - 1))
-                prop_value = np.pad(prop_value, pad_width, "edge")
-            if len(prop_value) > new_path_len:
-                prop_value = prop_value[-new_path_len:]
-            setattr(target_object, f"_{prop}", prop_value)
+    for name in target_object._path_properties:
+        val = getattr(target_object, f"_{name}", None)
+        val = pad_path_property(val, new_path_len, start)
+        setattr(target_object, f"_{name}", val)
 
 
 def _apply_rotation(
@@ -237,7 +251,7 @@ def _apply_rotation(
         # target anchor length
         len_anchor = end - newstart
         # pad up parent_path if input requires it
-        padding, start = _path_padding_param(
+        padding, start = _get_padding_params(
             inrotQ.ndim == 1, parent_path.shape[0], len_anchor, start
         )
         if padding:
