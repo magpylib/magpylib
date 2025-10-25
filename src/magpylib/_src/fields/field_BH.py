@@ -57,6 +57,7 @@ from magpylib._src.input_checks import (
     check_format_pixel_agg,
     check_getBH_output_type,
 )
+from magpylib._src.obj_classes.class_BaseTransform import pad_path_properties
 from magpylib._src.utility import (
     check_static_sensor_orient,
     format_obj_input,
@@ -274,28 +275,18 @@ def _getBH_level2(
     # tile up paths -------------------------------------------------------------
     #   all obj paths that are shorter than max-length are filled up with the last
     #   position/orientation of the object (static paths)
-    path_lengths = [len(obj._position) for obj in obj_list]
-    max_path_len = max(path_lengths)
+    max_path_len = max(len(obj._position) for obj in obj_list)
 
-    # objects to tile up and reset below
-    mask_reset = [max_path_len != pl for pl in path_lengths]
-    reset_obj = [obj for obj, mask in zip(obj_list, mask_reset, strict=False) if mask]
-    reset_obj_m0 = [
-        pl for pl, mask in zip(path_lengths, mask_reset, strict=False) if mask
-    ]
-
-    if max_path_len > 1:
-        for obj, m0 in zip(reset_obj, reset_obj_m0, strict=False):
-            # length to be tiled
-            m_tile = max_path_len - m0
-            # tile up position
-            tile_pos = np.tile(obj._position[-1], (m_tile, 1))
-            obj._position = np.concatenate((obj._position, tile_pos))
-            # tile up orientation
-            tile_orient = np.tile(obj._orientation.as_quat()[-1], (m_tile, 1))
-            # FUTURE use Rotation.concatenate() requires scipy>=1.8 and python 3.8
-            tile_orient = np.concatenate((obj._orientation.as_quat(), tile_orient))
-            obj._orientation = R.from_quat(tile_orient)
+    # Store original lengths of tiled objects to reset them later
+    objs_to_pad_orig_len = {
+        obj: len(obj._position) for obj in obj_list if len(obj._position) < max_path_len
+    }
+    for obj in objs_to_pad_orig_len:
+        pad_path_properties(
+            obj,
+            max_path_len,
+            path_properties=["position", "orientation", *obj._path_properties],
+        )
 
     # combine information form all sensors to generate pos_obs with-------------
     #   shape (m * concat all sens flat pixel, 3)
@@ -407,9 +398,12 @@ def _getBH_level2(
         B = np.concatenate(Bagg, axis=2)
 
     # reset tiled objects
-    for obj, m0 in zip(reset_obj, reset_obj_m0, strict=False):
-        obj._position = obj._position[:m0]
-        obj._orientation = obj._orientation[:m0]
+    for obj, m0 in objs_to_pad_orig_len.items():
+        pad_path_properties(
+            obj,
+            m0,
+            path_properties=["position", "orientation", *obj._path_properties],
+        )
 
     # sumup over sources
     if sumup:

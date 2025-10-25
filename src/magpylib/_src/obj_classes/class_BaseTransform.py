@@ -196,8 +196,11 @@ def pad_path_property(prop, new_path_len, start=0):
     return prop
 
 
-def pad_path_properties(target_object, new_path_len, start=0):
-    for name in target_object._path_properties:
+def pad_path_properties(target_object, new_path_len, start=0, path_properties=None):
+    """Pad all path properties of target_object to new_path_len."""
+    if path_properties is None:
+        path_properties = target_object._path_properties
+    for name in path_properties:
         val = getattr(target_object, f"_{name}", None)
         val = pad_path_property(val, new_path_len, start)
         setattr(target_object, f"_{name}", val)
