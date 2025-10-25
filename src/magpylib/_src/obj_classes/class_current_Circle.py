@@ -147,7 +147,7 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         )
         if np.isscalar(self._diameter):
             self._diameter = np.array([self._diameter], dtype=float)
-        self._sync_all_paths(len(self._diameter))
+        self._sync_all_paths(self._diameter)
 
     @property
     def _default_style_description(self):

@@ -158,9 +158,9 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
             must be given.
         """
         self._vertices = check_format_input_vertices(vert)
-        if self._vertices.ndim == 2:
+        if isinstance(self._vertices, np.ndarray) and self._vertices.ndim == 2:
             self._vertices = np.array([self._vertices], dtype=float)
-        self._sync_all_paths(len(self._vertices))
+        self._sync_all_paths(self._vertices)
 
     @property
     def _default_style_description(self):

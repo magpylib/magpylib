@@ -175,7 +175,7 @@ def _apply_move(target_object, displacement, start="auto"):
 
 def pad_path_properties(target_object, new_path_len, start=0):
     for prop in target_object._path_properties:
-        prop_value = getattr(target_object, f"_{prop}")
+        prop_value = getattr(target_object, f"_{prop}", None)
         if isinstance(prop_value, np.ndarray):
             pad_start = len(prop_value) if start < 0 else start
             pad_end = max(0, new_path_len - len(prop_value) - pad_start)
@@ -260,7 +260,7 @@ def _apply_rotation(
     target_object._orientation = R.from_quat(opath)
     target_object._position = ppath
     if padded:
-        pad_path_properties(target_object, len(ppath), start)
+        pad_path_properties(target_object, len(ppath), newstart)
 
     return target_object
 

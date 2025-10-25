@@ -132,7 +132,7 @@ class BaseGeo(BaseTransform, ABC):
                 self._position, ((0, n_path_new - n_path), (0, 0)), "edge"
             )
 
-    def _sync_all_paths(self, target_len=None, start=0):
+    def _sync_all_paths(self, prop=None, start=0):
         if not self._path_sync_enabled:
             return
         lengths = [
@@ -142,8 +142,7 @@ class BaseGeo(BaseTransform, ABC):
         ]
         if not lengths:
             return
-        if target_len is None:
-            target_len = max(lengths)
+        target_len = max(lengths) if prop is None else len(prop)
         # sync private attributes of all additional path properties
         pad_path_properties(self, target_len, start=start)
         # now sync position and orientation including children for collection

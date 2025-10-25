@@ -424,4 +424,4 @@ class BaseCurrent(BaseSource):
         )
         if np.isscalar(self._current):
             self._current = np.array([self._current], dtype=float)
-        self._sync_all_paths(len(self._current))
+        self._sync_all_paths(self._current)
