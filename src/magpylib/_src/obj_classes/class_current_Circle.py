@@ -144,6 +144,7 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
             shapes=(None, (None,)),
             name="diameter",
             allow_None=True,
+            value_conditions=(("ge", 0, "all"),),
         )
         if np.isscalar(self._diameter):
             self._diameter = np.array([self._diameter], dtype=float)

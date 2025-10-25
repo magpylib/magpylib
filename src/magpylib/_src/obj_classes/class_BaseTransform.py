@@ -8,6 +8,7 @@ import numbers
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
+from magpylib._src.exceptions import MagpylibInternalError
 from magpylib._src.input_checks import (
     check_degree_type,
     check_format_input_anchor,
@@ -178,8 +179,8 @@ def pad_path_property(prop, new_path_len, start=0):
         return prop
     is_rot = isinstance(prop, R)
     if not isinstance(prop, np.ndarray) and not is_rot:
-        msg = "Internal error: path property is not a numpy array."
-        raise TypeError(msg)
+        msg = "path property is not a numpy array."
+        raise MagpylibInternalError(msg)
     if is_rot:
         prop = prop.as_quat()
     pad_start = len(prop) if start < 0 else start

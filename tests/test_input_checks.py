@@ -207,7 +207,7 @@ def test_input_objects_diameter_good(diameter):
 @pytest.mark.parametrize(
     "diameter",
     [
-        (1, 2),
+        #(1, 2),  # paths now allowed
         [(1, 2, 3, 4)] * 2,
         "x",
         ["x", "y", "z"],
@@ -249,7 +249,7 @@ def test_input_objects_vertices_good(vertices):
     [
         (1, 2),
         [(1, 2, 3, 4)] * 2,
-        [(1, 2, 3)],
+        #[(1, 2, 3)],  # paths now allowed
         "x",
         ["x", "y", "z"],
         {"woot": 15},

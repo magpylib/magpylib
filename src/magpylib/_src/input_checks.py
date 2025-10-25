@@ -15,7 +15,11 @@ from scipy.spatial.transform import Rotation
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
-from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibMissingInput
+from magpylib._src.exceptions import (
+    MagpylibBadUserInput,
+    MagpylibInternalError,
+    MagpylibMissingInput,
+)
 from magpylib._src.utility import format_obj_input, wrong_obj_msg
 
 #################################################################
@@ -210,6 +214,71 @@ def match_shape(shape, pattern):
     return helper(0, 0)
 
 
+def check_condition(
+    inp,
+    cond,
+    threshold,
+    name="input",
+    mode="all",
+):
+    """Check that inp satisfies condition cond with threshold.
+    cond can be one of {'eq','ne','lt','le','gt','ge'} or a callable(arr, threshold)->bool/array.
+    mode: 'all' (default) requires all elements to satisfy, 'any' requires at least one.
+    Returns inp unchanged on success, raises MagpylibBadUserInput on failure.
+    """
+
+    # build name for error messages
+    msg_name = "Input" + (f" {name}" if name is not None else "")
+    ops = {
+        "eq": np.equal,
+        "ne": np.not_equal,
+        "lt": np.less,
+        "le": np.less_equal,
+        "gt": np.greater,
+        "ge": np.greater_equal,
+    }
+
+    if isinstance(cond, str):
+        try:
+            func = ops[cond]
+        except KeyError as err:
+            msg = f"Unknown condition string {cond!r}."
+            raise MagpylibInternalError(msg) from err
+    elif callable(cond):
+        func = cond
+    else:
+        msg = (
+            f"Condition must be a string or callable; instead received {type(cond)!r}."
+        )
+        raise MagpylibInternalError(msg)
+
+    try:
+        arr = np.array(inp)
+        res = func(arr, threshold)
+    except Exception as err:
+        msg = f"Failed to evaluate condition {cond!r} on input {inp!r} with threshold {threshold!r}: {err}"
+        raise MagpylibInternalError(msg) from err
+
+    if not (isinstance(res, (bool, np.bool_))):
+        if mode == "all":
+            ok = bool(np.all(res))
+        elif mode == "any":
+            ok = bool(np.any(res))
+        else:
+            msg = f"Mode must be 'all' or 'any'; instead received {mode!r}."
+            raise MagpylibInternalError(msg)
+    else:
+        ok = bool(res)
+
+    if not ok:
+        msg = (
+            f"Input {name} must satisfy condition {cond!r} with threshold"
+            " {threshold!r} (mode={mode!r}); instead received {inp!r}."
+        )
+        raise MagpylibBadUserInput(msg)
+    return inp
+
+
 def check_format_input_numeric(
     inp,
     dtype,
@@ -217,10 +286,23 @@ def check_format_input_numeric(
     name=None,
     allow_None=False,
     reshape=None,
+    value_conditions=None,
 ):
     """Validate numeric input and return normalized form."""
     if allow_None and inp is None:
         return None
+
+    def check_conditions(array):
+        if value_conditions is not None:
+            for cond, threshold, mode in value_conditions:
+                check_condition(
+                    array,
+                    cond,
+                    threshold,
+                    name=name,
+                    mode=mode,
+                )
+        return array
 
     # build name for error messages
     msg_name = "Input" + (f" {name}" if name is not None else "")
@@ -267,7 +349,8 @@ def check_format_input_numeric(
         raise MagpylibBadUserInput(msg)
 
     if 0 in dims and is_a_number:
-        return dtype(inp)
+        inp = dtype(inp)
+        return check_conditions(dtype(inp))
 
     if 0 not in dims and is_a_number:
         dims_str = " or ".join(str(d) for d in dims)
@@ -302,7 +385,7 @@ def check_format_input_numeric(
         raise MagpylibBadUserInput(msg)
 
     if shapes == (None,):
-        return array
+        return check_conditions(array)
 
     shape_match = False
     for shape in shapes:
@@ -324,7 +407,7 @@ def check_format_input_numeric(
         assert isinstance(reshape, tuple), "reshape must be a tuple"
         array = np.reshape(inp, reshape)
 
-    return array
+    return check_conditions(array)
 
 
 def check_format_input_orientation(inp, init_format=False):
