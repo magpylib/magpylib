@@ -16,7 +16,7 @@ from magpylib._src.input_checks import match_shape
 
 
 @pytest.mark.parametrize(
-    "shp,pat",
+    ("shp", "pat"),
     [
         pytest.param((2, 4), (None, 4), id="wildcard-last-4"),
         pytest.param((2, 4), (Ellipsis, 4), id="ellipsis-leading-4"),
@@ -42,7 +42,7 @@ def test_shape_match_true(shp, pat):
 
 
 @pytest.mark.parametrize(
-    "shp,pat",
+    ("shp", "pat"),
     [
         pytest.param((2, 4), (None, None, 4), id="pattern-longer-no-ellipsis"),
         pytest.param((2, 4), (None, 3), id="last-dim-mismatch"),
