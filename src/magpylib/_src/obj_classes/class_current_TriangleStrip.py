@@ -152,7 +152,13 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         """Default style description text"""
         if self.vertices is None:
             return "no vertices"
-        return f"{unit_prefix(self.current)}A" if self.current else "no current"
+        curr = self._current
+        if curr is None:
+            return "no current"
+        if len(curr) == 1:
+            return f"{unit_prefix(curr[0])}A current"
+        cmin, cmax = np.nanmin(curr), np.nanmax(curr)
+        return f"{unit_prefix(cmin)}A..{unit_prefix(cmax)}A"
 
     # Methods
     def _get_centroid(self, squeeze=True):
