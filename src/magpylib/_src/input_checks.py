@@ -205,10 +205,7 @@ def match_shape(shape, pattern):
             remaining_non_ellipsis = [p for p in pattern[next_pi:] if p is not Ellipsis]
             # maximum start index for aligning next non-ellipsis is such that enough shape elements remain
             max_k = len(shape) - len(remaining_non_ellipsis)
-            for k in range(si, max_k + 1):
-                if helper(next_pi, k):
-                    return True
-            return False
+            return any(helper(next_pi, k) for k in range(si, max_k + 1))
 
         # pattern[pi] is not Ellipsis but shape exhausted -> cannot match
         return False
