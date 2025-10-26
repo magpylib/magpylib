@@ -132,7 +132,7 @@ class BaseGeo(BaseTransform, ABC):
                 self._position, ((0, n_path_new - n_path), (0, 0)), "edge"
             )
 
-    def _sync_all_paths(self, prop=None, start=0):
+    def _sync_all_paths(self, prop=None, start=0, propagate=True):
         if not self._path_sync_enabled:
             return
         lengths = [
@@ -146,7 +146,8 @@ class BaseGeo(BaseTransform, ABC):
         # sync private attributes of all additional path properties
         pad_path_properties(self, target_len, start=start)
         # now sync position and orientation including children for collection
-        self._sync_pos_orient_recursive(target_len)
+        if propagate:
+            self._sync_pos_orient_recursive(target_len)
 
     @contextmanager
     def hold_path_sync(self, *, sync_on_exit=True):
@@ -302,6 +303,8 @@ class BaseGeo(BaseTransform, ABC):
         oriQ = self._orientation.as_quat()
         self._orientation = R.from_quat(_pad_slice_path(self._position, oriQ))
 
+        self._sync_all_paths(propagate=False)
+
         # when there are children include their relative position
         for child in getattr(self, "children", []):
             old_pos = _pad_slice_path(self._position, old_pos)
@@ -339,6 +342,8 @@ class BaseGeo(BaseTransform, ABC):
 
         # pad/slice position path to same length
         self._position = _pad_slice_path(oriQ, self._position)
+
+        self._sync_all_paths(propagate=False)
 
         # when there are children they rotate about self.position
         # after the old Collection orientation is rotated away.
