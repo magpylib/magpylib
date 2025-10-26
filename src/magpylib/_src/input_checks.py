@@ -194,21 +194,23 @@ def match_shape(shape, pattern):
         if pi == len(pattern):
             return si == len(shape)
 
-        # pattern[pi] is Ellipsis
-        # if ellipsis is the last pattern element it matches the rest (including empty)
-        if pi == len(pattern) - 1:
-            return True
-
-        # otherwise try all possible allocations of elements to the ellipsis (including zero)
-        next_pi = pi + 1
-        # try to align pattern[next_pi] with shape at positions si..len(shape)
-        for k in range(si, len(shape) + 1):
-            # quick check: ensure enough remaining shape elements for remaining non-ellipsis pattern items
-            remaining_non_ellipsis = [p for p in pattern[next_pi:] if p is not Ellipsis]
-            if len(shape) - k < len(remaining_non_ellipsis):
-                break
-            if helper(next_pi, k):
+        # if current pattern element is Ellipsis, it can absorb 0..N elements
+        if pattern[pi] is Ellipsis:
+            # if ellipsis is the last pattern element it matches the rest (including empty)
+            if pi == len(pattern) - 1:
                 return True
+            # otherwise try all possible allocations of elements to the ellipsis (including zero)
+            next_pi = pi + 1
+            # compute how many non-ellipsis items remain after the ellipsis
+            remaining_non_ellipsis = [p for p in pattern[next_pi:] if p is not Ellipsis]
+            # maximum start index for aligning next non-ellipsis is such that enough shape elements remain
+            max_k = len(shape) - len(remaining_non_ellipsis)
+            for k in range(si, max_k + 1):
+                if helper(next_pi, k):
+                    return True
+            return False
+
+        # pattern[pi] is not Ellipsis but shape exhausted -> cannot match
         return False
 
     return helper(0, 0)
@@ -272,7 +274,7 @@ def check_condition(
 
     if not ok:
         msg = (
-            f"Input {name} must satisfy condition {cond!r} with threshold"
+            f"{msg_name} must satisfy condition {cond!r} with threshold"
             " {threshold!r} (mode={mode!r}); instead received {inp!r}."
         )
         raise MagpylibBadUserInput(msg)
