@@ -69,7 +69,8 @@ from magpylib._src.utility import (
 def _tile_group_property_path(group: list, n_pix: int, prop_name: str):
     """tile up group property with path support"""
     props = np.array([getattr(src, f"_{prop_name}") for src in group])
-    return np.tile(props, n_pix).reshape((-1, *props.shape[2:]))
+    pii = props[0][0]  # single property, single path index shape
+    return np.tile(props, (n_pix, *[1] * pii.ndim)).reshape((-1, *pii.shape))
 
 
 def _tile_group_property(group: list, n_pp: int, prop_name: str):
