@@ -178,31 +178,60 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
     # Methods
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
-        if squeeze:
-            if self.vertices is not None:
-                return np.mean(self.vertices, axis=0) + self.position
-            return self.position
-        if self.vertices is not None:
-            return np.mean(self.vertices, axis=0) + self._position
-        return self._position
+        if self._vertices is None:
+            return self._position
 
-    def _get_dipole_moment(self):
+        # Compute mean for each path along vertex axis: shape (p, 3)
+        centroids = np.mean(self._vertices, axis=1)  # mean over vertices dimension
+
+        # Add position: shape (p, 3) + (p, 3)
+        centroids = centroids + self._position
+
+        if squeeze and len(centroids) == 1:
+            return centroids[0]
+        return centroids
+
+    def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
         # test init
-        if self.vertices is None or self.current is None:
-            return np.array((0.0, 0.0, 0.0))
-        # test for closed polyline
-        if (len(self.vertices) > 1) and (np.all(self.vertices[0] == self.vertices[-1])):
-            return (
-                self.current
-                / 2
-                * np.sum(np.cross(self.vertices[:-1], self.vertices[1:]), axis=0)
+        if self._vertices is None or self._current is None:
+            return np.zeros_like(self._position)
+
+        # Check if all paths are closed polylines
+        first_vertices = self._vertices[:, 0, :]  # shape (p, 3)
+        last_vertices = self._vertices[:, -1, :]  # shape (p, 3)
+        is_closed = np.all(first_vertices == last_vertices, axis=1)  # shape (p,)
+
+        # Check if any path is not closed and has more than 1 vertex
+        has_multiple_vertices = self._vertices.shape[1] > 1
+        invalid_paths = has_multiple_vertices & ~is_closed
+
+        if np.any(invalid_paths):
+            invalid_idx = np.where(invalid_paths)[0][0]
+            msg = (
+                f"Cannot compute dipole moment of {self} at path index {invalid_idx}. "
+                "Dipole moment is only defined for closed Polylines "
+                "(first and last vertex must be identical)."
             )
-        msg = (
-            f"Cannot compute dipole moment of {self}. Dipole moment is only defined for closed "
-            "Polylines (first and last vertex must be identical)."
-        )
-        raise ValueError(msg)
+            raise ValueError(msg)
+
+        # Compute dipole moments for all paths (vectorized)
+        # Prepare vertices pairs: v[:-1] and v[1:] for cross product
+        # Shape: (p, n-1, 3) where p is path length, n is number of vertices
+        v_start = self._vertices[:, :-1, :]  # shape (p, n-1, 3)
+        v_end = self._vertices[:, 1:, :]  # shape (p, n-1, 3)
+
+        # Cross product along segments: shape (p, n-1, 3)
+        crosses = np.cross(v_start, v_end)
+
+        # Sum along segments axis: shape (p, 3)
+        cross_sums = np.sum(crosses, axis=1)
+
+        # Multiply by current/2: shape (p, 3)
+        dipole_moments = self._current[:, np.newaxis] / 2 * cross_sums
+        if squeeze and len(dipole_moments) == 1:
+            return dipole_moments[0]
+        return dipole_moments
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
