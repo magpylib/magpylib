@@ -366,6 +366,19 @@ class BaseGeo(BaseTransform, ABC):
         """Return centroid without squeezing (internal)."""
         return self._get_centroid(squeeze=False)
 
+
+    @centroid.setter
+    def centroid(self, _input):
+        """Throw error when trying to set centroid."""
+        msg = "Cannot set property centroid. It is read-only."
+        raise AttributeError(msg)
+
+    @_centroid.setter
+    def _centroid(self, _input):
+        """Throw error when trying to set centroid."""
+        msg = "Cannot set property _centroid. It is read-only."
+        raise AttributeError(msg)
+    
     @property
     def style(self):
         """Return object style as a ``BaseStyle`` instance."""
