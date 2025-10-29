@@ -170,13 +170,18 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
             return self.position
         return self._position
 
-    def _get_dipole_moment(self):
+    def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
         # test init
-        if self.diameter is None or self.current is None:
-            return np.array((0.0, 0.0, 0.0))
-
-        return self.diameter**2 / 4 * np.pi * self.current * np.array((0, 0, 1))
+        diam, curr = self._diameter, self._current
+        if diam is None or curr is None:
+            mom = np.zeros_like(self._position)
+        else:
+            diam, curr = diam[:, np.newaxis], curr[:, np.newaxis]
+            mom = diam**2 / 4 * np.pi * curr * np.array((0, 0, 1))
+        if squeeze and len(mom) == 1:
+            return mom[0]
+        return mom
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
