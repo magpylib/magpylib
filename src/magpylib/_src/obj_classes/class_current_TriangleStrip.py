@@ -168,7 +168,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
             return np.squeeze(centr)
         return centr
 
-    def _get_dipole_moment(self):
+    def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
         # test init
         if self.vertices is None or self.current is None:

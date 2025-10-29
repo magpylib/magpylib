@@ -34,7 +34,7 @@ class BaseDipoleMoment(ABC):
         raise AttributeError(msg)
 
     @abstractmethod
-    def _get_dipole_moment(self):
+    def _get_dipole_moment(self, squeeze=True):
         """Return computed dipole moment (A·m²).
 
         Returns
