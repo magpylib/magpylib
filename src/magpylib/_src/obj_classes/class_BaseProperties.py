@@ -14,12 +14,23 @@ class BaseDipoleMoment(ABC):
     @property
     def dipole_moment(self):
         """Return dipole moment vector (A·m²)."""
-        return self._get_dipole_moment()
+        return self._get_dipole_moment(squeeze=True)
+
+    @property
+    def _dipole_moment(self):
+        """Return dipole moment vector (A·m²) without squeezing (internal)."""
+        return self._get_dipole_moment(squeeze=False)
 
     @dipole_moment.setter
     def dipole_moment(self, _input):
         """Raise error on attempt to set read-only dipole moment."""
         msg = "Cannot set property dipole_moment. It is read-only."
+        raise AttributeError(msg)
+
+    @_dipole_moment.setter
+    def _dipole_moment(self, _input):
+        """Raise error on attempt to set read-only dipole moment."""
+        msg = "Cannot set property _dipole_moment. It is read-only."
         raise AttributeError(msg)
 
     @abstractmethod
