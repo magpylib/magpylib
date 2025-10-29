@@ -12,7 +12,7 @@ class BaseDipoleMoment(ABC):
     @property
     def dipole_moment(self):
         """Return object dipole moment."""
-        return self._get_dipole_moment()
+        return self._get_dipole_moment(squeeze=True)
 
     @property
     def _dipole_moment(self):
@@ -32,5 +32,5 @@ class BaseDipoleMoment(ABC):
         raise AttributeError(msg)
 
     @abstractmethod
-    def _get_dipole_moment(self):
+    def _get_dipole_moment(self, squeeze=True):
         """Calculate and return the dipole moment of the object in units of A·m²."""
