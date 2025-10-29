@@ -212,53 +212,68 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
             )
             raise ValueError(msg)
 
-        # Compute dipole moments for all paths (vectorized)
-        # Process each path
-        dipole_moments = []
-        for path_idx in range(len(self._vertices)):
-            vertices_path = self._vertices[path_idx]  # shape (n, 3)
-            current_path = self._current[path_idx]  # scalar
+        # Create triangles: shape (p, n-2, 3, 3) where last two dims are (vertices, coords)
+        # Each triangle has vertices [i, i+1, i+2]
+        trias = np.stack(
+            [
+                self._vertices[:, :-2, :],  # shape (p, n-2, 3)
+                self._vertices[:, 1:-1, :],  # shape (p, n-2, 3)
+                self._vertices[:, 2:, :],  # shape (p, n-2, 3)
+            ],
+            axis=2,
+        )  # shape (p, n-2, 3, 3)
 
-            # number of triangles
-            no_tris = len(vertices_path) - 2
+        # Compute centroids: mean of three vertices, shape (p, n-2, 3)
+        centroids = np.mean(trias, axis=2)
 
-            # create triangles
-            trias = np.array(
-                [vertices_path[:-2], vertices_path[1:-1], vertices_path[2:]]
-            )
-            trias = np.swapaxes(trias, 0, 1)
+        # Compute areas: 0.5 * ||(v1-v0) x (v2-v0)||, shape (p, n-2)
+        cross_products = np.cross(
+            trias[:, :, 1, :] - trias[:, :, 0, :],
+            trias[:, :, 2, :] - trias[:, :, 0, :],
+        )
+        areas = 0.5 * np.linalg.norm(cross_products, axis=2)  # shape (p, n-2)
 
-            centroids = np.array([(t[0] + t[1] + t[2]) / 3 for t in trias])
-            areas = 0.5 * np.linalg.norm(
-                np.cross(trias[:, 1] - trias[:, 0], trias[:, 2] - trias[:, 0]), axis=1
-            )
+        # Create current density input
+        v1 = trias[:, :, 1, :] - trias[:, :, 0, :]  # shape (p, n-2, 3)
+        v2 = trias[:, :, 2, :] - trias[:, :, 0, :]  # shape (p, n-2, 3)
+        v1v1 = np.sum(v1 * v1, axis=2)  # shape (p, n-2)
+        v2v2 = np.sum(v2 * v2, axis=2)  # shape (p, n-2)
+        v1v2 = np.sum(v1 * v2, axis=2)  # shape (p, n-2)
 
-            # create current density input
-            v1 = trias[:, 1] - trias[:, 0]
-            v2 = trias[:, 2] - trias[:, 0]
-            v1v1 = np.sum(v1 * v1, axis=1)
-            v2v2 = np.sum(v2 * v2, axis=1)
-            v1v2 = np.sum(v1 * v2, axis=1)
+        # Initialize current densities: shape (p, n-2, 3)
+        curr_densities = np.zeros_like(v2)
 
-            curr_densities = np.zeros((no_tris, 3), dtype=float)
-            # catch two times the same vertex in one triangle, and set CD to zero there
-            mask = (v2v2 != 0) * (v1v1 != 0)
-            h = np.sqrt(v1v1[mask] - (v1v2[mask] ** 2 / v2v2[mask]))
-            curr_densities[mask] = (
-                v2[mask]
-                / (
-                    np.sqrt(v2v2[mask])
-                    * h
-                    / np.repeat(current_path, no_tris, axis=0)[mask]
-                )[:, np.newaxis]
-            )
-            # moment of one triangle: A / 2 * cent x curr_density
-            dipole_moment = np.sum(
-                areas[:, np.newaxis] / 2 * np.cross(centroids, curr_densities), axis=0
-            )
-            dipole_moments.append(dipole_moment)
+        # Catch two times the same vertex in one triangle, and set CD to zero there
+        mask = (v2v2 != 0) & (v1v1 != 0)  # shape (p, n-2)
 
-        dipole_moments = np.array(dipole_moments)  # shape (p, 3)
+        # Compute height for valid triangles
+        h = np.zeros_like(v1v1)
+        h[mask] = np.sqrt(v1v1[mask] - (v1v2[mask] ** 2 / v2v2[mask]))
+
+        # Expand current for broadcasting: shape (p, 1)
+        current_expanded = self._current[:, np.newaxis]
+
+        # Compute current densities where mask is True
+        # Shape calculations: v2[mask] has shape (k, 3) where k = number of True in mask
+        # We need to properly broadcast current for each path
+        denom = np.zeros_like(v2v2)
+        denom[mask] = (
+            np.sqrt(v2v2[mask])
+            * h[mask]
+            / np.broadcast_to(current_expanded, v2v2.shape)[mask]
+        )
+
+        # Avoid division by zero
+        valid = mask & (denom != 0)
+        curr_densities[valid] = v2[valid] / denom[valid, np.newaxis]
+
+        # Compute dipole moment: A / 2 * sum over triangles of (cent x curr_density)
+        # Shape: areas[:, :, np.newaxis] is (p, n-2, 1)
+        # cross(centroids, curr_densities) is (p, n-2, 3)
+        dipole_moments = np.sum(
+            areas[:, :, np.newaxis] / 2 * np.cross(centroids, curr_densities), axis=1
+        )  # shape (p, 3)
+
         if squeeze and len(dipole_moments) == 1:
             return dipole_moments[0]
         return dipole_moments
