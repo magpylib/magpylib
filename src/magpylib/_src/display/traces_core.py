@@ -117,7 +117,9 @@ def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
     return traces
 
 
-def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+def make_TriangleStrip(
+    obj, path_ind=-1, **kwargs
+) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly scatter3d parameters for a TriangleStrip current in a dictionary based on the
     provided arguments.
@@ -130,22 +132,23 @@ def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     obj.faces = []
     # every two consecutive triangles share an edge, so we alternate the vertex order
     # this allows to have all normals pointing in the same direction for a properly oriented mesh
-    for i in range(len(obj.vertices) - 2):
+    vertices = obj._vertices[path_ind]
+    for i in range(len(vertices) - 2):
         if i % 2 == 0:
             obj.faces.append((i, i + 1, i + 2))
         else:
             obj.faces.append((i + 1, i, i + 2))
     obj.faces = np.array(obj.faces)
     trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=obj.vertices, faces=obj.faces, color=style.color
+        "plotly-dict", vertices=vertices, faces=obj.faces, color=style.color
     )
     traces = [{**trace, **kwargs}]
-    obj.mesh = obj.vertices[obj.faces]
-    if obj.vertices is not None and style.direction.show:
+    obj.mesh = vertices[obj.faces]
+    if vertices is not None and style.direction.show:
         traces.append(
             make_triangle_orientations(
                 obj,
-                vectors=obj.vertices[2:] - obj.vertices[:-2],
+                vectors=vertices[2:] - vertices[:-2],
                 sizefactor=2.5,
                 **{**kwargs, "legendgroup": trace.get("legendgroup")},
             )
@@ -154,7 +157,7 @@ def make_TriangleStrip(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
         if getattr(style.mesh, mode).show:
             kw = {**kwargs, "legendgroup": trace.get("legendgroup")}
             kw["showlegend"] = False
-            trace = make_mesh_lines(obj, mode, **kw)
+            trace = make_mesh_lines(obj, mode, path_ind=path_ind, **kw)
             if trace:
                 traces.append(trace)
     return traces
@@ -465,7 +468,7 @@ def get_closest_vertices(faces_subsets, vertices):
     return np.array(closest_verts_list)
 
 
-def make_mesh_lines(obj, mode, **kwargs) -> dict[str, Any]:
+def make_mesh_lines(obj, mode, path_ind=None, **kwargs) -> dict[str, Any]:
     """Draw mesh lines and vertices"""
     # pylint: disable=protected-access
     kwargs.pop("color", None)
@@ -473,7 +476,8 @@ def make_mesh_lines(obj, mode, **kwargs) -> dict[str, Any]:
     style = obj.style
     mesh = getattr(style.mesh, mode)
     marker, line = mesh.marker, mesh.line
-    tr, vert = obj.faces, obj.vertices
+    vertices = obj.vertices if path_ind is None else obj._vertices[path_ind]
+    tr, vert = obj.faces, vertices
     if mode == "disconnected":
         subsets = obj.get_faces_subsets()
         lines = get_closest_vertices(subsets, vert)

@@ -108,6 +108,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         "current": 1,
         "vertices": 3,
     }
+    _path_properties = ("vertices",)  # also inherits from parent class
     get_trace = make_TriangleStrip
     _style_class = CurrentSheetStyle
 
@@ -122,18 +123,28 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.vertices = vertices
-
-        # Inherit
-        super().__init__(position, orientation, current=current, style=style, **kwargs)
+        # init inheritance
+        super().__init__(
+            position,
+            orientation,
+            current=current,
+            vertices=vertices,
+            style=style,
+            **kwargs,
+        )
         BaseTarget.__init__(self, meshing)
 
     # property getters and setters
     @property
     def vertices(self):
         """Triangle strip vertices in local object coordinates."""
-        return self._vertices
+        return (
+            None
+            if self._vertices is None
+            else self._vertices[0]
+            if len(self._vertices) == 1
+            else self._vertices
+        )
 
     @vertices.setter
     def vertices(self, vert):
@@ -146,6 +157,9 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
             vertices must be provided.
         """
         self._vertices = check_format_input_vertices(vert, minlength=3)
+        if isinstance(self._vertices, np.ndarray) and self._vertices.ndim == 2:
+            self._vertices = np.array([self._vertices], dtype=float)
+        self._sync_all_paths(self._vertices)
 
     @property
     def _default_style_description(self):
@@ -163,57 +177,91 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
     # Methods
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
-        centr = np.mean(self.vertices, axis=0) + self._position
-        if squeeze:
-            return np.squeeze(centr)
-        return centr
+        if self._vertices is None:
+            return self._position
+
+        # Compute mean for each path along vertex axis: shape (p, 3)
+        centroids = np.mean(self._vertices, axis=1)  # mean over vertices dimension
+
+        # Add position: shape (p, 3) + (p, 3)
+        centroids = centroids + self._position
+
+        if squeeze and len(centroids) == 1:
+            return centroids[0]
+        return centroids
 
     def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
         # test init
-        if self.vertices is None or self.current is None:
-            return np.array((0.0, 0.0, 0.0))
-        # test closed
-        if not np.allclose(self.vertices[:2], self.vertices[-2:]):
+        if self._vertices is None or self._current is None:
+            return np.zeros_like(self._position)
+
+        # Check if all paths are closed (first two and last two vertices identical)
+        # Shape: _vertices is (p, n, 3)
+        first_two = self._vertices[:, :2, :]  # shape (p, 2, 3)
+        last_two = self._vertices[:, -2:, :]  # shape (p, 2, 3)
+        is_closed = np.all(first_two == last_two, axis=(1, 2))  # shape (p,)
+
+        # Check if any path is not closed
+        if np.any(~is_closed):
+            invalid_idx = np.where(~is_closed)[0][0]
             msg = (
-                f"Cannot compute dipole moment of {self}. Dipole moment is only defined for closed "
-                "CurrentStrip where first two and last two vertices are identical."
+                f"Cannot compute dipole moment of {self} at path index {invalid_idx}. "
+                "Dipole moment is only defined for closed CurrentStrip where first two "
+                "and last two vertices are identical."
             )
             raise ValueError(msg)
 
-        # number of triangles
-        no_tris = len(self.vertices) - 2
+        # Compute dipole moments for all paths (vectorized)
+        # Process each path
+        dipole_moments = []
+        for path_idx in range(len(self._vertices)):
+            vertices_path = self._vertices[path_idx]  # shape (n, 3)
+            current_path = self._current[path_idx]  # scalar
 
-        # create triangles
-        trias = np.array([self.vertices[:-2], self.vertices[1:-1], self.vertices[2:]])
-        trias = np.swapaxes(trias, 0, 1)
+            # number of triangles
+            no_tris = len(vertices_path) - 2
 
-        centroids = np.array([(t[0] + t[1] + t[2]) / 3 for t in trias])
-        areas = 0.5 * np.linalg.norm(
-            np.cross(trias[:, 1] - trias[:, 0], trias[:, 2] - trias[:, 0]), axis=1
-        )
+            # create triangles
+            trias = np.array(
+                [vertices_path[:-2], vertices_path[1:-1], vertices_path[2:]]
+            )
+            trias = np.swapaxes(trias, 0, 1)
 
-        # create current density input
-        v1 = trias[:, 1] - trias[:, 0]
-        v2 = trias[:, 2] - trias[:, 0]
-        v1v1 = np.sum(v1 * v1, axis=1)
-        v2v2 = np.sum(v2 * v2, axis=1)
-        v1v2 = np.sum(v1 * v2, axis=1)
+            centroids = np.array([(t[0] + t[1] + t[2]) / 3 for t in trias])
+            areas = 0.5 * np.linalg.norm(
+                np.cross(trias[:, 1] - trias[:, 0], trias[:, 2] - trias[:, 0]), axis=1
+            )
 
-        curr_densities = np.zeros((no_tris, 3), dtype=float)
-        # catch two times the same vertex in one triangle, and set CD to zero there
-        mask = (v2v2 != 0) * (v1v1 != 0)
-        h = np.sqrt(v1v1[mask] - (v1v2[mask] ** 2 / v2v2[mask]))
-        curr_densities[mask] = (
-            v2[mask]
-            / (
-                np.sqrt(v2v2[mask]) * h / np.repeat(self.current, no_tris, axis=0)[mask]
-            )[:, np.newaxis]
-        )
-        # moment of one triangle: A / 2 * cent x curr_density
-        return np.sum(
-            areas[:, np.newaxis] / 2 * np.cross(centroids, curr_densities), axis=0
-        )
+            # create current density input
+            v1 = trias[:, 1] - trias[:, 0]
+            v2 = trias[:, 2] - trias[:, 0]
+            v1v1 = np.sum(v1 * v1, axis=1)
+            v2v2 = np.sum(v2 * v2, axis=1)
+            v1v2 = np.sum(v1 * v2, axis=1)
+
+            curr_densities = np.zeros((no_tris, 3), dtype=float)
+            # catch two times the same vertex in one triangle, and set CD to zero there
+            mask = (v2v2 != 0) * (v1v1 != 0)
+            h = np.sqrt(v1v1[mask] - (v1v2[mask] ** 2 / v2v2[mask]))
+            curr_densities[mask] = (
+                v2[mask]
+                / (
+                    np.sqrt(v2v2[mask])
+                    * h
+                    / np.repeat(current_path, no_tris, axis=0)[mask]
+                )[:, np.newaxis]
+            )
+            # moment of one triangle: A / 2 * cent x curr_density
+            dipole_moment = np.sum(
+                areas[:, np.newaxis] / 2 * np.cross(centroids, curr_densities), axis=0
+            )
+            dipole_moments.append(dipole_moment)
+
+        dipole_moments = np.array(dipole_moments)  # shape (p, 3)
+        if squeeze and len(dipole_moments) == 1:
+            return dipole_moments[0]
+        return dipole_moments
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
