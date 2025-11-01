@@ -273,7 +273,16 @@ def getFT(
     #  - collect all meshing infos
     #  - prepare masks and idx for later
 
-    meshes = [tgt._generate_mesh() for tgt in targets]
+    meshes = []
+    for tgt in targets:
+        mesh = tgt._generate_mesh()
+        if path_vars := mesh.get("path_vars", ()):
+            msg = (
+                f"Detected path-varying meshing for target {tgt!r}: {path_vars}. "
+                "which are not yet supported in getFT. "
+            )
+            raise NotImplementedError(msg)
+        meshes.append(mesh)
 
     # Mesh sizes and Masks
     mask_magnet = np.array(["moments" in m for m in meshes])
