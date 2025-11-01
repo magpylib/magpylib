@@ -239,7 +239,8 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
 
         # Special special case: fewer points than segments, cannot be caught in
         #    meshing setter because vertices might not have been set yet
-        n_segments = len(self.vertices) - 1
+        n_points = self.meshing
+        n_segments = len(self._vertices[0]) - 1
         if self.meshing < n_segments:
             msg = (
                 f"Input meshing of {self} must be an integer > number of Polyline "
@@ -247,8 +248,6 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
                 "Setting one point per segment in computation."
             )
             warnings.warn(msg, UserWarning, stacklevel=2)
-            n_target = n_segments
-        else:
-            n_target = self.meshing
+            n_points = n_segments
 
-        return _target_mesh_polyline(self.vertices, self.current, n_target)
+        return _target_mesh_polyline(self.vertices, self.current, n_points)

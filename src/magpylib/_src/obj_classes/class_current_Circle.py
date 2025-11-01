@@ -185,7 +185,7 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        return _target_mesh_circle(self.diameter / 2, self.meshing, self.current)
+        return _target_mesh_circle(self._diameter, self._current, self.meshing)
 
     def _validate_meshing(self, value):
         """Circle makes only sense with at least 4 mesh points."""

@@ -254,40 +254,66 @@ def _target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
     return {"pts": pts, "moments": moments}
 
 
-def _target_mesh_circle(r, n, i0):
+def _target_mesh_circle(diameter, current, n_points):
     """
-    Circle meshing in the local object coordinates
+    Circle meshing in the local object coordinates with path-varying parameters
 
     Parameters
     ----------
-    r: float - Radius of the circle.
-    n: int >= 4 - Number of points along the circle.
-    i0: float - electric current
+    diameter: array_like, shape (p,) - Diameter of the circle along path.
+    current: array_like, shape (p,) - electric current along path
+    n_points: int >= 4 - Number of points along the circle.
 
     Returns
     -------
     dict: {
-        "pts": np.ndarray, shape (n, 3) - central edge positions
-        "cvecs": np.ndarray, shape (n, 3) - current vectors
+        "pts": np.ndarray, shape (p, n, 3) - central edge positions along path
+        "cvecs": np.ndarray, shape (p, n, 3) - current vectors along path
     }
     """
-    # construct polygon with same area as circle
-    r1 = r * np.sqrt((2 * np.pi) / (n * np.sin(2 * np.pi / n)))
-    vx = r1 * np.cos(2 * np.pi * np.arange(n + 1) / n)
-    vy = r1 * np.sin(2 * np.pi * np.arange(n + 1) / n)
+    r, i0, n = np.atleast_1d(diameter / 2), np.atleast_1d(current), n_points
+    path_vars = []
+    if np.unique(r).shape[0] > 1:
+        path_vars.append("diameter")
+    if np.unique(i0).shape[0] > 1:
+        path_vars.append("current")
+    if not path_vars:
+        r, i0 = r[:1], i0[:1]
+    p_len = len(r)
 
-    # compute midpoints and tangents of polygon edges
-    midx = (vx[:-1] + vx[1:]) / 2
-    midy = (vy[:-1] + vy[1:]) / 2
-    midz = np.zeros((n,))
+    # Pre-compute angle arrays
+    angles = 2 * np.pi * np.arange(n + 1) / n
 
-    tx = vx[1:] - vx[:-1]
-    ty = vy[1:] - vy[:-1]
+    # Vectorized computation for all path positions
+    # Shape: (p,) -> (p, 1) for broadcasting
+    r_expanded = r.reshape(-1, 1)
+    i0_expanded = i0.reshape(-1, 1)
 
-    pts = np.column_stack((midx, midy, midz))
+    # construct polygon with same area as circle for all path positions
+    r1 = r_expanded * np.sqrt((2 * np.pi) / (n * np.sin(2 * np.pi / n)))
 
-    cvecs = np.column_stack((tx, ty, midz)) * i0
-    return {"pts": pts, "cvecs": cvecs}
+    # Compute vertices for all path positions: shape (p, n+1)
+    vx = r1 * np.cos(angles)  # Broadcasting: (p, 1) * (n+1,) -> (p, n+1)
+    vy = r1 * np.sin(angles)
+
+    # compute midpoints: shape (p, n)
+    midx = (vx[:, :-1] + vx[:, 1:]) / 2
+    midy = (vy[:, :-1] + vy[:, 1:]) / 2
+    midz = np.zeros((p_len, n))
+
+    # compute tangents: shape (p, n)
+    tx = vx[:, 1:] - vx[:, :-1]
+    ty = vy[:, 1:] - vy[:, :-1]
+
+    # Stack to create pts: shape (p, n, 3)
+    pts = np.stack([midx, midy, midz], axis=2)
+
+    # Create cvecs with current scaling: shape (p, n, 3)
+    cvecs = np.stack([tx, ty, midz], axis=2) * i0_expanded.reshape(p_len, 1, 1)
+
+    if not path_vars:
+        pts, cvecs = pts[0], cvecs[0]
+    return {"pts": pts, "cvecs": cvecs, "path_vars": tuple(path_vars)}
 
 
 def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
@@ -421,15 +447,16 @@ def _target_mesh_triangle_current(
     return {"pts": centroids, "cvecs": cvecs}
 
 
-def _target_mesh_polyline(vertices, i0, n_points):
+def _target_mesh_polyline(vertices, current, n_points):
     """
-    Polyline meshing in the local object coordinates
+    Polyline meshing in the local object coordinates with path-varying parameters
 
     Parameters
     ----------
-    vertices: array-like, shape (n, 3) - vertices of the polyline
-    i0: float - electric current
-    n_points: int >= n_segments
+    vertices: array-like, shape (n, 3) or (p, n, 3) - vertices of the polyline
+    i0: array-like, shape (p,) or scalar - electric current along path
+        Note: For internal use, lengths are guaranteed to match vertices path dimension
+    n_points: int >= n_segments - Number of points along the polyline
 
     If n_points is int, the algorithm tries to distribute these points evenly
     over the polyline, enforcing at least one point per segment.
@@ -437,55 +464,101 @@ def _target_mesh_polyline(vertices, i0, n_points):
     Returns
     -------
     dict: {
-        "pts": np.ndarray, shape (m, 3) - central segment positions
-        "cvecs": np.ndarray, shape (m, 3) - current vectors
+        "pts": np.ndarray, shape (m, 3) or (p, m, 3) - central segment positions
+        "cvecs": np.ndarray, shape (m, 3) or (p, m, 3) - current vectors
+        "path_vars": tuple - path-varying parameter names
     }
     """
-    n_segments = len(vertices) - 1
+    # Handle different input shapes
+    vertices = np.asarray(vertices)
+    i0 = np.atleast_1d(current)
 
-    # Calculate segment lengths
-    segment_vectors = vertices[1:] - vertices[:-1]
-    segment_lengths = np.linalg.norm(segment_vectors, axis=1)
-    total_length = np.sum(segment_lengths)
+    p_len = i0.shape[0]
+
+    # Check for path-varying parameters
+    path_vars = []
+    if np.unique(vertices, axis=0).shape[0] > 1:
+        path_vars.append("vertices")
+    if np.unique(i0).shape[0] > 1:
+        path_vars.append("current")
+
+    n_vertices = vertices.shape[1]
+    n_segments = n_vertices - 1
+
+    # Calculate segment lengths for all path positions
+    segment_vectors = vertices[:, 1:] - vertices[:, :-1]  # Shape: (p, n_segments, 3)
+    segment_lengths = np.linalg.norm(segment_vectors, axis=2)  # Shape: (p, n_segments)
+    total_lengths = np.sum(segment_lengths, axis=1)  # Shape: (p,)
 
     # DISTRIBUTE POINTS OVER SEGMENTS #######################################
-    # 1. one point per segment
-    points_per_segment = np.ones(n_segments, dtype=int)
+    # 1. one point per segment for all path positions
+    points_per_segment = np.ones((p_len, n_segments), dtype=int)
 
     # 2. distribute remaining points proportionally to segment lengths
     remaining_points = n_points - n_segments
     if remaining_points > 0:
-        # Calculate how many extra points each segment should get
-        proportional_extra = (segment_lengths / total_length) * remaining_points
+        # Calculate how many extra points each segment should get for each path position
+        proportional_extra = (
+            segment_lengths / total_lengths[:, np.newaxis]
+        ) * remaining_points
         extra_points = np.round(proportional_extra).astype(int)
         points_per_segment += extra_points
 
-        # possibly there will now be n_segments too much or too few points
-        n_points = np.sum(points_per_segment)
+    # Update n_points to actual distributed points for each path position
+    actual_n_points = np.sum(points_per_segment, axis=1)
+    max_n_points = np.max(actual_n_points)
 
-    # GENERATE MESH AND TVEC ##########################################
-    parts = np.empty(n_points)
-    idx = 0
-    for n_pts in points_per_segment:
-        parts[idx : idx + n_pts] = [(2 * j + 1) / (2 * n_pts) for j in range(n_pts)]
-        idx += n_pts
+    # GENERATE MESH AND CVEC ##########################################
+    pts_list = []
+    cvecs_list = []
 
-    pts = np.repeat(segment_vectors, points_per_segment, axis=0)
-    pts = pts * parts[:, np.newaxis]
-    pts += np.repeat(
-        vertices[:-1], points_per_segment, axis=0
-    )  # add starting point of each segment
+    for p_idx in range(p_len):
+        n_pts_path = actual_n_points[p_idx]
+        parts = np.empty(n_pts_path)
+        idx = 0
 
-    cvecs = (
-        np.repeat(
-            segment_vectors / points_per_segment[:, np.newaxis],
-            points_per_segment,
-            axis=0,
+        for _, n_pts in enumerate(points_per_segment[p_idx]):
+            parts[idx : idx + n_pts] = [(2 * j + 1) / (2 * n_pts) for j in range(n_pts)]
+            idx += n_pts
+
+        # Generate points for this path position
+        pts_path = np.repeat(segment_vectors[p_idx], points_per_segment[p_idx], axis=0)
+        pts_path = pts_path * parts[:, np.newaxis]
+        pts_path += np.repeat(
+            vertices[p_idx, :-1], points_per_segment[p_idx], axis=0
+        )  # add starting point of each segment
+
+        cvecs_path = (
+            np.repeat(
+                segment_vectors[p_idx] / points_per_segment[p_idx, :, np.newaxis],
+                points_per_segment[p_idx],
+                axis=0,
+            )
+            * i0[p_idx]
         )
-        * i0
-    )
 
-    return {"pts": pts, "cvecs": cvecs}
+        pts_list.append(pts_path)
+        cvecs_list.append(cvecs_path)
+
+    # Convert to arrays with consistent shapes
+    # Pad shorter arrays with zeros to match max_n_points
+    pts = np.zeros((p_len, max_n_points, 3))
+    cvecs = np.zeros((p_len, max_n_points, 3))
+
+    for p_idx in range(p_len):
+        n_pts = len(pts_list[p_idx])
+        pts[p_idx, :n_pts] = pts_list[p_idx]
+        cvecs[p_idx, :n_pts] = cvecs_list[p_idx]
+
+    # If no path variation, return squeezed arrays
+    if not path_vars:
+        pts, cvecs = pts[0], cvecs[0]
+        # Remove padding zeros
+        if max_n_points > actual_n_points[0]:
+            pts = pts[: actual_n_points[0]]
+            cvecs = cvecs[: actual_n_points[0]]
+
+    return {"pts": pts, "cvecs": cvecs, "path_vars": tuple(path_vars)}
 
 
 def _create_grid(dimensions, spacing):
