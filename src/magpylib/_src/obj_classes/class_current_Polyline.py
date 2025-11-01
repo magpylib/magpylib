@@ -250,4 +250,4 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
             warnings.warn(msg, UserWarning, stacklevel=2)
             n_points = n_segments
 
-        return _target_mesh_polyline(self.vertices, self.current, n_points)
+        return _target_mesh_polyline(self._vertices, self._current, n_points)
