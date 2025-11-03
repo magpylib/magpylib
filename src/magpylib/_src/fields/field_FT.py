@@ -7,9 +7,10 @@ import logging
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from magpylib._src.fields.field_BH import getB, _preserve_paths
+from magpylib._src.fields.field_BH import _preserve_paths, getB
 from magpylib._src.input_checks import check_dimensions, check_excitations
 from magpylib._src.utility import format_src_inputs
+
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
@@ -384,7 +385,9 @@ def getFT(
 
     # Annoying general case - cycle through path
     else:
-        with _preserve_paths(sources, path_properties=["position", "orientation"], copy=False):
+        with _preserve_paths(
+            sources, path_properties=["position", "orientation"], copy=False
+        ):
             # Extract an pad source paths
             src_pos = np.empty((n_src, n_path, 3))
             src_ori = np.empty((n_src, n_path, 4))
