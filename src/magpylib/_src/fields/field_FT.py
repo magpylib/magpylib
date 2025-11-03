@@ -7,10 +7,9 @@ import logging
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from magpylib._src.fields.field_BH import getB
+from magpylib._src.fields.field_BH import getB, _preserve_paths
 from magpylib._src.input_checks import check_dimensions, check_excitations
 from magpylib._src.utility import format_src_inputs
-
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
@@ -385,39 +384,31 @@ def getFT(
 
     # Annoying general case - cycle through path
     else:
-        # Store original paths
-        src_pos0 = [src._position for src in sources]
-        src_ori0 = [src._orientation for src in sources]
+        with _preserve_paths(sources, path_properties=["position", "orientation"], copy=False):
+            # Extract an pad source paths
+            src_pos = np.empty((n_src, n_path, 3))
+            src_ori = np.empty((n_src, n_path, 4))
 
-        # Extract an pad source paths
-        src_pos = np.empty((n_src, n_path, 3))
-        src_ori = np.empty((n_src, n_path, 4))
-
-        for i, src in enumerate(sources):
-            n_pad = n_path - len(src._position)
-            if n_pad == 0:  # np.pad creates a relevant overhead
-                src_pos[i] = src._position
-                src_ori[i] = src._orientation.as_quat()
-            else:
-                src_pos[i] = np.pad(src._position, ((0, n_pad), (0, 0)), "edge")
-                src_ori[i] = np.pad(
-                    src._orientation.as_quat(), ((0, n_pad), (0, 0)), "edge"
-                )
-
-        # Allocate
-        B_all = np.empty((n_src, n_path, n_mesh_all7, 3))
-
-        # Compute for each path and Broadcast
-        for j in range(n_path):
             for i, src in enumerate(sources):
-                src.position = src_pos[i, j]
-                src.orientation = R.from_quat(src_ori[i, j])
-            B_all[:, j] = getB(sources, OBS7[j], squeeze=True)
+                n_pad = n_path - len(src._position)
+                if n_pad == 0:  # np.pad creates a relevant overhead
+                    src_pos[i] = src._position
+                    src_ori[i] = src._orientation.as_quat()
+                else:
+                    src_pos[i] = np.pad(src._position, ((0, n_pad), (0, 0)), "edge")
+                    src_ori[i] = np.pad(
+                        src._orientation.as_quat(), ((0, n_pad), (0, 0)), "edge"
+                    )
 
-        # Restore original paths
-        for i, src in enumerate(sources):
-            src._position = src_pos0[i]
-            src._orientation = src_ori0[i]
+            # Allocate
+            B_all = np.empty((n_src, n_path, n_mesh_all7, 3))
+
+            # Compute for each path and Broadcast
+            for j in range(n_path):
+                for i, src in enumerate(sources):
+                    src.position = src_pos[i, j]
+                    src.orientation = R.from_quat(src_ori[i, j])
+                B_all[:, j] = getB(sources, OBS7[j], squeeze=True)
 
     F_all = np.zeros((n_src, n_path, n_mesh_all, 3))
     T_all = np.zeros((n_src, n_path, n_mesh_all, 3))

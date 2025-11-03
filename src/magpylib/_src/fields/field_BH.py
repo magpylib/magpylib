@@ -68,7 +68,7 @@ from magpylib._src.utility import (
 
 
 @contextmanager
-def _preserve_paths(input_objs, copy=False):
+def _preserve_paths(input_objs, path_properties=None, copy=False):
     """
     Context manager to store and restore original source paths.
 
@@ -87,8 +87,12 @@ def _preserve_paths(input_objs, copy=False):
     # Store original paths
     path_orig = {}
     for obj in input_objs:
-        path_properties = ["position", "orientation", *obj._path_properties]
-        for prop in path_properties:
+        path_props_obj = (
+            ["position", "orientation", *obj._path_properties]
+            if path_properties is None
+            else path_properties
+        )
+        for prop in path_props_obj:
             key = (id(obj), prop)
             val = getattr(obj, f"_{prop}")
             path_orig[key] = val.copy() if copy else val
@@ -97,7 +101,12 @@ def _preserve_paths(input_objs, copy=False):
     finally:
         # Restore original paths
         for obj in input_objs:
-            for prop in ["position", "orientation", *obj._path_properties]:
+            path_props_obj = (
+                ["position", "orientation", *obj._path_properties]
+                if path_properties is None
+                else path_properties
+            )
+            for prop in path_props_obj:
                 key = (id(obj), prop)
                 setattr(obj, f"_{prop}", path_orig[key])
 
