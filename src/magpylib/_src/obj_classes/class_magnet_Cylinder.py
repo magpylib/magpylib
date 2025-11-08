@@ -178,7 +178,7 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             return self.position
         return self._position
 
-    def _get_dipole_moment(self, squeeze=True):
+    def _get_dipole_moment(self, squeeze=True):  # noqa: ARG002
         """Magnetic moment of object in units Am²."""
         # test init
         if self.magnetization is None or self.dimension is None:

@@ -144,7 +144,7 @@ class Dipole(BaseSource, BaseDipoleMoment):
         moments = np.array([self.moment])
         return {"pts": points, "moments": moments}
 
-    def _get_dipole_moment(self, squeeze=True):
+    def _get_dipole_moment(self, squeeze=True):  # noqa: ARG002
         """Magnetic moment of object (A·m²)."""
         # test init
         if self.moment is None:

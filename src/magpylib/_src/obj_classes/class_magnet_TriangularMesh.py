@@ -269,7 +269,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             return self.barycenter
         return self._barycenter
 
-    def _get_dipole_moment(self, squeeze=True):
+    def _get_dipole_moment(self, squeeze=True):  # noqa: ARG002
         """Magnetic moment of object in units (A*m²)."""
         # test init
         if self.magnetization is None or self.vertices is None or self.faces is None:
