@@ -87,19 +87,7 @@ def _check_format_input_targets(targets):
 
 
 def _create_eps_vector(eps):
-    """
-    Create a vector of finite difference steps based on the input eps.
-
-    Parameters
-    ----------
-    eps : float
-        The finite difference step size.
-
-    Returns
-    -------
-    np.ndarray
-        A vector of shape (7, 3) for finite difference calculations.
-    """
+    """Create a vector vector of shape (7, 3) for finite difference calculations with step size eps."""
     return np.array(
         [
             (0, 0, 0),
@@ -233,6 +221,12 @@ def _generate_path_meshes(targets, n_path, eps):
             moments = orientations_repeated.apply(base_moments_flat).reshape(
                 n_path, n_mesh, 3
             )
+            mesh_data = {
+                "observers": observers,
+                "moments": moments,
+                "type": "magnet",
+                "n_mesh": n_mesh,
+            }
         else:
             observers = obs_all
 
@@ -241,15 +235,6 @@ def _generate_path_meshes(targets, n_path, eps):
             cvecs = orientations_repeated.apply(base_cvecs_flat).reshape(
                 n_path, n_mesh, 3
             )
-
-        if is_magnet:
-            mesh_data = {
-                "observers": observers,
-                "moments": moments,
-                "type": "magnet",
-                "n_mesh": n_mesh,
-            }
-        else:
             mesh_data = {
                 "observers": observers,
                 "cvecs": cvecs,
