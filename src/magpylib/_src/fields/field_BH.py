@@ -88,7 +88,7 @@ def _preserve_paths(input_objs, path_properties=None, copy=False):
     path_orig = {}
     for obj in input_objs:
         path_props_obj = (
-            ["position", "orientation", *obj._path_properties]
+            obj._path_properties
             if path_properties is None
             else path_properties
         )
@@ -102,7 +102,7 @@ def _preserve_paths(input_objs, path_properties=None, copy=False):
         # Restore original paths
         for obj in input_objs:
             path_props_obj = (
-                ["position", "orientation", *obj._path_properties]
+                obj._path_properties
                 if path_properties is None
                 else path_properties
             )
@@ -143,33 +143,38 @@ def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     # pylint: disable=too-many-return-statements
 
     # tile up basic attributes that all sources have
-    # position
+    # Position
     poss = np.array([src._position for src in group])
     posv = np.tile(poss, n_pix).reshape((-1, 3))
 
-    # orientation
+    # Orientation - convert Rotation to quat, tile, convert back
     rots = np.array([src._orientation.as_quat() for src in group])
     rotv = np.tile(rots, n_pix).reshape((-1, 4))
     rotobj = R.from_quat(rotv)
 
-    # pos_obs
+    # Sile up observer positions
     posov = np.tile(poso, (len(group), 1))
 
-    # determine which group we are dealing with and tile up properties
-
+    # Start with position, orientation, and observers
     kwargs = {
         "position": posv,
         "observers": posov,
         "orientation": rotobj,
     }
+    
+    # Get all property names that need processing
     prop_with_path = group[0]._path_properties
+    
+    # Process non-path properties
     for prop_name in group[0]._field_func_kwargs_ndim:
         if hasattr(group[0], prop_name) and prop_name not in prop_with_path:
             kwargs[prop_name] = _tile_group_property(group, n_pp, prop_name)
 
+    # Process other path properties (position and orientation already handled above)
     for prop_name in prop_with_path:
-        if hasattr(group[0], prop_name):
+        if hasattr(group[0], prop_name) and prop_name not in ("position", "orientation"):
             kwargs[prop_name] = _tile_group_property_path(group, n_pix, prop_name)
+    
     return kwargs
 
 
@@ -339,7 +344,7 @@ def _getBH_level2(
             pad_path_properties(
                 obj,
                 max_path_len,
-                path_properties=["position", "orientation", *obj._path_properties],
+                path_properties=obj._path_properties,
             )
 
         # combine information form all sensors to generate pos_obs with-------------

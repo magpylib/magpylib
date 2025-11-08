@@ -371,31 +371,27 @@ def _compute_B_with_paths(sources, obs_flat, n_path):
             pad_path_properties(
                 src,
                 n_path,
-                path_properties=["position", "orientation", *src._path_properties],
+                path_properties=src._path_properties,
             )
 
-        # Store padded path properties before modification
-        src_path_data = []
-        for src in sources:
-            src_data = {
-                "position": src._position.copy(),
-                "orientation": src._orientation.as_quat().copy(),
-            }
-            for prop in src._path_properties:
-                src_data[prop] = getattr(src, f"_{prop}").copy()
-            src_path_data.append(src_data)
+        # Store references to padded path properties (no copy needed - restored by context manager)
+        src_path_data = [
+            {prop: getattr(src, f"_{prop}") for prop in src._path_properties}
+            for src in sources
+        ]
 
         # Compute for each path step
         for j in range(n_path):
             # Set each source to its j-th path position
             for i, src in enumerate(sources):
-                src.position = src_path_data[i]["position"][j]
-                src.orientation = R.from_quat(src_path_data[i]["orientation"][j])
-
-                # Set all path properties to single values for this path step
                 for prop in src._path_properties:
                     prop_val = src_path_data[i][prop]
-                    setattr(src, f"_{prop}", np.array([prop_val[j]]))
+                    if prop == "position":
+                        src.position = prop_val[j]
+                    elif prop == "orientation":
+                        src.orientation = prop_val[j]
+                    else:
+                        setattr(src, f"_{prop}", np.array([prop_val[j]]))
 
             # Compute B-field at this path step
             B_flat[:, j] = getB(sources, obs_flat[j], squeeze=True)
