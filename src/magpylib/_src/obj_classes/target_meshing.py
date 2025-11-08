@@ -427,34 +427,34 @@ def _target_mesh_triangle_current(
     # Handle different input shapes
     triangles = np.asarray(triangles)
     cds = np.asarray(cds)
-    
+
     # Check if we have path dimension
     has_path_dim = triangles.ndim == 4
-    
+
     if not has_path_dim:
         # Original behavior for no path dimension - add path dimension for uniform processing
         triangles = triangles[np.newaxis, ...]  # Shape: (1, n, 3, 3)
         cds = cds[np.newaxis, ...]  # Shape: (1, n, 3)
-    
+
     p_len = triangles.shape[0]
     n_tria = triangles.shape[1]
-    
+
     # Check for path-varying parameters
     path_vars = []
     if np.unique(triangles, axis=0).shape[0] > 1:
         path_vars.append("triangles")
     if np.unique(cds, axis=0).shape[0] > 1:
         path_vars.append("cds")
-    
+
     # Vectorized computation of surfaces for all paths: shape (p, n)
     surfaces = 0.5 * np.linalg.norm(
         np.cross(
-            triangles[:, :, 1] - triangles[:, :, 0], 
-            triangles[:, :, 2] - triangles[:, :, 0]
+            triangles[:, :, 1] - triangles[:, :, 0],
+            triangles[:, :, 2] - triangles[:, :, 0],
         ),
         axis=2,
     )
-    
+
     # Calculate splits for all paths
     # Note: splits are the same for all paths since they're based on n_target
     splits = np.zeros(n_tria, dtype=int)
@@ -465,30 +465,33 @@ def _target_mesh_triangle_current(
         surfaces_temp[idx] /= 2.0
         splits[idx] += 1
         n_tria_temp = np.sum(2**splits)
-    
+
     # Apply the surface divisions to all paths (vectorized)
     # Each surface gets divided by 2^splits[i]
     surfaces = surfaces / (2.0 ** splits[np.newaxis, :])
-    
+
     # Vectorized subdivision and centroid calculation for all paths
     # Apply _subdiv to each path and stack results
     trias_refined_list = [_subdiv(triangles[p_idx], splits) for p_idx in range(p_len)]
     trias_refined = np.stack(trias_refined_list, axis=0)  # Shape: (p, n_refined, 3, 3)
-    
+
     # Calculate centroids for all paths at once: shape (p, n_refined, 3)
     pts = np.mean(trias_refined, axis=2)
-    
+
     # Expand surfaces and cds for all paths
     # We need to repeat along the triangle dimension (axis=1 after adding path dim)
-    surfaces_expanded_list = [np.repeat(surfaces[p_idx], 2**splits) for p_idx in range(p_len)]
+    surfaces_expanded_list = [
+        np.repeat(surfaces[p_idx], 2**splits) for p_idx in range(p_len)
+    ]
     cvecs_list = [
-        np.repeat(cds[p_idx], 2**splits, axis=0) * surfaces_expanded_list[p_idx][:, np.newaxis]
+        np.repeat(cds[p_idx], 2**splits, axis=0)
+        * surfaces_expanded_list[p_idx][:, np.newaxis]
         for p_idx in range(p_len)
     ]
-    
+
     # Stack results: shape (p, n_refined, 3)
     cvecs = np.stack(cvecs_list, axis=0)
-    
+
     # If no path variation, return squeezed arrays
     if not path_vars:
         pts = pts[0]
