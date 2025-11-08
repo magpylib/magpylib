@@ -90,17 +90,17 @@ class BaseGeo(BaseTransform, ABC):
     ):
         self._style_kwargs = {}
         self._parent = None
-        
+
         # set path properties while holding sync of path lengths
         path_kwargs = {k: v for k, v in kwargs.items() if k in self._path_properties}
         kwargs = {k: v for k, v in kwargs.items() if k not in path_kwargs}
-        
+
         # Initialize position and orientation if not provided in kwargs
         if "position" not in path_kwargs:
             path_kwargs["position"] = position
         if "orientation" not in path_kwargs:
             path_kwargs["orientation"] = orientation
-            
+
         with self.hold_path_sync(sync_on_exit=True):
             for prop, val in path_kwargs.items():
                 setattr(self, prop, val)
@@ -246,11 +246,7 @@ class BaseGeo(BaseTransform, ABC):
     @property
     def position(self):
         """Return object position in global coordinates (m)."""
-        return (
-            np.squeeze(self._position)
-            if self._position is not None
-            else None
-        )
+        return np.squeeze(self._position) if self._position is not None else None
 
     @position.setter
     def position(self, position):

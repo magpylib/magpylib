@@ -88,9 +88,7 @@ def _preserve_paths(input_objs, path_properties=None, copy=False):
     path_orig = {}
     for obj in input_objs:
         path_props_obj = (
-            obj._path_properties
-            if path_properties is None
-            else path_properties
+            obj._path_properties if path_properties is None else path_properties
         )
         for prop in path_props_obj:
             key = (id(obj), prop)
@@ -102,9 +100,7 @@ def _preserve_paths(input_objs, path_properties=None, copy=False):
         # Restore original paths
         for obj in input_objs:
             path_props_obj = (
-                obj._path_properties
-                if path_properties is None
-                else path_properties
+                obj._path_properties if path_properties is None else path_properties
             )
             for prop in path_props_obj:
                 key = (id(obj), prop)
@@ -161,10 +157,10 @@ def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         "observers": posov,
         "orientation": rotobj,
     }
-    
+
     # Get all property names that need processing
     prop_with_path = group[0]._path_properties
-    
+
     # Process non-path properties
     for prop_name in group[0]._field_func_kwargs_ndim:
         if hasattr(group[0], prop_name) and prop_name not in prop_with_path:
@@ -172,9 +168,12 @@ def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     # Process other path properties (position and orientation already handled above)
     for prop_name in prop_with_path:
-        if hasattr(group[0], prop_name) and prop_name not in ("position", "orientation"):
+        if hasattr(group[0], prop_name) and prop_name not in (
+            "position",
+            "orientation",
+        ):
             kwargs[prop_name] = _tile_group_property_path(group, n_pix, prop_name)
-    
+
     return kwargs
 
 
