@@ -1,7 +1,6 @@
 """Tests for path-varying target properties in getFT."""
 
 import numpy as np
-import pytest
 
 import magpylib as magpy
 
