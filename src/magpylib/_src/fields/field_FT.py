@@ -184,7 +184,7 @@ def _generate_path_meshes(targets, n_path, eps):
     for tgt in targets:
         # Get mesh (potentially path-varying)
         base_mesh = tgt._generate_mesh()
-        
+
         # Check if mesh is path-varying by dimensionality
         # Path-varying: shape (p_mesh, n_mesh, 3)
         # Path-independent: shape (n_mesh, 3)
