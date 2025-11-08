@@ -213,8 +213,8 @@ class TriangleSheet(BaseSource, BaseTarget):
         """Generate mesh for force computation."""
         return _target_mesh_triangle_current(
             self.vertices[self.faces],
-            self.meshing,
             self.current_densities,
+            self.meshing,
         )
 
     def _validate_meshing(self, value):

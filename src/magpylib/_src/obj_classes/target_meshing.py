@@ -407,7 +407,7 @@ def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
 
 
 def _target_mesh_triangle_current(
-    triangles: np.ndarray, n_target: int, cds: np.ndarray
+    triangles: np.ndarray, cds: np.ndarray, n_target: int
 ):
     """
     Refines input triangles into >n_target triangles using bisection along longest edge.
@@ -415,36 +415,86 @@ def _target_mesh_triangle_current(
     per triangle is created.
 
     Parameters:
-    - triangles (n, 3, 3) array, triangles
+    - triangles (n, 3, 3) or (p, n, 3, 3) array, triangles with optional path dimension
+    - cds: (n, 3) or (p, n, 3) array, current density vectors with optional path dimension
     - n_target: int, target number of mesh points
-    - cds: (n, 3) array, current density vectors
 
     Returns dict:
     - mesh: centroids of refined triangles
     - cvecs: current vectors
+    - path_vars: tuple - path-varying parameter names
     """
-    n_tria = len(triangles)
+    # Handle different input shapes
+    triangles = np.asarray(triangles)
+    cds = np.asarray(cds)
+    
+    # Check if we have path dimension
+    has_path_dim = triangles.ndim == 4
+    
+    if not has_path_dim:
+        # Original behavior for no path dimension - add path dimension for uniform processing
+        triangles = triangles[np.newaxis, ...]  # Shape: (1, n, 3, 3)
+        cds = cds[np.newaxis, ...]  # Shape: (1, n, 3)
+    
+    p_len = triangles.shape[0]
+    n_tria = triangles.shape[1]
+    
+    # Check for path-varying parameters
+    path_vars = []
+    if np.unique(triangles, axis=0).shape[0] > 1:
+        path_vars.append("triangles")
+    if np.unique(cds, axis=0).shape[0] > 1:
+        path_vars.append("cds")
+    
+    # Vectorized computation of surfaces for all paths: shape (p, n)
     surfaces = 0.5 * np.linalg.norm(
-        np.cross(triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0]),
-        axis=1,
+        np.cross(
+            triangles[:, :, 1] - triangles[:, :, 0], 
+            triangles[:, :, 2] - triangles[:, :, 0]
+        ),
+        axis=2,
     )
-
-    # longest edge bisection splits triangle surface always in half
-    # all triangles should in the end have somewhat similar surface
-    # so we can easily calculate which triangles we have to split how often
+    
+    # Calculate splits for all paths
+    # Note: splits are the same for all paths since they're based on n_target
     splits = np.zeros(n_tria, dtype=int)
-    while n_tria < n_target:
-        idx = np.argmax(surfaces)
-        surfaces[idx] /= 2.0
+    surfaces_temp = surfaces[0].copy()  # Use first path for split calculation
+    n_tria_temp = n_tria
+    while n_tria_temp < n_target:
+        idx = np.argmax(surfaces_temp)
+        surfaces_temp[idx] /= 2.0
         splits[idx] += 1
-        n_tria = np.sum(2**splits)
+        n_tria_temp = np.sum(2**splits)
+    
+    # Apply the surface divisions to all paths (vectorized)
+    # Each surface gets divided by 2^splits[i]
+    surfaces = surfaces / (2.0 ** splits[np.newaxis, :])
+    
+    # Vectorized subdivision and centroid calculation for all paths
+    # Apply _subdiv to each path and stack results
+    trias_refined_list = [_subdiv(triangles[p_idx], splits) for p_idx in range(p_len)]
+    trias_refined = np.stack(trias_refined_list, axis=0)  # Shape: (p, n_refined, 3, 3)
+    
+    # Calculate centroids for all paths at once: shape (p, n_refined, 3)
+    pts = np.mean(trias_refined, axis=2)
+    
+    # Expand surfaces and cds for all paths
+    # We need to repeat along the triangle dimension (axis=1 after adding path dim)
+    surfaces_expanded_list = [np.repeat(surfaces[p_idx], 2**splits) for p_idx in range(p_len)]
+    cvecs_list = [
+        np.repeat(cds[p_idx], 2**splits, axis=0) * surfaces_expanded_list[p_idx][:, np.newaxis]
+        for p_idx in range(p_len)
+    ]
+    
+    # Stack results: shape (p, n_refined, 3)
+    cvecs = np.stack(cvecs_list, axis=0)
+    
+    # If no path variation, return squeezed arrays
+    if not path_vars:
+        pts = pts[0]
+        cvecs = cvecs[0]
 
-    surfaces = np.repeat(surfaces, 2**splits)
-    triangles = _subdiv(triangles, splits)
-    centroids = np.mean(triangles, axis=1)
-    cvecs = np.repeat(cds, 2**splits, axis=0) * surfaces[:, np.newaxis]
-
-    return {"pts": centroids, "cvecs": cvecs}
+    return {"pts": pts, "cvecs": cvecs, "path_vars": tuple(path_vars)}
 
 
 def _target_mesh_polyline(vertices, current, n_points):

@@ -280,41 +280,51 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        triangles = np.array(
-            [self.vertices[i : i + 3] for i in range(len(self.vertices) - 2)]
-        )
+        # TODO with path: suppress all triangles in computation that are ~1e-9 times
+        # smaller than the total mesh surface, not sure how to handle this since the
+        # areas are changing along path
+        verts, curr = self._vertices, self._current
+        # verts has shape (p, n, 3) where p is path dimension, n is number of vertices
+        # Create triangles for each path: shape (p, n-2, 3, 3)
+        # Vectorized triangle creation using advanced indexing
+        triangles = np.stack(
+            [
+                verts[:, :-2, :],  # First vertex of each triangle: shape (p, n-2, 3)
+                verts[:, 1:-1, :],  # Second vertex of each triangle: shape (p, n-2, 3)
+                verts[:, 2:, :],  # Third vertex of each triangle: shape (p, n-2, 3)
+            ],
+            axis=2,
+        )  # Final shape: (p, n-2, 3, 3)
 
-        # suppress all triangles in computation that are ~1e-9 times
-        # smaller than the total mesh surface
-        mask_good = np.ones(len(triangles), dtype=bool)
+        # sideA and sideB shape: (p, n-2, 3)
+        sideA = triangles[:, :, 1] - triangles[:, :, 0]
+        sideB = triangles[:, :, 2] - triangles[:, :, 0]
 
-        sideA = triangles[:, 1] - triangles[:, 0]
-        sideB = triangles[:, 2] - triangles[:, 0]
-
-        sideAA = np.sum(sideA * sideA, axis=1)
-        sideBB = np.sum(sideB * sideB, axis=1)
-        sideAB = np.sum(sideA * sideB, axis=1)
+        # sideAA, sideBB, sideAB shape: (p, n-2)
+        sideAA = np.sum(sideA * sideA, axis=2)
+        sideBB = np.sum(sideB * sideB, axis=2)
+        sideAB = np.sum(sideA * sideB, axis=2)
         area2 = sideAA * sideBB - sideAB * sideAB
-        area2_rel = area2 / np.sum(area2)
-
-        mask_good[area2_rel < 1e-19] = False
-
-        triangles = triangles[mask_good]
 
         # compute current densities
-        base_length = np.linalg.norm(sideB[mask_good], axis=1)
-        height = np.sqrt(area2[mask_good]) / base_length
+        base_length = np.linalg.norm(sideB, axis=2)
+        height = np.sqrt(area2) / base_length
+
+        # curr shape: (p,) needs to be broadcast to match triangles shape (p, n-2)
+        curr_expanded = np.repeat(curr[:, np.newaxis], triangles.shape[1], axis=1)
+
+        # Current densities shape: (p, n-2, 3)
         cds = (
-            sideB[mask_good]
-            / base_length[:, np.newaxis]
-            * self.current
-            / height[:, np.newaxis]
+            sideB
+            / base_length[:, :, np.newaxis]
+            * curr_expanded[:, :, np.newaxis]
+            / height[:, :, np.newaxis]
         )
 
         return _target_mesh_triangle_current(
             triangles,
-            self.meshing,
             cds,
+            self.meshing,
         )
 
     def _validate_meshing(self, value):
