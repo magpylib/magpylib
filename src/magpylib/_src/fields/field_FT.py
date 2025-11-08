@@ -182,44 +182,67 @@ def _generate_path_meshes(targets, n_path, eps):
     eps_vec = _create_eps_vector(eps)
 
     for tgt in targets:
-        # Get base mesh (path-independent geometry)
+        # Get mesh (potentially path-varying)
         base_mesh = tgt._generate_mesh()
+        path_vars = base_mesh.get("path_vars", ())
+        has_path_varying_mesh = bool(path_vars)
 
-        # Check for path-varying meshing (not yet supported)
-        if path_vars := base_mesh.get("path_vars", ()):
-            msg = (
-                f"Detected path-varying meshing for target {tgt!r}: {path_vars}. "
-                "which are not yet supported in getFT. "
-            )
-            raise NotImplementedError(msg)
-
-        n_mesh = len(base_mesh["pts"])
+        # Determine mesh size and path length from mesh
+        if has_path_varying_mesh:
+            # Mesh already includes path: shape (p_mesh, n_mesh, 3)
+            n_mesh = base_mesh["pts"].shape[1]
+        else:
+            # Mesh is path-independent: shape (n_mesh, 3)
+            n_mesh = len(base_mesh["pts"])
 
         # Get path-varying transforms
         positions = pad_path_property(tgt._position, n_path)  # (n_path, 3)
         orientations = pad_path_property(tgt._orientation, n_path)  # Rotation object
 
-        # Transform mesh for each path step (vectorized)
+        # Transform mesh for each path step
         is_magnet = "moments" in base_mesh
 
-        # Broadcast base mesh to all path steps and apply rotations
-        base_pts_flat = np.tile(base_mesh["pts"], (n_path, 1))  # (n_path*n_mesh, 3)
+        # Prepare mesh data: either pad path-varying mesh or tile static mesh
+        if has_path_varying_mesh:
+            # Mesh already has path dimension: (p_mesh, n_mesh, 3) -> pad to n_path
+            base_pts = pad_path_property(base_mesh["pts"], n_path)
+            if is_magnet:
+                base_moments = pad_path_property(base_mesh["moments"], n_path)
+            else:
+                base_cvecs = pad_path_property(base_mesh["cvecs"], n_path)
+        else:
+            # Mesh is path-independent: (n_mesh, 3) -> tile to all path steps
+            base_pts = np.tile(base_mesh["pts"], (n_path, 1, 1))
+            if is_magnet:
+                base_moments = np.tile(base_mesh["moments"], (n_path, 1, 1))
+            else:
+                base_cvecs = np.tile(base_mesh["cvecs"], (n_path, 1, 1))
+
+        # Apply rotations (vectorized across all path steps)
+        base_pts_flat = base_pts.reshape(-1, 3)  # (n_path*n_mesh, 3)
         orientations_repeated = R.from_quat(
             np.repeat(orientations.as_quat(), n_mesh, axis=0)
-        )  # n_path*n_mesh rotations
+        )
         obs_all = orientations_repeated.apply(base_pts_flat).reshape(n_path, n_mesh, 3)
-        obs_all += positions[:, np.newaxis, :]  # Add positions
+        obs_all += positions[:, np.newaxis, :]
 
         if is_magnet:
-            # Add finite difference steps
-            observers = (
-                obs_all[:, :, np.newaxis, :] + eps_vec[np.newaxis, np.newaxis, :, :]
-            )
-
             # Transform moments
-            base_moments_flat = np.tile(base_mesh["moments"], (n_path, 1))
+            base_moments_flat = base_moments.reshape(-1, 3)
             moments = orientations_repeated.apply(base_moments_flat).reshape(
                 n_path, n_mesh, 3
+            )
+        else:
+            # Transform current vectors
+            base_cvecs_flat = base_cvecs.reshape(-1, 3)
+            cvecs = orientations_repeated.apply(base_cvecs_flat).reshape(
+                n_path, n_mesh, 3
+            )
+
+        # Add finite difference steps for magnets
+        if is_magnet:
+            observers = (
+                obs_all[:, :, np.newaxis, :] + eps_vec[np.newaxis, np.newaxis, :, :]
             )
             mesh_data = {
                 "observers": observers,
@@ -229,12 +252,6 @@ def _generate_path_meshes(targets, n_path, eps):
             }
         else:
             observers = obs_all
-
-            # Transform current vectors
-            base_cvecs_flat = np.tile(base_mesh["cvecs"], (n_path, 1))
-            cvecs = orientations_repeated.apply(base_cvecs_flat).reshape(
-                n_path, n_mesh, 3
-            )
             mesh_data = {
                 "observers": observers,
                 "cvecs": cvecs,
