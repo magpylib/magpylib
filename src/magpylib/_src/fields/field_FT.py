@@ -224,7 +224,9 @@ def _generate_path_meshes(targets, n_path, eps):
 
         if is_magnet:
             # Add finite difference steps
-            observers = obs_all[:, :, np.newaxis, :] + eps_vec[np.newaxis, np.newaxis, :, :]
+            observers = (
+                obs_all[:, :, np.newaxis, :] + eps_vec[np.newaxis, np.newaxis, :, :]
+            )
 
             # Transform moments
             base_moments_flat = np.tile(base_mesh["moments"], (n_path, 1))
