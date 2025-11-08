@@ -206,17 +206,9 @@ def _generate_path_meshes(targets, n_path, eps):
         if has_path_varying_mesh:
             # Mesh already has path dimension: (p_mesh, n_mesh, 3) -> pad to n_path
             base_pts = pad_path_property(base_mesh["pts"], n_path)
-            if is_magnet:
-                base_moments = pad_path_property(base_mesh["moments"], n_path)
-            else:
-                base_cvecs = pad_path_property(base_mesh["cvecs"], n_path)
         else:
             # Mesh is path-independent: (n_mesh, 3) -> tile to all path steps
             base_pts = np.tile(base_mesh["pts"], (n_path, 1, 1))
-            if is_magnet:
-                base_moments = np.tile(base_mesh["moments"], (n_path, 1, 1))
-            else:
-                base_cvecs = np.tile(base_mesh["cvecs"], (n_path, 1, 1))
 
         # Apply rotations (vectorized across all path steps)
         base_pts_flat = base_pts.reshape(-1, 3)  # (n_path*n_mesh, 3)
@@ -227,13 +219,21 @@ def _generate_path_meshes(targets, n_path, eps):
         obs_all += positions[:, np.newaxis, :]
 
         if is_magnet:
-            # Transform moments
+            # Prepare and transform moments
+            if has_path_varying_mesh:
+                base_moments = pad_path_property(base_mesh["moments"], n_path)
+            else:
+                base_moments = np.tile(base_mesh["moments"], (n_path, 1, 1))
             base_moments_flat = base_moments.reshape(-1, 3)
             moments = orientations_repeated.apply(base_moments_flat).reshape(
                 n_path, n_mesh, 3
             )
         else:
-            # Transform current vectors
+            # Prepare and transform current vectors
+            if has_path_varying_mesh:
+                base_cvecs = pad_path_property(base_mesh["cvecs"], n_path)
+            else:
+                base_cvecs = np.tile(base_mesh["cvecs"], (n_path, 1, 1))
             base_cvecs_flat = base_cvecs.reshape(-1, 3)
             cvecs = orientations_repeated.apply(base_cvecs_flat).reshape(
                 n_path, n_mesh, 3
