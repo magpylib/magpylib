@@ -258,7 +258,7 @@ def check_condition(
         msg = f"Failed to evaluate condition {cond!r} on input {inp!r} with threshold {threshold!r}: {err}"
         raise MagpylibInternalError(msg) from err
 
-    if not (isinstance(res, (bool, np.bool_))):
+    if not isinstance(res, (bool, np.bool_)):
         if mode == "all":
             ok = bool(np.all(res))
         elif mode == "any":
