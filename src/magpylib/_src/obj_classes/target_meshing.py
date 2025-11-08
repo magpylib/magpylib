@@ -272,12 +272,8 @@ def _target_mesh_circle(diameter, current, n_points):
     }
     """
     r, i0, n = np.atleast_1d(diameter / 2), np.atleast_1d(current), n_points
-    path_vars = []
-    if np.unique(r).shape[0] > 1:
-        path_vars.append("diameter")
-    if np.unique(i0).shape[0] > 1:
-        path_vars.append("current")
-    if not path_vars:
+    has_path_varying = (np.unique(r).shape[0] > 1) or (np.unique(i0).shape[0] > 1)
+    if not has_path_varying:
         r, i0 = r[:1], i0[:1]
     p_len = len(r)
 
@@ -311,9 +307,9 @@ def _target_mesh_circle(diameter, current, n_points):
     # Create cvecs with current scaling: shape (p, n, 3)
     cvecs = np.stack([tx, ty, midz], axis=2) * i0_expanded.reshape(p_len, 1, 1)
 
-    if not path_vars:
+    if not has_path_varying:
         pts, cvecs = pts[0], cvecs[0]
-    return {"pts": pts, "cvecs": cvecs, "path_vars": tuple(path_vars)}
+    return {"pts": pts, "cvecs": cvecs}
 
 
 def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
@@ -422,7 +418,6 @@ def _target_mesh_triangle_current(
     Returns dict:
     - mesh: centroids of refined triangles
     - cvecs: current vectors
-    - path_vars: tuple - path-varying parameter names
     """
     # Handle different input shapes
     triangles = np.asarray(triangles)
@@ -440,11 +435,9 @@ def _target_mesh_triangle_current(
     n_tria = triangles.shape[1]
 
     # Check for path-varying parameters
-    path_vars = []
-    if np.unique(triangles, axis=0).shape[0] > 1:
-        path_vars.append("triangles")
-    if np.unique(cds, axis=0).shape[0] > 1:
-        path_vars.append("cds")
+    has_path_varying = (np.unique(triangles, axis=0).shape[0] > 1) or (
+        np.unique(cds, axis=0).shape[0] > 1
+    )
 
     # Vectorized computation of surfaces for all paths: shape (p, n)
     surfaces = 0.5 * np.linalg.norm(
@@ -493,11 +486,11 @@ def _target_mesh_triangle_current(
     cvecs = np.stack(cvecs_list, axis=0)
 
     # If no path variation, return squeezed arrays
-    if not path_vars:
+    if not has_path_varying:
         pts = pts[0]
         cvecs = cvecs[0]
 
-    return {"pts": pts, "cvecs": cvecs, "path_vars": tuple(path_vars)}
+    return {"pts": pts, "cvecs": cvecs}
 
 
 def _target_mesh_polyline(vertices, current, n_points):
@@ -519,7 +512,6 @@ def _target_mesh_polyline(vertices, current, n_points):
     dict: {
         "pts": np.ndarray, shape (m, 3) or (p, m, 3) - central segment positions
         "cvecs": np.ndarray, shape (m, 3) or (p, m, 3) - current vectors
-        "path_vars": tuple - path-varying parameter names
     }
     """
     # Handle different input shapes
@@ -529,11 +521,9 @@ def _target_mesh_polyline(vertices, current, n_points):
     p_len = i0.shape[0]
 
     # Check for path-varying parameters
-    path_vars = []
-    if np.unique(vertices, axis=0).shape[0] > 1:
-        path_vars.append("vertices")
-    if np.unique(i0).shape[0] > 1:
-        path_vars.append("current")
+    has_path_varying = (np.unique(vertices, axis=0).shape[0] > 1) or (
+        np.unique(i0).shape[0] > 1
+    )
 
     n_vertices = vertices.shape[1]
     n_segments = n_vertices - 1
@@ -604,14 +594,14 @@ def _target_mesh_polyline(vertices, current, n_points):
         cvecs[p_idx, :n_pts] = cvecs_list[p_idx]
 
     # If no path variation, return squeezed arrays
-    if not path_vars:
+    if not has_path_varying:
         pts, cvecs = pts[0], cvecs[0]
         # Remove padding zeros
         if max_n_points > actual_n_points[0]:
             pts = pts[: actual_n_points[0]]
             cvecs = cvecs[: actual_n_points[0]]
 
-    return {"pts": pts, "cvecs": cvecs, "path_vars": tuple(path_vars)}
+    return {"pts": pts, "cvecs": cvecs}
 
 
 def _create_grid(dimensions, spacing):
