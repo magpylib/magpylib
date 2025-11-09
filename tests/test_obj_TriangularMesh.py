@@ -357,12 +357,12 @@ def test_TriangularMesh_from_faces_bad_inputs():
 
     # bad shape input
     msh = [((0, 0), (1, 0), (0, 1))] * 2
-    with pytest.raises(ValueError, match="Input mesh must have"):
+    with pytest.raises(MagpylibBadUserInput, match="Input mesh must be of shape"):
         get_tri_from_mesh(msh)
 
     # bad shape input
     msh = [((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))] * 2
-    with pytest.raises(ValueError, match="Input mesh must have"):
+    with pytest.raises(MagpylibBadUserInput, match="Input mesh must be of shape"):
         get_tri_from_mesh(msh)
 
 

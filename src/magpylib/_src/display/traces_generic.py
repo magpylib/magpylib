@@ -83,17 +83,22 @@ class MagpyMarkers:
         return trace
 
 
-def update_magnet_mesh(
-    mesh_dict, mag_style=None, magnetization=None, color_slicing=False
-):
+def update_magnet_mesh(input_obj, style, mesh_dict, color_slicing=False, path_ind=None):
     """
     Updates an existing plotly mesh3d dictionary of an object which has a magnetic vector. The
     object gets colorized, positioned and oriented based on provided arguments.
     Slicing allows for Matplotlib to show colorgradients approximations by slicing the mesh into
     the colorscales colors, remesh it and merge with assigning facecolor for each part.
     """
+    mag_style = style.magnetization
     mag_color = mag_style.color
-    if magnetization is None:
+    mag_arr = input_obj._magnetization
+    if mag_arr is not None:
+        if path_ind is not None and mag_arr.shape[0] > 1:
+            magnetization = mag_arr[path_ind]
+        else:
+            magnetization = mag_arr[0]
+    else:
         magnetization = np.array([0.0, 0.0, 0.0], dtype=float)
     if mag_style.show:
         vertices = np.array([mesh_dict[k] for k in "xyz"]).T
@@ -543,14 +548,16 @@ def get_generic_traces3D(
         if style.model3d.showdefault and make_func is not None:
             p_trs = make_func(**make_func_kwargs, **extra_kwargs)
             for p_tr_item in p_trs:
+                p_tr_item.pop("path_ind", None)
                 p_tr = p_tr_item.copy()
                 is_mag = p_tr.pop("ismagnet", is_mag)
                 if is_mag and p_tr.get("type", "") == "mesh3d":
                     p_tr = update_magnet_mesh(
+                        input_obj,
+                        style,
                         p_tr,
-                        mag_style=style.magnetization,
-                        magnetization=input_obj.magnetization,
                         color_slicing=not supports_colorgradient,
+                        path_ind=extra_kwargs.get("path_ind"),
                     )
 
                 traces_generic_temp.append(p_tr)

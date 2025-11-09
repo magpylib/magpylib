@@ -347,8 +347,6 @@ def test_input_objects_magnetization_moment_good(pol_or_mom):
     [
         (1, 2),
         [1, 2, 3, 4],
-        [(1, 2, 3)] * 2,
-        np.array([(1, 2, 3)] * 2),
         "x",
         ["x", "y", "z"],
         {"woot": 15},

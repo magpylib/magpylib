@@ -318,6 +318,7 @@ class BaseMagnet(BaseSource):
     """Provide magnetization and polarization attributes for magnet sources."""
 
     _style_class = MagnetStyle
+    _path_properties = ("polarization",)  # also inherits from parent class
 
     def __init__(
         self, position, orientation, *, magnetization, polarization, style, **kwargs
@@ -340,7 +341,7 @@ class BaseMagnet(BaseSource):
     @property
     def magnetization(self):
         """Magnet magnetization vector (A/m) in local coordinates."""
-        return self._magnetization
+        return np.squeeze(self._magnetization) if self._magnetization is not None else None
 
     @magnetization.setter
     def magnetization(self, mag):
@@ -348,23 +349,29 @@ class BaseMagnet(BaseSource):
 
         Parameters
         ----------
-        mag : None | array-like, shape (3,)
+        mag : None | array-like, shape (3,) or (n, 3)
             Magnetization vector M = J/mu0 in units (A/m), given in the local object
             coordinates. Sets also ``polarization``.
         """
         self._magnetization = check_format_input_numeric(
             mag,
             dtype=float,
-            shapes=((3,),),
+            shapes=((3,), (None, 3)),
             name="magnetization",
             allow_None=True,
+            reshape=(-1, 3),
         )
-        self._polarization = self._magnetization * (4 * np.pi * 1e-7)
+        if self._magnetization is not None:
+            self._polarization = self._magnetization * (4 * np.pi * 1e-7)
+            # sync all paths - let it auto-detect max length from all path properties
+            self._sync_all_paths(propagate=False)
+        else:
+            self._polarization = None
 
     @property
     def polarization(self):
         """Magnet polarization vector (T) in local coordinates."""
-        return self._polarization
+        return np.squeeze(self._polarization) if self._polarization is not None else None
 
     @polarization.setter
     def polarization(self, mag):
@@ -372,18 +379,25 @@ class BaseMagnet(BaseSource):
 
         Parameters
         ----------
-        mag : None | array-like, shape (3,)
+        mag : None | array-like, shape (3,) or (n, 3)
             Magnetic polarization vector J = mu0*M in units (T), given in the
             local object coordinates. Sets also ``magnetization``.
         """
         self._polarization = check_format_input_numeric(
             mag,
             dtype=float,
-            shapes=((3,),),
+            shapes=((3,), (None, 3)),
             name="polarization",
             allow_None=True,
+            reshape=(-1, 3),
         )
-        self._magnetization = self._polarization / (4 * np.pi * 1e-7)
+        if self._polarization is not None:
+            self._magnetization = self._polarization / (4 * np.pi * 1e-7)
+            # sync all paths - let it auto-detect max length from all path properties
+            self._sync_all_paths(propagate=False)
+        else:
+            self._magnetization = None
+        self._sync_all_paths(propagate=False)
 
 
 class BaseCurrent(BaseSource):
