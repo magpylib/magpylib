@@ -85,91 +85,101 @@ def test_path_varying_circle_current_diameter():
 def test_path_varying_cuboid_dimension_magnetization():
     """Test getFT with path-varying dimension and magnetization on Cuboid target.
 
-    Tests that both geometry (dimension) and magnetization can vary along the path.
-    Compares the vectorized path-varying implementation against a manual loop approach.
+    Tests both cases:
+    1. Both dimension and magnetization varying (full vectorization)
+    2. Only magnetization varying (optimized mesh reuse)
     """
-    # Create a dipole source at fixed position
     dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -5))
 
-    # Define path-varying properties
-    dimensions = np.array(
+    # CASE 1: Both dimension and magnetization vary
+    dimensions_varying = np.array(
         [
-            [0.001, 0.002, 0.003],  # Step 0: small cuboid
-            [0.0015, 0.0025, 0.0035],  # Step 1: medium cuboid
-            [0.002, 0.003, 0.004],  # Step 2: large cuboid
+            [0.001, 0.002, 0.003],
+            [0.0015, 0.0025, 0.0035],
+            [0.002, 0.003, 0.004],
         ]
     )
-    magnetizations = np.array(
+    magnetizations_varying = np.array(
         [
-            [0, 0, 1e6],  # Step 0: magnetized in +z
-            [0, 0, 1.2e6],  # Step 1: stronger magnetization
-            [0, 0, 1.5e6],  # Step 2: even stronger
+            [0, 0, 1e6],
+            [0, 0, 1.2e6],
+            [0, 0, 1.5e6],
         ]
     )
     positions = np.array([[0, 0, i * 0.01] for i in range(3)])
 
-    # VECTORIZED: Create cuboid with path-varying properties
-    cuboid_varying = magpy.magnet.Cuboid(
-        dimension=dimensions,
-        magnetization=magnetizations,
+    cuboid_varying_both = magpy.magnet.Cuboid(
+        dimension=dimensions_varying,
+        magnetization=magnetizations_varying,
         position=positions,
         meshing=50,
     )
 
-    F_vectorized, T_vectorized = magpy.getFT(dipole, cuboid_varying)
+    F_vec_both, T_vec_both = magpy.getFT(dipole, cuboid_varying_both)
 
-    # MANUAL LOOP: Compute each path step separately
-    F_manual = []
-    T_manual = []
-
-    for i in range(len(dimensions)):
-        # Create a new cuboid for each path step with single values
+    # Manual loop for verification
+    F_manual_both = []
+    T_manual_both = []
+    for i in range(3):
         cuboid_single = magpy.magnet.Cuboid(
-            dimension=dimensions[i],
-            magnetization=magnetizations[i],
+            dimension=dimensions_varying[i],
+            magnetization=magnetizations_varying[i],
             position=positions[i],
             meshing=50,
         )
-
         F_i, T_i = magpy.getFT(dipole, cuboid_single)
-        F_manual.append(F_i)
-        T_manual.append(T_i)
+        F_manual_both.append(F_i)
+        T_manual_both.append(T_i)
 
-    F_manual = np.array(F_manual)
-    T_manual = np.array(T_manual)
+    F_manual_both = np.array(F_manual_both)
+    T_manual_both = np.array(T_manual_both)
 
-    # Verify that both approaches give identical results
-    np.testing.assert_allclose(
-        F_vectorized,
-        F_manual,
-        rtol=1e-7,
-        atol=1e-23,
-        err_msg="Force calculation differs between vectorized and manual loop approach",
-    )
+    np.testing.assert_allclose(F_vec_both, F_manual_both, rtol=1e-7, atol=1e-23)
+    np.testing.assert_allclose(T_vec_both, T_manual_both, rtol=1e-7, atol=1e-27)
 
-    np.testing.assert_allclose(
-        T_vectorized,
-        T_manual,
-        rtol=1e-7,
-        atol=1e-27,
-        err_msg="Torque calculation differs between vectorized and manual loop approach",
-    )
+    # CASE 2: Only magnetization varies (optimized case - mesh reused)
+    dimensions_constant = np.array([
+        [0.001, 0.002, 0.003],
+        [0.001, 0.002, 0.003],  # Same dimensions
+        [0.001, 0.002, 0.003],
+    ])
 
-    # Verify output shapes
-    assert F_vectorized.shape == (3, 3), (
-        f"Expected shape (3, 3), got {F_vectorized.shape}"
-    )
-    assert T_vectorized.shape == (3, 3), (
-        f"Expected shape (3, 3), got {T_vectorized.shape}"
+    cuboid_varying_mag = magpy.magnet.Cuboid(
+        dimension=dimensions_constant,
+        magnetization=magnetizations_varying,
+        position=positions,
+        meshing=50,
     )
 
-    # Verify that values change along the path (not all the same)
-    assert not np.allclose(F_vectorized[0], F_vectorized[1], rtol=0, atol=0), (
-        "Forces should vary along path due to changing dimension and magnetization"
-    )
-    assert not np.allclose(F_vectorized[1], F_vectorized[2], rtol=0, atol=0), (
-        "Forces should vary along path due to changing dimension and magnetization"
-    )
+    F_vec_mag, T_vec_mag = magpy.getFT(dipole, cuboid_varying_mag)
+
+    # Manual loop for verification
+    F_manual_mag = []
+    T_manual_mag = []
+    for i in range(3):
+        cuboid_single = magpy.magnet.Cuboid(
+            dimension=dimensions_constant[i],
+            magnetization=magnetizations_varying[i],
+            position=positions[i],
+            meshing=50,
+        )
+        F_i, T_i = magpy.getFT(dipole, cuboid_single)
+        F_manual_mag.append(F_i)
+        T_manual_mag.append(T_i)
+
+    F_manual_mag = np.array(F_manual_mag)
+    T_manual_mag = np.array(T_manual_mag)
+
+    np.testing.assert_allclose(F_vec_mag, F_manual_mag, rtol=1e-7, atol=1e-23)
+    np.testing.assert_allclose(T_vec_mag, T_manual_mag, rtol=1e-7, atol=1e-27)
+
+    # Verify shapes
+    assert F_vec_both.shape == (3, 3)
+    assert F_vec_mag.shape == (3, 3)
+
+    # Verify path variation
+    assert not np.allclose(F_vec_both[0], F_vec_both[1], rtol=0, atol=0)
+    assert not np.allclose(F_vec_mag[0], F_vec_mag[1], rtol=0, atol=0)
 
 
 def test_cuboid_aspect_ratio_warning():

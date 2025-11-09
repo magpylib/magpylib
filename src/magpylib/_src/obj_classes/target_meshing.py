@@ -3,7 +3,6 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-function-args
 
-import itertools
 import warnings
 from itertools import product
 
@@ -140,23 +139,17 @@ def _target_mesh_cuboid(dimension, magnetization, target_elems):
         "moments": np.ndarray, shape (n, 3) or (p, n, 3) - moments associated with each point
     }
     """
-    # Inputs are already path-enabled (p, 3) from the class
     p_len = len(dimension)
+    dimension_varying = np.unique(dimension, axis=0).shape[0] > 1
+    magnetization_varying = np.unique(magnetization, axis=0).shape[0] > 1
+    has_path_varying = dimension_varying or magnetization_varying
 
-    # Check for path-varying parameters
-    has_path_varying = (np.unique(dimension, axis=0).shape[0] > 1) or (
-        np.unique(magnetization, axis=0).shape[0] > 1
-    )
-
-    # Calculate mesh divisions based on first path position
+    # Calculate mesh divisions from first path position
     a, b, c = dimension[0]
-
-    # Scalar meshing input
     if isinstance(target_elems, int):
         if target_elems == 1:
-            n1, n2, n3 = (1, 1, 1)
+            n1, n2, n3 = 1, 1, 1
         else:
-            # estimate splitting with aspect ratio~1
             cell_size = (a * b * c / target_elems) ** (1 / 3)
             n1 = max(1, int(np.round(a / cell_size)))
             n2 = max(1, int(np.round(b / cell_size)))
@@ -164,15 +157,10 @@ def _target_mesh_cuboid(dimension, magnetization, target_elems):
     else:
         n1, n2, n3 = target_elems
 
-    # Check for aspect ratio variation along path if path-varying
-    if has_path_varying and p_len > 1:
-        # Calculate cell dimensions at each path position
-        cell_dims = dimension / np.array([n1, n2, n3])  # shape (p, 3)
-
-        # Calculate aspect ratio at each position: max(dx,dy,dz) / min(dx,dy,dz)
+    # Warn if aspect ratio varies significantly along path
+    if dimension_varying and p_len > 1:
+        cell_dims = dimension / np.array([n1, n2, n3])
         aspect_ratios = np.max(cell_dims, axis=1) / np.min(cell_dims, axis=1)
-
-        # Check if aspect ratio varies by more than factor of 2
         aspect_variation = np.max(aspect_ratios) / np.min(aspect_ratios)
         if aspect_variation > 2.0:
             warnings.warn(
@@ -183,41 +171,58 @@ def _target_mesh_cuboid(dimension, magnetization, target_elems):
                 stacklevel=2,
             )
 
-    # Vectorized mesh generation for all path positions
-    pts_list = []
-    moments_list = []
+    n_total = n1 * n2 * n3
 
-    for p_idx in range(p_len):
-        a, b, c = dimension[p_idx]
-        mag = magnetization[p_idx]
+    # Helper function to compute cell centers
+    def _cell_centers(bounds, n):
+        return (bounds[:-1] + bounds[1:]) / 2 if n > 1 else np.array([0.0])
 
-        xs = np.linspace(-a / 2, a / 2, n1 + 1)
-        ys = np.linspace(-b / 2, b / 2, n2 + 1)
-        zs = np.linspace(-c / 2, c / 2, n3 + 1)
+    if dimension_varying:
+        # Vectorized mesh for varying dimensions: shape (p, n, 3)
+        a, b, c = dimension[:, 0], dimension[:, 1], dimension[:, 2]
+        xs, ys, zs = (
+            np.linspace(-a / 2, a / 2, n1 + 1).T,
+            np.linspace(-b / 2, b / 2, n2 + 1).T,
+            np.linspace(-c / 2, c / 2, n3 + 1).T,
+        )
+        xs_cent = (xs[:, :-1] + xs[:, 1:]) / 2 if n1 > 1 else (xs[:, 0:1] + a[:, None]) / 2
+        ys_cent = (ys[:, :-1] + ys[:, 1:]) / 2 if n2 > 1 else (ys[:, 0:1] + b[:, None]) / 2
+        zs_cent = (zs[:, :-1] + zs[:, 1:]) / 2 if n3 > 1 else (zs[:, 0:1] + c[:, None]) / 2
 
-        dx = xs[1] - xs[0] if len(xs) > 1 else a
-        dy = ys[1] - ys[0] if len(ys) > 1 else b
-        dz = zs[1] - zs[0] if len(zs) > 1 else c
+        # Broadcasting: (p, n1, 1, 1) * (p, 1, n2, 1) * (p, 1, 1, n3) -> (p, n1, n2, n3)
+        xx = xs_cent[:, :, None, None]
+        yy = ys_cent[:, None, :, None]
+        zz = zs_cent[:, None, None, :]
 
-        xs_cent = xs[:-1] + dx / 2 if len(xs) > 1 else xs + dx / 2
-        ys_cent = ys[:-1] + dy / 2 if len(ys) > 1 else ys + dy / 2
-        zs_cent = zs[:-1] + dz / 2 if len(zs) > 1 else zs + dz / 2
+        pts_array = np.stack(
+            [
+                np.broadcast_to(xx, (p_len, n1, n2, n3)).reshape(p_len, n_total),
+                np.broadcast_to(yy, (p_len, n1, n2, n3)).reshape(p_len, n_total),
+                np.broadcast_to(zz, (p_len, n1, n2, n3)).reshape(p_len, n_total),
+            ],
+            axis=2,
+        )
+        volumes = a * b * c / n_total
+    else:
+        # Constant dimensions - compute mesh once and broadcast
+        xs_cent = _cell_centers(np.linspace(-a / 2, a / 2, n1 + 1), n1)
+        ys_cent = _cell_centers(np.linspace(-b / 2, b / 2, n2 + 1), n2)
+        zs_cent = _cell_centers(np.linspace(-c / 2, c / 2, n3 + 1), n3)
 
-        pts = np.array(list(itertools.product(xs_cent, ys_cent, zs_cent)))
-        volume = a * b * c / n1 / n2 / n3
-        moments = volume * mag
+        xx, yy, zz = np.meshgrid(xs_cent, ys_cent, zs_cent, indexing="ij")
+        pts_single = np.stack([xx.ravel(), yy.ravel(), zz.ravel()], axis=1)
+        pts_array = np.broadcast_to(pts_single[None, :, :], (p_len, n_total, 3))
+        volumes = np.full(p_len, a * b * c / n_total)
 
-        pts_list.append(pts)
-        moments_list.append(np.tile(moments, (len(pts), 1)))
+    # Calculate moments
+    moments_array = np.broadcast_to(
+        volumes[:, None, None] * magnetization[:, None, :],
+        (p_len, n_total, 3),
+    )
 
-    # Stack results
-    pts_array = np.stack(pts_list, axis=0)  # shape (p, n, 3)
-    moments_array = np.stack(moments_list, axis=0)  # shape (p, n, 3)
-
-    # If no path variation, return squeezed arrays
+    # Squeeze if no path variation
     if not has_path_varying:
-        pts_array = pts_array[0]
-        moments_array = moments_array[0]
+        pts_array, moments_array = pts_array[0], moments_array[0]
 
     return {"pts": pts_array, "moments": moments_array}
 
