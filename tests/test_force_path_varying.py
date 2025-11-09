@@ -138,11 +138,13 @@ def test_path_varying_cuboid_dimension_magnetization():
     np.testing.assert_allclose(T_vec_both, T_manual_both, rtol=1e-7, atol=1e-27)
 
     # CASE 2: Only magnetization varies (optimized case - mesh reused)
-    dimensions_constant = np.array([
-        [0.001, 0.002, 0.003],
-        [0.001, 0.002, 0.003],  # Same dimensions
-        [0.001, 0.002, 0.003],
-    ])
+    dimensions_constant = np.array(
+        [
+            [0.001, 0.002, 0.003],
+            [0.001, 0.002, 0.003],  # Same dimensions
+            [0.001, 0.002, 0.003],
+        ]
+    )
 
     cuboid_varying_mag = magpy.magnet.Cuboid(
         dimension=dimensions_constant,

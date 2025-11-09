@@ -185,9 +185,15 @@ def _target_mesh_cuboid(dimension, magnetization, target_elems):
             np.linspace(-b / 2, b / 2, n2 + 1).T,
             np.linspace(-c / 2, c / 2, n3 + 1).T,
         )
-        xs_cent = (xs[:, :-1] + xs[:, 1:]) / 2 if n1 > 1 else (xs[:, 0:1] + a[:, None]) / 2
-        ys_cent = (ys[:, :-1] + ys[:, 1:]) / 2 if n2 > 1 else (ys[:, 0:1] + b[:, None]) / 2
-        zs_cent = (zs[:, :-1] + zs[:, 1:]) / 2 if n3 > 1 else (zs[:, 0:1] + c[:, None]) / 2
+        xs_cent = (
+            (xs[:, :-1] + xs[:, 1:]) / 2 if n1 > 1 else (xs[:, 0:1] + a[:, None]) / 2
+        )
+        ys_cent = (
+            (ys[:, :-1] + ys[:, 1:]) / 2 if n2 > 1 else (ys[:, 0:1] + b[:, None]) / 2
+        )
+        zs_cent = (
+            (zs[:, :-1] + zs[:, 1:]) / 2 if n3 > 1 else (zs[:, 0:1] + c[:, None]) / 2
+        )
 
         # Broadcasting: (p, n1, 1, 1) * (p, 1, n2, 1) * (p, 1, 1, n3) -> (p, n1, n2, n3)
         xx = xs_cent[:, :, None, None]
