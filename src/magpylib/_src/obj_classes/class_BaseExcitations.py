@@ -16,7 +16,7 @@ from magpylib._src.input_checks import (
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.style import CurrentStyle, MagnetStyle
-from magpylib._src.utility import format_star_input
+from magpylib._src.utility import format_star_input, unit_prefix
 
 
 class BaseSource(BaseGeo, BaseDisplayRepr):
@@ -425,3 +425,14 @@ class BaseCurrent(BaseSource):
         if np.isscalar(self._current):
             self._current = np.array([self._current], dtype=float)
         self._sync_all_paths(self._current)
+
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        curr = self._current
+        if curr is None:
+            return "no current"
+        if len(curr) == 1 or np.unique(curr).shape[0] == 1:
+            return f"{unit_prefix(curr[0])}A current"
+        cmin, cmax = np.nanmin(curr), np.nanmax(curr)
+        return f"{unit_prefix(cmin)}A↔{unit_prefix(cmax)}A"

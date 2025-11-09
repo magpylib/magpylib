@@ -16,7 +16,6 @@ from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.target_meshing import _target_mesh_triangle_current
 from magpylib._src.style import CurrentSheetStyle
-from magpylib._src.utility import unit_prefix
 
 
 class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
@@ -166,13 +165,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         """Default style description text"""
         if self.vertices is None:
             return "no vertices"
-        curr = self._current
-        if curr is None:
-            return "no current"
-        if len(curr) == 1 or np.unique(curr).shape[0] == 1:
-            return f"{unit_prefix(curr[0])}A current"
-        cmin, cmax = np.nanmin(curr), np.nanmax(curr)
-        return f"{unit_prefix(cmin)}A..{unit_prefix(cmax)}A"
+        return super()._default_style_description
 
     # Methods
     def _get_centroid(self, squeeze=True):
