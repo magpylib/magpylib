@@ -1,7 +1,5 @@
 """Tests for path-varying target properties in getFT."""
 
-import warnings
-
 import numpy as np
 import pytest
 
@@ -94,16 +92,20 @@ def test_path_varying_cuboid_dimension_magnetization():
     dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -5))
 
     # Define path-varying properties
-    dimensions = np.array([
-        [0.001, 0.002, 0.003],  # Step 0: small cuboid
-        [0.0015, 0.0025, 0.0035],  # Step 1: medium cuboid
-        [0.002, 0.003, 0.004],  # Step 2: large cuboid
-    ])
-    magnetizations = np.array([
-        [0, 0, 1e6],  # Step 0: magnetized in +z
-        [0, 0, 1.2e6],  # Step 1: stronger magnetization
-        [0, 0, 1.5e6],  # Step 2: even stronger
-    ])
+    dimensions = np.array(
+        [
+            [0.001, 0.002, 0.003],  # Step 0: small cuboid
+            [0.0015, 0.0025, 0.0035],  # Step 1: medium cuboid
+            [0.002, 0.003, 0.004],  # Step 2: large cuboid
+        ]
+    )
+    magnetizations = np.array(
+        [
+            [0, 0, 1e6],  # Step 0: magnetized in +z
+            [0, 0, 1.2e6],  # Step 1: stronger magnetization
+            [0, 0, 1.5e6],  # Step 2: even stronger
+        ]
+    )
     positions = np.array([[0, 0, i * 0.01] for i in range(3)])
 
     # VECTORIZED: Create cuboid with path-varying properties
@@ -176,10 +178,12 @@ def test_cuboid_aspect_ratio_warning():
     The warning should be triggered when aspect ratio changes by more than 2.0x along the path.
     """
     # Create cuboid with dimensions that cause >2x aspect ratio change
-    dimensions = np.array([
-        [0.001, 0.001, 0.001],  # Step 0: cube (1:1:1)
-        [0.003, 0.001, 0.001],  # Step 1: elongated (3:1:1) -> 3x change
-    ])
+    dimensions = np.array(
+        [
+            [0.001, 0.001, 0.001],  # Step 0: cube (1:1:1)
+            [0.003, 0.001, 0.001],  # Step 1: elongated (3:1:1) -> 3x change
+        ]
+    )
 
     cuboid = magpy.magnet.Cuboid(
         dimension=dimensions,
