@@ -10,7 +10,6 @@ import numpy as np
 from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import (
     check_format_input_numeric,
-    check_format_input_vector,
     validate_field_func,
 )
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
@@ -353,12 +352,11 @@ class BaseMagnet(BaseSource):
             Magnetization vector M = J/mu0 in units (A/m), given in the local object
             coordinates. Sets also ``polarization``.
         """
-        self._magnetization = check_format_input_vector(
+        self._magnetization = check_format_input_numeric(
             mag,
-            dims=(1,),
-            shape_m1=3,
-            sig_name="magnetization",
-            sig_type="array-like (list, tuple, ndarray) with shape (3,)",
+            dtype=float,
+            shapes=((3,),),
+            name="magnetization",
             allow_None=True,
         )
         self._polarization = self._magnetization * (4 * np.pi * 1e-7)
@@ -378,12 +376,11 @@ class BaseMagnet(BaseSource):
             Magnetic polarization vector J = mu0*M in units (T), given in the
             local object coordinates. Sets also ``magnetization``.
         """
-        self._polarization = check_format_input_vector(
+        self._polarization = check_format_input_numeric(
             mag,
-            dims=(1,),
-            shape_m1=3,
-            sig_name="polarization",
-            sig_type="array-like (list, tuple, ndarray) with shape (3,)",
+            dtype=float,
+            shapes=((3,),),
+            name="polarization",
             allow_None=True,
         )
         self._magnetization = self._polarization / (4 * np.pi * 1e-7)

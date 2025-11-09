@@ -10,7 +10,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_TriangleSheet
 from magpylib._src.fields.field_BH_current_sheet import _BHJM_current_trisheet
-from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.target_meshing import _target_mesh_triangle_current
@@ -145,36 +145,24 @@ class TriangleSheet(BaseSource, BaseTarget):
 
     def _input_check(self, current_densities, vertices, faces):
         """check and format user inputs"""
-        cd = check_format_input_vector(
+        cd = check_format_input_numeric(
             current_densities,
-            dims=(
-                1,
-                2,
-            ),
-            shape_m1=3,
-            sig_name="TriangleSheet.current_densities",
-            sig_type="None or array-like (list, tuple, ndarray) with shape (n, 3)",
-            allow_None=False,
-        ).astype(float)
-        verts = check_format_input_vector(
+            dtype=float,
+            shapes=((3,), (None, 3)),
+            name="TriangleSheet.current_densities",
+        )
+        verts = check_format_input_numeric(
             vertices,
-            dims=(2,),
-            shape_m1=3,
-            sig_name="TriangleSheet.vertices",
-            sig_type="None or array-like (list, tuple, ndarray) with shape (n, 3)",
-            allow_None=False,
-        ).astype(float)
-        fac = check_format_input_vector(
+            dtype=float,
+            shapes=((None, 3),),
+            name="TriangleSheet.vertices",
+        )
+        fac = check_format_input_numeric(
             faces,
-            dims=(
-                1,
-                2,
-            ),
-            shape_m1=3,
-            sig_name="TriangleSheet.faces",
-            sig_type="None or array-like (list, tuple, ndarray) with shape (n, 3)",
-            allow_None=False,
-        ).astype(int)
+            dtype=int,
+            shapes=((3,), (None, 3)),
+            name="TriangleSheet.faces",
+        )
 
         # allow init of single faces without extra dimension
         if cd.ndim == 1:

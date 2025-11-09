@@ -32,45 +32,6 @@ def all_same(lst: list) -> bool:
     return lst[1:] == lst[:-1]
 
 
-def is_array_like(inp, msg: str):
-    """test if inp is array-like: type list, tuple or ndarray
-    inp: test object
-    msg: str, error msg
-    """
-    if not isinstance(inp, list | tuple | np.ndarray):
-        raise MagpylibBadUserInput(msg)
-
-
-def make_float_array(inp, msg: str):
-    """transform inp to array with dtype=float, throw error with bad input
-    inp: test object
-    msg: str, error msg
-    """
-    try:
-        inp_array = np.array(inp, dtype=float)
-    except Exception as err:
-        raise MagpylibBadUserInput(msg + f"{err}") from err
-    return inp_array
-
-
-def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, length=None, msg=""):
-    """check if inp shape is allowed
-    inp: test object
-    dims: list, list of allowed dims
-    shape_m1: shape of lowest level, if 'any' allow any shape
-    msg: str, error msg
-    """
-    if inp.ndim in dims:
-        if length is None:
-            if inp.shape[-1] == shape_m1:
-                return
-            if shape_m1 == "any":
-                return
-        elif len(inp) == length:
-            return
-    raise MagpylibBadUserInput(msg)
-
-
 def check_input_zoom(inp):
     """check show zoom input"""
     if not (isinstance(inp, numbers.Number) and inp >= 0):
@@ -349,7 +310,7 @@ def check_format_input_numeric(
 
     if 0 in dims and is_a_number:
         inp = dtype(inp)
-        return check_conditions(dtype(inp))
+        return check_conditions(inp)
 
     if 0 not in dims and is_a_number:
         dims_str = " or ".join(str(d) for d in dims)
@@ -398,13 +359,13 @@ def check_format_input_numeric(
         )
         msg = (
             f"{msg_name} must be of shape {shapes_str};"
-            " instead received shape {array.shape}."
+            f" instead received shape {array.shape}."
         )
         raise MagpylibBadUserInput(msg)
 
     if reshape is not None:
         assert isinstance(reshape, tuple), "reshape must be a tuple"
-        array = np.reshape(inp, reshape)
+        array = np.reshape(array, reshape)
 
     return check_conditions(array)
 
@@ -447,12 +408,11 @@ def check_format_input_anchor(inp):
     if isinstance(inp, numbers.Number) and inp == 0:
         return np.array((0.0, 0.0, 0.0))
 
-    return check_format_input_vector(
+    return check_format_input_numeric(
         inp,
-        dims=(1, 2),
-        shape_m1=3,
-        sig_name="anchor",
-        sig_type="None or 0 or array-like (list, tuple, ndarray) with shape (3,)",
+        dtype=float,
+        shapes=((3,), (None, 3)),
+        name="anchor",
         allow_None=True,
     )
 
@@ -479,12 +439,11 @@ def check_format_input_axis(inp):
         )
         raise MagpylibBadUserInput(msg)
 
-    inp = check_format_input_vector(
+    inp = check_format_input_numeric(
         inp,
-        dims=(1,),
-        shape_m1=3,
-        sig_name="axis",
-        sig_type="array-like (list, tuple, ndarray) with shape (3,) or one of {'x', 'y', 'z'}",
+        dtype=float,
+        shapes=((3,),),
+        name="axis",
     )
 
     if np.all(inp == 0):
@@ -506,114 +465,12 @@ def check_format_input_angle(inp):
     if isinstance(inp, numbers.Number):
         return float(inp)
 
-    return check_format_input_vector(
+    return check_format_input_numeric(
         inp,
-        dims=(1,),
-        shape_m1="any",
-        sig_name="angle",
-        sig_type="int, float, or array-like (list, tuple, ndarray) with shape (n,)",
+        dtype=float,
+        shapes=((None,),),
+        name="angle",
     )
-
-
-def check_format_input_scalar(
-    inp, sig_name, sig_type, allow_None=False, forbid_negative=False
-):
-    """check scalar input and return in formatted form
-    - must be scalar or None (if allowed)
-    - must be float compatible
-    - transform into float
-    """
-    if allow_None and inp is None:
-        return None
-
-    ERR_MSG = f"Input {sig_name} must be {sig_type}; instead received {inp!r}."
-
-    if not isinstance(inp, numbers.Number):
-        raise MagpylibBadUserInput(ERR_MSG)
-
-    inp = float(inp)
-
-    if forbid_negative and inp < 0:
-        raise MagpylibBadUserInput(ERR_MSG)
-    return inp
-
-
-def check_format_input_vector(
-    inp,
-    dims,
-    shape_m1,
-    sig_name,
-    sig_type,
-    length=None,
-    reshape=False,
-    allow_None=False,
-    forbid_negative0=False,
-):
-    """checks vector input and returns in formatted form
-    - inp must be array-like
-    - convert inp to ndarray with dtype float
-    - inp shape must be given by dims and shape_m1
-    - print error msg with signature arguments
-    - if reshape=True: returns shape (n, 3) - required for position init and setter
-    - if allow_None: return None
-    - if extend_dim_to2: add a dimension if input is only (1, 2, 3) - required for sensor pixel
-    """
-    if allow_None and inp is None:
-        return None
-
-    is_array_like(
-        inp,
-        f"Input {sig_name} must be {sig_type}; instead received type {type(inp)!r}.",
-    )
-    inp = make_float_array(
-        inp,
-        f"Input {sig_name} must contain only float compatible entries.",
-    )
-    check_array_shape(
-        inp,
-        dims=dims,
-        shape_m1=shape_m1,
-        length=length,
-        msg=(
-            f"Input {sig_name} must be {sig_type}; "
-            f"instead received array-like with shape {inp.shape}."
-        ),
-    )
-    if isinstance(reshape, tuple):
-        return np.reshape(inp, reshape)
-
-    if forbid_negative0 and np.any(inp <= 0):
-        msg = f"Input parameter {sig_name} cannot have values <= 0."
-        raise MagpylibBadUserInput(msg)
-    return inp
-
-
-def check_format_input_vector2(
-    inp,
-    shape,
-    param_name,
-):
-    """checks vector input and returns in formatted form
-    - inp must be array-like
-    - convert inp to ndarray with dtype float
-    - make sure that inp.ndim = target_ndim, None dimensions are ignored
-    """
-    is_array_like(
-        inp,
-        f"Input {param_name} must be array-like; instead received type {type(inp)!r}.",
-    )
-    inp = make_float_array(
-        inp,
-        f"Input {param_name} must contain only float compatible entries.",
-    )
-    for d1, d2 in zip(inp.shape, shape, strict=False):
-        if d2 is not None and d1 != d2:
-            msg = (
-                f"Input {param_name} must have shape {shape}; "
-                f"instead received shape {inp.shape}."
-            )
-            raise ValueError(msg)
-    return inp
 
 
 def check_format_input_vertices(inp, minlength=2):
@@ -644,15 +501,11 @@ def check_format_input_cylinder_segment(inp):
     - check if phi2-phi1 > 360
     - return error msg
     """
-    inp = check_format_input_vector(
+    inp = check_format_input_numeric(
         inp,
-        dims=(1,),
-        shape_m1=5,
-        sig_name="CylinderSegment.dimension",
-        sig_type=(
-            "array-like of the form (r1, r2, h, phi1, phi2) with 0<=r1<r2, h>0, "
-            "phi1<phi2, and phi2-phi1<=360"
-        ),
+        dtype=float,
+        shapes=((5,),),
+        name="CylinderSegment.dimension",
         allow_None=True,
     )
 

@@ -14,8 +14,8 @@ from magpylib._src.input_checks import (
     check_format_input_anchor,
     check_format_input_angle,
     check_format_input_axis,
+    check_format_input_numeric,
     check_format_input_orientation,
-    check_format_input_vector,
     check_start_type,
 )
 
@@ -119,8 +119,12 @@ def _path_padding(inpath, start, target_object):
     # pad old path depending on input
     padding, start = _get_padding_params(scalar_input, len(ppath), lenip, start)
     if padding:
-        ppath = np.pad(ppath, (padding, (0, 0)), "edge")
+        ppath = np.pad(ppath, (padding, (0, 0)), "edge").astype(float, copy=False)
         opath = np.pad(opath, (padding, (0, 0)), "edge")
+    else:
+        # Always create a copy to avoid modifying the original array
+        # and ensure it's float dtype for in-place operations
+        ppath = np.array(ppath, dtype=float)
 
     # set end-index
     end = len(ppath) if scalar_input else start + lenip
@@ -152,12 +156,11 @@ def _apply_move(target_object, displacement, start="auto"):
     # pylint: disable=too-many-branches
 
     # check and format inputs
-    inpath = check_format_input_vector(
+    inpath = check_format_input_numeric(
         displacement,
-        dims=(1, 2),
-        shape_m1=3,
-        sig_name="displacement",
-        sig_type="array-like (list, tuple, ndarray) with shape (3,) or (n, 3)",
+        dtype=float,
+        shapes=((3,), (None, 3)),
+        name="displacement",
     )
     check_start_type(start)
 

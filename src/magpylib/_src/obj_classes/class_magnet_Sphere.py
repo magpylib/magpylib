@@ -8,7 +8,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Sphere
 from magpylib._src.fields.field_BH_sphere import _BHJM_magnet_sphere
-from magpylib._src.input_checks import check_format_input_scalar
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import (
     BaseDipoleMoment,
@@ -131,12 +131,13 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
         dia : None or float
             Diameter in units (m).
         """
-        self._diameter = check_format_input_scalar(
+        self._diameter = check_format_input_numeric(
             dia,
-            sig_name="diameter",
-            sig_type="None or a positive number (int, float)",
+            dtype=float,
+            shapes=(None,),
+            name="diameter",
             allow_None=True,
-            forbid_negative=True,
+            value_conditions=[("gt", 0, "all")],
         )
 
     @property

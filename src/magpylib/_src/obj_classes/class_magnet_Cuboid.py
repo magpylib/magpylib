@@ -8,7 +8,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Cuboid
 from magpylib._src.fields.field_BH_cuboid import _BHJM_magnet_cuboid
-from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import (
     BaseDipoleMoment,
@@ -151,14 +151,13 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         dim : None or array-like, shape (3,)
             Side lengths (a, b, c) in units (m).
         """
-        self._dimension = check_format_input_vector(
+        self._dimension = check_format_input_numeric(
             dim,
-            dims=(1,),
-            shape_m1=3,
-            sig_name="Cuboid.dimension",
-            sig_type="array-like (list, tuple, ndarray) of shape (3,) with positive values",
+            dtype=float,
+            shapes=((3,),),
+            name="Cuboid.dimension",
             allow_None=True,
-            forbid_negative0=True,
+            value_conditions=[("gt", 0, "all")],
         )
 
     @property

@@ -8,7 +8,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Cylinder
 from magpylib._src.fields.field_BH_cylinder import _BHJM_magnet_cylinder
-from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import (
     BaseDipoleMoment,
@@ -145,14 +145,13 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         dim : None or array-like, shape (2,)
             Diameter and height ``(d, h)`` in units (m).
         """
-        self._dimension = check_format_input_vector(
+        self._dimension = check_format_input_numeric(
             dim,
-            dims=(1,),
-            shape_m1=2,
-            sig_name="Cylinder.dimension",
-            sig_type="array-like (list, tuple, ndarray) with shape (2,) with positive values",
+            dtype=float,
+            shapes=((2,),),
+            name="Cylinder.dimension",
             allow_None=True,
-            forbid_negative0=True,
+            value_conditions=[("gt", 0, "all")],
         )
 
     @property

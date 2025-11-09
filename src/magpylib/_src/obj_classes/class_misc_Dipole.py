@@ -6,7 +6,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Dipole
 from magpylib._src.fields.field_BH_dipole import _BHJM_dipole
-from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
 from magpylib._src.style import DipoleStyle
@@ -113,12 +113,11 @@ class Dipole(BaseSource, BaseDipoleMoment):
         mom : None | array-like, shape (3,)
             Dipole moment vector (A·m²) in local object coordinates.
         """
-        self._moment = check_format_input_vector(
+        self._moment = check_format_input_numeric(
             mom,
-            dims=(1,),
-            shape_m1=3,
-            sig_name="moment",
-            sig_type="array-like (list, tuple, ndarray) with shape (3,)",
+            dtype=float,
+            shapes=((3,),),
+            name="moment",
             allow_None=True,
         )
 

@@ -8,7 +8,7 @@ import numpy as np
 from magpylib._src.display.traces_core import make_Sensor
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.fields.field_BH import _getBH_level2
-from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.style import SensorStyle
@@ -128,12 +128,11 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         pix : None | array-like, shape (3,) or (o1, o2, ..., 3)
             Sensor pixel positions in local object coordinates in units (m).
         """
-        self._pixel = check_format_input_vector(
+        self._pixel = check_format_input_numeric(
             pix,
-            dims=range(1, 20),
-            shape_m1=3,
-            sig_name="pixel",
-            sig_type="array-like (list, tuple, ndarray) with shape (o1, o2, ..., 3) or None",
+            dtype=float,
+            shapes=((..., 3),),
+            name="pixel",
             allow_None=True,
         )
 

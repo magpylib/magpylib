@@ -13,8 +13,8 @@ from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.input_checks import (
+    check_format_input_numeric,
     check_format_input_orientation,
-    check_format_input_vector,
 )
 from magpylib._src.obj_classes.class_BaseTransform import (
     BaseTransform,
@@ -263,12 +263,11 @@ class BaseGeo(BaseTransform, ABC):
         old_pos = getattr(self, "_position", None)
 
         # check and set new position
-        self._position = check_format_input_vector(
+        self._position = check_format_input_numeric(
             position,
-            dims=(1, 2),
-            shape_m1=3,
-            sig_name="position",
-            sig_type="array-like (list, tuple, ndarray) with shape (3,) or (n, 3)",
+            dtype=float,
+            shapes=((3,), (None, 3)),
+            name="position",
             reshape=(-1, 3),
         )
 
