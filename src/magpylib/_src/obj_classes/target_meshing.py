@@ -4,6 +4,7 @@
 # pylint: disable=too-many-function-args
 
 import itertools
+import warnings
 from itertools import product
 
 import numpy as np
@@ -114,30 +115,41 @@ def _cells_from_dimension(
     return np.array(result).astype(int)
 
 
-def _target_mesh_cuboid(target_elems, dimension, magnetization):
-    """Cuboid mesh in the local object coordinates.
+def _target_mesh_cuboid(dimension, magnetization, target_elems):
+    """Cuboid mesh in the local object coordinates with path-varying parameters.
 
     Generates a point-cloud of n1 x n2 x n3 points inside a cuboid with sides a, b, c.
     The points are centers of cubical cells that fill the Cuboid.
 
     Parameters
     ----------
+    dimension: np.ndarray, shape (p, 3)
+        Dimensions of the cuboid (length, width, height) along path.
+        Already path-enabled from the class.
+    magnetization: np.ndarray, shape (p, 3)
+        Magnetization vector for the mesh points along path.
+        Already path-enabled from the class.
     target_elems: int or tuple (n1, n2, n3)
         Target number of elements in the mesh. If an integer is provided, it is treated as
         the total number of elements.
-    dimension: array-like, shape (3,)
-        Dimensions of the cuboid (length, width, height).
-    magnetization: np.ndarray, shape (3,)
-        Magnetization vector for the mesh points.
 
     Returns
     -------
     dict: {
-        "pts": np.ndarray, shape (n, 3) - mesh points
-        "moments": np.ndarray, shape (n, 3) - moments associated with each point
+        "pts": np.ndarray, shape (n, 3) or (p, n, 3) - mesh points
+        "moments": np.ndarray, shape (n, 3) or (p, n, 3) - moments associated with each point
     }
     """
-    a, b, c = dimension
+    # Inputs are already path-enabled (p, 3) from the class
+    p_len = len(dimension)
+
+    # Check for path-varying parameters
+    has_path_varying = (np.unique(dimension, axis=0).shape[0] > 1) or (
+        np.unique(magnetization, axis=0).shape[0] > 1
+    )
+
+    # Calculate mesh divisions based on first path position
+    a, b, c = dimension[0]
 
     # Scalar meshing input
     if isinstance(target_elems, int):
@@ -152,28 +164,62 @@ def _target_mesh_cuboid(target_elems, dimension, magnetization):
     else:
         n1, n2, n3 = target_elems
 
-    # could improve auto-splitting by reducing the aspect error
-    # print(n1*n2*n3)
-    # print((a/n1)/(b/n2), (b/n2)/(c/n3), (c/n3)/(a/n1))
+    # Check for aspect ratio variation along path if path-varying
+    if has_path_varying and p_len > 1:
+        # Calculate cell dimensions at each path position
+        cell_dims = dimension / np.array([n1, n2, n3])  # shape (p, 3)
 
-    xs = np.linspace(-a / 2, a / 2, n1 + 1)
-    ys = np.linspace(-b / 2, b / 2, n2 + 1)
-    zs = np.linspace(-c / 2, c / 2, n3 + 1)
+        # Calculate aspect ratio at each position: max(dx,dy,dz) / min(dx,dy,dz)
+        aspect_ratios = np.max(cell_dims, axis=1) / np.min(cell_dims, axis=1)
 
-    dx = xs[1] - xs[0] if len(xs) > 1 else a
-    dy = ys[1] - ys[0] if len(ys) > 1 else b
-    dz = zs[1] - zs[0] if len(zs) > 1 else c
+        # Check if aspect ratio varies by more than factor of 2
+        aspect_variation = np.max(aspect_ratios) / np.min(aspect_ratios)
+        if aspect_variation > 2.0:
+            warnings.warn(
+                f"Cuboid mesh cells vary significantly in aspect ratio (factor {aspect_variation:.2f}) "
+                f"along the path due to changing dimensions. Consider increasing `meshing` parameter "
+                f"or using explicit meshing tuple (n1, n2, n3) for better accuracy.",
+                UserWarning,
+                stacklevel=2,
+            )
 
-    xs_cent = xs[:-1] + dx / 2 if len(xs) > 1 else xs + dx / 2
-    ys_cent = ys[:-1] + dy / 2 if len(ys) > 1 else ys + dy / 2
-    zs_cent = zs[:-1] + dz / 2 if len(zs) > 1 else zs + dz / 2
+    # Vectorized mesh generation for all path positions
+    pts_list = []
+    moments_list = []
 
-    pts = np.array(list(itertools.product(xs_cent, ys_cent, zs_cent)))
-    volumes = np.tile(a * b * c / n1 / n2 / n3, (len(pts),))
+    for p_idx in range(p_len):
+        a, b, c = dimension[p_idx]
+        mag = magnetization[p_idx]
 
-    moments = volumes[:, np.newaxis] * magnetization
+        xs = np.linspace(-a / 2, a / 2, n1 + 1)
+        ys = np.linspace(-b / 2, b / 2, n2 + 1)
+        zs = np.linspace(-c / 2, c / 2, n3 + 1)
 
-    return {"pts": pts, "moments": moments}
+        dx = xs[1] - xs[0] if len(xs) > 1 else a
+        dy = ys[1] - ys[0] if len(ys) > 1 else b
+        dz = zs[1] - zs[0] if len(zs) > 1 else c
+
+        xs_cent = xs[:-1] + dx / 2 if len(xs) > 1 else xs + dx / 2
+        ys_cent = ys[:-1] + dy / 2 if len(ys) > 1 else ys + dy / 2
+        zs_cent = zs[:-1] + dz / 2 if len(zs) > 1 else zs + dz / 2
+
+        pts = np.array(list(itertools.product(xs_cent, ys_cent, zs_cent)))
+        volume = a * b * c / n1 / n2 / n3
+        moments = volume * mag
+
+        pts_list.append(pts)
+        moments_list.append(np.tile(moments, (len(pts), 1)))
+
+    # Stack results
+    pts_array = np.stack(pts_list, axis=0)  # shape (p, n, 3)
+    moments_array = np.stack(moments_list, axis=0)  # shape (p, n, 3)
+
+    # If no path variation, return squeezed arrays
+    if not has_path_varying:
+        pts_array = pts_array[0]
+        moments_array = moments_array[0]
+
+    return {"pts": pts_array, "moments": moments_array}
 
 
 def _target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):

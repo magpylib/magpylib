@@ -206,7 +206,7 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        return _target_mesh_cuboid(self.meshing, self.dimension, self.magnetization)
+        return _target_mesh_cuboid(self._dimension, self._magnetization ,self.meshing)
 
     def _validate_meshing(self, value):
         """Cuboid meshing must be a positive integer or array-like of shape (3,)."""

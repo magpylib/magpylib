@@ -1,6 +1,9 @@
 """Tests for path-varying target properties in getFT."""
 
+import warnings
+
 import numpy as np
+import pytest
 
 import magpylib as magpy
 
@@ -79,6 +82,117 @@ def test_path_varying_circle_current_diameter():
     assert not np.allclose(T_vectorized[0], T_vectorized[1]), (
         "Torques should vary along path"
     )
+
+
+def test_path_varying_cuboid_dimension_magnetization():
+    """Test getFT with path-varying dimension and magnetization on Cuboid target.
+
+    Tests that both geometry (dimension) and magnetization can vary along the path.
+    Compares the vectorized path-varying implementation against a manual loop approach.
+    """
+    # Create a dipole source at fixed position
+    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -5))
+
+    # Define path-varying properties
+    dimensions = np.array([
+        [0.001, 0.002, 0.003],  # Step 0: small cuboid
+        [0.0015, 0.0025, 0.0035],  # Step 1: medium cuboid
+        [0.002, 0.003, 0.004],  # Step 2: large cuboid
+    ])
+    magnetizations = np.array([
+        [0, 0, 1e6],  # Step 0: magnetized in +z
+        [0, 0, 1.2e6],  # Step 1: stronger magnetization
+        [0, 0, 1.5e6],  # Step 2: even stronger
+    ])
+    positions = np.array([[0, 0, i * 0.01] for i in range(3)])
+
+    # VECTORIZED: Create cuboid with path-varying properties
+    cuboid_varying = magpy.magnet.Cuboid(
+        dimension=dimensions,
+        magnetization=magnetizations,
+        position=positions,
+        meshing=50,
+    )
+
+    F_vectorized, T_vectorized = magpy.getFT(dipole, cuboid_varying)
+
+    # MANUAL LOOP: Compute each path step separately
+    F_manual = []
+    T_manual = []
+
+    for i in range(len(dimensions)):
+        # Create a new cuboid for each path step with single values
+        cuboid_single = magpy.magnet.Cuboid(
+            dimension=dimensions[i],
+            magnetization=magnetizations[i],
+            position=positions[i],
+            meshing=50,
+        )
+
+        F_i, T_i = magpy.getFT(dipole, cuboid_single)
+        F_manual.append(F_i)
+        T_manual.append(T_i)
+
+    F_manual = np.array(F_manual)
+    T_manual = np.array(T_manual)
+
+    # Verify that both approaches give identical results
+    np.testing.assert_allclose(
+        F_vectorized,
+        F_manual,
+        rtol=1e-7,
+        atol=1e-23,
+        err_msg="Force calculation differs between vectorized and manual loop approach",
+    )
+
+    np.testing.assert_allclose(
+        T_vectorized,
+        T_manual,
+        rtol=1e-7,
+        atol=1e-27,
+        err_msg="Torque calculation differs between vectorized and manual loop approach",
+    )
+
+    # Verify output shapes
+    assert F_vectorized.shape == (3, 3), (
+        f"Expected shape (3, 3), got {F_vectorized.shape}"
+    )
+    assert T_vectorized.shape == (3, 3), (
+        f"Expected shape (3, 3), got {T_vectorized.shape}"
+    )
+
+    # Verify that values change along the path (not all the same)
+    assert not np.allclose(F_vectorized[0], F_vectorized[1], rtol=0, atol=0), (
+        "Forces should vary along path due to changing dimension and magnetization"
+    )
+    assert not np.allclose(F_vectorized[1], F_vectorized[2], rtol=0, atol=0), (
+        "Forces should vary along path due to changing dimension and magnetization"
+    )
+
+
+def test_cuboid_aspect_ratio_warning():
+    """Test that warning is triggered when cuboid aspect ratio changes significantly.
+
+    The warning should be triggered when aspect ratio changes by more than 2.0x along the path.
+    """
+    # Create cuboid with dimensions that cause >2x aspect ratio change
+    dimensions = np.array([
+        [0.001, 0.001, 0.001],  # Step 0: cube (1:1:1)
+        [0.003, 0.001, 0.001],  # Step 1: elongated (3:1:1) -> 3x change
+    ])
+
+    cuboid = magpy.magnet.Cuboid(
+        dimension=dimensions,
+        magnetization=[[0, 0, 1e6], [0, 0, 1e6]],
+        meshing=10,
+    )
+
+    # Warning is triggered when mesh is generated (lazy evaluation)
+    with pytest.warns(
+        UserWarning,
+        match="Cuboid mesh cells vary significantly in aspect ratio",
+    ):
+        _ = cuboid._generate_mesh()
 
 
 def test_path_varying_polyline_vertices():
