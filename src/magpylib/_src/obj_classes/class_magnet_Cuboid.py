@@ -39,14 +39,14 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    dimension : None | array-like, shape (3,), default None
-        Lengths of the cuboid sides (a, b, c) in units (m).
-    polarization : None | array-like, shape (3,), default None
+    dimension : None | array-like, shape (3,) or (p, 3), default None
+        Lengths of the cuboid sides (a, b, c) in units (m). Can be a path.
+    polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
-        local object coordinates. Sets also ``magnetization``.
-    magnetization : None | array-like, shape (3,), default None
+        local object coordinates. Sets also ``magnetization``. Can be a path.
+    magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
-        object coordinates. Sets also ``polarization``.
+        object coordinates. Sets also ``polarization``. Can be a path.
     meshing : None | int | array-like, shape (3,), default None
         Mesh fineness for force computation. Must be a positive integer specifying
         the target mesh size or an explicit splitting of the cuboid into regular
@@ -61,11 +61,11 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    dimension : None | ndarray, shape (3,)
+    dimension : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``dimension``.
-    polarization : None | ndarray, shape (3,)
+    polarization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``polarization``.
-    magnetization : None | ndarray, shape (3,)
+    magnetization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``magnetization``.
     meshing : int | None
         Same as constructor parameter ``meshing``.
@@ -107,6 +107,7 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         "polarization": 2,
         "dimension": 2,
     }
+    _path_properties = ("dimension",)  # also inherits from parent class
     get_trace = make_Cuboid
 
     def __init__(
@@ -120,15 +121,13 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.dimension = dimension
-
-        # init inheritance
+        # init inheritance - dimension is passed via kwargs for path sync
         super().__init__(
             position,
             orientation,
             magnetization=magnetization,
             polarization=polarization,
+            dimension=dimension,
             style=style,
             **kwargs,
         )
@@ -140,7 +139,7 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     @property
     def dimension(self):
         """Cuboid side lengths (a, b, c) in units (m)."""
-        return self._dimension
+        return np.squeeze(self._dimension) if self._dimension is not None else None
 
     @dimension.setter
     def dimension(self, dim):
@@ -148,25 +147,42 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
         Parameters
         ----------
-        dim : None or array-like, shape (3,)
-            Side lengths (a, b, c) in units (m).
+        dim : None or array-like, shape (3,) or (p, 3)
+            Side lengths (a, b, c) in units (m). Can be a path.
         """
         self._dimension = check_format_input_numeric(
             dim,
             dtype=float,
-            shapes=((3,),),
+            shapes=((3,), (None, 3)),
             name="Cuboid.dimension",
             allow_None=True,
+            reshape=(-1, 3),
             value_conditions=[("gt", 0, "all")],
         )
+        self._sync_all_paths(propagate=False)
 
     @property
     def _default_style_description(self):
         """Default style description text"""
         if self.dimension is None:
             return "no dimension"
-        d = [unit_prefix(d) for d in self.dimension]
-        return f"{d[0]}m|{d[1]}m|{d[2]}m"
+        # Handle path dimensions similar to BaseCurrent
+        dims = self._dimension
+        if len(dims) == 1 or np.all(dims == dims[0], axis=0).all():
+            # Single dimension or all dimensions are the same
+            d = [unit_prefix(v) for v in dims[0]]
+            return f"{d[0]}m|{d[1]}m|{d[2]}m"
+        # Multiple different dimensions - show range only for varying axes
+        dmin, dmax = np.nanmin(dims, axis=0), np.nanmax(dims, axis=0)
+        parts = []
+        for i in range(3):
+            if np.allclose(dmin[i], dmax[i]):
+                # No variation in this dimension
+                parts.append(f"{unit_prefix(dmin[i])}m")
+            else:
+                # Variation in this dimension
+                parts.append(f"{unit_prefix(dmin[i])}m↔{unit_prefix(dmax[i])}m")
+        return "|".join(parts)
 
     # Methods
     def _get_volume(self):

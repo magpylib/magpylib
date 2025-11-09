@@ -299,17 +299,17 @@ def make_Dipole(obj, autosize=None, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_Cuboid(obj, **kwargs) -> dict[str, Any]:
+def make_Cuboid(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Cuboid Magnet in a dictionary based on the
     provided arguments.
     """
     style = obj.style
-    if obj.dimension is None:
+    if obj._dimension is None:
         trace = create_null_dim_trace(color=style.color)
     else:
         trace = make_BaseCuboid(
-            "plotly-dict", dimension=obj.dimension, color=style.color
+            "plotly-dict", dimension=obj._dimension[path_ind], color=style.color
         )
     return {**trace, **kwargs}
 
