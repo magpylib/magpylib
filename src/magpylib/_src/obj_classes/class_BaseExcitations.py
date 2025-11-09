@@ -341,7 +341,9 @@ class BaseMagnet(BaseSource):
     @property
     def magnetization(self):
         """Magnet magnetization vector (A/m) in local coordinates."""
-        return np.squeeze(self._magnetization) if self._magnetization is not None else None
+        return (
+            np.squeeze(self._magnetization) if self._magnetization is not None else None
+        )
 
     @magnetization.setter
     def magnetization(self, mag):
@@ -371,7 +373,9 @@ class BaseMagnet(BaseSource):
     @property
     def polarization(self):
         """Magnet polarization vector (T) in local coordinates."""
-        return np.squeeze(self._polarization) if self._polarization is not None else None
+        return (
+            np.squeeze(self._polarization) if self._polarization is not None else None
+        )
 
     @polarization.setter
     def polarization(self, mag):
