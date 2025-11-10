@@ -281,10 +281,10 @@ def _target_mesh_cylinder(r1, r2, h, phi1, phi2, magnetization, target_elems):
             msg = "Cylinder/CylinderSegment does not yet support path-varying parameters. "
             raise NotImplementedError(msg)
         vals[i] = val[0]
-    
+
     # Unpack extracted scalar values
     r1, r2, h, phi1, phi2, magnetization = vals
-    
+
     n = target_elems
     al = (r2 + r1) * 3.14 * (phi2 - phi1) / 360  # arclen = D*pi*arcratio
     dim = al, r2 - r1, h
