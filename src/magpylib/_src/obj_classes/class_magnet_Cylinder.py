@@ -39,8 +39,8 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    dimension : None | array-like, shape (2,), default None
-        Cylinder diameter and height ``(d, h)`` in units (m).
+    dimension : None | array-like, shape (2,) or (p, 2), default None
+        Cylinder diameter and height ``(d, h)`` in units (m). Can be a path.
     polarization : None | array-like, shape (3,), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
@@ -134,7 +134,7 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     @property
     def dimension(self):
         """Cylinder diameter and height ``(d, h)`` in units (m)."""
-        return self._dimension
+        return np.squeeze(self._dimension) if self._dimension is not None else None
 
     @dimension.setter
     def dimension(self, dim):
@@ -142,25 +142,44 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
         Parameters
         ----------
-        dim : None or array-like, shape (2,)
-            Diameter and height ``(d, h)`` in units (m).
+        dim : None or array-like, shape (2,) or (p, 2)
+            Diameter and height ``(d, h)`` in units (m). Can be a path.
         """
         self._dimension = check_format_input_numeric(
             dim,
             dtype=float,
-            shapes=((2,),),
+            shapes=((2,), (None, 2)),
             name="Cylinder.dimension",
             allow_None=True,
+            reshape=(-1, 2),
             value_conditions=[("gt", 0, "all")],
         )
+        self._sync_all_paths(propagate=False)
 
     @property
     def _default_style_description(self):
         """Default style description text"""
         if self.dimension is None:
             return "no dimension"
-        d = [unit_prefix(d) for d in self.dimension]
-        return f"D={d[0]}m, H={d[1]}m"
+        # Handle path dimensions
+        dims = self._dimension
+        if len(dims) == 1 or np.all(dims == dims[0], axis=0).all():
+            # Single dimension or all dimensions are the same
+            d = [unit_prefix(v) for v in dims[0]]
+            return f"D={d[0]}m, H={d[1]}m"
+        # Multiple different dimensions - show range
+        dmin, dmax = np.nanmin(dims, axis=0), np.nanmax(dims, axis=0)
+        parts = []
+        for i, label in enumerate(["D", "H"]):
+            if np.allclose(dmin[i], dmax[i]):
+                # No variation in this dimension
+                val = unit_prefix(dmin[i])
+                parts.append(f"{label}={val}m")
+            else:
+                # Show range
+                vmin, vmax = unit_prefix(dmin[i]), unit_prefix(dmax[i])
+                parts.append(f"{label}={vmin}m↔{vmax}m")
+        return ", ".join(parts)
 
     # Methods
     def _get_volume(self):
@@ -168,7 +187,8 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         if self.dimension is None:
             return 0.0
 
-        d, h = self.dimension
+        dims = self._dimension  # Use internal (p, 2) shape
+        d, h = dims[..., 0], dims[..., 1]
         return d**2 * np.pi * h / 4
 
     def _get_centroid(self, squeeze=True):
@@ -187,7 +207,13 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     def _generate_mesh(self):
         """Generate mesh for force computation."""
         # Tests in getFT ensure that meshing, dimension and excitation are set
-        d, h = self.dimension
+        # Pass full path-enabled arrays (p, 2) and (p, 3)
         return _target_mesh_cylinder(
-            0, d / 2, h, 0, 360, self.meshing, self.magnetization
+            np.zeros(self._dimension.shape[0]),  # r1 = 0 (solid cylinder)
+            self._dimension[:, 0] / 2,  # r2 = d/2
+            self._dimension[:, 1],  # h
+            np.zeros(self._dimension.shape[0]),  # phi1 = 0
+            np.full(self._dimension.shape[0], 360),  # phi2 = 360 (full cylinder)
+            self._magnetization,
+            self.meshing,
         )

@@ -496,7 +496,7 @@ def check_format_input_vertices(inp, minlength=2):
 
 def check_format_input_cylinder_segment(inp):
     """checks vertices input and returns in formatted form
-    - vector check with dim = (5) or none
+    - vector check with dim = (5,) or (p, 5) or none
     - check if d1<d2, phi1<phi2
     - check if phi2-phi1 > 360
     - return error msg
@@ -504,23 +504,24 @@ def check_format_input_cylinder_segment(inp):
     inp = check_format_input_numeric(
         inp,
         dtype=float,
-        shapes=((5,),),
+        shapes=((5,), (None, 5)),
         name="CylinderSegment.dimension",
         allow_None=True,
+        reshape=(-1, 5),
     )
 
     if inp is None:
         return None
 
-    r1, r2, h, phi1, phi2 = inp
+    r1, r2, h, phi1, phi2 = inp.T
     case2 = r1 > r2
     case3 = phi1 > phi2
     case4 = (phi2 - phi1) > 360
     case5 = (r1 < 0) | (r2 <= 0) | (h <= 0)
-    if case2 | case3 | case4 | case5:
+    if (case2 | case3 | case4 | case5).any():
         msg = (
             f"Input CylinderSegment.dimension must be array-like of the form "
-            f"(r1, r2, h, phi1, phi2) with 0<=r1<r2, h>0, phi1<phi2 and phi2-phi1<=360; "
+            f"(r1, r2, h, phi1, phi2) or (p, 5) with 0<=r1<r2, h>0, phi1<phi2 and phi2-phi1<=360; "
             f"instead received {inp!r}."
         )
         raise MagpylibBadUserInput(msg)

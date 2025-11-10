@@ -314,16 +314,16 @@ def make_Cuboid(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_Cylinder(obj, base=50, **kwargs) -> dict[str, Any]:
+def make_Cylinder(obj, path_ind=-1, base=50, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Cylinder Magnet in a dictionary based on the
     provided arguments.
     """
     style = obj.style
-    if obj.dimension is None:
+    if obj._dimension is None:
         trace = create_null_dim_trace(color=style.color)
     else:
-        diameter, height = obj.dimension
+        diameter, height = obj._dimension[path_ind]
         trace = make_BasePrism(
             "plotly-dict",
             base=base,

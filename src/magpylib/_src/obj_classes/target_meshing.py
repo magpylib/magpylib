@@ -233,34 +233,59 @@ def _target_mesh_cuboid(dimension, magnetization, target_elems):
     return {"pts": pts_array, "moments": moments_array}
 
 
-def _target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
-    """
-    Cylinder mesh in the local object coordinates.
+def _target_mesh_cylinder(r1, r2, h, phi1, phi2, magnetization, target_elems):
+    """Cylinder mesh in the local object coordinates with path-varying parameters.
+
+    Generates a point-cloud of mesh points inside a cylinder or cylinder segment.
+    Currently only supports path length p=1 (single position along path).
 
     Parameters
     ----------
-    r1: float
-        Inner radius of the cylinder.
-    r2: float
-        Outer radius of the cylinder.
-    h: float
-        Height of the cylinder.
-    phi1: float
-        Start angle of the cylinder in degrees.
-    phi2: float
-        End angle of the cylinder in degrees.
-    n: int
-        Number of points in mesh.
-    magnetization: np.ndarray, shape (3,)
-        Magnetization vector.
+    r1: np.ndarray, shape (p,)
+        Inner radius of the cylinder along path.
+        Already path-enabled from the class.
+    r2: np.ndarray, shape (p,)
+        Outer radius of the cylinder along path.
+        Already path-enabled from the class.
+    h: np.ndarray, shape (p,)
+        Height of the cylinder along path.
+        Already path-enabled from the class.
+    phi1: np.ndarray, shape (p,)
+        Start angle of the cylinder in degrees along path.
+        Already path-enabled from the class.
+    phi2: np.ndarray, shape (p,)
+        End angle of the cylinder in degrees along path.
+        Already path-enabled from the class.
+    magnetization: np.ndarray, shape (p, 3)
+        Magnetization vector for the mesh points along path.
+        Already path-enabled from the class.
+    target_elems: int
+        Target number of elements in the mesh.
 
     Returns
     -------
     dict: {
-        "pts": np.ndarray, shape (n, 3) - mesh points
-        "moments": np.ndarray, shape (n, 3) - moments associated with each point
+        "pts": np.ndarray, shape (n, 3) - mesh points (p=1 only)
+        "moments": np.ndarray, shape (n, 3) - moments associated with each point (p=1 only)
     }
+
+    Notes
+    -----
+    Full path-varying mesh generation (p > 1) is not yet implemented and will raise
+    NotImplementedError. Currently accepts path-enabled inputs with p=1 for backward
+    compatibility.
     """
+    vals = [r1, r2, h, phi1, phi2, magnetization]
+    for i, val in enumerate(vals):
+        if len(val) > 1:
+            msg = "Cylinder/CylinderSegment does not yet support path-varying parameters. "
+            raise NotImplementedError(msg)
+        vals[i] = val[0]
+    
+    # Unpack extracted scalar values
+    r1, r2, h, phi1, phi2, magnetization = vals
+    
+    n = target_elems
     al = (r2 + r1) * 3.14 * (phi2 - phi1) / 360  # arclen = D*pi*arcratio
     dim = al, r2 - r1, h
     # "unroll" the cylinder and distribute the target number of elements along the
