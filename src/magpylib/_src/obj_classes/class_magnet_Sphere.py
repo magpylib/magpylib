@@ -91,6 +91,7 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
         "polarization": 2,
         "diameter": 1,
     }
+    _path_properties = ("diameter",)  # also inherits from parent class
     get_trace = make_Sphere
 
     def __init__(
@@ -103,15 +104,13 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.diameter = diameter
-
         # init inheritance
         super().__init__(
             position,
             orientation,
             magnetization=magnetization,
             polarization=polarization,
+            diameter=diameter,
             style=style,
             **kwargs,
         )
@@ -120,7 +119,13 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
     @property
     def diameter(self):
         """Diameter of the sphere in units (m)."""
-        return self._diameter
+        return (
+            None
+            if self._diameter is None
+            else self._diameter[0]
+            if len(self._diameter) == 1
+            else self._diameter
+        )
 
     @diameter.setter
     def diameter(self, dia):
@@ -128,32 +133,36 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
 
         Parameters
         ----------
-        dia : None or float
-            Diameter in units (m).
+        dia : None or float or array-like, shape (p,)
+            Diameter in units (m). Can be a scalar or array for path-varying diameter.
         """
         self._diameter = check_format_input_numeric(
             dia,
             dtype=float,
-            shapes=(None,),
+            shapes=(None, (None,)),
             name="diameter",
             allow_None=True,
             value_conditions=[("gt", 0, "all")],
         )
+        if np.isscalar(self._diameter):
+            self._diameter = np.array([self._diameter], dtype=float)
+        self._sync_all_paths(self._diameter)
 
     @property
     def _default_style_description(self):
         """Default style description text"""
         if self.diameter is None:
             return "no dimension"
-        return f"D={unit_prefix(self.diameter)}m"
+        if len(self._diameter) == 1:
+            return f"D={unit_prefix(self._diameter[0])}m"
+        return f"D={unit_prefix(self._diameter.min())}m↔{unit_prefix(self._diameter.max())}m"
 
     # Methods
     def _get_volume(self):
         """Volume of object in units (m³)."""
-        if self.diameter is None:
+        if self._diameter is None:
             return 0.0
-
-        return self.diameter**3 * np.pi / 6
+        return self._diameter**3 * np.pi / 6
 
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
@@ -161,15 +170,38 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
             return self.position
         return self._position
 
-    def _get_dipole_moment(self, squeeze=True):  # noqa: ARG002
+    def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
         # test init
-        if self.magnetization is None or self.diameter is None:
+        if self._magnetization is None or self._diameter is None:
             return np.array((0.0, 0.0, 0.0))
-        return self.magnetization * self.volume
+        volume = self._get_volume()
+        return (
+            (volume[:, np.newaxis] * self._magnetization).squeeze()
+            if squeeze
+            else volume[:, np.newaxis] * self._magnetization
+        )
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        points = np.array([(0, 0, 0)])
-        moments = np.array([self.volume * self.magnetization])
+        volume = self._get_volume()
+
+        # Check for path-varying parameters
+        p_len = len(volume)
+        has_path_varying = (np.unique(volume).shape[0] > 1) or (
+            np.unique(self._magnetization, axis=0).shape[0] > 1
+        )
+
+        if has_path_varying:
+            # Path-varying: shape (p, 1, 3)
+            points = np.zeros((p_len, 1, 3))
+            moments = (
+                volume[:, np.newaxis, np.newaxis]
+                * self._magnetization[:, np.newaxis, :]
+            )
+        else:
+            # No path variation: shape (1, 3)
+            points = np.array([(0, 0, 0)])
+            moments = np.array([volume[0] * self._magnetization[0]])
+
         return {"pts": points, "moments": moments}
