@@ -144,6 +144,12 @@ def make_mag_arrows(obj, path_ind=-1):
     # pylint: disable=protected-access
 
     # vector length, color and magnetization
+
+    mag = obj._magnetization
+    mag = np.array([[0.0, 0.0, 0.0]]) if mag is None else mag
+    mag = mag[path_ind]
+    if np.all(mag == 0):
+        return None
     style = obj.style
     arrow = style.magnetization.arrow
     length = 1
@@ -167,7 +173,6 @@ def make_mag_arrows(obj, path_ind=-1):
             length = np.amax(obj._dimension[path_ind, :3])
         length *= 1.5
     length *= arrow.size
-    mag = obj._magnetization[path_ind]
     # collect all draw positions and directions
     pos = getattr(obj, "_barycenter", obj._position)[path_ind] - obj._position[path_ind]
     # we need initial relative barycenter, arrow gets orientated later
@@ -566,7 +571,9 @@ def get_generic_traces3D(
                         color_slicing=not supports_colorgradient,
                         path_ind=extra_kwargs.get("path_ind"),
                     )
-
+                    if is_mag_arrows:
+                        tr_arrows = make_mag_arrows(input_obj, path_ind=path_ind)
+                        traces_generic_temp.append(tr_arrows)
                 traces_generic_temp.append(p_tr)
         return traces_generic_temp
 
@@ -605,13 +612,6 @@ def get_generic_traces3D(
                     raise ValueError(msg)
                 tr_non_generic.update(linearize_dict(obj_extr_trace, separator="_"))
                 traces_generic.append(tr_non_generic)
-
-    if is_mag_arrows:
-        mag = input_obj.magnetization
-        mag = np.array([0.0, 0.0, 0.0]) if mag is None else mag
-        if not np.all(mag == 0):
-            mag_arrow_tr = make_mag_arrows(input_obj)
-            traces_generic.append(mag_arrow_tr)
 
     legend_label = get_legend_label(input_obj)
     path_traces_generic = []
