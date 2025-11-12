@@ -16,7 +16,7 @@ from magpylib._src.display.traces_utility import (
 )
 from magpylib._src.input_checks import (
     check_format_input_backend,
-    check_format_input_vector,
+    check_format_input_numeric,
     check_input_animation,
     check_input_canvas_update,
 )
@@ -204,12 +204,11 @@ def _show(
     # input checks
     backend = check_format_input_backend(backend)
     check_input_animation(animation)
-    check_format_input_vector(
+    check_format_input_numeric(
         markers,
-        dims=(2,),
-        shape_m1=3,
-        sig_name="markers",
-        sig_type="array-like of shape (n, 3)",
+        dtype=float,
+        shapes=((None, 3),),
+        name="markers",
         allow_None=True,
     )
 

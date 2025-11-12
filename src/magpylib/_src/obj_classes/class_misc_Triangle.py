@@ -8,7 +8,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Triangle
 from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
-from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.style import TriangleStyle
 
@@ -107,7 +107,12 @@ class Triangle(BaseMagnet):
 
         # init inheritance
         super().__init__(
-            position, orientation, magnetization, polarization, style, **kwargs
+            position,
+            orientation,
+            magnetization=magnetization,
+            polarization=polarization,
+            style=style,
+            **kwargs,
         )
 
     # Properties
@@ -125,12 +130,11 @@ class Triangle(BaseMagnet):
         val : None | array-like, shape (3, 3)
             Triangle vertices in local object coordinates in units (m).
         """
-        self._vertices = check_format_input_vector(
+        self._vertices = check_format_input_numeric(
             val,
-            dims=(2,),
-            shape_m1=3,
-            sig_name="Triangle.vertices",
-            sig_type="array-like (list, tuple, ndarray) of shape (3, 3)",
+            dtype=float,
+            shapes=((3, 3),),
+            name="Triangle.vertices",
             allow_None=True,
         )
 

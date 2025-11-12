@@ -8,7 +8,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Tetrahedron
 from magpylib._src.fields.field_BH_tetrahedron import _BHJM_magnet_tetrahedron
-from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import (
     BaseDipoleMoment,
@@ -129,7 +129,12 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
         # init inheritance
         super().__init__(
-            position, orientation, magnetization, polarization, style, **kwargs
+            position,
+            orientation,
+            magnetization=magnetization,
+            polarization=polarization,
+            style=style,
+            **kwargs,
         )
 
         # Initialize BaseTarget
@@ -150,13 +155,11 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         dim : None or array-like, shape (4, 3)
             Vertices in local object coordinates in units (m).
         """
-        self._vertices = check_format_input_vector(
+        self._vertices = check_format_input_numeric(
             dim,
-            dims=(2,),
-            shape_m1=3,
-            length=4,
-            sig_name="Tetrahedron.vertices",
-            sig_type="array-like (list, tuple, ndarray) of shape (4, 3)",
+            dtype=float,
+            shapes=((4, 3),),
+            name="Tetrahedron.vertices",
             allow_None=True,
         )
 
@@ -199,7 +202,7 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             return self.barycenter
         return self._barycenter
 
-    def _get_dipole_moment(self):
+    def _get_dipole_moment(self, squeeze=True):  # noqa: ARG002
         """Magnetic moment of object in units (A*m²)."""
         # test init
         if self.magnetization is None or self.vertices is None:

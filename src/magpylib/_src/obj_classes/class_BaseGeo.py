@@ -6,16 +6,20 @@
 # pylint: disable=import-outside-toplevel
 
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.input_checks import (
+    check_format_input_numeric,
     check_format_input_orientation,
-    check_format_input_vector,
 )
-from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
+from magpylib._src.obj_classes.class_BaseTransform import (
+    BaseTransform,
+    pad_path_properties,
+)
 from magpylib._src.style import BaseStyle
 from magpylib._src.utility import add_iteration_suffix
 
@@ -73,25 +77,97 @@ class BaseGeo(BaseTransform, ABC):
     """
 
     _style_class = BaseStyle
+    _path_properties = ("position", "orientation")
+    _path_sync_enabled = True
 
     def __init__(
         self,
-        position=(
-            0.0,
-            0.0,
-            0.0,
-        ),
+        position=(0.0, 0.0, 0.0),
         orientation=None,
+        *,
         style=None,
         **kwargs,
     ):
         self._style_kwargs = {}
         self._parent = None
-        # set _position and _orientation attributes
-        self._init_position_orientation(position, orientation)
+
+        # set path properties while holding sync of path lengths
+        path_kwargs = {k: v for k, v in kwargs.items() if k in self._path_properties}
+        kwargs = {k: v for k, v in kwargs.items() if k not in path_kwargs}
+
+        # Initialize position and orientation if not provided in kwargs
+        if "position" not in path_kwargs:
+            path_kwargs["position"] = position
+        if "orientation" not in path_kwargs:
+            path_kwargs["orientation"] = orientation
+
+        with self.hold_path_sync(sync_on_exit=True):
+            for prop, val in path_kwargs.items():
+                setattr(self, prop, val)
 
         if style is not None or kwargs:  # avoid style creation cost if not needed
             self._style_kwargs = self._process_style_kwargs(style=style, **kwargs)
+
+    # path logic methods --------------------------------------------
+    def __init_subclass__(cls):
+        """Automatically aggregate '_path_properties' from parent classes when subclassing."""
+        super().__init_subclass__()
+        parent_attr = []
+        for base in cls.__mro__[1:]:
+            if hasattr(base, "_path_properties"):
+                parent_attr.extend(base._path_properties)
+                break  # only take first (nearest) base's attribute
+        if "_path_properties" in cls.__dict__:
+            cls._path_properties = tuple(
+                dict.fromkeys([*parent_attr, *cls._path_properties])
+            )
+        else:
+            cls._path_properties = tuple(parent_attr)
+
+    def _sync_pos_orient_recursive(self, target_len):
+        """
+        Pad position, using public attribute which triggers orientation
+        and recursive children padding.
+        """
+        n_path_new, n_path = target_len, len(self._position)
+        if n_path_new < n_path:
+            self.position = self._position[-n_path_new:]
+        elif n_path_new > n_path:
+            self.position = np.pad(
+                self._position, ((0, n_path_new - n_path), (0, 0)), "edge"
+            )
+
+    def _sync_all_paths(self, prop=None, start=0, propagate=True):
+        if not self._path_sync_enabled:
+            return
+        lengths = [
+            len(arr)
+            for name in self._path_properties
+            if (arr := getattr(self, f"_{name}", None)) is not None
+        ]
+        if not lengths:
+            return
+        target_len = max(lengths) if prop is None else len(prop)
+        # sync private attributes of all path properties (including position and orientation)
+        pad_path_properties(self, target_len, start=start)
+        # now sync children positions for collection
+        if propagate:
+            self._sync_pos_orient_recursive(target_len)
+
+    @contextmanager
+    def hold_path_sync(self, *, sync_on_exit=True):
+        """
+        Temporarily disable auto-sync inside the block.
+        If auto_sync=True (default), performs one global sync on exit.
+        """
+        old_state = self._path_sync_enabled
+        self._path_sync_enabled = False
+        try:
+            yield
+        finally:
+            self._path_sync_enabled = old_state
+            if sync_on_exit and old_state:
+                self._sync_all_paths()
 
     # static methods ------------------------------------------------
     @staticmethod
@@ -110,38 +186,6 @@ class BaseGeo(BaseTransform, ABC):
         return style
 
     # private helper methods ----------------------------------------
-    def _init_position_orientation(self, position, orientation):
-        """tile up position and orientation input and set _position and
-        _orientation at class init. Because position and orientation inputs
-        come at the same time, tiling is slightly different then with setters.
-        pos: position input
-        ori: orientation input
-        """
-
-        # format position and orientation inputs
-        pos = check_format_input_vector(
-            position,
-            dims=(1, 2),
-            shape_m1=3,
-            sig_name="position",
-            sig_type="array-like (list, tuple, ndarray) with shape (3,) or (n, 3)",
-            reshape=(-1, 3),
-        )
-        oriQ = check_format_input_orientation(orientation, init_format=True)
-
-        # padding logic: if one is longer than the other, edge-pad up the other
-        len_pos = pos.shape[0]
-        len_ori = oriQ.shape[0]
-
-        if len_pos > len_ori:
-            oriQ = np.pad(oriQ, ((0, len_pos - len_ori), (0, 0)), "edge")
-        elif len_pos < len_ori:
-            pos = np.pad(pos, ((0, len_ori - len_pos), (0, 0)), "edge")
-
-        # set attributes
-        self._position = pos
-        self._orientation = R.from_quat(oriQ)
-
     def _validate_style(self, val=None):
         val = {} if val is None else val
         style = self.style  # triggers style creation
@@ -202,13 +246,13 @@ class BaseGeo(BaseTransform, ABC):
     @property
     def position(self):
         """Return object position in global coordinates (m)."""
-        return np.squeeze(self._position)
+        return np.squeeze(self._position) if self._position is not None else None
 
     @position.setter
     def position(self, position):
         """Set object position.
 
-        Edge-padding or end-slicing is applied to keep orientation path length consistent.
+        Path syncing is applied to keep all path properties consistent.
         Child positions are updated to preserve relative offsets when part of a collection.
 
         Parameters
@@ -216,29 +260,28 @@ class BaseGeo(BaseTransform, ABC):
         position : array-like, shape (3,) or (n, 3)
             New position(s) in units (m).
         """
-        old_pos = self._position
+        old_pos = getattr(self, "_position", None)
 
         # check and set new position
-        self._position = check_format_input_vector(
+        self._position = check_format_input_numeric(
             position,
-            dims=(1, 2),
-            shape_m1=3,
-            sig_name="position",
-            sig_type="array-like (list, tuple, ndarray) with shape (3,) or (n, 3)",
+            dtype=float,
+            shapes=((3,), (None, 3)),
+            name="position",
             reshape=(-1, 3),
         )
 
-        # pad/slice and set orientation path to same length
-        oriQ = self._orientation.as_quat()
-        self._orientation = R.from_quat(_pad_slice_path(self._position, oriQ))
+        # sync all paths (including orientation)
+        self._sync_all_paths(self._position, propagate=False)
 
         # when there are children include their relative position
-        for child in getattr(self, "children", []):
-            old_pos = _pad_slice_path(self._position, old_pos)
-            child_pos = _pad_slice_path(self._position, child._position)
-            rel_child_pos = child_pos - old_pos
-            # set child position (pad/slice orientation)
-            child.position = self._position + rel_child_pos
+        if old_pos is not None:
+            for child in getattr(self, "children", []):
+                old_pos_padded = _pad_slice_path(self._position, old_pos)
+                child_pos = _pad_slice_path(self._position, child._position)
+                rel_child_pos = child_pos - old_pos_padded
+                # set child position (syncs all child paths)
+                child.position = self._position + rel_child_pos
 
     @property
     def orientation(self):
@@ -246,6 +289,8 @@ class BaseGeo(BaseTransform, ABC):
 
         ``None`` corresponds to unit rotation.
         """
+        if self._orientation is None:
+            return None
         # cannot squeeze (its a Rotation object)
         if len(self._orientation) == 1:  # single path orientation - reduce dimension
             return self._orientation[0]
@@ -261,25 +306,27 @@ class BaseGeo(BaseTransform, ABC):
             New orientation as ``scipy.spatial.transform.Rotation``. ``None`` generates a unit
             rotation for every path step.
         """
-        old_oriQ = self._orientation.as_quat()
+        old_ori = getattr(self, "_orientation", None)
+        old_oriQ = old_ori.as_quat() if old_ori is not None else None
 
         # set _orientation attribute with ndim=2 format
         oriQ = check_format_input_orientation(orientation, init_format=True)
         self._orientation = R.from_quat(oriQ)
 
-        # pad/slice position path to same length
-        self._position = _pad_slice_path(oriQ, self._position)
+        # sync all paths (including position)
+        self._sync_all_paths(oriQ, propagate=False)
 
         # when there are children they rotate about self.position
         # after the old Collection orientation is rotated away.
-        for child in getattr(self, "children", []):
-            # pad/slice and set child path
-            child.position = _pad_slice_path(self._position, child._position)
-            # compute rotation and apply
-            old_ori_pad = R.from_quat(np.squeeze(_pad_slice_path(oriQ, old_oriQ)))
-            child.rotate(
-                self.orientation * old_ori_pad.inv(), anchor=self._position, start=0
-            )
+        if old_oriQ is not None:
+            for child in getattr(self, "children", []):
+                # pad/slice and set child path
+                child.position = _pad_slice_path(oriQ, child._position)
+                # compute rotation and apply
+                old_ori_pad = R.from_quat(np.squeeze(_pad_slice_path(oriQ, old_oriQ)))
+                child.rotate(
+                    self.orientation * old_ori_pad.inv(), anchor=self._position, start=0
+                )
 
     @property
     def centroid(self):
@@ -290,6 +337,18 @@ class BaseGeo(BaseTransform, ABC):
     def _centroid(self):
         """Return centroid without squeezing (internal)."""
         return self._get_centroid(squeeze=False)
+
+    @centroid.setter
+    def centroid(self, _input):
+        """Throw error when trying to set centroid."""
+        msg = "Cannot set property centroid. It is read-only."
+        raise AttributeError(msg)
+
+    @_centroid.setter
+    def _centroid(self, _input):
+        """Throw error when trying to set centroid."""
+        msg = "Cannot set property _centroid. It is read-only."
+        raise AttributeError(msg)
 
     @property
     def style(self):

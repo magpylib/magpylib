@@ -23,8 +23,7 @@ from magpylib._src.fields.field_BH_triangularmesh import (
     _get_open_edges,
 )
 from magpylib._src.input_checks import (
-    check_format_input_vector,
-    check_format_input_vector2,
+    check_format_input_numeric,
 )
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import (
@@ -175,7 +174,12 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
         # inherit
         super().__init__(
-            position, orientation, magnetization, polarization, style, **kwargs
+            position,
+            orientation,
+            magnetization=magnetization,
+            polarization=polarization,
+            style=style,
+            **kwargs,
         )
         # Initialize BaseTarget with meshing parameter
         BaseTarget.__init__(self, meshing=meshing)
@@ -264,7 +268,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             return self.barycenter
         return self._barycenter
 
-    def _get_dipole_moment(self):
+    def _get_dipole_moment(self, squeeze=True):  # noqa: ARG002
         """Magnetic moment of object in units (A*m²)."""
         # test init
         if self.magnetization is None or self.vertices is None or self.faces is None:
@@ -533,20 +537,18 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         if faces is None:
             msg = f"Input faces of {self!r} must be set."
             raise MagpylibMissingInput(msg)
-        verts = check_format_input_vector(
+        verts = check_format_input_numeric(
             vertices,
-            dims=(2,),
-            shape_m1=3,
-            sig_name="TriangularMesh.vertices",
-            sig_type="array-like (list, tuple, ndarray) of shape (n, 3)",
+            dtype=float,
+            shapes=((None, 3),),
+            name="TriangularMesh.vertices",
         )
-        trias = check_format_input_vector(
+        trias = check_format_input_numeric(
             faces,
-            dims=(2,),
-            shape_m1=3,
-            sig_name="TriangularMesh.faces",
-            sig_type="array-like (list, tuple, ndarray) of shape (n, 3)",
-        ).astype(int)
+            dtype=int,
+            shapes=((None, 3),),
+            name="TriangularMesh.faces",
+        )
         try:
             verts[trias]
         except IndexError as e:
@@ -771,10 +773,11 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         TriangularMesh
             New magnet instance defined by the provided ``mesh``.
         """
-        mesh = check_format_input_vector2(
+        mesh = check_format_input_numeric(
             mesh,
-            shape=[None, 3, 3],
-            param_name="mesh",
+            dtype=float,
+            shapes=((None, 3, 3),),
+            name="mesh",
         )
         vertices, tr = np.unique(mesh.reshape((-1, 3)), axis=0, return_inverse=True)
         faces = tr.reshape((-1, 3))

@@ -6,7 +6,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Dipole
 from magpylib._src.fields.field_BH_dipole import _BHJM_dipole
-from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
 from magpylib._src.style import DipoleStyle
@@ -96,7 +96,7 @@ class Dipole(BaseSource, BaseDipoleMoment):
         self.moment = moment
 
         # init inheritance
-        super().__init__(position, orientation, style, **kwargs)
+        super().__init__(position, orientation, style=style, **kwargs)
 
     # Properties
     @property
@@ -113,12 +113,11 @@ class Dipole(BaseSource, BaseDipoleMoment):
         mom : None | array-like, shape (3,)
             Dipole moment vector (A·m²) in local object coordinates.
         """
-        self._moment = check_format_input_vector(
+        self._moment = check_format_input_numeric(
             mom,
-            dims=(1,),
-            shape_m1=3,
-            sig_name="moment",
-            sig_type="array-like (list, tuple, ndarray) with shape (3,)",
+            dtype=float,
+            shapes=((3,),),
+            name="moment",
             allow_None=True,
         )
 
@@ -144,7 +143,7 @@ class Dipole(BaseSource, BaseDipoleMoment):
         moments = np.array([self.moment])
         return {"pts": points, "moments": moments}
 
-    def _get_dipole_moment(self):
+    def _get_dipole_moment(self, squeeze=True):  # noqa: ARG002
         """Magnetic moment of object (A·m²)."""
         # test init
         if self.moment is None:

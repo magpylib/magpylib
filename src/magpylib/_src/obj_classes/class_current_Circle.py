@@ -6,12 +6,11 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Circle
 from magpylib._src.fields.field_BH_circle import _BHJM_circle
-from magpylib._src.input_checks import check_format_input_scalar
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.target_meshing import _target_mesh_circle
-from magpylib._src.utility import unit_prefix
 
 
 class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
@@ -89,6 +88,8 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     _field_func = staticmethod(_BHJM_circle)
     _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"current": 1, "diameter": 1}
+    _path_properties = ("diameter",)  # also inherits from parent class
+
     get_trace = make_Circle
 
     def __init__(
@@ -102,11 +103,15 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.diameter = diameter
-
         # init inheritance
-        super().__init__(position, orientation, current, style, **kwargs)
+        super().__init__(
+            position,
+            orientation,
+            diameter=diameter,
+            current=current,
+            style=style,
+            **kwargs,
+        )
 
         # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
@@ -115,31 +120,41 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     @property
     def diameter(self):
         """Diameter of the loop in units of m."""
-        return self._diameter
+        return (
+            None
+            if self._diameter is None
+            else self._diameter[0]
+            if len(self._diameter) == 1
+            else self._diameter
+        )
 
     @diameter.setter
-    def diameter(self, dia):
+    def diameter(self, diameter):
         """Set loop diameter.
 
         Parameters
         ----------
-        dia : float | None
+        diameter : float | None
             Loop diameter in units (m).
         """
-        self._diameter = check_format_input_scalar(
-            dia,
-            sig_name="diameter",
-            sig_type="None or a positive number (int, float)",
+        self._diameter = check_format_input_numeric(
+            diameter,
+            dtype=float,
+            shapes=(None, (None,)),
+            name="diameter",
             allow_None=True,
-            forbid_negative=True,
+            value_conditions=(("ge", 0, "all"),),
         )
+        if np.isscalar(self._diameter):
+            self._diameter = np.array([self._diameter], dtype=float)
+        self._sync_all_paths(self._diameter)
 
     @property
     def _default_style_description(self):
         """Default style description text"""
         if self.diameter is None:
             return "no dimension"
-        return f"{unit_prefix(self.current)}A" if self.current else "no current"
+        return super()._default_style_description
 
     # Methods
     def _get_centroid(self, squeeze=True):
@@ -148,17 +163,22 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
             return self.position
         return self._position
 
-    def _get_dipole_moment(self):
+    def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
         # test init
-        if self.diameter is None or self.current is None:
-            return np.array((0.0, 0.0, 0.0))
-
-        return self.diameter**2 / 4 * np.pi * self.current * np.array((0, 0, 1))
+        diam, curr = self._diameter, self._current
+        if diam is None or curr is None:
+            mom = np.zeros_like(self._position)
+        else:
+            diam, curr = diam[:, np.newaxis], curr[:, np.newaxis]
+            mom = diam**2 / 4 * np.pi * curr * np.array((0, 0, 1))
+        if squeeze and len(mom) == 1:
+            return mom[0]
+        return mom
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        return _target_mesh_circle(self.diameter / 2, self.meshing, self.current)
+        return _target_mesh_circle(self._diameter, self._current, self.meshing)
 
     def _validate_meshing(self, value):
         """Circle makes only sense with at least 4 mesh points."""
