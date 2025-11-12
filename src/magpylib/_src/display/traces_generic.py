@@ -147,7 +147,7 @@ def make_mag_arrows(obj, path_ind=-1):
 
     mag = obj._magnetization
     mag = np.array([[0.0, 0.0, 0.0]]) if mag is None else mag
-    mag = mag[path_ind]
+    mag = mag[path_ind] if mag.ndim == 2 else mag
     if np.all(mag == 0):
         return None
     style = obj.style
@@ -557,6 +557,7 @@ def get_generic_traces3D(
     def get_traces_func(**extra_kwargs):
         nonlocal is_mag
         traces_generic_temp = []
+        path_ind = extra_kwargs.get("path_ind", -1)
         if style.model3d.showdefault and make_func is not None:
             p_trs = make_func(**make_func_kwargs, **extra_kwargs)
             for p_tr_item in p_trs:
@@ -569,11 +570,12 @@ def get_generic_traces3D(
                         style,
                         p_tr,
                         color_slicing=not supports_colorgradient,
-                        path_ind=extra_kwargs.get("path_ind"),
+                        path_ind=path_ind,
                     )
                     if is_mag_arrows:
                         tr_arrows = make_mag_arrows(input_obj, path_ind=path_ind)
-                        traces_generic_temp.append(tr_arrows)
+                        if tr_arrows is not None:
+                            traces_generic_temp.append(tr_arrows)
                 traces_generic_temp.append(p_tr)
         return traces_generic_temp
 

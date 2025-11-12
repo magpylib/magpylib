@@ -479,7 +479,7 @@ def make_mesh_lines(obj, mode, path_ind=None, **kwargs) -> dict[str, Any]:
     style = obj.style
     mesh = getattr(style.mesh, mode)
     marker, line = mesh.marker, mesh.line
-    vertices = obj.vertices if path_ind is None else obj._vertices[path_ind]
+    vertices = obj._vertices if path_ind is None else obj._vertices[path_ind]
     tr, vert = obj.faces, vertices
     if mode == "disconnected":
         subsets = obj.get_faces_subsets()
