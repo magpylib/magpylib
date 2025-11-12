@@ -261,7 +261,7 @@ def test_path_varying_sphere_diameter_magnetization():
         rtol=1e-10,
         err_msg="Sphere with both varying should match manual loop",
     )
-    
+
     np.testing.assert_allclose(
         T_vec_both,
         T_manual_both,
@@ -301,7 +301,7 @@ def test_path_varying_sphere_diameter_magnetization():
         rtol=1e-10,
         err_msg="Sphere with magnetization varying should match manual loop",
     )
-    
+
     np.testing.assert_allclose(
         T_vec_mag,
         T_manual_mag,
