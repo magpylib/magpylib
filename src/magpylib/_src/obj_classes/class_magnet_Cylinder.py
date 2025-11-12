@@ -101,6 +101,7 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         "polarization": 2,
         "dimension": 2,
     }
+    _path_properties = ("dimension",)  # also inherits from parent class
     get_trace = make_Cylinder
 
     def __init__(
@@ -114,15 +115,13 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.dimension = dimension
-
         # init inheritance
         super().__init__(
             position,
             orientation,
             magnetization=magnetization,
             polarization=polarization,
+            dimension=dimension,
             style=style,
             **kwargs,
         )

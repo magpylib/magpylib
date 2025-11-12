@@ -277,7 +277,8 @@ def _target_mesh_cylinder(r1, r2, h, phi1, phi2, magnetization, target_elems):
     """
     vals = [r1, r2, h, phi1, phi2, magnetization]
     for i, val in enumerate(vals):
-        if len(val) > 1:
+        axis = None if val.ndim <= 1 else 0
+        if np.unique(val, axis=axis).shape[0] > 1:
             msg = "Cylinder/CylinderSegment does not yet support path-varying parameters. "
             raise NotImplementedError(msg)
         vals[i] = val[0]

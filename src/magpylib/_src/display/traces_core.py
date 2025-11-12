@@ -334,7 +334,7 @@ def make_Cylinder(obj, path_ind=-1, base=50, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_CylinderSegment(obj, vertices=25, **kwargs) -> dict[str, Any]:
+def make_CylinderSegment(obj, path_ind=-1, vertices=25, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Cylinder Segment Magnet in a dictionary based on the
     provided arguments.
@@ -344,26 +344,29 @@ def make_CylinderSegment(obj, vertices=25, **kwargs) -> dict[str, Any]:
         trace = create_null_dim_trace(color=style.color)
     else:
         trace = make_BaseCylinderSegment(
-            "plotly-dict", dimension=obj.dimension, vert=vertices, color=style.color
+            "plotly-dict",
+            dimension=obj._dimension[path_ind],
+            vert=vertices,
+            color=style.color,
         )
     return {**trace, **kwargs}
 
 
-def make_Sphere(obj, vertices=15, **kwargs) -> dict[str, Any]:
+def make_Sphere(obj, path_ind=-1, vertices=15, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Sphere Magnet in a dictionary based on the
     provided arguments.
     """
     style = obj.style
 
-    if obj.diameter is None:
+    if obj._diameter is None:
         trace = create_null_dim_trace(color=style.color)
     else:
         vertices = min(max(vertices, 3), 20)
         trace = make_BaseEllipsoid(
             "plotly-dict",
             vert=vertices,
-            dimension=[obj.diameter] * 3,
+            dimension=[obj._diameter[path_ind]] * 3,
             color=style.color,
         )
     return {**trace, **kwargs}

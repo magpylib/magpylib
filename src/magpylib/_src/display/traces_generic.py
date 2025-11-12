@@ -131,7 +131,7 @@ def update_magnet_mesh(input_obj, style, mesh_dict, color_slicing=False, path_in
     return mesh_dict
 
 
-def make_mag_arrows(obj):
+def make_mag_arrows(obj, path_ind=-1):
     """draw direction of magnetization of faced magnets
 
     Parameters
@@ -140,6 +140,7 @@ def make_mag_arrows(obj):
     - colors: colors of faced_objects
     - show_path(bool or int): draw on every position where object is displayed
     """
+    # TODO needs to be integragted with magmesh because of frame dependent magnetization
     # pylint: disable=protected-access
 
     # vector length, color and magnetization
@@ -149,22 +150,28 @@ def make_mag_arrows(obj):
     color = style.color if arrow.color is None else arrow.color
     if arrow.sizemode == "scaled":
         if hasattr(obj, "diameter"):
-            length = obj.diameter  # Sphere
+            length = obj._diameter[path_ind]  # Sphere
         elif isinstance(obj, magpy.misc.Triangle):
-            length = np.amax(obj.vertices) - np.amin(obj.vertices)
+            verts = obj._vertices
+            verts = verts[path_ind] if verts.ndim == 3 else verts
+            length = np.amax(verts) - np.amin(verts)
         elif hasattr(obj, "mesh"):
-            length = np.amax(np.ptp(obj.mesh.reshape(-1, 3), axis=0))
+            mesh = obj.mesh
+            mesh = mesh[path_ind] if mesh.ndim == 4 else mesh
+            length = np.amax(np.ptp(mesh.reshape(-1, 3), axis=0))
         elif hasattr(obj, "vertices"):
-            length = np.amax(np.ptp(obj.vertices, axis=0))
+            verts = obj._vertices
+            verts = verts[path_ind] if verts.ndim == 3 else verts
+            length = np.amax(np.ptp(verts, axis=0))
         else:  # Cuboid, Cylinder, CylinderSegment
-            length = np.amax(obj.dimension[:3])
+            length = np.amax(obj._dimension[path_ind, :3])
         length *= 1.5
     length *= arrow.size
-    mag = obj.magnetization
+    mag = obj._magnetization[path_ind]
     # collect all draw positions and directions
-    pos = getattr(obj, "_barycenter", obj._position)[0] - obj._position[0]
+    pos = getattr(obj, "_barycenter", obj._position)[path_ind] - obj._position[path_ind]
     # we need initial relative barycenter, arrow gets orientated later
-    pos = obj._orientation[0].inv().apply(pos)
+    pos = obj._orientation[path_ind].inv().apply(pos)
     direc = mag / (np.linalg.norm(mag) + 1e-6) * length
     x, y, z = draw_arrowed_line(
         direc, pos, sign=1, arrow_pos=arrow.offset, pivot="tail"

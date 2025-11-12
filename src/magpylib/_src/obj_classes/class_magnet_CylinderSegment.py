@@ -113,6 +113,7 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         "polarization": 2,
         "dimension": 2,
     }
+    _path_properties = ("dimension",)  # also inherits from parent class
     get_trace = make_CylinderSegment
 
     def __init__(
@@ -126,15 +127,13 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.dimension = dimension
-
         # init inheritance
         super().__init__(
             position,
             orientation,
             magnetization=magnetization,
             polarization=polarization,
+            dimension=dimension,
             style=style,
             **kwargs,
         )
@@ -199,7 +198,7 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
                     parts.append(f"{label}={val}m")
                 else:
                     vmin, vmax = unit_prefix(dmin[i1]), unit_prefix(dmax[i1])
-                    parts.append(f"{label}={vmin}m…{vmax}m")
+                    parts.append(f"{label}={vmin}m↔{vmax}m")
             # Range (r, φ)
             elif np.allclose(dmin[i1], dmax[i1]) and np.allclose(dmin[i2], dmax[i2]):
                 v1, v2 = unit_prefix(dmin[i1]), unit_prefix(dmin[i2])
@@ -253,11 +252,14 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         """Returns the barycenter of a cylinder segment.
         Input checks should make sure:
             -360 < phi1 < phi2 < 360 and 0 < r1 < r2
+        Inputs must all be path enabled and synced.
         """
         if dimension is None:
             centroid = np.array([0.0, 0.0, 0.0])
         else:
-            r1, r2, _, phi1, phi2 = dimension
+            # Handle path-varying dimensions
+            dims = dimension
+            r1, r2, _, phi1, phi2 = dims.T
             alpha = np.deg2rad((phi2 - phi1) / 2)
             phi = np.deg2rad((phi1 + phi2) / 2)
             # get centroid x for unrotated annular sector
@@ -265,6 +267,12 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
                 2 / 3 * np.sin(alpha) / alpha * (r2**3 - r1**3) / (r2**2 - r1**2)
             )
             # get centroid for rotated annular sector
-            x, y, z = centroid_x * np.cos(phi), centroid_x * np.sin(phi), 0
-            centroid = np.array([x, y, z])
+            x, y, z = (
+                centroid_x * np.cos(phi),
+                centroid_x * np.sin(phi),
+                np.zeros_like(centroid_x),
+            )
+            centroid = np.column_stack([x, y, z])
+            if centroid.shape[0] == 1:
+                centroid = centroid[0]
         return orientation.apply(centroid) + position
