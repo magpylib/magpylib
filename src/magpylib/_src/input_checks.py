@@ -340,7 +340,7 @@ def check_format_input_numeric(
         dims_str = " or ".join(str(d) for d in dims if d != 0)
         msg = (
             f"{msg_name} must be {msg_scalar}array-like of dimension {dims_str};"
-            " instead received an input of dimension {array.ndim}."
+            f" instead received an input of dimension {array.ndim}."
         )
         raise MagpylibBadUserInput(msg)
 
