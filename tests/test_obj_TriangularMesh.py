@@ -378,7 +378,7 @@ def test_TriangularMesh_from_faces_good_inputs():
     pos_ori = {"orientation": tetra.orientation, "position": tetra.position}
 
     tmesh1 = magpy.magnet.TriangularMesh.from_ConvexHull(
-        polarization=pol, points=tetra.vertices, **pos_ori
+        polarization=pol, points=tetra._vertices[0], **pos_ori
     )
 
     # from triangle list
