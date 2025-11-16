@@ -129,6 +129,8 @@ class BaseGeo(BaseTransform, ABC):
         Pad position, using public attribute which triggers orientation
         and recursive children padding.
         """
+        if self._position is None:
+            return
         n_path_new, n_path = target_len, len(self._position)
         if n_path_new < n_path:
             self.position = self._position[-n_path_new:]
@@ -137,19 +139,22 @@ class BaseGeo(BaseTransform, ABC):
                 self._position, ((0, n_path_new - n_path), (0, 0)), "edge"
             )
 
-    def _sync_all_paths(self, prop=None, start=0, propagate=True):
+    def _sync_all_paths(self, prop=None, start=0, propagate=True, path_properties=None):
         if not self._path_sync_enabled:
             return
+        path_properties = self._path_properties
         lengths = [
             len(arr)
-            for name in self._path_properties
+            for name in path_properties
             if (arr := getattr(self, f"_{name}", None)) is not None
         ]
         if not lengths:
             return
         target_len = max(lengths) if prop is None else len(prop)
         # sync private attributes of all path properties (including position and orientation)
-        pad_path_properties(self, target_len, start=start)
+        pad_path_properties(
+            self, target_len, start=start, path_properties=path_properties
+        )
         # now sync children positions for collection
         if propagate:
             self._sync_pos_orient_recursive(target_len)

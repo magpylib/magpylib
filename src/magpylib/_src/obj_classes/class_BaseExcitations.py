@@ -6,6 +6,7 @@
 from typing import ClassVar
 
 import numpy as np
+from scipy.constants import mu_0 as MU0
 
 from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import (
@@ -318,25 +319,52 @@ class BaseMagnet(BaseSource):
     """Provide magnetization and polarization attributes for magnet sources."""
 
     _style_class = MagnetStyle
-    _path_properties = ("polarization",)  # also inherits from parent class
+    _path_properties = (
+        "polarization",
+        "magnetization",
+    )  # also inherits from parent class
 
     def __init__(
         self, position, orientation, *, magnetization, polarization, style, **kwargs
     ):
-        super().__init__(position, orientation, style=style, **kwargs)
-
         self._polarization = None
         self._magnetization = None
-        if magnetization is not None:
-            self.magnetization = magnetization
-            if polarization is not None:
-                msg = (
-                    "The attributes magnetization and polarization are dependent. "
-                    "Only one can be provided at magnet initialization."
-                )
-                raise ValueError(msg)
-        if polarization is not None:
-            self.polarization = polarization
+        if magnetization is not None and polarization is not None:
+            msg = (
+                "The attributes magnetization and polarization are dependent. "
+                "Only one can be provided at magnet initialization."
+            )
+            raise ValueError(msg)
+        name = "magnetization" if magnetization is not None else "polarization"
+        magpol = magnetization if magnetization is not None else polarization
+        self._check_input_format_mag_pol(magpol, name)
+        super().__init__(position, orientation, style=style, **kwargs)
+
+    def _check_input_format_mag_pol(self, magpol, name):
+        """Check and format magnetization/polarization input and set both attributes.
+
+        Parameters
+        ----------
+        magpol : array-like or None
+            Input magnetization or polarization value
+        name : str
+            Either 'magnetization' or 'polarization' to indicate which is being set
+        """
+        formatted = check_format_input_numeric(
+            magpol,
+            dtype=float,
+            shapes=((3,), (None, 3)),
+            name=name,
+            allow_None=True,
+            reshape=(-1, 3),
+        )
+
+        if name == "magnetization":
+            self._magnetization = formatted
+            self._polarization = formatted * MU0 if formatted is not None else None
+        elif name == "polarization":
+            self._polarization = formatted
+            self._magnetization = formatted / MU0 if formatted is not None else None
 
     @property
     def magnetization(self):
@@ -355,20 +383,8 @@ class BaseMagnet(BaseSource):
             Magnetization vector M = J/mu0 in units (A/m), given in the local object
             coordinates. Sets also ``polarization``.
         """
-        self._magnetization = check_format_input_numeric(
-            mag,
-            dtype=float,
-            shapes=((3,), (None, 3)),
-            name="magnetization",
-            allow_None=True,
-            reshape=(-1, 3),
-        )
-        if self._magnetization is not None:
-            self._polarization = self._magnetization * (4 * np.pi * 1e-7)
-            # sync all paths - let it auto-detect max length from all path properties
-            self._sync_all_paths(propagate=False)
-        else:
-            self._polarization = None
+        self._check_input_format_mag_pol(mag, "magnetization")
+        self._sync_all_paths(propagate=False)
 
     @property
     def polarization(self):
@@ -387,20 +403,7 @@ class BaseMagnet(BaseSource):
             Magnetic polarization vector J = mu0*M in units (T), given in the
             local object coordinates. Sets also ``magnetization``.
         """
-        self._polarization = check_format_input_numeric(
-            mag,
-            dtype=float,
-            shapes=((3,), (None, 3)),
-            name="polarization",
-            allow_None=True,
-            reshape=(-1, 3),
-        )
-        if self._polarization is not None:
-            self._magnetization = self._polarization / (4 * np.pi * 1e-7)
-            # sync all paths - let it auto-detect max length from all path properties
-            self._sync_all_paths(propagate=False)
-        else:
-            self._magnetization = None
+        self._check_input_format_mag_pol(mag, "polarization")
         self._sync_all_paths(propagate=False)
 
 
