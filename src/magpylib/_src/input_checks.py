@@ -514,17 +514,84 @@ def check_format_input_cylinder_segment(inp):
         return None
 
     r1, r2, h, phi1, phi2 = inp.T
-    case2 = r1 > r2
-    case3 = phi1 > phi2
-    case4 = (phi2 - phi1) > 360
-    case5 = (r1 < 0) | (r2 <= 0) | (h <= 0)
-    if (case2 | case3 | case4 | case5).any():
+    path_len = len(inp)
+
+    def format_index_msg(indices):
+        """Format index message: show first index and count of additional bad entries."""
+        if path_len == 1:
+            return ""
+        if len(indices) == 1:
+            return f" at index {indices[0]}"
+        return f" at index {indices[0]} (+{len(indices) - 1} more)"
+
+    # Check r1 >= 0
+    bad_idx = r1 < 0
+    if bad_idx.any():
+        indices = np.where(bad_idx)[0]
+        idx_msg = format_index_msg(indices)
         msg = (
-            f"Input CylinderSegment.dimension must be array-like of the form "
-            f"(r1, r2, h, phi1, phi2) or (p, 5) with 0<=r1<r2, h>0, phi1<phi2 and phi2-phi1<=360; "
-            f"instead received {inp!r}."
+            f"Input CylinderSegment.dimension inner radius r1 must be >= 0; "
+            f"instead received r1={r1[indices[0]]}{idx_msg}."
         )
         raise MagpylibBadUserInput(msg)
+
+    # Check r2 > 0
+    bad_idx = r2 <= 0
+    if bad_idx.any():
+        indices = np.where(bad_idx)[0]
+        idx_msg = format_index_msg(indices)
+        msg = (
+            f"Input CylinderSegment.dimension outer radius r2 must be > 0; "
+            f"instead received r2={r2[indices[0]]}{idx_msg}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+    # Check r1 < r2
+    bad_idx = r1 >= r2
+    if bad_idx.any():
+        indices = np.where(bad_idx)[0]
+        idx_msg = format_index_msg(indices)
+        msg = (
+            f"Input CylinderSegment.dimension must have r1 < r2; "
+            f"instead received r1={r1[indices[0]]}, r2={r2[indices[0]]}{idx_msg}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+    # Check h > 0
+    bad_idx = h <= 0
+    if bad_idx.any():
+        indices = np.where(bad_idx)[0]
+        idx_msg = format_index_msg(indices)
+        msg = (
+            f"Input CylinderSegment.dimension height h must be > 0; "
+            f"instead received h={h[indices[0]]}{idx_msg}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+    # Check phi1 < phi2
+    bad_idx = phi1 >= phi2
+    if bad_idx.any():
+        indices = np.where(bad_idx)[0]
+        idx_msg = format_index_msg(indices)
+        msg = (
+            f"Input CylinderSegment.dimension must have phi1 < phi2; "
+            f"instead received phi1={phi1[indices[0]]}, phi2={phi2[indices[0]]}{idx_msg}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+    # Check phi2 - phi1 <= 360
+    bad_idx = (phi2 - phi1) > 360
+    if bad_idx.any():
+        indices = np.where(bad_idx)[0]
+        idx_msg = format_index_msg(indices)
+        span = phi2[indices[0]] - phi1[indices[0]]
+        msg = (
+            f"Input CylinderSegment.dimension angular span (phi2 - phi1) must be <= 360; "
+            f"instead received phi1={phi1[indices[0]]}, phi2={phi2[indices[0]]}, "
+            f"span={span}{idx_msg}."
+        )
+        raise MagpylibBadUserInput(msg)
+
     return inp
 
 
