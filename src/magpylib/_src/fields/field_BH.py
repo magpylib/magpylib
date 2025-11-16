@@ -160,6 +160,7 @@ def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     # Get all property names that need processing
     prop_with_path = group[0]._path_properties
+    props_in_field_func = group[0]._field_func_kwargs_ndim.keys()
 
     # Process non-path properties
     for prop_name in group[0]._field_func_kwargs_ndim:
@@ -168,9 +169,10 @@ def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     # Process other path properties (position and orientation already handled above)
     for prop_name in prop_with_path:
-        if hasattr(group[0], prop_name) and prop_name not in (
-            "position",
-            "orientation",
+        if (
+            hasattr(group[0], prop_name)
+            and prop_name not in ("position", "orientation")
+            and prop_name in props_in_field_func
         ):
             kwargs[prop_name] = _tile_group_property_path(group, n_pix, prop_name)
 
