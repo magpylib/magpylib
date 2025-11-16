@@ -278,12 +278,13 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     def _generate_mesh(self):
         """Generate mesh for force computation."""
         # Tests in getFT ensure that meshing, dimension and excitation are set
+        # TODO : catch unsupported path varying meshing!
         return _target_mesh_triangularmesh(
             self.vertices,
             self.faces,
             self.meshing,
             self.volume,
-            self.magnetization,
+            self._magnetization[0],
         )
 
     @staticmethod
