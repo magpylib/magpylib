@@ -185,11 +185,15 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         return "|".join(parts)
 
     # Methods
-    def _get_volume(self):
+    def _get_volume(self, squeeze=True):
         """Volume of object in units (m³)."""
-        if self.dimension is None:
-            return 0.0
-        return np.prod(self.dimension)
+        if self._dimension is None:
+            return 0.0 if squeeze else np.array([0.0])
+
+        vols = np.prod(self._dimension, axis=1)
+        if squeeze and len(vols) == 1:
+            return float(vols[0])
+        return vols
 
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
@@ -197,12 +201,18 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             return self.position
         return self._position
 
-    def _get_dipole_moment(self, squeeze=True):  # noqa: ARG002
+    def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
-        # test init
-        if self.magnetization is None or self.dimension is None:
-            return np.array((0.0, 0.0, 0.0))
-        return self.magnetization * self.volume
+        if self._magnetization is None or self._dimension is None:
+            dip = np.zeros_like(self._position)
+            if squeeze and len(dip) == 1:
+                return dip[0]
+            return dip
+        vols = self._get_volume(squeeze=False)
+        dipoles = self._magnetization * vols[:, np.newaxis]
+        if squeeze and len(dipoles) == 1:
+            return dipoles[0]
+        return dipoles
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""

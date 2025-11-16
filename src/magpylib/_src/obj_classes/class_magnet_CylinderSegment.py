@@ -210,14 +210,17 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         return ", ".join(parts)
 
     # Methods
-    def _get_volume(self):
+    def _get_volume(self, squeeze=True):
         """Volume of object in units (m³)."""
-        if self.dimension is None:
-            return 0.0
+        if self._dimension is None:
+            return 0.0 if squeeze else np.array([0.0])
 
         dims = self._dimension  # Use internal (p, 5) shape
         r1, r2, h, phi1, phi2 = dims.T
-        return (r2**2 - r1**2) * np.pi * h * (phi2 - phi1) / 360
+        vols = (r2**2 - r1**2) * np.pi * h * (phi2 - phi1) / 360
+        if squeeze and len(vols) == 1:
+            return float(vols[0])
+        return vols
 
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
@@ -225,12 +228,20 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             return self.barycenter
         return self._barycenter
 
-    def _get_dipole_moment(self, squeeze=True):  # noqa: ARG002
+    def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
-        # test init
-        if self.magnetization is None or self.dimension is None:
-            return np.array((0.0, 0.0, 0.0))
-        return self.magnetization * self.volume
+        if self._magnetization is None or self._dimension is None:
+            dip = np.zeros_like(self._position)
+            if squeeze and len(dip) == 1:
+                return dip[0]
+            return dip
+
+        vols = self._get_volume(squeeze=False)
+        dipoles = self._magnetization * vols[:, np.newaxis]
+
+        if squeeze and len(dipoles) == 1:
+            return dipoles[0]
+        return dipoles
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""

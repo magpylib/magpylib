@@ -1054,12 +1054,9 @@ class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
             return weighted_centroid / total_volume
         return self.position
 
-    def _get_dipole_moment(self, squeeze=True):  # noqa: ARG002
+    def _get_dipole_moment(self, squeeze=True):
         """Return magnetic dipole moment of object (A·m²)."""
         return np.sum(
-            [
-                getattr(child, "dipole_moment", np.zeros(3))
-                for child in self.children_all
-            ],
+            [child._get_dipole_moment(squeeze=squeeze) for child in self.children_all],
             axis=0,
         )

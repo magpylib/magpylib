@@ -158,11 +158,15 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
         return f"D={unit_prefix(self._diameter.min())}m↔{unit_prefix(self._diameter.max())}m"
 
     # Methods
-    def _get_volume(self):
+    def _get_volume(self, squeeze=True):
         """Volume of object in units (m³)."""
         if self._diameter is None:
-            return 0.0
-        return self._diameter**3 * np.pi / 6
+            return 0.0 if squeeze else np.array([0.0])
+
+        vols = self._diameter**3 * np.pi / 6
+        if squeeze and len(vols) == 1:
+            return float(vols[0])
+        return vols
 
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
@@ -172,19 +176,22 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
 
     def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
-        # test init
         if self._magnetization is None or self._diameter is None:
-            return np.array((0.0, 0.0, 0.0))
-        volume = self._get_volume()
-        return (
-            (volume[:, np.newaxis] * self._magnetization).squeeze()
-            if squeeze
-            else volume[:, np.newaxis] * self._magnetization
-        )
+            dip = np.zeros_like(self._position)
+            if squeeze and len(dip) == 1:
+                return dip[0]
+            return dip
+
+        vols = self._get_volume(squeeze=False)
+        dipoles = self._magnetization * vols[:, np.newaxis]
+
+        if squeeze and len(dipoles) == 1:
+            return dipoles[0]
+        return dipoles
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        volume = self._get_volume()
+        volume = self._get_volume(squeeze=False)
 
         # Check for path-varying parameters
         p_len = len(volume)
