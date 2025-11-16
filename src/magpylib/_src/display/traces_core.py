@@ -372,7 +372,7 @@ def make_Sphere(obj, path_ind=-1, vertices=15, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_Tetrahedron(obj, **kwargs) -> dict[str, Any]:
+def make_Tetrahedron(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Tetrahedron Magnet in a dictionary based on the
     provided arguments.
@@ -382,7 +382,7 @@ def make_Tetrahedron(obj, **kwargs) -> dict[str, Any]:
         trace = create_null_dim_trace(color=style.color)
     else:
         trace = make_BaseTetrahedron(
-            "plotly-dict", vertices=obj.vertices, color=style.color
+            "plotly-dict", vertices=obj._vertices[path_ind], color=style.color
         )
     return {**trace, **kwargs}
 

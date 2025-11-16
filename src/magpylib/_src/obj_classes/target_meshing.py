@@ -728,99 +728,146 @@ def _target_mesh_tetrahedron(
     n_points: int, vertices: np.ndarray, magnetization: np.ndarray
 ):
     """
-    Generate mesh of tetrahedral body using uniform barycentric coordinate grid.
+    Generate mesh of tetrahedral body using a uniform barycentric coordinate grid.
 
-    This function creates a uniform grid of points inside the tetrahedron using
-    structured barycentric coordinates, ensuring homogeneous density distribution.
-    The actual number of points may differ slightly from the target for efficiency.
+    Supports path-enabled inputs: `vertices` may be a single tetrahedron with shape
+    (4, 3) or a path of tetrahedra with shape (p, 4, 3). Similarly, `magnetization`
+    may be shape (3,) or (p, 3). When path inputs are provided and no per-path
+    variation exists, the function returns the same squeezed outputs as before.
+
+    The function creates a uniform grid of points inside the tetrahedron using
+    structured barycentric coordinates. The actual number of generated points may
+    differ slightly from the target for efficiency.
 
     Parameters
     ----------
     n_points : int
-        Target number of mesh points.
-    vertices : array-like, shape (4, 3)
-        Vertices of the tetrahedron.
-    magnetization : array-like, shape (3,)
-        Magnetization vector.
+        Target number of mesh points per tetrahedron.
+    vertices : array-like, shape (4, 3) or (p, 4, 3)
+        Vertices of the tetrahedron or a path of tetrahedra.
+    magnetization : array-like, shape (3,) or (p, 3)
+        Magnetization vector for the tetrahedron or per-path magnetizations.
 
     Returns
     -------
-     dict: {
-        "pts": np.ndarray, shape (n, 3) - mesh points
-        "moments": np.ndarray, shape (n, 3) - moments associated with each point
-    }
+    dict
+        {
+            "pts": np.ndarray,
+                - shape (n, 3) for single tetrahedron input,
+                - shape (p, n, 3) for path-enabled inputs where each path
+                  produced the same number of mesh points;
+            "moments": np.ndarray,
+                - shape (n, 3) for single tetrahedron input,
+                - shape (p, n, 3) for path-enabled inputs where each path
+                  produced the same number of mesh points.
+        }
+
+    Notes
+    -----
+    - For path-enabled inputs, the function generates a mesh per path and stacks
+      the results. If different paths produce different numbers of mesh points,
+      a ``NotImplementedError`` is raised (this mirrors behavior in other meshers
+      that currently require uniform output shapes for stacking).
+    - If no path variation is detected, the function preserves the original
+      single-body behavior and returns squeezed arrays for backward compatibility.
     """
 
-    # Calculate tetrahedron volume
-    v1 = vertices[1] - vertices[0]
-    v2 = vertices[2] - vertices[0]
-    v3 = vertices[3] - vertices[0]
-    tet_volume = abs(np.linalg.det(np.column_stack([v1, v2, v3]))) / 6.0
+    # Support path-enabled inputs: vertices can be (4,3) or (p,4,3)
+    verts = np.atleast_1d(vertices)
+    mags = np.atleast_1d(magnetization)
 
-    # Return centroid for single point
-    if n_points == 1:
-        centroid = np.mean(vertices, axis=0)
-        pts = np.array([centroid])
-        moments = np.array([tet_volume * magnetization])
+    # Normalize shapes to (p, 4, 3) and (p, 3)
+    verts_exp = verts[np.newaxis, ...] if verts.ndim == 2 else verts
+    mags_exp = mags[np.newaxis, ...] if mags.ndim == 1 else mags
 
+    p_len = len(verts_exp)
+
+    # Detect path variation by flattening per-path vertices
+    verts_varying = np.unique(verts_exp.reshape(p_len, -1), axis=0).shape[0] > 1
+    mags_varying = np.unique(mags_exp, axis=0).shape[0] > 1
+    has_path_varying = verts_varying or mags_varying
+
+    def _mesh_single(n_points_i, verts_i, mags_i):
+        """Generate mesh for a single tetrahedron (verts_i shape (4,3))."""
+        # Calculate tetrahedron volume
+        v1 = verts_i[1] - verts_i[0]
+        v2 = verts_i[2] - verts_i[0]
+        v3 = verts_i[3] - verts_i[0]
+        tet_volume = abs(np.linalg.det(np.column_stack([v1, v2, v3]))) / 6.0
+
+        # Return centroid for single point
+        if n_points_i == 1:
+            centroid = np.mean(verts_i, axis=0)
+            pts = np.array([centroid])
+            moments = np.array([tet_volume * mags_i])
+            return {"pts": pts, "moments": moments}
+
+        # Find the optimal number of subdivisions to get closest to n_points
+        def points_for_n_div(n):
+            return (n + 1) * (n + 2) * (n + 3) // 6
+
+        n_div_estimate = max(1, int(np.round((6 * n_points_i) ** (1 / 3) - 1.5)))
+
+        best_n_div = n_div_estimate
+        best_diff = abs(points_for_n_div(n_div_estimate) - n_points_i)
+        for test_n_div in range(max(1, n_div_estimate - 2), n_div_estimate + 4):
+            test_points = points_for_n_div(test_n_div)
+            diff = abs(test_points - n_points_i)
+            if diff < best_diff:
+                best_diff = diff
+                best_n_div = test_n_div
+
+        n_div = best_n_div
+
+        pts_list = []
+        for i in range(n_div + 1):
+            for j in range(n_div + 1 - i):
+                for k in range(n_div + 1 - i - j):
+                    L = n_div - i - j - k
+                    if L >= 0:
+                        u1 = i / n_div
+                        u2 = j / n_div
+                        u3 = k / n_div
+                        u4 = L / n_div
+                        point = (
+                            u1 * verts_i[0]
+                            + u2 * verts_i[1]
+                            + u3 * verts_i[2]
+                            + u4 * verts_i[3]
+                        )
+                        pts_list.append(point)
+
+        pts = np.array(pts_list)
+        volume_per_point = tet_volume / len(pts)
+        volumes = np.full(len(pts), volume_per_point)
+        moments = volumes[:, np.newaxis] * mags_i
         return {"pts": pts, "moments": moments}
 
-    # Find the optimal number of subdivisions to get closest to n_points
-    # For a tetrahedron with n_div divisions, the exact number of points is:
-    # (n_div+1)(n_div+2)(n_div+3)/6
-    def points_for_n_div(n):
-        return (n + 1) * (n + 2) * (n + 3) // 6
+    # If no path variation, keep original behavior
+    if not has_path_varying:
+        return _mesh_single(n_points, verts_exp[0], mags_exp[0])
 
-    # Start with a rough estimate
-    n_div_estimate = max(1, int(np.round((6 * n_points) ** (1 / 3) - 1.5)))
-
-    # Test a few values around the estimate to find the closest match
-    best_n_div = n_div_estimate
-    best_diff = abs(points_for_n_div(n_div_estimate) - n_points)
-
-    for test_n_div in range(max(1, n_div_estimate - 2), n_div_estimate + 4):
-        test_points = points_for_n_div(test_n_div)
-        diff = abs(test_points - n_points)
-        if diff < best_diff:
-            best_diff = diff
-            best_n_div = test_n_div
-
-    n_div = best_n_div
-
-    # Generate structured barycentric coordinates
+    # Path-varying: generate per-path meshes and stack results
     pts_list = []
+    moments_list = []
+    n_pts = None
+    for idx in range(p_len):
+        out = _mesh_single(n_points, verts_exp[idx], mags_exp[idx])
+        pts_i, moments_i = out["pts"], out["moments"]
+        if n_pts is None:
+            n_pts = len(pts_i)
+        elif len(pts_i) != n_pts:
+            msg = (
+                "Tetrahedron meshing generated differing number of points along the path. "
+                "Path-varying tetrahedron meshes with varying point counts are not supported."
+            )
+            raise NotImplementedError(msg)
+        pts_list.append(pts_i)
+        moments_list.append(moments_i)
 
-    # Create uniform grid in barycentric coordinates
-    # We need u1 + u2 + u3 + u4 = 1 and all ui >= 0
-    for i in range(n_div + 1):
-        for j in range(n_div + 1 - i):
-            for k in range(n_div + 1 - i - j):
-                l = n_div - i - j - k  # noqa: E741
-                if l >= 0:
-                    # Barycentric coordinates (normalized)
-                    u1 = i / n_div
-                    u2 = j / n_div
-                    u3 = k / n_div
-                    u4 = l / n_div
-
-                    # Convert to Cartesian coordinates
-                    point = (
-                        u1 * vertices[0]
-                        + u2 * vertices[1]
-                        + u3 * vertices[2]
-                        + u4 * vertices[3]
-                    )
-                    pts_list.append(point)
-
-    pts = np.array(pts_list)
-
-    # Calculate volume per point based on actual number of points generated
-    volume_per_point = tet_volume / len(pts)
-    volumes = np.full(len(pts), volume_per_point)
-
-    moments = volumes[:, np.newaxis] * magnetization
-
-    return {"pts": pts, "moments": moments}
+    pts_array = np.stack(pts_list, axis=0)
+    moments_array = np.stack(moments_list, axis=0)
+    return {"pts": pts_array, "moments": moments_array}
 
 
 def _target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetization):

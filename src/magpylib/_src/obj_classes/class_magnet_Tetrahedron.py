@@ -111,6 +111,7 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         "polarization": 1,
         "vertices": 3,
     }
+    _path_properties = ("vertices",)  # also inherits from parent class
     get_trace = make_Tetrahedron
 
     def __init__(
@@ -124,15 +125,13 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.vertices = vertices
-
         # init inheritance
         super().__init__(
             position,
             orientation,
             magnetization=magnetization,
             polarization=polarization,
+            vertices=vertices,
             style=style,
             **kwargs,
         )
@@ -144,7 +143,13 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     @property
     def vertices(self):
         """Tetrahedron vertices in local object coordinates."""
-        return self._vertices
+        return (
+            None
+            if self._vertices is None
+            else self._vertices[0]
+            if len(self._vertices) == 1
+            else self._vertices
+        )
 
     @vertices.setter
     def vertices(self, dim):
@@ -158,15 +163,17 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         self._vertices = check_format_input_numeric(
             dim,
             dtype=float,
-            shapes=((4, 3),),
+            shapes=((4, 3), (None, 4, 3)),
             name="Tetrahedron.vertices",
             allow_None=True,
+            reshape=(-1, 4, 3),
         )
+        self._sync_all_paths(self._vertices)
 
     @property
     def _barycenter(self):
         """Object barycenter."""
-        return self._get_barycenter(self._position, self._orientation, self.vertices)
+        return self._get_barycenter(self._position, self._orientation, self._vertices)
 
     @property
     def barycenter(self):
@@ -181,20 +188,24 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         return ""
 
     # Methods
-    def _get_volume(self):
+    def _get_volume(self, squeeze=True):
         """Volume of object in units (m³)."""
-        if self.vertices is None:
-            return 0.0
+        if self._vertices is None:
+            return 0.0 if squeeze else np.array([0.0])
 
-        # Tetrahedron volume formula: |det(B-A, C-A, D-A)| / 6
-        vertices = self.vertices
-        v1 = vertices[1] - vertices[0]  # B - A
-        v2 = vertices[2] - vertices[0]  # C - A
-        v3 = vertices[3] - vertices[0]  # D - A
+        verts = self._vertices  # shape (p, 4, 3)
+        # v1, v2, v3 shapes: (p, 3)
+        v1 = verts[:, 1] - verts[:, 0]
+        v2 = verts[:, 2] - verts[:, 0]
+        v3 = verts[:, 3] - verts[:, 0]
 
-        # Create 3x3 matrix and compute determinant
-        matrix = np.column_stack([v1, v2, v3])
-        return abs(np.linalg.det(matrix)) / 6.0
+        # Build per-path 3x3 matrices: shape (p, 3, 3)
+        matrices = np.stack([v1, v2, v3], axis=1)
+        dets = np.linalg.det(matrices)
+        vols = np.abs(dets) / 6.0
+        if squeeze and len(vols) == 1:
+            return float(vols[0])
+        return vols
 
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
@@ -202,22 +213,35 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             return self.barycenter
         return self._barycenter
 
-    def _get_dipole_moment(self, squeeze=True):  # noqa: ARG002
+    def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
-        # test init
-        if self.magnetization is None or self.vertices is None:
-            return np.array((0.0, 0.0, 0.0))
-        return self.magnetization * self.volume
+        if self._magnetization is None or self._vertices is None:
+            dip = np.zeros_like(self._position)
+            if squeeze and len(dip) == 1:
+                return dip[0]
+            return dip
+
+        vols = self._get_volume(squeeze=False)
+        dipoles = self._magnetization * vols[:, np.newaxis]
+        if squeeze and len(dipoles) == 1:
+            return dipoles[0]
+        return dipoles
 
     def _generate_mesh(self):
-        """Generate mesh for force computation."""
-        return _target_mesh_tetrahedron(self.meshing, self.vertices, self.magnetization)
+        """Generate mesh for force computation by delegating to target mesher."""
+        return _target_mesh_tetrahedron(
+            self.meshing, self._vertices, self._magnetization
+        )
 
     # Static methods
     @staticmethod
     def _get_barycenter(position, orientation, vertices):
         """Returns the barycenter of a tetrahedron."""
-        centroid = (
-            np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
-        )
+        if vertices is None:
+            centroid = np.array([0.0, 0.0, 0.0])
+        elif isinstance(vertices, np.ndarray) and vertices.ndim == 3:
+            # vertices path-shaped: shape (p,4,3)
+            centroid = np.mean(vertices, axis=1)  # (p,3)
+        else:
+            centroid = np.mean(vertices, axis=0)
         return orientation.apply(centroid) + position
