@@ -492,7 +492,7 @@ def check_format_input_vertices(inp, minlength=2):
         # Reshape 2D to 3D: (n, 3) -> (1, n, 3)
         if inp.ndim == 2:
             inp = np.array([inp], dtype=float)
-        
+
         if inp.shape[-2] < minlength:
             msg = (
                 f"Input vertices must have at least {minlength} vertices; "
