@@ -310,6 +310,9 @@ def check_format_input_numeric(
 
     if 0 in dims and is_a_number:
         inp = dtype(inp)
+        if reshape is not None:
+            assert isinstance(reshape, tuple), "reshape must be a tuple"
+            inp = np.reshape(inp, reshape)
         return check_conditions(inp)
 
     if 0 not in dims and is_a_number:
