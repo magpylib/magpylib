@@ -164,7 +164,7 @@ class TriangleSheet(BaseSource, BaseTarget):
             raise ValueError(msg)
 
         self._vertices = verts
-        self._sync_all_paths(propagate=False)
+        self._sync_all_paths(self._vertices)
 
     @property
     def faces(self):
@@ -201,7 +201,7 @@ class TriangleSheet(BaseSource, BaseTarget):
             raise ValueError(msg)
 
         self._current_densities = cd
-        self._sync_all_paths(propagate=False)
+        self._sync_all_paths(self._current_densities)
 
     def _input_check(self, current_densities, vertices, faces):
         """check and format user inputs"""

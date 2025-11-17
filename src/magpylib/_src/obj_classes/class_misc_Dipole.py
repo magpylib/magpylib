@@ -123,7 +123,7 @@ class Dipole(BaseSource, BaseDipoleMoment):
             allow_None=True,
             reshape=(-1, 3),
         )
-        self._sync_all_paths(propagate=False)
+        self._sync_all_paths(self._moment)
 
     @property
     def _default_style_description(self):

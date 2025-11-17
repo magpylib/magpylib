@@ -165,7 +165,7 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             Can be a path.
         """
         self._dimension = check_format_input_cylinder_segment(dim)
-        self._sync_all_paths(propagate=False)
+        self._sync_all_paths(self._dimension)
 
     @property
     def _barycenter(self):
