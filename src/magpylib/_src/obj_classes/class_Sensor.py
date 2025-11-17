@@ -52,10 +52,10 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Same as constructor parameter ``pixel``.
     handedness : str
         Same as constructor parameter ``handedness``.
-    parent : Collection | None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : SensorStyle
+        Object style. See SensorStyle for details.
 
     Examples
     --------

@@ -934,7 +934,7 @@ class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
         Ordered list of children in the collection top level.
     children_all : list
         Read-only. Ordered list of children in the collection including nested collections.
-    parent : Collection | None
+    parent : None | Collection
         Parent collection of the object.
     sensors : list
         Ordered list of sensor objects in the collection top level.
@@ -957,8 +957,8 @@ class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
     dipole_moment : ndarray, shape (3,)
         Read-only. Total Collection dipole moment (A·m²) computed from the sum of all child
         dipole moments.
-    style : dict
-        Style dictionary defining the visual properties of the collection objects.
+    style : BaseStyle
+        Object style. See BaseStyle for details.
 
     Examples
     --------

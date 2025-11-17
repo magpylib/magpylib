@@ -60,21 +60,21 @@ class TriangleSheet(BaseSource, BaseTarget):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    vertices : None or ndarray, shape (n, 3) or (p, n, 3)
+    vertices : None | ndarray, shape (n, 3) or (p, n, 3)
         Same as constructor parameter ``vertices``.
-    faces : None or ndarray, shape (n, 3)
+    faces : None | ndarray, shape (n, 3)
         Same as constructor parameter ``faces``.
-    current_densities : None or ndarray, shape (n, 3) or (p, n, 3)
+    current_densities : None | ndarray, shape (n, 3) or (p, n, 3)
         Same as constructor parameter ``current_densities``.
-    meshing : None or int
+    meshing : None | int
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid computed via mean of vertices in units (m)
         in global coordinates. Can be a path.
-    parent : Collection | None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : CurrentSheetStyle
+        Object style. See CurrentSheetStyle for details.
 
     Notes
     -----
@@ -136,7 +136,13 @@ class TriangleSheet(BaseSource, BaseTarget):
 
     @vertices.setter
     def vertices(self, val):
-        """Set vertices"""
+        """Set vertices.
+
+        Parameters
+        ----------
+        val : array-like, shape (n, 3) or (p, n, 3)
+            Vertices in local object coordinates in units (m). Can be a path.
+        """
         verts = check_format_input_numeric(
             val,
             dtype=float,

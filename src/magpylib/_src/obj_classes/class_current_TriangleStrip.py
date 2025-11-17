@@ -38,15 +38,16 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    vertices : None | array-like, shape (n, 3), default None
+    vertices : None | array-like, shape (n, 3) or (p, n, 3), default None
         The current flows along a band that consists of triangles {T1, T2, ...}
         defined by the vertices {V1, V2, V3, V4, ...} as T1 = (V1, V2, V3),
         T2 = (V2, V3, V4), ... The vertices are given in units (m) in the local
         object coordinates (move/rotate with object). At least three vertices
-        must be given, which define the first triangle.
-    current : float | None, default None
+        must be given, which define the first triangle. Can be a path.
+    current : float | array-like, shape (p,), default None
         Total current flowing through the strip in units (A). It flows in the
         direction V1→V3 in the first triangle, V2→V4 in the second, ...
+        Can be a path.
     meshing : int | None, default None
         Mesh fineness for force computation. Must be an integer >= number of
         faces specifying the target mesh size. The mesh is generated via bisection
@@ -61,11 +62,11 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    vertices : None or ndarray, shape (n, 3)
+    vertices : None | ndarray, shape (n, 3) or (p, n, 3)
         Same as constructor parameter ``vertices``.
-    current : None or float
+    current : None | float | ndarray, shape (p,)
         Same as constructor parameter ``current``.
-    meshing : None or int
+    meshing : None | int
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid computed via mean of vertices in units (m)
@@ -73,10 +74,10 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
     dipole_moment : ndarray, shape (3,)
         Read-only. Object dipole moment (A·m²) in local object coordinates. Can
         only be computed for a closed loop.
-    parent : Collection | None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : CurrentSheetStyle
+        Object style. See CurrentSheetStyle for details.
 
     Notes
     -----
@@ -151,9 +152,9 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
 
         Parameters
         ----------
-        vert : array-like, shape (n, 3)
+        vert : array-like, shape (n, 3) or (p, n, 3)
             Vertices in local object coordinates in units (m). At least three
-            vertices must be provided.
+            vertices must be provided. Can be a path.
         """
         self._vertices = check_format_input_vertices(vert, minlength=3)
         if isinstance(self._vertices, np.ndarray) and self._vertices.ndim == 2:

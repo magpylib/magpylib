@@ -35,7 +35,7 @@ class Dipole(BaseSource, BaseDipoleMoment):
     moment : None | array-like, shape (3,) or (p, 3), default None
         Magnetic dipole moment (A·m²) in local object coordinates. For homogeneous
         magnets the relation ``moment = magnetization * volume`` holds. For current
-        loops the relation ``moment = current * loop_surface`` holds.
+        loops the relation ``moment = current * loop_surface`` holds. Can be a path.
     style : None | dict, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -54,10 +54,10 @@ class Dipole(BaseSource, BaseDipoleMoment):
     dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
         Can be a path.
-    parent : Collection | None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : DipoleStyle
+        Object style. See DipoleStyle for details.
 
     Notes
     -----

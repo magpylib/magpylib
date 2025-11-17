@@ -46,12 +46,12 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Cylinder segment size (r1, r2, h, phi1, phi2) where r1 < r2 are inner
         and outer radii in units (m), phi1 < phi2 are section angles in units (deg),
         and h is the height in units (m). Can be a path.
-    polarization : None | array-like, shape (3,), default None
+    polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
-        local object coordinates. Sets also ``magnetization``.
-    magnetization : None | array-like, shape (3,), default None
+        local object coordinates. Sets also ``magnetization``. Can be a path.
+    magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
-        object coordinates. Sets also ``polarization``.
+        object coordinates. Sets also ``polarization``. Can be a path.
     meshing : int | None, default None
         Mesh fineness for force computation. Must be a positive integer specifying
         the target mesh size.
@@ -65,9 +65,11 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    polarization : None | ndarray, shape (3,)
+    dimension : None | ndarray, shape (5,) or (p, 5)
+        Same as constructor parameter ``dimension``.
+    polarization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``polarization``.
-    magnetization : None | ndarray, shape (3,)
+    magnetization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``magnetization``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
@@ -76,10 +78,10 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Read-only. Object dipole moment (A·m²) in local object coordinates.
     volume : float
         Read-only. Object physical volume in units (m³).
-    parent : Collection or None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : MagnetStyle
+        Object style. See MagnetStyle for details.
     barycenter : ndarray, shape (3,)
         Read-only. Geometric barycenter (= center of mass) of the object.
 

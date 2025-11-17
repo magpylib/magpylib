@@ -76,10 +76,10 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Read-only. Object dipole moment (A·m²) in local object coordinates.
     volume : float
         Read-only. Object physical volume in units (m³).
-    parent : Collection or None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : MagnetStyle
+        Object style. See MagnetStyle for details.
 
     Notes
     -----

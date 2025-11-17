@@ -33,8 +33,8 @@ class Triangle(BaseMagnet):
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
     vertices : None | array-like, shape (3, 3) or (p, 3, 3), default None
-        Triangle vertices in the local object coordinates in units (m).
-    polarization : None | array-like, shape (3,) or (p, 3), default Nonefault None
+        Triangle vertices in the local object coordinates in units (m). Can be a path.
+    polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
     magnetization : None | array-like, shape (3,) or (p, 3), default None
@@ -59,10 +59,10 @@ class Triangle(BaseMagnet):
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
         Can be a path.
-    parent : Collection | None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : TriangleStyle
+        Object style. See TriangleStyle for details.
 
     Notes
     -----
@@ -129,7 +129,7 @@ class Triangle(BaseMagnet):
         Parameters
         ----------
         val : None | array-like, shape (3, 3) or (p, 3, 3)
-            Triangle vertices in local object coordinates in units (m).
+            Triangle vertices in local object coordinates in units (m). Can be a path.
         """
         self._vertices = check_format_input_numeric(
             val,

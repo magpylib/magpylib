@@ -40,15 +40,15 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    vertices : None | array-like, shape (4, 3), default None
+    vertices : None | array-like, shape (4, 3) or (p, 4, 3), default None
         Vertices ``[(x1, y1, z1), (x2, y2, z2), (x3, y3, z3), (x4, y4, z4)]`` in the
-        local object coordinates.
-    polarization : None | array-like, shape (3,), default None
+        local object coordinates. Can be a path.
+    polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
-        local object coordinates. Sets also ``magnetization``.
-    magnetization : None | array-like, shape (3,), default None
+        local object coordinates. Sets also ``magnetization``. Can be a path.
+    magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
-        object coordinates. Sets also ``polarization``.
+        object coordinates. Sets also ``polarization``. Can be a path.
     meshing : int | None, default None
         Mesh fineness for force computation. Must be a positive integer specifying
         the target mesh size.
@@ -62,11 +62,11 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    vertices : ndarray, shape (4, 3)
+    vertices : ndarray, shape (4, 3) or (p, 4, 3)
         Same as constructor parameter ``vertices``.
-    polarization : None | ndarray, shape (3,)
+    polarization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``polarization``.
-    magnetization : None | ndarray, shape (3,)
+    magnetization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``magnetization``.
     meshing : int | None
         Same as constructor parameter ``meshing``.
@@ -77,10 +77,10 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Read-only. Object dipole moment (A·m²) in local object coordinates.
     volume : float
         Read-only. Object physical volume in units (m³).
-    parent : Collection or None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : MagnetStyle
+        Object style. See MagnetStyle for details.
     barycenter : ndarray, shape (3,)
         Read-only. Geometric barycenter (= center of mass) of the object.
 
@@ -157,8 +157,8 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
         Parameters
         ----------
-        dim : None or array-like, shape (4, 3)
-            Vertices in local object coordinates in units (m).
+        dim : None or array-like, shape (4, 3) or (p, 4, 3)
+            Vertices in local object coordinates in units (m). Can be a path.
         """
         self._vertices = check_format_input_numeric(
             dim,

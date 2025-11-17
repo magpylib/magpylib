@@ -39,10 +39,10 @@ class CustomSource(BaseSource):
         Same as constructor parameter ``orientation``.
     field_func : None | callable
         Same as constructor parameter ``field_func``.
-    parent : Collection | None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : BaseStyle
+        Object style. See BaseStyle for details.
 
     Examples
     --------

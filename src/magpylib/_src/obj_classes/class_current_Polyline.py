@@ -36,11 +36,11 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    vertices : None | array-like, shape (n, 3), default None
+    vertices : None | array-like, shape (n, 3) or (p, n, 3), default None
         Current flows along the vertices in units (m) in the local object coordinates. At
-        least two vertices must be given.
-    current : float | None, default None
-        Electrical current (A).
+        least two vertices must be given. Can be a path.
+    current : float | array-like, shape (p,), default None
+        Electrical current (A). Can be a path.
     meshing : int | None, default None
         Mesh fineness for force computation. Must be a positive integer at least the
         number of segments. Each segment gets one mesh point at its center. All
@@ -55,11 +55,11 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    vertices : None or float
+    vertices : None | ndarray, shape (n, 3) or (p, n, 3)
         Same as constructor parameter ``vertices``.
-    current : None or float
+    current : None | float | ndarray, shape (p,)
         Same as constructor parameter ``current``.
-    meshing : None or int
+    meshing : None | int
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid computed via mean of vertices in units (m)
@@ -67,10 +67,10 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
     dipole_moment : ndarray, shape (3,)
         Read-only. Object dipole moment (A·m²) in local object coordinates. Can
         only be computed for a closed loop.
-    parent : Collection or None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : CurrentStyle
+        Object style. See CurrentStyle for details.
 
     Notes
     -----
@@ -152,9 +152,9 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
 
         Parameters
         ----------
-        vert : None | array-like, shape (n, 3)
+        vert : None | array-like, shape (n, 3) or (p, n, 3)
             Vertex list (m) in local object coordinates. At least two vertices
-            must be given.
+            must be given. Can be a path.
         """
         self._vertices = check_format_input_vertices(vert)
         if isinstance(self._vertices, np.ndarray) and self._vertices.ndim == 2:

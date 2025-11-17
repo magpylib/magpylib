@@ -33,10 +33,10 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    diameter : float | None, default None
-        Loop diameter (m).
-    current : float | None, default None
-        Electrical current (A).
+    diameter : float | array-like, shape (p,), default None
+        Loop diameter (m). Can be a path.
+    current : float | array-like, shape (p,), default None
+        Electrical current (A). Can be a path.
     meshing : int | None, default None
         Mesh fineness for force computation. Must be an integer ``>= 4``. Points
         are equally distributed on the circle.
@@ -50,21 +50,21 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    diameter : None or float
+    diameter : None | float | ndarray, shape (p,)
         Same as constructor parameter ``diameter``.
-    current : None or float
+    current : None | float | ndarray, shape (p,)
         Same as constructor parameter ``current``.
-    meshing : None or int
+    meshing : None | int
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
         Can be a path.
     dipole_moment : ndarray, shape (3,)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
-    parent : Collection or None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : CurrentStyle
+        Object style. See CurrentStyle for details.
 
     Notes
     -----
@@ -134,8 +134,8 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
 
         Parameters
         ----------
-        diameter : float | None
-            Loop diameter in units (m).
+        diameter : float | array-like, shape (p,), default None
+            Loop diameter in units (m). Can be a path.
         """
         self._diameter = check_format_input_numeric(
             diameter,

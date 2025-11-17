@@ -379,7 +379,7 @@ class BaseMagnet(BaseSource):
 
         Parameters
         ----------
-        mag : None | array-like, shape (3,) or (n, 3)
+        mag : None | array-like, shape (3,) or (p, 3)
             Magnetization vector M = J/mu0 in units (A/m), given in the local object
             coordinates. Sets also ``polarization``.
         """
@@ -430,8 +430,8 @@ class BaseCurrent(BaseSource):
 
         Parameters
         ----------
-        current : None | float
-            Electric current amplitude in units (A).
+        current : None | float | array-like, shape (p,)
+            Electric current amplitude in units (A). Can be a path.
         """
         self._current = check_format_input_numeric(
             current,
