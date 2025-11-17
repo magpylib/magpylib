@@ -391,7 +391,7 @@ def make_Tetrahedron(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
 
 
 def make_triangle_orientations(
-    obj, vectors=None, sizefactor=1, **kwargs
+    obj, vectors=None, sizefactor=1, path_ind=-1, **kwargs
 ) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a triangle orientation cone or arrow3d in a dictionary
@@ -405,7 +405,12 @@ def make_triangle_orientations(
     symbol = orient.symbol
     offset = getattr(orient, "offset", 0.5)
     color = style.color if orient.color is None else orient.color
-    vertices = obj.mesh if hasattr(obj, "mesh") else [obj.vertices]
+    if hasattr(obj, "mesh"):
+        vertices = obj.mesh
+    else:
+        vertices = [obj._vertices[path_ind]] if obj._vertices is not None else None
+    if vertices is None:
+        return {}
     traces = []
     for vert_ind, vert in enumerate(vertices):
         if vectors is None:
@@ -517,13 +522,13 @@ def make_mesh_lines(obj, mode, path_ind=None, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_Triangle(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+def make_Triangle(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly mesh3d parameters for a Triangular facet in a dictionary based on the
     provided arguments.
     """
     style = obj.style
-    vert = obj.vertices
+    vert = obj._vertices[path_ind] if obj._vertices is not None else None
 
     if vert is None:
         trace = create_null_dim_trace(color=style.color)
@@ -534,8 +539,8 @@ def make_Triangle(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
         # proper color gradient visualization. Otherwise only the middle color is shown.
         magnetization = (
             np.array([0.0, 0.0, 0.0])
-            if obj.magnetization is None
-            else obj.magnetization
+            if obj._magnetization is None
+            else obj._magnetization[path_ind]
         )
         if np.all(np.cross(magnetization, vec) == 0):
             epsilon = 1e-3 * vec
@@ -555,7 +560,7 @@ def make_Triangle(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
         )
     traces = [{**trace, **kwargs}]
     if vert is not None and style.orientation.show:
-        traces.append(make_triangle_orientations(obj, **kwargs))
+        traces.append(make_triangle_orientations(obj, path_ind=path_ind, **kwargs))
     return traces
 
 
