@@ -798,168 +798,166 @@ def test_path_shortening_with_implicit_sync():
     """Test that setting a shorter path on a property syncs other path properties
     even when the setter doesn't explicitly pass the property to _sync_all_paths"""
     # pylint: disable=protected-access
-    
+
     # Create a Cuboid with a long path for position and orientation
     cube = magpy.magnet.Cuboid(
         dimension=(1, 1, 1),
         polarization=(0, 0, 1),
         position=[(i, i, i) for i in range(5)],  # path length 5
     )
-    
+
     # Initially all paths should have length 5
     assert len(cube._position) == 5, "Initial position path should be 5"
     assert len(cube._orientation) == 5, "Initial orientation path should be 5"
     assert len(cube._dimension) == 5, "Initial dimension path should be 5"
-    
+
     # Now set dimension to a shorter path (length 3)
     # The dimension setter does NOT pass the property to _sync_all_paths
     cube.dimension = [(2, 2, 2), (3, 3, 3), (4, 4, 4)]
-    
+
     # All paths should now be shortened to length 3
     assert len(cube._position) == 3, "Position path should be shortened to 3"
     assert len(cube._orientation) == 3, "Orientation path should be shortened to 3"
     assert len(cube._dimension) == 3, "Dimension path should be 3"
-    
+
     # Verify the last elements are kept (sliced from the end)
     np.testing.assert_allclose(
         cube._position,
         np.array([[2, 2, 2], [3, 3, 3], [4, 4, 4]]),
-        err_msg="Position should be sliced from the end"
+        err_msg="Position should be sliced from the end",
     )
-    
+
     # Test with polarization which also doesn't pass prop to _sync_all_paths
     mag = magpy.magnet.Sphere(
         diameter=1.0,
         polarization=(0, 0, 1),
         position=[(i, 0, 0) for i in range(6)],  # path length 6
     )
-    
+
     assert len(mag._position) == 6
     assert len(mag._polarization) == 6
-    
+
     # Set shorter polarization path
     mag.polarization = [(1, 0, 0), (0, 1, 0)]  # length 2
-    
+
     # All paths should now be 2
     assert len(mag._position) == 2, "Position should be shortened to 2"
     assert len(mag._polarization) == 2, "Polarization should be 2"
-    
+
     # Verify position is sliced from the end
     np.testing.assert_allclose(
         mag._position,
         np.array([[4, 0, 0], [5, 0, 0]]),
-        err_msg="Position should keep last 2 elements"
+        err_msg="Position should keep last 2 elements",
     )
 
 
 def test_path_shortening_with_explicit_sync():
     """Test that classes that DO pass the property to _sync_all_paths work correctly"""
     # pylint: disable=protected-access
-    
+
     # Create a Sphere with diameter path - diameter setter DOES pass prop to _sync_all_paths
     sphere = magpy.magnet.Sphere(
         diameter=1.0,
         polarization=(0, 0, 1),
         position=[(i, 0, 0) for i in range(5)],  # path length 5
     )
-    
+
     # Initially all paths should have length 5
     assert len(sphere._position) == 5, "Initial position path should be 5"
     assert len(sphere._orientation) == 5, "Initial orientation path should be 5"
     assert len(sphere._diameter) == 5, "Initial diameter path should be 5"
     assert len(sphere._polarization) == 5, "Initial polarization path should be 5"
-    
+
     # Now set diameter to a shorter path (length 3)
     # The diameter setter DOES pass self._diameter to _sync_all_paths
     sphere.diameter = [2.0, 3.0, 4.0]
-    
+
     # All paths should now be shortened to length 3
     assert len(sphere._position) == 3, "Position path should be shortened to 3"
     assert len(sphere._orientation) == 3, "Orientation path should be shortened to 3"
     assert len(sphere._diameter) == 3, "Diameter path should be 3"
     assert len(sphere._polarization) == 3, "Polarization path should be shortened to 3"
-    
+
     # Verify the last elements are kept (sliced from the end)
     np.testing.assert_allclose(
         sphere._position,
         np.array([[2, 0, 0], [3, 0, 0], [4, 0, 0]]),
-        err_msg="Position should be sliced from the end"
+        err_msg="Position should be sliced from the end",
     )
     np.testing.assert_allclose(
         sphere._diameter,
         np.array([2.0, 3.0, 4.0]),
-        err_msg="Diameter should match input"
+        err_msg="Diameter should match input",
     )
-    
+
     # Test with Circle.diameter which also passes prop to _sync_all_paths
     circle = magpy.current.Circle(
         diameter=1.0,
         current=2.0,
         position=[(0, i, 0) for i in range(4)],  # path length 4
     )
-    
+
     assert len(circle._position) == 4
     assert len(circle._diameter) == 4
     assert len(circle._current) == 4
-    
+
     # Set shorter diameter path
     circle.diameter = [5.0, 6.0]  # length 2
-    
+
     # All paths should now be 2
     assert len(circle._position) == 2, "Position should be shortened to 2"
     assert len(circle._diameter) == 2, "Diameter should be 2"
     assert len(circle._current) == 2, "Current should be shortened to 2"
-    
+
     # Verify position is sliced from the end
     np.testing.assert_allclose(
         circle._position,
         np.array([[0, 2, 0], [0, 3, 0]]),
-        err_msg="Position should keep last 2 elements"
+        err_msg="Position should keep last 2 elements",
     )
     np.testing.assert_allclose(
-        circle._diameter,
-        np.array([5.0, 6.0]),
-        err_msg="Diameter should match input"
+        circle._diameter, np.array([5.0, 6.0]), err_msg="Diameter should match input"
     )
 
 
 def test_path_sync_with_collections():
     """Test that path synchronization works correctly with Collections"""
     # pylint: disable=protected-access
-    
+
     # Create a collection with children that have long paths
     cube1 = magpy.magnet.Cuboid(
         dimension=(1, 1, 1),
         polarization=(0, 0, 1),
         position=[(i, 0, 0) for i in range(5)],
-        style_label='cube1'
+        style_label="cube1",
     )
     cube2 = magpy.magnet.Cuboid(
         dimension=(2, 2, 2),
         polarization=(0, 1, 0),
         position=[(0, i, 0) for i in range(5)],
-        style_label='cube2'
+        style_label="cube2",
     )
-    
+
     col = magpy.Collection(cube1, cube2, position=[(0, 0, i) for i in range(5)])
-    
+
     # All objects should have path length 5
     assert len(col._position) == 5
     assert len(cube1._position) == 5
     assert len(cube2._position) == 5
     assert len(cube1._dimension) == 5
-    
+
     # Now shorten the collection's position path
     col.position = [(0, 0, 1), (0, 0, 2)]  # length 2
-    
+
     # Collection and children should all be shortened to length 2
     assert len(col._position) == 2, "Collection position should be 2"
     assert len(cube1._position) == 2, "Child1 position should be shortened to 2"
     assert len(cube2._position) == 2, "Child2 position should be shortened to 2"
-    
+
     # Now set a child's dimension to a shorter path
     cube1.dimension = [(3, 3, 3)]  # length 1
-    
+
     # Only cube1's paths should be affected, not the collection or other children
     assert len(cube1._position) == 1, "Cube1 position should be shortened to 1"
     assert len(cube1._dimension) == 1, "Cube1 dimension should be 1"
@@ -971,66 +969,64 @@ def test_path_sync_with_collections():
 def test_all_path_properties_sync_consistently():
     """Comprehensive test that all property setters sync paths consistently"""
     # pylint: disable=protected-access
-    
+
     # Test various classes with path properties
     test_cases = [
         # (object, property_name, initial_value, new_shorter_value)
         (
             magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1)),
-            'dimension',
+            "dimension",
             [(1, 1, 1)] * 5,
-            [(2, 2, 2)] * 3
+            [(2, 2, 2)] * 3,
         ),
         (
             magpy.magnet.Cylinder(dimension=(1, 2), polarization=(0, 0, 1)),
-            'dimension',
+            "dimension",
             [(1, 2)] * 5,
-            [(2, 3)] * 3
+            [(2, 3)] * 3,
         ),
         (
             magpy.magnet.Sphere(diameter=1, polarization=(0, 0, 1)),
-            'diameter',
+            "diameter",
             [1.0] * 5,
-            [2.0] * 3
+            [2.0] * 3,
         ),
-        (
-            magpy.current.Circle(diameter=1, current=2),
-            'diameter',
-            [1.0] * 5,
-            [2.0] * 3
-        ),
+        (magpy.current.Circle(diameter=1, current=2), "diameter", [1.0] * 5, [2.0] * 3),
         (
             magpy.misc.Dipole(moment=(1, 0, 0)),
-            'moment',
+            "moment",
             [(1, 0, 0)] * 5,
-            [(2, 0, 0)] * 3
+            [(2, 0, 0)] * 3,
         ),
     ]
-    
+
     for obj, prop_name, initial_val, new_val in test_cases:
         # Set long position path
         obj.position = [(i, 0, 0) for i in range(5)]
-        
+
         # Set long property path
         setattr(obj, prop_name, initial_val)
-        
+
         # Verify all paths are length 5
         assert len(obj._position) == 5, f"{type(obj).__name__}.position should be 5"
-        assert len(getattr(obj, f'_{prop_name}')) == 5, \
+        assert len(getattr(obj, f"_{prop_name}")) == 5, (
             f"{type(obj).__name__}.{prop_name} should be 5"
-        
+        )
+
         # Set shorter property path
         setattr(obj, prop_name, new_val)
-        
+
         # Verify all paths shortened to 3
-        assert len(obj._position) == 3, \
+        assert len(obj._position) == 3, (
             f"{type(obj).__name__}.position should shorten to 3 when {prop_name} is shortened"
-        assert len(getattr(obj, f'_{prop_name}')) == 3, \
+        )
+        assert len(getattr(obj, f"_{prop_name}")) == 3, (
             f"{type(obj).__name__}.{prop_name} should be 3"
-        
+        )
+
         # Verify position values are the last 3 from original
         np.testing.assert_allclose(
             obj._position,
             np.array([[2, 0, 0], [3, 0, 0], [4, 0, 0]]),
-            err_msg=f"{type(obj).__name__} position should keep last 3 elements"
+            err_msg=f"{type(obj).__name__} position should keep last 3 elements",
         )
