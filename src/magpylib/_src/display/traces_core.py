@@ -163,18 +163,23 @@ def make_TriangleStrip(
     return traces
 
 
-def make_TriangleSheet(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+def make_TriangleSheet(
+    obj, path_ind=-1, **kwargs
+) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly scatter3d parameters for a TriangleSheet current in a dictionary based on the
     provided arguments.
     """
     style = obj.style
+
+    verts = obj._vertices[path_ind]
+
     trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=obj.vertices, faces=obj.faces, color=style.color
+        "plotly-dict", vertices=verts, faces=obj.faces, color=style.color
     )
     traces = [{**trace, **kwargs}]
-    obj.mesh = obj.vertices[obj.faces]
-    vectors = obj.current_densities
+    obj.mesh = verts[obj.faces]
+    vectors = obj._current_densities[path_ind]
 
     if vectors is None:
         return traces

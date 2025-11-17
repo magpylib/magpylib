@@ -37,12 +37,12 @@ class TriangleSheet(BaseSource, BaseTarget):
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    vertices : array-like, shape (n, 3), default None
+    vertices : array-like, shape (n, 3) or (p, n, 3), default None
         Points in units (m) in the local object coordinates from which the
         triangular faces are constructed by the additional ``faces`` input.
     faces : array-like, shape (n, 3), default None
         Triplets of vertex indices. Each triplet represents one triangle of the mesh.
-    current_densities : array-like, shape (n, 3), default None
+    current_densities : array-like, shape (n, 3) or (p, n, 3), default None
         Electrical current densities flowing on the faces in units (A/m). The
         effective current density is a projection of the given current density
         vector into the face planes. Input must have the same length as ``faces``.
@@ -60,11 +60,11 @@ class TriangleSheet(BaseSource, BaseTarget):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    vertices : None or ndarray, shape (n, 3)
+    vertices : None or ndarray, shape (n, 3) or (p, n, 3)
         Same as constructor parameter ``vertices``.
     faces : None or ndarray, shape (n, 3)
         Same as constructor parameter ``faces``.
-    current_densities : None or ndarray, shape (n, 3)
+    current_densities : None or ndarray, shape (n, 3) or (p, n, 3)
         Same as constructor parameter ``current_densities``.
     meshing : None or int
         Same as constructor parameter ``meshing``.
@@ -103,6 +103,7 @@ class TriangleSheet(BaseSource, BaseTarget):
         "vertices": 3,
         "faces": 3,
     }
+    _path_properties = ("current_densities", "vertices")
     get_trace = make_TriangleSheet
     _style_class = CurrentSheetStyle
 
@@ -131,7 +132,37 @@ class TriangleSheet(BaseSource, BaseTarget):
     @property
     def vertices(self):
         """TriangleSheet Vertices"""
-        return self._vertices
+        return (
+            np.squeeze(self._vertices)
+            if self._vertices is not None
+            else None
+        )
+
+    @vertices.setter
+    def vertices(self, val):
+        """Set vertices"""
+        verts = check_format_input_numeric(
+            val,
+            dtype=float,
+            shapes=((3,), (None, 3), (None, None, 3)),
+            name="TriangleSheet.vertices",
+        )
+        # allow init of single vertex without extra dimension
+        if verts.ndim == 1:
+            verts = np.expand_dims(verts, 0)
+        # reshape (n, 3) -> (1, n, 3) for path handling
+        if verts.ndim == 2:
+            verts = np.reshape(verts, (-1, verts.shape[0], verts.shape[1]))
+        
+        if verts.shape[-2] < 3:
+            msg = (
+                f"Input vertices of {self} must have at least 3 vertices; "
+                f"instead received {verts.shape[-2]} vertices."
+            )
+            raise ValueError(msg)
+        
+        self._vertices = verts
+        self._sync_all_paths(propagate=False)
 
     @property
     def faces(self):
@@ -141,20 +172,47 @@ class TriangleSheet(BaseSource, BaseTarget):
     @property
     def current_densities(self):
         """TriangleSheet CurrentDensities"""
-        return self._current_densities
+        return (
+            np.squeeze(self._current_densities)
+            if self._current_densities is not None
+            else None
+        )
+
+    @current_densities.setter
+    def current_densities(self, val):
+        """Set current_densities"""
+        cd = check_format_input_numeric(
+            val,
+            dtype=float,
+            shapes=((3,), (None, 3), (None, None, 3)),
+            name="TriangleSheet.current_densities",
+        )
+        # allow init of single faces without extra dimension
+        if cd.ndim == 1:
+            cd = np.expand_dims(cd, 0)
+        # reshape (n, 3) -> (1, n, 3) for path handling
+        if cd.ndim == 2:
+            cd = np.reshape(cd, (-1, cd.shape[0], cd.shape[1]))
+        
+        if len(self._faces) != cd.shape[-2]:
+            msg = f"Input current_densities and faces of {self} must have same length."
+            raise ValueError(msg)
+        
+        self._current_densities = cd
+        self._sync_all_paths(propagate=False)
 
     def _input_check(self, current_densities, vertices, faces):
         """check and format user inputs"""
         cd = check_format_input_numeric(
             current_densities,
             dtype=float,
-            shapes=((3,), (None, 3)),
+            shapes=((3,), (None, 3), (None, None, 3)),
             name="TriangleSheet.current_densities",
         )
         verts = check_format_input_numeric(
             vertices,
             dtype=float,
-            shapes=((None, 3),),
+            shapes=((3,), (None, 3), (None, None, 3)),
             name="TriangleSheet.vertices",
         )
         fac = check_format_input_numeric(
@@ -167,22 +225,36 @@ class TriangleSheet(BaseSource, BaseTarget):
         # allow init of single faces without extra dimension
         if cd.ndim == 1:
             cd = np.expand_dims(cd, 0)
+        # reshape (n, 3) -> (1, n, 3) for path handling
+        if cd.ndim == 2:
+            cd = np.reshape(cd, (-1, cd.shape[0], cd.shape[1]))
+        
+        if verts.ndim == 1:
+            verts = np.expand_dims(verts, 0)
+        # reshape (n, 3) -> (1, n, 3) for path handling
+        if verts.ndim == 2:
+            verts = np.reshape(verts, (-1, verts.shape[0], verts.shape[1]))
+        
         if fac.ndim == 1:
             fac = np.expand_dims(fac, 0)
 
-        if len(verts) < 3:
+        if verts.shape[-2] < 3:
             msg = (
                 f"Input vertices of {self} must have at least 3 vertices; "
-                f"instead received {len(verts)} vertices."
+                f"instead received {verts.shape[-2]} vertices."
             )
             raise ValueError(msg)
 
-        if len(fac) != len(cd):
+        # Check against the face count dimension (axis 1 for path arrays)
+        n_faces = len(fac)
+        n_current_densities = cd.shape[-2]  # Second to last dimension for (p, n, 3)
+        if n_faces != n_current_densities:
             msg = f"Input current_densities and faces of {self} must have same length."
             raise ValueError(msg)
 
         try:
-            verts[fac]
+            # Check against first path position for validation
+            verts[0][fac]
         except IndexError as e:
             msg = f"Some faces indices of {self} do not match with vertices array."
             raise IndexError(msg) from e
@@ -192,16 +264,21 @@ class TriangleSheet(BaseSource, BaseTarget):
     # Methods
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
-        centr = np.mean(self.vertices, axis=0) + self._position
+        # For path arrays (p, n, 3), mean over axis 1 to get (p, 3)
+        # For non-path arrays (1, n, 3), mean over axis 1 to get (1, 3)
+        centr = np.mean(self._vertices, axis=-2) + self._position
         if squeeze:
             return np.squeeze(centr)
         return centr
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
+        # Use first element if arrays have path dimension
+        verts = self._vertices[0] if self._vertices.ndim == 3 else self.vertices
+        cd = self._current_densities[0] if self._current_densities.ndim == 3 else self.current_densities
         return _target_mesh_triangle_current(
-            self.vertices[self.faces],
-            self.current_densities,
+            verts[self.faces],
+            cd,
             self.meshing,
         )
 
