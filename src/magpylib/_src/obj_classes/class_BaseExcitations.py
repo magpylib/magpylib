@@ -384,7 +384,6 @@ class BaseMagnet(BaseSource):
             coordinates. Sets also ``polarization``.
         """
         self._check_input_format_mag_pol(mag, "magnetization")
-        self._sync_all_paths(self._magnetization)
 
     @property
     def polarization(self):
@@ -404,7 +403,6 @@ class BaseMagnet(BaseSource):
             local object coordinates. Sets also ``magnetization``.
         """
         self._check_input_format_mag_pol(mag, "polarization")
-        self._sync_all_paths(self._polarization)
 
 
 class BaseCurrent(BaseSource):
@@ -439,10 +437,8 @@ class BaseCurrent(BaseSource):
             shapes=(None, (None,)),
             name="current",
             allow_None=True,
+            reshape=(-1,),
         )
-        if np.isscalar(self._current):
-            self._current = np.array([self._current], dtype=float)
-        self._sync_all_paths(self._current)
 
     @property
     def _default_style_description(self):

@@ -168,7 +168,6 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             allow_None=True,
             reshape=(-1, 4, 3),
         )
-        self._sync_all_paths(self._vertices)
 
     @property
     def _barycenter(self):

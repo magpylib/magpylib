@@ -124,6 +124,23 @@ class BaseGeo(BaseTransform, ABC):
         else:
             cls._path_properties = tuple(parent_attr)
 
+    def __setattr__(self, name, value):
+        """Intercept public property assignments to trigger automatic path sync."""
+        super().__setattr__(name, value)
+        
+        # Only sync for public path properties (not private _attributes)
+        # This avoids recursion during internal operations
+        if (
+            not name.startswith('_')
+            and name in getattr(self, '_path_properties', ())
+            and getattr(self, '_path_sync_enabled', False)
+        ):
+            # Get the actual stored value (from private attribute) to determine target length
+            private_name = f'_{name}'
+            prop_value = getattr(self, private_name, None)
+            if prop_value is not None:
+                self._sync_all_paths(prop_value)
+
     def _sync_pos_orient_recursive(self, target_len):
         """
         Pad position, using public attribute which triggers orientation
@@ -140,9 +157,11 @@ class BaseGeo(BaseTransform, ABC):
             )
 
     def _sync_all_paths(self, prop=None, start=0, propagate=True, path_properties=None):
+        """Synchronize all path properties to the same length."""
         if not self._path_sync_enabled:
             return
-        path_properties = self._path_properties
+        
+        path_properties = path_properties or self._path_properties
         lengths = [
             len(arr)
             for name in path_properties
@@ -150,14 +169,18 @@ class BaseGeo(BaseTransform, ABC):
         ]
         if not lengths:
             return
+        
         target_len = max(lengths) if prop is None else len(prop)
-        # sync private attributes of all path properties (including position and orientation)
-        pad_path_properties(
-            self, target_len, start=start, path_properties=path_properties
-        )
-        # now sync children positions for collection
-        if propagate:
-            self._sync_pos_orient_recursive(target_len)
+        
+        # Temporarily disable sync to avoid recursion during padding
+        with self.hold_path_sync(sync_on_exit=False):
+            # Pad private attributes of all path properties
+            pad_path_properties(
+                self, target_len, start=start, path_properties=path_properties
+            )
+            # Sync children positions for collections
+            if propagate:
+                self._sync_pos_orient_recursive(target_len)
 
     @contextmanager
     def hold_path_sync(self, *, sync_on_exit=True):

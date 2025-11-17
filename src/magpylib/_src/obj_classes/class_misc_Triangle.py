@@ -139,7 +139,6 @@ class Triangle(BaseMagnet):
             allow_None=True,
             reshape=(-1, 3, 3),
         )
-        self._sync_all_paths(self._vertices)
 
     @property
     def _barycenter(self):

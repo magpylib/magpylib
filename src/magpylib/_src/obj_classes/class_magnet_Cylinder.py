@@ -155,7 +155,6 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             reshape=(-1, 2),
             value_conditions=[("gt", 0, "all")],
         )
-        self._sync_all_paths(self._dimension)
 
     @property
     def _default_style_description(self):

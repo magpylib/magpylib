@@ -119,11 +119,10 @@ class Dipole(BaseSource, BaseDipoleMoment):
             mom,
             dtype=float,
             shapes=((3,), (None, 3)),
-            name="moment",
+            name="Dipole.moment",
             allow_None=True,
             reshape=(-1, 3),
         )
-        self._sync_all_paths(self._moment)
 
     @property
     def _default_style_description(self):
