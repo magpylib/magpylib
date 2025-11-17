@@ -474,7 +474,7 @@ def test_func_triangle_current():
         vert = verts[:, faces]  # (p, 3, 3)
     else:  # non-path array (n, 3)
         vert = verts[faces]  # (3, 3)
-    
+
     B2 = triangle_current_field(
         "B", obs, vert, tria.current_densities, tria.position, tria.orientation
     )

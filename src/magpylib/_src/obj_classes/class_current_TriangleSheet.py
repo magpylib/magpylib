@@ -132,11 +132,7 @@ class TriangleSheet(BaseSource, BaseTarget):
     @property
     def vertices(self):
         """TriangleSheet Vertices"""
-        return (
-            np.squeeze(self._vertices)
-            if self._vertices is not None
-            else None
-        )
+        return np.squeeze(self._vertices) if self._vertices is not None else None
 
     @vertices.setter
     def vertices(self, val):
@@ -153,14 +149,14 @@ class TriangleSheet(BaseSource, BaseTarget):
         # reshape (n, 3) -> (1, n, 3) for path handling
         if verts.ndim == 2:
             verts = np.reshape(verts, (-1, verts.shape[0], verts.shape[1]))
-        
+
         if verts.shape[-2] < 3:
             msg = (
                 f"Input vertices of {self} must have at least 3 vertices; "
                 f"instead received {verts.shape[-2]} vertices."
             )
             raise ValueError(msg)
-        
+
         self._vertices = verts
         self._sync_all_paths(propagate=False)
 
@@ -193,11 +189,11 @@ class TriangleSheet(BaseSource, BaseTarget):
         # reshape (n, 3) -> (1, n, 3) for path handling
         if cd.ndim == 2:
             cd = np.reshape(cd, (-1, cd.shape[0], cd.shape[1]))
-        
+
         if len(self._faces) != cd.shape[-2]:
             msg = f"Input current_densities and faces of {self} must have same length."
             raise ValueError(msg)
-        
+
         self._current_densities = cd
         self._sync_all_paths(propagate=False)
 
@@ -228,13 +224,13 @@ class TriangleSheet(BaseSource, BaseTarget):
         # reshape (n, 3) -> (1, n, 3) for path handling
         if cd.ndim == 2:
             cd = np.reshape(cd, (-1, cd.shape[0], cd.shape[1]))
-        
+
         if verts.ndim == 1:
             verts = np.expand_dims(verts, 0)
         # reshape (n, 3) -> (1, n, 3) for path handling
         if verts.ndim == 2:
             verts = np.reshape(verts, (-1, verts.shape[0], verts.shape[1]))
-        
+
         if fac.ndim == 1:
             fac = np.expand_dims(fac, 0)
 
@@ -275,7 +271,11 @@ class TriangleSheet(BaseSource, BaseTarget):
         """Generate mesh for force computation."""
         # Use first element if arrays have path dimension
         verts = self._vertices[0] if self._vertices.ndim == 3 else self.vertices
-        cd = self._current_densities[0] if self._current_densities.ndim == 3 else self.current_densities
+        cd = (
+            self._current_densities[0]
+            if self._current_densities.ndim == 3
+            else self.current_densities
+        )
         return _target_mesh_triangle_current(
             verts[self.faces],
             cd,
