@@ -604,12 +604,14 @@ def test_path_varying_triangle_sheet_vertices_current_densities():
     dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -2))
 
     # Define fixed vertices - simple mesh with 4 vertices forming 2 triangular faces
-    vertices = np.array([
-        [0, 0, 0],
-        [1, 0, 0],
-        [0, 1, 0],
-        [1, 1, 0],
-    ])
+    vertices = np.array(
+        [
+            [0, 0, 0],
+            [1, 0, 0],
+            [0, 1, 0],
+            [1, 1, 0],
+        ]
+    )
 
     # Define faces (same for all path steps)
     faces = np.array([[0, 1, 2], [1, 3, 2]])
@@ -672,8 +674,12 @@ def test_path_varying_triangle_sheet_vertices_current_densities():
     )
 
     # Verify output shapes
-    assert F_vectorized.shape == (3, 3), f"Expected shape (3, 3), got {F_vectorized.shape}"
-    assert T_vectorized.shape == (3, 3), f"Expected shape (3, 3), got {T_vectorized.shape}"
+    assert F_vectorized.shape == (3, 3), (
+        f"Expected shape (3, 3), got {F_vectorized.shape}"
+    )
+    assert T_vectorized.shape == (3, 3), (
+        f"Expected shape (3, 3), got {T_vectorized.shape}"
+    )
 
     # Verify that values change along the path
     assert not np.allclose(F_vectorized[0], F_vectorized[1]), (
@@ -693,14 +699,16 @@ def test_path_varying_triangle_strip_vertices_current():
     dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -2))
 
     # Path-varying vertices - morphing strip from flat to curved
-    vertices_path = np.array([
-        # Path step 0: flat strip
-        [[0, 0, 0], [1, 0, 0], [0, 0.5, 0], [1, 0.5, 0]],
-        # Path step 1: slightly curved
-        [[0, 0, 0.1], [1, 0, 0.1], [0, 0.5, 0.15], [1, 0.5, 0.15]],
-        # Path step 2: more curved
-        [[0, 0, 0.2], [1, 0, 0.2], [0, 0.5, 0.3], [1, 0.5, 0.3]],
-    ])
+    vertices_path = np.array(
+        [
+            # Path step 0: flat strip
+            [[0, 0, 0], [1, 0, 0], [0, 0.5, 0], [1, 0.5, 0]],
+            # Path step 1: slightly curved
+            [[0, 0, 0.1], [1, 0, 0.1], [0, 0.5, 0.15], [1, 0.5, 0.15]],
+            # Path step 2: more curved
+            [[0, 0, 0.2], [1, 0, 0.2], [0, 0.5, 0.3], [1, 0.5, 0.3]],
+        ]
+    )
 
     # Path-varying current - increasing magnitude
     currents_path = np.array([50, 100, 150])
@@ -754,8 +762,12 @@ def test_path_varying_triangle_strip_vertices_current():
     )
 
     # Verify output shapes
-    assert F_vectorized.shape == (3, 3), f"Expected shape (3, 3), got {F_vectorized.shape}"
-    assert T_vectorized.shape == (3, 3), f"Expected shape (3, 3), got {T_vectorized.shape}"
+    assert F_vectorized.shape == (3, 3), (
+        f"Expected shape (3, 3), got {F_vectorized.shape}"
+    )
+    assert T_vectorized.shape == (3, 3), (
+        f"Expected shape (3, 3), got {T_vectorized.shape}"
+    )
 
     # Verify that values change along the path
     assert not np.allclose(F_vectorized[0], F_vectorized[1]), (
@@ -764,4 +776,3 @@ def test_path_varying_triangle_strip_vertices_current():
     assert not np.allclose(F_vectorized[1], F_vectorized[2]), (
         "Forces should vary along path"
     )
-
