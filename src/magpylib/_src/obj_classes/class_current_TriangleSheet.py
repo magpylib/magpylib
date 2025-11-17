@@ -269,15 +269,19 @@ class TriangleSheet(BaseSource, BaseTarget):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        # Use first element if arrays have path dimension
-        verts = self._vertices[0] if self._vertices.ndim == 3 else self.vertices
-        cd = (
-            self._current_densities[0]
-            if self._current_densities.ndim == 3
-            else self.current_densities
-        )
+        verts = self._vertices
+        cd = self._current_densities
+        # verts has shape (p, n, 3) where p is path dimension, n is number of vertices
+        # cd has shape (p, m, 3) where m is number of faces
+        # faces has shape (m, 3) - indices into vertices
+
+        # Create triangles by indexing vertices with faces
+        # triangles shape: (p, m, 3, 3)
+        # For each path p, for each face m, get 3 vertices of 3 coordinates
+        triangles = verts[:, self.faces, :]  # shape (p, m, 3, 3)
+
         return _target_mesh_triangle_current(
-            verts[self.faces],
+            triangles,
             cd,
             self.meshing,
         )
