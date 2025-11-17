@@ -262,13 +262,16 @@ def make_Circle(
     return traces
 
 
-def make_Dipole(obj, autosize=None, **kwargs) -> dict[str, Any]:
+def make_Dipole(obj, path_ind=-1, autosize=None, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a dipole in a dictionary based on the
     provided arguments.
     """
     style = obj.style
-    moment = np.array([0.0, 0.0, 0.0]) if obj.moment is None else obj.moment
+    if obj._moment is None:
+        moment = np.array([0.0, 0.0, 0.0])
+    else:
+        moment = obj._moment[path_ind]
     moment_mag = np.linalg.norm(moment)
     size = style.size
     if autosize is not None and style.sizemode == "scaled":

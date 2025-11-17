@@ -32,7 +32,7 @@ class Dipole(BaseSource, BaseDipoleMoment):
     orientation : None | Rotation, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    moment : None | array-like, shape (3,), default None
+    moment : None | array-like, shape (3,) or (p, 3), default None
         Magnetic dipole moment (A·m²) in local object coordinates. For homogeneous
         magnets the relation ``moment = magnetization * volume`` holds. For current
         loops the relation ``moment = current * loop_surface`` holds.
@@ -46,13 +46,14 @@ class Dipole(BaseSource, BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    moment : None | ndarray, shape (3,)
+    moment : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``moment``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
         Can be a path.
-    dipole_moment : ndarray, shape (3,)
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
+        Can be a path.
     parent : Collection | None
         Parent collection of the object.
     style : dict
@@ -80,6 +81,7 @@ class Dipole(BaseSource, BaseDipoleMoment):
     _field_func = staticmethod(_BHJM_dipole)
     _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"moment": 2}
+    _path_properties = ("moment",)
     _style_class = DipoleStyle
     get_trace = make_Dipole
     _autosize = True
@@ -102,7 +104,7 @@ class Dipole(BaseSource, BaseDipoleMoment):
     @property
     def moment(self):
         """Magnetic dipole moment (A·m²) in local object coordinates."""
-        return self._moment
+        return np.squeeze(self._moment) if self._moment is not None else None
 
     @moment.setter
     def moment(self, mom):
@@ -110,25 +112,30 @@ class Dipole(BaseSource, BaseDipoleMoment):
 
         Parameters
         ----------
-        mom : None | array-like, shape (3,)
+        mom : None | array-like, shape (3,) or (p, 3)
             Dipole moment vector (A·m²) in local object coordinates.
         """
         self._moment = check_format_input_numeric(
             mom,
             dtype=float,
-            shapes=((3,),),
+            shapes=((3,), (None, 3)),
             name="moment",
             allow_None=True,
+            reshape=(-1, 3),
         )
+        self._sync_all_paths(propagate=False)
 
     @property
     def _default_style_description(self):
         """Default style description text"""
-        moment = np.array([0.0, 0.0, 0.0]) if self.moment is None else self.moment
-        moment_mag = np.linalg.norm(moment)
-        if moment_mag == 0:
+        mom = self._moment
+        if mom is None:
             return "no moment"
-        return f"moment={unit_prefix(moment_mag)}A·m²"
+        mom_mag = np.linalg.norm(mom, axis=1)
+        if len(mom) == 1 or np.unique(mom_mag).shape[0] == 1:
+            return f"moment={unit_prefix(mom_mag[0])}A·m²"
+        mmin, mmax = np.nanmin(mom_mag), np.nanmax(mom_mag)
+        return f"moment={unit_prefix(mmin)}A·m²↔{unit_prefix(mmax)}A·m²"
 
     # Methods
     def _get_centroid(self, squeeze=True):
@@ -139,13 +146,29 @@ class Dipole(BaseSource, BaseDipoleMoment):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        points = np.array([(0, 0, 0)])
-        moments = np.array([self.moment])
+        if self._moment is None:
+            return {"pts": np.array([(0, 0, 0)]), "moments": np.array([(0, 0, 0)])}
+
+        # Check for path-varying parameters
+        p_len = len(self._moment)
+        has_path_varying = np.unique(self._moment, axis=0).shape[0] > 1
+
+        if has_path_varying:
+            # Path-varying: shape (p, 1, 3)
+            points = np.zeros((p_len, 1, 3))
+            moments = self._moment[:, np.newaxis, :]
+        else:
+            # No path variation: shape (1, 3)
+            points = np.array([(0, 0, 0)])
+            moments = np.array([self._moment[0]])
+
         return {"pts": points, "moments": moments}
 
-    def _get_dipole_moment(self, squeeze=True):  # noqa: ARG002
+    def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object (A·m²)."""
         # test init
-        if self.moment is None:
+        if self._moment is None:
             return np.array((0.0, 0.0, 0.0))
-        return self.moment
+        if squeeze:
+            return np.squeeze(self._moment)
+        return self._moment
