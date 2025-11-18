@@ -122,7 +122,6 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # init inheritance
         super().__init__(
             position,
             orientation,

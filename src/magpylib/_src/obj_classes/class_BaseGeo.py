@@ -133,8 +133,8 @@ class BaseGeo(BaseTransform, ABC):
         # This avoids recursion during internal operations
         if (
             not name.startswith("_")
-            and name in getattr(self, "_path_properties", ())
-            and getattr(self, "_path_sync_enabled", False)
+            and name in self._path_properties
+            and self._path_sync_enabled
         ):
             # Get the actual stored value (from private attribute) to determine target length
             private_name = f"_{name}"
@@ -243,6 +243,35 @@ class BaseGeo(BaseTransform, ABC):
         """
 
     # properties ----------------------------------------------------
+    @property
+    def path_properties(self):
+        """Tuple of property names that support paths.
+
+        Path properties are object attributes that can store multiple values to describe
+        a path through space. For example, ``position`` and ``orientation`` are path
+        properties that can be arrays of shape (n, 3) and Rotation objects of length n,
+        respectively, representing n positions along a path.
+
+        Returns
+        -------
+        tuple of str
+            Names of properties that can have path-like behavior. Common path properties
+            include ``position``, ``orientation``, and for some objects ``dimension``,
+            ``polarization``, ``magnetization``, etc.
+
+        Examples
+        --------
+        >>> import magpylib as magpy
+        >>> sensor = magpy.Sensor()
+        >>> sensor.path_properties
+        ('position', 'orientation')
+
+        >>> cuboid = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+        >>> cuboid.path_properties
+        ('position', 'orientation', 'dimension', 'polarization')
+        """
+        return self._path_properties
+
     @property
     def parent(self):
         """Parent collection of the object."""

@@ -116,7 +116,6 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # init inheritance
         super().__init__(
             position,
             orientation,
@@ -127,7 +126,6 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             **kwargs,
         )
 
-        # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
 
     # Properties

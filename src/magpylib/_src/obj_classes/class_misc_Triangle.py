@@ -103,14 +103,12 @@ class Triangle(BaseMagnet):
         style=None,
         **kwargs,
     ):
-        self.vertices = vertices
-
-        # init inheritance
         super().__init__(
             position,
             orientation,
             magnetization=magnetization,
             polarization=polarization,
+            vertices=vertices,
             style=style,
             **kwargs,
         )

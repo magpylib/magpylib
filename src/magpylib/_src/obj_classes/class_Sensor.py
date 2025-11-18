@@ -109,7 +109,6 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         self.pixel = pixel
         self.handedness = handedness
 
-        # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
         BaseDisplayRepr.__init__(self)
 

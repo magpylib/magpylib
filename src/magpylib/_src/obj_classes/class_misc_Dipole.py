@@ -92,11 +92,7 @@ class Dipole(BaseSource, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.moment = moment
-
-        # init inheritance
-        super().__init__(position, orientation, style=style, **kwargs)
+        super().__init__(position, orientation, style=style, moment=moment, **kwargs)
 
     # Properties
     @property

@@ -105,7 +105,6 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # init inheritance
         super().__init__(
             position,
             orientation,

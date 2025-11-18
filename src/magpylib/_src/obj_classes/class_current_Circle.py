@@ -102,7 +102,6 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # init inheritance
         super().__init__(
             position,
             orientation,
@@ -112,7 +111,6 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
             **kwargs,
         )
 
-        # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
 
     # Properties

@@ -643,6 +643,7 @@ def test_describe_with_label():
         "  • centroid: [0. 0. 0.]",
         "  • dipole_moment: [0. 0. 0.]",
         "  • meshing: None",
+        "  • path_properties: shape(5,)",
         "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
@@ -668,6 +669,7 @@ def test_describe_with_parent():
         "  • centroid: [0. 0. 0.]",
         "  • dipole_moment: [0. 0. 0.]",
         "  • meshing: None",
+        "  • path_properties: shape(5,)",
         "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
@@ -685,6 +687,7 @@ def test_describe_with_path():
         "  • orientation (last): [0. 0. 0.] deg",
         "  • centroid: shape(3, 3)",
         "  • handedness: right",
+        "  • path_properties: ['position' 'orientation']",
         "  • pixel: None",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
@@ -701,6 +704,7 @@ def test_describe_with_exclude_None():
         "  • orientation: [0. 0. 0.] deg",
         "  • centroid: [0. 0. 0.]",
         "  • handedness: right",
+        "  • path_properties: ['position' 'orientation']",
         "  • pixel: None",
         (
             "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True),"
@@ -728,6 +732,7 @@ def test_describe_with_many_pixels():
         "  • orientation: [0. 0. 0.] deg",
         "  • centroid: [1. 2. 3.]",
         "  • handedness: left",
+        "  • path_properties: ['position' 'orientation']",
         "  • pixel: 75 (3x5x5)",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
@@ -760,6 +765,7 @@ def test_describe_with_triangularmesh():
         "  • faces: shape(6, 3)",
         "  • mesh: shape(6, 3, 3)",
         "  • meshing: None",
+        "  • path_properties: ['position' 'orientation' 'polarization' 'magnetization']",
         "  • status_disconnected: False",
         "  • status_disconnected_data: 1 part",
         "  • status_open: False",

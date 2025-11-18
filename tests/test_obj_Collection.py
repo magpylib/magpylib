@@ -436,6 +436,7 @@ def test_collection_describe():
         "│   • orientation: [0. 0. 0.] deg",
         "│   • centroid: [0. 0. 0.]",
         "│   • dipole_moment: [0. 0. 0.]",
+        "│   • path_properties: ['position' 'orientation']",
         "│   • volume: 0.0",
         "├── x",
         "│       • position: [0. 0. 0.] m",
@@ -446,6 +447,7 @@ def test_collection_describe():
         "│       • centroid: [0. 0. 0.]",
         "│       • dipole_moment: [0. 0. 0.]",
         "│       • meshing: None",
+        "│       • path_properties: shape(5,)",
         "│       • volume: 0.0",
         "└── y",
         "        • position: [0. 0. 0.] m",
@@ -456,6 +458,7 @@ def test_collection_describe():
         "        • centroid: [0. 0. 0.]",
         "        • dipole_moment: [0. 0. 0.]",
         "        • meshing: None",
+        "        • path_properties: shape(5,)",
         "        • volume: 0.0",
     ]
     assert "".join(test) == re.sub("id=*[0-9]*[0-9]", "id=REGEX", "".join(desc))

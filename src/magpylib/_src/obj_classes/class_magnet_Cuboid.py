@@ -120,7 +120,6 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # init inheritance - dimension is passed via kwargs for path sync
         super().__init__(
             position,
             orientation,
@@ -131,7 +130,6 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             **kwargs,
         )
 
-        # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
 
     # Properties
