@@ -105,9 +105,9 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid.
-    dipole_moment : ndarray, shape (3,)
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
-    volume : float
+    volume : float | ndarray, shape (p,)
         Read-only. Object physical volume in units (m³).
     parent : None | Collection
         Parent collection of the object.

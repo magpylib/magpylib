@@ -40,13 +40,13 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
     dimension : None | array-like, shape (3,) or (p, 3), default None
-        Lengths of the cuboid sides (a, b, c) in units (m). Can be a path.
+        Lengths of the cuboid sides (a, b, c) in units (m).
     polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
-        local object coordinates. Sets also ``magnetization``. Can be a path.
+        local object coordinates. Sets also ``magnetization``.
     magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
-        object coordinates. Sets also ``polarization``. Can be a path.
+        object coordinates. Sets also ``polarization``.
     meshing : None | int | array-like, shape (3,), default None
         Mesh fineness for force computation. Must be a positive integer specifying
         the target mesh size or an explicit splitting of the cuboid into regular
@@ -71,10 +71,9 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
-        Can be a path.
-    dipole_moment : ndarray, shape (3,)
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
-    volume : float
+    volume : float | ndarray, shape (p,)
         Read-only. Object physical volume in units (m³).
     parent : None | Collection
         Parent collection of the object.
@@ -148,7 +147,7 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Parameters
         ----------
         dim : None or array-like, shape (3,) or (p, 3)
-            Side lengths (a, b, c) in units (m). Can be a path.
+            Side lengths (a, b, c) in units (m).
         """
         self._dimension = check_format_input_numeric(
             dim,

@@ -45,13 +45,13 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     dimension : None | array-like, shape (5,) or (p, 5), default None
         Cylinder segment size (r1, r2, h, phi1, phi2) where r1 < r2 are inner
         and outer radii in units (m), phi1 < phi2 are section angles in units (deg),
-        and h is the height in units (m). Can be a path.
+        and h is the height in units (m).
     polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
-        local object coordinates. Sets also ``magnetization``. Can be a path.
+        local object coordinates. Sets also ``magnetization``.
     magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
-        object coordinates. Sets also ``polarization``. Can be a path.
+        object coordinates. Sets also ``polarization``.
     meshing : int | None, default None
         Mesh fineness for force computation. Must be a positive integer specifying
         the target mesh size.
@@ -73,10 +73,9 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``magnetization``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
-        Can be a path.
-    dipole_moment : ndarray, shape (3,)
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
-    volume : float
+    volume : float | ndarray, shape (p,)
         Read-only. Object physical volume in units (m³).
     parent : None | Collection
         Parent collection of the object.
@@ -160,7 +159,6 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         dim : None or array-like, shape (5,) or (p, 5)
             Size (r1, r2, h, phi1, phi2) where r1 < r2 are radii in (m),
             phi1 < phi2 are section angles in (deg), and h is the height (m).
-            Can be a path.
         """
         self._dimension = check_format_input_cylinder_segment(dim)
 

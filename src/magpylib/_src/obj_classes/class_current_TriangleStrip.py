@@ -43,11 +43,10 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         defined by the vertices {V1, V2, V3, V4, ...} as T1 = (V1, V2, V3),
         T2 = (V2, V3, V4), ... The vertices are given in units (m) in the local
         object coordinates (move/rotate with object). At least three vertices
-        must be given, which define the first triangle. Can be a path.
+        must be given, which define the first triangle.
     current : float | array-like, shape (p,), default None
         Total current flowing through the strip in units (A). It flows in the
         direction V1→V3 in the first triangle, V2→V4 in the second, ...
-        Can be a path.
     meshing : int | None, default None
         Mesh fineness for force computation. Must be an integer >= number of
         faces specifying the target mesh size. The mesh is generated via bisection
@@ -70,8 +69,8 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid computed via mean of vertices in units (m)
-        in global coordinates. Can be a path.
-    dipole_moment : ndarray, shape (3,)
+        in global coordinates.
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates. Can
         only be computed for a closed loop.
     parent : None | Collection
@@ -154,7 +153,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         ----------
         vert : array-like, shape (n, 3) or (p, n, 3)
             Vertices in local object coordinates in units (m). At least three
-            vertices must be provided. Can be a path.
+            vertices must be provided.
         """
         self._vertices = check_format_input_vertices(vert, minlength=3)
 

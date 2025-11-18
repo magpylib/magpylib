@@ -429,7 +429,7 @@ class BaseCurrent(BaseSource):
         Parameters
         ----------
         current : None | float | array-like, shape (p,)
-            Electric current amplitude in units (A). Can be a path.
+            Electric current amplitude in units (A).
         """
         self._current = check_format_input_numeric(
             current,

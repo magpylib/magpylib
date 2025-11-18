@@ -883,7 +883,7 @@ def _target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetiz
     vertices : np.ndarray, shape (n, 3) - Mesh vertices
     faces : np.ndarray, shape (m, 3) - Mesh faces (triangles) as vertex indices
     target_points : int - Target number of mesh points
-    volume : float - Volume of the body
+    volume : float | ndarray, shape (p,) - Volume of the body
     magnetization : np.ndarray, shape (3,) - Magnetization vector for the mesh points
 
     Returns

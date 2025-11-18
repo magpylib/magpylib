@@ -70,7 +70,7 @@ class TriangleSheet(BaseSource, BaseTarget):
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid computed via mean of vertices in units (m)
-        in global coordinates. Can be a path.
+        in global coordinates.
     parent : None | Collection
         Parent collection of the object.
     style : CurrentSheetStyle
@@ -141,7 +141,7 @@ class TriangleSheet(BaseSource, BaseTarget):
         Parameters
         ----------
         val : array-like, shape (n, 3) or (p, n, 3)
-            Vertices in local object coordinates in units (m). Can be a path.
+            Vertices in local object coordinates in units (m).
         """
         verts = check_format_input_numeric(
             val,

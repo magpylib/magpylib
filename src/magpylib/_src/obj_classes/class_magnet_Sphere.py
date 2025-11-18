@@ -37,13 +37,13 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
     diameter : float | array-like, shape (p,), default None
-        Diameter of the sphere in units (m). Can be a path.
+        Diameter of the sphere in units (m).
     polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
-        local object coordinates. Sets also ``magnetization``. Can be a path.
+        local object coordinates. Sets also ``magnetization``.
     magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
-        object coordinates. Sets also ``polarization``. Can be a path.
+        object coordinates. Sets also ``polarization``.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -62,10 +62,9 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``magnetization``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
-        Can be a path.
     dipole_moment : ndarray, shape (3,)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
-    volume : float
+    volume : float | ndarray, shape (p,) | ndarray, shape (p,)
         Read-only. Object physical volume in units (m³).
     parent : None | Collection
         Parent collection of the object.

@@ -34,9 +34,9 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
     diameter : float | array-like, shape (p,), default None
-        Loop diameter (m). Can be a path.
+        Loop diameter (m).
     current : float | array-like, shape (p,), default None
-        Electrical current (A). Can be a path.
+        Electrical current (A).
     meshing : int | None, default None
         Mesh fineness for force computation. Must be an integer ``>= 4``. Points
         are equally distributed on the circle.
@@ -58,8 +58,7 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
-        Can be a path.
-    dipole_moment : ndarray, shape (3,)
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
     parent : None | Collection
         Parent collection of the object.
@@ -135,7 +134,7 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         Parameters
         ----------
         diameter : float | array-like, shape (p,), default None
-            Loop diameter in units (m). Can be a path.
+            Loop diameter in units (m).
         """
         self._diameter = check_format_input_numeric(
             diameter,

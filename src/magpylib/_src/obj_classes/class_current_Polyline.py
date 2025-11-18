@@ -38,9 +38,9 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         have length 1 or p. ``None`` generates a unit-rotation.
     vertices : None | array-like, shape (n, 3) or (p, n, 3), default None
         Current flows along the vertices in units (m) in the local object coordinates. At
-        least two vertices must be given. Can be a path.
+        least two vertices must be given.
     current : float | array-like, shape (p,), default None
-        Electrical current (A). Can be a path.
+        Electrical current (A).
     meshing : int | None, default None
         Mesh fineness for force computation. Must be a positive integer at least the
         number of segments. Each segment gets one mesh point at its center. All
@@ -63,8 +63,8 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid computed via mean of vertices in units (m)
-        in global coordinates. Can be a path.
-    dipole_moment : ndarray, shape (3,)
+        in global coordinates.
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates. Can
         only be computed for a closed loop.
     parent : None | Collection
@@ -154,7 +154,7 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         ----------
         vert : None | array-like, shape (n, 3) or (p, n, 3)
             Vertex list (m) in local object coordinates. At least two vertices
-            must be given. Can be a path.
+            must be given.
         """
         self._vertices = check_format_input_vertices(vert)
 

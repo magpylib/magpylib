@@ -950,11 +950,11 @@ class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
         Read-only. Ordered list of collection objects in the collection including nested collections.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Collection centroid in units (m) computed as the volume-weighted average of all
-        child centroids. Can be a path.
-    volume : float
+        child centroids.
+    volume : float | ndarray, shape (p,)
         Read-only. Total Collection volume (m³) of all magnets. Overlapping objects may lead
         to double counting.
-    dipole_moment : ndarray, shape (3,)
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Total Collection dipole moment (A·m²) computed from the sum of all child
         dipole moments.
     style : BaseStyle

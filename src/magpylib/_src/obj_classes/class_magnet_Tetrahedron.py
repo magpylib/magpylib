@@ -42,13 +42,13 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         have length 1 or p. ``None`` generates a unit-rotation.
     vertices : None | array-like, shape (4, 3) or (p, 4, 3), default None
         Vertices ``[(x1, y1, z1), (x2, y2, z2), (x3, y3, z3), (x4, y4, z4)]`` in the
-        local object coordinates. Can be a path.
+        local object coordinates.
     polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
-        local object coordinates. Sets also ``magnetization``. Can be a path.
+        local object coordinates. Sets also ``magnetization``.
     magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
-        object coordinates. Sets also ``polarization``. Can be a path.
+        object coordinates. Sets also ``polarization``.
     meshing : int | None, default None
         Mesh fineness for force computation. Must be a positive integer specifying
         the target mesh size.
@@ -72,10 +72,9 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
-        Can be a path.
-    dipole_moment : ndarray, shape (3,)
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
-    volume : float
+    volume : float | ndarray, shape (p,)
         Read-only. Object physical volume in units (m³).
     parent : None | Collection
         Parent collection of the object.
@@ -156,7 +155,7 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Parameters
         ----------
         dim : None or array-like, shape (4, 3) or (p, 4, 3)
-            Vertices in local object coordinates in units (m). Can be a path.
+            Vertices in local object coordinates in units (m).
         """
         self._vertices = check_format_input_numeric(
             dim,
