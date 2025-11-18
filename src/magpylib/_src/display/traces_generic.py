@@ -174,8 +174,8 @@ def make_mag_arrows(obj, path_ind=-1):
         length *= 1.5
     length *= arrow.size
     # collect all draw positions and directions
-    pos = getattr(obj, "_barycenter", obj._position)[path_ind] - obj._position[path_ind]
-    # we need initial relative barycenter, arrow gets orientated later
+    pos = getattr(obj, "_centroid", obj._position)[path_ind] - obj._position[path_ind]
+    # we need initial relative centroid, arrow gets orientated later
     pos = obj._orientation[path_ind].inv().apply(pos)
     direc = mag / (np.linalg.norm(mag) + 1e-6) * length
     x, y, z = draw_arrowed_line(

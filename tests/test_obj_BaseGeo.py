@@ -755,7 +755,6 @@ def test_describe_with_triangularmesh():
         "  • orientation: [0. 0. 0.] deg",
         "  • magnetization: [     0.              0.         795774.71556455] A/m",
         "  • polarization: [0. 0. 1.] T",
-        "  • barycenter: [0.         0.         0.46065534]",
         "  • centroid: [0.         0.         0.46065534]",
         "  • dipole_moment: [      0.               0.         2122065.90817212]",
         "  • faces: shape(6, 3)",

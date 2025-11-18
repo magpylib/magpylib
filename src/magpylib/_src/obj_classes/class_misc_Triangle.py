@@ -141,16 +141,6 @@ class Triangle(BaseMagnet):
         )
 
     @property
-    def _barycenter(self):
-        """Object barycenter."""
-        return self._get_barycenter(self._position, self._orientation, self._vertices)
-
-    @property
-    def barycenter(self):
-        """Object barycenter in units (m) in global coordinates."""
-        return np.squeeze(self._barycenter)
-
-    @property
     def _default_style_description(self):
         """Default style description text"""
         if self.vertices is None:
@@ -160,17 +150,12 @@ class Triangle(BaseMagnet):
     # Methods
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
-        if squeeze:
-            return self.barycenter
-        return self._barycenter
-
-    # Static methods
-    @staticmethod
-    def _get_barycenter(position, orientation, vertices):
-        """Returns the barycenter of the Triangle object."""
-        if vertices is None:
+        if self._vertices is None:
             centroid = np.array([0.0, 0.0, 0.0])
         else:
             # vertices shape is (p, 3, 3), mean over axis 1 to get (p, 3)
-            centroid = np.mean(vertices, axis=1)
-        return orientation.apply(centroid) + position
+            centroid = np.mean(self._vertices, axis=1)
+        result = self._orientation.apply(centroid) + self._position
+        if squeeze and len(result) == 1:
+            return result[0]
+        return result

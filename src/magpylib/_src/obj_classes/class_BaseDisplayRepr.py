@@ -51,6 +51,11 @@ class BaseDisplayRepr:
         """
         if exclude is None:
             exclude = ()
+        exclude = (
+            ("barycenter", *exclude)
+            if isinstance(exclude, (list, tuple))
+            else ("barycenter", exclude)
+        )
         params = list(self._property_names_generator())
         lines = [f"{self!r}"]
         for key in list(dict.fromkeys(list(UNITS) + list(params))):

@@ -27,7 +27,7 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     When ``position=(0, 0, 0)`` and ``orientation=None`` the Tetrahedron vertex coordinates
     are the same as in the global coordinate system. The geometric center of the Tetrahedron
     is determined by its vertices and is not necessarily located in the origin. It can be
-    computed with the ``barycenter`` property.
+    computed with the ``centroid`` property.
 
     SI units are used for all inputs and outputs.
 
@@ -36,7 +36,7 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     position : array-like, shape (3,) or (p, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path. When setting ``vertices``,
-        the initial position is set to the barycenter.
+        the initial position is set to the centroid.
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
@@ -81,8 +81,6 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Parent collection of the object.
     style : MagnetStyle
         Object style. See MagnetStyle for details.
-    barycenter : ndarray, shape (3,)
-        Read-only. Geometric barycenter (= center of mass) of the object.
 
     Notes
     -----
@@ -170,16 +168,6 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         )
 
     @property
-    def _barycenter(self):
-        """Object barycenter."""
-        return self._get_barycenter(self._position, self._orientation, self._vertices)
-
-    @property
-    def barycenter(self):
-        """Object barycenter."""
-        return np.squeeze(self._barycenter)
-
-    @property
     def _default_style_description(self):
         """Default style description text"""
         if self.vertices is None:
@@ -208,9 +196,17 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
-        if squeeze:
-            return self.barycenter
-        return self._barycenter
+        if self._vertices is None:
+            centroid = np.array([0.0, 0.0, 0.0])
+        elif isinstance(self._vertices, np.ndarray) and self._vertices.ndim == 3:
+            # vertices path-shaped: shape (p,4,3)
+            centroid = np.mean(self._vertices, axis=1)  # (p,3)
+        else:
+            centroid = np.mean(self._vertices, axis=0)
+        result = self._orientation.apply(centroid) + self._position
+        if squeeze and len(result) == 1:
+            return result[0]
+        return result
 
     def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
@@ -231,16 +227,3 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         return _target_mesh_tetrahedron(
             self.meshing, self._vertices, self._magnetization
         )
-
-    # Static methods
-    @staticmethod
-    def _get_barycenter(position, orientation, vertices):
-        """Returns the barycenter of a tetrahedron."""
-        if vertices is None:
-            centroid = np.array([0.0, 0.0, 0.0])
-        elif isinstance(vertices, np.ndarray) and vertices.ndim == 3:
-            # vertices path-shaped: shape (p,4,3)
-            centroid = np.mean(vertices, axis=1)  # (p,3)
-        else:
-            centroid = np.mean(vertices, axis=0)
-        return orientation.apply(centroid) + position

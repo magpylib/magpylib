@@ -82,8 +82,6 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Parent collection of the object.
     style : MagnetStyle
         Object style. See MagnetStyle for details.
-    barycenter : ndarray, shape (3,)
-        Read-only. Geometric barycenter (= center of mass) of the object.
 
     Notes
     -----
@@ -167,16 +165,6 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         self._dimension = check_format_input_cylinder_segment(dim)
 
     @property
-    def _barycenter(self):
-        """Object barycenter."""
-        return self._get_barycenter(self._position, self._orientation, self.dimension)
-
-    @property
-    def barycenter(self):
-        """Object barycenter."""
-        return np.squeeze(self._barycenter)
-
-    @property
     def _default_style_description(self):
         """Default style description text"""
         if self.dimension is None:
@@ -225,9 +213,31 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
-        if squeeze:
-            return self.barycenter
-        return self._barycenter
+        if self._dimension is None:
+            centroid = np.array([0.0, 0.0, 0.0])
+        else:
+            # Handle path-varying dimensions
+            dims = self._dimension
+            r1, r2, _, phi1, phi2 = dims.T
+            alpha = np.deg2rad((phi2 - phi1) / 2)
+            phi = np.deg2rad((phi1 + phi2) / 2)
+            # get centroid x for unrotated annular sector
+            centroid_x = (
+                2 / 3 * np.sin(alpha) / alpha * (r2**3 - r1**3) / (r2**2 - r1**2)
+            )
+            # get centroid for rotated annular sector
+            x, y, z = (
+                centroid_x * np.cos(phi),
+                centroid_x * np.sin(phi),
+                np.zeros_like(centroid_x),
+            )
+            centroid = np.column_stack([x, y, z])
+            if centroid.shape[0] == 1:
+                centroid = centroid[0]
+        result = self._orientation.apply(centroid) + self._position
+        if squeeze and len(result) == 1:
+            return result[0]
+        return result
 
     def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
@@ -257,34 +267,3 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             self._magnetization,
             self.meshing,
         )
-
-    # Static methods
-    @staticmethod
-    def _get_barycenter(position, orientation, dimension):
-        """Returns the barycenter of a cylinder segment.
-        Input checks should make sure:
-            -360 < phi1 < phi2 < 360 and 0 < r1 < r2
-        Inputs must all be path enabled and synced.
-        """
-        if dimension is None:
-            centroid = np.array([0.0, 0.0, 0.0])
-        else:
-            # Handle path-varying dimensions
-            dims = dimension
-            r1, r2, _, phi1, phi2 = dims.T
-            alpha = np.deg2rad((phi2 - phi1) / 2)
-            phi = np.deg2rad((phi1 + phi2) / 2)
-            # get centroid x for unrotated annular sector
-            centroid_x = (
-                2 / 3 * np.sin(alpha) / alpha * (r2**3 - r1**3) / (r2**2 - r1**2)
-            )
-            # get centroid for rotated annular sector
-            x, y, z = (
-                centroid_x * np.cos(phi),
-                centroid_x * np.sin(phi),
-                np.zeros_like(centroid_x),
-            )
-            centroid = np.column_stack([x, y, z])
-            if centroid.shape[0] == 1:
-                centroid = centroid[0]
-        return orientation.apply(centroid) + position

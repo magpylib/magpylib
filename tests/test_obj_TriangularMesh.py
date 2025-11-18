@@ -24,16 +24,6 @@ def test_TriangularMesh_repr():
     assert repr(trimesh).startswith("TriangularMesh"), "TriangularMesh repr failed"
 
 
-def test_TriangularMesh_barycenter():
-    """test TriangularMesh barycenter"""
-    pol = (0, 0, 333)
-    trimesh = magpy.magnet.TriangularMesh.from_pyvista(
-        polarization=pol, polydata=pv.Octahedron()
-    ).move((1, 2, 3))
-    bary = np.array([1, 2, 3])
-    np.testing.assert_allclose(trimesh.barycenter, bary)
-
-
 def test_TriangularMesh_getBH():
     """Compare meshed cube to magpylib cube"""
     dimension = (1, 1, 1)
@@ -523,11 +513,21 @@ def test_TriangularMesh_volume_complex():
 
 
 def test_TriangularMesh_centroid():
-    """Test TriangularMesh centroid - should return barycenter if available"""
+    """test TriangularMesh centroid"""
+    pol = (0, 0, 333)
+    trimesh = magpy.magnet.TriangularMesh.from_pyvista(
+        polarization=pol, polydata=pv.Octahedron()
+    ).move((1, 2, 3))
+    centroid = np.array([1, 2, 3])
+    np.testing.assert_allclose(trimesh.centroid, centroid)
+
+
+def test_TriangularMesh_centroid2():
+    """Test TriangularMesh centroid - should return centroid if available"""
     vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
     faces = np.array([[0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3]])
     tri_mesh = magpy.magnet.TriangularMesh(
         vertices=vertices, faces=faces, polarization=(0, 0, 1), position=(6, 7, 8)
     )
-    expected = [6.26289171, 7.26289171, 8.26289171]  # barycenter offset from position
+    expected = [6.26289171, 7.26289171, 8.26289171]  # centroid offset from position
     assert np.allclose(tri_mesh.centroid, expected)

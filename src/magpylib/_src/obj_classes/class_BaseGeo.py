@@ -5,6 +5,7 @@
 # pylint: disable=protected-access
 # pylint: disable=import-outside-toplevel
 
+import warnings
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 
@@ -377,6 +378,27 @@ class BaseGeo(BaseTransform, ABC):
         """Throw error when trying to set centroid."""
         msg = "Cannot set property _centroid. It is read-only."
         raise AttributeError(msg)
+
+    @property
+    def barycenter(self):
+        """Return barycenter (m).
+
+        .. deprecated:: 6.0.0
+            Use :attr:`centroid` instead. The ``barycenter`` property will be removed
+            in a future version.
+        """
+        warnings.warn(
+            "The 'barycenter' property is deprecated and will be removed in a future "
+            "version. Use 'centroid' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.centroid
+
+    @property
+    def _barycenter(self):
+        """Return barycenter without squeezing (internal, deprecated)."""
+        return self._centroid
 
     @property
     def style(self):

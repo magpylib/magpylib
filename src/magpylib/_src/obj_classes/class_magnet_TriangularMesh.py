@@ -264,9 +264,15 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
-        if squeeze:
-            return self.barycenter
-        return self._barycenter
+        centroid = (
+            np.array([0.0, 0.0, 0.0])
+            if self._vertices is None
+            else _calculate_centroid(self._vertices, self._faces)
+        )
+        result = self._orientation.apply(centroid) + self._position
+        if squeeze and len(result) == 1:
+            return result[0]
+        return result
 
     def _get_dipole_moment(self, squeeze=True):  # noqa: ARG002
         """Magnetic moment of object in units (A*m²)."""
@@ -503,28 +509,6 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     def status_selfintersecting_data(self):
         """return self-intersecting faces"""
         return self._status_selfintersecting_data
-
-    @property
-    def _barycenter(self):
-        """Object barycenter."""
-        return self._get_barycenter(
-            self._position, self._orientation, self._vertices, self._faces
-        )
-
-    @property
-    def barycenter(self):
-        """Object barycenter."""
-        return np.squeeze(self._barycenter)
-
-    @staticmethod
-    def _get_barycenter(position, orientation, vertices, faces):
-        """Returns the barycenter of a tetrahedron."""
-        centroid = (
-            np.array([0.0, 0.0, 0.0])
-            if vertices is None
-            else _calculate_centroid(vertices, faces)
-        )
-        return orientation.apply(centroid) + position
 
     def _input_check(self, vertices, faces):
         """input checks here ?"""

@@ -2537,7 +2537,6 @@ def test_centroid():
         polarization=(1, 0, 0),
         position=[(1, 2, 3), (4, 5, 6)],
     )
-    np.testing.assert_allclose(seg.centroid, seg._barycenter)
     np.testing.assert_allclose(seg._centroid, seg._barycenter)
 
     sph = magpy.magnet.Sphere(diameter=1, polarization=(1, 0, 0), position=(3, 2, 3))
