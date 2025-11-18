@@ -273,10 +273,7 @@ def make_Dipole(obj, path_ind=-1, autosize=None, **kwargs) -> dict[str, Any]:
     provided arguments.
     """
     style = obj.style
-    if obj._moment is None:
-        moment = np.array([0.0, 0.0, 0.0])
-    else:
-        moment = obj._moment[path_ind]
+    moment = np.array([0.0, 0.0, 0.0]) if obj._moment is None else obj._moment[path_ind]
     moment_mag = np.linalg.norm(moment)
     size = style.size
     if autosize is not None and style.sizemode == "scaled":
