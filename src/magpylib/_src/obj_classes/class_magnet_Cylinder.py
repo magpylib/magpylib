@@ -67,7 +67,7 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     magnetization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``magnetization``.
     centroid : ndarray, shape (3,) or (p, 3)
-        Read-only. Object centroid in units (m) in global coordinates. 
+        Read-only. Object centroid in units (m) in global coordinates.
     dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
     volume : float | ndarray, shape (p,)
