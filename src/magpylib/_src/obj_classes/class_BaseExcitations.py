@@ -13,13 +13,12 @@ from magpylib._src.input_checks import (
     check_format_input_numeric,
     validate_field_func,
 )
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.style import CurrentStyle, MagnetStyle
 from magpylib._src.utility import format_star_input, unit_prefix
 
 
-class BaseSource(BaseGeo, BaseDisplayRepr):
+class BaseSource(BaseGeo):
     """Base class for all source objects providing getBHJM and field function hook."""
 
     _field_func = None
@@ -30,7 +29,6 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
         if field_func is not None:
             self.field_func = field_func
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
-        BaseDisplayRepr.__init__(self)
 
     @property
     def field_func(self):
