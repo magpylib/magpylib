@@ -11,14 +11,18 @@ from magpylib._src.display.traces_core import make_DefaultTrace
 
 UNITS = {
     "parent": None,
+    "path_properties": None,
+    "current": "A",
+    "polarization": "T",
+    "magnetization": "A/m",
     "position": "m",
     "orientation": "deg",
     "dimension": "m",
     "diameter": "m",
-    "current": "A",
-    "magnetization": "A/m",
-    "polarization": "T",
+    "vertices": "m",
     "moment": "A·m²",
+    "volume": "m³",
+    "current_densities": "A/m",
 }
 
 
@@ -36,68 +40,75 @@ class BaseDisplayRepr:
             if isinstance(getattr(type(self), attr, None), property)
         )
 
-    def _get_description(self, exclude=None):
+    def _get_description(self, exclude=None, precision=3):
         """Return list of lines describing the object properties.
 
         Parameters
         ----------
         exclude : None | str | Sequence[str], default ('style',)
             Property names to omit from the description.
+        precision : int, default 3
+            Number of decimal places for floating point representation.
 
         Returns
         -------
         list of str
             One line per entry ready to be joined with newlines.
         """
-        if exclude is None:
-            exclude = ()
-        exclude = (
-            ("barycenter", *exclude)
-            if isinstance(exclude, (list, tuple))
-            else ("barycenter", exclude)
-        )
-        params = list(self._property_names_generator())
-        lines = [f"{self!r}"]
-        for key in list(dict.fromkeys(list(UNITS) + list(params))):
-            k = key
-            if not k.startswith("_") and k in params and k not in exclude:
-                unit = UNITS.get(k)
-                unit_str = f" {unit}" if unit else ""
-                val = ""
-                if k == "position":
-                    val = getattr(self, "_position", None)
-                    if isinstance(val, np.ndarray):
-                        if val.shape[0] != 1:
-                            lines.append(f"  • path length: {val.shape[0]}")
-                            k = f"{k} (last)"
-                        val = f"{val[-1]}"
-                elif k == "orientation":
-                    val = getattr(self, "_orientation", None)
-                    if isinstance(val, Rotation):
-                        val = val.as_rotvec(degrees=True)  # pylint: disable=no-member
-                        if len(val) != 1:
-                            k = f"{k} (last)"
-                        val = f"{val[-1]}"
-                elif k == "pixel":
-                    val = getattr(self, "pixel", None)
-                    if isinstance(val, np.ndarray):
-                        px_shape = val.shape[:-1]
-                        val_str = f"{int(np.prod(px_shape))}"
-                        if val.ndim > 2:
-                            val_str += f" ({'x'.join(str(p) for p in px_shape)})"
-                        val = val_str
-                elif k == "status_disconnected_data":
-                    val = getattr(self, k)
-                    if val is not None:
-                        val = f"{len(val)} part{'s'[: len(val) ^ 1]}"
-                elif isinstance(getattr(self, k), list | tuple | np.ndarray):
-                    val = np.array(getattr(self, k))
-                    if np.prod(val.shape) > 4:
-                        val = f"shape{val.shape}"
-                else:
-                    val = getattr(self, k)
-                lines.append(f"  • {k}: {val}{unit_str}")
-        return lines
+        with np.printoptions(precision=precision, suppress=True, linewidth=200):
+            if exclude is None:
+                exclude = ()
+            exclude = (
+                ("barycenter", *exclude)
+                if isinstance(exclude, (list, tuple))
+                else ("barycenter", exclude)
+            )
+            params = list(self._property_names_generator())
+            lines = [f"{self!r}"]
+            lines.append(f"  • path length: {self._position.shape[0]}")  # pylint: disable=no-member
+            for key in list(dict.fromkeys([*UNITS, *self.path_properties, *params])):  # pylint: disable=no-member
+                k = key
+                if not k.startswith("_") and k in params and k not in exclude:
+                    unit = UNITS.get(k)
+                    unit_str = f" {unit}" if unit else ""
+                    val = ""
+                    if k == "path_properties":
+                        k, val = "path properties", ""
+                    elif k in self.path_properties:  # pylint: disable=no-member
+                        val = getattr(self, f"_{k}", None)
+                        if isinstance(val, Rotation):
+                            val = val.as_rotvec(degrees=True)  # pylint: disable=no-member
+                        if isinstance(val, np.ndarray):
+                            axis = None if val.ndim <= 1 else 0
+                            if len(val) == 1 or np.unique(val, axis=axis).shape[0] == 1:
+                                val = val[0]
+                            elif len(val) > 1:
+                                k = f"{k} (last)"
+                                val = val[-1]
+                            if len(val.flatten()) > 20:
+                                val = f"shape{val.shape}"
+                    elif k == "pixel":
+                        val = getattr(self, "pixel", None)
+                        if isinstance(val, np.ndarray):
+                            px_shape = val.shape[:-1]
+                            val_str = f"{int(np.prod(px_shape))}"
+                            if val.ndim > 2:
+                                val_str += f" ({'x'.join(str(p) for p in px_shape)})"
+                            val = val_str
+                    elif k == "status_disconnected_data":
+                        val = getattr(self, k)
+                        if val is not None:
+                            val = f"{len(val)} part{'s'[: len(val) ^ 1]}"
+                    elif isinstance(getattr(self, k), list | tuple | np.ndarray):
+                        val = np.array(getattr(self, k))
+                        if len(val.flatten()) > 20:
+                            val = f"shape{val.shape}"
+                    else:
+                        val = getattr(self, k)
+                    val = str(val).replace("\n", " ")
+                    indent = " " * 2 if key in self.path_properties else ""  # pylint: disable=no-member
+                    lines.append(f"{indent}  • {k}: {val}{unit_str}")
+            return lines
 
     def describe(self, *, exclude=("style", "field_func"), return_string=False):
         """Return or print a formatted description of object properties.

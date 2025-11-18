@@ -634,17 +634,18 @@ def test_describe_with_label():
     # describe string
     test = [
         "Cuboid(id=2743358534352, label='x1')",
+        "  • path length: 1",
         "  • parent: None",
-        "  • position: [0. 0. 0.] m",
-        "  • orientation: [0. 0. 0.] deg",
-        "  • dimension: None m",
-        "  • magnetization: None A/m",
-        "  • polarization: None T",
+        "  • path properties: ",
+        "    • polarization: None T",
+        "    • magnetization: None A/m",
+        "    • position: [0. 0. 0.] m",
+        "    • orientation: [0. 0. 0.] deg",
+        "    • dimension: None m",
+        "  • volume: 0.0 m³",
         "  • centroid: [0. 0. 0.]",
         "  • dipole_moment: [0. 0. 0.]",
         "  • meshing: None",
-        "  • path_properties: shape(5,)",
-        "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
 
@@ -660,17 +661,18 @@ def test_describe_with_parent():
     magpy.Collection(x)  # add parent
     test = [
         "Cuboid(id=1687262797456, label='x1')",
+        "  • path length: 1",
         "  • parent: Collection(id=1687262859280)",
-        "  • position: [0. 0. 0.] m",
-        "  • orientation: [0. 0. 0.] deg",
-        "  • dimension: None m",
-        "  • magnetization: None A/m",
-        "  • polarization: None T",
+        "  • path properties: ",
+        "    • polarization: None T",
+        "    • magnetization: None A/m",
+        "    • position: [0. 0. 0.] m",
+        "    • orientation: [0. 0. 0.] deg",
+        "    • dimension: None m",
+        "  • volume: 0.0 m³",
         "  • centroid: [0. 0. 0.]",
         "  • dipole_moment: [0. 0. 0.]",
         "  • meshing: None",
-        "  • path_properties: shape(5,)",
-        "  • volume: 0.0",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
 
@@ -681,13 +683,13 @@ def test_describe_with_path():
     x = magpy.Sensor(position=[(1, 2, 3)] * 3)
     test = [
         "Sensor(id=2743359152656)",
-        "  • parent: None",
         "  • path length: 3",
-        "  • position (last): [1. 2. 3.] m",
-        "  • orientation (last): [0. 0. 0.] deg",
-        "  • centroid: shape(3, 3)",
+        "  • parent: None",
+        "  • path properties: ",
+        "    • position: [1. 2. 3.] m",
+        "    • orientation: [0. 0. 0.] deg",
+        "  • centroid: [[1. 2. 3.]  [1. 2. 3.]  [1. 2. 3.]]",
         "  • handedness: right",
-        "  • path_properties: ['position' 'orientation']",
         "  • pixel: None",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
@@ -699,12 +701,13 @@ def test_describe_with_exclude_None():
     x = magpy.Sensor()
     test = [
         "Sensor(id=140534160166976)",
+        "  • path length: 1",
         "  • parent: None",
-        "  • position: [0. 0. 0.] m",
-        "  • orientation: [0. 0. 0.] deg",
+        "  • path properties: ",
+        "    • position: [0. 0. 0.] m",
+        "    • orientation: [0. 0. 0.] deg",
         "  • centroid: [0. 0. 0.]",
         "  • handedness: right",
-        "  • path_properties: ['position' 'orientation']",
         "  • pixel: None",
         (
             "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True),"
@@ -727,12 +730,13 @@ def test_describe_with_many_pixels():
     x = magpy.Sensor(pixel=[[[(1, 2, 3)] * 5] * 5] * 3, handedness="left")
     test = [
         "Sensor(id=1687262996944)",
+        "  • path length: 1",
         "  • parent: None",
-        "  • position: [0. 0. 0.] m",
-        "  • orientation: [0. 0. 0.] deg",
+        "  • path properties: ",
+        "    • position: [0. 0. 0.] m",
+        "    • orientation: [0. 0. 0.] deg",
         "  • centroid: [1. 2. 3.]",
         "  • handedness: left",
-        "  • path_properties: ['position' 'orientation']",
         "  • pixel: 75 (3x5x5)",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
@@ -755,17 +759,20 @@ def test_describe_with_triangularmesh():
     )
     test = [
         "TriangularMesh(id=1687257413648)",
+        "  • path length: 1",
         "  • parent: None",
-        "  • position: [0. 0. 0.] m",
-        "  • orientation: [0. 0. 0.] deg",
-        "  • magnetization: [     0.              0.         795774.71556455] A/m",
-        "  • polarization: [0. 0. 1.] T",
-        "  • centroid: [0.         0.         0.46065534]",
-        "  • dipole_moment: [      0.               0.         2122065.90817212]",
-        "  • faces: shape(6, 3)",
+        "  • path properties: ",
+        "    • polarization: [0. 0. 1.] T",
+        "    • magnetization: [     0.         0.    795774.716] A/m",
+        "    • position: [0. 0. 0.] m",
+        "    • orientation: [0. 0. 0.] deg",
+        "  • vertices: [[-1. -1.  0.]  [-1.  1.  0.]  [ 1. -1.  0.]  [ 1.  1.  0.]  [ 0.  0.  2.]] m",
+        "  • volume: 2.6666666666666665 m³",
+        "  • centroid: [0.    0.    0.461]",
+        "  • dipole_moment: [      0.          0.    2122065.908]",
+        "  • faces: [[4 0 2]  [4 1 0]  [3 4 2]  [3 1 4]  [3 0 1]  [3 2 0]]",
         "  • mesh: shape(6, 3, 3)",
         "  • meshing: None",
-        "  • path_properties: ['position' 'orientation' 'polarization' 'magnetization']",
         "  • status_disconnected: False",
         "  • status_disconnected_data: 1 part",
         "  • status_open: False",
@@ -773,8 +780,6 @@ def test_describe_with_triangularmesh():
         "  • status_reoriented: True",
         "  • status_selfintersecting: None",
         "  • status_selfintersecting_data: None",
-        "  • vertices: shape(5, 3)",
-        "  • volume: 2.6666666666666665",
     ]
 
     match_string_up_to_id(test, x.describe(return_string=True))
