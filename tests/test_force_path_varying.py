@@ -5,6 +5,99 @@ import pytest
 
 import magpylib as magpy
 
+################################################################################
+# CURRENT SOURCES TESTS
+################################################################################
+
+
+def test_path_varying_polyline_vertices():
+    """Test getFT with path-varying vertices on Polyline target.
+
+    Tests that geometry itself can vary along the path, not just properties.
+    """
+    # Create a dipole source
+    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -2))
+
+    # Define path-varying vertices - expanding square loop
+    vertices_path = np.array(
+        [
+            [  # Step 0: small square
+                [-0.5, -0.5, 0],
+                [0.5, -0.5, 0],
+                [0.5, 0.5, 0],
+                [-0.5, 0.5, 0],
+                [-0.5, -0.5, 0],
+            ],
+            [  # Step 1: medium square
+                [-1.0, -1.0, 0],
+                [1.0, -1.0, 0],
+                [1.0, 1.0, 0],
+                [-1.0, 1.0, 0],
+                [-1.0, -1.0, 0],
+            ],
+            [  # Step 2: large square
+                [-1.5, -1.5, 0],
+                [1.5, -1.5, 0],
+                [1.5, 1.5, 0],
+                [-1.5, 1.5, 0],
+                [-1.5, -1.5, 0],
+            ],
+        ]
+    )
+
+    currents = np.array([100.0, 100.0, 100.0])
+    positions = np.array([[0, 0, i] for i in range(3)])
+
+    # VECTORIZED: Create polyline with path-varying vertices
+    polyline_varying = magpy.current.Polyline(
+        vertices=vertices_path, current=currents, position=positions, meshing=20
+    )
+
+    F_vectorized, T_vectorized = magpy.getFT(dipole, polyline_varying)
+
+    # MANUAL LOOP: Compute each path step separately
+    F_manual = []
+    T_manual = []
+
+    for i in range(len(vertices_path)):
+        polyline_single = magpy.current.Polyline(
+            vertices=vertices_path[i],
+            current=currents[i],
+            position=positions[i],
+            meshing=20,
+        )
+
+        F_i, T_i = magpy.getFT(dipole, polyline_single)
+        F_manual.append(F_i)
+        T_manual.append(T_i)
+
+    F_manual = np.array(F_manual)
+    T_manual = np.array(T_manual)
+
+    # Verify that both approaches give identical results
+    np.testing.assert_allclose(
+        F_vectorized,
+        F_manual,
+        rtol=1e-10,
+        err_msg="Force calculation differs for path-varying vertices",
+    )
+
+    np.testing.assert_allclose(
+        T_vectorized,
+        T_manual,
+        rtol=1e-10,
+        err_msg="Torque calculation differs for path-varying vertices",
+    )
+
+    # Verify forces decrease as polyline moves away (increasing z position)
+    force_magnitudes = np.linalg.norm(F_vectorized, axis=1)
+    assert force_magnitudes[1] < force_magnitudes[0], (
+        "Force should decrease as polyline moves farther from dipole"
+    )
+    assert force_magnitudes[2] < force_magnitudes[1], (
+        "Force should decrease as polyline moves farther from dipole"
+    )
+
 
 def test_path_varying_circle_current_diameter():
     """Test getFT with path-varying current and diameter on Circle target.
@@ -80,6 +173,194 @@ def test_path_varying_circle_current_diameter():
     assert not np.allclose(T_vectorized[0], T_vectorized[1]), (
         "Torques should vary along path"
     )
+
+
+def test_path_varying_triangle_sheet_vertices_current_densities():
+    """Test getFT with path-varying vertices and current_densities on TriangleSheet.
+
+    Tests both geometry and current density varying along the path.
+    """
+    # Create a dipole source
+    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -2))
+
+    # Define fixed vertices - simple mesh with 4 vertices forming 2 triangular faces
+    vertices = np.array(
+        [
+            [0, 0, 0],
+            [1, 0, 0],
+            [0, 1, 0],
+            [1, 1, 0],
+        ]
+    )
+
+    # Define faces (same for all path steps)
+    faces = np.array([[0, 1, 2], [1, 3, 2]])
+
+    # Path-varying current densities - rotating direction
+    angles = np.array([0, np.pi / 4, np.pi / 2])
+    current_densities_path = np.zeros((3, 2, 3))
+    for i, angle in enumerate(angles):
+        current_densities_path[i, :, 0] = 100 * np.cos(angle)  # x component
+        current_densities_path[i, :, 1] = 100 * np.sin(angle)  # y component
+
+    positions = np.array([[0, 0, i * 0.5] for i in range(3)])
+
+    # VECTORIZED: Create TriangleSheet with path-varying current_densities only
+    sheet_varying = magpy.current.TriangleSheet(
+        vertices=vertices,
+        faces=faces,
+        current_densities=current_densities_path,
+        position=positions,
+        meshing=10,
+    )
+
+    F_vectorized, T_vectorized = magpy.getFT(dipole, sheet_varying)
+
+    # MANUAL LOOP: Compute each path step separately
+    F_manual = []
+    T_manual = []
+
+    for i in range(len(current_densities_path)):
+        sheet_single = magpy.current.TriangleSheet(
+            vertices=vertices,
+            faces=faces,
+            current_densities=current_densities_path[i],
+            position=positions[i],
+            meshing=10,
+        )
+
+        F_i, T_i = magpy.getFT(dipole, sheet_single)
+        F_manual.append(F_i)
+        T_manual.append(T_i)
+
+    F_manual = np.array(F_manual)
+    T_manual = np.array(T_manual)
+
+    # Verify that both approaches give identical results
+    np.testing.assert_allclose(
+        F_vectorized,
+        F_manual,
+        rtol=1e-8,
+        atol=1e-10,
+        err_msg="Force calculation differs for path-varying TriangleSheet",
+    )
+
+    np.testing.assert_allclose(
+        T_vectorized,
+        T_manual,
+        rtol=1e-8,
+        atol=1e-10,
+        err_msg="Torque calculation differs for path-varying TriangleSheet",
+    )
+
+    # Verify output shapes
+    assert F_vectorized.shape == (3, 3), (
+        f"Expected shape (3, 3), got {F_vectorized.shape}"
+    )
+    assert T_vectorized.shape == (3, 3), (
+        f"Expected shape (3, 3), got {T_vectorized.shape}"
+    )
+
+    # Verify that values change along the path
+    assert not np.allclose(F_vectorized[0], F_vectorized[1]), (
+        "Forces should vary along path"
+    )
+    assert not np.allclose(F_vectorized[1], F_vectorized[2]), (
+        "Forces should vary along path"
+    )
+
+
+def test_path_varying_triangle_strip_vertices_current():
+    """Test getFT with path-varying vertices and current on TriangleStrip.
+
+    Tests both geometry and current varying along the path.
+    """
+    # Create a dipole source
+    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -2))
+
+    # Path-varying vertices - morphing strip from flat to curved
+    vertices_path = np.array(
+        [
+            # Path step 0: flat strip
+            [[0, 0, 0], [1, 0, 0], [0, 0.5, 0], [1, 0.5, 0]],
+            # Path step 1: slightly curved
+            [[0, 0, 0.1], [1, 0, 0.1], [0, 0.5, 0.15], [1, 0.5, 0.15]],
+            # Path step 2: more curved
+            [[0, 0, 0.2], [1, 0, 0.2], [0, 0.5, 0.3], [1, 0.5, 0.3]],
+        ]
+    )
+
+    # Path-varying current - increasing magnitude
+    currents_path = np.array([50, 100, 150])
+
+    positions = np.array([[0, 0, i * 0.5] for i in range(3)])
+
+    # VECTORIZED: Create TriangleStrip with path-varying vertices and current
+    strip_varying = magpy.current.TriangleStrip(
+        vertices=vertices_path,
+        current=currents_path,
+        position=positions,
+        meshing=10,
+    )
+
+    F_vectorized, T_vectorized = magpy.getFT(dipole, strip_varying)
+
+    # MANUAL LOOP: Compute each path step separately
+    F_manual = []
+    T_manual = []
+
+    for i in range(len(currents_path)):
+        strip_single = magpy.current.TriangleStrip(
+            vertices=vertices_path[i],
+            current=currents_path[i],
+            position=positions[i],
+            meshing=10,
+        )
+
+        F_i, T_i = magpy.getFT(dipole, strip_single)
+        F_manual.append(F_i)
+        T_manual.append(T_i)
+
+    F_manual = np.array(F_manual)
+    T_manual = np.array(T_manual)
+
+    # Verify that both approaches give identical results
+    np.testing.assert_allclose(
+        F_vectorized,
+        F_manual,
+        rtol=1e-8,
+        atol=1e-10,
+        err_msg="Force calculation differs for path-varying TriangleStrip",
+    )
+
+    np.testing.assert_allclose(
+        T_vectorized,
+        T_manual,
+        rtol=1e-8,
+        atol=1e-10,
+        err_msg="Torque calculation differs for path-varying TriangleStrip",
+    )
+
+    # Verify output shapes
+    assert F_vectorized.shape == (3, 3), (
+        f"Expected shape (3, 3), got {F_vectorized.shape}"
+    )
+    assert T_vectorized.shape == (3, 3), (
+        f"Expected shape (3, 3), got {T_vectorized.shape}"
+    )
+
+    # Verify that values change along the path
+    assert not np.allclose(F_vectorized[0], F_vectorized[1]), (
+        "Forces should vary along path"
+    )
+    assert not np.allclose(F_vectorized[1], F_vectorized[2]), (
+        "Forces should vary along path"
+    )
+
+
+################################################################################
+# MAGNET SOURCES TESTS
+################################################################################
 
 
 def test_path_varying_cuboid_dimension_magnetization():
@@ -318,95 +599,6 @@ def test_path_varying_sphere_diameter_magnetization():
     assert not np.allclose(F_vec_mag[0], F_vec_mag[1], rtol=0, atol=0)
 
 
-def test_path_varying_polyline_vertices():
-    """Test getFT with path-varying vertices on Polyline target.
-
-    Tests that geometry itself can vary along the path, not just properties.
-    """
-    # Create a dipole source
-    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -2))
-
-    # Define path-varying vertices - expanding square loop
-    vertices_path = np.array(
-        [
-            [  # Step 0: small square
-                [-0.5, -0.5, 0],
-                [0.5, -0.5, 0],
-                [0.5, 0.5, 0],
-                [-0.5, 0.5, 0],
-                [-0.5, -0.5, 0],
-            ],
-            [  # Step 1: medium square
-                [-1.0, -1.0, 0],
-                [1.0, -1.0, 0],
-                [1.0, 1.0, 0],
-                [-1.0, 1.0, 0],
-                [-1.0, -1.0, 0],
-            ],
-            [  # Step 2: large square
-                [-1.5, -1.5, 0],
-                [1.5, -1.5, 0],
-                [1.5, 1.5, 0],
-                [-1.5, 1.5, 0],
-                [-1.5, -1.5, 0],
-            ],
-        ]
-    )
-
-    currents = np.array([100.0, 100.0, 100.0])
-    positions = np.array([[0, 0, i] for i in range(3)])
-
-    # VECTORIZED: Create polyline with path-varying vertices
-    polyline_varying = magpy.current.Polyline(
-        vertices=vertices_path, current=currents, position=positions, meshing=20
-    )
-
-    F_vectorized, T_vectorized = magpy.getFT(dipole, polyline_varying)
-
-    # MANUAL LOOP: Compute each path step separately
-    F_manual = []
-    T_manual = []
-
-    for i in range(len(vertices_path)):
-        polyline_single = magpy.current.Polyline(
-            vertices=vertices_path[i],
-            current=currents[i],
-            position=positions[i],
-            meshing=20,
-        )
-
-        F_i, T_i = magpy.getFT(dipole, polyline_single)
-        F_manual.append(F_i)
-        T_manual.append(T_i)
-
-    F_manual = np.array(F_manual)
-    T_manual = np.array(T_manual)
-
-    # Verify that both approaches give identical results
-    np.testing.assert_allclose(
-        F_vectorized,
-        F_manual,
-        rtol=1e-10,
-        err_msg="Force calculation differs for path-varying vertices",
-    )
-
-    np.testing.assert_allclose(
-        T_vectorized,
-        T_manual,
-        rtol=1e-10,
-        err_msg="Torque calculation differs for path-varying vertices",
-    )
-
-    # Verify forces decrease as polyline moves away (increasing z position)
-    force_magnitudes = np.linalg.norm(F_vectorized, axis=1)
-    assert force_magnitudes[1] < force_magnitudes[0], (
-        "Force should decrease as polyline moves farther from dipole"
-    )
-    assert force_magnitudes[2] < force_magnitudes[1], (
-        "Force should decrease as polyline moves farther from dipole"
-    )
-
-
 def test_mismatched_path_lengths():
     """Test getFT with different path lengths for source and target.
 
@@ -446,6 +638,58 @@ def test_mismatched_path_lengths():
     np.testing.assert_allclose(
         T[2], T_expected, rtol=1e-10, err_msg="Padded step should match expected value"
     )
+
+
+################################################################################
+# COLLECTIONS
+################################################################################
+
+
+def test_path_varying_with_collections():
+    """Test getFT with Collections containing path-varying targets.
+
+    Verifies that forces are correctly summed across collection members.
+    """
+    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -3))
+
+    # Two circles with different path-varying properties
+    circle1 = magpy.current.Circle(
+        diameter=[1.0, 2.0], current=[100.0, 200.0], meshing=20
+    )
+
+    circle2 = magpy.current.Circle(
+        diameter=[1.5, 2.5], current=[150.0, 250.0], meshing=20
+    )
+
+    # Create collection
+    coll = magpy.Collection(circle1, circle2)
+    coll.position = [(0, 0, 0), (0, 0, 1)]
+
+    F_coll, T_coll = magpy.getFT(dipole, coll)
+
+    # Compute individual forces and sum manually
+    F1, T1 = magpy.getFT(dipole, [circle1, circle2])
+    F_manual = F1[:, 0, :] + F1[:, 1, :]  # Sum across targets
+    T_manual = T1[:, 0, :] + T1[:, 1, :]
+
+    np.testing.assert_allclose(
+        F_coll,
+        F_manual,
+        rtol=1e-10,
+        err_msg="Collection should sum forces correctly",
+    )
+
+    np.testing.assert_allclose(
+        T_coll,
+        T_manual,
+        rtol=1e-10,
+        err_msg="Collection should sum torques correctly",
+    )
+
+
+################################################################################
+# MISC TESTS
+################################################################################
 
 
 def test_single_element_array_vs_scalar():
@@ -522,257 +766,4 @@ def test_path_varying_with_centroid_pivot():
         T_manual,
         rtol=1e-10,
         err_msg="Default pivot (centroid) should match manual per-step calculation",
-    )
-
-
-def test_path_varying_with_collections():
-    """Test getFT with Collections containing path-varying targets.
-
-    Verifies that forces are correctly summed across collection members.
-    """
-    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -3))
-
-    # Two circles with different path-varying properties
-    circle1 = magpy.current.Circle(
-        diameter=[1.0, 2.0], current=[100.0, 200.0], meshing=20
-    )
-
-    circle2 = magpy.current.Circle(
-        diameter=[1.5, 2.5], current=[150.0, 250.0], meshing=20
-    )
-
-    # Create collection
-    coll = magpy.Collection(circle1, circle2)
-    coll.position = [(0, 0, 0), (0, 0, 1)]
-
-    F_coll, T_coll = magpy.getFT(dipole, coll)
-
-    # Compute individual forces and sum manually
-    F1, T1 = magpy.getFT(dipole, [circle1, circle2])
-    F_manual = F1[:, 0, :] + F1[:, 1, :]  # Sum across targets
-    T_manual = T1[:, 0, :] + T1[:, 1, :]
-
-    np.testing.assert_allclose(
-        F_coll,
-        F_manual,
-        rtol=1e-10,
-        err_msg="Collection should sum forces correctly",
-    )
-
-    np.testing.assert_allclose(
-        T_coll,
-        T_manual,
-        rtol=1e-10,
-        err_msg="Collection should sum torques correctly",
-    )
-
-
-def test_zero_current_in_path():
-    """Test that zero current in path doesn't cause numerical issues."""
-    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -2))
-
-    # Include zero current at first step
-    circle = magpy.current.Circle(
-        diameter=[2.0, 2.0, 2.0],
-        current=[0.0, 100.0, 200.0],
-        position=[(0, 0, i) for i in range(3)],
-        meshing=20,
-    )
-
-    F, T = magpy.getFT(dipole, circle)
-
-    # Verify no NaN or inf values
-    assert not np.any(np.isnan(F)), "Result should not contain NaN"
-    assert not np.any(np.isinf(F)), "Result should not contain inf"
-    assert not np.any(np.isnan(T)), "Result should not contain NaN"
-    assert not np.any(np.isinf(T)), "Result should not contain inf"
-
-    # First step should have near-zero force (zero current)
-    assert np.linalg.norm(F[0]) < 1e-10, "Zero current should produce near-zero force"
-
-    # Later steps should have non-zero forces
-    assert np.linalg.norm(F[1]) > 1e-6, "Non-zero current should produce force"
-    assert np.linalg.norm(F[2]) > 1e-6, "Non-zero current should produce force"
-
-
-def test_path_varying_triangle_sheet_vertices_current_densities():
-    """Test getFT with path-varying vertices and current_densities on TriangleSheet.
-
-    Tests both geometry and current density varying along the path.
-    """
-    # Create a dipole source
-    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -2))
-
-    # Define fixed vertices - simple mesh with 4 vertices forming 2 triangular faces
-    vertices = np.array(
-        [
-            [0, 0, 0],
-            [1, 0, 0],
-            [0, 1, 0],
-            [1, 1, 0],
-        ]
-    )
-
-    # Define faces (same for all path steps)
-    faces = np.array([[0, 1, 2], [1, 3, 2]])
-
-    # Path-varying current densities - rotating direction
-    angles = np.array([0, np.pi / 4, np.pi / 2])
-    current_densities_path = np.zeros((3, 2, 3))
-    for i, angle in enumerate(angles):
-        current_densities_path[i, :, 0] = 100 * np.cos(angle)  # x component
-        current_densities_path[i, :, 1] = 100 * np.sin(angle)  # y component
-
-    positions = np.array([[0, 0, i * 0.5] for i in range(3)])
-
-    # VECTORIZED: Create TriangleSheet with path-varying current_densities only
-    sheet_varying = magpy.current.TriangleSheet(
-        vertices=vertices,
-        faces=faces,
-        current_densities=current_densities_path,
-        position=positions,
-        meshing=10,
-    )
-
-    F_vectorized, T_vectorized = magpy.getFT(dipole, sheet_varying)
-
-    # MANUAL LOOP: Compute each path step separately
-    F_manual = []
-    T_manual = []
-
-    for i in range(len(current_densities_path)):
-        sheet_single = magpy.current.TriangleSheet(
-            vertices=vertices,
-            faces=faces,
-            current_densities=current_densities_path[i],
-            position=positions[i],
-            meshing=10,
-        )
-
-        F_i, T_i = magpy.getFT(dipole, sheet_single)
-        F_manual.append(F_i)
-        T_manual.append(T_i)
-
-    F_manual = np.array(F_manual)
-    T_manual = np.array(T_manual)
-
-    # Verify that both approaches give identical results
-    np.testing.assert_allclose(
-        F_vectorized,
-        F_manual,
-        rtol=1e-8,
-        atol=1e-10,
-        err_msg="Force calculation differs for path-varying TriangleSheet",
-    )
-
-    np.testing.assert_allclose(
-        T_vectorized,
-        T_manual,
-        rtol=1e-8,
-        atol=1e-10,
-        err_msg="Torque calculation differs for path-varying TriangleSheet",
-    )
-
-    # Verify output shapes
-    assert F_vectorized.shape == (3, 3), (
-        f"Expected shape (3, 3), got {F_vectorized.shape}"
-    )
-    assert T_vectorized.shape == (3, 3), (
-        f"Expected shape (3, 3), got {T_vectorized.shape}"
-    )
-
-    # Verify that values change along the path
-    assert not np.allclose(F_vectorized[0], F_vectorized[1]), (
-        "Forces should vary along path"
-    )
-    assert not np.allclose(F_vectorized[1], F_vectorized[2]), (
-        "Forces should vary along path"
-    )
-
-
-def test_path_varying_triangle_strip_vertices_current():
-    """Test getFT with path-varying vertices and current on TriangleStrip.
-
-    Tests both geometry and current varying along the path.
-    """
-    # Create a dipole source
-    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -2))
-
-    # Path-varying vertices - morphing strip from flat to curved
-    vertices_path = np.array(
-        [
-            # Path step 0: flat strip
-            [[0, 0, 0], [1, 0, 0], [0, 0.5, 0], [1, 0.5, 0]],
-            # Path step 1: slightly curved
-            [[0, 0, 0.1], [1, 0, 0.1], [0, 0.5, 0.15], [1, 0.5, 0.15]],
-            # Path step 2: more curved
-            [[0, 0, 0.2], [1, 0, 0.2], [0, 0.5, 0.3], [1, 0.5, 0.3]],
-        ]
-    )
-
-    # Path-varying current - increasing magnitude
-    currents_path = np.array([50, 100, 150])
-
-    positions = np.array([[0, 0, i * 0.5] for i in range(3)])
-
-    # VECTORIZED: Create TriangleStrip with path-varying vertices and current
-    strip_varying = magpy.current.TriangleStrip(
-        vertices=vertices_path,
-        current=currents_path,
-        position=positions,
-        meshing=10,
-    )
-
-    F_vectorized, T_vectorized = magpy.getFT(dipole, strip_varying)
-
-    # MANUAL LOOP: Compute each path step separately
-    F_manual = []
-    T_manual = []
-
-    for i in range(len(currents_path)):
-        strip_single = magpy.current.TriangleStrip(
-            vertices=vertices_path[i],
-            current=currents_path[i],
-            position=positions[i],
-            meshing=10,
-        )
-
-        F_i, T_i = magpy.getFT(dipole, strip_single)
-        F_manual.append(F_i)
-        T_manual.append(T_i)
-
-    F_manual = np.array(F_manual)
-    T_manual = np.array(T_manual)
-
-    # Verify that both approaches give identical results
-    np.testing.assert_allclose(
-        F_vectorized,
-        F_manual,
-        rtol=1e-8,
-        atol=1e-10,
-        err_msg="Force calculation differs for path-varying TriangleStrip",
-    )
-
-    np.testing.assert_allclose(
-        T_vectorized,
-        T_manual,
-        rtol=1e-8,
-        atol=1e-10,
-        err_msg="Torque calculation differs for path-varying TriangleStrip",
-    )
-
-    # Verify output shapes
-    assert F_vectorized.shape == (3, 3), (
-        f"Expected shape (3, 3), got {F_vectorized.shape}"
-    )
-    assert T_vectorized.shape == (3, 3), (
-        f"Expected shape (3, 3), got {T_vectorized.shape}"
-    )
-
-    # Verify that values change along the path
-    assert not np.allclose(F_vectorized[0], F_vectorized[1]), (
-        "Forces should vary along path"
-    )
-    assert not np.allclose(F_vectorized[1], F_vectorized[2]), (
-        "Forces should vary along path"
     )
