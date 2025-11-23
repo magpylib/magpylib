@@ -24,7 +24,7 @@ from magpylib._src.obj_classes.class_BaseTransform import (
     pad_path_properties,
 )
 from magpylib._src.style import BaseStyle
-from magpylib._src.utility import add_iteration_suffix
+from magpylib._src.utility import add_iteration_suffix, unit_prefix
 
 UNITS = {
     "parent": None,
@@ -644,6 +644,8 @@ class BaseGeo(BaseTransform, ABC):
                             val = f"shape{val.shape}"
                     else:
                         val = getattr(self, k)
+                    if isinstance(val, float):
+                        val = f"{unit_prefix(val, precision=precision)}"
                     val = str(val).replace("\n", " ")
                     indent = " " * 2 if key in self.path_properties else ""
                     lines.append(f"{indent}  • {k}: {val}{unit_str}")

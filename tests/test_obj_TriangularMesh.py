@@ -372,9 +372,10 @@ def test_TriangularMesh_from_faces_good_inputs():
     )
 
     # from triangle list
-    trias = [
-        magpy.misc.Triangle(polarization=pol, vertices=face) for face in tmesh1.mesh
-    ]
+    mesh = tmesh1.mesh
+    if mesh.ndim == 4:
+        mesh = mesh[0]
+    trias = [magpy.misc.Triangle(polarization=pol, vertices=face) for face in mesh]
     tmesh2 = magpy.magnet.TriangularMesh.from_triangles(
         polarization=pol, triangles=trias, **pos_ori
     )

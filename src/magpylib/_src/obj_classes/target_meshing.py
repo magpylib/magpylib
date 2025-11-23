@@ -880,11 +880,16 @@ def _target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetiz
 
     Parameters
     ----------
-    vertices : np.ndarray, shape (n, 3) - Mesh vertices
-    faces : np.ndarray, shape (m, 3) - Mesh faces (triangles) as vertex indices
-    target_points : int - Target number of mesh points
-    volume : float | ndarray, shape (p,) - Volume of the body
-    magnetization : np.ndarray, shape (3,) - Magnetization vector for the mesh points
+    vertices : np.ndarray, shape (n, 3) or (p, n, 3)
+        Mesh vertices.
+    faces : np.ndarray, shape (m, 3)
+        Mesh faces (triangles) as vertex indices.
+    target_points : int
+        Target number of mesh points.
+    volume : float | ndarray, shape (p,)
+        Volume of the body.
+    magnetization : np.ndarray, shape (3,) or (p, 3)
+        Magnetization vector for the mesh points.
 
     Returns
     -------
@@ -898,6 +903,24 @@ def _target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetiz
         _calculate_centroid,
         _mask_inside_trimesh,
     )
+
+    # Handle path-varying inputs (currently not supported, so we take the first element)
+    # vertices: (n, 3) or (p, n, 3)
+    if vertices.ndim == 3:
+        if np.unique(vertices, axis=0).shape[0] > 1:
+            msg = "TriangularMesh does not yet support path-varying vertices for force computation."
+            raise NotImplementedError(msg)
+        vertices = vertices[0]
+
+    # volume: float or (p,)
+    volume = np.atleast_1d(volume)
+    if volume.ndim == 1 and volume.shape[0] > 1:
+        if np.unique(volume).shape[0] > 1:
+            msg = "TriangularMesh does not yet support path-varying volume for force computation."
+            raise NotImplementedError(msg)
+        volume = volume[0]
+    elif volume.ndim == 1:
+        volume = volume[0]
 
     # Return barycenter (centroid) if only one point is requested
     if target_points == 1:

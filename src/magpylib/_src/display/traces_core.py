@@ -490,6 +490,8 @@ def make_mesh_lines(obj, mode, path_ind=None, **kwargs) -> dict[str, Any]:
     mesh = getattr(style.mesh, mode)
     marker, line = mesh.marker, mesh.line
     vertices = obj._vertices if path_ind is None else obj._vertices[path_ind]
+    if vertices.ndim == 3 and vertices.shape[0] == 1:
+        vertices = vertices[0]
     tr, vert = obj.faces, vertices
     if mode == "disconnected":
         subsets = obj.get_faces_subsets()
@@ -566,14 +568,15 @@ def make_Triangle(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
     return traces
 
 
-def make_TriangularMesh_single(obj, **kwargs) -> dict[str, Any]:
+def make_TriangularMesh_single(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
     """
     Creates the plotly mesh3d parameters for a Triangular facet mesh in a dictionary based on the
     provided arguments.
     """
     style = obj.style
+    vertices = obj._vertices
     trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=obj.vertices, faces=obj.faces, color=style.color
+        "plotly-dict", vertices=vertices[path_ind], faces=obj.faces, color=style.color
     )
     trace["name"] = get_legend_label(obj)
     # make edges sharper in plotly
