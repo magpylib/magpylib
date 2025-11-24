@@ -33,7 +33,7 @@ from magpylib._src.obj_classes.class_BaseProperties import (
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
-from magpylib._src.obj_classes.target_meshing import _target_mesh_triangularmesh
+from magpylib._src.obj_classes.target_meshing import generate_mesh_triangularmesh
 from magpylib._src.style import TriangularMeshStyle
 
 
@@ -324,7 +324,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     def _generate_mesh(self):
         """Generate mesh for force computation."""
         # Tests in getFT ensure that meshing, dimension and excitation are set
-        return _target_mesh_triangularmesh(
+        return generate_mesh_triangularmesh(
             self._vertices,
             self._faces,
             self.meshing,

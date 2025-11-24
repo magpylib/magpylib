@@ -13,7 +13,7 @@ from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
-from magpylib._src.obj_classes.target_meshing import _target_mesh_polyline
+from magpylib._src.obj_classes.target_meshing import generate_mesh_polyline
 
 
 class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
@@ -238,4 +238,4 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
             warnings.warn(msg, UserWarning, stacklevel=2)
             n_points = n_segments
 
-        return _target_mesh_polyline(self._vertices, self._current, n_points)
+        return generate_mesh_polyline(self._vertices, self._current, n_points)

@@ -15,7 +15,7 @@ from magpylib._src.obj_classes.class_BaseProperties import (
     BaseVolume,
 )
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
-from magpylib._src.obj_classes.target_meshing import _target_mesh_tetrahedron
+from magpylib._src.obj_classes.target_meshing import generate_mesh_tetrahedron
 
 
 class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
@@ -221,6 +221,6 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
     def _generate_mesh(self):
         """Generate mesh for force computation by delegating to target mesher."""
-        return _target_mesh_tetrahedron(
+        return generate_mesh_tetrahedron(
             self.meshing, self._vertices, self._magnetization
         )

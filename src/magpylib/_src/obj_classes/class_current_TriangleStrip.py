@@ -14,7 +14,7 @@ from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
-from magpylib._src.obj_classes.target_meshing import _target_mesh_triangle_current
+from magpylib._src.obj_classes.target_meshing import generate_mesh_triangle_current
 from magpylib._src.style import CurrentSheetStyle
 
 
@@ -310,7 +310,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
             / height[:, :, np.newaxis]
         )
 
-        return _target_mesh_triangle_current(
+        return generate_mesh_triangle_current(
             triangles,
             cds,
             self.meshing,

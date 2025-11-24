@@ -13,7 +13,7 @@ from magpylib._src.fields.field_BH_current_sheet import _BHJM_current_trisheet
 from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
-from magpylib._src.obj_classes.target_meshing import _target_mesh_triangle_current
+from magpylib._src.obj_classes.target_meshing import generate_mesh_triangle_current
 from magpylib._src.style import CurrentSheetStyle
 
 
@@ -284,7 +284,7 @@ class TriangleSheet(BaseSource, BaseTarget):
         # For each path p, for each face m, get 3 vertices of 3 coordinates
         triangles = verts[:, self.faces, :]  # shape (p, m, 3, 3)
 
-        return _target_mesh_triangle_current(
+        return generate_mesh_triangle_current(
             triangles,
             cd,
             self.meshing,

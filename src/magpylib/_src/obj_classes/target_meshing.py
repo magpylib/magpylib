@@ -143,7 +143,7 @@ def _get_cuboid_mesh_single(a, b, c, target_elems):
     return pts, volume
 
 
-def _target_mesh_cuboid(dimension, magnetization, target_elems):
+def generate_mesh_cuboid(dimension, magnetization, target_elems):
     """Cuboid mesh in the local object coordinates with path-varying parameters.
 
     Generates a point-cloud of n1 x n2 x n3 points inside a cuboid with sides a, b, c.
@@ -285,7 +285,7 @@ def _get_cylinder_mesh_single(r1, r2, h, phi1, phi2, target_elems):
     return pts, volumes
 
 
-def _target_mesh_cylinder(r1, r2, h, phi1, phi2, magnetization, target_elems):
+def generate_mesh_cylindersegment(r1, r2, h, phi1, phi2, magnetization, target_elems):
     """Cylinder mesh in the local object coordinates with path-varying parameters.
 
     Generates a point-cloud of mesh points inside a cylinder or cylinder segment.
@@ -393,7 +393,7 @@ def _target_mesh_cylinder(r1, r2, h, phi1, phi2, magnetization, target_elems):
     return {"pts": pts_array, "moments": moments_array}
 
 
-def _target_mesh_circle(diameter, current, n_points):
+def generate_mesh_circle(diameter, current, n_points):
     """
     Circle meshing in the local object coordinates with path-varying parameters
 
@@ -541,7 +541,7 @@ def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
     return TRIA
 
 
-def _target_mesh_triangle_current(
+def generate_mesh_triangle_current(
     triangles: np.ndarray, cds: np.ndarray, n_target: int
 ):
     """
@@ -632,7 +632,7 @@ def _target_mesh_triangle_current(
     return {"pts": pts, "cvecs": cvecs}
 
 
-def _target_mesh_polyline(vertices, current, n_points):
+def generate_mesh_polyline(vertices, current, n_points):
     """
     Polyline meshing in the local object coordinates with path-varying parameters
 
@@ -852,7 +852,7 @@ def _get_tetrahedron_mesh_single(n_points, vertices, magnetization):
     return {"pts": pts, "moments": moments}
 
 
-def _target_mesh_tetrahedron(
+def generate_mesh_tetrahedron(
     n_points: int, vertices: np.ndarray, magnetization: np.ndarray
 ):
     """
@@ -1035,7 +1035,7 @@ def _get_triangularmesh_mesh_single(
     return {"pts": pts, "moments": moments}
 
 
-def _target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetization):
+def generate_mesh_triangularmesh(vertices, faces, target_points, volume, magnetization):
     """
     Generate mesh points inside a triangular mesh volume for force computations.
 

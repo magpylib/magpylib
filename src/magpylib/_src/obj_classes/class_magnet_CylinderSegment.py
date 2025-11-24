@@ -17,7 +17,7 @@ from magpylib._src.obj_classes.class_BaseProperties import (
     BaseVolume,
 )
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
-from magpylib._src.obj_classes.target_meshing import _target_mesh_cylinder
+from magpylib._src.obj_classes.target_meshing import generate_mesh_cylindersegment
 from magpylib._src.utility import unit_prefix
 
 
@@ -254,7 +254,7 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         """Generate mesh for force computation."""
         # Tests in getFT ensure that meshing, dimension and excitation are set
         # Pass full path-enabled arrays (p, 5) and (p, 3)
-        return _target_mesh_cylinder(
+        return generate_mesh_cylindersegment(
             self._dimension[:, 0],  # r1
             self._dimension[:, 1],  # r2
             self._dimension[:, 2],  # h
