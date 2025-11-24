@@ -165,33 +165,22 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         """Default style description text"""
         if self.dimension is None:
             return "no dimension"
-        # Handle path dimensions
         dims = self._dimension
+        # Single dimension or all dimensions are the same
         if len(dims) == 1 or np.all(dims == dims[0], axis=0).all():
-            # Single dimension or all dimensions are the same
             d = [unit_prefix(v) for v in dims[0]]
             return f"r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°"
-        # Multiple different dimensions - show range
+        # Multiple different dimensions - show range per component
         dmin, dmax = np.nanmin(dims, axis=0), np.nanmax(dims, axis=0)
         parts = []
-        labels = [("r", 0, 1), ("h", 2, 2), ("φ", 3, 4)]
-        for label, i1, i2 in labels:
-            if i1 == i2:
-                # Single value (h)
-                if np.allclose(dmin[i1], dmax[i1]):
-                    val = unit_prefix(dmin[i1])
-                    parts.append(f"{label}={val}m")
-                else:
-                    vmin, vmax = unit_prefix(dmin[i1]), unit_prefix(dmax[i1])
-                    parts.append(f"{label}={vmin}m↔{vmax}m")
-            # Range (r, φ)
-            elif np.allclose(dmin[i1], dmax[i1]) and np.allclose(dmin[i2], dmax[i2]):
-                v1, v2 = unit_prefix(dmin[i1]), unit_prefix(dmin[i2])
-                unit = "m" if label == "r" else "°"
-                parts.append(f"{label}={v1}{unit}|{v2}{unit}")
+        units = [("r1", "m"), ("r2", "m"), ("h", "m"), ("φ1", "°"), ("φ2", "°")]
+        for idx, (name, unit) in enumerate(units):
+            if np.allclose(dmin[idx], dmax[idx]):
+                val = unit_prefix(dmin[idx])
+                parts.append(f"{name}={val}{unit}")
             else:
-                unit = "m" if label == "r" else "°"
-                parts.append(f"{label}=varying")
+                vmin, vmax = unit_prefix(dmin[idx]), unit_prefix(dmax[idx])
+                parts.append(f"{name}={vmin}{unit}↔{vmax}{unit}")
         return ", ".join(parts)
 
     # Methods
