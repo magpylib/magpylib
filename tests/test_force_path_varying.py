@@ -850,3 +850,89 @@ def test_path_varying_tetrahedron():
 
     np.testing.assert_allclose(F_vec, F_manual, rtol=1e-7, atol=1e-23)
     np.testing.assert_allclose(T_vec, T_manual, rtol=1e-7, atol=1e-27)
+
+
+def test_path_varying_triangularmesh():
+    """Test getFT with path-varying vertices and magnetization on TriangularMesh target."""
+    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -5))
+
+    # Create simple cube meshes with varying sizes
+    # Cube 1: size 2mm
+    vertices1 = np.array(
+        [
+            [0, 0, 0],
+            [0.002, 0, 0],
+            [0.002, 0.002, 0],
+            [0, 0.002, 0],
+            [0, 0, 0.002],
+            [0.002, 0, 0.002],
+            [0.002, 0.002, 0.002],
+            [0, 0.002, 0.002],
+        ]
+    )
+    # Cube 2: size 3mm
+    vertices2 = np.array(
+        [
+            [0, 0, 0],
+            [0.003, 0, 0],
+            [0.003, 0.003, 0],
+            [0, 0.003, 0],
+            [0, 0, 0.003],
+            [0.003, 0, 0.003],
+            [0.003, 0.003, 0.003],
+            [0, 0.003, 0.003],
+        ]
+    )
+
+    # Standard cube faces
+    faces = np.array(
+        [
+            [0, 1, 2],
+            [0, 2, 3],  # bottom
+            [4, 5, 6],
+            [4, 6, 7],  # top
+            [0, 1, 5],
+            [0, 5, 4],  # front
+            [2, 3, 7],
+            [2, 7, 6],  # back
+            [0, 3, 7],
+            [0, 7, 4],  # left
+            [1, 2, 6],
+            [1, 6, 5],  # right
+        ]
+    )
+
+    vertices_varying = np.array([vertices1, vertices2, vertices1])  # Repeat first
+    magnetizations_varying = np.array([[0, 0, 1e6], [0, 0, 1.2e6], [0, 0, 1.5e6]])
+    positions = np.array([[0, 0, i * 0.01] for i in range(3)])
+
+    trimesh_varying = magpy.magnet.TriangularMesh(
+        vertices=vertices_varying,
+        faces=faces,
+        magnetization=magnetizations_varying,
+        position=positions,
+        meshing=50,
+    )
+
+    F_vec, T_vec = magpy.getFT(dipole, trimesh_varying)
+
+    # Manual loop for verification
+    F_manual = []
+    T_manual = []
+    for i in range(3):
+        trimesh_single = magpy.magnet.TriangularMesh(
+            vertices=vertices_varying[i],
+            faces=faces,
+            magnetization=magnetizations_varying[i],
+            position=positions[i],
+            meshing=50,
+        )
+        F_i, T_i = magpy.getFT(dipole, trimesh_single)
+        F_manual.append(F_i)
+        T_manual.append(T_i)
+
+    F_manual = np.array(F_manual)
+    T_manual = np.array(T_manual)
+
+    np.testing.assert_allclose(F_vec, F_manual, rtol=1e-7, atol=1e-23)
+    np.testing.assert_allclose(T_vec, T_manual, rtol=1e-7, atol=1e-27)

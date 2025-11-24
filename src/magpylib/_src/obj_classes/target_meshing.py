@@ -970,6 +970,71 @@ def _target_mesh_tetrahedron(
     return {"pts": pts_array, "moments": moments_array}
 
 
+def _get_triangularmesh_mesh_single(
+    vertices, faces, target_points, volume, magnetization
+):
+    """Helper function to generate a single triangular mesh.
+
+    Parameters
+    ----------
+    vertices : np.ndarray, shape (n, 3)
+        Mesh vertices.
+    faces : np.ndarray, shape (m, 3)
+        Mesh faces (triangles) as vertex indices.
+    target_points : int
+        Target number of mesh points.
+    volume : float
+        Volume of the body.
+    magnetization : np.ndarray, shape (3,)
+        Magnetization vector.
+
+    Returns
+    -------
+    dict
+        {"pts": np.ndarray, shape (n, 3), "moments": np.ndarray, shape (n, 3)}
+    """
+    from magpylib._src.fields.field_BH_triangularmesh import (  # noqa: PLC0415
+        _calculate_centroid,
+        _mask_inside_trimesh,
+    )
+
+    # Return barycenter (centroid) if only one point is requested
+    if target_points == 1:
+        barycenter = _calculate_centroid(vertices, faces)
+        pts = np.array([barycenter])
+        moments = np.array([volume * magnetization])
+        return {"pts": pts, "moments": moments}
+
+    # Generate regular cubic grid
+    spacing = (volume / target_points) ** (1 / 3)
+    min_coords = np.min(vertices, axis=0)
+    max_coords = np.max(vertices, axis=0)
+    padding = spacing * 0.5
+    dimensions = [
+        min_coords[0] - padding,
+        min_coords[1] - padding,
+        min_coords[2] - padding,
+        max_coords[0] + padding,
+        max_coords[1] + padding,
+        max_coords[2] + padding,
+    ]
+    points = _create_grid(dimensions, spacing)
+
+    # Apply inside/outside mask
+    inside_mask = _mask_inside_trimesh(points, vertices[faces])
+    pts = points[inside_mask]
+
+    if len(pts) == 0:
+        barycenter = _calculate_centroid(vertices, faces)
+        pts = np.array([barycenter])
+        volumes = np.full(1, volume)
+    else:
+        volumes = np.full(len(pts), volume / len(pts))
+
+    moments = volumes[:, np.newaxis] * magnetization
+    return {"pts": pts, "moments": moments}
+
+
 def _target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetization):
     """
     Generate mesh points inside a triangular mesh volume for force computations.
@@ -994,72 +1059,53 @@ def _target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetiz
     Returns
     -------
     dict: {
-        "pts": np.ndarray, shape (n, 3) - mesh points
-        "moments": np.ndarray, shape (n, 3) - moments associated with each point
+        "pts": np.ndarray, shape (n, 3) or (p, n, 3) - mesh points
+        "moments": np.ndarray, shape (n, 3) or (p, n, 3) - moments associated with each point
     }
     """
-    # Import the required functions from triangular mesh field module
-    from magpylib._src.fields.field_BH_triangularmesh import (  # noqa: PLC0415
-        _calculate_centroid,
-        _mask_inside_trimesh,
-    )
+    # Normalize inputs
+    verts = np.atleast_1d(vertices)
+    mags = np.atleast_1d(magnetization)
+    vols = np.atleast_1d(volume)
 
-    # Handle path-varying inputs (currently not supported, so we take the first element)
-    # vertices: (n, 3) or (p, n, 3)
-    if vertices.ndim == 3:
-        if np.unique(vertices, axis=0).shape[0] > 1:
-            msg = "TriangularMesh does not yet support path-varying vertices for force computation."
-            raise NotImplementedError(msg)
-        vertices = vertices[0]
+    # Normalize shapes
+    verts_exp = verts[np.newaxis, ...] if verts.ndim == 2 else verts
+    mags_exp = mags[np.newaxis, ...] if mags.ndim == 1 else mags
+    vols_exp = vols[np.newaxis] if vols.ndim == 0 else vols
 
-    # volume: float or (p,)
-    volume = np.atleast_1d(volume)
-    if volume.ndim == 1 and volume.shape[0] > 1:
-        if np.unique(volume).shape[0] > 1:
-            msg = "TriangularMesh does not yet support path-varying volume for force computation."
-            raise NotImplementedError(msg)
-        volume = volume[0]
-    elif volume.ndim == 1:
-        volume = volume[0]
+    p_len = len(verts_exp)
 
-    # Return barycenter (centroid) if only one point is requested
-    if target_points == 1:
-        barycenter = _calculate_centroid(vertices, faces)
-        pts = np.array([barycenter])
-        moments = np.array([volume * magnetization])
+    # Detect path variation
+    verts_varying = np.unique(verts_exp.reshape(p_len, -1), axis=0).shape[0] > 1
+    mags_varying = np.unique(mags_exp, axis=0).shape[0] > 1
+    vols_varying = np.unique(vols_exp).shape[0] > 1
+    has_path_varying = verts_varying or mags_varying or vols_varying
 
-        return {"pts": pts, "moments": moments}
+    # If no path variation, keep original behavior
+    if not has_path_varying:
+        return _get_triangularmesh_mesh_single(
+            verts_exp[0], faces, target_points, vols_exp[0], mags_exp[0]
+        )
 
-    # Generate regular cubic grid
-    spacing = (volume / target_points) ** (1 / 3)
-    min_coords = np.min(vertices, axis=0)
-    max_coords = np.max(vertices, axis=0)
-    padding = (
-        spacing * 0.5
-    )  # add half a cell size padding to ensure optimal homo loc-vol matching
-    dimensions = [
-        min_coords[0] - padding,
-        min_coords[1] - padding,
-        min_coords[2] - padding,
-        max_coords[0] + padding,
-        max_coords[1] + padding,
-        max_coords[2] + padding,
-    ]
-    points = _create_grid(dimensions, spacing)
+    # Path-varying: generate per-path meshes and pad
+    pts_list = []
+    moments_list = []
 
-    # Apply inside/outside mask
-    inside_mask = _mask_inside_trimesh(points, vertices[faces])
-    pts = points[inside_mask]
+    for p_idx in range(p_len):
+        out = _get_triangularmesh_mesh_single(
+            verts_exp[p_idx], faces, target_points, vols_exp[p_idx], mags_exp[p_idx]
+        )
+        pts_list.append(out["pts"])
+        moments_list.append(out["moments"])
 
-    if len(pts) == 0:
-        barycenter = _calculate_centroid(vertices, faces)
-        pts = np.array([barycenter])
-        volumes = np.array([volume])
-        return {"pts": pts, "volumes": volumes}
+    # Pad and stack
+    max_n = max(len(pts) for pts in pts_list)
+    pts_array = np.zeros((p_len, max_n, 3))
+    moments_array = np.zeros((p_len, max_n, 3))
 
-    # Volumes
-    volumes = np.full(len(pts), volume / len(pts))
+    for p_idx in range(p_len):
+        n = len(pts_list[p_idx])
+        pts_array[p_idx, :n] = pts_list[p_idx]
+        moments_array[p_idx, :n] = moments_list[p_idx]
 
-    moments = volumes[:, np.newaxis] * magnetization
-
-    return {"pts": pts, "moments": moments}
+    return {"pts": pts_array, "moments": moments_array}
