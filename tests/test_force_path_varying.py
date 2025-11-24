@@ -740,3 +740,57 @@ def test_path_varying_with_centroid_pivot():
         rtol=1e-10,
         err_msg="Default pivot (centroid) should match manual per-step calculation",
     )
+
+
+def test_path_varying_cylinder_segment():
+    """Test getFT with path-varying parameters on CylinderSegment target.
+
+    Tests varying r1, r2, h, phi1, phi2 and magnetization.
+    """
+    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -5))
+
+    # Varying dimensions: (r1, r2, h, phi1, phi2)
+    dimensions_varying = np.array(
+        [
+            [0.001, 0.003, 0.002, 0, 90],  # Segment 1
+            [0.002, 0.004, 0.001, 45, 135],  # Segment 2
+            [0.001, 0.003, 0.002, 0, 90],  # Segment 1 (repeated)
+        ]
+    )
+    magnetizations_varying = np.array(
+        [
+            [0, 0, 1e6],
+            [0, 0, 1.2e6],
+            [0, 0, 1.5e6],
+        ]
+    )
+    positions = np.array([[0, 0, i * 0.01] for i in range(3)])
+
+    cyl_seg_varying = magpy.magnet.CylinderSegment(
+        dimension=dimensions_varying,
+        magnetization=magnetizations_varying,
+        position=positions,
+        meshing=50,
+    )
+
+    F_vec, T_vec = magpy.getFT(dipole, cyl_seg_varying)
+
+    # Manual loop for verification
+    F_manual = []
+    T_manual = []
+    for i in range(3):
+        cyl_single = magpy.magnet.CylinderSegment(
+            dimension=dimensions_varying[i],
+            magnetization=magnetizations_varying[i],
+            position=positions[i],
+            meshing=50,
+        )
+        F_i, T_i = magpy.getFT(dipole, cyl_single)
+        F_manual.append(F_i)
+        T_manual.append(T_i)
+
+    F_manual = np.array(F_manual)
+    T_manual = np.array(T_manual)
+
+    np.testing.assert_allclose(F_vec, F_manual, rtol=1e-7, atol=1e-23)
+    np.testing.assert_allclose(T_vec, T_manual, rtol=1e-7, atol=1e-27)

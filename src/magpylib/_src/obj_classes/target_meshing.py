@@ -235,59 +235,8 @@ def _target_mesh_cuboid(dimension, magnetization, target_elems):
     return {"pts": pts_array, "moments": moments_array}
 
 
-def _target_mesh_cylinder(r1, r2, h, phi1, phi2, magnetization, target_elems):
-    """Cylinder mesh in the local object coordinates with path-varying parameters.
-
-    Generates a point-cloud of mesh points inside a cylinder or cylinder segment.
-    Currently only supports path length p=1 (single position along path).
-
-    Parameters
-    ----------
-    r1: np.ndarray, shape (p,)
-        Inner radius of the cylinder along path.
-        Already path-enabled from the class.
-    r2: np.ndarray, shape (p,)
-        Outer radius of the cylinder along path.
-        Already path-enabled from the class.
-    h: np.ndarray, shape (p,)
-        Height of the cylinder along path.
-        Already path-enabled from the class.
-    phi1: np.ndarray, shape (p,)
-        Start angle of the cylinder in degrees along path.
-        Already path-enabled from the class.
-    phi2: np.ndarray, shape (p,)
-        End angle of the cylinder in degrees along path.
-        Already path-enabled from the class.
-    magnetization: np.ndarray, shape (p, 3)
-        Magnetization vector for the mesh points along path.
-        Already path-enabled from the class.
-    target_elems: int
-        Target number of elements in the mesh.
-
-    Returns
-    -------
-    dict: {
-        "pts": np.ndarray, shape (n, 3) - mesh points (p=1 only)
-        "moments": np.ndarray, shape (n, 3) - moments associated with each point (p=1 only)
-    }
-
-    Notes
-    -----
-    Full path-varying mesh generation (p > 1) is not yet implemented and will raise
-    NotImplementedError. Currently accepts path-enabled inputs with p=1 for backward
-    compatibility.
-    """
-    vals = [r1, r2, h, phi1, phi2, magnetization]
-    for i, val in enumerate(vals):
-        axis = None if val.ndim <= 1 else 0
-        if np.unique(val, axis=axis).shape[0] > 1:
-            msg = "Cylinder/CylinderSegment does not yet support path-varying parameters. "
-            raise NotImplementedError(msg)
-        vals[i] = val[0]
-
-    # Unpack extracted scalar values
-    r1, r2, h, phi1, phi2, magnetization = vals
-
+def _get_cylinder_mesh_single(r1, r2, h, phi1, phi2, target_elems):
+    """Helper function to generate a single cylinder mesh."""
     n = target_elems
     al = (r2 + r1) * 3.14 * (phi2 - phi1) / 360  # arclen = D*pi*arcratio
     dim = al, r2 - r1, h
@@ -333,10 +282,116 @@ def _target_mesh_cylinder(r1, r2, h, phi1, phi2, magnetization, target_elems):
 
     pts = np.array(cells)
     volumes = np.array(volumes)
+    return pts, volumes
 
-    moments = volumes[:, np.newaxis] * magnetization
 
-    return {"pts": pts, "moments": moments}
+def _target_mesh_cylinder(r1, r2, h, phi1, phi2, magnetization, target_elems):
+    """Cylinder mesh in the local object coordinates with path-varying parameters.
+
+    Generates a point-cloud of mesh points inside a cylinder or cylinder segment.
+
+    Parameters
+    ----------
+    r1: np.ndarray, shape (p,)
+        Inner radius of the cylinder along path.
+        Already path-enabled from the class.
+    r2: np.ndarray, shape (p,)
+        Outer radius of the cylinder along path.
+        Already path-enabled from the class.
+    h: np.ndarray, shape (p,)
+        Height of the cylinder along path.
+        Already path-enabled from the class.
+    phi1: np.ndarray, shape (p,)
+        Start angle of the cylinder in degrees along path.
+        Already path-enabled from the class.
+    phi2: np.ndarray, shape (p,)
+        End angle of the cylinder in degrees along path.
+        Already path-enabled from the class.
+    magnetization: np.ndarray, shape (p, 3)
+        Magnetization vector for the mesh points along path.
+        Already path-enabled from the class.
+    target_elems: int
+        Target number of elements in the mesh.
+
+    Returns
+    -------
+    dict: {
+        "pts": np.ndarray, shape (n, 3) or (p, n, 3) - mesh points
+        "moments": np.ndarray, shape (n, 3) or (p, n, 3) - moments associated with each point
+    }
+    """
+    p_len = len(r1)
+
+    # Combine geometry parameters for uniqueness check
+    # Shape (p, 5)
+    geometry_params = np.stack([r1, r2, h, phi1, phi2], axis=1)
+
+    # Check for path variation
+    # Optimization: Compute unique geometries once and reuse
+    unique_geoms, indices = np.unique(geometry_params, axis=0, return_inverse=True)
+    geometry_varying = len(unique_geoms) > 1
+
+    magnetization_varying = np.unique(magnetization, axis=0).shape[0] > 1
+    has_path_varying = geometry_varying or magnetization_varying
+
+    if geometry_varying:
+        unique_pts_list = []
+        unique_volumes_list = []
+
+        for i in range(len(unique_geoms)):
+            r1_i, r2_i, h_i, phi1_i, phi2_i = unique_geoms[i]
+            pts, volumes = _get_cylinder_mesh_single(
+                r1_i, r2_i, h_i, phi1_i, phi2_i, target_elems
+            )
+            unique_pts_list.append(pts)
+            unique_volumes_list.append(volumes)
+
+        # Pad and stack
+        max_n = max(len(pts) for pts in unique_pts_list)
+        pts_array = np.zeros((p_len, max_n, 3))
+        moments_array = np.zeros((p_len, max_n, 3))
+
+        # Reconstruct full path arrays using vectorized assignment where possible
+        for i in range(len(unique_geoms)):
+            # Find all path indices corresponding to this unique geometry
+            mask = indices == i
+            n = len(unique_pts_list[i])
+
+            # Assign points (broadcasted)
+            pts_array[mask, :n] = unique_pts_list[i]
+
+            # Assign moments
+            # magnetization[mask] is (k, 3), unique_volumes_list[i] is (n,)
+            # Result is (k, n, 3)
+            mags_subset = magnetization[mask]  # Shape (k, 3)
+            vols = unique_volumes_list[i]  # Shape (n,)
+
+            # We need to assign to moments_array[mask, :n] which is (k, n, 3)
+            # mags_subset[:, None, :] is (k, 1, 3)
+            # vols[None, :, None] is (1, n, 1)
+            # Product is (k, n, 3)
+            moments_array[mask, :n] = mags_subset[:, None, :] * vols[None, :, None]
+
+    else:
+        # Constant geometry - compute mesh once and broadcast
+        r1_i, r2_i, h_i, phi1_i, phi2_i = unique_geoms[0]
+        pts_single, volumes = _get_cylinder_mesh_single(
+            r1_i, r2_i, h_i, phi1_i, phi2_i, target_elems
+        )
+        n_total = len(pts_single)
+
+        pts_array = np.broadcast_to(pts_single[None, :, :], (p_len, n_total, 3))
+
+        # Calculate moments
+        # volumes is (n,), magnetization is (p, 3)
+        # Result should be (p, n, 3)
+        moments_array = magnetization[:, None, :] * volumes[None, :, None]
+
+    # Squeeze if no path variation
+    if not has_path_varying:
+        pts_array, moments_array = pts_array[0], moments_array[0]
+
+    return {"pts": pts_array, "moments": moments_array}
 
 
 def _target_mesh_circle(diameter, current, n_points):
