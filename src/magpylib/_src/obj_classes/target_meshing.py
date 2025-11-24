@@ -410,11 +410,14 @@ def generate_mesh_circle(diameter, current, n_points):
         "cvecs": np.ndarray, shape (p, n, 3) - current vectors along path
     }
     """
-    r, i0, n = np.atleast_1d(diameter / 2), np.atleast_1d(current), n_points
+    r, i0 = diameter / 2, current
+    n = n_points
+    p_len = len(r)
     has_path_varying = (np.unique(r).shape[0] > 1) or (np.unique(i0).shape[0] > 1)
+
     if not has_path_varying:
         r, i0 = r[:1], i0[:1]
-    p_len = len(r)
+        p_len = 1
 
     # Pre-compute angle arrays
     angles = 2 * np.pi * np.arange(n + 1) / n
@@ -558,18 +561,7 @@ def generate_mesh_triangle_current(
     - mesh: centroids of refined triangles
     - cvecs: current vectors
     """
-    # Handle different input shapes
-    triangles = np.asarray(triangles)
-    cds = np.asarray(cds)
-
-    # Check if we have path dimension
-    has_path_dim = triangles.ndim == 4
-
-    if not has_path_dim:
-        # Original behavior for no path dimension - add path dimension for uniform processing
-        triangles = triangles[np.newaxis, ...]  # Shape: (1, n, 3, 3)
-        cds = cds[np.newaxis, ...]  # Shape: (1, n, 3)
-
+    # Inputs are already path-enabled from the class with shape (p, n, 3, 3) and (p, n, 3)
     p_len = triangles.shape[0]
     n_tria = triangles.shape[1]
 
@@ -653,15 +645,12 @@ def generate_mesh_polyline(vertices, current, n_points):
         "cvecs": np.ndarray, shape (m, 3) or (p, m, 3) - current vectors
     }
     """
-    # Handle different input shapes
-    vertices = np.asarray(vertices)
-    i0 = np.atleast_1d(current)
-
-    p_len = i0.shape[0]
+    # Inputs are already path-enabled from the class
+    p_len = len(current)
 
     # Check for path-varying parameters
     has_path_varying = (np.unique(vertices, axis=0).shape[0] > 1) or (
-        np.unique(i0).shape[0] > 1
+        np.unique(current).shape[0] > 1
     )
 
     n_vertices = vertices.shape[1]
@@ -716,7 +705,7 @@ def generate_mesh_polyline(vertices, current, n_points):
                 points_per_segment[p_idx],
                 axis=0,
             )
-            * i0[p_idx]
+            * current[p_idx]
         )
 
         pts_list.append(pts_path)
@@ -899,29 +888,19 @@ def generate_mesh_tetrahedron(
     - If no path variation is detected, the function preserves the original
       single-body behavior and returns squeezed arrays for backward compatibility.
     """
-
-    # Support path-enabled inputs: vertices can be (4,3) or (p,4,3)
-    verts = np.atleast_1d(vertices)
-    mags = np.atleast_1d(magnetization)
-
-    # Normalize shapes to (p, 4, 3) and (p, 3)
-    verts_exp = verts[np.newaxis, ...] if verts.ndim == 2 else verts
-    mags_exp = mags[np.newaxis, ...] if mags.ndim == 1 else mags
-
-    p_len = len(verts_exp)
+    # Inputs are already path-enabled from the class with shapes (p, 4, 3) and (p, 3)
+    p_len = len(vertices)
 
     # Detect path variation by flattening per-path vertices
-    verts_varying = np.unique(verts_exp.reshape(p_len, -1), axis=0).shape[0] > 1
-    mags_varying = np.unique(mags_exp, axis=0).shape[0] > 1
+    verts_varying = np.unique(vertices.reshape(p_len, -1), axis=0).shape[0] > 1
+    mags_varying = np.unique(magnetization, axis=0).shape[0] > 1
     has_path_varying = verts_varying or mags_varying
 
-    # If no path variation, keep original behavior
     if not has_path_varying:
-        return _get_tetrahedron_mesh_single(n_points, verts_exp[0], mags_exp[0])
+        return _get_tetrahedron_mesh_single(n_points, vertices[0], magnetization[0])
 
-    # Path-varying: use np.unique optimization
     # Flatten vertices per path for uniqueness check: (p, 12)
-    verts_flat = verts_exp.reshape(p_len, -1)
+    verts_flat = vertices.reshape(p_len, -1)
     unique_verts_flat, indices = np.unique(verts_flat, axis=0, return_inverse=True)
 
     unique_pts_list = []
@@ -931,7 +910,7 @@ def generate_mesh_tetrahedron(
         # Reshape back to (4, 3)
         verts_i = verts_flat_i.reshape(4, 3)
         # Use first magnetization for geometry (magnetization will be applied later)
-        out = _get_tetrahedron_mesh_single(n_points, verts_i, mags_exp[0])
+        out = _get_tetrahedron_mesh_single(n_points, verts_i, magnetization[0])
         pts_i = out["pts"]
 
         # Calculate volume for this geometry
@@ -961,7 +940,7 @@ def generate_mesh_tetrahedron(
 
         # Assign moments
         # magnetization[mask] is (k, 3), unique_volumes_list[i] is (n,)
-        mags_subset = mags_exp[mask]  # Shape (k, 3)
+        mags_subset = magnetization[mask]  # Shape (k, 3)
         vols = unique_volumes_list[i]  # Shape (n,)
 
         # Broadcast to (k, n, 3)
@@ -1063,28 +1042,18 @@ def generate_mesh_triangularmesh(vertices, faces, target_points, volume, magneti
         "moments": np.ndarray, shape (n, 3) or (p, n, 3) - moments associated with each point
     }
     """
-    # Normalize inputs
-    verts = np.atleast_1d(vertices)
-    mags = np.atleast_1d(magnetization)
-    vols = np.atleast_1d(volume)
-
-    # Normalize shapes
-    verts_exp = verts[np.newaxis, ...] if verts.ndim == 2 else verts
-    mags_exp = mags[np.newaxis, ...] if mags.ndim == 1 else mags
-    vols_exp = vols[np.newaxis] if vols.ndim == 0 else vols
-
-    p_len = len(verts_exp)
+    # Inputs are already path-enabled from the class with shapes (p, n, 3), (p,), and (p, 3)
+    p_len = len(vertices)
 
     # Detect path variation
-    verts_varying = np.unique(verts_exp.reshape(p_len, -1), axis=0).shape[0] > 1
-    mags_varying = np.unique(mags_exp, axis=0).shape[0] > 1
-    vols_varying = np.unique(vols_exp).shape[0] > 1
+    verts_varying = np.unique(vertices.reshape(p_len, -1), axis=0).shape[0] > 1
+    mags_varying = np.unique(magnetization, axis=0).shape[0] > 1
+    vols_varying = np.unique(volume).shape[0] > 1
     has_path_varying = verts_varying or mags_varying or vols_varying
 
-    # If no path variation, keep original behavior
     if not has_path_varying:
         return _get_triangularmesh_mesh_single(
-            verts_exp[0], faces, target_points, vols_exp[0], mags_exp[0]
+            vertices[0], faces, target_points, volume[0], magnetization[0]
         )
 
     # Path-varying: generate per-path meshes and pad
@@ -1093,7 +1062,7 @@ def generate_mesh_triangularmesh(vertices, faces, target_points, volume, magneti
 
     for p_idx in range(p_len):
         out = _get_triangularmesh_mesh_single(
-            verts_exp[p_idx], faces, target_points, vols_exp[p_idx], mags_exp[p_idx]
+            vertices[p_idx], faces, target_points, volume[p_idx], magnetization[p_idx]
         )
         pts_list.append(out["pts"])
         moments_list.append(out["moments"])
