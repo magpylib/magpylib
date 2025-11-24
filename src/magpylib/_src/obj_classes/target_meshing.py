@@ -1,5 +1,6 @@
 """Meshing functions"""
 
+# pylint: disable=too-many-lines
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-function-args
 
@@ -181,8 +182,7 @@ def _target_mesh_cuboid(dimension, magnetization, target_elems):
         unique_pts_list = []
         unique_volumes_list = []
 
-        for i in range(len(unique_dims)):
-            a, b, c = unique_dims[i]
+        for a, b, c in unique_dims:
             pts, volume = _get_cuboid_mesh_single(a, b, c, target_elems)
             unique_pts_list.append(pts)
             unique_volumes_list.append(volume)
@@ -338,8 +338,7 @@ def _target_mesh_cylinder(r1, r2, h, phi1, phi2, magnetization, target_elems):
         unique_pts_list = []
         unique_volumes_list = []
 
-        for i in range(len(unique_geoms)):
-            r1_i, r2_i, h_i, phi1_i, phi2_i = unique_geoms[i]
+        for r1_i, r2_i, h_i, phi1_i, phi2_i in unique_geoms:
             pts, volumes = _get_cylinder_mesh_single(
                 r1_i, r2_i, h_i, phi1_i, phi2_i, target_elems
             )
@@ -928,9 +927,9 @@ def _target_mesh_tetrahedron(
     unique_pts_list = []
     unique_volumes_list = []
 
-    for i in range(len(unique_verts_flat)):
+    for verts_flat_i in unique_verts_flat:
         # Reshape back to (4, 3)
-        verts_i = unique_verts_flat[i].reshape(4, 3)
+        verts_i = verts_flat_i.reshape(4, 3)
         # Use first magnetization for geometry (magnetization will be applied later)
         out = _get_tetrahedron_mesh_single(n_points, verts_i, mags_exp[0])
         pts_i = out["pts"]
