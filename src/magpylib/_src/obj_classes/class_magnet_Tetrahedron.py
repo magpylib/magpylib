@@ -222,5 +222,5 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     def _generate_mesh(self):
         """Generate mesh for force computation by delegating to target mesher."""
         return generate_mesh_tetrahedron(
-            self.meshing, self._vertices, self._magnetization
+            self._vertices, self._magnetization, self.meshing
         )

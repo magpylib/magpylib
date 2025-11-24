@@ -327,9 +327,9 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         return generate_mesh_triangularmesh(
             self._vertices,
             self._faces,
-            self.meshing,
             self._get_volume(squeeze=False),
             self._magnetization,
+            self.meshing,
         )
 
     @staticmethod
