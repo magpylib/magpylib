@@ -794,3 +794,59 @@ def test_path_varying_cylinder_segment():
 
     np.testing.assert_allclose(F_vec, F_manual, rtol=1e-7, atol=1e-23)
     np.testing.assert_allclose(T_vec, T_manual, rtol=1e-7, atol=1e-27)
+
+
+def test_path_varying_tetrahedron():
+    """Test getFT with path-varying vertices and magnetization on Tetrahedron target."""
+    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -5))
+
+    # Varying vertices: different tetrahedron shapes
+    vertices_varying = np.array(
+        [
+            [[0, 0, 0], [0.002, 0, 0], [0, 0.002, 0], [0, 0, 0.002]],  # Tet 1
+            [[0, 0, 0], [0.003, 0, 0], [0, 0.001, 0], [0, 0, 0.003]],  # Tet 2
+            [
+                [0, 0, 0],
+                [0.002, 0, 0],
+                [0, 0.002, 0],
+                [0, 0, 0.002],
+            ],  # Tet 1 (repeated)
+        ]
+    )
+    magnetizations_varying = np.array(
+        [
+            [0, 0, 1e6],
+            [0, 0, 1.2e6],
+            [0, 0, 1.5e6],
+        ]
+    )
+    positions = np.array([[0, 0, i * 0.01] for i in range(3)])
+
+    tet_varying = magpy.magnet.Tetrahedron(
+        vertices=vertices_varying,
+        magnetization=magnetizations_varying,
+        position=positions,
+        meshing=50,
+    )
+
+    F_vec, T_vec = magpy.getFT(dipole, tet_varying)
+
+    # Manual loop for verification
+    F_manual = []
+    T_manual = []
+    for i in range(3):
+        tet_single = magpy.magnet.Tetrahedron(
+            vertices=vertices_varying[i],
+            magnetization=magnetizations_varying[i],
+            position=positions[i],
+            meshing=50,
+        )
+        F_i, T_i = magpy.getFT(dipole, tet_single)
+        F_manual.append(F_i)
+        T_manual.append(T_i)
+
+    F_manual = np.array(F_manual)
+    T_manual = np.array(T_manual)
+
+    np.testing.assert_allclose(F_vec, F_manual, rtol=1e-7, atol=1e-23)
+    np.testing.assert_allclose(T_vec, T_manual, rtol=1e-7, atol=1e-27)
