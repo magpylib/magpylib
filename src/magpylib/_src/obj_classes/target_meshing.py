@@ -3,7 +3,6 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-function-args
 
-import warnings
 from itertools import product
 
 import numpy as np
@@ -114,6 +113,35 @@ def _cells_from_dimension(
     return np.array(result).astype(int)
 
 
+def _get_cuboid_mesh_single(a, b, c, target_elems):
+    """Helper function to generate a single cuboid mesh."""
+    if isinstance(target_elems, int):
+        if target_elems == 1:
+            n1, n2, n3 = 1, 1, 1
+        else:
+            cell_size = (a * b * c / target_elems) ** (1 / 3)
+            n1 = max(1, int(np.round(a / cell_size)))
+            n2 = max(1, int(np.round(b / cell_size)))
+            n3 = max(1, int(np.round(c / cell_size)))
+    else:
+        n1, n2, n3 = target_elems
+
+    n_total = n1 * n2 * n3
+
+    def _cell_centers(bounds, n):
+        return (bounds[:-1] + bounds[1:]) / 2 if n > 1 else np.array([0.0])
+
+    xs_cent = _cell_centers(np.linspace(-a / 2, a / 2, n1 + 1), n1)
+    ys_cent = _cell_centers(np.linspace(-b / 2, b / 2, n2 + 1), n2)
+    zs_cent = _cell_centers(np.linspace(-c / 2, c / 2, n3 + 1), n3)
+
+    xx, yy, zz = np.meshgrid(xs_cent, ys_cent, zs_cent, indexing="ij")
+    pts = np.stack([xx.ravel(), yy.ravel(), zz.ravel()], axis=1)
+    volume = a * b * c / n_total
+
+    return pts, volume
+
+
 def _target_mesh_cuboid(dimension, magnetization, target_elems):
     """Cuboid mesh in the local object coordinates with path-varying parameters.
 
@@ -140,91 +168,65 @@ def _target_mesh_cuboid(dimension, magnetization, target_elems):
     }
     """
     p_len = len(dimension)
-    dimension_varying = np.unique(dimension, axis=0).shape[0] > 1
+
+    # Check for path variation
+    # Optimization: Compute unique dimensions once and reuse
+    unique_dims, indices = np.unique(dimension, axis=0, return_inverse=True)
+    dimension_varying = len(unique_dims) > 1
+
     magnetization_varying = np.unique(magnetization, axis=0).shape[0] > 1
     has_path_varying = dimension_varying or magnetization_varying
 
-    # Calculate mesh divisions from first path position
-    a, b, c = dimension[0]
-    if isinstance(target_elems, int):
-        if target_elems == 1:
-            n1, n2, n3 = 1, 1, 1
-        else:
-            cell_size = (a * b * c / target_elems) ** (1 / 3)
-            n1 = max(1, int(np.round(a / cell_size)))
-            n2 = max(1, int(np.round(b / cell_size)))
-            n3 = max(1, int(np.round(c / cell_size)))
-    else:
-        n1, n2, n3 = target_elems
-
-    # Warn if aspect ratio varies significantly along path
-    if dimension_varying and p_len > 1:
-        cell_dims = dimension / np.array([n1, n2, n3])
-        aspect_ratios = np.max(cell_dims, axis=1) / np.min(cell_dims, axis=1)
-        aspect_variation = np.max(aspect_ratios) / np.min(aspect_ratios)
-        if aspect_variation > 2.0:
-            warnings.warn(
-                f"Cuboid mesh cells vary significantly in aspect ratio (factor {aspect_variation:.2f}) "
-                f"along the path due to changing dimensions. Consider increasing `meshing` parameter "
-                f"or using explicit meshing tuple (n1, n2, n3) for better accuracy.",
-                UserWarning,
-                stacklevel=2,
-            )
-
-    n_total = n1 * n2 * n3
-
-    # Helper function to compute cell centers
-    def _cell_centers(bounds, n):
-        return (bounds[:-1] + bounds[1:]) / 2 if n > 1 else np.array([0.0])
-
     if dimension_varying:
-        # Vectorized mesh for varying dimensions: shape (p, n, 3)
-        a, b, c = dimension[:, 0], dimension[:, 1], dimension[:, 2]
-        xs, ys, zs = (
-            np.linspace(-a / 2, a / 2, n1 + 1).T,
-            np.linspace(-b / 2, b / 2, n2 + 1).T,
-            np.linspace(-c / 2, c / 2, n3 + 1).T,
-        )
-        xs_cent = (
-            (xs[:, :-1] + xs[:, 1:]) / 2 if n1 > 1 else (xs[:, 0:1] + a[:, None]) / 2
-        )
-        ys_cent = (
-            (ys[:, :-1] + ys[:, 1:]) / 2 if n2 > 1 else (ys[:, 0:1] + b[:, None]) / 2
-        )
-        zs_cent = (
-            (zs[:, :-1] + zs[:, 1:]) / 2 if n3 > 1 else (zs[:, 0:1] + c[:, None]) / 2
-        )
+        unique_pts_list = []
+        unique_volumes_list = []
 
-        # Broadcasting: (p, n1, 1, 1) * (p, 1, n2, 1) * (p, 1, 1, n3) -> (p, n1, n2, n3)
-        xx = xs_cent[:, :, None, None]
-        yy = ys_cent[:, None, :, None]
-        zz = zs_cent[:, None, None, :]
+        for i in range(len(unique_dims)):
+            a, b, c = unique_dims[i]
+            pts, volume = _get_cuboid_mesh_single(a, b, c, target_elems)
+            unique_pts_list.append(pts)
+            unique_volumes_list.append(volume)
 
-        pts_array = np.stack(
-            [
-                np.broadcast_to(xx, (p_len, n1, n2, n3)).reshape(p_len, n_total),
-                np.broadcast_to(yy, (p_len, n1, n2, n3)).reshape(p_len, n_total),
-                np.broadcast_to(zz, (p_len, n1, n2, n3)).reshape(p_len, n_total),
-            ],
-            axis=2,
-        )
-        volumes = a * b * c / n_total
+        # Pad and stack
+        max_n = max(len(pts) for pts in unique_pts_list)
+        pts_array = np.zeros((p_len, max_n, 3))
+        moments_array = np.zeros((p_len, max_n, 3))
+
+        # Reconstruct full path arrays using vectorized assignment where possible
+        for i in range(len(unique_dims)):
+            # Find all path indices corresponding to this unique dimension
+            mask = indices == i
+            n = len(unique_pts_list[i])
+
+            # Assign points (broadcasted)
+            pts_array[mask, :n] = unique_pts_list[i]
+
+            # Assign moments
+            # magnetization[mask] is (k, 3), unique_volumes_list[i] is scalar
+            # Result is (k, 3), which broadcasts to (k, n, 3) if we reshape or use broadcasting
+            mags_subset = magnetization[mask]  # Shape (k, 3)
+            vol = unique_volumes_list[i]
+
+            # We need to assign to moments_array[mask, :n] which is (k, n, 3)
+            # mags_subset * vol is (k, 3)
+            # We need to broadcast (k, 3) to (k, n, 3)
+            moments_array[mask, :n] = (mags_subset * vol)[:, np.newaxis, :]
+
     else:
         # Constant dimensions - compute mesh once and broadcast
-        xs_cent = _cell_centers(np.linspace(-a / 2, a / 2, n1 + 1), n1)
-        ys_cent = _cell_centers(np.linspace(-b / 2, b / 2, n2 + 1), n2)
-        zs_cent = _cell_centers(np.linspace(-c / 2, c / 2, n3 + 1), n3)
+        # Use unique_dims[0] which corresponds to the single unique dimension
+        a, b, c = unique_dims[0]
+        pts_single, volume = _get_cuboid_mesh_single(a, b, c, target_elems)
+        n_total = len(pts_single)
 
-        xx, yy, zz = np.meshgrid(xs_cent, ys_cent, zs_cent, indexing="ij")
-        pts_single = np.stack([xx.ravel(), yy.ravel(), zz.ravel()], axis=1)
         pts_array = np.broadcast_to(pts_single[None, :, :], (p_len, n_total, 3))
-        volumes = np.full(p_len, a * b * c / n_total)
+        volumes = np.full(p_len, volume)
 
-    # Calculate moments
-    moments_array = np.broadcast_to(
-        volumes[:, None, None] * magnetization[:, None, :],
-        (p_len, n_total, 3),
-    )
+        # Calculate moments
+        moments_array = np.broadcast_to(
+            volumes[:, None, None] * magnetization[:, None, :],
+            (p_len, n_total, 3),
+        )
 
     # Squeeze if no path variation
     if not has_path_varying:

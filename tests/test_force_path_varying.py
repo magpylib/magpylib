@@ -1,7 +1,6 @@
 """Tests for path-varying target properties in getFT."""
 
 import numpy as np
-import pytest
 
 import magpylib as magpy
 
@@ -373,11 +372,12 @@ def test_path_varying_cuboid_dimension_magnetization():
     dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -5))
 
     # CASE 1: Both dimension and magnetization vary
+    # Use dimensions with significantly different aspect ratios to test padding logic
     dimensions_varying = np.array(
         [
-            [0.001, 0.002, 0.003],
-            [0.0015, 0.0025, 0.0035],
-            [0.002, 0.003, 0.004],
+            [0.001, 0.001, 0.01],  # Elongated in z (1:1:10)
+            [0.01, 0.001, 0.001],  # Elongated in x (10:1:1)
+            [0.002, 0.002, 0.002],  # Cube (1:1:1)
         ]
     )
     magnetizations_varying = np.array(
@@ -463,33 +463,6 @@ def test_path_varying_cuboid_dimension_magnetization():
     # Verify path variation
     assert not np.allclose(F_vec_both[0], F_vec_both[1], rtol=0, atol=0)
     assert not np.allclose(F_vec_mag[0], F_vec_mag[1], rtol=0, atol=0)
-
-
-def test_cuboid_aspect_ratio_warning():
-    """Test that warning is triggered when cuboid aspect ratio changes significantly.
-
-    The warning should be triggered when aspect ratio changes by more than 2.0x along the path.
-    """
-    # Create cuboid with dimensions that cause >2x aspect ratio change
-    dimensions = np.array(
-        [
-            [0.001, 0.001, 0.001],  # Step 0: cube (1:1:1)
-            [0.003, 0.001, 0.001],  # Step 1: elongated (3:1:1) -> 3x change
-        ]
-    )
-
-    cuboid = magpy.magnet.Cuboid(
-        dimension=dimensions,
-        magnetization=[[0, 0, 1e6], [0, 0, 1e6]],
-        meshing=10,
-    )
-
-    # Warning is triggered when mesh is generated (lazy evaluation)
-    with pytest.warns(
-        UserWarning,
-        match="Cuboid mesh cells vary significantly in aspect ratio",
-    ):
-        _ = cuboid._generate_mesh()
 
 
 def test_path_varying_sphere_diameter_magnetization():
