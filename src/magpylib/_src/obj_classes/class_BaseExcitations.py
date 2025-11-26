@@ -5,8 +5,7 @@
 
 from typing import ClassVar
 
-import numpy as np
-
+from magpylib import mu_0
 from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import (
     check_format_input_scalar,
@@ -17,7 +16,6 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.style import CurrentStyle, MagnetStyle
 from magpylib._src.utility import format_star_input
-from magpylib import mu_0
 
 
 class BaseSource(BaseGeo, BaseDisplayRepr):
