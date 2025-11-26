@@ -17,6 +17,7 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.style import CurrentStyle, MagnetStyle
 from magpylib._src.utility import format_star_input
+from magpylib import mu_0
 
 
 class BaseSource(BaseGeo, BaseDisplayRepr):
@@ -361,7 +362,7 @@ class BaseMagnet(BaseSource):
             sig_type="array-like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
         )
-        self._polarization = self._magnetization * (4 * np.pi * 1e-7)
+        self._polarization = self._magnetization * mu_0
 
     @property
     def polarization(self):
@@ -386,7 +387,7 @@ class BaseMagnet(BaseSource):
             sig_type="array-like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
         )
-        self._magnetization = self._polarization / (4 * np.pi * 1e-7)
+        self._magnetization = self._polarization / mu_0
 
 
 class BaseCurrent(BaseSource):
