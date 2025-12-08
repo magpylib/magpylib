@@ -154,7 +154,10 @@ def _cel_iter(qc, p, g, cc, ss, em, kk):
             result[i] = _cel_iter0(qc[i], p[i], g[i], cc[i], ss[i], em[i], kk[i])
 
     # case3: vectorized evaluation
-    return _cel_iterv(qc, p, g, cc, ss, em, kk)
+    else:
+        result = _cel_iterv(qc, p, g, cc, ss, em, kk)
+
+    return result
 
 
 def _cel_iter0(qc, p, g, cc, ss, em, kk):
