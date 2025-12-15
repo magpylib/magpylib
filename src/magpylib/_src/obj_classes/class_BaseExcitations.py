@@ -5,8 +5,7 @@
 
 from typing import ClassVar
 
-import numpy as np
-
+from magpylib import mu_0
 from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import (
     check_format_input_scalar,
@@ -361,7 +360,7 @@ class BaseMagnet(BaseSource):
             sig_type="array-like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
         )
-        self._polarization = self._magnetization * (4 * np.pi * 1e-7)
+        self._polarization = self._magnetization * mu_0
 
     @property
     def polarization(self):
@@ -386,7 +385,7 @@ class BaseMagnet(BaseSource):
             sig_type="array-like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
         )
-        self._magnetization = self._polarization / (4 * np.pi * 1e-7)
+        self._magnetization = self._polarization / mu_0
 
 
 class BaseCurrent(BaseSource):
