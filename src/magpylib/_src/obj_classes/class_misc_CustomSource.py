@@ -39,10 +39,10 @@ class CustomSource(BaseSource):
         Same as constructor parameter ``orientation``.
     field_func : None | callable
         Same as constructor parameter ``field_func``.
-    parent : Collection | None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : BaseStyle
+        Object style. See BaseStyle for details.
 
     Examples
     --------
@@ -71,8 +71,9 @@ class CustomSource(BaseSource):
         style=None,
         **kwargs,
     ):
-        # init inheritance
-        super().__init__(position, orientation, field_func, style, **kwargs)
+        super().__init__(
+            position, orientation, field_func=field_func, style=style, **kwargs
+        )
 
     # Methods
     def _get_centroid(self, squeeze=True):

@@ -16,7 +16,7 @@ def _calculate_centroid(vertices, faces):
     Calculates the centroid of a 3D triangular surface mesh.
 
     Parameters:
-    vertices (numpy.array): an n x 3 array of vertices
+    vertices (numpy.array): an n x 3 or p x n x 3 array of vertices
     faces (numpy.array): an m x 3 array of triangle indices
 
     Returns:
@@ -24,20 +24,21 @@ def _calculate_centroid(vertices, faces):
     """
 
     # Calculate the centroids of each triangle
-    triangle_centroids = np.mean(vertices[faces], axis=1)
+    mesh = vertices[:, faces] if vertices.ndim == 3 else vertices[faces]
+    axis_v = 1 if mesh.ndim == 3 else 2
+    triangle_centroids = np.mean(mesh, axis=axis_v)
 
     # Compute the area of each triangle
-    triangle_areas = 0.5 * np.linalg.norm(
-        np.cross(
-            vertices[faces[:, 1]] - vertices[faces[:, 0]],
-            vertices[faces[:, 2]] - vertices[faces[:, 0]],
-        ),
-        axis=1,
-    )
+    v0 = mesh[..., 0, :]
+    v1 = mesh[..., 1, :]
+    v2 = mesh[..., 2, :]
+    cross = np.cross(v1 - v0, v2 - v0)
+    triangle_areas = 0.5 * np.linalg.norm(cross, axis=-1)
 
     # Calculate the centroid of the entire mesh
-    return np.sum(triangle_centroids.T * triangle_areas, axis=1) / np.sum(
-        triangle_areas
+    return (
+        np.sum(triangle_centroids * triangle_areas[..., None], axis=-2)
+        / np.sum(triangle_areas, axis=-1)[..., None]
     )
 
 
@@ -485,8 +486,10 @@ def _mask_inside_trimesh(points: np.ndarray, faces: np.ndarray) -> np.ndarray:
 def _BHJM_magnet_trimesh(
     field: str,
     observers: np.ndarray,
-    mesh: np.ndarray,
-    polarization: np.ndarray,
+    mesh: np.ndarray = None,
+    polarization: np.ndarray = None,
+    vertices: np.ndarray = None,
+    faces: np.ndarray = None,
     in_out="auto",
 ) -> np.ndarray:
     """
@@ -494,6 +497,20 @@ def _BHJM_magnet_trimesh(
     - Closed meshes are assumed (input comes only from TriangularMesh class)
     - Field computations via publication: Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
+    if mesh is None:
+        if vertices is None or faces is None:
+            msg = "Either 'mesh' or 'vertices' and 'faces' must be provided."
+            raise ValueError(msg)
+        # Construct mesh from vertices and faces
+        # vertices: (p, n, 3), faces: (p, m, 3)
+        n = len(vertices)
+        if object in (vertices.dtype, faces.dtype):
+            mesh = np.array(
+                [v[f] for v, f in zip(vertices, faces, strict=True)], dtype=object
+            )
+        else:
+            mesh = vertices[np.arange(n)[:, None, None], faces]
+
     if field in "BH":
         if mesh.ndim != 1:  # all vertices objects have same number of children
             n0, n1, *_ = mesh.shape

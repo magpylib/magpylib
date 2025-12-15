@@ -1,9 +1,9 @@
 """Meshing functions"""
 
+# pylint: disable=too-many-lines
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-function-args
 
-import itertools
 from itertools import product
 
 import numpy as np
@@ -114,37 +114,12 @@ def _cells_from_dimension(
     return np.array(result).astype(int)
 
 
-def _target_mesh_cuboid(target_elems, dimension, magnetization):
-    """Cuboid mesh in the local object coordinates.
-
-    Generates a point-cloud of n1 x n2 x n3 points inside a cuboid with sides a, b, c.
-    The points are centers of cubical cells that fill the Cuboid.
-
-    Parameters
-    ----------
-    target_elems: int or tuple (n1, n2, n3)
-        Target number of elements in the mesh. If an integer is provided, it is treated as
-        the total number of elements.
-    dimension: array-like, shape (3,)
-        Dimensions of the cuboid (length, width, height).
-    magnetization: np.ndarray, shape (3,)
-        Magnetization vector for the mesh points.
-
-    Returns
-    -------
-    dict: {
-        "pts": np.ndarray, shape (n, 3) - mesh points
-        "moments": np.ndarray, shape (n, 3) - moments associated with each point
-    }
-    """
-    a, b, c = dimension
-
-    # Scalar meshing input
+def _get_cuboid_mesh_single(a, b, c, target_elems):
+    """Generate mesh points and moments for a single cuboid."""
     if isinstance(target_elems, int):
         if target_elems == 1:
-            n1, n2, n3 = (1, 1, 1)
+            n1, n2, n3 = 1, 1, 1
         else:
-            # estimate splitting with aspect ratio~1
             cell_size = (a * b * c / target_elems) ** (1 / 3)
             n1 = max(1, int(np.round(a / cell_size)))
             n2 = max(1, int(np.round(b / cell_size)))
@@ -152,58 +127,114 @@ def _target_mesh_cuboid(target_elems, dimension, magnetization):
     else:
         n1, n2, n3 = target_elems
 
-    # could improve auto-splitting by reducing the aspect error
-    # print(n1*n2*n3)
-    # print((a/n1)/(b/n2), (b/n2)/(c/n3), (c/n3)/(a/n1))
+    n_total = n1 * n2 * n3
 
-    xs = np.linspace(-a / 2, a / 2, n1 + 1)
-    ys = np.linspace(-b / 2, b / 2, n2 + 1)
-    zs = np.linspace(-c / 2, c / 2, n3 + 1)
+    def _cell_centers(bounds, n):
+        return (bounds[:-1] + bounds[1:]) / 2 if n > 1 else np.array([0.0])
 
-    dx = xs[1] - xs[0] if len(xs) > 1 else a
-    dy = ys[1] - ys[0] if len(ys) > 1 else b
-    dz = zs[1] - zs[0] if len(zs) > 1 else c
+    xs_cent = _cell_centers(np.linspace(-a / 2, a / 2, n1 + 1), n1)
+    ys_cent = _cell_centers(np.linspace(-b / 2, b / 2, n2 + 1), n2)
+    zs_cent = _cell_centers(np.linspace(-c / 2, c / 2, n3 + 1), n3)
 
-    xs_cent = xs[:-1] + dx / 2 if len(xs) > 1 else xs + dx / 2
-    ys_cent = ys[:-1] + dy / 2 if len(ys) > 1 else ys + dy / 2
-    zs_cent = zs[:-1] + dz / 2 if len(zs) > 1 else zs + dz / 2
+    xx, yy, zz = np.meshgrid(xs_cent, ys_cent, zs_cent, indexing="ij")
+    pts = np.stack([xx.ravel(), yy.ravel(), zz.ravel()], axis=1)
+    volume = a * b * c / n_total
 
-    pts = np.array(list(itertools.product(xs_cent, ys_cent, zs_cent)))
-    volumes = np.tile(a * b * c / n1 / n2 / n3, (len(pts),))
-
-    moments = volumes[:, np.newaxis] * magnetization
-
-    return {"pts": pts, "moments": moments}
+    return pts, volume
 
 
-def _target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
-    """
-    Cylinder mesh in the local object coordinates.
+def generate_mesh_cuboid(dimension, magnetization, target_elems):
+    """Generate mesh for cuboid magnet.
+
+    Creates point-cloud of n1 x n2 x n3 points inside cuboid with dimensions (a, b, c).
+    Points are centers of cubical cells that fill the volume.
 
     Parameters
     ----------
-    r1: float
-        Inner radius of the cylinder.
-    r2: float
-        Outer radius of the cylinder.
-    h: float
-        Height of the cylinder.
-    phi1: float
-        Start angle of the cylinder in degrees.
-    phi2: float
-        End angle of the cylinder in degrees.
-    n: int
-        Number of points in mesh.
-    magnetization: np.ndarray, shape (3,)
-        Magnetization vector.
+    dimension : ndarray, shape (p, 3)
+        Cuboid dimensions (length, width, height) per path position.
+    magnetization : ndarray, shape (p, 3)
+        Magnetization vector per path position.
+    target_elems : int or tuple of int
+        Target number of mesh elements. If int, total elements. If tuple (n1, n2, n3),
+        elements per dimension.
 
     Returns
     -------
-    dict: {
-        "pts": np.ndarray, shape (n, 3) - mesh points
-        "moments": np.ndarray, shape (n, 3) - moments associated with each point
-    }
+    dict
+        {"pts": ndarray, shape (n, 3) or (p, n, 3),
+         "moments": ndarray, shape (n, 3) or (p, n, 3)}
     """
+    p_len = len(dimension)
+
+    # Check for path variation
+    # Optimization: Compute unique dimensions once and reuse
+    unique_dims, indices = np.unique(dimension, axis=0, return_inverse=True)
+    dimension_varying = len(unique_dims) > 1
+
+    magnetization_varying = np.unique(magnetization, axis=0).shape[0] > 1
+    has_path_varying = dimension_varying or magnetization_varying
+
+    if dimension_varying:
+        unique_pts_list = []
+        unique_volumes_list = []
+
+        for a, b, c in unique_dims:
+            pts, volume = _get_cuboid_mesh_single(a, b, c, target_elems)
+            unique_pts_list.append(pts)
+            unique_volumes_list.append(volume)
+
+        # Pad and stack
+        max_n = max(len(pts) for pts in unique_pts_list)
+        pts_array = np.zeros((p_len, max_n, 3))
+        moments_array = np.zeros((p_len, max_n, 3))
+
+        # Reconstruct full path arrays using vectorized assignment where possible
+        for i in range(len(unique_dims)):
+            # Find all path indices corresponding to this unique dimension
+            mask = indices == i
+            n = len(unique_pts_list[i])
+
+            # Assign points (broadcasted)
+            pts_array[mask, :n] = unique_pts_list[i]
+
+            # Assign moments
+            # magnetization[mask] is (k, 3), unique_volumes_list[i] is scalar
+            # Result is (k, 3), which broadcasts to (k, n, 3) if we reshape or use broadcasting
+            mags_subset = magnetization[mask]  # Shape (k, 3)
+            vol = unique_volumes_list[i]
+
+            # We need to assign to moments_array[mask, :n] which is (k, n, 3)
+            # mags_subset * vol is (k, 3)
+            # We need to broadcast (k, 3) to (k, n, 3)
+            moments_array[mask, :n] = (mags_subset * vol)[:, np.newaxis, :]
+
+    else:
+        # Constant dimensions - compute mesh once and broadcast
+        # Use unique_dims[0] which corresponds to the single unique dimension
+        a, b, c = unique_dims[0]
+        pts_single, volume = _get_cuboid_mesh_single(a, b, c, target_elems)
+        n_total = len(pts_single)
+
+        pts_array = np.broadcast_to(pts_single[None, :, :], (p_len, n_total, 3))
+        volumes = np.full(p_len, volume)
+
+        # Calculate moments
+        moments_array = np.broadcast_to(
+            volumes[:, None, None] * magnetization[:, None, :],
+            (p_len, n_total, 3),
+        )
+
+    # Squeeze if no path variation
+    if not has_path_varying:
+        pts_array, moments_array = pts_array[0], moments_array[0]
+
+    return {"pts": pts_array, "moments": moments_array}
+
+
+def _get_cylinder_mesh_single(r1, r2, h, phi1, phi2, target_elems):
+    """Generate mesh points and volumes for a single cylinder segment."""
+    n = target_elems
     al = (r2 + r1) * 3.14 * (phi2 - phi1) / 360  # arclen = D*pi*arcratio
     dim = al, r2 - r1, h
     # "unroll" the cylinder and distribute the target number of elements along the
@@ -248,45 +279,167 @@ def _target_mesh_cylinder(r1, r2, h, phi1, phi2, n, magnetization):
 
     pts = np.array(cells)
     volumes = np.array(volumes)
-
-    moments = volumes[:, np.newaxis] * magnetization
-
-    return {"pts": pts, "moments": moments}
+    return pts, volumes
 
 
-def _target_mesh_circle(r, n, i0):
-    """
-    Circle meshing in the local object coordinates
+def generate_mesh_cylindersegment(r1, r2, h, phi1, phi2, magnetization, target_elems):
+    """Generate mesh for cylinder segment magnet.
 
     Parameters
     ----------
-    r: float - Radius of the circle.
-    n: int >= 4 - Number of points along the circle.
-    i0: float - electric current
+    r1 : ndarray, shape (p,)
+        Inner radius per path position.
+    r2 : ndarray, shape (p,)
+        Outer radius per path position.
+    h : ndarray, shape (p,)
+        Height per path position.
+    phi1 : ndarray, shape (p,)
+        Start angle in degrees per path position.
+    phi2 : ndarray, shape (p,)
+        End angle in degrees per path position.
+    magnetization : ndarray, shape (p, 3)
+        Magnetization vector per path position.
+    target_elems : int
+        Target number of mesh elements.
 
     Returns
     -------
-    dict: {
-        "pts": np.ndarray, shape (n, 3) - central edge positions
-        "cvecs": np.ndarray, shape (n, 3) - current vectors
-    }
+    dict
+        {"pts": ndarray, shape (n, 3) or (p, n, 3),
+         "moments": ndarray, shape (n, 3) or (p, n, 3)}
     """
-    # construct polygon with same area as circle
-    r1 = r * np.sqrt((2 * np.pi) / (n * np.sin(2 * np.pi / n)))
-    vx = r1 * np.cos(2 * np.pi * np.arange(n + 1) / n)
-    vy = r1 * np.sin(2 * np.pi * np.arange(n + 1) / n)
+    p_len = len(r1)
 
-    # compute midpoints and tangents of polygon edges
-    midx = (vx[:-1] + vx[1:]) / 2
-    midy = (vy[:-1] + vy[1:]) / 2
-    midz = np.zeros((n,))
+    # Combine geometry parameters for uniqueness check
+    # Shape (p, 5)
+    geometry_params = np.stack([r1, r2, h, phi1, phi2], axis=1)
 
-    tx = vx[1:] - vx[:-1]
-    ty = vy[1:] - vy[:-1]
+    # Check for path variation
+    # Optimization: Compute unique geometries once and reuse
+    unique_geoms, indices = np.unique(geometry_params, axis=0, return_inverse=True)
+    geometry_varying = len(unique_geoms) > 1
 
-    pts = np.column_stack((midx, midy, midz))
+    magnetization_varying = np.unique(magnetization, axis=0).shape[0] > 1
+    has_path_varying = geometry_varying or magnetization_varying
 
-    cvecs = np.column_stack((tx, ty, midz)) * i0
+    if geometry_varying:
+        unique_pts_list = []
+        unique_volumes_list = []
+
+        for r1_i, r2_i, h_i, phi1_i, phi2_i in unique_geoms:
+            pts, volumes = _get_cylinder_mesh_single(
+                r1_i, r2_i, h_i, phi1_i, phi2_i, target_elems
+            )
+            unique_pts_list.append(pts)
+            unique_volumes_list.append(volumes)
+
+        # Pad and stack
+        max_n = max(len(pts) for pts in unique_pts_list)
+        pts_array = np.zeros((p_len, max_n, 3))
+        moments_array = np.zeros((p_len, max_n, 3))
+
+        # Reconstruct full path arrays using vectorized assignment where possible
+        for i in range(len(unique_geoms)):
+            # Find all path indices corresponding to this unique geometry
+            mask = indices == i
+            n = len(unique_pts_list[i])
+
+            # Assign points (broadcasted)
+            pts_array[mask, :n] = unique_pts_list[i]
+
+            # Assign moments
+            # magnetization[mask] is (k, 3), unique_volumes_list[i] is (n,)
+            # Result is (k, n, 3)
+            mags_subset = magnetization[mask]  # Shape (k, 3)
+            vols = unique_volumes_list[i]  # Shape (n,)
+
+            # We need to assign to moments_array[mask, :n] which is (k, n, 3)
+            # mags_subset[:, None, :] is (k, 1, 3)
+            # vols[None, :, None] is (1, n, 1)
+            # Product is (k, n, 3)
+            moments_array[mask, :n] = mags_subset[:, None, :] * vols[None, :, None]
+
+    else:
+        # Constant geometry - compute mesh once and broadcast
+        r1_i, r2_i, h_i, phi1_i, phi2_i = unique_geoms[0]
+        pts_single, volumes = _get_cylinder_mesh_single(
+            r1_i, r2_i, h_i, phi1_i, phi2_i, target_elems
+        )
+        n_total = len(pts_single)
+
+        pts_array = np.broadcast_to(pts_single[None, :, :], (p_len, n_total, 3))
+
+        # Calculate moments
+        # volumes is (n,), magnetization is (p, 3)
+        # Result should be (p, n, 3)
+        moments_array = magnetization[:, None, :] * volumes[None, :, None]
+
+    # Squeeze if no path variation
+    if not has_path_varying:
+        pts_array, moments_array = pts_array[0], moments_array[0]
+
+    return {"pts": pts_array, "moments": moments_array}
+
+
+def generate_mesh_circle(diameter, current, target_elems):
+    """Generate mesh for circular current loop.
+
+    Parameters
+    ----------
+    diameter : ndarray, shape (p,)
+        Circle diameter per path position.
+    current : ndarray, shape (p,)
+        Electric current per path position.
+    target_elems : int
+        Number of mesh elements along circle (must be >= 4).
+
+    Returns
+    -------
+    dict
+        {"pts": ndarray, shape (n, 3) or (p, n, 3),
+         "cvecs": ndarray, shape (n, 3) or (p, n, 3)}
+    """
+    r, i0 = diameter / 2, current
+    n = target_elems
+    p_len = len(r)
+    has_path_varying = (np.unique(r).shape[0] > 1) or (np.unique(i0).shape[0] > 1)
+
+    if not has_path_varying:
+        r, i0 = r[:1], i0[:1]
+        p_len = 1
+
+    # Pre-compute angle arrays
+    angles = 2 * np.pi * np.arange(n + 1) / n
+
+    # Vectorized computation for all path positions
+    # Shape: (p,) -> (p, 1) for broadcasting
+    r_expanded = r.reshape(-1, 1)
+    i0_expanded = i0.reshape(-1, 1)
+
+    # construct polygon with same area as circle for all path positions
+    r1 = r_expanded * np.sqrt((2 * np.pi) / (n * np.sin(2 * np.pi / n)))
+
+    # Compute vertices for all path positions: shape (p, n+1)
+    vx = r1 * np.cos(angles)  # Broadcasting: (p, 1) * (n+1,) -> (p, n+1)
+    vy = r1 * np.sin(angles)
+
+    # compute midpoints: shape (p, n)
+    midx = (vx[:, :-1] + vx[:, 1:]) / 2
+    midy = (vy[:, :-1] + vy[:, 1:]) / 2
+    midz = np.zeros((p_len, n))
+
+    # compute tangents: shape (p, n)
+    tx = vx[:, 1:] - vx[:, :-1]
+    ty = vy[:, 1:] - vy[:, :-1]
+
+    # Stack to create pts: shape (p, n, 3)
+    pts = np.stack([midx, midy, midz], axis=2)
+
+    # Create cvecs with current scaling: shape (p, n, 3)
+    cvecs = np.stack([tx, ty, midz], axis=2) * i0_expanded.reshape(p_len, 1, 1)
+
+    if not has_path_varying:
+        pts, cvecs = pts[0], cvecs[0]
     return {"pts": pts, "cvecs": cvecs}
 
 
@@ -380,110 +533,194 @@ def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
     return TRIA
 
 
-def _target_mesh_triangle_current(
-    triangles: np.ndarray, n_target: int, cds: np.ndarray
+def generate_mesh_triangle_current(
+    triangles: np.ndarray, cds: np.ndarray, n_target: int
 ):
-    """
-    Refines input triangles into >n_target triangles using bisection along longest edge.
-    n_target must be at least number of input triangles in which case one mesh point
-    per triangle is created.
+    """Generate mesh for triangle current sources.
 
-    Parameters:
-    - triangles (n, 3, 3) array, triangles
-    - n_target: int, target number of mesh points
-    - cds: (n, 3) array, current density vectors
-
-    Returns dict:
-    - mesh: centroids of refined triangles
-    - cvecs: current vectors
-    """
-    n_tria = len(triangles)
-    surfaces = 0.5 * np.linalg.norm(
-        np.cross(triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0]),
-        axis=1,
-    )
-
-    # longest edge bisection splits triangle surface always in half
-    # all triangles should in the end have somewhat similar surface
-    # so we can easily calculate which triangles we have to split how often
-    splits = np.zeros(n_tria, dtype=int)
-    while n_tria < n_target:
-        idx = np.argmax(surfaces)
-        surfaces[idx] /= 2.0
-        splits[idx] += 1
-        n_tria = np.sum(2**splits)
-
-    surfaces = np.repeat(surfaces, 2**splits)
-    triangles = _subdiv(triangles, splits)
-    centroids = np.mean(triangles, axis=1)
-    cvecs = np.repeat(cds, 2**splits, axis=0) * surfaces[:, np.newaxis]
-
-    return {"pts": centroids, "cvecs": cvecs}
-
-
-def _target_mesh_polyline(vertices, i0, n_points):
-    """
-    Polyline meshing in the local object coordinates
+    Refines input triangles using bisection along longest edge until reaching n_target
+    mesh points. Returns centroids and current vectors.
 
     Parameters
     ----------
-    vertices: array-like, shape (n, 3) - vertices of the polyline
-    i0: float - electric current
-    n_points: int >= n_segments
-
-    If n_points is int, the algorithm tries to distribute these points evenly
-    over the polyline, enforcing at least one point per segment.
+    triangles : ndarray, shape (p, n, 3, 3)
+        Triangle vertices per path position.
+    cds : ndarray, shape (p, n, 3)
+        Current density vectors per path position.
+    n_target : int
+        Target number of mesh points (must be >= number of input triangles).
 
     Returns
     -------
-    dict: {
-        "pts": np.ndarray, shape (m, 3) - central segment positions
-        "cvecs": np.ndarray, shape (m, 3) - current vectors
-    }
+    dict
+        {"pts": ndarray, shape (p, m, 3), "cvecs": ndarray, shape (p, m, 3)}
     """
-    n_segments = len(vertices) - 1
+    # Inputs are already path-enabled from the class with shape (p, n, 3, 3) and (p, n, 3)
+    p_len = triangles.shape[0]
+    n_tria = triangles.shape[1]
 
-    # Calculate segment lengths
-    segment_vectors = vertices[1:] - vertices[:-1]
-    segment_lengths = np.linalg.norm(segment_vectors, axis=1)
-    total_length = np.sum(segment_lengths)
+    # Check for path-varying parameters
+    has_path_varying = (np.unique(triangles, axis=0).shape[0] > 1) or (
+        np.unique(cds, axis=0).shape[0] > 1
+    )
+
+    # Vectorized computation of surfaces for all paths: shape (p, n)
+    surfaces = 0.5 * np.linalg.norm(
+        np.cross(
+            triangles[:, :, 1] - triangles[:, :, 0],
+            triangles[:, :, 2] - triangles[:, :, 0],
+        ),
+        axis=2,
+    )
+
+    # Calculate splits for all paths
+    # Note: splits are the same for all paths since they're based on n_target
+    splits = np.zeros(n_tria, dtype=int)
+    surfaces_temp = surfaces[0].copy()  # Use first path for split calculation
+    n_tria_temp = n_tria
+    while n_tria_temp < n_target:
+        idx = np.argmax(surfaces_temp)
+        surfaces_temp[idx] /= 2.0
+        splits[idx] += 1
+        n_tria_temp = np.sum(2**splits)
+
+    # Apply the surface divisions to all paths (vectorized)
+    # Each surface gets divided by 2^splits[i]
+    surfaces = surfaces / (2.0 ** splits[np.newaxis, :])
+
+    # Vectorized subdivision and centroid calculation for all paths
+    # Apply _subdiv to each path and stack results
+    trias_refined_list = [_subdiv(triangles[p_idx], splits) for p_idx in range(p_len)]
+    trias_refined = np.stack(trias_refined_list, axis=0)  # Shape: (p, n_refined, 3, 3)
+
+    # Calculate centroids for all paths at once: shape (p, n_refined, 3)
+    pts = np.mean(trias_refined, axis=2)
+
+    # Expand surfaces and cds for all paths
+    # We need to repeat along the triangle dimension (axis=1 after adding path dim)
+    surfaces_expanded_list = [
+        np.repeat(surfaces[p_idx], 2**splits) for p_idx in range(p_len)
+    ]
+    cvecs_list = [
+        np.repeat(cds[p_idx], 2**splits, axis=0)
+        * surfaces_expanded_list[p_idx][:, np.newaxis]
+        for p_idx in range(p_len)
+    ]
+
+    # Stack results: shape (p, n_refined, 3)
+    cvecs = np.stack(cvecs_list, axis=0)
+
+    # If no path variation, return squeezed arrays
+    if not has_path_varying:
+        pts = pts[0]
+        cvecs = cvecs[0]
+
+    return {"pts": pts, "cvecs": cvecs}
+
+
+def generate_mesh_polyline(vertices, current, target_elems):
+    """Generate mesh for polyline current path.
+
+    Distributes target_elems along polyline segments proportionally to segment lengths,
+    with at least one point per segment.
+
+    Parameters
+    ----------
+    vertices : ndarray, shape (p, n, 3)
+        Polyline vertices per path position.
+    current : ndarray, shape (p,)
+        Electric current per path position.
+    target_elems : int
+        Total number of mesh elements (must be >= number of segments).
+
+    Returns
+    -------
+    dict
+        {"pts": ndarray, shape (p, m, 3), "cvecs": ndarray, shape (p, m, 3)}
+    """
+    # Inputs are already path-enabled from the class
+    p_len = len(current)
+
+    # Check for path-varying parameters
+    has_path_varying = (np.unique(vertices, axis=0).shape[0] > 1) or (
+        np.unique(current).shape[0] > 1
+    )
+
+    n_vertices = vertices.shape[1]
+    n_segments = n_vertices - 1
+
+    # Calculate segment lengths for all path positions
+    segment_vectors = vertices[:, 1:] - vertices[:, :-1]  # Shape: (p, n_segments, 3)
+    segment_lengths = np.linalg.norm(segment_vectors, axis=2)  # Shape: (p, n_segments)
+    total_lengths = np.sum(segment_lengths, axis=1)  # Shape: (p,)
 
     # DISTRIBUTE POINTS OVER SEGMENTS #######################################
-    # 1. one point per segment
-    points_per_segment = np.ones(n_segments, dtype=int)
+    # 1. one point per segment for all path positions
+    points_per_segment = np.ones((p_len, n_segments), dtype=int)
 
     # 2. distribute remaining points proportionally to segment lengths
-    remaining_points = n_points - n_segments
+    remaining_points = target_elems - n_segments
     if remaining_points > 0:
-        # Calculate how many extra points each segment should get
-        proportional_extra = (segment_lengths / total_length) * remaining_points
+        # Calculate how many extra points each segment should get for each path position
+        proportional_extra = (
+            segment_lengths / total_lengths[:, np.newaxis]
+        ) * remaining_points
         extra_points = np.round(proportional_extra).astype(int)
         points_per_segment += extra_points
 
-        # possibly there will now be n_segments too much or too few points
-        n_points = np.sum(points_per_segment)
+    # Update target_elems to actual distributed points for each path position
+    actual_n_points = np.sum(points_per_segment, axis=1)
+    max_n_points = np.max(actual_n_points)
 
-    # GENERATE MESH AND TVEC ##########################################
-    parts = np.empty(n_points)
-    idx = 0
-    for n_pts in points_per_segment:
-        parts[idx : idx + n_pts] = [(2 * j + 1) / (2 * n_pts) for j in range(n_pts)]
-        idx += n_pts
+    # GENERATE MESH AND CVEC ##########################################
+    pts_list = []
+    cvecs_list = []
 
-    pts = np.repeat(segment_vectors, points_per_segment, axis=0)
-    pts = pts * parts[:, np.newaxis]
-    pts += np.repeat(
-        vertices[:-1], points_per_segment, axis=0
-    )  # add starting point of each segment
+    for p_idx in range(p_len):
+        n_pts_path = actual_n_points[p_idx]
+        parts = np.empty(n_pts_path)
+        idx = 0
 
-    cvecs = (
-        np.repeat(
-            segment_vectors / points_per_segment[:, np.newaxis],
-            points_per_segment,
-            axis=0,
+        for _, n_pts in enumerate(points_per_segment[p_idx]):
+            parts[idx : idx + n_pts] = [(2 * j + 1) / (2 * n_pts) for j in range(n_pts)]
+            idx += n_pts
+
+        # Generate points for this path position
+        pts_path = np.repeat(segment_vectors[p_idx], points_per_segment[p_idx], axis=0)
+        pts_path = pts_path * parts[:, np.newaxis]
+        pts_path += np.repeat(
+            vertices[p_idx, :-1], points_per_segment[p_idx], axis=0
+        )  # add starting point of each segment
+
+        cvecs_path = (
+            np.repeat(
+                segment_vectors[p_idx] / points_per_segment[p_idx, :, np.newaxis],
+                points_per_segment[p_idx],
+                axis=0,
+            )
+            * current[p_idx]
         )
-        * i0
-    )
+
+        pts_list.append(pts_path)
+        cvecs_list.append(cvecs_path)
+
+    # Convert to arrays with consistent shapes
+    # Pad shorter arrays with zeros to match max_n_points
+    pts = np.zeros((p_len, max_n_points, 3))
+    cvecs = np.zeros((p_len, max_n_points, 3))
+
+    for p_idx in range(p_len):
+        n_pts = len(pts_list[p_idx])
+        pts[p_idx, :n_pts] = pts_list[p_idx]
+        cvecs[p_idx, :n_pts] = cvecs_list[p_idx]
+
+    # If no path variation, return squeezed arrays
+    if not has_path_varying:
+        pts, cvecs = pts[0], cvecs[0]
+        # Remove padding zeros
+        if max_n_points > actual_n_points[0]:
+            pts = pts[: actual_n_points[0]]
+            cvecs = cvecs[: actual_n_points[0]]
 
     return {"pts": pts, "cvecs": cvecs}
 
@@ -525,33 +762,8 @@ def _create_grid(dimensions, spacing):
     return np.column_stack([xx.ravel(), yy.ravel(), zz.ravel()])
 
 
-def _target_mesh_tetrahedron(
-    n_points: int, vertices: np.ndarray, magnetization: np.ndarray
-):
-    """
-    Generate mesh of tetrahedral body using uniform barycentric coordinate grid.
-
-    This function creates a uniform grid of points inside the tetrahedron using
-    structured barycentric coordinates, ensuring homogeneous density distribution.
-    The actual number of points may differ slightly from the target for efficiency.
-
-    Parameters
-    ----------
-    n_points : int
-        Target number of mesh points.
-    vertices : array-like, shape (4, 3)
-        Vertices of the tetrahedron.
-    magnetization : array-like, shape (3,)
-        Magnetization vector.
-
-    Returns
-    -------
-     dict: {
-        "pts": np.ndarray, shape (n, 3) - mesh points
-        "moments": np.ndarray, shape (n, 3) - moments associated with each point
-    }
-    """
-
+def _get_tetrahedron_mesh_single(vertices, magnetization, target_elems):
+    """Generate mesh points and moments for a single tetrahedron."""
     # Calculate tetrahedron volume
     v1 = vertices[1] - vertices[0]
     v2 = vertices[2] - vertices[0]
@@ -559,52 +771,39 @@ def _target_mesh_tetrahedron(
     tet_volume = abs(np.linalg.det(np.column_stack([v1, v2, v3]))) / 6.0
 
     # Return centroid for single point
-    if n_points == 1:
+    if target_elems == 1:
         centroid = np.mean(vertices, axis=0)
         pts = np.array([centroid])
         moments = np.array([tet_volume * magnetization])
-
         return {"pts": pts, "moments": moments}
 
-    # Find the optimal number of subdivisions to get closest to n_points
-    # For a tetrahedron with n_div divisions, the exact number of points is:
-    # (n_div+1)(n_div+2)(n_div+3)/6
+    # Find the optimal number of subdivisions to get closest to target_elems
     def points_for_n_div(n):
         return (n + 1) * (n + 2) * (n + 3) // 6
 
-    # Start with a rough estimate
-    n_div_estimate = max(1, int(np.round((6 * n_points) ** (1 / 3) - 1.5)))
+    n_div_estimate = max(1, int(np.round((6 * target_elems) ** (1 / 3) - 1.5)))
 
-    # Test a few values around the estimate to find the closest match
     best_n_div = n_div_estimate
-    best_diff = abs(points_for_n_div(n_div_estimate) - n_points)
-
+    best_diff = abs(points_for_n_div(n_div_estimate) - target_elems)
     for test_n_div in range(max(1, n_div_estimate - 2), n_div_estimate + 4):
         test_points = points_for_n_div(test_n_div)
-        diff = abs(test_points - n_points)
+        diff = abs(test_points - target_elems)
         if diff < best_diff:
             best_diff = diff
             best_n_div = test_n_div
 
     n_div = best_n_div
 
-    # Generate structured barycentric coordinates
     pts_list = []
-
-    # Create uniform grid in barycentric coordinates
-    # We need u1 + u2 + u3 + u4 = 1 and all ui >= 0
     for i in range(n_div + 1):
         for j in range(n_div + 1 - i):
             for k in range(n_div + 1 - i - j):
-                l = n_div - i - j - k  # noqa: E741
-                if l >= 0:
-                    # Barycentric coordinates (normalized)
+                L = n_div - i - j - k
+                if L >= 0:
                     u1 = i / n_div
                     u2 = j / n_div
                     u3 = k / n_div
-                    u4 = l / n_div
-
-                    # Convert to Cartesian coordinates
+                    u4 = L / n_div
                     point = (
                         u1 * vertices[0]
                         + u2 * vertices[1]
@@ -614,60 +813,114 @@ def _target_mesh_tetrahedron(
                     pts_list.append(point)
 
     pts = np.array(pts_list)
-
-    # Calculate volume per point based on actual number of points generated
     volume_per_point = tet_volume / len(pts)
     volumes = np.full(len(pts), volume_per_point)
-
     moments = volumes[:, np.newaxis] * magnetization
-
     return {"pts": pts, "moments": moments}
 
 
-def _target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetization):
-    """
-    Generate mesh points inside a triangular mesh volume for force computations.
+def generate_mesh_tetrahedron(vertices, magnetization, target_elems):
+    """Generate mesh for tetrahedron magnet.
 
-    Uses regular cubic grid generation around the object and applies inside/outside masking
-    similar to the sphere approach. When target_points is 1, returns the
-    barycenter of the mesh.
+    Uses uniform barycentric coordinate grid to generate mesh points inside tetrahedron.
 
     Parameters
     ----------
-    vertices : np.ndarray, shape (n, 3) - Mesh vertices
-    faces : np.ndarray, shape (m, 3) - Mesh faces (triangles) as vertex indices
-    target_points : int - Target number of mesh points
-    volume : float - Volume of the body
-    magnetization : np.ndarray, shape (3,) - Magnetization vector for the mesh points
+    vertices : ndarray, shape (p, 4, 3)
+        Tetrahedron vertices per path position.
+    magnetization : ndarray, shape (p, 3)
+        Magnetization vector per path position.
+    target_elems : int
+        Target number of mesh elements.
 
     Returns
     -------
-    dict: {
-        "pts": np.ndarray, shape (n, 3) - mesh points
-        "moments": np.ndarray, shape (n, 3) - moments associated with each point
-    }
+    dict
+        {"pts": ndarray, shape (n, 3) or (p, n, 3),
+         "moments": ndarray, shape (n, 3) or (p, n, 3)}
     """
-    # Import the required functions from triangular mesh field module
+    # Inputs are already path-enabled from the class with shapes (p, 4, 3) and (p, 3)
+    p_len = len(vertices)
+
+    # Detect path variation by flattening per-path vertices
+    verts_varying = np.unique(vertices.reshape(p_len, -1), axis=0).shape[0] > 1
+    mags_varying = np.unique(magnetization, axis=0).shape[0] > 1
+    has_path_varying = verts_varying or mags_varying
+
+    if not has_path_varying:
+        return _get_tetrahedron_mesh_single(vertices[0], magnetization[0], target_elems)
+
+    # Flatten vertices per path for uniqueness check: (p, 12)
+    verts_flat = vertices.reshape(p_len, -1)
+    unique_verts_flat, indices = np.unique(verts_flat, axis=0, return_inverse=True)
+
+    unique_pts_list = []
+    unique_volumes_list = []
+
+    for verts_flat_i in unique_verts_flat:
+        # Reshape back to (4, 3)
+        verts_i = verts_flat_i.reshape(4, 3)
+        # Use first magnetization for geometry (magnetization will be applied later)
+        out = _get_tetrahedron_mesh_single(verts_i, magnetization[0], target_elems)
+        pts_i = out["pts"]
+
+        # Calculate volume for this geometry
+        v1 = verts_i[1] - verts_i[0]
+        v2 = verts_i[2] - verts_i[0]
+        v3 = verts_i[3] - verts_i[0]
+        tet_volume = abs(np.linalg.det(np.column_stack([v1, v2, v3]))) / 6.0
+        volume_per_point = tet_volume / len(pts_i)
+        volumes_i = np.full(len(pts_i), volume_per_point)
+
+        unique_pts_list.append(pts_i)
+        unique_volumes_list.append(volumes_i)
+
+    # Pad and stack
+    max_n = max(len(pts) for pts in unique_pts_list)
+    pts_array = np.zeros((p_len, max_n, 3))
+    moments_array = np.zeros((p_len, max_n, 3))
+
+    # Reconstruct full path arrays using vectorized assignment
+    for i in range(len(unique_verts_flat)):
+        # Find all path indices corresponding to this unique geometry
+        mask = indices == i
+        n = len(unique_pts_list[i])
+
+        # Assign points (broadcasted)
+        pts_array[mask, :n] = unique_pts_list[i]
+
+        # Assign moments
+        # magnetization[mask] is (k, 3), unique_volumes_list[i] is (n,)
+        mags_subset = magnetization[mask]  # Shape (k, 3)
+        vols = unique_volumes_list[i]  # Shape (n,)
+
+        # Broadcast to (k, n, 3)
+        moments_array[mask, :n] = mags_subset[:, None, :] * vols[None, :, None]
+
+    return {"pts": pts_array, "moments": moments_array}
+
+
+def _get_triangularmesh_mesh_single(
+    vertices, faces, volume, magnetization, target_elems
+):
+    """Generate mesh points and moments for a single triangular mesh."""
     from magpylib._src.fields.field_BH_triangularmesh import (  # noqa: PLC0415
         _calculate_centroid,
         _mask_inside_trimesh,
     )
 
     # Return barycenter (centroid) if only one point is requested
-    if target_points == 1:
+    if target_elems == 1:
         barycenter = _calculate_centroid(vertices, faces)
         pts = np.array([barycenter])
         moments = np.array([volume * magnetization])
-
         return {"pts": pts, "moments": moments}
 
     # Generate regular cubic grid
-    spacing = (volume / target_points) ** (1 / 3)
+    spacing = (volume / target_elems) ** (1 / 3)
     min_coords = np.min(vertices, axis=0)
     max_coords = np.max(vertices, axis=0)
-    padding = (
-        spacing * 0.5
-    )  # add half a cell size padding to ensure optimal homo loc-vol matching
+    padding = spacing * 0.5
     dimensions = [
         min_coords[0] - padding,
         min_coords[1] - padding,
@@ -685,12 +938,71 @@ def _target_mesh_triangularmesh(vertices, faces, target_points, volume, magnetiz
     if len(pts) == 0:
         barycenter = _calculate_centroid(vertices, faces)
         pts = np.array([barycenter])
-        volumes = np.array([volume])
-        return {"pts": pts, "volumes": volumes}
-
-    # Volumes
-    volumes = np.full(len(pts), volume / len(pts))
+        volumes = np.full(1, volume)
+    else:
+        volumes = np.full(len(pts), volume / len(pts))
 
     moments = volumes[:, np.newaxis] * magnetization
-
     return {"pts": pts, "moments": moments}
+
+
+def generate_mesh_triangularmesh(vertices, faces, volume, magnetization, target_elems):
+    """Generate mesh for triangular mesh magnet.
+
+    Uses regular cubic grid with inside/outside masking to generate mesh points.
+    Returns barycenter when target_elems is 1.
+
+    Parameters
+    ----------
+    vertices : ndarray, shape (p, n, 3)
+        Mesh vertices per path position.
+    faces : ndarray, shape (m, 3)
+        Triangle face indices (same for all path positions).
+    volume : ndarray, shape (p,)
+        Volume per path position.
+    magnetization : ndarray, shape (p, 3)
+        Magnetization vector per path position.
+    target_elems : int
+        Target number of mesh points.
+
+    Returns
+    -------
+    dict
+        {"pts": ndarray, shape (p, n, 3), "moments": ndarray, shape (p, n, 3)}
+    """
+    # Inputs are already path-enabled from the class with shapes (p, n, 3), (p,), and (p, 3)
+    p_len = len(vertices)
+
+    # Detect path variation
+    verts_varying = np.unique(vertices.reshape(p_len, -1), axis=0).shape[0] > 1
+    mags_varying = np.unique(magnetization, axis=0).shape[0] > 1
+    vols_varying = np.unique(volume).shape[0] > 1
+    has_path_varying = verts_varying or mags_varying or vols_varying
+
+    if not has_path_varying:
+        return _get_triangularmesh_mesh_single(
+            vertices[0], faces, volume[0], magnetization[0], target_elems
+        )
+
+    # Path-varying: generate per-path meshes and pad
+    pts_list = []
+    moments_list = []
+
+    for p_idx in range(p_len):
+        out = _get_triangularmesh_mesh_single(
+            vertices[p_idx], faces, volume[p_idx], magnetization[p_idx], target_elems
+        )
+        pts_list.append(out["pts"])
+        moments_list.append(out["moments"])
+
+    # Pad and stack
+    max_n = max(len(pts) for pts in pts_list)
+    pts_array = np.zeros((p_len, max_n, 3))
+    moments_array = np.zeros((p_len, max_n, 3))
+
+    for p_idx in range(p_len):
+        n = len(pts_list[p_idx])
+        pts_array[p_idx, :n] = pts_list[p_idx]
+        moments_array[p_idx, :n] = moments_list[p_idx]
+
+    return {"pts": pts_array, "moments": moments_array}

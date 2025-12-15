@@ -107,7 +107,7 @@ magpy.show(*mesh, canvas=ax1, style_magnetization_show=False)
 
 # Apply polarization
 for m in mesh:
-    Btool = tool.getB(m.barycenter)
+    Btool = tool.getB(m.centroid)
     m.polarization = Btool/np.linalg.norm(Btool)
 
 # Compute and plot polarization

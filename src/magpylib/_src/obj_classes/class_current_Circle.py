@@ -6,12 +6,11 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Circle
 from magpylib._src.fields.field_BH_circle import _BHJM_circle
-from magpylib._src.input_checks import check_format_input_scalar
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
-from magpylib._src.obj_classes.target_meshing import _target_mesh_circle
-from magpylib._src.utility import unit_prefix
+from magpylib._src.obj_classes.target_meshing import generate_mesh_circle
 
 
 class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
@@ -34,9 +33,9 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    diameter : float | None, default None
+    diameter : float | array-like, shape (p,), default None
         Loop diameter (m).
-    current : float | None, default None
+    current : float | array-like, shape (p,), default None
         Electrical current (A).
     meshing : int | None, default None
         Mesh fineness for force computation. Must be an integer ``>= 4``. Points
@@ -51,21 +50,20 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    diameter : None or float
+    diameter : None | float | ndarray, shape (p,)
         Same as constructor parameter ``diameter``.
-    current : None or float
+    current : None | float | ndarray, shape (p,)
         Same as constructor parameter ``current``.
-    meshing : None or int
+    meshing : None | int
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
-        Can be a path.
-    dipole_moment : ndarray, shape (3,)
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
-    parent : Collection or None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : CurrentStyle
+        Object style. See CurrentStyle for details.
 
     Notes
     -----
@@ -89,6 +87,8 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     _field_func = staticmethod(_BHJM_circle)
     _force_type = "current"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"current": 1, "diameter": 1}
+    _path_properties = ("diameter",)  # also inherits from parent class
+
     get_trace = make_Circle
 
     def __init__(
@@ -102,36 +102,46 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.diameter = diameter
+        super().__init__(
+            position,
+            orientation,
+            diameter=diameter,
+            current=current,
+            style=style,
+            **kwargs,
+        )
 
-        # init inheritance
-        super().__init__(position, orientation, current, style, **kwargs)
-
-        # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
     def diameter(self):
         """Diameter of the loop in units of m."""
-        return self._diameter
+        return (
+            None
+            if self._diameter is None
+            else self._diameter[0]
+            if len(self._diameter) == 1
+            else self._diameter
+        )
 
     @diameter.setter
-    def diameter(self, dia):
+    def diameter(self, diameter):
         """Set loop diameter.
 
         Parameters
         ----------
-        dia : float | None
+        diameter : float | array-like, shape (p,), default None
             Loop diameter in units (m).
         """
-        self._diameter = check_format_input_scalar(
-            dia,
-            sig_name="diameter",
-            sig_type="None or a positive number (int, float)",
+        self._diameter = check_format_input_numeric(
+            diameter,
+            dtype=float,
+            shapes=(None, (None,)),
+            name="diameter",
             allow_None=True,
-            forbid_negative=True,
+            reshape=(-1,),
+            value_conditions=(("ge", 0, "all"),),
         )
 
     @property
@@ -139,7 +149,7 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         """Default style description text"""
         if self.diameter is None:
             return "no dimension"
-        return f"{unit_prefix(self.current)}A" if self.current else "no current"
+        return super()._default_style_description
 
     # Methods
     def _get_centroid(self, squeeze=True):
@@ -148,17 +158,22 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
             return self.position
         return self._position
 
-    def _get_dipole_moment(self):
+    def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
         # test init
-        if self.diameter is None or self.current is None:
-            return np.array((0.0, 0.0, 0.0))
-
-        return self.diameter**2 / 4 * np.pi * self.current * np.array((0, 0, 1))
+        diam, curr = self._diameter, self._current
+        if diam is None or curr is None:
+            mom = np.zeros_like(self._position)
+        else:
+            diam, curr = diam[:, np.newaxis], curr[:, np.newaxis]
+            mom = diam**2 / 4 * np.pi * curr * np.array((0, 0, 1))
+        if squeeze and len(mom) == 1:
+            return mom[0]
+        return mom
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        return _target_mesh_circle(self.diameter / 2, self.meshing, self.current)
+        return generate_mesh_circle(self._diameter, self._current, self.meshing)
 
     def _validate_meshing(self, value):
         """Circle makes only sense with at least 4 mesh points."""

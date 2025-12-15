@@ -609,7 +609,7 @@ def test_force_path7a():
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
-    mom = a * b * h * cube.magnetization
+    mom = a * b * h * cube._magnetization[0]
     dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
         angles, axis=axis, anchor=anch
     )
@@ -673,7 +673,7 @@ def test_force_path7b():
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
-    mom = a * b * h * cube.magnetization
+    mom = a * b * h * cube._magnetization[0]
     dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
         angles, axis=axis, anchor=anch
     )
@@ -738,7 +738,7 @@ def test_force_path7c():
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
-    mom = a * b * h * cube.magnetization
+    mom = a * b * h * cube._magnetization[0]
     dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
         angles, axis=axis, anchor=anch
     )
@@ -803,7 +803,7 @@ def test_force_path7d():
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
-    mom = a * b * h * cube.magnetization
+    mom = a * b * h * cube._magnetization[0]
     dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
         angles, axis=axis, anchor=anch
     )
@@ -872,7 +872,7 @@ def test_force_path7e():
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
-    mom = a * b * h * cube.magnetization
+    mom = a * b * h * cube._magnetization[0]
     dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
         angles, axis=axis, anchor=anch
     )
@@ -937,7 +937,7 @@ def test_force_path7f():
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
-    mom = a * b * h * cube.magnetization
+    mom = a * b * h * cube._magnetization[0]
     dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
         angles, axis=axis, anchor=anch
     )
@@ -1003,7 +1003,7 @@ def test_force_path7g():
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
-    mom = a * b * h * cube.magnetization
+    mom = a * b * h * cube._magnetization[0]
     dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
         angles, axis=axis, anchor=anch
     )
@@ -1069,7 +1069,7 @@ def test_force_path7h():
     ).rotate_from_angax(angles, axis=axis, anchor=anch)
 
     # moment
-    mom = a * b * h * cube.magnetization
+    mom = a * b * h * cube._magnetization[0]
     dip = magpy.misc.Dipole(moment=mom).rotate_from_angax(
         angles, axis=axis, anchor=anch
     )
@@ -2537,7 +2537,6 @@ def test_centroid():
         polarization=(1, 0, 0),
         position=[(1, 2, 3), (4, 5, 6)],
     )
-    np.testing.assert_allclose(seg.centroid, seg._barycenter)
     np.testing.assert_allclose(seg._centroid, seg._barycenter)
 
     sph = magpy.magnet.Sphere(diameter=1, polarization=(1, 0, 0), position=(3, 2, 3))

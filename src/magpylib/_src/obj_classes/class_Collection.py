@@ -14,7 +14,6 @@ from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import check_format_input_obj
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseProperties import (
     BaseDipoleMoment,
@@ -124,14 +123,12 @@ def _collection_tree_generator(
             )
 
 
-class BaseCollection(BaseDisplayRepr):
+class BaseCollection:
     """Collection base class without BaseGeo properties"""
 
     get_trace = None
 
     def __init__(self, *children, override_parent=False):
-        BaseDisplayRepr.__init__(self)
-
         self._children = []
         self._sources = []
         self._sensors = []
@@ -264,52 +261,6 @@ class BaseCollection(BaseDisplayRepr):
 
     def __len__(self):
         return len(self._children)
-
-    def _repr_html_(self):
-        lines = []
-        lines.append(_repr_obj(self))
-        for line in _collection_tree_generator(
-            self,
-            format="type+label+id",
-            max_elems=10,
-        ):
-            lines.append(line)
-        return f"""<pre>{"<br>".join(lines)}</pre>"""
-
-    def describe(self, format="type+label+id", max_elems=10, return_string=False):
-        # pylint: disable=arguments-differ
-        """Return or print a tree view of the collection.
-
-        Parameters
-        ----------
-        format : str, default 'type+label+id'
-            Object description in tree view. Can be any combination of ``'type'``, ``'label'``
-            and ``'id'`` and ``'properties'``.
-        max_elems : int, default 10
-            If number of children at any level is higher than ``max_elems``, elements are
-            replaced by counters.
-        return_string : bool, default False
-            If ``False`` print description with stdout, if ``True`` return as string.
-
-        Returns
-        -------
-        str | None
-            Tree view string if ``return_string=True``, else ``None``.
-        """
-        tree = _collection_tree_generator(
-            self,
-            format=format,
-            max_elems=max_elems,
-        )
-        output = [_repr_obj(self, format)]
-        for t in tree:
-            output.append(t)
-        output = "\n".join(output)
-
-        if return_string:
-            return output
-        print(output)  # noqa: T201
-        return None
 
     def add(self, *children, override_parent=False):
         """Add sources, sensors or collections to the collection.
@@ -934,7 +885,7 @@ class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
         Ordered list of children in the collection top level.
     children_all : list
         Read-only. Ordered list of children in the collection including nested collections.
-    parent : Collection | None
+    parent : None | Collection
         Parent collection of the object.
     sensors : list
         Ordered list of sensor objects in the collection top level.
@@ -950,15 +901,15 @@ class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
         Read-only. Ordered list of collection objects in the collection including nested collections.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Collection centroid in units (m) computed as the volume-weighted average of all
-        child centroids. Can be a path.
-    volume : float
+        child centroids.
+    volume : float | ndarray, shape (p,)
         Read-only. Total Collection volume (m³) of all magnets. Overlapping objects may lead
         to double counting.
-    dipole_moment : ndarray, shape (3,)
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Total Collection dipole moment (A·m²) computed from the sum of all child
         dipole moments.
-    style : dict
-        Style dictionary defining the visual properties of the collection objects.
+    style : BaseStyle
+        Object style. See BaseStyle for details.
 
     Examples
     --------
@@ -1015,6 +966,8 @@ class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
     [ 2.329e-04 -9.317e-05 -3.445e-10]
     """
 
+    get_trace = None  # Collections don't have their own trace
+
     def __init__(
         self,
         *children,
@@ -1054,12 +1007,56 @@ class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
             return weighted_centroid / total_volume
         return self.position
 
-    def _get_dipole_moment(self):
+    def _get_dipole_moment(self, squeeze=True):
         """Return magnetic dipole moment of object (A·m²)."""
         return np.sum(
-            [
-                getattr(child, "dipole_moment", np.zeros(3))
-                for child in self.children_all
-            ],
+            [child._get_dipole_moment(squeeze=squeeze) for child in self.children_all],
             axis=0,
         )
+
+    def _repr_html_(self):
+        """Rich HTML representation for notebooks and other frontends."""
+        lines = []
+        lines.append(_repr_obj(self))
+        for line in _collection_tree_generator(
+            self,
+            format="type+label+id",
+            max_elems=10,
+        ):
+            lines.append(line)
+        return f"""<pre>{"<br>".join(lines)}</pre>"""
+
+    def describe(self, format="type+label+id", max_elems=10, return_string=False):
+        # pylint: disable=arguments-differ
+        """Return or print a tree view of the collection.
+
+        Parameters
+        ----------
+        format : str, default 'type+label+id'
+            Object description in tree view. Can be any combination of ``'type'``, ``'label'``
+            and ``'id'`` and ``'properties'``.
+        max_elems : int, default 10
+            If number of children at any level is higher than ``max_elems``, elements are
+            replaced by counters.
+        return_string : bool, default False
+            If ``False`` print description with stdout, if ``True`` return as string.
+
+        Returns
+        -------
+        str | None
+            Tree view string if ``return_string=True``, else ``None``.
+        """
+        tree = _collection_tree_generator(
+            self,
+            format=format,
+            max_elems=max_elems,
+        )
+        output = [_repr_obj(self, format)]
+        for t in tree:
+            output.append(t)
+        output = "\n".join(output)
+
+        if return_string:
+            return output
+        print(output)  # noqa: T201
+        return None

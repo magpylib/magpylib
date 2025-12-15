@@ -72,16 +72,16 @@ def test_empty_object_initialization():
     np.testing.assert_raises(MagpylibMissingInput, call_getB)
 
 
-def test_Triangle_barycenter():
-    """test Triangle barycenter"""
+def test_Triangle_centroid():
+    """test Triangle centroid"""
     pol = (0, 0, 0.333)
     vert = ((-1, -1, 0), (1, -1, 0), (0, 2, 0))
     face = magpy.misc.Triangle(polarization=pol, vertices=vert)
     bary = np.array([0, 0, 0])
-    np.testing.assert_allclose(face.barycenter, bary)
+    np.testing.assert_allclose(face.centroid, bary)
 
 
-def test_Triangle_centroid():
+def test_Triangle_centroid2():
     """Test Triangle centroid - placeholder implementation returns position"""
     expected = (10, 11, 12)
     triangle = magpy.misc.Triangle(

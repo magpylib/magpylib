@@ -8,7 +8,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Triangle
 from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
-from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.style import TriangleStyle
 
@@ -32,12 +32,12 @@ class Triangle(BaseMagnet):
     orientation : None | Rotation, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    vertices : None | array-like, shape (3, 3), default None
+    vertices : None | array-like, shape (3, 3) or (p, 3, 3), default None
         Triangle vertices in the local object coordinates in units (m).
-    polarization : None | array-like, shape (3,), default None
+    polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
-    magnetization : None | array-like, shape (3,), default None
+    magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
     style : None | dict, default None
@@ -50,19 +50,18 @@ class Triangle(BaseMagnet):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    vertices : None | ndarray, shape (3, 3)
+    vertices : None | ndarray, shape (3, 3) or (p, 3, 3)
         Same as constructor parameter ``vertices``.
-    polarization : None | ndarray, shape (3,)
+    polarization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``polarization``.
-    magnetization : None | ndarray, shape (3,)
+    magnetization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``magnetization``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
-        Can be a path.
-    parent : Collection | None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : TriangleStyle
+        Object style. See TriangleStyle for details.
 
     Notes
     -----
@@ -90,6 +89,7 @@ class Triangle(BaseMagnet):
         "polarization": 2,
         "vertices": 2,
     }
+    _path_properties = ("vertices",)
     get_trace = make_Triangle
     _style_class = TriangleStyle
 
@@ -103,18 +103,21 @@ class Triangle(BaseMagnet):
         style=None,
         **kwargs,
     ):
-        self.vertices = vertices
-
-        # init inheritance
         super().__init__(
-            position, orientation, magnetization, polarization, style, **kwargs
+            position,
+            orientation,
+            magnetization=magnetization,
+            polarization=polarization,
+            vertices=vertices,
+            style=style,
+            **kwargs,
         )
 
     # Properties
     @property
     def vertices(self):
         """Triangle vertices in local object coordinates in units (m)."""
-        return self._vertices
+        return np.squeeze(self._vertices) if self._vertices is not None else None
 
     @vertices.setter
     def vertices(self, val):
@@ -122,27 +125,17 @@ class Triangle(BaseMagnet):
 
         Parameters
         ----------
-        val : None | array-like, shape (3, 3)
+        val : None | array-like, shape (3, 3) or (p, 3, 3)
             Triangle vertices in local object coordinates in units (m).
         """
-        self._vertices = check_format_input_vector(
+        self._vertices = check_format_input_numeric(
             val,
-            dims=(2,),
-            shape_m1=3,
-            sig_name="Triangle.vertices",
-            sig_type="array-like (list, tuple, ndarray) of shape (3, 3)",
+            dtype=float,
+            shapes=((3, 3), (None, 3, 3)),
+            name="Triangle.vertices",
             allow_None=True,
+            reshape=(-1, 3, 3),
         )
-
-    @property
-    def _barycenter(self):
-        """Object barycenter."""
-        return self._get_barycenter(self._position, self._orientation, self._vertices)
-
-    @property
-    def barycenter(self):
-        """Object barycenter in units (m) in global coordinates."""
-        return np.squeeze(self._barycenter)
 
     @property
     def _default_style_description(self):
@@ -154,15 +147,12 @@ class Triangle(BaseMagnet):
     # Methods
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
-        if squeeze:
-            return self.barycenter
-        return self._barycenter
-
-    # Static methods
-    @staticmethod
-    def _get_barycenter(position, orientation, vertices):
-        """Returns the barycenter of the Triangle object."""
-        centroid = (
-            np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
-        )
-        return orientation.apply(centroid) + position
+        if self._vertices is None:
+            centroid = np.array([0.0, 0.0, 0.0])
+        else:
+            # vertices shape is (p, 3, 3), mean over axis 1 to get (p, 3)
+            centroid = np.mean(self._vertices, axis=1)
+        result = self._orientation.apply(centroid) + self._position
+        if squeeze and len(result) == 1:
+            return result[0]
+        return result
