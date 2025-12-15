@@ -25,7 +25,7 @@ def test_el3_inputs():
 
 def test_el3_vs_original():
     """
-    test new and vectroized el3 implemtnation vs original one
+    test new and vectorized el3 implementation vs original one
     """
     # store computations from original implementation
     # from florian_ell3_paper import el3 as _el30
@@ -51,7 +51,7 @@ def test_el3_vs_original():
 
 def test_el3_angle_vs_original():
     """
-    test vectroized _el3_angle implemtnation vs original one
+    test vectorized _el3_angle implementation vs original one
     """
     # # store computations from original implementation of _el3_angle
     # N = 1000

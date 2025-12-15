@@ -1044,4 +1044,4 @@ def test_magnet_polarization_magnetization_input3():
     c = magpy.magnet.Cuboid()
     c.magnetization = mag
     np.testing.assert_allclose(mag, c.magnetization)
-    np.testing.assert_allclose(mag * (4 * np.pi * 1e-7), c.polarization)  # type: ignore[attr-defined]
+    np.testing.assert_allclose(mag * magpy.mu_0, c.polarization)  # type: ignore[attr-defined]

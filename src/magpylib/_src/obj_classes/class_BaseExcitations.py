@@ -6,8 +6,8 @@
 from typing import ClassVar
 
 import numpy as np
-from scipy.constants import mu_0 as MU0
 
+from magpylib import mu_0
 from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import (
     check_format_input_numeric,
@@ -359,10 +359,10 @@ class BaseMagnet(BaseSource):
 
         if name == "magnetization":
             self._magnetization = formatted
-            self._polarization = formatted * MU0 if formatted is not None else None
+            self._polarization = formatted * mu_0 if formatted is not None else None
         elif name == "polarization":
             self._polarization = formatted
-            self._magnetization = formatted / MU0 if formatted is not None else None
+            self._magnetization = formatted / mu_0 if formatted is not None else None
 
     @property
     def magnetization(self):
