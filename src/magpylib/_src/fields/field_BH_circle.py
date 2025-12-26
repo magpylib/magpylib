@@ -72,10 +72,9 @@ def current_circle_Hfield(
     k2 = 4 * r / x0
     q2 = (z2 + (r - 1) ** 2) / x0
 
-    k = np.sqrt(k2)
     q = np.sqrt(q2)
     p = 1 + q
-    pf = k / np.sqrt(r) / q2 / 20 / r0 * 1e-6 * i0
+    pf = i0 / (4 * np.pi * r0 * np.sqrt(x0) * q2)
 
     # cel* part
     cc = k2 * k2
@@ -87,8 +86,7 @@ def current_circle_Hfield(
     ss = 2 * k2 * q * (k2 / p - p / r)
     Hz = -pf * _cel_iter(q, p, np.ones(n5), cc, ss, p, q)
 
-    # input is I -> output must be H-field
-    return np.vstack((Hr, np.zeros(n5), Hz)) / MU0
+    return np.vstack((Hr, np.zeros(n5), Hz))
 
 
 def _BHJM_circle(
