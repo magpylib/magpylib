@@ -35,13 +35,9 @@ import magpylib as magpy
 
 def test_vs_mag2_linear():
     """test against magpylib v2"""
-    with Path("tests/testdata/testdata_vs_mag2.p").resolve().open("rb") as f:
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore",
-                category=np.exceptions.VisibleDeprecationWarning,
-            )
-            data = pickle.load(f)[0]
+    with (Path("tests/testdata/testdata_vs_mag2.p").resolve().open("rb") as f, warnings.catch_warnings(),):
+        warnings.filterwarnings("ignore",category=np.exceptions.VisibleDeprecationWarning)
+        data = pickle.load(f)[0]
     poso = [(t, -t, t) for t in np.linspace(0, 3, 100)]
     pm = magpy.magnet.Cuboid(polarization=(111, 222, 333), dimension=(1, 2, 3))
 
@@ -51,13 +47,9 @@ def test_vs_mag2_linear():
 
 def test_vs_mag2_rotation():
     """test against magpylib v2"""
-    with Path("tests/testdata/testdata_vs_mag2.p").resolve().open("rb") as f:
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore",
-                category=np.exceptions.VisibleDeprecationWarning,
-            )
-            data = pickle.load(f)[1]
+    with (Path("tests/testdata/testdata_vs_mag2.p").resolve().open("rb") as f, warnings.catch_warnings(),):
+        warnings.filterwarnings("ignore",category=np.exceptions.VisibleDeprecationWarning)
+        data = pickle.load(f)[1]
     pm = magpy.magnet.Cuboid(polarization=(111, 222, 333), dimension=(1, 2, 3))
     possis = [
         (3 * np.sin(t / 180 * np.pi), 3 * np.cos(t / 180 * np.pi), 0)
@@ -69,13 +61,9 @@ def test_vs_mag2_rotation():
 
 def test_vs_mag2_spiral():
     """test against magpylib v2"""
-    with Path("tests/testdata/testdata_vs_mag2.p").resolve().open("rb") as f:
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore",
-                category=np.exceptions.VisibleDeprecationWarning,
-            )
-            data = pickle.load(f)[2]
+    with (Path("tests/testdata/testdata_vs_mag2.p").resolve().open("rb") as f, warnings.catch_warnings(),):
+        warnings.filterwarnings("ignore",category=np.exceptions.VisibleDeprecationWarning)
+        data = pickle.load(f)[2]
     pm = magpy.magnet.Cuboid(
         polarization=(111, 222, 333), dimension=(1, 2, 3), position=(3, 0, 0)
     )
