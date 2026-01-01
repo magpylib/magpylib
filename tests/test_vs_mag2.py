@@ -1,7 +1,7 @@
 import pickle
+import warnings
 from pathlib import Path
 
-import warnings
 import numpy as np
 
 import magpylib as magpy
