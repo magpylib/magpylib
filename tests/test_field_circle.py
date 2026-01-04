@@ -5,7 +5,7 @@ import pytest
 
 
 def test_current_circle_on_axis():
-    """testing H field on axis of current cirlce"""
+    """testing H field on axis of current circle"""
     z = np.linspace(-3, 3, 100)
     H = current_circle_Hfield(
         r0 = np.ones_like(z),
