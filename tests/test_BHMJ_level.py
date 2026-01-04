@@ -489,16 +489,14 @@ def test_BHJM_circle_on_axis():
     """Test of current circle field core function on axis"""
     z = np.linspace(-3, 3, 100)
 
-    obs = np.column_stack([
-        np.zeros_like(z),
-        np.zeros_like(z),
-        z
-    ])
-    H = _BHJM_circle(field="H", observers=obs, diameter=np.full_like(z,2), current=np.ones_like(z))
-    Hr = H[:,0]
-    Hz = H[:,2]
+    obs = np.column_stack([np.zeros_like(z), np.zeros_like(z), z])
+    H = _BHJM_circle(
+        field="H", observers=obs, diameter=np.full_like(z, 2), current=np.ones_like(z)
+    )
+    Hr = H[:, 0]
+    Hz = H[:, 2]
 
-    Hz_expected = 1 / (2 * (1+z*z)**(3/2))
+    Hz_expected = 1 / (2 * (1 + z * z) ** (3 / 2))
     np.testing.assert_array_almost_equal_nulp(Hz, Hz_expected, nulp=2)
     np.testing.assert_array_equal(Hr, np.zeros_like(z))
 
