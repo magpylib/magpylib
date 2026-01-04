@@ -87,7 +87,7 @@ def current_circle_Hfield(
     cc = k4 - (q2 + 1) * (4 / x0)
     ss = 2 * q * (k4 / p - (4 / x0) * p)
     Hz = -pf * _cel_iter(q, p, np.ones(n5), cc, ss, p, q)
-    #Hz = -_cel_iter(q, p, np.ones(n5), pf*cc, pf*ss, p, q)
+    # Hz = -_cel_iter(q, p, np.ones(n5), pf*cc, pf*ss, p, q)
 
     return np.vstack((Hr, np.zeros(n5), Hz))
 
