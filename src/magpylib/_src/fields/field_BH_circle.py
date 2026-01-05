@@ -24,7 +24,7 @@ def current_circle_Hfield(
     Parameters
     ----------
     r0 : array-like, shape (i,)
-        Loop radii.
+        Loop radii, should be positive (r0 > 0).
     r : array-like, shape (i,)
         Radial observer positions.
     z : array-like, shape (i,)
@@ -60,7 +60,6 @@ def current_circle_Hfield(
      [0.077 0.226]]
 
     """
-    assert np.all(r0 > 0), "Zero loop radius is not allowed"
     n5 = len(r)
 
     # express through ratios (make dimensionless, avoid large/small input values, stupid)
