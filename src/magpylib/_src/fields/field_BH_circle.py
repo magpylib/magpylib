@@ -24,7 +24,7 @@ def current_circle_Hfield(
     Parameters
     ----------
     r0 : array-like, shape (i,)
-        Loop radii.
+        Loop radii, should be positive (r0 > 0).
     r : array-like, shape (i,)
         Radial observer positions.
     z : array-like, shape (i,)
@@ -77,14 +77,16 @@ def current_circle_Hfield(
     pf = i0 / (4 * np.pi * r0 * np.sqrt(x0) * q2)
 
     # cel* part
-    cc = k2 * k2
+    cc = k2 * 4 * z / x0
     ss = 2 * cc * q / p
-    Hr = pf * z / r * _cel_iter(q, p, np.ones(n5), cc, ss, p, q)
+    Hr = pf * _cel_iter(q, p, np.ones(n5), cc, ss, p, q)
 
     # cel** part
-    cc = k2 * (k2 - (q2 + 1) / r)
-    ss = 2 * k2 * q * (k2 / p - p / r)
+    k4 = k2 * k2
+    cc = k4 - (q2 + 1) * (4 / x0)
+    ss = 2 * q * (k4 / p - (4 / x0) * p)
     Hz = -pf * _cel_iter(q, p, np.ones(n5), cc, ss, p, q)
+    # Hz = -_cel_iter(q, p, np.ones(n5), pf*cc, pf*ss, p, q)
 
     return np.vstack((Hr, np.zeros(n5), Hz))
 
@@ -115,24 +117,15 @@ def _BHJM_circle(
     mask1 = r0 == 0
     # case2: at singularity -> return (0, 0, 0)
     mask2 = np.logical_and(abs(r - r0) < 1e-15 * r0, z == 0)
-    # case3: r=0
-    mask3 = r == 0
-    if np.any(mask3):
-        mask4 = mask3 * ~mask1  # only relevant if not also case1
-        BHJM[mask4, 2] = (
-            (r0[mask4] ** 2 / (z[mask4] ** 2 + r0[mask4] ** 2) ** (3 / 2))
-            * current[mask4]
-            * 0.5
-        )
 
     # general case
-    mask5 = ~np.logical_or(np.logical_or(mask1, mask2), mask3)
-    if np.any(mask5):
-        BHJM[mask5] = current_circle_Hfield(
-            r0=r0[mask5],
-            r=r[mask5],
-            z=z[mask5],
-            i0=current[mask5],
+    mask3 = ~np.logical_or(mask1, mask2)
+    if np.any(mask3):
+        BHJM[mask3] = current_circle_Hfield(
+            r0=r0[mask3],
+            r=r[mask3],
+            z=z[mask3],
+            i0=current[mask3],
         ).T
 
     BHJM[:, 0], BHJM[:, 1] = cyl_field_to_cart(phi, BHJM[:, 0])
