@@ -354,7 +354,7 @@ def _compute_B_with_paths(sources, obs_flat, n_path):
     n_obs = obs_flat.shape[1]
 
     # Check if any source has a path
-    src_path_lengths = [len(src._position) for src in sources]
+    src_path_lengths = [src._get_path_len() for src in sources]
     n_src_path = max(src_path_lengths)
 
     # Simple case: no source paths
@@ -586,8 +586,8 @@ def getFT(
     n_src = len(sources)
 
     # Determine path length (max across all sources and targets)
-    tgt_path_lengths = [len(tgt._position) for tgt in targets]
-    src_path_lengths = [len(src._position) for src in sources]
+    tgt_path_lengths = [tgt._get_path_len() for tgt in targets]
+    src_path_lengths = [src._get_path_len() for src in sources]
     n_path = max(tgt_path_lengths + src_path_lengths)
 
     # Validate and broadcast pivot to (n_tgt, n_path, 3) or None

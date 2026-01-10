@@ -142,7 +142,7 @@ def check_static_sensor_orient(sensors):
     # pylint: disable=protected-access
     static_sensor_rot = []
     for sens in sensors:
-        if len(sens._position) == 1:  # no sensor path (sensor is static)
+        if sens.orientation.single:  # no sensor path (sensor is static)
             static_sensor_rot += [True]
         else:  # there is a sensor path
             rot = sens.orientation.as_quat()
@@ -171,26 +171,6 @@ def check_duplicates(obj_list: Sequence) -> list:
         )
 
     return obj_list_new
-
-
-def check_path_format(inp):
-    """check if each object path has same length
-    of obj.pos and obj.rot
-    Parameters
-    ----------
-    inp: single BaseGeo or list of BaseGeo objects
-    Returns
-    -------
-    no return
-    """
-    # pylint: disable=protected-access
-    if not isinstance(inp, list):
-        inp = [inp]
-    result = all(len(obj._position) == len(obj._orientation) for obj in inp)
-
-    if not result:
-        msg = "Bad path format: position and orientation have different lengths."
-        raise MagpylibBadUserInput(msg)
 
 
 def filter_objects(obj_list, allow="sources+sensors", warn=True):

@@ -76,7 +76,7 @@ def test_BaseGeo_basics():
     rots += [bgeo.orientation.as_rotvec()]
 
     poss = np.array(poss)
-    rots = np.array(rots)
+    rots = np.array(rots).squeeze()
 
     # avoid generating different zeros in macos CI tests (atol=1e-6)
     np.testing.assert_allclose(
@@ -291,7 +291,7 @@ def test_path_functionality2():
         ).move(inpath, start=3)
     )
     P = np.array([b1, b2, b3, b4 + c1, b5 + c2, b5 + c3])
-    Q = np.array([q1, q2, q3, q4, q5, q5])
+    Q = np.array([q1, q2, q3, q4, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
@@ -301,7 +301,7 @@ def test_path_functionality2():
         ).move(inpath, start=4)
     )
     P = np.array([b1, b2, b3, b4, b5 + c1, b5 + c2, b5 + c3])
-    Q = np.array([q1, q2, q3, q4, q5, q5, q5])
+    Q = np.array([q1, q2, q3, q4, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
@@ -311,7 +311,7 @@ def test_path_functionality2():
         ).move(inpath, start=5)
     )
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
-    Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
+    Q = np.array([q1, q2, q3, q4, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
@@ -321,7 +321,7 @@ def test_path_functionality2():
         ).move(inpath, start=5)
     )
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
-    Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
+    Q = np.array([q1, q2, q3, q4, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
@@ -331,7 +331,7 @@ def test_path_functionality2():
         ).move(inpath)
     )
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
-    Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
+    Q = np.array([q1, q2, q3, q4, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
@@ -816,25 +816,25 @@ def test_path_shortening_with_implicit_sync():
         position=[(i, i, i) for i in range(5)],  # path length 5
     )
 
-    # Initially all paths should have length 5
+    # Initially all paths should have length 5 (position) or 1 (lazy props)
     assert len(cube._position) == 5, "Initial position path should be 5"
-    assert len(cube._orientation) == 5, "Initial orientation path should be 5"
-    assert len(cube._dimension) == 5, "Initial dimension path should be 5"
+    assert len(cube._orientation) == 1, "Initial orientation path should be 1 (lazy)"
+    assert len(cube._dimension) == 1, "Initial dimension path should be 1 (lazy)"
 
     # Now set dimension to a shorter path (length 3)
     # The dimension setter does NOT pass the property to _sync_all_paths
     cube.dimension = [(2, 2, 2), (3, 3, 3), (4, 4, 4)]
 
-    # All paths should now be shortened to length 3
-    assert len(cube._position) == 3, "Position path should be shortened to 3"
-    assert len(cube._orientation) == 3, "Orientation path should be shortened to 3"
+    # PATH SYNCING REMOVED: Orientation should remain length 1 (lazy)
+    assert len(cube._position) == 5, "Position path should remain 5"
+    assert len(cube._orientation) == 1, "Orientation path should remain 1 (lazy)"
     assert len(cube._dimension) == 3, "Dimension path should be 3"
 
-    # Verify the last elements are kept (sliced from the end)
+    # Verify position is UNCHANGED
     np.testing.assert_allclose(
         cube._position,
-        np.array([[2, 2, 2], [3, 3, 3], [4, 4, 4]]),
-        err_msg="Position should be sliced from the end",
+        np.array([(i, i, i) for i in range(5)]),
+        err_msg="Position should remain unchanged",
     )
 
     # Test with polarization which also doesn't pass prop to _sync_all_paths
@@ -845,20 +845,20 @@ def test_path_shortening_with_implicit_sync():
     )
 
     assert len(mag._position) == 6
-    assert len(mag._polarization) == 6
+    assert len(mag._polarization) == 1, "Polarization should be 1 (lazy)"
 
     # Set shorter polarization path
     mag.polarization = [(1, 0, 0), (0, 1, 0)]  # length 2
 
-    # All paths should now be 2
-    assert len(mag._position) == 2, "Position should be shortened to 2"
+    # All paths should NOT be shortened
+    assert len(mag._position) == 6, "Position should remain 6"
     assert len(mag._polarization) == 2, "Polarization should be 2"
 
-    # Verify position is sliced from the end
+    # Verify position is UNCHANGED
     np.testing.assert_allclose(
         mag._position,
-        np.array([[4, 0, 0], [5, 0, 0]]),
-        err_msg="Position should keep last 2 elements",
+        np.array([(i, 0, 0) for i in range(6)]),
+        err_msg="Position should remain unchanged",
     )
 
 
@@ -873,27 +873,29 @@ def test_path_shortening_with_explicit_sync():
         position=[(i, 0, 0) for i in range(5)],  # path length 5
     )
 
-    # Initially all paths should have length 5
+    # Initially all paths should have length 5 (position) or 1 (lazy props)
     assert len(sphere._position) == 5, "Initial position path should be 5"
-    assert len(sphere._orientation) == 5, "Initial orientation path should be 5"
-    assert len(sphere._diameter) == 5, "Initial diameter path should be 5"
-    assert len(sphere._polarization) == 5, "Initial polarization path should be 5"
+    assert len(sphere._orientation) == 1, "Initial orientation path should be 1 (lazy)"
+    assert len(sphere._diameter) == 1, "Initial diameter path should be 1 (lazy)"
+    assert len(sphere._polarization) == 1, (
+        "Initial polarization path should be 1 (lazy)"
+    )
 
     # Now set diameter to a shorter path (length 3)
     # The diameter setter DOES pass self._diameter to _sync_all_paths
     sphere.diameter = [2.0, 3.0, 4.0]
 
-    # All paths should now be shortened to length 3
-    assert len(sphere._position) == 3, "Position path should be shortened to 3"
-    assert len(sphere._orientation) == 3, "Orientation path should be shortened to 3"
+    # PATH SYNCING REMOVED: orientation/polarization should remain length 1
+    assert len(sphere._position) == 5, "Position path should remain 5"
+    assert len(sphere._orientation) == 1, "Orientation path should remain 1 (lazy)"
     assert len(sphere._diameter) == 3, "Diameter path should be 3"
-    assert len(sphere._polarization) == 3, "Polarization path should be shortened to 3"
+    assert len(sphere._polarization) == 1, "Polarization path should remain 1 (lazy)"
 
-    # Verify the last elements are kept (sliced from the end)
+    # Verify position is UNCHANGED
     np.testing.assert_allclose(
         sphere._position,
-        np.array([[2, 0, 0], [3, 0, 0], [4, 0, 0]]),
-        err_msg="Position should be sliced from the end",
+        np.array([(i, 0, 0) for i in range(5)]),
+        err_msg="Position should remain unchanged",
     )
     np.testing.assert_allclose(
         sphere._diameter,
@@ -909,22 +911,23 @@ def test_path_shortening_with_explicit_sync():
     )
 
     assert len(circle._position) == 4
-    assert len(circle._diameter) == 4
-    assert len(circle._current) == 4
+    assert len(circle._diameter) == 1, "Diameter should be 1 (lazy)"
+    assert len(circle._current) == 1, "Current should be 1 (lazy)"
 
     # Set shorter diameter path
     circle.diameter = [5.0, 6.0]  # length 2
 
     # All paths should now be 2
-    assert len(circle._position) == 2, "Position should be shortened to 2"
+    assert len(circle._position) == 4, "Position should remain 4"
     assert len(circle._diameter) == 2, "Diameter should be 2"
-    assert len(circle._current) == 2, "Current should be shortened to 2"
+    assert len(circle._current) == 1, "Current should remain 1 (lazy)"
 
     # Verify position is sliced from the end
+    # Verify position is UNCHANGED (lazy padding: orientation was lazy 1, position updated)
     np.testing.assert_allclose(
         circle._position,
-        np.array([[0, 2, 0], [0, 3, 0]]),
-        err_msg="Position should keep last 2 elements",
+        np.array([(0, i, 0) for i in range(4)]),
+        err_msg="Position should remain unchanged length 4",
     )
     np.testing.assert_allclose(
         circle._diameter, np.array([5.0, 6.0]), err_msg="Diameter should match input"
@@ -951,27 +954,34 @@ def test_path_sync_with_collections():
 
     col = magpy.Collection(cube1, cube2, position=[(0, 0, i) for i in range(5)])
 
-    # All objects should have path length 5
+    # All objects should have path length 5 (position only)
     assert len(col._position) == 5
     assert len(cube1._position) == 5
     assert len(cube2._position) == 5
-    assert len(cube1._dimension) == 5
+    assert len(cube1._dimension) == 1, "Dimension should be 1 (lazy)"
 
     # Now shorten the collection's position path
     col.position = [(0, 0, 1), (0, 0, 2)]  # length 2
 
-    # Collection and children should all be shortened to length 2
+    # Collection and children positions should be shortened to length 2
     assert len(col._position) == 2, "Collection position should be 2"
     assert len(cube1._position) == 2, "Child1 position should be shortened to 2"
     assert len(cube2._position) == 2, "Child2 position should be shortened to 2"
 
+    # PATH SYNCING REMOVED: Dimension should remain length 1 (lazy)!
+    assert len(cube1._dimension) == 1, "Child1 dimension should remain 1 (lazy)"
+
     # Now set a child's dimension to a shorter path
     cube1.dimension = [(3, 3, 3)]  # length 1
 
-    # Only cube1's paths should be affected, not the collection or other children
-    assert len(cube1._position) == 1, "Cube1 position should be shortened to 1"
+    # Only cube1's dimension should be affected.
+    # Position should remain 2.
+    assert len(cube1._position) == 2, "Cube1 position should remain 2"
     assert len(cube1._dimension) == 1, "Cube1 dimension should be 1"
-    assert len(cube1._polarization) == 1, "Cube1 polarization should be shortened to 1"
+
+    # Polarization should remain 1 (lazy)
+    assert len(cube1._polarization) == 1, "Cube1 polarization should remain 1 (lazy)"
+
     assert len(col._position) == 2, "Collection position should remain 2"
     assert len(cube2._position) == 2, "Cube2 position should remain 2"
 
@@ -1027,16 +1037,17 @@ def test_all_path_properties_sync_consistently():
         setattr(obj, prop_name, new_val)
 
         # Verify all paths shortened to 3
-        assert len(obj._position) == 3, (
-            f"{type(obj).__name__}.position should shorten to 3 when {prop_name} is shortened"
+        # LAZY PADDING: position should NOT slice!
+        assert len(obj._position) == 5, (
+            f"{type(obj).__name__}.position should REMAIN 5 when {prop_name} is shortened"
         )
         assert len(getattr(obj, f"_{prop_name}")) == 3, (
             f"{type(obj).__name__}.{prop_name} should be 3"
         )
 
-        # Verify position values are the last 3 from original
+        # Verify position values are UNCHANGED
         np.testing.assert_allclose(
             obj._position,
-            np.array([[2, 0, 0], [3, 0, 0], [4, 0, 0]]),
-            err_msg=f"{type(obj).__name__} position should keep last 3 elements",
+            np.array([(i, 0, 0) for i in range(5)]),  # unchanged
+            err_msg=f"{type(obj).__name__} position should remain unchanged",
         )

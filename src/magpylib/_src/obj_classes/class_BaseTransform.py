@@ -126,6 +126,11 @@ def _path_padding(inpath, start, target_object):
         # and ensure it's float dtype for in-place operations
         ppath = np.array(ppath, dtype=float)
 
+    # LAZY PADDING: Ensure orientation matches position length
+    # If orientation is lazy (len=1) but position is longer, expand orientation
+    if len(opath) < len(ppath):
+        opath = np.pad(opath, ((0, len(ppath) - len(opath)), (0, 0)), "edge")
+
     # set end-index
     end = len(ppath) if scalar_input else start + lenip
 
@@ -165,14 +170,15 @@ def _apply_move(target_object, displacement, start="auto"):
     check_start_type(start)
 
     # pad target_object path and compute start and end-index for rotation application
-    ppath, opath, start, end, padded = _path_padding(inpath, start, target_object)
-    if padded:
-        pad_path_properties(target_object, len(ppath), start)
-        target_object._orientation = R.from_quat(opath)
+    ppath, _, start, end, _ = _path_padding(inpath, start, target_object)
+
+    # LAZY PADDING: Only position is affected by move. Orientation and other props stay as is.
+    # ppath is already padded if necessary by _path_padding.
+    target_object._position = ppath  # update position potentially with new length
 
     # apply move operation
     ppath[start:end] += inpath
-    target_object._position = ppath
+    target_object._position = ppath  # update position values
 
     return target_object
 
@@ -180,14 +186,18 @@ def _apply_move(target_object, displacement, start="auto"):
 def pad_path_property(prop, new_path_len, start=0):
     if prop is None:
         return prop
-    is_rot = isinstance(prop, R)
+    is_rot = hasattr(prop, "single")
     if not isinstance(prop, np.ndarray) and not is_rot:
-        msg = "path property is not a numpy array."
+        msg = "path property is not a numpy array or scipy Rotation."
         raise MagpylibInternalError(msg)
+
+    prop_len = 1 if is_rot and prop.single else len(prop)
+
     if is_rot:
         prop = prop.as_quat()
-    pad_start = len(prop) if start < 0 else start
-    pad_end = max(0, new_path_len - len(prop) - pad_start)
+
+    pad_start = prop_len if start < 0 else start
+    pad_end = max(0, new_path_len - prop_len - pad_start)
     if pad_start > 0 or pad_end > 0:
         pad_width = (pad_start, pad_end)
         if prop.ndim > 1:
@@ -248,7 +258,7 @@ def _apply_rotation(
         anchor, inrotQ, rotation = _multi_anchor_behavior(anchor, inrotQ, rotation)
 
     # pad target_object path and compute start and end-index for rotation application
-    ppath, opath, newstart, end, padded = _path_padding(inrotQ, start, target_object)
+    ppath, opath, newstart, end, _ = _path_padding(inrotQ, start, target_object)
 
     # compute anchor when dealing with Compound rotation (target_object is a child
     #   that rotates about its parent). This happens when a rotation with anchor=None
@@ -280,8 +290,10 @@ def _apply_rotation(
     # pylint: disable=attribute-defined-outside-init
     target_object._orientation = R.from_quat(opath)
     target_object._position = ppath
-    if padded:
-        pad_path_properties(target_object, len(ppath), newstart)
+
+    # LAZY PADDING: Do not pad other properties.
+    # if padded:
+    #     pad_path_properties(target_object, len(ppath), newstart)
 
     return target_object
 

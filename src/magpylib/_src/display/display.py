@@ -20,7 +20,6 @@ from magpylib._src.input_checks import (
     check_input_animation,
     check_input_canvas_update,
 )
-from magpylib._src.utility import check_path_format
 
 disp_args = set(get_defaults_dict("display"))
 
@@ -192,14 +191,12 @@ def _show(
     """
 
     # process input objs
-    objects, obj_list_flat, max_rows, max_cols, subplot_specs = process_show_input_objs(
+    objects, max_rows, max_cols, subplot_specs = process_show_input_objs(
         objects,
         **{k: v for k, v in kwargs.items() if k in DEFAULT_ROW_COL_PARAMS},
     )
     kwargs = {k: v for k, v in kwargs.items() if k not in DEFAULT_ROW_COL_PARAMS}
     canvas_update = check_input_canvas_update(canvas_update, canvas)
-    # test if every individual obj_path is good
-    check_path_format(obj_list_flat)
 
     # input checks
     backend = check_format_input_backend(backend)

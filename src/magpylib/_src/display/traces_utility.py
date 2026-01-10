@@ -356,6 +356,25 @@ def path_frames_to_indices(frames, path_len):
     return inds
 
 
+def _get_prop(prop, ind):
+    """Helper to safely get property at index, supporting lazy broadcasting."""
+    if prop is None:
+        return None
+
+    # Handle scipy Rotation
+    if hasattr(prop, "single"):
+        if prop.single:
+            return prop
+        if len(prop) == 1:
+            return prop[0]
+        return prop[ind]
+
+    # Handle other array-likes (numpy)
+    if len(prop) == 1:
+        return prop[0]
+    return prop[ind]
+
+
 def get_objects_props_by_row_col(*objs, colorsequence, style_kwargs):
     """Return flat dict with objs as keys object properties as values.
     Properties include: row_cols, style, legendgroup, legendtext"""
@@ -805,7 +824,6 @@ def process_show_input_objs(objs, **kwargs):
 
     return (
         list(row_col_dict.values()),
-        list(dict.fromkeys(sources_and_sensors_only)),
         max_rows,
         max_cols,
         specs,

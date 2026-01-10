@@ -22,6 +22,7 @@ from magpylib._src.defaults.defaults_utility import (
     linearize_dict,
 )
 from magpylib._src.display.traces_utility import (
+    _get_prop,
     draw_arrowed_line,
     get_legend_label,
     get_objects_props_by_row_col,
@@ -197,7 +198,7 @@ def make_mag_arrows(obj, path_ind=-1):
 def make_path(input_obj, label=None):
     """draw obj path based on path style properties"""
     style = input_obj.style
-    x, y, z = np.array(input_obj.position).T
+    x, y, z = np.array(input_obj._position).T
     txt_kwargs = (
         {"mode": "markers+text+lines", "text": list(range(len(x)))}
         if style.path.numbering
@@ -520,8 +521,11 @@ def get_generic_traces3D(
     positions = getattr(input_obj, "_position", None)
     orientations = getattr(input_obj, "_orientation", None)
     has_path = positions is not None and orientations is not None
-    path_len = 1 if positions is None else len(positions)
-    max_pos_ind = path_len - 1
+    # LAZY PADDING: Use _get_path_len() to get true path length including lazy properties
+    if hasattr(input_obj, "_get_path_len"):
+        path_len = input_obj._get_path_len()
+    else:
+        path_len = 1 if positions is None else len(positions)
     is_frame_dependent = False
     path_inds = path_inds_minimal = path_frames_to_indices(style.path.frames, path_len)
     if hasattr(style, "pixel"):
@@ -621,8 +625,9 @@ def get_generic_traces3D(
         temp_rot_traces = []
         name, name_suff = "", None
         for ind, path_ind in enumerate(path_inds):
-            pos_orient_ind = max_pos_ind if path_ind > max_pos_ind else path_ind
-            pos, orient = positions[pos_orient_ind], orientations[pos_orient_ind]
+            # Lazy Broadcasting via centralized _get_prop
+            pos = _get_prop(positions, path_ind)
+            orient = _get_prop(orientations, path_ind)
             tr_list = [trg]
             if trg is None:
                 tr_list = get_traces_func(path_ind=path_ind)
@@ -637,7 +642,14 @@ def get_generic_traces3D(
                 temp_rot_traces.append(tr1)
         path_traces_generic.extend(group_traces(*temp_rot_traces))
 
-    if np.array(input_obj.position).ndim > 1 and style.path.show:
+    geom_path_len = (
+        input_obj._get_geometric_path_len()
+        if hasattr(input_obj, "_get_geometric_path_len")
+        else input_obj._get_path_len()
+        if hasattr(input_obj, "_get_path_len")
+        else getattr(input_obj, "_position", np.array((0.0, 0.0, 0.0))).shape[0]
+    )
+    if geom_path_len > 1 and style.path.show:
         scatter_path = make_path(input_obj, legend_label)
         path_traces_generic.append(scatter_path)
 
@@ -741,7 +753,13 @@ def process_animation_kwargs(obj_list, animation=False, **kwargs):
         animation = True
     if (
         not any(
-            getattr(obj, "position", np.array([])).ndim > 1 for obj in flat_obj_list
+            (
+                obj._get_path_len()
+                if hasattr(obj, "_get_path_len")
+                else getattr(obj, "_position", np.empty((1, 3))).shape[0]
+            )
+            > 1
+            for obj in flat_obj_list
         )
         and animation is not False
     ):  # check if some path exist for any object
@@ -783,7 +801,11 @@ def extract_animation_properties(
         if isinstance(obj, Collection):
             subobjs.extend(obj.children)
         for subobj in subobjs:
-            path_len = getattr(subobj, "_position", np.array((0.0, 0.0, 0.0))).shape[0]
+            path_len = (
+                subobj._get_path_len()
+                if hasattr(subobj, "_get_path_len")
+                else getattr(subobj, "_position", np.empty((1, 3))).shape[0]
+            )
             path_lengths.append(path_len)
 
     max_pl = max(path_lengths)

@@ -7,7 +7,6 @@
 
 import warnings
 from abc import ABC, abstractmethod
-from contextlib import contextmanager
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -19,10 +18,7 @@ from magpylib._src.input_checks import (
     check_format_input_numeric,
     check_format_input_orientation,
 )
-from magpylib._src.obj_classes.class_BaseTransform import (
-    BaseTransform,
-    pad_path_properties,
-)
+from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
 from magpylib._src.style import BaseStyle
 from magpylib._src.utility import add_iteration_suffix, unit_prefix
 
@@ -98,8 +94,9 @@ class BaseGeo(BaseTransform, ABC):
     """
 
     _style_class = BaseStyle
+
     _path_properties = ("position", "orientation")
-    _path_sync_enabled = True
+
     show = show
     get_trace = make_DefaultTrace
 
@@ -124,9 +121,8 @@ class BaseGeo(BaseTransform, ABC):
         if "orientation" not in path_kwargs:
             path_kwargs["orientation"] = orientation
 
-        with self.hold_path_sync(sync_on_exit=True):
-            for prop, val in path_kwargs.items():
-                setattr(self, prop, val)
+        for prop, val in path_kwargs.items():
+            setattr(self, prop, val)
 
         if style is not None or kwargs:  # avoid style creation cost if not needed
             self._style_kwargs = self._process_style_kwargs(style=style, **kwargs)
@@ -147,78 +143,24 @@ class BaseGeo(BaseTransform, ABC):
         else:
             cls._path_properties = tuple(parent_attr)
 
-    def __setattr__(self, name, value):
-        """Intercept public property assignments to trigger automatic path sync."""
-        super().__setattr__(name, value)
+    def _get_path_len(self):
+        """Return the effective path length of the object (max of all properties)."""
+        lengths = []
+        for name in self._path_properties:
+            if (arr := getattr(self, f"_{name}", None)) is not None:
+                if hasattr(arr, "single"):  # scipy Rotation
+                    lengths.append(1 if arr.single else len(arr))
+                else:
+                    lengths.append(len(arr))
+        return max(lengths) if lengths else 1
 
-        # Only sync for public path properties (not private _attributes)
-        # This avoids recursion during internal operations
-        if (
-            not name.startswith("_")
-            and name in self._path_properties
-            and self._path_sync_enabled
-        ):
-            # Get the actual stored value (from private attribute) to determine target length
-            private_name = f"_{name}"
-            prop_value = getattr(self, private_name, None)
-            if prop_value is not None:
-                self._sync_all_paths(prop_value)
-
-    def _sync_pos_orient_recursive(self, target_len):
-        """
-        Pad position, using public attribute which triggers orientation
-        and recursive children padding.
-        """
-        if self._position is None:
-            return
-        n_path_new, n_path = target_len, len(self._position)
-        if n_path_new < n_path:
-            self.position = self._position[-n_path_new:]
-        elif n_path_new > n_path:
-            self.position = np.pad(
-                self._position, ((0, n_path_new - n_path), (0, 0)), "edge"
-            )
-
-    def _sync_all_paths(self, prop=None, start=0, propagate=True, path_properties=None):
-        """Synchronize all path properties to the same length."""
-        if not self._path_sync_enabled:
-            return
-
-        path_properties = path_properties or self._path_properties
-        lengths = [
-            len(arr)
-            for name in path_properties
-            if (arr := getattr(self, f"_{name}", None)) is not None
-        ]
-        if not lengths:
-            return
-
-        target_len = max(lengths) if prop is None else len(prop)
-
-        # Temporarily disable sync to avoid recursion during padding
-        with self.hold_path_sync(sync_on_exit=False):
-            # Pad private attributes of all path properties
-            pad_path_properties(
-                self, target_len, start=start, path_properties=path_properties
-            )
-            # Sync children positions for collections
-            if propagate:
-                self._sync_pos_orient_recursive(target_len)
-
-    @contextmanager
-    def hold_path_sync(self, *, sync_on_exit=True):
-        """
-        Temporarily disable auto-sync inside the block.
-        If auto_sync=True (default), performs one global sync on exit.
-        """
-        old_state = self._path_sync_enabled
-        self._path_sync_enabled = False
-        try:
-            yield
-        finally:
-            self._path_sync_enabled = old_state
-            if sync_on_exit and old_state:
-                self._sync_all_paths()
+    def _get_geometric_path_len(self):
+        """Return the geometric path length (max of position and orientation only)."""
+        n_pos = len(self._position) if self._position is not None else 1
+        n_ori = 1
+        if self._orientation is not None:
+            n_ori = 1 if self._orientation.single else len(self._orientation)
+        return max(n_pos, n_ori)
 
     # static methods ------------------------------------------------
     @staticmethod
@@ -351,17 +293,26 @@ class BaseGeo(BaseTransform, ABC):
             reshape=(-1, 3),
         )
 
-        # sync all paths (including orientation)
-        self._sync_all_paths(self._position, propagate=False)
-
         # when there are children include their relative position
         if old_pos is not None:
+            # LAZY PADDING: Determine effective path length
+            target_len = self._get_geometric_path_len()
+            ref_path = [0] * target_len
+
+            # Pad current position to target length for child calculation
+            min_pos_arr = (
+                self._position
+                if self._position is not None
+                else np.array([(0.0, 0.0, 0.0)])
+            )
+            cur_pos_padded = _pad_slice_path(ref_path, min_pos_arr)
+
             for child in getattr(self, "children", []):
-                old_pos_padded = _pad_slice_path(self._position, old_pos)
-                child_pos = _pad_slice_path(self._position, child._position)
+                old_pos_padded = _pad_slice_path(ref_path, old_pos)
+                child_pos = _pad_slice_path(ref_path, child._position)
                 rel_child_pos = child_pos - old_pos_padded
                 # set child position (syncs all child paths)
-                child.position = self._position + rel_child_pos
+                child.position = cur_pos_padded + rel_child_pos
 
     @property
     def orientation(self):
@@ -372,7 +323,7 @@ class BaseGeo(BaseTransform, ABC):
         if self._orientation is None:
             return None
         # cannot squeeze (its a Rotation object)
-        if len(self._orientation) == 1:  # single path orientation - reduce dimension
+        if self._orientation.single:  # single path orientation - reduce dimension
             return self._orientation[0]
         return self._orientation  # return full path
 
@@ -393,19 +344,28 @@ class BaseGeo(BaseTransform, ABC):
         oriQ = check_format_input_orientation(orientation, init_format=True)
         self._orientation = R.from_quat(oriQ)
 
-        # sync all paths (including position)
-        self._sync_all_paths(oriQ, propagate=False)
-
         # when there are children they rotate about self.position
         # after the old Collection orientation is rotated away.
+        # when there are children they rotate about self.position
         if old_oriQ is not None:
+            # LAZY PADDING: Determine effective path length
+            target_len = self._get_geometric_path_len()
+            ref_path = [0] * target_len
+
+            # Pad current orientation to target length for calculation
+            cur_ori_padded = R.from_quat(
+                np.squeeze(_pad_slice_path(ref_path, self._orientation.as_quat()))
+            )
+
             for child in getattr(self, "children", []):
                 # pad/slice and set child path
-                child.position = _pad_slice_path(oriQ, child._position)
+                child.position = _pad_slice_path(ref_path, child._position)
                 # compute rotation and apply
-                old_ori_pad = R.from_quat(np.squeeze(_pad_slice_path(oriQ, old_oriQ)))
+                old_ori_pad = R.from_quat(
+                    np.squeeze(_pad_slice_path(ref_path, old_oriQ))
+                )
                 child.rotate(
-                    self.orientation * old_ori_pad.inv(), anchor=self._position, start=0
+                    cur_ori_padded * old_ori_pad.inv(), anchor=self._position, start=0
                 )
 
     @property
@@ -604,7 +564,7 @@ class BaseGeo(BaseTransform, ABC):
             )
             params = list(self._property_names_generator())
             lines = [f"{self!r}"]
-            lines.append(f"  • path length: {self._position.shape[0]}")
+            lines.append(f"  • path length: {self._get_path_len()}")
             for key in list(dict.fromkeys([*UNITS, *self.path_properties, *params])):
                 k = key
                 if not k.startswith("_") and k in params and k not in exclude:
