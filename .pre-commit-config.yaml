@@ -35,7 +35,7 @@ repos:
       - id: rst-inline-touching-normal
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.7.4"
+    rev: "v3.8.1"
     hooks:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
@@ -45,7 +45,7 @@ repos:
         exclude: ^docs/|^tests/.*\.ya?ml$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.14.9"
+    rev: "v0.14.14"
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
@@ -81,13 +81,13 @@ repos:
         exclude: .pre-commit-config.yaml
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: "v0.24.1"
+    rev: "v0.25"
     hooks:
       - id: validate-pyproject
         additional_dependencies: ["validate-pyproject-schema-store[all]"]
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: "0.36.0"
+    rev: "0.36.1"
     hooks:
       - id: check-dependabot
       - id: check-github-workflows
