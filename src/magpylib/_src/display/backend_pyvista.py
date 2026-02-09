@@ -290,7 +290,7 @@ def display_pyvista(
                 if subplot_specs[row, col]["type"] == "scene":
                     getattr(canvas, f"add_{typ}")(**tr1)
                 else:
-                    if charts.get((row, col), None) is None:
+                    if charts.get((row, col)) is None:
                         charts_max_ind += 1
                         charts[(row, col)] = pv.Chart2D()
                         canvas.add_chart(charts[(row, col)])
