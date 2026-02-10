@@ -510,7 +510,7 @@ def test_input_objects_field_func_good():
             id="no-ndarray-return-on-B",
         ),
         pytest.param(
-            lambda field, observers: (1 if field == "H" else observers),
+            lambda field, observers: 1 if field == "H" else observers,
             id="no-ndarray-return-on-H",
         ),
         pytest.param(
@@ -520,9 +520,7 @@ def test_input_objects_field_func_good():
             id="bad-return-shape-on-B",
         ),
         pytest.param(
-            lambda field, observers: (
-                np.array([1, 2, 3]) if field == "H" else observers
-            ),
+            lambda field, observers: np.array([1, 2, 3]) if field == "H" else observers,
             id="bad-return-shape-on-H",
         ),
     ],
