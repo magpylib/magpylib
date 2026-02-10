@@ -4,7 +4,8 @@
 
 - Fixed issues appearing with Scipy 1.17 update (Rotation class)
 - Improved workflow on current loop field computation
-- Fixed an issue where current loop field computation would always defer to vectorized computation
+- Fixed an issue where current loop field computation would always defer to
+  vectorized computation
 
 ## [5.2.1] 2025-10-21
 
