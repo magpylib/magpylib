@@ -1,5 +1,7 @@
 # Changelog
 
+- Fixed issues appearing with Scipy 1.17 update (Rotation class)
+
 ## [5.2.1] 2025-10-21
 
 - Added current direction and styling to `TriangleStrip` and `TriangleSheet`

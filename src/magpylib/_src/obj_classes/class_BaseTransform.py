@@ -411,7 +411,7 @@ class BaseTransform:
 
         Create a rotation path by rotating in several steps about an anchor:
 
-        >>> sens.rotate(R.from_euler('z', (15, 30, 45), degrees=True), anchor=(0, 0, 0))
+        >>> sens.rotate(R.from_euler('z', [[15], [30], [45]], degrees=True), anchor=(0, 0, 0))
         Sensor(id=...)
         >>> print(sens.position)
         [[ 7.07106781e-01  7.07106781e-01  0.00000000e+00]
@@ -792,6 +792,8 @@ class BaseTransform:
         [  0.   0. -90.]
         """
         rot = R.from_mrp(mrp)
+        rot = rot.as_quat()  # bug in scipy 1.17 requires this workaround
+        rot = R.from_quat(rot)
         return self.rotate(rot, anchor=anchor, start=start)
 
     def rotate_from_quat(self, quat, anchor=None, start="auto"):

@@ -450,7 +450,9 @@ def test_scipy_from_methods():
         err_msg="from_rotvec failed on orientation",
     )
 
-    from_euler = cube().rotate_from_euler(angs_deg, "z", anchor=anchor, degrees=True)
+    from_euler = cube().rotate_from_euler(
+        angs_deg[:, np.newaxis], "z", anchor=anchor, degrees=True
+    )
     np.testing.assert_allclose(
         cube0.position,
         from_euler.position,
