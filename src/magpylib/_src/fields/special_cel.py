@@ -29,10 +29,8 @@ def _cel0(kc, p, c, s):
         p = np.sqrt(f / g)
         c = (c - s) / g
         s = -q / (g * g * p) + c * p
-    f = c
-    c = c + s / p
     g = k / p
-    s = 2. * (s + f * g)
+    c, s = c + s / p, 2. * (s + c * g)
     p = g + p
     g = em
     em = k + em
@@ -40,10 +38,8 @@ def _cel0(kc, p, c, s):
     while abs(g - k) > g * errtol:
         k = 2. * np.sqrt(kk)
         kk = k * em
-        f = c
-        c = c + s / p
         g = kk / p
-        s = 2. * (s + f * g)
+        c, s = c + s / p, 2. * (s + c * g)
         p = g + p
         g = em
         em = k + em
