@@ -11,7 +11,7 @@ def _cel0(kc, p, c, s):
     """
     complete elliptic integral algorithm vom Kirby2009
     """
-    if kc == 0:
+    if kc == 0.:
         msg = "FAIL cel: kc=0 not allowed."
         raise RuntimeError(msg)
     errtol = 0.000001
@@ -19,14 +19,14 @@ def _cel0(kc, p, c, s):
     pp = p
     cc = c
     ss = s
-    em = 1.0
-    if p > 0:
+    em = 1.
+    if p > 0.:
         pp = np.sqrt(p)
         ss = s / pp
     else:
         f = kc * kc
-        q = 1.0 - f
-        g = 1.0 - pp
+        q = 1. - f
+        g = 1. - pp
         f = f - pp
         q = q * (ss - c * pp)
         pp = np.sqrt(f / g)
@@ -35,22 +35,22 @@ def _cel0(kc, p, c, s):
     f = cc
     cc = cc + ss / pp
     g = k / pp
-    ss = 2 * (ss + f * g)
+    ss = 2. * (ss + f * g)
     pp = g + pp
     g = em
     em = k + em
     kk = k
     while abs(g - k) > g * errtol:
-        k = 2 * np.sqrt(kk)
+        k = 2. * np.sqrt(kk)
         kk = k * em
         f = cc
         cc = cc + ss / pp
         g = kk / pp
-        ss = 2 * (ss + f * g)
+        ss = 2. * (ss + f * g)
         pp = g + pp
         g = em
         em = k + em
-    return (np.pi / 2) * (ss + cc * em) / (em * (em + pp))
+    return (np.pi / 2.) * (ss + cc * em) / (em * (em + pp))
 
 
 def _celv(kc, p, c, s):
