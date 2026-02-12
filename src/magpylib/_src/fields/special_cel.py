@@ -16,41 +16,38 @@ def _cel0(kc, p, c, s):
         raise RuntimeError(msg)
     errtol = 0.000001
     k = abs(kc)
-    pp = p
-    cc = c
-    ss = s
     em = 1.
     if p > 0.:
-        pp = np.sqrt(p)
-        ss = s / pp
+        p = np.sqrt(p)
+        s = s / p
     else:
         f = kc * kc
         q = 1. - f
-        g = 1. - pp
-        f = f - pp
-        q = q * (ss - c * pp)
-        pp = np.sqrt(f / g)
-        cc = (c - ss) / g
-        ss = -q / (g * g * pp) + cc * pp
-    f = cc
-    cc = cc + ss / pp
-    g = k / pp
-    ss = 2. * (ss + f * g)
-    pp = g + pp
+        g = 1. - p
+        f = f - p
+        q = q * (s - c * p)
+        p = np.sqrt(f / g)
+        c = (c - s) / g
+        s = -q / (g * g * p) + c * p
+    f = c
+    c = c + s / p
+    g = k / p
+    s = 2. * (s + f * g)
+    p = g + p
     g = em
     em = k + em
     kk = k
     while abs(g - k) > g * errtol:
         k = 2. * np.sqrt(kk)
         kk = k * em
-        f = cc
-        cc = cc + ss / pp
-        g = kk / pp
-        ss = 2. * (ss + f * g)
-        pp = g + pp
+        f = c
+        c = c + s / p
+        g = kk / p
+        s = 2. * (s + f * g)
+        p = g + p
         g = em
         em = k + em
-    return (np.pi / 2.) * (ss + cc * em) / (em * (em + pp))
+    return (np.pi / 2.) * (s + c * em) / (em * (em + p))
 
 
 def _celv(kc, p, c, s):
