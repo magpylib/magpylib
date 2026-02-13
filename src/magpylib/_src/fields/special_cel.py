@@ -30,19 +30,15 @@ def _cel0(kc, p, c, s):
     nu = abs(kc)
     mu = 1.
     munu = nu
-    g = munu / p
-    c, s = c + s / p, 2. * (s + c * g)
-    p += g
-    g = mu
-    mu += nu
-    while abs(g - nu) > g * errtol:
-        nu = 2. * np.sqrt(munu)
-        munu = nu * mu
+    while True:
         g = munu / p
         c, s = c + s / p, 2. * (s + c * g)
         p += g
         g = mu
         mu += nu
+        if abs(g - nu) <= g * errtol: break
+        nu = 2. * np.sqrt(munu)
+        munu = nu * mu
     return (np.pi / 2.) * (s + c * mu) / (mu * (mu + p))
 
 
