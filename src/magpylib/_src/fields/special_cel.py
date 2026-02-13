@@ -15,8 +15,8 @@ def _cel0(kc, p, c, s):
         msg = "FAIL cel: kc=0 not allowed."
         raise RuntimeError(msg)
     errtol = 0.000001
-    k = abs(kc)
-    em = 1.
+    nu = abs(kc)
+    mu = 1.
     if p > 0.:
         p = np.sqrt(p)
         s = s / p
@@ -29,21 +29,21 @@ def _cel0(kc, p, c, s):
         p = np.sqrt(f / g)
         c = (c - s) / g
         s = -q / (g * g * p) + c * p
-    g = k / p
+    g = nu / p
     c, s = c + s / p, 2. * (s + c * g)
     p += g
-    g = em
-    em += k
-    kk = k
-    while abs(g - k) > g * errtol:
-        k = 2. * np.sqrt(kk)
-        kk = k * em
-        g = kk / p
+    g = mu
+    mu += nu
+    munu = nu
+    while abs(g - nu) > g * errtol:
+        nu = 2. * np.sqrt(munu)
+        munu = nu * mu
+        g = munu / p
         c, s = c + s / p, 2. * (s + c * g)
         p += g
-        g = em
-        em += k
-    return (np.pi / 2.) * (s + c * em) / (em * (em + p))
+        g = mu
+        mu += nu
+    return (np.pi / 2.) * (s + c * mu) / (mu * (mu + p))
 
 
 def _celv(kc, p, c, s):
