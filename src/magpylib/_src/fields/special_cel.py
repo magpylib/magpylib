@@ -24,25 +24,25 @@ def _cel0(kc, p, c, s):
         f = kc * kc
         q = 1. - f
         g = 1. - p
-        f = f - p
-        q = q * (s - c * p)
+        f -= p
+        q *= s - c * p
         p = np.sqrt(f / g)
         c = (c - s) / g
         s = -q / (g * g * p) + c * p
     g = k / p
     c, s = c + s / p, 2. * (s + c * g)
-    p = g + p
+    p += g
     g = em
-    em = k + em
+    em += k
     kk = k
     while abs(g - k) > g * errtol:
         k = 2. * np.sqrt(kk)
         kk = k * em
         g = kk / p
         c, s = c + s / p, 2. * (s + c * g)
-        p = g + p
+        p += g
         g = em
-        em = k + em
+        em += k
     return (np.pi / 2.) * (s + c * em) / (em * (em + p))
 
 
