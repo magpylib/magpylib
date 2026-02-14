@@ -54,57 +54,46 @@ def _celv(kc, p, c, s):
     errtol = 0.000001
     n = len(kc)
 
-    k = np.abs(kc)
-    em = np.ones(n, dtype=float)
-
-    cc = c.copy()
     pp = p.copy()
+    cc = c.copy()
     ss = s.copy()
 
     # apply a mask for evaluation of respective cases
     mask = p <= 0
 
     # if p>0:
-    pp[~mask] = np.sqrt(p[~mask])
-    ss[~mask] = s[~mask] / pp[~mask]
-
+    pp[~mask] = np.sqrt(pp[~mask])
+    ss[~mask] = ss[~mask] / pp[~mask]
     # else:
     f = kc[mask] * kc[mask]
-    q = 1.0 - f
-    g = 1.0 - pp[mask]
+    q = 1. - f
+    g = 1. - pp[mask]
     f = f - pp[mask]
-    q = q * (ss[mask] - c[mask] * pp[mask])
+    q *= ss[mask] - cc[mask] * pp[mask]
     pp[mask] = np.sqrt(f / g)
-    cc[mask] = (c[mask] - ss[mask]) / g
+    cc[mask] = (cc[mask] - ss[mask]) / g
     ss[mask] = -q / (g * g * pp[mask]) + cc[mask] * pp[mask]
 
-    f = cc.copy()
-    cc = cc + ss / pp
-    g = k / pp
-    ss = 2 * (ss + f * g)
-    pp = g + pp
-    g = em.copy()
-    em = k + em
-    kk = k.copy()
+    mu = np.ones(n)
+    nu = np.abs(kc)
+    munu = nu.copy()
 
     # define a mask that adjusts with every evaluation step so that only
     # non-converged entries are further iterated.
     mask = np.ones(n, dtype=bool)
-    while np.any(mask):
-        k[mask] = 2 * np.sqrt(kk[mask])
-        kk[mask] = k[mask] * em[mask]
-        f[mask] = cc[mask]
-        cc[mask] = cc[mask] + ss[mask] / pp[mask]
-        g[mask] = kk[mask] / pp[mask]
-        ss[mask] = 2 * (ss[mask] + f[mask] * g[mask])
-        pp[mask] = g[mask] + pp[mask]
-        g[mask] = em[mask]
-        em[mask] = k[mask] + em[mask]
+    g = np.empty(n)
+    while True:
+        g[mask] = munu[mask] / pp[mask]
+        cc[mask], ss[mask] = cc[mask] + ss[mask] / pp[mask], 2. * (ss[mask] + cc[mask] * g[mask])
+        pp[mask] += g[mask]
+        g[mask] = mu[mask]
+        mu[mask] += nu[mask]
+        mask[mask] = np.abs(g[mask] - nu[mask]) > g[mask] * errtol
+        if not np.any(mask[mask]): break
+        nu[mask] = 2. * np.sqrt(munu[mask])
+        munu[mask] = mu[mask] * nu[mask]
 
-        # redefine mask
-        mask = np.abs(g - k) > g * errtol
-
-    return (np.pi / 2) * (ss + cc * em) / (em * (em + pp))
+    return (np.pi / 2.) * (ss + cc * mu) / (mu * (mu + pp))
 
 
 def _cel(kcv: np.ndarray, pv: np.ndarray, cv: np.ndarray, sv: np.ndarray) -> np.ndarray:
