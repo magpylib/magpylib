@@ -14,7 +14,7 @@ def _cel0(kc, p, c, s):
     Numerische Mathematik 13, 305-315 (1969).
     """
     if kc == 0.:
-        msg = "FAIL cel: kc=0 not allowed."
+        msg = "FAIL cel: kc==0 not allowed."
         raise RuntimeError(msg)
     errtol = 0.000001
     if p > 0.:
@@ -29,8 +29,8 @@ def _cel0(kc, p, c, s):
         p = np.sqrt(f / g)
         c = (c - s) / g
         s = -q / (g * g * p) + c * p
-    nu = abs(kc)
     mu = 1.
+    nu = abs(kc)
     munu = nu
     while True:
         g = munu / p
@@ -40,7 +40,7 @@ def _cel0(kc, p, c, s):
         mu += nu
         if abs(g - nu) <= g * errtol: break
         nu = 2. * np.sqrt(munu)
-        munu = nu * mu
+        munu = mu * nu
     return (np.pi / 2.) * (s + c * mu) / (mu * (mu + p))
 
 
