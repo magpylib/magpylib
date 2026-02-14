@@ -9,7 +9,9 @@ import numpy as np
 
 def _cel0(kc, p, c, s):
     """
-    complete elliptic integral algorithm vom Kirby2009
+    Complete elliptic integral algorithm after
+    R. Bulirsch, Numerical Calculation of Elliptic Integrals and Elliptic Functions. III 
+    Numerische Mathematik 13, 305-315 (1969).
     """
     if kc == 0.:
         msg = "FAIL cel: kc=0 not allowed."
