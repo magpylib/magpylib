@@ -13,36 +13,36 @@ def _cel0(kc, p, c, s):
     R. Bulirsch, Numerical Calculation of Elliptic Integrals and Elliptic Functions. III
     Numerische Mathematik 13, 305-315 (1969).
     """
-    if kc == 0.0:
+    if kc == 0:
         msg = "FAIL cel: kc==0 not allowed."
         raise RuntimeError(msg)
     errtol = 0.000001
-    if p > 0.0:
+    if p > 0:
         p = np.sqrt(p)
         s = s / p
     else:
         f = kc * kc
-        q = 1.0 - f
-        g = 1.0 - p
+        q = 1 - f
+        g = 1 - p
         f -= p
         q *= s - c * p
         p = np.sqrt(f / g)
         c = (c - s) / g
         s = -q / (g * g * p) + c * p
-    mu = 1.0
+    mu = 1
     nu = abs(kc)
     munu = nu
     while True:
         g = munu / p
-        c, s = c + s / p, 2.0 * (s + c * g)
+        c, s = c + s / p, 2 * (s + c * g)
         p += g
         g = mu
         mu += nu
         if abs(g - nu) <= g * errtol:
             break
-        nu = 2.0 * np.sqrt(munu)
+        nu = 2 * np.sqrt(munu)
         munu = mu * nu
-    return (np.pi / 2.0) * (s + c * mu) / (mu * (mu + p))
+    return (np.pi / 2) * (s + c * mu) / (mu * (mu + p))
 
 
 def _celv(kc, p, c, s):
@@ -67,8 +67,8 @@ def _celv(kc, p, c, s):
     ss[~mask] = ss[~mask] / pp[~mask]
     # else:
     f = kc[mask] * kc[mask]
-    q = 1.0 - f
-    g = 1.0 - pp[mask]
+    q = 1 - f
+    g = 1 - pp[mask]
     f = f - pp[mask]
     q *= ss[mask] - cc[mask] * pp[mask]
     pp[mask] = np.sqrt(f / g)
@@ -87,7 +87,7 @@ def _celv(kc, p, c, s):
         g[mask] = munu[mask] / pp[mask]
         cc[mask], ss[mask] = (
             cc[mask] + ss[mask] / pp[mask],
-            2.0 * (ss[mask] + cc[mask] * g[mask]),
+            2 * (ss[mask] + cc[mask] * g[mask]),
         )
         pp[mask] += g[mask]
         g[mask] = mu[mask]
@@ -95,10 +95,10 @@ def _celv(kc, p, c, s):
         mask[mask] = np.abs(g[mask] - nu[mask]) > g[mask] * errtol
         if not np.any(mask[mask]):
             break
-        nu[mask] = 2.0 * np.sqrt(munu[mask])
+        nu[mask] = 2 * np.sqrt(munu[mask])
         munu[mask] = mu[mask] * nu[mask]
 
-    return (np.pi / 2.0) * (ss + cc * mu) / (mu * (mu + pp))
+    return (np.pi / 2) * (ss + cc * mu) / (mu * (mu + pp))
 
 
 def _cel(kcv: np.ndarray, pv: np.ndarray, cv: np.ndarray, sv: np.ndarray) -> np.ndarray:
