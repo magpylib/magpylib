@@ -6,7 +6,6 @@ import math as m
 
 import numpy as np
 
-
 _errtol = 1e-8
 # def _errtol(x) = np.sqrt(np.finfo(x.dtype)))
 
