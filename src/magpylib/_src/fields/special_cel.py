@@ -7,6 +7,10 @@ import math as m
 import numpy as np
 
 
+_errtol = 1e-8
+# def _errtol(x) = np.sqrt(np.finfo(x.dtype)))
+
+
 def _cel0(kc, p, c, s):
     """
     Complete elliptic integral algorithm after
@@ -16,7 +20,6 @@ def _cel0(kc, p, c, s):
     if kc == 0:
         msg = "FAIL cel: kc==0 not allowed."
         raise RuntimeError(msg)
-    errtol = 0.000001
     if p > 0:
         p = np.sqrt(p)
         s = s / p
@@ -38,7 +41,7 @@ def _cel0(kc, p, c, s):
         p += g
         g = mu
         mu += nu
-        if abs(g - nu) <= g * errtol:
+        if abs(g - nu) <= g * _errtol:
             break
         nu = 2 * np.sqrt(munu)
         munu = mu * nu
@@ -52,7 +55,6 @@ def _celv(kc, p, c, s):
 
     # if kc == 0:
     #    return NaN
-    errtol = 0.000001
     n = len(kc)
 
     pp = p.copy()
@@ -92,7 +94,7 @@ def _celv(kc, p, c, s):
         pp[mask] += g[mask]
         g[mask] = mu[mask]
         mu[mask] += nu[mask]
-        mask[mask] = np.abs(g[mask] - nu[mask]) > g[mask] * errtol
+        mask[mask] = np.abs(g[mask] - nu[mask]) > g[mask] * _errtol
         if not np.any(mask[mask]):
             break
         nu[mask] = 2 * np.sqrt(munu[mask])
@@ -149,7 +151,7 @@ def _cel_iter0(qc, p, g, cc, ss, em, kk):
     """
     Iterative part of Bulirsch cel algorithm
     """
-    while m.fabs(g - qc) >= qc * 1e-8:
+    while m.fabs(g - qc) >= g * _errtol:
         qc = 2 * m.sqrt(kk)
         kk = qc * em
         f = cc
@@ -166,7 +168,7 @@ def _cel_iterv(qc, p, g, cc, ss, em, kk):
     """
     Iterative part of Bulirsch cel algorithm
     """
-    while np.any(np.fabs(g - qc) >= qc * 1e-8):
+    while np.any(np.fabs(g - qc) >= g * _errtol):
         qc = 2 * np.sqrt(kk)
         kk = qc * em
         f = cc
