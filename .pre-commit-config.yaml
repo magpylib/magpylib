@@ -45,7 +45,7 @@ repos:
         exclude: ^docs/|^tests/.*\.ya?ml$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.0"
+    rev: "v0.15.5"
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
@@ -62,7 +62,7 @@ repos:
   #        - pytest
 
   - repo: https://github.com/codespell-project/codespell
-    rev: "v2.4.1"
+    rev: "v2.4.2"
     hooks:
       - id: codespell
 
@@ -87,7 +87,7 @@ repos:
         additional_dependencies: ["validate-pyproject-schema-store[all]"]
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: "0.36.1"
+    rev: "0.37.0"
     hooks:
       - id: check-dependabot
       - id: check-github-workflows
