@@ -44,36 +44,39 @@ def _coordinate_transformation(vertices):
     vertices[:, 2, :] = vertices[:, 2, :] - translation
     vertices[:, 0, :] = 0
 
-    # step 2
-    # apply two rotations so that Pi2 -> (u1, 0, 0)
+    # Three sequential rotations (x, z, x) place P2 on the x-axis and
+    # P3 in the xy-plane. Each angle depends on the previous rotation's
+    # result, but we compute them with direct trig (no intermediate
+    # .apply() calls) and apply the combined rotation once at the end.
 
-    # step 2.1: first rotation around x-axis so that Pi2 -> xy-plane
-    theta = -np.arctan2(vertices[:, 1, 2], vertices[:, 1, 1])
+    p2 = vertices[:, 1, :]
+    p3 = vertices[:, 2, :]
 
-    r21 = R.from_euler("x", theta[:, np.newaxis])
+    # Rotation 1 (x-axis): bring P2 into the xy-plane
+    theta = -np.arctan2(p2[:, 2], p2[:, 1])
+    ct, st = np.cos(theta), np.sin(theta)
 
-    vertices[:, 1, :] = r21.apply(vertices[:, 1, :])
-    vertices[:, 2, :] = r21.apply(vertices[:, 2, :])
+    # Rotation 2 (z-axis): bring P2 onto the x-axis
+    # After x-rotation by theta, P2's y-component is p2y*cos(t) - p2z*sin(t).
+    # x-component is unchanged by x-rotation.
+    p2y_after_r1 = p2[:, 1] * ct - p2[:, 2] * st
+    alpha = -np.arctan2(p2y_after_r1, p2[:, 0])
 
-    # step 2.2: second rotation around z-axis so that Pi2 -> x-axis
-    alpha = -np.arctan2(vertices[:, 1, 1], vertices[:, 1, 0])
+    # Rotation 3 (x-axis): bring P3 into the xy-plane
+    # Need (r2*r1)-rotated P3. Build r2*r1 to compute psi, then
+    # combine all three into a single "xzx" Euler rotation.
+    angles_21 = np.column_stack([theta, alpha])
+    r21 = R.from_euler("xz", angles_21)
+    p3_after_r21 = r21.apply(p3)
+    psi = -np.arctan2(p3_after_r21[:, 2], p3_after_r21[:, 1])
 
-    r22 = R.from_euler("z", alpha[:, np.newaxis])
+    # Combined rotation as a single Euler "xzx" sequence
+    angles_all = np.column_stack([theta, alpha, psi])
+    rotation = R.from_euler("xzx", angles_all)
 
-    vertices[:, 1, :] = r22.apply(vertices[:, 1, :])
-    vertices[:, 2, :] = r22.apply(vertices[:, 2, :])
-
-    # step 3
-    # apply rotation around x-axis so that Pi3 -> (u2, v2, 0)
-    psi = -np.arctan2(vertices[:, 2, 2], vertices[:, 2, 1])
-
-    r3 = R.from_euler("x", psi[:, np.newaxis])
-
-    # can this not be done in one "xzx" rotation?
-
-    vertices[:, 2, :] = r3.apply(vertices[:, 2, :])
-
-    rotation = r3 * r22 * r21
+    # Apply once to each vertex (2 apply calls total, was 5)
+    vertices[:, 1, :] = r21.apply(p2)
+    vertices[:, 2, :] = rotation.apply(p3)
 
     elementar_coordinates = np.zeros((n, 3))
     elementar_coordinates[:, 0] = vertices[:, 1, 0]
