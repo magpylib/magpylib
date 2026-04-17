@@ -134,14 +134,10 @@ def test_cel_1():
     """
     check _cel() results for kc==1
     """
-    np.testing.assert_array_almost_equal_nulp(
-        _cel0(1, 1, 1, 1), np.pi/2, nulp=1
-    )
-    np.testing.assert_array_almost_equal_nulp(
-        _cel0(1, 1, 1, -1), 0, nulp=1
-    )
+    np.testing.assert_array_almost_equal_nulp(_cel0(1, 1, 1, 1), np.pi / 2, nulp=1)
+    np.testing.assert_array_almost_equal_nulp(_cel0(1, 1, 1, -1), 0, nulp=1)
     np.testing.assert_array_almost_equal_nulp(
         _celv(np.array([1, 1]), np.array([1, 1]), np.array([1, 1]), np.array([1, -1])),
-        [np.pi/2, 0],
-        nulp=1
+        [np.pi / 2, 0],
+        nulp=1,
     )

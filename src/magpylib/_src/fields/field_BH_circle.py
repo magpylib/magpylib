@@ -75,19 +75,19 @@ def current_circle_Hfield(
 
     q = np.sqrt(q2)
     pf = i0 / (4 * np.pi * r0 * np.sqrt(beta2) * q2)
-    f = 1/(1 + q)
+    f = 1 / (1 + q)
     qL = 2 * f * np.sqrt(q)  # Bartky/Landen transformation
 
     # cel* part
     cc = k2 * 4 * z / beta2
     ss = 2 * cc * q / (1 + q)
-    Hr = pf * _cel(qL, np.ones(n5), cc, f*ss)*f
+    Hr = pf * _cel(qL, np.ones(n5), cc, f * ss) * f
 
     # cel** part
     k4 = k2 * k2
     cc = k4 - (4 / beta2) * (1 + q2)
     ss = 2 * q * (k4 / (1 + q) - (4 / beta2) * (1 + q))
-    Hz = -pf * _cel(qL, np.ones(n5), cc, f*ss)*f
+    Hz = -pf * _cel(qL, np.ones(n5), cc, f * ss) * f
 
     return np.vstack((Hr, np.zeros(n5), Hz))
 

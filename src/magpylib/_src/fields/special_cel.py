@@ -79,7 +79,7 @@ def _celv(kc, p, c, s):
 
     # define a mask that adjusts with every evaluation step so that only
     # non-converged entries are further iterated.
-    mask = kc != 0    # if kc == 0: skip iteration
+    mask = kc != 0  # if kc == 0: skip iteration
     g = np.empty(n)
     while True:
         g[mask] = munu[mask] / pp[mask]
@@ -116,7 +116,7 @@ def _cel(kcv: np.ndarray, pv: np.ndarray, cv: np.ndarray, sv: np.ndarray) -> np.
     R. Bulirsch, Numerical Calculation of Elliptic Integrals and Elliptic Functions. III
     Numerische Mathematik 13, 305-315 (1969).
     https://dlmf.nist.gov/19.2#E11, and other pages in https://dlmf.nist.gov/19
-    
+
     def ellipticK(k2):
         return _cel(np.sqrt(1-k2), 1, 1, 1)
 
