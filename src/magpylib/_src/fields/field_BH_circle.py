@@ -3,7 +3,7 @@
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.fields.special_cel import _cel_iter
+from magpylib._src.fields.special_cel import _cel
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
 
@@ -68,25 +68,26 @@ def current_circle_Hfield(
 
     # field computation from paper
     z2 = z**2
-    x0 = z2 + (r + 1) ** 2
-    k2 = 4 * r / x0
-    q2 = (z2 + (r - 1) ** 2) / x0
+    alpha2 = z2 + (r - 1) ** 2
+    beta2 = z2 + (r + 1) ** 2
+    q2 = alpha2 / beta2
+    k2 = 4 * r / beta2  # = 1 - q2
 
     q = np.sqrt(q2)
-    p = 1 + q
-    pf = i0 / (4 * np.pi * r0 * np.sqrt(x0) * q2)
+    pf = i0 / (4 * np.pi * r0 * np.sqrt(beta2) * q2)
+    f = 1/(1 + q)
+    qL = 2 * f * np.sqrt(q)  # Bartky/Landen transformation
 
     # cel* part
-    cc = k2 * 4 * z / x0
-    ss = 2 * cc * q / p
-    Hr = pf * _cel_iter(q, p, np.ones(n5), cc, ss, p, q)
+    cc = k2 * 4 * z / beta2
+    ss = 2 * cc * q / (1 + q)
+    Hr = pf * _cel(qL, np.ones(n5), cc, f*ss)*f
 
     # cel** part
     k4 = k2 * k2
-    cc = k4 - (q2 + 1) * (4 / x0)
-    ss = 2 * q * (k4 / p - (4 / x0) * p)
-    Hz = -pf * _cel_iter(q, p, np.ones(n5), cc, ss, p, q)
-    # Hz = -_cel_iter(q, p, np.ones(n5), pf*cc, pf*ss, p, q)
+    cc = k4 - (4 / beta2) * (1 + q2)
+    ss = 2 * q * (k4 / (1 + q) - (4 / beta2) * (1 + q))
+    Hz = -pf * _cel(qL, np.ones(n5), cc, f*ss)*f
 
     return np.vstack((Hr, np.zeros(n5), Hz))
 
@@ -113,9 +114,9 @@ def _BHJM_circle(
     r0 = np.abs(diameter / 2)
 
     # Special cases:
-    # case1: loop radius is 0 -> return (0, 0, 0)
+    # case 1: loop radius is 0 -> return (0, 0, 0)
     mask1 = r0 == 0
-    # case2: at singularity -> return (0, 0, 0)
+    # case 2: at singularity (on the loop) -> return (0, 0, 0)
     mask2 = np.logical_and(abs(r - r0) < 1e-15 * r0, z == 0)
 
     # general case

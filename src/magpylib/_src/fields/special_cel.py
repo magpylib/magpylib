@@ -1,12 +1,8 @@
 """Special functions cel."""
 
-# pylint: disable=too-many-positional-arguments
-
-import math as m
-
 import numpy as np
 
-# def _errtol(x) = np.sqrt(np.finfo(x.dtype)))
+_errtol = 1e-8  # ~ np.sqrt(np.finfo(np.float64).eps)
 
 
 def _cel0(kc, p, c, s):
@@ -14,6 +10,8 @@ def _cel0(kc, p, c, s):
     Complete elliptic integral algorithm after
     R. Bulirsch, Numerical Calculation of Elliptic Integrals and Elliptic Functions. III
     Numerische Mathematik 13, 305-315 (1969).
+
+    See also https://dlmf.nist.gov/19.2#E11, and other pages in https://dlmf.nist.gov/19
     """
     if kc == 0:
         msg = "FAIL cel: kc==0 not allowed."
@@ -81,7 +79,7 @@ def _celv(kc, p, c, s):
 
     # define a mask that adjusts with every evaluation step so that only
     # non-converged entries are further iterated.
-    mask = np.ones(n, dtype=bool)
+    mask = kc != 0    # if kc == 0: skip iteration
     g = np.empty(n)
     while True:
         g[mask] = munu[mask] / pp[mask]
@@ -89,7 +87,7 @@ def _celv(kc, p, c, s):
             cc[mask] + ss[mask] / pp[mask],
             2 * (ss[mask] + cc[mask] * g[mask]),
         )
-        pp[mask] += g[mask]
+        pp[mask] = pp[mask] + g[mask]
         g[mask] = mu[mask]
         mu[mask] += nu[mask]
         mask[mask] = np.abs(g[mask] - nu[mask]) > g[mask] * _errtol
@@ -98,21 +96,35 @@ def _celv(kc, p, c, s):
         nu[mask] = 2 * np.sqrt(munu[mask])
         munu[mask] = mu[mask] * nu[mask]
 
-    return (np.pi / 2) * (ss + cc * mu) / (mu * (mu + pp))
+    result = (np.pi / 2) * (ss + cc * mu) / (mu * (mu + pp))
+    # deal with the kc == 0 special case
+    result[kc == 0] = np.nan
+    return result
 
 
 def _cel(kcv: np.ndarray, pv: np.ndarray, cv: np.ndarray, sv: np.ndarray) -> np.ndarray:
     """
-    combine vectorized and non-vectorized implementations for improved performance
+    Complete elliptic integral
+                     π/2
+                      ⌠  a cos²𝜗 + b sin²𝜗         d𝜗
+    cel(q, p, c, s) = |  ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯  ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+                      ⌡   cos²𝜗 + p sin²𝜗   √(cos²𝜗 + q sin²𝜗)
+                      0
+    Combines vectorized and non-vectorized implementations for improved performance.
 
-    def ellipticK(x):
-        return elliptic((1-x)**(1/2.), 1, 1, 1)
+    See also:
+    R. Bulirsch, Numerical Calculation of Elliptic Integrals and Elliptic Functions. III
+    Numerische Mathematik 13, 305-315 (1969).
+    https://dlmf.nist.gov/19.2#E11, and other pages in https://dlmf.nist.gov/19
+    
+    def ellipticK(k2):
+        return _cel(np.sqrt(1-k2), 1, 1, 1)
 
-    def ellipticE(x):
-        return elliptic((1-x)**(1/2.), 1, 1, 1-x)
+    def ellipticE(k2):
+        return _cel(np.sqrt(1-k2), 1, 1, 1-k2)
 
-    def ellipticPi(x, y):
-        return elliptic((1-y)**(1/2.), 1-x, 1, 1)
+    def ellipticPi(alpha2, k2):
+        return _cel(np.sqrt(1-k2), 1-alpha2, 1, 1)
     """
     n_input = len(kcv)
 
@@ -122,58 +134,3 @@ def _cel(kcv: np.ndarray, pv: np.ndarray, cv: np.ndarray, sv: np.ndarray) -> np.
         )
 
     return _celv(kcv, pv, cv, sv)
-
-
-def _cel_iter(qc, p, g, cc, ss, em, kk):
-    """
-    Iterative part of Bulirsch cel algorithm
-    """
-    # case1: scalar input
-    #   This cannot happen in core functions
-
-    # case2: small input vector - loop is faster than vectorized computation
-    n_input = len(qc)
-    if n_input < 15:
-        result = np.zeros(n_input)
-        for i in range(n_input):
-            result[i] = _cel_iter0(qc[i], p[i], g[i], cc[i], ss[i], em[i], kk[i])
-
-    # case3: vectorized evaluation
-    else:
-        result = _cel_iterv(qc, p, g, cc, ss, em, kk)
-
-    return result
-
-
-def _cel_iter0(qc, p, g, cc, ss, em, kk):
-    """
-    Iterative part of Bulirsch cel algorithm
-    """
-    while m.fabs(g - qc) >= g * _errtol:
-        qc = 2 * m.sqrt(kk)
-        kk = qc * em
-        f = cc
-        cc = cc + ss / p
-        g = kk / p
-        ss = 2 * (ss + f * g)
-        p = p + g
-        g = em
-        em = em + qc
-    return 1.5707963267948966 * (ss + cc * em) / (em * (em + p))
-
-
-def _cel_iterv(qc, p, g, cc, ss, em, kk):
-    """
-    Iterative part of Bulirsch cel algorithm
-    """
-    while np.any(np.fabs(g - qc) >= g * _errtol):
-        qc = 2 * np.sqrt(kk)
-        kk = qc * em
-        f = cc
-        cc = cc + ss / p
-        g = kk / p
-        ss = 2 * (ss + f * g)
-        p = p + g
-        g = em
-        em = em + qc
-    return 1.5707963267948966 * (ss + cc * em) / (em * (em + p))
