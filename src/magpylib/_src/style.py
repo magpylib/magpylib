@@ -46,7 +46,6 @@ def get_families(obj):
     from magpylib._src.obj_classes.class_misc_Dipole import Dipole  # noqa: PLC0415
     from magpylib._src.obj_classes.class_misc_Triangle import Triangle  # noqa: PLC0415
     from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
-    # ruff: enable = F401, I001, I002
 
     loc = locals()
     parent_map = {TriangleSheet: "currentsheet", TriangleStrip: "currentsheet"}
