@@ -50,7 +50,7 @@ def _coordinate_transformation(vertices):
     # step 2.1: first rotation around x-axis so that Pi2 -> xy-plane
     theta = -np.arctan2(vertices[:, 1, 2], vertices[:, 1, 1])
 
-    r21 = R.from_euler("x", theta)
+    r21 = R.from_euler("x", theta[:, np.newaxis])
 
     vertices[:, 1, :] = r21.apply(vertices[:, 1, :])
     vertices[:, 2, :] = r21.apply(vertices[:, 2, :])
@@ -58,7 +58,7 @@ def _coordinate_transformation(vertices):
     # step 2.2: second rotation around z-axis so that Pi2 -> x-axis
     alpha = -np.arctan2(vertices[:, 1, 1], vertices[:, 1, 0])
 
-    r22 = R.from_euler("z", alpha)
+    r22 = R.from_euler("z", alpha[:, np.newaxis])
 
     vertices[:, 1, :] = r22.apply(vertices[:, 1, :])
     vertices[:, 2, :] = r22.apply(vertices[:, 2, :])
@@ -67,7 +67,9 @@ def _coordinate_transformation(vertices):
     # apply rotation around x-axis so that Pi3 -> (u2, v2, 0)
     psi = -np.arctan2(vertices[:, 2, 2], vertices[:, 2, 1])
 
-    r3 = R.from_euler("x", psi)
+    r3 = R.from_euler("x", psi[:, np.newaxis])
+
+    # can this not be done in one "xzx" rotation?
 
     vertices[:, 2, :] = r3.apply(vertices[:, 2, :])
 

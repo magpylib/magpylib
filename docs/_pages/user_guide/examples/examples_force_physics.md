@@ -415,7 +415,7 @@ The previous example explains why magnets in Earth's geomagnetic field experienc
 :::{grid-item}
 :columns: 5
 ![](../../../_static/images/examples_force_physics_compass.png)
-*Image taken from this [script](http://helios.fmi.fi/~juusolal/geomagnetism/Lectures/Chapter3_dipole.pdf)*
+*Image taken from [here](https://www.sciencelearn.org.nz/images/1820-earth-s-magnetic-field)*
 :::
 ::::
 
