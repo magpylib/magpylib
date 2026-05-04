@@ -776,7 +776,7 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
             raise ValueError(msg)
         # store maxlength
         n = params[key].shape[0]
-        nmax = n if n > nmax else nmax
+        nmax = max(nmax, n)
 
     # Check if shapes are correct, Tile to maxlength
     # include extra shapes

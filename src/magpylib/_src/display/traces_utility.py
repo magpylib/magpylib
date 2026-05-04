@@ -38,7 +38,7 @@ DEFAULT_ROW_COL_PARAMS = {
 def get_legend_label(obj, style=None, suffix=True):
     """provides legend entry based on name and suffix"""
     style = obj.style if style is None else style
-    name = style.label if style.label else obj.__class__.__name__
+    name = style.label or obj.__class__.__name__
     legend_txt = style.legend.text
     if legend_txt:
         return legend_txt

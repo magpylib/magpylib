@@ -296,8 +296,8 @@ def display_plotly(
 ):
     """Display objects and paths graphically using the plotly library."""
 
-    fig_kwargs = fig_kwargs if fig_kwargs else {}
-    show_kwargs = show_kwargs if show_kwargs else {}
+    fig_kwargs = fig_kwargs or {}
+    show_kwargs = show_kwargs or {}
     show_kwargs = {"renderer": renderer, **show_kwargs}
 
     # only update layout if canvas is not provided

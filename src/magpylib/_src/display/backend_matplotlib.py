@@ -270,8 +270,8 @@ def display_matplotlib(
     labels = data["labels"]
 
     # only update layout if canvas is not provided
-    fig_kwargs = fig_kwargs if fig_kwargs else {}
-    show_kwargs = show_kwargs if show_kwargs else {}
+    fig_kwargs = fig_kwargs or {}
+    show_kwargs = show_kwargs or {}
     show_kwargs = {**show_kwargs}
 
     for fr in frames:
