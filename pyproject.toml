@@ -53,7 +53,6 @@ test = [
   "pytest-cov >=7",
 ]
 
-[dependency-groups]
 dev = [
   { include-group = "test" },
 ]
