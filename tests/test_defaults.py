@@ -230,7 +230,7 @@ def test_bad_style_classes(style_class):
     """testing properties which take classes as properties"""
     c = DisplayStyle().reset()
     with pytest.raises(
-        ValueError,
+        TypeError,
         match=(r"The"),
     ):
         c.update(**{style_class: "bad class"})
@@ -239,17 +239,17 @@ def test_bad_style_classes(style_class):
 def test_bad_default_classes():
     """testing properties which take classes as properties"""
     with pytest.raises(
-        ValueError,
+        TypeError,
         match=r"The display property of DefaultSettings must be",
     ):
         magpy.defaults.display = "wrong input"
     with pytest.raises(
-        ValueError,
+        TypeError,
         match=r"The animation property of Display must be",
     ):
         magpy.defaults.display.animation = "wrong input"
     with pytest.raises(
-        ValueError,
+        TypeError,
         match=r"The style property of Display must be",
     ):
         magpy.defaults.display.style = "wrong input"

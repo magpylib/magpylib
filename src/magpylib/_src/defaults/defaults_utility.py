@@ -302,7 +302,7 @@ def validate_property_class(val, name, class_, parent):
             f"of {class_} or a dictionary with equivalent key/value pairs; "
             f"instead received {val!r}."
         )
-        raise ValueError(msg)
+        raise TypeError(msg)
     return val
 
 

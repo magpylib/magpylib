@@ -614,7 +614,7 @@ def check_format_pixel_agg(pixel_agg):
     # test pixel agg function reduce
     x = np.array([[[(1, 2, 3)] * 2] * 3] * 4)
     if not isinstance(pixel_agg_func(x), numbers.Number):
-        raise AttributeError(PIXEL_AGG_ERR_MSG)
+        raise TypeError(PIXEL_AGG_ERR_MSG)
 
     return pixel_agg_func
 

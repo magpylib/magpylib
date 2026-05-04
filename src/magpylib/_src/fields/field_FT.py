@@ -156,10 +156,11 @@ def _check_eps(eps):
     """
     check FD step
     """
-    msg = f"Input eps must be a positive float; instead received {eps!r}."
     if not isinstance(eps, float):
-        raise ValueError(msg)
+        msg = f"Input eps must be a float; instead received {eps!r}."
+        raise TypeError(msg)
     if eps <= 0:
+        msg = f"Input eps must be a positive float; instead received {eps!r}."
         raise ValueError(msg)
 
 
