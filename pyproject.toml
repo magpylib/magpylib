@@ -51,6 +51,12 @@ Changelog = "https://github.com/magpylib/magpylib/releases"
 test = [
   "pytest >=9",
   "pytest-cov >=7",
+  "pandas",
+  "pyvista",
+  "imageio[tifffile,ffmpeg]",
+  "jupyterlab",
+  "ipywidgets",  # for FigureWidget (plotly v5)
+  "anywidget", # for FigureWidget (plotly v6)
 ]
 
 dev = [
@@ -74,16 +80,7 @@ docs = [
   "kaleido==0.2.1", # ulterior versions don't ship chrome,
   "sphinxcontrib-bibtex>=2.6",
 ]
-test = [
-  "pytest>=7.4",
-  "pytest-cov>=3",
-  "pandas",
-  "pyvista",
-  "imageio[tifffile,ffmpeg]",
-  "jupyterlab",
-  "ipywidgets",  # for plotly FigureWidget
-  "anywidget", # for plotly FigureWidget
-]
+
 binder = [
     "jupytext",
     "jupyterlab>=3.2",
