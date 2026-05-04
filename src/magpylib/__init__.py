@@ -1,4 +1,7 @@
-"""Magnetic field and force computation."""
+"""Copyright (c) 2026 Michael Ortner. All rights reserved.
+
+magpylib: Python package for computation of magnetic fields of magnets, currents and moments.
+"""
 
 from scipy.constants import mu_0
 

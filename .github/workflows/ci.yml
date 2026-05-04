@@ -12,32 +12,39 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  # Many color libraries just need this variable to be set to any value.
+  # Set it to 3 to support 8-bit color graphics (256 colors per channel)
+  # for libraries that care about the value set.
   FORCE_COLOR: 3
 
 jobs:
-  pre-commit:
+  lint:
     name: Format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: astral-sh/setup-uv@v7
-      - uses: pre-commit/action@v3.0.1
+
+      - uses: actions/setup-python@v6
         with:
-          extra_args: --hook-stage manual --all-files
+          python-version: "3.x"
+
+      - uses: astral-sh/setup-uv@v7
+
+      - uses: j178/prek-action@v2
+
       - name: Run Pylint
         run: uvx nox -s pylint -- --output-format=github
 
   checks:
     name: Check Python ${{ matrix.python-version }} on ${{ matrix.runs-on }}
     runs-on: ${{ matrix.runs-on }}
-    needs: [pre-commit]
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
-        runs-on: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.11", "3.14"]
+        runs-on: [ubuntu-latest, windows-latest, macos-latest, macos-15-intel]
 
         # include:
         #   - python-version: "pypy-3.11"
@@ -60,7 +67,12 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
-          activate-environment: true
+          allow-prereleases: true
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Install package
+        run: uv sync
 
       - name: Test package
         run: >-
@@ -71,3 +83,14 @@ jobs:
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  pass:
+    if: always()
+    needs: [lint, checks]
+    runs-on: ubuntu-slim
+    timeout-minutes: 2
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
