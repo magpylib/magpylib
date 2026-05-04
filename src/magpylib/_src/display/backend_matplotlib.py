@@ -278,8 +278,9 @@ def display_matplotlib(
         new_data = []
         for tr in fr["data"]:
             new_data.extend(generic_trace_to_matplotlib(tr, antialiased=antialiased))
-        for model in fr["extra_backend_traces"]:
-            new_data.append(process_extra_trace(model))
+        new_data.extend(
+            process_extra_trace(model) for model in fr["extra_backend_traces"]
+        )
         fr["data"] = new_data
 
     show_canvas = bool(canvas is None)

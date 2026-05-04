@@ -486,7 +486,7 @@ def check_format_input_observers(inp, pixel_agg=None):
                 try:
                     obj = np.array(obj, dtype=float)
                     sensors.append(_src.obj_classes.class_Sensor.Sensor(pixel=obj))
-                except Exception:  # or some unwanted crap
+                except Exception:  # noqa: BLE001
                     raise MagpylibBadUserInput(
                         wrong_obj_msg(obj, allow="observers")
                     ) from err

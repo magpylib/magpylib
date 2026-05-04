@@ -403,9 +403,10 @@ def is_notebook() -> bool:  # pragma: no cover
             return True  # Jupyter notebook or qtconsole
         if shell == "TerminalInteractiveShell":
             return False  # Terminal running IPython
-        return False  # Other type (?)
     except NameError:
         return False  # Probably standard Python interpreter
+    else:
+        return False  # Other type (?)
 
 
 def open_animation(filepath, embed=True):
