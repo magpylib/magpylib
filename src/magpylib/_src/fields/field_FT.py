@@ -11,7 +11,7 @@ from magpylib._src.fields.field_BH import getB
 from magpylib._src.input_checks import check_dimensions, check_excitations
 from magpylib._src.utility import format_src_inputs
 
-logging.basicConfig(level=logging.INFO, format="%(message)s")
+logger = logging.getLogger(__name__)
 
 
 def _check_format_input_targets(targets):
@@ -303,10 +303,10 @@ def getFT(
     # Meshreport - maybe add optional breakpoint here so that one can look at the
     #  mesh parameters before going into eval.
     if meshreport:
-        logging.info("Mesh report:")
+        logger.info("Mesh report:")
         for t, m in zip(targets, mesh_sizes_all, strict=False):
-            logging.info("  Target %s: %d points", t, m)
-        logging.info("")
+            logger.info("  Target %s: %d points", t, m)
+        logger.info("")
 
     # OBSERVER ARRAY ##########################################################
     # determine observer points for B-field evaluation
