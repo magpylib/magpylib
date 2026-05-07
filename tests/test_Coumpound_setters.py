@@ -120,10 +120,9 @@ def create_compound_set(**kwargs):
 def get_pos_orient_from_collection(coll):
     """returns a list of (position, orientation.as_matrix()) tuple of a collection and of its
     children"""
-    pos_orient = []
-    for obj in [coll, *coll.children]:
-        pos_orient.append((obj.position, obj.orientation.as_matrix()))
-    return pos_orient
+    return [
+        (obj.position, obj.orientation.as_matrix()) for obj in [coll, *coll.children]
+    ]
 
 
 folder = "tests/testdata"

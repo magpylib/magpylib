@@ -249,8 +249,8 @@ def display_pyvista(
 
     frames = data["frames"]
 
-    fig_kwargs = fig_kwargs if fig_kwargs else {}
-    show_kwargs = show_kwargs if show_kwargs else {}
+    fig_kwargs = fig_kwargs or {}
+    show_kwargs = show_kwargs or {}
     show_kwargs = {**show_kwargs}
 
     animation = bool(len(frames) > 1)

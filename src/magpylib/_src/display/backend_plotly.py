@@ -296,8 +296,8 @@ def display_plotly(
 ):
     """Display objects and paths graphically using the plotly library."""
 
-    fig_kwargs = fig_kwargs if fig_kwargs else {}
-    show_kwargs = show_kwargs if show_kwargs else {}
+    fig_kwargs = fig_kwargs or {}
+    show_kwargs = show_kwargs or {}
     show_kwargs = {"renderer": renderer, **show_kwargs}
 
     # only update layout if canvas is not provided
@@ -318,9 +318,7 @@ def display_plotly(
 
     frames = data["frames"]
     for fr in frames:
-        new_data = []
-        for tr in fr["data"]:
-            new_data.append(generic_trace_to_plotly(tr))
+        new_data = [generic_trace_to_plotly(tr) for tr in fr["data"]]
         for model in fr["extra_backend_traces"]:
             extra_data = True
             new_data.append(process_extra_trace(model))

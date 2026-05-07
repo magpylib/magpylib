@@ -266,14 +266,10 @@ class BaseCollection(BaseDisplayRepr):
         return len(self._children)
 
     def _repr_html_(self):
-        lines = []
-        lines.append(_repr_obj(self))
-        for line in _collection_tree_generator(
-            self,
-            format="type+label+id",
-            max_elems=10,
-        ):
-            lines.append(line)
+        lines = [
+            _repr_obj(self),
+            *_collection_tree_generator(self, format="type+label+id", max_elems=10),
+        ]
         return f"""<pre>{"<br>".join(lines)}</pre>"""
 
     def describe(self, format="type+label+id", max_elems=10, return_string=False):
@@ -301,9 +297,7 @@ class BaseCollection(BaseDisplayRepr):
             format=format,
             max_elems=max_elems,
         )
-        output = [_repr_obj(self, format)]
-        for t in tree:
-            output.append(t)
+        output = [_repr_obj(self, format), *tree]
         output = "\n".join(output)
 
         if return_string:

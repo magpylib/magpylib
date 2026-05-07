@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "hatch-vcs"]
+requires = ["hatchling>=1.26", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 
@@ -13,14 +13,14 @@ maintainers = [
 ]
 description = "Python package for computation of magnetic fields of magnets, currents and moments."
 readme = "README.md"
-license = {file = "LICENSE"}
 keywords = ["magnetism", "physics", "analytical", "electromagnetic", "magnetic-field", "B-field"]
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 classifiers = [
   "Development Status :: 1 - Planning",
   "Intended Audience :: Science/Research",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: BSD License",
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
@@ -28,6 +28,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering",
   "Typing :: Typed",
 ]
@@ -39,10 +40,27 @@ dependencies = [
     "plotly>=5.16",
 ]
 
+[project.urls]
+Homepage = "https://github.com/magpylib/magpylib"
+"Bug Tracker" = "https://github.com/magpylib/magpylib/issues"
+Discussions = "https://github.com/magpylib/magpylib/discussions"
+Changelog = "https://github.com/magpylib/magpylib/releases"
+
+
 [dependency-groups]
+test = [
+  "pytest >=9",
+  "pytest-cov >=7",
+  "pandas",
+  "pyvista",
+  "imageio[tifffile,ffmpeg]",
+  "jupyterlab",
+  "ipywidgets",  # for FigureWidget (plotly v5)
+  "anywidget", # for FigureWidget (plotly v6)
+]
+
 dev = [
   { include-group = "test" },
-  { include-group = "docs" },
 ]
 
 docs = [
@@ -62,16 +80,7 @@ docs = [
   "kaleido==0.2.1", # ulterior versions don't ship chrome,
   "sphinxcontrib-bibtex>=2.6",
 ]
-test = [
-  "pytest>=7.4",
-  "pytest-cov>=3",
-  "pandas",
-  "pyvista",
-  "imageio[tifffile,ffmpeg]",
-  "jupyterlab",
-  "ipywidgets",  # for plotly FigureWidget
-  "anywidget", # for plotly FigureWidget
-]
+
 binder = [
     "jupytext",
     "jupyterlab>=3.2",
@@ -79,32 +88,26 @@ binder = [
 ]
 
 
-[project.urls]
-Homepage = "https://github.com/magpylib/magpylib"
-"Bug Tracker" = "https://github.com/magpylib/magpylib/issues"
-Discussions = "https://github.com/magpylib/magpylib/discussions"
-Changelog = "https://github.com/magpylib/magpylib/releases"
-
-
 [tool.hatch]
 version.source = "vcs"
 build.hooks.vcs.version-file = "src/magpylib/_version.py"
 
 [tool.hatch.envs.default]
-installer = "uv"
-features = ["test"]
-scripts.test = "pytest {args}"
+dependency-groups = ["dev"]
+
+[tool.hatch.envs.hatch-test]
+dependency-groups = ["test"]
+env-vars.PYTHONWARNDEFAULTENCODING = "1"
 
 
-
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
-xfail_strict = true
+[tool.pytest]
+minversion = "9.0"
+addopts = ["-ra", "--showlocals"]
+strict = true
 filterwarnings = [
   "error",
 ]
-log_cli_level = "INFO"
+log_level = "INFO"
 testpaths = [
   "tests",
 ]
@@ -134,31 +137,46 @@ disallow_incomplete_defs = true
 
 
 [tool.ruff]
-target-version = "py311"
+show-fixes = true
 
 [tool.ruff.lint]
 extend-select = [
-  "ARG",      # flake8-unused-arguments
-  "B",        # flake8-bugbear
-  "C4",       # flake8-comprehensions
-  "EM",       # flake8-errmsg
-  "EXE",      # flake8-executable
-  "G",        # flake8-logging-format
-  "I",        # isort
-  "ICN",      # flake8-import-conventions
-  "NPY",      # NumPy specific rules
-  "PD",       # pandas-vet
-  "PGH",      # pygrep-hooks
-  "PIE",      # flake8-pie
-  "PL",       # pylint
-  "PT",       # flake8-pytest-style
-  "PTH",      # flake8-use-pathlib
-  "RET",      # flake8-return
-  "RUF",      # Ruff-specific
-  "SIM",      # flake8-simplify
-  "T20",      # flake8-print
-  "UP",       # pyupgrade
-  "YTT",      # flake8-2020
+  "ARG",    # flake8-unused-arguments
+  "B",      # flake8-bugbear
+  "BLE",    # flake8-blind-except
+  "C4",     # flake8-comprehensions
+  "DTZ",    # flake8-datetimez
+  "EM",     # flake8-errmsg
+  "EXE",    # flake8-executable
+  "FA",     # flake8-future-annotations
+  "FLY",    # flynt
+  "FURB",   # refurb
+  "G",      # flake8-logging-format
+  "I",      # isort
+  "ICN",    # flake8-import-conventions
+  "ISC",    # flake8-implicit-str-concat
+  "LOG",    # flake8-logging
+  "NPY",    # NumPy specific rules
+  "PD",     # pandas-vet
+  "PERF",   # perflint
+  "PGH",    # pygrep-hooks
+  "PIE",    # flake8-pie
+  "PL",     # pylint
+  "PT",     # flake8-pytest-style
+  "PTH",    # flake8-use-pathlib
+  "PYI",    # flake8-pyi
+  "Q",      # flake8-quotes
+  "RET",    # flake8-return
+  "RSE",    # flake8-raise
+  "RUF",    # Ruff-specific
+  "SIM",    # flake8-simplify
+  "SLOT",   # flake8-slots
+  "T10",    # flake8-debugger
+  "T20",    # flake8-print
+  "TC",     # flake8-type-checking
+  "TRY",    # tryceratops
+  "UP",     # pyupgrade
+  "YTT",    # flake8-2020
 ]
 ignore = [
   "PLR09",    # Too many <...>

@@ -818,7 +818,7 @@ def make_Sensor(
                 field, *coords_str = fsrc
                 field_array = field_values[field]
                 px_vectors = field_values[field][path_ind]
-                coords_str = coords_str if coords_str else "xyz"
+                coords_str = coords_str or "xyz"
                 coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
                 other_coords = [i for i in range(3) if i not in coords]
                 field_array[..., other_coords] = 0  # set other components to zero

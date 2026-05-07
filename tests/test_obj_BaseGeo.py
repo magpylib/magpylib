@@ -521,7 +521,7 @@ def test_style():
     bg.style = {"label": "mylabel"}
     assert bg.style.color == "red"
     assert bg.style.label == "mylabel"
-    with pytest.raises(ValueError, match=r"Input .* must be"):
+    with pytest.raises(TypeError, match=r"Input .* must be"):
         bg.style = "wrong class"
 
 

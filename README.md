@@ -9,10 +9,12 @@
 
 [![GitHub Discussion][github-discussions-badge]][github-discussions-link]
 
+[![Coverage][coverage-badge]][coverage-link]
+
 <!-- SPHINX-START -->
 
 <!-- prettier-ignore-start -->
-[actions-badge]:            https://github.com/magpylib/magpylib/workflows/CI/badge.svg
+[actions-badge]:            https://github.com/magpylib/magpylib/actions/workflows/ci.yml/badge.svg
 [actions-link]:             https://github.com/magpylib/magpylib/actions
 [conda-badge]:              https://img.shields.io/conda/vn/conda-forge/magpylib
 [conda-link]:               https://github.com/conda-forge/magpylib-feedstock
@@ -23,6 +25,8 @@
 [pypi-version]:             https://img.shields.io/pypi/v/magpylib
 [rtd-badge]:                https://readthedocs.org/projects/magpylib/badge/?version=latest
 [rtd-link]:                 https://magpylib.readthedocs.io/en/latest/?badge=latest
+[coverage-badge]:           https://codecov.io/github/magpylib/magpylib/branch/main/graph/badge.svg
+[coverage-link]:            https://codecov.io/github/magpylib/magpylib
 
 <!-- prettier-ignore-end -->
 
