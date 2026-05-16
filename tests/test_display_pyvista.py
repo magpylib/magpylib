@@ -26,12 +26,12 @@ try:
         import imageio_ffmpeg
 
         imageio_ffmpeg.get_ffmpeg_exe()
-    except ImportError as err:
+    except ImportError:
         if HAS_IMAGEIO:
             imageio.plugins.ffmpeg.download()
         else:
-            raise err
-except Exception:
+            raise
+except Exception:  # noqa: BLE001
     # skip test if ffmpeg cannot be loaded
     FFMPEG_FAILED = True
 

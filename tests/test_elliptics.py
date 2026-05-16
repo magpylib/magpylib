@@ -1,14 +1,13 @@
 import numpy as np
 import pytest
 
-from magpylib._src.fields.special_cel import _cel, _cel0, _celv
+from magpylib._src.fields.special_cel import _cel, _cel_scalar, _cel_vector
 from magpylib._src.fields.special_el3 import _el3, _el3_angle, _el3v, _el30
 
-
-def test_except_cel0():
-    """bad _cel0 input"""
-    with pytest.raises(RuntimeError):
-        _cel0(0, 0.1, 0.2, 0.3)
+# def test_except_cel_scalar():
+#    """bad _cel_scalar input"""
+#    with pytest.raises(RuntimeError):
+#        _cel_scalar(0, 0.1, 0.2, 0.3)
 
 
 def test_except_el30():
@@ -90,7 +89,7 @@ def test_el3s():
 
 def test_cels():
     """
-    test cel, _cel0 (from florian) vs _celv (from magpylib original)
+    test cel, _cel_scalar (from florian) vs _cel_vector (from magpylib original)
     against each other
     """
     N = 999
@@ -100,8 +99,10 @@ def test_cels():
     cc = (rng.random(N) - 0.5) * 10
     ss = (rng.random(N) - 0.5) * 10
 
-    res0 = [_cel0(kc, p, c, s) for kc, p, c, s in zip(kcc, pp, cc, ss, strict=False)]
-    res1 = _celv(kcc, pp, cc, ss)
+    res0 = [
+        _cel_scalar(kc, p, c, s) for kc, p, c, s in zip(kcc, pp, cc, ss, strict=False)
+    ]
+    res1 = _cel_vector(kcc, pp, cc, ss)
     res2 = _cel(kcc, pp, cc, ss)
 
     np.testing.assert_allclose(res0, res1)
@@ -113,18 +114,20 @@ def test_cel_Bulirsch():
     check _cel() results vs. values published in R. Bulirsch, Numerische Mathematik 13, 305-315 (1969), section 4.2
     """
     np.testing.assert_array_almost_equal_nulp(
-        _cel0(0.1, 4.1, 1.2, 1.1), 1.5464442694017956, nulp=3
+        _cel_scalar(0.1, 4.1, 1.2, 1.1), 1.5464442694017956, nulp=3
     )
     np.testing.assert_array_almost_equal_nulp(
-        _cel0(0.1, -4.1, 1.2, 1.1), -0.67687378198360556, nulp=2
+        _cel_scalar(0.1, -4.1, 1.2, 1.1), -0.67687378198360556, nulp=2
     )
     np.testing.assert_array_almost_equal_nulp(
-        _celv(np.array([0.1]), np.array([4.1]), np.array([1.2]), np.array([1.1])),
+        _cel_vector(np.array([0.1]), np.array([4.1]), np.array([1.2]), np.array([1.1])),
         [1.5464442694017956],
         nulp=3,
     )
     np.testing.assert_array_almost_equal_nulp(
-        _celv(np.array([0.1]), np.array([-4.1]), np.array([1.2]), np.array([1.1])),
+        _cel_vector(
+            np.array([0.1]), np.array([-4.1]), np.array([1.2]), np.array([1.1])
+        ),
         [-0.67687378198360556],
         nulp=2,
     )

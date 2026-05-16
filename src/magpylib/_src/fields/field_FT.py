@@ -15,7 +15,7 @@ from magpylib._src.obj_classes.class_BaseTransform import (
 )
 from magpylib._src.utility import format_src_inputs
 
-logging.basicConfig(level=logging.INFO, format="%(message)s")
+logger = logging.getLogger(__name__)
 
 
 def _check_format_input_targets(targets):
@@ -148,10 +148,11 @@ def _check_eps(eps):
     """
     check FD step
     """
-    msg = f"Input eps must be a positive float; instead received {eps!r}."
     if not isinstance(eps, float):
-        raise ValueError(msg)
+        msg = f"Input eps must be a float; instead received {eps!r}."
+        raise TypeError(msg)
     if eps <= 0:
+        msg = f"Input eps must be a positive float; instead received {eps!r}."
         raise ValueError(msg)
 
 
@@ -602,10 +603,10 @@ def getFT(
 
     # Mesh report
     if meshreport:
-        logging.info("Mesh report:")
+        logger.info("Mesh report:")
         for t, mesh in zip(targets, target_meshes, strict=False):
-            logging.info("  Target %s: %d points", t, mesh["n_mesh"])
-        logging.info("")
+            logger.info("  Target %s: %d points", t, mesh["n_mesh"])
+        logger.info("")
 
     # Return mesh for analysis
     if return_mesh:

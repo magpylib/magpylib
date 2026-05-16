@@ -659,7 +659,7 @@ def check_format_input_observers(inp, pixel_agg=None):
                 try:
                     obj = np.array(obj, dtype=float)
                     sensors.append(_src.obj_classes.class_Sensor.Sensor(pixel=obj))
-                except Exception:  # or some unwanted crap
+                except Exception:  # noqa: BLE001
                     raise MagpylibBadUserInput(
                         wrong_obj_msg(obj, allow="observers")
                     ) from err
@@ -787,7 +787,7 @@ def check_format_pixel_agg(pixel_agg):
     # test pixel agg function reduce
     x = np.array([[[(1, 2, 3)] * 2] * 3] * 4)
     if not isinstance(pixel_agg_func(x), numbers.Number):
-        raise AttributeError(PIXEL_AGG_ERR_MSG)
+        raise TypeError(PIXEL_AGG_ERR_MSG)
 
     return pixel_agg_func
 

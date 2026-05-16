@@ -351,7 +351,7 @@ def get_traces_2D(
                 inds = frames_indices[::-frames]
             focus_inds.extend(inds)
         focus_inds = list(dict.fromkeys(focus_inds))
-        return focus_inds if focus_inds else [-1]
+        return focus_inds or [-1]
 
     def get_obj_list_str(objs):
         if len(objs) < 8:
@@ -621,7 +621,7 @@ def get_generic_traces3D(
         temp_rot_traces = []
         name, name_suff = "", None
         for ind, path_ind in enumerate(path_inds):
-            pos_orient_ind = max_pos_ind if path_ind > max_pos_ind else path_ind
+            pos_orient_ind = min(path_ind, max_pos_ind)
             pos, orient = positions[pos_orient_ind], orientations[pos_orient_ind]
             tr_list = [trg]
             if trg is None:
@@ -691,7 +691,7 @@ def get_generic_traces3D(
                                 if style.legend.show
                                 else False
                             ),
-                            "name": legendtext if legendtext else legend_label,
+                            "name": legendtext or legend_label,
                             "row": row,
                             "col": col,
                         },

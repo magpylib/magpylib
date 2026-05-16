@@ -247,7 +247,7 @@ class BaseGeo(BaseTransform, ABC):
                 f"Input style must be an instance of {self._style_class.__name__}; "
                 f"instead received type {type(val).__name__}."
             )
-            raise ValueError(msg)
+            raise TypeError(msg)
         return style
 
     # abstract methods that must be implemented by subclasses ------

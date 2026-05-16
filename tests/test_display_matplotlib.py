@@ -412,7 +412,7 @@ def test_matplotlib_model3d_extra_updatefunc():
 
     updatefunc = "not callable"
     with pytest.raises(
-        ValueError, match=(r"The data property of Model3d must be an instance.*")
+        TypeError, match=(r"The data property of Model3d must be an instance.*")
     ):
         obj.style.model3d.add_trace(updatefunc)
 

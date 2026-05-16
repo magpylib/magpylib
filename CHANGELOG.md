@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+- Fixed `getFT` modifying the root logger at import time via
+  `logging.basicConfig`
+  ([#953](https://github.com/magpylib/magpylib/issues/953)). A module-level
+  logger is now used instead.
+- Updated project template to
+  [scientific-python/cookie `2026.04.04`](https://github.com/scientific-python/cookie):
+  CI improvements (prek linter, `alls-green` pass job, Python 3.14 testing),
+  updated pre-commit hooks, ReadTheDocs migration to `commands` mode, and
+  coverage badge added to README.
+
 ## [5.2.2] 2026-02-10
 
 - Fixed issues appearing with Scipy 1.17 update (Rotation class)
