@@ -270,16 +270,17 @@ def display_matplotlib(
     labels = data["labels"]
 
     # only update layout if canvas is not provided
-    fig_kwargs = fig_kwargs if fig_kwargs else {}
-    show_kwargs = show_kwargs if show_kwargs else {}
+    fig_kwargs = fig_kwargs or {}
+    show_kwargs = show_kwargs or {}
     show_kwargs = {**show_kwargs}
 
     for fr in frames:
         new_data = []
         for tr in fr["data"]:
             new_data.extend(generic_trace_to_matplotlib(tr, antialiased=antialiased))
-        for model in fr["extra_backend_traces"]:
-            new_data.append(process_extra_trace(model))
+        new_data.extend(
+            process_extra_trace(model) for model in fr["extra_backend_traces"]
+        )
         fr["data"] = new_data
 
     show_canvas = bool(canvas is None)

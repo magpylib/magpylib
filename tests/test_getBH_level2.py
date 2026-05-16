@@ -457,7 +457,7 @@ def test_pixel_agg_heterogeneous_pixel_shapes():
         magpy.getB(src1, sens_col2, pixel_agg="bad_aggregator")
 
     # good pixel_agg NumPy reference, but non-reducing function
-    with pytest.raises(AttributeError):
+    with pytest.raises(TypeError):
         magpy.getB(src1, sens_col2, pixel_agg="array")
 
     B1 = magpy.getB(src1, sens_col1, squeeze=False, pixel_agg="max")

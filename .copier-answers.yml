@@ -1,7 +1,8 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: 2025.01.22-34-g133af09
+_commit: 2026.04.04
 _src_path: gh:scientific-python/cookie
 backend: hatch
+docs: sphinx
 email: magpylib@gmail.com
 full_name: Michael Ortner
 license: BSD

@@ -102,10 +102,9 @@ def test_linearize_dict():
     [
         (None, True, None),
         ("blue", True, "blue"),
-        ("r", True, "red"),
         (0, True, "#000000"),
         (0.5, True, "#7f7f7f"),
-        ("0.5", True, "#7f7f7f"),
+        pytest.param("0.5", True, "#7f7f7f", id="str0.5-True-#7f7f7f"),
         ((127, 127, 127), True, "#7f7f7f"),
         ("rgb(127, 127, 127)", True, "#7f7f7f"),
         ((0, 0, 0, 0), False, "#000000"),

@@ -379,13 +379,9 @@ def is_notebook() -> bool:  # pragma: no cover
         from IPython import get_ipython  # noqa: PLC0415
 
         shell = get_ipython().__class__.__name__
-        if shell == "ZMQInteractiveShell":
-            return True  # Jupyter notebook or qtconsole
-        if shell == "TerminalInteractiveShell":
-            return False  # Terminal running IPython
-        return False  # Other type (?)
     except NameError:
         return False  # Probably standard Python interpreter
+    return shell == "ZMQInteractiveShell"  # True only for Jupyter notebook or qtconsole
 
 
 def open_animation(filepath, embed=True):

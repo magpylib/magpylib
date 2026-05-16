@@ -1,5 +1,24 @@
 # Changelog
 
+## [5.2.3] 2026-05-15
+
+- Fixed `getFT` modifying the root logger at import time via
+  `logging.basicConfig`
+  ([#953](https://github.com/magpylib/magpylib/issues/953)). A module-level
+  logger is now used instead.
+- Updated project template to
+  [scientific-python/cookie `2026.04.04`](https://github.com/scientific-python/cookie):
+  CI improvements (prek linter, `alls-green` pass job, Python 3.14 testing),
+  updated pre-commit hooks, ReadTheDocs migration to `commands` mode, and
+  coverage badge added to README.
+- Refactor elliptic integral routines and improve vectorization resulting in up
+  to three times faster evaluation for Cylinder shapes
+  ([#955](https://github.com/magpylib/magpylib/pull/955),
+  [#945](https://github.com/magpylib/magpylib/pull/945),
+  [#941](https://github.com/magpylib/magpylib/pull/941))
+- Modified docs image of earth's magnetic field
+  ([#946](https://github.com/magpylib/magpylib/issues/946))
+
 ## [5.2.2] 2026-02-10
 
 - Fixed issues appearing with Scipy 1.17 update (Rotation class)

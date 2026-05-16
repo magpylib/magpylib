@@ -262,6 +262,46 @@ class BaseCollection:
     def __len__(self):
         return len(self._children)
 
+    def _repr_html_(self):
+        lines = [
+            _repr_obj(self),
+            *_collection_tree_generator(self, format="type+label+id", max_elems=10),
+        ]
+        return f"""<pre>{"<br>".join(lines)}</pre>"""
+
+    def describe(self, format="type+label+id", max_elems=10, return_string=False):
+        # pylint: disable=arguments-differ
+        """Return or print a tree view of the collection.
+
+        Parameters
+        ----------
+        format : str, default 'type+label+id'
+            Object description in tree view. Can be any combination of ``'type'``, ``'label'``
+            and ``'id'`` and ``'properties'``.
+        max_elems : int, default 10
+            If number of children at any level is higher than ``max_elems``, elements are
+            replaced by counters.
+        return_string : bool, default False
+            If ``False`` print description with stdout, if ``True`` return as string.
+
+        Returns
+        -------
+        str | None
+            Tree view string if ``return_string=True``, else ``None``.
+        """
+        tree = _collection_tree_generator(
+            self,
+            format=format,
+            max_elems=max_elems,
+        )
+        output = [_repr_obj(self, format), *tree]
+        output = "\n".join(output)
+
+        if return_string:
+            return output
+        print(output)  # noqa: T201
+        return None
+
     def add(self, *children, override_parent=False):
         """Add sources, sensors or collections to the collection.
 
@@ -986,6 +1026,24 @@ class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
         )
         BaseCollection.__init__(self, *children, override_parent=override_parent)
 
+    def describe(self, format="type+label+id", max_elems=10, return_string=False):
+        # pylint: disable=arguments-differ
+        """Return or print a tree view of the collection.
+
+        This override ensures that Collection instances use the collection-specific
+        tree formatter instead of the generic BaseGeo property description.
+        """
+        return BaseCollection.describe(
+            self,
+            format=format,
+            max_elems=max_elems,
+            return_string=return_string,
+        )
+
+    def _repr_html_(self):
+        """Rich HTML representation using the collection tree formatter."""
+        return BaseCollection._repr_html_(self)
+
     # Abstract methods implementation
     def _get_volume(self):
         """Return volume of all objects (m³)."""
@@ -1013,50 +1071,3 @@ class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
             [child._get_dipole_moment(squeeze=squeeze) for child in self.children_all],
             axis=0,
         )
-
-    def _repr_html_(self):
-        """Rich HTML representation for notebooks and other frontends."""
-        lines = []
-        lines.append(_repr_obj(self))
-        for line in _collection_tree_generator(
-            self,
-            format="type+label+id",
-            max_elems=10,
-        ):
-            lines.append(line)
-        return f"""<pre>{"<br>".join(lines)}</pre>"""
-
-    def describe(self, format="type+label+id", max_elems=10, return_string=False):
-        # pylint: disable=arguments-differ
-        """Return or print a tree view of the collection.
-
-        Parameters
-        ----------
-        format : str, default 'type+label+id'
-            Object description in tree view. Can be any combination of ``'type'``, ``'label'``
-            and ``'id'`` and ``'properties'``.
-        max_elems : int, default 10
-            If number of children at any level is higher than ``max_elems``, elements are
-            replaced by counters.
-        return_string : bool, default False
-            If ``False`` print description with stdout, if ``True`` return as string.
-
-        Returns
-        -------
-        str | None
-            Tree view string if ``return_string=True``, else ``None``.
-        """
-        tree = _collection_tree_generator(
-            self,
-            format=format,
-            max_elems=max_elems,
-        )
-        output = [_repr_obj(self, format)]
-        for t in tree:
-            output.append(t)
-        output = "\n".join(output)
-
-        if return_string:
-            return output
-        print(output)  # noqa: T201
-        return None

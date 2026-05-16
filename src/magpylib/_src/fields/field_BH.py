@@ -521,8 +521,8 @@ def _getBH_level2(
         if sumup and len(sources) > 1:
             src_ids = [f"sumup ({len(sources)})"]
         else:
-            src_ids = [s.style.label if s.style.label else f"{s}" for s in sources]
-        sens_ids = [s.style.label if s.style.label else f"{s}" for s in sensors]
+            src_ids = [s.style.label or f"{s}" for s in sources]
+        sens_ids = [s.style.label or f"{s}" for s in sensors]
         num_of_pixels = np.prod(pix_shapes[0][:-1]) if pixel_agg is None else 1
         df_field = pd.DataFrame(
             data=product(src_ids, range(max_path_len), sens_ids, range(num_of_pixels)),

@@ -352,7 +352,7 @@ def get_traces_2D(
                 inds = frames_indices[::-frames]
             focus_inds.extend(inds)
         focus_inds = list(dict.fromkeys(focus_inds))
-        return focus_inds if focus_inds else [-1]
+        return focus_inds or [-1]
 
     def get_obj_list_str(objs):
         if len(objs) < 8:
@@ -703,7 +703,7 @@ def get_generic_traces3D(
                                 if style.legend.show
                                 else False
                             ),
-                            "name": legendtext if legendtext else legend_label,
+                            "name": legendtext or legend_label,
                             "row": row,
                             "col": col,
                         },
