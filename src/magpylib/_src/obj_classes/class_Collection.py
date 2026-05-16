@@ -1026,6 +1026,24 @@ class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
         )
         BaseCollection.__init__(self, *children, override_parent=override_parent)
 
+    def describe(self, format="type+label+id", max_elems=10, return_string=False):
+        # pylint: disable=arguments-differ
+        """Return or print a tree view of the collection.
+
+        This override ensures that Collection instances use the collection-specific
+        tree formatter instead of the generic BaseGeo property description.
+        """
+        return BaseCollection.describe(
+            self,
+            format=format,
+            max_elems=max_elems,
+            return_string=return_string,
+        )
+
+    def _repr_html_(self):
+        """Rich HTML representation using the collection tree formatter."""
+        return BaseCollection._repr_html_(self)
+
     # Abstract methods implementation
     def _get_volume(self):
         """Return volume of all objects (m³)."""
