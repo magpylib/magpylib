@@ -367,12 +367,12 @@ def _get_prop(prop, ind):
             return prop
         if len(prop) == 1:
             return prop[0]
-        return prop[ind]
+        return prop[ind if ind < len(prop) else -1]
 
     # Handle other array-likes (numpy)
     if len(prop) == 1:
         return prop[0]
-    return prop[ind]
+    return prop[ind if ind < len(prop) else -1]
 
 
 def get_objects_props_by_row_col(*objs, colorsequence, style_kwargs):
