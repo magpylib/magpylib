@@ -1,7 +1,5 @@
 """Special functions cel."""
 
-# pylint: disable=too-many-positional-arguments
-
 import math as m
 
 import numpy as np
@@ -138,47 +136,30 @@ def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndar
     return _cel_vector(kc, p, c, s)
 
 
-def _cel_iter_scalar(qc, p, g, cc, ss, em, kk):
+# pylint: disable=too-many-positional-arguments
+
+
+def _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=m, any=lambda b: b):
     """
-    Iterative part of the scalar Bulirsch cel algorithm.
-    This routine continues the iteration from an already prepared state.
-    """
-
-    while abs(g - qc) > g * _CEL_ERRORTOL:
-        qc = 2 * m.sqrt(kk)
-        kk = em * qc
-
-        g = kk / p
-        cc, ss = cc + ss / p, 2 * (ss + cc * g)
-        p = p + g
-
-        g = em
-        em = em + qc
-
-    return (m.pi / 2) * (ss + cc * em) / (em * (em + p))
-
-
-def _cel_iter_vector(qc, p, g, cc, ss, em, kk):
-    """
-    Vectorized iterative part of the Bulirsch cel algorithm.
+    Iterative part of the Bulirsch cel algorithm.
     This routine continues the iteration from an already prepared state.
 
+    Handles scalar (xp=m) or vectorized (xp=np, any=np.any) inputs.
     Does not modify input arrays in-place.
     """
 
-    while np.any(np.abs(g - qc) > g * _CEL_ERRORTOL):
-        qc = 2 * np.sqrt(kk)
+    while any(abs(g - qc) > g * _CEL_ERRORTOL):
+        qc = 2 * xp.sqrt(kk)
         kk = em * qc
 
         g = kk / p
         cc, ss = cc + ss / p, 2 * (ss + cc * g)
-
         p = p + g
 
         g = em
         em = em + qc
 
-    return (np.pi / 2) * (ss + cc * em) / (em * (em + p))
+    return (xp.pi / 2) * (ss + cc * em) / (em * (em + p))
 
 
 def _cel_iter(
@@ -191,18 +172,15 @@ def _cel_iter(
     kk: np.ndarray,
 ) -> np.ndarray:
     """
-    Iterative part of bulirsch cel algorithm where the first iteration was already performed.
-    This function improves computation of current loop only and is separated from the
+    Iterative part of Bulirsch cel algorithm where the first iteration was already performed.
+    This function improves computation of current loop only and is separate from the _cel
     implementation above.
     """
 
     if qc.size < _CEL_SCALAR_THRESHOLD:
-        out = np.empty(qc.size, dtype=float)
-        for i in range(qc.size):
-            out[i] = _cel_iter_scalar(qc[i], p[i], g[i], cc[i], ss[i], em[i], kk[i])
-        return out
-
-    return _cel_iter_vector(qc, p, g, cc, ss, em, kk)
+        return np.array([_cel_iter_scalarvector(*args)
+                         for args in zip(qc, p, g, cc, ss, em, kk, strict=False)])  # fmt: skip
+    return _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=np, any=np.any)
 
 
 # import math as m
