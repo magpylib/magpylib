@@ -139,7 +139,7 @@ def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndar
 # pylint: disable=too-many-positional-arguments
 
 
-def _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=m, any=lambda b: b):
+def _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=m, any_=lambda b: b):
     """
     Iterative part of the Bulirsch cel algorithm.
     This routine continues the iteration from an already prepared state.
@@ -148,7 +148,7 @@ def _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=m, any=lambda b: b):
     Does not modify input arrays in-place.
     """
 
-    while any(abs(g - qc) > g * _CEL_ERRORTOL):
+    while any_(abs(g - qc) > g * _CEL_ERRORTOL):
         qc = 2 * xp.sqrt(kk)
         kk = em * qc
 
@@ -180,7 +180,7 @@ def _cel_iter(
     if qc.size < _CEL_SCALAR_THRESHOLD:
         return np.array([_cel_iter_scalarvector(*args)
                          for args in zip(qc, p, g, cc, ss, em, kk, strict=False)])  # fmt: skip
-    return _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=np, any=np.any)
+    return _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=np, any_=np.any)
 
 
 # import math as m
