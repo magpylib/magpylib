@@ -5,31 +5,30 @@
 
 from typing import ClassVar
 
+import numpy as np
+
 from magpylib import mu_0
 from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import (
-    check_format_input_scalar,
-    check_format_input_vector,
+    check_format_input_numeric,
     validate_field_func,
 )
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.style import CurrentStyle, MagnetStyle
-from magpylib._src.utility import format_star_input
+from magpylib._src.utility import format_star_input, unit_prefix
 
 
-class BaseSource(BaseGeo, BaseDisplayRepr):
+class BaseSource(BaseGeo):
     """Base class for all source objects providing getBHJM and field function hook."""
 
     _field_func = None
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {}
     _editable_field_func = False
 
-    def __init__(self, position, orientation, field_func=None, style=None, **kwargs):
+    def __init__(self, position, orientation, *, field_func=None, style=None, **kwargs):
         if field_func is not None:
             self.field_func = field_func
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
-        BaseDisplayRepr.__init__(self)
 
     @property
     def field_func(self):
@@ -318,29 +317,59 @@ class BaseMagnet(BaseSource):
     """Provide magnetization and polarization attributes for magnet sources."""
 
     _style_class = MagnetStyle
+    _path_properties = (
+        "polarization",
+        "magnetization",
+    )  # also inherits from parent class
 
     def __init__(
-        self, position, orientation, magnetization, polarization, style, **kwargs
+        self, position, orientation, *, magnetization, polarization, style, **kwargs
     ):
-        super().__init__(position, orientation, style=style, **kwargs)
-
         self._polarization = None
         self._magnetization = None
-        if magnetization is not None:
-            self.magnetization = magnetization
-            if polarization is not None:
-                msg = (
-                    "The attributes magnetization and polarization are dependent. "
-                    "Only one can be provided at magnet initialization."
-                )
-                raise ValueError(msg)
-        if polarization is not None:
-            self.polarization = polarization
+        if magnetization is not None and polarization is not None:
+            msg = (
+                "The attributes magnetization and polarization are dependent. "
+                "Only one can be provided at magnet initialization."
+            )
+            raise ValueError(msg)
+        name = "magnetization" if magnetization is not None else "polarization"
+        magpol = magnetization if magnetization is not None else polarization
+        self._check_input_format_mag_pol(magpol, name)
+        super().__init__(position, orientation, style=style, **kwargs)
+
+    def _check_input_format_mag_pol(self, magpol, name):
+        """Check and format magnetization/polarization input and set both attributes.
+
+        Parameters
+        ----------
+        magpol : array-like or None
+            Input magnetization or polarization value
+        name : str
+            Either 'magnetization' or 'polarization' to indicate which is being set
+        """
+        formatted = check_format_input_numeric(
+            magpol,
+            dtype=float,
+            shapes=((3,), (None, 3)),
+            name=name,
+            allow_None=True,
+            reshape=(-1, 3),
+        )
+
+        if name == "magnetization":
+            self._magnetization = formatted
+            self._polarization = formatted * mu_0 if formatted is not None else None
+        elif name == "polarization":
+            self._polarization = formatted
+            self._magnetization = formatted / mu_0 if formatted is not None else None
 
     @property
     def magnetization(self):
         """Magnet magnetization vector (A/m) in local coordinates."""
-        return self._magnetization
+        return (
+            np.squeeze(self._magnetization) if self._magnetization is not None else None
+        )
 
     @magnetization.setter
     def magnetization(self, mag):
@@ -348,24 +377,18 @@ class BaseMagnet(BaseSource):
 
         Parameters
         ----------
-        mag : None | array-like, shape (3,)
+        mag : None | array-like, shape (3,) or (p, 3)
             Magnetization vector M = J/mu0 in units (A/m), given in the local object
             coordinates. Sets also ``polarization``.
         """
-        self._magnetization = check_format_input_vector(
-            mag,
-            dims=(1,),
-            shape_m1=3,
-            sig_name="magnetization",
-            sig_type="array-like (list, tuple, ndarray) with shape (3,)",
-            allow_None=True,
-        )
-        self._polarization = self._magnetization * mu_0
+        self._check_input_format_mag_pol(mag, "magnetization")
 
     @property
     def polarization(self):
         """Magnet polarization vector (T) in local coordinates."""
-        return self._polarization
+        return (
+            np.squeeze(self._polarization) if self._polarization is not None else None
+        )
 
     @polarization.setter
     def polarization(self, mag):
@@ -373,34 +396,29 @@ class BaseMagnet(BaseSource):
 
         Parameters
         ----------
-        mag : None | array-like, shape (3,)
+        mag : None | array-like, shape (3,) or (n, 3)
             Magnetic polarization vector J = mu0*M in units (T), given in the
             local object coordinates. Sets also ``magnetization``.
         """
-        self._polarization = check_format_input_vector(
-            mag,
-            dims=(1,),
-            shape_m1=3,
-            sig_name="polarization",
-            sig_type="array-like (list, tuple, ndarray) with shape (3,)",
-            allow_None=True,
-        )
-        self._magnetization = self._polarization / mu_0
+        self._check_input_format_mag_pol(mag, "polarization")
 
 
 class BaseCurrent(BaseSource):
     """Provide scalar electric current attribute for current sources."""
 
     _style_class = CurrentStyle
-
-    def __init__(self, position, orientation, current, style, **kwargs):
-        super().__init__(position, orientation, style=style, **kwargs)
-        self.current = current
+    _path_properties = ("current",)  # also inherits from parent class
 
     @property
     def current(self):
         """Electric current amplitude (A)."""
-        return self._current
+        return (
+            None
+            if self._current is None
+            else self._current[0]
+            if len(self._current) == 1
+            else self._current
+        )
 
     @current.setter
     def current(self, current):
@@ -408,13 +426,25 @@ class BaseCurrent(BaseSource):
 
         Parameters
         ----------
-        current : None | float
+        current : None | float | array-like, shape (p,)
             Electric current amplitude in units (A).
         """
-        # input type and init check
-        self._current = check_format_input_scalar(
+        self._current = check_format_input_numeric(
             current,
-            sig_name="current",
-            sig_type="None or a number (int, float)",
+            dtype=float,
+            shapes=(None, (None,)),
+            name="current",
             allow_None=True,
+            reshape=(-1,),
         )
+
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        curr = self._current
+        if curr is None:
+            return "no current"
+        if len(curr) == 1 or np.unique(curr).shape[0] == 1:
+            return f"{unit_prefix(curr[0])}A current"
+        cmin, cmax = np.nanmin(curr), np.nanmax(curr)
+        return f"{unit_prefix(cmin)}A↔{unit_prefix(cmax)}A"

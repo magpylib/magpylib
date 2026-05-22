@@ -8,13 +8,14 @@ import numbers
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
+from magpylib._src.exceptions import MagpylibInternalError
 from magpylib._src.input_checks import (
     check_degree_type,
     check_format_input_anchor,
     check_format_input_angle,
     check_format_input_axis,
+    check_format_input_numeric,
     check_format_input_orientation,
-    check_format_input_vector,
     check_start_type,
 )
 
@@ -41,7 +42,7 @@ def _multi_anchor_behavior(anchor, inrotQ, rotation):
     return anchor, inrotQ, rotation
 
 
-def _path_padding_param(scalar_input: bool, lenop: int, lenip: int, start: int):
+def _get_padding_params(scalar_input: bool, lenop: int, lenip: int, start: int):
     """compute path padding parameters
 
     Example: with start>0 and input path exceeds old_path
@@ -116,10 +117,14 @@ def _path_padding(inpath, start, target_object):
     lenip = 1 if scalar_input else len(inpath)
 
     # pad old path depending on input
-    padding, start = _path_padding_param(scalar_input, len(ppath), lenip, start)
+    padding, start = _get_padding_params(scalar_input, len(ppath), lenip, start)
     if padding:
-        ppath = np.pad(ppath, (padding, (0, 0)), "edge")
+        ppath = np.pad(ppath, (padding, (0, 0)), "edge").astype(float, copy=False)
         opath = np.pad(opath, (padding, (0, 0)), "edge")
+    else:
+        # Always create a copy to avoid modifying the original array
+        # and ensure it's float dtype for in-place operations
+        ppath = np.array(ppath, dtype=float)
 
     # set end-index
     end = len(ppath) if scalar_input else start + lenip
@@ -151,18 +156,18 @@ def _apply_move(target_object, displacement, start="auto"):
     # pylint: disable=too-many-branches
 
     # check and format inputs
-    inpath = check_format_input_vector(
+    inpath = check_format_input_numeric(
         displacement,
-        dims=(1, 2),
-        shape_m1=3,
-        sig_name="displacement",
-        sig_type="array-like (list, tuple, ndarray) with shape (3,) or (n, 3)",
+        dtype=float,
+        shapes=((3,), (None, 3)),
+        name="displacement",
     )
     check_start_type(start)
 
     # pad target_object path and compute start and end-index for rotation application
     ppath, opath, start, end, padded = _path_padding(inpath, start, target_object)
     if padded:
+        pad_path_properties(target_object, len(ppath), start)
         target_object._orientation = R.from_quat(opath)
 
     # apply move operation
@@ -170,6 +175,39 @@ def _apply_move(target_object, displacement, start="auto"):
     target_object._position = ppath
 
     return target_object
+
+
+def pad_path_property(prop, new_path_len, start=0):
+    if prop is None:
+        return prop
+    is_rot = isinstance(prop, R)
+    if not isinstance(prop, np.ndarray) and not is_rot:
+        msg = "path property is not a numpy array."
+        raise MagpylibInternalError(msg)
+    if is_rot:
+        prop = prop.as_quat()
+    pad_start = len(prop) if start < 0 else start
+    pad_end = max(0, new_path_len - len(prop) - pad_start)
+    if pad_start > 0 or pad_end > 0:
+        pad_width = (pad_start, pad_end)
+        if prop.ndim > 1:
+            pad_width = (pad_width, *((0, 0),) * (prop.ndim - 1))
+        prop = np.pad(prop, pad_width, "edge")
+    if len(prop) > new_path_len:
+        prop = prop[-new_path_len:]
+    if is_rot:
+        prop = R.from_quat(prop)
+    return prop
+
+
+def pad_path_properties(target_object, new_path_len, start=0, path_properties=None):
+    """Pad all path properties of target_object to new_path_len."""
+    if path_properties is None:
+        path_properties = target_object._path_properties
+    for name in path_properties:
+        val = getattr(target_object, f"_{name}", None)
+        val = pad_path_property(val, new_path_len, start)
+        setattr(target_object, f"_{name}", val)
 
 
 def _apply_rotation(
@@ -210,7 +248,7 @@ def _apply_rotation(
         anchor, inrotQ, rotation = _multi_anchor_behavior(anchor, inrotQ, rotation)
 
     # pad target_object path and compute start and end-index for rotation application
-    ppath, opath, newstart, end, _ = _path_padding(inrotQ, start, target_object)
+    ppath, opath, newstart, end, padded = _path_padding(inrotQ, start, target_object)
 
     # compute anchor when dealing with Compound rotation (target_object is a child
     #   that rotates about its parent). This happens when a rotation with anchor=None
@@ -220,7 +258,7 @@ def _apply_rotation(
         # target anchor length
         len_anchor = end - newstart
         # pad up parent_path if input requires it
-        padding, start = _path_padding_param(
+        padding, start = _get_padding_params(
             inrotQ.ndim == 1, parent_path.shape[0], len_anchor, start
         )
         if padding:
@@ -242,6 +280,8 @@ def _apply_rotation(
     # pylint: disable=attribute-defined-outside-init
     target_object._orientation = R.from_quat(opath)
     target_object._position = ppath
+    if padded:
+        pad_path_properties(target_object, len(ppath), newstart)
 
     return target_object
 

@@ -17,7 +17,7 @@ from magpylib._src.obj_classes.class_BaseProperties import (
     BaseVolume,
 )
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
-from magpylib._src.obj_classes.target_meshing import _target_mesh_cylinder
+from magpylib._src.obj_classes.target_meshing import generate_mesh_cylindersegment
 from magpylib._src.utility import unit_prefix
 
 
@@ -42,14 +42,14 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    dimension : None | array-like, shape (5,), default None
+    dimension : None | array-like, shape (5,) or (p, 5), default None
         Cylinder segment size (r1, r2, h, phi1, phi2) where r1 < r2 are inner
         and outer radii in units (m), phi1 < phi2 are section angles in units (deg),
         and h is the height in units (m).
-    polarization : None | array-like, shape (3,), default None
+    polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
-    magnetization : None | array-like, shape (3,), default None
+    magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
     meshing : int | None, default None
@@ -65,23 +65,22 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    polarization : None | ndarray, shape (3,)
+    dimension : None | ndarray, shape (5,) or (p, 5)
+        Same as constructor parameter ``dimension``.
+    polarization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``polarization``.
-    magnetization : None | ndarray, shape (3,)
+    magnetization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``magnetization``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
-        Can be a path.
-    dipole_moment : ndarray, shape (3,)
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
-    volume : float
+    volume : float | ndarray, shape (p,)
         Read-only. Object physical volume in units (m³).
-    parent : Collection or None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
-    barycenter : ndarray, shape (3,)
-        Read-only. Geometric barycenter (= center of mass) of the object.
+    style : MagnetStyle
+        Object style. See MagnetStyle for details.
 
     Notes
     -----
@@ -113,6 +112,7 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         "polarization": 2,
         "dimension": 2,
     }
+    _path_properties = ("dimension",)  # also inherits from parent class
     get_trace = make_CylinderSegment
 
     def __init__(
@@ -126,15 +126,16 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.dimension = dimension
-
-        # init inheritance
         super().__init__(
-            position, orientation, magnetization, polarization, style, **kwargs
+            position,
+            orientation,
+            magnetization=magnetization,
+            polarization=polarization,
+            dimension=dimension,
+            style=style,
+            **kwargs,
         )
 
-        # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
 
     # property getters and setters
@@ -145,7 +146,7 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         r1 < r2 denote inner and outer radii in units (m), phi1 < phi2 the
         section angles in units (deg), and h the height in units (m).
         """
-        return self._dimension
+        return np.squeeze(self._dimension) if self._dimension is not None else None
 
     @dimension.setter
     def dimension(self, dim):
@@ -153,71 +154,56 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
         Parameters
         ----------
-        dim : None or array-like, shape (5,)
+        dim : None or array-like, shape (5,) or (p, 5)
             Size (r1, r2, h, phi1, phi2) where r1 < r2 are radii in (m),
             phi1 < phi2 are section angles in (deg), and h is the height (m).
         """
         self._dimension = check_format_input_cylinder_segment(dim)
 
     @property
-    def _barycenter(self):
-        """Object barycenter."""
-        return self._get_barycenter(self._position, self._orientation, self.dimension)
-
-    @property
-    def barycenter(self):
-        """Object barycenter."""
-        return np.squeeze(self._barycenter)
-
-    @property
     def _default_style_description(self):
         """Default style description text"""
         if self.dimension is None:
             return "no dimension"
-        d = [unit_prefix(d) for d in self.dimension]
-        return f"r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°"
+        dims = self._dimension
+        # Single dimension or all dimensions are the same
+        if len(dims) == 1 or np.all(dims == dims[0], axis=0).all():
+            d = [unit_prefix(v) for v in dims[0]]
+            return f"r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°"
+        # Multiple different dimensions - show range per component
+        dmin, dmax = np.nanmin(dims, axis=0), np.nanmax(dims, axis=0)
+        parts = []
+        units = [("r1", "m"), ("r2", "m"), ("h", "m"), ("φ1", "°"), ("φ2", "°")]
+        for idx, (name, unit) in enumerate(units):
+            if np.allclose(dmin[idx], dmax[idx]):
+                val = unit_prefix(dmin[idx])
+                parts.append(f"{name}={val}{unit}")
+            else:
+                vmin, vmax = unit_prefix(dmin[idx]), unit_prefix(dmax[idx])
+                parts.append(f"{name}={vmin}{unit}↔{vmax}{unit}")
+        return ", ".join(parts)
 
     # Methods
-    def _get_volume(self):
+    def _get_volume(self, squeeze=True):
         """Volume of object in units (m³)."""
-        if self.dimension is None:
-            return 0.0
+        if self._dimension is None:
+            return 0.0 if squeeze else np.array([0.0])
 
-        r1, r2, h, phi1, phi2 = self.dimension
-        return (r2**2 - r1**2) * np.pi * h * (phi2 - phi1) / 360
+        dims = self._dimension  # Use internal (p, 5) shape
+        r1, r2, h, phi1, phi2 = dims.T
+        vols = (r2**2 - r1**2) * np.pi * h * (phi2 - phi1) / 360
+        if squeeze and len(vols) == 1:
+            return float(vols[0])
+        return vols
 
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
-        if squeeze:
-            return self.barycenter
-        return self._barycenter
-
-    def _get_dipole_moment(self):
-        """Magnetic moment of object in units (A*m²)."""
-        # test init
-        if self.magnetization is None or self.dimension is None:
-            return np.array((0.0, 0.0, 0.0))
-        return self.magnetization * self.volume
-
-    def _generate_mesh(self):
-        """Generate mesh for force computation."""
-        # Tests in getFT ensure that meshing, dimension and excitation are set
-        r1, r2, h, phi1, phi2 = self.dimension
-        return _target_mesh_cylinder(
-            r1, r2, h, phi1, phi2, self.meshing, self.magnetization
-        )
-
-    # Static methods
-    @staticmethod
-    def _get_barycenter(position, orientation, dimension):
-        """Returns the barycenter of a cylinder segment.
-        Input checks should make sure:
-            -360 < phi1 < phi2 < 360 and 0 < r1 < r2
-        """
-        if dimension is None:
+        if self._dimension is None:
             centroid = np.array([0.0, 0.0, 0.0])
         else:
-            r1, r2, _, phi1, phi2 = dimension
+            # Handle path-varying dimensions
+            dims = self._dimension
+            r1, r2, _, phi1, phi2 = dims.T
             alpha = np.deg2rad((phi2 - phi1) / 2)
             phi = np.deg2rad((phi1 + phi2) / 2)
             # get centroid x for unrotated annular sector
@@ -225,6 +211,44 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
                 2 / 3 * np.sin(alpha) / alpha * (r2**3 - r1**3) / (r2**2 - r1**2)
             )
             # get centroid for rotated annular sector
-            x, y, z = centroid_x * np.cos(phi), centroid_x * np.sin(phi), 0
-            centroid = np.array([x, y, z])
-        return orientation.apply(centroid) + position
+            x, y, z = (
+                centroid_x * np.cos(phi),
+                centroid_x * np.sin(phi),
+                np.zeros_like(centroid_x),
+            )
+            centroid = np.column_stack([x, y, z])
+            if centroid.shape[0] == 1:
+                centroid = centroid[0]
+        result = self._orientation.apply(centroid) + self._position
+        if squeeze and len(result) == 1:
+            return result[0]
+        return result
+
+    def _get_dipole_moment(self, squeeze=True):
+        """Magnetic moment of object in units (A*m²)."""
+        if self._magnetization is None or self._dimension is None:
+            dip = np.zeros_like(self._position)
+            if squeeze and len(dip) == 1:
+                return dip[0]
+            return dip
+
+        vols = self._get_volume(squeeze=False)
+        dipoles = self._magnetization * vols[:, np.newaxis]
+
+        if squeeze and len(dipoles) == 1:
+            return dipoles[0]
+        return dipoles
+
+    def _generate_mesh(self):
+        """Generate mesh for force computation."""
+        # Tests in getFT ensure that meshing, dimension and excitation are set
+        # Pass full path-enabled arrays (p, 5) and (p, 3)
+        return generate_mesh_cylindersegment(
+            self._dimension[:, 0],  # r1
+            self._dimension[:, 1],  # r2
+            self._dimension[:, 2],  # h
+            self._dimension[:, 3],  # phi1
+            self._dimension[:, 4],  # phi2
+            self._magnetization,
+            self.meshing,
+        )

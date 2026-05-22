@@ -15,7 +15,11 @@ from scipy.spatial.transform import Rotation
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
-from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibMissingInput
+from magpylib._src.exceptions import (
+    MagpylibBadUserInput,
+    MagpylibInternalError,
+    MagpylibMissingInput,
+)
 from magpylib._src.utility import format_obj_input, wrong_obj_msg
 
 #################################################################
@@ -26,45 +30,6 @@ from magpylib._src.utility import format_obj_input, wrong_obj_msg
 def all_same(lst: list) -> bool:
     """test if all list entries are the same"""
     return lst[1:] == lst[:-1]
-
-
-def is_array_like(inp, msg: str):
-    """test if inp is array-like: type list, tuple or ndarray
-    inp: test object
-    msg: str, error msg
-    """
-    if not isinstance(inp, list | tuple | np.ndarray):
-        raise MagpylibBadUserInput(msg)
-
-
-def make_float_array(inp, msg: str):
-    """transform inp to array with dtype=float, throw error with bad input
-    inp: test object
-    msg: str, error msg
-    """
-    try:
-        inp_array = np.array(inp, dtype=float)
-    except Exception as err:
-        raise MagpylibBadUserInput(msg + f"{err}") from err
-    return inp_array
-
-
-def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, length=None, msg=""):
-    """check if inp shape is allowed
-    inp: test object
-    dims: list, list of allowed dims
-    shape_m1: shape of lowest level, if 'any' allow any shape
-    msg: str, error msg
-    """
-    if inp.ndim in dims:
-        if length is None:
-            if inp.shape[-1] == shape_m1:
-                return
-            if shape_m1 == "any":
-                return
-        elif len(inp) == length:
-            return
-    raise MagpylibBadUserInput(msg)
 
 
 def check_input_zoom(inp):
@@ -164,6 +129,250 @@ def validate_field_func(val):
 # CHECK - FORMAT
 
 
+def match_shape(shape, pattern):
+    """
+    Return True if `shape` (tuple/list) matches `pattern` where pattern
+    elements are ints (exact), None or 'any' (wildcard matching any value),
+    and Ellipsis (...) matches any number (>=0) of elements.
+    """
+    shape = tuple(shape)
+    pattern = tuple(pattern)
+
+    def elem_matches(p, s):
+        if p is None or p == "any":
+            return True
+        return p == s
+
+    def helper(pi, si):
+        # advance while both have elements and current pattern is not Ellipsis
+        while pi < len(pattern) and si < len(shape) and pattern[pi] is not Ellipsis:
+            if not elem_matches(pattern[pi], shape[si]):
+                return False
+            pi += 1
+            si += 1
+
+        # if we've consumed the whole pattern, shape must also be consumed
+        if pi == len(pattern):
+            return si == len(shape)
+
+        # if current pattern element is Ellipsis, it can absorb 0..N elements
+        if pattern[pi] is Ellipsis:
+            # if ellipsis is the last pattern element it matches the rest (including empty)
+            if pi == len(pattern) - 1:
+                return True
+            # otherwise try all possible allocations of elements to the ellipsis (including zero)
+            next_pi = pi + 1
+            # compute how many non-ellipsis items remain after the ellipsis
+            remaining_non_ellipsis = [p for p in pattern[next_pi:] if p is not Ellipsis]
+            # maximum start index for aligning next non-ellipsis is such that enough shape elements remain
+            max_k = len(shape) - len(remaining_non_ellipsis)
+            return any(helper(next_pi, k) for k in range(si, max_k + 1))
+
+        # pattern[pi] is not Ellipsis but shape exhausted -> cannot match
+        return False
+
+    return helper(0, 0)
+
+
+def check_condition(
+    inp,
+    cond,
+    threshold,
+    name="input",
+    mode="all",
+):
+    """Check that inp satisfies condition cond with threshold.
+    cond can be one of {'eq','ne','lt','le','gt','ge'} or a callable(arr, threshold)->bool/array.
+    mode: 'all' (default) requires all elements to satisfy, 'any' requires at least one.
+    Returns inp unchanged on success, raises MagpylibBadUserInput on failure.
+    """
+
+    # build name for error messages
+    msg_name = "Input" + (f" {name}" if name is not None else "")
+    ops = {
+        "eq": np.equal,
+        "ne": np.not_equal,
+        "lt": np.less,
+        "le": np.less_equal,
+        "gt": np.greater,
+        "ge": np.greater_equal,
+    }
+
+    if isinstance(cond, str):
+        try:
+            func = ops[cond]
+        except KeyError as err:
+            msg = f"Unknown condition string {cond!r}."
+            raise MagpylibInternalError(msg) from err
+    elif callable(cond):
+        func = cond
+    else:
+        msg = (
+            f"Condition must be a string or callable; instead received {type(cond)!r}."
+        )
+        raise MagpylibInternalError(msg)
+
+    try:
+        arr = np.array(inp)
+        res = func(arr, threshold)
+    except Exception as err:
+        msg = f"Failed to evaluate condition {cond!r} on input {inp!r} with threshold {threshold!r}: {err}"
+        raise MagpylibInternalError(msg) from err
+
+    if not isinstance(res, (bool, np.bool_)):
+        if mode == "all":
+            ok = bool(np.all(res))
+        elif mode == "any":
+            ok = bool(np.any(res))
+        else:
+            msg = f"Mode must be 'all' or 'any'; instead received {mode!r}."
+            raise MagpylibInternalError(msg)
+    else:
+        ok = bool(res)
+
+    if not ok:
+        msg = (
+            f"{msg_name} must satisfy condition {cond!r} with threshold"
+            " {threshold!r} (mode={mode!r}); instead received {inp!r}."
+        )
+        raise MagpylibBadUserInput(msg)
+    return inp
+
+
+def check_format_input_numeric(
+    inp,
+    dtype,
+    shapes=None,
+    name=None,
+    allow_None=False,
+    reshape=None,
+    value_conditions=None,
+):
+    """Validate numeric input and return normalized form."""
+    if allow_None and inp is None:
+        return None
+
+    def check_conditions(array):
+        if value_conditions is not None:
+            for cond, threshold, mode in value_conditions:
+                check_condition(
+                    array,
+                    cond,
+                    threshold,
+                    name=name,
+                    mode=mode,
+                )
+        return array
+
+    # build name for error messages
+    msg_name = "Input" + (f" {name}" if name is not None else "")
+
+    dims = []
+    if shapes is None:
+        shapes = (None,)
+    shapes_clean = []
+    for shape in shapes:
+        shape_clean = None
+        if shape is None:
+            dims.append(0)
+        elif isinstance(shape, int):
+            dims.append(1)
+            shape_clean = (shape,)
+        elif isinstance(shape, (list, tuple)):
+            shape_clean = shape
+            assert all(
+                (isinstance(s, int) and s >= 0) or s is None or s is Ellipsis
+                for s in shape
+            )
+            if Ellipsis in shape:
+                dims.append(None)
+            else:
+                dims.append(len(shape))
+        else:
+            # internal check
+            msg = "shapes must be either None for scalar or a tuple for arrays"
+            raise AssertionError(msg)
+        if shape_clean is not None:
+            shapes_clean.append(shape_clean)
+    dims = tuple(dict.fromkeys(dims))
+    shapes = tuple(shapes_clean)
+
+    is_an_array = isinstance(inp, (list, tuple, np.ndarray))
+    is_a_number = isinstance(inp, numbers.Number)
+
+    # scalar case
+    if dims == (0,) and not is_a_number:
+        msg = (
+            f"{msg_name} must be a scalar of type {dtype};"
+            " instead received type {type(inp)}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+    if 0 in dims and is_a_number:
+        inp = dtype(inp)
+        if reshape is not None:
+            assert isinstance(reshape, tuple), "reshape must be a tuple"
+            inp = np.reshape(inp, reshape)
+        return check_conditions(inp)
+
+    if 0 not in dims and is_a_number:
+        dims_str = " or ".join(str(d) for d in dims)
+        msg = (
+            f"{msg_name} must be an array of dimension {dims_str};"
+            " instead received type {type(inp)}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+    # array-like case
+    if not is_an_array:
+        msg_scalar = "scalar or " if 0 in dims else ""
+        msg = (
+            f"{msg_name} must be {msg_scalar}array-like of type {dtype};"
+            " instead received type {type(inp)!r}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+    try:
+        array = np.array(inp, dtype=dtype)
+    except Exception as err:
+        msg = f"{msg_name} cannot be transformed into a numpy array. {err}"
+        raise MagpylibBadUserInput(msg) from err
+
+    if None not in dims and array.ndim not in dims:
+        msg_scalar = "scalar or " if 0 in dims else ""
+        dims_str = " or ".join(str(d) for d in dims if d != 0)
+        msg = (
+            f"{msg_name} must be {msg_scalar}array-like of dimension {dims_str};"
+            f" instead received an input of dimension {array.ndim}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+    if shapes == (None,):
+        return check_conditions(array)
+
+    shape_match = False
+    for shape in shapes:
+        if match_shape(array.shape, shape):
+            shape_match = True
+            break
+
+    if not shape_match:
+        shapes_str = " or ".join(
+            str(d).replace("Ellipsis", "...").replace("None", "any") for d in shapes
+        )
+        msg = (
+            f"{msg_name} must be of shape {shapes_str};"
+            f" instead received shape {array.shape}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+    if reshape is not None:
+        assert isinstance(reshape, tuple), "reshape must be a tuple"
+        array = np.reshape(array, reshape)
+
+    return check_conditions(array)
+
+
 def check_format_input_orientation(inp, init_format=False):
     """checks orientation input returns in formatted form
     - inp must be None or Rotation object
@@ -202,12 +411,11 @@ def check_format_input_anchor(inp):
     if isinstance(inp, numbers.Number) and inp == 0:
         return np.array((0.0, 0.0, 0.0))
 
-    return check_format_input_vector(
+    return check_format_input_numeric(
         inp,
-        dims=(1, 2),
-        shape_m1=3,
-        sig_name="anchor",
-        sig_type="None or 0 or array-like (list, tuple, ndarray) with shape (3,)",
+        dtype=float,
+        shapes=((3,), (None, 3)),
+        name="anchor",
         allow_None=True,
     )
 
@@ -234,12 +442,11 @@ def check_format_input_axis(inp):
         )
         raise MagpylibBadUserInput(msg)
 
-    inp = check_format_input_vector(
+    inp = check_format_input_numeric(
         inp,
-        dims=(1,),
-        shape_m1=3,
-        sig_name="axis",
-        sig_type="array-like (list, tuple, ndarray) with shape (3,) or one of {'x', 'y', 'z'}",
+        dtype=float,
+        shapes=((3,),),
+        name="axis",
     )
 
     if np.all(inp == 0):
@@ -261,172 +468,138 @@ def check_format_input_angle(inp):
     if isinstance(inp, numbers.Number):
         return float(inp)
 
-    return check_format_input_vector(
+    return check_format_input_numeric(
         inp,
-        dims=(1,),
-        shape_m1="any",
-        sig_name="angle",
-        sig_type="int, float, or array-like (list, tuple, ndarray) with shape (n,)",
+        dtype=float,
+        shapes=((None,),),
+        name="angle",
     )
-
-
-def check_format_input_scalar(
-    inp, sig_name, sig_type, allow_None=False, forbid_negative=False
-):
-    """check scalar input and return in formatted form
-    - must be scalar or None (if allowed)
-    - must be float compatible
-    - transform into float
-    """
-    if allow_None and inp is None:
-        return None
-
-    ERR_MSG = f"Input {sig_name} must be {sig_type}; instead received {inp!r}."
-
-    if not isinstance(inp, numbers.Number):
-        raise MagpylibBadUserInput(ERR_MSG)
-
-    inp = float(inp)
-
-    if forbid_negative and inp < 0:
-        raise MagpylibBadUserInput(ERR_MSG)
-    return inp
-
-
-def check_format_input_vector(
-    inp,
-    dims,
-    shape_m1,
-    sig_name,
-    sig_type,
-    length=None,
-    reshape=False,
-    allow_None=False,
-    forbid_negative0=False,
-):
-    """checks vector input and returns in formatted form
-    - inp must be array-like
-    - convert inp to ndarray with dtype float
-    - inp shape must be given by dims and shape_m1
-    - print error msg with signature arguments
-    - if reshape=True: returns shape (n, 3) - required for position init and setter
-    - if allow_None: return None
-    - if extend_dim_to2: add a dimension if input is only (1, 2, 3) - required for sensor pixel
-    """
-    if allow_None and inp is None:
-        return None
-
-    is_array_like(
-        inp,
-        f"Input {sig_name} must be {sig_type}; instead received type {type(inp)!r}.",
-    )
-    inp = make_float_array(
-        inp,
-        f"Input {sig_name} must contain only float compatible entries.",
-    )
-    check_array_shape(
-        inp,
-        dims=dims,
-        shape_m1=shape_m1,
-        length=length,
-        msg=(
-            f"Input {sig_name} must be {sig_type}; "
-            f"instead received array-like with shape {inp.shape}."
-        ),
-    )
-    if isinstance(reshape, tuple):
-        return np.reshape(inp, reshape)
-
-    if forbid_negative0 and np.any(inp <= 0):
-        msg = f"Input parameter {sig_name} cannot have values <= 0."
-        raise MagpylibBadUserInput(msg)
-    return inp
-
-
-def check_format_input_vector2(
-    inp,
-    shape,
-    param_name,
-):
-    """checks vector input and returns in formatted form
-    - inp must be array-like
-    - convert inp to ndarray with dtype float
-    - make sure that inp.ndim = target_ndim, None dimensions are ignored
-    """
-    is_array_like(
-        inp,
-        f"Input {param_name} must be array-like; instead received type {type(inp)!r}.",
-    )
-    inp = make_float_array(
-        inp,
-        f"Input {param_name} must contain only float compatible entries.",
-    )
-    for d1, d2 in zip(inp.shape, shape, strict=False):
-        if d2 is not None and d1 != d2:
-            msg = (
-                f"Input {param_name} must have shape {shape}; "
-                f"instead received shape {inp.shape}."
-            )
-            raise ValueError(msg)
-    return inp
 
 
 def check_format_input_vertices(inp, minlength=2):
     """checks vertices input and returns in formatted form
     - vector check with dim = (n, 3) but n must be >=2
     """
-    inp = check_format_input_vector(
+    inp = check_format_input_numeric(
         inp,
-        dims=(2,),
-        shape_m1=3,
-        sig_name="vertices",
-        sig_type="None or array-like (list, tuple, ndarray) with shape (n, 3)",
+        dtype=float,
+        shapes=((None, 3), (None, None, 3)),
+        name="vertices",
         allow_None=True,
     )
 
-    if inp is not None and inp.shape[0] < minlength:
-        msg = (
-            f"Input vertices must have at least {minlength} vertices; "
-            f"instead received {inp.shape[0]}."
-        )
-        raise MagpylibBadUserInput(msg)
+    if inp is not None:
+        # Reshape 2D to 3D: (n, 3) -> (1, n, 3)
+        if inp.ndim == 2:
+            inp = np.array([inp], dtype=float)
+
+        if inp.shape[-2] < minlength:
+            msg = (
+                f"Input vertices must have at least {minlength} vertices; "
+                f"instead received {inp.shape[0]}."
+            )
+            raise MagpylibBadUserInput(msg)
     return inp
 
 
 def check_format_input_cylinder_segment(inp):
     """checks vertices input and returns in formatted form
-    - vector check with dim = (5) or none
+    - vector check with dim = (5,) or (p, 5) or none
     - check if d1<d2, phi1<phi2
     - check if phi2-phi1 > 360
     - return error msg
     """
-    inp = check_format_input_vector(
+    inp = check_format_input_numeric(
         inp,
-        dims=(1,),
-        shape_m1=5,
-        sig_name="CylinderSegment.dimension",
-        sig_type=(
-            "array-like of the form (r1, r2, h, phi1, phi2) with 0<=r1<r2, h>0, "
-            "phi1<phi2, and phi2-phi1<=360"
-        ),
+        dtype=float,
+        shapes=((5,), (None, 5)),
+        name="CylinderSegment.dimension",
         allow_None=True,
+        reshape=(-1, 5),
     )
 
     if inp is None:
         return None
 
-    r1, r2, h, phi1, phi2 = inp
-    case2 = r1 > r2
-    case3 = phi1 > phi2
-    case4 = (phi2 - phi1) > 360
-    case5 = (r1 < 0) | (r2 <= 0) | (h <= 0)
-    if case2 | case3 | case4 | case5:
+    r1, r2, h, phi1, phi2 = inp.T
+    path_len = len(inp)
+
+    def format_index_msg(indices):
+        """Format index message: show first index and count of additional bad entries."""
+        if path_len == 1:
+            return ""
+        if len(indices) == 1:
+            return f" at index {indices[0]}"
+        return f" at index {indices[0]} (+{len(indices) - 1} more)"
+
+    # Check r1 >= 0
+    bad_idx = r1 < 0
+    if bad_idx.any():
+        indices = np.where(bad_idx)[0]
+        idx_msg = format_index_msg(indices)
         msg = (
-            f"Input CylinderSegment.dimension must be array-like of the form "
-            f"(r1, r2, h, phi1, phi2) with 0<=r1<r2, h>0, phi1<phi2 and phi2-phi1<=360; "
-            f"instead received {inp!r}."
+            f"Input CylinderSegment.dimension inner radius r1 must be >= 0; "
+            f"instead received r1={r1[indices[0]]}{idx_msg}."
         )
         raise MagpylibBadUserInput(msg)
+
+    # Check r2 > 0
+    bad_idx = r2 <= 0
+    if bad_idx.any():
+        indices = np.where(bad_idx)[0]
+        idx_msg = format_index_msg(indices)
+        msg = (
+            f"Input CylinderSegment.dimension outer radius r2 must be > 0; "
+            f"instead received r2={r2[indices[0]]}{idx_msg}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+    # Check r1 < r2
+    bad_idx = r1 >= r2
+    if bad_idx.any():
+        indices = np.where(bad_idx)[0]
+        idx_msg = format_index_msg(indices)
+        msg = (
+            f"Input CylinderSegment.dimension must have r1 < r2; "
+            f"instead received r1={r1[indices[0]]}, r2={r2[indices[0]]}{idx_msg}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+    # Check h > 0
+    bad_idx = h <= 0
+    if bad_idx.any():
+        indices = np.where(bad_idx)[0]
+        idx_msg = format_index_msg(indices)
+        msg = (
+            f"Input CylinderSegment.dimension height h must be > 0; "
+            f"instead received h={h[indices[0]]}{idx_msg}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+    # Check phi1 < phi2
+    bad_idx = phi1 >= phi2
+    if bad_idx.any():
+        indices = np.where(bad_idx)[0]
+        idx_msg = format_index_msg(indices)
+        msg = (
+            f"Input CylinderSegment.dimension must have phi1 < phi2; "
+            f"instead received phi1={phi1[indices[0]]}, phi2={phi2[indices[0]]}{idx_msg}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+    # Check phi2 - phi1 <= 360
+    bad_idx = (phi2 - phi1) > 360
+    if bad_idx.any():
+        indices = np.where(bad_idx)[0]
+        idx_msg = format_index_msg(indices)
+        span = phi2[indices[0]] - phi1[indices[0]]
+        msg = (
+            f"Input CylinderSegment.dimension angular span (phi2 - phi1) must be <= 360; "
+            f"instead received phi1={phi1[indices[0]]}, phi2={phi2[indices[0]]}, "
+            f"span={span}{idx_msg}."
+        )
+        raise MagpylibBadUserInput(msg)
+
     return inp
 
 

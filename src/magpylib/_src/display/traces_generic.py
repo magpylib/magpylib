@@ -83,17 +83,22 @@ class MagpyMarkers:
         return trace
 
 
-def update_magnet_mesh(
-    mesh_dict, mag_style=None, magnetization=None, color_slicing=False
-):
+def update_magnet_mesh(input_obj, style, mesh_dict, color_slicing=False, path_ind=None):
     """
     Updates an existing plotly mesh3d dictionary of an object which has a magnetic vector. The
     object gets colorized, positioned and oriented based on provided arguments.
     Slicing allows for Matplotlib to show colorgradients approximations by slicing the mesh into
     the colorscales colors, remesh it and merge with assigning facecolor for each part.
     """
+    mag_style = style.magnetization
     mag_color = mag_style.color
-    if magnetization is None:
+    mag_arr = input_obj._magnetization
+    if mag_arr is not None:
+        if path_ind is not None and mag_arr.shape[0] > 1:
+            magnetization = mag_arr[path_ind]
+        else:
+            magnetization = mag_arr[0]
+    else:
         magnetization = np.array([0.0, 0.0, 0.0], dtype=float)
     if mag_style.show:
         vertices = np.array([mesh_dict[k] for k in "xyz"]).T
@@ -126,7 +131,7 @@ def update_magnet_mesh(
     return mesh_dict
 
 
-def make_mag_arrows(obj):
+def make_mag_arrows(obj, path_ind=-1):
     """draw direction of magnetization of faced magnets
 
     Parameters
@@ -135,31 +140,43 @@ def make_mag_arrows(obj):
     - colors: colors of faced_objects
     - show_path(bool or int): draw on every position where object is displayed
     """
+    # TODO needs to be integragted with magmesh because of frame dependent magnetization
     # pylint: disable=protected-access
 
     # vector length, color and magnetization
+
+    mag = obj._magnetization
+    mag = np.array([[0.0, 0.0, 0.0]]) if mag is None else mag
+    mag = mag[path_ind] if mag.ndim == 2 else mag
+    if np.all(mag == 0):
+        return None
     style = obj.style
     arrow = style.magnetization.arrow
     length = 1
     color = style.color if arrow.color is None else arrow.color
     if arrow.sizemode == "scaled":
         if hasattr(obj, "diameter"):
-            length = obj.diameter  # Sphere
+            length = obj._diameter[path_ind]  # Sphere
         elif isinstance(obj, magpy.misc.Triangle):
-            length = np.amax(obj.vertices) - np.amin(obj.vertices)
+            verts = obj._vertices
+            verts = verts[path_ind] if verts.ndim == 3 else verts
+            length = np.amax(verts) - np.amin(verts)
         elif hasattr(obj, "mesh"):
-            length = np.amax(np.ptp(obj.mesh.reshape(-1, 3), axis=0))
+            mesh = obj.mesh
+            mesh = mesh[path_ind] if mesh.ndim == 4 else mesh
+            length = np.amax(np.ptp(mesh.reshape(-1, 3), axis=0))
         elif hasattr(obj, "vertices"):
-            length = np.amax(np.ptp(obj.vertices, axis=0))
+            verts = obj._vertices
+            verts = verts[path_ind] if verts.ndim == 3 else verts
+            length = np.amax(np.ptp(verts, axis=0))
         else:  # Cuboid, Cylinder, CylinderSegment
-            length = np.amax(obj.dimension[:3])
+            length = np.amax(obj._dimension[path_ind, :3])
         length *= 1.5
     length *= arrow.size
-    mag = obj.magnetization
     # collect all draw positions and directions
-    pos = getattr(obj, "_barycenter", obj._position)[0] - obj._position[0]
-    # we need initial relative barycenter, arrow gets orientated later
-    pos = obj._orientation[0].inv().apply(pos)
+    pos = getattr(obj, "_centroid", obj._position)[path_ind] - obj._position[path_ind]
+    # we need initial relative centroid, arrow gets orientated later
+    pos = obj._orientation[path_ind].inv().apply(pos)
     direc = mag / (np.linalg.norm(mag) + 1e-6) * length
     x, y, z = draw_arrowed_line(
         direc, pos, sign=1, arrow_pos=arrow.offset, pivot="tail"
@@ -514,6 +531,17 @@ def get_generic_traces3D(
         if is_frame_dependent:
             path_len = len(next(iter(field_values.values())))
             path_inds = path_frames_to_indices(style.path.frames, path_len)
+    if getattr(input_obj, "_path_properties", None):
+        for name in input_obj._path_properties:
+            # Skip position and orientation as they're handled separately
+            if name in ("position", "orientation"):
+                continue
+            prop_w_path = getattr(input_obj, f"_{name}")
+            if isinstance(prop_w_path, np.ndarray):
+                axis = None if prop_w_path.ndim <= 1 else 0
+                if np.unique(prop_w_path, axis=axis).shape[0] > 1:
+                    is_frame_dependent = True
+                    break
 
     path_traces_extra_non_generic_backend = []
     if not has_path and make_func is not None:
@@ -529,19 +557,25 @@ def get_generic_traces3D(
     def get_traces_func(**extra_kwargs):
         nonlocal is_mag
         traces_generic_temp = []
+        path_ind = extra_kwargs.get("path_ind", -1)
         if style.model3d.showdefault and make_func is not None:
             p_trs = make_func(**make_func_kwargs, **extra_kwargs)
             for p_tr_item in p_trs:
+                p_tr_item.pop("path_ind", None)
                 p_tr = p_tr_item.copy()
                 is_mag = p_tr.pop("ismagnet", is_mag)
                 if is_mag and p_tr.get("type", "") == "mesh3d":
                     p_tr = update_magnet_mesh(
+                        input_obj,
+                        style,
                         p_tr,
-                        mag_style=style.magnetization,
-                        magnetization=input_obj.magnetization,
                         color_slicing=not supports_colorgradient,
+                        path_ind=path_ind,
                     )
-
+                    if is_mag_arrows:
+                        tr_arrows = make_mag_arrows(input_obj, path_ind=path_ind)
+                        if tr_arrows is not None:
+                            traces_generic_temp.append(tr_arrows)
                 traces_generic_temp.append(p_tr)
         return traces_generic_temp
 
@@ -580,13 +614,6 @@ def get_generic_traces3D(
                     raise ValueError(msg)
                 tr_non_generic.update(linearize_dict(obj_extr_trace, separator="_"))
                 traces_generic.append(tr_non_generic)
-
-    if is_mag_arrows:
-        mag = input_obj.magnetization
-        mag = np.array([0.0, 0.0, 0.0]) if mag is None else mag
-        if not np.all(mag == 0):
-            mag_arrow_tr = make_mag_arrows(input_obj)
-            traces_generic.append(mag_arrow_tr)
 
     legend_label = get_legend_label(input_obj)
     path_traces_generic = []

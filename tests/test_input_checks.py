@@ -8,8 +8,58 @@ from magpylib._src.exceptions import (
     MagpylibMissingInput,
 )
 from magpylib._src.fields.field_BH_dipole import _BHJM_dipole
+from magpylib._src.input_checks import match_shape
 
 # pylint: disable=unnecessary-lambda-assignment
+
+# UTILITY
+
+
+@pytest.mark.parametrize(
+    ("shp", "pat"),
+    [
+        pytest.param((2, 4), (None, 4), id="wildcard-last-4"),
+        pytest.param((2, 4), (Ellipsis, 4), id="ellipsis-leading-4"),
+        pytest.param((2, 4), (None, Ellipsis, 4), id="ellipsis-middle-4"),
+        pytest.param((2, 4), (2, 4), id="exact-2x4"),
+        pytest.param((2, 3, 4), (None, None, None), id="all-wildcards-3d"),
+        pytest.param((2, 3, 4), (None, Ellipsis), id="trailing-ellipsis-3d"),
+        pytest.param((), (Ellipsis,), id="empty-shape-ellipsis"),
+        # Additional edge cases
+        pytest.param((2, 4), (Ellipsis, 2, 4), id="ellipsis-zero-leading"),
+        pytest.param((2, 3, 4), (Ellipsis, 3, Ellipsis), id="multi-ellipsis"),
+        pytest.param((2, 3, 4), (Ellipsis, Ellipsis, 4), id="consecutive-ellipsis"),
+        pytest.param((1, 2, 3, 4), (Ellipsis, 3, 4), id="ellipsis-align-tail"),
+        pytest.param((1, 2, 3, 4), (1, Ellipsis, 4), id="ellipsis-middle-align"),
+        pytest.param((2, 4), ("any", 4), id="string-any-wildcard"),
+        pytest.param((), (), id="empty-pattern-and-shape"),
+        pytest.param((1, 2, 3, 4, 5), (Ellipsis, 4, 5), id="long-shape-ellipsis-align"),
+    ],
+)
+def test_shape_match_true(shp, pat):
+    """These cases must return True"""
+    assert match_shape(shp, pat) is True
+
+
+@pytest.mark.parametrize(
+    ("shp", "pat"),
+    [
+        pytest.param((2, 4), (None, None, 4), id="pattern-longer-no-ellipsis"),
+        pytest.param((2, 4), (None, 3), id="last-dim-mismatch"),
+        pytest.param((2, 4), (2, 4, 5), id="extra-required-element"),
+        pytest.param((2, 3), (None, None, None), id="shorter-than-pattern"),
+        pytest.param((1,), (Ellipsis, 2), id="ellipsis-followed-by-literal-mismatch"),
+        # Additional failing edge cases
+        pytest.param((1,), (), id="empty-pattern-nonempty-shape-fail"),
+        pytest.param((), (Ellipsis, 1), id="empty-shape-ellipsis-then-literal-fail"),
+        pytest.param((2,), (2, 3), id="literal-pattern-longer-fail"),
+        pytest.param((2, 3, 4), (None, 3, 5), id="middle-literal-mismatch"),
+    ],
+)
+def test_shape_match_false(shp, pat):
+    """These cases must return False"""
+    assert match_shape(shp, pat) is False
+
 
 ###########################################################
 ###########################################################
@@ -207,7 +257,7 @@ def test_input_objects_diameter_good(diameter):
 @pytest.mark.parametrize(
     "diameter",
     [
-        (1, 2),
+        # (1, 2),  # paths now allowed
         [(1, 2, 3, 4)] * 2,
         "x",
         ["x", "y", "z"],
@@ -249,7 +299,7 @@ def test_input_objects_vertices_good(vertices):
     [
         (1, 2),
         [(1, 2, 3, 4)] * 2,
-        [(1, 2, 3)],
+        # [(1, 2, 3)],  # paths now allowed
         "x",
         ["x", "y", "z"],
         {"woot": 15},
@@ -297,8 +347,6 @@ def test_input_objects_magnetization_moment_good(pol_or_mom):
     [
         (1, 2),
         [1, 2, 3, 4],
-        [(1, 2, 3)] * 2,
-        np.array([(1, 2, 3)] * 2),
         "x",
         ["x", "y", "z"],
         {"woot": 15},
@@ -346,8 +394,6 @@ def test_input_objects_dimension_cuboid_good(dimension):
         (0, 1, 2),
         (1, 2),
         [1, 2, 3, 4],
-        [(1, 2, 3)] * 2,
-        np.array([(1, 2, 3)] * 2),
         "x",
         ["x", "y", "z"],
         {"woot": 15},
@@ -388,8 +434,6 @@ def test_input_objects_dimension_cylinder_good(dimension):
         (0, 1),
         (1,),
         [1, 2, 3],
-        [(1, 2)] * 2,
-        np.array([(2, 3)] * 2),
         "x",
         ["x", "y"],
         {"woot": 15},
@@ -438,8 +482,6 @@ def test_input_objects_dimension_cylinderSegment_good(dimension):
         (1, 2, 0, 4, 5),
         (1, 2, -1, 4, 5),
         (1, 2, 3, 5, 4),
-        [(1, 2, 3, 4, 5)] * 2,
-        np.array([(1, 2, 3, 4, 5)] * 2),
         "x",
         ["x", "y", "z", 1, 2],
         {"woot": 15},

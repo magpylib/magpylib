@@ -8,14 +8,14 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Cuboid
 from magpylib._src.fields.field_BH_cuboid import _BHJM_magnet_cuboid
-from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import (
     BaseDipoleMoment,
     BaseVolume,
 )
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
-from magpylib._src.obj_classes.target_meshing import _target_mesh_cuboid
+from magpylib._src.obj_classes.target_meshing import generate_mesh_cuboid
 from magpylib._src.utility import unit_prefix
 
 
@@ -39,12 +39,12 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    dimension : None | array-like, shape (3,), default None
+    dimension : None | array-like, shape (3,) or (p, 3), default None
         Lengths of the cuboid sides (a, b, c) in units (m).
-    polarization : None | array-like, shape (3,), default None
+    polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
-    magnetization : None | array-like, shape (3,), default None
+    magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
     meshing : None | int | array-like, shape (3,), default None
@@ -61,25 +61,24 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    dimension : None | ndarray, shape (3,)
+    dimension : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``dimension``.
-    polarization : None | ndarray, shape (3,)
+    polarization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``polarization``.
-    magnetization : None | ndarray, shape (3,)
+    magnetization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``magnetization``.
     meshing : int | None
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
-        Can be a path.
-    dipole_moment : ndarray, shape (3,)
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
-    volume : float
+    volume : float | ndarray, shape (p,)
         Read-only. Object physical volume in units (m³).
-    parent : Collection or None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : MagnetStyle
+        Object style. See MagnetStyle for details.
 
     Notes
     -----
@@ -107,6 +106,7 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         "polarization": 2,
         "dimension": 2,
     }
+    _path_properties = ("dimension",)  # also inherits from parent class
     get_trace = make_Cuboid
 
     def __init__(
@@ -120,22 +120,23 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.dimension = dimension
-
-        # init inheritance
         super().__init__(
-            position, orientation, magnetization, polarization, style, **kwargs
+            position,
+            orientation,
+            magnetization=magnetization,
+            polarization=polarization,
+            dimension=dimension,
+            style=style,
+            **kwargs,
         )
 
-        # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
     def dimension(self):
         """Cuboid side lengths (a, b, c) in units (m)."""
-        return self._dimension
+        return np.squeeze(self._dimension) if self._dimension is not None else None
 
     @dimension.setter
     def dimension(self, dim):
@@ -143,17 +144,17 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
         Parameters
         ----------
-        dim : None or array-like, shape (3,)
+        dim : None or array-like, shape (3,) or (p, 3)
             Side lengths (a, b, c) in units (m).
         """
-        self._dimension = check_format_input_vector(
+        self._dimension = check_format_input_numeric(
             dim,
-            dims=(1,),
-            shape_m1=3,
-            sig_name="Cuboid.dimension",
-            sig_type="array-like (list, tuple, ndarray) of shape (3,) with positive values",
+            dtype=float,
+            shapes=((3,), (None, 3)),
+            name="Cuboid.dimension",
             allow_None=True,
-            forbid_negative0=True,
+            reshape=(-1, 3),
+            value_conditions=[("gt", 0, "all")],
         )
 
     @property
@@ -161,15 +162,34 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         """Default style description text"""
         if self.dimension is None:
             return "no dimension"
-        d = [unit_prefix(d) for d in self.dimension]
-        return f"{d[0]}m|{d[1]}m|{d[2]}m"
+        # Handle path dimensions similar to BaseCurrent
+        dims = self._dimension
+        if len(dims) == 1 or np.all(dims == dims[0], axis=0).all():
+            # Single dimension or all dimensions are the same
+            d = [unit_prefix(v) for v in dims[0]]
+            return f"{d[0]}m|{d[1]}m|{d[2]}m"
+        # Multiple different dimensions - show range only for varying axes
+        dmin, dmax = np.nanmin(dims, axis=0), np.nanmax(dims, axis=0)
+        parts = []
+        for i in range(3):
+            if np.allclose(dmin[i], dmax[i]):
+                # No variation in this dimension
+                parts.append(f"{unit_prefix(dmin[i])}m")
+            else:
+                # Variation in this dimension
+                parts.append(f"{unit_prefix(dmin[i])}m↔{unit_prefix(dmax[i])}m")
+        return "|".join(parts)
 
     # Methods
-    def _get_volume(self):
+    def _get_volume(self, squeeze=True):
         """Volume of object in units (m³)."""
-        if self.dimension is None:
-            return 0.0
-        return np.prod(self.dimension)
+        if self._dimension is None:
+            return 0.0 if squeeze else np.array([0.0])
+
+        vols = np.prod(self._dimension, axis=1)
+        if squeeze and len(vols) == 1:
+            return float(vols[0])
+        return vols
 
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
@@ -177,16 +197,22 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             return self.position
         return self._position
 
-    def _get_dipole_moment(self):
+    def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
-        # test init
-        if self.magnetization is None or self.dimension is None:
-            return np.array((0.0, 0.0, 0.0))
-        return self.magnetization * self.volume
+        if self._magnetization is None or self._dimension is None:
+            dip = np.zeros_like(self._position)
+            if squeeze and len(dip) == 1:
+                return dip[0]
+            return dip
+        vols = self._get_volume(squeeze=False)
+        dipoles = self._magnetization * vols[:, np.newaxis]
+        if squeeze and len(dipoles) == 1:
+            return dipoles[0]
+        return dipoles
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        return _target_mesh_cuboid(self.meshing, self.dimension, self.magnetization)
+        return generate_mesh_cuboid(self._dimension, self._magnetization, self.meshing)
 
     def _validate_meshing(self, value):
         """Cuboid meshing must be a positive integer or array-like of shape (3,)."""

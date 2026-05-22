@@ -8,7 +8,7 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Sphere
 from magpylib._src.fields.field_BH_sphere import _BHJM_magnet_sphere
-from magpylib._src.input_checks import check_format_input_scalar
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import (
     BaseDipoleMoment,
@@ -36,12 +36,12 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    diameter : float | None, default None
+    diameter : float | array-like, shape (p,), default None
         Diameter of the sphere in units (m).
-    polarization : None | array-like, shape (3,), default None
+    polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
-    magnetization : None | array-like, shape (3,), default None
+    magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
     style : dict | None, default None
@@ -54,21 +54,22 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    polarization : None | ndarray, shape (3,)
+    diameter : None | float | ndarray, shape (p,)
+        Same as constructor parameter ``diameter``.
+    polarization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``polarization``.
-    magnetization : None | ndarray, shape (3,)
+    magnetization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``magnetization``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
-        Can be a path.
     dipole_moment : ndarray, shape (3,)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
-    volume : float
+    volume : float | ndarray, shape (p,) | ndarray, shape (p,)
         Read-only. Object physical volume in units (m³).
-    parent : Collection or None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : MagnetStyle
+        Object style. See MagnetStyle for details.
 
     Examples
     --------
@@ -91,6 +92,7 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
         "polarization": 2,
         "diameter": 1,
     }
+    _path_properties = ("diameter",)  # also inherits from parent class
     get_trace = make_Sphere
 
     def __init__(
@@ -103,19 +105,27 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.diameter = diameter
-
-        # init inheritance
         super().__init__(
-            position, orientation, magnetization, polarization, style, **kwargs
+            position,
+            orientation,
+            magnetization=magnetization,
+            polarization=polarization,
+            diameter=diameter,
+            style=style,
+            **kwargs,
         )
 
     # Properties
     @property
     def diameter(self):
         """Diameter of the sphere in units (m)."""
-        return self._diameter
+        return (
+            None
+            if self._diameter is None
+            else self._diameter[0]
+            if len(self._diameter) == 1
+            else self._diameter
+        )
 
     @diameter.setter
     def diameter(self, dia):
@@ -123,15 +133,17 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
 
         Parameters
         ----------
-        dia : None or float
-            Diameter in units (m).
+        dia : None or float or array-like, shape (p,)
+            Diameter in units (m). Can be a scalar or array for path-varying diameter.
         """
-        self._diameter = check_format_input_scalar(
+        self._diameter = check_format_input_numeric(
             dia,
-            sig_name="diameter",
-            sig_type="None or a positive number (int, float)",
+            dtype=float,
+            shapes=(None, (None,)),
+            name="diameter",
             allow_None=True,
-            forbid_negative=True,
+            reshape=(-1,),
+            value_conditions=[("gt", 0, "all")],
         )
 
     @property
@@ -139,15 +151,20 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
         """Default style description text"""
         if self.diameter is None:
             return "no dimension"
-        return f"D={unit_prefix(self.diameter)}m"
+        if len(self._diameter) == 1:
+            return f"D={unit_prefix(self._diameter[0])}m"
+        return f"D={unit_prefix(self._diameter.min())}m↔{unit_prefix(self._diameter.max())}m"
 
     # Methods
-    def _get_volume(self):
+    def _get_volume(self, squeeze=True):
         """Volume of object in units (m³)."""
-        if self.diameter is None:
-            return 0.0
+        if self._diameter is None:
+            return 0.0 if squeeze else np.array([0.0])
 
-        return self.diameter**3 * np.pi / 6
+        vols = self._diameter**3 * np.pi / 6
+        if squeeze and len(vols) == 1:
+            return float(vols[0])
+        return vols
 
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
@@ -155,15 +172,41 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
             return self.position
         return self._position
 
-    def _get_dipole_moment(self):
+    def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
-        # test init
-        if self.magnetization is None or self.diameter is None:
-            return np.array((0.0, 0.0, 0.0))
-        return self.magnetization * self.volume
+        if self._magnetization is None or self._diameter is None:
+            dip = np.zeros_like(self._position)
+            if squeeze and len(dip) == 1:
+                return dip[0]
+            return dip
+
+        vols = self._get_volume(squeeze=False)
+        dipoles = self._magnetization * vols[:, np.newaxis]
+
+        if squeeze and len(dipoles) == 1:
+            return dipoles[0]
+        return dipoles
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        points = np.array([(0, 0, 0)])
-        moments = np.array([self.volume * self.magnetization])
+        volume = self._get_volume(squeeze=False)
+
+        # Check for path-varying parameters
+        p_len = len(volume)
+        has_path_varying = (np.unique(volume).shape[0] > 1) or (
+            np.unique(self._magnetization, axis=0).shape[0] > 1
+        )
+
+        if has_path_varying:
+            # Path-varying: shape (p, 1, 3)
+            points = np.zeros((p_len, 1, 3))
+            moments = (
+                volume[:, np.newaxis, np.newaxis]
+                * self._magnetization[:, np.newaxis, :]
+            )
+        else:
+            # No path variation: shape (1, 3)
+            points = np.array([(0, 0, 0)])
+            moments = np.array([volume[0] * self._magnetization[0]])
+
         return {"pts": points, "moments": moments}

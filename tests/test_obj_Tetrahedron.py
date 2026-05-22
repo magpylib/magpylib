@@ -43,7 +43,6 @@ def test_tetra_input():
     "vertices",
     [
         1,
-        [[(1, 1, -1), (1, 1, 1), (-1, 1, 1), (1, -1, 1)]] * 2,
         [(1, 1, -1), (1, 1, 1), (-1, 1, 1)],
         "123",
     ],
@@ -55,12 +54,12 @@ def test_tetra_bad_inputs(vertices):
         magpy.magnet.Tetrahedron(polarization=(0.111, 0.222, 0.333), vertices=vertices)
 
 
-def test_tetra_barycenter():
-    """get barycenter"""
+def test_tetra_centroid():
+    """get centroid"""
     pol = (0.111, 0.222, 0.333)
     vert = [(1, 1, -1), (1, 1, 1), (-1, 1, 1), (1, -1, 1)]
     tetra = magpy.magnet.Tetrahedron(polarization=pol, vertices=vert)
-    np.testing.assert_allclose(tetra.barycenter, (0.5, 0.5, 0.5))
+    np.testing.assert_allclose(tetra.centroid, (0.5, 0.5, 0.5))
 
 
 def test_tetra_in_out():
@@ -91,11 +90,11 @@ def test_Tetrahedron_volume():
 
 
 def test_Tetrahedron_centroid():
-    """Test Tetrahedron centroid - should return barycenter if available"""
+    """Test Tetrahedron centroid - should return centroid if available"""
     tetrahedron = magpy.magnet.Tetrahedron(
         vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)],
         polarization=(0, 0, 1),
         position=(5, 6, 7),
     )
-    expected = (5.25, 6.25, 7.25)  # barycenter offset from position
+    expected = (5.25, 6.25, 7.25)  # centroid offset from position
     assert np.allclose(tetrahedron.centroid, expected)

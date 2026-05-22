@@ -23,8 +23,7 @@ from magpylib._src.fields.field_BH_triangularmesh import (
     _get_open_edges,
 )
 from magpylib._src.input_checks import (
-    check_format_input_vector,
-    check_format_input_vector2,
+    check_format_input_numeric,
 )
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import (
@@ -34,7 +33,7 @@ from magpylib._src.obj_classes.class_BaseProperties import (
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
-from magpylib._src.obj_classes.target_meshing import _target_mesh_triangularmesh
+from magpylib._src.obj_classes.target_meshing import generate_mesh_triangularmesh
 from magpylib._src.style import TriangularMeshStyle
 
 
@@ -57,15 +56,15 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    vertices : array-like, shape (n, 3), default None
+    vertices : array-like, shape (n, 3) or (p, n, 3), default None
         Points in units (m) in the local object coordinates from which the triangular
         faces of the mesh are constructed by the additional ``faces`` input.
     faces : array-like, shape (n, 3), default None
         Triplets of vertex indices. Each triplet represents one triangle of the mesh.
-    polarization : None | array-like, shape (3,), default None
+    polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
-    magnetization : None | array-like, shape (3,), default None
+    magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
     meshing : int | None, default None
@@ -94,26 +93,26 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    vertices : ndarray, shape (n, 3)
+    vertices : ndarray, shape (n, 3) or (p, n, 3)
         Same as constructor parameter ``vertices``.
     faces : ndarray, shape (n, 3)
         Same as constructor parameter ``faces``.
-    polarization : None | ndarray, shape (3,)
+    polarization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``polarization``.
-    magnetization : None | ndarray, shape (3,)
+    magnetization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``magnetization``.
     meshing : int | None
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid.
-    dipole_moment : ndarray, shape (3,)
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
-    volume : float
+    volume : float | ndarray, shape (p,)
         Read-only. Object physical volume in units (m³).
-    parent : Collection | None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
+    style : TriangularMeshStyle
+        Object style. See TriangularMeshStyle for details.
 
     Notes
     -----
@@ -138,10 +137,15 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     """
 
     _field_func = staticmethod(_BHJM_magnet_trimesh)
-    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"polarization": 2, "mesh": 3}
+    _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {
+        "polarization": 2,
+        "vertices": 3,
+        "faces": 3,
+    }
     _force_type = "magnet"
     get_trace = make_TriangularMesh
     _style_class = TriangularMeshStyle
+    _path_properties = ("vertices",)
 
     def __init__(
         self,
@@ -175,7 +179,12 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
         # inherit
         super().__init__(
-            position, orientation, magnetization, polarization, style, **kwargs
+            position,
+            orientation,
+            magnetization=magnetization,
+            polarization=polarization,
+            style=style,
+            **kwargs,
         )
         # Initialize BaseTarget with meshing parameter
         BaseTarget.__init__(self, meshing=meshing)
@@ -183,18 +192,53 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     # Properties
     @property
     def vertices(self):
-        """Mesh vertices"""
+        """Mesh vertices in local object coordinates in units (m)."""
+        if self._vertices.shape[0] == 1:
+            return self._vertices[0]
         return self._vertices
+
+    @vertices.setter
+    def vertices(self, val):
+        """Set mesh vertices.
+
+        Parameters
+        ----------
+        val : array-like, shape (n, 3) or (p, n, 3)
+            Mesh vertices in local object coordinates in units (m).
+        """
+        self._vertices, self._faces = self._input_check(val, self._faces)
+        self._status_disconnected = None
+        self._status_open = None
+        self._status_reoriented = False
+        self._status_selfintersecting = None
 
     @property
     def faces(self):
-        """Mesh faces"""
+        """Mesh faces indices."""
         return self._faces
+
+    @faces.setter
+    def faces(self, val):
+        """Set mesh faces indices.
+
+        Parameters
+        ----------
+        val : array-like, shape (n, 3)
+            Triplets of vertex indices.
+        """
+        self._vertices, self._faces = self._input_check(self._vertices, val)
+        self._status_disconnected = None
+        self._status_open = None
+        self._status_reoriented = False
+        self._status_selfintersecting = None
 
     @property
     def mesh(self):
-        """Mesh"""
-        return self._vertices[self._faces]
+        """Mesh points of shape (n, 3, 3) or (p, n, 3, 3)."""
+        mesh = self._vertices[:, self._faces]
+        if mesh.shape[0] == 1:
+            return mesh[0]
+        return mesh
 
     @property
     def status_open(self):
@@ -212,7 +256,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         return self._status_reoriented
 
     # Methods
-    def _get_volume(self):
+    def _get_volume(self, squeeze=True):
         """Volume of object in units (m³).
 
         Based on algorithm from: https://n-e-r-v-o-u-s.com/blog/?p=4415
@@ -220,9 +264,14 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         to triangle using: V = (1/6) * (v1 x v2) . v3
         Sum all signed volumes to get total mesh volume.
 
+        Parameters
+        ----------
+        squeeze : bool, default True
+            If True and the result is a single value, return a scalar instead of a 1-element array.
+
         Returns
         -------
-        float
+        float or ndarray
             Volume in units (m³).
         """
         if self._vertices is None or self._faces is None:
@@ -234,52 +283,53 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             raise ValueError(msg)
 
         # Vectorized calculation: get all triangle vertices at once
-        # Shape: (n_faces, 3, 3) where each face has 3 vertices with 3 coordinates
+        # Shape: (n_faces, 3, 3) or (p, n_faces, 3, 3)
         triangles = self.mesh
 
-        # Extract vertex arrays: v1, v2, v3 for all triangles
-        # Shape: (n_faces, 3) for each vertex array
-        v1 = triangles[:, 0]  # First vertex of each triangle
-        v2 = triangles[:, 1]  # Second vertex of each triangle
-        v3 = triangles[:, 2]  # Third vertex of each triangle
-
-        # Vectorized cross product: v1 x v2 for all triangles
-        # Shape: (n_faces, 3)
+        v1 = triangles[..., 0, :]
+        v2 = triangles[..., 1, :]
+        v3 = triangles[..., 2, :]
         cross_products = np.cross(v1, v2)
-
-        # Vectorized dot product: (v1 x v2) . v3 for all triangles
-        # Shape: (n_faces,)
-        dot_products = np.sum(cross_products * v3, axis=1)
-
-        # Calculate signed volumes and sum them
+        dot_products = np.sum(cross_products * v3, axis=-1)
         signed_volumes = dot_products / 6.0
-        total_volume = np.sum(signed_volumes)
-
-        # Return absolute value to get positive volume
-        return abs(total_volume)
+        total_volume = np.atleast_1d(np.sum(signed_volumes, axis=-1))
+        abs_volume = np.abs(total_volume)
+        if squeeze and len(abs_volume) == 1:
+            return abs_volume[0]
+        return abs_volume
 
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
-        if squeeze:
-            return self.barycenter
-        return self._barycenter
+        if self._vertices is None:
+            centroid = np.array([0.0, 0.0, 0.0])
+        else:
+            centroid = _calculate_centroid(self._vertices, self._faces)
 
-    def _get_dipole_moment(self):
+        result = self._orientation.apply(centroid) + self._position
+        if squeeze and len(result) == 1:
+            return result[0]
+        return result
+
+    def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
         # test init
-        if self.magnetization is None or self.vertices is None or self.faces is None:
+        if self._magnetization is None or self._vertices is None or self._faces is None:
             return np.array((0.0, 0.0, 0.0))
-        return self.magnetization * self.volume
+        volume = self._get_volume(squeeze=False)
+        dipoles = self._magnetization * volume[:, np.newaxis]
+        if squeeze and len(dipoles) == 1:
+            return dipoles[0]
+        return dipoles
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
         # Tests in getFT ensure that meshing, dimension and excitation are set
-        return _target_mesh_triangularmesh(
-            self.vertices,
-            self.faces,
+        return generate_mesh_triangularmesh(
+            self._vertices,
+            self._faces,
+            self._get_volume(squeeze=False),
+            self._magnetization,
             self.meshing,
-            self.volume,
-            self.magnetization,
         )
 
     @staticmethod
@@ -427,7 +477,10 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
                 elif mode == "raise":
                     raise ValueError(msg)
 
-            self._faces = _fix_trimesh_orientation(self._vertices, self._faces)
+            verts = self._vertices
+            if verts.ndim == 3:
+                verts = verts[0]
+            self._faces = _fix_trimesh_orientation(verts, self._faces)
             self._status_reoriented = True
 
     def get_faces_subsets(self):
@@ -474,9 +527,24 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             Indices of potentially self-intersecting faces.
         """
         if self._status_selfintersecting_data is None:
-            self._status_selfintersecting_data = _get_intersecting_triangles(
-                self._vertices, self._faces
-            )
+            verts = self._vertices
+            if verts.ndim == 3:
+                # Check all path steps for self-intersection
+                intersecting_indices = []
+                for v in verts:
+                    inds = _get_intersecting_triangles(v, self._faces)
+                    if len(inds) > 0:
+                        intersecting_indices.append(inds)
+                if intersecting_indices:
+                    self._status_selfintersecting_data = np.unique(
+                        np.concatenate(intersecting_indices)
+                    )
+                else:
+                    self._status_selfintersecting_data = np.array([], dtype=int)
+            else:
+                self._status_selfintersecting_data = _get_intersecting_triangles(
+                    verts, self._faces
+                )
         return self._status_selfintersecting_data
 
     @property
@@ -499,28 +567,6 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         """return self-intersecting faces"""
         return self._status_selfintersecting_data
 
-    @property
-    def _barycenter(self):
-        """Object barycenter."""
-        return self._get_barycenter(
-            self._position, self._orientation, self._vertices, self._faces
-        )
-
-    @property
-    def barycenter(self):
-        """Object barycenter."""
-        return np.squeeze(self._barycenter)
-
-    @staticmethod
-    def _get_barycenter(position, orientation, vertices, faces):
-        """Returns the barycenter of a tetrahedron."""
-        centroid = (
-            np.array([0.0, 0.0, 0.0])
-            if vertices is None
-            else _calculate_centroid(vertices, faces)
-        )
-        return orientation.apply(centroid) + position
-
     def _input_check(self, vertices, faces):
         """input checks here ?"""
         # no. vertices must exceed largest triangle index
@@ -533,25 +579,24 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         if faces is None:
             msg = f"Input faces of {self!r} must be set."
             raise MagpylibMissingInput(msg)
-        verts = check_format_input_vector(
+        verts = check_format_input_numeric(
             vertices,
-            dims=(2,),
-            shape_m1=3,
-            sig_name="TriangularMesh.vertices",
-            sig_type="array-like (list, tuple, ndarray) of shape (n, 3)",
+            dtype=float,
+            shapes=((None, 3), (None, None, 3)),
+            name="TriangularMesh.vertices",
         )
-        trias = check_format_input_vector(
+        if verts.ndim == 2:
+            verts = verts[np.newaxis, :, :]
+        trias = check_format_input_numeric(
             faces,
-            dims=(2,),
-            shape_m1=3,
-            sig_name="TriangularMesh.faces",
-            sig_type="array-like (list, tuple, ndarray) of shape (n, 3)",
-        ).astype(int)
-        try:
-            verts[trias]
-        except IndexError as e:
+            dtype=int,
+            shapes=((None, 3),),
+            name="TriangularMesh.faces",
+        )
+
+        if trias.max() >= verts.shape[-2] or trias.min() < -verts.shape[-2]:
             msg = "Some faces indices do not match the vertices array."
-            raise IndexError(msg) from e
+            raise IndexError(msg)
         return verts, trias
 
     def to_TriangleCollection(self):
@@ -771,10 +816,11 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         TriangularMesh
             New magnet instance defined by the provided ``mesh``.
         """
-        mesh = check_format_input_vector2(
+        mesh = check_format_input_numeric(
             mesh,
-            shape=[None, 3, 3],
-            param_name="mesh",
+            dtype=float,
+            shapes=((None, 3, 3),),
+            name="mesh",
         )
         vertices, tr = np.unique(mesh.reshape((-1, 3)), axis=0, return_inverse=True)
         faces = tr.reshape((-1, 3))

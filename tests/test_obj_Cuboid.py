@@ -168,7 +168,7 @@ def test_Cuboid_volume():
 
 
 def test_Cuboid_centroid():
-    """Test Cuboid centroid - should return position (no barycenter)"""
+    """Test Cuboid centroid - should return position"""
     expected = (1, 2, 3)
     cuboid = magpy.magnet.Cuboid(
         dimension=(1, 2, 3), polarization=(0, 0, 1), position=expected

@@ -8,14 +8,14 @@ import numpy as np
 
 from magpylib._src.display.traces_core import make_Tetrahedron
 from magpylib._src.fields.field_BH_tetrahedron import _BHJM_magnet_tetrahedron
-from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import (
     BaseDipoleMoment,
     BaseVolume,
 )
 from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
-from magpylib._src.obj_classes.target_meshing import _target_mesh_tetrahedron
+from magpylib._src.obj_classes.target_meshing import generate_mesh_tetrahedron
 
 
 class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
@@ -27,7 +27,7 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     When ``position=(0, 0, 0)`` and ``orientation=None`` the Tetrahedron vertex coordinates
     are the same as in the global coordinate system. The geometric center of the Tetrahedron
     is determined by its vertices and is not necessarily located in the origin. It can be
-    computed with the ``barycenter`` property.
+    computed with the ``centroid`` property.
 
     SI units are used for all inputs and outputs.
 
@@ -36,17 +36,17 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     position : array-like, shape (3,) or (p, 3), default (0, 0, 0)
         Object position(s) in global coordinates in units (m). ``position`` and
         ``orientation`` attributes define the object path. When setting ``vertices``,
-        the initial position is set to the barycenter.
+        the initial position is set to the centroid.
     orientation : Rotation | None, default None
         Object orientation(s) in global coordinates as a scipy Rotation. Rotation can
         have length 1 or p. ``None`` generates a unit-rotation.
-    vertices : None | array-like, shape (4, 3), default None
+    vertices : None | array-like, shape (4, 3) or (p, 4, 3), default None
         Vertices ``[(x1, y1, z1), (x2, y2, z2), (x3, y3, z3), (x4, y4, z4)]`` in the
         local object coordinates.
-    polarization : None | array-like, shape (3,), default None
+    polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
-    magnetization : None | array-like, shape (3,), default None
+    magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
     meshing : int | None, default None
@@ -62,27 +62,24 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``position``.
     orientation : Rotation
         Same as constructor parameter ``orientation``.
-    vertices : ndarray, shape (4, 3)
+    vertices : ndarray, shape (4, 3) or (p, 4, 3)
         Same as constructor parameter ``vertices``.
-    polarization : None | ndarray, shape (3,)
+    polarization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``polarization``.
-    magnetization : None | ndarray, shape (3,)
+    magnetization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``magnetization``.
     meshing : int | None
         Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
-        Can be a path.
-    dipole_moment : ndarray, shape (3,)
+    dipole_moment : ndarray, shape (3,) or (p, 3)
         Read-only. Object dipole moment (A·m²) in local object coordinates.
-    volume : float
+    volume : float | ndarray, shape (p,)
         Read-only. Object physical volume in units (m³).
-    parent : Collection or None
+    parent : None | Collection
         Parent collection of the object.
-    style : dict
-        Style dictionary defining visual properties.
-    barycenter : ndarray, shape (3,)
-        Read-only. Geometric barycenter (= center of mass) of the object.
+    style : MagnetStyle
+        Object style. See MagnetStyle for details.
 
     Notes
     -----
@@ -111,6 +108,7 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         "polarization": 1,
         "vertices": 3,
     }
+    _path_properties = ("vertices",)  # also inherits from parent class
     get_trace = make_Tetrahedron
 
     def __init__(
@@ -124,22 +122,29 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.vertices = vertices
-
-        # init inheritance
         super().__init__(
-            position, orientation, magnetization, polarization, style, **kwargs
+            position,
+            orientation,
+            magnetization=magnetization,
+            polarization=polarization,
+            vertices=vertices,
+            style=style,
+            **kwargs,
         )
 
-        # Initialize BaseTarget
         BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
     def vertices(self):
         """Tetrahedron vertices in local object coordinates."""
-        return self._vertices
+        return (
+            None
+            if self._vertices is None
+            else self._vertices[0]
+            if len(self._vertices) == 1
+            else self._vertices
+        )
 
     @vertices.setter
     def vertices(self, dim):
@@ -147,28 +152,17 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
         Parameters
         ----------
-        dim : None or array-like, shape (4, 3)
+        dim : None or array-like, shape (4, 3) or (p, 4, 3)
             Vertices in local object coordinates in units (m).
         """
-        self._vertices = check_format_input_vector(
+        self._vertices = check_format_input_numeric(
             dim,
-            dims=(2,),
-            shape_m1=3,
-            length=4,
-            sig_name="Tetrahedron.vertices",
-            sig_type="array-like (list, tuple, ndarray) of shape (4, 3)",
+            dtype=float,
+            shapes=((4, 3), (None, 4, 3)),
+            name="Tetrahedron.vertices",
             allow_None=True,
+            reshape=(-1, 4, 3),
         )
-
-    @property
-    def _barycenter(self):
-        """Object barycenter."""
-        return self._get_barycenter(self._position, self._orientation, self.vertices)
-
-    @property
-    def barycenter(self):
-        """Object barycenter."""
-        return np.squeeze(self._barycenter)
 
     @property
     def _default_style_description(self):
@@ -178,43 +172,55 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         return ""
 
     # Methods
-    def _get_volume(self):
+    def _get_volume(self, squeeze=True):
         """Volume of object in units (m³)."""
-        if self.vertices is None:
-            return 0.0
+        if self._vertices is None:
+            return 0.0 if squeeze else np.array([0.0])
 
-        # Tetrahedron volume formula: |det(B-A, C-A, D-A)| / 6
-        vertices = self.vertices
-        v1 = vertices[1] - vertices[0]  # B - A
-        v2 = vertices[2] - vertices[0]  # C - A
-        v3 = vertices[3] - vertices[0]  # D - A
+        verts = self._vertices  # shape (p, 4, 3)
+        # v1, v2, v3 shapes: (p, 3)
+        v1 = verts[:, 1] - verts[:, 0]
+        v2 = verts[:, 2] - verts[:, 0]
+        v3 = verts[:, 3] - verts[:, 0]
 
-        # Create 3x3 matrix and compute determinant
-        matrix = np.column_stack([v1, v2, v3])
-        return abs(np.linalg.det(matrix)) / 6.0
+        # Build per-path 3x3 matrices: shape (p, 3, 3)
+        matrices = np.stack([v1, v2, v3], axis=1)
+        dets = np.linalg.det(matrices)
+        vols = np.abs(dets) / 6.0
+        if squeeze and len(vols) == 1:
+            return float(vols[0])
+        return vols
 
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
-        if squeeze:
-            return self.barycenter
-        return self._barycenter
+        if self._vertices is None:
+            centroid = np.array([0.0, 0.0, 0.0])
+        elif isinstance(self._vertices, np.ndarray) and self._vertices.ndim == 3:
+            # vertices path-shaped: shape (p,4,3)
+            centroid = np.mean(self._vertices, axis=1)  # (p,3)
+        else:
+            centroid = np.mean(self._vertices, axis=0)
+        result = self._orientation.apply(centroid) + self._position
+        if squeeze and len(result) == 1:
+            return result[0]
+        return result
 
-    def _get_dipole_moment(self):
+    def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
-        # test init
-        if self.magnetization is None or self.vertices is None:
-            return np.array((0.0, 0.0, 0.0))
-        return self.magnetization * self.volume
+        if self._magnetization is None or self._vertices is None:
+            dip = np.zeros_like(self._position)
+            if squeeze and len(dip) == 1:
+                return dip[0]
+            return dip
+
+        vols = self._get_volume(squeeze=False)
+        dipoles = self._magnetization * vols[:, np.newaxis]
+        if squeeze and len(dipoles) == 1:
+            return dipoles[0]
+        return dipoles
 
     def _generate_mesh(self):
-        """Generate mesh for force computation."""
-        return _target_mesh_tetrahedron(self.meshing, self.vertices, self.magnetization)
-
-    # Static methods
-    @staticmethod
-    def _get_barycenter(position, orientation, vertices):
-        """Returns the barycenter of a tetrahedron."""
-        centroid = (
-            np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
+        """Generate mesh for force computation by delegating to target mesher."""
+        return generate_mesh_tetrahedron(
+            self._vertices, self._magnetization, self.meshing
         )
-        return orientation.apply(centroid) + position

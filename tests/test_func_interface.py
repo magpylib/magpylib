@@ -467,7 +467,12 @@ def test_func_triangle_current():
     obs = (0.3, 0.1, 0.2)
     B1 = tria.getB(obs)
 
-    vert = tria.vertices[tria.faces]
+    # Handle path-varying vertices: if vertices is (p, n, 3), index along axis 1
+    verts = tria.vertices
+    faces = np.squeeze(tria.faces)  # Squeeze faces from (1, 3) to (3,)
+    # path array (p, n, 3)->(p, 3, 3) or single array (n, 3)->(3, 3)
+    vert = verts[:, faces] if verts.ndim == 3 else verts[faces]
+
     B2 = triangle_current_field(
         "B", obs, vert, tria.current_densities, tria.position, tria.orientation
     )
