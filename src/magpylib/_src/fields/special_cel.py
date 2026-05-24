@@ -10,12 +10,14 @@ _CEL_ERRORTOL = 1e-8
 
 def _cel_scalar(kc, p, c, s):
     """
-    scalar version of bulirsch cel algorithm
-    caller ensures that kc != 0
+    Scalar version of Bulirsch cel algorithm
     """
+    if kc == 0:
+        return np.nan
+
     if p > 0:
         p = m.sqrt(p)
-        s /= p
+        s = s / p
     else:
         f = kc * kc
         q = 1 - f
@@ -50,34 +52,33 @@ def _cel_scalar(kc, p, c, s):
 
 def _cel_vector(kc, p, c, s):
     """
-    vectorized version of Bulirsch cel algorithm.
+    Vectorized version of Bulirsch cel algorithm.
     """
 
     n = len(kc)
 
-    pp = p.copy()
-    cc = c.copy()
-    ss = s.copy()
+    p = p.copy()
+    c = c.copy()
+    s = s.copy()
 
-    mask = pp <= 0
+    mask = p <= 0
     pos = ~mask
 
-    pp[pos] = np.sqrt(pp[pos])
-    ss[pos] /= pp[pos]
+    p[pos] = np.sqrt(p[pos])
+    s[pos] /= p[pos]
 
     if np.any(mask):
         f = kc[mask] * kc[mask]
         q = 1 - f
-        g = 1 - pp[mask]
-        f -= pp[mask]
-        q *= ss[mask] - cc[mask] * pp[mask]
+        g = 1 - p[mask]
+        f -= p[mask]
+        q *= s[mask] - c[mask] * p[mask]
 
-        pp[mask] = np.sqrt(f / g)
-        cc[mask] = (cc[mask] - ss[mask]) / g
-        ss[mask] = -q / (g * g * pp[mask]) + cc[mask] * pp[mask]
+        p[mask] = np.sqrt(f / g)
+        c[mask] = (c[mask] - s[mask]) / g
+        s[mask] = -q / (g * g * p[mask]) + c[mask] * p[mask]
 
     em = np.ones(n)
-
     kc_zero = kc == 0
 
     qc = np.abs(kc)
@@ -86,10 +87,9 @@ def _cel_vector(kc, p, c, s):
     kk = qc.copy()
 
     while True:
-        g = kk / pp
-
-        cc, ss = cc + ss / pp, 2 * (ss + cc * g)
-        pp += g
+        g = kk / p
+        c, s = c + s / p, 2 * (s + c * g)
+        p += g
 
         g = em.copy()
         em += qc
@@ -100,7 +100,7 @@ def _cel_vector(kc, p, c, s):
         qc = 2 * np.sqrt(kk)
         kk = em * qc
 
-    result = (np.pi / 2) * (ss + cc * em) / (em * (em + pp))
+    result = (np.pi / 2) * (s + c * em) / (em * (em + p))
     result[kc_zero] = np.nan
 
     return result
@@ -109,11 +109,11 @@ def _cel_vector(kc, p, c, s):
 def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndarray:
     """
     Complete elliptic integral
-                     π/2
-                      ⌠  c cos²𝜗 + s sin²𝜗         d𝜗
-    cel(kc, p, c, s) = |  ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯  ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
-                      ⌡   cos²𝜗 + p sin²𝜗   √(cos²𝜗 + kc² sin²𝜗)
-                      0
+                      π/2
+                       ⌠  c cos²𝜗 + s sin²𝜗          d𝜗
+    cel(kc, p, c, s) = |  ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯  ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+                       ⌡   cos²𝜗 + p sin²𝜗   √(cos²𝜗 + kc² sin²𝜗)
+                       0
     Combines vectorized and non-vectorized implementations for improved performance.
 
     See also:
@@ -128,11 +128,8 @@ def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndar
     """
 
     if kc.size < _CEL_SCALAR_THRESHOLD:
-        out = np.empty(kc.size, dtype=float)
-        for i in range(kc.size):
-            out[i] = np.nan if kc[i] == 0 else _cel_scalar(kc[i], p[i], c[i], s[i])
-        return out
-
+        return np.array([_cel_scalar(*args)
+                         for args in zip(kc, p, c, s, strict=False)])  # fmt: skip
     return _cel_vector(kc, p, c, s)
 
 
