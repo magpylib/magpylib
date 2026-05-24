@@ -135,6 +135,7 @@ def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndar
 
 # pylint: disable=too-many-positional-arguments
 
+
 def _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=m, any_=lambda b: b):
     """
     Iterative part of the Bulirsch cel algorithm.
