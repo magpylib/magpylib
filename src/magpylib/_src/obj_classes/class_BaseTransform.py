@@ -110,9 +110,9 @@ def _path_padding(inpath, start, target_object):
     # scalar or vector input
     scalar_input = inpath.ndim == 1
 
-    # load old path
+    # load old path — ensure opath is always 2D (n, 4) regardless of .single
     ppath = target_object._position
-    opath = target_object._orientation.as_quat()
+    opath = np.atleast_2d(target_object._orientation.as_quat())
 
     lenip = 1 if scalar_input else len(inpath)
 
@@ -179,6 +179,17 @@ def _apply_move(target_object, displacement, start="auto"):
     # apply move operation
     ppath[start:end] += inpath
     target_object._position = ppath  # update position values
+
+    # Sync _orientation length to match new position path (geometric co-dependence).
+    from magpylib._src.obj_classes.class_BaseGeo import (  # noqa: PLC0415
+        _sync_orientation_to_len,
+    )
+
+    new_len = len(ppath)
+    if len(target_object._orientation) != new_len:
+        target_object._orientation = _sync_orientation_to_len(
+            target_object._orientation, new_len
+        )
 
     return target_object
 
@@ -286,7 +297,7 @@ def _apply_rotation(
     oldrot = R.from_quat(opath[newstart:end])
     opath[newstart:end] = (rotation * oldrot).as_quat()
 
-    # store new position and orientation
+    # store new position and orientation (opath is always 2D after path operations)
     # pylint: disable=attribute-defined-outside-init
     target_object._orientation = R.from_quat(opath)
     target_object._position = ppath

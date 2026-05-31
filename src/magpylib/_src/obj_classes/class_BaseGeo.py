@@ -53,6 +53,15 @@ def _pad_slice_path(path1, path2):
     return path2
 
 
+def _sync_orientation_to_len(ori, target_len):
+    """Pad or slice a Rotation (always array-form) to target_len."""
+    if ori is None:
+        return None
+    ori_quat = np.atleast_2d(ori.as_quat())  # always 2D
+    result = _pad_slice_path([0] * target_len, ori_quat)
+    return R.from_quat(result)
+
+
 class BaseGeo(BaseTransform, ABC):
     """Initializes basic properties inherited by ALL Magpylib objects
 
@@ -121,8 +130,18 @@ class BaseGeo(BaseTransform, ABC):
         if "orientation" not in path_kwargs:
             path_kwargs["orientation"] = orientation
 
+        self._is_initializing = True
         for prop, val in path_kwargs.items():
             setattr(self, prop, val)
+        self._is_initializing = False
+
+        # One-time geometric sync after initialization
+        target_len = self._get_geometric_path_len()
+        ref_path = [0] * target_len
+        if getattr(self, "_position", None) is not None:
+            self._position = _pad_slice_path(ref_path, self._position)
+        if getattr(self, "_orientation", None) is not None:
+            self._orientation = _sync_orientation_to_len(self._orientation, target_len)
 
         if style is not None or kwargs:  # avoid style creation cost if not needed
             self._style_kwargs = self._process_style_kwargs(style=style, **kwargs)
@@ -155,10 +174,12 @@ class BaseGeo(BaseTransform, ABC):
         return max(lengths) if lengths else 1
 
     def _get_geometric_path_len(self):
-        """Return the geometric path length (max of position and orientation only)."""
-        n_pos = len(self._position) if self._position is not None else 1
+        """Return the geometric path length (max of position and orientation)."""
+        n_pos = (
+            len(self._position) if getattr(self, "_position", None) is not None else 1
+        )
         n_ori = 1
-        if self._orientation is not None:
+        if getattr(self, "_orientation", None) is not None:
             n_ori = 1 if self._orientation.single else len(self._orientation)
         return max(n_pos, n_ori)
 
@@ -292,11 +313,16 @@ class BaseGeo(BaseTransform, ABC):
             name="position",
             reshape=(-1, 3),
         )
+        target_len = len(self._position)
+
+        # EAGER GEOMETRIC SYNC: Co-depend orientation
+        if getattr(self, "_orientation", None) is not None and not getattr(
+            self, "_is_initializing", False
+        ):
+            self._orientation = _sync_orientation_to_len(self._orientation, target_len)
 
         # when there are children include their relative position
         if old_pos is not None:
-            # LAZY PADDING: Determine effective path length
-            target_len = self._get_geometric_path_len()
             ref_path = [0] * target_len
 
             # Pad current position to target length for child calculation
@@ -324,6 +350,8 @@ class BaseGeo(BaseTransform, ABC):
             return None
         # cannot squeeze (its a Rotation object)
         if self._orientation.single:  # single path orientation - reduce dimension
+            return self._orientation
+        if len(self._orientation) == 1:  # array-form len-1 - return scalar-equivalent
             return self._orientation[0]
         return self._orientation  # return full path
 
@@ -340,21 +368,30 @@ class BaseGeo(BaseTransform, ABC):
         old_ori = getattr(self, "_orientation", None)
         old_oriQ = old_ori.as_quat() if old_ori is not None else None
 
-        # set _orientation attribute with ndim=2 format
+        # set _orientation: always store as array form (.single=False)
         oriQ = check_format_input_orientation(orientation, init_format=True)
         self._orientation = R.from_quat(oriQ)
+        target_len = len(self._orientation)
+
+        # EAGER GEOMETRIC SYNC: Co-depend position
+        if getattr(self, "_position", None) is not None and not getattr(
+            self, "_is_initializing", False
+        ):
+            ref_path = [0] * target_len
+            self._position = _pad_slice_path(ref_path, self._position)
 
         # when there are children they rotate about self.position
         # after the old Collection orientation is rotated away.
         # when there are children they rotate about self.position
         if old_oriQ is not None:
-            # LAZY PADDING: Determine effective path length
-            target_len = self._get_geometric_path_len()
             ref_path = [0] * target_len
+            # Ensure quats are 2D for _pad_slice_path (scalar .single=True -> 1D)
+            cur_oriQ_2d = np.atleast_2d(self._orientation.as_quat())
+            old_oriQ_2d = np.atleast_2d(old_oriQ)
 
             # Pad current orientation to target length for calculation
             cur_ori_padded = R.from_quat(
-                np.squeeze(_pad_slice_path(ref_path, self._orientation.as_quat()))
+                np.squeeze(_pad_slice_path(ref_path, cur_oriQ_2d))
             )
 
             for child in getattr(self, "children", []):
@@ -362,7 +399,7 @@ class BaseGeo(BaseTransform, ABC):
                 child.position = _pad_slice_path(ref_path, child._position)
                 # compute rotation and apply
                 old_ori_pad = R.from_quat(
-                    np.squeeze(_pad_slice_path(ref_path, old_oriQ))
+                    np.squeeze(_pad_slice_path(ref_path, old_oriQ_2d))
                 )
                 child.rotate(
                     cur_ori_padded * old_ori_pad.inv(), anchor=self._position, start=0
