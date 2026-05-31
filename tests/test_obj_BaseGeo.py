@@ -76,7 +76,7 @@ def test_BaseGeo_basics():
     rots += [bgeo.orientation.as_rotvec()]
 
     poss = np.array(poss)
-    rots = np.array(rots).squeeze()
+    rots = np.array(rots)
 
     # avoid generating different zeros in macos CI tests (atol=1e-6)
     np.testing.assert_allclose(
@@ -291,7 +291,7 @@ def test_path_functionality2():
         ).move(inpath, start=3)
     )
     P = np.array([b1, b2, b3, b4 + c1, b5 + c2, b5 + c3])
-    Q = np.array([q1, q2, q3, q4, q5])
+    Q = np.array([q1, q2, q3, q4, q5, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
@@ -301,7 +301,7 @@ def test_path_functionality2():
         ).move(inpath, start=4)
     )
     P = np.array([b1, b2, b3, b4, b5 + c1, b5 + c2, b5 + c3])
-    Q = np.array([q1, q2, q3, q4, q5])
+    Q = np.array([q1, q2, q3, q4, q5, q5, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
@@ -311,7 +311,7 @@ def test_path_functionality2():
         ).move(inpath, start=5)
     )
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
-    Q = np.array([q1, q2, q3, q4, q5])
+    Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
@@ -321,7 +321,7 @@ def test_path_functionality2():
         ).move(inpath, start=5)
     )
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
-    Q = np.array([q1, q2, q3, q4, q5])
+    Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
@@ -331,7 +331,7 @@ def test_path_functionality2():
         ).move(inpath)
     )
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
-    Q = np.array([q1, q2, q3, q4, q5])
+    Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
     np.testing.assert_allclose(pos, P)
     np.testing.assert_allclose(ori, Q)
 
