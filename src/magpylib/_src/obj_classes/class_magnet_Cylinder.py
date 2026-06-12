@@ -214,14 +214,14 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        # Tests in getFT ensure that meshing, dimension and excitation are set
-        # Pass full path-enabled arrays (p, 2) and (p, 3)
+        synced = self._sync_path_lengths(("dimension", "magnetization"))
+        dim, mag = synced["dimension"], synced["magnetization"]
         return generate_mesh_cylindersegment(
-            np.zeros(self._dimension.shape[0]),  # r1 = 0 (solid cylinder)
-            self._dimension[:, 0] / 2,  # r2 = d/2
-            self._dimension[:, 1],  # h
-            np.zeros(self._dimension.shape[0]),  # phi1 = 0
-            np.full(self._dimension.shape[0], 360),  # phi2 = 360 (full cylinder)
-            self._magnetization,
+            np.zeros(dim.shape[0]),  # r1 = 0 (solid cylinder)
+            dim[:, 0] / 2,  # r2 = d/2
+            dim[:, 1],  # h
+            np.zeros(dim.shape[0]),  # phi1 = 0
+            np.full(dim.shape[0], 360),  # phi2 = 360 (full cylinder)
+            mag,
             self.meshing,
         )

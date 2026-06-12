@@ -221,6 +221,7 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
     def _generate_mesh(self):
         """Generate mesh for force computation by delegating to target mesher."""
+        synced = self._sync_path_lengths(("vertices", "magnetization"))
         return generate_mesh_tetrahedron(
-            self._vertices, self._magnetization, self.meshing
+            synced["vertices"], synced["magnetization"], self.meshing
         )

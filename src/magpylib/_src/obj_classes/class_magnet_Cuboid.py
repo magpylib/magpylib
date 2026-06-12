@@ -204,15 +204,19 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             if squeeze and len(dip) == 1:
                 return dip[0]
             return dip
-        vols = self._get_volume(squeeze=False)
-        dipoles = self._magnetization * vols[:, np.newaxis]
+        synced = self._sync_path_lengths(("dimension", "magnetization"))
+        vols = np.prod(synced["dimension"], axis=1)
+        dipoles = synced["magnetization"] * vols[:, np.newaxis]
         if squeeze and len(dipoles) == 1:
             return dipoles[0]
         return dipoles
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        return generate_mesh_cuboid(self._dimension, self._magnetization, self.meshing)
+        synced = self._sync_path_lengths(("dimension", "magnetization"))
+        return generate_mesh_cuboid(
+            synced["dimension"], synced["magnetization"], self.meshing
+        )
 
     def _validate_meshing(self, value):
         """Cuboid meshing must be a positive integer or array-like of shape (3,)."""

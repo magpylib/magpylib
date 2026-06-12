@@ -189,24 +189,23 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        volume = self._get_volume(squeeze=False)
+        synced = self._sync_path_lengths(("diameter", "magnetization"))
+        diam, mag = synced["diameter"], synced["magnetization"]
+        volume = diam**3 * np.pi / 6
 
         # Check for path-varying parameters
         p_len = len(volume)
         has_path_varying = (np.unique(volume).shape[0] > 1) or (
-            np.unique(self._magnetization, axis=0).shape[0] > 1
+            np.unique(mag, axis=0).shape[0] > 1
         )
 
         if has_path_varying:
             # Path-varying: shape (p, 1, 3)
             points = np.zeros((p_len, 1, 3))
-            moments = (
-                volume[:, np.newaxis, np.newaxis]
-                * self._magnetization[:, np.newaxis, :]
-            )
+            moments = volume[:, np.newaxis, np.newaxis] * mag[:, np.newaxis, :]
         else:
             # No path variation: shape (1, 3)
             points = np.array([(0, 0, 0)])
-            moments = np.array([volume[0] * self._magnetization[0]])
+            moments = np.array([volume[0] * mag[0]])
 
         return {"pts": points, "moments": moments}

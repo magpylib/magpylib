@@ -107,9 +107,18 @@ def _preserve_paths(input_objs, path_properties=None, copy=False):
                 setattr(obj, f"_{prop}", path_orig[key])
 
 
-def _tile_group_property_path(group: list, n_pix: int, prop_name: str):
+def _tile_group_property_path(
+    group: list, n_pix: int, prop_name: str, max_path_len: int
+):
     """tile up group property with path support"""
-    out = [getattr(src, f"_{prop_name}") for src in group]
+    out = []
+    for src in group:
+        val = getattr(src, f"_{prop_name}")
+        # LAZY PADDING: Broadcast to max_path_len if needed
+        if len(val) == 1 and max_path_len > 1:
+            val = np.repeat(val, max_path_len, axis=0)
+        out.append(val)
+
     if not np.isscalar(out[0]) and any(o.shape != out[0].shape for o in out):
         out = [
             np.tile(o, (n_pix, *[1] * o[0].ndim)).reshape((-1, *o[0].shape))
@@ -133,18 +142,32 @@ def _tile_group_property(group: list, n_pp: int, prop_name: str):
     return np.repeat(out, n_pp, axis=0)
 
 
-def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
+def _get_src_dict(
+    group: list, n_pix: int, n_pp: int, poso: np.ndarray, max_path_len: int
+) -> dict:
     """create dictionaries for level1 input"""
     # pylint: disable=protected-access
     # pylint: disable=too-many-return-statements
 
     # tile up basic attributes that all sources have
     # Position
-    poss = np.array([src._position for src in group])
+    poss = []
+    for src in group:
+        pos = src._position
+        if len(pos) == 1 and max_path_len > 1:
+            pos = np.repeat(pos, max_path_len, axis=0)
+        poss.append(pos)
+    poss = np.array(poss)
     posv = np.tile(poss, n_pix).reshape((-1, 3))
 
     # Orientation - convert Rotation to quat, tile, convert back
-    rots = np.array([src._orientation.as_quat() for src in group])
+    rots = []
+    for src in group:
+        rot = src._orientation.as_quat()
+        if len(rot) == 1 and max_path_len > 1:
+            rot = np.repeat(rot, max_path_len, axis=0)
+        rots.append(rot)
+    rots = np.array(rots)
     rotv = np.tile(rots, n_pix).reshape((-1, 4))
     rotobj = R.from_quat(rotv)
 
@@ -174,7 +197,9 @@ def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
             and prop_name not in ("position", "orientation")
             and prop_name in props_in_field_func
         ):
-            kwargs[prop_name] = _tile_group_property_path(group, n_pix, prop_name)
+            kwargs[prop_name] = _tile_group_property_path(
+                group, n_pix, prop_name, max_path_len
+            )
 
     return kwargs
 
@@ -336,10 +361,27 @@ def _getBH_level2(
     # tile up paths -------------------------------------------------------------
     #   all obj paths that are shorter than max-length are filled up with the last
     #   position/orientation of the object (static paths)
-    max_path_len = max(len(obj._position) for obj in obj_list)
+    max_path_len = max(obj._get_path_len() for obj in obj_list)
 
     # Store original lengths of tiled objects to reset them later
-    objs_to_pad = [obj for obj in obj_list if len(obj._position) < max_path_len]
+    objs_to_pad = []
+    for obj in obj_list:
+        if obj._get_path_len() < max_path_len:
+            objs_to_pad.append(obj)
+        else:
+            # check if any other path property is shorter
+            for prop in obj._path_properties:
+                val = getattr(obj, f"_{prop}")
+                prop_len = 1
+                if val is not None:
+                    if hasattr(val, "single"):
+                        prop_len = 1 if val.single else len(val)
+                    else:
+                        prop_len = len(val)
+                if prop_len < max_path_len:
+                    objs_to_pad.append(obj)
+                    break
+
     with _preserve_paths(objs_to_pad, copy=False):
         for obj in objs_to_pad:
             pad_path_properties(
@@ -391,7 +433,7 @@ def _getBH_level2(
             lg = len(group["sources"])
             gr = group["sources"]
             src_dict = _get_src_dict(
-                gr, n_pix, n_pp, poso
+                gr, n_pix, n_pp, poso, max_path_len
             )  # compute array dict for level1
             # compute field
             B_group = _getBH_level1(

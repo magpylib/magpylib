@@ -4,7 +4,7 @@ import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import check_format_input_observers
-from magpylib._src.utility import check_path_format, format_obj_input, format_src_inputs
+from magpylib._src.utility import format_obj_input, format_src_inputs
 
 GETBH_KWARGS = {
     "sumup": False,
@@ -59,14 +59,6 @@ def utility_format_obs_inputs():
     sens2 = magpy.Sensor()
     possis = [1, 2, 3]
     check_format_input_observers([sens1, sens2, possis, "whatever"])
-
-
-def utility_check_path_format():
-    """bad path format input"""
-    # pylint: disable=protected-access
-    pm1 = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
-    pm1._position = [(1, 2, 3), (1, 2, 3)]
-    check_path_format(pm1)
 
 
 ###############################################################################
@@ -128,8 +120,6 @@ def bad_input_shape_dipole_mom():
 #####################################################################
 def test_except_utility():
     """utility"""
-    with pytest.raises(MagpylibBadUserInput):
-        utility_check_path_format()
     with pytest.raises(MagpylibBadUserInput):
         utility_format_obj_input()
     with pytest.raises(MagpylibBadUserInput):

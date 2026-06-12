@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 import magpylib as magpy
 
@@ -181,3 +182,78 @@ def test_zero_surf_triangle_strip2():
         observers=magpy.Sensor(pixel=[(2, 3, 4)]),
     )
     assert np.all(H1 == 0)
+
+
+def test_triangle_strip_degenerate_triangle_force_no_nan():
+    """Coincident adjacent vertices create a zero-area triangle. getFT must return
+    finite values (zero contribution from the degenerate triangle), not NaN."""
+    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -0.3))
+    verts = np.array([[0, 0, 0], [0.1, 0, 0], [0.05, 0.05, 0], [0.05, 0.05, 0]])
+    strip = magpy.current.TriangleStrip(vertices=verts, current=100, meshing=10)
+    F, T = magpy.getFT(dipole, strip)
+    assert np.all(np.isfinite(F)), f"degenerate triangle produced non-finite force: {F}"
+    assert np.all(np.isfinite(T)), (
+        f"degenerate triangle produced non-finite torque: {T}"
+    )
+
+
+def test_triangle_strip_degenerate_triangle_path_force_no_nan():
+    """Same check for a path-varying strip where one path step is degenerate."""
+    dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -0.3))
+    verts_good = np.array([[0, 0, 0], [0.1, 0, 0], [0.05, 0.05, 0], [0.1, 0.05, 0]])
+    verts_degen = np.array([[0, 0, 0], [0.1, 0, 0], [0.05, 0.05, 0], [0.05, 0.05, 0]])
+    strip = magpy.current.TriangleStrip(
+        vertices=np.array([verts_good, verts_degen]),
+        current=[100, 100],
+        meshing=10,
+    )
+    F, T = magpy.getFT(dipole, strip)
+    assert np.all(np.isfinite(F)), (
+        f"path with degenerate step produced non-finite force: {F}"
+    )
+    assert np.all(np.isfinite(T)), (
+        f"path with degenerate step produced non-finite torque: {T}"
+    )
+
+
+def test_triangle_sheet_vertices_setter_rejects_too_few_vertices():
+    """Re-assigning vertices to an array smaller than max(face index)+1 must raise
+    ValueError — the setter must re-validate face indices, not silently accept bad state."""
+    verts6 = np.array(
+        [
+            [0.0, 0.0, 0],
+            [0.05, 0.0, 0],
+            [0.10, 0.0, 0],
+            [0.0, 0.05, 0],
+            [0.05, 0.05, 0],
+            [0.10, 0.05, 0],
+        ]
+    )
+    faces = np.array([[0, 1, 3], [1, 4, 3], [1, 2, 4], [2, 5, 4]])  # uses indices 4 & 5
+    cd = np.full((4, 3), [1000.0, 0, 0])
+    ts = magpy.current.TriangleSheet(
+        vertices=verts6, faces=faces, current_densities=cd, meshing=4
+    )
+    with pytest.raises(ValueError, match="faces indices"):
+        ts.vertices = verts6[:4]  # indices 4 & 5 now out of range
+
+
+def test_triangle_sheet_vertices_setter_accepts_valid_reassignment():
+    """Re-assigning vertices to a compatible array (same vertex count) must succeed."""
+    verts6 = np.array(
+        [
+            [0.0, 0.0, 0],
+            [0.05, 0.0, 0],
+            [0.10, 0.0, 0],
+            [0.0, 0.05, 0],
+            [0.05, 0.05, 0],
+            [0.10, 0.05, 0],
+        ]
+    )
+    faces = np.array([[0, 1, 3], [1, 4, 3], [1, 2, 4], [2, 5, 4]])
+    cd = np.full((4, 3), [1000.0, 0, 0])
+    ts = magpy.current.TriangleSheet(
+        vertices=verts6, faces=faces, current_densities=cd, meshing=4
+    )
+    ts.vertices = verts6 + np.array([0, 0, 0.01])
+    np.testing.assert_allclose(ts.vertices[:, 2], 0.01)

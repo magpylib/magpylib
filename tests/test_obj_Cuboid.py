@@ -174,3 +174,29 @@ def test_Cuboid_centroid():
         dimension=(1, 2, 3), polarization=(0, 0, 1), position=expected
     )
     assert np.allclose(cuboid.centroid, expected)
+
+
+def test_cuboid_dipole_moment_mismatched_path_lengths():
+    """Setting dimension (p=2) and magnetization (p=3) via independent setter calls
+    must not crash _get_dipole_moment; the shorter path is edge-padded to match."""
+    cuboid = magpy.magnet.Cuboid(
+        dimension=(0.01, 0.01, 0.01), magnetization=(0, 0, 1e6)
+    )
+    cuboid.magnetization = [[0, 0, 1e6], [0, 0, 1.2e6], [0, 0, 1.5e6]]  # p=3
+    cuboid.dimension = [[0.01, 0.01, 0.01], [0.02, 0.01, 0.01]]  # p=2
+    dm = cuboid.dipole_moment
+    assert dm.shape == (3, 3), f"expected (3, 3), got {dm.shape}"
+
+
+def test_cuboid_dipole_moment_mismatched_values_correct():
+    """Edge-padded shorter dimension path must repeat the last step (not use zeros)."""
+    cuboid = magpy.magnet.Cuboid(
+        dimension=(0.01, 0.01, 0.01), magnetization=(0, 0, 1e6)
+    )
+    cuboid.magnetization = [[0, 0, 1e6], [0, 0, 2e6], [0, 0, 3e6]]  # p=3
+    cuboid.dimension = [[0.01, 0.01, 0.01]]  # p=1 → padded to 3
+    dm = cuboid.dipole_moment
+    volume = 0.01**3
+    np.testing.assert_allclose(dm[0], [0, 0, 1e6 * volume], rtol=1e-10)
+    np.testing.assert_allclose(dm[1], [0, 0, 2e6 * volume], rtol=1e-10)
+    np.testing.assert_allclose(dm[2], [0, 0, 3e6 * volume], rtol=1e-10)

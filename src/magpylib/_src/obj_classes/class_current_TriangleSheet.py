@@ -165,6 +165,14 @@ class TriangleSheet(BaseSource, BaseTarget):
 
         self._vertices = verts
 
+        if self._faces is not None:
+            try:
+                self._vertices[0][self._faces]
+            except IndexError:
+                self._vertices = None
+                msg = f"Some faces indices of {self} do not match with vertices array."
+                raise ValueError(msg) from None
+
     @property
     def faces(self):
         """TriangleSheet Faces"""
@@ -273,15 +281,10 @@ class TriangleSheet(BaseSource, BaseTarget):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        verts = self._vertices
-        cd = self._current_densities
-        # verts has shape (p, n, 3) where p is path dimension, n is number of vertices
-        # cd has shape (p, m, 3) where m is number of faces
-        # faces has shape (m, 3) - indices into vertices
+        synced = self._sync_path_lengths(("vertices", "current_densities"))
+        verts = synced["vertices"]  # shape (p, n, 3)
+        cd = synced["current_densities"]  # shape (p, m, 3)
 
-        # Create triangles by indexing vertices with faces
-        # triangles shape: (p, m, 3, 3)
-        # For each path p, for each face m, get 3 vertices of 3 coordinates
         triangles = verts[:, self.faces, :]  # shape (p, m, 3, 3)
 
         return generate_mesh_triangle_current(

@@ -256,6 +256,14 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         return self._status_reoriented
 
     # Methods
+    @staticmethod
+    def _volume_from_verts_faces(vertices, faces):
+        """Compute volume from (p, n_vert, 3) vertices and (n_faces, 3) faces."""
+        triangles = vertices[:, faces]  # (p, n_faces, 3, 3)
+        v1, v2, v3 = triangles[..., 0, :], triangles[..., 1, :], triangles[..., 2, :]
+        signed = np.sum(np.cross(v1, v2) * v3, axis=-1) / 6.0  # (p, n_faces)
+        return np.abs(np.atleast_1d(np.sum(signed, axis=-1)))  # (p,)
+
     def _get_volume(self, squeeze=True):
         """Volume of object in units (m³).
 
@@ -282,18 +290,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             msg = f"Open mesh detected in {self!r}. Cannot compute volume."
             raise ValueError(msg)
 
-        # Vectorized calculation: get all triangle vertices at once
-        # Shape: (n_faces, 3, 3) or (p, n_faces, 3, 3)
-        triangles = self.mesh
-
-        v1 = triangles[..., 0, :]
-        v2 = triangles[..., 1, :]
-        v3 = triangles[..., 2, :]
-        cross_products = np.cross(v1, v2)
-        dot_products = np.sum(cross_products * v3, axis=-1)
-        signed_volumes = dot_products / 6.0
-        total_volume = np.atleast_1d(np.sum(signed_volumes, axis=-1))
-        abs_volume = np.abs(total_volume)
+        abs_volume = self._volume_from_verts_faces(self._vertices, self._faces)
         if squeeze and len(abs_volume) == 1:
             return abs_volume[0]
         return abs_volume
@@ -323,13 +320,16 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        # Tests in getFT ensure that meshing, dimension and excitation are set
+        if self.status_open is None:
+            self.check_open()
+        if self.status_open is True:
+            msg = f"Open mesh detected in {self!r}. Cannot compute volume."
+            raise ValueError(msg)
+        synced = self._sync_path_lengths(("vertices", "magnetization"))
+        verts, mag = synced["vertices"], synced["magnetization"]
+        volume = self._volume_from_verts_faces(verts, self._faces)
         return generate_mesh_triangularmesh(
-            self._vertices,
-            self._faces,
-            self._get_volume(squeeze=False),
-            self._magnetization,
-            self.meshing,
+            verts, self._faces, volume, mag, self.meshing
         )
 
     @staticmethod

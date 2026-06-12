@@ -272,7 +272,8 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         # TODO with path: suppress all triangles in computation that are ~1e-9 times
         # smaller than the total mesh surface, not sure how to handle this since the
         # areas are changing along path
-        verts, curr = self._vertices, self._current
+        synced = self._sync_path_lengths(("vertices", "current"))
+        verts, curr = synced["vertices"], synced["current"]
         # verts has shape (p, n, 3) where p is path dimension, n is number of vertices
         # Create triangles for each path: shape (p, n-2, 3, 3)
         # Vectorized triangle creation using advanced indexing
@@ -295,20 +296,29 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         sideAB = np.sum(sideA * sideB, axis=2)
         area2 = sideAA * sideBB - sideAB * sideAB
 
-        # compute current densities
+        # Suppress degenerate triangles using the same relative-area threshold as
+        # the single-path implementation. A triangle whose area is < 1e-19 of the
+        # total strip area at that path step contributes zero current density.
+        area2_total = np.sum(area2, axis=1, keepdims=True)  # (p, 1)
+        with np.errstate(invalid="ignore", divide="ignore"):
+            area2_rel = np.where(area2_total > 0, area2 / area2_total, 0.0)
+        good = area2_rel >= 1e-19  # (p, n_tri)
+
         base_length = np.linalg.norm(sideB, axis=2)
-        height = np.sqrt(area2) / base_length
+        safe_base = np.where(good, base_length, 1.0)
+        height = np.sqrt(np.where(good, area2, 0.0)) / safe_base
 
         # curr shape: (p,) needs to be broadcast to match triangles shape (p, n-2)
         curr_expanded = np.repeat(curr[:, np.newaxis], triangles.shape[1], axis=1)
 
-        # Current densities shape: (p, n-2, 3)
+        # Current densities shape: (p, n-2, 3); zero for degenerate triangles
         cds = (
             sideB
-            / base_length[:, :, np.newaxis]
+            / safe_base[:, :, np.newaxis]
             * curr_expanded[:, :, np.newaxis]
-            / height[:, :, np.newaxis]
+            / np.where(good, height, 1.0)[:, :, np.newaxis]
         )
+        cds = np.where(good[:, :, np.newaxis], cds, 0.0)
 
         return generate_mesh_triangle_current(
             triangles,

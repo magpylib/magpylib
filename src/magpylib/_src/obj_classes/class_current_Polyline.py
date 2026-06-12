@@ -223,12 +223,11 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
 
     def _generate_mesh(self):
         """Generate mesh for force computation."""
-        # Tests in getFT ensure that meshing, dimension and excitation are set
+        synced = self._sync_path_lengths(("vertices", "current"))
+        verts, curr = synced["vertices"], synced["current"]
 
-        # Special special case: fewer points than segments, cannot be caught in
-        #    meshing setter because vertices might not have been set yet
         n_points = self.meshing
-        n_segments = len(self._vertices[0]) - 1
+        n_segments = len(verts[0]) - 1
         if self.meshing < n_segments:
             msg = (
                 f"Input meshing of {self} must be an integer > number of Polyline "
@@ -238,4 +237,4 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
             warnings.warn(msg, UserWarning, stacklevel=2)
             n_points = n_segments
 
-        return generate_mesh_polyline(self._vertices, self._current, n_points)
+        return generate_mesh_polyline(verts, curr, n_points)
