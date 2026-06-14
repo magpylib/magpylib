@@ -21,6 +21,7 @@ from magpylib._src.input_checks import (
 from magpylib._src.obj_classes.class_BaseTransform import (
     BaseTransform,
     pad_path_property,
+    path_property_len,
 )
 from magpylib._src.style import BaseStyle
 from magpylib._src.utility import add_iteration_suffix, unit_prefix
@@ -183,23 +184,17 @@ class BaseGeo(BaseTransform, ABC):
 
     def _get_path_len(self):
         """Return the effective path length of the object (max of all properties)."""
-        lengths = []
-        for name in self._path_properties:
-            if (arr := getattr(self, f"_{name}", None)) is not None:
-                if hasattr(arr, "single"):  # scipy Rotation
-                    lengths.append(1 if arr.single else len(arr))
-                else:
-                    lengths.append(len(arr))
+        lengths = [
+            path_property_len(getattr(self, f"_{name}", None))
+            for name in self._path_properties
+            if getattr(self, f"_{name}", None) is not None
+        ]
         return max(lengths) if lengths else 1
 
     def _get_geometric_path_len(self):
         """Return the geometric path length (max of position and orientation)."""
-        n_pos = (
-            len(self._position) if getattr(self, "_position", None) is not None else 1
-        )
-        n_ori = 1
-        if getattr(self, "_orientation", None) is not None:
-            n_ori = 1 if self._orientation.single else len(self._orientation)
+        n_pos = path_property_len(getattr(self, "_position", None))
+        n_ori = path_property_len(getattr(self, "_orientation", None))
         return max(n_pos, n_ori)
 
     def _sync_path_lengths(self, prop_names=None):
@@ -218,6 +213,10 @@ class BaseGeo(BaseTransform, ABC):
         -------
         dict of {str: ndarray | Rotation}
             Each value is edge-padded to the same max path length.
+
+        See Also
+        --------
+        pad_path_properties : in-place variant used during field/force computation.
         """
         if prop_names is None:
             prop_names = self._path_properties
@@ -225,10 +224,8 @@ class BaseGeo(BaseTransform, ABC):
         p_max = 1
         for name in prop_names:
             arr = getattr(self, f"_{name}", None)
-            if arr is None:
-                continue
-            p = 1 if getattr(arr, "single", False) else len(arr)
-            p_max = max(p_max, p)
+            if arr is not None:
+                p_max = max(p_max, path_property_len(arr))
 
         return {
             name: pad_path_property(getattr(self, f"_{name}"), p_max)

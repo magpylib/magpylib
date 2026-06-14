@@ -58,7 +58,10 @@ from magpylib._src.input_checks import (
     check_format_pixel_agg,
     check_getBH_output_type,
 )
-from magpylib._src.obj_classes.class_BaseTransform import pad_path_properties
+from magpylib._src.obj_classes.class_BaseTransform import (
+    pad_path_properties,
+    path_property_len,
+)
 from magpylib._src.utility import (
     check_static_sensor_orient,
     format_obj_input,
@@ -378,14 +381,11 @@ def _getBH_level2(
     # property, so a per-property scan is required to also catch objects whose
     # longest property reaches the max while others (e.g. dimension) are shorter.
     def _needs_padding(obj):
-        for prop in obj._path_properties:
-            val = getattr(obj, f"_{prop}")
-            if val is None:
-                continue
-            prop_len = 1 if getattr(val, "single", False) else len(val)
-            if prop_len < max_path_len:
-                return True
-        return False
+        return any(
+            (val := getattr(obj, f"_{prop}")) is not None
+            and path_property_len(val) < max_path_len
+            for prop in obj._path_properties
+        )
 
     objs_to_pad = [obj for obj in obj_list if _needs_padding(obj)]
 
