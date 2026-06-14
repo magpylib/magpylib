@@ -134,9 +134,11 @@ class BaseGeo(BaseTransform, ABC):
             path_kwargs["orientation"] = orientation
 
         self._is_initializing = True
-        for prop, val in path_kwargs.items():
-            setattr(self, prop, val)
-        self._is_initializing = False
+        try:
+            for prop, val in path_kwargs.items():
+                setattr(self, prop, val)
+        finally:
+            self._is_initializing = False
 
         # One-time geometric sync after initialization
         target_len = self._get_geometric_path_len()

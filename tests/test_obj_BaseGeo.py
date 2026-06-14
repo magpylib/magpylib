@@ -5,6 +5,7 @@ import pytest
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
+from magpylib._src.exceptions import MagpylibBadUserInput
 
 # pylint: disable=no-member
 
@@ -836,3 +837,34 @@ def test_orientation_setter_none_treated_as_identity_rotation():
     object.__setattr__(coll, "_orientation", None)
     coll.orientation = rot
     np.testing.assert_allclose(child.position, pos_expected, atol=1e-10)
+
+
+def test_is_initializing_reset_after_failed_init():
+    """_is_initializing must be False after __init__ raises, even via __new__.
+
+    If a setter raises during __init__ (e.g. bad dimension), the try/finally
+    around the _is_initializing block ensures the flag is cleared.  Without it,
+    any subsequent position/orientation setter call on the partially-constructed
+    object would skip eager geometric sync, silently leaving path lengths
+    inconsistent.
+    """
+
+    obj = magpy.magnet.Cuboid.__new__(magpy.magnet.Cuboid)
+    with pytest.raises(MagpylibBadUserInput):
+        obj.__init__(polarization=(0, 0, 1), dimension="bad")
+
+    # Flag must be False regardless of whether __init__ completed
+    assert not getattr(obj, "_is_initializing", True), (
+        "_is_initializing stuck at True after failed __init__"
+    )
+
+    # With the flag cleared, manually bring the object to a valid geometric state
+    # and verify the position setter correctly syncs orientation length.
+    obj._position = np.zeros((1, 3))
+    obj._orientation = R.from_quat([[0, 0, 0, 1]])  # single identity
+    long_path = np.array([(0, 0, i) for i in range(5)], dtype=float)
+    obj.position = long_path
+    assert len(obj._orientation) == 5, (
+        "orientation path not synced to new position length — "
+        "_is_initializing was True when it shouldn't be"
+    )
