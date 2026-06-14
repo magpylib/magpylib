@@ -215,7 +215,7 @@ def make_TriangleSheet(
         if getattr(style.mesh, mode).show:
             kw = {**kwargs, "legendgroup": trace.get("legendgroup")}
             kw["showlegend"] = False
-            trace = make_mesh_lines(obj, mode, **kw)
+            trace = make_mesh_lines(obj, mode, path_ind=path_ind, **kw)
             if trace:
                 traces.append(trace)
     return traces
@@ -494,7 +494,7 @@ def get_closest_vertices(faces_subsets, vertices):
     return np.array(closest_verts_list)
 
 
-def make_mesh_lines(obj, mode, path_ind=None, **kwargs) -> dict[str, Any]:
+def make_mesh_lines(obj, mode, path_ind=-1, **kwargs) -> dict[str, Any]:
     """Draw mesh lines and vertices"""
     # pylint: disable=protected-access
     kwargs.pop("color", None)
@@ -502,10 +502,7 @@ def make_mesh_lines(obj, mode, path_ind=None, **kwargs) -> dict[str, Any]:
     style = obj.style
     mesh = getattr(style.mesh, mode)
     marker, line = mesh.marker, mesh.line
-    vertices = obj._vertices if path_ind is None else _get_prop(obj._vertices, path_ind)
-    if vertices.ndim == 3 and vertices.shape[0] == 1:
-        vertices = vertices[0]
-    tr, vert = obj.faces, vertices
+    tr, vert = obj.faces, _get_prop(obj._vertices, path_ind)
     if mode == "disconnected":
         subsets = obj.get_faces_subsets()
         lines = get_closest_vertices(subsets, vert)
@@ -600,7 +597,9 @@ def make_TriangularMesh_single(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_TriangularMesh(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+def make_TriangularMesh(
+    obj, path_ind=-1, **kwargs
+) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly mesh3d parameters for a Triangular facet mesh in a dictionary based on the
     provided arguments.
@@ -667,7 +666,7 @@ def make_TriangularMesh(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
             )
     for mode in ("grid", "open", "disconnected", "selfintersecting"):
         if getattr(style.mesh, mode).show:
-            trace = make_mesh_lines(obj, mode, **kwargs)
+            trace = make_mesh_lines(obj, mode, path_ind=path_ind, **kwargs)
             if trace:
                 traces.append(trace)
     return traces
