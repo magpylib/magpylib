@@ -664,8 +664,9 @@ def test_preserve_paths_copy_true_works_for_rotation():
 
     with _preserve_paths([src], copy=True):
         # mutate inside the context — originals must be restored on exit
+        # (use from_rotvec for 3 distinct rotations; portable across scipy versions)
         src._position = src._position * 99
-        src._orientation = R.from_euler("z", [45, 90, 135], degrees=True)
+        src._orientation = R.from_rotvec([(0, 0, 0.5), (0, 0, 1.0), (0, 0, 1.5)])
 
     np.testing.assert_allclose(src._position, pos_before)
     np.testing.assert_allclose(src._orientation.as_quat(), ori_before)

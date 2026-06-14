@@ -432,7 +432,11 @@ def make_triangle_orientations(
             vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
         else:
             vec = vectors[vert_ind]
-        nvec = vec / np.linalg.norm(vec)
+        # guard against a zero vector (degenerate/collinear triangle, or a
+        # direction that projects to zero, e.g. a planar sheet with current
+        # density along its normal) — avoid a divide-by-zero / NaN orientation
+        vec_norm = np.linalg.norm(vec)
+        nvec = vec / vec_norm if vec_norm != 0 else np.zeros(3)
         # arrow length proportional to square root of triangle area
         length = (
             np.sqrt(triangles_area(np.expand_dims(vert, axis=0))[0]) * 0.2 * sizefactor
