@@ -3,9 +3,11 @@ import warnings
 
 import numpy as np
 import pytest
+from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.fields.field_BH import _preserve_paths
 
 
 def test_getB_level2_input_simple():
@@ -607,3 +609,25 @@ def test_do_not_warn():
         do_not_warnme2()
         if len(w) > 0:
             pytest.fail("WARNING SHOULD NOT HAVE BEEN RAISED")
+
+
+def test_preserve_paths_copy_true_works_for_rotation():
+    """_preserve_paths(copy=True) must not crash on Rotation-valued path properties.
+
+    Regression test: scipy Rotation has no .copy() method, so the naive
+    ``val.copy()`` in _preserve_paths raised AttributeError for orientation paths.
+    """
+
+    src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    src.move([(0, 0, i) for i in range(3)])  # path length 3
+
+    ori_before = src._orientation.as_quat().copy()
+    pos_before = src._position.copy()
+
+    with _preserve_paths([src], copy=True):
+        # mutate inside the context — originals must be restored on exit
+        src._position = src._position * 99
+        src._orientation = R.from_euler("z", [45, 90, 135], degrees=True)
+
+    np.testing.assert_allclose(src._position, pos_before)
+    np.testing.assert_allclose(src._orientation.as_quat(), ori_before)

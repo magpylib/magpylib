@@ -93,7 +93,13 @@ def _preserve_paths(input_objs, path_properties=None, copy=False):
         for prop in path_props_obj:
             key = (id(obj), prop)
             val = getattr(obj, f"_{prop}")
-            path_orig[key] = val.copy() if copy else val
+            if copy and val is not None:
+                # scipy Rotation has no .copy(); reconstruct from quaternion array
+                if hasattr(val, "as_quat"):
+                    val = R.from_quat(val.as_quat().copy())
+                else:
+                    val = val.copy()
+            path_orig[key] = val
     try:
         yield
     finally:
