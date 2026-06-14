@@ -181,11 +181,13 @@ class TriangleSheet(BaseSource, BaseTarget):
     @property
     def current_densities(self):
         """TriangleSheet CurrentDensities"""
-        return (
-            np.squeeze(self._current_densities)
-            if self._current_densities is not None
-            else None
-        )
+        # Collapse only the path axis (axis 0); keep the face axis intact so a
+        # single-face sheet returns (1, 3) consistently with multi-face (n, 3).
+        if self._current_densities is None:
+            return None
+        if len(self._current_densities) == 1:
+            return self._current_densities[0]
+        return self._current_densities
 
     @current_densities.setter
     def current_densities(self, val):

@@ -304,7 +304,7 @@ def check_format_input_numeric(
     if dims == (0,) and not is_a_number:
         msg = (
             f"{msg_name} must be a scalar of type {dtype};"
-            " instead received type {type(inp)}."
+            f" instead received type {type(inp).__name__}."
         )
         raise MagpylibBadUserInput(msg)
 
@@ -319,7 +319,7 @@ def check_format_input_numeric(
         dims_str = " or ".join(str(d) for d in dims)
         msg = (
             f"{msg_name} must be an array of dimension {dims_str};"
-            " instead received type {type(inp)}."
+            f" instead received type {type(inp).__name__}."
         )
         raise MagpylibBadUserInput(msg)
 
@@ -328,7 +328,7 @@ def check_format_input_numeric(
         msg_scalar = "scalar or " if 0 in dims else ""
         msg = (
             f"{msg_name} must be {msg_scalar}array-like of type {dtype};"
-            " instead received type {type(inp)!r}."
+            f" instead received type {type(inp).__name__}."
         )
         raise MagpylibBadUserInput(msg)
 

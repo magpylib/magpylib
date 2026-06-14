@@ -172,13 +172,9 @@ def _apply_move(target_object, displacement, start="auto"):
     # pad target_object path and compute start and end-index for rotation application
     ppath, _, start, end, _ = _path_padding(inpath, start, target_object)
 
-    # LAZY PADDING: Only position is affected by move. Orientation and other props stay as is.
-    # ppath is already padded if necessary by _path_padding.
-    target_object._position = ppath  # update position potentially with new length
-
-    # apply move operation
+    # apply move operation, then store (ppath was already padded by _path_padding)
     ppath[start:end] += inpath
-    target_object._position = ppath  # update position values
+    target_object._position = ppath
 
     # Sync _orientation length to match new position path (geometric co-dependence).
     from magpylib._src.obj_classes.class_BaseGeo import (  # noqa: PLC0415  # pylint: disable=import-outside-toplevel

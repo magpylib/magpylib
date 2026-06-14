@@ -8,7 +8,7 @@ from magpylib._src.exceptions import (
     MagpylibMissingInput,
 )
 from magpylib._src.fields.field_BH_dipole import _BHJM_dipole
-from magpylib._src.input_checks import match_shape
+from magpylib._src.input_checks import check_format_input_numeric, match_shape
 
 # pylint: disable=unnecessary-lambda-assignment
 
@@ -59,6 +59,29 @@ def test_shape_match_true(shp, pat):
 def test_shape_match_false(shp, pat):
     """These cases must return False"""
     assert match_shape(shp, pat) is False
+
+
+@pytest.mark.parametrize(
+    "bad_input",
+    [
+        pytest.param("not_a_number", id="string"),
+        pytest.param({"a": 1}, id="dict"),
+        pytest.param(object(), id="object"),
+    ],
+)
+def test_check_format_input_numeric_error_message_interpolation(bad_input):
+    """Error messages must interpolate the actual type, not show literal '{type(inp)}'.
+
+    Regression test: continuation lines of the error f-strings were missing the
+    'f' prefix, so users saw literal '{type(inp)}' / '{type(inp)!r}' in messages.
+    """
+
+    with pytest.raises(MagpylibBadUserInput) as excinfo:
+        check_format_input_numeric(
+            bad_input, dtype=float, shapes=((3,),), name="test_param"
+        )
+    msg = str(excinfo.value)
+    assert "{type(inp)" not in msg, f"un-interpolated placeholder in message: {msg!r}"
 
 
 ###########################################################

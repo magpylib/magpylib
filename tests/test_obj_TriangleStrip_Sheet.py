@@ -257,3 +257,25 @@ def test_triangle_sheet_vertices_setter_accepts_valid_reassignment():
     )
     ts.vertices = verts6 + np.array([0, 0, 0.01])
     np.testing.assert_allclose(ts.vertices[:, 2], 0.01)
+
+
+def test_triangle_sheet_single_face_current_densities_shape():
+    """A single-face sheet must return current_densities with the face axis intact.
+
+    Regression: the getter used np.squeeze, which collapsed the (n_faces=1) axis,
+    returning shape (3,) instead of (1, 3) — inconsistent with multi-face sheets
+    that return (n_faces, 3), and a regression from the pre-path behavior.
+    """
+    one_face = magpy.current.TriangleSheet(
+        vertices=((0, 0, 0), (1, 0, 0), (0, 1, 0)),
+        faces=((0, 1, 2),),
+        current_densities=((1, 0, 0),),
+    )
+    assert one_face.current_densities.shape == (1, 3)
+
+    two_face = magpy.current.TriangleSheet(
+        vertices=((0, 0, 0), (1, 0, 0), (0, 1, 0), (1, 1, 1)),
+        faces=((0, 1, 2), (1, 2, 3)),
+        current_densities=((1, 0, 0), (0, 1, 0)),
+    )
+    assert two_face.current_densities.shape == (2, 3)
