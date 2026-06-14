@@ -369,28 +369,25 @@ def _getBH_level2(
     num_of_sensors = len(sensors)
 
     # tile up paths -------------------------------------------------------------
-    #   all obj paths that are shorter than max-length are filled up with the last
-    #   position/orientation of the object (static paths)
+    #   any path property shorter than the global max is edge-padded (JIT) up to
+    #   max_path_len for the computation, then restored by _preserve_paths.
     max_path_len = max(obj._get_path_len() for obj in obj_list)
 
-    # Store original lengths of tiled objects to reset them later
-    objs_to_pad = []
-    for obj in obj_list:
-        if obj._get_path_len() < max_path_len:
-            objs_to_pad.append(obj)
-        else:
-            # check if any other path property is shorter
-            for prop in obj._path_properties:
-                val = getattr(obj, f"_{prop}")
-                prop_len = 1
-                if val is not None:
-                    if hasattr(val, "single"):
-                        prop_len = 1 if val.single else len(val)
-                    else:
-                        prop_len = len(val)
-                if prop_len < max_path_len:
-                    objs_to_pad.append(obj)
-                    break
+    # An object needs padding iff any of its (non-None) path properties is
+    # shorter than max_path_len. _get_path_len() only reflects the longest
+    # property, so a per-property scan is required to also catch objects whose
+    # longest property reaches the max while others (e.g. dimension) are shorter.
+    def _needs_padding(obj):
+        for prop in obj._path_properties:
+            val = getattr(obj, f"_{prop}")
+            if val is None:
+                continue
+            prop_len = 1 if getattr(val, "single", False) else len(val)
+            if prop_len < max_path_len:
+                return True
+        return False
+
+    objs_to_pad = [obj for obj in obj_list if _needs_padding(obj)]
 
     with _preserve_paths(objs_to_pad, copy=False):
         for obj in objs_to_pad:

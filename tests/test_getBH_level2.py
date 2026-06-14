@@ -164,6 +164,44 @@ def test_getB_level2_input_path():
     np.testing.assert_allclose(B, result)
 
 
+def test_getBH_level2_mixed_property_path_lengths():
+    """Object whose position reaches max_path_len but whose other path
+    properties are stored minimally (len 1) must still be field-correct and
+    restored to its minimal form afterwards.
+
+    Guard for the objs_to_pad detection in _getBH_level2: such an object has
+    _get_path_len() == max_path_len yet still needs padding because dimension /
+    polarization are shorter — the per-property scan must catch it.
+    """
+    # position path length 3; dimension & polarization stored minimally (len 1)
+    src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    src.position = [(0, 0, 0), (0, 0, 1), (0, 0, 2)]
+    # static second source to also exercise the shorter-than-max branch
+    src2 = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+
+    assert len(src._position) == 3
+    assert len(src._dimension) == 1
+    assert len(src._polarization) == 1
+
+    B = magpy.getB([src, src2], (0, 0, 5))
+    assert B.shape == (2, 3, 3)  # (sources, path, xyz)
+
+    # paths restored to minimal stored form
+    assert len(src._position) == 3
+    assert len(src._dimension) == 1
+    assert len(src._polarization) == 1
+    assert len(src2._position) == 1
+    assert len(src2._dimension) == 1
+
+    # correctness: each path step matches the equivalent static computation
+    for i, z in enumerate([0, 1, 2]):
+        ref = magpy.magnet.Cuboid(
+            polarization=(0, 0, 1), dimension=(1, 1, 1), position=(0, 0, z)
+        )
+        np.testing.assert_allclose(B[0, i], magpy.getB(ref, (0, 0, 5)))
+        np.testing.assert_allclose(B[1, i], magpy.getB(src2, (0, 0, 5)))
+
+
 def test_path_tile():
     """Test if auto-tiled paths of objects will properly be reset
     in getB_level2 before returning
