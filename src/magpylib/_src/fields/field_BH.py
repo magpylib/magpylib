@@ -120,6 +120,9 @@ def _tile_group_property_path(
     out = []
     for src in group:
         val = getattr(src, f"_{prop_name}")
+        if val is None:
+            msg = f"Input {prop_name} of {src} must be set before computing the field."
+            raise MagpylibMissingInput(msg)
         # LAZY PADDING: Broadcast to max_path_len if needed
         if len(val) == 1 and max_path_len > 1:
             val = np.repeat(val, max_path_len, axis=0)

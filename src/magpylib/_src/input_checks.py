@@ -755,7 +755,7 @@ def check_dimensions(sources):
 def check_excitations(sources):
     """check if all sources have excitation initialized"""
     for src in sources:
-        for arg in ("polarization", "current", "moment"):
+        for arg in ("polarization", "current", "moment", "current_densities"):
             if hasattr(src, arg):
                 if getattr(src, arg) is None:
                     msg = f"Input {arg} of {src} must be set."

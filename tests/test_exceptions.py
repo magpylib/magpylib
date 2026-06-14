@@ -1,7 +1,8 @@
+import numpy as np
 import pytest
 
 import magpylib as magpy
-from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibMissingInput
 from magpylib._src.fields.field_BH import _getBH_level2
 from magpylib._src.input_checks import check_format_input_observers
 from magpylib._src.utility import format_obj_input, format_src_inputs
@@ -134,6 +135,25 @@ def test_except_getBH_lev2():
         getBH_level2_bad_input1()
     with pytest.raises(MagpylibBadUserInput):
         getBH_different_pixel_shapes()
+
+
+def test_triangle_sheet_none_current_densities_raises_missing_input():
+    """getB on a TriangleSheet whose current_densities is None must raise
+    MagpylibMissingInput, not a cryptic TypeError from inside _tile_group_property_path.
+
+    current_densities is not covered by check_dimensions (dimension/diameter/vertices)
+    or check_excitations (polarization/current/moment), so the validation must be
+    explicit.  Direct mutation of the private attribute bypasses the setter guards to
+    simulate a future source type that forgets to validate.
+    """
+    verts = np.array([[[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]]], dtype=float)
+    cd = np.array([[[1, 0, 0], [0, 1, 0]]], dtype=float)
+    ts = magpy.current.TriangleSheet(
+        vertices=verts, faces=[[0, 1, 2], [1, 2, 3]], current_densities=cd
+    )
+    ts._current_densities = None  # bypass setter
+    with pytest.raises(MagpylibMissingInput):
+        magpy.getB(ts, (0, 0, 1))
 
 
 def test_except_bad_input_shape_basegeo():
