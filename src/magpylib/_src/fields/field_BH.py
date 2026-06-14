@@ -123,7 +123,8 @@ def _tile_group_property_path(
         if val is None:
             msg = f"Input {prop_name} of {src} must be set before computing the field."
             raise MagpylibMissingInput(msg)
-        # LAZY PADDING: Broadcast to max_path_len if needed
+        # JIT padding: materialize a minimally-stored (len-1) property up to
+        # max_path_len. np.repeat copies — this is not a broadcast view.
         if len(val) == 1 and max_path_len > 1:
             val = np.repeat(val, max_path_len, axis=0)
         out.append(val)

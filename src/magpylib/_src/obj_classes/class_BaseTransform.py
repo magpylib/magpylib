@@ -126,8 +126,9 @@ def _path_padding(inpath, start, target_object):
         # and ensure it's float dtype for in-place operations
         ppath = np.array(ppath, dtype=float)
 
-    # LAZY PADDING: Ensure orientation matches position length
-    # If orientation is lazy (len=1) but position is longer, expand orientation
+    # Geometric sync: position and orientation must share a path length.
+    # If orientation is stored minimally (len=1) but position is longer,
+    # edge-pad orientation up to match.
     if len(opath) < len(ppath):
         opath = np.pad(opath, ((0, len(ppath) - len(opath)), (0, 0)), "edge")
 
@@ -191,6 +192,12 @@ def _apply_move(target_object, displacement, start="auto"):
 
 
 def pad_path_property(prop, new_path_len, start=0):
+    """Edge-pad (or end-slice) a single path property to ``new_path_len``.
+
+    Just-in-time materialization of a minimally-stored property: returns a fresh
+    array/Rotation of length ``new_path_len`` by edge-padding (and slicing if it
+    is already longer). Returns ``None`` unchanged.
+    """
     if prop is None:
         return prop
     is_rot = hasattr(prop, "single")
@@ -218,7 +225,11 @@ def pad_path_property(prop, new_path_len, start=0):
 
 
 def pad_path_properties(target_object, new_path_len, start=0, path_properties=None):
-    """Pad all path properties of target_object to new_path_len."""
+    """Just-in-time pad all path properties of target_object to new_path_len.
+
+    Mutates the object's stored attributes in place; callers that must preserve
+    the minimal (lazy) storage wrap this in ``_preserve_paths``.
+    """
     if path_properties is None:
         path_properties = target_object._path_properties
     for name in path_properties:
@@ -298,9 +309,9 @@ def _apply_rotation(
     target_object._orientation = R.from_quat(opath)
     target_object._position = ppath
 
-    # LAZY PADDING: Do not pad other properties.
-    # if padded:
-    #     pad_path_properties(target_object, len(ppath), newstart)
+    # Lazy storage: rotation only touches position/orientation. Other path
+    # properties are left in their minimal stored form and padded just-in-time
+    # at field/force computation (see pad_path_properties in field_BH/field_FT).
 
     return target_object
 

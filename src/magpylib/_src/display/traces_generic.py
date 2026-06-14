@@ -521,7 +521,8 @@ def get_generic_traces3D(
     positions = getattr(input_obj, "_position", None)
     orientations = getattr(input_obj, "_orientation", None)
     has_path = positions is not None and orientations is not None
-    # LAZY PADDING: Use _get_path_len() to get true path length including lazy properties
+    # Use _get_path_len() for the true path length, including path properties
+    # that are stored lazily (minimal form) beyond position/orientation.
     if hasattr(input_obj, "_get_path_len"):
         path_len = input_obj._get_path_len()
     else:
@@ -625,7 +626,9 @@ def get_generic_traces3D(
         temp_rot_traces = []
         name, name_suff = "", None
         for ind, path_ind in enumerate(path_inds):
-            # Lazy Broadcasting via centralized _get_prop
+            # Lazy access: _get_prop reads the stored value for this frame
+            # without materializing the full path (returns the single stored
+            # value for any index when the property is not path-varying).
             pos = _get_prop(positions, path_ind)
             orient = _get_prop(orientations, path_ind)
             tr_list = [trg]

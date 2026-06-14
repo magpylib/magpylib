@@ -357,7 +357,12 @@ def path_frames_to_indices(frames, path_len):
 
 
 def _get_prop(prop, ind):
-    """Helper to safely get property at index, supporting lazy broadcasting."""
+    """Read a path property at index ``ind`` (lazy access).
+
+    Returns the single stored value for any index when the property is not
+    path-varying (length 1), so minimally-stored properties never need to be
+    materialized to the full path length for display.
+    """
     if prop is None:
         return None
 
