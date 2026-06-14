@@ -233,6 +233,24 @@ class BaseGeo(BaseTransform, ABC):
             if getattr(self, f"_{name}", None) is not None
         }
 
+    @staticmethod
+    def _squeeze_path_property(prop):
+        """Public form of a stored path property.
+
+        Stored path properties always carry a leading path axis. For returning
+        to the user we collapse *only* that axis when it has length 1 (a non
+        path-varying property), leaving feature axes untouched — unlike
+        ``np.squeeze`` which would also drop length-1 feature dimensions. Returns
+        ``None`` for ``None`` and a single scipy Rotation unchanged.
+        """
+        if prop is None:
+            return None
+        if getattr(prop, "single", False):  # single scipy Rotation
+            return prop
+        if len(prop) == 1:
+            return prop[0]
+        return prop
+
     # static methods ------------------------------------------------
     @staticmethod
     def _process_style_kwargs(style=None, **kwargs):
@@ -339,7 +357,7 @@ class BaseGeo(BaseTransform, ABC):
     @property
     def position(self):
         """Return object position in global coordinates (m)."""
-        return np.squeeze(self._position) if self._position is not None else None
+        return self._squeeze_path_property(self._position)
 
     @position.setter
     def position(self, position):
@@ -396,14 +414,7 @@ class BaseGeo(BaseTransform, ABC):
 
         ``None`` corresponds to unit rotation.
         """
-        if self._orientation is None:
-            return None
-        # cannot squeeze (its a Rotation object)
-        if self._orientation.single:  # single path orientation - reduce dimension
-            return self._orientation
-        if len(self._orientation) == 1:  # array-form len-1 - return scalar-equivalent
-            return self._orientation[0]
-        return self._orientation  # return full path
+        return self._squeeze_path_property(self._orientation)
 
     @orientation.setter
     def orientation(self, orientation):

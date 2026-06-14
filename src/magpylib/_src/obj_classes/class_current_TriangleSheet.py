@@ -132,7 +132,7 @@ class TriangleSheet(BaseSource, BaseTarget):
     @property
     def vertices(self):
         """TriangleSheet Vertices"""
-        return np.squeeze(self._vertices) if self._vertices is not None else None
+        return self._squeeze_path_property(self._vertices)
 
     @vertices.setter
     def vertices(self, val):
@@ -181,13 +181,9 @@ class TriangleSheet(BaseSource, BaseTarget):
     @property
     def current_densities(self):
         """TriangleSheet CurrentDensities"""
-        # Collapse only the path axis (axis 0); keep the face axis intact so a
-        # single-face sheet returns (1, 3) consistently with multi-face (n, 3).
-        if self._current_densities is None:
-            return None
-        if len(self._current_densities) == 1:
-            return self._current_densities[0]
-        return self._current_densities
+        # Collapse only the path axis; the face axis is preserved so a single-face
+        # sheet returns (1, 3) consistently with multi-face (n, 3).
+        return self._squeeze_path_property(self._current_densities)
 
     @current_densities.setter
     def current_densities(self, val):

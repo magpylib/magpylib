@@ -193,9 +193,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     @property
     def vertices(self):
         """Mesh vertices in local object coordinates in units (m)."""
-        if self._vertices.shape[0] == 1:
-            return self._vertices[0]
-        return self._vertices
+        return self._squeeze_path_property(self._vertices)
 
     @vertices.setter
     def vertices(self, val):

@@ -136,7 +136,7 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     @property
     def dimension(self):
         """Cuboid side lengths (a, b, c) in units (m)."""
-        return np.squeeze(self._dimension) if self._dimension is not None else None
+        return self._squeeze_path_property(self._dimension)
 
     @dimension.setter
     def dimension(self, dim):

@@ -138,13 +138,7 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     @property
     def vertices(self):
         """Tetrahedron vertices in local object coordinates."""
-        return (
-            None
-            if self._vertices is None
-            else self._vertices[0]
-            if len(self._vertices) == 1
-            else self._vertices
-        )
+        return self._squeeze_path_property(self._vertices)
 
     @vertices.setter
     def vertices(self, dim):

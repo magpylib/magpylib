@@ -132,7 +132,7 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     @property
     def dimension(self):
         """Cylinder diameter and height ``(d, h)`` in units (m)."""
-        return np.squeeze(self._dimension) if self._dimension is not None else None
+        return self._squeeze_path_property(self._dimension)
 
     @dimension.setter
     def dimension(self, dim):

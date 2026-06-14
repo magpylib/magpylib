@@ -146,7 +146,7 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         r1 < r2 denote inner and outer radii in units (m), phi1 < phi2 the
         section angles in units (deg), and h the height in units (m).
         """
-        return np.squeeze(self._dimension) if self._dimension is not None else None
+        return self._squeeze_path_property(self._dimension)
 
     @dimension.setter
     def dimension(self, dim):

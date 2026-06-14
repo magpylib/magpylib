@@ -98,7 +98,7 @@ class Dipole(BaseSource, BaseDipoleMoment):
     @property
     def moment(self):
         """Magnetic dipole moment (A·m²) in local object coordinates."""
-        return np.squeeze(self._moment) if self._moment is not None else None
+        return self._squeeze_path_property(self._moment)
 
     @moment.setter
     def moment(self, mom):

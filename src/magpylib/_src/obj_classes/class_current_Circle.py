@@ -117,13 +117,7 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     @property
     def diameter(self):
         """Diameter of the loop in units of m."""
-        return (
-            None
-            if self._diameter is None
-            else self._diameter[0]
-            if len(self._diameter) == 1
-            else self._diameter
-        )
+        return self._squeeze_path_property(self._diameter)
 
     @diameter.setter
     def diameter(self, diameter):

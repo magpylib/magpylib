@@ -117,7 +117,7 @@ class Triangle(BaseMagnet):
     @property
     def vertices(self):
         """Triangle vertices in local object coordinates in units (m)."""
-        return np.squeeze(self._vertices) if self._vertices is not None else None
+        return self._squeeze_path_property(self._vertices)
 
     @vertices.setter
     def vertices(self, val):

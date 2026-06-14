@@ -868,3 +868,40 @@ def test_is_initializing_reset_after_failed_init():
         "orientation path not synced to new position length — "
         "_is_initializing was True when it shouldn't be"
     )
+
+
+def test_squeeze_path_property_helper():
+    """_squeeze_path_property collapses only the path axis, never feature axes."""
+    f = magpy.magnet.Cuboid._squeeze_path_property
+
+    assert f(None) is None
+
+    # scalar property (p,) -> scalar for len 1, full path otherwise
+    np.testing.assert_array_equal(f(np.array([5.0])), 5.0)
+    np.testing.assert_array_equal(f(np.array([1.0, 2.0, 3.0])), [1.0, 2.0, 3.0])
+
+    # vector property (p, k)
+    assert f(np.zeros((1, 3))).shape == (3,)
+    assert f(np.zeros((4, 3))).shape == (4, 3)
+
+    # feature axis of length 1 must be preserved (the np.squeeze trap)
+    assert f(np.zeros((1, 1, 3))).shape == (1, 3)
+    assert f(np.zeros((2, 1, 3))).shape == (2, 1, 3)
+
+    # scipy Rotation: single unchanged, array len-1 -> single, len>1 -> full
+    single = R.from_rotvec((0.1, 0.2, 0.3))
+    assert f(single) is single
+    arr1 = R.from_rotvec([(0.1, 0.2, 0.3)])
+    assert f(arr1).single
+    arr2 = R.from_rotvec([(0.1, 0.2, 0.3), (0.2, 0.3, 0.4)])
+    assert len(f(arr2)) == 2
+
+
+def test_squeeze_path_property_matches_np_squeeze_on_safe_shapes():
+    """For the shapes the old getters used (feature dims >= 2), the helper must
+    reproduce np.squeeze exactly — proving the consistency refactor is
+    behavior-preserving."""
+    f = magpy.magnet.Cuboid._squeeze_path_property
+    for shape in [(1, 2), (1, 3), (1, 5), (3, 3), (1, 3, 3), (4, 3), (1, 4, 3)]:
+        arr = np.arange(np.prod(shape), dtype=float).reshape(shape)
+        np.testing.assert_array_equal(f(arr), np.squeeze(arr))
