@@ -289,3 +289,23 @@ def test_path_property_len(value, expected):
     """path_property_len is the single source of truth for path-step counting."""
 
     assert path_property_len(value) == expected
+
+
+def test_apply_move_negative_start_orientation_alignment():
+    """Orientation must be padded on the same side as position.
+
+    Regression test: move(start<0) front-pads the position path, but
+    _apply_move end-padded the orientation path, pairing orientation steps
+    with the wrong positions.
+    """
+    s = magpy.Sensor(position=[(0, 0, 0), (1, 0, 0)])
+    s.orientation = R.from_euler("z", [0, 90], degrees=True)
+
+    s.move([(0, 0, 1)] * 4, start=-4)
+
+    np.testing.assert_allclose(s.position, [(0, 0, 1), (0, 0, 1), (0, 0, 1), (1, 0, 1)])
+    np.testing.assert_allclose(
+        s.orientation.as_euler("zyx", degrees=True)[:, 0],
+        [0, 0, 0, 90],
+        atol=1e-10,
+    )

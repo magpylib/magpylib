@@ -670,3 +670,50 @@ def test_preserve_paths_copy_true_works_for_rotation():
 
     np.testing.assert_allclose(src._position, pos_before)
     np.testing.assert_allclose(src._orientation.as_quat(), ori_before)
+
+
+def test_path_varying_property_multi_pixel():
+    """Path-varying property values must pair with the correct path step for
+    every sensor pixel.
+
+    Regression test: _tile_group_property_path laid out path-varying
+    properties pixel-major/path-minor (np.tile) while positions and observers
+    are path-major/pixel-minor, silently scrambling fields across path steps.
+    """
+    pixel = [(0, 0, 0.1), (0, 0, 0.2)]
+    sens = magpy.Sensor(pixel=pixel)
+
+    # scalar property (current)
+    currents = [1.0, 2.0, 3.0]
+    circ = magpy.current.Circle(current=currents, diameter=1.0)
+    B = magpy.getB(circ, sens)
+    for i, curr in enumerate(currents):
+        B_ref = magpy.current.Circle(current=curr, diameter=1.0).getB(pixel)
+        np.testing.assert_allclose(B[i], B_ref)
+
+    # vector property (dimension)
+    dims = [(1, 1, 1), (2, 2, 2)]
+    cub = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=dims)
+    B = magpy.getB(cub, sens)
+    for i, dim in enumerate(dims):
+        B_ref = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=dim).getB(pixel)
+        np.testing.assert_allclose(B[i], B_ref)
+
+
+def test_path_varying_property_multi_pixel_ragged_group():
+    """Same as above for sources with unequal property shapes in one group
+    (object-dtype branch of _tile_group_property_path)."""
+    pixel = [(0.1, 0, 0.2), (0, 0.2, 0.3)]
+    sens = magpy.Sensor(pixel=pixel)
+
+    verts1 = np.array([[(-1, 0, 0), (1, 0, 0)], [(-1, 0, 0.5), (1, 0, 0.5)]])
+    verts2 = np.array([(0, -1, 0), (0, 1, 0), (0, 1, 1)])
+    p1 = magpy.current.Polyline(current=1, vertices=verts1)  # path-varying
+    p2 = magpy.current.Polyline(current=1, vertices=verts2)  # static
+
+    B = magpy.getB([p1, p2], sens)
+    for i in range(2):
+        B_ref1 = magpy.current.Polyline(current=1, vertices=verts1[i]).getB(pixel)
+        B_ref2 = magpy.current.Polyline(current=1, vertices=verts2).getB(pixel)
+        np.testing.assert_allclose(B[0, i], B_ref1)
+        np.testing.assert_allclose(B[1, i], B_ref2)

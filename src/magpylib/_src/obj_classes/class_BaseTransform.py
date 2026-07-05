@@ -171,22 +171,16 @@ def _apply_move(target_object, displacement, start="auto"):
     check_start_type(start)
 
     # pad target_object path and compute start and end-index for rotation application
-    ppath, _, start, end, _ = _path_padding(inpath, start, target_object)
+    ppath, opath, start, end, _ = _path_padding(inpath, start, target_object)
 
     # apply move operation, then store (ppath was already padded by _path_padding)
     ppath[start:end] += inpath
     target_object._position = ppath
 
-    # Sync _orientation length to match new position path (geometric co-dependence).
-    from magpylib._src.obj_classes.class_BaseGeo import (  # noqa: PLC0415  # pylint: disable=import-outside-toplevel
-        _sync_orientation_to_len,
-    )
-
-    new_len = len(ppath)
-    if len(target_object._orientation) != new_len:
-        target_object._orientation = _sync_orientation_to_len(
-            target_object._orientation, new_len
-        )
+    # _path_padding pads opath on the same side as ppath, keeping each
+    # orientation step paired with its original position
+    if len(target_object._orientation) != len(ppath):
+        target_object._orientation = R.from_quat(opath)
 
     return target_object
 

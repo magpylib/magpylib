@@ -132,16 +132,14 @@ def _tile_group_property_path(
             val = np.repeat(val, max_path_len, axis=0)
         out.append(val)
 
+    # repeat each path entry n_pix times: rows must be path-major/pixel-minor
+    # to match the position/orientation/observer layout in _get_src_dict
     if not np.isscalar(out[0]) and any(o.shape != out[0].shape for o in out):
-        out = [
-            np.tile(o, (n_pix, *[1] * o[0].ndim)).reshape((-1, *o[0].shape))
-            for o in out
-        ]
+        out = [np.repeat(o, n_pix, axis=0) for o in out]
         out = np.array([oo for o in out for oo in o], dtype="object")
     else:
-        out = np.array(out)
-        pii = out[0][0]  # single property base  array , single path index
-        out = np.tile(out, (n_pix, *[1] * pii.ndim)).reshape((-1, *pii.shape))
+        out = np.repeat(np.array(out), n_pix, axis=1)
+        out = out.reshape((-1, *out.shape[2:]))
     return out
 
 
