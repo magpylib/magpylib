@@ -7,6 +7,7 @@ import re
 from copy import deepcopy
 from functools import lru_cache
 
+import numpy as np
 from matplotlib.colors import CSS4_COLORS as mcolors
 
 from magpylib._src.defaults.defaults_values import DEFAULTS
@@ -206,7 +207,6 @@ def linearize_dict(kwargs, separator=".") -> dict:
     return dict_
 
 
-@lru_cache(maxsize=1000)
 def color_validator(color_input, allow_None=True, parent_name=""):
     """validates color inputs based on chosen `backend', allows `None` by default.
 
@@ -229,6 +229,16 @@ def color_validator(color_input, allow_None=True, parent_name=""):
     ValueError
         raises ValueError inf validation fails
     """
+    if isinstance(color_input, list | np.ndarray):
+        color_input = tuple(np.asarray(color_input).tolist())
+    try:
+        return _color_validator_cached(color_input, allow_None, parent_name)
+    except TypeError:  # unhashable input (e.g. nested list) cannot use the cache
+        return _color_validator_cached.__wrapped__(color_input, allow_None, parent_name)
+
+
+@lru_cache(maxsize=1000)
+def _color_validator_cached(color_input, allow_None=True, parent_name=""):
     if allow_None and color_input is None:
         return color_input
 

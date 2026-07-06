@@ -1,5 +1,6 @@
 from copy import deepcopy
 
+import numpy as np
 import pytest
 
 from magpylib._src.defaults.defaults_utility import (
@@ -109,6 +110,11 @@ def test_linearize_dict():
         ("rgb(127, 127, 127)", True, "#7f7f7f"),
         ((0, 0, 0, 0), False, "#000000"),
         ((0.1, 0.2, 0.3), False, "#19334c"),
+        ([127, 127, 127], True, "#7f7f7f"),
+        ([0.1, 0.2, 0.3], False, "#19334c"),
+        pytest.param(
+            np.array([0.1, 0.2, 0.3]), False, "#19334c", id="ndarray-uncached"
+        ),
     ]
     + [(shortC, True, longC) for shortC, longC in COLORS_SHORT_TO_LONG.items()],
 )
