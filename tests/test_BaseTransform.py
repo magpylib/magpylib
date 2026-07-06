@@ -299,13 +299,15 @@ def test_apply_move_negative_start_orientation_alignment():
     with the wrong positions.
     """
     s = magpy.Sensor(position=[(0, 0, 0), (1, 0, 0)])
-    s.orientation = R.from_euler("z", [0, 90], degrees=True)
+    # two rotations about z: 0 deg and 90 deg (from_rotvec is unambiguous across
+    # scipy versions, unlike from_euler("z", [0, 90]))
+    s.orientation = R.from_rotvec(np.deg2rad([[0, 0, 0], [0, 0, 90]]))
 
     s.move([(0, 0, 1)] * 4, start=-4)
 
     np.testing.assert_allclose(s.position, [(0, 0, 1), (0, 0, 1), (0, 0, 1), (1, 0, 1)])
     np.testing.assert_allclose(
-        s.orientation.as_euler("zyx", degrees=True)[:, 0],
+        np.rad2deg(s.orientation.as_rotvec()[:, 2]),
         [0, 0, 0, 90],
         atol=1e-10,
     )
