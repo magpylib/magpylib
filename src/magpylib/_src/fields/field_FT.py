@@ -365,8 +365,21 @@ def _compute_B_with_paths(sources, obs_flat, n_path):
     # General case: sources have paths
     B_flat = np.empty((n_src, n_path, n_obs, 3))
 
+    # A Collection source is moved per path step via its public position/
+    # orientation setters, which displace its descendants. Preserve those
+    # descendants too so their paths are restored on exit (setattr on the
+    # Collection alone would leave children permanently displaced).
+    from magpylib._src.obj_classes.class_Collection import (  # noqa: PLC0415
+        Collection,
+    )
+
+    preserve_objs = list(sources)
+    for src in sources:
+        if isinstance(src, Collection):
+            preserve_objs.extend(src.children_all)
+
     # Preserve original source paths and pad them to n_path
-    with _preserve_paths(sources, path_properties=None, copy=False):
+    with _preserve_paths(preserve_objs, path_properties=None, copy=False):
         # Pad all source paths to n_path
         for src in sources:
             pad_path_properties(

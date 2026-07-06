@@ -886,3 +886,37 @@ def test_path_varying_with_centroid_pivot():
         T_manual.append(T_i)
 
     np.testing.assert_allclose(T_default, np.array(T_manual), rtol=1e-10)
+
+
+def test_collection_source_path_restores_children():
+    """A Collection source with a path must not permanently displace its children.
+
+    Regression: _compute_B_with_paths moves a Collection source per path step
+    via the public position/orientation setters (which propagate to children),
+    but _preserve_paths only restored the Collection's own attributes, leaving
+    children permanently displaced (and their paths collapsed).
+    """
+    src = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1), dimension=(1, 1, 1), position=(0, 0, 2)
+    )
+    col = magpy.Collection(src)
+    col.move([(0, 0, 0), (1, 0, 0), (2, 0, 0)])
+    pos_before = src.position.copy()
+    ori_before = src.orientation.as_quat().copy()
+
+    tgt = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1), meshing=2)
+    F_col, T_col = magpy.getFT(col, tgt)
+
+    # children restored exactly
+    np.testing.assert_array_equal(src.position, pos_before)
+    np.testing.assert_allclose(src.orientation.as_quat(), ori_before)
+
+    # a Collection of one source equals the bare source
+    src2 = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1), dimension=(1, 1, 1), position=(0, 0, 2)
+    )
+    src2.move([(0, 0, 0), (1, 0, 0), (2, 0, 0)])
+    tgt2 = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1), meshing=2)
+    F_src, T_src = magpy.getFT(src2, tgt2)
+    np.testing.assert_allclose(F_col, F_src)
+    np.testing.assert_allclose(T_col, T_src)
