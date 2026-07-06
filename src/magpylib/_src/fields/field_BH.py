@@ -116,20 +116,18 @@ def _preserve_paths(input_objs, path_properties=None, copy=False):
                 setattr(obj, f"_{prop}", path_orig[key])
 
 
-def _tile_group_property_path(
-    group: list, n_pix: int, prop_name: str, max_path_len: int
-):
-    """tile up group property with path support"""
+def _tile_group_property_path(group: list, n_pix: int, prop_name: str):
+    """tile up group property with path support.
+
+    Every object is edge-padded to the common max path length by _getBH_level2
+    before this runs, so each stored value already carries the full path length.
+    """
     out = []
     for src in group:
         val = getattr(src, f"_{prop_name}")
         if val is None:
             msg = f"Input {prop_name} of {src} must be set before computing the field."
             raise MagpylibMissingInput(msg)
-        # JIT padding: materialize a minimally-stored (len-1) property up to
-        # max_path_len. np.repeat copies — this is not a broadcast view.
-        if len(val) == 1 and max_path_len > 1:
-            val = np.repeat(val, max_path_len, axis=0)
         out.append(val)
 
     # repeat each path entry n_pix times: rows must be path-major/pixel-minor
@@ -153,32 +151,23 @@ def _tile_group_property(group: list, n_pp: int, prop_name: str):
     return np.repeat(out, n_pp, axis=0)
 
 
-def _get_src_dict(
-    group: list, n_pix: int, n_pp: int, poso: np.ndarray, max_path_len: int
-) -> dict:
-    """create dictionaries for level1 input"""
+def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
+    """create dictionaries for level1 input.
+
+    Every object is edge-padded to the common max path length by _getBH_level2
+    before this runs, so ``_position``/``_orientation`` already carry the full
+    path length.
+    """
     # pylint: disable=protected-access
     # pylint: disable=too-many-return-statements
 
     # tile up basic attributes that all sources have
     # Position
-    poss = []
-    for src in group:
-        pos = src._position
-        if len(pos) == 1 and max_path_len > 1:
-            pos = np.repeat(pos, max_path_len, axis=0)
-        poss.append(pos)
-    poss = np.array(poss)
+    poss = np.array([src._position for src in group])
     posv = np.tile(poss, n_pix).reshape((-1, 3))
 
     # Orientation - convert Rotation to quat, tile, convert back
-    rots = []
-    for src in group:
-        rot = src._orientation.as_quat()
-        if len(rot) == 1 and max_path_len > 1:
-            rot = np.repeat(rot, max_path_len, axis=0)
-        rots.append(rot)
-    rots = np.array(rots)
+    rots = np.array([src._orientation.as_quat() for src in group])
     rotv = np.tile(rots, n_pix).reshape((-1, 4))
     rotobj = R.from_quat(rotv)
 
@@ -208,9 +197,7 @@ def _get_src_dict(
             and prop_name not in ("position", "orientation")
             and prop_name in props_in_field_func
         ):
-            kwargs[prop_name] = _tile_group_property_path(
-                group, n_pix, prop_name, max_path_len
-            )
+            kwargs[prop_name] = _tile_group_property_path(group, n_pix, prop_name)
 
     return kwargs
 
@@ -438,7 +425,7 @@ def _getBH_level2(
             lg = len(group["sources"])
             gr = group["sources"]
             src_dict = _get_src_dict(
-                gr, n_pix, n_pp, poso, max_path_len
+                gr, n_pix, n_pp, poso
             )  # compute array dict for level1
             # compute field
             B_group = _getBH_level1(

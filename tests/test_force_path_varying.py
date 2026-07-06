@@ -920,3 +920,71 @@ def test_collection_source_path_restores_children():
     F_src, T_src = magpy.getFT(src2, tgt2)
     np.testing.assert_allclose(F_col, F_src)
     np.testing.assert_allclose(T_col, T_src)
+
+
+def test_trimesh_static_geometry_varying_mag_matches_per_step():
+    """Deduped path meshing must match independent per-step computation.
+
+    generate_mesh_triangularmesh now meshes once per unique (vertices, volume)
+    geometry and applies each step's magnetization, instead of re-meshing every
+    step. The result must equal computing each step as a separate object.
+    """
+    v = (
+        np.array(
+            [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]],
+            dtype=float,
+        )
+        * 0.5
+    )
+    f = np.array(
+        [
+            [0, 2, 4],
+            [2, 1, 4],
+            [1, 3, 4],
+            [3, 0, 4],
+            [0, 5, 2],
+            [2, 5, 1],
+            [1, 5, 3],
+            [3, 5, 0],
+        ]
+    )
+    src = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1), dimension=(1, 1, 1), position=(0, 0, 3)
+    )
+    mags = np.array([[0, 0, 1e6], [0, 0, 1.5e6], [1e6, 0, 0]])
+
+    tm = magpy.magnet.TriangularMesh(
+        vertices=v, faces=f, magnetization=mags, meshing=30
+    )
+    F, T = magpy.getFT(src, tm)
+
+    for i, mag in enumerate(mags):
+        tm_i = magpy.magnet.TriangularMesh(
+            vertices=v, faces=f, magnetization=mag, meshing=30
+        )
+        F_i, T_i = magpy.getFT(src, tm_i)
+        np.testing.assert_allclose(F[i], F_i, rtol=1e-10)
+        np.testing.assert_allclose(T[i], T_i, rtol=1e-10)
+
+
+def test_trianglesheet_static_geometry_varying_current_matches_per_step():
+    """Same invariant for generate_mesh_triangle_current's geometry dedup."""
+    verts = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0], [0.5, 0.5, 0.2]])
+    faces = np.array([[0, 1, 2], [1, 3, 2], [0, 2, 4], [1, 2, 4]])
+    cds = np.array([[[1, 0, 0]] * 4, [[0, 1, 0]] * 4, [[0.5, 0.5, 0]] * 4], dtype=float)
+    src = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1), dimension=(1, 1, 1), position=(0, 0, 3)
+    )
+
+    ts = magpy.current.TriangleSheet(
+        vertices=verts, faces=faces, current_densities=cds, meshing=12
+    )
+    F, T = magpy.getFT(src, ts)
+
+    for i in range(len(cds)):
+        ts_i = magpy.current.TriangleSheet(
+            vertices=verts, faces=faces, current_densities=cds[i], meshing=12
+        )
+        F_i, T_i = magpy.getFT(src, ts_i)
+        np.testing.assert_allclose(F[i], F_i, rtol=1e-10)
+        np.testing.assert_allclose(T[i], T_i, rtol=1e-10)

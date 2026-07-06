@@ -559,10 +559,13 @@ def generate_mesh_triangle_current(
     p_len = triangles.shape[0]
     n_tria = triangles.shape[1]
 
-    # Check for path-varying parameters
-    has_path_varying = (np.unique(triangles, axis=0).shape[0] > 1) or (
-        np.unique(cds, axis=0).shape[0] > 1
-    )
+    # Check for path-varying parameters. Keep the triangle-geometry dedup
+    # (unique rows + inverse map) so the expensive _subdiv runs once per unique
+    # geometry instead of once per path step.
+    unique_trias, tria_inv = np.unique(triangles, axis=0, return_inverse=True)
+    tria_inv = tria_inv.ravel()  # numpy version-robust (2.0 returned (n, 1))
+    triangles_varying = unique_trias.shape[0] > 1
+    has_path_varying = triangles_varying or (np.unique(cds, axis=0).shape[0] > 1)
 
     # Vectorized computation of surfaces for all paths: shape (p, n)
     surfaces = 0.5 * np.linalg.norm(
@@ -588,10 +591,13 @@ def generate_mesh_triangle_current(
     # Each surface gets divided by 2^splits[i]
     surfaces = surfaces / (2.0 ** splits[np.newaxis, :])
 
-    # Vectorized subdivision and centroid calculation for all paths
-    # Apply _subdiv to each path and stack results
-    trias_refined_list = [_subdiv(triangles[p_idx], splits) for p_idx in range(p_len)]
-    trias_refined = np.stack(trias_refined_list, axis=0)  # Shape: (p, n_refined, 3, 3)
+    # Vectorized subdivision and centroid calculation for all paths.
+    # _subdiv depends only on the (path-independent) splits and the per-step
+    # geometry, so run it once per unique geometry and scatter back.
+    refined_unique = [_subdiv(tria, splits) for tria in unique_trias]
+    trias_refined = np.stack(
+        [refined_unique[k] for k in tria_inv], axis=0
+    )  # Shape: (p, n_refined, 3, 3)
 
     # Calculate centroids for all paths at once: shape (p, n_refined, 3)
     pts = np.mean(trias_refined, axis=2)
@@ -984,25 +990,36 @@ def generate_mesh_triangularmesh(vertices, faces, volume, magnetization, target_
             vertices[0], faces, volume[0], magnetization[0], target_elems
         )
 
-    # Path-varying: generate per-path meshes and pad
-    pts_list = []
-    moments_list = []
+    # The expensive grid + inside-mask meshing depends only on (vertices,
+    # volume) — magnetization merely scales the per-cell moment. Mesh once per
+    # unique geometry, then apply each step's magnetization. Cell volumes are
+    # uniform (volume / n_pts), so moments[p] = (volume / n_pts) * mag[p].
+    geom_key = np.concatenate(
+        [vertices.reshape(p_len, -1), volume.reshape(p_len, 1)], axis=1
+    )
+    unique_geom, geom_inv = np.unique(geom_key, axis=0, return_inverse=True)
+    geom_inv = geom_inv.ravel()
 
-    for p_idx in range(p_len):
+    uniq_pts = []
+    uniq_cell_volume = []
+    for g in range(len(unique_geom)):
+        rep = int(np.flatnonzero(geom_inv == g)[0])
         out = _get_triangularmesh_mesh_single(
-            vertices[p_idx], faces, volume[p_idx], magnetization[p_idx], target_elems
+            vertices[rep], faces, volume[rep], magnetization[rep], target_elems
         )
-        pts_list.append(out["pts"])
-        moments_list.append(out["moments"])
+        uniq_pts.append(out["pts"])
+        uniq_cell_volume.append(volume[rep] / len(out["pts"]))
 
     # Pad and stack
-    max_n = max(len(pts) for pts in pts_list)
+    max_n = max(len(pts) for pts in uniq_pts)
     pts_array = np.zeros((p_len, max_n, 3))
     moments_array = np.zeros((p_len, max_n, 3))
 
     for p_idx in range(p_len):
-        n = len(pts_list[p_idx])
-        pts_array[p_idx, :n] = pts_list[p_idx]
-        moments_array[p_idx, :n] = moments_list[p_idx]
+        g = geom_inv[p_idx]
+        pts_g = uniq_pts[g]
+        n = len(pts_g)
+        pts_array[p_idx, :n] = pts_g
+        moments_array[p_idx, :n] = uniq_cell_volume[g] * magnetization[p_idx]
 
     return {"pts": pts_array, "moments": moments_array}
