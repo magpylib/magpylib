@@ -318,6 +318,7 @@ class BaseMagnet(BaseSource):
     """Provide magnetization and polarization attributes for magnet sources."""
 
     _style_class = MagnetStyle
+    _style_family = ("magnet",)
 
     def __init__(
         self, position, orientation, magnetization, polarization, style, **kwargs
@@ -392,6 +393,7 @@ class BaseCurrent(BaseSource):
     """Provide scalar electric current attribute for current sources."""
 
     _style_class = CurrentStyle
+    _style_family = ("current",)
 
     def __init__(self, position, orientation, current, style, **kwargs):
         super().__init__(position, orientation, style=style, **kwargs)

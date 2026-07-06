@@ -24,48 +24,13 @@ ALLOWED_SIZEMODES = ("scaled", "absolute")
 
 
 def get_families(obj):
-    """get obj families"""
-    # pylint: disable=import-outside-toplevel
-    # pylint: disable=possibly-unused-variable
-    # pylint: disable=redefined-outer-name
-    # ruff: noqa: F401
-    from magpylib._src.display.traces_generic import MagpyMarkers as Markers  # noqa: I001, PLC0415
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent as Current  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet as Magnet  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_current_Circle import Circle  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_current_Polyline import Polyline  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_current_TriangleSheet import TriangleSheet  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_current_TriangleStrip import TriangleStrip  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_magnet_Cylinder import Cylinder  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_magnet_CylinderSegment import CylinderSegment  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_magnet_Sphere import Sphere  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_misc_CustomSource import CustomSource  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_misc_Dipole import Dipole  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_misc_Triangle import Triangle  # noqa: PLC0415
-    from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
+    """Return the style family names of an object, generic first.
 
-    loc = locals()
-    parent_map = {TriangleSheet: "currentsheet", TriangleStrip: "currentsheet"}
-    parent_exclude_map = {
-        TriangleStrip: "current"
-    }  # TriangleStrip is a Current but has not current style
-    obj_families = []
-    for item, val in loc.items():
-        if not item.startswith("_"):
-            try:
-                if isinstance(obj, val):
-                    obj_families.append(item.lower())
-                    if val in parent_map:
-                        obj_families.append(parent_map[val].lower())
-            except TypeError:
-                pass
-    for item, exclude in parent_exclude_map.items():
-        if isinstance(obj, item) and exclude in obj_families:
-            obj_families.remove(exclude)
-    return obj_families
+    Families are declared as a ``_style_family`` class attribute and name the
+    sections of the default style (``magpy.defaults.display.style``) that apply
+    to the object, e.g. ``("magnet", "triangularmesh")`` for a TriangularMesh.
+    """
+    return getattr(type(obj), "_style_family", ())
 
 
 def get_style(obj, default_settings, **kwargs):

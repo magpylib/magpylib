@@ -142,6 +142,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     _force_type = "magnet"
     get_trace = make_TriangularMesh
     _style_class = TriangularMeshStyle
+    _style_family = ("magnet", "triangularmesh")
 
     def __init__(
         self,

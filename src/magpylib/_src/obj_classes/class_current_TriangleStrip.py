@@ -110,6 +110,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
     }
     get_trace = make_TriangleStrip
     _style_class = CurrentSheetStyle
+    _style_family = ("currentsheet",)
 
     def __init__(
         self,
