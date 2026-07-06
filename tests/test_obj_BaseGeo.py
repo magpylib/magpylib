@@ -905,3 +905,61 @@ def test_squeeze_path_property_matches_np_squeeze_on_safe_shapes():
     for shape in [(1, 2), (1, 3), (1, 5), (3, 3), (1, 3, 3), (4, 3), (1, 4, 3)]:
         arr = np.arange(np.prod(shape), dtype=float).reshape(shape)
         np.testing.assert_array_equal(f(arr), np.squeeze(arr))
+
+
+@pytest.mark.parametrize(
+    ("obj", "attr"),
+    [
+        (
+            magpy.magnet.Cylinder(
+                magnetization=[(0, 0, 1e6), (0, 0, 2e6)],
+                dimension=[(1, 1), (2, 2), (3, 3)],
+            ),
+            "dipole_moment",
+        ),
+        (
+            magpy.magnet.Sphere(
+                magnetization=[(0, 0, 1e6), (0, 0, 2e6)], diameter=[1, 2, 3]
+            ),
+            "dipole_moment",
+        ),
+        (
+            magpy.magnet.CylinderSegment(
+                magnetization=(0, 0, 1e6),
+                dimension=[(1, 2, 1, 0, 90), (1, 2, 1, 0, 180), (1, 2, 1, 0, 270)],
+                position=[(0, 0, 0), (0, 0, 1)],
+            ),
+            "dipole_moment",
+        ),
+        (
+            magpy.magnet.CylinderSegment(
+                magnetization=(0, 0, 1e6),
+                dimension=[(1, 2, 1, 0, 90), (1, 2, 1, 0, 180), (1, 2, 1, 0, 270)],
+                position=[(0, 0, 0), (0, 0, 1)],
+            ),
+            "centroid",
+        ),
+        (
+            magpy.current.Circle(diameter=[1, 2, 3], current=[1, 2]),
+            "dipole_moment",
+        ),
+        (
+            magpy.magnet.Tetrahedron(
+                magnetization=[(0, 0, 1e6), (0, 0, 2e6)],
+                vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)],
+                position=[(0, 0, 0), (1, 0, 0), (2, 0, 0)],
+            ),
+            "centroid",
+        ),
+    ],
+)
+def test_computed_getters_mismatched_path_lengths(obj, attr):
+    """Computed getters must edge-pad path properties to a common length.
+
+    Regression test: under lazy storage a property (e.g. magnetization) may be
+    stored with a different path length than the geometry it multiplies. These
+    getters combined the raw arrays and raised a numpy broadcasting error while
+    getB on the same object worked via JIT padding.
+    """
+    result = np.asarray(getattr(obj, attr))  # must not raise
+    assert result.ndim == 2  # (p, 3), padded to the common max path length

@@ -233,7 +233,7 @@ def check_condition(
     if not ok:
         msg = (
             f"{msg_name} must satisfy condition {cond!r} with threshold"
-            " {threshold!r} (mode={mode!r}); instead received {inp!r}."
+            f" {threshold!r} (mode={mode!r}); instead received {inp!r}."
         )
         raise MagpylibBadUserInput(msg)
     return inp

@@ -155,11 +155,12 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
         # test init
-        diam, curr = self._diameter, self._current
-        if diam is None or curr is None:
+        if self._diameter is None or self._current is None:
             mom = np.zeros_like(self._position)
         else:
-            diam, curr = diam[:, np.newaxis], curr[:, np.newaxis]
+            synced = self._sync_path_lengths(("diameter", "current"))
+            diam = synced["diameter"][:, np.newaxis]
+            curr = synced["current"][:, np.newaxis]
             mom = diam**2 / 4 * np.pi * curr * np.array((0, 0, 1))
         if squeeze and len(mom) == 1:
             return mom[0]

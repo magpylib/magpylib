@@ -52,7 +52,7 @@ def _get_current_arrow_offset(obj, line_style, path_ind):
         cmin, cmax = np.nanmin(cs), np.nanmax(cs)
         if (ptp := cmax - cmin) != 0:
             offset_lst = (cs - cmin) / ptp
-            offset = offset_lst[path_ind]
+            offset = _get_prop(offset_lst, path_ind)
     return current, offset
 
 
@@ -96,7 +96,7 @@ def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
                 current, offset = _get_current_arrow_offset(obj, kind_style, path_ind)
                 x, y, z = draw_arrow_from_vertices(
                     vertices=_get_prop(vertices, path_ind),
-                    sign=np.sign(current[path_ind]),
+                    sign=np.sign(_get_prop(current, path_ind)),
                     arrow_size=kind_style.size,
                     arrow_pos=offset,
                     scaled=kind_style.sizemode == "scaled",
@@ -242,7 +242,7 @@ def make_Circle(
                 current, offset = _get_current_arrow_offset(obj, kind_style, path_ind)
                 angle_pos_deg = 360 * np.round(offset * base) / base
                 vertices = draw_arrow_on_circle(
-                    sign=np.sign(current[path_ind]),
+                    sign=np.sign(_get_prop(current, path_ind)),
                     diameter=diameter,
                     arrow_size=style.arrow.size,
                     scaled=kind_style.sizemode == "scaled",

@@ -189,12 +189,14 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         """Centroid of object in units (m)."""
         if self._vertices is None:
             centroid = np.array([0.0, 0.0, 0.0])
-        elif isinstance(self._vertices, np.ndarray) and self._vertices.ndim == 3:
-            # vertices path-shaped: shape (p,4,3)
-            centroid = np.mean(self._vertices, axis=1)  # (p,3)
+            orientation, position = self._orientation, self._position
         else:
-            centroid = np.mean(self._vertices, axis=0)
-        result = self._orientation.apply(centroid) + self._position
+            # sync vertices with position/orientation so the per-step centroid
+            # stays paired with its pose under the lazy-storage path model
+            synced = self._sync_path_lengths(("vertices", "position", "orientation"))
+            centroid = np.mean(synced["vertices"], axis=1)  # (p,3)
+            orientation, position = synced["orientation"], synced["position"]
+        result = orientation.apply(centroid) + position
         if squeeze and len(result) == 1:
             return result[0]
         return result
@@ -207,8 +209,18 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
                 return dip[0]
             return dip
 
-        vols = self._get_volume(squeeze=False)
-        dipoles = self._magnetization * vols[:, np.newaxis]
+        synced = self._sync_path_lengths(("vertices", "magnetization"))
+        verts = synced["vertices"]  # shape (p, 4, 3)
+        matrices = np.stack(
+            [
+                verts[:, 1] - verts[:, 0],
+                verts[:, 2] - verts[:, 0],
+                verts[:, 3] - verts[:, 0],
+            ],
+            axis=1,
+        )
+        vols = np.abs(np.linalg.det(matrices)) / 6.0
+        dipoles = synced["magnetization"] * vols[:, np.newaxis]
         if squeeze and len(dipoles) == 1:
             return dipoles[0]
         return dipoles

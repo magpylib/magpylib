@@ -174,8 +174,9 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
                 return dip[0]
             return dip
 
-        vols = self._get_volume(squeeze=False)
-        dipoles = self._magnetization * vols[:, np.newaxis]
+        synced = self._sync_path_lengths(("diameter", "magnetization"))
+        vols = synced["diameter"] ** 3 * np.pi / 6
+        dipoles = synced["magnetization"] * vols[:, np.newaxis]
 
         if squeeze and len(dipoles) == 1:
             return dipoles[0]

@@ -200,10 +200,12 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         """Centroid of object in units (m)."""
         if self._dimension is None:
             centroid = np.array([0.0, 0.0, 0.0])
+            orientation, position = self._orientation, self._position
         else:
-            # Handle path-varying dimensions
-            dims = self._dimension
-            r1, r2, _, phi1, phi2 = dims.T
+            # sync dimension with position/orientation so the per-step centroid
+            # stays paired with its pose under the lazy-storage path model
+            synced = self._sync_path_lengths(("dimension", "position", "orientation"))
+            r1, r2, _, phi1, phi2 = synced["dimension"].T
             alpha = np.deg2rad((phi2 - phi1) / 2)
             phi = np.deg2rad((phi1 + phi2) / 2)
             # get centroid x for unrotated annular sector
@@ -217,9 +219,8 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
                 np.zeros_like(centroid_x),
             )
             centroid = np.column_stack([x, y, z])
-            if centroid.shape[0] == 1:
-                centroid = centroid[0]
-        result = self._orientation.apply(centroid) + self._position
+            orientation, position = synced["orientation"], synced["position"]
+        result = orientation.apply(centroid) + position
         if squeeze and len(result) == 1:
             return result[0]
         return result
@@ -232,8 +233,10 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
                 return dip[0]
             return dip
 
-        vols = self._get_volume(squeeze=False)
-        dipoles = self._magnetization * vols[:, np.newaxis]
+        synced = self._sync_path_lengths(("dimension", "magnetization"))
+        r1, r2, h, phi1, phi2 = synced["dimension"].T
+        vols = (r2**2 - r1**2) * np.pi * h * (phi2 - phi1) / 360
+        dipoles = synced["magnetization"] * vols[:, np.newaxis]
 
         if squeeze and len(dipoles) == 1:
             return dipoles[0]

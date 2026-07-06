@@ -163,15 +163,16 @@ class TriangleSheet(BaseSource, BaseTarget):
             )
             raise ValueError(msg)
 
-        self._vertices = verts
-
+        # validate against existing faces before mutating, so a rejected
+        # assignment leaves the previously valid object unchanged
         if self._faces is not None:
             try:
-                self._vertices[0][self._faces]
+                verts[0][self._faces]
             except IndexError:
-                self._vertices = None
                 msg = f"Some faces indices of {self} do not match with vertices array."
                 raise ValueError(msg) from None
+
+        self._vertices = verts
 
     @property
     def faces(self):

@@ -279,3 +279,42 @@ def test_triangle_sheet_single_face_current_densities_shape():
         current_densities=((1, 0, 0), (0, 1, 0)),
     )
     assert two_face.current_densities.shape == (2, 3)
+
+
+def test_triangle_sheet_failed_vertices_assignment_is_noop():
+    """A rejected vertices assignment must leave the object unchanged.
+
+    Regression: the setter assigned self._vertices then set it to None on the
+    faces-compatibility failure, corrupting a previously valid object so that
+    subsequent getB/show raised MagpylibMissingInput.
+    """
+    ts = magpy.current.TriangleSheet(
+        vertices=[[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]],
+        faces=[[0, 1, 2], [1, 2, 3]],
+        current_densities=[(1, 0, 0), (0, 1, 0)],
+    )
+    before = ts._vertices.copy()
+
+    with pytest.raises(ValueError, match="faces indices"):
+        ts.vertices = [[0, 0, 0], [1, 0, 0], [0, 1, 0]]  # face index 3 now invalid
+
+    np.testing.assert_array_equal(ts._vertices, before)
+    # object still usable
+    assert np.asarray(ts.getB([0, 0, 1])).shape == (3,)
+
+
+def test_triangle_strip_dipole_moment_accepts_fp_closed_strip():
+    """Dipole moment must accept strips closed only to floating-point precision.
+
+    Regression: an exact ``==`` closed-strip check replaced main's np.allclose,
+    so strips whose closing vertices come from trig computations (differing by
+    ~1e-14) raised instead of computing the moment.
+    """
+    t = np.linspace(0, 2 * np.pi, 6)
+    ring = np.array([np.cos(t), np.sin(t), np.zeros_like(t)]).T
+    # append closing vertices off by floating-point epsilon
+    ring = np.vstack([ring, ring[0] + 1e-14, ring[1] - 1e-14])
+    strip = magpy.current.TriangleStrip(vertices=ring, current=1)
+
+    dm = strip.dipole_moment  # must not raise
+    assert np.asarray(dm).shape == (3,)

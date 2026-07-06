@@ -205,8 +205,10 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
                 return dip[0]
             return dip
 
-        vols = self._get_volume(squeeze=False)
-        dipoles = self._magnetization * vols[:, np.newaxis]
+        synced = self._sync_path_lengths(("dimension", "magnetization"))
+        dims = synced["dimension"]
+        vols = dims[..., 0] ** 2 * np.pi * dims[..., 1] / 4
+        dipoles = synced["magnetization"] * vols[:, np.newaxis]
 
         if squeeze and len(dipoles) == 1:
             return dipoles[0]

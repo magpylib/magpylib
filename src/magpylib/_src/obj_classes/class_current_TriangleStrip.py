@@ -183,7 +183,9 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         # Shape: _vertices is (p, n, 3)
         first_two = self._vertices[:, :2, :]  # shape (p, 2, 3)
         last_two = self._vertices[:, -2:, :]  # shape (p, 2, 3)
-        is_closed = np.all(first_two == last_two, axis=(1, 2))  # shape (p,)
+        # tolerance-based (matches main): strips closed only to floating-point
+        # precision (e.g. from trig-computed vertices) must still be accepted
+        is_closed = np.isclose(first_two, last_two).all(axis=(1, 2))  # shape (p,)
 
         # Check if any path is not closed
         if np.any(~is_closed):

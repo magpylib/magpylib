@@ -94,13 +94,14 @@ def update_magnet_mesh(input_obj, style, mesh_dict, color_slicing=False, path_in
     mag_style = style.magnetization
     mag_color = mag_style.color
     mag_arr = input_obj._magnetization
-    if mag_arr is not None:
-        if path_ind is not None and mag_arr.shape[0] > 1:
-            magnetization = mag_arr[path_ind]
-        else:
-            magnetization = mag_arr[0]
-    else:
+    if mag_arr is None:
         magnetization = np.array([0.0, 0.0, 0.0], dtype=float)
+    elif path_ind is None:
+        magnetization = mag_arr[0]
+    else:
+        # lazy access: clamp path_ind when magnetization is stored shorter
+        # than the object's overall path length
+        magnetization = _get_prop(mag_arr, path_ind)
     if mag_style.show:
         vertices = np.array([mesh_dict[k] for k in "xyz"]).T
         color_middle = mag_color.middle
@@ -148,7 +149,7 @@ def make_mag_arrows(obj, path_ind=-1):
 
     mag = obj._magnetization
     mag = np.array([[0.0, 0.0, 0.0]]) if mag is None else mag
-    mag = mag[path_ind] if mag.ndim == 2 else mag
+    mag = _get_prop(mag, path_ind) if mag.ndim == 2 else mag
     if np.all(mag == 0):
         return None
     style = obj.style
@@ -157,27 +158,28 @@ def make_mag_arrows(obj, path_ind=-1):
     color = style.color if arrow.color is None else arrow.color
     if arrow.sizemode == "scaled":
         if hasattr(obj, "diameter"):
-            length = obj._diameter[path_ind]  # Sphere
+            length = _get_prop(obj._diameter, path_ind)  # Sphere
         elif isinstance(obj, magpy.misc.Triangle):
             verts = obj._vertices
-            verts = verts[path_ind] if verts.ndim == 3 else verts
+            verts = _get_prop(verts, path_ind) if verts.ndim == 3 else verts
             length = np.amax(verts) - np.amin(verts)
         elif hasattr(obj, "mesh"):
             mesh = obj.mesh
-            mesh = mesh[path_ind] if mesh.ndim == 4 else mesh
+            mesh = _get_prop(mesh, path_ind) if mesh.ndim == 4 else mesh
             length = np.amax(np.ptp(mesh.reshape(-1, 3), axis=0))
         elif hasattr(obj, "vertices"):
             verts = obj._vertices
-            verts = verts[path_ind] if verts.ndim == 3 else verts
+            verts = _get_prop(verts, path_ind) if verts.ndim == 3 else verts
             length = np.amax(np.ptp(verts, axis=0))
         else:  # Cuboid, Cylinder, CylinderSegment
-            length = np.amax(obj._dimension[path_ind, :3])
+            length = np.amax(_get_prop(obj._dimension, path_ind)[:3])
         length *= 1.5
     length *= arrow.size
     # collect all draw positions and directions
-    pos = getattr(obj, "_centroid", obj._position)[path_ind] - obj._position[path_ind]
+    centroid = getattr(obj, "_centroid", obj._position)
+    pos = _get_prop(centroid, path_ind) - _get_prop(obj._position, path_ind)
     # we need initial relative centroid, arrow gets orientated later
-    pos = obj._orientation[path_ind].inv().apply(pos)
+    pos = _get_prop(obj._orientation, path_ind).inv().apply(pos)
     direc = mag / (np.linalg.norm(mag) + 1e-6) * length
     x, y, z = draw_arrowed_line(
         direc, pos, sign=1, arrow_pos=arrow.offset, pivot="tail"

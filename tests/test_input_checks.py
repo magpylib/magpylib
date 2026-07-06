@@ -1066,3 +1066,17 @@ def test_magnet_polarization_magnetization_input3():
     c.magnetization = mag
     np.testing.assert_allclose(mag, c.magnetization)
     np.testing.assert_allclose(mag * magpy.mu_0, c.polarization)  # type: ignore[attr-defined]
+
+
+def test_check_condition_message_interpolates_value():
+    """A value-condition violation must report the threshold and offending value.
+
+    Regression: the failure message dropped the f-prefix on its second line, so
+    users saw the literal text '{threshold!r} (mode={mode!r}); instead received
+    {inp!r}' instead of the actual numbers.
+    """
+    with pytest.raises(MagpylibBadUserInput) as excinfo:
+        magpy.current.Circle(diameter=-1)
+    msg = str(excinfo.value)
+    assert "{" not in msg  # no un-interpolated placeholders
+    assert "-1" in msg  # offending value is shown
