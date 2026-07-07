@@ -410,10 +410,9 @@ class PropertyNode:
     def copy(self):
         """Return a detached, unobserved deep copy."""
         new = type(self).__new__(type(self))
-        for key in self.__dict__:
+        for key, value in self.__dict__.items():
             if key not in self._fields:
                 continue
-            value = self.__dict__[key]
             if isinstance(value, PropertyNode):
                 child = value.copy()
                 object.__setattr__(child, "_parent", new)
@@ -489,14 +488,14 @@ class PropertyNode:
         """Register ``callback(path, value)`` to fire on any change in this
         subtree; ``path`` is the dotted path of the changed property relative
         to this node."""
-        if not self._observers:
-            object.__setattr__(self, "_observers", [])
-        self._observers.append(callback)
+        object.__setattr__(self, "_observers", (*self._observers, callback))
         self._mark_observed()
 
     def unobserve(self, callback):
         """Unregister a previously registered callback."""
-        self._observers.remove(callback)
+        observers = list(self._observers)
+        observers.remove(callback)
+        object.__setattr__(self, "_observers", tuple(observers))
 
     def _mark_observed(self):
         object.__setattr__(self, "_observed", True)

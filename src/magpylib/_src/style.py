@@ -6,6 +6,8 @@ round-tripping, schema introspection, change observation and layered
 resolution generically (see ``magpylib._src.defaults.property_tree``).
 """
 
+# pylint: disable=too-many-lines
+
 import re
 
 import numpy as np
