@@ -2,7 +2,6 @@
 
 # pylint: disable=too-many-branches
 
-import collections.abc
 import re
 from copy import deepcopy
 from functools import lru_cache
@@ -82,48 +81,6 @@ def get_defaults_dict(arg=None) -> dict:
         for v in arg.split("."):
             dict_ = dict_[v]
     return dict_
-
-
-def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False) -> dict:
-    """updates recursively dictionary 'd' from  dictionary 'u'
-
-    Parameters
-    ----------
-    d : dict
-       dictionary to be updated
-    u : dict
-        dictionary to update with
-    same_keys_only : bool, optional
-        if ``True``, only key found in d get updated and no new items are created,
-        by default False
-    replace_None_only : bool, optional
-        if ``True``, only key/value pair from d where ``value=None`` get updated from u,
-        by default False
-
-    Returns
-    -------
-    dict
-        updated dictionary
-    """
-    if not isinstance(d, collections.abc.Mapping):
-        if d is None or not replace_None_only:
-            d = u.copy()
-        return d
-    new_dict = deepcopy(d)
-    for k, v in u.items():
-        if k in new_dict or not same_keys_only:
-            if isinstance(v, collections.abc.Mapping):
-                new_dict[k] = update_nested_dict(
-                    new_dict.get(k, {}),
-                    v,
-                    same_keys_only=same_keys_only,
-                    replace_None_only=replace_None_only,
-                )
-            elif (new_dict.get(k, None) is None or not replace_None_only) and (
-                not same_keys_only or k in new_dict
-            ):
-                new_dict[k] = v
-    return new_dict
 
 
 def magic_to_dict(kwargs, separator="_") -> dict:
@@ -300,22 +257,6 @@ def _color_validator_cached(color_input, allow_None=True, parent_name=""):
     return color_new
 
 
-def validate_property_class(val, name, class_, parent):
-    """validator for sub property"""
-    if isinstance(val, dict):
-        val = class_(**val)
-    elif val is None:
-        val = class_()
-    if not isinstance(val, class_):
-        msg = (
-            f"The {name} property of {type(parent).__name__} must be an instance "
-            f"of {class_} or a dictionary with equivalent key/value pairs; "
-            f"instead received {val!r}."
-        )
-        raise TypeError(msg)
-    return val
-
-
 @lru_cache(maxsize=1)
 def _valid_style_keys():
     """generally available style keys, derived from the hardcoded defaults"""
@@ -337,123 +278,3 @@ def validate_style_keys(style_kwargs):
         )
         raise ValueError(msg)
     return style_kwargs
-
-
-class MagicProperties:
-    (
-        """
-    Base Class to represent only the property attributes defined at initialization, after which the
-    class is frozen. This prevents user to create any attributes that are not defined as properties.
-
-    Raises
-    ------
-    AttributeError
-        raises AttributeError if the object is not a property
-    """
-        """"""
-    )
-
-    __isfrozen = False
-
-    def __init__(self, **kwargs):
-        input_dict = dict.fromkeys(self._property_names_generator())
-        if kwargs:
-            magic_kwargs = magic_to_dict(kwargs)
-            diff = set(magic_kwargs.keys()).difference(set(input_dict.keys()))
-            for attr in diff:
-                msg = (
-                    f"{type(self).__name__} has no property {attr}. "
-                    f"Available properties: {list(self._property_names_generator())}."
-                )
-                raise AttributeError(msg)
-            input_dict.update(magic_kwargs)
-        for k, v in input_dict.items():
-            setattr(self, k, v)
-        self._freeze()
-
-    def __setattr__(self, key, value):
-        if self.__isfrozen and not hasattr(self, key):
-            msg = (
-                f"{type(self).__name__} has no property {key}. "
-                f"Available properties: {list(self._property_names_generator())}."
-            )
-            raise AttributeError(msg)
-        object.__setattr__(self, key, value)
-
-    def _freeze(self):
-        self.__isfrozen = True
-
-    def _property_names_generator(self):
-        """returns a generator with class properties only"""
-        return (
-            attr
-            for attr in dir(self)
-            if isinstance(getattr(type(self), attr, None), property)
-        )
-
-    def __repr__(self):
-        params = self._property_names_generator()
-        dict_str = ", ".join(f"{k}={getattr(self, k)!r}" for k in params)
-        return f"{type(self).__name__}({dict_str})"
-
-    def as_dict(self, flatten=False, separator="."):
-        """Returns recursively a nested dictionary with all properties objects of the class
-
-        Parameters
-        ----------
-        flatten: bool
-            If ``True``, the nested dictionary gets flatten out with provided separator for the
-            dictionary keys
-        separator: str
-            the separator to be used when flattening the dictionary. Only applies if
-            ``flatten=True``
-        """
-        params = self._property_names_generator()
-        dict_ = {}
-        for k in params:
-            val = getattr(self, k)
-            if hasattr(val, "as_dict"):
-                dict_[k] = val.as_dict()
-            else:
-                dict_[k] = val
-        if flatten:
-            dict_ = linearize_dict(dict_, separator=separator)
-        return dict_
-
-    def update(
-        self, arg=None, _match_properties=True, _replace_None_only=False, **kwargs
-    ):
-        """
-        Updates the class properties with provided arguments, supports magic underscore notation
-
-        Parameters
-        ----------
-        _match_properties: bool
-            If ``True``, checks if provided properties over keyword arguments are matching the current
-            object properties. An error is raised if a non-matching property is found.
-            If ``False``, the ``update`` method does not raise any error when an argument is not
-            matching a property.
-        _replace_None_only:
-            updates matching properties that are equal to ``None`` (not already been set)
-
-
-        Returns
-        -------
-        self
-        """
-        arg = {} if arg is None else arg.copy()
-        arg = magic_to_dict({**arg, **kwargs})
-        current_dict = self.as_dict()
-        new_dict = update_nested_dict(
-            current_dict,
-            arg,
-            same_keys_only=not _match_properties,
-            replace_None_only=_replace_None_only,
-        )
-        for k, v in new_dict.items():
-            setattr(self, k, v)
-        return self
-
-    def copy(self):
-        """returns a copy of the current class instance"""
-        return deepcopy(self)
