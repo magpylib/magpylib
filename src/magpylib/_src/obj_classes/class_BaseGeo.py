@@ -61,6 +61,8 @@ def _sync_orientation_to_len(ori, target_len):
     """Pad or slice a Rotation (always array-form) to target_len."""
     if ori is None:
         return None
+    if len(ori) == target_len:
+        return ori
     ori_quat = np.atleast_2d(ori.as_quat())  # always 2D
     result = _pad_slice_path([0] * target_len, ori_quat)
     return R.from_quat(result)
