@@ -17,6 +17,7 @@ from magpylib._src.defaults.defaults_utility import (
     ALLOWED_SYMBOLS,
     SUPPORTED_PLOTTING_BACKENDS,
     get_defaults_dict,
+    magic_to_dict,
     validate_style_keys,
 )
 from magpylib._src.defaults.property_tree import (
@@ -44,6 +45,29 @@ def get_families(obj):
     return getattr(type(obj), "_style_family", ())
 
 
+def _resolved_default_style(style_class, families, default_style):
+    """Return the cached fully-merged default style for a style class.
+
+    All objects of the same class resolve against the same defaults layers,
+    so the merge of family and base sections is computed once and cached on
+    the ``default_style`` node. The cache is invalidated through the node's
+    own change observation, so user mutations of ``magpy.defaults`` take
+    effect immediately.
+    """
+    cache = getattr(default_style, "_resolved_cache", None)
+    if cache is None:
+        cache = {}
+        default_style._resolved_cache = cache
+        default_style.observe(lambda _path, _value: cache.clear())
+    key = (style_class, families)
+    resolved = cache.get(key)
+    if resolved is None:
+        family_layers = [getattr(default_style, fam) for fam in reversed(families)]
+        resolved = style_class().merged(*family_layers, default_style.base)
+        cache[key] = resolved
+    return resolved
+
+
 def get_style(obj, default_settings, **kwargs):
     """Return the resolved style of an object with increasing priority:
 
@@ -59,17 +83,22 @@ def get_style(obj, default_settings, **kwargs):
     )
     style_kwargs = validate_style_keys(style_kwargs)
 
-    # apply object style and kwargs (highest priority)
-    style = obj.style.copy()
+    # apply kwargs onto a copy of the object style (highest priority; an
+    # explicit None kwarg unsets, deferring to the defaults below)
+    obj_style = obj.style.copy()
     style_kwargs_specific = {
-        k: v for k, v in style_kwargs.items() if k.split("_")[0] in style._fields
+        k: v for k, v in style_kwargs.items() if k.split("_")[0] in obj_style._fields
     }
-    style.update(style_kwargs_specific)
+    obj_style.update(style_kwargs_specific)
 
-    # fill unset properties from the defaults layers, most specific first
-    default_style = default_settings.display.style
-    family_layers = [getattr(default_style, fam) for fam in reversed(get_families(obj))]
-    return style.merged(*family_layers, default_style.base)
+    # overlay the explicitly set values onto the cached resolved defaults
+    style = _resolved_default_style(
+        type(obj_style), get_families(obj), default_settings.display.style
+    ).copy()
+    set_values = obj_style.set_values(separator="_")
+    if set_values:
+        style.update(magic_to_dict(set_values))
+    return style
 
 
 # field descriptors specific to style classes ---------------------------

@@ -177,6 +177,25 @@ def test_get_style_does_not_mutate_inputs():
     assert magpy.defaults.display.style.as_dict() == defaults_before
 
 
+def test_resolution_cache_invalidation_and_isolation():
+    """The cached defaults layer must refresh on magpy.defaults mutations and
+    every resolved style must be an independent copy of the cache entry."""
+    cuboid = make_cuboid()
+    assert get_style(cuboid, default_settings).magnetization.show is True
+    # mutation after a cache-priming resolution must take effect
+    magpy.defaults.display.style.magnet.magnetization.show = False
+    assert get_style(cuboid, default_settings).magnetization.show is False
+
+    # resolved styles are detached copies, not shared cache objects
+    first = get_style(cuboid, default_settings)
+    first.magnetization.arrow.width = 99
+    second = get_style(cuboid, default_settings)
+    assert second.magnetization.arrow.width != 99
+    # mutable leaves (model3d traces) are not shared with the object style
+    second.model3d.add_trace({"constructor": "Mesh3d"})
+    assert cuboid.style.model3d.data == ()
+
+
 # ------------------------------------------------------------------
 # end-to-end: resolved styles must reach the rendered figure
 # ------------------------------------------------------------------

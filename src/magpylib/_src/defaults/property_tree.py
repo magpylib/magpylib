@@ -407,6 +407,8 @@ class PropertyNode:
                 setattr(self, key, value)
         return self
 
+    _IMMUTABLE_TYPES = (str, int, float, bool, type(None))
+
     def copy(self):
         """Return a detached, unobserved deep copy."""
         new = type(self).__new__(type(self))
@@ -418,6 +420,8 @@ class PropertyNode:
                 object.__setattr__(child, "_parent", new)
                 object.__setattr__(child, "_name", key)
                 new.__dict__[key] = child
+            elif isinstance(value, self._IMMUTABLE_TYPES):
+                new.__dict__[key] = value
             else:
                 new.__dict__[key] = deepcopy(value)
         return new
