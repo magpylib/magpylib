@@ -7,6 +7,7 @@
 
 import inspect
 import numbers
+from functools import cache
 from importlib.util import find_spec
 
 import numpy as np
@@ -174,6 +175,16 @@ def match_shape(shape, pattern):
     return helper(0, 0)
 
 
+_CONDITION_OPS = {
+    "eq": np.equal,
+    "ne": np.not_equal,
+    "lt": np.less,
+    "le": np.less_equal,
+    "gt": np.greater,
+    "ge": np.greater_equal,
+}
+
+
 def check_condition(
     inp,
     cond,
@@ -186,21 +197,9 @@ def check_condition(
     mode: 'all' (default) requires all elements to satisfy, 'any' requires at least one.
     Returns inp unchanged on success, raises MagpylibBadUserInput on failure.
     """
-
-    # build name for error messages
-    msg_name = "Input" + (f" {name}" if name is not None else "")
-    ops = {
-        "eq": np.equal,
-        "ne": np.not_equal,
-        "lt": np.less,
-        "le": np.less_equal,
-        "gt": np.greater,
-        "ge": np.greater_equal,
-    }
-
     if isinstance(cond, str):
         try:
-            func = ops[cond]
+            func = _CONDITION_OPS[cond]
         except KeyError as err:
             msg = f"Unknown condition string {cond!r}."
             raise MagpylibInternalError(msg) from err
@@ -213,7 +212,7 @@ def check_condition(
         raise MagpylibInternalError(msg)
 
     try:
-        arr = np.array(inp)
+        arr = np.asarray(inp)
         res = func(arr, threshold)
     except Exception as err:
         msg = f"Failed to evaluate condition {cond!r} on input {inp!r} with threshold {threshold!r}: {err}"
@@ -231,12 +230,55 @@ def check_condition(
         ok = bool(res)
 
     if not ok:
+        msg_name = "Input" + (f" {name}" if name is not None else "")
         msg = (
             f"{msg_name} must satisfy condition {cond!r} with threshold"
             f" {threshold!r} (mode={mode!r}); instead received {inp!r}."
         )
         raise MagpylibBadUserInput(msg)
     return inp
+
+
+@cache
+def _parse_shape_specs(shapes):
+    """Parse static shape specifications into matching structures (cached).
+
+    Returns (dims, shapes_clean, exact_shapes, wildcard_shapes) where
+    exact_shapes is a set of all-int patterns compared by tuple equality
+    and wildcard_shapes holds the remaining patterns for `match_shape`.
+    """
+    dims = []
+    shapes_clean = []
+    for shape in shapes:
+        shape_clean = None
+        if shape is None:
+            dims.append(0)
+        elif isinstance(shape, int):
+            dims.append(1)
+            shape_clean = (shape,)
+        elif isinstance(shape, (list, tuple)):
+            shape_clean = tuple(shape)
+            assert all(
+                (isinstance(s, int) and s >= 0) or s is None or s is Ellipsis
+                for s in shape
+            )
+            if Ellipsis in shape:
+                dims.append(None)
+            else:
+                dims.append(len(shape))
+        else:
+            # internal check
+            msg = "shapes must be either None for scalar or a tuple for arrays"
+            raise AssertionError(msg)
+        if shape_clean is not None:
+            shapes_clean.append(shape_clean)
+    dims = tuple(dict.fromkeys(dims))
+    shapes_clean = tuple(shapes_clean)
+    exact_shapes = frozenset(
+        s for s in shapes_clean if all(isinstance(e, int) for e in s)
+    )
+    wildcard_shapes = tuple(s for s in shapes_clean if s not in exact_shapes)
+    return dims, shapes_clean, exact_shapes, wildcard_shapes
 
 
 def check_format_input_numeric(
@@ -267,35 +309,14 @@ def check_format_input_numeric(
     # build name for error messages
     msg_name = "Input" + (f" {name}" if name is not None else "")
 
-    dims = []
     if shapes is None:
         shapes = (None,)
-    shapes_clean = []
-    for shape in shapes:
-        shape_clean = None
-        if shape is None:
-            dims.append(0)
-        elif isinstance(shape, int):
-            dims.append(1)
-            shape_clean = (shape,)
-        elif isinstance(shape, (list, tuple)):
-            shape_clean = shape
-            assert all(
-                (isinstance(s, int) and s >= 0) or s is None or s is Ellipsis
-                for s in shape
-            )
-            if Ellipsis in shape:
-                dims.append(None)
-            else:
-                dims.append(len(shape))
-        else:
-            # internal check
-            msg = "shapes must be either None for scalar or a tuple for arrays"
-            raise AssertionError(msg)
-        if shape_clean is not None:
-            shapes_clean.append(shape_clean)
-    dims = tuple(dict.fromkeys(dims))
-    shapes = tuple(shapes_clean)
+    try:
+        dims, shapes, exact_shapes, wildcard_shapes = _parse_shape_specs(shapes)
+    except TypeError:  # unhashable spec (e.g. lists), parse without cache
+        dims, shapes, exact_shapes, wildcard_shapes = _parse_shape_specs.__wrapped__(
+            tuple(tuple(s) if isinstance(s, list) else s for s in shapes)
+        )
 
     is_an_array = isinstance(inp, (list, tuple, np.ndarray))
     is_a_number = isinstance(inp, numbers.Number)
@@ -347,14 +368,12 @@ def check_format_input_numeric(
         )
         raise MagpylibBadUserInput(msg)
 
-    if shapes == (None,):
+    if shapes == ():
         return check_conditions(array)
 
-    shape_match = False
-    for shape in shapes:
-        if match_shape(array.shape, shape):
-            shape_match = True
-            break
+    shape_match = array.shape in exact_shapes or any(
+        match_shape(array.shape, shape) for shape in wildcard_shapes
+    )
 
     if not shape_match:
         shapes_str = " or ".join(
