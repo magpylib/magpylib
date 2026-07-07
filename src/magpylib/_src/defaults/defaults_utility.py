@@ -316,11 +316,17 @@ def validate_property_class(val, name, class_, parent):
     return val
 
 
+@lru_cache(maxsize=1)
+def _valid_style_keys():
+    """generally available style keys, derived from the hardcoded defaults"""
+    styles_by_family = DEFAULTS["display"]["style"]
+    return frozenset(key for v in styles_by_family.values() for key in v)
+
+
 def validate_style_keys(style_kwargs):
     """validates style kwargs based on key up to first underscore.
     checks in the defaults structures the generally available style keys"""
-    styles_by_family = get_defaults_dict("display.style")
-    valid_keys = {key for v in styles_by_family.values() for key in v}
+    valid_keys = _valid_style_keys()
     level0_style_keys = {k.split("_")[0]: k for k in style_kwargs}
     kwargs_diff = set(level0_style_keys).difference(valid_keys)
     invalid_keys = {level0_style_keys[k] for k in kwargs_diff}

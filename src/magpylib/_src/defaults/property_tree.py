@@ -108,10 +108,13 @@ class Number(Property):
     json_type = "number"
     _types = (int, float)
 
-    def __init__(self, default=None, doc="", minimum=None, maximum=None):
+    def __init__(
+        self, default=None, doc="", minimum=None, maximum=None, exclusive_minimum=None
+    ):
         super().__init__(default, doc)
         self.minimum = minimum
         self.maximum = maximum
+        self.exclusive_minimum = exclusive_minimum
 
     def validate(self, obj, value):
         if (
@@ -119,9 +122,13 @@ class Number(Property):
             or isinstance(value, bool)
             or (self.minimum is not None and value < self.minimum)
             or (self.maximum is not None and value > self.maximum)
+            or (self.exclusive_minimum is not None and value <= self.exclusive_minimum)
         ):
             bounds = [
                 f">={self.minimum}" if self.minimum is not None else "",
+                f">{self.exclusive_minimum}"
+                if self.exclusive_minimum is not None
+                else "",
                 f"<={self.maximum}" if self.maximum is not None else "",
             ]
             bounds = " and ".join(b for b in bounds if b)
@@ -135,6 +142,8 @@ class Number(Property):
             out["minimum"] = self.minimum
         if self.maximum is not None:
             out["maximum"] = self.maximum
+        if self.exclusive_minimum is not None:
+            out["exclusiveMinimum"] = self.exclusive_minimum
         return out
 
 
@@ -210,18 +219,47 @@ class Color(Property):
         return {**super().schema(), "format": "color"}
 
 
+class ColorSequence(Property):
+    """A tuple of CSS colors, each normalized by `color_validator`."""
+
+    kind = "colorsequence"
+
+    def validate(self, obj, value):
+        name = type(obj).__name__
+        try:
+            return tuple(
+                color_validator(c, allow_None=False, parent_name=name) for c in value
+            )
+        except TypeError as err:
+            msg = (
+                f"Input {self.name} of {name} must be an "
+                f"iterable of colors; instead received {value!r}."
+            )
+            raise ValueError(msg) from err
+
+    def schema(self):
+        out = super().schema()
+        out["type"] = ["array", "null"]
+        out["items"] = {"type": "string", "format": "color"}
+        return out
+
+
 class Nested(Property):
     """A child `PropertyNode`, instantiated lazily on first access.
 
     Assigning a dict builds a fresh node from it (replace, not merge — use
     ``update()`` to merge); assigning ``None`` resets to a pristine node.
+    With ``from_str``, assigning a string builds a node with that field set,
+    e.g. ``style.description = "hello"`` for ``Nested(Description,
+    from_str="text")``.
     """
 
     kind = "node"
 
-    def __init__(self, node_class, doc=""):
+    def __init__(self, node_class, doc="", from_str=None):
         super().__init__(None, doc)
         self.node_class = node_class
+        self.from_str = from_str
 
     def __get__(self, obj, objtype=None):
         if obj is None:
@@ -236,6 +274,8 @@ class Nested(Property):
             obj.__dict__.pop(self.name, None)  # pristine node on next access
         elif isinstance(value, dict):
             self._adopt(obj, self.node_class(**value))
+        elif isinstance(value, str) and self.from_str:
+            self._adopt(obj, self.node_class(**{self.from_str: value}))
         elif isinstance(value, self.node_class):
             self._adopt(obj, value)
         else:
@@ -291,7 +331,12 @@ class PropertyNode:
             self.update(kwargs)
 
     def __setattr__(self, name, value):
-        if name in self._fields or name.startswith("_"):
+        if (
+            name in self._fields
+            or name.startswith("_")
+            # plain python properties are allowed, e.g. deprecated aliases
+            or isinstance(getattr(type(self), name, None), property)
+        ):
             object.__setattr__(self, name, value)
         else:
             msg = (
@@ -343,7 +388,9 @@ class PropertyNode:
         for key, value in data.items():
             field = self._fields.get(key)
             if field is None:
-                if _match_properties:
+                if isinstance(getattr(type(self), key, None), property):
+                    setattr(self, key, value)  # e.g. deprecated aliases
+                elif _match_properties:
                     msg = (
                         f"{type(self).__name__} has no property {key!r}. "
                         f"Available properties: {list(self._fields)}."

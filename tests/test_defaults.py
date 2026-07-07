@@ -76,19 +76,12 @@ bad_inputs = {
 
 def get_bad_test_data():
     """create parametrized bad style test data"""
-    # pylint: disable=possibly-used-before-assignment
-    bad_test_data = []
-    for k, tup in bad_inputs.items():
-        for v in tup:
-            if "description_text" not in k:
-                if "color" in k and "transition" not in k and "mode" not in k:
-                    # color attributes use a the color validator, which raises a ValueError
-                    errortype = ValueError
-                else:
-                    # all other parameters raise AssertionError
-                    errortype = AssertionError
-            bad_test_data.append((k, v, pytest.raises(errortype)))
-    return bad_test_data
+    # all property validators raise ValueError
+    return [
+        (k, v, pytest.raises(ValueError, match=r".*"))
+        for k, tup in bad_inputs.items()
+        for v in tup
+    ]
 
 
 @pytest.mark.parametrize(
@@ -170,7 +163,7 @@ good_inputs = {
         "tip",
     ),  # pivot middle, tail, tip
     "display_style_triangle_orientation_show": (True, False),
-    "display_style_triangle_orientation_size": (True, False),
+    "display_style_triangle_orientation_size": (0, 1),  # float>=0
     "display_style_triangle_orientation_color": ("yellow",),
     "display_style_triangle_orientation_offset": (-1, 0.5, 2),  # float, int
     "display_style_triangle_orientation_symbol": ("cone", "arrow3d"),
