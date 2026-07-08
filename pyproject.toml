@@ -106,6 +106,9 @@ addopts = ["-ra", "--showlocals"]
 strict = true
 filterwarnings = [
   "error",
+  # vtk's numpy_support is not NumPy 2.5 compatible (uses `arr.shape = ...`);
+  # remove once VTK ships a fix (surfaces through pyvista)
+  "ignore:Setting the shape on a NumPy array has been deprecated:DeprecationWarning",
 ]
 log_level = "INFO"
 testpaths = [
