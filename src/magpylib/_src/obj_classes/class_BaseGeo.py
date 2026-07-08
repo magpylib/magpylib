@@ -68,6 +68,12 @@ def _sync_orientation_to_len(ori, target_len):
     return R.from_quat(result)
 
 
+# Shared default orientation for objects initialized without orientation input.
+# Rotation objects are immutable (all magpylib code reassigns _orientation, and
+# as_quat() returns copies), so sharing one instance across objects is safe.
+_UNIT_ORIENTATION = R.identity(1)
+
+
 class BaseGeo(BaseTransform, ABC):
     """Initializes basic properties inherited by ALL Magpylib objects
 
@@ -153,7 +159,12 @@ class BaseGeo(BaseTransform, ABC):
         self._is_initializing = True
         try:
             for prop, val in path_kwargs.items():
-                setattr(self, prop, val)
+                if prop == "orientation" and val is None:
+                    # default case fast path: skip validation, Rotation
+                    # construction and the setter's children handling
+                    self._orientation = _UNIT_ORIENTATION
+                else:
+                    setattr(self, prop, val)
         finally:
             self._is_initializing = False
 
