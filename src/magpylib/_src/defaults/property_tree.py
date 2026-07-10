@@ -56,12 +56,8 @@ class Property:
         self.name = None
 
     def __set_name__(self, owner, name):
-        if "_" in name:
-            msg = (
-                f"Property name {name!r} of {owner.__name__} must not contain "
-                "underscores; they are reserved for magic underscore notation."
-            )
-            raise ValueError(msg)
+        # name validation happens in PropertyNode.__init_subclass__: exceptions
+        # raised in __set_name__ get wrapped in RuntimeError before python 3.12
         self.name = name
 
     def __get__(self, obj, objtype=None):
@@ -325,6 +321,13 @@ class PropertyNode:
             for key, val in vars(klass).items()
             if isinstance(val, Property)
         }
+        for key in cls._fields:
+            if "_" in key:
+                msg = (
+                    f"Property name {key!r} of {cls.__name__} must not contain "
+                    "underscores; they are reserved for magic underscore notation."
+                )
+                raise ValueError(msg)
 
     def __init__(self, **kwargs):
         if kwargs:
