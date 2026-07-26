@@ -230,3 +230,23 @@ def test_e2e_mutated_base_default_reaches_figure():
     magpy.defaults.display.style.base.color = "black"
     fig = magpy.show(make_cuboid(), **SHOW_KW)
     assert fig.data[0].color == "black"
+
+
+def test_show_preserves_style_instance_and_observers():
+    """show() must not swap out the object's style instance or drop change
+    observers bound to it - GUIs and other tools hold references across
+    renders. (Rendering temporarily replaces the style internally, but the
+    original instance is restored as-is.)"""
+    cuboid = make_cuboid()
+    cuboid.style.magnetization.mode = "arrow"
+    style_before = cuboid.style
+    events = []
+    cuboid.style.observe(lambda path, value: events.append((path, value)))
+
+    magpy.show(cuboid, **SHOW_KW)
+
+    assert cuboid.style is style_before  # same instance, not a restored copy
+    assert cuboid.style.magnetization.mode == "arrow"  # user value intact
+    # the observer bound before the render still fires afterwards
+    cuboid.style.opacity = 0.5
+    assert events == [("opacity", 0.5)]
