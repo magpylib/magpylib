@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 - Added `magpylib.register_backend`, making the display-backend registry public
-  ([#969](https://github.com/magpylib/magpylib/pull/969)). A third party can now
+  ([#969](https://github.com/magpylib/magpylib/pull/970)). A third party can now
   add a plotting backend without editing anything inside magpylib; the
   registered name is accepted by `show(backend=...)`,
   `magpy.defaults.display.backend` and `style.model3d.data[].backend`. The three
