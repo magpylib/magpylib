@@ -55,6 +55,52 @@ class RegisteredBackend:
         self.backends[name] = self
 
     @classmethod
+    def _warn_unsupported(cls, backend, feature, resolution):
+        """Warn that `backend` cannot do `feature`, naming one that can."""
+        supported = [k for k, v in cls.backends.items() if v.supports[feature]]
+        supported_str = (
+            f"one of {supported!r}" if len(supported) > 1 else f"{supported[0]!r}"
+        )
+        warnings.warn(
+            "Unsupported feature for selected backend: "
+            f"the {backend} backend does not support {feature!r}. "
+            f"Use {supported_str} instead. "
+            f"{resolution}",
+            stacklevel=3,
+        )
+
+    @classmethod
+    def _collapse_subplots(cls, objs, backend):
+        """Drop a subplot grid onto a single plot, for backends without subplots.
+
+        Only well defined for a homogeneous grid: `subplot_specs` marks each
+        cell as a 3D scene or a 2D field plot, and a grid mixing the two has no
+        single-plot equivalent. Mixed grids are therefore passed through with a
+        warning rather than silently flattened into something wrong.
+        """
+        from magpylib._src.display.traces_utility import (  # noqa: PLC0415
+            process_show_input_objs,
+        )
+
+        outputs = {obj.get("output", "model3d") for obj in objs}
+        if len(outputs) > 1:
+            cls._warn_unsupported(
+                backend,
+                "subplots",
+                "The grid mixes 3D and 2D panels and cannot be collapsed onto a "
+                "single plot, so it is passed through unchanged; the figure is "
+                "likely to be wrong.",
+            )
+            return objs, None, None, None
+
+        cls._warn_unsupported(
+            backend, "subplots", "Falling back to a single combined plot."
+        )
+        objs = [{**obj, "row": 1, "col": 1} for obj in objs]
+        objs, _, max_rows, max_cols, subplot_specs = process_show_input_objs(objs)
+        return objs, max_rows, max_cols, subplot_specs
+
+    @classmethod
     def show(
         cls,
         *objs,
@@ -72,26 +118,21 @@ class RegisteredBackend:
         self = cls.backends[backend]
         fallback = {
             "animation": {"animation": False},
-            "subplots": {"row": None, "col": None},
             "animation_output": {"animation_output": None},
         }
         for name, params in fallback.items():
             condition = not all(kwargs.get(k, v) == v for k, v in params.items())
             if condition and not self.supports[name]:
-                supported = [k for k, v in self.backends.items() if v.supports[name]]
-                supported_str = (
-                    f"one of {supported!r}"
-                    if len(supported) > 1
-                    else f"{supported[0]!r}"
-                )
-                warnings.warn(
-                    "Unsupported feature for selected backend: "
-                    f"the {backend} backend does not support {name!r}. "
-                    f"Use {supported_str} instead. "
-                    f"Falling back to: {params}",
-                    stacklevel=2,
-                )
+                self._warn_unsupported(backend, name, f"Falling back to: {params}")
                 kwargs.update(params)
+
+        # subplots are not in the table above: the grid is not carried in
+        # `kwargs` -- `row`/`col` are consumed by `process_show_input_objs`
+        # before dispatch -- so it is detected from the resolved grid instead.
+        if (max_rows, max_cols) != (None, None) and not self.supports["subplots"]:
+            objs, max_rows, max_cols, subplot_specs = self._collapse_subplots(
+                objs, backend
+            )
         display_kwargs = {
             k: v
             for k, v in kwargs.items()
@@ -175,7 +216,9 @@ def register_backend(
         warns and falls back to a static figure.
     supports_subplots: bool
         Whether the backend can place traces on a `row`/`col` grid. If False,
-        `show` warns and falls back to a single plot.
+        `show` warns and collapses the grid onto a single plot -- except for a
+        grid mixing 3D and 2D panels, which has no single-plot equivalent and
+        is passed through with a warning instead.
     supports_colorgradient: bool
         Whether the backend interpolates vertex colors across a mesh. If False,
         magnet meshes are geometrically sliced per color band instead.

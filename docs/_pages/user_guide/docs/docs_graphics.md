@@ -159,7 +159,7 @@ Three things are easy to miss when writing a backend:
 
 - **`frame["extra_backend_traces"]` must be consumed.** When a user attaches a native model through `style.model3d.data` naming your backend, the trace is routed into this list rather than into `frame["data"]`, already positioned and oriented. A backend that ignores the list silently drops the user's models — no warning, no error.
 - **2D traces.** With `output="Bx"` (etc.) rather than `"model3d"`, frames also carry plain `scatter` traces, not `scatter3d`. A pure-3D backend should either render them or document that it cannot.
-- **The `supports_*` flags are honoured for you.** Declaring one `False` means `show()` warns and falls back rather than handing your backend something it cannot draw.
+- **The `supports_*` flags are honoured for you.** Declaring one `False` means `show()` warns and falls back rather than handing your backend something it cannot draw — a path becomes a static figure, a subplot grid is collapsed onto a single plot. The one case that cannot be handled for you is a grid mixing 3D and 2D panels, which has no single-plot equivalent; it is passed through with a warning.
 
 Note that `magpy.SUPPORTED_PLOTTING_BACKENDS` continues to list the *built-in* backends only. To see everything currently registered, including your own, use `magpy.defaults.display.schema()["properties"]["backend"]["enum"]`.
 
