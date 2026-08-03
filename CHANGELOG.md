@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+- Added `magpylib.register_backend`, making the display-backend registry public
+  ([#969](https://github.com/magpylib/magpylib/pull/969)). A third party can now
+  add a plotting backend without editing anything inside magpylib; the
+  registered name is accepted by `show(backend=...)`,
+  `magpy.defaults.display.backend` and `style.model3d.data[].backend`. The three
+  built-in backends go through the same entry point.
+  `magpylib.SUPPORTED_PLOTTING_BACKENDS` is unchanged and still lists the
+  built-in backends only.
+
 - Rewrote the style and defaults internals as a declarative typed-property tree,
   replacing `MagicProperties`
   ([#967](https://github.com/magpylib/magpylib/pull/967)). Style _usage_ is
