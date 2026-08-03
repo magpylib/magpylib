@@ -105,6 +105,7 @@ class TriangleSheet(BaseSource, BaseTarget):
     }
     get_trace = make_TriangleSheet
     _style_class = CurrentSheetStyle
+    _style_family = ("currentsheet",)
 
     def __init__(
         self,

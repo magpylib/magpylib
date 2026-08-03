@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 import magpylib as magpy
@@ -6,7 +8,9 @@ from magpylib._src.defaults.defaults_utility import (
     ALLOWED_LINESTYLES,
     ALLOWED_SYMBOLS,
     SUPPORTED_PLOTTING_BACKENDS,
+    get_registered_backends,
 )
+from magpylib._src.display.display import RegisteredBackend
 from magpylib._src.style import DisplayStyle
 
 bad_inputs = {
@@ -76,19 +80,12 @@ bad_inputs = {
 
 def get_bad_test_data():
     """create parametrized bad style test data"""
-    # pylint: disable=possibly-used-before-assignment
-    bad_test_data = []
-    for k, tup in bad_inputs.items():
-        for v in tup:
-            if "description_text" not in k:
-                if "color" in k and "transition" not in k and "mode" not in k:
-                    # color attributes use a the color validator, which raises a ValueError
-                    errortype = ValueError
-                else:
-                    # all other parameters raise AssertionError
-                    errortype = AssertionError
-            bad_test_data.append((k, v, pytest.raises(errortype)))
-    return bad_test_data
+    # all property validators raise ValueError
+    return [
+        (k, v, pytest.raises(ValueError, match=r".*"))
+        for k, tup in bad_inputs.items()
+        for v in tup
+    ]
 
 
 @pytest.mark.parametrize(
@@ -170,7 +167,7 @@ good_inputs = {
         "tip",
     ),  # pivot middle, tail, tip
     "display_style_triangle_orientation_show": (True, False),
-    "display_style_triangle_orientation_size": (True, False),
+    "display_style_triangle_orientation_size": (0, 1),  # float>=0
     "display_style_triangle_orientation_color": ("yellow",),
     "display_style_triangle_orientation_offset": (-1, 0.5, 2),  # float, int
     "display_style_triangle_orientation_symbol": ("cone", "arrow3d"),
@@ -253,6 +250,69 @@ def test_bad_default_classes():
         match=r"The style property of Display must be",
     ):
         magpy.defaults.display.style = "wrong input"
+
+
+@pytest.fixture
+def dummy_backend():
+    """Register a do-nothing display backend for the duration of a test."""
+    name = "dummy"
+    RegisteredBackend(
+        name=name,
+        show_func=lambda data, **_kwargs: data,
+        supports_animation=False,
+        supports_subplots=False,
+        supports_colorgradient=False,
+        supports_animation_output=False,
+    )
+    default_backend = magpy.defaults.display.backend
+    try:
+        yield name
+    finally:
+        magpy.defaults.display.backend = default_backend
+        RegisteredBackend.backends.pop(name, None)
+
+
+def test_backend_fields_follow_the_registry(dummy_backend):
+    """Backend fields accept backends registered after import time.
+
+    The allowed set is resolved from `RegisteredBackend.backends` on every
+    use, not frozen when the property tree is declared. Should the registry
+    ever move, `get_registered_backends` must follow it or this fails.
+    """
+    assert dummy_backend in get_registered_backends()
+
+    magpy.defaults.display.backend = dummy_backend
+    assert magpy.defaults.display.backend == dummy_backend
+
+    obj = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
+    obj.style.model3d.add_trace(backend=dummy_backend, constructor="Mesh3d")
+    assert obj.style.model3d.data[0].backend == dummy_backend
+
+    # the generated schema reports the backends registered at generation time
+    enum = magpy.defaults.display.schema()["properties"]["backend"]["enum"]
+    assert dummy_backend in enum
+
+
+def test_registered_backends_falls_back_to_builtins(monkeypatch):
+    """Without the registry imported, the built-in backends are reported.
+
+    `DefaultSettings()` validates `display.backend` while `magpylib` is still
+    importing, before the registry module exists -- importing it from the
+    defaults would be circular.
+    """
+    monkeypatch.delitem(sys.modules, "magpylib._src.display.display")
+    assert get_registered_backends() == SUPPORTED_PLOTTING_BACKENDS
+    assert DefaultSettings().display.backend == "auto"
+
+
+def test_backend_fields_still_reject_unknown_names():
+    """Opening the choice set to the registry does not accept anything."""
+    with pytest.raises(ValueError, match="one of"):
+        magpy.defaults.display.backend = "plotty"
+
+    obj = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
+    with pytest.raises(ValueError, match="one of"):
+        obj.style.model3d.add_trace(backend="plotty", constructor="Mesh3d")
 
 
 def test_bad_deferred_style():

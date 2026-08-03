@@ -73,6 +73,7 @@ class BaseGeo(BaseTransform, ABC):
     """
 
     _style_class = BaseStyle
+    _style_family = ()
 
     def __init__(
         self,

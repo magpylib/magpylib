@@ -497,23 +497,31 @@ def merge_dicts_with_conflict_check(objs, *, target, identifiers, unique_fields)
 
 @contextmanager
 def style_temp_edit(*objs, styles_temp=None):
-    """Temporary replace style to allow edits before returning to original state"""
+    """Temporarily replace object styles for the duration of a render.
+
+    When a temporary style is provided for an object, rendering reads and
+    mutates that temporary style, so the original ``_style`` instance is
+    untouched and gets restored as-is - preserving its identity (and any
+    change observers bound to it, e.g. a GUI). When no temporary style is
+    provided, rendering mutates the object's own style in place, so a snapshot
+    copy is restored instead.
+    """
     # pylint: disable=protected-access
     styles_temp = {} if styles_temp is None else styles_temp
     orig_styles = {}
     try:
         for obj in objs:
             style_temp = styles_temp.get(obj, None)
-            orig_styles[obj] = getattr(obj, "_style", None)
-            # temporary save original style
-            if orig_styles[obj] is not None:
-                orig_styles[obj] = obj._style.copy()
+            orig = getattr(obj, "_style", None)
             if style_temp is not None:
+                orig_styles[obj] = orig  # untouched during render; restore instance
                 obj._style = style_temp
+            elif orig is not None:
+                orig_styles[obj] = orig.copy()  # mutated in place; restore snapshot
         yield
     finally:
-        for obj in objs:
-            obj._style = orig_styles[obj]
+        for obj, orig in orig_styles.items():
+            obj._style = orig
 
 
 def is_array_like(inp):

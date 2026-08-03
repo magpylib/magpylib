@@ -81,6 +81,7 @@ class Dipole(BaseSource, BaseDipoleMoment):
     _force_type = "magnet"
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"moment": 2}
     _style_class = DipoleStyle
+    _style_family = ("dipole",)
     get_trace = make_Dipole
     _autosize = True
 
