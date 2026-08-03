@@ -3,6 +3,7 @@
 # pylint: disable=too-many-branches
 
 import re
+import sys
 from copy import deepcopy
 from functools import lru_cache
 
@@ -12,6 +13,25 @@ from matplotlib.colors import CSS4_COLORS as mcolors
 from magpylib._src.defaults.defaults_values import DEFAULTS
 
 SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly", "pyvista")
+
+
+def get_registered_backends():
+    """Return the names of the display backends registered so far.
+
+    Unlike `SUPPORTED_PLOTTING_BACKENDS`, which lists the built-in backends
+    only, this reflects backends registered at runtime through
+    `RegisteredBackend`.
+
+    The registry module is looked up rather than imported: it imports the
+    defaults tree, so importing it from here would be circular while this
+    module is still initializing. That is not a limitation -- registering a
+    backend requires importing the registry, so while it is absent the
+    registered set is exactly the built-in one.
+    """
+    module = sys.modules.get("magpylib._src.display.display")
+    if module is None:
+        return SUPPORTED_PLOTTING_BACKENDS
+    return tuple(module.RegisteredBackend.backends)
 
 
 ALLOWED_SYMBOLS = (".", "+", "D", "d", "s", "x", "o")

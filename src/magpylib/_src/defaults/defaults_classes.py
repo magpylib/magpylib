@@ -1,8 +1,8 @@
 """Library default settings classes, declared as a typed-property tree."""
 
 from magpylib._src.defaults.defaults_utility import (
-    SUPPORTED_PLOTTING_BACKENDS,
     get_defaults_dict,
+    get_registered_backends,
 )
 from magpylib._src.defaults.property_tree import (
     Boolean,
@@ -75,8 +75,9 @@ class Display(PropertyNode):
     ----------
     backend: str, default=None
         Plotting backend to be used by default, if not explicitly set in the
-        `display` function (e.g. 'matplotlib', 'plotly'). Supported backends
-        are defined in magpylib.SUPPORTED_PLOTTING_BACKENDS.
+        `display` function (e.g. 'matplotlib', 'plotly'). The built-in
+        backends are listed in magpylib.SUPPORTED_PLOTTING_BACKENDS; any
+        backend registered at runtime is accepted as well.
     colorsequence: iterable, default=None
         An iterable of color values used to cycle through for every object
         displayed. A color may be specified by a hex string, an rgb string,
@@ -92,7 +93,8 @@ class Display(PropertyNode):
     """
 
     backend = Choice(
-        *SUPPORTED_PLOTTING_BACKENDS, "auto", doc="Default plotting backend."
+        lambda: (*get_registered_backends(), "auto"),
+        doc="Default plotting backend.",
     )
     colorsequence = ColorSequence(
         doc="Colors cycled through for every object displayed."

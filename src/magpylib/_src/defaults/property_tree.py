@@ -182,17 +182,33 @@ class String(Property):
 
 
 class Choice(Property):
-    """A field restricted to an explicit set of allowed values."""
+    """A field restricted to a set of allowed values.
+
+    The values are given either directly, or as a single zero-argument
+    callable returning them, for sets that are only known at call time (e.g.
+    the display backends registered so far). A callable is re-evaluated on
+    every `validate()` and `schema()`, so a generated schema describes the
+    choices as they stand at generation time.
+    """
 
     kind = "choice"
 
     def __init__(self, *choices, default=None, doc=""):
         super().__init__(default, doc)
-        self.choices = choices
+        if len(choices) == 1 and callable(choices[0]):
+            self._choices = choices[0]
+        else:
+            self._choices = lambda: choices
+
+    @property
+    def choices(self):
+        """The currently allowed values."""
+        return tuple(self._choices())
 
     def validate(self, obj, value):
-        if value not in self.choices:
-            self._fail(obj, value, f"one of {self.choices}")
+        choices = self.choices
+        if value not in choices:
+            self._fail(obj, value, f"one of {choices}")
         return value
 
     def schema(self):

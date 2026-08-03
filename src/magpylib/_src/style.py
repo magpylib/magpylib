@@ -15,8 +15,8 @@ import numpy as np
 from magpylib._src.defaults.defaults_utility import (
     ALLOWED_LINESTYLES,
     ALLOWED_SYMBOLS,
-    SUPPORTED_PLOTTING_BACKENDS,
     get_defaults_dict,
+    get_registered_backends,
     magic_to_dict,
     validate_style_keys,
 )
@@ -345,8 +345,10 @@ class Trace3d(PropertyNode):
 
     Parameters
     ----------
-    backend : {'generic', 'matplotlib', 'plotly'}, default 'generic'
-        Plotting backend for this trace.
+    backend : str, default 'generic'
+        Plotting backend for this trace: 'generic', any of the built-in
+        backends in ``magpylib.SUPPORTED_PLOTTING_BACKENDS``, or a backend
+        registered at runtime.
     constructor : str | None, default None
         Name of the constructor function/method to build the 3D model (e.g.,
         ``'plot_trisurf'``, ``'Mesh3d'``). Must match the selected backend.
@@ -367,8 +369,7 @@ class Trace3d(PropertyNode):
     """
 
     backend = Choice(
-        "generic",
-        *SUPPORTED_PLOTTING_BACKENDS,
+        lambda: ("generic", *get_registered_backends()),
         default="generic",
         doc="Plotting backend for this trace.",
     )

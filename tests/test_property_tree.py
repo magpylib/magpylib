@@ -96,6 +96,24 @@ def test_validation():
     assert style.label == "42"
 
 
+def test_choice_from_callable_resolves_at_call_time():
+    """A Choice built from a callable re-reads its choices on every use."""
+    allowed = ["red"]
+
+    class Dynamic(PropertyNode):
+        color = Choice(lambda: tuple(allowed), doc="Dynamic color.")
+
+    dyn = Dynamic()
+    assert Dynamic.__dict__["color"].choices == ("red",)
+    assert Dynamic.schema()["properties"]["color"]["enum"] == ["red", None]
+    with pytest.raises(ValueError, match="one of"):
+        dyn.color = "green"
+
+    allowed.append("green")
+    dyn.color = "green"  # now allowed, without redefining the class
+    assert Dynamic.schema()["properties"]["color"]["enum"] == ["red", "green", None]
+
+
 def test_unknown_property_raises():
     """The attribute set is frozen: typos raise with available properties."""
     with pytest.raises(AttributeError, match="Available properties"):
