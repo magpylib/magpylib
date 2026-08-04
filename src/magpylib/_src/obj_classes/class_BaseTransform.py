@@ -292,12 +292,12 @@ def path_property_len(prop):
     return len(prop)
 
 
-def pad_path_property(prop, new_path_len, start=0):
+def pad_path_property(prop, new_path_len):
     """Edge-pad (or end-slice) a single path property to ``new_path_len``.
 
     Just-in-time materialization of a minimally-stored property: returns a fresh
-    array/Rotation of length ``new_path_len`` by edge-padding (and slicing if it
-    is already longer). Returns ``None`` unchanged.
+    array/Rotation of length ``new_path_len`` by edge-padding at the end (and
+    slicing if it is already longer). Returns ``None`` unchanged.
     """
     if prop is None:
         return prop
@@ -311,10 +311,9 @@ def pad_path_property(prop, new_path_len, start=0):
     if is_rot:
         prop = prop.as_quat()
 
-    pad_start = prop_len if start < 0 else start
-    pad_end = max(0, new_path_len - prop_len - pad_start)
-    if pad_start > 0 or pad_end > 0:
-        pad_width = (pad_start, pad_end)
+    pad_end = max(0, new_path_len - prop_len)
+    if pad_end > 0:
+        pad_width = (0, pad_end)
         if prop.ndim > 1:
             pad_width = (pad_width, *((0, 0),) * (prop.ndim - 1))
         prop = np.pad(prop, pad_width, "edge")
@@ -325,7 +324,7 @@ def pad_path_property(prop, new_path_len, start=0):
     return prop
 
 
-def pad_path_properties(target_object, new_path_len, start=0, path_properties=None):
+def pad_path_properties(target_object, new_path_len, path_properties=None):
     """Just-in-time pad all path properties of target_object to new_path_len.
 
     Mutates the object's stored attributes in place; callers that must preserve
@@ -335,7 +334,7 @@ def pad_path_properties(target_object, new_path_len, start=0, path_properties=No
         path_properties = target_object._path_properties
     for name in path_properties:
         val = getattr(target_object, f"_{name}", None)
-        val = pad_path_property(val, new_path_len, start)
+        val = pad_path_property(val, new_path_len)
         setattr(target_object, f"_{name}", val)
 
 

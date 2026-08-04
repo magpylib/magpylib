@@ -5,10 +5,15 @@ from scipy.spatial.transform import Rotation as R
 import magpylib as magpy
 from magpylib._src.exceptions import (
     MagpylibBadUserInput,
+    MagpylibInternalError,
     MagpylibMissingInput,
 )
 from magpylib._src.fields.field_BH_dipole import _BHJM_dipole
-from magpylib._src.input_checks import check_format_input_numeric, match_shape
+from magpylib._src.input_checks import (
+    _normalize_shape_specs,
+    check_format_input_numeric,
+    match_shape,
+)
 
 # pylint: disable=unnecessary-lambda-assignment
 
@@ -1080,3 +1085,42 @@ def test_check_condition_message_interpolates_value():
     msg = str(excinfo.value)
     assert "{" not in msg  # no un-interpolated placeholders
     assert "-1" in msg  # offending value is shown
+
+
+def test_shape_specs_accept_list_and_any_wildcard():
+    """Shape specs are normalized before the cache and share match_shape's vocabulary.
+
+    A list spec must behave exactly like the equivalent tuple spec (and hit the
+    same cache entry), and 'any' must be accepted by the spec parser, not only
+    by `match_shape`.
+    """
+    assert _normalize_shape_specs([[3]]) == ((3,),)
+    assert _normalize_shape_specs(None) == (None,)
+
+    out_list = check_format_input_numeric(
+        [1, 2, 3], dtype=float, shapes=[[3]], name="x"
+    )
+    out_tuple = check_format_input_numeric(
+        [1, 2, 3], dtype=float, shapes=((3,),), name="x"
+    )
+    np.testing.assert_array_equal(out_list, out_tuple)
+
+    # 'any' is legal in a spec and matches any extent
+    out_any = check_format_input_numeric(
+        [[1, 2, 3], [4, 5, 6]], dtype=float, shapes=(("any", 3),), name="x"
+    )
+    assert out_any.shape == (2, 3)
+
+
+def test_shape_spec_rejects_unknown_vocabulary():
+    """An invalid spec element is an internal error, not a silent pass under -O."""
+    with pytest.raises(MagpylibInternalError):
+        check_format_input_numeric([1, 2, 3], dtype=float, shapes=((3.5,),), name="x")
+
+
+def test_reshape_must_be_a_tuple():
+    """The reshape guard must raise even when assertions are stripped."""
+    with pytest.raises(MagpylibInternalError):
+        check_format_input_numeric(
+            2.0, dtype=float, shapes=None, reshape=[1, 1], name="x"
+        )

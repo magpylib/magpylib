@@ -181,19 +181,20 @@ class BaseGeo(BaseTransform, ABC):
 
     # path logic methods --------------------------------------------
     def __init_subclass__(cls):
-        """Automatically aggregate '_path_properties' from parent classes when subclassing."""
+        """Automatically aggregate '_path_properties' from parent classes when subclassing.
+
+        Every base is consulted, not just the nearest one: concrete classes
+        mix several bases (e.g. ``Cuboid(BaseMagnet, BaseTarget, BaseVolume,
+        BaseDipoleMoment)``) and a path property declared on any of them must
+        be honoured. Order is MRO order with duplicates dropped, so a property
+        keeps the position of its first-declaring base.
+        """
         super().__init_subclass__()
         parent_attr = []
         for base in cls.__mro__[1:]:
-            if hasattr(base, "_path_properties"):
-                parent_attr.extend(base._path_properties)
-                break  # only take first (nearest) base's attribute
-        if "_path_properties" in cls.__dict__:
-            cls._path_properties = tuple(
-                dict.fromkeys([*parent_attr, *cls._path_properties])
-            )
-        else:
-            cls._path_properties = tuple(parent_attr)
+            parent_attr.extend(base.__dict__.get("_path_properties", ()))
+        own_attr = cls.__dict__.get("_path_properties", ())
+        cls._path_properties = tuple(dict.fromkeys([*parent_attr, *own_attr]))
 
     def _get_path_len(self):
         """Return the effective path length of the object (max of all properties)."""

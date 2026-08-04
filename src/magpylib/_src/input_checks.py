@@ -239,6 +239,13 @@ def check_condition(
     return inp
 
 
+def _normalize_shape_specs(shapes):
+    """Coerce a shape-spec collection into a hashable form for the cache."""
+    if shapes is None:
+        shapes = (None,)
+    return tuple(tuple(s) if isinstance(s, list) else s for s in shapes)
+
+
 @cache
 def _parse_shape_specs(shapes):
     """Parse static shape specifications into matching structures (cached).
@@ -258,10 +265,19 @@ def _parse_shape_specs(shapes):
             shape_clean = (shape,)
         elif isinstance(shape, (list, tuple)):
             shape_clean = tuple(shape)
-            assert all(
-                (isinstance(s, int) and s >= 0) or s is None or s is Ellipsis
+            # vocabulary must stay in sync with match_shape's elem_matches
+            if not all(
+                (isinstance(s, int) and s >= 0)
+                or s is None
+                or s == "any"
+                or s is Ellipsis
                 for s in shape
-            )
+            ):
+                msg = (
+                    "shape spec elements must be non-negative ints, None, "
+                    f"'any' or Ellipsis; instead received {shape!r}."
+                )
+                raise MagpylibInternalError(msg)
             if Ellipsis in shape:
                 dims.append(None)
             else:
@@ -309,14 +325,9 @@ def check_format_input_numeric(
     # build name for error messages
     msg_name = "Input" + (f" {name}" if name is not None else "")
 
-    if shapes is None:
-        shapes = (None,)
-    try:
-        dims, shapes, exact_shapes, wildcard_shapes = _parse_shape_specs(shapes)
-    except TypeError:  # unhashable spec (e.g. lists), parse without cache
-        dims, shapes, exact_shapes, wildcard_shapes = _parse_shape_specs.__wrapped__(
-            tuple(tuple(s) if isinstance(s, list) else s for s in shapes)
-        )
+    dims, shapes, exact_shapes, wildcard_shapes = _parse_shape_specs(
+        _normalize_shape_specs(shapes)
+    )
 
     is_an_array = isinstance(inp, (list, tuple, np.ndarray))
     is_a_number = isinstance(inp, numbers.Number)
@@ -332,7 +343,9 @@ def check_format_input_numeric(
     if 0 in dims and is_a_number:
         inp = dtype(inp)
         if reshape is not None:
-            assert isinstance(reshape, tuple), "reshape must be a tuple"
+            if not isinstance(reshape, tuple):
+                msg = f"reshape must be a tuple; instead received {reshape!r}."
+                raise MagpylibInternalError(msg)
             inp = np.reshape(inp, reshape)
         return check_conditions(inp)
 
@@ -368,7 +381,7 @@ def check_format_input_numeric(
         )
         raise MagpylibBadUserInput(msg)
 
-    if shapes == ():
+    if not shapes:
         return check_conditions(array)
 
     shape_match = array.shape in exact_shapes or any(
@@ -386,7 +399,9 @@ def check_format_input_numeric(
         raise MagpylibBadUserInput(msg)
 
     if reshape is not None:
-        assert isinstance(reshape, tuple), "reshape must be a tuple"
+        if not isinstance(reshape, tuple):
+            msg = f"reshape must be a tuple; instead received {reshape!r}."
+            raise MagpylibInternalError(msg)
         array = np.reshape(array, reshape)
 
     return check_conditions(array)

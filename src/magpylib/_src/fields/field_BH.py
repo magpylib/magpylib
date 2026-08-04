@@ -95,7 +95,7 @@ def _preserve_paths(input_objs, path_properties=None, copy=False):
         )
         for prop in path_props_obj:
             key = (id(obj), prop)
-            val = getattr(obj, f"_{prop}")
+            val = getattr(obj, f"_{prop}", None)
             if copy and val is not None:
                 # scipy Rotation has no .copy(); reconstruct from quaternion array
                 if hasattr(val, "as_quat"):
@@ -366,8 +366,10 @@ def _getBH_level2(
     # property, so a per-property scan is required to also catch objects whose
     # longest property reaches the max while others (e.g. dimension) are shorter.
     def _needs_padding(obj):
+        # default None: a declared path property need not have been assigned
+        # yet, and matches _get_path_len / _sync_path_lengths
         return any(
-            (val := getattr(obj, f"_{prop}")) is not None
+            (val := getattr(obj, f"_{prop}", None)) is not None
             and path_property_len(val) < max_path_len
             for prop in obj._path_properties
         )

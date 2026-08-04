@@ -963,3 +963,49 @@ def test_computed_getters_mismatched_path_lengths(obj, attr):
     """
     result = np.asarray(getattr(obj, attr))  # must not raise
     assert result.ndim == 2  # (p, 3), padded to the common max path length
+
+
+def test_path_properties_aggregate_over_all_bases():
+    """`_path_properties` must collect from every base, not just the nearest.
+
+    Concrete classes mix several bases (e.g. Cuboid(BaseMagnet, BaseTarget,
+    BaseVolume, BaseDipoleMoment)). An earlier version stopped at the first
+    base declaring `_path_properties`, so a property declared on any later
+    base was silently dropped -- no error, just missing path padding.
+    """
+
+    class PathMixin:
+        _path_properties = ("mixin_prop",)
+
+    class Probe(magpy.magnet.Cuboid, PathMixin):
+        _path_properties = ("own_prop",)
+
+    assert "mixin_prop" in Probe._path_properties
+    assert "own_prop" in Probe._path_properties
+    # inherited ones survive, in MRO order, without duplicates
+    assert Probe._path_properties[:5] == (
+        "position",
+        "orientation",
+        "polarization",
+        "magnetization",
+        "dimension",
+    )
+    assert len(set(Probe._path_properties)) == len(Probe._path_properties)
+
+
+def test_path_properties_unchanged_for_builtin_classes():
+    """Pin the aggregated tuples so the MRO walk cannot reorder them."""
+    assert magpy.magnet.Cuboid._path_properties == (
+        "position",
+        "orientation",
+        "polarization",
+        "magnetization",
+        "dimension",
+    )
+    assert magpy.current.Polyline._path_properties == (
+        "position",
+        "orientation",
+        "current",
+        "vertices",
+    )
+    assert magpy.misc.Dipole._path_properties == ("position", "orientation", "moment")

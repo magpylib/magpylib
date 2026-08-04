@@ -390,7 +390,7 @@ def _compute_B_with_paths(sources, obs_flat, n_path):
 
         # Store references to padded path properties (no copy needed - restored by context manager)
         src_path_data = [
-            {prop: getattr(src, f"_{prop}") for prop in src._path_properties}
+            {prop: getattr(src, f"_{prop}", None) for prop in src._path_properties}
             for src in sources
         ]
 
