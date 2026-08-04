@@ -8,7 +8,6 @@ from scipy.constants import mu_0
 from magpylib import core, current, func, graphics, magnet, misc
 from magpylib._src.defaults.defaults_classes import default_settings as defaults
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
-from magpylib._src.display.backend_registry import register_backend
 from magpylib._src.display.display import show, show_context
 from magpylib._src.fields import getB, getFT, getH, getJ, getM
 from magpylib._src.obj_classes.class_Collection import Collection
@@ -34,7 +33,6 @@ __all__ = [
     "magnet",
     "misc",
     "mu_0",
-    "register_backend",
     "show",
     "show_context",
 ]

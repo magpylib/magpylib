@@ -1,4 +1,4 @@
-"""Tests for the public display-backend registry."""
+"""Tests for the display-backend registry."""
 
 import warnings
 
@@ -28,9 +28,9 @@ def noop_backend():
         calls.append(kwargs)
         return data
 
-    magpy.register_backend(
-        name,
-        show_func,
+    RegisteredBackend(
+        name=name,
+        show_func=show_func,
         supports_animation=False,
         supports_subplots=False,
         supports_colorgradient=False,
@@ -40,12 +40,6 @@ def noop_backend():
         yield name, calls
     finally:
         RegisteredBackend.backends.pop(name, None)
-
-
-def test_register_backend_is_public_api():
-    """Adding a backend must not require reaching into `_src`."""
-    assert magpy.register_backend.__module__.startswith("magpylib.")
-    assert "register_backend" in magpy.__all__
 
 
 def test_registration_and_show_dispatch(noop_backend):

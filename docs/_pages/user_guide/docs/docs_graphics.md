@@ -126,43 +126,6 @@ There is a high level of **feature parity**, however, not all graphic features a
 
 `show()` will also pass on all kwargs to the respective plotting backends. For example, in the [animation sample code](guide-graphic-animations) the kwarg `show_legend` is forwarded to the Plotly backend.
 
-(guide-graphics-custom-backend)=
-### Registering a custom backend
-
-The three built-in backends are not privileged: they are registered through the same public entry point available to any third party, `magpy.register_backend`. Registering a backend makes its name valid everywhere a built-in name is — `show(backend=...)`, `magpy.defaults.display.backend`, and `style.model3d.data[].backend`.
-
-```{code-cell} ipython3
-import magpylib as magpy
-
-def display_counter(data, **kwargs):
-    """A minimal backend: report what it was handed instead of drawing it."""
-    frames = data["frames"]
-    traces = sum(len(frame["data"]) for frame in frames)
-    return f"{len(frames)} frame(s), {traces} trace(s)"
-
-magpy.register_backend(
-    "counter",
-    display_counter,
-    supports_animation=False,
-    supports_subplots=False,
-    supports_colorgradient=False,
-    supports_animation_output=False,
-)
-
-src = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
-print(magpy.show(src, backend="counter"))
-```
-
-`show_func` receives a backend-neutral structure with keys `frames`, `ranges`, `labels` and `input_kwargs`. Each frame carries `name`, `data`, `extra_backend_traces` and `layout`, where `data` holds `mesh3d` and `scatter3d` traces as plain dicts of NumPy arrays — `x`/`y`/`z` vertices and `i`/`j`/`k` face indices.
-
-Three things are easy to miss when writing a backend:
-
-- **`frame["extra_backend_traces"]` must be consumed.** When a user attaches a native model through `style.model3d.data` naming your backend, the trace is routed into this list rather than into `frame["data"]`, already positioned and oriented. A backend that ignores the list silently drops the user's models — no warning, no error.
-- **2D traces.** With `output="Bx"` (etc.) rather than `"model3d"`, frames also carry plain `scatter` traces, not `scatter3d`. A pure-3D backend should either render them or document that it cannot.
-- **The `supports_*` flags are honoured for you.** Declaring one `False` means `show()` warns and falls back rather than handing your backend something it cannot draw — a path becomes a static figure, a subplot grid is collapsed onto a single plot. The one case that cannot be handled for you is a grid mixing 3D and 2D panels, which has no single-plot equivalent; it is passed through with a warning.
-
-Note that `magpy.SUPPORTED_PLOTTING_BACKENDS` continues to list the *built-in* backends only. To see everything currently registered, including your own, use `magpy.defaults.display.schema()["properties"]["backend"]["enum"]`.
-
 ---------------------------------
 (guide-graphics-canvas)=
 ## Plotting Canvas
