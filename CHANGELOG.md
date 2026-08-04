@@ -31,6 +31,31 @@
   giving consistent messages across all object attributes.
 - Removed the internal `magpylib._src.utility.check_path_format`; path
   consistency is now maintained by the path-property machinery itself.
+- Rewrote the style and defaults internals as a declarative typed-property tree,
+  replacing `MagicProperties`
+  ([#967](https://github.com/magpylib/magpylib/pull/967)). Style _usage_ is
+  unchanged — nested attribute access, magic underscore kwargs, dict assignment
+  and `None`-defers-to-defaults all behave as before — but `show()` is about 3x
+  faster on typical scenes and `get_style()` about 50x faster per object.
+- Added a public introspection contract on every style and defaults node, so
+  third-party tools can build GUIs on top: `schema()` (JSON Schema),
+  `get(path)`/`set(path, value)` (dotted paths), `observe(callback)` (change
+  events), and `is_set`/`set_values()`/`merged()` (set-vs-inherited resolution).
+- **Breaking:** invalid style and defaults values now raise `ValueError` instead
+  of `AssertionError`. The old checks were `assert` statements and silently
+  vanished under `python -O`.
+- **Breaking:** number-valued style properties no longer accept booleans (`bool`
+  is an `int` subclass, so the old checks let `size=True` through).
+- **Breaking:** assigning `None` to an always-set property such as
+  `style.model3d.showdefault` now resets it to its default instead of raising.
+- **Breaking:** `as_dict()` no longer includes the deprecated
+  `magnetization.size` key. It remains readable and writable as an attribute.
+- `magpy.defaults.display.backend` and `style.model3d.data[].backend` now accept
+  any backend present in the display registry, resolved per call instead of
+  frozen at import. `magpylib.SUPPORTED_PLOTTING_BACKENDS` is unchanged and
+  still lists the built-in backends.
+- Fixed `color_validator` raising `TypeError: unhashable type` on the documented
+  list and array color forms.
 
 ## [5.2.3] 2026-05-15
 

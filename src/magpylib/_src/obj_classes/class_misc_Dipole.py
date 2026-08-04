@@ -81,6 +81,7 @@ class Dipole(BaseSource, BaseDipoleMoment):
     _field_func_kwargs_ndim: ClassVar[dict[str, int]] = {"moment": 2}
     _path_properties = ("moment",)
     _style_class = DipoleStyle
+    _style_family = ("dipole",)
     get_trace = make_Dipole
     _autosize = True
 

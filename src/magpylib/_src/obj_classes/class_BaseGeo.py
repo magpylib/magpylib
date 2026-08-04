@@ -115,6 +115,7 @@ class BaseGeo(BaseTransform, ABC):
     """
 
     _style_class = BaseStyle
+    _style_family = ()
 
     # Names of attributes that may carry a path dimension. Subclasses extend
     # this (aggregated via __init_subclass__) with their own path properties,

@@ -92,6 +92,7 @@ class Sensor(BaseGeo):
     """
 
     _style_class = SensorStyle
+    _style_family = ("sensor",)
     _autosize = True
     get_trace = make_Sensor
 

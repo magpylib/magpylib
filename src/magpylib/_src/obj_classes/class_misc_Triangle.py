@@ -92,6 +92,7 @@ class Triangle(BaseMagnet):
     _path_properties = ("vertices",)
     get_trace = make_Triangle
     _style_class = TriangleStyle
+    _style_family = ("magnet", "triangle")
 
     def __init__(
         self,

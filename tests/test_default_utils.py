@@ -1,65 +1,13 @@
-from copy import deepcopy
-
+import numpy as np
 import pytest
 
 from magpylib._src.defaults.defaults_utility import (
     COLORS_SHORT_TO_LONG,
-    MagicProperties,
     color_validator,
     get_defaults_dict,
     linearize_dict,
     magic_to_dict,
-    update_nested_dict,
 )
-
-
-def test_update_nested_dict():
-    """test all argument combinations of update_nested_dicts"""
-    # d gets updated, that's why we deepcopy it
-    d = {"a": 1, "b": {"c": 2, "d": None}, "f": None, "g": {"c": None, "d": 2}, "h": 1}
-    u = {"a": 2, "b": 3, "e": 5, "g": {"c": 7, "d": 5}, "h": {"i": 3}}
-    res = update_nested_dict(
-        deepcopy(d), u, same_keys_only=False, replace_None_only=False
-    )
-    assert res == {
-        "a": 2,
-        "b": 3,
-        "e": 5,
-        "f": None,
-        "g": {"c": 7, "d": 5},
-        "h": {"i": 3},
-    }, "failed updating nested dict"
-    res = update_nested_dict(
-        deepcopy(d), u, same_keys_only=True, replace_None_only=False
-    )
-    assert res == {
-        "a": 2,
-        "b": 3,
-        "f": None,
-        "g": {"c": 7, "d": 5},
-        "h": {"i": 3},
-    }, "failed updating nested dict"
-    res = update_nested_dict(
-        deepcopy(d), u, same_keys_only=True, replace_None_only=True
-    )
-    assert res == {
-        "a": 1,
-        "b": {"c": 2, "d": None},
-        "f": None,
-        "g": {"c": 7, "d": 2},
-        "h": 1,
-    }, "failed updating nested dict"
-    res = update_nested_dict(
-        deepcopy(d), u, same_keys_only=False, replace_None_only=True
-    )
-    assert res == {
-        "a": 1,
-        "b": {"c": 2, "d": None},
-        "f": None,
-        "g": {"c": 7, "d": 2},
-        "e": 5,
-        "h": 1,
-    }, "failed updating nested dict"
 
 
 def test_magic_to_dict():
@@ -109,6 +57,11 @@ def test_linearize_dict():
         ("rgb(127, 127, 127)", True, "#7f7f7f"),
         ((0, 0, 0, 0), False, "#000000"),
         ((0.1, 0.2, 0.3), False, "#19334c"),
+        ([127, 127, 127], True, "#7f7f7f"),
+        ([0.1, 0.2, 0.3], False, "#19334c"),
+        pytest.param(
+            np.array([0.1, 0.2, 0.3]), False, "#19334c", id="ndarray-uncached"
+        ),
     ]
     + [(shortC, True, longC) for shortC, longC in COLORS_SHORT_TO_LONG.items()],
 )
@@ -137,84 +90,6 @@ def test_bad_colors(color, allow_None, expected_exception):
 
     with pytest.raises(expected_exception):
         color_validator(color, allow_None=allow_None)
-
-
-def test_MagicProperties():
-    """test MagicProperties class"""
-
-    class BPsub1(MagicProperties):
-        "MagicProperties class"
-
-        @property
-        def prop1(self):
-            """prop1"""
-            return self._prop1
-
-        @prop1.setter
-        def prop1(self, val):
-            self._prop1 = val
-
-    class BPsub2(MagicProperties):
-        "MagicProperties class"
-
-        @property
-        def prop2(self):
-            """prop2"""
-            return self._prop2
-
-        @prop2.setter
-        def prop2(self, val):
-            self._prop2 = val
-
-    bp1 = BPsub1(prop1=1)
-
-    # check setting attribute/property
-    assert bp1.prop1 == 1, "bp1.prop1 should be 1"
-    with pytest.raises(AttributeError):
-        bp1.prop1e = "val"  # only properties are allowed to be set
-
-    assert bp1.as_dict() == {"prop1": 1}, "as_dict method failed"
-
-    bp2 = BPsub2(prop2=2)
-    bp1.prop1 = bp2  # assigning class to subproperty
-
-    # check as_dict method
-    assert bp1.as_dict() == {"prop1": {"prop2": 2}}, "as_dict method failed"
-
-    # check update method with different parameters
-    assert bp1.update(prop1_prop2=10).as_dict() == {"prop1": {"prop2": 10}}, (
-        "magic property setting failed"
-    )
-
-    with pytest.raises(AttributeError):
-        bp1.update(prop1_prop2=10, prop3=4)
-    assert bp1.update(prop1_prop2=10, prop3=4, _match_properties=False).as_dict() == {
-        "prop1": {"prop2": 10}
-    }, "magic property setting failed, should ignore 'prop3'"
-
-    assert bp1.update(prop1_prop2=20, _replace_None_only=True).as_dict() == {
-        "prop1": {"prop2": 10}
-    }, "magic property setting failed, prop2 should be remained unchanged 10"
-
-    # check copy method
-
-    bp3 = bp2.copy()
-    assert bp3 is not bp2, "failed copying, should return a different id"
-    assert bp3.as_dict() == bp2.as_dict(), (
-        "failed copying, should return the same property values"
-    )
-
-    # check flatten dict
-    assert bp3.as_dict(flatten=True) == bp2.as_dict(flatten=True), (
-        "failed copying, should return the same property values"
-    )
-
-    # check failing init
-    with pytest.raises(AttributeError):
-        BPsub1(a=0)  # a is not a property in the class
-
-    # check repr
-    assert repr(MagicProperties()) == "MagicProperties()", "repr failed"
 
 
 def test_get_defaults_dict():

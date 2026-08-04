@@ -1,15 +1,13 @@
 """Display function codes"""
 
-import warnings
 from contextlib import contextmanager
-from importlib import import_module
-from typing import ClassVar
 
 from matplotlib.axes import Axes as mplAxes
 from matplotlib.figure import Figure as mplFig
 
-from magpylib._src.defaults.defaults_utility import _DefaultValue, get_defaults_dict
-from magpylib._src.display.traces_generic import MagpyMarkers, get_frames
+from magpylib._src.defaults.defaults_utility import _DefaultValue
+from magpylib._src.display.backend_registry import RegisteredBackend
+from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.display.traces_utility import (
     DEFAULT_ROW_COL_PARAMS,
     process_show_input_objs,
@@ -20,125 +18,6 @@ from magpylib._src.input_checks import (
     check_input_animation,
     check_input_canvas_update,
 )
-
-disp_args = set(get_defaults_dict("display"))
-
-
-class RegisteredBackend:
-    """Base class for display backends"""
-
-    backends: ClassVar[dict[str, "RegisteredBackend"]] = {}
-
-    def __init__(
-        self,
-        *,
-        name,
-        show_func,
-        supports_animation,
-        supports_subplots,
-        supports_colorgradient,
-        supports_animation_output,
-    ):
-        self.name = name
-        self.show_func = show_func
-        self.supports = {
-            "animation": supports_animation,
-            "subplots": supports_subplots,
-            "colorgradient": supports_colorgradient,
-            "animation_output": supports_animation_output,
-        }
-        self._register_backend(name)
-
-    def _register_backend(self, name):
-        self.backends[name] = self
-
-    @classmethod
-    def show(
-        cls,
-        *objs,
-        backend,
-        title=None,
-        max_rows=None,
-        max_cols=None,
-        subplot_specs=None,
-        **kwargs,
-    ):
-        """Display function of the current backend"""
-        self = cls.backends[backend]
-        fallback = {
-            "animation": {"animation": False},
-            "subplots": {"row": None, "col": None},
-            "animation_output": {"animation_output": None},
-        }
-        for name, params in fallback.items():
-            condition = not all(kwargs.get(k, v) == v for k, v in params.items())
-            if condition and not self.supports[name]:
-                supported = [k for k, v in self.backends.items() if v.supports[name]]
-                supported_str = (
-                    f"one of {supported!r}"
-                    if len(supported) > 1
-                    else f"{supported[0]!r}"
-                )
-                warnings.warn(
-                    "Unsupported feature for selected backend: "
-                    f"the {backend} backend does not support {name!r}. "
-                    f"Use {supported_str} instead. "
-                    f"Falling back to: {params}",
-                    stacklevel=2,
-                )
-                kwargs.update(params)
-        display_kwargs = {
-            k: v
-            for k, v in kwargs.items()
-            if any(k.startswith(arg) for arg in disp_args)
-        }
-        kwargs = {k: v for k, v in kwargs.items() if k not in display_kwargs}
-        backend_kwargs = {
-            k[len(backend) + 1 :]: v
-            for k, v in kwargs.items()
-            if k.startswith(f"{backend.lower()}_")
-        }
-        backend_kwargs = {**kwargs.pop(backend, {}), **backend_kwargs}
-        kwargs = {k: v for k, v in kwargs.items() if not k.startswith(backend)}
-        fig_kwargs = {
-            **kwargs.pop("fig", {}),
-            **{k[4:]: v for k, v in kwargs.items() if k.startswith("fig_")},
-            **backend_kwargs.pop("fig", {}),
-            **{k[4:]: v for k, v in backend_kwargs.items() if k.startswith("fig_")},
-        }
-        show_kwargs = {
-            **kwargs.pop("show", {}),
-            **{k[5:]: v for k, v in kwargs.items() if k.startswith("show_")},
-            **backend_kwargs.pop("show", {}),
-            **{k[5:]: v for k, v in backend_kwargs.items() if k.startswith("show_")},
-        }
-        kwargs = {
-            k: v for k, v in kwargs.items() if not (k.startswith(("fig", "show")))
-        }
-        data = get_frames(
-            objs,
-            supports_colorgradient=self.supports["colorgradient"],
-            backend=backend,
-            title=title,
-            **display_kwargs,
-        )
-        return self.show_func(
-            data,
-            max_rows=max_rows,
-            max_cols=max_cols,
-            subplot_specs=subplot_specs,
-            fig_kwargs=fig_kwargs,
-            show_kwargs=show_kwargs,
-            **kwargs,
-        )
-
-
-def get_show_func(backend):
-    """Return the backend show function"""
-    # defer import to show call. Importerror should only fail if unavalaible backend is called
-    return lambda *args, backend=backend, **kwargs: getattr(
-        import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
-    )(*args, **kwargs)
 
 
 def infer_backend(canvas):
@@ -527,32 +406,3 @@ class DisplayContext:
 
 
 ctx = DisplayContext()
-
-
-RegisteredBackend(
-    name="matplotlib",
-    show_func=get_show_func("matplotlib"),
-    supports_animation=True,
-    supports_subplots=True,
-    supports_colorgradient=False,
-    supports_animation_output=False,
-)
-
-
-RegisteredBackend(
-    name="plotly",
-    show_func=get_show_func("plotly"),
-    supports_animation=True,
-    supports_subplots=True,
-    supports_colorgradient=True,
-    supports_animation_output=False,
-)
-
-RegisteredBackend(
-    name="pyvista",
-    show_func=get_show_func("pyvista"),
-    supports_animation=True,
-    supports_subplots=True,
-    supports_colorgradient=True,
-    supports_animation_output=True,
-)

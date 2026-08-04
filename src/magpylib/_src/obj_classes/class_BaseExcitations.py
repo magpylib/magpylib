@@ -317,6 +317,7 @@ class BaseMagnet(BaseSource):
     """Provide magnetization and polarization attributes for magnet sources."""
 
     _style_class = MagnetStyle
+    _style_family = ("magnet",)
     _path_properties = (
         "polarization",
         "magnetization",
@@ -403,6 +404,7 @@ class BaseCurrent(BaseSource):
     """Provide scalar electric current attribute for current sources."""
 
     _style_class = CurrentStyle
+    _style_family = ("current",)
     _path_properties = ("current",)  # also inherits from parent class
 
     @property

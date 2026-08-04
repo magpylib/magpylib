@@ -15,7 +15,7 @@ from scipy.spatial.transform import Rotation
 
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings
-from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
+from magpylib._src.display.backend_registry import RegisteredBackend
 from magpylib._src.exceptions import (
     MagpylibBadUserInput,
     MagpylibInternalError,
@@ -639,7 +639,7 @@ def check_format_input_cylinder_segment(inp):
 
 def check_format_input_backend(inp):
     """checks show-backend input and returns Non if bad input value"""
-    backends = [*SUPPORTED_PLOTTING_BACKENDS, "auto"]
+    backends = [*RegisteredBackend.backends, "auto"]
     if inp is None:
         inp = default_settings.display.backend
     if inp in backends:

@@ -106,6 +106,7 @@ class TriangleSheet(BaseSource, BaseTarget):
     _path_properties = ("current_densities", "vertices")
     get_trace = make_TriangleSheet
     _style_class = CurrentSheetStyle
+    _style_family = ("currentsheet",)
 
     def __init__(
         self,

@@ -417,19 +417,19 @@ def test_matplotlib_model3d_extra_updatefunc():
         obj.style.model3d.add_trace(updatefunc)
 
     updatefunc = "not callable"
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match=r"Input updatefunc of Trace3d"):
         obj.style.model3d.add_trace(updatefunc=updatefunc)
 
     def updatefunc():
         return "bad output type"
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match=r"Input updatefunc of Trace3d"):
         obj.style.model3d.add_trace(updatefunc=updatefunc)
 
     def updatefunc():
         return {"bad_key": "some_value"}
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match=r"Input updatefunc of Trace3d"):
         obj.style.model3d.add_trace(updatefunc=updatefunc)
 
 

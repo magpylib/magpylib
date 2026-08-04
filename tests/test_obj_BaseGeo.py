@@ -713,15 +713,17 @@ def test_describe_with_exclude_None():
         "  • handedness: right",
         "  • pixel: None",
         (
-            "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True),"
-            " y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True)),"
-            " color=None, description=Description(show=None, text=None), label=None,"
-            " legend=Legend(show=None, text=None), model3d=Model3d(data=[], showdefault=True),"
-            " opacity=None, path=Path(frames=None, line=Line(color=None, style=None, width=None),"
-            " marker=Marker(color=None, size=None, symbol=None), numbering=None, show=None),"
-            " pixel=Pixel(color=None, field=PixelField(colormap=None, colorscaling=None, shownull=None,"
-            " sizemin=None, sizescaling=None, source=None, symbol=None), size=1,"
-            " sizemode=None, symbol=None), size=None, sizemode=None)"
+            "  • style: SensorStyle(size=None, sizemode=None,"
+            " pixel=Pixel(size=1, sizemode=None, color=None, symbol=None,"
+            " field=PixelField(source=None, colormap=None, shownull=None, symbol=None,"
+            " sizescaling=None, sizemin=None, colorscaling=None)),"
+            " arrows=ArrowCS(x=ArrowSingle(show=True, color=None),"
+            " y=ArrowSingle(show=True, color=None), z=ArrowSingle(show=True, color=None)),"
+            " label=None, description=Description(text=None, show=None),"
+            " legend=Legend(text=None, show=None), color=None, opacity=None,"
+            " path=Path(show=None, marker=Marker(size=None, color=None, symbol=None),"
+            " line=Line(style=None, color=None, width=None), frames=None, numbering=None),"
+            " model3d=Model3d(showdefault=True, data=()))"
         ),
     ]
     match_string_up_to_id(test, x.describe(exclude=None, return_string=True))
