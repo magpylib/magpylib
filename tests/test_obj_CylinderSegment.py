@@ -11,18 +11,18 @@ def test_repr():
     assert repr(pm2)[:15] == "CylinderSegment", "CylinderSegment repr failed"
 
 
-def test_barycenter():
-    """test if barycenter is computed correctly"""
+def test_centroid():
+    """test if centroid is computed correctly"""
     cs = magpy.magnet.CylinderSegment(
         polarization=(100, 0, 0), dimension=(1, 2, 1, 85, 170)
     )
 
-    expected_barycenter_squeezed = np.array([-0.86248133, 1.12400755, 0.0])
-    np.testing.assert_allclose(cs.barycenter, expected_barycenter_squeezed)
+    expected_centroid_squeezed = np.array([-0.86248133, 1.12400755, 0.0])
+    np.testing.assert_allclose(cs.centroid, expected_centroid_squeezed)
 
     cs.rotate_from_angax([76 * i for i in range(5)], "x", anchor=(0, 0, 5), start=0)
 
-    expected_barycenter_path = np.array(
+    expected_centroid_path = np.array(
         [
             [-0.86248133, 1.12400755, 0.0],
             [-0.86248133, 5.12340067, 4.88101025],
@@ -31,7 +31,7 @@ def test_barycenter():
             [-0.86248133, -3.51665082, 1.27219099],
         ]
     )
-    np.testing.assert_allclose(cs.barycenter, expected_barycenter_path)
+    np.testing.assert_allclose(cs.centroid, expected_centroid_path)
 
 
 def test_CylinderSegment_volume():
@@ -45,7 +45,7 @@ def test_CylinderSegment_volume():
 
 
 def test_CylinderSegment_centroid():
-    """Test CylinderSegment centroid - should return barycenter if available"""
+    """Test CylinderSegment centroid"""
     cylinder_seg = magpy.magnet.CylinderSegment(
         dimension=(1, 2, 3, -145, 145),  # r1, r2, h, phi1, phi2
         polarization=(0, 0, 1),

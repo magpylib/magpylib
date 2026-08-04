@@ -8,13 +8,14 @@ import numbers
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
+from magpylib._src.exceptions import MagpylibInternalError
 from magpylib._src.input_checks import (
     check_degree_type,
     check_format_input_anchor,
     check_format_input_angle,
     check_format_input_axis,
+    check_format_input_numeric,
     check_format_input_orientation,
-    check_format_input_vector,
     check_start_type,
 )
 
@@ -41,7 +42,7 @@ def _multi_anchor_behavior(anchor, inrotQ, rotation):
     return anchor, inrotQ, rotation
 
 
-def _path_padding_param(scalar_input: bool, lenop: int, lenip: int, start: int):
+def _get_padding_params(scalar_input: bool, lenop: int, lenip: int, start: int):
     """compute path padding parameters
 
     Example: with start>0 and input path exceeds old_path
@@ -109,17 +110,27 @@ def _path_padding(inpath, start, target_object):
     # scalar or vector input
     scalar_input = inpath.ndim == 1
 
-    # load old path
+    # load old path — ensure opath is always 2D (n, 4) regardless of .single
     ppath = target_object._position
-    opath = target_object._orientation.as_quat()
+    opath = np.atleast_2d(target_object._orientation.as_quat())
 
     lenip = 1 if scalar_input else len(inpath)
 
     # pad old path depending on input
-    padding, start = _path_padding_param(scalar_input, len(ppath), lenip, start)
+    padding, start = _get_padding_params(scalar_input, len(ppath), lenip, start)
     if padding:
-        ppath = np.pad(ppath, (padding, (0, 0)), "edge")
+        ppath = np.pad(ppath, (padding, (0, 0)), "edge").astype(float, copy=False)
         opath = np.pad(opath, (padding, (0, 0)), "edge")
+    else:
+        # Always create a copy to avoid modifying the original array
+        # and ensure it's float dtype for in-place operations
+        ppath = np.array(ppath, dtype=float)
+
+    # Geometric sync: position and orientation must share a path length.
+    # If orientation is stored minimally (len=1) but position is longer,
+    # edge-pad orientation up to match.
+    if len(opath) < len(ppath):
+        opath = np.pad(opath, ((0, len(ppath) - len(opath)), (0, 0)), "edge")
 
     # set end-index
     end = len(ppath) if scalar_input else start + lenip
@@ -151,23 +162,25 @@ def _apply_move(target_object, displacement, start="auto"):
     # pylint: disable=too-many-branches
 
     # check and format inputs
-    inpath = check_format_input_vector(
+    inpath = check_format_input_numeric(
         displacement,
-        dims=(1, 2),
-        shape_m1=3,
-        sig_name="displacement",
-        sig_type="array-like (list, tuple, ndarray) with shape (3,) or (n, 3)",
+        dtype=float,
+        shapes=((3,), (None, 3)),
+        name="displacement",
     )
     check_start_type(start)
 
     # pad target_object path and compute start and end-index for rotation application
-    ppath, opath, start, end, padded = _path_padding(inpath, start, target_object)
-    if padded:
-        target_object._orientation = R.from_quat(opath)
+    ppath, opath, start, end, _ = _path_padding(inpath, start, target_object)
 
-    # apply move operation
+    # apply move operation, then store (ppath was already padded by _path_padding)
     ppath[start:end] += inpath
     target_object._position = ppath
+
+    # _path_padding pads opath on the same side as ppath, keeping each
+    # orientation step paired with its original position
+    if len(target_object._orientation) != len(ppath):
+        target_object._orientation = R.from_quat(opath)
 
     return target_object
 
@@ -220,7 +233,7 @@ def _apply_rotation(
         # target anchor length
         len_anchor = end - newstart
         # pad up parent_path if input requires it
-        padding, start = _path_padding_param(
+        padding, start = _get_padding_params(
             inrotQ.ndim == 1, parent_path.shape[0], len_anchor, start
         )
         if padding:
@@ -238,12 +251,91 @@ def _apply_rotation(
     oldrot = R.from_quat(opath[newstart:end])
     opath[newstart:end] = (rotation * oldrot).as_quat()
 
-    # store new position and orientation
+    # store new position and orientation (opath is always 2D after path operations)
     # pylint: disable=attribute-defined-outside-init
     target_object._orientation = R.from_quat(opath)
     target_object._position = ppath
 
+    # Lazy storage: rotation only touches position/orientation. Other path
+    # properties are left in their minimal stored form and padded just-in-time
+    # at field/force computation (see pad_path_properties in field_BH/field_FT).
+
     return target_object
+
+
+# ---------------------------------------------------------------------------
+# Path-property length & just-in-time padding helpers
+#
+# These implement the "lazy storage + just-in-time padding" path model
+# (see BaseGeo._path_properties). Three complementary primitives:
+#   - path_property_len(value)     : number of path steps a stored value spans
+#   - pad_path_property(value, n)  : pad ONE value to length n (pure, returns new)
+#   - pad_path_properties(obj, n)  : pad ALL of obj's properties IN PLACE
+#
+# To read padded copies of an object's properties WITHOUT mutating it, use
+# BaseGeo._sync_path_lengths() (returns a dict; built on pad_path_property).
+# pad_path_properties mutates and is only used transiently during vectorized
+# field/force computation, always under the _preserve_paths context manager.
+# ---------------------------------------------------------------------------
+
+
+def path_property_len(prop):
+    """Number of path steps a single stored path-property value spans.
+
+    Single source of truth for path-step counting: returns 1 for ``None`` and
+    for a single / length-1 scipy Rotation, otherwise ``len(prop)``.
+    """
+    if prop is None:
+        return 1
+    if getattr(prop, "single", False):  # single scipy Rotation
+        return 1
+    return len(prop)
+
+
+def pad_path_property(prop, new_path_len):
+    """Edge-pad (or end-slice) a single path property to ``new_path_len``.
+
+    Just-in-time materialization of a minimally-stored property: returns a fresh
+    array/Rotation of length ``new_path_len`` by edge-padding at the end (and
+    slicing if it is already longer). Returns ``None`` unchanged.
+    """
+    if prop is None:
+        return prop
+    is_rot = hasattr(prop, "single")
+    if not isinstance(prop, np.ndarray) and not is_rot:
+        msg = "path property is not a numpy array or scipy Rotation."
+        raise MagpylibInternalError(msg)
+
+    prop_len = path_property_len(prop)
+
+    if is_rot:
+        prop = prop.as_quat()
+
+    pad_end = max(0, new_path_len - prop_len)
+    if pad_end > 0:
+        pad_width = (0, pad_end)
+        if prop.ndim > 1:
+            pad_width = (pad_width, *((0, 0),) * (prop.ndim - 1))
+        prop = np.pad(prop, pad_width, "edge")
+    if len(prop) > new_path_len:
+        prop = prop[-new_path_len:]
+    if is_rot:
+        prop = R.from_quat(prop)
+    return prop
+
+
+def pad_path_properties(target_object, new_path_len, path_properties=None):
+    """Just-in-time pad all path properties of target_object to new_path_len.
+
+    Mutates the object's stored attributes in place; callers that must preserve
+    the minimal (lazy) storage wrap this in ``_preserve_paths``.
+    """
+    if path_properties is None:
+        path_properties = target_object._path_properties
+    for name in path_properties:
+        val = getattr(target_object, f"_{name}", None)
+        val = pad_path_property(val, new_path_len)
+        setattr(target_object, f"_{name}", val)
 
 
 class BaseTransform:

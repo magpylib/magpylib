@@ -356,6 +356,30 @@ def path_frames_to_indices(frames, path_len):
     return inds
 
 
+def _get_prop(prop, ind):
+    """Read a path property at index ``ind`` (lazy access).
+
+    Returns the single stored value for any index when the property is not
+    path-varying (length 1), so minimally-stored properties never need to be
+    materialized to the full path length for display.
+    """
+    if prop is None:
+        return None
+
+    # Handle scipy Rotation
+    if hasattr(prop, "single"):
+        if prop.single:
+            return prop
+        if len(prop) == 1:
+            return prop[0]
+        return prop[ind if ind < len(prop) else -1]
+
+    # Handle other array-likes (numpy)
+    if len(prop) == 1:
+        return prop[0]
+    return prop[ind if ind < len(prop) else -1]
+
+
 def get_objects_props_by_row_col(*objs, colorsequence, style_kwargs):
     """Return flat dict with objs as keys object properties as values.
     Properties include: row_cols, style, legendgroup, legendtext"""
@@ -805,7 +829,6 @@ def process_show_input_objs(objs, **kwargs):
 
     return (
         list(row_col_dict.values()),
-        list(dict.fromkeys(sources_and_sensors_only)),
         max_rows,
         max_cols,
         specs,

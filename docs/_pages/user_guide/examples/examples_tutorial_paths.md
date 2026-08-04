@@ -154,7 +154,7 @@ print(sensor.orientation.as_quat())
 (examples-tutorial-paths-edge-padding-end-slicing)=
 ## Edge-padding and end-slicing
 
-Magpylib will always make sure that object paths are in the right format, i.e., `position` and `orientation` attributes are of the same length. In addition, when objects with different path lengths are combined, e.g., when computing the field, the shorter paths are treated as static beyond their end to make the computation sensible. Internally, Magpylib follows a philosophy of edge-padding and end-slicing when adjusting paths.
+Magpylib will always make sure that object paths are in the right format, i.e., `position` and `orientation` attributes are of the same length. In addition, when objects with different path lengths are combined, e.g., when computing the field, the shorter paths are treated as static beyond their end to make the computation sensible. The same applies to the *other* path properties of a single object, which are reconciled with each other at computation time. Internally, Magpylib follows a philosophy of edge-padding and end-slicing when adjusting paths.
 
 The idea behind **edge-padding** is that, whenever path entries beyond the existing path length are needed, the edge-entries of the existing path are returned. This means that the object is static beyond its existing path.
 
@@ -200,6 +200,31 @@ print(sensor.position)
 print(sensor.orientation.as_rotvec())
 ```
 
-```{code-cell} ipython3
 
+----------------------------
+
+(examples-tutorial-paths-mismatched-properties)=
+## Padding across attributes
+
+Edge-padding is not limited to `position` and `orientation`. Any two path properties of the same object may have different lengths, and the shorter ones are padded to the longest when the field is computed.
+
+Here the `current` varies over three steps while the `position` only has two. The computation runs over three steps: the loop stays at its final position for the third one, while the current keeps changing.
+
+```{code-cell} ipython3
+import magpylib as magpy
+
+loop = magpy.current.Circle(current=[1, 2, 3], diameter=0.01)
+loop.position = [(0, 0, 0), (0, 0, 0.01)]
+
+print(loop.current)          # 3 steps
+print(len(loop.position))    # 2 steps
+
+B = magpy.getB(loop, (0, 0, 0.02))
+print(B.shape)               # computed over 3 steps
+```
+
+Note that the attributes themselves are left alone - `loop.position` still has two entries afterwards. The padding happens on a temporary copy, so setting one attribute never rewrites another.
+
+```{code-cell} ipython3
+print(len(loop.position))    # still 2
 ```

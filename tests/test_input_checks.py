@@ -5,11 +5,89 @@ from scipy.spatial.transform import Rotation as R
 import magpylib as magpy
 from magpylib._src.exceptions import (
     MagpylibBadUserInput,
+    MagpylibInternalError,
     MagpylibMissingInput,
 )
 from magpylib._src.fields.field_BH_dipole import _BHJM_dipole
+from magpylib._src.input_checks import (
+    _normalize_shape_specs,
+    check_format_input_numeric,
+    match_shape,
+)
 
 # pylint: disable=unnecessary-lambda-assignment
+
+# UTILITY
+
+
+@pytest.mark.parametrize(
+    ("shp", "pat"),
+    [
+        pytest.param((2, 4), (None, 4), id="wildcard-last-4"),
+        pytest.param((2, 4), (Ellipsis, 4), id="ellipsis-leading-4"),
+        pytest.param((2, 4), (None, Ellipsis, 4), id="ellipsis-middle-4"),
+        pytest.param((2, 4), (2, 4), id="exact-2x4"),
+        pytest.param((2, 3, 4), (None, None, None), id="all-wildcards-3d"),
+        pytest.param((2, 3, 4), (None, Ellipsis), id="trailing-ellipsis-3d"),
+        pytest.param((), (Ellipsis,), id="empty-shape-ellipsis"),
+        # Additional edge cases
+        pytest.param((2, 4), (Ellipsis, 2, 4), id="ellipsis-zero-leading"),
+        pytest.param((2, 3, 4), (Ellipsis, 3, Ellipsis), id="multi-ellipsis"),
+        pytest.param((2, 3, 4), (Ellipsis, Ellipsis, 4), id="consecutive-ellipsis"),
+        pytest.param((1, 2, 3, 4), (Ellipsis, 3, 4), id="ellipsis-align-tail"),
+        pytest.param((1, 2, 3, 4), (1, Ellipsis, 4), id="ellipsis-middle-align"),
+        pytest.param((2, 4), ("any", 4), id="string-any-wildcard"),
+        pytest.param((), (), id="empty-pattern-and-shape"),
+        pytest.param((1, 2, 3, 4, 5), (Ellipsis, 4, 5), id="long-shape-ellipsis-align"),
+    ],
+)
+def test_shape_match_true(shp, pat):
+    """These cases must return True"""
+    assert match_shape(shp, pat) is True
+
+
+@pytest.mark.parametrize(
+    ("shp", "pat"),
+    [
+        pytest.param((2, 4), (None, None, 4), id="pattern-longer-no-ellipsis"),
+        pytest.param((2, 4), (None, 3), id="last-dim-mismatch"),
+        pytest.param((2, 4), (2, 4, 5), id="extra-required-element"),
+        pytest.param((2, 3), (None, None, None), id="shorter-than-pattern"),
+        pytest.param((1,), (Ellipsis, 2), id="ellipsis-followed-by-literal-mismatch"),
+        # Additional failing edge cases
+        pytest.param((1,), (), id="empty-pattern-nonempty-shape-fail"),
+        pytest.param((), (Ellipsis, 1), id="empty-shape-ellipsis-then-literal-fail"),
+        pytest.param((2,), (2, 3), id="literal-pattern-longer-fail"),
+        pytest.param((2, 3, 4), (None, 3, 5), id="middle-literal-mismatch"),
+    ],
+)
+def test_shape_match_false(shp, pat):
+    """These cases must return False"""
+    assert match_shape(shp, pat) is False
+
+
+@pytest.mark.parametrize(
+    "bad_input",
+    [
+        pytest.param("not_a_number", id="string"),
+        pytest.param({"a": 1}, id="dict"),
+        pytest.param(object(), id="object"),
+    ],
+)
+def test_check_format_input_numeric_error_message_interpolation(bad_input):
+    """Error messages must interpolate the actual type, not show literal '{type(inp)}'.
+
+    Regression test: continuation lines of the error f-strings were missing the
+    'f' prefix, so users saw literal '{type(inp)}' / '{type(inp)!r}' in messages.
+    """
+
+    with pytest.raises(MagpylibBadUserInput) as excinfo:
+        check_format_input_numeric(
+            bad_input, dtype=float, shapes=((3,),), name="test_param"
+        )
+    msg = str(excinfo.value)
+    assert "{type(inp)" not in msg, f"un-interpolated placeholder in message: {msg!r}"
+
 
 ###########################################################
 ###########################################################
@@ -207,7 +285,7 @@ def test_input_objects_diameter_good(diameter):
 @pytest.mark.parametrize(
     "diameter",
     [
-        (1, 2),
+        # (1, 2),  # paths now allowed
         [(1, 2, 3, 4)] * 2,
         "x",
         ["x", "y", "z"],
@@ -249,7 +327,7 @@ def test_input_objects_vertices_good(vertices):
     [
         (1, 2),
         [(1, 2, 3, 4)] * 2,
-        [(1, 2, 3)],
+        # [(1, 2, 3)],  # paths now allowed
         "x",
         ["x", "y", "z"],
         {"woot": 15},
@@ -297,8 +375,6 @@ def test_input_objects_magnetization_moment_good(pol_or_mom):
     [
         (1, 2),
         [1, 2, 3, 4],
-        [(1, 2, 3)] * 2,
-        np.array([(1, 2, 3)] * 2),
         "x",
         ["x", "y", "z"],
         {"woot": 15},
@@ -346,8 +422,6 @@ def test_input_objects_dimension_cuboid_good(dimension):
         (0, 1, 2),
         (1, 2),
         [1, 2, 3, 4],
-        [(1, 2, 3)] * 2,
-        np.array([(1, 2, 3)] * 2),
         "x",
         ["x", "y", "z"],
         {"woot": 15},
@@ -388,8 +462,6 @@ def test_input_objects_dimension_cylinder_good(dimension):
         (0, 1),
         (1,),
         [1, 2, 3],
-        [(1, 2)] * 2,
-        np.array([(2, 3)] * 2),
         "x",
         ["x", "y"],
         {"woot": 15},
@@ -438,8 +510,6 @@ def test_input_objects_dimension_cylinderSegment_good(dimension):
         (1, 2, 0, 4, 5),
         (1, 2, -1, 4, 5),
         (1, 2, 3, 5, 4),
-        [(1, 2, 3, 4, 5)] * 2,
-        np.array([(1, 2, 3, 4, 5)] * 2),
         "x",
         ["x", "y", "z", 1, 2],
         {"woot": 15},
@@ -1001,3 +1071,56 @@ def test_magnet_polarization_magnetization_input3():
     c.magnetization = mag
     np.testing.assert_allclose(mag, c.magnetization)
     np.testing.assert_allclose(mag * magpy.mu_0, c.polarization)  # type: ignore[attr-defined]
+
+
+def test_check_condition_message_interpolates_value():
+    """A value-condition violation must report the threshold and offending value.
+
+    Regression: the failure message dropped the f-prefix on its second line, so
+    users saw the literal text '{threshold!r} (mode={mode!r}); instead received
+    {inp!r}' instead of the actual numbers.
+    """
+    with pytest.raises(MagpylibBadUserInput) as excinfo:
+        magpy.current.Circle(diameter=-1)
+    msg = str(excinfo.value)
+    assert "{" not in msg  # no un-interpolated placeholders
+    assert "-1" in msg  # offending value is shown
+
+
+def test_shape_specs_accept_list_and_any_wildcard():
+    """Shape specs are normalized before the cache and share match_shape's vocabulary.
+
+    A list spec must behave exactly like the equivalent tuple spec (and hit the
+    same cache entry), and 'any' must be accepted by the spec parser, not only
+    by `match_shape`.
+    """
+    assert _normalize_shape_specs([[3]]) == ((3,),)
+    assert _normalize_shape_specs(None) == (None,)
+
+    out_list = check_format_input_numeric(
+        [1, 2, 3], dtype=float, shapes=[[3]], name="x"
+    )
+    out_tuple = check_format_input_numeric(
+        [1, 2, 3], dtype=float, shapes=((3,),), name="x"
+    )
+    np.testing.assert_array_equal(out_list, out_tuple)
+
+    # 'any' is legal in a spec and matches any extent
+    out_any = check_format_input_numeric(
+        [[1, 2, 3], [4, 5, 6]], dtype=float, shapes=(("any", 3),), name="x"
+    )
+    assert out_any.shape == (2, 3)
+
+
+def test_shape_spec_rejects_unknown_vocabulary():
+    """An invalid spec element is an internal error, not a silent pass under -O."""
+    with pytest.raises(MagpylibInternalError):
+        check_format_input_numeric([1, 2, 3], dtype=float, shapes=((3.5,),), name="x")
+
+
+def test_reshape_must_be_a_tuple():
+    """The reshape guard must raise even when assertions are stripped."""
+    with pytest.raises(MagpylibInternalError):
+        check_format_input_numeric(
+            2.0, dtype=float, shapes=None, reshape=[1, 1], name="x"
+        )

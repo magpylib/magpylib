@@ -14,11 +14,10 @@ from magpylib._src.display.traces_utility import (
 )
 from magpylib._src.input_checks import (
     check_format_input_backend,
-    check_format_input_vector,
+    check_format_input_numeric,
     check_input_animation,
     check_input_canvas_update,
 )
-from magpylib._src.utility import check_path_format
 
 
 def infer_backend(canvas):
@@ -71,24 +70,21 @@ def _show(
     """
 
     # process input objs
-    objects, obj_list_flat, max_rows, max_cols, subplot_specs = process_show_input_objs(
+    objects, max_rows, max_cols, subplot_specs = process_show_input_objs(
         objects,
         **{k: v for k, v in kwargs.items() if k in DEFAULT_ROW_COL_PARAMS},
     )
     kwargs = {k: v for k, v in kwargs.items() if k not in DEFAULT_ROW_COL_PARAMS}
     canvas_update = check_input_canvas_update(canvas_update, canvas)
-    # test if every individual obj_path is good
-    check_path_format(obj_list_flat)
 
     # input checks
     backend = check_format_input_backend(backend)
     check_input_animation(animation)
-    check_format_input_vector(
+    check_format_input_numeric(
         markers,
-        dims=(2,),
-        shape_m1=3,
-        sig_name="markers",
-        sig_type="array-like of shape (n, 3)",
+        dtype=float,
+        shapes=((None, 3),),
+        name="markers",
         allow_None=True,
     )
 

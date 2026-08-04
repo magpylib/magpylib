@@ -14,6 +14,14 @@
 :img-bottom: ../../../_static/images/examples_icon_tutorial_paths.png
 :::
 
+:::{grid-item-card} {ref}`examples-tutorial-path-properties`
+:text-align: center
+:link: examples-tutorial-path-properties
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../../_static/images/examples_icon_tutorial_paths.png
+:::
+
 :::{grid-item-card} {ref}`examples-tutorial-field-computation`
 :text-align: center
 :link: examples-tutorial-field-computation
@@ -302,6 +310,7 @@
 :hidden:
 
 examples_tutorial_paths.md
+examples_tutorial_path_properties.md
 examples_tutorial_field_computation.md
 examples_tutorial_collection.md
 examples_tutorial_custom.md

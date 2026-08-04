@@ -3,7 +3,11 @@ import pytest
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
-from magpylib._src.obj_classes.class_BaseTransform import _apply_move, _apply_rotation
+from magpylib._src.obj_classes.class_BaseTransform import (
+    _apply_move,
+    _apply_rotation,
+    path_property_len,
+)
 
 # pylint: disable=too-many-positional-arguments
 
@@ -265,4 +269,45 @@ def test_apply_rotation(
         R.from_rotvec(new_orientation_rotvec).as_matrix(),
         rtol=1e-05,
         atol=1e-08,
+    )
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (None, 1),
+        (np.zeros((1, 3)), 1),
+        (np.zeros((5, 3)), 5),
+        (np.zeros((1,)), 1),
+        (np.zeros((4,)), 4),
+        (R.from_rotvec((0.1, 0.2, 0.3)), 1),  # single Rotation
+        (R.from_rotvec([(0.1, 0.2, 0.3)]), 1),  # array-form length 1
+        (R.from_rotvec([(0.1, 0.2, 0.3), (0.2, 0.3, 0.4)]), 2),
+    ],
+)
+def test_path_property_len(value, expected):
+    """path_property_len is the single source of truth for path-step counting."""
+
+    assert path_property_len(value) == expected
+
+
+def test_apply_move_negative_start_orientation_alignment():
+    """Orientation must be padded on the same side as position.
+
+    Regression test: move(start<0) front-pads the position path, but
+    _apply_move end-padded the orientation path, pairing orientation steps
+    with the wrong positions.
+    """
+    s = magpy.Sensor(position=[(0, 0, 0), (1, 0, 0)])
+    # two rotations about z: 0 deg and 90 deg (from_rotvec is unambiguous across
+    # scipy versions, unlike from_euler("z", [0, 90]))
+    s.orientation = R.from_rotvec(np.deg2rad([[0, 0, 0], [0, 0, 90]]))
+
+    s.move([(0, 0, 1)] * 4, start=-4)
+
+    np.testing.assert_allclose(s.position, [(0, 0, 1), (0, 0, 1), (0, 0, 1), (1, 0, 1)])
+    np.testing.assert_allclose(
+        np.rad2deg(s.orientation.as_rotvec()[:, 2]),
+        [0, 0, 0, 90],
+        atol=1e-10,
     )

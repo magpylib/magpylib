@@ -155,7 +155,7 @@ def test_Cylinder_volume():
 
 
 def test_Cylinder_centroid():
-    """Test Cylinder centroid - should return position (no barycenter)"""
+    """Test Cylinder centroid - should return position"""
     expected = (2, 3, 4)
     cylinder = magpy.magnet.Cylinder(
         dimension=(2, 4), polarization=(0, 0, 1), position=expected

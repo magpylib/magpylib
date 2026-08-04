@@ -3,9 +3,11 @@ import warnings
 
 import numpy as np
 import pytest
+from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.fields.field_BH import _preserve_paths
 
 
 def test_getB_level2_input_simple():
@@ -160,6 +162,44 @@ def test_getB_level2_input_path():
     B = magpy.getB([pm1, pm1], [sens2, sens2])
     result = np.array([fb, fb])
     np.testing.assert_allclose(B, result)
+
+
+def test_getBH_level2_mixed_property_path_lengths():
+    """Object whose position reaches max_path_len but whose other path
+    properties are stored minimally (len 1) must still be field-correct and
+    restored to its minimal form afterwards.
+
+    Guard for the objs_to_pad detection in _getBH_level2: such an object has
+    _get_path_len() == max_path_len yet still needs padding because dimension /
+    polarization are shorter — the per-property scan must catch it.
+    """
+    # position path length 3; dimension & polarization stored minimally (len 1)
+    src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    src.position = [(0, 0, 0), (0, 0, 1), (0, 0, 2)]
+    # static second source to also exercise the shorter-than-max branch
+    src2 = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+
+    assert len(src._position) == 3
+    assert len(src._dimension) == 1
+    assert len(src._polarization) == 1
+
+    B = magpy.getB([src, src2], (0, 0, 5))
+    assert B.shape == (2, 3, 3)  # (sources, path, xyz)
+
+    # paths restored to minimal stored form
+    assert len(src._position) == 3
+    assert len(src._dimension) == 1
+    assert len(src._polarization) == 1
+    assert len(src2._position) == 1
+    assert len(src2._dimension) == 1
+
+    # correctness: each path step matches the equivalent static computation
+    for i, z in enumerate([0, 1, 2]):
+        ref = magpy.magnet.Cuboid(
+            polarization=(0, 0, 1), dimension=(1, 1, 1), position=(0, 0, z)
+        )
+        np.testing.assert_allclose(B[0, i], magpy.getB(ref, (0, 0, 5)))
+        np.testing.assert_allclose(B[1, i], magpy.getB(src2, (0, 0, 5)))
 
 
 def test_path_tile():
@@ -607,3 +647,73 @@ def test_do_not_warn():
         do_not_warnme2()
         if len(w) > 0:
             pytest.fail("WARNING SHOULD NOT HAVE BEEN RAISED")
+
+
+def test_preserve_paths_copy_true_works_for_rotation():
+    """_preserve_paths(copy=True) must not crash on Rotation-valued path properties.
+
+    Regression test: scipy Rotation has no .copy() method, so the naive
+    ``val.copy()`` in _preserve_paths raised AttributeError for orientation paths.
+    """
+
+    src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    src.move([(0, 0, i) for i in range(3)])  # path length 3
+
+    ori_before = src._orientation.as_quat().copy()
+    pos_before = src._position.copy()
+
+    with _preserve_paths([src], copy=True):
+        # mutate inside the context — originals must be restored on exit
+        # (use from_rotvec for 3 distinct rotations; portable across scipy versions)
+        src._position = src._position * 99
+        src._orientation = R.from_rotvec([(0, 0, 0.5), (0, 0, 1.0), (0, 0, 1.5)])
+
+    np.testing.assert_allclose(src._position, pos_before)
+    np.testing.assert_allclose(src._orientation.as_quat(), ori_before)
+
+
+def test_path_varying_property_multi_pixel():
+    """Path-varying property values must pair with the correct path step for
+    every sensor pixel.
+
+    Regression test: _tile_group_property_path laid out path-varying
+    properties pixel-major/path-minor (np.tile) while positions and observers
+    are path-major/pixel-minor, silently scrambling fields across path steps.
+    """
+    pixel = [(0, 0, 0.1), (0, 0, 0.2)]
+    sens = magpy.Sensor(pixel=pixel)
+
+    # scalar property (current)
+    currents = [1.0, 2.0, 3.0]
+    circ = magpy.current.Circle(current=currents, diameter=1.0)
+    B = magpy.getB(circ, sens)
+    for i, curr in enumerate(currents):
+        B_ref = magpy.current.Circle(current=curr, diameter=1.0).getB(pixel)
+        np.testing.assert_allclose(B[i], B_ref)
+
+    # vector property (dimension)
+    dims = [(1, 1, 1), (2, 2, 2)]
+    cub = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=dims)
+    B = magpy.getB(cub, sens)
+    for i, dim in enumerate(dims):
+        B_ref = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=dim).getB(pixel)
+        np.testing.assert_allclose(B[i], B_ref)
+
+
+def test_path_varying_property_multi_pixel_ragged_group():
+    """Same as above for sources with unequal property shapes in one group
+    (object-dtype branch of _tile_group_property_path)."""
+    pixel = [(0.1, 0, 0.2), (0, 0.2, 0.3)]
+    sens = magpy.Sensor(pixel=pixel)
+
+    verts1 = np.array([[(-1, 0, 0), (1, 0, 0)], [(-1, 0, 0.5), (1, 0, 0.5)]])
+    verts2 = np.array([(0, -1, 0), (0, 1, 0), (0, 1, 1)])
+    p1 = magpy.current.Polyline(current=1, vertices=verts1)  # path-varying
+    p2 = magpy.current.Polyline(current=1, vertices=verts2)  # static
+
+    B = magpy.getB([p1, p2], sens)
+    for i in range(2):
+        B_ref1 = magpy.current.Polyline(current=1, vertices=verts1[i]).getB(pixel)
+        B_ref2 = magpy.current.Polyline(current=1, vertices=verts2).getB(pixel)
+        np.testing.assert_allclose(B[0, i], B_ref1)
+        np.testing.assert_allclose(B[1, i], B_ref2)

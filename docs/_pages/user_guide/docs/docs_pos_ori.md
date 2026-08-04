@@ -150,7 +150,55 @@ Several extensions of the `rotate()` method give a lot of flexibility with objec
 
 ::::
 
-When objects with different path lengths are combined, e.g. when computing the field, the shorter paths are treated as static beyond their end to make the computation sensible. Internally, Magpylib follows a philosophy of edge-padding and end-slicing when adjusting paths.
+--------------------------
+(docs-position-path-properties)=
+## Paths Beyond Position and Orientation
+
+A path is not restricted to motion. Physical attributes can vary along a path as well, so that a current ramps, a coil deforms, or a magnet expands as the object moves. Which attributes support this is listed per object by the read-only `path_properties` - besides `position` and `orientation` these are the physical attributes of the class.
+
+`position` and `orientation` are special in exactly one respect: they stay **eagerly synchronized with each other**, because geometric consistency is always required. All other path properties are independent - setting one does not change the others.
+
+Each of these attributes accepts either a single value or one value per path step. **What is stored is what you set**: an attribute keeps the shape it was given, and is not expanded to match the others.
+
+```python
+import numpy as np
+import magpylib as magpy
+
+loop = magpy.current.Circle(current=1, diameter=0.01)
+print(loop.path_properties)  # which attributes can carry a path
+#   --> ('position', 'orientation', 'current', 'diameter')
+
+loop = magpy.current.Circle(current=[1, 2, 3], diameter=0.01)
+print(loop.current)  # a current that varies along the path
+#   --> [1. 2. 3.]
+
+cube = magpy.magnet.Cuboid(dimension=(0.01, 0.01, 0.01), polarization=(0, 0, 1))
+cube.position = [(0, 0, z) for z in np.linspace(0, 0.04, 5)]
+print(np.shape(cube.position))  # position is a path ...
+#   --> (5, 3)
+print(cube.dimension)  # ... but dimension is untouched
+#   --> [0.01 0.01 0.01]
+```
+
+The lengths are reconciled only when they need to be - at field, force and display time - by edge-padding the shorter attributes up to the longest path. This keeps memory proportional to what you actually varied, and means that `move()` and `rotate()` never silently expand your other attributes.
+
+The same reconciliation applies to read-only derived properties, which gain a leading path axis when the attributes they are computed from vary:
+
+```python
+cube = magpy.magnet.Cuboid(dimension=(0.01, 0.01, 0.01), polarization=(0, 0, 1))
+print(np.shape(cube.dipole_moment))
+#   --> (3,)
+
+cube.polarization = [(0, 0, 1), (0, 0, 2)]
+print(np.shape(cube.dipole_moment))
+#   --> (2, 3)
+```
+
+Practical examples are shown in {ref}`examples-tutorial-path-properties`.
+
+--------------------------
+
+When objects with different path lengths are combined, e.g. when computing the field, the shorter paths are treated as static beyond their end to make the computation sensible. The same holds for attributes of different lengths **within** one object. Internally, Magpylib follows a philosophy of edge-padding and end-slicing when adjusting paths.
 
 ::::{grid} 2
 :gutter: 2

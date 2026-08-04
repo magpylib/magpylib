@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 
+- Extended the path system beyond `position`/`orientation` to object attributes
+  ([#916](https://github.com/magpylib/magpylib/pull/916)). Physical properties
+  such as `current`, `diameter`, `dimension`, `polarization`, `magnetization`,
+  `moment` and `vertices` can now vary along a path, enabling AC/ramped
+  currents, deforming geometries and thermal-expansion studies:
+
+  ```python
+  circle = magpy.current.Circle(
+      diameter=np.linspace(0.01, 0.05, 10),
+      current=np.linspace(1, 10, 10),
+  )
+  ```
+
+  Storage stays minimal — a property is kept in the form the user gave it, and
+  is edge-padded to the common path length only during field, force and display
+  computation, then restored. Objects with properties of differing path lengths
+  are padded to the longest.
+
+- Derived properties (`dipole_moment`, `barycenter`, …) gain a leading path axis
+  when the inputs they derive from are path-varying. Shapes for non-path-varying
+  objects are unchanged.
+- Added `obj.path_properties`, listing which of an object's attributes support a
+  path dimension. Classes declare their own via `_path_properties`, which is
+  aggregated across all base classes.
+- Rewrote numeric input validation around a single `check_format_input_numeric`
+  with shape-pattern matching (wildcards and ellipsis) and value conditions,
+  giving consistent messages across all object attributes.
+- Removed the internal `magpylib._src.utility.check_path_format`; path
+  consistency is now maintained by the path-property machinery itself.
 - Rewrote the style and defaults internals as a declarative typed-property tree,
   replacing `MagicProperties`
   ([#967](https://github.com/magpylib/magpylib/pull/967)). Style _usage_ is

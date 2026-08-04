@@ -157,6 +157,34 @@ def test_TriangleSheet_display():
     src.show(style_direction_color="black", return_fig=True)
 
 
+def test_TriangleSheet_path_varying_mesh_grid_display():
+    """Path-varying TriangleSheet with mesh grid enabled must not crash.
+
+    Regression test for make_mesh_lines being called without path_ind inside
+    make_TriangleSheet, causing an IndexError when vertices have path length > 1.
+    """
+    verts = np.array(
+        [
+            [[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]],
+            [[0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1]],
+        ],
+        dtype=float,
+    )  # shape (2, 4, 3) — path-varying
+    cd = np.array(
+        [
+            [[1, 0, 0], [0, 1, 0]],
+            [[0, 1, 0], [0, 0, 1]],
+        ],
+        dtype=float,
+    )  # shape (2, 2, 3)
+    src = magpy.current.TriangleSheet(
+        vertices=verts,
+        faces=[[0, 1, 2], [1, 2, 3]],
+        current_densities=cd,
+    )
+    src.show(style_mesh_grid_show=True, return_fig=True)
+
+
 def test_col_display():
     """testing display"""
     # pylint: disable=assignment-from-no-return

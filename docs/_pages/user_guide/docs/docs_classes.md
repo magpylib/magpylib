@@ -20,6 +20,10 @@ The following basic properties are shared by all Magpylib classes:
 
 * **`reset_path()`** method: Sets `position` and `orientation` to their default values.
 
+* **`path_properties`**: property (read only) which lists the attributes of this object that can carry a path. Besides `position` and `orientation` these are the physical attributes of the class, e.g. `current` and `vertices` for a `Polyline`, or `dimension`, `polarization` and `magnetization` for a `Cuboid`.
+
+**Every attribute listed in `path_properties` accepts either a single value, or one value per path step.** A `current` may be a single number or a sequence of numbers, a `dimension` a single triple or a sequence of triples, and so on. Attributes are independent of each other: setting one to a path does not change the others.
+
 See {ref}`docs-position` for more information on these features.
 
 **Graphic representation**
@@ -148,7 +152,7 @@ magpylib.magnet.Sphere(
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Sphere` objects represent magnets of spherical shape. The **`diameter`** attribute is the sphere diameter $d$ in units (m). The center of the sphere lies in the origin of the local coordinates.
+`Sphere` objects represent magnets of spherical shape. The **`diameter`** attribute is the sphere diameter $d$ in units (m), given as a scalar or as one scalar per path step. The center of the sphere lies in the origin of the local coordinates.
 :::
 :::{grid-item}
 :columns: 3
@@ -251,7 +255,7 @@ The method **`to_TriangleCollection()`** transforms a `TriangularMesh` object in
 (docs-classes-current)=
 ## Current Classes
 
-All currents are sources. Current objects (except `TriangleSheet`) have the **`current`** attribute which is a scalar that denotes the electrical current in units (A).
+All currents are sources. Current objects (except `TriangleSheet`) have the **`current`** attribute which denotes the electrical current in units (A). It is a scalar, or one scalar per path step.
 
 ### Circle
 ```python
@@ -261,7 +265,7 @@ magpylib.current.Circle(position, orientation, diameter, current, meshing, style
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Circle` objects represent circular line current loops. The **`diameter`** attribute is the loop diameter $d$ in units (m). The loop lies in the xy-plane with it's center in the origin of the local coordinates.
+`Circle` objects represent circular line current loops. The **`diameter`** attribute is the loop diameter $d$ in units (m), given as a scalar or as one scalar per path step. The loop lies in the xy-plane with it's center in the origin of the local coordinates.
 :::
 :::{grid-item}
 :columns: 3

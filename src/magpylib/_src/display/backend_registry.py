@@ -150,7 +150,7 @@ class RegisteredBackend:
             backend, "subplots", "Falling back to a single combined plot."
         )
         objs = [{**obj, "row": 1, "col": 1} for obj in objs]
-        objs, _, max_rows, max_cols, subplot_specs = process_show_input_objs(objs)
+        objs, max_rows, max_cols, subplot_specs = process_show_input_objs(objs)
         return objs, max_rows, max_cols, subplot_specs
 
     @classmethod

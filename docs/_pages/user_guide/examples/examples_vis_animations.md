@@ -184,7 +184,7 @@ def create_frames(frames):
         magpy.show(mag1, mag2, canvas=pl, style_legend_show=False)
 
         # Edit figure in Pyvista
-        pl.add_mesh(pv.Line(mag1.barycenter, mag2.barycenter), color="cyan")
+        pl.add_mesh(pv.Line(mag1.centroid, mag2.centroid), color="cyan")
 
         # Screenshot
         print(f"Writing frame {i+1:3d}/{frames}")
