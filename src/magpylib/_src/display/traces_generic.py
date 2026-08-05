@@ -27,6 +27,7 @@ from magpylib._src.display.api import (
     Panel,
     Scene,
 )
+from magpylib._src.display.backend_registry import RegisteredBackend
 from magpylib._src.display.traces_utility import (
     _get_prop,
     draw_arrowed_line,
@@ -444,6 +445,12 @@ def get_traces_2D(
     return traces
 
 
+def _backend_takes_native_traces(backend):
+    """Whether `backend` consumes models attached for it, or ignores them."""
+    reg = RegisteredBackend.backends.get(backend)
+    return True if reg is None else reg.supports.get("native_traces", True)
+
+
 def process_extra_trace(model):
     "process extra trace attached to some magpylib object"
     extr = model["model3d"]
@@ -703,6 +710,18 @@ def get_generic_traces3D(
             if not extr.show:
                 continue
             extr.update(extr.updatefunc())  # update before checking backend
+            if extr.backend == extra_backend and not _backend_takes_native_traces(
+                extra_backend
+            ):
+                warnings.warn(
+                    f"The {extra_backend} backend does not support "
+                    "backend-specific 3D models attached via "
+                    "style.model3d.data; the model is not displayed. Use a "
+                    "'generic' model3d trace instead, which every backend "
+                    "renders.",
+                    stacklevel=2,
+                )
+                continue
             if extr.backend == extra_backend:
                 for path_ind in path_inds_minimal:
                     tr_non_generic = {

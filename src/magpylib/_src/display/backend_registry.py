@@ -61,6 +61,10 @@ class RegisteredBackend:
     supports_animation_output: bool
         Whether the animation can be written to a file (`.mp4`/`.gif`). If
         False, `show` warns and falls back to displaying it.
+    supports_native_traces: bool, default True
+        Whether models attached via ``style.model3d.data`` naming this backend
+        are rendered. If False, such models are skipped with a warning rather
+        than silently dropped or failing inside the placement code.
 
     Notes
     -----
@@ -90,6 +94,7 @@ class RegisteredBackend:
         supports_subplots,
         supports_colorgradient,
         supports_animation_output,
+        supports_native_traces=True,
     ):
         self.name = name
         self.show_func = show_func
@@ -98,6 +103,7 @@ class RegisteredBackend:
             "subplots": supports_subplots,
             "colorgradient": supports_colorgradient,
             "animation_output": supports_animation_output,
+            "native_traces": supports_native_traces,
         }
         self._register_backend(name)
 
@@ -267,4 +273,8 @@ RegisteredBackend(
     supports_subplots=True,
     supports_colorgradient=True,
     supports_animation_output=True,
+    # pyvista has never consumed these: its constructors take points, centers
+    # and radii rather than the named x/y/z arrays place_and_orient_model3d
+    # transforms, so the generic placement contract does not fit them.
+    supports_native_traces=False,
 )

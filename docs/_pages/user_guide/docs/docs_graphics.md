@@ -108,7 +108,7 @@ There is a high level of **feature parity**, however, not all graphic features a
 | subplots 2D              | ✔️         | ✔️    | ✔️[6]   |
 | subplots 3D              | ✔️         | ✔️    | ✔️      |
 | user canvas              | ✔️         | ✔️    | ✔️      |
-| user extra 3d model [3]  | ✔️         | ✔️    | ✔️[4]   |
+| user extra 3d model [3]  | ✔️         | ✔️    | ❌[4]   |
 
 [1]: when returning animation object and exporting it as jshtml.
 
@@ -116,7 +116,7 @@ There is a high level of **feature parity**, however, not all graphic features a
 
 [3]: only `'scatter3d'`, and `'mesh3d'`. Gets "translated" to every other backend.
 
-[4]: custom user defined trace constructors  allowed, which are specific to the backend.
+[4]: backend-specific trace constructors are supported by Matplotlib and Plotly, whose constructors take the named coordinate arrays that Magpylib transforms. Pyvista constructors take points, centers and radii instead, so they do not fit that contract; attaching one emits a warning and the model is not displayed. Generic `model3d` traces work with every backend, Pyvista included.
 
 [5]: animation is only available through export as `gif` or `mp4`
 

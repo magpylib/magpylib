@@ -143,3 +143,41 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
         finally:
             with contextlib.suppress(FileNotFoundError):
                 temp.unlink()
+
+
+def test_pyvista_warns_on_backend_specific_model3d():
+    """Pyvista does not consume backend-specific models; it must say so.
+
+    Its constructors take points, centers and radii rather than the named
+    coordinate arrays `place_and_orient_model3d` transforms, so such a model
+    used to either crash inside the placement code or be silently dropped by
+    the backend, while the docs advertised support.
+    """
+    obj = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    obj.style.model3d.add_trace(
+        backend="pyvista",
+        constructor="Line",
+        kwargs={"pointa": (0, 0, 0), "pointb": (2, 2, 2)},
+    )
+
+    with pytest.warns(UserWarning, match="does not support"):
+        magpy.show(obj, backend="pyvista", return_fig=True)
+
+
+def test_pyvista_still_renders_generic_model3d():
+    """The documented alternative must keep working for pyvista."""
+    obj = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    obj.style.model3d.add_trace(
+        {
+            "backend": "generic",
+            "constructor": "scatter3d",
+            "kwargs": {"x": (0, 2), "y": (0, 2), "z": (0, 2), "mode": "lines"},
+        }
+    )
+    plotter = magpy.show(obj, backend="pyvista", return_fig=True)
+    plain = magpy.show(
+        magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1)),
+        backend="pyvista",
+        return_fig=True,
+    )
+    assert len(list(plotter.renderer.actors)) > len(list(plain.renderer.actors))
