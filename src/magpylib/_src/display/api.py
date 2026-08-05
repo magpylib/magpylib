@@ -179,6 +179,13 @@ class DisplayBackend:
     # traces, some simply prefer fewer and larger ones.
     merge_traces: ClassVar[bool] = True
 
+    #: Names this backend accepts in `Scene.options`, the bag of arguments
+    #: magpylib itself does not interpret. ``None`` means "accept anything",
+    #: which is also what makes a typo like ``retrun_fig=True`` pass silently.
+    #: Declaring the set lets magpylib say so. Modelled on xarray's
+    #: `BackendEntrypoint.open_dataset_parameters`.
+    accepts_options: ClassVar[frozenset[str] | None] = None
+
     #: Trace ``type`` values this backend knows how to draw. ``None`` means
     #: "assume everything". Declaring the set lets magpylib warn when a scene
     #: contains a type the backend never handles, instead of silently
@@ -241,6 +248,12 @@ class DisplayBackend:
     def show(self, scene: Scene):
         """Draw `scene`, returning this backend's figure object."""
         raise NotImplementedError
+
+    def unaccepted_options(self, scene: Scene) -> frozenset[str]:
+        """Option names in `scene` this backend does not declare."""
+        if self.accepts_options is None:
+            return frozenset()
+        return frozenset(set(scene.options) - self.accepts_options)
 
     def unhandled_trace_types(self, scene: Scene) -> frozenset[str]:
         """Trace types present in `scene` that this backend does not declare."""

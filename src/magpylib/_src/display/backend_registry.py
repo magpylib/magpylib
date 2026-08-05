@@ -39,6 +39,7 @@ def register_backend(
     supports_native_traces=True,
     merge_traces=True,
     handles_traces=None,
+    accepts_options=None,
 ):
     """Register a display backend from a plain function.
 
@@ -73,6 +74,11 @@ def register_backend(
         Trace ``type`` values this backend draws. ``None`` assumes all.
         Declaring it lets magpylib warn about a type the backend never handles
         rather than silently omitting it.
+    accepts_options : set of str, optional
+        Extra keyword arguments this backend accepts, forwarded through
+        `Scene.options`. ``None`` accepts anything, which also means a
+        misspelled argument passes unnoticed; declaring the set lets magpylib
+        warn about it.
 
     Returns
     -------
@@ -99,6 +105,7 @@ def register_backend(
         supports_native_traces=supports_native_traces,
         merge_traces=merge_traces,
         handles_traces=handles_traces,
+        accepts_options=accepts_options,
     )
 
 
@@ -113,6 +120,7 @@ def _make_backend(
     supports_native_traces=True,
     merge_traces=True,
     handles_traces=None,
+    accepts_options=None,
 ):
     """Build and register a DisplayBackend subclass delegating to show_func."""
     return type(
@@ -127,6 +135,7 @@ def _make_backend(
             "supports_native_traces": supports_native_traces,
             "merge_traces": merge_traces,
             "handles_traces": handles_traces,
+            "accepts_options": accepts_options,
             "show": staticmethod(show_func),
         },
     )
@@ -273,6 +282,14 @@ class ShowDispatcher:
                 f"{API_VERSION}. The figure may be wrong or incomplete.",
                 stacklevel=2,
             )
+        unaccepted = self.unaccepted_options(scene)
+        if unaccepted:
+            warnings.warn(
+                f"show() got unexpected keyword argument(s) "
+                f"{sorted(unaccepted)!r} for the {backend} backend; they are "
+                "ignored. Check for a typo.",
+                stacklevel=2,
+            )
         unhandled = self.unhandled_trace_types(scene)
         if unhandled:
             warnings.warn(
@@ -295,6 +312,7 @@ RegisteredBackend(
     name="matplotlib",
     show_func=get_show_func("matplotlib"),
     handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
+    accepts_options=frozenset({"antialiased", "return_animation"}),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=False,
@@ -306,6 +324,7 @@ RegisteredBackend(
     name="plotly",
     show_func=get_show_func("plotly"),
     handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
+    accepts_options=frozenset({"renderer"}),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
@@ -316,6 +335,7 @@ RegisteredBackend(
     name="pyvista",
     show_func=get_show_func("pyvista"),
     handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
+    accepts_options=frozenset({"jupyter_backend", "mp4_quality"}),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,

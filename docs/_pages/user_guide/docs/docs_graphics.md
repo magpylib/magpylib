@@ -139,7 +139,8 @@ There is a high level of **feature parity**, however, not all graphic features a
 
 The three built-in backends are not privileged: they subclass the same public `DisplayBackend` a third party would.
 
-```python
+```{code-cell} ipython3
+import magpylib as magpy
 from magpylib.graphics.backend import DisplayBackend
 
 
@@ -151,6 +152,10 @@ class CounterBackend(DisplayBackend):
     def show(self, scene):
         traces = sum(len(frame.traces) for frame in scene.frames)
         return f"{len(scene.frames)} frame(s), {traces} trace(s)"
+
+
+src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+print(magpy.show(src, backend="counter"))
 ```
 
 Declaring the class registers it. A backend shipped in a package should instead advertise itself in the `magpylib.backends` entry-point group, so that installing it is enough:

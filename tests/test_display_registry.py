@@ -433,3 +433,49 @@ def test_builtins_do_not_warn_about_their_own_traces(name):
             backend=name,
             return_fig=True,
         )
+
+
+@pytest.mark.parametrize(
+    ("name", "accepted"),
+    [
+        ("matplotlib", {"antialiased", "return_animation"}),
+        ("plotly", {"renderer"}),
+        ("pyvista", {"jupyter_backend", "mp4_quality"}),
+    ],
+)
+def test_builtins_declare_the_options_they_accept(name, accepted):
+    """Declared so a misspelled argument can be reported rather than ignored."""
+    assert DisplayBackend.backends[name].accepts_options == frozenset(accepted)
+
+
+@pytest.mark.parametrize("name", ["matplotlib", "plotly", "pyvista"])
+def test_misspelled_keyword_argument_warns(name):
+    """`show(retrun_fig=True)` used to do nothing at all, silently."""
+    with pytest.warns(UserWarning, match=r"unexpected keyword argument.*retrun_fig"):
+        magpy.show(make_source(), backend=name, return_fig=True, retrun_fig=True)
+
+
+@pytest.mark.parametrize(
+    ("name", "option"),
+    [
+        ("matplotlib", {"antialiased": False}),
+        ("plotly", {"renderer": None}),
+        ("pyvista", {"jupyter_backend": None}),
+    ],
+)
+def test_declared_options_do_not_warn(name, option):
+    """A legitimate backend-specific argument must stay silent."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", UserWarning)
+        magpy.show(make_source(), backend=name, return_fig=True, **option)
+
+
+def test_undeclared_accepts_options_accepts_anything():
+    """The default must not make existing third-party backends noisy."""
+    try:
+        magpy.register_backend("anything", lambda scene: scene)
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            magpy.show(make_source(), backend="anything", whatever=1)
+    finally:
+        DisplayBackend.backends.pop("anything", None)
