@@ -20,6 +20,23 @@ translates it (`SYMBOLS_TO_PLOTLY`, `SYMBOLS_TO_PYVISTA`), so it is magpylib's
 vocabulary rather than plotly's, and renaming would have cost a permanent
 adapter and three ported backends while fixing nothing an author complains
 about. What was missing is specification, not different names.
+
+Four things not to do here, each of which has been attempted or proposed:
+
+- **Do not rewrite the trace format into an abstract IR.** The hand-off is
+  already a plain dict of numpy arrays that matplotlib, plotly and pyvista all
+  consume. This was overridden once and reverted after measurement; it is the
+  most expensive wrong turn available in this module.
+- **Do not remove `group_traces` or the cross-object merge.** It is a real
+  optimisation for scenes where objects share a legendgroup and colour. It is
+  optional per backend via `DisplayBackend.merge_traces`; do not delete it.
+  The four merges *within* one object are unconditional by design.
+- **Do not change what `legendgroup` means.** Collection-scoped legend grouping
+  is correct behaviour. Identity is a separate axis and lives in `object_id`.
+- **Do not "fix" the capability-driven geometry.** `supports_colorgradient=False`
+  triggers geometric mesh slicing per colour band in `update_magnet_mesh`,
+  because matplotlib cannot interpolate vertex colours. It is a seam, it is
+  ugly, and it works.
 """
 
 import warnings
