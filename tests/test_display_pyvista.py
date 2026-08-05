@@ -181,3 +181,34 @@ def test_pyvista_still_renders_generic_model3d():
         return_fig=True,
     )
     assert len(list(plotter.renderer.actors)) > len(list(plain.renderer.actors))
+
+
+def test_title_reaches_the_pyvista_plotter():
+    """A lone panel gets the title as a corner annotation."""
+    obj = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1), dimension=(1, 1, 1), style_label="L"
+    )
+    with_title = magpy.show(obj, backend="pyvista", return_fig=True, title="MY TITLE")
+    without = magpy.show(obj, backend="pyvista", return_fig=True, title="")
+
+    assert "title" in with_title.renderer.actors
+    assert "title" not in without.renderer.actors
+
+
+def test_pyvista_skips_the_title_on_a_subplot_grid():
+    """pyvista has no figure-level title.
+
+    `add_title` applies to the active subplot, so on a grid it would read as
+    that one panel's title. Skipped rather than placed misleadingly.
+    """
+    obj = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    sensor = magpy.Sensor(position=(3, 0, 0))
+
+    plotter = magpy.show(
+        {"objects": [obj, sensor], "row": 1, "col": 1},
+        {"objects": [obj, sensor], "row": 1, "col": 2, "output": "Bx"},
+        backend="pyvista",
+        return_fig=True,
+        title="MY TITLE",
+    )
+    assert "title" not in plotter.renderer.actors

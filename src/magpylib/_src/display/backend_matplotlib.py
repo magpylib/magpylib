@@ -406,6 +406,11 @@ def display_matplotlib(scene):
         draw_frame(ind)
         return list(axes.values())
 
+    # the title is the same on every frame, so it belongs to the figure
+    title = scene.frames[0].title if scene.frames else None
+    if canvas_update and title:
+        fig.suptitle(title)
+
     anim = None
     if len(frames) == 1:
         draw_frame(0)

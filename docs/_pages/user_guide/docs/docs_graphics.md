@@ -112,6 +112,7 @@ There is a high level of **feature parity**, however, not all graphic features a
 |       subplots 2D       |     ✔️     |   ✔️   |  ✔️[6]  |
 |       subplots 3D       |     ✔️     |   ✔️   |   ✔️    |
 |       user canvas       |     ✔️     |   ✔️   |   ✔️    |
+|      figure title       |     ✔️     |   ✔️   |  ✔️[8]  |
 | user extra 3d model [3] |     ✔️     |   ✔️   |  ❌[4]  |
 
 [1]: when returning animation object and exporting it as jshtml.
@@ -125,6 +126,8 @@ There is a high level of **feature parity**, however, not all graphic features a
 [5]: animation is only available through export as `gif` or `mp4`
 
 [6]: 2D plots are not supported for all jupyter_backends. As of pyvista>=0.38 these are deprecated and replaced by the [trame](https://docs.pyvista.org/api/plotting/trame.html) backend.
+
+[8]: Pyvista has no figure-level title -- `add_title` applies to the active subplot -- so the title is shown for a single panel and omitted on a subplot grid.
 
 [7]: Matplotlib does not support color gradient. Instead magnetization is shown through object slicing and coloring.
 

@@ -352,6 +352,13 @@ def display_pyvista(scene):
         show_canvas = False
         open_animation(filename, embed=embed)
 
+    # pyvista has no figure-level title: add_title applies to the active
+    # subplot, so on a grid it would read as that one panel's title
+    title = scene.frames[0].title if scene.frames else None
+    if canvas_update and title and not scene.has_subplots:
+        canvas.subplot(0, 0)
+        canvas.add_title(title)
+
     if len(frames) == 1:
         draw_frame(0)
     elif animation:

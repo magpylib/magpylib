@@ -657,3 +657,22 @@ def test_extra_model3d_accepts_args_without_kwargs(label, trace_kwargs):
     fig = magpy.show(obj, backend="matplotlib", return_fig=True)
 
     assert fig.axes[0].lines, f"extra model was dropped for {label}"
+
+
+def test_title_reaches_the_matplotlib_figure():
+    """show(title=...) must not be plotly-only.
+
+    Matplotlib is the command-line default, and it never applied the title --
+    so an explicit title silently did nothing there.
+    """
+    obj = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1), dimension=(1, 1, 1), style_label="L"
+    )
+
+    fig = magpy.show(obj, backend="matplotlib", return_fig=True, title="MY TITLE")
+    assert fig._suptitle is not None
+    assert fig._suptitle.get_text() == "MY TITLE"
+
+    # and the inferred one still applies when no title is given
+    fig = magpy.show(obj, backend="matplotlib", return_fig=True)
+    assert fig._suptitle.get_text() == "L"
