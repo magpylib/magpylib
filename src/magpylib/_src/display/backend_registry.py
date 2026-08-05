@@ -259,6 +259,7 @@ class ShowDispatcher:
             supports_colorgradient=self.supports["colorgradient"],
             backend=backend,
             title=title,
+            merge_traces=self.merge_traces,
             **display_kwargs,
         )
         # complete the envelope: get_frames knows about geometry and frames,

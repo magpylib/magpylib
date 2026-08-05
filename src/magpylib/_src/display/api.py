@@ -29,6 +29,12 @@ from typing import Any, ClassVar, Literal
 
 import numpy as np
 
+#: Trace keys carrying magpylib metadata rather than drawing properties.
+#: A backend must not pass these to its plotting library -- plotly rejects
+#: unknown properties outright, and magic-underscore would read ``object_id``
+#: as ``object.id``. Use `drawing_properties` to strip them.
+TRACE_META_KEYS = frozenset({"object_id"})
+
 #: Entry-point group third-party packages advertise backends under, so that
 #: ``pip install`` is enough. Same mechanism as xarray.backends,
 #: matplotlib.backend and pandas_plotting_backends.
@@ -37,6 +43,18 @@ ENTRY_POINT_GROUP = "magpylib.backends"
 #: Version of the payload contract. Bumped when the *envelope* changes shape
 #: in a way a backend written against an older magpylib could not handle.
 API_VERSION = 1
+
+
+def drawing_properties(trace):
+    """Return `trace` without magpylib's metadata keys.
+
+    Traces mix drawing properties with magpylib metadata such as
+    ``object_id``. Plotting libraries reject the latter, so strip them before
+    handing a trace over::
+
+        fig.add_trace(go.Mesh3d(**drawing_properties(trace)))
+    """
+    return {k: v for k, v in trace.items() if k not in TRACE_META_KEYS}
 
 
 @dataclass(frozen=True)

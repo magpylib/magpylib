@@ -545,6 +545,19 @@ def aggregate_by_trace_type(traces):
     yield from result_dict.items()
 
 
+def _reconcile_object_id(merged, sources):
+    """Keep `object_id` only when every merged trace came from one object.
+
+    Unlisted keys are otherwise taken from `sources[0]`, which would silently
+    attach the *first* object's id to a trace spanning several -- worse than no
+    id at all. Merging an object's own sub-traces keeps the id, which is what
+    makes the identity survive the four intra-object merges.
+    """
+    ids = {tr.get("object_id") for tr in sources}
+    merged["object_id"] = ids.pop() if len(ids) == 1 else None
+    return merged
+
+
 def merge_traces(*traces):
     """Merges a list of plotly 3d-traces. Supported trace types are `mesh3d` and `scatter3d`.
     All traces have be of the same type when merging. Keys are taken from the first object, other
@@ -554,9 +567,9 @@ def merge_traces(*traces):
     for ttype, tlist in aggregate_by_trace_type(traces):
         if len(tlist) > 1:
             if ttype == "mesh3d":
-                new_traces.append(merge_mesh3d(*tlist))
+                new_traces.append(_reconcile_object_id(merge_mesh3d(*tlist), tlist))
             elif ttype == "scatter3d":
-                new_traces.append(merge_scatter3d(*tlist))
+                new_traces.append(_reconcile_object_id(merge_scatter3d(*tlist), tlist))
             else:  # pragma: no cover
                 new_traces.extend(tlist)
         elif len(tlist) == 1:

@@ -30,19 +30,23 @@ See the user guide for the trace dialect a backend receives.
 __all__ = [
     "API_VERSION",
     "ENTRY_POINT_GROUP",
+    "TRACE_META_KEYS",
     "AnimationSettings",
     "DisplayBackend",
     "Frame",
     "Panel",
     "Scene",
+    "drawing_properties",
 ]
 
 from magpylib._src.display.api import (
     API_VERSION,
     ENTRY_POINT_GROUP,
+    TRACE_META_KEYS,
     AnimationSettings,
     DisplayBackend,
     Frame,
     Panel,
     Scene,
+    drawing_properties,
 )

@@ -19,6 +19,7 @@ except ImportError as missing_module:  # pragma: no cover
     raise ModuleNotFoundError(msg) from missing_module
 
 from magpylib._src.defaults.defaults_utility import linearize_dict
+from magpylib._src.display.api import drawing_properties
 from magpylib._src.display.traces_utility import get_scene_ranges
 
 SYMBOLS_TO_PLOTLY = {
@@ -238,6 +239,7 @@ def animate_path(
 
 def generic_trace_to_plotly(trace):
     """Transform a generic trace into a plotly trace"""
+    trace = drawing_properties(trace)
     if "scatter" in trace["type"]:
         if trace.get("line_width", None):
             trace["line_width"] *= SIZE_FACTORS_TO_PLOTLY["line_width"]

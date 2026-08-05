@@ -682,6 +682,10 @@ def get_generic_traces3D(
     for tr in path_traces_generic:
         tr.update(place_and_orient_model3d(tr))
         tr.update(row=row, col=col)
+        # identity token: process-local and only valid while the object is
+        # alive, which is all an interactive viewer holding the same objects
+        # needs. Do not persist or transmit it.
+        tr["object_id"] = id(input_obj)
         if tr.get("opacity", None) is None:
             tr["opacity"] = style.opacity
         if tr.get("legendgroup", None) is None:
@@ -961,7 +965,7 @@ def get_sensor_pixel_field(objects):
     return field_by_sens
 
 
-def draw_frame(objs, *, rc_params, style_kwargs, **kwargs):
+def draw_frame(objs, *, rc_params, style_kwargs, merge_traces=True, **kwargs):
     """
     Creates traces from input ``objs`` and provided parameters, updates the size of objects like
     Sensors and Dipoles in ``kwargs`` depending on the canvas size.
@@ -1006,7 +1010,12 @@ def draw_frame(objs, *, rc_params, style_kwargs, **kwargs):
         )
         traces_dict.update({**traces_d1, **traces_d2})
         extra_backend_traces.extend([*traces_ex1, *traces_ex2])
-    traces = group_traces(*[t for tr in traces_dict.values() for t in tr])
+    flat_traces = [t for tr in traces_dict.values() for t in tr]
+    # the only *cross-object* merge. Backends that want per-object geometry --
+    # picking, drag gizmos, pyvista actor naming -- declare merge_traces=False
+    # and get one trace set per object instead. The four other group_traces
+    # calls merge within a single object and stay unconditional.
+    traces = group_traces(*flat_traces) if merge_traces else flat_traces
 
     if objs["rc_params"]["output"] != "model3d":
         traces2d = get_traces_2D(
@@ -1017,7 +1026,9 @@ def draw_frame(objs, *, rc_params, style_kwargs, **kwargs):
     return traces, extra_backend_traces, rc_params
 
 
-def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
+def get_frames(
+    objs, *, title, supports_colorgradient, backend, merge_traces=True, **kwargs
+):
     """This is a helper function which generates frames with generic traces to be provided to
     the chosen backend. According to a certain zoom level, all three space direction will be equal
     and match the maximum of the ranges needed to display all objects, including their paths.
@@ -1084,6 +1095,7 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
                     field_by_sens=field_by_sens,
                     rc_params=rc_params,
                     supports_colorgradient=supports_colorgradient,
+                    merge_traces=merge_traces,
                     extra_backend=backend,
                     style_kwargs=style_kwargs,
                 )

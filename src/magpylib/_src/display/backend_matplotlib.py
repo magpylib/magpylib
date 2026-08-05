@@ -16,6 +16,7 @@ import numpy as np
 from matplotlib import patches
 from matplotlib.animation import FuncAnimation
 
+from magpylib._src.display.api import drawing_properties
 from magpylib._src.display.traces_utility import (
     get_trace_kw,
     split_input_arrays,
@@ -192,6 +193,7 @@ def scatter_to_matplotlib(trace):
 
 def generic_trace_to_matplotlib(trace, antialiased=True):
     """Transform a generic trace into a matplotlib trace"""
+    trace = drawing_properties(trace)
     traces_mpl = []
     if trace["type"] == "mesh3d":
         traces_mpl.extend(mesh3d_to_matplotlib(trace, antialiased))

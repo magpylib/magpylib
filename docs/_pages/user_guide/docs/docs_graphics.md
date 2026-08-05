@@ -194,6 +194,16 @@ Every trace has `type`, `row`, `col`, `name`, `legendgroup` and `showlegend`. Be
 
 Values follow Magpylib's own vocabularies rather than any one library's: marker symbols come from `magpylib._src.defaults.defaults_utility.ALLOWED_SYMBOLS` and dash styles from `ALLOWED_LINESTYLES`, both Matplotlib-derived. Every built-in backend translates them — see `SYMBOLS_TO_PLOTLY` and `SYMBOLS_TO_PYVISTA`.
 
+Traces also carry Magpylib **metadata** that is not a drawing property: `object_id` identifies the object a trace came from, for picking and per-object manipulation. It is `None` on a trace merged across several objects, and process-local — never persist or transmit it. Strip metadata before handing a trace to your plotting library, which will otherwise reject the unknown key:
+
+```python
+from magpylib.graphics.backend import drawing_properties
+
+fig.add_trace(go.Mesh3d(**drawing_properties(trace)))
+```
+
+Declaring `merge_traces = False` stops Magpylib merging traces _across_ objects, so that every object keeps its own geometry and identity — what picking and drag gizmos need. It affects only objects that would otherwise merge, which in practice means `Collection` children under default styling; separately styled objects are never merged, because each gets its own colour. Merges _within_ one object are always applied.
+
 Three things are easy to miss:
 
 - **`frame.native_traces` must be consumed.** When a user attaches a model through `style.model3d.data` naming your backend, it is routed there rather than into `frame.traces`, already positioned and oriented. Ignoring the list silently drops the user's models. Declare `supports_native_traces = False` if you do not handle them, and Magpylib will warn on your behalf.

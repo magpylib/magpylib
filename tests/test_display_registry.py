@@ -9,6 +9,7 @@ from magpylib._src.display.api import DisplayBackend
 from magpylib._src.display.backend_registry import RegisteredBackend
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib.graphics import backend as public_backend
+from magpylib.graphics.backend import TRACE_META_KEYS, drawing_properties
 
 
 def make_source():
@@ -479,3 +480,99 @@ def test_undeclared_accepts_options_accepts_anything():
             magpy.show(make_source(), backend="anything", whatever=1)
     finally:
         DisplayBackend.backends.pop("anything", None)
+
+
+# --- Step 3: per-object identity ---------------------------------------------
+
+
+def _traces_of(*objs, backend_name, **kwargs):
+    captured = {}
+
+    magpy.register_backend(
+        backend_name,
+        lambda scene: captured.setdefault(
+            "t", [t for f in scene.frames for t in f.traces]
+        ),
+        supports_animation=True,
+        supports_subplots=True,
+        supports_colorgradient=True,
+    )
+    try:
+        magpy.show(*objs, backend=backend_name, **kwargs)
+        return captured["t"]
+    finally:
+        DisplayBackend.backends.pop(backend_name, None)
+
+
+def test_object_id_identifies_unmerged_traces():
+    """Separate objects never merge, so identity works without any flag."""
+    a, b = make_source(), make_source()
+    b.position = (3, 0, 0)
+
+    traces = _traces_of(a, b, backend_name="id_plain")
+
+    assert {t["object_id"] for t in traces} == {id(a), id(b)}
+
+
+def test_merged_traces_carry_no_object_id():
+    """A fused trace must report None, never the first object's id.
+
+    Merges take unlisted keys from the first trace, so without reconciliation
+    a Collection's fused mesh would claim to be one of its children.
+    """
+    a, b = make_source(), make_source()
+    b.position = (3, 0, 0)
+    collection = magpy.Collection(a, b, style_label="Ring")
+
+    traces = _traces_of(collection, backend_name="id_merged")
+
+    assert len(traces) == 1, "default styling should still merge the children"
+    assert traces[0]["object_id"] is None
+
+
+def test_merge_traces_false_unmerges_collection_children():
+    """The flag's one real effect: Collection children become identifiable."""
+    a, b = make_source(), make_source()
+    b.position = (3, 0, 0)
+    collection = magpy.Collection(a, b, style_label="Ring")
+
+    class Unmerged(DisplayBackend):
+        name = "id_unmerged"
+        merge_traces = False
+        supports_animation = True
+        supports_subplots = True
+        supports_colorgradient = True
+
+        def show(self, scene):
+            return [t for f in scene.frames for t in f.traces]
+
+    try:
+        traces = magpy.show(collection, backend="id_unmerged")
+        assert {t["object_id"] for t in traces} == {id(a), id(b)}
+    finally:
+        DisplayBackend.backends.pop("id_unmerged", None)
+
+
+def test_object_id_survives_intra_object_merges():
+    """The four within-object merges must keep the id, not blank it.
+
+    A path-varying object has its path-frame copies and sub-traces merged
+    before any backend sees them; that is one object, so the id stands.
+    """
+    obj = make_source()
+    obj.position = [(0, 0, 0), (0, 0, 1), (0, 0, 2)]
+    obj.style.path.show = True
+
+    traces = _traces_of(obj, backend_name="id_path")
+
+    assert traces
+    assert {t["object_id"] for t in traces} == {id(obj)}
+
+
+@pytest.mark.parametrize("name", ["matplotlib", "plotly", "pyvista"])
+def test_metadata_keys_never_reach_the_plotting_library(name):
+    """object_id must be stripped: plotly rejects unknown properties outright."""
+    assert "object_id" in TRACE_META_KEYS
+    assert drawing_properties({"x": 1, "object_id": 7}) == {"x": 1}
+    # a real render must not raise
+    assert magpy.show(make_source(), backend=name, return_fig=True) is not None

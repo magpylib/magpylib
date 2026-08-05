@@ -24,6 +24,7 @@ except ImportError as missing_module:  # pragma: no cover
 from matplotlib.colors import LinearSegmentedColormap
 from pyvista.plotting.colors import Color  # pylint: disable=import-error
 
+from magpylib._src.display.api import drawing_properties
 from magpylib._src.display.traces_utility import get_trace_kw, split_input_arrays
 from magpylib._src.utility import is_array_like, open_animation
 
@@ -202,6 +203,7 @@ def scatter_to_pyvista(trace):
 
 def generic_trace_to_pyvista(trace):
     """Transform a generic trace into a pyvista traces"""
+    trace = drawing_properties(trace)
     traces_pv = []
     if trace["type"] == "mesh3d":
         traces_pv.append(mesh3d_to_pyvista(trace))
