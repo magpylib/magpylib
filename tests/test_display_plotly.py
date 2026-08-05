@@ -328,6 +328,21 @@ def test_empty_display():
     assert isinstance(fig, go.Figure), "empty display plotly test fail"
 
 
+@pytest.fixture
+def _restore_defaults():
+    """Undo global defaults a test mutates.
+
+    Several tests lower animation.maxfps/maxframes to force a warning and
+    never put them back, so a later test animating at the default fps trips
+    "animation_fps ... greater than the max allowed" -- which
+    `filterwarnings = ["error"]` turns into a failure in whichever test
+    happens to run next.
+    """
+    yield
+    magpy.defaults.reset()
+
+
+@pytest.mark.usefixtures("_restore_defaults")
 def test_display_warnings():
     """should display some animation warnings"""
     magpy.defaults.display.backend = "plotly"
@@ -363,6 +378,7 @@ def test_display_warnings():
         src.show(canvas=fig, style_path_frames=[], animation=True)
 
 
+@pytest.mark.usefixtures("_restore_defaults")
 def test_bad_animation_value():
     """should fail if animation is not a boolean or a positive number"""
     magpy.defaults.display.backend = "plotly"

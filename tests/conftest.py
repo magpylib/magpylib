@@ -4,8 +4,26 @@ import base64
 import re
 import warnings
 
+import matplotlib as mpl
+
+mpl.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
+
+
+@pytest.fixture(autouse=True)
+def _close_matplotlib_figures():
+    """Close pyplot figures after every test.
+
+    Nothing in the suite closed them, so figures accumulated across tests
+    until matplotlib emitted `RuntimeWarning: More than 20 figures have been
+    opened` -- which the `filterwarnings = ["error"]` setting turns into a
+    failure. Which test tripped it depended on ordering, so this surfaced as
+    unrelated tests failing in CI.
+    """
+    yield
+    plt.close("all")
 
 
 def _convert_ndarray_to_list(obj):
