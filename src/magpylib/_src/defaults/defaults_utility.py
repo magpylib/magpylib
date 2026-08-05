@@ -20,8 +20,9 @@ def get_registered_backends():
 
     Unlike `SUPPORTED_PLOTTING_BACKENDS`, which lists the built-in backends
     only, this reflects backends registered at runtime through
-    `register_backend`.
+    `register_backend`, plus any advertised by an installed package.
     """
+    DisplayBackend.discover()
     return tuple(DisplayBackend.backends)
 
 

@@ -28,7 +28,81 @@ def _display_arg_names():
     return set(get_defaults_dict("display"))
 
 
-def RegisteredBackend(
+def register_backend(
+    name,
+    show_func,
+    *,
+    supports_animation=False,
+    supports_subplots=False,
+    supports_colorgradient=False,
+    supports_animation_output=False,
+    supports_native_traces=True,
+    merge_traces=True,
+    handles_traces=None,
+):
+    """Register a display backend from a plain function.
+
+    The imperative counterpart to subclassing
+    `magpylib.graphics.backend.DisplayBackend`: use this for a backend defined
+    in a script or notebook, and the entry-point group ``magpylib.backends``
+    for one shipped in a package, where ``pip install`` should be enough.
+
+    Once registered the name is accepted everywhere a built-in name is:
+    ``show(backend=name)``, ``magpy.defaults.display.backend`` and
+    ``style.model3d.data[].backend``.
+
+    Parameters
+    ----------
+    name : str
+        Name the backend is selected by. Re-registering a name replaces it.
+    show_func : callable
+        Called as ``show_func(scene)`` with a
+        `magpylib.graphics.backend.Scene`; returns the figure object.
+    supports_animation, supports_subplots, supports_colorgradient, supports_animation_output : bool, default False
+        Capabilities. `show` warns and falls back rather than handing the
+        backend something it has not declared it can draw. They default to
+        False so a capability added in a later magpylib release never changes
+        an existing backend's behaviour.
+    supports_native_traces : bool, default True
+        Whether models attached via ``style.model3d.data`` naming this backend
+        are rendered. False skips them with a warning.
+    merge_traces : bool, default True
+        Preference, not a capability: whether traces of different objects may
+        be merged into fewer, larger ones.
+    handles_traces : set of str, optional
+        Trace ``type`` values this backend draws. ``None`` assumes all.
+        Declaring it lets magpylib warn about a type the backend never handles
+        rather than silently omitting it.
+
+    Returns
+    -------
+    type
+        The generated `DisplayBackend` subclass.
+
+    Examples
+    --------
+    >>> import magpylib as magpy
+    >>> def show_types(scene):
+    ...     return sorted({t["type"] for f in scene.frames for t in f.traces})
+    >>> _ = magpy.register_backend("typelist", show_types)
+    >>> src = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
+    >>> magpy.show(src, backend="typelist")
+    ['mesh3d', 'scatter3d']
+    """
+    return _make_backend(
+        name=name,
+        show_func=show_func,
+        supports_animation=supports_animation,
+        supports_subplots=supports_subplots,
+        supports_colorgradient=supports_colorgradient,
+        supports_animation_output=supports_animation_output,
+        supports_native_traces=supports_native_traces,
+        merge_traces=merge_traces,
+        handles_traces=handles_traces,
+    )
+
+
+def _make_backend(
     *,
     name,
     show_func,
@@ -40,12 +114,7 @@ def RegisteredBackend(
     merge_traces=True,
     handles_traces=None,
 ):
-    """Register a backend from a plain function.
-
-    Imperative escape hatch over `DisplayBackend`: builds and registers a
-    subclass whose `show` delegates to `show_func(scene)`. Subclassing
-    `DisplayBackend` directly is the declarative equivalent.
-    """
+    """Build and register a DisplayBackend subclass delegating to show_func."""
     return type(
         f"{name.title()}Backend",
         (DisplayBackend,),
@@ -61,6 +130,10 @@ def RegisteredBackend(
             "show": staticmethod(show_func),
         },
     )
+
+
+#: Internal alias for the adapter under its previous name.
+RegisteredBackend = _make_backend
 
 
 class ShowDispatcher:

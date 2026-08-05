@@ -13,9 +13,11 @@ orphan: true
 ---
 
 (guide-graphics)=
+
 # Graphic output
 
 (guide-graphics-show)=
+
 ## 3D View
 
 Once all Magpylib objects and their paths have been created, `show()` creates a 3D plot of the geometric arrangement using the Matplotlib (command line default) and Plotly (notebook default) packages. `show()` generates a new figure which is automatically displayed.
@@ -47,8 +49,10 @@ Notice that objects and their paths are automatically assigned different colors.
 
 How objects are represented graphically (color, line thickness, etc.) is defined by their [style properties](guide-graphic-styles).
 
----------------------------------
+---
+
 (guide-graphic-backends)=
+
 ## Graphic Backends
 
 The graphic backend refers to the plotting library that is used for graphic output. A plotting canvas refers to the frame/window/canvas/axes object the graphic output is forwarded to.
@@ -76,7 +80,7 @@ for backend in magpy.SUPPORTED_PLOTTING_BACKENDS:
 With the installation default setting, `backend='auto'`, Magpylib infers the graphic backend from the environment running the code, or from the requested canvas.
 
 | environment      | canvas                                          | inferred backend |
-|------------------|-------------------------------------------------|------------------|
+| ---------------- | ----------------------------------------------- | ---------------- |
 | Command-Line     | `None`                                          | `matplotlib`     |
 | IPython notebook | `None`                                          | `plotly`         |
 | all              | `matplotlib.axes.Axes`                          | `matplotlib`     |
@@ -87,28 +91,28 @@ The library default can be changed, e.g. with the command `magpy.defaults.displa
 
 There is a high level of **feature parity**, however, not all graphic features are supported by all backends, and not all graphic features work equally well, so that [default style settings](guide-graphic-styles-default) differ slightly. In addition, some common Matplotlib syntax (e.g. color `'r'`, linestyle `':'`) is automatically translated to other backends.
 
-|        Feature           | Matplotlib | Plotly | Pyvista |
-|:------------------------:|:----------:|:------:|:-------:|
-| triangular mesh 3d       | ✔️         | ✔️    | ✔️      |
-| line 3d                  | ✔️         | ✔️    | ✔️      |
-| line style               | ✔️         | ✔️    | ❌      |
-| line color               | ✔️         | ✔️    | ✔️      |
-| line width               | ✔️         | ✔️    | ✔️      |
-| marker 3d                | ✔️         | ✔️    | ✔️      |
-| marker color             | ✔️         | ✔️    | ✔️      |
-| marker size              | ✔️         | ✔️    | ✔️      |
-| marker symbol            | ✔️         | ✔️    | ❌      |
-| marker numbering         | ✔️         | ✔️    | ❌      |
-| zoom level               | ✔️         | ✔️    | ❌[2]   |
-| magnetization color      | ✔️[7]      | ✔️    | ✔️      |
-| animation                | ✔️         | ✔️    | ✔️[5]   |
-| animation time           | ✔️         | ✔️    | ✔️[5]   |
-| animation fps            | ✔️         | ✔️    | ✔️[5]   |
-| animation slider         | ✔️[1]      | ✔️    | ❌      |
-| subplots 2D              | ✔️         | ✔️    | ✔️[6]   |
-| subplots 3D              | ✔️         | ✔️    | ✔️      |
-| user canvas              | ✔️         | ✔️    | ✔️      |
-| user extra 3d model [3]  | ✔️         | ✔️    | ❌[4]   |
+|         Feature         | Matplotlib | Plotly | Pyvista |
+| :---------------------: | :--------: | :----: | :-----: |
+|   triangular mesh 3d    |     ✔️     |   ✔️   |   ✔️    |
+|         line 3d         |     ✔️     |   ✔️   |   ✔️    |
+|       line style        |     ✔️     |   ✔️   |   ❌    |
+|       line color        |     ✔️     |   ✔️   |   ✔️    |
+|       line width        |     ✔️     |   ✔️   |   ✔️    |
+|        marker 3d        |     ✔️     |   ✔️   |   ✔️    |
+|      marker color       |     ✔️     |   ✔️   |   ✔️    |
+|       marker size       |     ✔️     |   ✔️   |   ✔️    |
+|      marker symbol      |     ✔️     |   ✔️   |   ❌    |
+|    marker numbering     |     ✔️     |   ✔️   |   ❌    |
+|       zoom level        |     ✔️     |   ✔️   |  ❌[2]  |
+|   magnetization color   |   ✔️[7]    |   ✔️   |   ✔️    |
+|        animation        |     ✔️     |   ✔️   |  ✔️[5]  |
+|     animation time      |     ✔️     |   ✔️   |  ✔️[5]  |
+|      animation fps      |     ✔️     |   ✔️   |  ✔️[5]  |
+|    animation slider     |   ✔️[1]    |   ✔️   |   ❌    |
+|       subplots 2D       |     ✔️     |   ✔️   |  ✔️[6]  |
+|       subplots 3D       |     ✔️     |   ✔️   |   ✔️    |
+|       user canvas       |     ✔️     |   ✔️   |   ✔️    |
+| user extra 3d model [3] |     ✔️     |   ✔️   |  ❌[4]  |
 
 [1]: when returning animation object and exporting it as jshtml.
 
@@ -126,8 +130,74 @@ There is a high level of **feature parity**, however, not all graphic features a
 
 `show()` will also pass on all kwargs to the respective plotting backends. For example, in the [animation sample code](guide-graphic-animations) the kwarg `show_legend` is forwarded to the Plotly backend.
 
----------------------------------
+(guide-graphics-custom-backend)=
+
+### Writing a custom backend
+
+The three built-in backends are not privileged: they subclass the same public `DisplayBackend` a third party would.
+
+```python
+from magpylib.graphics.backend import DisplayBackend
+
+
+class CounterBackend(DisplayBackend):
+    name = "counter"
+    description = "Reports what it was handed instead of drawing it"
+    supports_animation = False
+
+    def show(self, scene):
+        traces = sum(len(frame.traces) for frame in scene.frames)
+        return f"{len(scene.frames)} frame(s), {traces} trace(s)"
+```
+
+Declaring the class registers it. A backend shipped in a package should instead advertise itself in the `magpylib.backends` entry-point group, so that installing it is enough:
+
+```toml
+[project.entry-points."magpylib.backends"]
+counter = "my_package:CounterBackend"
+```
+
+Entry points are resolved lazily, the first time a backend name is looked up. For a backend defined in a script or notebook, `magpy.register_backend(name, show_func, ...)` is the imperative equivalent.
+
+#### What `show` receives
+
+A `Scene` carries everything needed to draw:
+
+| attribute                              | meaning                                                                                                     |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `panels`                               | the subplot grid; each `Panel` has `row`, `col`, `kind` (`"scene3d"` or `"chart2d"`), `ranges` and `labels` |
+| `frames`                               | the timeline; one `Frame` for a static scene, several when animating                                        |
+| `animation`                            | `fps`, `time`, `slider`, `output`, `frame_duration`, `path_indices`, ...                                    |
+| `canvas`, `canvas_update`              | a user-supplied figure to draw into, and whether it may be restyled                                         |
+| `return_fig`, `legend_maxitems`        |                                                                                                             |
+| `fig_kwargs`, `show_kwargs`, `options` | forwarded verbatim; `options` holds arguments Magpylib does not interpret                                   |
+
+Each `Frame` has `label`, `title`, `traces` and `native_traces`.
+
+#### The trace dialect
+
+Traces are plain dictionaries, deliberately: a new key or a whole new trace type then needs no API change. Keys use the magic underscore convention (`marker_line_color` means `marker.line.color`), so `magpylib._src.defaults.defaults_utility.magic_to_dict` turns them into nested form if that suits the backend better.
+
+Every trace has `type`, `row`, `col`, `name`, `legendgroup` and `showlegend`. Beyond that:
+
+- **`type="mesh3d"`** — `x`, `y`, `z` vertex arrays and `i`, `j`, `k` face indices, plus `color`, `opacity`, and optionally `colorscale` with `intensity`, or `facecolor`.
+- **`type="scatter3d"`** — `x`, `y`, `z` and a `mode` combining `"lines"`, `"markers"` and `"text"`, with `line_*` and `marker_*` styling.
+- **`type="scatter"`** — a 2D curve in a `chart2d` panel, with `x` and `y`. These carry no `opacity`.
+
+Values follow Magpylib's own vocabularies rather than any one library's: marker symbols come from `magpylib._src.defaults.defaults_utility.ALLOWED_SYMBOLS` and dash styles from `ALLOWED_LINESTYLES`, both Matplotlib-derived. Every built-in backend translates them — see `SYMBOLS_TO_PLOTLY` and `SYMBOLS_TO_PYVISTA`.
+
+Three things are easy to miss:
+
+- **`frame.native_traces` must be consumed.** When a user attaches a model through `style.model3d.data` naming your backend, it is routed there rather than into `frame.traces`, already positioned and oriented. Ignoring the list silently drops the user's models. Declare `supports_native_traces = False` if you do not handle them, and Magpylib will warn on your behalf.
+- **2D traces.** With `output="Bx"` rather than `"model3d"`, frames also carry `scatter` traces. A pure-3D backend has no answer for these.
+- **Declare `handles_traces`** if you draw only some trace types. Magpylib then warns about a type you never handle instead of producing a quietly incomplete figure — which is what makes new trace types safe to add.
+
+Capability flags (`supports_animation`, `supports_subplots`, `supports_colorgradient`, `supports_animation_output`) all default to `False`, so a capability added in a later Magpylib release never changes an existing backend's behaviour. `show()` warns and falls back rather than handing over something undeclared.
+
+---
+
 (guide-graphics-canvas)=
+
 ## Plotting Canvas
 
 When calling `show()`, a figure is automatically generated and displayed. It is also possible to place the `show()` output in a given figure using the `canvas` argument. Consider the following Magpylib field computation,
@@ -234,8 +304,10 @@ pl.add_lines(line, color="black")
 pl.show()
 ```
 
----------------------------------
+---
+
 (guide-graphics-return_fig)=
+
 ## Return Figure
 
 Instead of forwarding a figure to an existing canvas, it is also possible to return the figure object for further manipulation using the `return_fig` command. In the following example this is demonstrated for the pyvista backend.
@@ -261,13 +333,16 @@ pl.enable_anti_aliasing("ssaa")
 pl.show()
 ```
 
----------------------------------
+---
+
 (guide-graphic-animations)=
+
 ## Animation
 
 The Magpylib [object paths](docs-position-paths) visualized with `show()` can be animated by setting the kwarg `animation=True`. This synergize specifically well with the Plotly backend.
 
 The animations can be fine-tuned with the following kwargs of `show()`:
+
 1. `animation_time` (default=3), must be a positive number that gives the animation time in seconds.
 2. `animation_slider` (default=`True`), is boolean and sets if a slider should be displayed.
 3. `animation_fps` (default=30), sets the maximal frames per second.
@@ -300,8 +375,10 @@ magpy.show(
 Even with some implemented fail safes, such as a maximum frame rate and frame count, there is no guarantee that the animation will be rendered properly. This is particularly relevant when the user tries to animate many objects and/or many path positions at the same time.
 ```
 
----------------------------------
+---
+
 (guide-graphics-subplots)=
+
 ## Built-in Subplots
 
 :::{versionadded} 4.4
@@ -320,9 +397,8 @@ All of this is achieved via the `show()` function by passing input objects as di
 2. `col`: int which selects the subplot column. Default is `col=1`.
 3. `row`: int which selects the subplot row. Default is `row=1`.
 4. `output`: string which selects the type of output that should be displayed in this subplot. Options are
-
-    1. `'model3d'` is the default value and selects the 3D output.
-    2. `'Xa'` selects a 2D line-plot of a field component (combination) as seen by the sensor(s) along their path. The sensor(s) must be part of the `objects` input. Here "X" selects the field and must be one of "BHJM", and "a" selects the respective component combination and must be a subset of "xyz". For example, `output=Hx` displays the x-component of the H-field, or `output=Bxz` displays `sqrt(|Bx|² + |Bz|²)`. By default, source outputs are summed up (`sumup=True`) and sensor pixels, are aggregated by mean (`pixel_agg='mean'`).
+   1. `'model3d'` is the default value and selects the 3D output.
+   2. `'Xa'` selects a 2D line-plot of a field component (combination) as seen by the sensor(s) along their path. The sensor(s) must be part of the `objects` input. Here "X" selects the field and must be one of "BHJM", and "a" selects the respective component combination and must be a subset of "xyz". For example, `output=Hx` displays the x-component of the H-field, or `output=Bxz` displays `sqrt(|Bx|² + |Bz|²)`. By default, source outputs are summed up (`sumup=True`) and sensor pixels, are aggregated by mean (`pixel_agg='mean'`).
 
 The following code demonstrates these features.
 
@@ -379,6 +455,7 @@ magpy.show(
 ```
 
 (guide-graphics-show_context)=
+
 ### With `show_context`
 
 To make the subplot syntax more convenient we introduced the `show_context` native Python context manager. It allows to defer calls to the `show()` function while passing additional arguments. This is necessary for Magpylib to know how many rows and columns are requested by the user, which single `show()` calls do not keep track of. All kwargs, e.g. `backend` are handed directly to the context manager.

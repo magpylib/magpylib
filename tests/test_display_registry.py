@@ -8,6 +8,7 @@ import magpylib as magpy
 from magpylib._src.display.api import DisplayBackend
 from magpylib._src.display.backend_registry import RegisteredBackend
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib.graphics import backend as public_backend
 
 
 def make_source():
@@ -266,3 +267,79 @@ def test_handles_traces_none_means_assume_all():
             magpy.show(make_source(), backend="quiet")
     finally:
         DisplayBackend.backends.pop("quiet", None)
+
+
+def test_register_backend_is_public_api():
+    """Adding a backend must not require reaching into `_src`."""
+    assert "register_backend" in magpy.__all__
+    assert callable(magpy.register_backend)
+
+
+def test_public_register_backend_defaults_capabilities_off():
+    """Capabilities default False so a later magpylib cannot change behaviour."""
+    try:
+        magpy.register_backend("minimal", lambda scene: scene)
+        backend = DisplayBackend.backends["minimal"]
+        assert backend.supports == {
+            "animation": False,
+            "subplots": False,
+            "colorgradient": False,
+            "animation_output": False,
+            "native_traces": True,
+        }
+        assert magpy.show(make_source(), backend="minimal").frames
+    finally:
+        DisplayBackend.backends.pop("minimal", None)
+
+
+def test_backend_api_is_importable_from_the_public_module():
+    """A backend author imports from magpylib.graphics.backend, not _src."""
+    assert public_backend.DisplayBackend is DisplayBackend
+    assert public_backend.ENTRY_POINT_GROUP == "magpylib.backends"
+    for name in ("Scene", "Panel", "Frame", "AnimationSettings", "API_VERSION"):
+        assert hasattr(public_backend, name)
+
+
+def test_entry_point_discovery_is_lazy_and_runs_once(monkeypatch):
+    """Entry points are resolved on first lookup, never at import."""
+    calls = []
+
+    def fake_entry_points(*, group):
+        calls.append(group)
+        return []
+
+    # patch where the name is bound, not where it is defined
+    monkeypatch.setattr(
+        "magpylib._src.display.api.entry_points", fake_entry_points, raising=True
+    )
+    monkeypatch.setattr(DisplayBackend, "_discovered", False, raising=False)
+
+    DisplayBackend.discover()
+    DisplayBackend.discover()
+
+    assert calls == ["magpylib.backends"], "discovery must run exactly once"
+
+
+def test_a_broken_entry_point_warns_and_does_not_break_show(monkeypatch):
+    """One bad plugin must not take down every figure."""
+
+    class BadEntry:
+        name = "broken"
+        value = "nonexistent.module:Backend"
+
+        def load(self):
+            msg = "no such module"
+            raise ImportError(msg)
+
+    monkeypatch.setattr(
+        "magpylib._src.display.api.entry_points",
+        lambda *, group: [BadEntry()],  # noqa: ARG005
+        raising=True,
+    )
+    monkeypatch.setattr(DisplayBackend, "_discovered", False, raising=False)
+
+    with pytest.warns(UserWarning, match="Could not load display backend"):
+        DisplayBackend.discover()
+
+    # unrelated backends keep working
+    assert magpy.show(make_source(), backend="matplotlib", return_fig=True)

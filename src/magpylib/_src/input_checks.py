@@ -639,6 +639,7 @@ def check_format_input_cylinder_segment(inp):
 
 def check_format_input_backend(inp):
     """checks show-backend input and returns Non if bad input value"""
+    DisplayBackend.discover()
     backends = [*DisplayBackend.backends, "auto"]
     if inp is None:
         inp = default_settings.display.backend

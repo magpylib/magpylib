@@ -22,10 +22,17 @@ adapter and three ported backends while fixing nothing an author complains
 about. What was missing is specification, not different names.
 """
 
+import warnings
 from dataclasses import dataclass, field
+from importlib.metadata import entry_points
 from typing import Any, ClassVar, Literal
 
 import numpy as np
+
+#: Entry-point group third-party packages advertise backends under, so that
+#: ``pip install`` is enough. Same mechanism as xarray.backends,
+#: matplotlib.backend and pandas_plotting_backends.
+ENTRY_POINT_GROUP = "magpylib.backends"
 
 #: Version of the payload contract. Bumped when the *envelope* changes shape
 #: in a way a backend written against an older magpylib could not handle.
@@ -179,11 +186,39 @@ class DisplayBackend:
     #: trace type safe. Modelled on HoloViews' element/plot registry.
     handles_traces: ClassVar[frozenset[str] | None] = None
 
+    _discovered: ClassVar[bool] = False
+
     def __init_subclass__(cls, **kwargs):
         """Register any subclass that names itself."""
         super().__init_subclass__(**kwargs)
         if cls.name:
             cls.backends[cls.name] = cls()
+
+    @classmethod
+    def discover(cls):
+        """Load backends advertised by installed packages, once.
+
+        Deliberately lazy: entry points are resolved the first time a backend
+        name is looked up, never at import, so magpylib's import cost does not
+        grow with every backend installed alongside it.
+        """
+        if cls._discovered:
+            return
+        cls._discovered = True  # set first: a failing plugin must not retry
+        for entry in entry_points(group=ENTRY_POINT_GROUP):
+            try:
+                loaded = entry.load()
+            except Exception as err:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+                warnings.warn(
+                    f"Could not load display backend {entry.name!r} advertised "
+                    f"by {entry.value!r}: {type(err).__name__}: {err}",
+                    stacklevel=2,
+                )
+                continue
+            # importing the class registers it via __init_subclass__; register
+            # explicitly too, in case the entry point names it something else
+            if isinstance(loaded, type) and issubclass(loaded, DisplayBackend):
+                cls.backends.setdefault(loaded.name or entry.name, loaded())
 
     @property
     def supports(self) -> dict[str, bool]:
