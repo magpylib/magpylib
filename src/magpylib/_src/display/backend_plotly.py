@@ -355,8 +355,11 @@ def display_plotly(scene):
             fig.add_traces(frames[0]["data"], rows=rows_list, cols=cols_list)
             # the animation branch sets this via animate_path; the static one
             # dropped it, so show(title=...) never reached a static figure
-            if canvas_update:
-                fig.update_layout(title=frames[0]["layout"]["title"])
+            # only when there is one: setting title=None still materializes an
+            # empty title object in the figure JSON
+            static_title = frames[0]["layout"]["title"]
+            if canvas_update and static_title:
+                fig.update_layout(title=static_title)
         else:
             animation_slider = scene.animation.slider
             animate_path(
