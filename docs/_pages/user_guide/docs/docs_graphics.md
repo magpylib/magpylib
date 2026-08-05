@@ -204,11 +204,12 @@ fig.add_trace(go.Mesh3d(**drawing_properties(trace)))
 
 Declaring `merge_traces = False` stops Magpylib merging traces _across_ objects, so that every object keeps its own geometry and identity — what picking and drag gizmos need. It affects only objects that would otherwise merge, which in practice means `Collection` children under default styling; separately styled objects are never merged, because each gets its own colour. Merges _within_ one object are always applied.
 
-Three things are easy to miss:
+Four things are easy to miss:
 
 - **`frame.native_traces` must be consumed.** When a user attaches a model through `style.model3d.data` naming your backend, it is routed there rather than into `frame.traces`, already positioned and oriented. Ignoring the list silently drops the user's models. Declare `supports_native_traces = False` if you do not handle them, and Magpylib will warn on your behalf.
 - **2D traces.** With `output="Bx"` rather than `"model3d"`, frames also carry `scatter` traces. A pure-3D backend has no answer for these.
 - **Declare `handles_traces`** if you draw only some trace types. Magpylib then warns about a type you never handle instead of producing a quietly incomplete figure — which is what makes new trace types safe to add.
+- **Geometry is in world coordinates, and some of it depends on the whole scene.** Vertex arrays already have the object's position and orientation applied. Autosized objects — sensors, dipoles — are additionally scaled to the _scene's_ extent, so re-rendering one object on its own and splicing the result into an existing figure by `object_id` gives it the wrong size. Magnets and currents are scene-independent and can be spliced safely.
 
 Capability flags (`supports_animation`, `supports_subplots`, `supports_colorgradient`, `supports_animation_output`) all default to `False`, so a capability added in a later Magpylib release never changes an existing backend's behaviour. `show()` warns and falls back rather than handing over something undeclared.
 
