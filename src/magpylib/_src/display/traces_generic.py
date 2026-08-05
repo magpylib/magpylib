@@ -447,8 +447,12 @@ def get_traces_2D(
 def process_extra_trace(model):
     "process extra trace attached to some magpylib object"
     extr = model["model3d"]
-    model_kwargs = {**(extr.kwargs() if callable(extr.kwargs) else extr.kwargs)}
+    # both default to None: a Matplotlib model is idiomatically given as
+    # args=(xs, ys, zs) with no kwargs at all, so neither may be assumed set
+    model_kwargs = extr.kwargs() if callable(extr.kwargs) else extr.kwargs
+    model_kwargs = {**(model_kwargs or {})}
     model_args = extr.args() if callable(extr.args) else extr.args
+    model_args = tuple(model_args or ())
     trace3d = {
         "constructor": extr.constructor,
         "kwargs": model_kwargs,

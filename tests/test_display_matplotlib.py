@@ -631,3 +631,29 @@ def test_bad_units_length(units_length):
 
     with pytest.raises(ValueError, match=r"Input unit_input must be"):
         c.show(units_length=units_length, return_fig=True, backend="matplotlib")
+
+
+@pytest.mark.parametrize(
+    ("label", "trace_kwargs"),
+    [
+        ("args-only", {"args": (np.array([0.0, 2.0]),) * 3}),
+        ("args-and-empty-kwargs", {"args": (np.array([0.0, 2.0]),) * 3, "kwargs": {}}),
+        ("callable-args", {"args": lambda: (np.array([0.0, 2.0]),) * 3}),
+    ],
+)
+def test_extra_model3d_accepts_args_without_kwargs(label, trace_kwargs):
+    """A Matplotlib model given as args=(xs, ys, zs) must render.
+
+    `Trace3d.kwargs` and `.args` both default to None, and process_extra_trace
+    used to splat kwargs unconditionally -- so the form the style docs
+    recommend for Matplotlib (coordsargs defaulting to args[0..2]) raised
+    `TypeError: 'NoneType' object is not a mapping`.
+    """
+    obj = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    obj.style.model3d.add_trace(
+        backend="matplotlib", constructor="plot", **trace_kwargs
+    )
+
+    fig = magpy.show(obj, backend="matplotlib", return_fig=True)
+
+    assert fig.axes[0].lines, f"extra model was dropped for {label}"
