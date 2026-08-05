@@ -332,7 +332,11 @@ def display_plotly(scene):
         for model in fr.native_traces:
             extra_data = True
             new_data.append(process_extra_trace(model))
-        frames.append({"data": new_data})
+        # keep name and layout: plotly reads the per-frame title, and the
+        # animation slider steps are keyed by frame name
+        frames.append(
+            {"name": fr.label, "data": new_data, "layout": {"title": fr.title}}
+        )
     with fig.batch_update():
         for frame in frames:
             rows_list = []
@@ -347,6 +351,10 @@ def display_plotly(scene):
         isanimation = len(frames) != 1
         if not isanimation:
             fig.add_traces(frames[0]["data"], rows=rows_list, cols=cols_list)
+            # the animation branch sets this via animate_path; the static one
+            # dropped it, so show(title=...) never reached a static figure
+            if canvas_update:
+                fig.update_layout(title=frames[0]["layout"]["title"])
         else:
             animation_slider = scene.animation.slider
             animate_path(

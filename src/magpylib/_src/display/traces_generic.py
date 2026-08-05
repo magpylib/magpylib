@@ -1036,7 +1036,7 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
     (
         is_animation,
         path_indices,
-        path_digits,
+        _path_digits,
         frame_duration,
         animation_kwargs,
     ) = process_animation_kwargs([o for obj in objs for o in obj["objects"]], **kwargs)
@@ -1046,13 +1046,13 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
         msg = f"show() got unexpected keyword argument(s) {kwargs!r}"
         raise TypeError(msg)
 
-    # infer title if necessary
-    if objs:
-        style = objs[0]["objects"][0].style
-        label = getattr(style, "label", None)
-        title = label if len(objs[0]["objects"]) == 1 else None
-    else:
-        title = "No objects to be displayed"
+    # infer title only if the caller gave none -- without this guard an
+    # explicit show(title=...) was overwritten by the inferred one
+    if title is None:
+        if not objs:
+            title = "No objects to be displayed"
+        elif len(objs[0]["objects"]) == 1:
+            title = getattr(objs[0]["objects"][0].style, "label", None)
 
     objs_rc = get_objects_props_by_row_col(
         *objs,
@@ -1079,8 +1079,6 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
             for frame, path_ind in zip(frames, path_indices, strict=False):
                 if is_animation:
                     style_kwargs["style_path_frames"] = [path_ind]
-                    title = "Animation 3D - " if title is None else title
-                    title_str = f"""{title}path index: {path_ind + 1:0{path_digits}d}"""
                 traces, extra_backend_traces, rc_params = draw_frame(
                     props,
                     field_by_sens=field_by_sens,

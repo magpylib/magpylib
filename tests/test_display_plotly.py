@@ -668,3 +668,56 @@ def test_pixel_field_color_scales():
         )
         subplots.append({"objects": [c1, s], "col": i})
     magpy.show(*subplots, backend="plotly", return_fig=True)
+
+
+def _plotly_title(*objs, **kwargs):
+    fig = magpy.show(*objs, backend="plotly", return_fig=True, **kwargs)
+    return fig.layout.title.text
+
+
+def test_explicit_title_is_not_overwritten_by_inference():
+    """show(title=...) used to be discarded.
+
+    get_frames inferred a title under a comment reading "infer title if
+    necessary" but without an `if title is None` guard, so the caller's title
+    was always overwritten -- by the object's label for a single object, or by
+    None for several.
+    """
+    one = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1), dimension=(1, 1, 1), style_label="Magnet A"
+    )
+    two = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1), dimension=(1, 1, 1), position=(3, 0, 0)
+    )
+
+    assert _plotly_title(one, title="MY TITLE") == "MY TITLE"
+    assert _plotly_title(one, two, title="MY TITLE") == "MY TITLE"
+
+
+def test_title_is_inferred_from_a_lone_object_label():
+    """The inference itself must survive: no title given, one object."""
+    obj = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1), dimension=(1, 1, 1), style_label="Magnet A"
+    )
+    assert _plotly_title(obj) == "Magnet A"
+
+    other = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1), dimension=(1, 1, 1), position=(3, 0, 0)
+    )
+    assert _plotly_title(obj, other) is None
+
+
+def test_animation_title_matches_the_static_one():
+    """Animating must not rewrite the title.
+
+    Frames used to append "path index: N" and default to "Animation 3D",
+    so an animated figure never showed the title a static one would.
+    """
+    obj = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1), dimension=(1, 1, 1), style_label="Magnet A"
+    )
+    obj.position = [(0, 0, 0), (0, 0, 1)]
+
+    assert _plotly_title(obj, animation=True, title="MY TITLE") == "MY TITLE"
+    assert _plotly_title(obj, animation=True) == "Magnet A"
+    assert "path index" not in str(_plotly_title(obj, animation=True))
