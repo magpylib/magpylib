@@ -1,15 +1,25 @@
-"""Public data model handed to display backends.
+"""Public contract between `magpylib.show` and a display backend.
 
-Backend-neutral description of what `show` wants drawn. The vocabulary here
-is deliberately not plotly's: `vertices`/`faces` rather than `x/y/z` +
-`i/j/k`, `colormap` rather than `colorscale`, `group` rather than
-`legendgroup`, and typed trace classes rather than a `type` string.
+The split here is deliberate, and follows what glTF, Vega and matplotlib all
+do: a **typed envelope** around **open payload**.
 
-Every field was derived from the payload magpylib actually produces, not
-from what a plotting library happens to call things -- see
-`DISPLAY_BACKEND_API.md`. Notably, only the fields on `Trace` are universal;
-`opacity` for instance is absent from 2D traces and therefore lives on the
-3D classes.
+*Typed* -- `Scene`, `Panel`, `Frame`, `AnimationSettings` -- because the
+envelope is small, fixed, controlled entirely by magpylib and changes rarely.
+It was also the genuinely broken part: seven loose parameters, axis ranges and
+labels in side-tables keyed by ``(row, col)``, `canvas` arriving undocumented
+through ``**kwargs``.
+
+*Open* -- traces stay plain dicts in magpylib's documented dialect (plotly-style
+magic-underscore keys, matplotlib-derived symbol and dash vocabularies). They
+are large, open-ended, and must be able to grow a key without a release; a
+frozen dataclass cannot. `magic_to_dict` turns ``marker_line_color`` into
+nested form for backends that prefer it.
+
+Renaming that dialect was considered and rejected: every backend already
+translates it (`SYMBOLS_TO_PLOTLY`, `SYMBOLS_TO_PYVISTA`), so it is magpylib's
+vocabulary rather than plotly's, and renaming would have cost a permanent
+adapter and three ported backends while fixing nothing an author complains
+about. What was missing is specification, not different names.
 """
 
 from dataclasses import dataclass, field
@@ -17,149 +27,27 @@ from typing import Any, ClassVar, Literal
 
 import numpy as np
 
-# --------------------------------------------------------------------------
-# style
-# --------------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class LineStyle:
-    """How a line is stroked."""
-
-    color: str | None = None
-    width: float | None = None
-    dash: str | None = None
-
-
-@dataclass(frozen=True)
-class MarkerStyle:
-    """How a point marker is drawn.
-
-    `size` may be a single value or one value per point -- a multi-pixel
-    sensor's field curve carries one per pixel. Do not compare `MarkerStyle`
-    instances with `==`; an array-valued `size` makes that ambiguous.
-    """
-
-    color: str | None = None
-    size: float | np.ndarray | None = None
-    symbol: str | None = None
-    line_color: str | None = None  # outline; 2D traces only
-
-
-# --------------------------------------------------------------------------
-# traces
-# --------------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class Trace:
-    """Fields shared by every trace -- and only these are universal."""
-
-    row: int = 1
-    col: int = 1
-    label: str | None = None
-    group: str | None = None
-    show_in_legend: bool = True
-    object_id: int | None = None
-
-
-@dataclass(frozen=True)
-class Mesh(Trace):
-    """A triangular surface mesh.
-
-    `vertices` is (n, 3) and `faces` is (m, 3) of indices into it -- the
-    spelling pyvista, trimesh and three.js use. A backend wanting the
-    plotly/structure-of-arrays form takes `vertices.T` and `faces.T`.
-    """
-
-    vertices: np.ndarray = field(default_factory=lambda: np.empty((0, 3)))
-    faces: np.ndarray = field(default_factory=lambda: np.empty((0, 3), dtype=int))
-    color: str | None = None
-    opacity: float = 1.0
-    vertex_values: np.ndarray | None = None  # per-vertex scalars for `colormap`
-    face_colors: np.ndarray | None = None
-    colormap: tuple[tuple[float, str], ...] | None = None
-    show_colorbar: bool = False
-
-
-@dataclass(frozen=True)
-class Scatter3D(Trace):
-    """Points in space, drawn as any combination of lines, markers and text.
-
-    `draw` is a set rather than a choice of class: magpylib emits a single
-    trace drawing all three at once for a numbered path.
-    """
-
-    points: np.ndarray = field(default_factory=lambda: np.empty((0, 3)))
-    draw: frozenset[str] = frozenset({"lines"})
-    line: LineStyle | None = None
-    marker: MarkerStyle | None = None
-    texts: tuple[str, ...] | None = None
-    opacity: float = 1.0
-
-
-@dataclass(frozen=True)
-class Scatter2D(Trace):
-    """A curve in a 2D panel, e.g. a field-vs-path-index plot.
-
-    Carries no `opacity`: magpylib never emits one for 2D traces.
-    """
-
-    x: np.ndarray = field(default_factory=lambda: np.empty(0))
-    y: np.ndarray = field(default_factory=lambda: np.empty(0))
-    draw: frozenset[str] = frozenset({"lines"})
-    line: LineStyle | None = None
-    marker: MarkerStyle | None = None
-    texts: tuple[str, ...] | None = None
-    hover_template: str | None = None
-    group_title: str | None = None
-
-
-@dataclass(frozen=True)
-class NativeTrace:
-    """A model the user supplied in the rendering backend's own format.
-
-    Already positioned and oriented. There is no `backend` field: this list
-    only ever holds traces addressed to the backend currently rendering.
-
-    A backend that ignores these **silently drops the user's models**.
-    """
-
-    constructor: str = ""
-    args: tuple = ()
-    kwargs: dict[str, Any] = field(default_factory=dict)
-    coordsargs: dict[str, str] = field(default_factory=dict)
-    extra: dict[str, Any] = field(default_factory=dict)
-
-
-# --------------------------------------------------------------------------
-# scene
-# --------------------------------------------------------------------------
+#: Version of the payload contract. Bumped when the *envelope* changes shape
+#: in a way a backend written against an older magpylib could not handle.
+API_VERSION = 1
 
 
 @dataclass(frozen=True)
 class Panel:
-    """One cell of the subplot grid."""
+    """One cell of the subplot grid.
+
+    Replaces the ``ranges``/``labels`` side-tables that were keyed by
+    ``(row, col)``: each panel now owns its own axis metadata.
+    """
 
     row: int = 1
     col: int = 1
     kind: Literal["scene3d", "chart2d"] = "scene3d"
-    # 3D axis extents, (3, 2) of (min, max). None for chart2d: magpylib emits
-    # a 3D range there too, but it describes nothing a 2D chart can use.
+    #: (3, 2) of (min, max) per axis. None for chart2d -- magpylib emits a 3D
+    #: range there too, but it describes nothing a 2D chart can use.
     ranges: np.ndarray | None = None
+    #: e.g. {"x": "x (m)", ...}. Empty for chart2d, for the same reason.
     labels: dict[str, str] = field(default_factory=dict)
-
-
-@dataclass(frozen=True)
-class AnimationSettings:
-    """Animation parameters, previously the misnamed `input_kwargs`."""
-
-    fps: int = 20
-    max_fps: int = 30
-    max_frames: int = 200
-    time: float = 5
-    slider: bool = True
-    output: str | None = None
 
 
 @dataclass(frozen=True)
@@ -167,9 +55,34 @@ class Frame:
     """One step of the timeline. A static scene has exactly one."""
 
     label: str = ""
+    #: Was buried in ``frame["layout"]["title"]``; varies across an animation.
     title: str | None = None
-    traces: tuple[Trace, ...] = ()
-    native_traces: tuple[NativeTrace, ...] = ()
+    #: Trace dicts in magpylib's dialect. Left as dicts on purpose -- see the
+    #: module docstring.
+    traces: tuple[dict[str, Any], ...] = ()
+    #: Models the user supplied in *this* backend's own format, already
+    #: positioned and oriented. Keys: constructor, args, kwargs, coordsargs,
+    #: kwargs_extra. **A backend that ignores these silently drops the user's
+    #: models** -- no warning, no error.
+    native_traces: tuple[dict[str, Any], ...] = ()
+
+
+@dataclass(frozen=True)
+class AnimationSettings:
+    """Animation parameters, replacing the misnamed ``input_kwargs`` bag."""
+
+    fps: int = 20
+    max_fps: int = 30
+    max_frames: int = 200
+    time: float = 5
+    slider: bool = True
+    output: str | None = None
+    repeat: bool = False
+    #: Milliseconds per frame, derived from fps and downsampling. None when
+    #: the scene is static.
+    frame_duration: float | None = None
+    #: Which path steps the frames correspond to; may be downsampled.
+    path_indices: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -178,11 +91,21 @@ class Scene:
 
     panels: tuple[Panel, ...] = ()
     frames: tuple[Frame, ...] = ()
-    canvas: Any = None
-    canvas_update: bool = True
     animation: AnimationSettings = field(default_factory=AnimationSettings)
+    #: User-supplied figure/axes/plotter to draw into, or None.
+    canvas: Any = None
+    #: Whether the backend may restyle a user-supplied canvas.
+    canvas_update: bool = True
+    #: Return the figure instead of displaying it.
+    return_fig: bool = False
+    #: Collapse the legend beyond this many entries.
+    legend_maxitems: int = 20
     fig_kwargs: dict[str, Any] = field(default_factory=dict)
     show_kwargs: dict[str, Any] = field(default_factory=dict)
+    #: Options magpylib does not interpret, forwarded verbatim. This is where
+    #: backend-specific arguments live (plotly's `renderer`, pyvista's
+    #: `jupyter_backend`, matplotlib's `antialiased`, ...).
+    options: dict[str, Any] = field(default_factory=dict)
 
     @property
     def is_animation(self) -> bool:
@@ -212,17 +135,12 @@ class Scene:
         return None
 
 
-# --------------------------------------------------------------------------
-# backend
-# --------------------------------------------------------------------------
-
-
 class DisplayBackend:
     """Base class for a magpylib display backend.
 
-    Subclass, set `name`, and implement `show`. Capability flags declare what
-    the backend can do; `show` warns and falls back rather than handing over
-    something it cannot draw.
+    Subclass, set `name`, implement `show`. Capability flags declare what the
+    backend can do; `show` warns and falls back rather than handing over
+    something the backend cannot draw.
 
     Capabilities default to False so that a capability added in a later
     magpylib release never silently changes an existing backend's behaviour.
@@ -232,16 +150,36 @@ class DisplayBackend:
     description: ClassVar[str] = ""
     url: ClassVar[str] = ""
 
+    #: Payload contract this backend was written against. magpylib warns when
+    #: it no longer matches `API_VERSION`.
+    api_version: ClassVar[int] = API_VERSION
+
     # capabilities: what the backend *can* do
     supports_animation: ClassVar[bool] = False
     supports_subplots: ClassVar[bool] = False
     supports_colorgradient: ClassVar[bool] = False
     supports_animation_output: ClassVar[bool] = False
 
-    # preferences: what the backend *wants*. Not a capability -- every backend
-    # can render unmerged traces; some just prefer fewer, larger ones.
+    # preference, not a capability: every backend *can* render unmerged
+    # traces, some simply prefer fewer and larger ones.
     merge_traces: ClassVar[bool] = True
 
+    #: Trace ``type`` values this backend knows how to draw. ``None`` means
+    #: "assume everything". Declaring the set lets magpylib warn when a scene
+    #: contains a type the backend never handles, instead of silently
+    #: producing an incomplete figure -- which is what makes adding a new
+    #: trace type safe. Modelled on HoloViews' element/plot registry.
+    handles_traces: ClassVar[frozenset[str] | None] = None
+
     def show(self, scene: Scene):
-        """Draw `scene` and return whatever this backend's figure object is."""
+        """Draw `scene`, returning this backend's figure object."""
         raise NotImplementedError
+
+    def unhandled_trace_types(self, scene: Scene) -> frozenset[str]:
+        """Trace types present in `scene` that this backend does not declare."""
+        if self.handles_traces is None:
+            return frozenset()
+        present = {
+            tr.get("type") for fr in scene.frames for tr in fr.traces if tr.get("type")
+        }
+        return frozenset(present - self.handles_traces)

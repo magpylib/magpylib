@@ -21,6 +21,12 @@ from magpylib._src.defaults.defaults_utility import (
     ALLOWED_SYMBOLS,
     linearize_dict,
 )
+from magpylib._src.display.api import (
+    AnimationSettings,
+    Frame,
+    Panel,
+    Scene,
+)
 from magpylib._src.display.traces_utility import (
     _get_prop,
     draw_arrowed_line,
@@ -1088,17 +1094,50 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
         for key in ("data", "extra_backend_traces"):
             frame[key] = rescale_traces(frame[key], factors=scale_factors_rc)
 
-    out = {
-        "frames": frames,
-        "ranges": ranges_rc,
-        "labels": labels_rc,
-        "input_kwargs": {**kwargs, **animation_kwargs},
-    }
-    if is_animation:
-        out.update(
-            {
-                "frame_duration": frame_duration,
-                "path_indices": path_indices,
-            }
+    # assemble the public Scene. The mutable dict accumulation above stays
+    # internal; only the envelope is typed, while traces remain dicts in
+    # magpylib's dialect -- see magpylib._src.display.api.
+    panels = []
+    for rc in sorted(set(ranges_rc) | set(labels_rc) | set(objs_rc)):
+        props = objs_rc.get(rc)
+        output = props["rc_params"].get("output", "model3d") if props else "model3d"
+        is_3d = output == "model3d"
+        rng = ranges_rc.get(rc)
+        panels.append(
+            Panel(
+                row=rc[0],
+                col=rc[1],
+                kind="scene3d" if is_3d else "chart2d",
+                # chart2d panels are emitted with a 3D range and x/y/z labels
+                # that describe nothing a 2D chart can use; drop them here
+                # rather than making every backend ignore them.
+                ranges=np.asarray(rng) if (is_3d and rng is not None) else None,
+                labels=dict(labels_rc.get(rc, {})) if is_3d else {},
+            )
         )
-    return out
+
+    anim_kw = {**kwargs, **animation_kwargs}
+    animation = AnimationSettings(
+        fps=anim_kw.get("animation_fps", AnimationSettings.fps),
+        max_fps=anim_kw.get("animation_maxfps", AnimationSettings.max_fps),
+        max_frames=anim_kw.get("animation_maxframes", AnimationSettings.max_frames),
+        time=anim_kw.get("animation_time", AnimationSettings.time),
+        slider=anim_kw.get("animation_slider", AnimationSettings.slider),
+        output=anim_kw.get("animation_output", AnimationSettings.output),
+        frame_duration=frame_duration if is_animation else None,
+        path_indices=tuple(int(i) for i in path_indices) if is_animation else (),
+    )
+
+    return Scene(
+        panels=tuple(panels),
+        frames=tuple(
+            Frame(
+                label=fr["name"],
+                title=(fr["layout"] or {}).get("title"),
+                traces=tuple(fr["data"]),
+                native_traces=tuple(fr["extra_backend_traces"]),
+            )
+            for fr in frames
+        ),
+        animation=animation,
+    )

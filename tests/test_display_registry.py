@@ -18,15 +18,15 @@ def make_source():
 def noop_backend():
     """Register a backend returning the generic data untouched.
 
-    Yields ``(name, calls)``, where `calls` collects the kwargs each `show`
+    Yields ``(name, calls)``, where `calls` collects the Scene each `show`
     dispatch handed to the backend.
     """
     name = "noop"
     calls = []
 
-    def show_func(data, **kwargs):
-        calls.append(kwargs)
-        return data
+    def show_func(scene):
+        calls.append(scene)
+        return scene
 
     RegisteredBackend(
         name=name,
@@ -47,13 +47,18 @@ def test_registration_and_show_dispatch(noop_backend):
     name, calls = noop_backend
     assert name in RegisteredBackend.backends
 
-    data = magpy.show(make_source(), backend=name)
+    scene = magpy.show(make_source(), backend=name)
 
-    assert set(data) == {"frames", "ranges", "labels", "input_kwargs"}
     assert len(calls) == 1
-    frame = data["frames"][0]
-    assert {"name", "data", "extra_backend_traces", "layout"} <= set(frame)
-    assert frame["data"], "expected at least one trace"
+    assert scene.frames, "expected at least one frame"
+    frame = scene.frames[0]
+    assert frame.traces, "expected at least one trace"
+    # traces stay plain dicts in magpylib's dialect, so a new key or a new
+    # trace type needs no API change
+    assert isinstance(frame.traces[0], dict)
+    assert frame.traces[0]["type"] in {"mesh3d", "scatter3d", "scatter"}
+    assert scene.panels
+    assert scene.panels[0].kind == "scene3d"
 
 
 def test_registered_backend_is_selectable_everywhere(noop_backend):
@@ -102,23 +107,23 @@ def test_subplot_grid_collapses_for_backend_without_subplots(noop_backend):
     before `show` reaches the backend -- so this is detected from the resolved
     `max_rows`/`max_cols` instead.
     """
-    name, calls = noop_backend
+    name, _ = noop_backend
     a, b = make_source(), make_source()
     b.position = (3, 0, 0)
 
     with pytest.warns(UserWarning, match="does not support 'subplots'"):
-        data = magpy.show(
+        scene = magpy.show(
             {"objects": [a], "row": 1, "col": 1},
             {"objects": [b], "row": 2, "col": 1},
             backend=name,
         )
 
-    assert calls[-1]["max_rows"] is None
-    assert calls[-1]["max_cols"] is None
+    assert scene.has_subplots is False
+    assert (scene.n_rows, scene.n_cols) == (1, 1)
     placements = {
         (trace.get("row"), trace.get("col"))
-        for frame in data["frames"]
-        for trace in frame["data"]
+        for frame in scene.frames
+        for trace in frame.traces
     }
     assert placements == {(1, 1)}
 

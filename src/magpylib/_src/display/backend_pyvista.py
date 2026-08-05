@@ -229,29 +229,32 @@ def generic_trace_to_pyvista(trace):
     return traces_pv
 
 
-def display_pyvista(
-    data,
-    canvas=None,
-    return_fig=False,
-    canvas_update="auto",
-    jupyter_backend=None,
-    max_rows=None,
-    max_cols=None,
-    subplot_specs=None,
-    repeat=False,
-    legend_maxitems=20,
-    fig_kwargs=None,
-    show_kwargs=None,
-    mp4_quality=5,
-    **kwargs,  # noqa: ARG001
-):
+def _is_3d_panel(scene, row, col):
+    """True when the panel at 1-based row/col is a 3D scene (or absent)."""
+    panel = scene.panel(row, col)
+    return panel is None or panel.kind == "scene3d"
+
+
+def display_pyvista(scene):
     """Display objects and paths graphically using the pyvista library."""
+    canvas = scene.canvas
+    canvas_update = scene.canvas_update
+    return_fig = scene.return_fig
+    legend_maxitems = scene.legend_maxitems
+    repeat = scene.animation.repeat
+    # options magpylib does not interpret are the backend's own
+    jupyter_backend = scene.options.get("jupyter_backend")
+    mp4_quality = scene.options.get("mp4_quality", 5)
+    max_rows = scene.n_rows if scene.has_subplots else None
+    max_cols = scene.n_cols if scene.has_subplots else None
 
-    frames = data["frames"]
+    frames = [
+        {"data": list(fr.traces), "native": list(fr.native_traces)}
+        for fr in scene.frames
+    ]
 
-    fig_kwargs = fig_kwargs or {}
-    show_kwargs = show_kwargs or {}
-    show_kwargs = {**show_kwargs}
+    fig_kwargs = dict(scene.fig_kwargs)
+    show_kwargs = dict(scene.show_kwargs)
 
     animation = bool(len(frames) > 1)
     max_rows = max_rows if max_rows is not None else 1
@@ -287,7 +290,8 @@ def display_pyvista(
                     if tr1.get("label", ""):
                         count_with_labels[(row, col)] += 1
                 canvas.subplot(row, col)
-                if subplot_specs[row, col]["type"] == "scene":
+                panel = scene.panel(row + 1, col + 1)
+                if panel is None or panel.kind == "scene3d":
                     getattr(canvas, f"add_{typ}")(**tr1)
                 else:
                     if charts.get((row, col)) is None:
@@ -296,10 +300,12 @@ def display_pyvista(
                         canvas.add_chart(charts[(row, col)])
                     getattr(charts[(row, col)], typ)(**tr1)
             # in pyvista there is no way to set the bounds so we add corners with
-            # a transparent scatter plot to set the ranges and zoom correctly
-            ranges = data["ranges"][row + 1, col + 1]
-            pts = np.array(np.meshgrid(*ranges)).T.reshape(-1, 3)
-            canvas.add_mesh(pv.PolyData(pts), opacity=0)
+            # a transparent scatter plot to set the ranges and zoom correctly.
+            # 2D panels carry no 3D range -- there are no bounds to set there.
+            panel = scene.panel(row + 1, col + 1)
+            if panel is not None and panel.ranges is not None:
+                pts = np.array(np.meshgrid(*panel.ranges)).T.reshape(-1, 3)
+                canvas.add_mesh(pv.PolyData(pts), opacity=0)
             with contextlib.suppress(StopIteration, IndexError):
                 canvas.remove_scalar_bar()
                 # needs to happen in the loop otherwise they cummulate
@@ -313,10 +319,7 @@ def display_pyvista(
                     canvas.show_axes()
                 canvas.camera.azimuth = -90
                 canvas.set_background("gray", top="white")
-            if (
-                0 < count <= legend_maxitems
-                and subplot_specs[row, col]["type"] == "scene"
-            ):
+            if 0 < count <= legend_maxitems and _is_3d_panel(scene, row + 1, col + 1):
                 canvas.add_legend(bcolor=None)
 
     def run_animation(filename, embed=True):
@@ -326,10 +329,14 @@ def display_pyvista(
         suff = Path(filename).suffix
         if suff == ".gif":
             loop = 1 if repeat is False else 0 if repeat is True else int(repeat)
-            canvas.open_gif(filename, loop=loop, fps=1000 / data["frame_duration"])
+            canvas.open_gif(
+                filename, loop=loop, fps=1000 / scene.animation.frame_duration
+            )
         elif suff == ".mp4":
             canvas.open_movie(
-                filename, framerate=1000 / data["frame_duration"], quality=mp4_quality
+                filename,
+                framerate=1000 / scene.animation.frame_duration,
+                quality=mp4_quality,
             )
 
         for frame_ind, _ in enumerate(frames):
@@ -347,7 +354,7 @@ def display_pyvista(
     if len(frames) == 1:
         draw_frame(0)
     elif animation:
-        animation_output = data["input_kwargs"].get("animation_output", None)
+        animation_output = scene.animation.output
         animation_output = "gif" if animation_output is None else animation_output
         if animation_output in ("gif", "mp4"):
             try:

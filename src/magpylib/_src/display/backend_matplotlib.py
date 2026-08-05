@@ -248,48 +248,55 @@ def process_extra_trace(model):
     return trace3d
 
 
-def display_matplotlib(
-    data,
-    canvas=None,
-    repeat=False,
-    return_fig=False,
-    canvas_update="auto",
-    return_animation=False,
-    max_rows=None,
-    max_cols=None,
-    subplot_specs=None,
-    antialiased=True,
-    legend_maxitems=20,
-    fig_kwargs=None,
-    show_kwargs=None,
-    **kwargs,  # noqa: ARG001
-):
+def _is_3d_panel(scene, row, col):
+    """True when the panel at row/col is a 3D scene (or absent)."""
+    panel = scene.panel(row, col)
+    return panel is None or panel.kind == "scene3d"
+
+
+def display_matplotlib(scene):
     """Display objects and paths graphically using the Matplotlib library."""
-    frames = data["frames"]
-    ranges = data["ranges"]
-    labels = data["labels"]
+    canvas = scene.canvas
+    canvas_update = scene.canvas_update
+    return_fig = scene.return_fig
+    legend_maxitems = scene.legend_maxitems
+    repeat = scene.animation.repeat
+    # options magpylib does not interpret are the backend's own
+    antialiased = scene.options.get("antialiased", True)
+    return_animation = scene.options.get("return_animation", False)
+    max_rows = scene.n_rows if scene.has_subplots else None
+    max_cols = scene.n_cols if scene.has_subplots else None
+    ranges = {(p.row, p.col): p.ranges for p in scene.panels if p.ranges is not None}
+    labels = {(p.row, p.col): p.labels for p in scene.panels}
 
     # only update layout if canvas is not provided
-    fig_kwargs = fig_kwargs or {}
-    show_kwargs = show_kwargs or {}
-    show_kwargs = {**show_kwargs}
+    fig_kwargs = dict(scene.fig_kwargs)
+    show_kwargs = dict(scene.show_kwargs)
 
-    for fr in frames:
-        new_data = []
-        for tr in fr["data"]:
-            new_data.extend(generic_trace_to_matplotlib(tr, antialiased=antialiased))
-        new_data.extend(
-            process_extra_trace(model) for model in fr["extra_backend_traces"]
-        )
-        fr["data"] = new_data
+    # Scene frames are immutable; render into local dicts instead.
+    frames = [
+        {
+            "data": [
+                *(
+                    mpl_tr
+                    for tr in fr.traces
+                    for mpl_tr in generic_trace_to_matplotlib(
+                        tr, antialiased=antialiased
+                    )
+                ),
+                *(process_extra_trace(model) for model in fr.native_traces),
+            ]
+        }
+        for fr in scene.frames
+    ]
 
     show_canvas = bool(canvas is None)
     axes = {}
     if canvas_update:
         fig_kwargs["dpi"] = fig_kwargs.get("dpi", 80)
-        if fig_kwargs.get("figsize", None) is None:
+        if fig_kwargs.get("figsize") is None:
             figsize = (8, 8)
-            ratio = subplot_specs.shape[1] / subplot_specs.shape[0]
+            ratio = scene.n_cols / scene.n_rows
             if legend_maxitems != 0:
                 ratio *= 1.5  # extend horizontal ratio if legend is present
             fig_kwargs["figsize"] = (figsize[0] * ratio, figsize[1])
@@ -318,9 +325,8 @@ def display_matplotlib(
         if isinstance(canvas, mpl.axes.Axes):
             axes[(1, 1)] = canvas
         else:
-            sp_typ = subplot_specs[0, 0]["type"]
             axes[(1, 1)] = fig.add_subplot(
-                111, projection="3d" if sp_typ == "scene" else None
+                111, projection="3d" if _is_3d_panel(scene, 1, 1) else None
             )
     else:
         max_rows = max_rows if max_rows is not None else 1
@@ -331,9 +337,7 @@ def display_matplotlib(
                 subplot_found = True
                 count += 1
                 row_col_num = (row, col)
-                projection = (
-                    "3d" if subplot_specs[row - 1, col - 1]["type"] == "scene" else None
-                )
+                projection = "3d" if _is_3d_panel(scene, row, col) else None
                 if isinstance(canvas, mpl.figure.Figure):
                     try:
                         axes[row_col_num] = extract_axis_from_row_col(fig, row, col)
@@ -410,7 +414,7 @@ def display_matplotlib(
             fig,
             animate,
             frames=range(len(frames)),
-            interval=data["frame_duration"],
+            interval=scene.animation.frame_duration,
             blit=False,
             repeat=repeat,
         )
