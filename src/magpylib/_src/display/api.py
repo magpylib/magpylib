@@ -146,6 +146,10 @@ class DisplayBackend:
     magpylib release never silently changes an existing backend's behaviour.
     """
 
+    #: Every registered backend, keyed by name. Subclasses with a `name`
+    #: register themselves here on definition.
+    backends: ClassVar[dict[str, "DisplayBackend"]] = {}
+
     name: ClassVar[str] = ""
     description: ClassVar[str] = ""
     url: ClassVar[str] = ""
@@ -159,6 +163,10 @@ class DisplayBackend:
     supports_subplots: ClassVar[bool] = False
     supports_colorgradient: ClassVar[bool] = False
     supports_animation_output: ClassVar[bool] = False
+    #: Whether models attached via ``style.model3d.data`` naming this backend
+    #: are rendered. False means they are skipped with a warning rather than
+    #: silently dropped or crashing inside the placement code.
+    supports_native_traces: ClassVar[bool] = True
 
     # preference, not a capability: every backend *can* render unmerged
     # traces, some simply prefer fewer and larger ones.
@@ -170,6 +178,23 @@ class DisplayBackend:
     #: producing an incomplete figure -- which is what makes adding a new
     #: trace type safe. Modelled on HoloViews' element/plot registry.
     handles_traces: ClassVar[frozenset[str] | None] = None
+
+    def __init_subclass__(cls, **kwargs):
+        """Register any subclass that names itself."""
+        super().__init_subclass__(**kwargs)
+        if cls.name:
+            cls.backends[cls.name] = cls()
+
+    @property
+    def supports(self) -> dict[str, bool]:
+        """Capability flags keyed by short name, for uniform lookup."""
+        return {
+            "animation": self.supports_animation,
+            "subplots": self.supports_subplots,
+            "colorgradient": self.supports_colorgradient,
+            "animation_output": self.supports_animation_output,
+            "native_traces": self.supports_native_traces,
+        }
 
     def show(self, scene: Scene):
         """Draw `scene`, returning this backend's figure object."""

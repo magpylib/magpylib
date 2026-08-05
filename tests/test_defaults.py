@@ -10,7 +10,8 @@ from magpylib._src.defaults.defaults_utility import (
     SUPPORTED_PLOTTING_BACKENDS,
     get_registered_backends,
 )
-from magpylib._src.display.display import RegisteredBackend
+from magpylib._src.display.api import DisplayBackend
+from magpylib._src.display.backend_registry import RegisteredBackend
 from magpylib._src.style import DisplayStyle
 
 bad_inputs = {
@@ -269,13 +270,13 @@ def dummy_backend():
         yield name
     finally:
         magpy.defaults.display.backend = default_backend
-        RegisteredBackend.backends.pop(name, None)
+        DisplayBackend.backends.pop(name, None)
 
 
 def test_backend_fields_follow_the_registry(dummy_backend):
     """Backend fields accept backends registered after import time.
 
-    The allowed set is resolved from `RegisteredBackend.backends` on every
+    The allowed set is resolved from `DisplayBackend.backends` on every
     use, not frozen when the property tree is declared. Should the registry
     ever move, `get_registered_backends` must follow it or this fails.
     """

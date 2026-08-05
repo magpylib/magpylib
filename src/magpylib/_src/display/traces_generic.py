@@ -23,11 +23,11 @@ from magpylib._src.defaults.defaults_utility import (
 )
 from magpylib._src.display.api import (
     AnimationSettings,
+    DisplayBackend,
     Frame,
     Panel,
     Scene,
 )
-from magpylib._src.display.backend_registry import RegisteredBackend
 from magpylib._src.display.traces_utility import (
     _get_prop,
     draw_arrowed_line,
@@ -447,7 +447,7 @@ def get_traces_2D(
 
 def _backend_takes_native_traces(backend):
     """Whether `backend` consumes models attached for it, or ignores them."""
-    reg = RegisteredBackend.backends.get(backend)
+    reg = DisplayBackend.backends.get(backend)
     return True if reg is None else reg.supports.get("native_traces", True)
 
 

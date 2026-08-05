@@ -6,7 +6,7 @@ from matplotlib.axes import Axes as mplAxes
 from matplotlib.figure import Figure as mplFig
 
 from magpylib._src.defaults.defaults_utility import _DefaultValue
-from magpylib._src.display.backend_registry import RegisteredBackend
+from magpylib._src.display.backend_registry import ShowDispatcher
 from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.display.traces_utility import (
     DEFAULT_ROW_COL_PARAMS,
@@ -94,7 +94,7 @@ def _show(
     if backend == "auto":
         backend = infer_backend(canvas)
 
-    return RegisteredBackend.show(
+    return ShowDispatcher.show(
         *objects,
         backend=backend,
         animation=animation,

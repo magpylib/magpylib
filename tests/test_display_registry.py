@@ -5,6 +5,7 @@ import warnings
 import pytest
 
 import magpylib as magpy
+from magpylib._src.display.api import DisplayBackend
 from magpylib._src.display.backend_registry import RegisteredBackend
 from magpylib._src.exceptions import MagpylibBadUserInput
 
@@ -39,13 +40,13 @@ def noop_backend():
     try:
         yield name, calls
     finally:
-        RegisteredBackend.backends.pop(name, None)
+        DisplayBackend.backends.pop(name, None)
 
 
 def test_registration_and_show_dispatch(noop_backend):
     """A registered backend receives the generic frame structure."""
     name, calls = noop_backend
-    assert name in RegisteredBackend.backends
+    assert name in DisplayBackend.backends
 
     scene = magpy.show(make_source(), backend=name)
 
@@ -153,7 +154,7 @@ def test_no_subplot_warning_without_a_grid(noop_backend):
 def test_builtin_backends_keep_their_subplot_support():
     """Built-ins all declare subplot support, so nothing regresses for them."""
     for builtin in magpy.SUPPORTED_PLOTTING_BACKENDS:
-        assert RegisteredBackend.backends[builtin].supports["subplots"] is True
+        assert DisplayBackend.backends[builtin].supports["subplots"] is True
 
 
 def test_unknown_backend_lists_registered_names(noop_backend):
@@ -170,12 +171,98 @@ def test_unknown_backend_lists_registered_names(noop_backend):
 def test_builtin_backends_are_registered():
     """The built-ins go through the same registry as third parties."""
     for name in magpy.SUPPORTED_PLOTTING_BACKENDS:
-        assert name in RegisteredBackend.backends
+        assert name in DisplayBackend.backends
 
 
 def test_supported_plotting_backends_still_lists_builtins_only(noop_backend):
     """The public constant keeps its meaning: built-ins, not the registry."""
     name, _ = noop_backend
-    assert name in RegisteredBackend.backends
+    assert name in DisplayBackend.backends
     assert name not in magpy.SUPPORTED_PLOTTING_BACKENDS
     assert magpy.SUPPORTED_PLOTTING_BACKENDS == ("matplotlib", "plotly", "pyvista")
+
+
+def test_backends_are_display_backend_subclasses():
+    """The built-ins go through the same class a third party would subclass."""
+    for name in magpy.SUPPORTED_PLOTTING_BACKENDS:
+        assert isinstance(DisplayBackend.backends[name], DisplayBackend)
+
+
+def test_declaring_a_subclass_registers_it():
+    """Subclassing with a `name` is the declarative way to register."""
+
+    class Declarative(DisplayBackend):
+        name = "declarative"
+        supports_animation = True
+        supports_subplots = True
+        supports_colorgradient = True
+
+        def show(self, scene):
+            return scene
+
+    try:
+        assert "declarative" in DisplayBackend.backends
+        scene = magpy.show(make_source(), backend="declarative")
+        assert scene.frames
+    finally:
+        DisplayBackend.backends.pop("declarative", None)
+
+
+def test_api_version_mismatch_warns():
+    """A backend written against an older payload must not fail silently."""
+
+    class Stale(DisplayBackend):
+        name = "stale"
+        api_version = 0
+        supports_animation = True
+        supports_subplots = True
+        supports_colorgradient = True
+
+        def show(self, scene):
+            return scene
+
+    try:
+        with pytest.warns(UserWarning, match="api_version"):
+            magpy.show(make_source(), backend="stale")
+    finally:
+        DisplayBackend.backends.pop("stale", None)
+
+
+def test_undeclared_trace_type_warns():
+    """`handles_traces` is what makes adding a trace type safe."""
+
+    class Picky(DisplayBackend):
+        name = "picky"
+        handles_traces = frozenset({"scatter3d"})
+        supports_animation = True
+        supports_subplots = True
+        supports_colorgradient = True
+
+        def show(self, scene):
+            return scene
+
+    try:
+        with pytest.warns(UserWarning, match=r"does not declare support.*mesh3d"):
+            magpy.show(make_source(), backend="picky")
+    finally:
+        DisplayBackend.backends.pop("picky", None)
+
+
+def test_handles_traces_none_means_assume_all():
+    """The default must stay silent -- no warning for backends that don't declare."""
+
+    class Quiet(DisplayBackend):
+        name = "quiet"
+        supports_animation = True
+        supports_subplots = True
+        supports_colorgradient = True
+
+        def show(self, scene):
+            return scene
+
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            magpy.show(make_source(), backend="quiet")
+    finally:
+        DisplayBackend.backends.pop("quiet", None)
