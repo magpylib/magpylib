@@ -204,7 +204,9 @@ class DisplayBackend:
         """
         if cls._discovered:
             return
-        cls._discovered = True  # set first: a failing plugin must not retry
+        # set on the base, not on cls: discovering through a subclass must
+        # still mark it done globally, or the base would rediscover later
+        DisplayBackend._discovered = True
         for entry in entry_points(group=ENTRY_POINT_GROUP):
             try:
                 loaded = entry.load()
@@ -217,8 +219,13 @@ class DisplayBackend:
                 continue
             # importing the class registers it via __init_subclass__; register
             # explicitly too, in case the entry point names it something else
+            # importing the class registers it via __init_subclass__; only
+            # instantiate when it did not, e.g. the entry point names it
+            # differently. setdefault would construct it unconditionally.
             if isinstance(loaded, type) and issubclass(loaded, DisplayBackend):
-                cls.backends.setdefault(loaded.name or entry.name, loaded())
+                key = loaded.name or entry.name
+                if key not in cls.backends:
+                    cls.backends[key] = loaded()
 
     @property
     def supports(self) -> dict[str, bool]:

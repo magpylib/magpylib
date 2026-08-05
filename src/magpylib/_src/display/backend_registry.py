@@ -184,7 +184,7 @@ class ShowDispatcher:
             backend, "subplots", "Falling back to a single combined plot."
         )
         objs = [{**obj, "row": 1, "col": 1} for obj in objs]
-        objs, _, _, _ = process_show_input_objs(objs)
+        objs, _, _ = process_show_input_objs(objs)
         return objs
 
     @classmethod
@@ -195,7 +195,6 @@ class ShowDispatcher:
         title=None,
         max_rows=None,
         max_cols=None,
-        subplot_specs=None,  # noqa: ARG003  (grid now derives from Scene.panels)
         **kwargs,
     ):
         """Display function of the current backend"""
@@ -295,6 +294,7 @@ def get_show_func(backend):
 RegisteredBackend(
     name="matplotlib",
     show_func=get_show_func("matplotlib"),
+    handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=False,
@@ -305,6 +305,7 @@ RegisteredBackend(
 RegisteredBackend(
     name="plotly",
     show_func=get_show_func("plotly"),
+    handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
@@ -314,6 +315,7 @@ RegisteredBackend(
 RegisteredBackend(
     name="pyvista",
     show_func=get_show_func("pyvista"),
+    handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,

@@ -249,7 +249,8 @@ def display_pyvista(scene):
     max_cols = scene.n_cols if scene.has_subplots else None
 
     frames = [
-        {"data": list(fr.traces), "native": list(fr.native_traces)}
+        # native_traces are not consumed: supports_native_traces is False
+        {"data": list(fr.traces)}
         for fr in scene.frames
     ]
 

@@ -343,3 +343,93 @@ def test_a_broken_entry_point_warns_and_does_not_break_show(monkeypatch):
 
     # unrelated backends keep working
     assert magpy.show(make_source(), backend="matplotlib", return_fig=True)
+
+
+def test_discovery_through_a_subclass_flags_the_base(monkeypatch):
+    """`discover()` must mark the base done, not just the calling subclass.
+
+    Setting the flag on `cls` left DisplayBackend._discovered False, so the
+    base would resolve entry points a second time later.
+    """
+    calls = []
+    monkeypatch.setattr(
+        "magpylib._src.display.api.entry_points",
+        lambda *, group: calls.append(group) or [],
+        raising=True,
+    )
+    monkeypatch.setattr(DisplayBackend, "_discovered", False, raising=False)
+
+    class Sub(DisplayBackend):
+        name = "sub_probe"
+
+        def show(self, scene):
+            return scene
+
+    try:
+        Sub.discover()
+        DisplayBackend.discover()
+        assert calls == ["magpylib.backends"], "base rediscovered after subclass call"
+    finally:
+        DisplayBackend.backends.pop("sub_probe", None)
+
+
+def test_discovery_does_not_reinstantiate_a_registered_backend(monkeypatch):
+    """Defining the class already registers it; discovery must not build it again."""
+    built = []
+
+    class Counting(DisplayBackend):
+        name = "counting_probe"
+
+        def __init__(self):
+            built.append(1)
+            super().__init__()
+
+        def show(self, scene):
+            return scene
+
+    class Entry:
+        name = "counting_probe"
+        value = "pkg:Counting"
+
+        def load(self):
+            return Counting
+
+    monkeypatch.setattr(
+        "magpylib._src.display.api.entry_points",
+        lambda *, group: [Entry()],  # noqa: ARG005
+        raising=True,
+    )
+    monkeypatch.setattr(DisplayBackend, "_discovered", False, raising=False)
+
+    try:
+        before = len(built)
+        DisplayBackend.discover()
+        assert len(built) == before
+    finally:
+        DisplayBackend.backends.pop("counting_probe", None)
+
+
+@pytest.mark.parametrize("name", ["matplotlib", "plotly", "pyvista"])
+def test_builtins_declare_the_trace_types_they_draw(name):
+    """`handles_traces` must be real on the built-ins, not just plumbing.
+
+    Otherwise the warning can never fire for a shipped backend and a newly
+    added trace type would go unnoticed.
+    """
+    backend = DisplayBackend.backends[name]
+    assert backend.handles_traces == frozenset({"mesh3d", "scatter3d", "scatter"})
+
+
+@pytest.mark.parametrize("name", ["matplotlib", "plotly", "pyvista"])
+def test_builtins_do_not_warn_about_their_own_traces(name):
+    """Declaring the set must not make ordinary figures noisy."""
+    obj = make_source()
+    sensor = magpy.Sensor(position=(3, 0, 0))
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", UserWarning)
+        magpy.show(
+            {"objects": [obj, sensor], "row": 1, "col": 1},
+            {"objects": [obj, sensor], "row": 1, "col": 2, "output": "Bx"},
+            backend=name,
+            return_fig=True,
+        )

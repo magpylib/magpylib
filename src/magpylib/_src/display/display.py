@@ -70,7 +70,7 @@ def _show(
     """
 
     # process input objs
-    objects, max_rows, max_cols, subplot_specs = process_show_input_objs(
+    objects, max_rows, max_cols = process_show_input_objs(
         objects,
         **{k: v for k, v in kwargs.items() if k in DEFAULT_ROW_COL_PARAMS},
     )
@@ -100,7 +100,6 @@ def _show(
         animation=animation,
         canvas=canvas,
         canvas_update=canvas_update,
-        subplot_specs=subplot_specs,
         max_rows=max_rows,
         max_cols=max_cols,
         **kwargs,

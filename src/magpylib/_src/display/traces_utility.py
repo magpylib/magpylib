@@ -812,27 +812,17 @@ def process_show_input_objs(objs, **kwargs):
         unique_fields=unique_fields,
     )
 
-    # create subplot specs grid
+    # resolve the grid extent; the per-cell 2D/3D kind now lives on Scene.panels
     row_cols = [*row_col_dict]
     max_rows, max_cols = np.max(row_cols, axis=0).astype(int) if row_cols else (1, 1)
-    # convert to int to avoid np.int32 type conflicting with plolty subplot specs
     max_rows, max_cols = int(max_rows), int(max_cols)
-    specs = np.array([[{"type": "scene"}] * max_cols] * max_rows)
-    for rc, obj in row_col_dict.items():
-        if obj["output"] != "model3d":
-            specs[rc[0] - 1, rc[1] - 1] = {"type": "xy"}
     if max_rows == 1 and max_cols == 1:
         max_rows = max_cols = None
 
     for obj in row_col_dict.values():
         check_input_zoom(obj.get("zoom", None))
 
-    return (
-        list(row_col_dict.values()),
-        max_rows,
-        max_cols,
-        specs,
-    )
+    return list(row_col_dict.values()), max_rows, max_cols
 
 
 def triangles_area(triangles):
