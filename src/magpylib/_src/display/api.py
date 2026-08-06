@@ -165,11 +165,20 @@ class Scene:
         return self.n_rows > 1 or self.n_cols > 1
 
     def panel(self, row: int, col: int) -> Panel | None:
-        """Return the panel at `row`/`col`, or None if the cell is empty."""
+        """Return the panel at 1-based `row`/`col`, or None if the cell is empty."""
         for p in self.panels:
             if p.row == row and p.col == col:
                 return p
         return None
+
+    def panel_kind(self, row: int, col: int) -> str:
+        """Kind of the panel at 1-based `row`/`col`.
+
+        An empty cell reports ``"scene3d"``: a backend building a grid needs a
+        kind for every cell, and a 3D axis is the harmless default.
+        """
+        panel = self.panel(row, col)
+        return "scene3d" if panel is None else panel.kind
 
 
 class DisplayBackend:

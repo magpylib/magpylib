@@ -250,6 +250,9 @@ class ShowDispatcher:
         kwargs = {
             k: v for k, v in kwargs.items() if not (k.startswith(("fig", "show")))
         }
+        # backend-prefixed arguments that are neither fig_ nor show_ are still
+        # meant for the backend, e.g. plotly_renderer=... -> renderer=...
+        kwargs = {**kwargs, **backend_kwargs}
         scene = get_frames(
             objs,
             supports_colorgradient=self.supports["colorgradient"],

@@ -287,11 +287,7 @@ def _subplot_specs(scene):
     """plotly's make_subplots spec grid, derived from the scene panels."""
     return [
         [
-            {
-                "type": "scene"
-                if (p := scene.panel(r, c)) is None or p.kind == "scene3d"
-                else "xy"
-            }
+            {"type": "scene" if scene.panel_kind(r, c) == "scene3d" else "xy"}
             for c in range(1, scene.n_cols + 1)
         ]
         for r in range(1, scene.n_rows + 1)

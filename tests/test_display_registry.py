@@ -568,3 +568,41 @@ def test_metadata_keys_never_reach_the_plotting_library(name):
     assert drawing_properties({"x": 1, "object_id": 7}) == {"x": 1}
     # a real render must not raise
     assert magpy.show(make_source(), backend=name, return_fig=True) is not None
+
+
+def test_panel_kind_defaults_absent_cells_to_3d():
+    """Every cell of a grid needs a kind, including empty ones."""
+    scene = public_backend.Scene(
+        panels=(
+            public_backend.Panel(row=1, col=1, kind="scene3d"),
+            public_backend.Panel(row=1, col=2, kind="chart2d"),
+        )
+    )
+    assert scene.panel_kind(1, 1) == "scene3d"
+    assert scene.panel_kind(1, 2) == "chart2d"
+    assert scene.panel_kind(9, 9) == "scene3d"
+
+
+@pytest.mark.parametrize(
+    "spelling",
+    [
+        {"renderer": "png"},
+        {"probe_renderer": "png"},
+        {"probe": {"renderer": "png"}},
+    ],
+)
+def test_backend_prefixed_options_reach_the_backend(spelling):
+    """All three spellings of a backend argument must arrive.
+
+    Backend-prefixed arguments that were neither fig_ nor show_ used to be
+    extracted from kwargs and then dropped, so `plotly_renderer=...` silently
+    did nothing -- and could not even be reported as a typo, because it never
+    reached `Scene.options`.
+    """
+    seen = []
+    try:
+        magpy.register_backend("probe", lambda scene: seen.append(dict(scene.options)))
+        magpy.show(make_source(), backend="probe", **spelling)
+        assert seen[0] == {"renderer": "png"}
+    finally:
+        DisplayBackend.backends.pop("probe", None)

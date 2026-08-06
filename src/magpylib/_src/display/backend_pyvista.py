@@ -231,12 +231,6 @@ def generic_trace_to_pyvista(trace):
     return traces_pv
 
 
-def _is_3d_panel(scene, row, col):
-    """True when the panel at 1-based row/col is a 3D scene (or absent)."""
-    panel = scene.panel(row, col)
-    return panel is None or panel.kind == "scene3d"
-
-
 def display_pyvista(scene):
     """Display objects and paths graphically using the pyvista library."""
     canvas = scene.canvas
@@ -322,7 +316,10 @@ def display_pyvista(scene):
                     canvas.show_axes()
                 canvas.camera.azimuth = -90
                 canvas.set_background("gray", top="white")
-            if 0 < count <= legend_maxitems and _is_3d_panel(scene, row + 1, col + 1):
+            if (
+                0 < count <= legend_maxitems
+                and scene.panel_kind(row + 1, col + 1) == "scene3d"
+            ):
                 canvas.add_legend(bcolor=None)
 
     def run_animation(filename, embed=True):

@@ -250,12 +250,6 @@ def process_extra_trace(model):
     return trace3d
 
 
-def _is_3d_panel(scene, row, col):
-    """True when the panel at row/col is a 3D scene (or absent)."""
-    panel = scene.panel(row, col)
-    return panel is None or panel.kind == "scene3d"
-
-
 def display_matplotlib(scene):
     """Display objects and paths graphically using the Matplotlib library."""
     canvas = scene.canvas
@@ -328,7 +322,7 @@ def display_matplotlib(scene):
             axes[(1, 1)] = canvas
         else:
             axes[(1, 1)] = fig.add_subplot(
-                111, projection="3d" if _is_3d_panel(scene, 1, 1) else None
+                111, projection="3d" if scene.panel_kind(1, 1) == "scene3d" else None
             )
     else:
         max_rows = max_rows if max_rows is not None else 1
@@ -339,7 +333,7 @@ def display_matplotlib(scene):
                 subplot_found = True
                 count += 1
                 row_col_num = (row, col)
-                projection = "3d" if _is_3d_panel(scene, row, col) else None
+                projection = "3d" if scene.panel_kind(row, col) == "scene3d" else None
                 if isinstance(canvas, mpl.figure.Figure):
                     try:
                         axes[row_col_num] = extract_axis_from_row_col(fig, row, col)
