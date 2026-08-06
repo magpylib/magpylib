@@ -299,9 +299,6 @@ def display_plotly(scene):
     canvas = scene.canvas
     canvas_update = scene.canvas_update
     return_fig = scene.return_fig
-    max_rows = scene.n_rows if scene.has_subplots else None
-    max_cols = scene.n_cols if scene.has_subplots else None
-
     fig_kwargs = dict(scene.fig_kwargs)
     show_kwargs = {"renderer": scene.options.get("renderer"), **scene.show_kwargs}
 
@@ -314,10 +311,10 @@ def display_plotly(scene):
             show_fig = True
         fig = go.Figure()
 
-    if not (max_rows is None and max_cols is None) and fig._grid_ref is None:  # pylint: disable=protected-access
+    if scene.has_subplots and fig._grid_ref is None:  # pylint: disable=protected-access
         fig = fig.set_subplots(
-            rows=max_rows,
-            cols=max_cols,
+            rows=scene.n_rows,
+            cols=scene.n_cols,
             specs=_subplot_specs(scene),
         )
 
@@ -329,10 +326,9 @@ def display_plotly(scene):
         for model in fr.native_traces:
             extra_data = True
             new_data.append(process_extra_trace(model))
-        # keep name and layout: plotly reads the per-frame title, and the
-        # animation slider steps are keyed by frame name
+        # the slider steps are keyed by frame name
         frames.append(
-            {"name": fr.label, "data": new_data, "layout": {"title": fr.title}}
+            {"name": fr.label, "data": new_data, "layout": {"title": scene.title}}
         )
     with fig.batch_update():
         for frame in frames:
@@ -343,17 +339,16 @@ def display_plotly(scene):
                 col = tr.pop("col", None)
                 rows_list.append(row)
                 cols_list.append(col)
-        if max_rows is None and max_cols is None:
+        if not scene.has_subplots:
             rows_list = cols_list = None
-        isanimation = len(frames) != 1
+        isanimation = scene.is_animation
         if not isanimation:
             fig.add_traces(frames[0]["data"], rows=rows_list, cols=cols_list)
             # animate_path does this for the animated branch
             # only when there is one: setting title=None still materializes an
             # empty title object in the figure JSON
-            static_title = frames[0]["layout"]["title"]
-            if canvas_update and static_title:
-                fig.update_layout(title=static_title)
+            if canvas_update and scene.title:
+                fig.update_layout(title=scene.title)
         else:
             animation_slider = scene.animation.slider
             animate_path(

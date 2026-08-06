@@ -278,7 +278,7 @@ def test_public_register_backend_defaults_capabilities_off():
             "subplots": False,
             "colorgradient": False,
             "animation_output": False,
-            "native_traces": True,
+            "native_traces": False,
         }
         assert magpy.show(make_source(), backend="minimal").frames
     finally:

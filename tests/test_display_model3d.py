@@ -7,10 +7,6 @@ crashed. Pyvista never consumed backend-specific models at all. These tests
 pin the behaviour of each backend against each kind of model.
 """
 
-import matplotlib as mpl
-
-mpl.use("Agg")
-
 import numpy as np
 import pytest
 

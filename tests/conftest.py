@@ -11,6 +11,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
+from magpylib._src.display.api import DisplayBackend
+
+
+@pytest.fixture(autouse=True)
+def _restore_display_backends():
+    """Undo backends a test registers.
+
+    Registering is a global side effect -- `DisplayBackend.backends` is a class
+    attribute -- so a test that forgets to unregister leaks into every test
+    that runs after it.
+    """
+    known = dict(DisplayBackend.backends)
+    yield
+    DisplayBackend.backends.clear()
+    DisplayBackend.backends.update(known)
+
 
 @pytest.fixture(autouse=True)
 def _close_matplotlib_figures():

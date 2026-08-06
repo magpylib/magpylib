@@ -260,8 +260,6 @@ def display_matplotlib(scene):
     # options magpylib does not interpret are the backend's own
     antialiased = scene.options.get("antialiased", True)
     return_animation = scene.options.get("return_animation", False)
-    max_rows = scene.n_rows if scene.has_subplots else None
-    max_cols = scene.n_cols if scene.has_subplots else None
     ranges = {(p.row, p.col): p.ranges for p in scene.panels if p.ranges is not None}
     labels = {(p.row, p.col): p.labels for p in scene.panels}
 
@@ -300,7 +298,7 @@ def display_matplotlib(scene):
         fig = plt.figure(**{"tight_layout": True, **fig_kwargs})
     elif isinstance(canvas, mpl.axes.Axes):
         fig = canvas.get_figure()
-        if max_rows is not None or max_cols is not None:
+        if scene.has_subplots:
             msg = (
                 "Provided canvas is an instance of matplotlib.axes.Axes and does not support "
                 "rows or cols arguments. Use a matplotlib.figure.Figure instead."
@@ -317,7 +315,7 @@ def display_matplotlib(scene):
     if canvas is not None and canvas_update:
         fig.set_size_inches(*fig_kwargs["figsize"], forward=True)
         fig.set_dpi(fig_kwargs["dpi"])
-    if max_rows is None and max_cols is None:
+    if not scene.has_subplots:
         if isinstance(canvas, mpl.axes.Axes):
             axes[(1, 1)] = canvas
         else:
@@ -325,11 +323,9 @@ def display_matplotlib(scene):
                 111, projection="3d" if scene.panel_kind(1, 1) == "scene3d" else None
             )
     else:
-        max_rows = max_rows if max_rows is not None else 1
-        max_cols = max_cols if max_cols is not None else 1
         count = 0
-        for row in range(1, max_rows + 1):
-            for col in range(1, max_cols + 1):
+        for row in range(1, scene.n_rows + 1):
+            for col in range(1, scene.n_cols + 1):
                 subplot_found = True
                 count += 1
                 row_col_num = (row, col)
@@ -341,7 +337,7 @@ def display_matplotlib(scene):
                         subplot_found = False
                 if canvas is None or not subplot_found:
                     axes[row_col_num] = fig.add_subplot(
-                        max_rows, max_cols, count, projection=projection
+                        scene.n_rows, scene.n_cols, count, projection=projection
                     )
                 if axes[row_col_num].name == "3d":
                     axes[row_col_num].set_box_aspect((1, 1, 1))
@@ -402,13 +398,11 @@ def display_matplotlib(scene):
         draw_frame(ind)
         return list(axes.values())
 
-    # the title is the same on every frame, so it belongs to the figure
-    title = scene.frames[0].title if scene.frames else None
-    if canvas_update and title:
-        fig.suptitle(title)
+    if canvas_update and scene.title:
+        fig.suptitle(scene.title)
 
     anim = None
-    if len(frames) == 1:
+    if not scene.is_animation:
         draw_frame(0)
     else:
         anim = FuncAnimation(
@@ -424,7 +418,7 @@ def display_matplotlib(scene):
     if return_fig:
         show_canvas = False
         out += (fig,)
-    if return_animation and len(frames) != 1:
+    if return_animation and scene.is_animation:
         show_canvas = False
         out += (anim,)
     if show_canvas:

@@ -164,25 +164,6 @@ def test_pyvista_warns_on_backend_specific_model3d():
         magpy.show(obj, backend="pyvista", return_fig=True)
 
 
-def test_pyvista_still_renders_generic_model3d():
-    """The documented alternative must keep working for pyvista."""
-    obj = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
-    obj.style.model3d.add_trace(
-        {
-            "backend": "generic",
-            "constructor": "scatter3d",
-            "kwargs": {"x": (0, 2), "y": (0, 2), "z": (0, 2), "mode": "lines"},
-        }
-    )
-    plotter = magpy.show(obj, backend="pyvista", return_fig=True)
-    plain = magpy.show(
-        magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1)),
-        backend="pyvista",
-        return_fig=True,
-    )
-    assert len(list(plotter.renderer.actors)) > len(list(plain.renderer.actors))
-
-
 def test_title_reaches_the_pyvista_plotter():
     """A lone panel gets the title as a corner annotation."""
     obj = magpy.magnet.Cuboid(

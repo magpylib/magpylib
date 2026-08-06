@@ -28,19 +28,7 @@ def _display_arg_names():
     return set(get_defaults_dict("display"))
 
 
-def register_backend(
-    name,
-    show_func,
-    *,
-    supports_animation=False,
-    supports_subplots=False,
-    supports_colorgradient=False,
-    supports_animation_output=False,
-    supports_native_traces=True,
-    merge_traces=True,
-    handles_traces=None,
-    accepts_options=None,
-):
+def register_backend(name, show_func, **capabilities):
     """Register a display backend from a plain function.
 
     The imperative counterpart to subclassing
@@ -70,6 +58,11 @@ def register_backend(
     merge_traces : bool, default True
         Preference, not a capability: whether traces of different objects may
         be merged into fewer, larger ones.
+    **capabilities
+        Any ``supports_*`` flag, plus ``merge_traces``, ``handles_traces`` and
+        ``accepts_options``. Unknown names are rejected. See `DisplayBackend`
+        for the full list and defaults.
+
     handles_traces : set of str, optional
         Trace ``type`` values this backend draws. ``None`` assumes all.
         Declaring it lets magpylib warn about a type the backend never handles
@@ -95,49 +88,17 @@ def register_backend(
     >>> magpy.show(src, backend="typelist")
     ['mesh3d', 'scatter3d']
     """
-    return _make_backend(
-        name=name,
-        show_func=show_func,
-        supports_animation=supports_animation,
-        supports_subplots=supports_subplots,
-        supports_colorgradient=supports_colorgradient,
-        supports_animation_output=supports_animation_output,
-        supports_native_traces=supports_native_traces,
-        merge_traces=merge_traces,
-        handles_traces=handles_traces,
-        accepts_options=accepts_options,
-    )
-
-
-def _make_backend(
-    *,
-    name,
-    show_func,
-    supports_animation,
-    supports_subplots,
-    supports_colorgradient,
-    supports_animation_output,
-    supports_native_traces=True,
-    merge_traces=True,
-    handles_traces=None,
-    accepts_options=None,
-):
-    """Build and register a DisplayBackend subclass delegating to show_func."""
+    unknown = set(capabilities) - set(vars(DisplayBackend))
+    if unknown:
+        msg = (
+            f"register_backend() got unknown backend capability "
+            f"{sorted(unknown)!r}; see DisplayBackend for the accepted names."
+        )
+        raise TypeError(msg)
     return type(
         f"{name.title()}Backend",
         (DisplayBackend,),
-        {
-            "name": name,
-            "supports_animation": supports_animation,
-            "supports_subplots": supports_subplots,
-            "supports_colorgradient": supports_colorgradient,
-            "supports_animation_output": supports_animation_output,
-            "supports_native_traces": supports_native_traces,
-            "merge_traces": merge_traces,
-            "handles_traces": handles_traces,
-            "accepts_options": accepts_options,
-            "show": staticmethod(show_func),
-        },
+        {"name": name, "show": staticmethod(show_func), **capabilities},
     )
 
 
@@ -259,6 +220,7 @@ class ShowDispatcher:
             backend=backend,
             title=title,
             merge_traces=self.merge_traces,
+            supports_native_traces=self.supports["native_traces"],
             **display_kwargs,
         )
         # complete the envelope: get_frames knows about geometry and frames,
@@ -308,9 +270,10 @@ def get_show_func(backend):
     )(*args, **kwargs)
 
 
-_make_backend(
-    name="matplotlib",
-    show_func=get_show_func("matplotlib"),
+register_backend(
+    "matplotlib",
+    get_show_func("matplotlib"),
+    supports_native_traces=True,
     handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
     accepts_options=frozenset({"antialiased", "return_animation"}),
     supports_animation=True,
@@ -320,9 +283,10 @@ _make_backend(
 )
 
 
-_make_backend(
-    name="plotly",
-    show_func=get_show_func("plotly"),
+register_backend(
+    "plotly",
+    get_show_func("plotly"),
+    supports_native_traces=True,
     handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
     accepts_options=frozenset({"renderer"}),
     supports_animation=True,
@@ -331,9 +295,9 @@ _make_backend(
     supports_animation_output=False,
 )
 
-_make_backend(
-    name="pyvista",
-    show_func=get_show_func("pyvista"),
+register_backend(
+    "pyvista",
+    get_show_func("pyvista"),
     handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
     accepts_options=frozenset({"jupyter_backend", "mp4_quality"}),
     supports_animation=True,

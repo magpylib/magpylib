@@ -241,27 +241,19 @@ def display_pyvista(scene):
     # options magpylib does not interpret are the backend's own
     jupyter_backend = scene.options.get("jupyter_backend")
     mp4_quality = scene.options.get("mp4_quality", 5)
-    max_rows = scene.n_rows if scene.has_subplots else None
-    max_cols = scene.n_cols if scene.has_subplots else None
-
-    frames = [
-        # native_traces are intentionally unused; see supports_native_traces
-        {"data": list(fr.traces)}
-        for fr in scene.frames
-    ]
+    # native_traces are intentionally unused; see supports_native_traces
+    frames = [fr.traces for fr in scene.frames]
 
     fig_kwargs = dict(scene.fig_kwargs)
     show_kwargs = dict(scene.show_kwargs)
 
-    animation = bool(len(frames) > 1)
-    max_rows = max_rows if max_rows is not None else 1
-    max_cols = max_cols if max_cols is not None else 1
+    animation = scene.is_animation
     show_canvas = False
     if canvas is None:
         if not return_fig:
             show_canvas = True  # pragma: no cover
         canvas = pv.Plotter(
-            shape=(max_rows, max_cols),
+            shape=(scene.n_rows, scene.n_cols),
             off_screen=animation,
             **fig_kwargs,
         )
@@ -275,8 +267,7 @@ def display_pyvista(scene):
 
     def draw_frame(frame_ind):
         nonlocal count_with_labels, charts_max_ind
-        frame = frames[frame_ind]
-        for tr0 in frame["data"]:
+        for tr0 in frames[frame_ind]:
             for tr1 in generic_trace_to_pyvista(tr0):
                 row = tr1.pop("row", 1)
                 col = tr1.pop("col", 1)
@@ -353,12 +344,11 @@ def display_pyvista(scene):
 
     # pyvista has no figure-level title: add_title applies to the active
     # subplot, so on a grid it would read as that one panel's title
-    title = scene.frames[0].title if scene.frames else None
-    if canvas_update and title and not scene.has_subplots:
+    if canvas_update and scene.title and not scene.has_subplots:
         canvas.subplot(0, 0)
-        canvas.add_title(title)
+        canvas.add_title(scene.title)
 
-    if len(frames) == 1:
+    if not scene.is_animation:
         draw_frame(0)
     elif animation:
         animation_output = scene.animation.output

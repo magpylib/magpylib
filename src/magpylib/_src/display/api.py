@@ -91,9 +91,6 @@ class Frame:
     """One step of the timeline. A static scene has exactly one."""
 
     label: str = ""
-    #: Figure title for this frame. Every frame of an animation carries the
-    #: same one.
-    title: str | None = None
     #: Trace dicts in magpylib's dialect. Left as dicts on purpose -- see the
     #: module docstring.
     traces: tuple[dict[str, Any], ...] = ()
@@ -128,6 +125,8 @@ class Scene:
 
     panels: tuple[Panel, ...] = ()
     frames: tuple[Frame, ...] = ()
+    #: Figure title, or None. A property of the figure, not of a frame.
+    title: str | None = None
     animation: AnimationSettings = field(default_factory=AnimationSettings)
     #: User-supplied figure/axes/plotter to draw into, or None.
     canvas: Any = None
@@ -210,9 +209,10 @@ class DisplayBackend:
     supports_colorgradient: ClassVar[bool] = False
     supports_animation_output: ClassVar[bool] = False
     #: Whether models attached via ``style.model3d.data`` naming this backend
-    #: are rendered. False means they are skipped with a warning rather than
-    #: silently dropped or crashing inside the placement code.
-    supports_native_traces: ClassVar[bool] = True
+    #: are rendered. False -- like every capability -- so a backend that never
+    #: reads `Frame.native_traces` gets a warning rather than silently dropping
+    #: the user's models.
+    supports_native_traces: ClassVar[bool] = False
 
     # preference, not a capability: every backend *can* render unmerged
     # traces, some simply prefer fewer and larger ones.
@@ -244,9 +244,11 @@ class DisplayBackend:
     def discover(cls):
         """Load backends advertised by installed packages, once.
 
-        Deliberately lazy: entry points are resolved the first time a backend
-        name is looked up, never at import, so magpylib's import cost does not
-        grow with every backend installed alongside it.
+        Resolved on the first backend-name lookup and cached, rather than at
+        every lookup. In practice that first lookup happens while magpylib is
+        imported, when the defaults tree validates its own default backend, so
+        the scan does contribute to import time (a few ms, growing with the
+        number of installed distributions).
         """
         if cls._discovered:
             return
@@ -273,13 +275,15 @@ class DisplayBackend:
 
     @property
     def supports(self) -> dict[str, bool]:
-        """Capability flags keyed by short name, for uniform lookup."""
+        """Capability flags keyed by short name, derived from the attributes.
+
+        Introspected rather than hand-listed so a new ``supports_*`` attribute
+        needs no second edit here.
+        """
         return {
-            "animation": self.supports_animation,
-            "subplots": self.supports_subplots,
-            "colorgradient": self.supports_colorgradient,
-            "animation_output": self.supports_animation_output,
-            "native_traces": self.supports_native_traces,
+            name[len("supports_") :]: getattr(self, name)
+            for name in dir(type(self))
+            if name.startswith("supports_")
         }
 
     def show(self, scene: Scene):
