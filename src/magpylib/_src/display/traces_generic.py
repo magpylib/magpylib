@@ -1057,8 +1057,7 @@ def get_frames(
         msg = f"show() got unexpected keyword argument(s) {kwargs!r}"
         raise TypeError(msg)
 
-    # infer title only if the caller gave none -- without this guard an
-    # explicit show(title=...) was overwritten by the inferred one
+    # only infer when the caller gave no title; an explicit one always wins
     if title is None:
         if not objs:
             title = "No objects to be displayed"
@@ -1128,8 +1127,8 @@ def get_frames(
             frame[key] = rescale_traces(frame[key], factors=scale_factors_rc)
 
     # assemble the public Scene. The mutable dict accumulation above stays
-    # internal; only the envelope is typed, while traces remain dicts in
-    # magpylib's dialect -- see magpylib._src.display.api.
+    # internal; only the envelope is typed, traces remain dicts in magpylib's
+    # dialect -- see magpylib._src.display.api.
     panels = []
     for rc in sorted(set(ranges_rc) | set(labels_rc) | set(objs_rc)):
         props = objs_rc.get(rc)

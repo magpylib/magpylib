@@ -5,9 +5,8 @@ do: a **typed envelope** around **open payload**.
 
 *Typed* -- `Scene`, `Panel`, `Frame`, `AnimationSettings` -- because the
 envelope is small, fixed, controlled entirely by magpylib and changes rarely.
-It was also the genuinely broken part: seven loose parameters, axis ranges and
-labels in side-tables keyed by ``(row, col)``, `canvas` arriving undocumented
-through ``**kwargs``.
+A backend gets one object describing the whole figure rather than a handful of
+loose arguments.
 
 *Open* -- traces stay plain dicts in magpylib's documented dialect (plotly-style
 magic-underscore keys, matplotlib-derived symbol and dash vocabularies). They
@@ -15,18 +14,17 @@ are large, open-ended, and must be able to grow a key without a release; a
 frozen dataclass cannot. `magic_to_dict` turns ``marker_line_color`` into
 nested form for backends that prefer it.
 
-Renaming that dialect was considered and rejected: every backend already
-translates it (`SYMBOLS_TO_PLOTLY`, `SYMBOLS_TO_PYVISTA`), so it is magpylib's
-vocabulary rather than plotly's, and renaming would have cost a permanent
-adapter and three ported backends while fixing nothing an author complains
-about. What was missing is specification, not different names.
+The dialect looks plotly-flavoured but is magpylib's own: every backend,
+plotly included, translates it (`SYMBOLS_TO_PLOTLY`, `SYMBOLS_TO_PYVISTA`).
+Renaming it would buy a permanent adapter and three ported backends in
+exchange for nothing a backend author needs; what such an author needs is
+specification, which the user guide provides.
 
-Four things not to do here, each of which has been attempted or proposed:
+Four things not to do here:
 
 - **Do not rewrite the trace format into an abstract IR.** The hand-off is
   already a plain dict of numpy arrays that matplotlib, plotly and pyvista all
-  consume. This was overridden once and reverted after measurement; it is the
-  most expensive wrong turn available in this module.
+  consume, so an IR would be a translation layer with no consumer.
 - **Do not remove `group_traces` or the cross-object merge.** It is a real
   optimisation for scenes where objects share a legendgroup and colour. It is
   optional per backend via `DisplayBackend.merge_traces`; do not delete it.
@@ -76,11 +74,7 @@ def drawing_properties(trace):
 
 @dataclass(frozen=True)
 class Panel:
-    """One cell of the subplot grid.
-
-    Replaces the ``ranges``/``labels`` side-tables that were keyed by
-    ``(row, col)``: each panel now owns its own axis metadata.
-    """
+    """One cell of the subplot grid, owning its own axis metadata."""
 
     row: int = 1
     col: int = 1
@@ -97,7 +91,8 @@ class Frame:
     """One step of the timeline. A static scene has exactly one."""
 
     label: str = ""
-    #: Was buried in ``frame["layout"]["title"]``; varies across an animation.
+    #: Figure title for this frame. Every frame of an animation carries the
+    #: same one.
     title: str | None = None
     #: Trace dicts in magpylib's dialect. Left as dicts on purpose -- see the
     #: module docstring.
@@ -111,7 +106,7 @@ class Frame:
 
 @dataclass(frozen=True)
 class AnimationSettings:
-    """Animation parameters, replacing the misnamed ``input_kwargs`` bag."""
+    """Timing and playback parameters for an animated scene."""
 
     fps: int = 20
     max_fps: int = 30
@@ -259,8 +254,6 @@ class DisplayBackend:
                     stacklevel=2,
                 )
                 continue
-            # importing the class registers it via __init_subclass__; register
-            # explicitly too, in case the entry point names it something else
             # importing the class registers it via __init_subclass__; only
             # instantiate when it did not, e.g. the entry point names it
             # differently. setdefault would construct it unconditionally.

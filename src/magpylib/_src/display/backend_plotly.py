@@ -325,9 +325,8 @@ def display_plotly(scene):
             specs=_subplot_specs(scene),
         )
 
-    # Scene frames are immutable; render into local dicts instead. This also
-    # removes the old in-place `fr.pop("extra_backend_traces")`, which mutated
-    # the payload other backends might still be holding.
+    # Scene frames are immutable, so render into local dicts rather than
+    # mutating the payload -- other code may still be holding it.
     frames = []
     for fr in scene.frames:
         new_data = [generic_trace_to_plotly(tr) for tr in fr.traces]
@@ -353,8 +352,7 @@ def display_plotly(scene):
         isanimation = len(frames) != 1
         if not isanimation:
             fig.add_traces(frames[0]["data"], rows=rows_list, cols=cols_list)
-            # the animation branch sets this via animate_path; the static one
-            # dropped it, so show(title=...) never reached a static figure
+            # animate_path does this for the animated branch
             # only when there is one: setting title=None still materializes an
             # empty title object in the figure JSON
             static_title = frames[0]["layout"]["title"]

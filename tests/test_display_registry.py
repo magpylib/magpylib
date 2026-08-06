@@ -6,7 +6,6 @@ import pytest
 
 import magpylib as magpy
 from magpylib._src.display.api import DisplayBackend
-from magpylib._src.display.backend_registry import RegisteredBackend
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib.graphics import backend as public_backend
 from magpylib.graphics.backend import TRACE_META_KEYS, drawing_properties
@@ -31,14 +30,7 @@ def noop_backend():
         calls.append(scene)
         return scene
 
-    RegisteredBackend(
-        name=name,
-        show_func=show_func,
-        supports_animation=False,
-        supports_subplots=False,
-        supports_colorgradient=False,
-        supports_animation_output=False,
-    )
+    magpy.register_backend(name, show_func)
     try:
         yield name, calls
     finally:

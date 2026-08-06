@@ -11,7 +11,6 @@ from magpylib._src.defaults.defaults_utility import (
     get_registered_backends,
 )
 from magpylib._src.display.api import DisplayBackend
-from magpylib._src.display.backend_registry import RegisteredBackend
 from magpylib._src.style import DisplayStyle
 
 bad_inputs = {
@@ -257,14 +256,7 @@ def test_bad_default_classes():
 def dummy_backend():
     """Register a do-nothing display backend for the duration of a test."""
     name = "dummy"
-    RegisteredBackend(
-        name=name,
-        show_func=lambda data, **_kwargs: data,
-        supports_animation=False,
-        supports_subplots=False,
-        supports_colorgradient=False,
-        supports_animation_output=False,
-    )
+    magpy.register_backend(name, lambda scene: scene)
     default_backend = magpy.defaults.display.backend
     try:
         yield name

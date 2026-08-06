@@ -3,7 +3,7 @@
 This module deliberately imports nothing from magpylib at module level. Both
 `input_checks` and the defaults tree have to consult the registry to validate a
 backend name, and both are imported long before the display layer; anything
-this module pulled in eagerly would close that loop. What `RegisteredBackend.show`
+this module pulled in eagerly would close that loop. What the dispatcher
 needs from the display layer is therefore imported inside the call, by which
 time everything is loaded.
 """
@@ -139,10 +139,6 @@ def _make_backend(
             "show": staticmethod(show_func),
         },
     )
-
-
-#: Internal alias for the adapter under its previous name.
-RegisteredBackend = _make_backend
 
 
 class ShowDispatcher:
@@ -309,7 +305,7 @@ def get_show_func(backend):
     )(*args, **kwargs)
 
 
-RegisteredBackend(
+_make_backend(
     name="matplotlib",
     show_func=get_show_func("matplotlib"),
     handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
@@ -321,7 +317,7 @@ RegisteredBackend(
 )
 
 
-RegisteredBackend(
+_make_backend(
     name="plotly",
     show_func=get_show_func("plotly"),
     handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
@@ -332,7 +328,7 @@ RegisteredBackend(
     supports_animation_output=False,
 )
 
-RegisteredBackend(
+_make_backend(
     name="pyvista",
     show_func=get_show_func("pyvista"),
     handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
