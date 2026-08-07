@@ -272,20 +272,24 @@ def get_ipython_shell():
     return get_ipython()
 
 
-def register():
-    """Register the backend under the name 'threejs'."""
-    return magpy.register_backend(
-        "threejs",
-        show_threejs,
-        # three.js does vertex colours natively, so take the gradient unsliced
-        supports_colorgradient=True,
-        # every object keeps its own mesh, so it can be addressed and moved
-        merge_traces=False,
-        # prototype scope
-        supports_animation=False,
-        supports_subplots=False,
-        supports_animation_output=False,
-        supports_native_traces=False,
-        handles_traces=frozenset({"mesh3d", "scatter3d"}),
-        accepts_options=frozenset(),
-    )
+#: Declared once. A variant backend -- the editor in interactive.py -- differs
+#: in what it *draws*, never in what it can do, so both register with this set.
+#: Re-listing it per script is how the two quietly drift apart.
+CAPABILITIES = {
+    # three.js does vertex colours natively, so take the gradient unsliced
+    "supports_colorgradient": True,
+    # every object keeps its own mesh, so it can be addressed and moved
+    "merge_traces": False,
+    # prototype scope
+    "supports_animation": False,
+    "supports_subplots": False,
+    "supports_animation_output": False,
+    "supports_native_traces": False,
+    "handles_traces": frozenset({"mesh3d", "scatter3d"}),
+    "accepts_options": frozenset(),
+}
+
+
+def register(name="threejs", show_func=None):
+    """Register the backend, or a variant of it under another `name`."""
+    return magpy.register_backend(name, show_func or show_threejs, **CAPABILITIES)

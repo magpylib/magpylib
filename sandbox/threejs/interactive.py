@@ -33,7 +33,7 @@ import json
 import webbrowser
 from pathlib import Path
 
-from magpylib_threejs import render_page
+from magpylib_threejs import register, render_page
 
 import magpylib as magpy
 
@@ -142,14 +142,7 @@ def main():
         anchors = {oid: obj.position for oid, obj in registry.items()}
         return render_page(scene, extra_js=_INTERACTION_JS, anchors=anchors)
 
-    magpy.register_backend(
-        "threejs-edit",
-        show,
-        supports_colorgradient=True,
-        merge_traces=False,  # one mesh per object, so each can be picked
-        handles_traces=frozenset({"mesh3d", "scatter3d"}),
-        accepts_options=frozenset(),
-    )
+    register("threejs-edit", show)
 
     # Pin both scene-dependent scalings, or dragging one object would change
     # the geometry of the others and the JS scene could not be kept.
