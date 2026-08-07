@@ -166,6 +166,10 @@ def show(
         Sum field contributions of sources.
     pixel_agg : str, default 'mean'
         NumPy reducer applied across sensor pixels (e.g., ``'min'``, ``'max'``, ``'std'``).
+    in_out : {'auto', 'inside', 'outside'}, default 'auto'
+        Assumption about observer locations relative to magnet bodies, used by field
+        plots. ``'auto'`` detects per observer (safest, slower). ``'inside'`` treats all
+        inside (faster). ``'outside'`` treats all outside (faster).
     units_length : str, default 'auto'
         Length unit the scene is drawn in, e.g. ``'mm'``. With ``'auto'`` the unit is
         inferred from the extent of the displayed system. The default is configurable

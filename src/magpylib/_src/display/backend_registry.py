@@ -52,7 +52,7 @@ def register_backend(name, show_func, **capabilities):
         backend something it has not declared it can draw. They default to
         False so a capability added in a later magpylib release never changes
         an existing backend's behaviour.
-    supports_native_traces : bool, default True
+    supports_native_traces : bool, default False
         Whether models attached via ``style.model3d.data`` naming this backend
         are rendered. False skips them with a warning.
     merge_traces : bool, default True
