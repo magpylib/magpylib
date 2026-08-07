@@ -2,6 +2,7 @@
 
 import warnings
 
+import numpy as np
 import pytest
 
 import magpylib as magpy
@@ -606,3 +607,35 @@ def test_backend_prefixed_options_reach_the_backend(spelling):
         assert seen[0] == {"renderer": "png"}
     finally:
         DisplayBackend.backends.pop("probe", None)
+
+
+# --- scene-dependent geometry ------------------------------------------------
+
+
+def test_units_length_default_scales_what_the_backend_receives():
+    """`defaults.display.units.length` sets the unit of the payload coordinates.
+
+    With the default 'auto' the unit -- and so every coordinate handed over --
+    is inferred from the extent of the whole scene. Pinning it is what makes
+    the geometry a backend receives depend only on the objects themselves,
+    which is what a backend splicing single objects into an existing figure
+    needs. A per-call `units_length` still wins over the default.
+    """
+
+    def extent(**kwargs):
+        traces = _traces_of(make_source(), backend_name="units_probe", **kwargs)
+        xyz = np.concatenate(
+            [
+                np.stack([t["x"], t["y"], t["z"]], axis=1)
+                for t in traces
+                if t["type"] == "mesh3d"
+            ]
+        )
+        return round(float(np.ptp(xyz, axis=0).max()), 6)
+
+    assert extent() == 1.0  # a 1 m cube, 'auto' resolves to 'm'
+
+    magpy.defaults.display.units.length = "mm"
+    assert extent() == 1000.0
+
+    assert extent(units_length="km") == 0.001

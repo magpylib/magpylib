@@ -209,7 +209,19 @@ Four things are easy to miss:
 - **`frame.native_traces` must be consumed.** When a user attaches a model through `style.model3d.data` naming your backend, it is routed there rather than into `frame.traces`, already positioned and oriented. Ignoring the list silently drops the user's models. Declare `supports_native_traces = False` if you do not handle them, and Magpylib will warn on your behalf.
 - **2D traces.** With `output="Bx"` rather than `"model3d"`, frames also carry `scatter` traces. A pure-3D backend has no answer for these.
 - **Declare `handles_traces`** if you draw only some trace types. Magpylib then warns about a type you never handle instead of producing a quietly incomplete figure — which is what makes new trace types safe to add.
-- **Geometry is in world coordinates, and some of it depends on the whole scene.** Vertex arrays already have the object's position and orientation applied. Autosized objects — sensors, dipoles — are additionally scaled to the _scene's_ extent, so re-rendering one object on its own and splicing the result into an existing figure by `object_id` gives it the wrong size. Magnets and currents are scene-independent and can be spliced safely.
+- **Geometry is in world coordinates, and under default settings all of it depends on the whole scene.** Vertex arrays already have the object's position and orientation applied. Two further scalings are derived from the extent of the _whole_ scene, so re-rendering one object on its own and splicing it into an existing figure by `object_id` yields wrong geometry:
+  - **Autosize** scales sensors and dipoles, which have no physical size of their own, by the scene extent. It varies continuously, so moving any object rescales every autosized object.
+  - **`units_length="auto"`** picks an SI prefix from the scene extent and rescales _every_ trace by the corresponding factor. It is quantized — nothing changes until the extent crosses a decade boundary, at which point the entire scene jumps by 1000.
+
+  A backend that re-renders whole scenes need not care. One that splices or updates incrementally does, and both scalings can be pinned — per call, or globally through `magpy.defaults.display`:
+
+  ```python
+  magpy.defaults.display.style.sensor.sizemode = "absolute"  # sizes become physical
+  magpy.defaults.display.style.dipole.sizemode = "absolute"
+  magpy.defaults.display.units.length = "m"  # or show(..., units_length="m")
+  ```
+
+  Both are needed; either alone still leaves the geometry scene-dependent.
 
 Capability flags (`supports_animation`, `supports_subplots`, `supports_colorgradient`, `supports_animation_output`) all default to `False`, so a capability added in a later Magpylib release never changes an existing backend's behaviour. `show()` warns and falls back rather than handing over something undeclared.
 
@@ -554,7 +566,7 @@ with magpy.show_context(loop, sens, animation=True) as sc:
 When displaying very small Magpylib objects, the axes scaling in units (m) might be inadequate and you may want to use other units that fit the system dimensions more nicely. The example below shows how to display an object (in this case the same) with different length units and zoom levels.
 
 ```{tip}
-Setting `units_length='auto'` will infer the most suitable units based on the maximum range of the system.
+Setting `units_length='auto'` (the default) will infer the most suitable units based on the maximum range of the system. Set `magpy.defaults.display.units.length` to change it for every `show()` call.
 ```
 
 ```{code-cell} ipython3

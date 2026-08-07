@@ -31,8 +31,22 @@ DEFAULT_ROW_COL_PARAMS = {
     "pixel_agg": "mean",
     "in_out": "auto",
     "zoom": 0,
+    # placeholder: `units_length` is user-configurable at runtime, so its
+    # effective value is resolved per call by `row_col_defaults()`. This dict
+    # is still the authority on *which* keys are row/col parameters.
     "units_length": "auto",
 }
+
+
+def row_col_defaults():
+    """Default row/col parameters, with the runtime-configurable ones resolved.
+
+    Use this over `DEFAULT_ROW_COL_PARAMS` wherever the *values* are needed.
+    """
+    return {
+        **DEFAULT_ROW_COL_PARAMS,
+        "units_length": default_settings.display.units.length,
+    }
 
 
 def get_legend_label(obj, style=None, suffix=True):
@@ -796,7 +810,7 @@ def subdivide_mesh_by_facecolor(trace):
 
 def process_show_input_objs(objs, **kwargs):
     """Extract max_rows and max_cols from obj list of dicts"""
-    defaults = DEFAULT_ROW_COL_PARAMS.copy()
+    defaults = row_col_defaults()
     identifiers = ("row", "col")
     unique_fields = tuple(k for k in defaults if k not in identifiers)
     sources_and_sensors_only = []

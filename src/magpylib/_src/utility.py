@@ -220,6 +220,11 @@ _UNIT_PREFIX = {
 }
 
 _UNIT_PREFIX_REVERSED = {v: k for k, v in _UNIT_PREFIX.items()}
+_DECI_CENTI = {"d": -1, "c": -2}
+
+# Length units `get_unit_factor(..., target_unit="m")` accepts, deci and centi
+# included -- it enables them by default.
+LENGTH_UNITS = tuple(f"{p}m" for p in (*_UNIT_PREFIX_REVERSED, *_DECI_CENTI))
 
 
 @cache
@@ -230,7 +235,7 @@ def get_unit_factor(unit_input, *, target_unit, deci_centi=True):
     pref, suff, factor_power = "", "", None
     prefs = _UNIT_PREFIX_REVERSED
     if deci_centi:
-        prefs = {**_UNIT_PREFIX_REVERSED, "d": -1, "c": -2}
+        prefs = {**_UNIT_PREFIX_REVERSED, **_DECI_CENTI}
     unit_input_str = str(unit_input)
     if unit_input_str:
         if len(unit_input_str) >= 2:

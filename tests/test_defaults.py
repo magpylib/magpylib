@@ -23,6 +23,7 @@ bad_inputs = {
     "display_animation_output": ("filename.badext", "badext"),  # bool
     "display_backend": ("plotty",),  # str typo
     "display_colorsequence": (["#2E91E5", "wrongcolor"], 123),  # iterable of colors
+    "display_units_length": ("mT", "inch", "dam", "e"),  # length unit or 'auto'
     "display_style_base_path_line_width": (-1,),  # float>=0
     "display_style_base_path_line_style": ("wrongstyle",),
     "display_style_base_path_line_color": ("wrongcolor",),  # color
@@ -115,6 +116,7 @@ good_inputs = {
         ("#2e91e5", "#0d2a63"),
         ("blue", "red"),
     ),  # ]),  # iterable of colors
+    "display_units_length": ("auto", "m", "mm", "cm"),  # length unit or 'auto'
     "display_style_base_path_line_width": (0, 1),  # float>=0
     "display_style_base_path_line_style": ALLOWED_LINESTYLES,
     "display_style_base_path_line_color": ("blue", "#2E91E5"),  # color

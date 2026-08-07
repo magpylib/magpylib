@@ -2,7 +2,13 @@ import numpy as np
 import pytest
 
 import magpylib as magpy
-from magpylib._src.utility import add_iteration_suffix, check_duplicates, filter_objects
+from magpylib._src.utility import (
+    LENGTH_UNITS,
+    add_iteration_suffix,
+    check_duplicates,
+    filter_objects,
+    get_unit_factor,
+)
 
 
 def test_duplicates():
@@ -86,3 +92,19 @@ def test_format_getBH_class_inputs():
 def test_add_iteration_suffix(name, expected):
     """check if iteration suffix works correctly"""
     assert add_iteration_suffix(name) == expected
+
+
+def test_length_units_matches_the_converter():
+    """`LENGTH_UNITS` must list exactly what `get_unit_factor` accepts.
+
+    The tuple feeds the `magpy.defaults.display.units.length` choice set, so a
+    unit advertised there but rejected by the converter would pass validation
+    and then raise at draw time.
+    """
+    for unit in LENGTH_UNITS:
+        assert get_unit_factor(unit, target_unit="m") > 0
+
+    # and nothing outside it gets through
+    for bad in ("dam", "inch", "mT", "", "e"):
+        with pytest.raises(ValueError, match="must be one of"):
+            get_unit_factor(bad, target_unit="m")

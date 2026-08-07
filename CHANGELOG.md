@@ -56,6 +56,17 @@
   still lists the built-in backends.
 - Fixed `color_validator` raising `TypeError: unhashable type` on the documented
   list and array color forms.
+- Added `magpy.defaults.display.units.length`, so the `show(units_length=...)`
+  default is configurable like every other display setting
+  ([#973](https://github.com/magpylib/magpylib/pull/973)). It was the only
+  display parameter with no defaults entry. Pinning it to a fixed unit — with
+  `sizemode='absolute'` for sensors and dipoles — keeps the coordinates handed
+  to a display backend dependent only on the objects themselves, rather than on
+  the extent of the whole scene, which is what a backend that updates a figure
+  incrementally needs. As a side effect of `units` becoming a defaults
+  namespace, a misspelled `units...` argument to `show()` now raises `TypeError`
+  instead of warning, matching how the other namespaces (`animation...`,
+  `style...`) already behaved.
 
 ## [5.2.3] 2026-05-15
 

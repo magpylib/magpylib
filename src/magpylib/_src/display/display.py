@@ -11,6 +11,7 @@ from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.display.traces_utility import (
     DEFAULT_ROW_COL_PARAMS,
     process_show_input_objs,
+    row_col_defaults,
 )
 from magpylib._src.input_checks import (
     check_format_input_backend,
@@ -89,7 +90,7 @@ def _show(
     )
 
     if markers:
-        objects.append({"objects": [MagpyMarkers(*markers)], **DEFAULT_ROW_COL_PARAMS})
+        objects.append({"objects": [MagpyMarkers(*markers)], **row_col_defaults()})
 
     if backend == "auto":
         backend = infer_backend(canvas)
@@ -165,6 +166,10 @@ def show(
         Sum field contributions of sources.
     pixel_agg : str, default 'mean'
         NumPy reducer applied across sensor pixels (e.g., ``'min'``, ``'max'``, ``'std'``).
+    units_length : str, default 'auto'
+        Length unit the scene is drawn in, e.g. ``'mm'``. With ``'auto'`` the unit is
+        inferred from the extent of the displayed system. The default is configurable
+        via ``magpy.defaults.display.units.length``.
     style : dict | None, default None
         Global style overrides, e.g. ``{'color': 'red'}`` or via underscore magic
         (``style_color='red'``). Applied to matching objects.

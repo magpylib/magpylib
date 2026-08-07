@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
+import magpylib as magpy
 from magpylib._src.display.api import DisplayBackend
 
 
@@ -26,6 +27,20 @@ def _restore_display_backends():
     yield
     DisplayBackend.backends.clear()
     DisplayBackend.backends.update(known)
+
+
+@pytest.fixture(autouse=True)
+def _restore_defaults():
+    """Restore the library defaults after every test.
+
+    `magpy.defaults` is process-wide state, so a test that sets one and does
+    not put it back alters every test that runs after it -- surfacing as
+    unrelated, order-dependent failures rather than as a fault in the test
+    that caused them. This resets to the *library* defaults rather than to a
+    snapshot, so nothing may rely on a default set outside a test.
+    """
+    yield
+    magpy.defaults.reset()
 
 
 @pytest.fixture(autouse=True)
