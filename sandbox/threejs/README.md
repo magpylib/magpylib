@@ -13,6 +13,35 @@ python sandbox/threejs/demo.py   # writes cuboid / two_cuboids / current / every
 
 `show()` returns a self-contained HTML page pulling three.js from unpkg.
 
+## The one thing to internalise first
+
+**The payload is a rendering, not a model.** Ask the object what it _is_; ask
+Magpylib how it should _look_. `object_id` is the join between the two, which is
+exactly what its docstring says: it is valid for "an interactive viewer holding
+the same objects".
+
+This is stated up front because the same mistake was made three separate times
+while writing this prototype, each time by trying to recover the model from the
+picture:
+
+| tried to derive          | from                    | when the host could just |
+| ------------------------ | ----------------------- | ------------------------ |
+| an object's origin       | its bounding-box centre | read `obj.position`      |
+| an absolute position     | accumulated drag deltas | read `obj.position`      |
+| the magnetization vector | the `intensity` array   | read `obj.polarization`  |
+
+Each derivation was wrong, or right only by accident: the bounding-box centre is
+off by `0.678` for a Sensor (finding 10), and the intensity formula assumed
+convexity. And each was unnecessary — a host that owns the objects has the
+answer already.
+
+The same applies in the other direction. To render an edit, do not reimplement
+Magpylib's meshing or colouring in the frontend: set the property on the object
+and ask Magpylib for that one object again. It costs **0.27–0.37 ms**, about 2%
+of a 60fps frame, and cannot drift from Magpylib's own conventions. Only the
+things Magpylib is not involved in — a transform, or a scale-covariant resize
+preview — belong in the browser.
+
 ## What worked without friction
 
 - **Registration is one call.**
@@ -257,6 +286,23 @@ only, `magnetization.mode` regenerates geometry — same subtree, opposite cost.
 Appearance-only means the vertex buffers are untouched, so the host updates a
 material and the LUT texture with no re-upload. Nothing in the API says which is
 which, which is [#976](https://github.com/magpylib/magpylib/issues/976).
+
+### 12. Magnetization amplitude renders as nothing
+
+`polarization=(0, 0, 1)` and `(0, 0, 5)` produce **byte-identical** payloads:
+same geometry, same `intensity`, same `colorscale`. The colour scheme encodes
+polarity, not strength, so magnitude is not visualised at all in colour mode.
+
+Nothing to redraw is convenient, but it also means an editor gets no feedback
+from the viewport when the user changes amplitude. That has to be supplied by
+the host — a readout, or `magnetization.mode='arrow'`, where the arrow length is
+geometry and therefore does change.
+
+Direction is different and cheap: it leaves geometry and colorscale untouched
+and changes only the per-vertex `intensity`, which in this backend _is_ the UV
+already uploaded for the colorscale lookup. Rewriting one attribute is enough;
+positions are not re-uploaded. Re-deriving that array in the browser is tempting
+and wrong — see the framing above; ask Magpylib, it costs 0.3 ms.
 
 ## Not hit, but expected later
 
