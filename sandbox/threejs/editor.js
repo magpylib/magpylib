@@ -85,15 +85,55 @@ const history = [],
 // be converted back through the inverse of the mesh's quaternion before it can
 // be sent. Getting that wrong is invisible until an object is rotated.
 const polGroup = new THREE.Group();
-const polArrow = new THREE.ArrowHelper(
-  new THREE.Vector3(0, 0, 1),
-  new THREE.Vector3(),
-  1,
-  0xd62728,
-  0.3,
-  0.18,
-);
-polGroup.add(polArrow);
+// The arrow is coloured with the object's own colorscale, so it reads the
+// same way the magnet does: tail at intensity 0, tip at 1. Built along +Y
+// then rotated onto +Z, which is the axis polGroup is aimed with.
+function lutTexture(lut) {
+  const t = new THREE.DataTexture(
+    new Uint8Array(lut),
+    lut.length / 4,
+    1,
+    THREE.RGBAFormat,
+  );
+  t.minFilter = t.magFilter = THREE.LinearFilter;
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.needsUpdate = true;
+  return t;
+}
+
+function buildArrow(lut, length, radius) {
+  const shaftLen = length * 0.72,
+    headLen = length * 0.28;
+  const shaft = new THREE.CylinderGeometry(
+    radius * 0.32,
+    radius * 0.32,
+    shaftLen,
+    24,
+  );
+  shaft.translate(0, shaftLen / 2, 0);
+  const head = new THREE.ConeGeometry(radius, headLen, 24);
+  head.translate(0, shaftLen + headLen / 2, 0);
+  for (const g of [shaft, head]) {
+    const pos = g.attributes.position;
+    const uv = new Float32Array(pos.count * 2);
+    for (let i = 0; i < pos.count; i++) {
+      uv[i * 2] = Math.min(1, Math.max(0, pos.getY(i) / length));
+      uv[i * 2 + 1] = 0.5;
+    }
+    g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+    g.rotateX(Math.PI / 2); // +Y -> +Z
+  }
+  const material = new THREE.MeshLambertMaterial({
+    map: lut ? lutTexture(lut) : null,
+    color: lut ? 0xffffff : 0xd62728,
+  });
+  const group = new THREE.Group();
+  group.add(new THREE.Mesh(shaft, material), new THREE.Mesh(head, material));
+  return group;
+}
+
+let polArrow = null;
 polGroup.visible = false;
 scene.add(polGroup);
 const Z = new THREE.Vector3(0, 0, 1);
@@ -121,10 +161,40 @@ function placePolarization(mesh) {
   const span =
     mesh.geometry.boundingSphere.radius *
     Math.max(mesh.scale.x, mesh.scale.y, mesh.scale.z);
-  polArrow.setLength(span * 1.8, span * 0.5, span * 0.3);
+  if (polArrow) polGroup.remove(polArrow);
+  polArrow = buildArrow(mesh.userData.lut, span * 1.9, span * 0.28);
+  polGroup.add(polArrow);
   polGroup.position.copy(mesh.position);
   polGroup.quaternion.setFromUnitVectors(Z, dir.clone().normalize());
   polGroup.visible = true;
+}
+
+/** Re-project the colorscale onto `mesh` for a new body-frame direction.
+ *
+ * A *preview*. magpylib derives `intensity` the same way -- the vertex
+ * projected on the magnetization axis, normalised -- and this reproduces it
+ * exactly for the convex primitives (checked to 2e-16). It is still a
+ * duplicate of magpylib's convention, in the same class as previewing a
+ * resize with mesh.scale: the authoritative value is whatever magpylib
+ * returns when the edit is committed.
+ */
+function updateGradient(mesh, localDir) {
+  const uv = mesh.geometry.attributes.uv;
+  if (!uv) return; // flat or facecolor mesh: nothing to re-project
+  const pos = mesh.geometry.attributes.position;
+  const d = localDir.clone().normalize();
+  const proj = new Float64Array(pos.count);
+  let min = Infinity,
+    max = -Infinity;
+  for (let i = 0; i < pos.count; i++) {
+    const p = pos.getX(i) * d.x + pos.getY(i) * d.y + pos.getZ(i) * d.z;
+    proj[i] = p;
+    if (p < min) min = p;
+    if (p > max) max = p;
+  }
+  const span = max - min || 1;
+  for (let i = 0; i < pos.count; i++) uv.setX(i, (proj[i] - min) / span);
+  uv.needsUpdate = true;
 }
 
 function applyToMesh(oid, field, value) {
@@ -145,6 +215,7 @@ function applyToMesh(oid, field, value) {
   // convention, and getting it subtly wrong for every rotated object. Ask
   // magpylib instead: one object re-renders in 0.3 ms.
   if (field === "polarization") {
+    updateGradient(mesh, new THREE.Vector3().fromArray(value));
     placePolarization(mesh);
     return;
   }
@@ -169,12 +240,15 @@ function send(oid, field, value) {
 function applyEdit(oid, field, value, record = true) {
   const before = state.get(oid)[field];
   if (JSON.stringify(before) === JSON.stringify(value)) return;
+  // State first: applyToMesh re-derives the view from it -- the polarization
+  // arrow is placed by reading it back -- so updating afterwards would redraw
+  // from the value being replaced, and the arrow would snap to where it was.
+  state.get(oid)[field] = value;
   applyToMesh(oid, field, value);
   if (record) {
     history.push({ oid, field, before, after: value });
     redoStack.length = 0;
   }
-  state.get(oid)[field] = value;
   send(oid, field, value);
   document.getElementById("hist").textContent = `history: ${history.length}`;
   if (selected && selected.userData.objectId === oid) buildInspector(selected);
@@ -347,6 +421,14 @@ addEventListener("keydown", (e) => {
 
 // ---- during the drag: JS only, nothing sent ------------------------------
 gizmo.addEventListener("objectChange", () => {
+  if (gizmo.object === polGroup && selected) {
+    // follow the arrow live; the committed value still comes from mouseUp
+    const local = Z.clone()
+      .applyQuaternion(polGroup.quaternion)
+      .applyQuaternion(selected.quaternion.clone().invert());
+    updateGradient(selected, local);
+    return;
+  }
   const shape = SHAPES[String(selected.userData.objectId)];
   if (gizmo.mode === "scale" && shape) {
     if (shape.constraint === "uniform") {
