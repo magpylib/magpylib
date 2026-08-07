@@ -29,6 +29,47 @@ hud.innerHTML = `<b>click an object</b><br>
   Backspace reset</small>`;
 document.body.appendChild(hud);
 
+// ---- is the backend still there? -----------------------------------------
+// An editor is only useful while python is listening, so the page says whether
+// it is -- and notices when it stops, rather than silently accepting edits
+// that go nowhere.
+const status = document.createElement("div");
+status.id = "status";
+status.innerHTML =
+  `<i></i><span id="statustext">connecting</span>` +
+  `<small>${INFO.backend} &middot; magpylib ${INFO.magpylib}` +
+  ` &middot; python ${INFO.python}</small>`;
+document.body.appendChild(status);
+// the viewer's legend also sits top-left; the editor added the pill, so the
+// editor makes room for it
+// `legend` is viewer.js's own binding, so use a distinct name here
+const legendBox = document.getElementById("legend");
+if (legendBox) legendBox.style.top = "46px";
+
+function setStatus(state, text) {
+  status.dataset.state = state;
+  document.getElementById("statustext").textContent = text;
+}
+
+if (!INFO.alive) {
+  setStatus("static", "no backend - saved page");
+} else {
+  let missed = 0;
+  const beat = async () => {
+    try {
+      const response = await fetch(INFO.alive, { cache: "no-store" });
+      if (!response.ok) throw new Error(response.status);
+      missed = 0;
+      setStatus("live", "backend connected");
+    } catch {
+      missed += 1;
+      if (missed >= 2) setStatus("dead", "backend gone - edits go nowhere");
+    }
+  };
+  beat();
+  setInterval(beat, 2000);
+}
+
 const inspector = document.createElement("div");
 inspector.id = "inspector";
 inspector.innerHTML = `<b>exact values</b><div id="fields">select an object</div>`;
@@ -42,7 +83,17 @@ style.textContent = `#hud { position: absolute; bottom: 8px; left: 8px;
   font: 12px/1.8 sans-serif; background: rgba(255,255,255,.9);
   padding: 8px 10px; border-radius: 4px; }
 #inspector label { display: block; }
-#inspector input { width: 5.5em; margin-left: .4em; font: inherit; }`;
+#inspector input { width: 5.5em; margin-left: .4em; font: inherit; }
+#status { position: absolute; top: 8px; left: 8px; font: 12px sans-serif;
+  background: rgba(255,255,255,.9); padding: 6px 9px; border-radius: 4px;
+  display: flex; align-items: center; gap: 7px; }
+#status i { width: 9px; height: 9px; border-radius: 50%; background: #bbb;
+  flex: none; }
+#status small { color: #777; }
+#status[data-state="live"] i { background: #2ca02c; }
+#status[data-state="dead"] i { background: #d62728; }
+#status[data-state="dead"] { background: #ffe8e8; }
+#status[data-state="busy"] i { background: #ff7f0e; }`;
 document.head.appendChild(style);
 
 const gizmo = new TransformControls(camera, renderer.domElement);
@@ -229,6 +280,10 @@ function applyToMesh(oid, field, value) {
 }
 
 function send(oid, field, value) {
+  if (status.dataset.state === "live") {
+    setStatus("busy", "sending");
+    setTimeout(() => setStatus("live", "backend connected"), 250);
+  }
   roundTrips += 1;
   document.getElementById("calls").textContent =
     `python round-trips: ${roundTrips}`;

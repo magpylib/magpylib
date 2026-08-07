@@ -304,6 +304,31 @@ already uploaded for the colorscale lookup. Rewriting one attribute is enough;
 positions are not re-uploaded. Re-deriving that array in the browser is tempting
 and wrong — see the framing above; ask Magpylib, it costs 0.3 ms.
 
+### 13. A backend cannot reach the objects; only a host can
+
+`object_id` is documented as valid for "an interactive viewer holding the same
+objects", and finding 10 leans on exactly that. But it draws a line that is easy
+to miss: a **host** holds the objects, because it calls `show` and owns them. A
+**backend** does not. `show(scene)` hands over a `Scene` and nothing else -- no
+objects, and no transform anywhere in the payload.
+
+That is fine for magpylib-studio, which is the host. It is not fine for a
+backend shipped in a package, which is the case the entry-point group exists to
+support: an editor needs an object's origin to anchor a gizmo, and its
+polarization to aim one, and has no supported way to get either.
+
+This prototype resolves the token back through
+`ctypes.cast(oid, ctypes.py_object).value`. It returns the original object --
+verified `is` the one passed to `show` -- and is safe _at that moment_ because
+magpylib is holding every object in order to draw it. It is also
+CPython-specific and exactly the kind of thing a public API should make
+unnecessary.
+
+The two honest fixes are for the host to do the work (what studio will do), or
+for magpylib to pass the objects alongside the scene. Adding the transform to
+the payload, which was the first idea, would cover the gizmo case and not the
+polarization one.
+
 ## Not hit, but expected later
 
 Screen-space sizing for sensors and dipoles — three.js can keep them at constant

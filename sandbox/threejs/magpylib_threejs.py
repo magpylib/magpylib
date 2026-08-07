@@ -215,19 +215,24 @@ def render_page(scene, extra_js="", extra_imports="", extra_data=None, anchors=N
     )
 
 
-def show_threejs(scene):
-    """Render a Magpylib `Scene` to a self-contained three.js page."""
-    html = render_page(scene)
+def present(scene, html):
+    """Hand `html` back or display it, according to `scene`.
 
+    Shared by every variant of this backend so they behave identically at the
+    edges: `return_fig` is advisory -- magpylib discards the return value when
+    it is not set -- so honouring it, and displaying otherwise, is on us.
+    """
     if scene.canvas is not None:  # see README: canvas has no meaning here
         msg = "the threejs backend cannot draw onto an existing canvas"
         raise NotImplementedError(msg)
-
-    # `return_fig` is advisory: magpylib passes the backend's return value
-    # straight back to the caller either way, so honouring it is on us.
     if scene.return_fig:
         return html
     return _display(html)
+
+
+def show_threejs(scene):
+    """Render a Magpylib `Scene` to a self-contained three.js page."""
+    return present(scene, render_page(scene))
 
 
 def _display(html):
