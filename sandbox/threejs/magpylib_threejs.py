@@ -20,6 +20,14 @@ import magpylib as magpy
 
 THREE_VERSION = "0.160.0"
 
+#: Magpylib's `line_width` and `marker_size` are nominal: every backend scales
+#: them into its own library's units, and nothing in the contract says what a
+#: width of 2 should look like -- `backend_plotly` carries its own
+#: `SIZE_FACTORS_TO_PLOTLY`, and the others calibrate elsewhere. These are
+#: Plotly's numbers, which transfer directly because `Line2` and
+#: `PointsMaterial(sizeAttenuation=False)` also measure in pixels.
+SIZE_FACTORS = {"line_width": 2.2, "marker_size": 0.7}
+
 
 def _hex_to_rgb(color):
     """'#rrggbb' -> (r, g, b) floats in 0..1."""
@@ -119,10 +127,12 @@ def _scatter_to_payload(trace):
         # marker symbols have a primitive here. Carried so the gap is visible
         # in the payload rather than silently dropped in Python.
         "line_color": trace.get("line_color") or "#2e91e5",
-        "line_width": float(trace.get("line_width") or 1),
+        "line_width": float(trace.get("line_width") or 1) * SIZE_FACTORS["line_width"],
         "line_dash": trace.get("line_dash") or "solid",
         "marker_color": trace.get("marker_color") or "#2e91e5",
-        "marker_size": float(trace.get("marker_size") or 3),
+        "marker_size": (
+            float(trace.get("marker_size") or 3) * SIZE_FACTORS["marker_size"]
+        ),
         "marker_symbol": trace.get("marker_symbol") or "o",
     }
 
@@ -149,6 +159,12 @@ _TEMPLATE = """<!doctype html>
 <script type="module">
 import * as THREE from 'three';
 import {{ OrbitControls }} from 'three/addons/controls/OrbitControls.js';
+// plain WebGL lines are always 1px wide; Line2 renders them as camera-facing
+// quads, so line_width is honoured. worldUnits:false makes the width a pixel
+// count -- the same screen-space mechanism zoom-invariant sizing would need.
+import {{ Line2 }} from 'three/addons/lines/Line2.js';
+import {{ LineGeometry }} from 'three/addons/lines/LineGeometry.js';
+import {{ LineMaterial }} from 'three/addons/lines/LineMaterial.js';
 
 const DATA = {data};
 
@@ -227,27 +243,56 @@ for (const item of DATA.meshes) {{
   }}
   geometry.computeVertexNormals();
 
+  // Magpylib bakes position and orientation into the vertices and sends no
+  // transform, so every mesh would sit at the origin with an identity matrix
+  // -- and a gizmo attached to it would appear at the world origin rather
+  // than on the object. Re-centre the geometry and move the offset onto the
+  // mesh, which is visually identical but gives each object a real transform.
+  // The anchor is the bounding-box centre, not Magpylib's origin for the
+  // object; for a Cuboid they coincide, for a Sensor they do not.
+  // The host may supply the object's real origin, looked up from object_id;
+  // the bounding-box centre is only the fallback.
+  const anchor = new THREE.Vector3();
+  const given = DATA.anchors[String(item.object_id)];
+  if (given) {{
+    anchor.fromArray(given);
+  }} else {{
+    geometry.computeBoundingBox();
+    geometry.boundingBox.getCenter(anchor);
+  }}
+  geometry.translate(-anchor.x, -anchor.y, -anchor.z);
+
   const material = new THREE.MeshLambertMaterial(options);
   const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.copy(anchor);
   mesh.name = item.name;
   mesh.userData.objectId = item.object_id;
   scene.add(mesh);
   byObjectId.set(item.object_id, mesh);
 }}
+const lineMaterials = [];
 for (const item of DATA.scatters) {{
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position',
     new THREE.Float32BufferAttribute(item.position, 3));
 
   if (item.lines) {{
-    // NOTE: WebGL ignores linewidth on LineBasicMaterial -- every line is one
-    // pixel regardless of item.line_width. Real widths need Line2 +
-    // LineMaterial from the addons. Likewise item.line_dash has no primitive.
-    const line = new THREE.Line(geometry, new THREE.LineBasicMaterial({{
+    const lineGeometry = new LineGeometry();
+    lineGeometry.setPositions(item.position);
+    // item.line_dash still has no primitive; LineMaterial can dash, but only
+    // with a uniform pattern, not magpylib's named styles.
+    const material = new LineMaterial({{
       color: new THREE.Color(item.line_color),
+      linewidth: item.line_width,     // pixels, because worldUnits is false
+      worldUnits: false,
       transparent: item.opacity < 1,
       opacity: item.opacity,
-    }}));
+    }});
+    material.resolution.set(window.innerWidth, window.innerHeight);
+    lineMaterials.push(material);
+
+    const line = new Line2(lineGeometry, material);
+    line.computeLineDistances();
     line.name = item.name;
     line.userData.objectId = item.object_id;
     scene.add(line);
@@ -255,9 +300,13 @@ for (const item of DATA.scatters) {{
   if (item.markers) {{
     // item.marker_symbol has no primitive either: PointsMaterial draws
     // squares, and symbols would need a texture atlas.
+    // sizeAttenuation:false makes size a pixel count rather than a world
+    // length, so markers keep their size under zoom -- as in Plotly. Point
+    // size is in device pixels, hence the devicePixelRatio.
     const points = new THREE.Points(geometry, new THREE.PointsMaterial({{
       color: new THREE.Color(item.marker_color),
-      size: item.marker_size * span / 200,
+      size: item.marker_size * window.devicePixelRatio,
+      sizeAttenuation: false,
       transparent: item.opacity < 1,
       opacity: item.opacity,
     }}));
@@ -269,7 +318,15 @@ for (const item of DATA.scatters) {{
 
 window.magpyObjects = byObjectId;   // so a host page can address one object
 
-scene.add(new THREE.AxesHelper(span / 2));
+// A bounding box over Panel.ranges, like the box the built-in backends draw.
+// An AxesHelper would be misleading here: its red/green/blue axes are exactly
+// what a Sensor looks like, so the frame reads as an object in the scene.
+{{
+  const box = new THREE.Box3(
+    new THREE.Vector3(rx[0], ry[0], rz[0]),
+    new THREE.Vector3(rx[1], ry[1], rz[1]));
+  scene.add(new THREE.Box3Helper(box, new THREE.Color(0xcccccc)));
+}}
 
 const legend = document.getElementById('legend');
 const entries = new Map();
@@ -286,15 +343,32 @@ addEventListener('resize', () => {{
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  // pixel-width lines need the viewport size to convert into clip space
+  for (const material of lineMaterials) {{
+    material.resolution.set(window.innerWidth, window.innerHeight);
+  }}
 }});
+
+// Anything a specialised backend wants to add: picking, gizmos, HUD. Injected
+// after formatting so it may contain braces freely.
+__EXTRA_JS__
 
 renderer.setAnimationLoop(() => renderer.render(scene, camera));
 </script>
 """
 
 
-def show_threejs(scene):
-    """Render a Magpylib `Scene` to a self-contained three.js page."""
+def render_page(scene, extra_js="", anchors=None):
+    """Build the HTML page for `scene`, optionally with extra JS appended.
+
+    `anchors` maps ``object_id`` to the object's true origin, in the same
+    length unit as the geometry. Magpylib bakes position and orientation into
+    the vertices and sends no transform, but `object_id` is documented as valid
+    for "an interactive viewer holding the same objects" -- so a host that owns
+    them looks the transform up itself and passes it here. Without it the mesh
+    falls back to its bounding-box centre, which is wrong for any object whose
+    origin is not its centroid.
+    """
     panel = scene.panel(1, 1)
     traces = [trace for frame in scene.frames for trace in frame.traces]
     data = {
@@ -304,11 +378,18 @@ def show_threejs(scene):
         ],
         "ranges": panel.ranges.tolist(),
         "labels": panel.labels,
+        "anchors": {str(k): list(v) for k, v in (anchors or {}).items()},
     }
-    html = _TEMPLATE.format(
-        version=THREE_VERSION,
-        data=json.dumps(data),
-    ).replace("__TITLE__", scene.title or "Magpylib")
+    return (
+        _TEMPLATE.format(version=THREE_VERSION, data=json.dumps(data))
+        .replace("__TITLE__", scene.title or "Magpylib")
+        .replace("__EXTRA_JS__", extra_js)
+    )
+
+
+def show_threejs(scene):
+    """Render a Magpylib `Scene` to a self-contained three.js page."""
+    html = render_page(scene)
 
     if scene.canvas is not None:  # see README: canvas has no meaning here
         msg = "the threejs backend cannot draw onto an existing canvas"
