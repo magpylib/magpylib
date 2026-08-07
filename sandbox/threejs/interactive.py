@@ -95,6 +95,8 @@ for (const [oid, mesh] of byObjectId) {
   const s = { position: mesh.position.toArray(),
               quaternion: mesh.quaternion.toArray() };
   if (shape) s[shape.attr] = shape.value;
+  const pol = POLARIZATION[String(oid)];
+  if (pol) s[pol.attr] = pol.value;
   state.set(oid, s);
   initial.set(oid, JSON.parse(JSON.stringify(s)));
 }
@@ -105,6 +107,13 @@ function applyToMesh(oid, field, value) {
   const mesh = byObjectId.get(oid), shape = SHAPES[String(oid)];
   if (field === 'position') { mesh.position.fromArray(value); return; }
   if (field === 'quaternion') { mesh.quaternion.fromArray(value); return; }
+  // Polarization is the one edit with no preview here. It changes `intensity`
+  // -- a per-vertex attribute -- and magpylib computes that from the vector in
+  // *world* space, i.e. the object's orientation applied to the stored local
+  // vector. Recomputing it in the browser means reimplementing that frame
+  // convention, and getting it subtly wrong for every rotated object. Ask
+  // magpylib instead: one object re-renders in 0.3 ms.
+  if (field === 'polarization') return;
   // a shape value is expressed as a scale of the base mesh
   const base = Array.isArray(shape.value) ? shape.value : [shape.value];
   const v = Array.isArray(value) ? value : [value];
@@ -181,6 +190,14 @@ function buildInspector(mesh) {
       `<label>${shape.attr}${v.length > 1 ? ' ' + i : ''}<input
          data-field="${shape.attr}" data-i="${i}" type="number" step="0.1"
          min="0.001" value="${n.toFixed(3)}"></label>`));
+  }
+  const pol = POLARIZATION[String(oid)];
+  if (pol) {
+    current[pol.attr].forEach((n, i) => rows.push(
+      `<label>${pol.attr} ${'xyz'[i]}<input data-field="${pol.attr}" data-i="${i}"
+         type="number" step="0.1" value="${n.toFixed(3)}"></label>`));
+    rows.push('<small>direction needs magpylib to redraw;<br>' +
+              'amplitude changes nothing visible</small>');
   }
   fields.innerHTML = rows.join('');
 
@@ -350,6 +367,25 @@ def shape_of(obj):
     }
 
 
+def polarization_of(obj):
+    """The polarization vector of `obj`, or None if it has none.
+
+    Reported in the object's **local** frame, which is how magpylib stores it.
+    The rendered `intensity` is the vertex projected on the *world* vector, so
+    the two differ by the object's orientation -- reading the attribute as if
+    it were world-space is wrong for anything rotated (measured: 0.44 off for a
+    50 degree rotation). That is one reason this edit is not previewed in the
+    browser; see `_MAGNETIZATION_NOTE`.
+    """
+    pol = getattr(obj, "polarization", None)
+    if pol is None:
+        return None
+    return {
+        "attr": "polarization",
+        "value": [float(component) for component in pol],
+    }
+
+
 def main():
     # The host owns the objects, so it can resolve object_id back to the
     # object and read the transform Magpylib does not put in the payload.
@@ -395,13 +431,19 @@ def main():
     shapes = {
         str(oid): s for oid, obj in registry.items() if (s := shape_of(obj)) is not None
     }
+    polarizations = {
+        str(oid): p
+        for oid, obj in registry.items()
+        if (p := polarization_of(obj)) is not None
+    }
     html = html.replace(
         # the addon import has to precede the module body
         "import { OrbitControls }",
         _IMPORT.strip() + "\nimport { OrbitControls }",
     ).replace(
         "const DATA =",
-        f"const UNIT = 'm';\nconst SHAPES = {json.dumps(shapes)};\nconst DATA =",
+        f"const UNIT = 'm';\nconst SHAPES = {json.dumps(shapes)};\n"
+        f"const POLARIZATION = {json.dumps(polarizations)};\nconst DATA =",
     )
 
     page = HERE / "interactive.html"
