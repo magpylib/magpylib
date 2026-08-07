@@ -23,6 +23,7 @@ from __future__ import annotations
 
 # printing is what this script is for
 # ruff: noqa: T201
+import json
 import webbrowser
 from pathlib import Path
 
@@ -49,7 +50,7 @@ hud.innerHTML = `<b>click an object</b><br>
   <span id="sel">nothing selected</span><br>
   <span id="delta"></span><br>
   <span id="calls">python round-trips: 0</span><br>
-  <small>W translate &middot; E rotate &middot; Esc deselect</small>`;
+  <small>W move &middot; E rotate &middot; R resize &middot; Esc deselect</small>`;
 document.body.appendChild(hud);
 const style = document.createElement('style');
 style.textContent = `#hud { position: absolute; bottom: 8px; left: 8px;
@@ -92,11 +93,51 @@ renderer.domElement.addEventListener('pointerdown', event => {
 addEventListener('keydown', e => {
   if (e.key === 'w') gizmo.setMode('translate');
   if (e.key === 'e') gizmo.setMode('rotate');
+  if (e.key === 'r') {
+    const shape = selected && SHAPES[String(selected.userData.objectId)];
+    if (shape) { gizmo.setMode('scale'); }
+    else { document.getElementById('delta').textContent =
+      'this object has no scale-covariant shape parameter'; }
+  }
   if (e.key === 'Escape') select(null);
 });
 
+// A dimension change is not a transform -- it needs new geometry, so in
+// general it needs magpylib. But for these primitives the new geometry is
+// *exactly* the old one scaled, so the preview is free and python only has to
+// be told the final value. `constraint` says which scale axes are independent:
+// a Sphere has one diameter, a Cylinder ties x and y to its diameter.
+function applyConstraint(shape, scale) {
+  if (shape.constraint === 'uniform') {
+    const s = Math.max(scale.x, scale.y, scale.z);
+    scale.set(s, s, s);
+  } else if (shape.constraint === 'xy') {
+    const s = Math.abs(scale.x - 1) > Math.abs(scale.y - 1) ? scale.x : scale.y;
+    scale.set(s, s, scale.z);
+  }
+  return scale;
+}
+
+function scaledValue(shape, scale) {
+  if (shape.constraint === 'uniform') return shape.value * scale.x;
+  if (shape.constraint === 'xy') return [shape.value[0] * scale.x,
+                                         shape.value[1] * scale.z];
+  return [shape.value[0] * scale.x, shape.value[1] * scale.y,
+          shape.value[2] * scale.z];
+}
+
 // during the drag: JS only, no message to Python
 gizmo.addEventListener('objectChange', () => {
+  const shape = SHAPES[String(selected.userData.objectId)];
+  if (gizmo.mode === 'scale' && shape) {
+    applyConstraint(shape, selected.scale);
+    const v = scaledValue(shape, selected.scale);
+    const txt = Array.isArray(v) ? v.map(n => n.toFixed(3)).join(', ')
+                                 : v.toFixed(3);
+    document.getElementById('delta').textContent =
+      `${shape.attr}: (${txt}) ${UNIT}`;
+    return;
+  }
   const d = selected.position.clone().sub(startPosition);
   document.getElementById('delta').textContent =
     `delta: (${d.x.toFixed(3)}, ${d.y.toFixed(3)}, ${d.z.toFixed(3)}) ${UNIT}`;
@@ -107,6 +148,17 @@ gizmo.addEventListener('objectChange', () => {
 // whatever depends on it.
 gizmo.addEventListener('mouseUp', () => {
   if (!selected) return;
+  const shape = SHAPES[String(selected.userData.objectId)];
+  if (gizmo.mode === 'scale' && shape) {
+    roundTrips += 1;
+    document.getElementById('calls').textContent =
+      `python round-trips: ${roundTrips}`;
+    console.log('would send to python:', {
+      object_id: selected.userData.objectId,
+      [shape.attr]: scaledValue(shape, selected.scale),
+    });
+    return;
+  }
   const d = selected.position.clone().sub(startPosition);
   if (d.lengthSq() === 0) return;
   roundTrips += 1;
@@ -117,6 +169,33 @@ gizmo.addEventListener('mouseUp', () => {
   startPosition = selected.position.clone();
 });
 """
+
+
+#: Classes whose geometry is *exactly* the unit shape scaled, so a resize can
+#: be previewed with `mesh.scale` and magpylib told only the final value.
+#: `constraint` records which scale axes are independent. Everything else --
+#: `CylinderSegment` (its angles do not scale), meshes, and the autosized
+#: Sensor and Dipole -- needs magpylib for every intermediate step.
+SCALE_COVARIANT = {
+    "Cuboid": ("dimension", "free"),
+    "Sphere": ("diameter", "uniform"),
+    "Cylinder": ("dimension", "xy"),
+}
+
+
+def shape_of(obj):
+    """The scale-covariant shape parameter of `obj`, or None."""
+    entry = SCALE_COVARIANT.get(type(obj).__name__)
+    if entry is None:
+        return None
+    attr, constraint = entry
+    value = getattr(obj, attr)
+    return {
+        "kind": type(obj).__name__,
+        "attr": attr,
+        "value": value.tolist() if hasattr(value, "tolist") else float(value),
+        "constraint": constraint,
+    }
 
 
 def main():
@@ -161,11 +240,17 @@ def main():
     html = magpy.show(
         *objects, backend="threejs-edit", units_length="m", return_fig=True
     )
-    # the addon import has to precede the module body
+    shapes = {
+        str(oid): s for oid, obj in registry.items() if (s := shape_of(obj)) is not None
+    }
     html = html.replace(
+        # the addon import has to precede the module body
         "import { OrbitControls }",
         _IMPORT.strip() + "\nimport { OrbitControls }",
-    ).replace("const DATA =", "const UNIT = 'm';\nconst DATA =")
+    ).replace(
+        "const DATA =",
+        f"const UNIT = 'm';\nconst SHAPES = {json.dumps(shapes)};\nconst DATA =",
+    )
 
     page = HERE / "interactive.html"
     page.write_text(html)

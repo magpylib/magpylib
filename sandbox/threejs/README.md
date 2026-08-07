@@ -148,11 +148,21 @@ None of these is a contract problem — Magpylib expresses them perfectly well,
 and Pyvista carries ❌ for exactly _line style_ and _marker symbol_ in the
 backend feature table, so a three.js column would look much the same.
 
-The fix for line width is `Line2` + `LineMaterial` from the three.js addons, and
-it is worth noting _why_: `LineMaterial` has `worldUnits: false`, meaning widths
-are specified in **pixels** and stay constant under zoom. That is the same
-screen-space mechanism sensors and dipoles would want, so whoever implements
-zoom-invariant sizing gets line widths as a by-product.
+Line width and marker size are since fixed, and the fix matters beyond them.
+`Line2` + `LineMaterial` render lines as camera-facing quads, and
+`PointsMaterial` takes `sizeAttenuation: false`; in both cases the size is then
+a **pixel count that stays constant under zoom**. That is exactly the
+screen-space mechanism sensors and dipoles would want, so it is no longer
+hypothetical — the same primitive is already drawing the current loops here.
+`line_dash` and `marker_symbol` remain unimplemented.
+
+**Sizes in the payload are nominal, and each backend calibrates them.** Even
+with pixel-space lines the widths were still half Plotly's, because
+`backend_plotly` carries its own `SIZE_FACTORS_TO_PLOTLY` — `line_width × 2.2`,
+`marker_size × 0.7` — and nothing in the contract says what a width of `2`
+should look like. A new backend has to calibrate empirically against an existing
+one. This prototype borrows Plotly's factors, which transfer directly because
+both measure in pixels.
 
 ### 9. `mesh3d` carries three colour mechanisms, and two of them are traps
 
@@ -192,8 +202,70 @@ still rendered wrong in three separate ways. That is the case for the
 golden-file figure regressions in
 [#972](https://github.com/magpylib/magpylib/issues/972).
 
+### 10. The payload carries no object transform — resolve `object_id` instead
+
+Position and orientation are baked into the vertex arrays, and no trace, `Frame`
+or `Scene` field carries them. A backend therefore has no anchor to attach a
+gizmo to: every mesh arrives with an identity matrix, so a gizmo attached to one
+appears at the world origin rather than on the object.
+
+The bounding-box centre is the obvious fallback and is **wrong** for anything
+whose origin is not its centroid. Measured on a Sensor at `(0, -3, 0)`, no
+heuristic recovers it:
+
+| estimate                     | centre                 | error |
+| ---------------------------- | ---------------------- | ----- |
+| bbox, all faces              | `0.312, -2.574, 0.425` | 0.678 |
+| bbox, excluding black pixels | `0.350, -2.574, 0.425` | 0.696 |
+| bbox, RGB arrow heads only   | `0.425, -2.574, 0.425` | 0.737 |
+
+Excluding the pixels makes it _worse_: a Sensor's cross emanates from the origin
+along +x, +y, +z, so any bbox estimate is off by roughly half an arrow length by
+construction. Translation is unaffected — a delta is a delta — but rotation
+orbits the wrong point.
+
+**No API change is needed.** `object_id` is documented as valid for "an
+interactive viewer holding the same objects", and a host that owns them keeps a
+`{id(obj): obj}` map and reads `position` and `orientation` off the object
+directly. That takes the Sensor error from `0.678` to exactly `0`. The anchor
+must be scaled by the same `units_length` factor as the geometry.
+
+### 11. Three classes of edit, with very different costs
+
+What an interactive host actually needs to know. Measured:
+
+| class                                           | needs magpylib?               |
+| ----------------------------------------------- | ----------------------------- |
+| **transform** — position, orientation           | no; one matrix, 0 round-trips |
+| **shape** — dimension, diameter                 | yes, but 0.28–0.37 ms/object  |
+| **style** — colour, opacity, magnetization mode | depends, see below            |
+
+Regenerating one object costs **0.28–0.37 ms** against a 16.7 ms frame budget,
+so a round-trip _per object_ is affordable during a drag. Regenerating the
+_scene_ is not: 11.9 ms at 100 objects, 60.4 ms at 500. So a host must re-render
+the edited object and splice it by `object_id` — which is only valid once
+finding 1 is satisfied.
+
+Better still for the primitives: a dimension change is _exactly_ a scale, so
+`mesh.scale` previews it with no magpylib call at all and Python is told only
+the final value. `interactive.py` does this for `Cuboid` (free), `Sphere`
+(uniform) and `Cylinder` (x/y tied to the diameter). It breaks down for
+`CylinderSegment`, whose angles do not scale.
+
+Style splits, and not where you would guess: `magnetization.show` is appearance
+only, `magnetization.mode` regenerates geometry — same subtree, opposite cost.
+Appearance-only means the vertex buffers are untouched, so the host updates a
+material and the LUT texture with no re-upload. Nothing in the API says which is
+which, which is [#976](https://github.com/magpylib/magpylib/issues/976).
+
 ## Not hit, but expected later
 
 Screen-space sizing for sensors and dipoles — three.js can keep them at constant
-pixel size while zooming, which `sizemode` approximates statically. Irrelevant
-for cuboids, so this prototype does not exercise it.
+pixel size while zooming, which `sizemode` approximates statically. The
+mechanism is no longer speculative: `LineMaterial` with `worldUnits: false` and
+`PointsMaterial` with `sizeAttenuation: false` already size this prototype's
+lines and markers in pixels (finding 8). Applying it to autosized meshes needs a
+reference size, which is the open question.
+
+Also unimplemented: `line_dash` and `marker_symbol` (finding 8), axis labels
+(finding 6), animation and subplots.
