@@ -31,8 +31,22 @@ DEFAULT_ROW_COL_PARAMS = {
     "pixel_agg": "mean",
     "in_out": "auto",
     "zoom": 0,
+    # placeholder: `units_length` is user-configurable at runtime, so its
+    # effective value is resolved per call by `row_col_defaults()`. This dict
+    # is still the authority on *which* keys are row/col parameters.
     "units_length": "auto",
 }
+
+
+def row_col_defaults():
+    """Default row/col parameters, with the runtime-configurable ones resolved.
+
+    Use this over `DEFAULT_ROW_COL_PARAMS` wherever the *values* are needed.
+    """
+    return {
+        **DEFAULT_ROW_COL_PARAMS,
+        "units_length": default_settings.display.units.length,
+    }
 
 
 def get_legend_label(obj, style=None, suffix=True):
@@ -545,6 +559,19 @@ def aggregate_by_trace_type(traces):
     yield from result_dict.items()
 
 
+def _reconcile_object_id(merged, sources):
+    """Keep `object_id` only when every merged trace came from one object.
+
+    Unlisted keys are otherwise taken from `sources[0]`, which would silently
+    attach the *first* object's id to a trace spanning several -- worse than no
+    id at all. Merging an object's own sub-traces keeps the id, which is what
+    makes the identity survive the four intra-object merges.
+    """
+    ids = {tr.get("object_id") for tr in sources}
+    merged["object_id"] = ids.pop() if len(ids) == 1 else None
+    return merged
+
+
 def merge_traces(*traces):
     """Merges a list of plotly 3d-traces. Supported trace types are `mesh3d` and `scatter3d`.
     All traces have be of the same type when merging. Keys are taken from the first object, other
@@ -554,9 +581,9 @@ def merge_traces(*traces):
     for ttype, tlist in aggregate_by_trace_type(traces):
         if len(tlist) > 1:
             if ttype == "mesh3d":
-                new_traces.append(merge_mesh3d(*tlist))
+                new_traces.append(_reconcile_object_id(merge_mesh3d(*tlist), tlist))
             elif ttype == "scatter3d":
-                new_traces.append(merge_scatter3d(*tlist))
+                new_traces.append(_reconcile_object_id(merge_scatter3d(*tlist), tlist))
             else:  # pragma: no cover
                 new_traces.extend(tlist)
         elif len(tlist) == 1:
@@ -783,7 +810,7 @@ def subdivide_mesh_by_facecolor(trace):
 
 def process_show_input_objs(objs, **kwargs):
     """Extract max_rows and max_cols from obj list of dicts"""
-    defaults = DEFAULT_ROW_COL_PARAMS.copy()
+    defaults = row_col_defaults()
     identifiers = ("row", "col")
     unique_fields = tuple(k for k in defaults if k not in identifiers)
     sources_and_sensors_only = []
@@ -812,27 +839,17 @@ def process_show_input_objs(objs, **kwargs):
         unique_fields=unique_fields,
     )
 
-    # create subplot specs grid
+    # resolve the grid extent; the per-cell 2D/3D kind now lives on Scene.panels
     row_cols = [*row_col_dict]
     max_rows, max_cols = np.max(row_cols, axis=0).astype(int) if row_cols else (1, 1)
-    # convert to int to avoid np.int32 type conflicting with plolty subplot specs
     max_rows, max_cols = int(max_rows), int(max_cols)
-    specs = np.array([[{"type": "scene"}] * max_cols] * max_rows)
-    for rc, obj in row_col_dict.items():
-        if obj["output"] != "model3d":
-            specs[rc[0] - 1, rc[1] - 1] = {"type": "xy"}
     if max_rows == 1 and max_cols == 1:
         max_rows = max_cols = None
 
     for obj in row_col_dict.values():
         check_input_zoom(obj.get("zoom", None))
 
-    return (
-        list(row_col_dict.values()),
-        max_rows,
-        max_cols,
-        specs,
-    )
+    return list(row_col_dict.values()), max_rows, max_cols
 
 
 def triangles_area(triangles):

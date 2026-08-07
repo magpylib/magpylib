@@ -15,6 +15,7 @@ from magpylib._src.defaults.property_tree import (
     PropertyNode,
 )
 from magpylib._src.style import DisplayStyle
+from magpylib._src.utility import LENGTH_UNITS
 
 
 class AnimationOutput(Property):
@@ -68,6 +69,26 @@ class Animation(PropertyNode):
     output = AnimationOutput(doc="Animation output type ('mp4' or 'gif').")
 
 
+class Units(PropertyNode):
+    """Defines the units a scene is drawn in.
+
+    Parameters
+    ----------
+    length: str, default=None
+        Length unit the scene is drawn in (e.g. 'mm'), overridable per call
+        with `show(units_length=...)`. With 'auto' the unit is inferred from
+        the extent of the displayed system, which makes the coordinates handed
+        to the backend depend on the scene as a whole; pin it to a fixed unit
+        when they have to depend only on the objects themselves.
+    """
+
+    length = Choice(
+        "auto",
+        *LENGTH_UNITS,
+        doc="Length unit the scene is drawn in ('auto' infers it from the scene).",
+    )
+
+
 class Display(PropertyNode):
     """Defines the properties for the plotting features.
 
@@ -88,6 +109,9 @@ class Display(PropertyNode):
     autosizefactor: float, default=None
         Defines at which scale objects like sensors and dipoles are displayed.
         Specifically `object_size` = `canvas_size` / `AUTOSIZE_FACTOR`.
+    units: dict or `Units` object, default=None
+        Units the scene is drawn in. Reachable as `units.length` or, via magic
+        underscore, as `units_length` -- matching the `show()` argument.
     style: dict or `DisplayStyle` object, default=None
         Display styling properties for all object families.
     """
@@ -103,6 +127,7 @@ class Display(PropertyNode):
     autosizefactor = Number(
         exclusive_minimum=0, doc="Display scale of autosized objects."
     )
+    units = Nested(Units, doc="Units the scene is drawn in.")
     style = Nested(DisplayStyle, doc="Display styling properties for all families.")
 
 

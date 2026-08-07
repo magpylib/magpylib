@@ -13,9 +13,11 @@ orphan: true
 ---
 
 (guide-graphics)=
+
 # Graphic output
 
 (guide-graphics-show)=
+
 ## 3D View
 
 Once all Magpylib objects and their paths have been created, `show()` creates a 3D plot of the geometric arrangement using the Matplotlib (command line default) and Plotly (notebook default) packages. `show()` generates a new figure which is automatically displayed.
@@ -47,8 +49,10 @@ Notice that objects and their paths are automatically assigned different colors.
 
 How objects are represented graphically (color, line thickness, etc.) is defined by their [style properties](guide-graphic-styles).
 
----------------------------------
+---
+
 (guide-graphic-backends)=
+
 ## Graphic Backends
 
 The graphic backend refers to the plotting library that is used for graphic output. A plotting canvas refers to the frame/window/canvas/axes object the graphic output is forwarded to.
@@ -76,7 +80,7 @@ for backend in magpy.SUPPORTED_PLOTTING_BACKENDS:
 With the installation default setting, `backend='auto'`, Magpylib infers the graphic backend from the environment running the code, or from the requested canvas.
 
 | environment      | canvas                                          | inferred backend |
-|------------------|-------------------------------------------------|------------------|
+| ---------------- | ----------------------------------------------- | ---------------- |
 | Command-Line     | `None`                                          | `matplotlib`     |
 | IPython notebook | `None`                                          | `plotly`         |
 | all              | `matplotlib.axes.Axes`                          | `matplotlib`     |
@@ -87,28 +91,29 @@ The library default can be changed, e.g. with the command `magpy.defaults.displa
 
 There is a high level of **feature parity**, however, not all graphic features are supported by all backends, and not all graphic features work equally well, so that [default style settings](guide-graphic-styles-default) differ slightly. In addition, some common Matplotlib syntax (e.g. color `'r'`, linestyle `':'`) is automatically translated to other backends.
 
-|        Feature           | Matplotlib | Plotly | Pyvista |
-|:------------------------:|:----------:|:------:|:-------:|
-| triangular mesh 3d       | ✔️         | ✔️    | ✔️      |
-| line 3d                  | ✔️         | ✔️    | ✔️      |
-| line style               | ✔️         | ✔️    | ❌      |
-| line color               | ✔️         | ✔️    | ✔️      |
-| line width               | ✔️         | ✔️    | ✔️      |
-| marker 3d                | ✔️         | ✔️    | ✔️      |
-| marker color             | ✔️         | ✔️    | ✔️      |
-| marker size              | ✔️         | ✔️    | ✔️      |
-| marker symbol            | ✔️         | ✔️    | ❌      |
-| marker numbering         | ✔️         | ✔️    | ❌      |
-| zoom level               | ✔️         | ✔️    | ❌[2]   |
-| magnetization color      | ✔️[7]      | ✔️    | ✔️      |
-| animation                | ✔️         | ✔️    | ✔️[5]   |
-| animation time           | ✔️         | ✔️    | ✔️[5]   |
-| animation fps            | ✔️         | ✔️    | ✔️[5]   |
-| animation slider         | ✔️[1]      | ✔️    | ❌      |
-| subplots 2D              | ✔️         | ✔️    | ✔️[6]   |
-| subplots 3D              | ✔️         | ✔️    | ✔️      |
-| user canvas              | ✔️         | ✔️    | ✔️      |
-| user extra 3d model [3]  | ✔️         | ✔️    | ✔️[4]   |
+|         Feature         | Matplotlib | Plotly | Pyvista |
+| :---------------------: | :--------: | :----: | :-----: |
+|   triangular mesh 3d    |     ✔️     |   ✔️   |   ✔️    |
+|         line 3d         |     ✔️     |   ✔️   |   ✔️    |
+|       line style        |     ✔️     |   ✔️   |   ❌    |
+|       line color        |     ✔️     |   ✔️   |   ✔️    |
+|       line width        |     ✔️     |   ✔️   |   ✔️    |
+|        marker 3d        |     ✔️     |   ✔️   |   ✔️    |
+|      marker color       |     ✔️     |   ✔️   |   ✔️    |
+|       marker size       |     ✔️     |   ✔️   |   ✔️    |
+|      marker symbol      |     ✔️     |   ✔️   |   ❌    |
+|    marker numbering     |     ✔️     |   ✔️   |   ❌    |
+|       zoom level        |     ✔️     |   ✔️   |  ❌[2]  |
+|   magnetization color   |   ✔️[7]    |   ✔️   |   ✔️    |
+|        animation        |     ✔️     |   ✔️   |  ✔️[5]  |
+|     animation time      |     ✔️     |   ✔️   |  ✔️[5]  |
+|      animation fps      |     ✔️     |   ✔️   |  ✔️[5]  |
+|    animation slider     |   ✔️[1]    |   ✔️   |   ❌    |
+|       subplots 2D       |     ✔️     |   ✔️   |  ✔️[6]  |
+|       subplots 3D       |     ✔️     |   ✔️   |   ✔️    |
+|       user canvas       |     ✔️     |   ✔️   |   ✔️    |
+|      figure title       |     ✔️     |   ✔️   |  ✔️[8]  |
+| user extra 3d model [3] |     ✔️     |   ✔️   |  ❌[4]  |
 
 [1]: when returning animation object and exporting it as jshtml.
 
@@ -116,18 +121,28 @@ There is a high level of **feature parity**, however, not all graphic features a
 
 [3]: only `'scatter3d'`, and `'mesh3d'`. Gets "translated" to every other backend.
 
-[4]: custom user defined trace constructors  allowed, which are specific to the backend.
+[4]: backend-specific trace constructors are supported by Matplotlib and Plotly, whose constructors take the named coordinate arrays that Magpylib transforms. Pyvista constructors take points, centers and radii instead, so they do not fit that contract; attaching one emits a warning and the model is not displayed. Generic `model3d` traces work with every backend, Pyvista included.
 
 [5]: animation is only available through export as `gif` or `mp4`
 
 [6]: 2D plots are not supported for all jupyter_backends. As of pyvista>=0.38 these are deprecated and replaced by the [trame](https://docs.pyvista.org/api/plotting/trame.html) backend.
 
+[8]: Pyvista has no figure-level title -- `add_title` applies to the active subplot -- so the title is shown for a single panel and omitted on a subplot grid.
+
 [7]: Matplotlib does not support color gradient. Instead magnetization is shown through object slicing and coloring.
 
 `show()` will also pass on all kwargs to the respective plotting backends. For example, in the [animation sample code](guide-graphic-animations) the kwarg `show_legend` is forwarded to the Plotly backend.
 
----------------------------------
+(guide-graphics-custom-backend-pointer)=
+
+### Writing a custom backend
+
+Magpylib's three built-in backends are not privileged: they go through the same public contract any third party can use, and a backend shipped in a package needs only `pip install` to become available. See [](guide-graphics-custom-backend).
+
+---
+
 (guide-graphics-canvas)=
+
 ## Plotting Canvas
 
 When calling `show()`, a figure is automatically generated and displayed. It is also possible to place the `show()` output in a given figure using the `canvas` argument. Consider the following Magpylib field computation,
@@ -234,8 +249,10 @@ pl.add_lines(line, color="black")
 pl.show()
 ```
 
----------------------------------
+---
+
 (guide-graphics-return_fig)=
+
 ## Return Figure
 
 Instead of forwarding a figure to an existing canvas, it is also possible to return the figure object for further manipulation using the `return_fig` command. In the following example this is demonstrated for the pyvista backend.
@@ -261,13 +278,16 @@ pl.enable_anti_aliasing("ssaa")
 pl.show()
 ```
 
----------------------------------
+---
+
 (guide-graphic-animations)=
+
 ## Animation
 
 The Magpylib [object paths](docs-position-paths) visualized with `show()` can be animated by setting the kwarg `animation=True`. This synergize specifically well with the Plotly backend.
 
 The animations can be fine-tuned with the following kwargs of `show()`:
+
 1. `animation_time` (default=3), must be a positive number that gives the animation time in seconds.
 2. `animation_slider` (default=`True`), is boolean and sets if a slider should be displayed.
 3. `animation_fps` (default=30), sets the maximal frames per second.
@@ -300,8 +320,10 @@ magpy.show(
 Even with some implemented fail safes, such as a maximum frame rate and frame count, there is no guarantee that the animation will be rendered properly. This is particularly relevant when the user tries to animate many objects and/or many path positions at the same time.
 ```
 
----------------------------------
+---
+
 (guide-graphics-subplots)=
+
 ## Built-in Subplots
 
 :::{versionadded} 4.4
@@ -320,9 +342,8 @@ All of this is achieved via the `show()` function by passing input objects as di
 2. `col`: int which selects the subplot column. Default is `col=1`.
 3. `row`: int which selects the subplot row. Default is `row=1`.
 4. `output`: string which selects the type of output that should be displayed in this subplot. Options are
-
-    1. `'model3d'` is the default value and selects the 3D output.
-    2. `'Xa'` selects a 2D line-plot of a field component (combination) as seen by the sensor(s) along their path. The sensor(s) must be part of the `objects` input. Here "X" selects the field and must be one of "BHJM", and "a" selects the respective component combination and must be a subset of "xyz". For example, `output=Hx` displays the x-component of the H-field, or `output=Bxz` displays `sqrt(|Bx|² + |Bz|²)`. By default, source outputs are summed up (`sumup=True`) and sensor pixels, are aggregated by mean (`pixel_agg='mean'`).
+   1. `'model3d'` is the default value and selects the 3D output.
+   2. `'Xa'` selects a 2D line-plot of a field component (combination) as seen by the sensor(s) along their path. The sensor(s) must be part of the `objects` input. Here "X" selects the field and must be one of "BHJM", and "a" selects the respective component combination and must be a subset of "xyz". For example, `output=Hx` displays the x-component of the H-field, or `output=Bxz` displays `sqrt(|Bx|² + |Bz|²)`. By default, source outputs are summed up (`sumup=True`) and sensor pixels, are aggregated by mean (`pixel_agg='mean'`).
 
 The following code demonstrates these features.
 
@@ -379,6 +400,7 @@ magpy.show(
 ```
 
 (guide-graphics-show_context)=
+
 ### With `show_context`
 
 To make the subplot syntax more convenient we introduced the `show_context` native Python context manager. It allows to defer calls to the `show()` function while passing additional arguments. This is necessary for Magpylib to know how many rows and columns are requested by the user, which single `show()` calls do not keep track of. All kwargs, e.g. `backend` are handed directly to the context manager.
@@ -458,7 +480,7 @@ with magpy.show_context(loop, sens, animation=True) as sc:
 When displaying very small Magpylib objects, the axes scaling in units (m) might be inadequate and you may want to use other units that fit the system dimensions more nicely. The example below shows how to display an object (in this case the same) with different length units and zoom levels.
 
 ```{tip}
-Setting `units_length='auto'` will infer the most suitable units based on the maximum range of the system.
+Setting `units_length='auto'` (the default) will infer the most suitable units based on the maximum range of the system. Set `magpy.defaults.display.units.length` to change it for every `show()` call.
 ```
 
 ```{code-cell} ipython3

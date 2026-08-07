@@ -56,6 +56,56 @@
   still lists the built-in backends.
 - Fixed `color_validator` raising `TypeError: unhashable type` on the documented
   list and array color forms.
+- Added a public display-backend API, making a third-party backend a first-class
+  citizen instead of a monkeypatch
+  ([#973](https://github.com/magpylib/magpylib/pull/973)). Register one at
+  runtime with `magpy.register_backend(name, show_func, **capabilities)`, or
+  ship it in a package through the `magpylib.backends` entry-point group, where
+  `pip install` is enough to make it available. A registered name is then
+  accepted everywhere a built-in one is: `show(backend=...)`,
+  `magpy.defaults.display.backend` and `style.model3d.data[].backend`.
+- `show()` now hands a backend a single typed `Scene` — panels, frames,
+  animation settings, canvas and leftover options — rather than seven loose
+  arguments. Traces stay plain dicts in Magpylib's own dialect, so the envelope
+  is typed without freezing the payload. The contract is exported from
+  `magpylib.graphics.backend`: `Scene`, `Panel`, `Frame`, `AnimationSettings`,
+  `DisplayBackend`, `drawing_properties`, `TRACE_META_KEYS`, `API_VERSION` and
+  `ENTRY_POINT_GROUP`.
+- Backends declare what they can draw — `supports_animation`,
+  `supports_subplots`, `supports_colorgradient`, `supports_animation_output`,
+  `supports_native_traces`, plus `handles_traces` and `accepts_options`. Every
+  flag defaults to off or undeclared, so a capability added in a later Magpylib
+  release never silently changes an existing backend's behaviour, and `show()`
+  warns and falls back instead of handing over something the backend never
+  claimed to support.
+- Traces now carry `object_id`, and a backend can set `merge_traces = False` to
+  keep each object's geometry and identity separate — what picking and drag
+  gizmos need. `drawing_properties(trace)` strips Magpylib's metadata keys
+  before a trace is passed to a plotting library.
+- Fixed a series of display bugs this rework exposed, several of which had never
+  worked ([#973](https://github.com/magpylib/magpylib/pull/973)):
+  `style.model3d` traces given as `args` without `kwargs` raised, although that
+  is the form the style docs describe; Pyvista silently discarded models
+  addressed to it, having never consumed them at all, and now declares
+  `supports_native_traces = False` and warns; `show(title=...)` reached no
+  backend; a backend declaring `supports_subplots = False` was still handed a
+  subplot grid; misspelled arguments and backend-prefixed ones such as
+  `plotly_renderer=...` were dropped without a word; and the Plotly backend
+  mutated the payload it was given. `show()` also returned whatever the backend
+  returned even with `return_fig=False`, contradicting its own documented return
+  value — the built-in backends happened to return `None` there, so only a
+  third-party backend could expose it.
+- Added `magpy.defaults.display.units.length`, so the `show(units_length=...)`
+  default is configurable like every other display setting
+  ([#973](https://github.com/magpylib/magpylib/pull/973)). It was the only
+  display parameter with no defaults entry. Pinning it to a fixed unit — with
+  `sizemode='absolute'` for sensors and dipoles — keeps the coordinates handed
+  to a display backend dependent only on the objects themselves, rather than on
+  the extent of the whole scene, which is what a backend that updates a figure
+  incrementally needs. As a side effect of `units` becoming a defaults
+  namespace, a misspelled `units...` argument to `show()` now raises `TypeError`
+  instead of warning, matching how the other namespaces (`animation...`,
+  `style...`) already behaved.
 
 ## [5.2.3] 2026-05-15
 

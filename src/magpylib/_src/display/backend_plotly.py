@@ -19,6 +19,7 @@ except ImportError as missing_module:  # pragma: no cover
     raise ModuleNotFoundError(msg) from missing_module
 
 from magpylib._src.defaults.defaults_utility import linearize_dict
+from magpylib._src.display.api import drawing_properties
 from magpylib._src.display.traces_utility import get_scene_ranges
 
 SYMBOLS_TO_PLOTLY = {
@@ -238,6 +239,7 @@ def animate_path(
 
 def generic_trace_to_plotly(trace):
     """Transform a generic trace into a plotly trace"""
+    trace = drawing_properties(trace)
     if "scatter" in trace["type"]:
         if trace.get("line_width", None):
             trace["line_width"] *= SIZE_FACTORS_TO_PLOTLY["line_width"]
@@ -281,24 +283,24 @@ def process_extra_trace(model):
     return trace3d
 
 
-def display_plotly(
-    data,
-    canvas=None,
-    renderer=None,
-    return_fig=False,
-    canvas_update="auto",
-    max_rows=None,
-    max_cols=None,
-    subplot_specs=None,
-    fig_kwargs=None,
-    show_kwargs=None,
-    **kwargs,  # noqa: ARG001
-):
-    """Display objects and paths graphically using the plotly library."""
+def _subplot_specs(scene):
+    """plotly's make_subplots spec grid, derived from the scene panels."""
+    return [
+        [
+            {"type": "scene" if scene.panel_kind(r, c) == "scene3d" else "xy"}
+            for c in range(1, scene.n_cols + 1)
+        ]
+        for r in range(1, scene.n_rows + 1)
+    ]
 
-    fig_kwargs = fig_kwargs or {}
-    show_kwargs = show_kwargs or {}
-    show_kwargs = {"renderer": renderer, **show_kwargs}
+
+def display_plotly(scene):
+    """Display objects and paths graphically using the plotly library."""
+    canvas = scene.canvas
+    canvas_update = scene.canvas_update
+    return_fig = scene.return_fig
+    fig_kwargs = dict(scene.fig_kwargs)
+    show_kwargs = {"renderer": scene.options.get("renderer"), **scene.show_kwargs}
 
     # only update layout if canvas is not provided
     fig = canvas
@@ -309,21 +311,25 @@ def display_plotly(
             show_fig = True
         fig = go.Figure()
 
-    if not (max_rows is None and max_cols is None) and fig._grid_ref is None:  # pylint: disable=protected-access
+    if scene.has_subplots and fig._grid_ref is None:  # pylint: disable=protected-access
         fig = fig.set_subplots(
-            rows=max_rows,
-            cols=max_cols,
-            specs=subplot_specs.tolist(),
+            rows=scene.n_rows,
+            cols=scene.n_cols,
+            specs=_subplot_specs(scene),
         )
 
-    frames = data["frames"]
-    for fr in frames:
-        new_data = [generic_trace_to_plotly(tr) for tr in fr["data"]]
-        for model in fr["extra_backend_traces"]:
+    # Scene frames are immutable, so render into local dicts rather than
+    # mutating the payload -- other code may still be holding it.
+    frames = []
+    for fr in scene.frames:
+        new_data = [generic_trace_to_plotly(tr) for tr in fr.traces]
+        for model in fr.native_traces:
             extra_data = True
             new_data.append(process_extra_trace(model))
-        fr["data"] = new_data
-        fr.pop("extra_backend_traces", None)
+        # the slider steps are keyed by frame name
+        frames.append(
+            {"name": fr.label, "data": new_data, "layout": {"title": scene.title}}
+        )
     with fig.batch_update():
         for frame in frames:
             rows_list = []
@@ -333,29 +339,39 @@ def display_plotly(
                 col = tr.pop("col", None)
                 rows_list.append(row)
                 cols_list.append(col)
-        if max_rows is None and max_cols is None:
+        if not scene.has_subplots:
             rows_list = cols_list = None
-        isanimation = len(frames) != 1
+        isanimation = scene.is_animation
         if not isanimation:
             fig.add_traces(frames[0]["data"], rows=rows_list, cols=cols_list)
+            # animate_path does this for the animated branch
+            # only when there is one: setting title=None still materializes an
+            # empty title object in the figure JSON
+            if canvas_update and scene.title:
+                fig.update_layout(title=scene.title)
         else:
-            animation_slider = data["input_kwargs"].get("animation_slider", False)
+            animation_slider = scene.animation.slider
             animate_path(
                 fig,
                 frames,
-                data["path_indices"],
-                data["frame_duration"],
+                scene.animation.path_indices,
+                scene.animation.frame_duration,
                 animation_slider=animation_slider,
                 update_layout=canvas_update,
                 rows=rows_list,
                 cols=cols_list,
             )
         if canvas_update:
-            ranges_rc = data["ranges"]
+            ranges_rc = {
+                (p.row, p.col): p.ranges for p in scene.panels if p.ranges is not None
+            }
             if extra_data:
                 ranges_rc = get_scene_ranges(*frames[0]["data"])
             apply_fig_ranges(
-                fig, ranges_rc, labels_rc=data["labels"], apply2d=isanimation
+                fig,
+                ranges_rc,
+                labels_rc={(p.row, p.col): p.labels for p in scene.panels},
+                apply2d=isanimation,
             )
             fig.update_layout(
                 legend_itemsizing="constant",

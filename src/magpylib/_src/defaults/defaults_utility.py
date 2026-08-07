@@ -10,7 +10,7 @@ import numpy as np
 from matplotlib.colors import CSS4_COLORS as mcolors
 
 from magpylib._src.defaults.defaults_values import DEFAULTS
-from magpylib._src.display.backend_registry import RegisteredBackend
+from magpylib._src.display.api import DisplayBackend
 
 SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly", "pyvista")
 
@@ -20,9 +20,10 @@ def get_registered_backends():
 
     Unlike `SUPPORTED_PLOTTING_BACKENDS`, which lists the built-in backends
     only, this reflects backends registered at runtime through
-    `register_backend`.
+    `register_backend`, plus any advertised by an installed package.
     """
-    return tuple(RegisteredBackend.backends)
+    DisplayBackend.discover()
+    return tuple(DisplayBackend.backends)
 
 
 ALLOWED_SYMBOLS = (".", "+", "D", "d", "s", "x", "o")

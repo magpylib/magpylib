@@ -4,8 +4,57 @@ import base64
 import re
 import warnings
 
+import matplotlib as mpl
+
+mpl.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
+
+import magpylib as magpy
+from magpylib._src.display.api import DisplayBackend
+
+
+@pytest.fixture(autouse=True)
+def _restore_display_backends():
+    """Undo backends a test registers.
+
+    Registering is a global side effect -- `DisplayBackend.backends` is a class
+    attribute -- so a test that forgets to unregister leaks into every test
+    that runs after it.
+    """
+    known = dict(DisplayBackend.backends)
+    yield
+    DisplayBackend.backends.clear()
+    DisplayBackend.backends.update(known)
+
+
+@pytest.fixture(autouse=True)
+def _restore_defaults():
+    """Restore the library defaults after every test.
+
+    `magpy.defaults` is process-wide state, so a test that sets one and does
+    not put it back alters every test that runs after it -- surfacing as
+    unrelated, order-dependent failures rather than as a fault in the test
+    that caused them. This resets to the *library* defaults rather than to a
+    snapshot, so nothing may rely on a default set outside a test.
+    """
+    yield
+    magpy.defaults.reset()
+
+
+@pytest.fixture(autouse=True)
+def _close_matplotlib_figures():
+    """Close pyplot figures after every test.
+
+    Nothing in the suite closed them, so figures accumulated across tests
+    until matplotlib emitted `RuntimeWarning: More than 20 figures have been
+    opened` -- which the `filterwarnings = ["error"]` setting turns into a
+    failure. Which test tripped it depended on ordering, so this surfaced as
+    unrelated tests failing in CI.
+    """
+    yield
+    plt.close("all")
 
 
 def _convert_ndarray_to_list(obj):

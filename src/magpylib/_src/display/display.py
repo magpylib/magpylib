@@ -6,11 +6,12 @@ from matplotlib.axes import Axes as mplAxes
 from matplotlib.figure import Figure as mplFig
 
 from magpylib._src.defaults.defaults_utility import _DefaultValue
-from magpylib._src.display.backend_registry import RegisteredBackend
+from magpylib._src.display.backend_registry import ShowDispatcher
 from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.display.traces_utility import (
     DEFAULT_ROW_COL_PARAMS,
     process_show_input_objs,
+    row_col_defaults,
 )
 from magpylib._src.input_checks import (
     check_format_input_backend,
@@ -70,7 +71,7 @@ def _show(
     """
 
     # process input objs
-    objects, max_rows, max_cols, subplot_specs = process_show_input_objs(
+    objects, max_rows, max_cols = process_show_input_objs(
         objects,
         **{k: v for k, v in kwargs.items() if k in DEFAULT_ROW_COL_PARAMS},
     )
@@ -89,18 +90,17 @@ def _show(
     )
 
     if markers:
-        objects.append({"objects": [MagpyMarkers(*markers)], **DEFAULT_ROW_COL_PARAMS})
+        objects.append({"objects": [MagpyMarkers(*markers)], **row_col_defaults()})
 
     if backend == "auto":
         backend = infer_backend(canvas)
 
-    return RegisteredBackend.show(
+    return ShowDispatcher.show(
         *objects,
         backend=backend,
         animation=animation,
         canvas=canvas,
         canvas_update=canvas_update,
-        subplot_specs=subplot_specs,
         max_rows=max_rows,
         max_cols=max_cols,
         **kwargs,
@@ -166,6 +166,14 @@ def show(
         Sum field contributions of sources.
     pixel_agg : str, default 'mean'
         NumPy reducer applied across sensor pixels (e.g., ``'min'``, ``'max'``, ``'std'``).
+    in_out : {'auto', 'inside', 'outside'}, default 'auto'
+        Assumption about observer locations relative to magnet bodies, used by field
+        plots. ``'auto'`` detects per observer (safest, slower). ``'inside'`` treats all
+        inside (faster). ``'outside'`` treats all outside (faster).
+    units_length : str, default 'auto'
+        Length unit the scene is drawn in, e.g. ``'mm'``. With ``'auto'`` the unit is
+        inferred from the extent of the displayed system. The default is configurable
+        via ``magpy.defaults.display.units.length``.
     style : dict | None, default None
         Global style overrides, e.g. ``{'color': 'red'}`` or via underscore magic
         (``style_color='red'``). Applied to matching objects.

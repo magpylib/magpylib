@@ -10,7 +10,7 @@ from magpylib._src.defaults.defaults_utility import (
     SUPPORTED_PLOTTING_BACKENDS,
     get_registered_backends,
 )
-from magpylib._src.display.display import RegisteredBackend
+from magpylib._src.display.api import DisplayBackend
 from magpylib._src.style import DisplayStyle
 
 bad_inputs = {
@@ -23,6 +23,7 @@ bad_inputs = {
     "display_animation_output": ("filename.badext", "badext"),  # bool
     "display_backend": ("plotty",),  # str typo
     "display_colorsequence": (["#2E91E5", "wrongcolor"], 123),  # iterable of colors
+    "display_units_length": ("mT", "inch", "dam", "e"),  # length unit or 'auto'
     "display_style_base_path_line_width": (-1,),  # float>=0
     "display_style_base_path_line_style": ("wrongstyle",),
     "display_style_base_path_line_color": ("wrongcolor",),  # color
@@ -115,6 +116,7 @@ good_inputs = {
         ("#2e91e5", "#0d2a63"),
         ("blue", "red"),
     ),  # ]),  # iterable of colors
+    "display_units_length": ("auto", "m", "mm", "cm"),  # length unit or 'auto'
     "display_style_base_path_line_width": (0, 1),  # float>=0
     "display_style_base_path_line_style": ALLOWED_LINESTYLES,
     "display_style_base_path_line_color": ("blue", "#2E91E5"),  # color
@@ -256,26 +258,19 @@ def test_bad_default_classes():
 def dummy_backend():
     """Register a do-nothing display backend for the duration of a test."""
     name = "dummy"
-    RegisteredBackend(
-        name=name,
-        show_func=lambda data, **_kwargs: data,
-        supports_animation=False,
-        supports_subplots=False,
-        supports_colorgradient=False,
-        supports_animation_output=False,
-    )
+    magpy.register_backend(name, lambda scene: scene)
     default_backend = magpy.defaults.display.backend
     try:
         yield name
     finally:
         magpy.defaults.display.backend = default_backend
-        RegisteredBackend.backends.pop(name, None)
+        DisplayBackend.backends.pop(name, None)
 
 
 def test_backend_fields_follow_the_registry(dummy_backend):
     """Backend fields accept backends registered after import time.
 
-    The allowed set is resolved from `RegisteredBackend.backends` on every
+    The allowed set is resolved from `DisplayBackend.backends` on every
     use, not frozen when the property tree is declared. Should the registry
     ever move, `get_registered_backends` must follow it or this fails.
     """

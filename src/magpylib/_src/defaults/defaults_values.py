@@ -38,6 +38,7 @@ DEFAULTS = {
             "#AF0038",
             "#222A2A",
         ),
+        "units": {"length": "auto"},
         "style": {
             "base": {
                 "path": {

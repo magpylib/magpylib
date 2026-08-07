@@ -21,6 +21,12 @@ from magpylib._src.defaults.defaults_utility import (
     ALLOWED_SYMBOLS,
     linearize_dict,
 )
+from magpylib._src.display.api import (
+    AnimationSettings,
+    Frame,
+    Panel,
+    Scene,
+)
 from magpylib._src.display.traces_utility import (
     _get_prop,
     draw_arrowed_line,
@@ -441,8 +447,12 @@ def get_traces_2D(
 def process_extra_trace(model):
     "process extra trace attached to some magpylib object"
     extr = model["model3d"]
-    model_kwargs = {**(extr.kwargs() if callable(extr.kwargs) else extr.kwargs)}
+    # both default to None: a Matplotlib model is idiomatically given as
+    # args=(xs, ys, zs) with no kwargs at all, so neither may be assumed set
+    model_kwargs = extr.kwargs() if callable(extr.kwargs) else extr.kwargs
+    model_kwargs = {**(model_kwargs or {})}
     model_args = extr.args() if callable(extr.args) else extr.args
+    model_args = tuple(model_args or ())
     trace3d = {
         "constructor": extr.constructor,
         "kwargs": model_kwargs,
@@ -474,6 +484,7 @@ def get_generic_traces3D(
     showlegend=None,
     supports_colorgradient=True,
     extra_backend=False,
+    supports_native_traces=False,
     field_values=None,
     row=1,
     col=1,
@@ -665,6 +676,10 @@ def get_generic_traces3D(
     for tr in path_traces_generic:
         tr.update(place_and_orient_model3d(tr))
         tr.update(row=row, col=col)
+        # identity token: process-local and only valid while the object is
+        # alive, which is all an interactive viewer holding the same objects
+        # needs. Do not persist or transmit it.
+        tr["object_id"] = id(input_obj)
         if tr.get("opacity", None) is None:
             tr["opacity"] = style.opacity
         if tr.get("legendgroup", None) is None:
@@ -693,30 +708,41 @@ def get_generic_traces3D(
             if not extr.show:
                 continue
             extr.update(extr.updatefunc())  # update before checking backend
-            if extr.backend == extra_backend:
-                for path_ind in path_inds_minimal:
-                    tr_non_generic = {
-                        "model3d": extr,
-                        "position": positions[path_ind],
-                        "orientation": orientations[path_ind],
-                        "kwargs_extra": {
-                            "opacity": style.opacity,
-                            "color": style.color,
-                            "legendgroup": legendgroup,
-                            "showlegend": (
-                                showlegend
-                                if showlegend is not None
-                                else None
-                                if style.legend.show
-                                else False
-                            ),
-                            "name": legendtext or legend_label,
-                            "row": row,
-                            "col": col,
-                        },
-                    }
-                    tr_non_generic = process_extra_trace(tr_non_generic)
-                    path_traces_extra_non_generic_backend.append(tr_non_generic)
+            if extr.backend != extra_backend:
+                continue
+            if not supports_native_traces:
+                warnings.warn(
+                    f"The {extra_backend} backend does not support "
+                    "backend-specific 3D models attached via "
+                    "style.model3d.data; the model is not displayed. Use a "
+                    "'generic' model3d trace instead, which every backend "
+                    "renders.",
+                    stacklevel=2,
+                )
+                continue
+            for path_ind in path_inds_minimal:
+                tr_non_generic = {
+                    "model3d": extr,
+                    "position": positions[path_ind],
+                    "orientation": orientations[path_ind],
+                    "kwargs_extra": {
+                        "opacity": style.opacity,
+                        "color": style.color,
+                        "legendgroup": legendgroup,
+                        "showlegend": (
+                            showlegend
+                            if showlegend is not None
+                            else None
+                            if style.legend.show
+                            else False
+                        ),
+                        "name": legendtext or legend_label,
+                        "row": row,
+                        "col": col,
+                    },
+                }
+                tr_non_generic = process_extra_trace(tr_non_generic)
+                path_traces_extra_non_generic_backend.append(tr_non_generic)
         out.update({extra_backend: path_traces_extra_non_generic_backend})
     return out
 
@@ -780,12 +806,12 @@ def process_animation_kwargs(obj_list, animation=False, **kwargs):
     anim_def.update({k[10:]: v for k, v in kwargs.items()}, _match_properties=False)
     animation_kwargs = {f"animation_{k}": v for k, v in anim_def.as_dict().items()}
 
-    path_indices, path_digits, frame_duration = [-1], 0, 0
+    path_indices, frame_duration = [-1], 0
     if animation:
-        path_indices, path_digits, frame_duration = extract_animation_properties(
+        path_indices, frame_duration = extract_animation_properties(
             obj_list_semi_flat, **animation_kwargs
         )
-    return animation, path_indices, path_digits, frame_duration, animation_kwargs
+    return animation, path_indices, frame_duration, animation_kwargs
 
 
 def extract_animation_properties(
@@ -840,14 +866,6 @@ def extract_animation_properties(
             max_pl - 1
         )  # make sure the last frame is the last path position
 
-    # calculate exponent of last frame index to avoid digit shift in
-    # frame number display during animation
-    path_digits = (
-        np.log10(path_indices.max()).astype(int) + 1
-        if path_indices.ndim != 0 and path_indices.max() > 0
-        else 1
-    )
-
     frame_duration = int(animation_time * 1000 / path_indices.shape[0])
     new_fps = int(1000 / frame_duration)
     if max_pl > animation_maxframes:
@@ -859,10 +877,16 @@ def extract_animation_properties(
             stacklevel=2,
         )
 
-    return path_indices, path_digits, frame_duration
+    return path_indices, frame_duration
 
 
-def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs):
+def get_traces_3D(
+    flat_objs_props,
+    extra_backend=False,
+    supports_native_traces=False,
+    autosize=None,
+    **kwargs,
+):
     """Return traces, traces to resize and extra_backend_traces"""
     extra_backend_traces = []
     traces_dict = {}
@@ -881,6 +905,7 @@ def get_traces_3D(flat_objs_props, extra_backend=False, autosize=None, **kwargs)
             out_traces = get_generic_traces3D(
                 obj,
                 extra_backend=extra_backend,
+                supports_native_traces=supports_native_traces,
                 autosize=autosize,
                 field_values=field_by_sens.get(obj, None),
                 **params,
@@ -932,7 +957,15 @@ def get_sensor_pixel_field(objects):
     return field_by_sens
 
 
-def draw_frame(objs, *, rc_params, style_kwargs, **kwargs):
+def draw_frame(
+    objs,
+    *,
+    rc_params,
+    style_kwargs,
+    merge_traces=True,
+    supports_native_traces=False,
+    **kwargs,
+):
     """
     Creates traces from input ``objs`` and provided parameters, updates the size of objects like
     Sensors and Dipoles in ``kwargs`` depending on the canvas size.
@@ -957,7 +990,11 @@ def draw_frame(objs, *, rc_params, style_kwargs, **kwargs):
     rc_keys = ("row", "col")
     kwargs.update({k: v for k, v in objs["rc_params"].items() if k in rc_keys})
     if objs["rc_params"]["output"] == "model3d":
-        traces_d1, traces_ex1 = get_traces_3D(objs["objects"], **kwargs)
+        traces_d1, traces_ex1 = get_traces_3D(
+            objs["objects"],
+            supports_native_traces=supports_native_traces,
+            **kwargs,
+        )
         rc_params["autosize"] = rc_params.get("autosize", None)
         if rc_params["autosize"] is None:
             # get the dipoles and sensors autosize from first frame
@@ -973,11 +1010,19 @@ def draw_frame(objs, *, rc_params, style_kwargs, **kwargs):
             k: v for k, v in objs["objects"].items() if k in to_resize_keys
         }
         traces_d2, traces_ex2 = get_traces_3D(
-            flat_objs_props, autosize=rc_params["autosize"], **kwargs
+            flat_objs_props,
+            autosize=rc_params["autosize"],
+            supports_native_traces=supports_native_traces,
+            **kwargs,
         )
         traces_dict.update({**traces_d1, **traces_d2})
         extra_backend_traces.extend([*traces_ex1, *traces_ex2])
-    traces = group_traces(*[t for tr in traces_dict.values() for t in tr])
+    flat_traces = [t for tr in traces_dict.values() for t in tr]
+    # the only *cross-object* merge. Backends that want per-object geometry --
+    # picking, drag gizmos, pyvista actor naming -- declare merge_traces=False
+    # and get one trace set per object instead. The four other group_traces
+    # calls merge within a single object and stay unconditional.
+    traces = group_traces(*flat_traces) if merge_traces else flat_traces
 
     if objs["rc_params"]["output"] != "model3d":
         traces2d = get_traces_2D(
@@ -988,7 +1033,16 @@ def draw_frame(objs, *, rc_params, style_kwargs, **kwargs):
     return traces, extra_backend_traces, rc_params
 
 
-def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
+def get_frames(
+    objs,
+    *,
+    title,
+    supports_colorgradient,
+    backend,
+    merge_traces=True,
+    supports_native_traces=False,
+    **kwargs,
+):
     """This is a helper function which generates frames with generic traces to be provided to
     the chosen backend. According to a certain zoom level, all three space direction will be equal
     and match the maximum of the ranges needed to display all objects, including their paths.
@@ -1007,7 +1061,6 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
     (
         is_animation,
         path_indices,
-        path_digits,
         frame_duration,
         animation_kwargs,
     ) = process_animation_kwargs([o for obj in objs for o in obj["objects"]], **kwargs)
@@ -1017,13 +1070,12 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
         msg = f"show() got unexpected keyword argument(s) {kwargs!r}"
         raise TypeError(msg)
 
-    # infer title if necessary
-    if objs:
-        style = objs[0]["objects"][0].style
-        label = getattr(style, "label", None)
-        title = label if len(objs[0]["objects"]) == 1 else None
-    else:
-        title = "No objects to be displayed"
+    # only infer when the caller gave no title; an explicit one always wins
+    if title is None:
+        if not objs:
+            title = "No objects to be displayed"
+        elif len(objs[0]["objects"]) == 1:
+            title = getattr(objs[0]["objects"][0].style, "label", None)
 
     objs_rc = get_objects_props_by_row_col(
         *objs,
@@ -1032,7 +1084,6 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
     )
     # create frame for each path index or downsampled path index
     style_kwargs = {}
-    title_str = title
     frames = [
         {
             "name": str(path_ind + 1),
@@ -1050,19 +1101,19 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
             for frame, path_ind in zip(frames, path_indices, strict=False):
                 if is_animation:
                     style_kwargs["style_path_frames"] = [path_ind]
-                    title = "Animation 3D - " if title is None else title
-                    title_str = f"""{title}path index: {path_ind + 1:0{path_digits}d}"""
                 traces, extra_backend_traces, rc_params = draw_frame(
                     props,
                     field_by_sens=field_by_sens,
                     rc_params=rc_params,
                     supports_colorgradient=supports_colorgradient,
+                    merge_traces=merge_traces,
+                    supports_native_traces=supports_native_traces,
                     extra_backend=backend,
                     style_kwargs=style_kwargs,
                 )
                 frame["data"].extend(traces)
                 frame["extra_backend_traces"].extend(extra_backend_traces)
-                frame["layout"] = {"title": title_str}
+
     clean_legendgroups(frames)
     all_traces = [
         t
@@ -1088,17 +1139,50 @@ def get_frames(objs, *, title, supports_colorgradient, backend, **kwargs):
         for key in ("data", "extra_backend_traces"):
             frame[key] = rescale_traces(frame[key], factors=scale_factors_rc)
 
-    out = {
-        "frames": frames,
-        "ranges": ranges_rc,
-        "labels": labels_rc,
-        "input_kwargs": {**kwargs, **animation_kwargs},
-    }
-    if is_animation:
-        out.update(
-            {
-                "frame_duration": frame_duration,
-                "path_indices": path_indices,
-            }
+    # assemble the public Scene. The mutable dict accumulation above stays
+    # internal; only the envelope is typed, traces remain dicts in magpylib's
+    # dialect -- see magpylib._src.display.api.
+    panels = []
+    for rc in sorted(set(ranges_rc) | set(labels_rc) | set(objs_rc)):
+        props = objs_rc.get(rc)
+        output = props["rc_params"].get("output", "model3d") if props else "model3d"
+        is_3d = output == "model3d"
+        rng = ranges_rc.get(rc)
+        panels.append(
+            Panel(
+                row=rc[0],
+                col=rc[1],
+                kind="scene3d" if is_3d else "chart2d",
+                # chart2d panels are emitted with a 3D range and x/y/z labels
+                # that describe nothing a 2D chart can use; drop them here
+                # rather than making every backend ignore them.
+                ranges=np.asarray(rng) if (is_3d and rng is not None) else None,
+                labels=dict(labels_rc.get(rc, {})) if is_3d else {},
+            )
         )
-    return out
+
+    # process_animation_kwargs resolves every animation_* key from the defaults
+    animation = AnimationSettings(
+        fps=animation_kwargs["animation_fps"],
+        max_fps=animation_kwargs["animation_maxfps"],
+        max_frames=animation_kwargs["animation_maxframes"],
+        time=animation_kwargs["animation_time"],
+        slider=animation_kwargs["animation_slider"],
+        output=animation_kwargs["animation_output"],
+        frame_duration=frame_duration if is_animation else None,
+        path_indices=tuple(int(i) for i in path_indices) if is_animation else (),
+    )
+
+    return Scene(
+        title=title,
+        panels=tuple(panels),
+        frames=tuple(
+            Frame(
+                label=fr["name"],
+                traces=tuple(fr["data"]),
+                native_traces=tuple(fr["extra_backend_traces"]),
+            )
+            for fr in frames
+        ),
+        animation=animation,
+    )

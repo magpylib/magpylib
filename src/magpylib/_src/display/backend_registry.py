@@ -3,7 +3,7 @@
 This module deliberately imports nothing from magpylib at module level. Both
 `input_checks` and the defaults tree have to consult the registry to validate a
 backend name, and both are imported long before the display layer; anything
-this module pulled in eagerly would close that loop. What `RegisteredBackend.show`
+this module pulled in eagerly would close that loop. What the dispatcher
 needs from the display layer is therefore imported inside the call, by which
 time everything is loaded.
 """
@@ -11,9 +11,11 @@ time everything is loaded.
 # pylint: disable=import-outside-toplevel
 
 import warnings
+from dataclasses import replace
 from functools import cache
 from importlib import import_module
-from typing import ClassVar
+
+from magpylib._src.display.api import API_VERSION, DisplayBackend, Scene
 
 
 @cache
@@ -26,91 +28,89 @@ def _display_arg_names():
     return set(get_defaults_dict("display"))
 
 
-class RegisteredBackend:
-    """A plotting backend `show` can dispatch to.
+def register_backend(name, show_func, **capabilities):
+    """Register a display backend from a plain function.
 
-    Instantiating registers the backend under `name`; the registry is what
-    `check_format_input_backend` and the `backend` style/defaults fields
-    validate against, so registering is sufficient to make the name usable.
+    The imperative counterpart to subclassing
+    `magpylib.graphics.backend.DisplayBackend`: use this for a backend defined
+    in a script or notebook, and the entry-point group ``magpylib.backends``
+    for one shipped in a package, where ``pip install`` should be enough.
 
-    This is internal for now. The public entry point for third-party backends
-    is still being designed -- see `DISPLAY_BACKEND_API.md`. The notes below
-    describe the current hand-off, and are the reason that design exists.
+    Once registered the name is accepted everywhere a built-in name is:
+    ``show(backend=name)``, ``magpy.defaults.display.backend`` and
+    ``style.model3d.data[].backend``.
 
     Parameters
     ----------
-    name: str
+    name : str
         Name the backend is selected by. Re-registering a name replaces it.
-    show_func: callable
-        Called as ``show_func(data, max_rows=, max_cols=, subplot_specs=,
-        fig_kwargs=, show_kwargs=, canvas=, canvas_update=)``.
-    supports_animation: bool
-        Whether a path can be rendered as an animation. If False, `show` warns
-        and falls back to a static figure.
-    supports_subplots: bool
-        Whether traces can be placed on a `row`/`col` grid. If False, `show`
-        warns and collapses the grid onto a single plot -- except a grid mixing
-        3D and 2D panels, which has no single-plot equivalent and is passed
-        through with a warning instead.
-    supports_colorgradient: bool
-        Whether vertex colors are interpolated across a mesh. If False, magnet
-        meshes are geometrically sliced per color band instead.
-    supports_animation_output: bool
-        Whether the animation can be written to a file (`.mp4`/`.gif`). If
-        False, `show` warns and falls back to displaying it.
+    show_func : callable
+        Called as ``show_func(scene)`` with a
+        `magpylib.graphics.backend.Scene`; returns the figure object.
+    supports_animation, supports_subplots, supports_colorgradient, supports_animation_output : bool, default False
+        Capabilities. `show` warns and falls back rather than handing the
+        backend something it has not declared it can draw. They default to
+        False so a capability added in a later magpylib release never changes
+        an existing backend's behaviour.
+    supports_native_traces : bool, default False
+        Whether models attached via ``style.model3d.data`` naming this backend
+        are rendered. False skips them with a warning.
+    merge_traces : bool, default True
+        Preference, not a capability: whether traces of different objects may
+        be merged into fewer, larger ones.
+    **capabilities
+        Any ``supports_*`` flag, plus ``merge_traces``, ``handles_traces`` and
+        ``accepts_options``. Unknown names are rejected. See `DisplayBackend`
+        for the full list and defaults.
 
-    Notes
-    -----
-    `show_func` receives a dict with keys ``frames``, ``ranges``, ``labels``
-    and ``input_kwargs``. Each frame is a dict with ``name``, ``data``,
-    ``extra_backend_traces`` and ``layout``; ``data`` holds `mesh3d` and
-    `scatter3d` traces as plain dicts of numpy arrays.
+    handles_traces : set of str, optional
+        Trace ``type`` values this backend draws. ``None`` assumes all.
+        Declaring it lets magpylib warn about a type the backend never handles
+        rather than silently omitting it.
+    accepts_options : set of str, optional
+        Extra keyword arguments this backend accepts, forwarded through
+        `Scene.options`. ``None`` accepts anything, which also means a
+        misspelled argument passes unnoticed; declaring the set lets magpylib
+        warn about it.
 
-    Three things are easy to miss when writing a backend:
+    Returns
+    -------
+    type
+        The generated `DisplayBackend` subclass.
 
-    - **`frame["extra_backend_traces"]` must be consumed.** When a user
-      attaches a native model via ``style.model3d.data`` naming this backend,
-      the trace is routed into this list rather than into ``frame["data"]``,
-      already positioned and oriented. A backend that ignores the list silently
-      drops the user's models -- no warning, no error.
-    - **2D traces.** With ``output="Bx"`` (etc.) rather than ``"model3d"``,
-      frames also carry plain `scatter` traces, not `scatter3d`. A pure-3D
-      backend has no answer for these.
-    - **The trace dicts use plotly's vocabulary** (``colorscale``,
-      ``showscale``, ``legendgroup``, ``type``), and ``subplot_specs`` uses
-      plotly's ``{"type": "scene"|"xy"}``. Neutralizing that is the main reason
-      the public API is not simply this class.
+    Examples
+    --------
+    >>> import magpylib as magpy
+    >>> def show_types(scene):
+    ...     return sorted({t["type"] for f in scene.frames for t in f.traces})
+    >>> _ = magpy.register_backend("typelist", show_types)
+    >>> src = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
+    >>> magpy.show(src, backend="typelist", return_fig=True)
+    ['mesh3d', 'scatter3d']
     """
+    unknown = set(capabilities) - set(vars(DisplayBackend))
+    if unknown:
+        msg = (
+            f"register_backend() got unknown backend capability "
+            f"{sorted(unknown)!r}; see DisplayBackend for the accepted names."
+        )
+        raise TypeError(msg)
+    return type(
+        f"{name.title()}Backend",
+        (DisplayBackend,),
+        {"name": name, "show": staticmethod(show_func), **capabilities},
+    )
 
-    backends: ClassVar[dict[str, "RegisteredBackend"]] = {}
 
-    def __init__(
-        self,
-        *,
-        name,
-        show_func,
-        supports_animation,
-        supports_subplots,
-        supports_colorgradient,
-        supports_animation_output,
-    ):
-        self.name = name
-        self.show_func = show_func
-        self.supports = {
-            "animation": supports_animation,
-            "subplots": supports_subplots,
-            "colorgradient": supports_colorgradient,
-            "animation_output": supports_animation_output,
-        }
-        self._register_backend(name)
-
-    def _register_backend(self, name):
-        self.backends[name] = self
+class ShowDispatcher:
+    """Resolves a backend by name, applies fallbacks, and hands over the Scene."""
 
     @classmethod
     def _warn_unsupported(cls, backend, feature, resolution):
         """Warn that `backend` cannot do `feature`, naming one that can."""
-        supported = [k for k, v in cls.backends.items() if v.supports[feature]]
+        supported = [
+            k for k, v in DisplayBackend.backends.items() if v.supports[feature]
+        ]
         supported_str = (
             f"one of {supported!r}" if len(supported) > 1 else f"{supported[0]!r}"
         )
@@ -126,10 +126,10 @@ class RegisteredBackend:
     def _collapse_subplots(cls, objs, backend):
         """Drop a subplot grid onto a single plot, for backends without subplots.
 
-        Only well defined for a homogeneous grid: `subplot_specs` marks each
-        cell as a 3D scene or a 2D field plot, and a grid mixing the two has no
-        single-plot equivalent. Mixed grids are therefore passed through with a
-        warning rather than silently flattened into something wrong.
+        Only well defined for a homogeneous grid: a panel is either a 3D scene
+        or a 2D field plot, and a grid mixing the two has no single-plot
+        equivalent. Mixed grids are therefore passed through with a warning
+        rather than silently flattened into something wrong.
         """
         from magpylib._src.display.traces_utility import (  # noqa: PLC0415
             process_show_input_objs,
@@ -144,14 +144,14 @@ class RegisteredBackend:
                 "single plot, so it is passed through unchanged; the figure is "
                 "likely to be wrong.",
             )
-            return objs, None, None, None
+            return objs
 
         cls._warn_unsupported(
             backend, "subplots", "Falling back to a single combined plot."
         )
         objs = [{**obj, "row": 1, "col": 1} for obj in objs]
-        objs, max_rows, max_cols, subplot_specs = process_show_input_objs(objs)
-        return objs, max_rows, max_cols, subplot_specs
+        objs, _, _ = process_show_input_objs(objs)
+        return objs
 
     @classmethod
     def show(
@@ -161,14 +161,13 @@ class RegisteredBackend:
         title=None,
         max_rows=None,
         max_cols=None,
-        subplot_specs=None,
         **kwargs,
     ):
         """Display function of the current backend"""
         from magpylib._src.display.traces_generic import get_frames  # noqa: PLC0415
 
         disp_args = _display_arg_names()
-        self = cls.backends[backend]
+        self = DisplayBackend.backends[backend]
         fallback = {
             "animation": {"animation": False},
             "animation_output": {"animation_output": None},
@@ -176,16 +175,14 @@ class RegisteredBackend:
         for name, params in fallback.items():
             condition = not all(kwargs.get(k, v) == v for k, v in params.items())
             if condition and not self.supports[name]:
-                self._warn_unsupported(backend, name, f"Falling back to: {params}")
+                cls._warn_unsupported(backend, name, f"Falling back to: {params}")
                 kwargs.update(params)
 
         # subplots are not in the table above: the grid is not carried in
         # `kwargs` -- `row`/`col` are consumed by `process_show_input_objs`
         # before dispatch -- so it is detected from the resolved grid instead.
         if (max_rows, max_cols) != (None, None) and not self.supports["subplots"]:
-            objs, max_rows, max_cols, subplot_specs = self._collapse_subplots(
-                objs, backend
-            )
+            objs = cls._collapse_subplots(objs, backend)
         display_kwargs = {
             k: v
             for k, v in kwargs.items()
@@ -214,22 +211,60 @@ class RegisteredBackend:
         kwargs = {
             k: v for k, v in kwargs.items() if not (k.startswith(("fig", "show")))
         }
-        data = get_frames(
+        # backend-prefixed arguments that are neither fig_ nor show_ are still
+        # meant for the backend, e.g. plotly_renderer=... -> renderer=...
+        kwargs = {**kwargs, **backend_kwargs}
+        scene = get_frames(
             objs,
             supports_colorgradient=self.supports["colorgradient"],
             backend=backend,
             title=title,
+            merge_traces=self.merge_traces,
+            supports_native_traces=self.supports["native_traces"],
             **display_kwargs,
         )
-        return self.show_func(
-            data,
-            max_rows=max_rows,
-            max_cols=max_cols,
-            subplot_specs=subplot_specs,
+        # complete the envelope: get_frames knows about geometry and frames,
+        # the dispatch point knows about the canvas and the user's options.
+        scene = replace(
+            scene,
+            canvas=kwargs.pop("canvas", None),
+            canvas_update=kwargs.pop("canvas_update", True),
+            return_fig=kwargs.pop("return_fig", False),
+            legend_maxitems=kwargs.pop("legend_maxitems", Scene.legend_maxitems),
+            animation=replace(scene.animation, repeat=kwargs.pop("repeat", False)),
             fig_kwargs=fig_kwargs,
             show_kwargs=show_kwargs,
-            **kwargs,
+            # anything magpylib does not interpret is the backend's own
+            options=kwargs,
         )
+        if self.api_version != API_VERSION:
+            warnings.warn(
+                f"The {backend!r} backend declares api_version "
+                f"{self.api_version}, but this magpylib emits version "
+                f"{API_VERSION}. The figure may be wrong or incomplete.",
+                stacklevel=2,
+            )
+        unaccepted = self.unaccepted_options(scene)
+        if unaccepted:
+            warnings.warn(
+                f"show() got unexpected keyword argument(s) "
+                f"{sorted(unaccepted)!r} for the {backend} backend; they are "
+                "ignored. Check for a typo.",
+                stacklevel=2,
+            )
+        unhandled = self.unhandled_trace_types(scene)
+        if unhandled:
+            warnings.warn(
+                f"The {backend} backend does not declare support for trace "
+                f"type(s) {sorted(unhandled)!r}; they may not be drawn.",
+                stacklevel=2,
+            )
+        figure = self.show(scene)
+        # show() documents that it returns the figure only when return_fig is
+        # set. All three built-in backends return None otherwise, so the promise
+        # held by convention rather than by construction -- a backend that
+        # returns its figure unconditionally leaked it into the caller.
+        return figure if scene.return_fig else None
 
 
 def get_show_func(backend):
@@ -240,9 +275,12 @@ def get_show_func(backend):
     )(*args, **kwargs)
 
 
-RegisteredBackend(
-    name="matplotlib",
-    show_func=get_show_func("matplotlib"),
+register_backend(
+    "matplotlib",
+    get_show_func("matplotlib"),
+    supports_native_traces=True,
+    handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
+    accepts_options=frozenset({"antialiased", "return_animation"}),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=False,
@@ -250,20 +288,29 @@ RegisteredBackend(
 )
 
 
-RegisteredBackend(
-    name="plotly",
-    show_func=get_show_func("plotly"),
+register_backend(
+    "plotly",
+    get_show_func("plotly"),
+    supports_native_traces=True,
+    handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
+    accepts_options=frozenset({"renderer"}),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
     supports_animation_output=False,
 )
 
-RegisteredBackend(
-    name="pyvista",
-    show_func=get_show_func("pyvista"),
+register_backend(
+    "pyvista",
+    get_show_func("pyvista"),
+    handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
+    accepts_options=frozenset({"jupyter_backend", "mp4_quality"}),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
     supports_animation_output=True,
+    # pyvista has never consumed these: its constructors take points, centers
+    # and radii rather than the named x/y/z arrays place_and_orient_model3d
+    # transforms, so the generic placement contract does not fit them.
+    supports_native_traces=False,
 )
