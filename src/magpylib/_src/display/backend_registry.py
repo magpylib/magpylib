@@ -85,7 +85,7 @@ def register_backend(name, show_func, **capabilities):
     ...     return sorted({t["type"] for f in scene.frames for t in f.traces})
     >>> _ = magpy.register_backend("typelist", show_types)
     >>> src = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
-    >>> magpy.show(src, backend="typelist")
+    >>> magpy.show(src, backend="typelist", return_fig=True)
     ['mesh3d', 'scatter3d']
     """
     unknown = set(capabilities) - set(vars(DisplayBackend))

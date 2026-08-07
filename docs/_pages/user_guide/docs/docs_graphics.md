@@ -155,7 +155,7 @@ class CounterBackend(DisplayBackend):
 
 
 src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
-print(magpy.show(src, backend="counter"))
+print(magpy.show(src, backend="counter", return_fig=True))
 ```
 
 Declaring the class registers it. A backend shipped in a package should instead advertise itself in the `magpylib.backends` entry-point group, so that installing it is enough:
