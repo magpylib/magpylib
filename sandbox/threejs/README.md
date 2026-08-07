@@ -4,10 +4,11 @@ A deliberately minimal third-party display backend, written against the public
 `magpylib.graphics.backend` contract to find out where that contract is thin.
 Not shipped, not tested, not a dependency of anything.
 
-Scope: `mesh3d` traces only, no animation, no subplots.
+Scope: `mesh3d` and `scatter3d`, which between them cover every Magpylib object.
+No animation, no subplots.
 
 ```bash
-python sandbox/threejs/demo.py   # writes cuboid.html / two_cuboids.html
+python sandbox/threejs/demo.py   # writes cuboid / two_cuboids / current / everything .html
 ```
 
 `show()` returns a self-contained HTML page pulling three.js from unpkg.
@@ -58,10 +59,22 @@ splicing it in by `object_id` is only valid once both are.
 | Circle, Polyline (currents)                            | `scatter3d` |
 
 A mesh-only backend therefore covers the entire magnet catalogue plus sensors
-and dipoles. Currents are the only gap, and `handles_traces` warns about them
-rather than dropping them silently. Worth knowing when scoping a real backend:
-`scatter3d` is the second and last thing to implement, and its `mode` is a
-combination (`"markers+text+lines"` occurs), not an enum.
+and dipoles. Currents were the only gap, and `handles_traces` warned about them
+rather than dropping them silently.
+
+`scatter3d` has since been added, and it was the second and last thing needed —
+the prototype now draws every object type Magpylib has. Three `mode` values
+occur in practice, and `mode` is a combination rather than an enum, so it has to
+be split into tokens:
+
+| mode            | produced by                         |
+| --------------- | ----------------------------------- |
+| `lines`         | currents                            |
+| `markers+lines` | an object's path                    |
+| `markers`       | the `markers=` argument to `show()` |
+
+Sensor pixels are _not_ markers, contrary to the obvious guess — a Sensor is
+entirely `mesh3d`.
 
 ### 3. `return_fig` was advisory and unenforced — since fixed
 
@@ -119,6 +132,27 @@ with. Noted in the parent's "easy to miss" list; nothing more to do about it.
 Magpylib scenes are z-up, so `camera.up.set(0, 0, 1)` is required or every view
 is silently wrong. It had to be inferred from the built-in backends; the parent
 branch now says so outright.
+
+### 8. Three line and marker properties have no WebGL primitive
+
+Adding `scatter3d` surfaced a gap on three.js's side rather than Magpylib's. The
+payload asks for things plain WebGL cannot draw:
+
+| Magpylib sends  | seen in practice | three.js                                           |
+| --------------- | ---------------- | -------------------------------------------------- |
+| `line_width`    | `1.0`, `2.0`     | ignored — `LineBasicMaterial` is always 1 px       |
+| `line_dash`     | `solid`          | no primitive; `LineDashedMaterial` is uniform-only |
+| `marker_symbol` | `o`, `x`         | no primitive; `PointsMaterial` draws squares       |
+
+None of these is a contract problem — Magpylib expresses them perfectly well,
+and Pyvista carries ❌ for exactly _line style_ and _marker symbol_ in the
+backend feature table, so a three.js column would look much the same.
+
+The fix for line width is `Line2` + `LineMaterial` from the three.js addons, and
+it is worth noting _why_: `LineMaterial` has `worldUnits: false`, meaning widths
+are specified in **pixels** and stay constant under zoom. That is the same
+screen-space mechanism sensors and dipoles would want, so whoever implements
+zoom-invariant sizing gets line widths as a by-product.
 
 ## Not hit, but expected later
 

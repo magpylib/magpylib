@@ -69,6 +69,36 @@ def _mesh_to_payload(trace):
     }
 
 
+def _scatter_to_payload(trace):
+    """Convert one `scatter3d` trace into what the JS side needs.
+
+    `mode` is a combination, not an enum -- "markers+lines" and
+    "markers+text+lines" both occur -- so it is split into tokens and each is
+    handled on its own.
+    """
+    position = np.stack(
+        [np.asarray(trace[axis], dtype=float) for axis in "xyz"], axis=1
+    )
+    modes = set(str(trace.get("mode") or "lines").split("+"))
+    return {
+        "name": trace.get("name") or "",
+        "object_id": trace.get("object_id"),
+        "opacity": float(trace.get("opacity", 1) or 1),
+        "position": position.ravel().tolist(),
+        "lines": "lines" in modes,
+        "markers": "markers" in modes,
+        # see README: WebGL ignores line width, and neither dash patterns nor
+        # marker symbols have a primitive here. Carried so the gap is visible
+        # in the payload rather than silently dropped in Python.
+        "line_color": trace.get("line_color") or "#2e91e5",
+        "line_width": float(trace.get("line_width") or 1),
+        "line_dash": trace.get("line_dash") or "solid",
+        "marker_color": trace.get("marker_color") or "#2e91e5",
+        "marker_size": float(trace.get("marker_size") or 3),
+        "marker_symbol": trace.get("marker_symbol") or "o",
+    }
+
+
 _TEMPLATE = """<!doctype html>
 <meta charset="utf-8">
 <title>__TITLE__</title>
@@ -145,15 +175,54 @@ for (const item of DATA.meshes) {{
   scene.add(mesh);
   byObjectId.set(item.object_id, mesh);
 }}
+for (const item of DATA.scatters) {{
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position',
+    new THREE.Float32BufferAttribute(item.position, 3));
+
+  if (item.lines) {{
+    // NOTE: WebGL ignores linewidth on LineBasicMaterial -- every line is one
+    // pixel regardless of item.line_width. Real widths need Line2 +
+    // LineMaterial from the addons. Likewise item.line_dash has no primitive.
+    const line = new THREE.Line(geometry, new THREE.LineBasicMaterial({{
+      color: new THREE.Color(item.line_color),
+      transparent: item.opacity < 1,
+      opacity: item.opacity,
+    }}));
+    line.name = item.name;
+    line.userData.objectId = item.object_id;
+    scene.add(line);
+  }}
+  if (item.markers) {{
+    // item.marker_symbol has no primitive either: PointsMaterial draws
+    // squares, and symbols would need a texture atlas.
+    const points = new THREE.Points(geometry, new THREE.PointsMaterial({{
+      color: new THREE.Color(item.marker_color),
+      size: item.marker_size * span / 200,
+      transparent: item.opacity < 1,
+      opacity: item.opacity,
+    }}));
+    points.name = item.name;
+    points.userData.objectId = item.object_id;
+    scene.add(points);
+  }}
+}}
+
 window.magpyObjects = byObjectId;   // so a host page can address one object
 
 scene.add(new THREE.AxesHelper(span / 2));
 
 const legend = document.getElementById('legend');
-legend.innerHTML = DATA.meshes.map(m => {{
+const entries = new Map();
+for (const m of DATA.meshes) {{
   const [r, g, b] = m.color.slice(0, 3).map(v => Math.round(v * 255));
-  return `<div><i style="background: rgb(${{r}},${{g}},${{b}})"></i>${{m.name}}</div>`;
-}}).join('');
+  entries.set(m.name, `rgb(${{r}},${{g}},${{b}})`);
+}}
+for (const s of DATA.scatters) {{
+  if (!entries.has(s.name)) entries.set(s.name, s.line_color);
+}}
+legend.innerHTML = [...entries].map(([name, css]) =>
+  `<div><i style="background: ${{css}}"></i>${{name}}</div>`).join('');
 
 addEventListener('resize', () => {{
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -169,14 +238,12 @@ renderer.setAnimationLoop(() => renderer.render(scene, camera));
 def show_threejs(scene):
     """Render a Magpylib `Scene` to a self-contained three.js page."""
     panel = scene.panel(1, 1)
-    meshes = [
-        _mesh_to_payload(trace)
-        for frame in scene.frames
-        for trace in frame.traces
-        if trace["type"] == "mesh3d"
-    ]
+    traces = [trace for frame in scene.frames for trace in frame.traces]
     data = {
-        "meshes": meshes,
+        "meshes": [_mesh_to_payload(t) for t in traces if t["type"] == "mesh3d"],
+        "scatters": [
+            _scatter_to_payload(t) for t in traces if t["type"] == "scatter3d"
+        ],
         "ranges": panel.ranges.tolist(),
         "labels": panel.labels,
     }
@@ -240,6 +307,6 @@ def register():
         supports_subplots=False,
         supports_animation_output=False,
         supports_native_traces=False,
-        handles_traces=frozenset({"mesh3d"}),
+        handles_traces=frozenset({"mesh3d", "scatter3d"}),
         accepts_options=frozenset(),
     )

@@ -64,7 +64,7 @@ def main():
     with_path = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
     with_path.position = [(0, 0, 0), (2, 0, 0), (4, 0, 0)]
     report(
-        "object with a path (emits scatter3d, undeclared)",
+        "object with a path (scatter3d: markers+lines)",
         lambda: magpy.show(with_path, backend="threejs", return_fig=True),
     )
     report(
@@ -80,14 +80,39 @@ def main():
             cube, magpy.Sensor(position=(0, 0, 4)), backend="threejs", return_fig=True
         ),
     )
-    report(
-        "a current (the one shape that is not mesh3d)",
+    html = report(
+        "a current (scatter3d: lines)",
         lambda: magpy.show(
             magpy.current.Circle(diameter=2, current=1),
             backend="threejs",
             return_fig=True,
         ),
     )
+    if html:
+        (HERE / "current.html").write_text(html)
+        print(f"  wrote current.html ({len(html)} bytes)")
+
+    # all three scatter3d modes at once: 'lines' from a current, 'markers+lines'
+    # from a path, and 'markers' from the markers= kwarg
+    moving = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
+    moving.position = [(0, 0, z) for z in range(4)]
+    html = report(
+        "every object type at once",
+        lambda: magpy.show(
+            cube,
+            moving,
+            magpy.current.Circle(diameter=4, current=1),
+            magpy.current.Polyline(vertices=[(0, 0, 0), (1, 1, 1)], current=1),
+            magpy.misc.Dipole(moment=(0, 0, 1), position=(0, 3, 0)),
+            magpy.Sensor(position=(0, -3, 0), pixel=[(x, 0, 0) for x in (0, 0.3)]),
+            markers=[(4, 4, 4)],
+            backend="threejs",
+            return_fig=True,
+        ),
+    )
+    if html:
+        (HERE / "everything.html").write_text(html)
+        print(f"  wrote everything.html ({len(html)} bytes)")
     report(
         "subplots (undeclared capability)",
         lambda: magpy.show(
