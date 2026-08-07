@@ -163,12 +163,14 @@ _SHELL = """<!doctype html>
 }}
 </script>
 <script type="module">
+__EXTRA_IMPORTS__
+__EXTRA_DATA__
 __VIEWER_JS__
 </script>
 """
 
 
-def render_page(scene, extra_js="", anchors=None):
+def render_page(scene, extra_js="", extra_imports="", extra_data=None, anchors=None):
     """Build the HTML page for `scene`, optionally with extra JS appended.
 
     `anchors` maps ``object_id`` to the object's true origin, in the same
@@ -178,6 +180,12 @@ def render_page(scene, extra_js="", anchors=None):
     them looks the transform up itself and passes it here. Without it the mesh
     falls back to its bounding-box centre, which is wrong for any object whose
     origin is not its centroid.
+
+    `extra_imports` and `extra_data` are the seams a specialised backend needs
+    so it does not have to edit the rendered page afterwards: the first goes in
+    with the module's own imports, the second becomes ``const NAME = ...;``
+    declarations the extra JS can read. Both are emptied by default, so the
+    plain backend renders exactly as before.
     """
     panel = scene.panel(1, 1)
     traces = [trace for frame in scene.frames for trace in frame.traces]
@@ -190,14 +198,20 @@ def render_page(scene, extra_js="", anchors=None):
         "labels": panel.labels,
         "anchors": {str(k): list(v) for k, v in (anchors or {}).items()},
     }
-    # Substitution order matters: the payload goes in last, so a value
-    # inside it can never be mistaken for one of the tokens.
+    declarations = "\n".join(
+        f"const {name} = {json.dumps(value)};"
+        for name, value in (extra_data or {}).items()
+    )
+    # Substitution order matters: everything carrying user data goes in last,
+    # so a value inside it can never be mistaken for one of the tokens.
     return (
         _SHELL.replace("__VERSION__", THREE_VERSION)
         .replace("__TITLE__", scene.title or "Magpylib")
+        .replace("__EXTRA_IMPORTS__", extra_imports.strip())
         .replace("__VIEWER_JS__", _VIEWER_JS)
         .replace("__EXTRA_JS__", extra_js)
         .replace("__DATA__", json.dumps(data))
+        .replace("__EXTRA_DATA__", declarations)
     )
 
 

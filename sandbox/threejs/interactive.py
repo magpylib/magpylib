@@ -29,7 +29,6 @@ from __future__ import annotations
 
 # printing is what this script is for
 # ruff: noqa: T201
-import json
 import webbrowser
 from pathlib import Path
 
@@ -42,8 +41,8 @@ HERE = Path(__file__).parent
 #: The editor front-end, kept beside this file as real JavaScript.
 _INTERACTION_JS = (HERE / "editor.js").read_text()
 
-# `import` statements must sit at the top of a module script, so the addon
-# import is prepended to the page rather than appended with the rest.
+#: The addon the editor needs. `import` must sit with the module's other
+#: imports, which is why the backend takes it separately from the JS body.
 _IMPORT = """
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 """
@@ -139,8 +138,26 @@ def main():
     registry: dict[int, object] = {}
 
     def show(scene):
-        anchors = {oid: obj.position for oid, obj in registry.items()}
-        return render_page(scene, extra_js=_INTERACTION_JS, anchors=anchors)
+        """Everything the editor needs, handed to the backend as data."""
+        return render_page(
+            scene,
+            extra_js=_INTERACTION_JS,
+            extra_imports=_IMPORT,
+            extra_data={
+                "UNIT": "m",
+                "SHAPES": {
+                    str(oid): s
+                    for oid, obj in registry.items()
+                    if (s := shape_of(obj)) is not None
+                },
+                "POLARIZATION": {
+                    str(oid): p
+                    for oid, obj in registry.items()
+                    if (p := polarization_of(obj)) is not None
+                },
+            },
+            anchors={oid: obj.position for oid, obj in registry.items()},
+        )
 
     register("threejs-edit", show)
 
@@ -166,24 +183,6 @@ def main():
     html = magpy.show(
         *objects, backend="threejs-edit", units_length="m", return_fig=True
     )
-    shapes = {
-        str(oid): s for oid, obj in registry.items() if (s := shape_of(obj)) is not None
-    }
-    polarizations = {
-        str(oid): p
-        for oid, obj in registry.items()
-        if (p := polarization_of(obj)) is not None
-    }
-    html = html.replace(
-        # the addon import has to precede the module body
-        "import { OrbitControls }",
-        _IMPORT.strip() + "\nimport { OrbitControls }",
-    ).replace(
-        "const DATA =",
-        f"const UNIT = 'm';\nconst SHAPES = {json.dumps(shapes)};\n"
-        f"const POLARIZATION = {json.dumps(polarizations)};\nconst DATA =",
-    )
-
     page = HERE / "interactive.html"
     page.write_text(html)
     print(f"wrote {page}")
