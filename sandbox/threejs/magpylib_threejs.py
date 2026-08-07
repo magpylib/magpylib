@@ -12,6 +12,7 @@ written up in README.md next to this file.
 from __future__ import annotations
 
 import json
+from collections import Counter
 
 import numpy as np
 
@@ -26,20 +27,33 @@ def _hex_to_rgb(color):
     return tuple(int(color[i : i + 2], 16) / 255 for i in (0, 2, 4))
 
 
-def _sample_colorscale(colorscale, values):
-    """Map `values` (0..1) through a Magpylib colorscale to RGB triples.
+LUT_SIZE = 256
 
-    The colorscale arrives as ``((stop, '#rrggbb'), ...)``, the Plotly
-    spelling Magpylib's trace dialect inherited. Interpolating here rather
-    than in the shader keeps the JS side dumb.
+
+def _colorscale_lut(colorscale):
+    """Flatten a Magpylib colorscale into a `LUT_SIZE` RGB lookup table.
+
+    The colorscale arrives as ``((stop, '#rrggbb'), ...)``, the Plotly spelling
+    Magpylib's trace dialect inherited, and it is *piecewise*: the default
+    tricolor scheme holds green to 0.16, grey from 0.26 to 0.74, then red.
+
+    Sampling it per vertex does not work. A Cuboid has eight vertices whose
+    intensities are all exactly 0 or 1, so nothing lands on the grey plateau
+    and the GPU blends corner colours into a straight green-to-red ramp. What
+    has to be interpolated across the face is the *intensity*, with the
+    colorscale applied per fragment -- hence a lookup texture, indexed by an
+    intensity-valued UV. That is what Plotly's shader does too.
     """
     stops = np.array([s for s, _ in colorscale], dtype=float)
     colors = np.array([_hex_to_rgb(c) for _, c in colorscale], dtype=float)
-    values = np.clip(np.asarray(values, dtype=float), 0.0, 1.0)
-    return np.stack(
-        [np.interp(values, stops, colors[:, channel]) for channel in range(3)],
+    samples = np.linspace(0.0, 1.0, LUT_SIZE)
+    lut = np.stack(
+        [np.interp(samples, stops, colors[:, channel]) for channel in range(3)]
+        # RGBA: three.js dropped RGBFormat in r137, so RGBAFormat it is
+        + [np.ones_like(samples)],
         axis=1,
     )
+    return np.round(lut * 255).astype(int).ravel().tolist()
 
 
 def _mesh_to_payload(trace):
@@ -53,11 +67,17 @@ def _mesh_to_payload(trace):
 
     intensity = trace.get("intensity")
     colorscale = trace.get("colorscale")
-    if intensity is not None and colorscale is not None:
-        colors = _sample_colorscale(colorscale, intensity)
-    else:
-        flat = _hex_to_rgb(trace.get("color") or "#2e91e5")
-        colors = np.tile(flat, (len(position), 1))
+    graded = intensity is not None and colorscale is not None
+    # per-triangle colours, e.g. a Sensor: body in the object's colour, pixels
+    # black, arrow heads red/green/blue. Mixes CSS names with hex, so the
+    # strings go over as-is for THREE.Color to parse.
+    facecolor = trace.get("facecolor")
+    facecolor = None if facecolor is None else [str(c) for c in facecolor]
+
+    uv = None
+    if graded:
+        intensity = np.clip(np.asarray(intensity, dtype=float), 0, 1)
+        uv = np.stack([intensity, np.full(len(position), 0.5)], axis=1)
 
     return {
         "name": trace.get("name") or "",
@@ -65,7 +85,15 @@ def _mesh_to_payload(trace):
         "opacity": float(trace.get("opacity", 1) or 1),
         "position": position.ravel().tolist(),
         "index": index.ravel().tolist(),
-        "color": colors.ravel().tolist(),
+        "color": trace.get("color"),
+        "uv": None if uv is None else uv.ravel().tolist(),
+        "lut": _colorscale_lut(colorscale) if graded else None,
+        "facecolor": facecolor,
+        # legend swatch: the flat colour, else whichever face colour dominates
+        "legend_color": (
+            trace.get("color")
+            or (Counter(facecolor).most_common(1)[0][0] if facecolor else "#2e91e5")
+        ),
     }
 
 
@@ -156,19 +184,50 @@ scene.add(key);
 const byObjectId = new Map();
 for (const item of DATA.meshes) {{
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position',
-    new THREE.Float32BufferAttribute(item.position, 3));
-  geometry.setAttribute('color',
-    new THREE.Float32BufferAttribute(item.color, 3));
-  geometry.setIndex(item.index);
-  geometry.computeVertexNormals();
-
-  const material = new THREE.MeshLambertMaterial({{
-    vertexColors: true,
+  const options = {{
     transparent: item.opacity < 1,
     opacity: item.opacity,
     side: THREE.DoubleSide,
-  }});
+  }};
+
+  if (item.facecolor) {{
+    // per-triangle colours need one vertex per triangle corner, so the
+    // geometry is expanded rather than indexed
+    const pos = [], col = [], c = new THREE.Color();
+    for (let t = 0; t < item.facecolor.length; t++) {{
+      c.set(item.facecolor[t]);                 // parses '#rrggbb' and 'black'
+      for (let corner = 0; corner < 3; corner++) {{
+        const v = item.index[t * 3 + corner];
+        pos.push(item.position[v * 3], item.position[v * 3 + 1],
+                 item.position[v * 3 + 2]);
+        col.push(c.r, c.g, c.b);
+      }}
+    }}
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    options.vertexColors = true;
+  }} else {{
+    geometry.setAttribute('position',
+      new THREE.Float32BufferAttribute(item.position, 3));
+    geometry.setIndex(item.index);
+    if (item.lut) {{
+      // interpolate intensity across the face and look the colour up per
+      // fragment, so a piecewise colorscale keeps its plateaus
+      geometry.setAttribute('uv', new THREE.Float32BufferAttribute(item.uv, 2));
+      const texture = new THREE.DataTexture(
+        new Uint8Array(item.lut), item.lut.length / 4, 1, THREE.RGBAFormat);
+      texture.minFilter = texture.magFilter = THREE.LinearFilter;
+      texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.needsUpdate = true;
+      options.map = texture;
+    }} else {{
+      options.color = new THREE.Color(item.color || '#2e91e5');
+    }}
+  }}
+  geometry.computeVertexNormals();
+
+  const material = new THREE.MeshLambertMaterial(options);
   const mesh = new THREE.Mesh(geometry, material);
   mesh.name = item.name;
   mesh.userData.objectId = item.object_id;
@@ -215,8 +274,7 @@ scene.add(new THREE.AxesHelper(span / 2));
 const legend = document.getElementById('legend');
 const entries = new Map();
 for (const m of DATA.meshes) {{
-  const [r, g, b] = m.color.slice(0, 3).map(v => Math.round(v * 255));
-  entries.set(m.name, `rgb(${{r}},${{g}},${{b}})`);
+  if (!entries.has(m.name)) entries.set(m.name, m.legend_color);
 }}
 for (const s of DATA.scatters) {{
   if (!entries.has(s.name)) entries.set(s.name, s.line_color);

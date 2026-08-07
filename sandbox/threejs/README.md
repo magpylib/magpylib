@@ -20,10 +20,10 @@ python sandbox/threejs/demo.py   # writes cuboid / two_cuboids / current / every
   in Magpylib, and `show(backend="threejs")` works immediately.
 - **`mesh3d` maps onto `BufferGeometry` directly.** `x`/`y`/`z` interleave into
   `position`, `i`/`j`/`k` into the index buffer. No reshaping beyond that.
-- **`supports_colorgradient = True` pays off immediately.** three.js does vertex
-  colours natively, so declaring it means Magpylib hands over the gradient
-  unsliced: `intensity` (per vertex) plus `colorscale`, sampled once in Python
-  into a colour attribute. One mesh per object instead of one per colour band.
+- **`supports_colorgradient = True` pays off immediately.** Declaring it means
+  Magpylib hands over the gradient unsliced — `intensity` per vertex plus a
+  `colorscale` — so one mesh per object replaces one per colour band. Consuming
+  it correctly is less obvious than it looks; see finding 9.
 - **`merge_traces = False` gives addressable objects.** Every trace carries
   `object_id`, so each becomes one `THREE.Mesh` the host page can look up.
 - **`Panel.ranges` frames the camera** without needing to walk the geometry.
@@ -153,6 +153,44 @@ it is worth noting _why_: `LineMaterial` has `worldUnits: false`, meaning widths
 are specified in **pixels** and stay constant under zoom. That is the same
 screen-space mechanism sensors and dipoles would want, so whoever implements
 zoom-invariant sizing gets line widths as a by-product.
+
+### 9. `mesh3d` carries three colour mechanisms, and two of them are traps
+
+Not a Magpylib defect — the dialect expresses all three perfectly well — but the
+obvious reading of each is wrong, and both mistakes render without erroring.
+Every one of these was caught by _looking at the output_, not by validation.
+
+| mechanism                | used by | naive handling         | what it needs                    |
+| ------------------------ | ------- | ---------------------- | -------------------------------- |
+| `color`                  | Dipole  | flat material colour   | correct as read                  |
+| `intensity`+`colorscale` | magnets | sample per vertex      | per-fragment lookup texture      |
+| `facecolor`              | Sensor  | ignored, falls to flat | de-indexed, per-triangle colours |
+
+**The colorscale is piecewise, so per-vertex sampling loses it.** Magpylib's
+default tricolor scale holds green to `0.16`, grey from `0.26` to `0.74`, then
+red. A Cuboid has eight vertices whose intensities are all exactly `0` or `1`,
+so nothing lands on the grey plateau: sampling the scale in Python and letting
+the GPU blend corner colours produces a straight green-to-red ramp with **no
+grey band at all**. What has to be interpolated across the face is the
+_intensity_, with the colour looked up per fragment — a 256-entry RGBA texture
+indexed by an intensity-valued UV. Plotly's shader does the same, which is why
+the reference figures look right.
+
+**`facecolor` is a third path, and a trace using it has `color = None`.** A
+Sensor is a single `mesh3d` with 216 per-triangle colours: the object's own
+colour for the arrow bodies, `red`/`green`/`blue` for the axis heads, `black`
+for the pixels. Falling back to `color` yields a uniform blob that looks
+plausible enough to miss. Rendering it means giving up the index buffer — one
+vertex per triangle corner — which is the same thing
+`subdivide_mesh_by_facecolor` does for Matplotlib. Note the values mix CSS names
+with hex, so `THREE.Color` parses them rather than a Python helper.
+
+A third bug hid behind these two: `THREE.RGBFormat`, which three.js **removed in
+r137**. `node --check` accepts it — it is valid syntax that is merely
+`undefined` at runtime. The payload validated, the JS parsed, and the scene
+still rendered wrong in three separate ways. That is the case for the
+golden-file figure regressions in
+[#972](https://github.com/magpylib/magpylib/issues/972).
 
 ## Not hit, but expected later
 
