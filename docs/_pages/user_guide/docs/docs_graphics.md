@@ -188,13 +188,20 @@ Traces are plain dictionaries, deliberately: a new key or a whole new trace type
 
 Every trace has `type`, `row`, `col`, `name`, `legendgroup` and `showlegend`. Beyond that:
 
-- **`type="mesh3d"`** — `x`, `y`, `z` vertex arrays and `i`, `j`, `k` face indices, plus `color`, `opacity`, and optionally `colorscale` with `intensity`, or `facecolor`.
+- **`type="mesh3d"`** — `x`, `y`, `z` vertex arrays and `i`, `j`, `k` face indices, plus `opacity` and one of three _mutually exclusive_ colourings:
+  - a flat `color`;
+  - `intensity` per vertex with a `colorscale`, used for magnetization. The scale is **piecewise** — the default tricolor one holds green to `0.16`, grey from `0.26` to `0.74`, then red — so it must be applied per fragment, by interpolating the intensity. Sampling it per vertex instead loses every plateau: a Cuboid's eight vertices are all at intensity `0` or `1`, so none of them lands on the grey band and the result is a flat green-to-red ramp;
+  - `facecolor`, one colour per triangle, used where a single object needs several — a Sensor's arrow bodies, its red/green/blue axis heads and its black pixels arrive as one trace. Values mix CSS names with hex. **A trace using `facecolor` has `color = None`**, so a backend that reads only `color` renders it as a uniform blob without erroring.
 - **`type="scatter3d"`** — `x`, `y`, `z` and a `mode` combining `"lines"`, `"markers"` and `"text"`, with `line_*` and `marker_*` styling.
 - **`type="scatter"`** — a 2D curve in a `chart2d` panel, with `x` and `y`. These carry no `opacity`.
 
 Values follow Magpylib's own vocabularies rather than any one library's: marker symbols come from `magpylib._src.defaults.defaults_utility.ALLOWED_SYMBOLS` and dash styles from `ALLOWED_LINESTYLES`, both Matplotlib-derived. Every built-in backend translates them — see `SYMBOLS_TO_PLOTLY` and `SYMBOLS_TO_PYVISTA`.
 
-Traces also carry Magpylib **metadata** that is not a drawing property: `object_id` identifies the object a trace came from, for picking and per-object manipulation. It is `None` on a trace merged across several objects, and process-local — never persist or transmit it. Strip metadata before handing a trace to your plotting library, which will otherwise reject the unknown key:
+Traces also carry Magpylib **metadata** that is not a drawing property: `object_id` identifies the object a trace came from, for picking and per-object manipulation. It is `None` on a trace merged across several objects, and process-local — never persist or transmit it.
+
+`object_id` is also how a caller recovers an object's **transform**, which the payload does not contain: position and orientation are baked into the vertex arrays, and no trace carries them separately. A host that holds the same objects — the case `object_id` exists for — resolves the token against them and reads `position` and `orientation` from the object itself. This matters for anything that manipulates an object rather than only drawing it: a gizmo anchored on a mesh's bounding-box centre rotates about the wrong point for any object whose origin is not its centroid, a Sensor being the obvious case.
+
+Strip metadata before handing a trace to your plotting library, which will otherwise reject the unknown key:
 
 ```python
 from magpylib.graphics.backend import drawing_properties
