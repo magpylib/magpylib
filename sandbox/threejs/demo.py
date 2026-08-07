@@ -103,13 +103,13 @@ def main():
             cube, backend="threejs", threejs_wireframe=True, return_fig=True
         ),
     )
-    # magpylib returns the backend's value either way, so `return_fig` is only
-    # honoured because the backend checks it -- nothing enforces that.
+    # magpylib discards the returned figure unless return_fig is set; what the
+    # backend still owns is whether to *display*, which is why it reads the flag.
     # The browser is stubbed out so running the demo stays side-effect free.
     opened = []
     webbrowser.open = opened.append
     result = report(
-        "return_fig=False (backend must honour it itself)",
+        "return_fig=False (magpylib discards the figure; backend displays)",
         lambda: magpy.show(cube, backend="threejs"),
     )
     print(

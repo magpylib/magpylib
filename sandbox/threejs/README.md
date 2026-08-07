@@ -63,13 +63,20 @@ rather than dropping them silently. Worth knowing when scoping a real backend:
 `scatter3d` is the second and last thing to implement, and its `mode` is a
 combination (`"markers+text+lines"` occurs), not an enum.
 
-### 3. `return_fig` is advisory, and nothing enforces it
+### 3. `return_fig` was advisory and unenforced — since fixed
 
-`magpy.show()` passes the backend's return value back to the caller **whether or
-not `return_fig` is set**. A backend that ignores `scene.return_fig` still
-"works", but leaks its figure object into the caller's REPL on every call. This
-prototype did exactly that until it was fixed. Nothing warns, and it is easy to
-miss because the built-in backends all handle it.
+`magpy.show()` used to return the backend's value to the caller **whether or not
+`return_fig` was set**, contradicting its own documented return value. All three
+built-in backends return `None` there of their own accord, so the promise held
+by convention rather than by construction, and nothing in the suite covered it.
+This prototype was the first thing to break it: every `show()` call leaked an
+HTML string into the caller.
+
+Fixed on the parent branch — the dispatcher now discards the figure unless
+`return_fig` is set, and five tests that had been resting on the leak were
+corrected with it. The half that stays with the backend is the _other_ decision
+`scene.return_fig` drives: whether to display. This backend still reads it to
+choose between opening a browser tab and staying quiet.
 
 ### 4. `canvas` has no meaning for a browser backend
 
@@ -82,29 +89,36 @@ in the Python process. So:
   will never pick one.
 
 There is no capability flag for "cannot accept a canvas", so the only way to
-report it is to raise from inside `show`.
+report it is to raise from inside `show`. The parent branch documents that
+rather than adding a fifth flag for one hypothetical backend; worth revisiting
+if a second such backend ever appears.
 
-### 5. No legend contract
+### 5. No legend contract — since documented
 
 Traces carry `name`, `legendgroup` and `showlegend`, and `Scene.legend_maxitems`
 is handed over, but building a legend is entirely the backend's problem — this
-prototype hand-rolls an HTML overlay. `api.py` tells a backend author not to
-_change_ what `legendgroup` means, without saying what it means: which traces
-are expected to collapse into one entry, and how `legend_maxitems` is meant to
-be applied.
+prototype hand-rolls an HTML overlay. `api.py` told a backend author not to
+_change_ what `legendgroup` means without saying what it means.
+
+The parent branch now states it: traces sharing a `legendgroup` are one entry,
+which is how a `Collection`'s children collapse into a single row.
+`legend_maxitems` turned out to be worse than undocumented — it hides the legend
+entirely past that count rather than truncating, plotly ignores it outright, and
+negative values reserve legend space without drawing one. That is
+[#975](https://github.com/magpylib/magpylib/issues/975).
 
 ### 6. Axis labels have no primitive
 
 `Panel.labels` gives `{'x': 'x (m)', ...}`, which the three built-in backends
 render for free. three.js has no text in `AxesHelper`; labels need sprites or an
 HTML overlay. Minor, but it is real work the contract implies and does not help
-with.
+with. Noted in the parent's "easy to miss" list; nothing more to do about it.
 
-### 7. The up-axis is not stated anywhere
+### 7. The up-axis was not stated anywhere — since documented
 
 Magpylib scenes are z-up, so `camera.up.set(0, 0, 1)` is required or every view
-is wrong. That is not in the backend documentation; it was inferred from the
-built-in backends. One sentence in the "easy to miss" list would cover it.
+is silently wrong. It had to be inferred from the built-in backends; the parent
+branch now says so outright.
 
 ## Not hit, but expected later
 
