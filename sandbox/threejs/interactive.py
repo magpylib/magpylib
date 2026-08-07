@@ -58,7 +58,8 @@ hud.innerHTML = `<b>click an object</b><br>
   <span id="calls">python round-trips: 0</span><br>
   <span id="snap">snap: off</span> &middot; <span id="hist">history: 0</span><br>
   <small>W move &middot; E rotate &middot; R resize &middot; S snap<br>
-  &#8984;/Ctrl+Z undo &middot; &#8679;+Z redo &middot; Backspace reset</small>`;
+  P polarization &middot; &#8984;/Ctrl+Z undo &middot; &#8679;+Z redo<br>
+  Backspace reset</small>`;
 document.body.appendChild(hud);
 
 const inspector = document.createElement('div');
@@ -103,6 +104,40 @@ for (const [oid, mesh] of byObjectId) {
 
 const history = [], redoStack = [];
 
+// ---- polarization gizmo ---------------------------------------------------
+// The arrow shows the *world* direction, which is the object's orientation
+// applied to the stored local vector -- magpylib keeps polarization in the
+// body frame. Rotating the arrow therefore sets a world direction that has to
+// be converted back through the inverse of the mesh's quaternion before it can
+// be sent. Getting that wrong is invisible until an object is rotated.
+const polGroup = new THREE.Group();
+const polArrow = new THREE.ArrowHelper(
+  new THREE.Vector3(0, 0, 1), new THREE.Vector3(), 1, 0xd62728, 0.3, 0.18);
+polGroup.add(polArrow);
+polGroup.visible = false;
+scene.add(polGroup);
+const Z = new THREE.Vector3(0, 0, 1);
+
+function worldPolarization(oid) {
+  const local = new THREE.Vector3().fromArray(state.get(oid)[POLARIZATION[String(oid)].attr]);
+  return local.applyQuaternion(byObjectId.get(oid).quaternion);
+}
+
+/** Park the arrow on `mesh`, pointing along its world polarization. */
+function placePolarization(mesh) {
+  const oid = mesh && mesh.userData.objectId;
+  if (!mesh || !POLARIZATION[String(oid)]) { polGroup.visible = false; return; }
+  const dir = worldPolarization(oid);
+  if (dir.lengthSq() === 0) { polGroup.visible = false; return; }
+  mesh.geometry.computeBoundingSphere();
+  const span = mesh.geometry.boundingSphere.radius *
+               Math.max(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+  polArrow.setLength(span * 1.8, span * 0.5, span * 0.3);
+  polGroup.position.copy(mesh.position);
+  polGroup.quaternion.setFromUnitVectors(Z, dir.clone().normalize());
+  polGroup.visible = true;
+}
+
 function applyToMesh(oid, field, value) {
   const mesh = byObjectId.get(oid), shape = SHAPES[String(oid)];
   if (field === 'position') { mesh.position.fromArray(value); return; }
@@ -113,7 +148,7 @@ function applyToMesh(oid, field, value) {
   // vector. Recomputing it in the browser means reimplementing that frame
   // convention, and getting it subtly wrong for every rotated object. Ask
   // magpylib instead: one object re-renders in 0.3 ms.
-  if (field === 'polarization') return;
+  if (field === 'polarization') { placePolarization(mesh); return; }
   // a shape value is expressed as a scale of the base mesh
   const base = Array.isArray(shape.value) ? shape.value : [shape.value];
   const v = Array.isArray(value) ? value : [value];
@@ -218,10 +253,11 @@ function buildInspector(mesh) {
 function select(mesh) {
   selected = mesh;
   buildInspector(mesh);
-  if (!mesh) { gizmo.detach();
+  if (!mesh) { gizmo.detach(); polGroup.visible = false;
     document.getElementById('sel').textContent = 'nothing selected';
     document.getElementById('delta').textContent = ''; return; }
   gizmo.attach(mesh);
+  placePolarization(mesh);
   document.getElementById('sel').textContent = `selected: ${mesh.name}`;
   document.getElementById('delta').textContent = 'drag a handle';
 }
@@ -263,6 +299,15 @@ addEventListener('keydown', e => {
     else document.getElementById('delta').textContent =
       'this object has no scale-covariant shape parameter';
   }
+  if (e.key === 'p') {
+    if (selected && POLARIZATION[String(selected.userData.objectId)]) {
+      gizmo.attach(polGroup); gizmo.setMode('rotate');
+      document.getElementById('delta').textContent =
+        'rotating polarization -- colours redraw once magpylib answers';
+    } else {
+      document.getElementById('delta').textContent = 'this object has no polarization';
+    }
+  }
   if (e.key === 'Escape') select(null);
 });
 
@@ -279,6 +324,7 @@ gizmo.addEventListener('objectChange', () => {
       selected.scale.set(s, s, selected.scale.z);
     }
   }
+  if (gizmo.object !== polGroup) placePolarization(selected);
   const p = selected.position;
   document.getElementById('delta').textContent =
     `at (${p.x.toFixed(3)}, ${p.y.toFixed(3)}, ${p.z.toFixed(3)}) ${UNIT}`;
@@ -288,6 +334,19 @@ gizmo.addEventListener('objectChange', () => {
 gizmo.addEventListener('mouseUp', () => {
   if (!selected) return;
   const oid = selected.userData.objectId, shape = SHAPES[String(oid)];
+  if (gizmo.object === polGroup) {
+    const pol = POLARIZATION[String(oid)];
+    // amplitude is not what the arrow expresses, so it is carried through
+    const magnitude = new THREE.Vector3()
+      .fromArray(state.get(oid)[pol.attr]).length();
+    // the arrow points in world space; magpylib stores the body frame
+    const local = Z.clone()
+      .applyQuaternion(polGroup.quaternion)
+      .applyQuaternion(selected.quaternion.clone().invert())
+      .multiplyScalar(magnitude);
+    applyEdit(oid, pol.attr, local.toArray().map(n => Number(n.toFixed(6))));
+    return;
+  }
   if (gizmo.mode === 'translate') {
     applyEdit(oid, 'position', selected.position.toArray());
   } else if (gizmo.mode === 'rotate') {
