@@ -134,7 +134,7 @@ class Scene:
     canvas_update: bool = True
     #: Return the figure instead of displaying it.
     return_fig: bool = False
-    #: Collapse the legend beyond this many entries.
+    #: Hide the legend once it would carry more entries than this.
     legend_maxitems: int = 20
     fig_kwargs: dict[str, Any] = field(default_factory=dict)
     show_kwargs: dict[str, Any] = field(default_factory=dict)

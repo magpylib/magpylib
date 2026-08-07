@@ -91,7 +91,10 @@
   backend; a backend declaring `supports_subplots = False` was still handed a
   subplot grid; misspelled arguments and backend-prefixed ones such as
   `plotly_renderer=...` were dropped without a word; and the Plotly backend
-  mutated the payload it was given.
+  mutated the payload it was given. `show()` also returned whatever the backend
+  returned even with `return_fig=False`, contradicting its own documented return
+  value — the built-in backends happened to return `None` there, so only a
+  third-party backend could expose it.
 - Added `magpy.defaults.display.units.length`, so the `show(units_length=...)`
   default is configurable like every other display setting
   ([#973](https://github.com/magpylib/magpylib/pull/973)). It was the only

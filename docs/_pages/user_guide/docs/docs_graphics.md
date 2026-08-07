@@ -204,7 +204,7 @@ fig.add_trace(go.Mesh3d(**drawing_properties(trace)))
 
 Declaring `merge_traces = False` stops Magpylib merging traces _across_ objects, so that every object keeps its own geometry and identity — what picking and drag gizmos need. It affects only objects that would otherwise merge, which in practice means `Collection` children under default styling; separately styled objects are never merged, because each gets its own colour. Merges _within_ one object are always applied.
 
-Four things are easy to miss:
+A few things are easy to miss:
 
 - **`frame.native_traces` must be consumed.** When a user attaches a model through `style.model3d.data` naming your backend, it is routed there rather than into `frame.traces`, already positioned and oriented. Ignoring the list silently drops the user's models. Declare `supports_native_traces = False` if you do not handle them, and Magpylib will warn on your behalf.
 - **2D traces.** With `output="Bx"` rather than `"model3d"`, frames also carry `scatter` traces. A pure-3D backend has no answer for these.
@@ -222,6 +222,10 @@ Four things are easy to miss:
   ```
 
   Both are needed; either alone still leaves the geometry scene-dependent.
+
+- **`scene.return_fig` decides whether to _display_, not what to return.** Magpylib discards whatever `show` returns unless it is set, so the question it answers is whether to call your library's blocking show/display — returning the figure either way is fine.
+- **`scene.canvas` is a Python object** — a Matplotlib `Figure`, a Plotly `Figure`, a PyVista `Plotter`. A backend that renders outside the Python process, in a browser for instance, has nothing to bind it to and should raise. For the same reason `backend="auto"`, which infers the backend from the canvas type, will never select one.
+- **Scenes are z-up, and the legend is yours to draw.** Camera code needs the z-up convention stated explicitly. `Panel.labels` carries the axis titles and every trace carries `name`, `legendgroup` and `showlegend`, but nothing renders them for you: traces sharing a `legendgroup` belong to one legend entry — that is how a `Collection`'s children collapse into a single row — and `Scene.legend_maxitems` is the count past which the built-in backends hide the legend entirely.
 
 Capability flags (`supports_animation`, `supports_subplots`, `supports_colorgradient`, `supports_animation_output`) all default to `False`, so a capability added in a later Magpylib release never changes an existing backend's behaviour. `show()` warns and falls back rather than handing over something undeclared.
 

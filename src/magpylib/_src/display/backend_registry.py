@@ -259,7 +259,12 @@ class ShowDispatcher:
                 f"type(s) {sorted(unhandled)!r}; they may not be drawn.",
                 stacklevel=2,
             )
-        return self.show(scene)
+        figure = self.show(scene)
+        # show() documents that it returns the figure only when return_fig is
+        # set. All three built-in backends return None otherwise, so the promise
+        # held by convention rather than by construction -- a backend that
+        # returns its figure unconditionally leaked it into the caller.
+        return figure if scene.return_fig else None
 
 
 def get_show_func(backend):

@@ -43,7 +43,7 @@ def test_registration_and_show_dispatch(noop_backend):
     name, calls = noop_backend
     assert name in DisplayBackend.backends
 
-    scene = magpy.show(make_source(), backend=name)
+    scene = magpy.show(make_source(), backend=name, return_fig=True)
 
     assert len(calls) == 1
     assert scene.frames, "expected at least one frame"
@@ -112,6 +112,7 @@ def test_subplot_grid_collapses_for_backend_without_subplots(noop_backend):
             {"objects": [a], "row": 1, "col": 1},
             {"objects": [b], "row": 2, "col": 1},
             backend=name,
+            return_fig=True,
         )
 
     assert scene.has_subplots is False
@@ -197,7 +198,7 @@ def test_declaring_a_subclass_registers_it():
 
     try:
         assert "declarative" in DisplayBackend.backends
-        scene = magpy.show(make_source(), backend="declarative")
+        scene = magpy.show(make_source(), backend="declarative", return_fig=True)
         assert scene.frames
     finally:
         DisplayBackend.backends.pop("declarative", None)
@@ -281,7 +282,7 @@ def test_public_register_backend_defaults_capabilities_off():
             "animation_output": False,
             "native_traces": False,
         }
-        assert magpy.show(make_source(), backend="minimal").frames
+        assert magpy.show(make_source(), backend="minimal", return_fig=True).frames
     finally:
         DisplayBackend.backends.pop("minimal", None)
 
@@ -464,6 +465,23 @@ def test_declared_options_do_not_warn(name, option):
         magpy.show(make_source(), backend=name, return_fig=True, **option)
 
 
+def test_return_fig_false_discards_the_backend_figure():
+    """`show()` documents that it returns None unless `return_fig` is set.
+
+    All three built-in backends return None of their own accord, so the
+    promise held by convention; a third-party backend returning its figure
+    unconditionally leaked it into the caller.
+    """
+    try:
+        magpy.register_backend("leaky", lambda scene: "THE FIGURE")  # noqa: ARG005
+        assert magpy.show(make_source(), backend="leaky") is None
+        assert (
+            magpy.show(make_source(), backend="leaky", return_fig=True) == "THE FIGURE"
+        )
+    finally:
+        DisplayBackend.backends.pop("leaky", None)
+
+
 def test_undeclared_accepts_options_accepts_anything():
     """The default must not make existing third-party backends noisy."""
     try:
@@ -540,7 +558,7 @@ def test_merge_traces_false_unmerges_collection_children():
             return [t for f in scene.frames for t in f.traces]
 
     try:
-        traces = magpy.show(collection, backend="id_unmerged")
+        traces = magpy.show(collection, backend="id_unmerged", return_fig=True)
         assert {t["object_id"] for t in traces} == {id(a), id(b)}
     finally:
         DisplayBackend.backends.pop("id_unmerged", None)
