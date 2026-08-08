@@ -25,13 +25,16 @@ from __future__ import annotations
 # it reports the URL it is serving on
 # ruff: noqa: T201
 import ctypes
+import json
 import sys
 import threading
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+import numpy as np
 from magpylib_threejs import register, render_page
+from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 
@@ -129,6 +132,85 @@ def polarization_of(obj):
     }
 
 
+#: Constructor arguments worth emitting per class, in order. Anything not
+#: listed is either a default or reachable through position/orientation.
+_CONSTRUCTOR_ARGS = {
+    "Cuboid": ("dimension", "polarization"),
+    "Cylinder": ("dimension", "polarization"),
+    "CylinderSegment": ("dimension", "polarization"),
+    "Sphere": ("diameter", "polarization"),
+    "Tetrahedron": ("vertices", "polarization"),
+    "Dipole": ("moment",),
+    "Circle": ("diameter", "current"),
+    "Polyline": ("vertices", "current"),
+    "Sensor": ("pixel",),
+}
+
+
+def _literal(value):
+    """A numpy value as something that can be pasted into a script."""
+    array = np.asarray(value)
+    if array.ndim == 0:
+        return repr(round(float(array), 6))
+    return repr(np.round(array, 6).tolist())
+
+
+def to_code(objects):
+    """The current objects as a runnable magpylib script.
+
+    This is the round-trip the whole exercise is for: edit in the browser, get
+    python back. It reads the live objects, so it reflects every edit that has
+    been applied -- which is why the edits have to actually reach python rather
+    than only being logged.
+    """
+    lines = ["import magpylib as magpy", ""]
+    rotated = [o for o in objects if o.orientation.magnitude() > 1e-12]
+    if rotated:
+        lines.insert(1, "from scipy.spatial.transform import Rotation as R")
+
+    for index, obj in enumerate(objects, start=1):
+        kind = type(obj).__name__
+        module = {
+            "Sensor": "magpy",
+            "Dipole": "magpy.misc",
+            "Circle": "magpy.current",
+            "Polyline": "magpy.current",
+        }.get(kind, "magpy.magnet")
+        args = [
+            f"{name}={_literal(getattr(obj, name))}"
+            for name in _CONSTRUCTOR_ARGS.get(kind, ())
+            if getattr(obj, name, None) is not None
+        ]
+        args.append(f"position={_literal(obj.position)}")
+        if obj.orientation.magnitude() > 1e-12:
+            args.append(
+                f"orientation=R.from_quat({_literal(obj.orientation.as_quat())})"
+            )
+        name = f"{kind.lower()}{index}"
+        joined = ",\n    ".join(args)
+        lines.append(f"{name} = {module}.{kind}(\n    {joined},\n)")
+
+    names = ", ".join(
+        f"{type(o).__name__.lower()}{i}" for i, o in enumerate(objects, 1)
+    )
+    lines += ["", f"magpy.show({names})"]
+    return "\n".join(lines)
+
+
+def apply_edit(obj, field, value):
+    """Apply one ``{field: value}`` message from the browser to `obj`."""
+    if field == "quaternion":
+        obj.orientation = R.from_quat(value)
+    elif "." in field:  # a style path, e.g. style.size
+        node = obj
+        *parents, leaf = field.split(".")
+        for part in parents:
+            node = getattr(node, part)
+        setattr(node, leaf, value)
+    else:
+        setattr(obj, field, value)
+
+
 def _objects_in(scene):
     """Map ``object_id`` to the object it came from, for one `show` call.
 
@@ -144,7 +226,7 @@ def _objects_in(scene):
     return found
 
 
-def _serve(html, server):
+def _serve(html, server, objects_by_id):
     """Serve `html` at ``/`` and a heartbeat at ``/alive`` until interrupted.
 
     A viewer can be served once and forgotten, which is what the plain backend
@@ -155,18 +237,33 @@ def _serve(html, server):
     payload = html.encode()
 
     class Handler(BaseHTTPRequestHandler):
-        def do_GET(self):
-            alive = self.path.startswith("/alive")
-            body = b'{"alive":true}' if alive else payload
+        def _reply(self, body, kind="application/json"):
             self.send_response(200)
-            self.send_header(
-                "Content-Type",
-                "application/json" if alive else "text/html; charset=utf-8",
-            )
+            self.send_header("Content-Type", kind)
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
             self.wfile.write(body)
+
+        def do_GET(self):
+            if self.path.startswith("/alive"):
+                self._reply(b'{"alive":true}')
+            elif self.path.startswith("/export"):
+                # read the live objects, so this reflects every applied edit
+                code = to_code(list(objects_by_id.values()))
+                self._reply(code.encode(), "text/plain; charset=utf-8")
+            else:
+                self._reply(payload, "text/html; charset=utf-8")
+
+        def do_POST(self):
+            """Apply one edit to the object it names."""
+            size = int(self.headers.get("Content-Length", 0))
+            message = json.loads(self.rfile.read(size) or b"{}")
+            obj = objects_by_id.get(message.pop("object_id", None))
+            if obj is not None:
+                for field, value in message.items():
+                    apply_edit(obj, field, value)
+            self._reply(b'{"ok":true}')
 
         def log_message(self, *args):
             """Quieten the per-request logging."""
@@ -185,7 +282,7 @@ def _serve(html, server):
 
 def show(scene):
     """Render `scene` with the editor layer attached."""
-    objects = _objects_in(scene)
+    objects_by_id = _objects_in(scene)
     # the port has to be known before the page is built, since the page needs
     # to be told where to send its heartbeat
     server = None if scene.return_fig else ThreadingHTTPServer(("127.0.0.1", 0), None)
@@ -205,26 +302,29 @@ def show(scene):
                 "alive": None
                 if server is None
                 else f"http://127.0.0.1:{server.server_port}/alive",
+                "root": None
+                if server is None
+                else f"http://127.0.0.1:{server.server_port}/",
             },
             "SHAPES": {
                 str(oid): s
-                for oid, obj in objects.items()
+                for oid, obj in objects_by_id.items()
                 if (s := shape_of(obj)) is not None
             },
             "POLARIZATION": {
                 str(oid): p
-                for oid, obj in objects.items()
+                for oid, obj in objects_by_id.items()
                 if (p := polarization_of(obj)) is not None
             },
         },
-        anchors={oid: obj.position for oid, obj in objects.items()},
+        anchors={oid: obj.position for oid, obj in objects_by_id.items()},
     )
     if scene.canvas is not None:  # see README: canvas has no meaning here
         msg = "the threejs backend cannot draw onto an existing canvas"
         raise NotImplementedError(msg)
     if scene.return_fig:
         return html
-    return _serve(html, server)
+    return _serve(html, server, objects_by_id)
 
 
 # Importing an editing backend pins the two scalings magpylib derives from the

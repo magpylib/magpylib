@@ -45,6 +45,15 @@ style.textContent = `
 #legend { top: 12px; left: 12px; }
 #hud    { bottom: 42px; left: 12px; }
 #inspector { top: 12px; right: 12px; min-width: 172px; }
+#code {
+  display: none; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  max-width: min(680px, 82vw); max-height: 70vh; overflow: auto;
+}
+#code pre {
+  margin: 0; font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre; color: #1f2328;
+}
+#code .hint { float: right; text-transform: none; letter-spacing: 0; }
 
 /* a status bar rather than another floating panel: connection state is about
    the session, not about anything in the scene */
@@ -184,6 +193,7 @@ hud.innerHTML = `
     <kbd>L</kbd><span>local / world space</span>
     <kbd>F</kbd><span>frame selected</span>
     <kbd>\u21b9</kbd><span>next object</span>
+    <kbd>C</kbd><span>export magpylib code</span>
     <kbd>\u2318Z</kbd><span>undo / <kbd>\u21e7</kbd> redo</span>
     <kbd>\u232b</kbd><span>reset</span>
     <kbd>H</kbd><span>hide (<kbd>\u21e7</kbd> isolate)</span>
@@ -202,6 +212,14 @@ inspector.innerHTML =
   `<div class="mp-title" id="sel">values</div>` +
   `<div id="fields">select an object</div>`;
 document.body.appendChild(inspector);
+
+const code = document.createElement("div");
+code.id = "code";
+code.className = "mp-panel";
+code.innerHTML =
+  `<div class="mp-title">magpylib code <span class="hint"></span></div>` +
+  `<pre></pre>`;
+document.body.appendChild(code);
 
 const gizmo = new TransformControls(camera, renderer.domElement);
 // OrbitControls must yield while the gizmo has the pointer, or dragging a
@@ -372,14 +390,44 @@ function applyToMesh(oid, field, value) {
   else mesh.scale.set(s[0], s[1], s[2]);
 }
 
-function send(oid, field, value) {
-  if (status.dataset.state === "live") {
-    setStatus("busy", "sending");
-    setTimeout(() => setStatus("live", "backend connected"), 250);
-  }
+async function send(oid, field, value) {
   roundTrips += 1;
   document.getElementById("calls").textContent = `${roundTrips} round-trips`;
-  console.log("would send to python:", { object_id: oid, [field]: value });
+  if (!INFO.root) return; // a saved page has nobody to tell
+  setStatus("busy", "sending");
+  try {
+    await fetch(INFO.root, {
+      method: "POST",
+      body: JSON.stringify({ object_id: oid, [field]: value }),
+    });
+    setStatus("live", "backend connected");
+  } catch {
+    setStatus("dead", "backend gone \u2014 edits go nowhere");
+  }
+}
+
+// ---- export ---------------------------------------------------------------
+// The point of the round-trip: python holds the edited objects, so it can
+// print them back as a script. Reading it from the server rather than
+// rebuilding it here is what makes it trustworthy -- it is the objects, not
+// the browser's idea of them.
+async function exportCode() {
+  if (!INFO.root) {
+    setStatus("static", "no backend \u2014 cannot export");
+    return;
+  }
+  const code = await (
+    await fetch(INFO.root + "export", { cache: "no-store" })
+  ).text();
+  const panel = document.getElementById("code");
+  panel.querySelector("pre").textContent = code;
+  panel.style.display = "block";
+  try {
+    await navigator.clipboard.writeText(code);
+    panel.querySelector(".hint").textContent = "copied to clipboard";
+  } catch {
+    panel.querySelector(".hint").textContent = "select and copy";
+  }
 }
 
 // The single door every change goes through. `record` is false when replaying,
@@ -729,7 +777,11 @@ addEventListener("keydown", (e) => {
       `pivot: ${pivotAtOrigin ? "origin" : "centre"}`;
     bindProxy();
   }
-  if (e.key === "Escape") select(null);
+  if (e.key === "c") exportCode();
+  if (e.key === "Escape") {
+    document.getElementById("code").style.display = "none";
+    select(null);
+  }
 });
 
 // ---- during the drag: JS only, nothing sent ------------------------------
