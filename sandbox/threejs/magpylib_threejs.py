@@ -147,13 +147,17 @@ _SHELL = """<!doctype html>
 <meta charset="utf-8">
 <title>__TITLE__</title>
 <style>
-  body { margin: 0; overflow: hidden; background: #ffffff; }
+  body { margin: 0; overflow: hidden; background: #fbfbfc; }
   #legend {
-    position: absolute; top: 8px; left: 8px; font: 12px sans-serif;
-    background: rgba(255,255,255,.85); padding: 6px 8px; border-radius: 4px;
+    position: absolute; top: 12px; left: 12px; z-index: 5;
+    font: 12px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #1f2328; background: rgba(255,255,255,.93);
+    border: 1px solid rgba(15,23,42,.10); border-radius: 9px;
+    box-shadow: 0 1px 2px rgba(15,23,42,.05), 0 6px 20px rgba(15,23,42,.08);
+    backdrop-filter: blur(8px); padding: 9px 11px;
   }
-  #legend div { display: flex; align-items: center; gap: 6px; }
-  #legend i { width: 10px; height: 10px; border-radius: 2px; }
+  #legend div { display: flex; align-items: center; gap: 7px; }
+  #legend i { width: 9px; height: 9px; border-radius: 3px; flex: none; }
 </style>
 <div id="legend"></div>
 <script type="importmap">

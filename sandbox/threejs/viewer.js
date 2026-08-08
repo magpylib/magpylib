@@ -35,7 +35,7 @@ const centre = new THREE.Vector3(
 );
 const span = Math.max(rx[1] - rx[0], ry[1] - ry[0], rz[1] - rz[0]) || 1;
 
-const camera = new THREE.PerspectiveCamera(
+let camera = new THREE.PerspectiveCamera(
   45,
   window.innerWidth / window.innerHeight,
   span / 1000,
@@ -231,4 +231,11 @@ addEventListener("resize", () => {
 // after formatting so it may contain braces freely.
 __EXTRA_JS__;
 
+// `camera` is a binding rather than a constant, and the loop reads it each
+// frame, so an editor layer can swap in an orthographic one.
+function setCamera(next) {
+  camera = next;
+  controls.object = next;
+  controls.update();
+}
 renderer.setAnimationLoop(() => renderer.render(scene, camera));

@@ -17,42 +17,136 @@
 // one. The browser holds the history only so it can name that value; the model
 // is the magpylib object, and a real host would replay these against it.
 
-const hud = document.createElement("div");
-hud.id = "hud";
-hud.innerHTML = `<b>click an object</b><br>
-  <span id="sel">nothing selected</span><br>
-  <span id="delta"></span><br>
-  <span id="calls">python round-trips: 0</span><br>
-  <span id="snap">snap: off</span> &middot; <span id="hist">history: 0</span><br>
-  <small>W move &middot; E rotate &middot; R resize &middot; S snap<br>
-  P polarization &middot; &#8984;/Ctrl+Z undo &middot; &#8679;+Z redo<br>
-  Backspace reset</small>`;
-document.body.appendChild(hud);
+// ---- chrome ---------------------------------------------------------------
+// Four panels sharing one visual language: status top-left, the viewer's own
+// legend beneath it, controls bottom-left, inspector right.
 
-// ---- is the backend still there? -----------------------------------------
-// An editor is only useful while python is listening, so the page says whether
-// it is -- and notices when it stops, rather than silently accepting edits
-// that go nowhere.
+const style = document.createElement("style");
+style.textContent = `
+:root {
+  --panel: rgba(255,255,255,.93);
+  --edge: rgba(15,23,42,.10);
+  --ink: #1f2328;
+  --muted: #6b7280;
+  --shadow: 0 1px 2px rgba(15,23,42,.05), 0 6px 20px rgba(15,23,42,.08);
+}
+.mp-panel {
+  position: absolute; z-index: 5;
+  background: var(--panel); color: var(--ink);
+  border: 1px solid var(--edge); border-radius: 9px;
+  box-shadow: var(--shadow); backdrop-filter: blur(8px);
+  padding: 9px 11px;
+  font: 12px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.mp-title {
+  font-size: 10px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+}
+#legend { top: 12px; left: 12px; }
+#hud    { bottom: 42px; left: 12px; }
+#inspector { top: 12px; right: 12px; min-width: 172px; }
+
+/* a status bar rather than another floating panel: connection state is about
+   the session, not about anything in the scene */
+#statusbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
+  display: flex; align-items: center; gap: 9px;
+  height: 26px; padding: 0 12px; box-sizing: border-box;
+  background: rgba(248,249,251,.94); border-top: 1px solid var(--edge);
+  backdrop-filter: blur(8px);
+  font: 11px/1 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink);
+}
+#statusbar i {
+  width: 8px; height: 8px; border-radius: 50%; flex: none; background: #c3c8d0;
+  box-shadow: 0 0 0 3px rgba(0,0,0,.04);
+}
+#statusbar .sep { flex: 1; }
+#statusbar .meta { color: var(--muted); }
+#statusbar[data-state="live"] i { background: #22a06b; box-shadow: 0 0 0 3px rgba(34,160,107,.16); }
+#statusbar[data-state="busy"] i { background: #e8912d; box-shadow: 0 0 0 3px rgba(232,145,45,.18); }
+#statusbar[data-state="dead"] i { background: #d64545; box-shadow: 0 0 0 3px rgba(214,69,69,.18); }
+#statusbar[data-state="dead"] { background: #fdecec; border-top-color: rgba(214,69,69,.35); }
+/* aiming the polarization edits the magnet's field, not its placement, so the
+   viewport gets a border and the mode is named in the bar */
+body.aiming::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 4;
+  border: 2px solid rgba(214,69,69,.45); box-sizing: border-box;
+}
+body.aiming #mode { color: #d64545; font-weight: 600; }
+
+kbd {
+  font: 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: #f4f5f7; border: 1px solid var(--edge); border-bottom-width: 2px;
+  border-radius: 4px; padding: 2px 5px; color: #3d4451;
+}
+#controls > summary {
+  cursor: pointer; list-style: none; user-select: none;
+  margin: 0 0 6px; display: flex; align-items: center; gap: 5px;
+}
+#controls > summary::-webkit-details-marker { display: none; }
+#controls > summary::before {
+  content: ""; width: 0; height: 0; flex: none;
+  border: 4px solid transparent; border-left-color: var(--ink);
+  transition: transform .14s ease;
+}
+#controls > summary:hover { color: var(--ink); }
+#controls > summary:hover::before { border-left-color: #2e91e5; }
+#controls[open] > summary::before { transform: rotate(90deg) translateX(-1px); }
+#controls:not([open]) > summary { margin-bottom: 0; }
+#keys { display: grid; grid-template-columns: auto 1fr; gap: 3px 8px; align-items: center; }
+#keys span { color: var(--muted); }
+
+#readout { margin-bottom: 7px; }
+#sel { font-weight: 600; }
+#delta { color: var(--muted); }
+#stats { color: var(--muted); font-size: 11px; margin: 5px 0 8px; }
+
+#fields .row {
+  display: grid; grid-template-columns: 1fr auto; align-items: center;
+  gap: 10px; margin-bottom: 3px;
+}
+#fields .row span { color: var(--muted); }
+#fields input {
+  width: 6.2em; font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+  padding: 2px 6px; color: var(--ink);
+  border: 1px solid var(--edge); border-radius: 5px; background: #fff;
+}
+#fields input:focus { outline: 2px solid rgba(46,145,229,.35); outline-offset: 0; }
+#fields .note { color: var(--muted); font-size: 11px; display: block; margin-top: 6px; }
+#fields .group { margin-top: 8px; }
+`;
+document.head.appendChild(style);
+
 const status = document.createElement("div");
-status.id = "status";
+status.id = "statusbar";
 status.innerHTML =
   `<i></i><span id="statustext">connecting</span>` +
-  `<small>${INFO.backend} &middot; magpylib ${INFO.magpylib}` +
-  ` &middot; python ${INFO.python}</small>`;
+  `<span class="meta">&middot;</span><span id="mode">mode: translate</span>` +
+  `<span class="meta">&middot;</span><span id="delta"></span>` +
+  `<span class="sep"></span>` +
+  `<span id="calls">0 round-trips</span>` +
+  `<span class="meta">&middot;</span><span id="hist">0 edits</span>` +
+  `<span class="meta">&middot;</span><span id="snap">snap: off</span>` +
+  `<span class="meta">&middot;</span><span id="axis">axes: all</span>` +
+  `<span class="meta">&middot;</span><span id="space">space: world</span>` +
+  `<span class="meta">&middot;</span><span id="pivot">pivot: origin</span>` +
+  `<span class="meta">&middot;</span><span id="proj">perspective</span>` +
+  `<span class="meta">&middot;</span><span id="shown">all shown</span>` +
+  `<span class="meta">&middot; ${INFO.backend} &middot; magpylib ` +
+  `${INFO.magpylib} &middot; python ${INFO.python}</span>`;
 document.body.appendChild(status);
-// the viewer's legend also sits top-left; the editor added the pill, so the
-// editor makes room for it
-// `legend` is viewer.js's own binding, so use a distinct name here
-const legendBox = document.getElementById("legend");
-if (legendBox) legendBox.style.top = "46px";
 
 function setStatus(state, text) {
   status.dataset.state = state;
   document.getElementById("statustext").textContent = text;
 }
 
+// An editor is only useful while python is listening, so the page says whether
+// it is -- and notices when it stops, rather than silently accepting edits
+// that go nowhere.
 if (!INFO.alive) {
-  setStatus("static", "no backend - saved page");
+  setStatus("static", "no backend \u2014 saved page");
 } else {
   let missed = 0;
   const beat = async () => {
@@ -63,38 +157,51 @@ if (!INFO.alive) {
       setStatus("live", "backend connected");
     } catch {
       missed += 1;
-      if (missed >= 2) setStatus("dead", "backend gone - edits go nowhere");
+      if (missed >= 2)
+        setStatus("dead", "backend gone \u2014 edits go nowhere");
     }
   };
   beat();
   setInterval(beat, 2000);
 }
 
+const legendBox = document.getElementById("legend");
+if (legendBox) legendBox.className = "mp-panel";
+
+const hud = document.createElement("div");
+hud.id = "hud";
+hud.className = "mp-panel";
+hud.innerHTML = `
+  <details id="controls">
+  <summary class="mp-title">controls</summary>
+  <div id="keys">
+    <kbd>W</kbd><span>move</span>
+    <kbd>E</kbd><span>rotate</span>
+    <kbd>R</kbd><span>resize</span>
+    <kbd>P</kbd><span>aim polarization</span>
+    <kbd>S</kbd><span>snap to grid</span>
+    <kbd>X</kbd><span>constrain axis (<kbd>A</kbd> all)</span>
+    <kbd>L</kbd><span>local / world space</span>
+    <kbd>F</kbd><span>frame selected</span>
+    <kbd>\u21b9</kbd><span>next object</span>
+    <kbd>\u2318Z</kbd><span>undo / <kbd>\u21e7</kbd> redo</span>
+    <kbd>\u232b</kbd><span>reset</span>
+    <kbd>H</kbd><span>hide (<kbd>\u21e7</kbd> isolate)</span>
+    <kbd>1</kbd><span>front &middot; <kbd>3</kbd> right &middot; <kbd>7</kbd> top</span>
+    <kbd>5</kbd><span>ortho / perspective</span>
+    <kbd>,</kbd><span>pivot origin / centre</span>
+    <kbd>\u21e7</kbd><span>click to multi-select</span>
+  </div>
+  </details>`;
+document.body.appendChild(hud);
+
 const inspector = document.createElement("div");
 inspector.id = "inspector";
-inspector.innerHTML = `<b>exact values</b><div id="fields">select an object</div>`;
+inspector.className = "mp-panel";
+inspector.innerHTML =
+  `<div class="mp-title" id="sel">values</div>` +
+  `<div id="fields">select an object</div>`;
 document.body.appendChild(inspector);
-
-const style = document.createElement("style");
-style.textContent = `#hud { position: absolute; bottom: 8px; left: 8px;
-  font: 12px/1.5 sans-serif; background: rgba(255,255,255,.9);
-  padding: 8px 10px; border-radius: 4px; }
-#inspector { position: absolute; top: 8px; right: 8px;
-  font: 12px/1.8 sans-serif; background: rgba(255,255,255,.9);
-  padding: 8px 10px; border-radius: 4px; }
-#inspector label { display: block; }
-#inspector input { width: 5.5em; margin-left: .4em; font: inherit; }
-#status { position: absolute; top: 8px; left: 8px; font: 12px sans-serif;
-  background: rgba(255,255,255,.9); padding: 6px 9px; border-radius: 4px;
-  display: flex; align-items: center; gap: 7px; }
-#status i { width: 9px; height: 9px; border-radius: 50%; background: #bbb;
-  flex: none; }
-#status small { color: #777; }
-#status[data-state="live"] i { background: #2ca02c; }
-#status[data-state="dead"] i { background: #d62728; }
-#status[data-state="dead"] { background: #ffe8e8; }
-#status[data-state="busy"] i { background: #ff7f0e; }`;
-document.head.appendChild(style);
 
 const gizmo = new TransformControls(camera, renderer.domElement);
 // OrbitControls must yield while the gizmo has the pointer, or dragging a
@@ -106,6 +213,40 @@ scene.add(gizmo.getHelper ? gizmo.getHelper() : gizmo);
 
 let selected = null,
   roundTrips = 0;
+
+// Multi-select drives a proxy rather than a mesh. `Object3D.attach` re-parents
+// while preserving world transform, so moving the proxy moves the group and
+// each member's own transform stays readable when it is detached again.
+const perspective = camera; // the viewer's own camera, kept to swap back to
+const selection = [];
+const proxy = new THREE.Object3D();
+scene.add(proxy);
+let pivotAtOrigin = true; // vs the bounding-box centre of the selection
+
+function selectionCentre() {
+  const box = new THREE.Box3();
+  for (const mesh of selection) box.expandByObject(mesh);
+  return pivotAtOrigin && selection.length === 1
+    ? selection[0].position.clone()
+    : box.getCenter(new THREE.Vector3());
+}
+
+function bindProxy() {
+  for (const mesh of [...proxy.children]) scene.attach(mesh);
+  if (!selection.length) {
+    gizmo.detach();
+    return;
+  }
+  proxy.position.copy(selectionCentre());
+  proxy.quaternion.identity();
+  proxy.scale.set(1, 1, 1);
+  for (const mesh of selection) proxy.attach(mesh);
+  gizmo.attach(proxy);
+}
+
+function releaseProxy() {
+  for (const mesh of [...proxy.children]) scene.attach(mesh);
+}
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 const pickable = [...byObjectId.values()]; // lines and points are decoration
@@ -129,62 +270,17 @@ for (const [oid, mesh] of byObjectId) {
 const history = [],
   redoStack = [];
 
-// ---- polarization gizmo ---------------------------------------------------
-// The arrow shows the *world* direction, which is the object's orientation
-// applied to the stored local vector -- magpylib keeps polarization in the
-// body frame. Rotating the arrow therefore sets a world direction that has to
-// be converted back through the inverse of the mesh's quaternion before it can
-// be sent. Getting that wrong is invisible until an object is rotated.
+// ---- aiming the polarization ----------------------------------------------
+// An empty handle the rotate gizmo can drive. There is no arrow: the object's
+// own N/S colouring already shows the direction and re-projects live as the
+// handle turns, so a second indicator only competed with the first.
+//
+// The handle points along the *world* direction, which is the object's
+// orientation applied to the stored vector -- magpylib keeps polarization in
+// the body frame. Committing therefore means converting back through the
+// inverse of the mesh's world quaternion. Getting that wrong stays invisible
+// until an object is rotated.
 const polGroup = new THREE.Group();
-// The arrow is coloured with the object's own colorscale, so it reads the
-// same way the magnet does: tail at intensity 0, tip at 1. Built along +Y
-// then rotated onto +Z, which is the axis polGroup is aimed with.
-function lutTexture(lut) {
-  const t = new THREE.DataTexture(
-    new Uint8Array(lut),
-    lut.length / 4,
-    1,
-    THREE.RGBAFormat,
-  );
-  t.minFilter = t.magFilter = THREE.LinearFilter;
-  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.needsUpdate = true;
-  return t;
-}
-
-function buildArrow(lut, length, radius) {
-  const shaftLen = length * 0.72,
-    headLen = length * 0.28;
-  const shaft = new THREE.CylinderGeometry(
-    radius * 0.32,
-    radius * 0.32,
-    shaftLen,
-    24,
-  );
-  shaft.translate(0, shaftLen / 2, 0);
-  const head = new THREE.ConeGeometry(radius, headLen, 24);
-  head.translate(0, shaftLen + headLen / 2, 0);
-  for (const g of [shaft, head]) {
-    const pos = g.attributes.position;
-    const uv = new Float32Array(pos.count * 2);
-    for (let i = 0; i < pos.count; i++) {
-      uv[i * 2] = Math.min(1, Math.max(0, pos.getY(i) / length));
-      uv[i * 2 + 1] = 0.5;
-    }
-    g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
-    g.rotateX(Math.PI / 2); // +Y -> +Z
-  }
-  const material = new THREE.MeshLambertMaterial({
-    map: lut ? lutTexture(lut) : null,
-    color: lut ? 0xffffff : 0xd62728,
-  });
-  const group = new THREE.Group();
-  group.add(new THREE.Mesh(shaft, material), new THREE.Mesh(head, material));
-  return group;
-}
-
-let polArrow = null;
 polGroup.visible = false;
 scene.add(polGroup);
 const Z = new THREE.Vector3(0, 0, 1);
@@ -193,7 +289,11 @@ function worldPolarization(oid) {
   const local = new THREE.Vector3().fromArray(
     state.get(oid)[POLARIZATION[String(oid)].attr],
   );
-  return local.applyQuaternion(byObjectId.get(oid).quaternion);
+  // world, not local: while a drag is in progress the mesh is parented to the
+  // proxy, so its own quaternion is relative to that rather than to the scene
+  return local.applyQuaternion(
+    byObjectId.get(oid).getWorldQuaternion(new THREE.Quaternion()),
+  );
 }
 
 /** Park the arrow on `mesh`, pointing along its world polarization. */
@@ -208,14 +308,7 @@ function placePolarization(mesh) {
     polGroup.visible = false;
     return;
   }
-  mesh.geometry.computeBoundingSphere();
-  const span =
-    mesh.geometry.boundingSphere.radius *
-    Math.max(mesh.scale.x, mesh.scale.y, mesh.scale.z);
-  if (polArrow) polGroup.remove(polArrow);
-  polArrow = buildArrow(mesh.userData.lut, span * 1.9, span * 0.28);
-  polGroup.add(polArrow);
-  polGroup.position.copy(mesh.position);
+  polGroup.position.copy(mesh.getWorldPosition(new THREE.Vector3()));
   polGroup.quaternion.setFromUnitVectors(Z, dir.clone().normalize());
   polGroup.visible = true;
 }
@@ -285,8 +378,7 @@ function send(oid, field, value) {
     setTimeout(() => setStatus("live", "backend connected"), 250);
   }
   roundTrips += 1;
-  document.getElementById("calls").textContent =
-    `python round-trips: ${roundTrips}`;
+  document.getElementById("calls").textContent = `${roundTrips} round-trips`;
   console.log("would send to python:", { object_id: oid, [field]: value });
 }
 
@@ -305,7 +397,7 @@ function applyEdit(oid, field, value, record = true) {
     redoStack.length = 0;
   }
   send(oid, field, value);
-  document.getElementById("hist").textContent = `history: ${history.length}`;
+  document.getElementById("hist").textContent = `${history.length} edits`;
   if (selected && selected.userData.objectId === oid) buildInspector(selected);
 }
 
@@ -314,7 +406,7 @@ function undo() {
   if (!e) return;
   redoStack.push(e);
   applyEdit(e.oid, e.field, e.before, false);
-  document.getElementById("hist").textContent = `history: ${history.length}`;
+  document.getElementById("hist").textContent = `${history.length} edits`;
 }
 
 function redo() {
@@ -322,7 +414,7 @@ function redo() {
   if (!e) return;
   history.push(e);
   applyEdit(e.oid, e.field, e.after, false);
-  document.getElementById("hist").textContent = `history: ${history.length}`;
+  document.getElementById("hist").textContent = `${history.length} edits`;
 }
 
 // Reset is not a special operation either: it is every field set back to the
@@ -335,7 +427,7 @@ function reset() {
   }
   history.length = 0;
   redoStack.length = 0;
-  document.getElementById("hist").textContent = "history: 0";
+  document.getElementById("hist").textContent = "0 edits";
 }
 
 // ---- inspector -----------------------------------------------------------
@@ -349,10 +441,12 @@ function buildInspector(mesh) {
     shape = SHAPES[String(oid)];
   const current = state.get(oid);
 
-  const rows = ["x", "y", "z"].map(
-    (axis, i) =>
-      `<label>position ${axis}<input data-field="position" data-i="${i}"
-       type="number" step="0.1" value="${current.position[i].toFixed(3)}"></label>`,
+  const row = (label, field, i, value, step = 0.1) =>
+    `<div class="row"><span>${label}</span><input data-field="${field}"` +
+    ` data-i="${i}" type="number" step="${step}" value="${value.toFixed(3)}"></div>`;
+
+  const rows = ["x", "y", "z"].map((axis, i) =>
+    row(`position ${axis}`, "position", i, current.position[i]),
   );
 
   if (shape) {
@@ -361,23 +455,31 @@ function buildInspector(mesh) {
       : [current[shape.attr]];
     v.forEach((n, i) =>
       rows.push(
-        `<label>${shape.attr}${v.length > 1 ? " " + i : ""}<input
-         data-field="${shape.attr}" data-i="${i}" type="number" step="0.1"
-         min="0.001" value="${n.toFixed(3)}"></label>`,
+        row(`${shape.attr}${v.length > 1 ? " " + i : ""}`, shape.attr, i, n),
       ),
     );
   }
   const pol = POLARIZATION[String(oid)];
   if (pol) {
+    rows.push('<div class="group"></div>');
     current[pol.attr].forEach((n, i) =>
-      rows.push(
-        `<label>${pol.attr} ${"xyz"[i]}<input data-field="${pol.attr}" data-i="${i}"
-         type="number" step="0.1" value="${n.toFixed(3)}"></label>`,
+      rows.push(row(`polarization ${"xyz"[i]}`, pol.attr, i, n)),
+    );
+    // Amplitude is not a fourth component: it is the length of the vector, and
+    // the gizmo cannot express it because nothing in the render depends on it.
+    // Typing it here rescales the vector and leaves the direction alone.
+    rows.push(
+      row(
+        "|polarization|",
+        "polarization-magnitude",
+        0,
+        Math.hypot(...current[pol.attr]),
+        0.05,
       ),
     );
     rows.push(
-      "<small>direction needs magpylib to redraw;<br>" +
-        "amplitude changes nothing visible</small>",
+      '<small class="note">direction redraws once magpylib answers;' +
+        "<br>amplitude has no visible effect at all</small>",
     );
   }
   fields.innerHTML = rows.join("");
@@ -387,6 +489,16 @@ function buildInspector(mesh) {
       const i = Number(input.dataset.i),
         n = Number(input.value);
       const field = input.dataset.field;
+      if (field === "polarization-magnitude") {
+        const vector = state.get(oid)[pol.attr];
+        const length = Math.hypot(...vector) || 1;
+        applyEdit(
+          oid,
+          pol.attr,
+          vector.map((c) => (c / length) * n),
+        );
+        return;
+      }
       let value = state.get(oid)[field];
       if (Array.isArray(value)) {
         value = value.slice();
@@ -406,20 +518,28 @@ function buildInspector(mesh) {
   });
 }
 
-function select(mesh) {
-  selected = mesh;
-  buildInspector(mesh);
-  if (!mesh) {
-    gizmo.detach();
-    polGroup.visible = false;
-    document.getElementById("sel").textContent = "nothing selected";
-    document.getElementById("delta").textContent = "";
-    return;
+function select(mesh, additive = false) {
+  if (!additive) selection.length = 0;
+  if (mesh) {
+    const at = selection.indexOf(mesh);
+    at === -1 ? selection.push(mesh) : selection.splice(at, 1);
   }
-  gizmo.attach(mesh);
-  placePolarization(mesh);
-  document.getElementById("sel").textContent = `selected: ${mesh.name}`;
-  document.getElementById("delta").textContent = "drag a handle";
+  selected = selection.length === 1 ? selection[0] : null;
+  // picking something else leaves aiming mode, so the gizmo never keeps
+  // meaning "polarization" for an object that was not being aimed
+  if (document.body.classList.contains("aiming")) setGizmoMode("translate");
+  bindProxy();
+  buildInspector(selected);
+  placePolarization(selected);
+
+  const label =
+    selection.length === 0
+      ? "values"
+      : selection.length === 1
+        ? selected.name
+        : `${selection.length} objects`;
+  document.getElementById("sel").textContent = label;
+  document.getElementById("delta").textContent = "";
 }
 
 renderer.domElement.addEventListener("pointerdown", (event) => {
@@ -427,8 +547,11 @@ renderer.domElement.addEventListener("pointerdown", (event) => {
   pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
   pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(pointer, camera);
-  const hit = raycaster.intersectObjects(pickable, false)[0];
-  select(hit ? hit.object : null);
+  const hit = raycaster.intersectObjects(
+    pickable.filter((m) => m.visible),
+    false,
+  )[0];
+  select(hit ? hit.object : null, event.shiftKey);
 });
 
 // ---- keyboard ------------------------------------------------------------
@@ -439,37 +562,172 @@ function setSnapping(on) {
   gizmo.setRotationSnap(on ? THREE.MathUtils.degToRad(15) : null);
   gizmo.setScaleSnap(on ? 0.1 : null);
   document.getElementById("snap").textContent =
-    `snap: ${on ? "0.1 / 15deg" : "off"}`;
+    `snap: ${on ? `0.1 ${UNIT} / 15\u00b0` : "off"}`;
+}
+
+/** Move the camera so `mesh` fills the view, keeping the current direction. */
+function frame(mesh) {
+  const target = mesh ? mesh.position : centre;
+  mesh?.geometry.computeBoundingSphere();
+  const radius = mesh
+    ? mesh.geometry.boundingSphere.radius *
+      Math.max(mesh.scale.x, mesh.scale.y, mesh.scale.z)
+    : span / 2;
+  const offset = camera.position.clone().sub(controls.target).normalize();
+  camera.position.copy(target).addScaledVector(offset, radius * 3.2);
+  controls.target.copy(target);
+  controls.update();
+}
+
+/** Select the next pickable object, so a scene can be walked without aiming. */
+function cycle(step) {
+  if (!pickable.length) return;
+  const at = pickable.indexOf(selected);
+  select(pickable[(at + step + pickable.length) % pickable.length]);
+}
+
+// Constraining a drag to one axis is the difference between nudging along x
+// and drifting in three axes at once.
+function constrain(axis) {
+  gizmo.showX = axis === null || axis === "x";
+  gizmo.showY = axis === null || axis === "y";
+  gizmo.showZ = axis === null || axis === "z";
+  document.getElementById("axis").textContent =
+    axis === null ? "axes: all" : `axis: ${axis}`;
+}
+
+let localSpace = false;
+
+// The same rotate gizmo means two different things depending on what it is
+// attached to, so say which, and make it a different size: aiming the
+// polarization gets a smaller ring than turning the object.
+function setGizmoMode(kind) {
+  if (kind === "polarization") {
+    gizmo.attach(polGroup);
+    gizmo.setMode("rotate");
+    gizmo.size = 0.62;
+  } else {
+    if (gizmo.object === polGroup) bindProxy();
+    gizmo.setMode(kind);
+    gizmo.size = 1;
+  }
+  const label = kind === "polarization" ? "aim polarization" : kind;
+  document.getElementById("mode").textContent = `mode: ${label}`;
+  document.body.classList.toggle("aiming", kind === "polarization");
+}
+const hidden = new Set();
+
+function setHidden(mesh, on) {
+  mesh.visible = !on;
+  on ? hidden.add(mesh) : hidden.delete(mesh);
+  document.getElementById("shown").textContent = hidden.size
+    ? `${hidden.size} hidden`
+    : "all shown";
+}
+
+/** Show only the selection, or everything again if nothing is hidden. */
+function isolate() {
+  if (hidden.size) {
+    for (const mesh of [...hidden]) setHidden(mesh, false);
+    return;
+  }
+  for (const mesh of pickable) {
+    if (!selection.includes(mesh)) setHidden(mesh, true);
+  }
+}
+
+// ---- views ----------------------------------------------------------------
+const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, span * 100);
+let usingOrtho = false;
+
+function fitOrtho() {
+  const aspect = window.innerWidth / window.innerHeight;
+  const half = controls.target.distanceTo(camera.position) * 0.4;
+  ortho.left = -half * aspect;
+  ortho.right = half * aspect;
+  ortho.top = half;
+  ortho.bottom = -half;
+  ortho.updateProjectionMatrix();
+}
+
+function toggleOrtho() {
+  usingOrtho = !usingOrtho;
+  const from = usingOrtho ? camera : ortho;
+  const next = usingOrtho ? ortho : perspective;
+  next.position.copy(from.position);
+  next.up.set(0, 0, 1);
+  next.lookAt(controls.target);
+  if (usingOrtho) fitOrtho();
+  setCamera(next);
+  document.getElementById("proj").textContent = usingOrtho
+    ? "orthographic"
+    : "perspective";
+}
+
+/** Look down `axis` at whatever is currently framed. */
+function axisView(axis) {
+  const distance = camera.position.distanceTo(controls.target) || span * 2;
+  camera.position
+    .copy(controls.target)
+    .add(axis.clone().multiplyScalar(distance));
+  camera.up.set(0, 0, 1);
+  controls.update();
+  if (usingOrtho) fitOrtho();
 }
 
 addEventListener("keydown", (e) => {
   // otherwise typing a value in the inspector also fires the shortcuts
   if (e.target.tagName === "INPUT") return;
+  if (e.key === "f") frame(selected);
+  if (e.key === "Home") frame(null);
+  if (e.key === "Tab") {
+    e.preventDefault();
+    cycle(e.shiftKey ? -1 : 1);
+  }
+  if (e.key === "x" || e.key === "y" || e.key === "z") constrain(e.key);
+  if (e.key === "a") constrain(null);
+  if (e.key === "l") {
+    // magpylib stores polarization in the body frame, so a local-space gizmo
+    // is the one that matches what is being edited
+    localSpace = !localSpace;
+    gizmo.setSpace(localSpace ? "local" : "world");
+    document.getElementById("space").textContent =
+      `space: ${localSpace ? "local" : "world"}`;
+  }
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
     e.shiftKey ? redo() : undo();
     return;
   }
   if (e.key === "Backspace") reset();
   if (e.key === "s") setSnapping(!snapping);
-  if (e.key === "w") gizmo.setMode("translate");
-  if (e.key === "e") gizmo.setMode("rotate");
+  if (e.key === "w") setGizmoMode("translate");
+  if (e.key === "e") setGizmoMode("rotate");
   if (e.key === "r") {
     const shape = selected && SHAPES[String(selected.userData.objectId)];
-    if (shape) gizmo.setMode("scale");
+    if (shape) setGizmoMode("scale");
     else
       document.getElementById("delta").textContent =
         "this object has no scale-covariant shape parameter";
   }
   if (e.key === "p") {
     if (selected && POLARIZATION[String(selected.userData.objectId)]) {
-      gizmo.attach(polGroup);
-      gizmo.setMode("rotate");
-      document.getElementById("delta").textContent =
-        "rotating polarization -- colours redraw once magpylib answers";
+      setGizmoMode("polarization");
     } else {
       document.getElementById("delta").textContent =
         "this object has no polarization";
     }
+  }
+  if (e.key === "h")
+    e.shiftKey ? isolate() : selection.forEach((m) => setHidden(m, true));
+  if (e.key === "1") axisView(new THREE.Vector3(0, -1, 0)); // front
+  if (e.key === "3") axisView(new THREE.Vector3(1, 0, 0)); // right
+  if (e.key === "7") axisView(new THREE.Vector3(0, 0, 1)); // top
+  if (e.key === "5") toggleOrtho();
+  if (e.key === ",") {
+    pivotAtOrigin = !pivotAtOrigin;
+    document.getElementById("pivot").textContent =
+      `pivot: ${pivotAtOrigin ? "origin" : "centre"}`;
+    bindProxy();
   }
   if (e.key === "Escape") select(null);
 });
@@ -506,10 +764,10 @@ gizmo.addEventListener("objectChange", () => {
 
 // ---- on drop: one message, through the same door as everything else ------
 gizmo.addEventListener("mouseUp", () => {
-  if (!selected) return;
-  const oid = selected.userData.objectId,
-    shape = SHAPES[String(oid)];
+  // Polarization has its own gizmo on polGroup, and never touches the proxy.
   if (gizmo.object === polGroup) {
+    if (!selected) return;
+    const oid = selected.userData.objectId;
     const pol = POLARIZATION[String(oid)];
     // amplitude is not what the arrow expresses, so it is carried through
     const magnitude = new THREE.Vector3()
@@ -527,19 +785,36 @@ gizmo.addEventListener("mouseUp", () => {
     );
     return;
   }
-  if (gizmo.mode === "translate") {
-    applyEdit(oid, "position", selected.position.toArray());
-  } else if (gizmo.mode === "rotate") {
-    applyEdit(oid, "quaternion", selected.quaternion.toArray());
-  } else if (gizmo.mode === "scale" && shape) {
-    const base = Array.isArray(shape.value) ? shape.value : [shape.value];
-    const s = selected.scale;
-    const next =
-      shape.constraint === "uniform"
-        ? base[0] * s.x
-        : shape.constraint === "xy"
-          ? [base[0] * s.x, base[1] * s.z]
-          : [base[0] * s.x, base[1] * s.y, base[2] * s.z];
-    applyEdit(oid, shape.attr, next);
+
+  if (!selection.length) return;
+  // detach first, so each mesh reports its own transform rather than one
+  // relative to the proxy that was just dragged
+  releaseProxy();
+
+  if (selection.length > 1) {
+    for (const mesh of selection) {
+      const oid = mesh.userData.objectId;
+      applyEdit(oid, "position", mesh.position.toArray());
+      applyEdit(oid, "quaternion", mesh.quaternion.toArray());
+    }
+  } else {
+    const oid = selected.userData.objectId,
+      shape = SHAPES[String(oid)];
+    if (gizmo.mode === "translate") {
+      applyEdit(oid, "position", selected.position.toArray());
+    } else if (gizmo.mode === "rotate") {
+      applyEdit(oid, "quaternion", selected.quaternion.toArray());
+    } else if (gizmo.mode === "scale" && shape) {
+      const base = Array.isArray(shape.value) ? shape.value : [shape.value];
+      const s = selected.scale;
+      const next =
+        shape.constraint === "uniform"
+          ? base[0] * s.x
+          : shape.constraint === "xy"
+            ? [base[0] * s.x, base[1] * s.z]
+            : [base[0] * s.x, base[1] * s.y, base[2] * s.z];
+      applyEdit(oid, shape.attr, next);
+    }
   }
+  bindProxy();
 });
