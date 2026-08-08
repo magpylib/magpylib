@@ -22,155 +22,7 @@
 // legend beneath it, controls bottom-left, inspector right.
 
 const style = document.createElement("style");
-style.textContent = `
-:root {
-  --panel: rgba(255,255,255,.93);
-  --edge: rgba(15,23,42,.10);
-  --ink: #1f2328;
-  --muted: #6b7280;
-  --shadow: 0 1px 2px rgba(15,23,42,.05), 0 6px 20px rgba(15,23,42,.08);
-}
-.mp-panel {
-  position: absolute; z-index: 5;
-  background: var(--panel); color: var(--ink);
-  border: 1px solid var(--edge); border-radius: 9px;
-  box-shadow: var(--shadow); backdrop-filter: blur(8px);
-  padding: 9px 11px;
-  font: 12px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
-}
-.mp-title {
-  font-size: 10px; font-weight: 600; letter-spacing: .07em;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
-}
-#legend { top: 12px; left: 12px; }
-#hud    { bottom: 42px; left: 12px; }
-#inspector { top: 12px; right: 12px; min-width: 172px; }
-#code {
-  display: none; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  max-width: min(680px, 82vw); max-height: 70vh; overflow: auto;
-}
-#code pre {
-  margin: 0; font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
-  white-space: pre; color: #1f2328;
-}
-#code .hint { float: right; text-transform: none; letter-spacing: 0; }
-
-/* shift-click extends a *text* selection by default, which streaks the rows
-   grey while multi-selecting. Off for the chrome, kept where text is the
-   point: the exported code, and the number fields. */
-#tree, #hud, #statusbar, #inspector .mp-title {
-  user-select: none; -webkit-user-select: none;
-}
-#code pre, #fields input { user-select: text; -webkit-user-select: text; }
-
-#legend { max-height: 46vh; overflow: auto; min-width: 168px; }
-/* the viewer styles its flat legend with "#legend div { display: flex }",
-   which would lay the tree's containers out in a row. Same specificity, later
-   in the document, so this wins; .node declares its own flex below. */
-#legend div { display: block; }
-#tree .node {
-  display: flex; align-items: center; gap: 5px; border-radius: 4px;
-  padding: 1px 4px 1px 3px; cursor: default;
-}
-/* Indentation alone made a depth-0 row following a depth-2 row read as part of
-   the same group. The branches now draw a guide line, so nesting is visible
-   rather than inferred from how far something is pushed across. */
-#tree .branch {
-  margin-left: 8px; padding-left: 8px;
-  border-left: 1px solid rgba(15,23,42,.13);
-}
-#tree > .node { font-weight: 550; }
-#tree .node.group > .label { font-weight: 550; }
-#tree .node:hover { background: rgba(15,23,42,.05); }
-#tree .node.selected { background: rgba(46,145,229,.16); }
-#tree .node.off .label, #tree .node.off .swatch { opacity: .38; }
-#tree .label { cursor: pointer; white-space: nowrap; }
-#tree .swatch { width: 9px; height: 9px; border-radius: 3px; flex: none; }
-#tree .caret {
-  width: 0; height: 0; flex: none; margin-right: 1px; cursor: pointer;
-  border: 4px solid transparent; border-left-color: var(--ink);
-  transform: rotate(90deg); transition: transform .12s;
-}
-#tree .node.closed .caret { transform: none; }
-#tree .caret.leaf { border-left-color: transparent; cursor: default; }
-#tree .eye {
-  width: 12px; height: 12px; flex: none; cursor: pointer; opacity: .6;
-  background: no-repeat center/12px
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%231f2328' d='M8 3C4.5 3 1.7 5.4 1 8c.7 2.6 3.5 5 7 5s6.3-2.4 7-5c-.7-2.6-3.5-5-7-5zm0 8.3A3.3 3.3 0 1 1 8 4.7a3.3 3.3 0 0 1 0 6.6zm0-5.3a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'/%3E%3C/svg%3E");
-}
-#tree .eye:hover { opacity: 1; }
-#tree .node.off .eye { opacity: .28; }
-
-/* a status bar rather than another floating panel: connection state is about
-   the session, not about anything in the scene */
-#statusbar {
-  position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
-  display: flex; align-items: center; gap: 9px;
-  height: 26px; padding: 0 12px; box-sizing: border-box;
-  background: rgba(248,249,251,.94); border-top: 1px solid var(--edge);
-  backdrop-filter: blur(8px);
-  font: 11px/1 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
-  color: var(--ink);
-}
-#statusbar i {
-  width: 8px; height: 8px; border-radius: 50%; flex: none; background: #c3c8d0;
-  box-shadow: 0 0 0 3px rgba(0,0,0,.04);
-}
-#statusbar .sep { flex: 1; }
-#statusbar .meta { color: var(--muted); }
-#statusbar[data-state="live"] i { background: #22a06b; box-shadow: 0 0 0 3px rgba(34,160,107,.16); }
-#statusbar[data-state="busy"] i { background: #e8912d; box-shadow: 0 0 0 3px rgba(232,145,45,.18); }
-#statusbar[data-state="dead"] i { background: #d64545; box-shadow: 0 0 0 3px rgba(214,69,69,.18); }
-#statusbar[data-state="dead"] { background: #fdecec; border-top-color: rgba(214,69,69,.35); }
-/* aiming the polarization edits the magnet's field, not its placement, so the
-   viewport gets a border and the mode is named in the bar */
-body.aiming::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 4;
-  border: 2px solid rgba(214,69,69,.45); box-sizing: border-box;
-}
-body.aiming #mode { color: #d64545; font-weight: 600; }
-
-kbd {
-  font: 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
-  background: #f4f5f7; border: 1px solid var(--edge); border-bottom-width: 2px;
-  border-radius: 4px; padding: 2px 5px; color: #3d4451;
-}
-#controls > summary {
-  cursor: pointer; list-style: none; user-select: none;
-  margin: 0 0 6px; display: flex; align-items: center; gap: 5px;
-}
-#controls > summary::-webkit-details-marker { display: none; }
-#controls > summary::before {
-  content: ""; width: 0; height: 0; flex: none;
-  border: 4px solid transparent; border-left-color: var(--ink);
-  transition: transform .14s ease;
-}
-#controls > summary:hover { color: var(--ink); }
-#controls > summary:hover::before { border-left-color: #2e91e5; }
-#controls[open] > summary::before { transform: rotate(90deg) translateX(-1px); }
-#controls:not([open]) > summary { margin-bottom: 0; }
-#keys { display: grid; grid-template-columns: auto 1fr; gap: 3px 8px; align-items: center; }
-#keys span { color: var(--muted); }
-
-#readout { margin-bottom: 7px; }
-#sel { font-weight: 600; }
-#delta { color: var(--muted); }
-#stats { color: var(--muted); font-size: 11px; margin: 5px 0 8px; }
-
-#fields .row {
-  display: grid; grid-template-columns: 1fr auto; align-items: center;
-  gap: 10px; margin-bottom: 3px;
-}
-#fields .row span { color: var(--muted); }
-#fields input {
-  width: 6.2em; font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
-  padding: 2px 6px; color: var(--ink);
-  border: 1px solid var(--edge); border-radius: 5px; background: #fff;
-}
-#fields input:focus { outline: 2px solid rgba(46,145,229,.35); outline-offset: 0; }
-#fields .note { color: var(--muted); font-size: 11px; display: block; margin-top: 6px; }
-#fields .group { margin-top: 8px; }
-`;
+style.textContent = EDITOR_CSS; // editor.css, handed over by the backend
 document.head.appendChild(style);
 
 const status = document.createElement("div");
@@ -232,6 +84,39 @@ legendBox.innerHTML = `<div class="mp-title">scene</div><div id="tree"></div>`;
 function leavesOf(node) {
   if (!node.children.length) return byObjectId.has(node.id) ? [node.id] : [];
   return node.children.flatMap(leavesOf);
+}
+
+function setHidden(mesh, on) {
+  mesh.visible = !on;
+  on ? hidden.add(mesh) : hidden.delete(mesh);
+  document.getElementById("shown").textContent = hidden.size
+    ? `${hidden.size} hidden`
+    : "all shown";
+}
+
+/** Show only the selection, or everything again if nothing is hidden. */
+function isolate() {
+  if (hidden.size) {
+    for (const mesh of [...hidden]) setHidden(mesh, false);
+    return;
+  }
+  for (const mesh of pickable) {
+    if (!selection.includes(mesh)) setHidden(mesh, true);
+  }
+}
+
+function flatNodes(nodes = TREE, out = []) {
+  for (const node of nodes) {
+    out.push(node);
+    flatNodes(node.children, out);
+  }
+  return out;
+}
+
+function meshesOf(node) {
+  return leavesOf(node)
+    .map((id) => byObjectId.get(id))
+    .filter(Boolean);
 }
 
 function renderTree(nodes, into) {
@@ -378,6 +263,10 @@ const proxy = new THREE.Object3D();
 scene.add(proxy);
 let pivotAtOrigin = true; // vs the bounding-box centre of the selection
 
+// ---- selection and its proxy ----------------------------------------------
+// Multi-select drives a proxy rather than a mesh, so one gizmo can move a
+// group; `selectNode` further down decides what ends up in the selection.
+
 function selectionCentre() {
   const box = new THREE.Box3();
   for (const mesh of selection) box.expandByObject(mesh);
@@ -451,7 +340,7 @@ function worldPolarization(oid) {
   );
 }
 
-/** Park the arrow on `mesh`, pointing along its world polarization. */
+/** Park the handle on `mesh`, pointing along its world polarization. */
 function placePolarization(mesh) {
   const oid = mesh && mesh.userData.objectId;
   if (!mesh || !POLARIZATION[String(oid)]) {
@@ -543,38 +432,14 @@ async function send(oid, field, value) {
   }
 }
 
-// ---- export ---------------------------------------------------------------
-// The point of the round-trip: python holds the edited objects, so it can
-// print them back as a script. Reading it from the server rather than
-// rebuilding it here is what makes it trustworthy -- it is the objects, not
-// the browser's idea of them.
-async function exportCode() {
-  if (!INFO.root) {
-    setStatus("static", "no backend \u2014 cannot export");
-    return;
-  }
-  const code = await (
-    await fetch(INFO.root + "export", { cache: "no-store" })
-  ).text();
-  const panel = document.getElementById("code");
-  panel.querySelector("pre").textContent = code;
-  panel.style.display = "block";
-  try {
-    await navigator.clipboard.writeText(code);
-    panel.querySelector(".hint").textContent = "copied to clipboard";
-  } catch {
-    panel.querySelector(".hint").textContent = "select and copy";
-  }
-}
-
 // The single door every change goes through. `record` is false when replaying,
 // so undo does not itself become undoable.
 function applyEdit(oid, field, value, record = true) {
   const before = state.get(oid)[field];
   if (JSON.stringify(before) === JSON.stringify(value)) return;
   // State first: applyToMesh re-derives the view from it -- the polarization
-  // arrow is placed by reading it back -- so updating afterwards would redraw
-  // from the value being replaced, and the arrow would snap to where it was.
+  // handle is placed by reading it back -- so updating afterwards would redraw
+  // from the value being replaced, and the colouring would snap back.
   state.get(oid)[field] = value;
   applyToMesh(oid, field, value);
   if (record) {
@@ -709,20 +574,6 @@ function buildInspector(mesh) {
 // scene actually has.
 let anchorId = null;
 
-function flatNodes(nodes = TREE, out = []) {
-  for (const node of nodes) {
-    out.push(node);
-    flatNodes(node.children, out);
-  }
-  return out;
-}
-
-function meshesOf(node) {
-  return leavesOf(node)
-    .map((id) => byObjectId.get(id))
-    .filter(Boolean);
-}
-
 function selectNode(node, mode = "replace") {
   if (!node) {
     selection.length = 0;
@@ -795,6 +646,30 @@ renderer.domElement.addEventListener("pointerdown", (event) => {
   select(hit ? hit.object : null, selectionMode(event));
 });
 
+// ---- export ---------------------------------------------------------------
+// The point of the round-trip: python holds the edited objects, so it can
+// print them back as a script. Reading it from the server rather than
+// rebuilding it here is what makes it trustworthy -- it is the objects, not
+// the browser's idea of them.
+async function exportCode() {
+  if (!INFO.root) {
+    setStatus("static", "no backend \u2014 cannot export");
+    return;
+  }
+  const code = await (
+    await fetch(INFO.root + "export", { cache: "no-store" })
+  ).text();
+  const panel = document.getElementById("code");
+  panel.querySelector("pre").textContent = code;
+  panel.style.display = "block";
+  try {
+    await navigator.clipboard.writeText(code);
+    panel.querySelector(".hint").textContent = "copied to clipboard";
+  } catch {
+    panel.querySelector(".hint").textContent = "select and copy";
+  }
+}
+
 // ---- keyboard ------------------------------------------------------------
 let snapping = false;
 function setSnapping(on) {
@@ -861,25 +736,6 @@ function setGizmoMode(kind) {
   document.body.classList.toggle("aiming", kind === "polarization");
 }
 const hidden = new Set();
-
-function setHidden(mesh, on) {
-  mesh.visible = !on;
-  on ? hidden.add(mesh) : hidden.delete(mesh);
-  document.getElementById("shown").textContent = hidden.size
-    ? `${hidden.size} hidden`
-    : "all shown";
-}
-
-/** Show only the selection, or everything again if nothing is hidden. */
-function isolate() {
-  if (hidden.size) {
-    for (const mesh of [...hidden]) setHidden(mesh, false);
-    return;
-  }
-  for (const mesh of pickable) {
-    if (!selection.includes(mesh)) setHidden(mesh, true);
-  }
-}
 
 // ---- views ----------------------------------------------------------------
 const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, span * 100);
@@ -984,7 +840,7 @@ addEventListener("keydown", (e) => {
 // ---- during the drag: JS only, nothing sent ------------------------------
 gizmo.addEventListener("objectChange", () => {
   if (gizmo.object === polGroup && selected) {
-    // follow the arrow live; the committed value still comes from mouseUp
+    // follow the handle live; the committed value still comes from mouseUp
     const local = Z.clone()
       .applyQuaternion(polGroup.quaternion)
       .applyQuaternion(selected.quaternion.clone().invert());
@@ -1018,11 +874,11 @@ gizmo.addEventListener("mouseUp", () => {
     if (!selected) return;
     const oid = selected.userData.objectId;
     const pol = POLARIZATION[String(oid)];
-    // amplitude is not what the arrow expresses, so it is carried through
+    // the handle expresses direction only, so amplitude is carried through
     const magnitude = new THREE.Vector3()
       .fromArray(state.get(oid)[pol.attr])
       .length();
-    // the arrow points in world space; magpylib stores the body frame
+    // the handle points in world space; magpylib stores the body frame
     const local = Z.clone()
       .applyQuaternion(polGroup.quaternion)
       .applyQuaternion(selected.quaternion.clone().invert())

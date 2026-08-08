@@ -36,15 +36,16 @@ from pathlib import Path
 from urllib.request import urlopen
 
 import numpy as np
-from magpylib_threejs import register, render_page
+from magpylib_threejs import present, register, render_page
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 
 _HERE = Path(__file__).parent
 
-#: The editor front-end, kept beside this file as real JavaScript.
+#: The editor front-end, kept beside this file as real JavaScript and CSS.
 _EDITOR_JS = (_HERE / "editor.js").read_text()
+_EDITOR_CSS = (_HERE / "editor.css").read_text()
 
 #: The addon the editor needs. `import` must sit with the module's other
 #: imports, which is why the backend takes it separately from the JS body.
@@ -371,6 +372,7 @@ def show(scene):
         extra_js=_EDITOR_JS,
         extra_imports=_IMPORT,
         extra_data={
+            "EDITOR_CSS": _EDITOR_CSS,
             "UNIT": next(iter(scene.panel(1, 1).labels.values()), "").strip("xyz ()")
             or "m",
             "INFO": {
@@ -400,12 +402,7 @@ def show(scene):
         },
         anchors={oid: obj.position for oid, obj in objects_by_id.items()},
     )
-    if scene.canvas is not None:  # see README: canvas has no meaning here
-        msg = "the threejs backend cannot draw onto an existing canvas"
-        raise NotImplementedError(msg)
-    if scene.return_fig:
-        return html
-    return _serve(html, server, objects_by_id)
+    return present(scene, html, lambda page: _serve(page, server, objects_by_id))
 
 
 # Importing an editing backend pins the two scalings magpylib derives from the

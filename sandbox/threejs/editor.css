@@ -1,0 +1,355 @@
+/* Chrome for the editor layer: four panels sharing one visual language,
+   plus the scene tree. Injected by editor.js, which receives it as
+   EDITOR_CSS -- a real .css file so it gets highlighting and prettier. */
+
+:root {
+  --panel: rgba(255, 255, 255, 0.93);
+  --edge: rgba(15, 23, 42, 0.1);
+  --ink: #1f2328;
+  --muted: #6b7280;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 6px 20px rgba(15, 23, 42, 0.08);
+}
+.mp-panel {
+  position: absolute;
+  z-index: 5;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--edge);
+  border-radius: 9px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+  padding: 9px 11px;
+  font:
+    12px/1.55 ui-sans-serif,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+.mp-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+#legend {
+  top: 12px;
+  left: 12px;
+}
+#hud {
+  bottom: 42px;
+  left: 12px;
+}
+#inspector {
+  top: 12px;
+  right: 12px;
+  min-width: 172px;
+}
+#code {
+  display: none;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  max-width: min(680px, 82vw);
+  max-height: 70vh;
+  overflow: auto;
+}
+#code pre {
+  margin: 0;
+  font:
+    12px/1.5 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  white-space: pre;
+  color: #1f2328;
+}
+#code .hint {
+  float: right;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* shift-click extends a *text* selection by default, which streaks the rows
+   grey while multi-selecting. Off for the chrome, kept where text is the
+   point: the exported code, and the number fields. */
+#tree,
+#hud,
+#statusbar,
+#inspector .mp-title {
+  user-select: none;
+  -webkit-user-select: none;
+}
+#code pre,
+#fields input {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+#legend {
+  max-height: 46vh;
+  overflow: auto;
+  min-width: 168px;
+}
+/* the viewer styles its flat legend with "#legend div { display: flex }",
+   which would lay the tree's containers out in a row. Same specificity, later
+   in the document, so this wins; .node declares its own flex below. */
+#legend div {
+  display: block;
+}
+#tree .node {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 4px;
+  padding: 1px 4px 1px 3px;
+  cursor: default;
+}
+/* Indentation alone made a depth-0 row following a depth-2 row read as part of
+   the same group. The branches now draw a guide line, so nesting is visible
+   rather than inferred from how far something is pushed across. */
+#tree .branch {
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(15, 23, 42, 0.13);
+}
+#tree > .node {
+  font-weight: 550;
+}
+#tree .node.group > .label {
+  font-weight: 550;
+}
+#tree .node:hover {
+  background: rgba(15, 23, 42, 0.05);
+}
+#tree .node.selected {
+  background: rgba(46, 145, 229, 0.16);
+}
+#tree .node.off .label,
+#tree .node.off .swatch {
+  opacity: 0.38;
+}
+#tree .label {
+  cursor: pointer;
+  white-space: nowrap;
+}
+#tree .swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  flex: none;
+}
+#tree .caret {
+  width: 0;
+  height: 0;
+  flex: none;
+  margin-right: 1px;
+  cursor: pointer;
+  border: 4px solid transparent;
+  border-left-color: var(--ink);
+  transform: rotate(90deg);
+  transition: transform 0.12s;
+}
+#tree .node.closed .caret {
+  transform: none;
+}
+#tree .caret.leaf {
+  border-left-color: transparent;
+  cursor: default;
+}
+#tree .eye {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  cursor: pointer;
+  opacity: 0.6;
+  background: no-repeat center/12px
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%231f2328' d='M8 3C4.5 3 1.7 5.4 1 8c.7 2.6 3.5 5 7 5s6.3-2.4 7-5c-.7-2.6-3.5-5-7-5zm0 8.3A3.3 3.3 0 1 1 8 4.7a3.3 3.3 0 0 1 0 6.6zm0-5.3a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'/%3E%3C/svg%3E");
+}
+#tree .eye:hover {
+  opacity: 1;
+}
+#tree .node.off .eye {
+  opacity: 0.28;
+}
+
+/* a status bar rather than another floating panel: connection state is about
+   the session, not about anything in the scene */
+#statusbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 26px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  background: rgba(248, 249, 251, 0.94);
+  border-top: 1px solid var(--edge);
+  backdrop-filter: blur(8px);
+  font:
+    11px/1 ui-sans-serif,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  color: var(--ink);
+}
+#statusbar i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  background: #c3c8d0;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
+}
+#statusbar .sep {
+  flex: 1;
+}
+#statusbar .meta {
+  color: var(--muted);
+}
+#statusbar[data-state="live"] i {
+  background: #22a06b;
+  box-shadow: 0 0 0 3px rgba(34, 160, 107, 0.16);
+}
+#statusbar[data-state="busy"] i {
+  background: #e8912d;
+  box-shadow: 0 0 0 3px rgba(232, 145, 45, 0.18);
+}
+#statusbar[data-state="dead"] i {
+  background: #d64545;
+  box-shadow: 0 0 0 3px rgba(214, 69, 69, 0.18);
+}
+#statusbar[data-state="dead"] {
+  background: #fdecec;
+  border-top-color: rgba(214, 69, 69, 0.35);
+}
+/* aiming the polarization edits the magnet's field, not its placement, so the
+   viewport gets a border and the mode is named in the bar */
+body.aiming::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  border: 2px solid rgba(214, 69, 69, 0.45);
+  box-sizing: border-box;
+}
+body.aiming #mode {
+  color: #d64545;
+  font-weight: 600;
+}
+
+kbd {
+  font:
+    11px/1 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  background: #f4f5f7;
+  border: 1px solid var(--edge);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 2px 5px;
+  color: #3d4451;
+}
+#controls > summary {
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+#controls > summary::-webkit-details-marker {
+  display: none;
+}
+#controls > summary::before {
+  content: "";
+  width: 0;
+  height: 0;
+  flex: none;
+  border: 4px solid transparent;
+  border-left-color: var(--ink);
+  transition: transform 0.14s ease;
+}
+#controls > summary:hover {
+  color: var(--ink);
+}
+#controls > summary:hover::before {
+  border-left-color: #2e91e5;
+}
+#controls[open] > summary::before {
+  transform: rotate(90deg) translateX(-1px);
+}
+#controls:not([open]) > summary {
+  margin-bottom: 0;
+}
+#keys {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 8px;
+  align-items: center;
+}
+#keys span {
+  color: var(--muted);
+}
+
+#readout {
+  margin-bottom: 7px;
+}
+#sel {
+  font-weight: 600;
+}
+#delta {
+  color: var(--muted);
+}
+#stats {
+  color: var(--muted);
+  font-size: 11px;
+  margin: 5px 0 8px;
+}
+
+#fields .row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 3px;
+}
+#fields .row span {
+  color: var(--muted);
+}
+#fields input {
+  width: 6.2em;
+  font:
+    12px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  padding: 2px 6px;
+  color: var(--ink);
+  border: 1px solid var(--edge);
+  border-radius: 5px;
+  background: #fff;
+}
+#fields input:focus {
+  outline: 2px solid rgba(46, 145, 229, 0.35);
+  outline-offset: 0;
+}
+#fields .note {
+  color: var(--muted);
+  font-size: 11px;
+  display: block;
+  margin-top: 6px;
+}
+#fields .group {
+  margin-top: 8px;
+}

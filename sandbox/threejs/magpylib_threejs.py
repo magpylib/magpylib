@@ -1,12 +1,15 @@
 """A minimal three.js display backend for Magpylib -- prototype, not shipped.
 
-Deliberately narrow: `mesh3d` traces only (which covers magnets), no
-animation, no subplots. The point is to exercise
-`magpylib.graphics.backend` from the outside, the way a real third-party
-backend would, and find out where the contract is thin. Findings are
-written up in README.md next to this file.
+Draws `mesh3d` and `scatter3d`, which between them cover every magpylib
+object. No animation and no subplots -- both are declined through the
+capability flags rather than half-implemented.
 
-`show()` returns a self-contained HTML page as a string.
+The point is to exercise `magpylib.graphics.backend` from the outside, the
+way a real third-party backend would, and find out where the contract is
+thin. Findings are written up in README.md next to this file.
+
+`show()` returns a self-contained HTML page as a string. The page body is
+`viewer.js`; `threejs_edit.py` registers a variant that adds an editor.
 """
 
 from __future__ import annotations
@@ -219,19 +222,22 @@ def render_page(scene, extra_js="", extra_imports="", extra_data=None, anchors=N
     )
 
 
-def present(scene, html):
-    """Hand `html` back or display it, according to `scene`.
+def present(scene, html, display=None):
+    """Hand `html` back or show it, according to `scene`.
 
-    Shared by every variant of this backend so they behave identically at the
-    edges: `return_fig` is advisory -- magpylib discards the return value when
-    it is not set -- so honouring it, and displaying otherwise, is on us.
+    Shared by every variant of this backend, because the obligations are the
+    same wherever the page came from: a canvas cannot be honoured at all (see
+    README), and `return_fig` is advisory -- magpylib discards the return value
+    when it is not set, so respecting it is on us. Only the means of showing
+    differs, which is what `display` supplies; the editor serves the page for a
+    session instead of opening it once.
     """
-    if scene.canvas is not None:  # see README: canvas has no meaning here
+    if scene.canvas is not None:
         msg = "the threejs backend cannot draw onto an existing canvas"
         raise NotImplementedError(msg)
     if scene.return_fig:
         return html
-    return _display(html)
+    return (display or _display)(html)
 
 
 def show_threejs(scene):
