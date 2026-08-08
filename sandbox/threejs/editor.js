@@ -40,6 +40,8 @@ status.innerHTML =
   `<span class="meta">&middot;</span><span id="pivot">pivot: origin</span>` +
   `<span class="meta">&middot;</span><span id="proj">perspective</span>` +
   `<span class="meta">&middot;</span><span id="shown">all shown</span>` +
+  `<span class="meta">&middot;</span><span id="play"></span>` +
+  `<span id="frameno"></span>` +
   `<span class="meta">&middot; ${INFO.backend} &middot; magpylib ` +
   `${INFO.magpylib} &middot; python ${INFO.python}</span>`;
 document.body.appendChild(status);
@@ -214,6 +216,7 @@ hud.innerHTML = `
     <kbd>F</kbd><span>frame selected</span>
     <kbd>\u21b9</kbd><span>next object</span>
     <kbd>C</kbd><span>export magpylib code</span>
+    <kbd>space</kbd><span>play / pause the paths</span>
     <kbd>\u2318Z</kbd><span>undo / <kbd>\u21e7</kbd> redo</span>
     <kbd>\u232b</kbd><span>reset</span>
     <kbd>H</kbd><span>hide (<kbd>\u21e7</kbd> isolate)</span>
@@ -646,6 +649,50 @@ renderer.domElement.addEventListener("pointerdown", (event) => {
   select(hit ? hit.object : null, selectionMode(event));
 });
 
+// ---- playback -------------------------------------------------------------
+// magpylib animates by re-baking every frame's vertices -- 1826 KB for 99
+// frames of a sphere, measured, for what is a rigid transform of frame 0 to
+// 2e-16. This backend declines supports_animation and animates from the
+// model instead: the same path as position and quaternion arrays is 5.4 KB,
+// and a scene graph applies a matrix per object per frame anyway.
+//
+// A path that changes shape rather than pose cannot be a matrix, so those are
+// marked and left alone rather than played back wrongly.
+
+const trackLength = Math.max(
+  0,
+  ...Object.values(TRACKS).map((t) => t.position.length),
+);
+let frameIndex = trackLength ? trackLength - 1 : 0; // rendered at the last step
+let playing = null;
+
+function showFrame(index) {
+  frameIndex = ((index % trackLength) + trackLength) % trackLength;
+  for (const [oid, track] of Object.entries(TRACKS)) {
+    const mesh = byObjectId.get(Number(oid));
+    if (!mesh || !track.rigid) continue;
+    const at = Math.min(frameIndex, track.position.length - 1);
+    mesh.position.fromArray(track.position[at]);
+    mesh.quaternion.fromArray(track.quaternion[at]);
+  }
+  const scrub = document.getElementById("scrub");
+  if (scrub) scrub.value = frameIndex;
+  document.getElementById("frameno").textContent =
+    `frame ${frameIndex + 1}/${trackLength}`;
+  placePolarization(selected);
+}
+
+function togglePlay() {
+  if (!trackLength) return;
+  if (playing) {
+    clearInterval(playing);
+    playing = null;
+  } else {
+    playing = setInterval(() => showFrame(frameIndex + 1), 1000 / 20);
+  }
+  document.getElementById("play").textContent = playing ? "pause" : "play";
+}
+
 // ---- export ---------------------------------------------------------------
 // The point of the round-trip: python holds the edited objects, so it can
 // print them back as a script. Reading it from the server rather than
@@ -831,6 +878,10 @@ addEventListener("keydown", (e) => {
     bindProxy();
   }
   if (e.key === "c") exportCode();
+  if (e.key === " ") {
+    e.preventDefault();
+    togglePlay();
+  }
   if (e.key === "Escape") {
     document.getElementById("code").style.display = "none";
     select(null);

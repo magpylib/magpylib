@@ -233,6 +233,62 @@ def build_tree(objects_by_id, colors):
     return roots
 
 
+#: Path attributes that are *not* a rigid motion. If one of these varies, the
+#: shape or colouring changes along the path and a matrix cannot express it.
+_NON_RIGID = ("dimension", "diameter", "vertices", "polarization", "magnetization")
+
+
+def build_tracks(objects_by_id):
+    """Each object's path as transforms, for animating without new geometry.
+
+    magpylib animates by re-baking every frame's vertices: 99 frames of a
+    Sphere is 1826 KB of geometry for what is, measured, a rigid transform of
+    frame 0 to 2e-16. The same path as position and quaternion arrays is 5.4 KB
+    -- 337 times smaller -- and a scene-graph renderer wants the matrix anyway,
+    since it already applies one per object per frame.
+
+    So this backend declines `supports_animation` and animates from the model
+    instead. `path_properties` says which attributes may vary; when one of the
+    non-rigid ones does, a matrix is not enough and the path is reported as
+    unanimatable rather than played back wrongly.
+    """
+    tracks = {}
+    for oid, obj in objects_by_id.items():
+        # the path length is whatever the longest path-varying property has:
+        # an object can morph without moving, and then position is a single
+        # point while dimension is an array
+        varying, length = [], 1
+        for name in getattr(obj, "path_properties", ()):
+            raw = getattr(obj, name, None)
+            if raw is None or name == "orientation":
+                continue
+            try:  # vertices can be ragged, and some properties are not numeric
+                value = np.asarray(raw, dtype=float)
+            except (TypeError, ValueError):
+                varying.append(name)
+                continue
+            if value.ndim < 2:
+                continue
+            length = max(length, len(value))
+            if name in _NON_RIGID:
+                varying.append(name)
+        positions = np.atleast_2d(np.asarray(obj.position, dtype=float))
+        if length < 2:
+            continue
+        if len(positions) < length:  # static position, varying something else
+            positions = np.repeat(positions[-1:], length, axis=0)
+        quats = np.atleast_2d(obj.orientation.as_quat())
+        if len(quats) < length:
+            quats = np.repeat(quats[-1:], length, axis=0)
+        tracks[str(oid)] = {
+            "position": np.round(positions, 6).tolist(),
+            "quaternion": np.round(quats, 6).tolist(),
+            "rigid": not varying,
+            "varying": varying,
+        }
+    return tracks
+
+
 def apply_edit(obj, field, value):
     """Apply one ``{field: value}`` message from the browser to `obj`."""
     if field == "quaternion":
@@ -394,13 +450,19 @@ def show(scene):
                 if (s := shape_of(obj)) is not None
             },
             "TREE": build_tree(objects_by_id, colors),
+            "TRACKS": build_tracks(objects_by_id),
             "POLARIZATION": {
                 str(oid): p
                 for oid, obj in objects_by_id.items()
                 if (p := polarization_of(obj)) is not None
             },
         },
-        anchors={oid: obj.position for oid, obj in objects_by_id.items()},
+        # a path object is drawn at its *last* step, so that is the anchor its
+        # geometry is centred on -- obj.position is the whole path, not a point
+        anchors={
+            oid: np.atleast_2d(np.asarray(obj.position, dtype=float))[-1]
+            for oid, obj in objects_by_id.items()
+        },
     )
     return present(scene, html, lambda page: _serve(page, server, objects_by_id))
 

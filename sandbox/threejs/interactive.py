@@ -14,6 +14,7 @@ needs when it is imported.
 
 from __future__ import annotations
 
+import numpy as np
 import threejs_edit  # noqa: F401  -- the import registers the backend
 
 import magpylib as magpy
@@ -59,6 +60,13 @@ def main():
             style_label="probe",
         ),
         magpy.misc.Dipole(moment=(0, 0, 1), position=(0, 3, 0), style_label="stray"),
+        # a path, so there is something to play back
+        magpy.magnet.Sphere(
+            diameter=0.7,
+            polarization=(0, 1, 0),
+            position=np.linspace((-4, 2, 2), (4, 2, 2), 40),
+            style_label="sweeper",
+        ),
     ]
 
     magpy.show(
