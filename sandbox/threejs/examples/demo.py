@@ -7,6 +7,13 @@ the interesting output.
 
 from __future__ import annotations
 
+# the backend lives one level up, beside the JS it serves
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+
 # printing is what this script is for
 # ruff: noqa: T201
 import warnings

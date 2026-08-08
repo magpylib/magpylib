@@ -14,8 +14,15 @@ needs when it is imported.
 
 from __future__ import annotations
 
+# the backend lives one level up, beside the JS it serves
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+
 import numpy as np
-import threejs_edit  # noqa: F401  -- the import registers the backend
+import threejs_edit  # noqa: F401  -- the import registers the backend  # noqa: E402
 
 import magpylib as magpy
 

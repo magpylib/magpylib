@@ -7,8 +7,14 @@ Not shipped, not tested, not a dependency of anything.
 Scope: `mesh3d` and `scatter3d`, which between them cover every Magpylib object.
 No animation, no subplots.
 
+The backend is the two modules at the top level; everything in `examples/` is an
+ordinary Magpylib script that happens to select it.
+
 ```bash
-python sandbox/threejs/demo.py   # writes cuboid / two_cuboids / current / everything .html
+python sandbox/threejs/examples/demo.py         # one page per object kind
+python sandbox/threejs/examples/compare.py      # side by side against Plotly
+python sandbox/threejs/examples/interactive.py  # the editor: pick, drag, export
+python sandbox/threejs/examples/animation.py    # paths, played from the model
 ```
 
 `show()` returns a self-contained HTML page pulling three.js from unpkg.
