@@ -24,13 +24,16 @@ from __future__ import annotations
 
 # it reports the URL it is serving on
 # ruff: noqa: T201
+import contextlib
 import ctypes
 import json
 import sys
 import threading
+import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.request import urlopen
 
 import numpy as np
 from magpylib_threejs import register, render_page
@@ -197,6 +200,38 @@ def to_code(objects):
     return "\n".join(lines)
 
 
+def build_tree(objects_by_id, colors):
+    """The Collection hierarchy, as nested nodes for the tree view.
+
+    It cannot come from the payload. Every trace under a Collection carries the
+    same `legendgroup` -- that of the *outermost* one -- so a nested collection
+    leaves no trace of itself, and three levels arrive looking like one. The
+    objects do know: `obj.parent` walks up, so the host rebuilds the tree from
+    the objects it already resolved. Another face of finding 13.
+    """
+    nodes, roots = {}, []
+
+    def node_for(obj):
+        oid = id(obj)
+        if oid in nodes:
+            return nodes[oid]
+        node = {
+            "id": oid,
+            "kind": type(obj).__name__,
+            "label": getattr(obj.style, "label", None) or type(obj).__name__,
+            "color": colors.get(oid),
+            "children": [],
+        }
+        nodes[oid] = node
+        parent = getattr(obj, "parent", None)
+        (roots if parent is None else node_for(parent)["children"]).append(node)
+        return node
+
+    for obj in objects_by_id.values():
+        node_for(obj)
+    return roots
+
+
 def apply_edit(obj, field, value):
     """Apply one ``{field: value}`` message from the browser to `obj`."""
     if field == "quaternion":
@@ -226,6 +261,42 @@ def _objects_in(scene):
     return found
 
 
+#: A fixed port, so re-running the script serves the *same* URL and an open
+#: tab shows the new build on reload. An ephemeral port meant every run needed
+#: a fresh tab, and reloading an old one silently showed an old build.
+PORT = 8770
+
+
+def _bind():
+    """Bind `PORT`, taking it over from a previous run of this script.
+
+    A fixed port is what lets an open tab reload onto the new build, but it
+    also means re-running the script finds its own predecessor holding the
+    socket. Rather than fail, ask that one to stop -- it is recognisable by
+    answering `/alive` -- and then take the port. Anything else on the port is
+    left alone and an ephemeral one is used instead.
+    """
+    ThreadingHTTPServer.allow_reuse_address = True
+    for attempt in range(12):
+        try:
+            return ThreadingHTTPServer(("127.0.0.1", PORT), None)
+        except OSError:
+            if attempt == 0:
+                try:
+                    with urlopen(f"http://127.0.0.1:{PORT}/alive", timeout=0.4) as r:
+                        ours = b"alive" in r.read()
+                except OSError:
+                    ours = False
+                if not ours:
+                    print(f"port {PORT} is taken by something else; using another")
+                    return ThreadingHTTPServer(("127.0.0.1", 0), None)
+                print(f"taking port {PORT} from the previous run")
+                with contextlib.suppress(OSError):
+                    urlopen(f"http://127.0.0.1:{PORT}/shutdown", timeout=0.4).read()
+            time.sleep(0.25)
+    return ThreadingHTTPServer(("127.0.0.1", 0), None)
+
+
 def _serve(html, server, objects_by_id):
     """Serve `html` at ``/`` and a heartbeat at ``/alive`` until interrupted.
 
@@ -246,7 +317,10 @@ def _serve(html, server, objects_by_id):
             self.wfile.write(body)
 
         def do_GET(self):
-            if self.path.startswith("/alive"):
+            if self.path.startswith("/shutdown"):
+                self._reply(b'{"stopping":true}')
+                threading.Thread(target=server.shutdown, daemon=True).start()
+            elif self.path.startswith("/alive"):
                 self._reply(b'{"alive":true}')
             elif self.path.startswith("/export"):
                 # read the live objects, so this reflects every applied edit
@@ -285,7 +359,13 @@ def show(scene):
     objects_by_id = _objects_in(scene)
     # the port has to be known before the page is built, since the page needs
     # to be told where to send its heartbeat
-    server = None if scene.return_fig else ThreadingHTTPServer(("127.0.0.1", 0), None)
+    server = None if scene.return_fig else _bind()
+    colors = {
+        trace["object_id"]: trace.get("color")
+        for frame in scene.frames
+        for trace in frame.traces
+        if trace.get("object_id") is not None
+    }
     html = render_page(
         scene,
         extra_js=_EDITOR_JS,
@@ -311,6 +391,7 @@ def show(scene):
                 for oid, obj in objects_by_id.items()
                 if (s := shape_of(obj)) is not None
             },
+            "TREE": build_tree(objects_by_id, colors),
             "POLARIZATION": {
                 str(oid): p
                 for oid, obj in objects_by_id.items()

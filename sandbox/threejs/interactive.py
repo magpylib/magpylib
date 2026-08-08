@@ -20,17 +20,50 @@ import magpylib as magpy
 
 
 def main():
-    objects = [
-        magpy.magnet.Cuboid(dimension=(1, 2, 3), polarization=(0, 0, 1)),
+    # three levels, so the tree has something to nest: two sub-assemblies
+    # inside a rig, and a couple of loose objects beside them
+    array = magpy.Collection(
+        *[
+            magpy.magnet.Cuboid(
+                dimension=(0.8, 0.8, 1.6),
+                polarization=(0, 0, 1 if n % 2 == 0 else -1),
+                position=(n * 1.2 - 1.8, 0, 0),
+                style_label=f"pole {n + 1}",
+            )
+            for n in range(4)
+        ],
+        style_label="halbach array",
+    )
+    yoke = magpy.Collection(
         magpy.magnet.Cylinder(
-            dimension=(1, 1), polarization=(0, 0, 1), position=(3, 0, 0)
+            dimension=(1.2, 0.4),
+            polarization=(0, 0, 1),
+            position=(0, 0, -1.6),
+            style_label="backing disc",
         ),
-        magpy.magnet.Sphere(diameter=1.5, polarization=(1, 0, 0), position=(-3, 0, 0)),
-        magpy.misc.Dipole(moment=(0, 0, 1), position=(0, 3, 0)),
-        magpy.Sensor(position=(0, -3, 0), pixel=[(x, 0, 0) for x in (-0.3, 0, 0.3)]),
+        magpy.magnet.Sphere(
+            diameter=0.9,
+            polarization=(1, 0, 0),
+            position=(0, 0, -2.6),
+            style_label="trim magnet",
+        ),
+        style_label="yoke",
+    )
+    rig = magpy.Collection(array, yoke, style_label="rig")
+
+    objects = [
+        rig,
+        magpy.Sensor(
+            position=(0, -3, 0),
+            pixel=[(x, 0, 0) for x in (-0.3, 0, 0.3)],
+            style_label="probe",
+        ),
+        magpy.misc.Dipole(moment=(0, 0, 1), position=(0, 3, 0), style_label="stray"),
     ]
 
-    magpy.show(*objects, backend="threejs-edit")
+    magpy.show(
+        *objects, backend="threejs-edit", style_magnetization_color_mode="tricycle"
+    )
 
 
 if __name__ == "__main__":

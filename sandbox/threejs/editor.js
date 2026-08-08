@@ -55,6 +55,52 @@ style.textContent = `
 }
 #code .hint { float: right; text-transform: none; letter-spacing: 0; }
 
+/* shift-click extends a *text* selection by default, which streaks the rows
+   grey while multi-selecting. Off for the chrome, kept where text is the
+   point: the exported code, and the number fields. */
+#tree, #hud, #statusbar, #inspector .mp-title {
+  user-select: none; -webkit-user-select: none;
+}
+#code pre, #fields input { user-select: text; -webkit-user-select: text; }
+
+#legend { max-height: 46vh; overflow: auto; min-width: 168px; }
+/* the viewer styles its flat legend with "#legend div { display: flex }",
+   which would lay the tree's containers out in a row. Same specificity, later
+   in the document, so this wins; .node declares its own flex below. */
+#legend div { display: block; }
+#tree .node {
+  display: flex; align-items: center; gap: 5px; border-radius: 4px;
+  padding: 1px 4px 1px 3px; cursor: default;
+}
+/* Indentation alone made a depth-0 row following a depth-2 row read as part of
+   the same group. The branches now draw a guide line, so nesting is visible
+   rather than inferred from how far something is pushed across. */
+#tree .branch {
+  margin-left: 8px; padding-left: 8px;
+  border-left: 1px solid rgba(15,23,42,.13);
+}
+#tree > .node { font-weight: 550; }
+#tree .node.group > .label { font-weight: 550; }
+#tree .node:hover { background: rgba(15,23,42,.05); }
+#tree .node.selected { background: rgba(46,145,229,.16); }
+#tree .node.off .label, #tree .node.off .swatch { opacity: .38; }
+#tree .label { cursor: pointer; white-space: nowrap; }
+#tree .swatch { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+#tree .caret {
+  width: 0; height: 0; flex: none; margin-right: 1px; cursor: pointer;
+  border: 4px solid transparent; border-left-color: var(--ink);
+  transform: rotate(90deg); transition: transform .12s;
+}
+#tree .node.closed .caret { transform: none; }
+#tree .caret.leaf { border-left-color: transparent; cursor: default; }
+#tree .eye {
+  width: 12px; height: 12px; flex: none; cursor: pointer; opacity: .6;
+  background: no-repeat center/12px
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%231f2328' d='M8 3C4.5 3 1.7 5.4 1 8c.7 2.6 3.5 5 7 5s6.3-2.4 7-5c-.7-2.6-3.5-5-7-5zm0 8.3A3.3 3.3 0 1 1 8 4.7a3.3 3.3 0 0 1 0 6.6zm0-5.3a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'/%3E%3C/svg%3E");
+}
+#tree .eye:hover { opacity: 1; }
+#tree .node.off .eye { opacity: .28; }
+
 /* a status bar rather than another floating panel: connection state is about
    the session, not about anything in the scene */
 #statusbar {
@@ -174,8 +220,97 @@ if (!INFO.alive) {
   setInterval(beat, 2000);
 }
 
+// ---- tree view -------------------------------------------------------------
+// Replaces the viewer's flat legend. The nesting comes from the host walking
+// obj.parent, because the payload gives every trace under a Collection the
+// same legendgroup and so cannot express more than one level.
 const legendBox = document.getElementById("legend");
-if (legendBox) legendBox.className = "mp-panel";
+legendBox.className = "mp-panel";
+legendBox.innerHTML = `<div class="mp-title">scene</div><div id="tree"></div>`;
+
+/** Every leaf under `node`, i.e. the objects that actually have a mesh. */
+function leavesOf(node) {
+  if (!node.children.length) return byObjectId.has(node.id) ? [node.id] : [];
+  return node.children.flatMap(leavesOf);
+}
+
+function renderTree(nodes, into) {
+  for (const node of nodes) {
+    const row = document.createElement("div");
+    row.className = node.children.length ? "node group" : "node";
+    row.dataset.id = node.id;
+    row.innerHTML =
+      `<span class="caret${node.children.length ? "" : " leaf"}"></span>` +
+      `<span class="eye" title="show / hide"></span>` +
+      (node.color
+        ? `<i class="swatch" style="background:${node.color}"></i>`
+        : "") +
+      `<span class="label">${node.label}</span>`;
+    into.appendChild(row);
+
+    const branch = document.createElement("div");
+    branch.className = "branch";
+    into.appendChild(branch);
+    renderTree(node.children, branch);
+
+    row.querySelector(".caret").addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (!node.children.length) return;
+      row.classList.toggle("closed");
+      branch.style.display = row.classList.contains("closed") ? "none" : "";
+    });
+
+    // the eye cascades: hiding a collection hides everything beneath it
+    row.querySelector(".eye").addEventListener("click", (event) => {
+      event.stopPropagation();
+      const ids = leavesOf(node);
+      const anyShown = ids.some((id) => byObjectId.get(id).visible);
+      for (const id of ids) setHidden(byObjectId.get(id), anyShown);
+      syncTree();
+    });
+
+    // the label selects, so the tree is a way in as well as a readout
+    row.querySelector(".label").addEventListener("click", (event) => {
+      selectNode(node, selectionMode(event));
+    });
+  }
+}
+
+/** Mirror selection and visibility from the scene onto the tree. */
+function syncTree() {
+  for (const row of legendBox.querySelectorAll(".node")) {
+    const ids = leavesOf(findNode(Number(row.dataset.id)));
+    const meshes = ids.map((id) => byObjectId.get(id)).filter(Boolean);
+    row.classList.toggle(
+      "selected",
+      meshes.length > 0 && meshes.every((m) => selection.includes(m)),
+    );
+    row.classList.toggle(
+      "off",
+      meshes.length > 0 && meshes.every((m) => !m.visible),
+    );
+  }
+}
+
+function findNode(id, nodes = TREE) {
+  for (const node of nodes) {
+    if (node.id === id) return node;
+    const hit = findNode(id, node.children);
+    if (hit) return hit;
+  }
+  return { id, children: [] };
+}
+
+// A shift-click extends whatever text selection already exists, wherever it
+// was anchored, and user-select does not prevent that -- so refuse the
+// mousedown and clear any selection the browser has already made.
+legendBox.addEventListener("mousedown", (event) => {
+  event.preventDefault();
+  const chosen = window.getSelection();
+  if (chosen && !chosen.isCollapsed) chosen.removeAllRanges();
+});
+
+renderTree(TREE, document.getElementById("tree"));
 
 const hud = document.createElement("div");
 hud.id = "hud";
@@ -200,7 +335,8 @@ hud.innerHTML = `
     <kbd>1</kbd><span>front &middot; <kbd>3</kbd> right &middot; <kbd>7</kbd> top</span>
     <kbd>5</kbd><span>ortho / perspective</span>
     <kbd>,</kbd><span>pivot origin / centre</span>
-    <kbd>\u21e7</kbd><span>click to multi-select</span>
+    <kbd>\u2318</kbd><span>click: toggle one</span>
+    <kbd>\u21e7</kbd><span>click: select range</span>
   </div>
   </details>`;
 document.body.appendChild(hud);
@@ -224,6 +360,7 @@ document.body.appendChild(code);
 const gizmo = new TransformControls(camera, renderer.domElement);
 // OrbitControls must yield while the gizmo has the pointer, or dragging a
 // handle also spins the camera.
+gizmo.size = 0.6;
 gizmo.addEventListener("dragging-changed", (e) => {
   controls.enabled = !e.value;
 });
@@ -566,29 +703,82 @@ function buildInspector(mesh) {
   });
 }
 
-function select(mesh, additive = false) {
-  if (!additive) selection.length = 0;
-  if (mesh) {
-    const at = selection.indexOf(mesh);
-    at === -1 ? selection.push(mesh) : selection.splice(at, 1);
+// Selection follows the file-manager split rather than treating the two
+// modifiers alike: cmd/ctrl toggles one thing, shift takes the range from the
+// last plain click. The range runs in tree order, which is the only order the
+// scene actually has.
+let anchorId = null;
+
+function flatNodes(nodes = TREE, out = []) {
+  for (const node of nodes) {
+    out.push(node);
+    flatNodes(node.children, out);
   }
+  return out;
+}
+
+function meshesOf(node) {
+  return leavesOf(node)
+    .map((id) => byObjectId.get(id))
+    .filter(Boolean);
+}
+
+function selectNode(node, mode = "replace") {
+  if (!node) {
+    selection.length = 0;
+    anchorId = null;
+  } else if (mode === "toggle") {
+    for (const mesh of meshesOf(node)) {
+      const at = selection.indexOf(mesh);
+      at === -1 ? selection.push(mesh) : selection.splice(at, 1);
+    }
+    anchorId = node.id;
+  } else if (mode === "range" && anchorId !== null) {
+    const flat = flatNodes();
+    const from = flat.findIndex((n) => n.id === anchorId);
+    const to = flat.findIndex((n) => n.id === node.id);
+    selection.length = 0;
+    const [lo, hi] = from <= to ? [from, to] : [to, from];
+    for (let i = lo; i <= hi; i++) {
+      for (const mesh of meshesOf(flat[i])) {
+        if (!selection.includes(mesh)) selection.push(mesh);
+      }
+    }
+  } else {
+    selection.length = 0;
+    selection.push(...meshesOf(node));
+    anchorId = node.id;
+  }
+
   selected = selection.length === 1 ? selection[0] : null;
-  // picking something else leaves aiming mode, so the gizmo never keeps
-  // meaning "polarization" for an object that was not being aimed
   if (document.body.classList.contains("aiming")) setGizmoMode("translate");
   bindProxy();
   buildInspector(selected);
   placePolarization(selected);
-
-  const label =
+  document.getElementById("sel").textContent =
     selection.length === 0
       ? "values"
       : selection.length === 1
         ? selected.name
         : `${selection.length} objects`;
-  document.getElementById("sel").textContent = label;
   document.getElementById("delta").textContent = "";
+  syncTree();
 }
+
+/** How the modifiers on `event` should change the selection. */
+function selectionMode(event) {
+  if (event.shiftKey) return "range";
+  if (event.metaKey || event.ctrlKey) return "toggle";
+  return "replace";
+}
+
+function select(mesh, mode = "replace") {
+  selectNode(mesh ? findNode(mesh.userData.objectId) : null, mode);
+}
+
+renderer.domElement.addEventListener("contextmenu", (event) =>
+  event.preventDefault(),
+);
 
 renderer.domElement.addEventListener("pointerdown", (event) => {
   if (gizmo.dragging) return;
@@ -599,7 +789,10 @@ renderer.domElement.addEventListener("pointerdown", (event) => {
     pickable.filter((m) => m.visible),
     false,
   )[0];
-  select(hit ? hit.object : null, event.shiftKey);
+  // Shift is the 3D-editor convention (Blender, Maya, Figma); cmd/ctrl is the
+  // file-manager one. Both mean "add to the selection" to somebody, so accept
+  // either rather than making people guess.
+  select(hit ? hit.object : null, selectionMode(event));
 });
 
 // ---- keyboard ------------------------------------------------------------
@@ -649,15 +842,19 @@ let localSpace = false;
 // The same rotate gizmo means two different things depending on what it is
 // attached to, so say which, and make it a different size: aiming the
 // polarization gets a smaller ring than turning the object.
+//: Gizmo sizes. The polarization ring stays proportionally smaller than the
+//: object handles, since that difference is one of the mode signals.
+const GIZMO_SIZE = { object: 0.6, polarization: 0.38 };
+
 function setGizmoMode(kind) {
   if (kind === "polarization") {
     gizmo.attach(polGroup);
     gizmo.setMode("rotate");
-    gizmo.size = 0.62;
+    gizmo.size = GIZMO_SIZE.polarization;
   } else {
     if (gizmo.object === polGroup) bindProxy();
     gizmo.setMode(kind);
-    gizmo.size = 1;
+    gizmo.size = GIZMO_SIZE.object;
   }
   const label = kind === "polarization" ? "aim polarization" : kind;
   document.getElementById("mode").textContent = `mode: ${label}`;
@@ -855,7 +1052,12 @@ gizmo.addEventListener("mouseUp", () => {
     if (gizmo.mode === "translate") {
       applyEdit(oid, "position", selected.position.toArray());
     } else if (gizmo.mode === "rotate") {
+      // A rotation about anything other than the object's own origin moves it
+      // as well as turning it -- which is the case whenever the pivot is the
+      // selection centre. Sending only the quaternion would drop that, and the
+      // view and python would quietly disagree.
       applyEdit(oid, "quaternion", selected.quaternion.toArray());
+      applyEdit(oid, "position", selected.position.toArray());
     } else if (gizmo.mode === "scale" && shape) {
       const base = Array.isArray(shape.value) ? shape.value : [shape.value];
       const s = selected.scale;
