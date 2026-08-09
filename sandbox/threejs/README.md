@@ -5,7 +5,8 @@ A deliberately minimal third-party display backend, written against the public
 Not shipped, not tested, not a dependency of anything.
 
 Scope: `mesh3d` and `scatter3d`, which between them cover every Magpylib object.
-No animation, no subplots.
+No subplots. Paths animate, but from the objects rather than from Magpylib's
+frames -- see finding 15.
 
 The backend is the two modules at the top level; everything in `examples/` is an
 ordinary Magpylib script that happens to select it.
@@ -334,6 +335,67 @@ The two honest fixes are for the host to do the work (what studio will do), or
 for magpylib to pass the objects alongside the scene. Adding the transform to
 the payload, which was the first idea, would cover the gizmo case and not the
 polarization one.
+
+### 14. A Collection hierarchy cannot be rebuilt from the payload
+
+Every trace under a `Collection` carries the same `legendgroup` — that of the
+**outermost** one. A nested collection therefore leaves no trace of itself, and
+three levels arrive looking like one:
+
+```
+rig ── halbach array ── pole 1..4        all three magnets report
+    └─ yoke ── backing disc, trim        legendgroup = "rig"
+```
+
+`obj.parent` walks up, so a host rebuilds the tree from the objects it already
+resolved — which is what the scene tree in `examples/interactive.py` does. A
+backend shipped through the entry-point group cannot, because it never sees the
+objects (finding 13).
+
+That is worse than the transform case. A legend is a **display** concern, and
+drawing one is the sort of thing a display backend exists to do.
+
+### 15. Animation is shipped as baked frames where transforms would do
+
+`supports_animation` makes magpylib re-render the whole scene per path step.
+Measured:
+
+| scene                   | as frames | as transforms | ratio    |
+| ----------------------- | --------- | ------------- | -------- |
+| Sphere, 99 steps        | 1826 KB   | 5.4 KB        | **337×** |
+| `examples/animation.py` | 1903 KB   | 11.6 KB       | **164×** |
+
+And every frame of a moving object is a rigid transform of the first, to
+`2e-16`. A scene graph applies a matrix per object per frame regardless, so the
+frames are not only larger to send but more work to draw.
+
+So this backend declines `supports_animation`, takes one frame, and animates the
+paths itself from `obj.position` and `obj.orientation`. That is a limit of the
+capability model rather than a bug in it: the flag asks whether a backend can
+consume magpylib's _frames_, and a scene-graph renderer would rather have the
+transforms. Answering "no" and animating anyway is the honest route today, but
+it reads as a backend that cannot animate.
+
+Paths are not always rigid — #916 made `dimension`, `diameter` and the rest
+path-varying too — so `build_tracks` reads `path_properties` and reports which
+vary. A cube whose dimension sweeps comes back `rigid=False` and is left alone
+rather than played back wrongly.
+
+### 16. What the viewer declares constrains what can be built on it
+
+The `extra_js` seam lets an editor layer share the viewer's module scope, which
+is what makes the prototype's editor possible at all. But sharing a scope means
+sharing every decision in it:
+
+| in `viewer.js`                  | consequence                                          |
+| ------------------------------- | ---------------------------------------------------- |
+| `const camera`                  | no editor could swap in an orthographic one          |
+| `const legend`                  | name collision, invisible until both are on the page |
+| `#legend div { display: flex }` | laid the editor's tree out in a row                  |
+
+None was intentional; each cost a debugging session. A backend meant to be
+extended wants its mutable state behind accessors, its CSS scoped to its own
+elements, and ideally the extension rendering into a shadow root.
 
 ## Not hit, but expected later
 
