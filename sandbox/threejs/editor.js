@@ -36,12 +36,11 @@ status.innerHTML =
   `<span class="meta">&middot;</span><span id="hist">0 edits</span>` +
   `<span class="meta">&middot;</span><span id="snap">snap: off</span>` +
   `<span class="meta">&middot;</span><span id="axis">axes: all</span>` +
-  `<span class="meta">&middot;</span><span id="space">space: world</span>` +
+  `<span class="meta">&middot;</span><span id="space">gizmo: world axes</span>` +
   `<span class="meta">&middot;</span><span id="pivot">pivot: origin</span>` +
   `<span class="meta">&middot;</span><span id="proj">perspective</span>` +
   `<span class="meta">&middot;</span><span id="shown">all shown</span>` +
-  `<span class="meta">&middot;</span><span id="play"></span>` +
-  `<span id="frameno"></span>` +
+  `<span class="meta">&middot;</span><span id="frameno"></span>` +
   `<span class="meta">&middot; ${INFO.backend} &middot; magpylib ` +
   `${INFO.magpylib} &middot; python ${INFO.python}</span>`;
 document.body.appendChild(status);
@@ -212,11 +211,11 @@ hud.innerHTML = `
     <kbd>P</kbd><span>aim polarization</span>
     <kbd>S</kbd><span>snap to grid</span>
     <kbd>X</kbd><span>constrain axis (<kbd>A</kbd> all)</span>
-    <kbd>L</kbd><span>local / world space</span>
+    <kbd>L</kbd><span>gizmo along object / world axes</span>
     <kbd>F</kbd><span>frame selected</span>
     <kbd>\u21b9</kbd><span>next object</span>
     <kbd>C</kbd><span>export magpylib code</span>
-    <kbd>space</kbd><span>play / pause the paths</span>
+    <kbd>space</kbd><span>play / pause paths</span>
     <kbd>\u2318Z</kbd><span>undo / <kbd>\u21e7</kbd> redo</span>
     <kbd>\u232b</kbd><span>reset</span>
     <kbd>H</kbd><span>hide (<kbd>\u21e7</kbd> isolate)</span>
@@ -682,6 +681,28 @@ function showFrame(index) {
   placePolarization(selected);
 }
 
+// A transport in the status bar, so playback is visible rather than a key you
+// have to know. Built here rather than with the rest of the chrome because it
+// only exists when something actually has a path.
+if (trackLength) {
+  const transport = document.createElement("span");
+  transport.id = "transport";
+  transport.innerHTML =
+    `<button id="playbtn" title="space">&#9654;</button>` +
+    `<input id="scrub" type="range" min="0" max="${trackLength - 1}" ` +
+    `value="${frameIndex}">`;
+  status.insertBefore(
+    transport,
+    document.getElementById("shown").previousSibling,
+  );
+  document.getElementById("playbtn").addEventListener("click", togglePlay);
+  document.getElementById("scrub").addEventListener("input", (event) => {
+    if (playing) togglePlay();
+    showFrame(Number(event.target.value));
+  });
+  showFrame(frameIndex);
+}
+
 function togglePlay() {
   if (!trackLength) return;
   if (playing) {
@@ -690,7 +711,8 @@ function togglePlay() {
   } else {
     playing = setInterval(() => showFrame(frameIndex + 1), 1000 / 20);
   }
-  document.getElementById("play").textContent = playing ? "pause" : "play";
+  const button = document.getElementById("playbtn");
+  if (button) button.innerHTML = playing ? "&#10074;&#10074;" : "&#9654;";
 }
 
 // ---- export ---------------------------------------------------------------
@@ -840,7 +862,7 @@ addEventListener("keydown", (e) => {
     localSpace = !localSpace;
     gizmo.setSpace(localSpace ? "local" : "world");
     document.getElementById("space").textContent =
-      `space: ${localSpace ? "local" : "world"}`;
+      `gizmo: ${localSpace ? "object axes" : "world axes"}`;
   }
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
     e.shiftKey ? redo() : undo();

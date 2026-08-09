@@ -101,7 +101,7 @@ def main():
     objects = build()
     report(objects)
     print("\nspace plays, the status bar shows the frame")
-    magpy.show(*objects, backend="threejs-edit")
+    magpy.show(*objects, backend="plotly", legend_show=False)
 
 
 if __name__ == "__main__":

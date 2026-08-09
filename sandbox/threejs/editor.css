@@ -177,7 +177,11 @@
 
 /* a status bar rather than another floating panel: connection state is about
    the session, not about anything in the scene */
+/* The bar is a flex row, so a string that grows squeezes the spacer and
+   everything to its right jumps. Tabular digits stop 1 and 7 having different
+   widths, and the fields that change reserve their own space. */
 #statusbar {
+  font-variant-numeric: tabular-nums;
   position: absolute;
   left: 0;
   right: 0;
@@ -352,4 +356,72 @@ kbd {
 }
 #fields .group {
   margin-top: 8px;
+}
+
+#transport {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+#playbtn {
+  font:
+    10px/1 ui-sans-serif,
+    sans-serif;
+  padding: 2px 6px;
+  cursor: pointer;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+}
+#playbtn:hover {
+  border-color: #2e91e5;
+}
+#scrub {
+  width: 120px;
+  accent-color: #2e91e5;
+}
+
+#delta,
+#frameno,
+#calls,
+#hist,
+#snap,
+#axis,
+#space,
+#pivot,
+#proj,
+#shown {
+  display: inline-block;
+  white-space: nowrap;
+}
+#delta {
+  min-width: 17em;
+}
+#frameno {
+  min-width: 6em;
+}
+#calls {
+  min-width: 6.5em;
+}
+#hist {
+  min-width: 4.5em;
+}
+#snap {
+  min-width: 7.5em;
+}
+#axis {
+  min-width: 5em;
+}
+#space {
+  min-width: 10em;
+}
+#pivot {
+  min-width: 7em;
+}
+#proj {
+  min-width: 6.5em;
+}
+#shown {
+  min-width: 5.5em;
 }
