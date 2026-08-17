@@ -184,6 +184,11 @@ extend-select = [
 ignore = [
   "PLR09",    # Too many <...>
   "PLR2004",  # Magic value used in comparison
+  # Module names here carry physics and API shape: field_BH_cuboid,
+  # class_Cuboid, test_BHMJ_level. B, H, M and J *are* the fields, and
+  # lowercasing them would make 57 file names say something else. Reported
+  # since ruff 0.16 began applying N999 to these paths.
+  "N999",     # Invalid module name
 ]
 # Uncomment if using a _compat.typing backport
 # typing-modules = ["magpylib._compat.typing"]
