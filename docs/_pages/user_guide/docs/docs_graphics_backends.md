@@ -47,7 +47,7 @@ Declaring the class registers it. A backend shipped in a package should instead 
 counter = "my_package:CounterBackend"
 ```
 
-Entry points are resolved lazily, the first time a backend name is looked up. For a backend defined in a script or notebook, `magpy.register_backend(name, show_func, ...)` is the imperative equivalent.
+Entry points are resolved lazily, the first time a backend name is looked up after `import magpylib` has returned — so magpylib is fully imported before your module runs, and `from magpylib.graphics.backend import DisplayBackend` at module scope is safe. An entry point may name the class or the module that defines it; if loading it registers no backend, magpylib says so rather than leaving the name quietly missing. For a backend defined in a script or notebook, `magpy.register_backend(name, show_func, ...)` is the imperative equivalent.
 
 ## What `show` receives
 

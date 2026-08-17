@@ -63,7 +63,10 @@
   ship it in a package through the `magpylib.backends` entry-point group, where
   `pip install` is enough to make it available. A registered name is then
   accepted everywhere a built-in one is: `show(backend=...)`,
-  `magpy.defaults.display.backend` and `style.model3d.data[].backend`.
+  `magpy.defaults.display.backend` and `style.model3d.data[].backend`. Entry
+  points are resolved on the first backend-name lookup after `import magpylib`
+  returns, rather than during the import itself, so importing magpylib no longer
+  loads the backends installed alongside it.
 - `show()` now hands a backend a single typed `Scene` — panels, frames,
   animation settings, canvas and leftover options — rather than seven loose
   arguments. Traces stay plain dicts in Magpylib's own dialect, so the envelope

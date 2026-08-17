@@ -14,6 +14,15 @@ import pytest
 import magpylib as magpy
 from magpylib._src.display.api import DisplayBackend
 
+# Resolve entry-point backends here, before anything is snapshotted. They are
+# discovered on the first backend-name lookup, which is now inside whichever
+# test happens to look one up first -- after the fixture below has taken its
+# snapshot, so teardown would evict a backend that a plugin installed in this
+# environment provides, and discovery runs once so it would never come back.
+# Doing it at collection also keeps a plugin's load warning out of a test,
+# where `filterwarnings = ["error"]` would fail whichever one ran first.
+DisplayBackend.discover()
+
 
 @pytest.fixture(autouse=True)
 def _restore_display_backends():
