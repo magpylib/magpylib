@@ -29,7 +29,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: hynek/build-and-inspect-python-package@v2
+      # Pinned to a full version on purpose: v3 stopped force-tagging `@v3`
+      # and `@v3.0`, so there is no moving tag to follow. Dependabot bumps it.
+      # It has to be v3 at least -- v2 pins Twine 6.2, which rejects the
+      # Metadata-Version 2.5 that hatchling now writes, failing every build.
+      - uses: hynek/build-and-inspect-python-package@v3.0.1
 
   publish:
     needs: [dist]
