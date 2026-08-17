@@ -166,7 +166,7 @@ def triangle_Bfield(
     # )
 
     with np.errstate(divide="ignore", invalid="ignore"):
-        I = np.where(  # noqa: E741
+        I = np.where(
             ind > 1.0e-12,
             1.0 / l1 * np.log((np.sqrt(l2 + 2 * b + r2) + l1 + bl) / ind),
             -(1.0 / l1) * np.log(np.fabs(l1 - r) / r),

@@ -225,7 +225,7 @@ def test_core_physics_long_solenoid():
         where Jz = MU0 * I * N / L, and holds for B and for H-M.
     """
 
-    I = 134  # noqa: E741
+    I = 134
     N = 5000
     R = 1.543
     L = 1234

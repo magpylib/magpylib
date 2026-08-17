@@ -264,7 +264,7 @@ def test_observe_bubbles_with_dotted_path():
 
     # observer on a subnode sees subtree changes only, with relative paths
     sub_events = []
-    callback = lambda path, _: sub_events.append(path)  # noqa: E731
+    callback = lambda path, _: sub_events.append(path)
     style.path.observe(callback)
     style.path.line.style = "dotted"
     style.label = "x"

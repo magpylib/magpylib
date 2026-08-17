@@ -1,7 +1,5 @@
 """Special functions el3."""
 
-# ruff: noqa: E741  # Avoid ambiguity with variable names
-
 import numpy as np
 
 from magpylib._src.fields.special_cel import _cel
