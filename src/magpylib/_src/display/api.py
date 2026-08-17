@@ -234,6 +234,16 @@ class DisplayBackend:
 
     _discovered: ClassVar[bool] = False
 
+    #: Cleared at the end of ``magpylib/__init__.py``. Until then no entry
+    #: point may be loaded: loading one runs third-party code that imports
+    #: magpylib back, and the module it is told to subclass from --
+    #: ``magpylib.graphics.backend`` -- cannot be imported while this package
+    #: is still executing. Its parent's ``__init__`` pulls the style and
+    #: display stack, which comes back round to ``default_settings`` before
+    #: that name is bound, so the backend fails to load with a circular-import
+    #: error and never registers.
+    _importing: ClassVar[bool] = True
+
     def __init_subclass__(cls, **kwargs):
         """Register any subclass that names itself."""
         super().__init_subclass__(**kwargs)
@@ -244,18 +254,28 @@ class DisplayBackend:
     def discover(cls):
         """Load backends advertised by installed packages, once.
 
-        Resolved on the first backend-name lookup and cached, rather than at
-        every lookup. In practice that first lookup happens while magpylib is
-        imported, when the defaults tree validates its own default backend, so
-        the scan does contribute to import time (a few ms, growing with the
-        number of installed distributions).
+        Resolved on the first backend-name lookup after magpylib has finished
+        importing, and cached. A lookup during the import -- the defaults tree
+        validating its own default backend is one -- is not the first lookup
+        for this purpose: it is answered from the built-ins alone, and the scan
+        waits. Otherwise a third-party backend would be imported into a
+        half-built magpylib and fail (see `_importing`).
+
+        Deferring it also keeps the scan (a few ms, growing with the number of
+        installed distributions) off the import path entirely, for a program
+        that imports magpylib without ever drawing anything.
         """
-        if cls._discovered:
+        if cls._discovered or DisplayBackend._importing:
             return
         # set on the base, not on cls: discovering through a subclass must
         # still mark it done globally, or the base would rediscover later
         DisplayBackend._discovered = True
         for entry in entry_points(group=ENTRY_POINT_GROUP):
+            # what this entry finds registered before it runs. Importing the
+            # module its value names is itself what registers a backend, via
+            # __init_subclass__, so "did this entry give us anything" cannot be
+            # answered by looking at `loaded` alone.
+            known = set(cls.backends)
             try:
                 loaded = entry.load()
             except Exception as err:  # noqa: BLE001  # pylint: disable=broad-exception-caught
@@ -272,6 +292,24 @@ class DisplayBackend:
                 key = loaded.name or entry.name
                 if key not in cls.backends:
                     cls.backends[key] = loaded()
+            elif entry.name not in cls.backends and set(cls.backends) == known:
+                # A module or an instance is a legitimate thing for an entry
+                # point to name -- importing it defines the subclass, which
+                # registers itself -- so what is reported is the absence of a
+                # backend, not the shape of what was loaded. Both tests apply:
+                # the name may already be there because the module was
+                # imported earlier, in which case nothing appeared here either.
+                # Silence is the failure worth naming: a package whose class
+                # comes out None on the magpylib it found looks installed and
+                # does nothing.
+                what = getattr(loaded, "__name__", None) or repr(loaded)
+                warnings.warn(
+                    f"Display backend {entry.name!r} advertised by "
+                    f"{entry.value!r} registered no backend ({what}); it is "
+                    "ignored. An entry point should name a DisplayBackend "
+                    "subclass, or a module that defines one.",
+                    stacklevel=2,
+                )
 
     @property
     def supports(self) -> dict[str, bool]:

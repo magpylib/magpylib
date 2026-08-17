@@ -1,5 +1,8 @@
 """Tests for the display-backend registry."""
 
+import subprocess
+import sys
+import types
 import warnings
 
 import numpy as np
@@ -657,3 +660,144 @@ def test_units_length_default_scales_what_the_backend_receives():
     assert extent() == 1000.0
 
     assert extent(units_length="km") == 0.001
+
+
+def test_discovery_waits_until_the_import_has_finished(monkeypatch):
+    """A lookup during `import magpylib` must not resolve entry points.
+
+    The defaults tree validates its own default backend while this package is
+    still executing, and that is a backend-name lookup. Resolving entry points
+    there loads third-party code into a half-built magpylib: the module a
+    backend is told to subclass from -- `magpylib.graphics.backend` -- imports
+    the style and display stack, which comes back round to `default_settings`
+    before that name is bound. Every backend shipped the documented way failed
+    with a circular import, and none of them registered.
+    """
+    calls = []
+    monkeypatch.setattr(
+        "magpylib._src.display.api.entry_points",
+        lambda *, group: calls.append(group) or [],
+        raising=True,
+    )
+    monkeypatch.setattr(DisplayBackend, "_discovered", False, raising=False)
+    monkeypatch.setattr(DisplayBackend, "_importing", True, raising=False)
+
+    DisplayBackend.discover()
+
+    assert calls == [], "no entry point may be loaded while magpylib imports"
+    assert not DisplayBackend._discovered, "the scan must still be pending"
+
+    monkeypatch.setattr(DisplayBackend, "_importing", False, raising=False)
+    DisplayBackend.discover()
+
+    assert calls == ["magpylib.backends"], "and run on the first lookup after"
+
+
+def test_importing_magpylib_resolves_no_entry_points():
+    """End to end, in an interpreter that has only just imported magpylib.
+
+    In-process this cannot be observed -- by the time a test runs, something
+    has looked a backend name up -- so it is asked of a fresh one.
+    """
+    code = (
+        "import magpylib\n"
+        "from magpylib._src.display.api import DisplayBackend\n"
+        "print(DisplayBackend._discovered, DisplayBackend._importing)\n"
+    )
+    out = subprocess.run(
+        [sys.executable, "-c", code],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=120,
+    )
+    assert out.returncode == 0, out.stderr
+    assert out.stdout.split() == ["False", "False"], out.stderr
+
+
+def test_an_entry_point_that_is_not_a_backend_warns(monkeypatch):
+    """Silence here is the worst outcome: the name advertised simply is not
+    there, and the package looks installed and inert."""
+
+    class NotABackend:
+        name = "impostor"
+        value = "somewhere:Thing"
+
+        def load(self):
+            return None
+
+    monkeypatch.setattr(
+        "magpylib._src.display.api.entry_points",
+        lambda *, group: [NotABackend()],  # noqa: ARG005
+        raising=True,
+    )
+    monkeypatch.setattr(DisplayBackend, "_discovered", False, raising=False)
+
+    with pytest.warns(UserWarning, match="registered no backend"):
+        DisplayBackend.discover()
+
+    assert "impostor" not in DisplayBackend.backends
+
+
+def test_an_entry_point_naming_a_module_is_not_reported_as_broken(monkeypatch):
+    """Importing the module is what registers the backend, so nothing is wrong.
+
+    The entry-point value may name the class or the module defining it. In the
+    second case `load()` returns a module, and the backend is already in the
+    registry by then -- reporting that as "not a DisplayBackend" would call a
+    working install broken, and under `-W error` would break it.
+    """
+    module = types.ModuleType("fake_backend_package")
+
+    class ModuleBackend(DisplayBackend):
+        name = "from_a_module"
+
+        def show(self, scene):
+            return scene
+
+    module.ModuleBackend = ModuleBackend
+
+    class Entry:
+        name = "from_a_module"
+        value = "fake_backend_package"
+
+        def load(self):
+            return module
+
+    monkeypatch.setattr(
+        "magpylib._src.display.api.entry_points",
+        lambda *, group: [Entry()],  # noqa: ARG005
+        raising=True,
+    )
+    monkeypatch.setattr(DisplayBackend, "_discovered", False, raising=False)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        DisplayBackend.discover()
+
+    assert "from_a_module" in DisplayBackend.backends
+
+
+def test_the_report_names_the_object_it_got(monkeypatch):
+    """`type(loaded).__name__` is the metaclass for a class -- "type", which
+    tells the author nothing about what magpylib actually found."""
+
+    class Plain:
+        pass
+
+    class Entry:
+        name = "plain"
+        value = "somewhere:Plain"
+
+        def load(self):
+            return Plain
+
+    monkeypatch.setattr(
+        "magpylib._src.display.api.entry_points",
+        lambda *, group: [Entry()],  # noqa: ARG005
+        raising=True,
+    )
+    monkeypatch.setattr(DisplayBackend, "_discovered", False, raising=False)
+
+    with pytest.warns(UserWarning, match="Plain"):
+        DisplayBackend.discover()
