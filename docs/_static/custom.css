@@ -37,3 +37,87 @@ Target the logo text
     font-weight: bold;
     font-size: 1.6em;
 }
+
+
+/*
+Magnetic wordmark — the "Magpylib" brand text beside the logo behaves like a row
+of bar magnets attracted to the pointer. Driven by _static/webcode/magneticTitle.js,
+which splits the text into .mgl letters. Pole colours match magpylib's own
+magnetization defaults.
+*/
+.navbar-brand {
+    --mag-north: #E71111;
+    --mag-middle: #DDDDDD;
+    --mag-south: #00B050;
+}
+
+.navbar-brand .mgw {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.navbar-brand .mgl {
+    position: relative;
+    display: inline-block;
+    transform-origin: 50% 50%;
+    will-change: transform;
+    /* a letter carried away from the header must never swallow clicks on the
+       page underneath, and the brand link keeps its own hit area */
+    pointer-events: none;
+}
+
+/* the pole gradient, faded in as the letter is magnetised */
+.navbar-brand .mgl::after {
+    content: attr(data-ch);
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: linear-gradient(
+        to top,
+        var(--mag-south) 0%,
+        var(--mag-south) 34%,
+        var(--mag-middle) 50%,
+        var(--mag-north) 66%,
+        var(--mag-north) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    opacity: var(--p, 0);
+    pointer-events: none;
+}
+
+/* the magpie that leaves the logo to fetch a stolen letter back */
+.mag-bird {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1040; /* above the sticky header (1030) */
+    pointer-events: none;
+    /* no fade: the flying bird must appear exactly as the logo's bird vanishes,
+       otherwise you briefly see two magpies, or none */
+    opacity: 0;
+    background: url("images/magpylib_logo_bird.png") no-repeat center / contain;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
+    will-change: transform;
+}
+
+/* the bird is near-black, so give it a rim against a dark page */
+html[data-theme="dark"] .mag-bird {
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.45));
+}
+
+/* the wing, hinged at the shoulder — the logo magpie is a single flat shape,
+   so this is what actually beats. Same ink as the bird, under the same shadow. */
+.mag-bird__wing {
+    position: absolute;
+    left: -34%;
+    top: 44%;
+    width: 80%;
+    height: 21%;
+    background: #2a2939; /* the magpie's own ink, sampled from the logo */
+    clip-path: polygon(100% 18%, 55% 0%, 16% 30%, 0% 62%, 30% 90%, 80% 96%, 100% 74%);
+    /* hinged below the head, so the upstroke never swings across the face */
+    transform-origin: 90% 40%;
+    will-change: transform;
+}

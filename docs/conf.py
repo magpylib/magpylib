@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path("./../").resolve()))  ##Add the folder one level abo
 def setup(app):
     app.add_css_file("css/stylesheet.css")
     app.add_js_file("webcode/summaryOpen.js")
+    app.add_js_file("webcode/magneticTitle.js")
 
 
 ###    sphinx.ext.apidoc.main(
