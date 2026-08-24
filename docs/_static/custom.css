@@ -121,3 +121,106 @@ html[data-theme="dark"] .mag-bird {
     transform-origin: 90% 40%;
     will-change: transform;
 }
+
+/* ---- 404: the magpie has made off with the page ---- */
+.mag404 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 8px 0 4px;
+}
+
+.mag404__scene {
+    position: relative;
+    width: 100%;
+    height: 168px;
+}
+
+/* the same magpie the navbar uses, hovering with its loot */
+.mag404__bird {
+    position: absolute;
+    left: 50%;
+    top: 6px;
+    width: 84px;
+    height: 135px;
+    margin-left: -42px;
+    background: url("images/magpylib_logo_bird.png") no-repeat center / contain;
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.3));
+    animation: mag404-hover 3s ease-in-out infinite;
+}
+
+html[data-theme="dark"] .mag404__bird {
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
+/* the stolen page, dangling from its claws */
+.mag404__loot {
+    position: absolute;
+    left: 50%;
+    top: 104px;
+    margin-left: -12px;
+    width: 42px;
+    height: 54px;
+    border-radius: 3px;
+    background: repeating-linear-gradient(
+            to bottom,
+            transparent 0 9px,
+            rgba(20, 22, 27, 0.22) 9px 11px
+        ),
+        #fdfdfb;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.32);
+    animation: mag404-swing 3s ease-in-out infinite;
+}
+
+.mag404__code {
+    font-size: clamp(72px, 15vw, 132px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    margin: 0;
+    background: linear-gradient(to top, #00b050, #e71111);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+@keyframes mag404-flap {
+    from {
+        transform: rotate(-38deg);
+    }
+    to {
+        transform: rotate(34deg);
+    }
+}
+
+@keyframes mag404-hover {
+    0%,
+    100% {
+        transform: translateY(-7px) rotate(-3deg);
+    }
+    50% {
+        transform: translateY(7px) rotate(3deg);
+    }
+}
+
+@keyframes mag404-swing {
+    0%,
+    100% {
+        transform: translateY(-5px) rotate(-11deg);
+    }
+    50% {
+        transform: translateY(6px) rotate(7deg);
+    }
+}
+
+.mag404__bird .mag-bird__wing {
+    animation: mag404-flap 0.38s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mag404__bird,
+    .mag404__loot,
+    .mag404__bird .mag-bird__wing {
+        animation: none;
+    }
+}

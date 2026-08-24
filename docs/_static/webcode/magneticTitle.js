@@ -39,11 +39,15 @@
     /* a shake is counted in direction reversals, not raw speed, so dragging a
        letter quickly across the page keeps it and only a wiggle sheds it */
     shakeSpeed: 380, shakeDecay: 2.2, shakeOff: 2.6,
+    /* the horseshoe in the logo is a magnet too */
+    logoShare: 0.45, logoPull: 0.06,
+    /* left alone, the magpie helps itself to a letter */
+    stealAfter: 24, stealSpread: 12, stashFor: 22,
     /* derived from the rendered font size in measure() */
     soft: 26, reach: 96, limit: 7, gap: 30, lead: 22, dHalf: 40,
   };
 
-  let host = null, cRect = null;
+  let host = null, cRect = null, mRect = null, needSettle = true;
   const letters = [], held = [];
   let MX = -1e5, MY = -1e5, active = false;
   let cvx = 0, cvy = 0, lastT = 0, lastX = 0, lastY = 0, shake = 0;
@@ -52,9 +56,13 @@
      with _static/images/magpylib_logo_bird.png, which is that same region cropped
      out, and with ..._nobird.png, which is the logo without it. */
   const BIRD_BOX = { cx: 0.1906, cy: 0.2611, w: 0.3811, h: 0.5222 };
-  const bird = { el:null, wing:null, mode:"perched", target:null,
-                 x:0, y:0, vx:0, vy:0, w:0, h:0, t:0, face:1, scale:1 };
+  /* the horseshoe's two pole faces sit side by side at its foot, so its far field
+     is a dipole at their midpoint with the moment along the line joining them */
+  const LOGO_MAG = { cx: 0.52, cy: 0.86, mx: 1, my: 0 };
+  const bird = { el:null, wing:null, mode:"perched", target:null, errand:"recover",
+                 x:0, y:0, vx:0, vy:0, w:0, h:0, t:0, face:1, scale:1, stashX:0, stashY:0 };
   let holdTime = 0, logoImgs = [], srcPerched = [], srcFlown = [];
+  let idleTime = 0, stealAt = 0, stashTimer = 0;
 
   /* ---------- split the brand text into letters ---------- */
   function build(){
@@ -72,8 +80,9 @@
       el.textContent = ch;
       wrap.appendChild(el);
       letters.push({ el, hx:0, hy:0, ox:0, oy:0, hw:0, hh:0,
-                     x:0, y:0, vx:0, vy:0, a:0, w:0, p:0,
-                     stuck:false, carried:false, cool:0, attach:0 });
+                     x:0, y:0, vx:0, vy:0, a:0, w:0, p:0, pPrev:0,
+                     ax:0, ay:0,            // where the spring pulls it back to
+                     stuck:false, carried:false, stashed:false, cool:0, attach:0 });
     }
     host.textContent = "";
     host.appendChild(wrap);
@@ -107,14 +116,20 @@
   }
 
   /* ---------- the magpie ---------- */
-  function perch(){
+  function logoRect(){
     /* the theme ships a light and a dark logo and hides one of them */
     for (const img of logoImgs){
       const r = img.getBoundingClientRect();
-      if (r.width) return { x: r.left + BIRD_BOX.cx * r.width, y: r.top + BIRD_BOX.cy * r.height,
-                            w: BIRD_BOX.w * r.width, h: BIRD_BOX.h * r.height };
+      if (r.width) return r;
     }
     return null;
+  }
+
+  function perch(){
+    const r = logoRect();
+    if (!r) return null;
+    return { x: r.left + BIRD_BOX.cx * r.width, y: r.top + BIRD_BOX.cy * r.height,
+             w: BIRD_BOX.w * r.width, h: BIRD_BOX.h * r.height };
   }
 
   function showLogoBird(on){
@@ -122,9 +137,10 @@
     logoImgs.forEach((img, i) => img.setAttribute("src", on ? srcPerched[i] : srcFlown[i]));
   }
 
-  function launch(target){
+  function launch(target, errand){
     const p = perch();
     if (!p) return;
+    bird.errand = errand;
     bird.x = p.x; bird.y = p.y; bird.w = p.w; bird.h = p.h;
     bird.vx = 0; bird.vy = 0; bird.t = 0; bird.scale = 1;
     bird.mode = "hunt"; bird.target = target;
@@ -157,20 +173,35 @@
 
     if (bird.mode === "hunt"){
       const L = bird.target;
-      if (!L || !L.stuck){
-        bird.mode = "home"; bird.target = null;      // shaken off before it arrived
+      /* the errand can be called off underneath it: shaken loose before it
+         arrived, or the reader picked the stashed letter up first */
+      const gone = !L || L.carried ||
+        (bird.errand === "recover" && !L.stuck) ||
+        (bird.errand === "fetch" && !L.stashed);
+      if (gone){
+        bird.mode = "home"; bird.target = null;
       } else if (seek(L.hx + L.x, L.hy + L.y, dt) < P.birdCatch){
         const i = held.indexOf(L);
         if (i >= 0) held.splice(i, 1);
-        L.stuck = false; L.carried = true; L.cool = Infinity;
-        holdTime = 0; shake = 0;
+        L.stuck = false; L.stashed = false; L.carried = true; L.cool = Infinity;
+        holdTime = 0; shake = 0; stashTimer = 0;
         bird.mode = "carry";
       }
     }
     if (bird.mode === "carry"){
       const L = bird.target;
-      if (seek(L.hx, L.hy - bird.h*0.40, dt) < P.birdDrop){
+      const stealing = bird.errand === "steal";
+      const tx = stealing ? bird.stashX : L.hx;
+      const ty = (stealing ? bird.stashY : L.hy) - bird.h*0.40;
+      if (seek(tx, ty, dt) < P.birdDrop){
         L.carried = false; L.cool = P.birdCool;      // a moment before it can be taken again
+        if (stealing){
+          L.stashed = true;                          // the spring now holds it here
+          L.ax = bird.stashX - L.hx; L.ay = bird.stashY - L.hy;
+          stashTimer = P.stashFor;
+        } else {
+          L.ax = 0; L.ay = 0;
+        }
         bird.target = null; bird.mode = "home";
       }
     }
@@ -219,6 +250,8 @@
     P.dHalf = fs * 2.20;   // distance at which a letter reads half-magnetised
     P.gap   = fs * 1.90;
     P.lead  = fs * 1.40;
+    mRect = logoRect();
+    needSettle = true;
     render();
   }
 
@@ -254,7 +287,11 @@
       const ca = Math.cos(L.a), sa = Math.sin(L.a);
       const lx =  dx*ca + dy*sa;          // pointer in the letter's own frame
       const ly = -dx*sa + dy*ca;
-      if (Math.abs(lx) < L.hw && Math.abs(ly) < L.hh){ L.stuck = true; held.push(L); }
+      if (Math.abs(lx) < L.hw && Math.abs(ly) < L.hh){
+        L.stuck = true; held.push(L);
+        /* taking a stashed letter back by hand cancels the magpie's errand */
+        if (L.stashed){ L.stashed = false; L.ax = 0; L.ay = 0; stashTimer = 0; }
+      }
     }
   }
 
@@ -269,6 +306,26 @@
     const k = C/(d2*d);
     BX = k*(3*md*ux);
     BY = k*(3*md*uy + 1);
+  }
+
+  /* ---------- field of the logo's own horseshoe ----------
+     The letters are soft magnetic: they carry no moment of their own, they are
+     magnetised by whatever field reaches them. So the logo tints the letters
+     nearest it and tugs them very slightly towards itself (|B| rises towards a
+     magnet, and a soft body is drawn up that gradient) but imposes no preferred
+     angle -- which is what keeps the wordmark sitting straight when untouched. */
+  function logoMag(px, py, C){
+    if (!mRect) return 0;
+    const sx = mRect.left + LOGO_MAG.cx * mRect.width;
+    const sy = mRect.top  + LOGO_MAG.cy * mRect.height;
+    const rx = px - sx, ry = py - sy;
+    const d2 = rx*rx + ry*ry + P.soft*P.soft;
+    const d = Math.sqrt(d2);
+    const md = (LOGO_MAG.mx*rx + LOGO_MAG.my*ry) / d;
+    const k = C/(d2*d);
+    const bx = k*(3*md*rx/d - LOGO_MAG.mx);
+    const by = k*(3*md*ry/d - LOGO_MAG.my);
+    return Math.hypot(bx, by);
   }
 
   function step(dt){
@@ -302,31 +359,46 @@
         continue;
       }
 
+      const px0 = L.hx + L.x, py0 = L.hy + L.y;
       let fx = 0, fy = 0, tq = 0, pol = 0;
+
+      /* the logo's magnet: a tint, and a whisper of a pull */
+      const Cl = C * P.logoShare;
+      const bl = logoMag(px0, py0, Cl);
+      if (bl > 0){
+        fx += P.logoPull * (logoMag(px0+e, py0, Cl) - logoMag(px0-e, py0, Cl)) / (2*e);
+        fy += P.logoPull * (logoMag(px0, py0+e, Cl) - logoMag(px0, py0-e, Cl)) / (2*e);
+      }
+
       if (active){
-        const px = L.hx + L.x, py = L.hy + L.y;
+        const px = px0, py = py0;
         const ca = Math.cos(L.a), sa = Math.sin(L.a);
         const lmx = sa, lmy = -ca;                        // this letter's moment
         fieldAt(px+e, py, C); const a1 = lmx*BX + lmy*BY;
         fieldAt(px-e, py, C); const a2 = lmx*BX + lmy*BY;
         fieldAt(px, py+e, C); const a3 = lmx*BX + lmy*BY;
         fieldAt(px, py-e, C); const a4 = lmx*BX + lmy*BY;
-        fx = (a1-a2)/(2*e); fy = (a3-a4)/(2*e);           // F = grad(m.B)
-        const fm = Math.hypot(fx, fy);
-        if (fm > P.maxForce){ fx *= P.maxForce/fm; fy *= P.maxForce/fm; }
+        fx += (a1-a2)/(2*e); fy += (a3-a4)/(2*e);          // F = grad(m.B)
         fieldAt(px, py, C);
         const bm = Math.hypot(BX, BY) || 1e-9;
         tq  = P.torque * ((ca*BX + sa*BY)/bm) * (bm/(bm+B0));   // aligns m with B
-        pol = bm/(bm+B0);
+      }
+      const fm = Math.hypot(fx, fy);
+      if (fm > P.maxForce){ fx *= P.maxForce/fm; fy *= P.maxForce/fm; }
+      {
+        fieldAt(px0, py0, C);
+        const bm = active ? Math.hypot(BX, BY) : 0;
+        pol = (bm + bl) / (bm + bl + B0);
       }
 
       /* The restoring spring stiffens with displacement, so a letter can be pulled
          hard but never far enough to scramble the brand or shift the link target.
          Both it and the speed are capped: a letter dropped across the page would
          otherwise make this spring explode. */
-      const off = Math.hypot(L.x, L.y) / P.limit;
+      const rx = L.x - L.ax, ry = L.y - L.ay;      // displacement from its anchor
+      const off = Math.hypot(rx, ry) / P.limit;
       const stiff = 1 + Math.min(off*off, 36);
-      let sx = -P.spring*L.x*stiff, sy = -P.spring*L.y*stiff;
+      let sx = -P.spring*rx*stiff, sy = -P.spring*ry*stiff;
       const sm = Math.hypot(sx, sy);
       if (sm > P.maxSpring){ sx *= P.maxSpring/sm; sy *= P.maxSpring/sm; }
       L.vx += (fx + sx - P.damp*L.vx) * dt;
@@ -348,16 +420,31 @@
     }
   }
 
+  /* The logo keeps the nearest letters faintly magnetised for ever, so "at rest"
+     cannot mean "back at zero" -- it means nothing is changing any more. */
   const atRest = () => letters.every(L =>
-    Math.abs(L.x) < .05 && Math.abs(L.y) < .05 && Math.abs(L.vx) < .05 && Math.abs(L.vy) < .05 &&
-    Math.abs(L.a) < .002 && Math.abs(L.w) < .002 && L.p < .005);
+    Math.abs(L.vx) < .05 && Math.abs(L.vy) < .05 && Math.abs(L.w) < .002 &&
+    Math.abs(L.p - L.pPrev) < .0008);
 
   function idle(){
-    if (held.length || shake > 0.05 || bird.mode !== "perched" || !atRest()) return false;
+    if (needSettle || held.length || shake > 0.05 || bird.mode !== "perched") return false;
+    if (letters.some(L => L.stashed) || !atRest()) return false;
     if (!active || !cRect) return true;
     const dx = MX - (cRect.left + cRect.width/2), dy = MY - (cRect.top + cRect.height/2);
     const far = P.reach * 3.5;
     return dx*dx + dy*dy > far*far;          // pointer nowhere near: nothing to do
+  }
+
+  /* ---------- left alone, the magpie helps itself ---------- */
+  function startSteal(){
+    const pool = letters.filter(L => !L.stuck && !L.carried && !L.stashed && L.cool <= 0);
+    if (!pool.length) return;
+    /* somewhere out on the page, well clear of the header it came from */
+    bird.stashX = innerWidth  * (0.28 + Math.random()*0.56);
+    bird.stashY = innerHeight * (0.38 + Math.random()*0.40);
+    launch(pool[(Math.random()*pool.length)|0], "steal");
+    idleTime = 0;
+    stealAt = P.stealAfter + Math.random()*P.stealSpread;
   }
 
   /* The loop always runs and skips its own work when there is nothing to do — a
@@ -367,12 +454,35 @@
     requestAnimationFrame(frame);
     let dt = last ? (t - last)/1000 : 0; last = t;
     if (!(dt > 0)) dt = 1/60;
-    dt = Math.min(0.05, dt);
+    stepFrame(Math.min(0.05, dt));
+  }
+
+  function stepFrame(dt){
+    /* This bookkeeping has to run even while the simulation is asleep, otherwise
+       the magpie could never get bored enough to go thieving. */
+    const stashed = letters.some(L => L.stashed);
+    const quiet = !held.length && bird.mode === "perched" && !stashed && !document.hidden;
+    if (quiet) {
+      idleTime += dt;
+      if (idleTime > stealAt) startSteal();
+    } else if (!stashed) {
+      idleTime = 0;
+    }
+    /* and it always brings a stolen letter back in the end */
+    if (stashTimer > 0){
+      stashTimer -= dt;
+      if (stashTimer <= 0 && bird.mode === "perched"){
+        const L = letters.find(x => x.stashed);
+        if (L) launch(L, "fetch"); else stashTimer = 0;
+      }
+    }
+
     if (idle()) return;
 
     cRect = host.getBoundingClientRect();
     if (!cRect.width) return;                // brand hidden (narrow viewport)
-    for (const L of letters){ L.hx = cRect.left + L.ox; L.hy = cRect.top + L.oy; }
+    for (const L of letters){ L.hx = cRect.left + L.ox; L.hy = cRect.top + L.oy; L.pPrev = L.p; }
+    mRect = logoRect();
 
     shake *= Math.exp(-dt*P.shakeDecay);
     if (shake > P.shakeOff && held.length) dropAll();
@@ -381,7 +491,7 @@
     /* hold on to a letter and the magpie comes to take it back */
     if (held.length){
       holdTime += dt;
-      if (bird.mode === "perched" && holdTime > P.patience) launch(held[0]);
+      if (bird.mode === "perched" && holdTime > P.patience) launch(held[0], "recover");
     } else if (bird.mode === "perched"){
       holdTime = 0;
     }
@@ -389,6 +499,7 @@
     let rem = dt;
     while (rem > 0){ const h = Math.min(rem, 1/240); step(h); rem -= h; }
     render();
+    if (needSettle && atRest()) needSettle = false;
   }
 
   function init(){
@@ -399,6 +510,7 @@
     addEventListener("resize", measure);
     addEventListener("scroll", () => { if (idle()) cRect = host.getBoundingClientRect(); }, { passive: true });
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+    stealAt = P.stealAfter + Math.random()*P.stealSpread;
     requestAnimationFrame(frame);
   }
 

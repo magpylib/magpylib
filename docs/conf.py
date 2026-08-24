@@ -1,6 +1,7 @@
 import importlib.metadata
 import os
 import platform
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -27,10 +28,32 @@ sys.path.insert(0, str(Path("./../").resolve()))  ##Add the folder one level abo
 # pio.renderers.default = "sphinx_gallery"
 
 
+def _absolutise_404_links(app, pagename, _templatename, context, _doctree):
+    """Make the links in the 404 body absolute, like its assets already are.
+
+    sphinx-notfound-page rewrites the theme's own URLs (stylesheets, logo, nav)
+    but leaves the links written in the page body relative, and this page is
+    served for addresses that do not exist -- so a relative link would be
+    measured from the address that failed.
+    """
+    if pagename != app.config.notfound_pagename or not context.get("body"):
+        return
+    prefix = app.config.notfound_urls_prefix or "/"
+
+    def absolutise(match):
+        attr, url = match.group(1), match.group(2)
+        if re.match(r"^(?:[a-z][a-z0-9+.-]*:|//|/|#)", url, re.IGNORECASE):
+            return match.group(0)  # already absolute, or a bare anchor
+        return f'{attr}="{prefix}{url}"'
+
+    context["body"] = re.sub(r'\b(href|src)="([^"]*)"', absolutise, context["body"])
+
+
 def setup(app):
     app.add_css_file("css/stylesheet.css")
     app.add_js_file("webcode/summaryOpen.js")
     app.add_js_file("webcode/magneticTitle.js")
+    app.connect("html-page-context", _absolutise_404_links)
 
 
 ###    sphinx.ext.apidoc.main(
@@ -77,6 +100,7 @@ extensions = [
     "sphinx_favicon",
     "sphinx_design",
     "sphinxcontrib.bibtex",
+    "notfound.extension",
 ]
 
 # Good defaults for NumPy style
@@ -320,6 +344,19 @@ epub_exclude_files = ["search.html"]
 # source_parsers = {
 #     '.md': 'recommonmark.parser.CommonMarkParser',
 # }
+
+# -- 404 page ----------------------------------------------------------------
+# The 404 is served for any address that does not resolve, so a relative link on
+# it would be measured from the address that failed. sphinx-notfound-page rewrites
+# its links and assets to absolute ones using this prefix: on Read the Docs that
+# is the language/version path the build is served under, locally it is the root
+# of the output directory. Our own docs/404.md is used as the page content.
+_rtd_version = os.environ.get("READTHEDOCS_VERSION")
+notfound_urls_prefix = (
+    f"/{os.environ.get('READTHEDOCS_LANGUAGE', 'en')}/{_rtd_version}/"
+    if _rtd_version
+    else "/"
+)
 
 myst_enable_extensions = [
     "amsmath",
