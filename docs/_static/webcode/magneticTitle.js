@@ -8,8 +8,8 @@
  * line up with the field rather than merely slide toward the pointer. Poles are
  * tinted with magpylib's own magnetization colours (see defaults_values.py).
  *
- * Move onto a letter and it latches to the pointer and comes along; shake to throw
- * it off. Hold on to it too long and the magpie lifts off the logo, chases the
+ * Move onto a letter and it latches on and becomes the pointer itself, native
+ * cursor hidden, until you shake it off. Hold on to it too long and the magpie lifts off the logo, chases the
  * letter down, takes it back and returns it to the wordmark before flying home.
  * The letters always spring back to the baseline, and their travel is capped so
  * the brand stays readable and the link underneath stays easy to hit.
@@ -30,7 +30,8 @@
     rspring: 160, rdamp: 9,
     maxForce: 9000, maxSpring: 18000, maxSpeed: 2600,
     /* how a latched letter is carried */
-    grip: 900, gripDamp: 46, gripTorque: 420, gripRDamp: 30,
+    /* stiff enough to read as the cursor itself, loose enough to have weight */
+    grip: 6000, gripDamp: 155, gripTorque: 420, gripRDamp: 30,
     fling: 0.5, cooldown: 0.55, maxHeld: 1,
     /* the magpie: how long it tolerates a theft, and how it flies */
     patience: 1.8, birdAccel: 3000, birdDamp: 3.2, birdMax: 1000,
@@ -44,7 +45,7 @@
     /* left alone, the magpie helps itself to a letter */
     stealAfter: 24, stealSpread: 12, stashFor: 22,
     /* derived from the rendered font size in measure() */
-    soft: 26, reach: 96, limit: 7, gap: 30, lead: 22, dHalf: 40,
+    soft: 26, reach: 96, limit: 7, dHalf: 40,
   };
 
   let host = null, cRect = null, mRect = null, needSettle = true;
@@ -82,7 +83,7 @@
       letters.push({ el, hx:0, hy:0, ox:0, oy:0, hw:0, hh:0,
                      x:0, y:0, vx:0, vy:0, a:0, w:0, p:0, pPrev:0,
                      ax:0, ay:0,            // where the spring pulls it back to
-                     stuck:false, carried:false, stashed:false, cool:0, attach:0 });
+                     stuck:false, carried:false, stashed:false, cool:0 });
     }
     host.textContent = "";
     host.appendChild(wrap);
@@ -248,8 +249,6 @@
     P.reach = fs * 6.00;
     P.limit = fs * 0.28;   // max travel: a nudge, not a leap
     P.dHalf = fs * 2.20;   // distance at which a letter reads half-magnetised
-    P.gap   = fs * 1.90;
-    P.lead  = fs * 1.40;
     mRect = logoRect();
     needSettle = true;
     render();
@@ -333,9 +332,6 @@
     const B0 = C / (P.dHalf*P.dHalf*P.dHalf);   // sets how close is "fully magnetised"
     const e = 1;
 
-    let run = P.lead;
-    for (const L of held){ L.attach = run + P.gap*0.5; run += P.gap; }
-
     for (const L of letters){
       if (L.cool > 0) L.cool -= dt;
 
@@ -344,10 +340,7 @@
         if (L.carried){
           tx = bird.x; ty = bird.y + bird.h*0.42;    // clutched under the magpie
         } else {
-          /* hang off the pointer, but never off the edge of the window */
-          const padX = L.hw + 6, padY = L.hh + 6;
-          tx = Math.max(padX, Math.min(innerWidth  - padX, MX));
-          ty = Math.max(padY, Math.min(innerHeight - padY, MY + L.attach));
+          tx = MX; ty = MY;                          // the letter *is* the pointer now
         }
         L.vx += (P.grip*(tx - L.hx - L.x) - P.gripDamp*L.vx) * dt;
         L.vy += (P.grip*(ty - L.hy - L.y) - P.gripDamp*L.vy) * dt;
@@ -413,7 +406,15 @@
     }
   }
 
+  let wearingLetter = false;
   function render(){
+    /* Driven from the rendered state rather than from the events that change it,
+       so the cursor can never be left hidden by a path that forgot to restore it. */
+    const carrying = held.length > 0;
+    if (carrying !== wearingLetter){
+      wearingLetter = carrying;
+      document.documentElement.classList.toggle("mag-carrying", carrying);
+    }
     for (const L of letters){
       L.el.style.transform = "translate3d(" + L.x.toFixed(2) + "px," + L.y.toFixed(2) + "px,0) rotate(" + L.a.toFixed(4) + "rad)";
       L.el.style.setProperty("--p", (L.p * 0.85).toFixed(3));
@@ -506,7 +507,7 @@
     if (!build()) return;
     measure();
     addEventListener("mousemove", onMove, { passive: true });
-    document.addEventListener("mouseleave", () => { active = false; dropAll(); });
+    document.addEventListener("mouseleave", () => { active = false; dropAll(); render(); });
     addEventListener("resize", measure);
     addEventListener("scroll", () => { if (idle()) cRect = host.getBoundingClientRect(); }, { passive: true });
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);

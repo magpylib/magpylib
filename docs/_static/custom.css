@@ -224,3 +224,9 @@ html[data-theme="dark"] .mag404__bird {
         animation: none;
     }
 }
+
+/* while a letter is riding on the pointer, the letter is the cursor */
+html.mag-carrying,
+html.mag-carrying * {
+    cursor: none !important;
+}
