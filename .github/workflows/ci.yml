@@ -53,7 +53,7 @@ jobs:
 
     steps:
       - name: Setup headless display
-        uses: pyvista/setup-headless-display-action@v4
+        uses: pyvista/setup-headless-display-action@v5
 
       - uses: actions/checkout@v7
         with:
