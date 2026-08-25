@@ -47,8 +47,15 @@ magnetization defaults.
 */
 .navbar-brand {
     --mag-north: #E71111;
-    --mag-middle: #DDDDDD;
     --mag-south: #00B050;
+    /* The neutral band between the poles has to sit against the page, not against
+       a fixed idea of it: magpylib's own #DDDDDD is right on a dark ground but
+       hollows the letters out on a light one. */
+    --mag-middle: #39414c;
+}
+
+html[data-theme="dark"] .navbar-brand {
+    --mag-middle: #dddddd;
 }
 
 .navbar-brand .mgw {
@@ -145,6 +152,21 @@ magnetization defaults.
 
 .mag-bird--perched .mag-bird__eye {
     animation: mag-blink var(--blink) ease-in-out infinite;
+}
+
+/* the far wing: behind the opaque body, tucked and a shade lighter so it reads
+   as being on the other side of the bird */
+.mag-bird__wing--far {
+    left: -14%;
+    top: 36%;
+    width: 60%;
+    height: 17%;
+    background: #34344b;
+}
+
+.mag-bird--perched .mag-bird__wing--far {
+    opacity: 0;
+    animation: none;
 }
 
 /* the folded wing is already part of the silhouette, so it only appears for a

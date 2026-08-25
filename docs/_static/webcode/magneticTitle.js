@@ -24,6 +24,12 @@
   /* Motion is the entire point of this, so there is nothing to degrade to. */
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
+  /* A touch device has no pointer for any of this to answer to. The wordmark
+     still gets its colours, but nothing moves and no magpie flies about a page
+     the reader has no way to interact with. */
+  const FINE = !window.matchMedia ||
+    window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
   const P = {
     /* absolute (px/s^2, 1/s) */
     strength: 300, spring: 320, damp: 12, torque: 80,
@@ -34,14 +40,24 @@
     grip: 6000, gripDamp: 155, gripTorque: 420, gripRDamp: 30,
     fling: 0.5, cooldown: 0.55, maxHeld: 1,
     /* the magpie: how long it tolerates a theft, and how it flies */
-    patience: 1.8, birdAccel: 3000, birdDamp: 3.2, birdMax: 1000,
-    birdCatch: 26, birdDrop: 12, birdCool: 0.9, birdScale: 2.2,
-    flapRate: 32, flapBase: -2, flapSweep: 36,
+    patience: 1.8, birdMax: 780, birdSteer: 6,
+    /* how far out it starts slowing down: short for a dive, long for a landing */
+    slowHunt: 70, slowCarry: 170, slowHome: 220,
+    hoverTime: 0.45, dropSpeed: 240, flapBrake: 0.7,
+    birdCatch: 26, birdDrop: 12, birdCool: 0.9,
+    flapRate: 29, flapBase: -2, flapSweep: 36,
+    /* the far wing lags the near one, and both shorten at the ends of the stroke */
+    farLag: 0.85, farSweep: 0.85, farOffset: 4, wingShorten: 0.16,
+    /* leaning into the flight, and easing round a turn instead of mirroring */
+    flightLean: -0.35, turnRate: 11, turnMin: 0.34,
     /* a shake is counted in direction reversals, not raw speed, so dragging a
        letter quickly across the page keeps it and only a wiggle sheds it */
     shakeSpeed: 380, shakeDecay: 2.2, shakeOff: 2.6,
     /* the horseshoe in the logo is a magnet too */
     logoShare: 0.45, logoPull: 0.06,
+    /* the wordmark reads as magnet-coloured even untouched, with headroom left
+       for the pointer to drive it the rest of the way */
+    baseTint: 0.55,
     /* left alone, the magpie helps itself to a letter */
     stealAfter: 24, stealSpread: 12, stashFor: 22,
     /* derived from the rendered font size in measure() */
@@ -60,8 +76,8 @@
   /* the horseshoe's two pole faces sit side by side at its foot, so its far field
      is a dipole at their midpoint with the moment along the line joining them */
   const LOGO_MAG = { cx: 0.52, cy: 0.86, mx: 1, my: 0 };
-  const bird = { el:null, body:null, wing:null, eye:null, mode:"perched", target:null, errand:"recover",
-                 x:0, y:0, vx:0, vy:0, w:0, h:0, t:0, face:1, scale:1, stashX:0, stashY:0 };
+  const bird = { el:null, body:null, wing:null, farWing:null, eye:null, mode:"perched", target:null, errand:"recover",
+                 x:0, y:0, vx:0, vy:0, w:0, h:0, t:0, ph:0, face:1, turn:1, hold:0, stashX:0, stashY:0 };
   let holdTime = 0, logoImgs = [], srcPerched = [], srcFlown = [];
   let idleTime = 0, stealAt = 0, stashTimer = 0;
 
@@ -94,6 +110,12 @@
     /* The logo magpie is one flat silhouette with no wing to animate, so the wing
        is a separate shape in the same ink, hinged at the shoulder. Both sit under
        one drop-shadow, so they read as a single beating silhouette. */
+    /* the far wing sits behind the body, which is opaque, so it only shows where
+       it sticks out past the silhouette -- which is what reads as a second wing */
+    bird.farWing = document.createElement("div");
+    bird.farWing.className = "mag-bird__wing mag-bird__wing--far";
+    bird.el.appendChild(bird.farWing);
+
     bird.body = document.createElement("div");
     bird.body.className = "mag-bird__body";
     bird.wing = document.createElement("div");
@@ -158,15 +180,17 @@
       return false;
     }
     bird.x = p.x; bird.y = p.y; bird.w = p.w; bird.h = p.h;
-    bird.vx = 0; bird.vy = 0; bird.scale = 1; bird.face = 1;
+    bird.vx = 0; bird.vy = 0; bird.face = 1;
     bird.el.style.width = p.w.toFixed(1) + "px";
     bird.el.style.height = p.h.toFixed(1) + "px";
     bird.el.style.transform =
       "translate3d(" + (p.x - p.w/2).toFixed(1) + "px," + (p.y - p.h/2).toFixed(1) + "px,0)";
     bird.el.style.opacity = "1";
     bird.el.classList.add("mag-bird--perched");
+    bird.turn = bird.face = 1;
     bird.body.style.transform = "";
     bird.wing.style.transform = "";
+    bird.farWing.style.transform = "";
     showLogoBird(false);
     return true;
   }
@@ -176,7 +200,7 @@
     if (!p) return;
     bird.errand = errand;
     bird.x = p.x; bird.y = p.y; bird.w = p.w; bird.h = p.h;
-    bird.vx = 0; bird.vy = 0; bird.t = 0; bird.scale = 1;
+    bird.vx = 0; bird.vy = 0; bird.t = 0; bird.ph = 0;
     bird.mode = "hunt"; bird.target = target;
     bird.el.style.width = p.w.toFixed(1) + "px";
     bird.el.style.height = p.h.toFixed(1) + "px";
@@ -189,13 +213,16 @@
     settle();
   }
 
-  function seek(tx, ty, dt){
+  /* Steering with an arrival: the speed it *wants* tapers to nothing inside the
+     slowing radius, so it settles onto the target. Accelerating flat out until it
+     gets there is what made it shoot past the perch and circle back round. */
+  function seek(tx, ty, dt, slow){
     const dx = tx - bird.x, dy = ty - bird.y;
     const d = Math.hypot(dx, dy) || 1e-6;
-    bird.vx += (dx/d * P.birdAccel - bird.vx * P.birdDamp) * dt;
-    bird.vy += (dy/d * P.birdAccel - bird.vy * P.birdDamp) * dt;
-    const sp = Math.hypot(bird.vx, bird.vy);
-    if (sp > P.birdMax){ bird.vx *= P.birdMax/sp; bird.vy *= P.birdMax/sp; }
+    const want = P.birdMax * Math.min(1, d / (slow || P.slowHome));
+    const k = Math.min(1, dt * P.birdSteer);
+    bird.vx += (dx/d * want - bird.vx) * k;
+    bird.vy += (dy/d * want - bird.vy) * k;
     bird.x += bird.vx*dt; bird.y += bird.vy*dt;
     return d;
   }
@@ -213,7 +240,7 @@
         (bird.errand === "fetch" && !L.stashed);
       if (gone){
         bird.mode = "home"; bird.target = null;
-      } else if (seek(L.hx + L.x, L.hy + L.y, dt) < P.birdCatch){
+      } else if (seek(L.hx + L.x, L.hy + L.y, dt, P.slowHunt) < P.birdCatch){
         const i = held.indexOf(L);
         if (i >= 0) held.splice(i, 1);
         L.stuck = false; L.stashed = false; L.carried = true; L.cool = Infinity;
@@ -226,8 +253,9 @@
       const stealing = bird.errand === "steal";
       const tx = stealing ? bird.stashX : L.hx;
       const ty = (stealing ? bird.stashY : L.hy) - bird.h*0.40;
-      if (seek(tx, ty, dt) < P.birdDrop){
+      if (seek(tx, ty, dt, P.slowCarry) < P.birdDrop){
         L.carried = false; L.cool = P.birdCool;      // a moment before it can be taken again
+        L.vy += P.dropSpeed;                         // it falls the last little way
         if (stealing){
           L.stashed = true;                          // the spring now holds it here
           L.ax = bird.stashX - L.hx; L.ay = bird.stashY - L.hy;
@@ -235,30 +263,56 @@
         } else {
           L.ax = 0; L.ay = 0;
         }
-        bird.target = null; bird.mode = "home";
+        bird.hold = P.hoverTime;
+        bird.mode = "deliver";
       }
+    }
+    if (bird.mode === "deliver"){
+      /* hang over it while it drops into place, instead of turning tail in the
+         same frame it lets go */
+      const L = bird.target;
+      const tx = bird.errand === "steal" ? bird.stashX : L.hx;
+      const ty = (bird.errand === "steal" ? bird.stashY : L.hy) - bird.h*0.55;
+      seek(tx, ty, dt, 40);
+      bird.hold -= dt;
+      if (bird.hold <= 0){ bird.target = null; bird.mode = "home"; }
     }
     if (bird.mode === "home"){
       const p = perch();
       if (!p){ land(); return; }
       bird.w = p.w; bird.h = p.h;
-      if (seek(p.x, p.y, dt) < 7){ land(); return; }
+      if (seek(p.x, p.y, dt, P.slowHome) < 4){ land(); return; }
     }
 
-    /* it grows as it leaves the logo, so it still reads while crossing the page */
-    const want = bird.mode === "home" ? 1 : P.birdScale;
-    bird.scale += (want - bird.scale) * Math.min(1, dt * 5);
+    /* One flap drives both wings and the body. The far wing lags, so at any
+       instant the two are at visibly different angles; without that they overlap
+       into a single lump. Both shorten at the ends of the stroke, where a real
+       wing is swinging towards the viewer rather than across it. */
+    /* it flutters faster the slower it is going, the way a bird brakes onto a perch */
+    const slowness = Math.max(0, 1 - Math.hypot(bird.vx, bird.vy) / P.birdMax);
+    bird.ph += dt * P.flapRate * (1 + P.flapBrake * slowness);
+    const ph = bird.ph;
+    const near = Math.sin(ph), far = Math.sin(ph + P.farLag);
+    bird.wing.style.transform =
+      "rotate(" + (P.flapBase + near * P.flapSweep).toFixed(1) + "deg)" +
+      " scaleX(" + (1 - P.wingShorten * Math.abs(near)).toFixed(3) + ")";
+    bird.farWing.style.transform =
+      "rotate(" + (P.flapBase + far * P.flapSweep * P.farSweep + P.farOffset).toFixed(1) + "deg)" +
+      " scaleX(" + (1 - P.wingShorten * Math.abs(far)).toFixed(3) + ")";
 
-    /* one flap drives both the wing and the body: it rises on the downstroke */
-    const flap = Math.sin(bird.t * P.flapRate);
-    bird.wing.style.transform = "rotate(" + (P.flapBase + flap * P.flapSweep).toFixed(1) + "deg)";
-
-    const bob = -flap * bird.h * 0.055;
+    const bob = -near * bird.h * 0.055;
     if (Math.abs(bird.vx) > 40) bird.face = bird.vx > 0 ? -1 : 1;   // the sprite faces left
-    const tilt = Math.max(-0.45, Math.min(0.45, bird.vy / 1100)) * bird.face;
+
+    /* Turning is eased rather than mirrored on the spot: the sprite narrows as it
+       comes edge-on and widens out the other side, which reads as swinging round
+       in depth instead of flipping. It never goes fully edge-on, or it vanishes. */
+    bird.turn += (bird.face - bird.turn) * Math.min(1, dt * P.turnRate);
+    const across = Math.max(P.turnMin, Math.abs(bird.turn)) * (bird.turn < 0 ? -1 : 1);
+
+    const tilt = (Math.max(-0.45, Math.min(0.45, bird.vy / 1100)) + P.flightLean) * bird.face;
     bird.el.style.transform =
       "translate3d(" + (bird.x - bird.w/2).toFixed(1) + "px," + (bird.y - bird.h/2 + bob).toFixed(1) + "px,0)" +
-      " scale(" + (bird.scale * bird.face).toFixed(3) + "," + bird.scale.toFixed(3) + ")" +
+      " scale(" + across.toFixed(3) + ",1)" +
       " rotate(" + tilt.toFixed(3) + "rad)";
   }
 
@@ -371,7 +425,7 @@
       if (L.stuck || L.carried){
         let tx, ty;
         if (L.carried){
-          tx = bird.x; ty = bird.y + bird.h*0.42;    // clutched under the magpie
+          tx = bird.x; ty = bird.y + bird.h*0.42;              // clutched at the claws
         } else {
           tx = MX; ty = MY;                          // the letter *is* the pointer now
         }
@@ -450,7 +504,7 @@
     }
     for (const L of letters){
       L.el.style.transform = "translate3d(" + L.x.toFixed(2) + "px," + L.y.toFixed(2) + "px,0) rotate(" + L.a.toFixed(4) + "rad)";
-      L.el.style.setProperty("--p", (L.p * 0.85).toFixed(3));
+      L.el.style.setProperty("--p", (P.baseTint + (1 - P.baseTint) * L.p).toFixed(3));
     }
   }
 
@@ -544,9 +598,20 @@
 
   function init(){
     if (!build()) return;
+    if (!FINE){
+      for (const L of letters) L.el.style.setProperty("--p", P.baseTint.toFixed(3));
+      if (bird.el) bird.el.remove();      // the logo keeps its painted magpie
+      return;
+    }
     measure();
     addEventListener("mousemove", onMove, { passive: true });
-    document.addEventListener("mouseleave", () => { active = false; dropAll(); render(); });
+    const letGo = () => { active = false; dropAll(); render(); };
+    document.addEventListener("mouseleave", letGo);
+    /* Switching away does not fire mouseleave, and the cursor is hidden while a
+       letter is riding on it -- so coming back to an invisible cursor holding a
+       letter is the one way this can strand someone. */
+    addEventListener("blur", letGo);
+    document.addEventListener("visibilitychange", () => { if (document.hidden) letGo(); });
     addEventListener("resize", measure);
     addEventListener("scroll", () => {
       if (!idle()) return;
