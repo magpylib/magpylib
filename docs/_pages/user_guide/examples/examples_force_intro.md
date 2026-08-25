@@ -118,7 +118,7 @@ pivot_labels = ["Intrinsic only", "Centroid", "Axle at z=-0.5", "Axle at z=-1.0"
 for pivot, label in zip(pivot_points, pivot_labels):
     F, T = magpy.getFT(stator, cube, pivot=pivot)
 
-    print(f"{label}:" f"  Force:  {np.round(F, 1)} N" f"  Torque: {np.round(T, 1)} N*m")
+    print(f"{label}:  Force:  {np.round(F, 1)} N  Torque: {np.round(T, 1)} N*m")
 
 # Intrinsic only:
 #   Force:  [80.6 -0.   0. ] N
@@ -295,7 +295,6 @@ F0, T0 = magpy.getFT(loop, dipole, pivot=(0, 0, 0))
 
 # Backward (numerical), has opposite sign
 for meshing in [8, 40, 200, 1000]:
-
     # Set meshing parameter
     loop.meshing = meshing
 
