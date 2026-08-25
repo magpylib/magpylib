@@ -1,10 +1,12 @@
 import importlib.metadata
 import os
 import platform
-import re
 import shutil
 import sys
 from pathlib import Path
+
+import docutils.nodes
+from notfound.utils import replace_uris
 
 if platform.system() == "Linux":
     xvfb = shutil.which("Xvfb")
@@ -28,32 +30,25 @@ sys.path.insert(0, str(Path("./../").resolve()))  ##Add the folder one level abo
 # pio.renderers.default = "sphinx_gallery"
 
 
-def _absolutise_404_links(app, pagename, _templatename, context, _doctree):
-    """Make the links in the 404 body absolute, like its assets already are.
+def _absolutise_404_body_links(app, doctree, docname):
+    """Give links in the 404 body the same treatment as the ones in its sidebar.
 
-    sphinx-notfound-page rewrites the theme's own URLs (stylesheets, logo, nav)
-    but leaves the links written in the page body relative, and this page is
-    served for addresses that do not exist -- so a relative link would be
-    measured from the address that failed.
+    sphinx-notfound-page rewrites the theme's URLs and the toctree's references,
+    but never points its ``replace_uris`` helper at references written in the page
+    body -- and this page is served for any address that does not resolve, so a
+    relative link there would be measured from the address that failed.
     """
-    if pagename != app.config.notfound_pagename or not context.get("body"):
+    if docname != app.config.notfound_pagename:
         return
-    prefix = app.config.notfound_urls_prefix or "/"
 
-    def absolutise(match):
-        attr, url = match.group(1), match.group(2)
-        if re.match(r"^(?:[a-z][a-z0-9+.-]*:|//|/|#)", url, re.IGNORECASE):
-            return match.group(0)  # already absolute, or a bare anchor
-        return f'{attr}="{prefix}{url}"'
-
-    context["body"] = re.sub(r'\b(href|src)="([^"]*)"', absolutise, context["body"])
+    replace_uris(app, doctree, docutils.nodes.reference, "refuri")
 
 
 def setup(app):
     app.add_css_file("css/stylesheet.css")
     app.add_js_file("webcode/summaryOpen.js")
     app.add_js_file("webcode/magneticTitle.js")
-    app.connect("html-page-context", _absolutise_404_links)
+    app.connect("doctree-resolved", _absolutise_404_body_links)
 
 
 ###    sphinx.ext.apidoc.main(
