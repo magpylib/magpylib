@@ -47,6 +47,10 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
     permissions:
       contents: read
+    env:
+      # Pin the interpreter uv resolves to, instead of letting it discover one
+      # off PATH -- a mismatch here would silently test the same version twice.
+      UV_PYTHON: ${{ matrix.python-version }}
     strategy:
       fail-fast: false
       matrix:
