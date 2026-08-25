@@ -60,7 +60,7 @@
   /* the horseshoe's two pole faces sit side by side at its foot, so its far field
      is a dipole at their midpoint with the moment along the line joining them */
   const LOGO_MAG = { cx: 0.52, cy: 0.86, mx: 1, my: 0 };
-  const bird = { el:null, wing:null, mode:"perched", target:null, errand:"recover",
+  const bird = { el:null, body:null, wing:null, eye:null, mode:"perched", target:null, errand:"recover",
                  x:0, y:0, vx:0, vy:0, w:0, h:0, t:0, face:1, scale:1, stashX:0, stashY:0 };
   let holdTime = 0, logoImgs = [], srcPerched = [], srcFlown = [];
   let idleTime = 0, stealAt = 0, stashTimer = 0;
@@ -94,9 +94,15 @@
     /* The logo magpie is one flat silhouette with no wing to animate, so the wing
        is a separate shape in the same ink, hinged at the shoulder. Both sit under
        one drop-shadow, so they read as a single beating silhouette. */
+    bird.body = document.createElement("div");
+    bird.body.className = "mag-bird__body";
     bird.wing = document.createElement("div");
     bird.wing.className = "mag-bird__wing";
-    bird.el.appendChild(bird.wing);
+    bird.eye = document.createElement("div");
+    bird.eye.className = "mag-bird__eye";
+    bird.body.appendChild(bird.wing);
+    bird.body.appendChild(bird.eye);
+    bird.el.appendChild(bird.body);
     document.body.appendChild(bird.el);
 
     /* Swapping the logo for its bird-less twin is what actually makes the magpie
@@ -138,6 +144,33 @@
     logoImgs.forEach((img, i) => img.setAttribute("src", on ? srcPerched[i] : srcFlown[i]));
   }
 
+  /* Put the live magpie on the perch and take the painted one out of the logo.
+     Done once the perch is known to be measurable, so a logo that never resolves
+     keeps its own bird rather than losing it to an element that never appeared. */
+  function settle(){
+    const p = perch();
+    if (!p){
+      /* no measurable logo (narrow viewport, hidden brand): give the painted
+         bird back rather than leaving one floating and the other missing */
+      bird.el.style.opacity = "0";
+      bird.el.classList.remove("mag-bird--perched");
+      showLogoBird(true);
+      return false;
+    }
+    bird.x = p.x; bird.y = p.y; bird.w = p.w; bird.h = p.h;
+    bird.vx = 0; bird.vy = 0; bird.scale = 1; bird.face = 1;
+    bird.el.style.width = p.w.toFixed(1) + "px";
+    bird.el.style.height = p.h.toFixed(1) + "px";
+    bird.el.style.transform =
+      "translate3d(" + (p.x - p.w/2).toFixed(1) + "px," + (p.y - p.h/2).toFixed(1) + "px,0)";
+    bird.el.style.opacity = "1";
+    bird.el.classList.add("mag-bird--perched");
+    bird.body.style.transform = "";
+    bird.wing.style.transform = "";
+    showLogoBird(false);
+    return true;
+  }
+
   function launch(target, errand){
     const p = perch();
     if (!p) return;
@@ -148,13 +181,12 @@
     bird.el.style.width = p.w.toFixed(1) + "px";
     bird.el.style.height = p.h.toFixed(1) + "px";
     bird.el.style.opacity = "1";
-    showLogoBird(false);
+    bird.el.classList.remove("mag-bird--perched");
   }
 
   function land(){
     bird.mode = "perched"; bird.target = null;
-    bird.el.style.opacity = "0";
-    showLogoBird(true);
+    settle();
   }
 
   function seek(tx, ty, dt){
@@ -235,6 +267,7 @@
   function measure(){
     for (const L of letters) L.el.style.transform = "none";
     cRect = host.getBoundingClientRect();
+    if (bird.mode === "perched") settle();
     if (!cRect.width) return;
     /* scale off the font size, not the line box, so line-height cannot change the feel */
     const fs = parseFloat(getComputedStyle(host).fontSize) || 16;
@@ -465,9 +498,15 @@
     const quiet = !held.length && bird.mode === "perched" && !stashed && !document.hidden;
     if (quiet) {
       idleTime += dt;
+      /* the longer it waits, the more it fidgets -- so the theft is telegraphed
+         rather than coming out of nowhere. Written only when the mood changes. */
+      const t = idleTime / (stealAt || 1);
+      const mood = t > 0.85 ? "twitchy" : t > 0.5 ? "restless" : "calm";
+      if (bird.el && bird.el.dataset.mood !== mood) bird.el.dataset.mood = mood;
       if (idleTime > stealAt) startSteal();
     } else if (!stashed) {
       idleTime = 0;
+      if (bird.el && bird.el.dataset.mood !== "calm") bird.el.dataset.mood = "calm";
     }
     /* and it always brings a stolen letter back in the end */
     if (stashTimer > 0){
@@ -509,8 +548,13 @@
     addEventListener("mousemove", onMove, { passive: true });
     document.addEventListener("mouseleave", () => { active = false; dropAll(); render(); });
     addEventListener("resize", measure);
-    addEventListener("scroll", () => { if (idle()) cRect = host.getBoundingClientRect(); }, { passive: true });
+    addEventListener("scroll", () => {
+      if (!idle()) return;
+      cRect = host.getBoundingClientRect();
+      if (bird.mode === "perched") settle();
+    }, { passive: true });
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+    settle();
     stealAt = P.stealAfter + Math.random()*P.stealSpread;
     requestAnimationFrame(frame);
   }

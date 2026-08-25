@@ -94,12 +94,139 @@ magnetization defaults.
     top: 0;
     z-index: 1040; /* above the sticky header (1030) */
     pointer-events: none;
-    /* no fade: the flying bird must appear exactly as the logo's bird vanishes,
-       otherwise you briefly see two magpies, or none */
     opacity: 0;
-    background: url("images/magpylib_logo_bird.png") no-repeat center / contain;
     filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
     will-change: transform;
+}
+
+/* The outer element is placed by the script; the body is left free so the idle
+   animation below can have `transform` to itself. */
+.mag-bird__body {
+    position: absolute;
+    inset: 0;
+    background: url("images/magpylib_logo_bird.png") no-repeat center / contain;
+    transform-origin: 50% 92%; /* it rocks on its feet, not around its middle */
+}
+
+/* the eyelid: a dot of the bird's own ink, flat until it blinks */
+.mag-bird__eye {
+    position: absolute;
+    left: 60.8%;
+    top: 5%;
+    width: 9.4%;
+    height: 5.9%;
+    border-radius: 50%;
+    background: #2a2939;
+    transform: scaleY(0);
+}
+
+/* ---- perched: waiting, and getting visibly bored ---- */
+.mag-bird--perched {
+    --fidget: 16s;
+    --blink: 8s;
+    /* on its perch it has to be indistinguishable from the logo it came out of;
+       the rim below exists only to keep it legible out over the page */
+    filter: none;
+}
+
+.mag-bird--perched[data-mood="restless"] {
+    --fidget: 9s;
+    --blink: 5s;
+}
+
+.mag-bird--perched[data-mood="twitchy"] {
+    --fidget: 4.5s;
+    --blink: 2.4s;
+}
+
+.mag-bird--perched .mag-bird__body {
+    animation: mag-fidget var(--fidget) ease-in-out infinite;
+}
+
+.mag-bird--perched .mag-bird__eye {
+    animation: mag-blink var(--blink) ease-in-out infinite;
+}
+
+/* the folded wing is already part of the silhouette, so it only appears for a
+   moment when the bird stretches it */
+.mag-bird--perched .mag-bird__wing {
+    opacity: 0;
+    animation: mag-stretch var(--fidget) ease-in-out infinite;
+}
+
+@keyframes mag-blink {
+    0%,
+    93% {
+        transform: scaleY(0);
+    }
+    94%,
+    95% {
+        transform: scaleY(1);
+    }
+    96%,
+    96.8% {
+        transform: scaleY(0);
+    }
+    97.6%,
+    98.4% {
+        transform: scaleY(1);
+    }
+    99.2%,
+    100% {
+        transform: scaleY(0);
+    }
+}
+
+@keyframes mag-fidget {
+    0%,
+    58%,
+    100% {
+        transform: rotate(0deg) translateY(0);
+    }
+    62% {
+        transform: rotate(-3.5deg) translateY(-1.5%);
+    }
+    66% {
+        transform: rotate(1.8deg) translateY(0.4%);
+    }
+    70% {
+        transform: rotate(0deg) translateY(0);
+    }
+    86% {
+        transform: rotate(0deg) translateY(0);
+    }
+    89% {
+        transform: rotate(3deg) translateY(-1%);
+    }
+    93% {
+        transform: rotate(-1.2deg) translateY(0);
+    }
+}
+
+@keyframes mag-stretch {
+    0%,
+    59%,
+    100% {
+        opacity: 0;
+        transform: rotate(20deg);
+    }
+    63%,
+    66% {
+        opacity: 1;
+        transform: rotate(-16deg);
+    }
+    69% {
+        opacity: 0;
+        transform: rotate(20deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mag-bird--perched .mag-bird__body,
+    .mag-bird--perched .mag-bird__eye,
+    .mag-bird--perched .mag-bird__wing {
+        animation: none;
+    }
 }
 
 /* the bird is near-black, so give it a rim against a dark page */
