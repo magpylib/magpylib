@@ -166,7 +166,7 @@ html[data-theme="dark"] .navbar-brand {
 
 .mag-bird--flying .mag-bird__body {
     background-image: url("images/magpylib_logo_bird_fly.png");
-    background-size: 600% 100%;
+    background-size: 600% 100%; /* six frames */
     background-position: calc(var(--frame, 0) * 20%) 0;
 }
 
@@ -260,14 +260,14 @@ html[data-theme="dark"] .mag-bird--flying {
     left: 50%;
     top: 0;
     width: 150px;
-    height: 120px; /* the flight frames are 263 x 210 */
+    height: 140px; /* the flight frames are 225 x 210 */
     margin-left: -75px;
     background-image: url("images/magpylib_logo_bird_fly.png");
     background-repeat: no-repeat;
     background-size: 600% 100%;
     filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.3));
     animation:
-        mag404-fly 0.62s steps(6) infinite,
+        mag404-fly 0.6s steps(6, jump-none) infinite alternate,
         mag404-hover 3s ease-in-out infinite;
 }
 
@@ -283,8 +283,8 @@ html[data-theme="dark"] .mag404__bird {
 .mag404__loot {
     position: absolute;
     left: 50%;
-    top: 112px;
-    margin-left: -32px;
+    top: 137px;
+    margin-left: 20px;
     width: 42px;
     height: 54px;
     border-radius: 3px;
@@ -310,13 +310,14 @@ html[data-theme="dark"] .mag404__bird {
     color: transparent;
 }
 
-/* six frames, so the position has to travel one frame past the last one */
+/* Six frames at 0/20/40/60/80/100%. steps(6) alone lands between them and the
+   bird appears to slide sideways; jump-none puts a stop on both ends. */
 @keyframes mag404-fly {
     from {
         background-position-x: 0%;
     }
     to {
-        background-position-x: 120%;
+        background-position-x: 100%;
     }
 }
 

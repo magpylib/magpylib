@@ -45,7 +45,7 @@
     slowHunt: 70, slowCarry: 170, slowHome: 220,
     hoverTime: 0.45, dropSpeed: 240, flapBrake: 0.7, landTime: 0.22,
     birdCatch: 26, birdDrop: 12, birdCool: 0.9,
-    flapRate: 29, flapFrames: 6,
+    flapRate: 29,
     /* easing round a turn instead of mirroring on the spot */
     turnRate: 11, turnMin: 0.34,
     /* a shake is counted in direction reversals, not raw speed, so dragging a
@@ -79,7 +79,10 @@
      body match the perched bird's, which is what makes taking off read as the same
      bird rather than a bigger one -- the box is wider only because the wings are
      open. Measured from _static/images/magpylib_logo_bird_fly.png. */
-  const FLY = { w: 0.975, h: 0.779, clawX: 0.427, clawY: 0.930 };
+  const FLY = { w: 1.288, h: 1.202, clawX: 0.772, clawY: 0.978 };
+  /* Six drawings, ordered from wings-highest to wings-lowest. Playing them out and
+     back gives a ten-step beat without drawing the upstroke twice. */
+  const FLAP = [0, 1, 2, 3, 4, 5, 4, 3, 2, 1];
   /* The perched bird carries the logo's own outline, baked in at 1.573% of the
      logo's width. The flight frames are drawn without one, so CSS strokes it --
      at the same fraction, or the two versions of the bird do not match. */
@@ -333,8 +336,9 @@
     const slowness = Math.max(0, 1 - Math.hypot(bird.vx, bird.vy) / P.birdMax);
     bird.ph += dt * P.flapRate * (1 + P.flapBrake * slowness);
     /* the wing-beat is drawn, so flapping is just which frame is showing */
-    const n = P.flapFrames;
-    bird.body.style.setProperty("--frame", ((Math.floor(bird.ph / (Math.PI*2) * n) % n) + n) % n);
+    const n = FLAP.length;
+    const step = ((Math.floor(bird.ph / (Math.PI*2) * n) % n) + n) % n;
+    bird.body.style.setProperty("--frame", FLAP[step]);
 
     const bob = -Math.sin(bird.ph) * bird.h * 0.03;
     if (Math.abs(bird.vx) > 40) bird.face = bird.vx > 0 ? -1 : 1;   // the sprite faces left
