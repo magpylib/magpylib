@@ -102,7 +102,7 @@ html[data-theme="dark"] .navbar-brand {
     z-index: 1040; /* above the sticky header (1030) */
     pointer-events: none;
     opacity: 0;
-    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.28));
     will-change: transform;
 }
 
@@ -154,26 +154,25 @@ html[data-theme="dark"] .navbar-brand {
     animation: mag-blink var(--blink) ease-in-out infinite;
 }
 
-/* the far wing: behind the opaque body, tucked and a shade lighter so it reads
-   as being on the other side of the bird */
-.mag-bird__wing--far {
-    left: -14%;
-    top: 36%;
-    width: 60%;
-    height: 17%;
-    background: #34344b;
-}
-
-.mag-bird--perched .mag-bird__wing--far {
-    opacity: 0;
-    animation: none;
-}
-
 /* the folded wing is already part of the silhouette, so it only appears for a
    moment when the bird stretches it */
 .mag-bird--perched .mag-bird__wing {
     opacity: 0;
     animation: mag-stretch var(--fidget) ease-in-out infinite;
+}
+
+/* ---- in flight it steps through a drawn six-frame wing-beat ---- */
+.mag-bird--flying .mag-bird__body {
+    background-image: url("images/magpylib_logo_bird_fly.png");
+    background-size: 600% 100%;
+    background-position: calc(var(--frame, 0) * 20%) 0;
+}
+
+/* the perched bird's separate wing and eyelid have no job once the wing-beat
+   and the eye are part of the drawing */
+.mag-bird--flying .mag-bird__wing,
+.mag-bird--flying .mag-bird__eye {
+    display: none;
 }
 
 @keyframes mag-blink {
@@ -251,9 +250,13 @@ html[data-theme="dark"] .navbar-brand {
     }
 }
 
-/* the bird is near-black, so give it a rim against a dark page */
+/* Near-black on a near-black header needs an edge. A 1px stroke matches the thin
+   outline the logo's own shapes carry; a glow at this size just smudges it. */
 html[data-theme="dark"] .mag-bird {
-    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.45));
+    filter: drop-shadow(1px 0 0 rgba(226, 232, 242, 0.85))
+        drop-shadow(-1px 0 0 rgba(226, 232, 242, 0.85))
+        drop-shadow(0 1px 0 rgba(226, 232, 242, 0.85))
+        drop-shadow(0 -1px 0 rgba(226, 232, 242, 0.85));
 }
 
 /* the wing, hinged at the shoulder — the logo magpie is a single flat shape,

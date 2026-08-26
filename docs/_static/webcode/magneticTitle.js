@@ -45,11 +45,9 @@
     slowHunt: 70, slowCarry: 170, slowHome: 220,
     hoverTime: 0.45, dropSpeed: 240, flapBrake: 0.7,
     birdCatch: 26, birdDrop: 12, birdCool: 0.9,
-    flapRate: 29, flapBase: -2, flapSweep: 36,
-    /* the far wing lags the near one, and both shorten at the ends of the stroke */
-    farLag: 0.85, farSweep: 0.85, farOffset: 4, wingShorten: 0.16,
-    /* leaning into the flight, and easing round a turn instead of mirroring */
-    flightLean: -0.35, turnRate: 11, turnMin: 0.34,
+    flapRate: 29, flapFrames: 6,
+    /* easing round a turn instead of mirroring on the spot */
+    turnRate: 11, turnMin: 0.34,
     /* a shake is counted in direction reversals, not raw speed, so dragging a
        letter quickly across the page keeps it and only a wiggle sheds it */
     shakeSpeed: 380, shakeDecay: 2.2, shakeOff: 2.6,
@@ -76,7 +74,12 @@
   /* the horseshoe's two pole faces sit side by side at its foot, so its far field
      is a dipole at their midpoint with the moment along the line joining them */
   const LOGO_MAG = { cx: 0.52, cy: 0.86, mx: 1, my: 0 };
-  const bird = { el:null, body:null, wing:null, farWing:null, eye:null, mode:"perched", target:null, errand:"recover",
+  /* The flight frames are a separate drawing: a magpie in a flying posture, six
+     frames of one wing-beat. Sized so its head matches the perched bird's, which
+     is what makes taking off read as the same bird rather than a bigger one.
+     Measured from _static/images/magpylib_logo_bird_fly.png. */
+  const FLY = { w: 1.148, h: 1.316, clawX: 0.419, clawY: 0.855 };
+  const bird = { el:null, body:null, wing:null, eye:null, mode:"perched", target:null, errand:"recover",
                  x:0, y:0, vx:0, vy:0, w:0, h:0, t:0, ph:0, face:1, turn:1, hold:0, stashX:0, stashY:0 };
   let holdTime = 0, logoImgs = [], srcPerched = [], srcFlown = [];
   let idleTime = 0, stealAt = 0, stashTimer = 0, perchWatch = 0;
@@ -110,12 +113,6 @@
     /* The logo magpie is one flat silhouette with no wing to animate, so the wing
        is a separate shape in the same ink, hinged at the shoulder. Both sit under
        one drop-shadow, so they read as a single beating silhouette. */
-    /* the far wing sits behind the body, which is opaque, so it only shows where
-       it sticks out past the silhouette -- which is what reads as a second wing */
-    bird.farWing = document.createElement("div");
-    bird.farWing.className = "mag-bird__wing mag-bird__wing--far";
-    bird.el.appendChild(bird.farWing);
-
     bird.body = document.createElement("div");
     bird.body.className = "mag-bird__body";
     bird.wing = document.createElement("div");
@@ -161,6 +158,15 @@
              w: BIRD_BOX.w * r.width, h: BIRD_BOX.h * r.height };
   }
 
+  function flyBox(){
+    const r = logoRect();
+    return r ? { w: FLY.w * r.width, h: FLY.h * r.width } : null;
+  }
+
+  /* where the claws are, relative to the bird's centre, mirrored when it banks */
+  function clawDX(){ return (FLY.clawX - 0.5) * bird.w * (bird.turn < 0 ? -1 : 1); }
+  function clawDY(){ return (FLY.clawY - 0.5) * bird.h; }
+
   function showLogoBird(on){
     if (!srcFlown.length) return;
     logoImgs.forEach((img, i) => img.setAttribute("src", on ? srcPerched[i] : srcFlown[i]));
@@ -186,11 +192,11 @@
     bird.el.style.transform =
       "translate3d(" + (p.x - p.w/2).toFixed(1) + "px," + (p.y - p.h/2).toFixed(1) + "px,0)";
     bird.el.style.opacity = "1";
+    bird.el.classList.remove("mag-bird--flying");
     bird.el.classList.add("mag-bird--perched");
     bird.turn = bird.face = 1;
     bird.body.style.transform = "";
     bird.wing.style.transform = "";
-    bird.farWing.style.transform = "";
     showLogoBird(false);
     return true;
   }
@@ -199,13 +205,15 @@
     const p = perch();
     if (!p) return;
     bird.errand = errand;
-    bird.x = p.x; bird.y = p.y; bird.w = p.w; bird.h = p.h;
+    const f = flyBox() || { w: p.w, h: p.h };
+    bird.x = p.x; bird.y = p.y; bird.w = f.w; bird.h = f.h;
     bird.vx = 0; bird.vy = 0; bird.t = 0; bird.ph = 0;
     bird.mode = "hunt"; bird.target = target;
-    bird.el.style.width = p.w.toFixed(1) + "px";
-    bird.el.style.height = p.h.toFixed(1) + "px";
+    bird.el.style.width = f.w.toFixed(1) + "px";
+    bird.el.style.height = f.h.toFixed(1) + "px";
     bird.el.style.opacity = "1";
     bird.el.classList.remove("mag-bird--perched");
+    bird.el.classList.add("mag-bird--flying");
   }
 
   function land(){
@@ -251,8 +259,8 @@
     if (bird.mode === "carry"){
       const L = bird.target;
       const stealing = bird.errand === "steal";
-      const tx = stealing ? bird.stashX : L.hx;
-      const ty = (stealing ? bird.stashY : L.hy) - bird.h*0.40;
+      const tx = (stealing ? bird.stashX : L.hx) - clawDX();
+      const ty = (stealing ? bird.stashY : L.hy) - clawDY();
       if (seek(tx, ty, dt, P.slowCarry) < P.birdDrop){
         L.carried = false; L.cool = P.birdCool;      // a moment before it can be taken again
         L.vy += P.dropSpeed;                         // it falls the last little way
@@ -271,8 +279,8 @@
       /* hang over it while it drops into place, instead of turning tail in the
          same frame it lets go */
       const L = bird.target;
-      const tx = bird.errand === "steal" ? bird.stashX : L.hx;
-      const ty = (bird.errand === "steal" ? bird.stashY : L.hy) - bird.h*0.55;
+      const tx = (bird.errand === "steal" ? bird.stashX : L.hx) - clawDX();
+      const ty = (bird.errand === "steal" ? bird.stashY : L.hy) - clawDY() - bird.h*0.12;
       seek(tx, ty, dt, 40);
       bird.hold -= dt;
       if (bird.hold <= 0){ bird.target = null; bird.mode = "home"; }
@@ -291,16 +299,11 @@
     /* it flutters faster the slower it is going, the way a bird brakes onto a perch */
     const slowness = Math.max(0, 1 - Math.hypot(bird.vx, bird.vy) / P.birdMax);
     bird.ph += dt * P.flapRate * (1 + P.flapBrake * slowness);
-    const ph = bird.ph;
-    const near = Math.sin(ph), far = Math.sin(ph + P.farLag);
-    bird.wing.style.transform =
-      "rotate(" + (P.flapBase + near * P.flapSweep).toFixed(1) + "deg)" +
-      " scaleX(" + (1 - P.wingShorten * Math.abs(near)).toFixed(3) + ")";
-    bird.farWing.style.transform =
-      "rotate(" + (P.flapBase + far * P.flapSweep * P.farSweep + P.farOffset).toFixed(1) + "deg)" +
-      " scaleX(" + (1 - P.wingShorten * Math.abs(far)).toFixed(3) + ")";
+    /* the wing-beat is drawn, so flapping is just which frame is showing */
+    const n = P.flapFrames;
+    bird.body.style.setProperty("--frame", ((Math.floor(bird.ph / (Math.PI*2) * n) % n) + n) % n);
 
-    const bob = -near * bird.h * 0.055;
+    const bob = -Math.sin(bird.ph) * bird.h * 0.03;
     if (Math.abs(bird.vx) > 40) bird.face = bird.vx > 0 ? -1 : 1;   // the sprite faces left
 
     /* Turning is eased rather than mirrored on the spot: the sprite narrows as it
@@ -309,7 +312,8 @@
     bird.turn += (bird.face - bird.turn) * Math.min(1, dt * P.turnRate);
     const across = Math.max(P.turnMin, Math.abs(bird.turn)) * (bird.turn < 0 ? -1 : 1);
 
-    const tilt = (Math.max(-0.45, Math.min(0.45, bird.vy / 1100)) + P.flightLean) * bird.face;
+    /* the drawing already holds a flying posture, so this is only the pitch */
+    const tilt = Math.max(-0.4, Math.min(0.4, bird.vy / 1100)) * bird.face;
     bird.el.style.transform =
       "translate3d(" + (bird.x - bird.w/2).toFixed(1) + "px," + (bird.y - bird.h/2 + bob).toFixed(1) + "px,0)" +
       " scale(" + across.toFixed(3) + ",1)" +
@@ -425,7 +429,7 @@
       if (L.stuck || L.carried){
         let tx, ty;
         if (L.carried){
-          tx = bird.x; ty = bird.y + bird.h*0.42;              // clutched at the claws
+          tx = bird.x + clawDX(); ty = bird.y + clawDY();   // gripped in the claws
         } else {
           tx = MX; ty = MY;                          // the letter *is* the pointer now
         }
