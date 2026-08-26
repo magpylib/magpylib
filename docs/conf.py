@@ -45,7 +45,6 @@ def _absolutise_404_body_links(app, doctree, docname):
 
 
 def setup(app):
-    app.add_css_file("css/stylesheet.css")
     app.add_js_file("webcode/summaryOpen.js")
     app.add_js_file("webcode/magneticTitle.js")
     app.connect("doctree-resolved", _absolutise_404_body_links)
