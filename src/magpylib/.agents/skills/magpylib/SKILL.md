@@ -30,8 +30,8 @@ parameter names, and most pre-trained code reproduces the old API.
   `(s, p, o, *pixel, 3)` before squeezing. See
   [Field computation](#field-computation).
 - Never loop in Python over positions or parameters — use a path or the
-  functional interface. See
-  [references/position-paths.md](references/position-paths.md).
+  functional interface. Paths carry physical attributes too, not just motion:
+  see [Path-varying properties](#path-varying-properties).
 - Force and torque: `magpy.getFT(sources, targets)`, and every target except
   `Dipole` and `Sphere` needs `meshing` set. See
   [Force and torque](#force-and-torque).
@@ -79,12 +79,26 @@ Available classes:
 
 All magnets accept `polarization` (T) **or** `magnetization` (A/m). The two are
 codependent, kept in sync as J = µ₀·M, so set one and read either. Prefer
-`polarization` — datasheet remanence B_r is a polarization.
+`polarization`: a datasheet's remanence B_r is a polarization. Use B_r directly
+only when ignoring material response — a real magnet demagnetises itself, so the
+mean polarization sits a few percent below B_r (about 95% of it as a rule of
+thumb, exactly the J at the working point). For an inhomogeneous treatment see
+the `magpylib-material-response` package.
 
 Every source constructor takes `position`, `orientation`, its shape parameters,
 `meshing` (for force targets), and `style`. Shape parameters are given in the
 object's **local** coordinates; `position`/`orientation` place that local frame
-in the global one.
+in the global one. `obj.copy(**kwargs)` clones an object with overrides, which
+is how arrays of near-identical magnets are built.
+
+Two classes need more than a constructor call:
+
+- `magnet.TriangularMesh` builds a solid from a closed surface mesh, via
+  `from_pyvista()` (an STL or any PyVista `PolyData`), `from_ConvexHull()`,
+  `from_triangles()`, or `from_mesh()`. It validates closedness and orientation.
+- `misc.CustomSource(field_func=...)` wraps any callable
+  `field_func(field, observers) -> (n, 3)`, which is how measured or
+  interpolated field data joins a Magpylib scene.
 
 ## Field computation
 
@@ -104,8 +118,15 @@ B = magpy.getB(
 methods on every object, so `cube.getB(sensor)` and `sensor.getB(cube)` give the
 same array.
 
+`getJ` and `getM` describe the material, not a field in space: they return the
+body's own polarization/magnetization **inside** it and exactly zero everywhere
+outside. Inside a magnet the H-field opposes J (the demagnetising field), so
+`getB` inside is not µ₀·`getH` + J by inspection — it is smaller than J.
+
 `observers` is an array of positions with shape `(..., 3)`, a `Sensor`, a
-`Collection`, or a flat list of those.
+`Collection`, or a flat list of those. Note the asymmetry on the source side: a
+`Collection` passed as `sources` counts as **one** source and superposes its
+children, whereas `[child_a, child_b]` keeps a source axis of length 2.
 
 ```python
 import numpy as np
@@ -158,30 +179,71 @@ Together they form the object's **path**, and a field computation runs over the
 whole path at once.
 
 ```python
-from scipy.spatial.transform import Rotation as R
-
 cube.position = np.linspace((0, 0, 0.01), (0, 0, 0.05), 50)  # 50-step path
-cube.rotate(R.from_rotvec((0, 0, 90), degrees=True), anchor=(0, 0, 0))
+cube.rotate_from_angax(90, "z", anchor=(0, 0, 0))  # no scipy import needed
 ```
+
+Reach for the `rotate_from_*` helpers rather than building a `Rotation` by hand:
+`rotate_from_angax`, `rotate_from_rotvec`, `rotate_from_euler`,
+`rotate_from_quat`, `rotate_from_matrix`, `rotate_from_mrp`. They take the same
+`anchor` and `start` arguments as `rotate()`.
 
 `move()` and `rotate()` behave differently for scalar and vector input, and the
 default `start="auto"` means scalar input _transforms the existing path_ while
 vector input _appends to it_. This trips up nearly everyone; read
 [references/position-paths.md](references/position-paths.md) before writing
-multi-step motion, and note that physical attributes (`current`, `dimension`,
-`polarization`, `vertices`, …) can carry a path too.
+multi-step motion.
+
+## Path-varying properties
+
+A path is not restricted to motion. Physical attributes can vary along it too,
+so a current ramps, a coil deforms, or a magnet expands — computed in the same
+single vectorised call. `obj.path_properties` lists which attributes of a class
+support this.
+
+```python
+coil = magpy.current.Circle(
+    diameter=np.linspace(0.01, 0.02, 10),  # geometry ramps
+    current=np.linspace(1, 5, 10),  # excitation ramps
+    position=np.linspace((0, 0, 0), (0, 0, 0.02), 10),  # and it moves
+)
+B = magpy.getB(coil, (0, 0, 0.03))  # (10, 3)
+```
+
+This is the vectorised replacement for a Python loop over parameter values — AC
+or ramped currents, thermal expansion, deforming conductors, parameter sweeps.
+Note that a swept attribute is still **one object** observed at n settings, not
+n objects: the result has a path axis, not a source axis.
+
+Three rules govern it, and they are the part worth remembering:
+
+- **What you set is what is stored.** Attributes are independent (except
+  `position`/`orientation`, which stay synchronised with each other) and are
+  never silently expanded to match one another.
+- **Lengths reconcile only at computation time**, by edge-padding the shorter
+  attributes to the longest — the object is static beyond its own path — on a
+  temporary copy. Your attributes keep the lengths you gave them.
+- **Derived properties follow.** `dipole_moment`, `centroid`, and friends gain a
+  leading path axis when the attributes they are computed from vary.
+
+See [references/position-paths.md](references/position-paths.md) for
+end-slicing, mismatched lengths, and worked examples.
 
 ## Collections
 
 ```python
 array = magpy.Collection(magnet1, magnet2, sensor)
-array.rotate(R.from_rotvec((0, 0, 45), degrees=True), anchor=(0, 0, 0))
+array.rotate_from_angax(45, "z", anchor=(0, 0, 0))
 ```
 
 A `Collection` groups objects for common manipulation and spans a local frame
 for its children; moving it moves them while preserving relative placement. It
 is both a source (for `getB`) and a container. Access parts via `.sources`,
 `.observers`, `.collections`, or the `*_all` variants for nested collections.
+
+Subclassing `Collection` is the documented way to build a parametrised assembly
+— a magnet ring, a coil former — that behaves as one object with its own
+constructor arguments while keeping the full Magpylib API.
 
 ## Force and torque
 
@@ -236,4 +298,12 @@ subplots. Styling is per-object via `obj.style` or globally via
 - `misc.Triangle` is a single charged facet, not a closed body. For a solid mesh
   magnet use `magnet.TriangularMesh`, which validates closedness.
 - Field on a source's own vertices/edges returns 0, not `nan`.
+- `getJ()`/`getM()` return zero outside the body. They are not "the field" — for
+  that, use `getB()`/`getH()`.
+- A `Collection` as `sources` is one source, not many: `getB(coll, obs)` already
+  superposes its children, so summing the result again double-counts.
+- Setting one path property does not lengthen the others. A `current` of 3 steps
+  with a `position` of 2 computes over 3 steps, with the object parked at its
+  last position — no error, so check `path_properties` lengths when a result has
+  an unexpected first axis.
 - `magpy.mu_0` ≠ `4πe-7`. Use the constant when converting M ↔ J.

@@ -39,6 +39,19 @@ Sensors with **different** pixel shapes cannot be broadcast into one array; pass
 `pixel_agg="mean"` (or any NumPy aggregator name) to reduce each sensor's pixels
 first, which makes the shapes compatible.
 
+On the source side, a `Collection` behaves as a **single** source — it
+superposes its children internally and contributes one entry to the `s` axis.
+Pass a list of the children instead when the per-source breakdown is wanted:
+
+```python
+magpy.getB(coll, obs).shape  # (3,) — already summed
+magpy.getB(list(coll.sources_all), obs).shape  # (2, 3) — per source
+```
+
+Multiple sources and multiple observers produce **all combinations**, and
+similar sources are grouped and vectorised internally, so one call with many
+inputs beats many calls.
+
 ## sumup and output
 
 ```python
