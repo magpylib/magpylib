@@ -43,7 +43,7 @@
     patience: 1.8, birdMax: 780, birdSteer: 6,
     /* how far out it starts slowing down: short for a dive, long for a landing */
     slowHunt: 70, slowCarry: 170, slowHome: 220,
-    hoverTime: 0.45, dropSpeed: 240, flapBrake: 0.7,
+    hoverTime: 0.45, dropSpeed: 240, flapBrake: 0.7, landTime: 0.22,
     birdCatch: 26, birdDrop: 12, birdCool: 0.9,
     flapRate: 29, flapFrames: 6,
     /* easing round a turn instead of mirroring on the spot */
@@ -74,13 +74,18 @@
   /* the horseshoe's two pole faces sit side by side at its foot, so its far field
      is a dipole at their midpoint with the moment along the line joining them */
   const LOGO_MAG = { cx: 0.52, cy: 0.86, mx: 1, my: 0 };
-  /* The flight frames are a separate drawing: a magpie in a flying posture, six
-     frames of one wing-beat. Sized so its head matches the perched bird's, which
-     is what makes taking off read as the same bird rather than a bigger one.
-     Measured from _static/images/magpylib_logo_bird_fly.png. */
-  const FLY = { w: 1.148, h: 1.316, clawX: 0.419, clawY: 0.855 };
-  const bird = { el:null, body:null, wing:null, eye:null, mode:"perched", target:null, errand:"recover",
-                 x:0, y:0, vx:0, vy:0, w:0, h:0, t:0, ph:0, face:1, turn:1, hold:0, stashX:0, stashY:0 };
+  /* The flight frames are a separate drawing: a magpie in a flying posture with
+     its proper white markings, six frames of one wing-beat. Sized so its head and
+     body match the perched bird's, which is what makes taking off read as the same
+     bird rather than a bigger one -- the box is wider only because the wings are
+     open. Measured from _static/images/magpylib_logo_bird_fly.png. */
+  const FLY = { w: 0.975, h: 0.779, clawX: 0.427, clawY: 0.930 };
+  /* The perched bird carries the logo's own outline, baked in at 1.573% of the
+     logo's width. The flight frames are drawn without one, so CSS strokes it --
+     at the same fraction, or the two versions of the bird do not match. */
+  const RIM = 0.01573;
+  const bird = { el:null, body:null, still:null, eye:null, mode:"perched", target:null, errand:"recover",
+                 x:0, y:0, vx:0, vy:0, w:0, h:0, t:0, ph:0, face:1, turn:1, hold:0, lt:0, fromW:0, fromH:0, fromX:0, fromY:0, stashX:0, stashY:0 };
   let holdTime = 0, logoImgs = [], srcPerched = [], srcFlown = [];
   let idleTime = 0, stealAt = 0, stashTimer = 0, perchWatch = 0;
 
@@ -115,13 +120,15 @@
        one drop-shadow, so they read as a single beating silhouette. */
     bird.body = document.createElement("div");
     bird.body.className = "mag-bird__body";
-    bird.wing = document.createElement("div");
-    bird.wing.className = "mag-bird__wing";
+    /* the perched drawing lives on its own layer, so landing can fade from one
+       to the other instead of swapping sprites in a single frame */
+    bird.still = document.createElement("div");
+    bird.still.className = "mag-bird__still";
     bird.eye = document.createElement("div");
     bird.eye.className = "mag-bird__eye";
-    bird.body.appendChild(bird.wing);
-    bird.body.appendChild(bird.eye);
+    bird.still.appendChild(bird.eye);
     bird.el.appendChild(bird.body);
+    bird.el.appendChild(bird.still);
     document.body.appendChild(bird.el);
 
     /* Swapping the logo for its bird-less twin is what actually makes the magpie
@@ -160,7 +167,9 @@
 
   function flyBox(){
     const r = logoRect();
-    return r ? { w: FLY.w * r.width, h: FLY.h * r.width } : null;
+    if (!r) return null;
+    bird.el.style.setProperty("--rim", (RIM * r.width).toFixed(2) + "px");
+    return { w: FLY.w * r.width, h: FLY.h * r.width };
   }
 
   /* where the claws are, relative to the bird's centre, mirrored when it banks */
@@ -194,9 +203,10 @@
     bird.el.style.opacity = "1";
     bird.el.classList.remove("mag-bird--flying");
     bird.el.classList.add("mag-bird--perched");
+    bird.body.style.opacity = "0";
+    bird.still.style.opacity = "1";
     bird.turn = bird.face = 1;
     bird.body.style.transform = "";
-    bird.wing.style.transform = "";
     showLogoBird(false);
     return true;
   }
@@ -214,11 +224,18 @@
     bird.el.style.opacity = "1";
     bird.el.classList.remove("mag-bird--perched");
     bird.el.classList.add("mag-bird--flying");
+    bird.body.style.opacity = "1";
+    bird.still.style.opacity = "0";
   }
 
   function land(){
-    bird.mode = "perched"; bird.target = null;
-    settle();
+    const p = perch();
+    if (!p){ bird.mode = "perched"; bird.target = null; settle(); return; }
+    /* ease down onto the perch: the flying drawing fades out as the perched one
+       fades in, and the box shrinks to match, so there is no jump */
+    bird.mode = "landing"; bird.target = null; bird.lt = 0;
+    bird.fromW = bird.w; bird.fromH = bird.h;
+    bird.fromX = bird.x; bird.fromY = bird.y;
   }
 
   /* Steering with an arrival: the speed it *wants* tapers to nothing inside the
@@ -288,8 +305,24 @@
     if (bird.mode === "home"){
       const p = perch();
       if (!p){ land(); return; }
-      bird.w = p.w; bird.h = p.h;
       if (seek(p.x, p.y, dt, P.slowHome) < 4){ land(); return; }
+    }
+    if (bird.mode === "landing"){
+      const p = perch();
+      if (!p){ bird.mode = "perched"; settle(); return; }
+      bird.lt += dt;
+      const k = Math.min(1, bird.lt / P.landTime);
+      const e = k*k*(3 - 2*k);                       // smoothstep
+      bird.x = bird.fromX + (p.x - bird.fromX)*e;
+      bird.y = bird.fromY + (p.y - bird.fromY)*e;
+      bird.w = bird.fromW + (p.w - bird.fromW)*e;
+      bird.h = bird.fromH + (p.h - bird.fromH)*e;
+      bird.vx *= 0.85; bird.vy *= 0.85;
+      bird.el.style.width  = bird.w.toFixed(1) + "px";
+      bird.el.style.height = bird.h.toFixed(1) + "px";
+      bird.body.style.opacity  = (1-e).toFixed(3);
+      bird.still.style.opacity = e.toFixed(3);
+      if (k >= 1){ bird.mode = "perched"; settle(); return; }
     }
 
     /* One flap drives both wings and the body. The far wing lags, so at any

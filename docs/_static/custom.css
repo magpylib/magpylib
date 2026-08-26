@@ -102,17 +102,24 @@ html[data-theme="dark"] .navbar-brand {
     z-index: 1040; /* above the sticky header (1030) */
     pointer-events: none;
     opacity: 0;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.28));
     will-change: transform;
 }
 
-/* The outer element is placed by the script; the body is left free so the idle
-   animation below can have `transform` to itself. */
-.mag-bird__body {
+/* The outer element is placed by the script; these layers are left free so the
+   idle animation below can have `transform` to itself. The flight frames and the
+   perched drawing sit on separate layers so landing can fade between them. */
+.mag-bird__body,
+.mag-bird__still {
     position: absolute;
     inset: 0;
-    background: url("images/magpylib_logo_bird.png") no-repeat center / contain;
+    background-repeat: no-repeat;
     transform-origin: 50% 92%; /* it rocks on its feet, not around its middle */
+}
+
+.mag-bird__still {
+    background-image: url("images/magpylib_logo_bird.png");
+    background-position: center;
+    background-size: contain;
 }
 
 /* the eyelid: a dot of the bird's own ink, flat until it blinks */
@@ -131,9 +138,7 @@ html[data-theme="dark"] .navbar-brand {
 .mag-bird--perched {
     --fidget: 16s;
     --blink: 8s;
-    /* on its perch it has to be indistinguishable from the logo it came out of;
-       the rim below exists only to keep it legible out over the page */
-    filter: none;
+    /* on its perch it is the logo's own bird, outline and all: nothing added */
 }
 
 .mag-bird--perched[data-mood="restless"] {
@@ -146,7 +151,7 @@ html[data-theme="dark"] .navbar-brand {
     --blink: 2.4s;
 }
 
-.mag-bird--perched .mag-bird__body {
+.mag-bird--perched .mag-bird__still {
     animation: mag-fidget var(--fidget) ease-in-out infinite;
 }
 
@@ -154,26 +159,18 @@ html[data-theme="dark"] .navbar-brand {
     animation: mag-blink var(--blink) ease-in-out infinite;
 }
 
-/* the folded wing is already part of the silhouette, so it only appears for a
-   moment when the bird stretches it */
-.mag-bird--perched .mag-bird__wing {
-    opacity: 0;
-    animation: mag-stretch var(--fidget) ease-in-out infinite;
+/* ---- in flight it steps through a drawn six-frame wing-beat ---- */
+.mag-bird--flying {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.28));
 }
 
-/* ---- in flight it steps through a drawn six-frame wing-beat ---- */
 .mag-bird--flying .mag-bird__body {
     background-image: url("images/magpylib_logo_bird_fly.png");
     background-size: 600% 100%;
     background-position: calc(var(--frame, 0) * 20%) 0;
 }
 
-/* the perched bird's separate wing and eyelid have no job once the wing-beat
-   and the eye are part of the drawing */
-.mag-bird--flying .mag-bird__wing,
-.mag-bird--flying .mag-bird__eye {
-    display: none;
-}
+
 
 @keyframes mag-blink {
     0%,
@@ -224,54 +221,23 @@ html[data-theme="dark"] .navbar-brand {
     }
 }
 
-@keyframes mag-stretch {
-    0%,
-    59%,
-    100% {
-        opacity: 0;
-        transform: rotate(20deg);
-    }
-    63%,
-    66% {
-        opacity: 1;
-        transform: rotate(-16deg);
-    }
-    69% {
-        opacity: 0;
-        transform: rotate(20deg);
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
-    .mag-bird--perched .mag-bird__body,
-    .mag-bird--perched .mag-bird__eye,
-    .mag-bird--perched .mag-bird__wing {
+    .mag-bird--perched .mag-bird__still,
+    .mag-bird--perched .mag-bird__eye {
         animation: none;
     }
 }
 
 /* Near-black on a near-black header needs an edge. A 1px stroke matches the thin
    outline the logo's own shapes carry; a glow at this size just smudges it. */
-html[data-theme="dark"] .mag-bird {
-    filter: drop-shadow(1px 0 0 rgba(226, 232, 242, 0.85))
-        drop-shadow(-1px 0 0 rgba(226, 232, 242, 0.85))
-        drop-shadow(0 1px 0 rgba(226, 232, 242, 0.85))
-        drop-shadow(0 -1px 0 rgba(226, 232, 242, 0.85));
-}
-
-/* the wing, hinged at the shoulder — the logo magpie is a single flat shape,
-   so this is what actually beats. Same ink as the bird, under the same shadow. */
-.mag-bird__wing {
-    position: absolute;
-    left: -34%;
-    top: 44%;
-    width: 80%;
-    height: 21%;
-    background: #2a2939; /* the magpie's own ink, sampled from the logo */
-    clip-path: polygon(100% 18%, 55% 0%, 16% 30%, 0% 62%, 30% 90%, 80% 96%, 100% 74%);
-    /* hinged below the head, so the upstroke never swings across the face */
-    transform-origin: 90% 40%;
-    will-change: transform;
+/* The same outline the perched bird carries, at the same fraction of the logo's
+   width -- the script sets --rim, because the thickness has to scale with how
+   big the bird is drawn or the flying and perched versions stop matching. */
+html[data-theme="dark"] .mag-bird--flying {
+    filter: drop-shadow(var(--rim, 1px) 0 0 rgba(255, 255, 255, 0.92))
+        drop-shadow(calc(var(--rim, 1px) * -1) 0 0 rgba(255, 255, 255, 0.92))
+        drop-shadow(0 var(--rim, 1px) 0 rgba(255, 255, 255, 0.92))
+        drop-shadow(0 calc(var(--rim, 1px) * -1) 0 rgba(255, 255, 255, 0.92));
 }
 
 /* ---- 404: the magpie has made off with the page ---- */
@@ -285,32 +251,40 @@ html[data-theme="dark"] .mag-bird {
 .mag404__scene {
     position: relative;
     width: 100%;
-    height: 168px;
+    height: 196px;
 }
 
-/* the same magpie the navbar uses, hovering with its loot */
+/* the same flying magpie the navbar uses, making off with its loot */
 .mag404__bird {
     position: absolute;
     left: 50%;
-    top: 6px;
-    width: 84px;
-    height: 135px;
-    margin-left: -42px;
-    background: url("images/magpylib_logo_bird.png") no-repeat center / contain;
+    top: 0;
+    width: 150px;
+    height: 120px; /* the flight frames are 263 x 210 */
+    margin-left: -75px;
+    background-image: url("images/magpylib_logo_bird_fly.png");
+    background-repeat: no-repeat;
+    background-size: 600% 100%;
     filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.3));
-    animation: mag404-hover 3s ease-in-out infinite;
+    animation:
+        mag404-fly 0.62s steps(6) infinite,
+        mag404-hover 3s ease-in-out infinite;
 }
 
 html[data-theme="dark"] .mag404__bird {
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+    /* 150px wide matches a logo drawn 103px wide, so 1.573% of that */
+    filter: drop-shadow(1.63px 0 0 rgba(255, 255, 255, 0.92))
+        drop-shadow(-1.63px 0 0 rgba(255, 255, 255, 0.92))
+        drop-shadow(0 1.63px 0 rgba(255, 255, 255, 0.92))
+        drop-shadow(0 -1.63px 0 rgba(255, 255, 255, 0.92));
 }
 
 /* the stolen page, dangling from its claws */
 .mag404__loot {
     position: absolute;
     left: 50%;
-    top: 104px;
-    margin-left: -12px;
+    top: 112px;
+    margin-left: -32px;
     width: 42px;
     height: 54px;
     border-radius: 3px;
@@ -336,12 +310,13 @@ html[data-theme="dark"] .mag404__bird {
     color: transparent;
 }
 
-@keyframes mag404-flap {
+/* six frames, so the position has to travel one frame past the last one */
+@keyframes mag404-fly {
     from {
-        transform: rotate(-38deg);
+        background-position-x: 0%;
     }
     to {
-        transform: rotate(34deg);
+        background-position-x: 120%;
     }
 }
 
@@ -365,14 +340,9 @@ html[data-theme="dark"] .mag404__bird {
     }
 }
 
-.mag404__bird .mag-bird__wing {
-    animation: mag404-flap 0.38s ease-in-out infinite alternate;
-}
-
 @media (prefers-reduced-motion: reduce) {
     .mag404__bird,
-    .mag404__loot,
-    .mag404__bird .mag-bird__wing {
+    .mag404__loot {
         animation: none;
     }
 }
