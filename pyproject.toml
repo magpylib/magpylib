@@ -77,6 +77,7 @@ docs = [
   "plotly>=7.0", # see https://github.com/executablebooks/myst-nb/issues/667
   "kaleido==0.2.1", # ulterior versions don't ship chrome,
   "sphinxcontrib-bibtex>=2.6",
+  "sphinx-notfound-page",
 ]
 
 binder = [

@@ -84,3 +84,242 @@ itself behind sphinx-design tabs, see webcode/figures.js.
     height: 100%;
     border: 0;
 }
+
+
+/*
+Magnetic wordmark — the "Magpylib" brand text beside the logo behaves like a row
+of bar magnets attracted to the pointer. Driven by _static/webcode/magneticTitle.js,
+which splits the text into .mgl letters. Pole colours match magpylib's own
+magnetization defaults.
+*/
+.navbar-brand {
+    --mag-north: #E71111;
+    --mag-south: #00B050;
+    /* The neutral band between the poles has to sit against the page, not against
+       a fixed idea of it: magpylib's own #DDDDDD is right on a dark ground but
+       hollows the letters out on a light one. */
+    --mag-middle: #39414c;
+}
+
+html[data-theme="dark"] .navbar-brand {
+    --mag-middle: #dddddd;
+}
+
+.navbar-brand .mgw {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.navbar-brand .mgl {
+    position: relative;
+    display: inline-block;
+    transform-origin: 50% 50%;
+    will-change: transform;
+    /* a letter carried away from the header must never swallow clicks on the
+       page underneath, and the brand link keeps its own hit area */
+    pointer-events: none;
+}
+
+/* the pole gradient, faded in as the letter is magnetised */
+.navbar-brand .mgl::after {
+    content: attr(data-ch);
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: linear-gradient(
+        to top,
+        var(--mag-south) 0%,
+        var(--mag-south) 34%,
+        var(--mag-middle) 50%,
+        var(--mag-north) 66%,
+        var(--mag-north) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    opacity: var(--p, 0);
+    pointer-events: none;
+}
+
+/* the magpie that leaves the logo to fetch a stolen letter back */
+.mag-bird {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1040; /* above the sticky header (1030) */
+    pointer-events: none;
+    opacity: 0;
+    will-change: transform;
+}
+
+/* The outer element is placed by the script; these layers are left free so the
+   idle animation below can have `transform` to itself. The flight frames and the
+   perched drawing sit on separate layers so landing can fade between them. */
+.mag-bird__body,
+.mag-bird__still {
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+    transform-origin: 50% 92%; /* it rocks on its feet, not around its middle */
+}
+
+.mag-bird__still {
+    background-image: url("images/magpylib_logo_bird.png");
+    background-position: center;
+    background-size: contain;
+}
+
+/* the eyelid: a dot of the bird's own ink, flat until it blinks */
+.mag-bird__eye {
+    position: absolute;
+    left: 60.8%;
+    top: 5%;
+    width: 9.4%;
+    height: 5.9%;
+    border-radius: 50%;
+    background: #2a2939;
+    transform: scaleY(0);
+}
+
+/* ---- perched: waiting, and getting visibly bored ---- */
+.mag-bird--perched {
+    --fidget: 16s;
+    --blink: 8s;
+    /* on its perch it is the logo's own bird, outline and all: nothing added */
+}
+
+.mag-bird--perched[data-mood="restless"] {
+    --fidget: 9s;
+    --blink: 5s;
+}
+
+.mag-bird--perched[data-mood="twitchy"] {
+    --fidget: 4.5s;
+    --blink: 2.4s;
+}
+
+.mag-bird--perched .mag-bird__still {
+    animation: mag-fidget var(--fidget) ease-in-out infinite;
+}
+
+.mag-bird--perched .mag-bird__eye {
+    animation: mag-blink var(--blink) ease-in-out infinite;
+}
+
+/* ---- in flight it steps through a drawn six-frame wing-beat ---- */
+.mag-bird--flying {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.28));
+}
+
+.mag-bird--flying .mag-bird__body {
+    background-image: url("images/magpylib_logo_bird_fly.png");
+    background-size: 600% 100%; /* six frames */
+    background-position: calc(var(--frame, 0) * 20%) 0;
+}
+
+
+
+@keyframes mag-blink {
+    0%,
+    93% {
+        transform: scaleY(0);
+    }
+    94%,
+    95% {
+        transform: scaleY(1);
+    }
+    96%,
+    96.8% {
+        transform: scaleY(0);
+    }
+    97.6%,
+    98.4% {
+        transform: scaleY(1);
+    }
+    99.2%,
+    100% {
+        transform: scaleY(0);
+    }
+}
+
+@keyframes mag-fidget {
+    0%,
+    58%,
+    100% {
+        transform: rotate(0deg) translateY(0);
+    }
+    62% {
+        transform: rotate(-3.5deg) translateY(-1.5%);
+    }
+    66% {
+        transform: rotate(1.8deg) translateY(0.4%);
+    }
+    70% {
+        transform: rotate(0deg) translateY(0);
+    }
+    86% {
+        transform: rotate(0deg) translateY(0);
+    }
+    89% {
+        transform: rotate(3deg) translateY(-1%);
+    }
+    93% {
+        transform: rotate(-1.2deg) translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mag-bird--perched .mag-bird__still,
+    .mag-bird--perched .mag-bird__eye {
+        animation: none;
+    }
+}
+
+/* Near-black on a near-black header needs an edge. A 1px stroke matches the thin
+   outline the logo's own shapes carry; a glow at this size just smudges it. */
+/* The same outline the perched bird carries, at the same fraction of the logo's
+   width -- the script sets --rim, because the thickness has to scale with how
+   big the bird is drawn or the flying and perched versions stop matching. */
+html[data-theme="dark"] .mag-bird--flying {
+    filter: drop-shadow(var(--rim, 1px) 0 0 rgba(255, 255, 255, 0.92))
+        drop-shadow(calc(var(--rim, 1px) * -1) 0 0 rgba(255, 255, 255, 0.92))
+        drop-shadow(0 var(--rim, 1px) 0 rgba(255, 255, 255, 0.92))
+        drop-shadow(0 calc(var(--rim, 1px) * -1) 0 rgba(255, 255, 255, 0.92));
+}
+
+/* ---- 404: the magpie has made off with the page ---- */
+.mag404 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 8px 0 4px;
+}
+
+.mag404__code {
+    font-size: clamp(72px, 15vw, 132px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    margin: 0;
+    background: linear-gradient(to top, #00b050, #e71111);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+
+/* while a letter is riding on the pointer, the letter is the cursor */
+html.mag-carrying,
+html.mag-carrying * {
+    cursor: none !important;
+}
+
+/* The magpie is the one part of this that moves without being asked, so it can be
+   sent away: click it and it goes back into the logo for good, click the same spot
+   and it comes back out. It cannot carry a cursor of its own -- it is
+   pointer-events: none, so that it never swallows a click meant for the page under
+   it -- so the hint is put on the root while the pointer is over it. */
+html.mag-swat,
+html.mag-swat .navbar-brand {
+    cursor: pointer;
+}
