@@ -79,7 +79,7 @@
   const bird = { el:null, body:null, wing:null, farWing:null, eye:null, mode:"perched", target:null, errand:"recover",
                  x:0, y:0, vx:0, vy:0, w:0, h:0, t:0, ph:0, face:1, turn:1, hold:0, stashX:0, stashY:0 };
   let holdTime = 0, logoImgs = [], srcPerched = [], srcFlown = [];
-  let idleTime = 0, stealAt = 0, stashTimer = 0;
+  let idleTime = 0, stealAt = 0, stashTimer = 0, perchWatch = 0;
 
   /* ---------- split the brand text into letters ---------- */
   function build(){
@@ -546,6 +546,22 @@
   }
 
   function stepFrame(dt){
+    /* The perched bird is placed in viewport coordinates, so anything that moves
+       the header under it -- a version banner arriving, a webfont landing, the
+       sidebar opening -- strands it where the logo used to be. None of those fire
+       resize, so watch the perch rather than measuring it once. */
+    if (bird.mode === "perched"){
+      perchWatch += dt;
+      if (perchWatch > 0.4){
+        perchWatch = 0;
+        const p = perch();
+        if (!p || Math.abs(p.x - bird.x) > 0.5 || Math.abs(p.y - bird.y) > 0.5){
+          cRect = host.getBoundingClientRect();
+          settle();
+        }
+      }
+    }
+
     /* This bookkeeping has to run even while the simulation is asleep, otherwise
        the magpie could never get bored enough to go thieving. */
     const stashed = letters.some(L => L.stashed);
