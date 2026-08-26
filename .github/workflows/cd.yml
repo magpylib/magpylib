@@ -10,6 +10,8 @@ on:
     types:
       - published
 
+permissions: {}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -23,10 +25,13 @@ jobs:
   dist:
     name: Distribution build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v7
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       # Pinned to a full version on purpose: v3 stopped force-tagging `@v3`
@@ -53,7 +58,7 @@ jobs:
           path: dist
 
       - name: Generate artifact attestation for sdist and wheel
-        uses: actions/attest-build-provenance@v4.2.2
+        uses: actions/attest@v4
         with:
           subject-path: "dist/*"
 
