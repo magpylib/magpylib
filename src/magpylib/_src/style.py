@@ -26,10 +26,12 @@ from magpylib._src.defaults.property_tree import (
     Color,
     ColorSequence,
     Nested,
+    NodeSequence,
     Number,
     Property,
     PropertyNode,
     String,
+    _detached,
 )
 
 ALLOWED_SIZEMODES = ("scaled", "absolute")
@@ -89,7 +91,9 @@ def get_style(obj, default_settings, **kwargs):
     style_kwargs_specific = {
         k: v for k, v in style_kwargs.items() if k.split("_")[0] in obj_style._fields
     }
-    obj_style.update(style_kwargs_specific)
+    # detached: this style is discarded after the render, and must not take
+    # ownership of nodes (e.g. Trace3d) the caller passed in from elsewhere
+    obj_style.update(_detached(style_kwargs_specific))
 
     # overlay the explicitly set values onto the cached resolved defaults
     style = _resolved_default_style(
@@ -389,15 +393,13 @@ class Trace3d(PropertyNode):
     )
 
 
-class TraceData(Property):
-    """List of Trace3d objects; accepts single/list of Trace3d, dict or callable."""
-
-    default = ()
+class TraceData(NodeSequence):
+    """Tuple of Trace3d objects; accepts single/list of Trace3d, dict or callable."""
 
     def __init__(self, doc=""):
-        super().__init__((), doc)
+        super().__init__(Trace3d, doc)
 
-    def validate(self, obj, value):
+    def coerce(self, obj, value):
         return obj._validate_data(value)
 
 
@@ -408,13 +410,17 @@ class Model3d(PropertyNode):
     ----------
     showdefault: bool, default=True
         Shows/hides default 3d-model.
-    data: dict or list of dicts, default=None
-        A trace or list of traces where each is an instance of `Trace3d` or
-        dictionary of equivalent key/value pairs.
+    data: Trace3d or dict or sequence of those, default=()
+        A trace or sequence of traces, each an instance of `Trace3d` or a
+        dictionary of equivalent key/value pairs. Held as a tuple: add traces
+        with `add_trace` or by assigning a new sequence, e.g.
+        ``data = [*data, trace]`` or ``data = []`` to drop them all.
     """
 
     showdefault = Boolean(default=True, doc="Shows/hides default 3d-model.")
-    data = TraceData(doc="Data of 3d object representation (trace or list of traces).")
+    data = TraceData(
+        doc="Data of 3d object representation (trace or sequence of traces)."
+    )
 
     @staticmethod
     def _validate_data(traces, **kwargs):
@@ -462,7 +468,7 @@ class Model3d(PropertyNode):
         -------
         Model3d
         """
-        self.data = [*self.data, *self._validate_data([trace], **kwargs)]
+        self.data = (*self.data, *self._validate_data([trace], **kwargs))
         return self
 
 

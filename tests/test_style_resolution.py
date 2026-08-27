@@ -9,6 +9,9 @@ explicitly set ``None`` on the object defers to the next layer down. Any
 refactor of the style internals must keep this suite green.
 """
 
+import copy
+import json
+
 import pytest
 
 import magpylib as magpy
@@ -194,6 +197,133 @@ def test_resolution_cache_invalidation_and_isolation():
     # mutable leaves (model3d traces) are not shared with the object style
     second.model3d.add_trace({"constructor": "Mesh3d"})
     assert cuboid.style.model3d.data == ()
+
+
+# ------------------------------------------------------------------
+# model3d traces: a collection of nodes inside the style tree
+# ------------------------------------------------------------------
+
+TRACE = {
+    "backend": "generic",
+    "constructor": "Mesh3d",
+    "kwargs": {
+        "i": [0],
+        "j": [1],
+        "k": [2],
+        "x": [0, 1, 0],
+        "y": [0, 0, 1],
+        "z": [0] * 3,
+    },
+}
+
+
+def test_model3d_data_is_always_a_tuple():
+    """`model3d.data` reads as a tuple whether unset, filled or emptied, so
+    traces can only be replaced, never mutated in place - the pattern the
+    compound example relies on to rebuild itself."""
+    cuboid = make_cuboid()
+    model3d = cuboid.style.model3d
+    assert model3d.data == ()
+
+    model3d.add_trace(TRACE)
+    assert isinstance(model3d.data, tuple)
+    assert len(model3d.data) == 1
+
+    model3d.data = []  # how a rebuild drops its old traces
+    assert model3d.data == ()
+    with pytest.raises(AttributeError):
+        model3d.data.clear()
+
+
+def test_model3d_trace_edits_are_observed():
+    """Edits inside a trace bubble up like any other style change, so tools
+    holding an observer on obj.style see them."""
+    cuboid = make_cuboid()
+    events = []
+    cuboid.style.observe(lambda path, value: events.append((path, value)))
+
+    cuboid.style.model3d.add_trace(TRACE)
+    cuboid.style.model3d.data[0].show = False
+    cuboid.style.set("model3d.data.0.scale", 2)
+
+    assert events[1:] == [("model3d.data.0.show", False), ("model3d.data.0.scale", 2)]
+    assert cuboid.style.get("model3d.data.0.scale") == 2
+
+
+def test_show_kwargs_do_not_take_over_a_trace():
+    """A trace passed through show kwargs is resolved against a throwaway
+    style, which must not take it out of the tree it belongs to."""
+    cuboid = make_cuboid()
+    cuboid.style.model3d.add_trace(TRACE)
+    trace = cuboid.style.model3d.data[0]
+    events = []
+    cuboid.style.observe(lambda path, _: events.append(path))
+
+    magpy.show(cuboid, style_model3d_data=[trace], backend="plotly", return_fig=True)
+
+    assert trace._parent is cuboid.style.model3d
+    trace.scale = 2
+    assert events == ["model3d.data.0.scale"]
+
+
+def test_trace_deepcopy_is_detached():
+    """The documented way to derive a trace from another one - deepcopy, edit,
+    add - must not reach back into the style tree the original belongs to."""
+    cuboid = make_cuboid()
+    cuboid.style.model3d.add_trace(TRACE)
+    events = []
+    cuboid.style.observe(lambda path, _: events.append(path))
+
+    derived = copy.deepcopy(cuboid.style.model3d.data[0])
+    derived.scale = 3
+    derived.kwargs["x"] = [9]
+
+    assert events == []
+    assert cuboid.style.model3d.data[0].scale == 1
+    assert cuboid.style.model3d.data[0].kwargs["x"] != [9]
+
+    cuboid.style.model3d.add_trace(derived)
+    assert len(cuboid.style.model3d.data) == 2
+
+
+def test_show_kwargs_preserve_trace_values():
+    """Detaching caller-supplied traces must hand the values over unchanged -
+    a tuple that arrived as a tuple is still one when it is validated."""
+    trace = {"backend": "matplotlib", "constructor": "plot", "args": ((0, 1),) * 3}
+    fig = magpy.show(
+        make_cuboid(), style_model3d_data=[trace], backend="matplotlib", return_fig=True
+    )
+    assert fig is not None
+
+
+def test_style_schemas_are_json():
+    """schema() is the GUI contract: every style class, and the defaults tree,
+    must survive json.dumps - including the trace fields reached through
+    `model3d.data`, one of which defaults to a callable."""
+    for style_class in (MagnetStyle, SensorStyle, CurrentStyle):
+        json.dumps(style_class.schema())
+    json.dumps(magpy.defaults.schema())
+
+    trace = MagnetStyle.schema()["properties"]["model3d"]["properties"]["data"]
+    assert trace["type"] == ["array", "null"]
+    assert "default" not in trace["items"]["properties"]["updatefunc"]
+
+
+def test_default_traces_keep_their_owner_through_resolution():
+    """Resolution hands out copies of a defaults-layer trace, so the layer
+    keeps its own - and an edit to it invalidates the resolved-style cache."""
+    base_model3d = magpy.defaults.display.style.base.model3d
+    base_model3d.data = [TRACE]
+    default_trace = base_model3d.data[0]
+    cuboid = make_cuboid()
+
+    resolved = get_style(cuboid, default_settings)
+    assert len(resolved.model3d.data) == 1
+    assert resolved.model3d.data[0] is not default_trace
+    assert default_trace._parent is base_model3d
+
+    default_trace.scale = 5  # after the cache was primed by the resolution above
+    assert get_style(cuboid, default_settings).model3d.data[0].scale == 5
 
 
 # ------------------------------------------------------------------

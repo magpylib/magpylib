@@ -1,6 +1,7 @@
 """Tests for the declarative typed-property tree (successor of MagicProperties)."""
 
 import json
+from copy import deepcopy
 
 import pytest
 
@@ -10,6 +11,7 @@ from magpylib._src.defaults.property_tree import (
     Color,
     Integer,
     Nested,
+    NodeSequence,
     Number,
     Property,
     PropertyNode,
@@ -42,6 +44,16 @@ class LabelMixin(PropertyNode):
 class Style(LabelMixin):
     path = Nested(Path)
     opacity = Number(minimum=0, maximum=1)
+
+
+class Layer(PropertyNode):
+    name = String()
+    weight = Number(minimum=0)
+
+
+class Stack(LabelMixin):
+    layers = NodeSequence(Layer, doc="Stacked layers.")
+    meta = Property(doc="Free-form metadata.")
 
 
 # field registration ---------------------------------------------------
@@ -282,6 +294,169 @@ def test_unobserved_sets_have_no_bookkeeping():
     assert style.path._observed is False
 
 
+# node collections ------------------------------------------------------------
+
+
+def test_node_sequence_is_always_a_tuple():
+    """A collection field holds a tuple, whether unset, emptied or filled -
+    so it can only change by assignment, never by mutating what it returns."""
+    stack = Stack()
+    assert stack.layers == ()
+    assert stack.is_set("layers") is False
+
+    stack.layers = [{"name": "a"}, Layer(name="b")]
+    assert isinstance(stack.layers, tuple)
+    assert [layer.name for layer in stack.layers] == ["a", "b"]
+
+    stack.layers = {"name": "solo"}  # a single item is wrapped
+    assert len(stack.layers) == 1
+
+    stack.layers = []  # explicitly empty, and explicitly set
+    assert stack.layers == ()
+    assert stack.is_set("layers") is True
+
+    stack.layers = None  # unset, back to the default
+    assert stack.layers == ()
+    assert stack.is_set("layers") is False
+
+    with pytest.raises(AttributeError):  # in-place mutation is impossible
+        stack.layers.append(Layer())
+    with pytest.raises(TypeError, match="sequence of Layer"):
+        stack.layers = ["not a layer"]
+
+
+def test_node_sequence_rejected_assignment_changes_nothing():
+    """A collection that fails validation keeps its elements, and keeps them
+    reporting into the tree."""
+    stack = Stack(layers=[{"name": "a"}])
+    events = []
+    stack.observe(lambda path, _: events.append(path))
+
+    with pytest.raises(TypeError, match="sequence of Layer"):
+        stack.layers = [Layer(name="b"), "not a layer"]
+
+    assert [layer.name for layer in stack.layers] == ["a"]
+    stack.layers[0].weight = 1
+    assert events == ["layers.0.weight"]
+
+
+def test_node_sequence_elements_join_the_tree():
+    """Elements are adopted, so changes inside them bubble up under their
+    index, and get/set reach them through that same path."""
+    stack = Stack()
+    events = []
+    stack.observe(lambda path, value: events.append((path, value)))
+
+    stack.layers = [{"name": "a"}, {"name": "b"}]
+    stack.layers[1].weight = 2
+    stack.set("layers.0.weight", 1)
+    assert events[1:] == [("layers.1.weight", 2), ("layers.0.weight", 1)]
+    assert stack.get("layers.0.weight") == 1
+    assert stack.get("layers.-1") is stack.layers[1]
+
+    with pytest.raises(ValueError, match="must be an index"):
+        stack.get("layers.nope")
+    # a path can only end on a property; the error says what it ran into
+    with pytest.raises(TypeError, match="'layers' is a tuple"):
+        stack.set("layers.0", Layer())
+    stack.meta = {"origin": "file"}
+    with pytest.raises(TypeError, match="'meta' is a dict"):
+        stack.set("meta.origin", "hand")
+
+    # a dropped element leaves the tree instead of reporting into it
+    dropped = stack.layers[0]
+    stack.layers = []
+    dropped.weight = 9
+    assert dropped._parent is None
+    assert [path for path, _ in events][-1] == "layers"
+
+
+def test_node_sequence_elements_are_adopted_before_notification():
+    """The collection event fires on a fully linked tree, so a callback that
+    edits a fresh element is itself reported."""
+    stack = Stack()
+    events = []
+
+    def callback(path, value):
+        events.append(path)
+        if path == "layers":
+            value[0].weight = 1  # edit an element the callback just received
+
+    stack.observe(callback)
+    stack.layers = [{"name": "a"}]
+    assert events == ["layers", "layers.0.weight"]
+
+
+def test_node_sequence_observed_after_the_fact():
+    """observe() reaches elements that were already in the collection."""
+    stack = Stack(layers=[{"name": "a"}])
+    events = []
+    stack.observe(lambda path, value: events.append((path, value)))
+    stack.layers[0].weight = 3
+    assert events == [("layers.0.weight", 3)]
+
+
+def test_node_sequence_copy_is_detached():
+    """Copies own their elements: editing one leaves the original alone."""
+    stack = Stack(layers=[{"name": "a", "weight": 1}])
+    clone = stack.copy()
+    clone.layers[0].weight = 5
+    assert stack.layers[0].weight == 1
+    assert clone.layers[0]._parent is clone
+    assert clone.layers[0]._name == "layers.0"
+
+
+def test_node_sequence_element_deepcopy_is_detached():
+    """copy.deepcopy of an element copies the element, not the tree it hangs
+    in - otherwise the live tree's observers would fire for edits to the copy."""
+    stack = Stack(layers=[{"name": "a", "weight": 1}])
+    events = []
+    stack.observe(lambda path, _: events.append(path))
+
+    clone = deepcopy(stack.layers[0])
+    clone.weight = 5
+
+    assert clone._parent is None
+    assert events == []
+    assert stack.layers[0].weight == 1
+
+    # a whole tree still deep-copies with its internal links intact
+    twin = deepcopy(stack)
+    twin.layers[0].weight = 7
+    assert twin.layers[0]._parent is twin
+    assert stack.layers[0].weight == 1
+    assert events == []
+
+
+def test_node_sequence_element_cannot_hold_two_slots():
+    """A node has one parent link, so the same node twice becomes two
+    independent elements rather than one reporting under both indices."""
+    layer = Layer(name="a")
+    stack = Stack(layers=[layer, layer])
+    events = []
+    stack.observe(lambda path, _: events.append(path))
+
+    assert stack.layers[0] is not stack.layers[1]
+    stack.layers[0].weight = 1
+    stack.layers[1].weight = 2
+    assert events == ["layers.0.weight", "layers.1.weight"]
+
+
+def test_node_sequence_merged_keeps_layer_ownership():
+    """A layer keeps its own elements: merged() takes copies, because
+    assignment would otherwise adopt them out of the layer's tree."""
+    stack = Stack()
+    layer = Stack(layers=[{"name": "a", "weight": 1}])
+    resolved = stack.merged(layer)
+
+    assert [lay.name for lay in resolved.layers] == ["a"]
+    assert resolved.layers[0] is not layer.layers[0]
+    assert layer.layers[0]._parent is layer  # ownership not stolen
+
+    resolved.layers[0].weight = 5
+    assert layer.layers[0].weight == 1
+
+
 # schema ---------------------------------------------------------------------
 
 
@@ -298,8 +473,26 @@ def test_schema():
     assert props["path"]["properties"]["show"]["default"] is True
     json.dumps(schema)  # JSON-serializable
 
+    layers = Stack.schema()["properties"]["layers"]
+    assert layers["type"] == ["array", "null"]
+    assert layers["items"] == Layer.schema()
+    assert layers["description"] == "Stacked layers."
+    json.dumps(Stack.schema())
+
 
 # base Property ---------------------------------------------------------------
+
+
+def test_schema_omits_callable_defaults():
+    """A schema is JSON, so a callable default is described by its field but
+    never reported as a `default` value."""
+
+    class WithCallable(PropertyNode):
+        hook = Property(default=dict, doc="Called at render time.")
+
+    field = WithCallable.schema()["properties"]["hook"]
+    assert field == {"description": "Called at render time."}
+    json.dumps(WithCallable.schema())
 
 
 def test_plain_property_accepts_anything():
