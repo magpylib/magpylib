@@ -585,7 +585,8 @@ class PropertyNode:
                         "into the collection it addresses."
                     )
                     raise ValueError(msg)
-                obj = obj[int(part)]
+                # the isinstance above is the guard pylint does not follow
+                obj = obj[int(part)]  # pylint: disable=unsubscriptable-object
             else:
                 obj = getattr(obj, part)
         return obj
