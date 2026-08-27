@@ -15,6 +15,8 @@ generically from the declarations.
 Value semantics: a field only ever stores explicitly set values; assigning
 ``None`` unsets it, after which reading returns the field default (usually
 ``None``, meaning "defer to the next defaults layer at display time").
+Collections of child nodes (`NodeSequence`) are held as tuples, so they too
+can only change by assignment, and every change stays validated and observed.
 
 Public contract for GUIs and third-party tooling:
 
@@ -90,8 +92,8 @@ class Property:
         out = {"type": [self.json_type, "null"]} if self.json_type else {}
         if self.doc:
             out["description"] = self.doc
-        if self.default is not None:
-            out["default"] = self.default
+        if self.default is not None and not callable(self.default):
+            out["default"] = self.default  # a callable has no JSON form
         return out
 
     json_type = None
@@ -256,6 +258,20 @@ class ColorSequence(Property):
         return out
 
 
+def _adopt_child(parent, child, name):
+    """Link a child node into its parent's tree under ``name`` and return it.
+
+    Adoption is what makes a change inside the child bubble up as
+    ``name.<leaf>``; a child adopted into an observed tree starts observing,
+    down to its own children.
+    """
+    object.__setattr__(child, "_parent", parent)
+    object.__setattr__(child, "_name", name)
+    if parent._observed:
+        child._mark_observed()
+    return child
+
+
 class Nested(Property):
     """A child `PropertyNode`, instantiated lazily on first access.
 
@@ -301,17 +317,107 @@ class Nested(Property):
             obj._notify(self.name, getattr(obj, self.name))
 
     def _adopt(self, obj, child):
-        object.__setattr__(child, "_parent", obj)
-        object.__setattr__(child, "_name", self.name)
-        object.__setattr__(child, "_observed", obj._observed)
         obj.__dict__[self.name] = child
-        return child
+        return _adopt_child(obj, child, self.name)
 
     def schema(self):
         out = self.node_class.schema()
         if self.doc:
             out["description"] = self.doc
         return out
+
+
+class NodeSequence(Property):
+    """A tuple of child `PropertyNode` objects, e.g. the 3d traces of a style.
+
+    The stored value is always a tuple, so the collection can only change by
+    assignment,
+
+        node.field = [*node.field, extra]   # not node.field.append(extra)
+
+    which keeps every change validated and reported to observers — both of
+    which in-place mutation of a list would bypass. Elements are adopted like
+    `Nested` children, so a change inside one bubbles up as
+    ``<field>.<index>.<leaf>`` and `PropertyNode.get`/`set` reach it through
+    that same path. Adoption transfers ownership: assign copies to hold the
+    same node in two trees.
+    """
+
+    kind = "nodes"
+
+    def __init__(self, node_class, doc=""):
+        super().__init__((), doc)
+        self.node_class = node_class
+
+    def validate(self, obj, value):
+        nodes, seen = [], set()
+        for item in self.coerce(obj, value):
+            # a node has one parent link, so it can only hold one slot
+            node = item.copy() if id(item) in seen else item
+            seen.add(id(node))
+            nodes.append(node)
+        return tuple(nodes)
+
+    def coerce(self, obj, value):
+        """Return the given input as an iterable of `node_class` instances."""
+        items = value if isinstance(value, list | tuple) else [value]
+        nodes = []
+        for item in items:
+            node = self.node_class(**item) if isinstance(item, dict) else item
+            if not isinstance(node, self.node_class):
+                msg = (
+                    f"The {self.name} property of {type(obj).__name__} must be a "
+                    f"sequence of {self.node_class.__name__} instances or of "
+                    f"dictionaries with equivalent key/value pairs; instead "
+                    f"received {item!r}."
+                )
+                raise TypeError(msg)
+            nodes.append(node)
+        return nodes
+
+    def __set__(self, obj, value):
+        # `Property.__set__` inlined: elements have to be adopted before
+        # observers are notified, so a callback sees a fully linked tree.
+        previous = obj.__dict__.get(self.name, ())
+        if value is None:
+            obj.__dict__.pop(self.name, None)  # unset
+            new = self.default
+        else:  # validated first: a rejected value changes nothing
+            new = obj.__dict__[self.name] = self.validate(obj, value)
+        for child in previous:
+            if child._parent is obj:  # dropped nodes leave the tree
+                object.__setattr__(child, "_parent", None)
+                object.__setattr__(child, "_name", None)
+        for index, child in enumerate(new):
+            _adopt_child(obj, child, f"{self.name}.{index}")
+        if obj._observed:
+            obj._notify(self.name, new)
+
+    def schema(self):
+        out = super().schema()
+        out["type"] = ["array", "null"]
+        out["items"] = self.node_class.schema()
+        return out
+
+
+def _detached(value):
+    """Return ``value`` with every property node inside it replaced by a copy.
+
+    Assignment adopts nodes, transferring ownership (see `NodeSequence`), so
+    values handed to a node that must not take them over are detached first:
+    a defaults layer feeding `PropertyNode.merged`, or caller style kwargs
+    feeding the throwaway style that `get_style` resolves against.
+    """
+    if isinstance(value, PropertyNode):
+        return value.copy()
+    if isinstance(value, dict):
+        return {key: _detached(val) for key, val in value.items()}
+    if isinstance(value, list | tuple):
+        # the container type is part of the value: a tuple that came back as a
+        # list would fail validation of e.g. the args of a Trace3d
+        items = [_detached(item) for item in value]
+        return tuple(items) if isinstance(value, tuple) else items
+    return value
 
 
 class PropertyNode:
@@ -428,19 +534,30 @@ class PropertyNode:
 
     _IMMUTABLE_TYPES = (str, int, float, bool, type(None))
 
+    def __deepcopy__(self, memo):
+        """Deep copies are detached, like `copy()`: a node is copied with its
+        own subtree, never with the tree it hangs in — whose observers would
+        otherwise fire for edits made to the copy."""
+        new = self.copy()
+        memo[id(self)] = new
+        return new
+
     def copy(self):
         """Return a detached, unobserved deep copy."""
         new = type(self).__new__(type(self))
         for key, value in self.__dict__.items():
-            if key not in self._fields:
+            field = self._fields.get(key)
+            if field is None:
                 continue
             if isinstance(value, PropertyNode):
-                child = value.copy()
-                object.__setattr__(child, "_parent", new)
-                object.__setattr__(child, "_name", key)
-                new.__dict__[key] = child
+                new.__dict__[key] = _adopt_child(new, value.copy(), key)
             elif isinstance(value, self._IMMUTABLE_TYPES):
                 new.__dict__[key] = value
+            elif isinstance(field, NodeSequence):
+                new.__dict__[key] = tuple(
+                    _adopt_child(new, child.copy(), f"{key}.{index}")
+                    for index, child in enumerate(value)
+                )
             else:
                 new.__dict__[key] = deepcopy(value)
         return new
@@ -457,16 +574,34 @@ class PropertyNode:
         }
 
     def get(self, path):
-        """Return the value at a dotted path, e.g. ``'arrow.width'``."""
+        """Return the value at a dotted path, e.g. ``'arrow.width'``; a node
+        inside a collection is addressed by index, e.g. ``'data.0.show'``."""
         obj = self
         for part in path.split("."):
-            obj = getattr(obj, part)
+            if isinstance(obj, list | tuple):
+                if not part.lstrip("-").isdigit():
+                    msg = (
+                        f"Path {path!r} is invalid: {part!r} must be an index "
+                        "into the collection it addresses."
+                    )
+                    raise ValueError(msg)
+                # the isinstance above is the guard pylint does not follow
+                obj = obj[int(part)]  # pylint: disable=unsubscriptable-object
+            else:
+                obj = getattr(obj, part)
         return obj
 
     def set(self, path, value):
         """Set the value at a dotted path and return self."""
         parent_path, _, leaf = path.rpartition(".")
         node = self.get(parent_path) if parent_path else self
+        if not isinstance(node, PropertyNode):
+            msg = (
+                f"Cannot set {path!r}: {parent_path!r} is a "
+                f"{type(node).__name__}, not a property node; assign the whole "
+                f"value at {parent_path!r} instead."
+            )
+            raise TypeError(msg)
         setattr(node, leaf, value)
         return self
 
@@ -498,8 +633,12 @@ class PropertyNode:
         layers, first-set-wins (self has the highest priority)."""
         new = self.copy()
         for layer in layers:
+            values = {
+                key: _detached(value)
+                for key, value in layer.set_values(separator="_").items()
+            }
             new.update(
-                magic_to_dict(layer.set_values(separator="_")),
+                magic_to_dict(values),
                 _match_properties=False,
                 _replace_None_only=True,
             )
@@ -523,8 +662,14 @@ class PropertyNode:
     def _mark_observed(self):
         object.__setattr__(self, "_observed", True)
         for key, value in self.__dict__.items():
-            if key in self._fields and isinstance(value, PropertyNode):
+            field = self._fields.get(key)
+            if field is None:  # e.g. the _parent backlink
+                continue
+            if isinstance(value, PropertyNode):
                 value._mark_observed()
+            elif isinstance(field, NodeSequence):
+                for child in value:
+                    child._mark_observed()
 
     def _notify(self, path, value):
         for callback in self._observers:

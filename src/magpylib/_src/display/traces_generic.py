@@ -605,9 +605,7 @@ def get_generic_traces3D(
             traces_generic.append(None)
         else:
             traces_generic.extend(get_traces_func())
-        extra_model3d_traces = (
-            style.model3d.data if style.model3d.data is not None else []
-        )
+        extra_model3d_traces = style.model3d.data
         for extr in extra_model3d_traces:
             if not extr.show:
                 continue

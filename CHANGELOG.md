@@ -41,6 +41,11 @@
   third-party tools can build GUIs on top: `schema()` (JSON Schema),
   `get(path)`/`set(path, value)` (dotted paths), `observe(callback)` (change
   events), and `is_set`/`set_values()`/`merged()` (set-vs-inherited resolution).
+- Collections of child nodes (currently `style.model3d.data`) take part in that
+  contract like any other node: an edit inside a trace reports as
+  `model3d.data.0.show` to observers, `get`/`set` address traces by index
+  through the same path, and `schema()` describes the collection as an array of
+  trace objects.
 - **Breaking:** invalid style and defaults values now raise `ValueError` instead
   of `AssertionError`. The old checks were `assert` statements and silently
   vanished under `python -O`.
@@ -48,6 +53,12 @@
   is an `int` subclass, so the old checks let `size=True` through).
 - **Breaking:** assigning `None` to an always-set property such as
   `style.model3d.showdefault` now resets it to its default instead of raising.
+- **Breaking:** `style.model3d.data` is always a tuple, where it used to be a
+  list. Traces are replaced rather than mutated in place —
+  `data = [*data, trace]` (or `add_trace()`) instead of `data.append(trace)`,
+  and `data = []` instead of `data.clear()`. In-place mutation bypassed both
+  validation and change notification, so an unvalidated entry could reach
+  `show()` and a GUI observing the style never learned of it.
 - **Breaking:** `as_dict()` no longer includes the deprecated
   `magnetization.size` key. It remains readable and writable as an attribute.
 - `magpy.defaults.display.backend` and `style.model3d.data[].backend` now accept

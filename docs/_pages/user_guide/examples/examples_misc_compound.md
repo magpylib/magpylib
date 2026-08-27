@@ -61,7 +61,7 @@ class MagnetRing(magpy.Collection):
         # Clean up old object properties
         self.reset_path()
         self.children = []
-        self.style.model3d.data.clear()
+        self.style.model3d.data = []
 
         # Add children
         for i in range(cubes):
