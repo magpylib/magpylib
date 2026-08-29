@@ -5,6 +5,9 @@ import shutil
 import sys
 from pathlib import Path
 
+import docutils.nodes
+from notfound.utils import replace_uris
+
 if platform.system() == "Linux":
     xvfb = shutil.which("Xvfb")
     if xvfb:
@@ -88,11 +91,26 @@ def _balance_read_order(app, env, docnames):
     docnames.sort(key=order.__getitem__)
 
 
+def _absolutise_404_body_links(app, doctree, docname):
+    """Give links in the 404 body the same treatment as the ones in its sidebar.
+
+    sphinx-notfound-page rewrites the theme's URLs and the toctree's references,
+    but never points its ``replace_uris`` helper at references written in the page
+    body -- and this page is served for any address that does not resolve, so a
+    relative link there would be measured from the address that failed.
+    """
+    if docname != app.config.notfound_pagename:
+        return
+
+    replace_uris(app, doctree, docutils.nodes.reference, "refuri")
+
+
 def setup(app):
     app.connect("builder-inited", _record_builder)
     app.connect("env-before-read-docs", _balance_read_order)
-    app.add_css_file("css/stylesheet.css")
+    app.connect("doctree-resolved", _absolutise_404_body_links)
     app.add_js_file("webcode/summaryOpen.js")
+    app.add_js_file("webcode/magneticTitle.js")
     app.add_js_file("webcode/plotlySync.js")
     app.add_js_file("webcode/figures.js")
 
@@ -141,6 +159,7 @@ extensions = [
     "sphinx_favicon",
     "sphinx_design",
     "sphinxcontrib.bibtex",
+    "notfound.extension",
 ]
 
 # Good defaults for NumPy style
@@ -384,6 +403,19 @@ epub_exclude_files = ["search.html"]
 # source_parsers = {
 #     '.md': 'recommonmark.parser.CommonMarkParser',
 # }
+
+# -- 404 page ----------------------------------------------------------------
+# The 404 is served for any address that does not resolve, so a relative link on
+# it would be measured from the address that failed. sphinx-notfound-page rewrites
+# its links and assets to absolute ones using this prefix: on Read the Docs that
+# is the language/version path the build is served under, locally it is the root
+# of the output directory. Our own docs/404.md is used as the page content.
+_rtd_version = os.environ.get("READTHEDOCS_VERSION")
+notfound_urls_prefix = (
+    f"/{os.environ.get('READTHEDOCS_LANGUAGE', 'en')}/{_rtd_version}/"
+    if _rtd_version
+    else "/"
+)
 
 myst_enable_extensions = [
     "amsmath",
