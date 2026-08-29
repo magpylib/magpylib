@@ -41,7 +41,7 @@ strl = grid.streamlines_from_source(
     seed,
     vectors="B",
     max_step_length=0.1,
-    max_time=.02,
+    max_length=.02,
     integration_direction="both",
 )
 

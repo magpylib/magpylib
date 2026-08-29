@@ -37,3 +37,50 @@ Target the logo text
     font-weight: bold;
     font-size: 1.6em;
 }
+
+
+/*
+Dark mode paints a light panel behind notebook html outputs, on the assumption
+that they are light-only - the same theme rule the image fix above works around.
+Plotly figures follow the page theme themselves (webcode/plotlySync.js), so for
+those the panel is just a bezel. Kept narrow on purpose: dataframes and other
+html outputs still want it.
+*/
+/* Plotly outputs - the figure, and the script-only one holding its config and
+   (since plotly 7) the inlined bundle, which the panel renders as a bare strip
+   above the figure. Both are tagged by webcode/plotlySync.js rather than
+   matched with :has(): re-evaluating a :has() over a multi-megabyte script, in
+   a page plotly keeps mutating, costs enough style invalidation to lock the
+   browser up. `body` is in the selector only to outweigh the theme's rule. */
+html[data-theme=dark] body .bd-content div.cell_output div.text_html.magpy-plotly-output,
+/* and pyvista scenes, which carry their own screenshot and toggle */
+html[data-theme=dark] .bd-content div.cell_output div.text_html:has(div.magpy-scene),
+/* and matplotlib figures, which now arrive as html rather than as an image */
+html[data-theme=dark] .bd-content div.cell_output div.text_html:has(img.magpy-themed) {
+    background: none;
+    padding: 0;
+}
+
+
+/*
+Pyvista scenes rendered by docs/_ext/magpydocs.py: a screenshot, and the scene
+itself behind sphinx-design tabs, see webcode/figures.js.
+*/
+.magpy-scene img,
+.magpy-scene .magpy-scene-viewer {
+    width: 100%;
+}
+
+/* the light twin is what shows without javascript */
+.magpy-themed:not([src]) {
+    visibility: hidden;
+}
+
+/* the viewer fills the box the panel reserves from the screenshot's shape, so
+   switching tabs does not move the page */
+.magpy-scene iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}

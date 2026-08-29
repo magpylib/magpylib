@@ -381,6 +381,9 @@ def is_notebook() -> bool:  # pragma: no cover
     """Check if execution is within a IPython environment"""
     # pylint: disable=import-outside-toplevel
     try:
+        # ipython 9.17 hands out get_ipython through a module __getattr__, so
+        # pylint no longer finds the name by reading the module
+        # pylint: disable-next=no-name-in-module
         from IPython import get_ipython  # noqa: PLC0415
 
         shell = get_ipython().__class__.__name__

@@ -99,9 +99,13 @@ def mesh3d_to_pyvista(trace):
     }
     if facecolor is not None:
         # pylint: disable=unsupported-assignment-operation
-        mesh.cell_data["colors"] = [
-            Color(c, default_color=(0, 0, 0)).int_rgb for c in facecolor
-        ]
+        # uint8, or numpy stores the rgb triples as int64: vtk keeps that
+        # dtype through to the scene export, where it becomes a BigInt64Array
+        # that webgl viewers cannot read - the scene then breaks at this actor
+        mesh.cell_data["colors"] = np.array(
+            [Color(c, default_color=(0, 0, 0)).int_rgb for c in facecolor],
+            dtype=np.uint8,
+        )
         trace_pv.update(
             {
                 "scalars": "colors",

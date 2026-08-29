@@ -11,7 +11,29 @@ if platform.system() == "Linux":
         os.system(f"{xvfb} :99 -screen 0 1024x768x24 >/dev/null 2>&1 &")
         os.environ["DISPLAY"] = ":99"
 os.environ["PYVISTA_OFF_SCREEN"] = "true"
-os.environ["PYVISTA_USE_IPYVTK"] = "true"
+# The notebook kernels myst-nb starts inherit this environment: PYTHONPATH puts
+# the docs helpers on their import path, an ipython profile of our own imports
+# them once the shell is up, and the rest tells them where to write figures and
+# which pyvista backend to use - pinning a backend also keeps pyvista from
+# warning, in every pyvista cell, that trame is missing. The profile is
+# generated rather than tracked, so kernels leave their history and pid files
+# in the build directory instead of the source tree.
+_docs_dir = Path(__file__).parent
+_ext_dir = _docs_dir / "_ext"
+_startup_dir = _docs_dir / "_build" / "ipython" / "profile_default" / "startup"
+_startup_dir.mkdir(parents=True, exist_ok=True)
+shutil.copy(_ext_dir / "kernel_startup.py", _startup_dir / "00-magpylib-docs.py")
+os.environ["IPYTHONDIR"] = str(_startup_dir.parents[1])
+os.environ["MAGPYLIB_DOCS_STATIC"] = str(_docs_dir / "_static")
+os.environ["PYTHONPATH"] = os.pathsep.join(
+    p for p in (str(_ext_dir), os.environ.get("PYTHONPATH", "")) if p
+)
+os.environ["PYVISTA_JUPYTER_BACKEND"] = "magpylib-docs"
+# Pin plotly's renderer for the same reason: left to auto-detect it emits a
+# widget mime type when ipywidgets is installed - which pyvista[jupyter] pulls
+# in - and myst-nb renders nothing for it, so every plotly figure vanishes
+# from the page without a warning.
+os.environ["PLOTLY_RENDERER"] = "notebook"
 os.environ["MAGPYLIB_MPL_SVG"] = "true"
 
 # Location of Sphinx files
@@ -22,14 +44,57 @@ sys.path.insert(0, str(Path("./../").resolve()))  ##Add the folder one level abo
 ###)
 
 
-# from sphinx_gallery.sorting import FileNameSortKey
+def _record_builder(app):
+    """Tell the notebook kernels which builder they are feeding.
 
-# pio.renderers.default = "sphinx_gallery"
+    Only an html build renders the text/html figures magpydocs emits; any other
+    builder must keep matplotlib's own image output. This runs on
+    builder-inited - inside setup() the builder does not exist yet - which is
+    still before any notebook is executed.
+    """
+    os.environ["MAGPYLIB_DOCS_BUILDER"] = app.builder.name
+
+
+def _balance_read_order(app, env, docnames):
+    """Spread the executed pages evenly over a parallel build's workers.
+
+    ``sphinx-build -j`` slices this list into contiguous chunks, one per
+    worker, and every notebook lives under ``_pages/user_guide``. Left in the
+    alphabetical order sphinx hands us, the chunks covering that directory get
+    all of the executing and the rest return almost immediately - at ``-j4``
+    two of the six chunks hold no notebook at all, and the build waits on the
+    one holding twelve. Interleaving the executed pages with the cheap ones
+    gives every chunk a comparable share.
+
+    A notebook is recognised the way myst-nb recognises one, by the kernelspec
+    its front matter carries. Only the read order changes, which nothing in the
+    output depends on, and a serial build skips this entirely.
+    """
+    if app.parallel <= 1:
+        return
+    heavy, light = [], []
+    for docname in docnames:
+        head = Path(env.doc2path(docname)).read_text(encoding="utf8", errors="replace")[
+            :2000
+        ]
+        (heavy if "kernelspec" in head else light).append(docname)
+    # each group is spread over the whole range, so sorting on the key merges
+    # them in proportion however lopsided the split is
+    total = len(docnames)
+    order = {}
+    for group in (heavy, light):
+        step = total / len(group) if group else 1
+        order.update({d: i * step for i, d in enumerate(group)})
+    docnames.sort(key=order.__getitem__)
 
 
 def setup(app):
+    app.connect("builder-inited", _record_builder)
+    app.connect("env-before-read-docs", _balance_read_order)
     app.add_css_file("css/stylesheet.css")
     app.add_js_file("webcode/summaryOpen.js")
+    app.add_js_file("webcode/plotlySync.js")
+    app.add_js_file("webcode/figures.js")
 
 
 ###    sphinx.ext.apidoc.main(
@@ -66,13 +131,13 @@ needs_sphinx = "7.2"
 extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.viewcode",
     "sphinx.ext.coverage",
     "sphinx.ext.autosummary",
     "sphinx.ext.ifconfig",
-    "matplotlib.sphinxext.plot_directive",
     "sphinx_copybutton",
     "myst_nb",
-    "sphinx_thebe",
     "sphinx_favicon",
     "sphinx_design",
     "sphinxcontrib.bibtex",
@@ -339,7 +404,6 @@ copybutton_prompt_is_regexp = True
 
 html_js_files = [
     "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js",
-    # "https://unpkg.com/thebe@latest/lib/index.js",
 ]
 
 suppress_warnings = [
@@ -353,27 +417,28 @@ favicons = [
 ]
 
 
+# Kept broad on purpose. Docstrings describe types in prose - "array-like,
+# shape (n,3), default None" - which napoleon hands to the python domain one
+# comma-separated token at a time, so a build without this reports some 4700
+# missing targets, of which only a few hundred name a type that exists.
+# Narrowing it is a docstring job, not a config one. napoleon_preprocess_types
+# with type aliases is not the answer either: it cuts the links intersphinx
+# does resolve from 1386 to 216.
 nitpick_ignore_regex = [(r"py:.*", r".*")]
 
+# Types named in docstrings and signatures link to the project that defines
+# them. Sphinx 9 caches the downloaded inventories, so this costs one fetch per
+# project per build at most.
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy", None),
+    "matplotlib": ("https://matplotlib.org/stable", None),
+    "pandas": ("https://pandas.pydata.org/docs", None),
+    "pyvista": ("https://docs.pyvista.org", None),
+    "plotly": ("https://plotly.com/python-api-reference", None),
+}
 
-# sphinx gallery settings
-# sphinx_gallery_conf = {
-#     # convert rst to md for ipynb
-#     # "pypandoc": True,
-#     # path to your example scripts
-#     "examples_dirs": "../examples",
-#     # path to where to save gallery generated output
-#     "gallery_dirs": "auto_examples",
-#     # Remove the "Download all examples" button from the top level gallery
-#     "download_all_examples": False,
-#     # # Remove sphinx configuration comments from code blocks
-#     # "remove_config_comments": True,
-#     # # Sort gallery example by file name instead of number of lines (default)
-#     # "within_subsection_order": FileNameSortKey,
-#     # Modules for which function level galleries are created.  In
-#     "doc_module": "pyvista",
-#     "image_scrapers": ("pyvista", "matplotlib"),
-# }
 
 # import pyvista
 # pyvista.BUILDING_GALLERY = True

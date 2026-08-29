@@ -70,6 +70,10 @@ instance/
 # Sphinx documentation
 docs/_build/
 docs/_autogen/
+# figures written during the docs build, see docs/_ext/magpydocs.py
+docs/_static/scenes/
+docs/_static/figures/
+docs/_static/static_viewer.html
 
 # PyBuilder
 .pybuilder/
