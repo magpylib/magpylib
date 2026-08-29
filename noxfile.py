@@ -73,6 +73,9 @@ def docs(session: nox.Session) -> None:
     shared_args = (
         "-n",  # nitpicky mode
         "-T",  # full tracebacks
+        # execute the notebooks in parallel - they are read, and so run, by one
+        # forked worker per core. conf.py evens out how they are shared.
+        "-j=auto",
         f"-b={args.builder}",
         "docs",
         args.output or f"docs/_build/{args.builder}",

@@ -65,18 +65,16 @@ dev = [
 
 docs = [
   "pydata-sphinx-theme",
-  "sphinx>=7.0,<8.0",
+  "sphinx >=8.2", # pydata-sphinx-theme 0.20 dropped sphinx <=8.1
   "sphinx-design",
-  "sphinx-thebe",
   "sphinx-favicon",
-  "sphinx-gallery",
   "sphinx-copybutton",
   "myst-nb",
   "pandas",
   "numpy-stl",
-  "pyvista",
+  "pyvista[jupyter] >=0.48", # trame ships the scene exporter and the viewer
   "magpylib-material-response",
-  "plotly>=5.16,<6.0", # see https://github.com/executablebooks/myst-nb/issues/667
+  "plotly>=7.0", # see https://github.com/executablebooks/myst-nb/issues/667
   "kaleido==0.2.1", # ulterior versions don't ship chrome,
   "sphinxcontrib-bibtex>=2.6",
 ]

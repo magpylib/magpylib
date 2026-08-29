@@ -120,6 +120,9 @@
   namespace, a misspelled `units...` argument to `show()` now raises `TypeError`
   instead of warning, matching how the other namespaces (`animation...`,
   `style...`) already behaved.
+- Reworked the docs build (theme-aware figures, on-demand Pyvista scenes,
+  parallel notebooks) and fixed Pyvista face colors breaking web scene exports
+  ([#988](https://github.com/magpylib/magpylib/pull/988)).
 
 ## [5.2.3] 2026-05-15
 

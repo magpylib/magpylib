@@ -193,3 +193,25 @@ def test_pyvista_skips_the_title_on_a_subplot_grid():
         title="MY TITLE",
     )
     assert "title" not in plotter.renderer.actors
+
+
+def test_face_colors_stay_uint8():
+    """Face colors must reach vtk as unsigned bytes.
+
+    Handed a list of int triples, numpy makes an int64 array and vtk keeps
+    that dtype into `export_vtksz`, where it becomes a BigInt64Array. Webgl
+    viewers cannot read one, so the exported scene breaks at this actor and
+    everything queued behind it - later actors, the orientation marker - is
+    never drawn, while the desktop render looks perfectly fine.
+    """
+    plotter = magpy.show(magpy.Sensor(), backend="pyvista", return_fig=True)
+
+    colored = [
+        actor.mapper.dataset
+        for actor in plotter.renderer.actors.values()
+        if getattr(getattr(actor, "mapper", None), "dataset", None) is not None
+        and "colors" in actor.mapper.dataset.cell_data
+    ]
+    assert colored, "the sensor is drawn with per-face colors"
+    for dataset in colored:
+        assert dataset.cell_data["colors"].dtype == np.uint8

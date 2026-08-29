@@ -9,11 +9,16 @@ build:
     python: "3.14"
   apt_packages:
     - libgl1-mesa-dev # pyvista/VTK needs OpenGL libs
+    - xvfb # conf.py starts it, without a display VTK warns into every page
   commands:
     - asdf plugin add uv
     - asdf install uv latest
     - asdf global uv latest
     - uv sync --group docs
     - uv run sphinx-apidoc -f -T -e -E -M -o docs/_autogen src/magpylib
-    - uv run python -m sphinx -T -b html -d docs/_build/doctrees -D language=en
-      docs $READTHEDOCS_OUTPUT/html
+    # a fixed -j, never auto: sphinx reads auto off the host's core count,
+    # which ignores what the container is actually allotted. Each read worker
+    # drives a notebook kernel carrying pyvista and VTK, ~0.5GB a lane, so the
+    # count has to stay a number we picked against the 7GB build budget.
+    - uv run python -m sphinx -T -j4 -b html -d docs/_build/doctrees -D
+      language=en docs $READTHEDOCS_OUTPUT/html
