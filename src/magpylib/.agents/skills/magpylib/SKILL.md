@@ -239,7 +239,8 @@ array.rotate_from_angax(45, "z", anchor=(0, 0, 0))
 A `Collection` groups objects for common manipulation and spans a local frame
 for its children; moving it moves them while preserving relative placement. It
 is both a source (for `getB`) and a container. Access parts via `.sources`,
-`.observers`, `.collections`, or the `*_all` variants for nested collections.
+`.sensors`, `.collections`, `.children`, or the `*_all` variants that recurse
+into nested collections. There is no `.observers`.
 
 Subclassing `Collection` is the documented way to build a parametrised assembly
 — a magnet ring, a coil former — that behaves as one object with its own
@@ -255,7 +256,9 @@ F, T = magpy.getFT(cube, loop, pivot="centroid")
 - Numerical, not analytical: targets are discretised, so results depend on
   `meshing`. Every target except `Dipole` and `Sphere` **must** have `meshing`
   set, as an integer target number of mesh cells.
-- Output shape is `(s, p, t, 3)` for force and torque, in N and N·m.
+- `getFT` returns one array whose leading axis stacks force and torque, which is
+  what `F, T = ...` unpacks. Each of the two is `(s, p, t, 3)` before squeezing,
+  in N and N·m, so the full return is `(2, s, p, t, 3)`.
 - Torque needs a pivot. `pivot="centroid"` (default) is right for a free body;
   `pivot=None` gives nonphysical results.
 - **Scale invariance does not hold for forces.** Field results are invariant if

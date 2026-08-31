@@ -1,6 +1,8 @@
 import importlib.metadata
 import os
 import re
+import tarfile
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -8,6 +10,8 @@ import pytest
 import magpylib as m
 
 SKILL_DIR = Path(m.__file__).parent / ".agents" / "skills" / "magpylib"
+DIST_DIR = Path(__file__).resolve().parents[1] / "dist"
+SKILL_IN_DIST = "magpylib/.agents/skills/magpylib"
 
 
 @pytest.mark.skipif(
@@ -38,9 +42,50 @@ def _frontmatter(text: str) -> dict[str, str]:
     return {k: " ".join(v) for k, v in fields.items()}
 
 
-def test_agent_skill_is_packaged() -> None:
-    """The Agent Skill ships inside the package, next to the code it describes."""
+def test_agent_skill_is_present() -> None:
+    """The Agent Skill sits inside the package, next to the code it describes.
+
+    This resolves through ``magpylib.__file__``, which is the source tree under
+    an editable install. It shows the skill is in the right place, not that it
+    ships -- ``test_agent_skill_ships_in_distributions`` is the check for that.
+    """
     assert (SKILL_DIR / "SKILL.md").is_file()
+
+
+def _distribution_members() -> dict[str, list[str]]:
+    """Map each built artifact in ``dist/`` to the paths it contains."""
+    members: dict[str, list[str]] = {}
+    for wheel in sorted(DIST_DIR.glob("*.whl")):
+        with zipfile.ZipFile(wheel) as archive:
+            members[wheel.name] = archive.namelist()
+    for sdist in sorted(DIST_DIR.glob("*.tar.gz")):
+        with tarfile.open(sdist) as archive:
+            members[sdist.name] = archive.getnames()
+    return members
+
+
+def test_agent_skill_ships_in_distributions() -> None:
+    """The built wheel and sdist really carry the skill and its references.
+
+    Package data is easy to lose to a build-backend or ignore-file change, and
+    a source-tree assertion cannot see that happen. Build first with
+    ``uvx nox -s build``; without artifacts there is nothing to inspect.
+    """
+    artifacts = _distribution_members()
+    if not artifacts:
+        pytest.skip("no artifacts in dist/ -- run `uvx nox -s build` first")
+
+    references = sorted(p.name for p in (SKILL_DIR / "references").glob("*.md"))
+    assert references, "expected reference files beside SKILL.md"
+    expected = ["SKILL.md", *(f"references/{name}" for name in references)]
+
+    for artifact, paths in artifacts.items():
+        missing = [
+            rel
+            for rel in expected
+            if not any(path.endswith(f"{SKILL_IN_DIST}/{rel}") for path in paths)
+        ]
+        assert not missing, f"{artifact} is missing {missing}"
 
 
 def test_agent_skill_frontmatter() -> None:

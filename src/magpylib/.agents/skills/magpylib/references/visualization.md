@@ -8,21 +8,28 @@ objects.
 ```python
 magpy.show(
     *objects,
-    backend=None,
-    canvas=None,
-    animation=False,
-    zoom=0,
-    markers=None,
-    return_fig=False,
-    row=None,
-    col=None,
-    style=None,
+    backend,
+    canvas,
+    canvas_update,
+    animation,
+    zoom,
+    markers,
+    return_fig,
+    row,
+    col,
+    output,
+    sumup,
+    pixel_agg,
+    style,
+    **kwargs,
 )
 ```
 
 `show()` takes any number of sources, sensors, and collections. It is also a
 method on every object (`cube.show()`), and `magpy.show(cube, sensor)` draws
-them in one scene.
+them in one scene. Every keyword defaults to the matching entry in
+`magpy.defaults` rather than to a literal in the signature, so changing a
+default globally changes what an unqualified `show()` does.
 
 - `return_fig=True` returns the backend figure instead of displaying it — use
   this in scripts, tests, and docs builds rather than relying on a display.

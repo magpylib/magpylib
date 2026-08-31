@@ -16,7 +16,9 @@ F, T = magpy.getFT(
 ```
 
 `F` is in newtons, `T` in newton-metres, both shaped `(s, p, t, 3)` — sources,
-path, targets, components — before squeezing.
+path, targets, components — before squeezing. They arrive stacked: `getFT`
+returns one `(2, s, p, t, 3)` array, and the two-name assignment above unpacks
+its leading axis. Bind a single name instead and that axis is still there.
 
 ## Meshing is mandatory
 
