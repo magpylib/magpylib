@@ -47,17 +47,19 @@ sdist collection and omit the real packaged skill.
 
 ## Validate
 
-Run the focused packaging tests and build both distribution formats:
+Build both distribution formats first, then run the focused packaging tests:
 
 ```console
-uv run pytest tests/test_package.py
 uvx nox -s build
+uv run pytest tests/test_package.py
 ```
 
-Inspect the wheel and sdist archives to confirm `SKILL.md` and every linked
-reference are present at `magpylib/.agents/skills/magpylib/`. Also parse the
-frontmatter and verify all relative links resolve. A source-tree test alone is
-not sufficient evidence that package data ships.
+The order matters. `test_agent_skill_ships_in_distributions` opens the wheel and
+sdist left in `dist/` and asserts that `SKILL.md` and every linked reference are
+present at `magpylib/.agents/skills/magpylib/`; with no artifacts to inspect it
+skips. Every other test in that file resolves through `magpylib.__file__`, which
+is the source tree under an editable install, so it checks the frontmatter and
+relative links but cannot show that package data ships.
 
 ## Sources
 
