@@ -40,7 +40,7 @@ repos:
         exclude: ^docs/|^tests/.*\.ya?ml$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.16.2"
+    rev: "v0.16.6"
     hooks:
       - id: ruff-check
         args: ["--fix"]
@@ -66,7 +66,7 @@ repos:
           - tomli; python_version<'3.11'
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: "v0.11.0.1"
+    rev: "v0.11.0.1-1"
     hooks:
       - id: shellcheck
         exclude: ^.binder/ # messes up colon fences for grids in docs
@@ -80,7 +80,7 @@ repos:
         exclude: .pre-commit-config.yaml
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: "v0.25"
+    rev: "0.26"
     hooks:
       - id: validate-pyproject
         additional_dependencies: ["validate-pyproject-schema-store[all]"]
@@ -93,6 +93,6 @@ repos:
       - id: check-readthedocs
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: "v1.29.0"
+    rev: "v1.30.0"
     hooks:
       - id: zizmor
