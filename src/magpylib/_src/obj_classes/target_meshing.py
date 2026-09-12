@@ -61,18 +61,18 @@ def _cells_from_dimension(
 
     Examples
     --------
-    >>> _cells_from_dimension([1, 2, 6], 926, parity=None, strict_max=True)
-    [ 4  9 25]  # Actual total: 900
-    >>> _cells_from_dimension([1, 2, 6], 926, parity=None, strict_max=False)
-    [ 4  9 26]  # Actual total: 936
-    >>> _cells_from_dimension([1, 2, 6], 926, parity='odd', strict_max=True)
-    [ 3 11 27]  # Actual total: 891
-    >>> _cells_from_dimension([1, 2, 6], 926, parity='odd', strict_max=False)
-    [ 5  7 27]  # Actual total: 945
-    >>> _cells_from_dimension([1, 2, 6], 926, parity='even', strict_max=True)
-    [ 4  8 26]  # Actual total: 832
-    >>> _cells_from_dimension([1, 2, 6], 926, parity='even', strict_max=False)
-    [ 4 10 24]  # Actual total: 960
+    >>> print(_cells_from_dimension([1, 2, 6], 926, parity=None, strict_max=True))
+    [ 4  9 25]
+    >>> print(_cells_from_dimension([1, 2, 6], 926, parity=None, strict_max=False))
+    [ 4  9 26]
+    >>> print(_cells_from_dimension([1, 2, 6], 926, parity='odd', strict_max=True))
+    [ 3 11 27]
+    >>> print(_cells_from_dimension([1, 2, 6], 926, parity='odd', strict_max=False))
+    [ 5  7 27]
+    >>> print(_cells_from_dimension([1, 2, 6], 926, parity='even', strict_max=True))
+    [ 4  8 26]
+    >>> print(_cells_from_dimension([1, 2, 6], 926, parity='even', strict_max=False))
+    [ 4 10 24]
     """
     elems = np.prod(target_elems)  # in case target_elems is an iterable
 
