@@ -473,11 +473,11 @@ def current_sheet_Hfield(
 
     >>> import numpy as np
     >>> from magpylib._src.fields.field_BH_current_sheet import current_sheet_Hfield
-    >>> np.set_printoptions(formatter={'float': '{:.2e}'.format})
     >>> verts = np.array([[(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0)]])
     >>> J = np.array([(1.0, 0.0, 0.0)])
     >>> H = current_sheet_Hfield(np.array([(0.0, 0.0, 1.0)]), verts, J)
-    >>> print(H)
+    >>> with np.printoptions(formatter={'float': '{:.2e}'.format}):
+    ...     print(H)
     [[0.00e+00 -2.70e-02 -8.32e-03]]
     """
     # pylint: disable=too-many-statements

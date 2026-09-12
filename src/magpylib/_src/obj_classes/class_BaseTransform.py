@@ -769,7 +769,12 @@ class BaseTransform:
          [  0.   0. 120.]
          [  0.   0. 135.]]
         """
-        rot = R.from_euler(seq, angle, degrees=degrees)
+        # SciPy >=1.17: with a one-character seq, a 1-D angle vector must be
+        # shaped (n, 1). Magpylib historically accepted a flat (n,) path.
+        angles = np.asarray(angle, dtype=float)
+        if len(seq) == 1 and angles.ndim == 1 and angles.size > 1:
+            angles = angles.reshape(-1, 1)
+        rot = R.from_euler(seq, angles, degrees=degrees)
         return self.rotate(rot, anchor=anchor, start=start)
 
     def rotate_from_matrix(self, matrix, anchor=None, start="auto"):

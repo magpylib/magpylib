@@ -336,7 +336,7 @@ class BaseGeo(BaseTransform, ABC):
 
         >>> cuboid = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
         >>> cuboid.path_properties
-        ('position', 'orientation', 'dimension', 'polarization')
+        ('position', 'orientation', 'polarization', 'magnetization', 'dimension')
         """
         return self._path_properties
 

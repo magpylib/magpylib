@@ -53,6 +53,16 @@ def tests(session: nox.Session) -> None:
     session.run("pytest", *session.posargs)
 
 
+@nox.session
+def doctests(session: nox.Session) -> None:
+    """
+    Run docstring examples under src/magpylib.
+    """
+    test_deps = nox.project.dependency_groups(PROJECT, "test")
+    session.install("-e.", *test_deps)
+    session.run("pytest", "--doctest-modules", "src/magpylib", *session.posargs)
+
+
 @nox.session(reuse_venv=True, default=False)
 def docs(session: nox.Session) -> None:
     """
