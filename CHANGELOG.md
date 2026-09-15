@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+- Magpylib now ships an official [Agent Skill](https://agentskills.io) at
+  `magpylib/.agents/skills/magpylib/`, so AI coding assistants get the current
+  API instead of the pre-v5 one they were trained on — SI units, `polarization`
+  over `magnetization`, output shapes, path semantics, and the `meshing`
+  requirement of `getFT()`. It travels inside the wheel and is therefore always
+  in sync with the installed version. Users pick it up with `uvx library-skills`
+  (see [library-skills.io](https://library-skills.io)), which symlinks it into
+  their project's `.agents/skills/`.
 - Extended the path system beyond `position`/`orientation` to object attributes
   ([#916](https://github.com/magpylib/magpylib/pull/916)). Physical properties
   such as `current`, `diameter`, `dimension`, `polarization`, `magnetization`,
