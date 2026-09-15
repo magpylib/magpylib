@@ -1,0 +1,13 @@
+{
+  "enabledPlugins": {
+    "magpylib-skills@magpylib-agent-skills": true
+  },
+  "extraKnownMarketplaces": {
+    "magpylib-agent-skills": {
+      "source": {
+        "source": "directory",
+        "path": ".agents"
+      }
+    }
+  }
+}

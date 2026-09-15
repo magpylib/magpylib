@@ -1,0 +1,14 @@
+{
+  "name": "magpylib-agent-skills",
+  "owner": {
+    "name": "Magpylib contributors"
+  },
+  "description": "Local Claude Code skills for working on the Magpylib repository",
+  "plugins": [
+    {
+      "name": "magpylib-skills",
+      "source": "./",
+      "description": "Local skills for developing the Magpylib repository"
+    }
+  ]
+}
