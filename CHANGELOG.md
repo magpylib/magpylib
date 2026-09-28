@@ -96,6 +96,12 @@
   keep each object's geometry and identity separate — what picking and drag
   gizmos need. `drawing_properties(trace)` strips Magpylib's metadata keys
   before a trace is passed to a plotting library.
+- Each `Panel` now carries the `objects` drawn in it, as they were passed to
+  `show()`, collections whole
+  ([#999](https://github.com/magpylib/magpylib/pull/999)). A backend can then
+  draw a nested legend, which no trace can describe — `legendgroup` names only
+  the outermost collection — and resolve an `object_id` to its object without
+  holding the objects itself.
 - Fixed a series of display bugs this rework exposed, several of which had never
   worked ([#973](https://github.com/magpylib/magpylib/pull/973)):
   `style.model3d` traces given as `args` without `kwargs` raised, although that

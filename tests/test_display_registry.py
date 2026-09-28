@@ -592,6 +592,76 @@ def test_metadata_keys_never_reach_the_plotting_library(name):
     assert magpy.show(make_source(), backend=name, return_fig=True) is not None
 
 
+def _scene_of(*objs, backend_name, **kwargs):
+    """The `Scene` handed to a backend that declares every capability and
+    keeps each object's traces apart, so every trace names its object."""
+    magpy.register_backend(
+        backend_name,
+        lambda scene: scene,
+        supports_animation=True,
+        supports_subplots=True,
+        supports_colorgradient=True,
+        merge_traces=False,
+    )
+    try:
+        return magpy.show(*objs, backend=backend_name, return_fig=True, **kwargs)
+    finally:
+        DisplayBackend.backends.pop(backend_name, None)
+
+
+def test_a_panel_carries_its_objects_as_given():
+    """Collections whole and in order: the hierarchy no trace describes.
+
+    Every trace under a Collection reports the outermost one as its
+    legendgroup, so a backend drawing a nested legend needs the objects --
+    and they are also what an object_id resolves against.
+    """
+    inner = magpy.Collection(make_source(), make_source(), style_label="inner")
+    outer = magpy.Collection(inner, make_source(), style_label="outer")
+    loose = make_source()
+    loose.position = (3, 0, 0)
+
+    scene = _scene_of(outer, loose, backend_name="objects_given")
+
+    (panel,) = scene.panels
+    assert [id(o) for o in panel.objects] == [id(outer), id(loose)]
+    assert panel.objects[0].children[0] is inner
+    # every object drawn, however deep, is reachable from them
+    reachable = {
+        id(o) for top in panel.objects for o in (top, *getattr(top, "children_all", ()))
+    }
+    magnets = {id(o) for o in (*inner.children, outer.children[1], loose)}
+    ids = {t["object_id"] for f in scene.frames for t in f.traces}
+    assert ids == magnets
+    assert ids <= reachable
+
+
+def test_panel_objects_are_as_passed_not_deduplicated_across_nesting():
+    """A child passed beside its collection is there twice, as it was given:
+    once on its own, once inside -- the backend decides how to list it."""
+    child = make_source()
+    collection = magpy.Collection(child, make_source())
+
+    scene = _scene_of(collection, child, [child], backend_name="objects_twice")
+
+    (panel,) = scene.panels
+    assert [id(o) for o in panel.objects] == [id(collection), id(child)]
+
+
+def test_each_cell_carries_its_own_objects():
+    a, b = make_source(), make_source()
+    b.position = (3, 0, 0)
+
+    scene = _scene_of(
+        {"objects": [a], "row": 1, "col": 1},
+        {"objects": [b, a], "row": 1, "col": 2},
+        backend_name="objects_by_cell",
+    )
+
+    assert [id(o) for o in scene.panel(1, 1).objects] == [id(a)]
+    assert [id(o) for o in scene.panel(1, 2).objects] == [id(b), id(a)]
+
+
 def test_panel_kind_defaults_absent_cells_to_3d():
     """Every cell of a grid needs a kind, including empty ones."""
     scene = public_backend.Scene(

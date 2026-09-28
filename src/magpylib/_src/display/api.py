@@ -84,6 +84,14 @@ class Panel:
     ranges: np.ndarray | None = None
     #: e.g. {"x": "x (m)", ...}. Empty for chart2d, for the same reason.
     labels: dict[str, str] = field(default_factory=dict)
+    #: The objects drawn in this cell, as they were passed to `show`: lists
+    #: unpacked, collections whole, in the order given -- so an object passed
+    #: on its own and inside a collection passed with it is here both ways.
+    #: For what no trace carries: the `Collection` hierarchy (walk
+    #: ``children``; `legendgroup` names only the outermost collection), and
+    #: the object an ``object_id`` names (match ``id(obj)``). Live objects: a
+    #: backend that keeps them keeps them alive.
+    objects: tuple[Any, ...] = ()
 
 
 @dataclass(frozen=True)
