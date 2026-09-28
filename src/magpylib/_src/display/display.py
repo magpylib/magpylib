@@ -362,8 +362,13 @@ def show_context(
 
     >>> import magpylib as magpy
     >>> import plotly.graph_objects as go
+    >>> src1 = magpy.magnet.Sphere(diameter=1, polarization=(0, 0, 1))
+    >>> src2 = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
+    >>> sensor = magpy.Sensor()
     >>> fig = go.Figure()
-    >>> with magpy.show_context(src1, src2, sensor, canvas=fig, backend='plotly', animation=True) as ctx:
+    >>> with magpy.show_context(  # doctest: +SKIP
+    ...     src1, src2, sensor, canvas=fig, backend='plotly', animation=True
+    ... ) as ctx:
     ...     magpy.show(col=1, output='model3d')
     ...     magpy.show(col=2, output='Bxy', sumup=True)
     ...     magpy.show(col=3, output='Bz', sumup=False)
