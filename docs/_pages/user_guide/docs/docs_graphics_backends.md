@@ -55,7 +55,7 @@ A `Scene` carries everything needed to draw:
 
 | attribute                              | meaning                                                                                                     |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `panels`                               | the subplot grid; each `Panel` has `row`, `col`, `kind` (`"scene3d"` or `"chart2d"`), `ranges` and `labels` |
+| `panels`                               | the subplot grid; each `Panel` has `row`, `col`, `kind` (`"scene3d"` or `"chart2d"`), `ranges`, `labels` and `objects` |
 | `frames`                               | the timeline; one `Frame` for a static scene, several when animating                                        |
 | `animation`                            | `fps`, `time`, `slider`, `output`, `frame_duration`, `path_indices`, ...                                    |
 | `canvas`, `canvas_update`              | a user-supplied figure to draw into, and whether it may be restyled                                         |
@@ -114,6 +114,7 @@ A few things are easy to miss:
 
 - **`scene.return_fig` decides whether to _display_, not what to return.** Magpylib discards whatever `show` returns unless it is set, so the question it answers is whether to call your library's blocking show/display — returning the figure either way is fine.
 - **`scene.canvas` is a Python object** — a Matplotlib `Figure`, a Plotly `Figure`, a PyVista `Plotter`. A backend that renders outside the Python process, in a browser for instance, has nothing to bind it to and should raise. For the same reason `backend="auto"`, which infers the backend from the canvas type, will never select one.
+- **The objects are there when the traces are not enough.** `Panel.objects` holds what was passed to `show` for that cell, collections whole. It is how a backend recovers what no trace carries: the `Collection` hierarchy — `legendgroup` names only the _outermost_ collection, so three levels of nesting arrive looking like one — and the object behind an `object_id`, by matching `id(obj)`. Lists are unpacked, so an object passed on its own and inside a collection passed with it appears both ways. They are live objects: a backend that keeps them keeps them alive.
 - **Scenes are z-up, and the legend is yours to draw.** Camera code needs the z-up convention stated explicitly. `Panel.labels` carries the axis titles and every trace carries `name`, `legendgroup` and `showlegend`, but nothing renders them for you: traces sharing a `legendgroup` belong to one legend entry — that is how a `Collection`'s children collapse into a single row — and `Scene.legend_maxitems` is the count past which the built-in backends hide the legend entirely.
 
 Capability flags (`supports_animation`, `supports_subplots`, `supports_colorgradient`, `supports_animation_output`) all default to `False`, so a capability added in a later Magpylib release never changes an existing backend's behaviour. `show()` warns and falls back rather than handing over something undeclared.

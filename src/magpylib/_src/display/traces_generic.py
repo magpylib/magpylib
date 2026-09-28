@@ -1080,6 +1080,13 @@ def get_frames(
         colorsequence=colorsequence,
         style_kwargs=style_kwargs,
     )
+    # each cell's objects as the caller gave them, collections unflattened,
+    # for `Panel.objects`
+    given_rc = {}
+    for obj in objs:
+        given = given_rc.setdefault((obj["row"], obj["col"]), {})
+        for o in obj["objects"]:
+            given.setdefault(id(o), o)
     # create frame for each path index or downsampled path index
     style_kwargs = {}
     frames = [
@@ -1156,6 +1163,7 @@ def get_frames(
                 # rather than making every backend ignore them.
                 ranges=np.asarray(rng) if (is_3d and rng is not None) else None,
                 labels=dict(labels_rc.get(rc, {})) if is_3d else {},
+                objects=tuple(given_rc.get(rc, {}).values()),
             )
         )
 
