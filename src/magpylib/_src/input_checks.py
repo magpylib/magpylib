@@ -664,8 +664,16 @@ def check_format_input_observers(inp, pixel_agg=None):
     # note: bare pixel is automatically made into a list by Sensor
 
     # any good input must now be list/tuple/array
-    if not isinstance(inp, list | tuple | np.ndarray):
+    if inp is None:
         raise MagpylibBadUserInput(wrong_obj_msg(inp, allow="observers"))
+    if not isinstance(inp, list | tuple | np.ndarray):
+        msg = (
+            f"Input observers of type {type(inp).__name__!r} are not supported. "
+            "Observers must be a Sensor, a Collection with at least one Sensor, "
+            "positions given as list, tuple or NumPy array, or a 1D list of these; "
+            f"instead received {inp!r}."
+        )
+        raise MagpylibBadUserInput(msg)
 
     # empty list
     if len(inp) == 0:

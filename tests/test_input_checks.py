@@ -1,3 +1,5 @@
+import array
+
 import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R
@@ -827,6 +829,16 @@ def test_input_observers_bad(observers):
     src = magpy.misc.Dipole(moment=(1, 2, 3))
     with pytest.raises(MagpylibBadUserInput):
         src.getB(observers)
+
+
+def test_input_observers_unsupported_type_message():
+    """non-NumPy arrays are rejected with an error naming their type (#1000)"""
+    src = magpy.misc.Dipole(moment=(1, 2, 3))
+    with pytest.raises(MagpylibBadUserInput) as excinfo:
+        src.getB(array.array("d", [0.0, 0.0, 2.0]))
+    msg = str(excinfo.value)
+    assert "of type 'array' are not supported" in msg
+    assert "No observers provided" not in msg
 
 
 @pytest.mark.parametrize(
