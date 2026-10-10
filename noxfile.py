@@ -37,9 +37,11 @@ def pylint(session: nox.Session) -> None:
     """
     Run Pylint.
     """
-    # This needs to be installed into the package environment, and is slower
-    # than a pre-commit check
-    session.install("--group", "dev", "-e", ".", "pylint>=3.2")
+    # pylint and astroid are pinned in the `lint` group: a release of either
+    # changes what is reported, and should land as a bump of that pin rather
+    # than as a red check on an unrelated PR. This needs the package
+    # environment, and is slower than a pre-commit check.
+    session.install("--group", "dev", "--group", "lint", "-e", ".")
     session.run("pylint", "magpylib", *session.posargs)
 
 

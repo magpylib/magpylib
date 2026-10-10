@@ -473,7 +473,6 @@ def make_triangle_orientations(
 
 def get_closest_vertices(faces_subsets, vertices):
     """Get closest pairs of points between disconnected subsets of faces indices"""
-    # pylint: disable=used-before-assignment
     nparts = len(faces_subsets)
     inds_subsets = [np.unique(v) for v in faces_subsets]
     closest_verts_list = []
@@ -481,6 +480,9 @@ def get_closest_vertices(faces_subsets, vertices):
         connected = [np.min(inds_subsets[0])]
         while len(connected) < nparts:
             prev_min = float("inf")
+            # Always set in the loops below: some part is still unconnected,
+            # and its distance to a connected one is finite.
+            closest_verts = connected_ind = None
             for i in connected:
                 for j in range(nparts):
                     if j not in connected:

@@ -11,3 +11,17 @@ updates:
       actions:
         patterns:
           - "*"
+
+  # Keep the linter's pin in pyproject.toml current: a pylint or astroid
+  # release then arrives as a PR of its own, with the new findings in it,
+  # rather than as a red check on every open PR. "pip" rather than "uv":
+  # the uv ecosystem updates uv.lock, which this repo does not commit.
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    allow:
+      - dependency-name: "pylint"
+      - dependency-name: "astroid"
