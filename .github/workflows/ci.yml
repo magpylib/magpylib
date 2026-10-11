@@ -95,6 +95,11 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+      # A run of its own: collecting src/ next to tests/ imports pyvista
+      # before test_show_with_missing_pyvista can hide it.
+      - name: Test docstring examples
+        run: uv run pytest --doctest-modules src/magpylib -q
+
   pass:
     if: always()
     needs: [lint, checks]
