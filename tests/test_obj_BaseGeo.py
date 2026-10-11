@@ -1011,3 +1011,22 @@ def test_path_properties_unchanged_for_builtin_classes():
         "vertices",
     )
     assert magpy.misc.Dipole._path_properties == ("position", "orientation", "moment")
+
+
+def test_rotate_from_euler_flat_angle_path_single_axis():
+    """a flat (n,) angle path with a one-character seq behaves like (n, 1)"""
+    angs = np.array([15, 30, 45])
+    flat = magpy.Sensor(position=(1, 0, 0)).rotate_from_euler(
+        angs, "z", anchor=0, degrees=True
+    )
+    column = magpy.Sensor(position=(1, 0, 0)).rotate_from_euler(
+        angs[:, np.newaxis], "z", anchor=0, degrees=True
+    )
+    assert flat.position.shape == (4, 3)
+    np.testing.assert_allclose(flat.position, column.position)
+    np.testing.assert_allclose(
+        flat.orientation.as_rotvec(), column.orientation.as_rotvec()
+    )
+    np.testing.assert_allclose(
+        flat.orientation.as_euler("xyz", degrees=True)[:, 2], [0, 15, 30, 45]
+    )
