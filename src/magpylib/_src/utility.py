@@ -4,6 +4,7 @@
 # pylint: disable=cyclic-import
 # import numbers
 
+import reprlib
 import warnings
 from collections.abc import Callable, Sequence
 from contextlib import contextmanager
@@ -42,17 +43,19 @@ def wrong_obj_msg(*objs, allow="sources"):
     """return error message for wrong object type provided"""
     assert len(objs) <= 1, "only max one obj allowed"
     allowed = allow.split("+")
-    prefix = "No" if len(allowed) == 1 else "Bad"
-    msg = f"{prefix} {'/'.join(allowed)} provided"
+    obj = objs[0] if objs else None
+    given = obj is not None and not (
+        isinstance(obj, list | tuple | np.ndarray) and len(obj) == 0
+    )
+    msg = f"{'Bad' if given else 'No'} {'/'.join(allowed)} provided"
     if "sources" in allowed:
         msg += "\n" + get_allowed_sources_msg()
     if "observers" in allowed:
         msg += "\n" + ALLOWED_OBSERVER_MSG
     if "sensors" in allowed:
         msg += "\n" + ALLOWED_SENSORS_MSG
-    if objs:
-        obj = objs[0]
-        msg += f"\nreceived {obj!r} of type {type(obj).__name__!r} instead."
+    if given:
+        msg += f"\nreceived {reprlib.repr(obj)} of type {type(obj).__name__!r} instead."
     return msg
 
 

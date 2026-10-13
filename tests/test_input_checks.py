@@ -831,14 +831,29 @@ def test_input_observers_bad(observers):
         src.getB(observers)
 
 
-def test_input_observers_unsupported_type_message():
-    """non-NumPy arrays are rejected with an error naming their type (#1000)"""
-    src = magpy.misc.Dipole(moment=(1, 2, 3))
+@pytest.mark.parametrize(
+    ("sources", "observers", "first_line", "received"),
+    [
+        (None, None, "No observers provided", None),
+        (None, [], "No observers provided", None),
+        (None, array.array("d", [0, 0, 2]), "Bad observers provided", "type 'array'"),
+        (None, [magpy.Sensor(), "abc"], "Bad observers provided", "'abc'"),
+        (None, [magpy.Sensor(), "x" * 200], "Bad observers provided", "xxx...xxx"),
+        ("abc", (0, 0, 1), "Bad sources provided", "'abc'"),
+    ],
+)
+def test_wrong_input_message(sources, observers, first_line, received):
+    """ "No ... provided" only when nothing was given; otherwise "Bad ... provided"
+    and a shortened repr of what was received (#1000)"""
+    sources = magpy.misc.Dipole(moment=(1, 2, 3)) if sources is None else sources
     with pytest.raises(MagpylibBadUserInput) as excinfo:
-        src.getB(array.array("d", [0.0, 0.0, 2.0]))
-    msg = str(excinfo.value)
-    assert "of type 'array' are not supported" in msg
-    assert "No observers provided" not in msg
+        magpy.getB(sources, observers)
+    lines = str(excinfo.value).splitlines()
+    assert lines[0] == first_line
+    if received is None:
+        assert not lines[-1].startswith("received")
+    else:
+        assert received in lines[-1]
 
 
 @pytest.mark.parametrize(

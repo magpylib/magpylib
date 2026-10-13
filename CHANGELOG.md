@@ -65,9 +65,9 @@
   ([#967](https://github.com/magpylib/magpylib/pull/967)).
 - Pyvista face colors broke web scene exports
   ([#988](https://github.com/magpylib/magpylib/pull/988)).
-- Observers of an unsupported type, such as a JAX array, now raise an error that
-  names the type instead of the misleading "No observers provided"
-  ([#1000](https://github.com/magpylib/magpylib/issues/1000)).
+- A wrong observer or source, such as a JAX array or a misspelled item in a
+  list, was reported as "No observers provided" or "No sources provided"
+  ([#1002](https://github.com/magpylib/magpylib/pull/1002)).
 
 ## [5.2.3] 2026-05-15
 
