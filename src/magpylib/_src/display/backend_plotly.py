@@ -304,10 +304,16 @@ def cap_legend(frames, maxitems):
                 frame["data"][i] = {**frame["data"][i], "showlegend": False}
     if maxitems == 0:
         return
-    # an empty, invisible trace of the hidden ones' kind, in their subplot:
-    # it draws nothing and only lends the legend a line
+    # an invisible trace of the hidden ones' kind, in their subplot, on one
+    # of their points: plotly lists only traces with data, and a one-point
+    # line draws nothing, where an empty or NaN one would skew the ranges
     last = frames[0]["data"][hidden[-1]]
     is_2d = last.get("type") == "scatter"
+    coords = "xy" if is_2d else "xyz"
+    try:
+        point = {k: [np.ravel(last[k])[0]] for k in coords}
+    except (KeyError, IndexError):  # a trace without coordinates
+        point = {k: [None] for k in coords}
     overflow = {
         "type": "scatter" if is_2d else "scatter3d",
         "mode": "lines",
@@ -317,7 +323,7 @@ def cap_legend(frames, maxitems):
         "showlegend": True,
         "row": last.get("row"),
         "col": last.get("col"),
-        **{k: [] for k in ("xy" if is_2d else "xyz")},
+        **point,
     }
     for frame in frames:
         frame["data"].append(dict(overflow))
