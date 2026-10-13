@@ -50,7 +50,6 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.exceptions import MagpylibMissingInput
-from magpylib._src.fields.field_BHfunc import _getBH_dict_level2
 from magpylib._src.input_checks import (
     check_dimensions,
     check_excitations,
@@ -244,7 +243,7 @@ def _getBH_level1(
 
 
 def _getBH_level2(
-    sources, observers, *, field, sumup, squeeze, pixel_agg, output, in_out, **kwargs
+    sources, observers, *, field, sumup, squeeze, pixel_agg, output, in_out
 ) -> np.ndarray:
     """Compute field for given sources and observers.
     Info:
@@ -263,23 +262,6 @@ def _getBH_level2(
 
     from magpylib._src.obj_classes.class_Collection import Collection  # noqa: I001, PLC0415
     from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh  # noqa: PLC0415
-
-    # DEPRECATED CALL TO FUNCTIONAL INTERFACE
-    if isinstance(sources, str):
-        msg = (
-            "Calling the functional interface (string input for sources) from magpy.getB() "
-            "is deprecated and will be removed in future versions. The functional "
-            "interface was moved to the magpy.func subpackage."
-        )
-        warnings.warn(msg, DeprecationWarning, stacklevel=2)
-        return _getBH_dict_level2(
-            source_type=sources,
-            observers=observers,
-            field=field,
-            squeeze=squeeze,
-            in_out=in_out,
-            **kwargs,
-        )
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
 
@@ -544,7 +526,6 @@ def getB(
     pixel_agg=None,
     output="ndarray",
     in_out="auto",
-    **kwargs,
 ):
     """Return B-field (T) of s sources at o observers.
 
@@ -616,7 +597,6 @@ def getB(
         pixel_agg=pixel_agg,
         output=output,
         in_out=in_out,
-        **kwargs,
     )
 
 
@@ -628,7 +608,6 @@ def getH(
     pixel_agg=None,
     output="ndarray",
     in_out="auto",
-    **kwargs,
 ):
     """Return H-field (A/m) of s sources at o observers.
 
@@ -700,7 +679,6 @@ def getH(
         pixel_agg=pixel_agg,
         output=output,
         in_out=in_out,
-        **kwargs,
     )
 
 
@@ -712,7 +690,6 @@ def getM(
     pixel_agg=None,
     output="ndarray",
     in_out="auto",
-    **kwargs,
 ):
     """Return magnetization (A/m) of s sources at o observers.
 
@@ -772,7 +749,6 @@ def getM(
         pixel_agg=pixel_agg,
         output=output,
         in_out=in_out,
-        **kwargs,
     )
 
 
@@ -784,7 +760,6 @@ def getJ(
     pixel_agg=None,
     output="ndarray",
     in_out="auto",
-    **kwargs,
 ):
     """Return magnetic polarization (T) of s sources at o observers.
 
@@ -844,5 +819,4 @@ def getJ(
         pixel_agg=pixel_agg,
         output=output,
         in_out=in_out,
-        **kwargs,
     )

@@ -23,8 +23,7 @@ def get_allowed_sources_msg():
     return f"""Sources must be either
 - one of type {srcs}
 - Collection with at least one of the above
-- 1D list of the above
-- string {srcs}"""
+- 1D list of the above"""
 
 
 ALLOWED_OBSERVER_MSG = """Observers must be either
