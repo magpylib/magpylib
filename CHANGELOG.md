@@ -20,7 +20,7 @@
   `magpy.defaults.display.units.length` and
   `magpy.defaults.display.legend.maxitems`
   ([#973](https://github.com/magpylib/magpylib/pull/973),
-  [#975](https://github.com/magpylib/magpylib/issues/975)).
+  [#1007](https://github.com/magpylib/magpylib/pull/1007)).
 
 ### Changed
 
@@ -32,7 +32,7 @@
   ([#967](https://github.com/magpylib/magpylib/pull/967)).
 - **Breaking:** past `legend_maxitems`, the legend lists its first entries and
   "… and k more" instead of disappearing
-  ([#975](https://github.com/magpylib/magpylib/issues/975)).
+  ([#1007](https://github.com/magpylib/magpylib/pull/1007)).
 - `show()` is about 3x faster
   ([#967](https://github.com/magpylib/magpylib/pull/967)).
 - Misspelled keyword arguments are no longer ignored: `getB()`, `getH()`,
