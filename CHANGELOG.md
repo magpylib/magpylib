@@ -26,13 +26,12 @@
   `add_trace()` instead of `data.append(trace)`
   ([#987](https://github.com/magpylib/magpylib/pull/987)).
 - **Breaking:** invalid style and defaults values raise `ValueError` instead of
-  `AssertionError`, number-valued style properties reject booleans, and
-  assigning `None` resets a property to its default
+  `AssertionError`, and number-valued style properties reject booleans
   ([#967](https://github.com/magpylib/magpylib/pull/967)).
 - `show()` is about 3x faster
   ([#967](https://github.com/magpylib/magpylib/pull/967)).
-- Misspelled keyword arguments to `show()`, `getB()`, `getH()`, `getJ()` and
-  `getM()` raise `TypeError` instead of being ignored
+- Misspelled keyword arguments are no longer ignored: `getB()`, `getH()`,
+  `getJ()` and `getM()` raise `TypeError`, `show()` warns
   ([#973](https://github.com/magpylib/magpylib/pull/973),
   [#1005](https://github.com/magpylib/magpylib/pull/1005)).
 - Derived properties such as `dipole_moment` gain a path axis when their inputs
@@ -54,11 +53,10 @@
 ### Fixed
 
 - Display: `show(title=...)` and backend arguments such as `plotly_renderer=...`
-  were ignored, `return_fig=False` still returned the figure, `style.model3d`
-  models given as `args` alone raised, and Pyvista silently dropped models
-  addressed to it, which it now warns about
+  were ignored, `style.model3d` models given as `args` alone raised, and Pyvista
+  silently dropped models addressed to it, which it now warns about
   ([#973](https://github.com/magpylib/magpylib/pull/973)).
-- Colors given as lists or arrays raised `TypeError`
+- Colors given as lists or arrays, such as `[0.1, 0.2, 0.3]`, raised `TypeError`
   ([#967](https://github.com/magpylib/magpylib/pull/967)).
 - Pyvista face colors broke web scene exports
   ([#988](https://github.com/magpylib/magpylib/pull/988)).
