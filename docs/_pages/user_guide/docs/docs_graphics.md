@@ -494,28 +494,3 @@ with magpy.show_context(c1, backend="matplotlib") as s:
     s.show(row=2, col=1, units_length="µm", zoom=2)
     s.show(row=2, col=2, units_length="m", zoom=3)
 ```
-
-(guide-graphics-legend-length)=
-
-## Legend Length
-
-A scene with many objects would produce a legend too long to read. `show()` lists at most `legend_maxitems` entries (20 by default) and sums up the rest in a single "… and k more" entry, so the first objects stay identifiable. `legend_maxitems=0` hides the legend. Matplotlib and Pyvista apply the limit to the legend of each 3D subplot, Plotly to its one legend for the whole figure.
-
-```{tip}
-Set `magpy.defaults.display.legend.maxitems` to change the limit for every `show()` call.
-```
-
-```{code-cell} ipython3
-import magpylib as magpy
-
-cubes = [
-    magpy.magnet.Cuboid(
-        dimension=(0.01, 0.01, 0.01),
-        polarization=(0, 0, 1),
-        position=(0.02 * i, 0, 0),
-    )
-    for i in range(12)
-]
-
-magpy.show(*cubes, backend="matplotlib", legend_maxitems=5)
-```
