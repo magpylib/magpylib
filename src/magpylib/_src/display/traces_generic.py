@@ -41,6 +41,7 @@ from magpylib._src.display.traces_utility import (
     rescale_traces,
     slice_mesh_from_colorscale,
 )
+from magpylib._src.input_checks import check_input_legend_maxitems
 from magpylib._src.style import DefaultMarkers
 from magpylib._src.utility import (
     format_obj_input,
@@ -1049,6 +1050,10 @@ def get_frames(
     # process all kwargs
     # pylint: disable=no-member
     colorsequence = kwargs.pop("colorsequence", default_settings.display.colorsequence)
+    legend_maxitems = kwargs.pop(
+        "legend_maxitems", default_settings.display.legend.maxitems
+    )
+    check_input_legend_maxitems(legend_maxitems)
 
     # extract style info
     style_kwargs = {k: v for k, v in kwargs.items() if k.startswith("style")}
@@ -1191,4 +1196,5 @@ def get_frames(
             for fr in frames
         ),
         animation=animation,
+        legend_maxitems=legend_maxitems,
     )

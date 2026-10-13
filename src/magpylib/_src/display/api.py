@@ -142,7 +142,13 @@ class Scene:
     canvas_update: bool = True
     #: Return the figure instead of displaying it.
     return_fig: bool = False
-    #: Hide the legend once it would carry more entries than this.
+    #: Most entries a flat legend lists. Past it the built-in backends list
+    #: the first ones and sum up the rest in one "... and k more" entry;
+    #: 0 means no legend. Matplotlib and pyvista
+    #: apply it per 3D panel, plotly to its one figure-wide legend. A backend
+    #: whose legend scales another way, such as a collapsible tree, may
+    #: ignore it. Never applied to the traces themselves: the payload stays
+    #: whole.
     legend_maxitems: int = 20
     fig_kwargs: dict[str, Any] = field(default_factory=dict)
     show_kwargs: dict[str, Any] = field(default_factory=dict)

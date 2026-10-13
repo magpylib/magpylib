@@ -174,6 +174,11 @@ def show(
         Length unit the scene is drawn in, e.g. ``'mm'``. With ``'auto'`` the unit is
         inferred from the extent of the displayed system. The default is configurable
         via ``magpy.defaults.display.units.length``.
+    legend_maxitems : int, default 20
+        Most entries a legend lists. Past it, the first ones are listed and the
+        rest summed up in one "… and k more" entry; ``0`` hides the legend.
+        Matplotlib and Pyvista apply it per 3D subplot, Plotly to its one legend.
+        The default is configurable via ``magpy.defaults.display.legend.maxitems``.
     style : dict | None, default None
         Global style overrides, e.g. ``{'color': 'red'}`` or via underscore magic
         (``style_color='red'``). Applied to matching objects.

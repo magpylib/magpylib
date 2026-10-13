@@ -25,7 +25,11 @@ from matplotlib.colors import LinearSegmentedColormap
 from pyvista.plotting.colors import Color  # pylint: disable=import-error
 
 from magpylib._src.display.api import drawing_properties
-from magpylib._src.display.traces_utility import get_trace_kw, split_input_arrays
+from magpylib._src.display.traces_utility import (
+    get_trace_kw,
+    legend_overflow_label,
+    split_input_arrays,
+)
 from magpylib._src.utility import is_array_like, open_animation
 
 # from magpylib._src.utility import format_obj_input
@@ -235,6 +239,24 @@ def generic_trace_to_pyvista(trace):
     return traces_pv
 
 
+def add_capped_legend(canvas, labels, maxitems):
+    """Add the active subplot's legend with at most `maxitems` of its
+    `labels`, the rest summed up in one entry. 0 adds none."""
+    if maxitems == 0 or not labels:
+        return
+    hidden = len(labels) - maxitems
+    if hidden <= 0:
+        canvas.add_legend(bcolor=None)
+        return
+    # a bare label takes its face and colour from the labelled actor at the
+    # same index, so the entries kept look as they would uncapped
+    entries = [
+        *labels[:maxitems],
+        {"label": legend_overflow_label(hidden), "color": "gray", "face": "none"},
+    ]
+    canvas.add_legend(labels=entries, bcolor=None)
+
+
 def display_pyvista(scene):
     """Display objects and paths graphically using the pyvista library."""
     canvas = scene.canvas
@@ -266,21 +288,20 @@ def display_pyvista(scene):
     jupyter_backend = show_kwargs.pop("jupyter_backend", jupyter_backend)
     if jupyter_backend is None:
         jupyter_backend = pv.global_theme.jupyter_backend
-    count_with_labels = {}
+    legend_labels = {}
     charts_max_ind = 0
 
     def draw_frame(frame_ind):
-        nonlocal count_with_labels, charts_max_ind
+        nonlocal charts_max_ind
         for tr0 in frames[frame_ind]:
             for tr1 in generic_trace_to_pyvista(tr0):
                 row = tr1.pop("row", 1)
                 col = tr1.pop("col", 1)
                 typ = tr1.pop("type")
                 if frame_ind == 0:
-                    if (row, col) not in count_with_labels:
-                        count_with_labels[(row, col)] = 0
+                    labels_rc = legend_labels.setdefault((row, col), [])
                     if tr1.get("label", ""):
-                        count_with_labels[(row, col)] += 1
+                        labels_rc.append(tr1["label"])
                 canvas.subplot(row, col)
                 panel = scene.panel(row + 1, col + 1)
                 if panel is None or panel.kind == "scene3d":
@@ -303,7 +324,7 @@ def display_pyvista(scene):
                 # needs to happen in the loop otherwise they cummulate
                 # while the max of 10 is reached and throws a ValueError
 
-        for (row, col), count in count_with_labels.items():
+        for (row, col), labels_rc in legend_labels.items():
             canvas.subplot(row, col)
             # match other backends plotter properties
             if canvas_update:
@@ -311,11 +332,8 @@ def display_pyvista(scene):
                     canvas.show_axes()
                 canvas.camera.azimuth = -90
                 canvas.set_background("gray", top="white")
-            if (
-                0 < count <= legend_maxitems
-                and scene.panel_kind(row + 1, col + 1) == "scene3d"
-            ):
-                canvas.add_legend(bcolor=None)
+            if scene.panel_kind(row + 1, col + 1) == "scene3d":
+                add_capped_legend(canvas, labels_rc, legend_maxitems)
 
     def run_animation(filename, embed=True):
         # embed=True, embeds the animation into the notebook page and is necessary when using
