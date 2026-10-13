@@ -32,7 +32,11 @@ project.
 4. Once your changes are complete (see [Coding requirements](coding-requ)
    below), or you want some feedback, make a pull request (PR) targeting the
    Magpylib repository. Explain your feature in the PR, and/or refer to the
-   respective issue that you address. Add illustrative code examples.
+   respective issue that you address. Show the effect of the change: a
+   before/after code snippet for a change in behaviour, and before/after
+   screenshots of every affected backend for anything that changes a figure. Put
+   the Magpylib code that produces the example below them, folded in a
+   `<details>` block, so reviewers can reproduce it.
 5. Once a PR is created, our pipeline tests will automatically check your code.
    A Magpylib member will review your contributions and discuss your changes.
    Possible improvements will be requested.
@@ -53,6 +57,11 @@ project.
   there are no formatting issues reported (e.g. line-too-long).
 - Your code is PEP8 compliant and formatted with
   [Black](https://black.readthedocs.io/en/stable/) default settings.
+- User-facing changes get one line in `CHANGELOG.md` under `## [Unreleased]`, in
+  the matching [Keep a Changelog](https://keepachangelog.com) section (Added,
+  Changed, Deprecated, Removed, Fixed), linking the PR. Group related changes
+  into one line, start breaking ones with **Breaking:** and a migration hint,
+  and keep the details in the PR description.
 
 We strongly suggest that you use the [Pre-Commit](https://pre-commit.com/) hooks
 that apply important code checks which each commit.

@@ -63,6 +63,14 @@ dev = [
   { include-group = "test" },
 ]
 
+lint = [
+  # Pinned, and the only pins here: a release of either changes what pylint
+  # reports, and that should land as a bump of these two lines, not as a red
+  # check on every open PR. uv.lock is not committed, so nothing else holds them.
+  "pylint ==4.1.2",
+  "astroid ==4.3.4",
+]
+
 docs = [
   "pydata-sphinx-theme",
   "sphinx >=8.2", # pydata-sphinx-theme 0.20 dropped sphinx <=8.1
@@ -210,3 +218,4 @@ messages_control.disable = [
 
 [tool.codespell]
 skip = 'src/magpylib/_src/fields/special_el3.py'
+ignore-words-list = 'astroid' # pylint's parser, not the rock

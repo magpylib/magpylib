@@ -1011,3 +1011,33 @@ def test_path_properties_unchanged_for_builtin_classes():
         "vertices",
     )
     assert magpy.misc.Dipole._path_properties == ("position", "orientation", "moment")
+
+
+def test_rotate_from_euler_flat_angle_path_single_axis():
+    """a flat (n,) angle path with a one-character seq behaves like (n, 1)"""
+    angs = np.array([15, 30, 45])
+    flat = magpy.Sensor(position=(1, 0, 0)).rotate_from_euler(
+        angs, "z", anchor=0, degrees=True
+    )
+    column = magpy.Sensor(position=(1, 0, 0)).rotate_from_euler(
+        angs[:, np.newaxis], "z", anchor=0, degrees=True
+    )
+    assert flat.position.shape == (4, 3)
+    np.testing.assert_allclose(flat.position, column.position)
+    np.testing.assert_allclose(
+        flat.orientation.as_rotvec(), column.orientation.as_rotvec()
+    )
+    np.testing.assert_allclose(
+        flat.orientation.as_euler("xyz", degrees=True)[:, 2], [0, 15, 30, 45]
+    )
+    # one angle in a list appends a step, and an empty list adds none, as
+    # rotate_from_angax does
+    for angle, steps in (([45], 2), ([], 1)):
+        euler = magpy.Sensor(position=(1, 0, 0)).rotate_from_euler(
+            angle, "z", anchor=0, degrees=True
+        )
+        angax = magpy.Sensor(position=(1, 0, 0)).rotate_from_angax(
+            angle, "z", anchor=0, degrees=True
+        )
+        assert len(np.atleast_2d(euler.position)) == steps
+        np.testing.assert_allclose(euler.position, angax.position, atol=1e-12)

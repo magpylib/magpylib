@@ -39,6 +39,7 @@ DEFAULTS = {
             "#222A2A",
         ),
         "units": {"length": "auto"},
+        "legend": {"maxitems": 20},
         "style": {
             "base": {
                 "path": {

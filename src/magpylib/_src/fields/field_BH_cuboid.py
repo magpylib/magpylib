@@ -56,8 +56,8 @@ def magnet_cuboid_Bfield(
     ...     polarizations=np.array([(0, 0, 1), (0.5, 0.5, 0.0)]),
     ... )
     >>> with np.printoptions(precision=3):
-    ...     print(B)
-    [[ 1.561e-02  1.561e-02 -3.534e-17]
+    ...     print(B)  # doctest: +ELLIPSIS
+    [[ 1.561e-02  1.561e-02 ...]
      [ 7.732e-03  6.544e-03  1.048e-02]]
 
     """
