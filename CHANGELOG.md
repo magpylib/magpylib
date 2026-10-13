@@ -59,6 +59,14 @@
   and `data = []` instead of `data.clear()`. In-place mutation bypassed both
   validation and change notification, so an unvalidated entry could reach
   `show()` and a GUI observing the style never learned of it.
+- **Breaking:** removed the functional call through the object interface,
+  `getB("Cuboid", ...)` and `getH("Cuboid", ...)`, deprecated since 5.2. Use the
+  `magpylib.func` subpackage instead, e.g. `magpy.func.cuboid_field(...)`. With
+  the `Line` and `Loop` names already gone since 5.2, this closes
+  [#693](https://github.com/magpylib/magpylib/issues/693). `magpy.getB`, `getH`,
+  `getJ` and `getM` lose the `**kwargs` that only fed that call, so a misspelled
+  keyword such as `sum_up=True` now raises `TypeError` instead of being silently
+  ignored.
 - **Breaking:** `as_dict()` no longer includes the deprecated
   `magnetization.size` key. It remains readable and writable as an attribute.
 - `magpy.defaults.display.backend` and `style.model3d.data[].backend` now accept

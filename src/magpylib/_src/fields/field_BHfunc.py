@@ -1,12 +1,10 @@
 """Magnetic field computation functional interface"""
 
-import numbers
 from collections.abc import Callable
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.fields.field_BH_circle import _BHJM_circle
 from magpylib._src.fields.field_BH_cuboid import _BHJM_magnet_cuboid
 from magpylib._src.fields.field_BH_current_sheet import _BHJM_current_sheet
@@ -17,7 +15,7 @@ from magpylib._src.fields.field_BH_polyline import _BHJM_current_polyline
 from magpylib._src.fields.field_BH_sphere import _BHJM_magnet_sphere
 from magpylib._src.fields.field_BH_tetrahedron import _BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
-from magpylib._src.utility import get_registered_sources, has_parameter
+from magpylib._src.utility import has_parameter
 
 
 def circle_field(
@@ -807,126 +805,6 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
     if squeeze:
         return np.squeeze(field)
     return field
-
-
-# REMOVE IN FUTURE VERSIONS ############################################
-# REMOVE IN FUTURE VERSIONS ############################################
-# REMOVE IN FUTURE VERSIONS ############################################
-
-
-def _getBH_dict_level2(
-    source_type,
-    observers,
-    *,
-    field: str,
-    position=(0, 0, 0),
-    orientation=None,
-    squeeze=True,
-    in_out="auto",
-    **kwargs: dict,
-) -> np.ndarray:
-    """Functional interface access to vectorized computation
-
-    Parameters
-    ----------
-    kwargs: dict that describes the computation.
-
-    Returns
-    -------
-    field: ndarray, shape (o, 3), field at obs_pos in (T) or (A/m)
-
-    Info
-    ----
-    - check inputs
-
-    - secures input types (list/tuple -> ndarray)
-    - test if mandatory inputs are there
-    - sets default input variables (e.g. pos, rot) if missing
-    - tiles 1D inputs vectors to correct dimension
-    """
-    # pylint: disable=protected-access
-    # pylint: disable=too-many-branches
-
-    # generate dict of secured inputs for auto-tiling ---------------
-    #  entries in this dict will be tested for input length, and then
-    #  be automatically tiled up and stored back into kwargs for calling
-    #  _getBH_level1().
-    #  To allow different input dimensions, the ndim argument is also given
-    #  which tells the program which dimension it should tile up.
-
-    # pylint: disable=import-outside-toplevel
-    if orientation is None:
-        orientation = R.identity()
-    try:
-        source_classes = get_registered_sources()
-        field_func = source_classes[source_type]._field_func
-        field_func_kwargs_ndim = {"position": 2, "orientation": 2, "observers": 2}
-        field_func_kwargs_ndim.update(
-            source_classes[source_type]._field_func_kwargs_ndim
-        )
-    except KeyError as err:
-        msg = (
-            f"Input source_type must be one of {list(source_classes)}; "
-            f"instead received {source_type!r}."
-        )
-        raise MagpylibBadUserInput(msg) from err
-
-    kwargs["observers"] = observers
-    kwargs["position"] = position
-
-    # change orientation to Rotation NumPy array for tiling
-    kwargs["orientation"] = orientation.as_quat()
-
-    # evaluation vector lengths
-    vec_lengths = {}
-    ragged_seq = {}
-    for key, val_item in kwargs.items():
-        val = val_item
-        try:
-            if (
-                not isinstance(val, numbers.Number)
-                and not isinstance(val[0], numbers.Number)
-                and any(len(o) != len(val[0]) for o in val)
-            ):
-                ragged_seq[key] = True
-                val = np.array([np.array(v, dtype=float) for v in val], dtype="object")
-            else:
-                ragged_seq[key] = False
-                val = np.array(val, dtype=float)
-        except TypeError as err:
-            msg = f"Input {key} must be array-like; instead received {val!r}."
-            raise MagpylibBadUserInput(msg) from err
-        expected_dim = field_func_kwargs_ndim.get(key, 1)
-        if val.ndim == expected_dim or ragged_seq[key]:
-            if len(val) == 1:
-                val = np.squeeze(val)
-            else:
-                vec_lengths[key] = len(val)
-
-        kwargs[key] = val
-
-    if len(set(vec_lengths.values())) > 1:
-        msg = (
-            "Input arrays must have length 1 or the same length; "
-            f"instead received lengths {vec_lengths}."
-        )
-        raise MagpylibBadUserInput(msg)
-    vec_len = max(vec_lengths.values(), default=1)
-    # tile 1D inputs and replace original values in kwargs
-    for key, val in kwargs.items():
-        expected_dim = field_func_kwargs_ndim.get(key, 1)
-        if val.ndim < expected_dim and not ragged_seq[key]:
-            kwargs[key] = np.tile(val, (vec_len, *[1] * (expected_dim - 1)))
-
-    # change orientation back to Rotation object
-    kwargs["orientation"] = R.from_quat(kwargs["orientation"])
-
-    # compute and return B
-    B = _getBH_level1(field=field, field_func=field_func, in_out=in_out, **kwargs)
-
-    if B is not None and squeeze:
-        return np.squeeze(B)
-    return B
 
 
 def _getBH_level1(
