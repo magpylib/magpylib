@@ -15,7 +15,7 @@ from dataclasses import replace
 from functools import cache
 from importlib import import_module
 
-from magpylib._src.display.api import API_VERSION, DisplayBackend, Scene
+from magpylib._src.display.api import API_VERSION, DisplayBackend
 
 
 @cache
@@ -230,7 +230,6 @@ class ShowDispatcher:
             canvas=kwargs.pop("canvas", None),
             canvas_update=kwargs.pop("canvas_update", True),
             return_fig=kwargs.pop("return_fig", False),
-            legend_maxitems=kwargs.pop("legend_maxitems", Scene.legend_maxitems),
             animation=replace(scene.animation, repeat=kwargs.pop("repeat", False)),
             fig_kwargs=fig_kwargs,
             show_kwargs=show_kwargs,

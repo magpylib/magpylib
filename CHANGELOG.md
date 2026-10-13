@@ -16,9 +16,11 @@
   tools that build GUIs on top
   ([#967](https://github.com/magpylib/magpylib/pull/967),
   [#987](https://github.com/magpylib/magpylib/pull/987)).
-- `magpy.defaults.display.units.length` sets the default of
-  `show(units_length=...)`
-  ([#973](https://github.com/magpylib/magpylib/pull/973)).
+- Defaults for `show(units_length=...)` and `show(legend_maxitems=...)`:
+  `magpy.defaults.display.units.length` and
+  `magpy.defaults.display.legend.maxitems`
+  ([#973](https://github.com/magpylib/magpylib/pull/973),
+  [#1007](https://github.com/magpylib/magpylib/pull/1007)).
 
 ### Changed
 
@@ -28,6 +30,9 @@
 - **Breaking:** invalid style and defaults values raise `ValueError` instead of
   `AssertionError`, and number-valued style properties reject booleans
   ([#967](https://github.com/magpylib/magpylib/pull/967)).
+- **Breaking:** past `legend_maxitems`, the legend lists its first entries and
+  "… and k more" instead of disappearing
+  ([#1007](https://github.com/magpylib/magpylib/pull/1007)).
 - `show()` is about 3x faster
   ([#967](https://github.com/magpylib/magpylib/pull/967)).
 - Misspelled keyword arguments are no longer ignored: `getB()`, `getH()`,

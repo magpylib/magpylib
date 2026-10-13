@@ -40,6 +40,15 @@ def check_input_zoom(inp):
         raise MagpylibBadUserInput(msg)
 
 
+def check_input_legend_maxitems(inp):
+    """check show legend_maxitems input"""
+    if isinstance(inp, bool) or not isinstance(inp, int) or inp < 0:
+        msg = (
+            f"Input legend_maxitems must be an integer >= 0; instead received {inp!r}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+
 def check_input_animation(inp):
     """check show animation input"""
     msg = (

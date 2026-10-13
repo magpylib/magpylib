@@ -49,6 +49,12 @@ def row_col_defaults():
     }
 
 
+def legend_overflow_label(hidden):
+    """Text of the one entry standing for the `hidden` legend entries past
+    `legend_maxitems`, shared so every backend words it the same."""
+    return f"… and {hidden} more"
+
+
 def get_legend_label(obj, style=None, suffix=True):
     """provides legend entry based on name and suffix"""
     style = obj.style if style is None else style

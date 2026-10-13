@@ -20,7 +20,10 @@ except ImportError as missing_module:  # pragma: no cover
 
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.display.api import drawing_properties
-from magpylib._src.display.traces_utility import get_scene_ranges
+from magpylib._src.display.traces_utility import (
+    get_scene_ranges,
+    legend_overflow_label,
+)
 
 SYMBOLS_TO_PLOTLY = {
     ".": "circle",
@@ -283,6 +286,49 @@ def process_extra_trace(model):
     return trace3d
 
 
+def cap_legend(frames, maxitems):
+    """Keep at most `maxitems` entries in the figure's one legend, the rest
+    summed up in one; 0 keeps none. Decided on the first frame and applied
+    alike to every frame, since an animation's traces line up by index."""
+    entries = [
+        i
+        for i, tr in enumerate(frames[0]["data"])
+        if tr.get("showlegend", True) is not False
+    ]
+    hidden = entries[maxitems:]
+    if not hidden:
+        return
+    for frame in frames:
+        for i in hidden:
+            if i < len(frame["data"]):
+                frame["data"][i] = {**frame["data"][i], "showlegend": False}
+    if maxitems == 0:
+        return
+    # an invisible trace of the hidden ones' kind, in their subplot, on one
+    # of their points: plotly lists only traces with data, and a one-point
+    # line draws nothing, where an empty or NaN one would skew the ranges
+    last = frames[0]["data"][hidden[-1]]
+    is_2d = last.get("type") == "scatter"
+    coords = "xy" if is_2d else "xyz"
+    try:
+        point = {k: [np.ravel(last[k])[0]] for k in coords}
+    except (KeyError, IndexError):  # a trace without coordinates
+        point = {k: [None] for k in coords}
+    overflow = {
+        "type": "scatter" if is_2d else "scatter3d",
+        "mode": "lines",
+        "line_color": "rgba(0,0,0,0)",
+        "hoverinfo": "skip",
+        "name": legend_overflow_label(len(hidden)),
+        "showlegend": True,
+        "row": last.get("row"),
+        "col": last.get("col"),
+        **point,
+    }
+    for frame in frames:
+        frame["data"].append(dict(overflow))
+
+
 def _subplot_specs(scene):
     """plotly's make_subplots spec grid, derived from the scene panels."""
     return [
@@ -330,6 +376,7 @@ def display_plotly(scene):
         frames.append(
             {"name": fr.label, "data": new_data, "layout": {"title": scene.title}}
         )
+    cap_legend(frames, scene.legend_maxitems)
     with fig.batch_update():
         for frame in frames:
             rows_list = []

@@ -15,10 +15,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import patches
 from matplotlib.animation import FuncAnimation
+from matplotlib.lines import Line2D
 
 from magpylib._src.display.api import drawing_properties
 from magpylib._src.display.traces_utility import (
     get_trace_kw,
+    legend_overflow_label,
     split_input_arrays,
     subdivide_mesh_by_facecolor,
 )
@@ -250,6 +252,26 @@ def process_extra_trace(model):
     return trace3d
 
 
+def is_legend_entry(trace):
+    """Whether a matplotlib trace gets a legend entry: matplotlib skips
+    labels starting with an underscore."""
+    label = trace.get("kwargs", {}).get("label")
+    return bool(label) and not str(label).startswith("_")
+
+
+def draw_capped_legend(ax, maxitems, **kwargs):
+    """Draw the legend of `ax` with at most `maxitems` entries, the rest
+    summed up in one. 0 draws none."""
+    handles, labels = ax.get_legend_handles_labels()
+    if maxitems == 0 or not labels:
+        return
+    hidden = len(labels) - maxitems
+    if hidden > 0:
+        handles = [*handles[:maxitems], Line2D([], [], linestyle="none")]
+        labels = [*labels[:maxitems], legend_overflow_label(hidden)]
+    ax.legend(handles, labels, **kwargs)
+
+
 def display_matplotlib(scene):
     """Display objects and paths graphically using the Matplotlib library."""
     canvas = scene.canvas
@@ -291,7 +313,13 @@ def display_matplotlib(scene):
         if fig_kwargs.get("figsize") is None:
             figsize = (8, 8)
             ratio = scene.n_cols / scene.n_rows
-            if legend_maxitems != 0:
+            # the same rule `draw_capped_legend` draws by: a 3D panel with
+            # at least one entry, and a cap above 0
+            if legend_maxitems > 0 and any(
+                is_legend_entry(tr)
+                and scene.panel_kind(tr["row"], tr["col"]) == "scene3d"
+                for tr in frames[0]["data"]
+            ):
                 ratio *= 1.5  # extend horizontal ratio if legend is present
             fig_kwargs["figsize"] = (figsize[0] * ratio, figsize[1])
     if canvas is None:
@@ -343,7 +371,6 @@ def display_matplotlib(scene):
                     axes[row_col_num].set_box_aspect((1, 1, 1))
 
     def draw_frame(frame_ind):
-        count_with_labels = {}
         handler_map = {}
         for tr in frames[frame_ind]["data"]:
             row_col_num = (tr["row"], tr["col"])
@@ -351,12 +378,6 @@ def display_matplotlib(scene):
             constructor = tr["constructor"]
             args = tr.get("args", ())
             kwargs = tr.get("kwargs", {})
-            if frame_ind == 0:
-                if row_col_num not in count_with_labels:
-                    count_with_labels[row_col_num] = 0
-                label = kwargs.get("label", "_")
-                if label and not label.startswith("_"):
-                    count_with_labels[row_col_num] += 1
             trace = getattr(ax, constructor)(*args, **kwargs)
             if "legend_handler" in tr:
                 handler_map[trace] = tr["legend_handler"]
@@ -371,7 +392,6 @@ def display_matplotlib(scene):
                     )
                     setattr(trace, f"_{arg}colors2d", color)
         for row_col_num, ax in axes.items():
-            count = count_with_labels.get(row_col_num, 0)
             if ax.name == "3d":
                 if row_col_num in ranges and canvas_update:
                     ax.set(
@@ -382,13 +402,12 @@ def display_matplotlib(scene):
                         },
                     )
                 ax.set_box_aspect(aspect=(1, 1, 1))
-                if 0 < count <= legend_maxitems:
-                    lg_kw = {"bbox_to_anchor": (1.04, 1), "loc": "upper left"}
-                    if handler_map:
-                        lg_kw["handler_map"] = handler_map
-                    with contextlib.suppress(AttributeError):
-                        # see https://github.com/matplotlib/matplotlib/pull/25565
-                        ax.legend(**lg_kw)
+                lg_kw = {"bbox_to_anchor": (1.04, 1), "loc": "upper left"}
+                if handler_map:
+                    lg_kw["handler_map"] = handler_map
+                with contextlib.suppress(AttributeError):
+                    # see https://github.com/matplotlib/matplotlib/pull/25565
+                    draw_capped_legend(ax, legend_maxitems, **lg_kw)
             else:
                 ax.legend(loc="best")
 

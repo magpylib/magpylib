@@ -32,7 +32,11 @@ project.
 4. Once your changes are complete (see [Coding requirements](coding-requ)
    below), or you want some feedback, make a pull request (PR) targeting the
    Magpylib repository. Explain your feature in the PR, and/or refer to the
-   respective issue that you address. Add illustrative code examples.
+   respective issue that you address. Show the effect of the change: a
+   before/after code snippet for a change in behaviour, and before/after
+   screenshots of every affected backend for anything that changes a figure. Put
+   the Magpylib code that produces the example below them, folded in a
+   `<details>` block, so reviewers can reproduce it.
 5. Once a PR is created, our pipeline tests will automatically check your code.
    A Magpylib member will review your contributions and discuss your changes.
    Possible improvements will be requested.
