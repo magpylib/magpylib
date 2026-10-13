@@ -53,6 +53,11 @@ project.
   there are no formatting issues reported (e.g. line-too-long).
 - Your code is PEP8 compliant and formatted with
   [Black](https://black.readthedocs.io/en/stable/) default settings.
+- User-facing changes get one line in `CHANGELOG.md` under `## [Unreleased]`, in
+  the matching [Keep a Changelog](https://keepachangelog.com) section (Added,
+  Changed, Deprecated, Removed, Fixed), linking the PR. Group related changes
+  into one line, start breaking ones with **Breaking:** and a migration hint,
+  and keep the details in the PR description.
 
 We strongly suggest that you use the [Pre-Commit](https://pre-commit.com/) hooks
 that apply important code checks which each commit.
