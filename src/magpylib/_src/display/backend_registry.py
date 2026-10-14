@@ -299,16 +299,22 @@ class ShowDispatcher:
             # anything magpylib does not interpret is the backend's own
             options=options,
         )
-        if self.api_version != API_VERSION:
-            direction = "older" if self.api_version < API_VERSION else "newer"
+        # unset counts as version 1, the first public one
+        declared = 1 if self.api_version is None else self.api_version
+        if declared != API_VERSION:
+            direction = "older" if declared < API_VERSION else "newer"
             advice = (
                 "The backend may misread what it is handed; look for an update of it."
                 if direction == "older"
                 else "It may expect what this magpylib does not send; update magpylib."
             )
+            said = (
+                "does not declare api_version, so counts as 1,"
+                if self.api_version is None
+                else f"declares api_version {declared},"
+            )
             warnings.warn(
-                f"The {backend!r} backend declares api_version "
-                f"{self.api_version}, {direction} than the version "
+                f"The {backend!r} backend {said} {direction} than the version "
                 f"{API_VERSION} this magpylib emits. {advice}",
                 stacklevel=user_stacklevel(),
             )

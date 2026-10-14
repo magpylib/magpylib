@@ -215,6 +215,7 @@ def scatter_to_pyvista(trace):
 
 def generic_trace_to_pyvista(trace):
     """Transform a generic trace into a pyvista traces"""
+    row, col = trace.get("row", 1), trace.get("col", 1)
     trace = drawing_properties(trace)
     traces_pv = []
     if trace["type"] == "mesh3d":
@@ -229,8 +230,8 @@ def generic_trace_to_pyvista(trace):
         raise ValueError(msg2)
     showlegend = trace.get("showlegend", False)
     for tr in traces_pv:
-        tr["row"] = trace.get("row", 1) - 1
-        tr["col"] = trace.get("col", 1) - 1
+        tr["row"] = row - 1
+        tr["col"] = col - 1
         if tr["type"] == "point_labels":
             continue
         if showlegend:

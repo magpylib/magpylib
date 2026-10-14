@@ -465,13 +465,19 @@ def get_flatten_objects_properties_recursive(
     if color_cycle is None:
         color_cycle = cycle(colorsequence)
     flat_objs = {}
-    for subobj in dict.fromkeys(obj_list_semi_flat):
+    for index, subobj in enumerate(dict.fromkeys(obj_list_semi_flat)):
         isCollection = getattr(subobj, "children", None) is not None
         style_kwargs = {} if style_kwargs is None else style_kwargs
         style = get_style(subobj, default_settings, **style_kwargs)
         if style.label is None:
             style.label = str(type(subobj).__name__)
-        legendgroup = f"{subobj}" if parent_legendgroup is None else parent_legendgroup
+        # the outermost object's class and position among those shown: unique
+        # in the figure and the same on every run, unlike a repr with its id
+        legendgroup = (
+            f"{type(subobj).__name__}#{index}"
+            if parent_legendgroup is None
+            else parent_legendgroup
+        )
         label = (
             get_legend_label(subobj, style=style)
             if parent_label is None

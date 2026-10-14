@@ -55,13 +55,23 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 #: your own: the set may grow in a later release.
 TRACE_META_KEYS = frozenset({"object_id"})
 
+#: Trace keys placing a trace in the subplot grid. No plotting library takes
+#: them as trace arguments either, so `drawing_properties` strips them too:
+#: read them first.
+PLACEMENT_KEYS = frozenset({"row", "col"})
+
 #: Entry-point group third-party packages advertise backends under, so that
 #: ``pip install`` is enough. Same mechanism as xarray.backends,
 #: matplotlib.backend and pandas_plotting_backends.
 ENTRY_POINT_GROUP = "magpylib.backends"
 
-#: Version of the payload contract. Bumped when the *envelope* changes shape
-#: in a way a backend written against an older magpylib could not handle.
+#: Version of the payload contract. Bumped when a backend written against the
+#: previous version could misread what it is handed: a field of `Scene`,
+#: `Panel`, `Frame` or `AnimationSettings`, a trace key or a trace type
+#: removed, renamed or given another meaning. Not bumped for an addition: a
+#: new field with a default, a new trace key or trace type (`handles_traces`
+#: guards those), a new capability (False by default), a new metadata key
+#: (`drawing_properties` strips those).
 API_VERSION = 1
 
 
@@ -158,15 +168,21 @@ RESERVED_BACKEND_NAMES = frozenset({"auto", "fig", "show"})
 
 
 def drawing_properties(trace):
-    """Return `trace` without magpylib's metadata keys.
+    """Return `trace` without magpylib's metadata and placement keys.
 
     Traces mix drawing properties with magpylib metadata such as
-    ``object_id``. Plotting libraries reject the latter, so strip them before
+    ``object_id`` and with the subplot cell, ``row`` and ``col``. Plotting
+    libraries reject both, so read the placement, then strip both before
     handing a trace over::
 
-        fig.add_trace(go.Mesh3d(**drawing_properties(trace)))
+        row, col = trace["row"], trace["col"]
+        fig.add_trace(go.Mesh3d(**drawing_properties(trace)), row=row, col=col)
     """
-    return {k: v for k, v in trace.items() if k not in TRACE_META_KEYS}
+    return {
+        k: v
+        for k, v in trace.items()
+        if k not in TRACE_META_KEYS and k not in PLACEMENT_KEYS
+    }
 
 
 @dataclass(frozen=True)
@@ -325,12 +341,16 @@ class DisplayBackend:
     backends: ClassVar[dict[str, "DisplayBackend"]] = {}
 
     name: ClassVar[str] = ""
+    #: Shown, with `url`, where magpylib lists the backends -- the error for
+    #: an unknown backend name, for one.
     description: ClassVar[str] = ""
     url: ClassVar[str] = ""
 
-    #: Payload contract this backend was written against. magpylib warns when
-    #: it no longer matches `API_VERSION`.
-    api_version: ClassVar[int] = API_VERSION
+    #: Payload contract this backend was written against; pin it. Left unset,
+    #: a backend counts as written against version 1, the first, so it is
+    #: warned once the contract moves on. Inheriting the current version would
+    #: make the warning impossible for exactly the backends that never said.
+    api_version: ClassVar[int | None] = None
 
     # capabilities: what the backend *can* do
     supports_animation: ClassVar[bool] = False
@@ -433,15 +453,16 @@ class DisplayBackend:
                     f"not {getattr(cls, attr)!r}"
                 )
                 raise TypeError(msg)
-        if isinstance(cls.api_version, bool) or not isinstance(
-            cls.api_version, numbers.Integral
-        ):
-            msg = (
-                f"{cls.__name__}.api_version must be an integer such as "
-                f"{API_VERSION}, not {cls.api_version!r}"
-            )
-            raise TypeError(msg)
-        cls.api_version = int(cls.api_version)
+        if cls.api_version is not None:
+            if isinstance(cls.api_version, bool) or not isinstance(
+                cls.api_version, numbers.Integral
+            ):
+                msg = (
+                    f"{cls.__name__}.api_version must be an integer such as "
+                    f"{API_VERSION}, or None, not {cls.api_version!r}"
+                )
+                raise TypeError(msg)
+            cls.api_version = int(cls.api_version)
         if not isinstance(cls.name, str):
             msg = f"{cls.__name__}.name must be a string, not {cls.name!r}"
             raise TypeError(msg)

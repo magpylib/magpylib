@@ -199,6 +199,7 @@ def scatter_to_matplotlib(trace):
 
 def generic_trace_to_matplotlib(trace, antialiased=True):
     """Transform a generic trace into a matplotlib trace"""
+    row, col = trace.get("row", 1), trace.get("col", 1)
     trace = drawing_properties(trace)
     traces_mpl = []
     if trace["type"] == "mesh3d":
@@ -209,8 +210,8 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
         msg = f"Trace type {trace['type']!r} cannot be transformed into a Matplotlib trace."
         raise ValueError(msg)
     for tr in traces_mpl:
-        tr["row"] = trace.get("row", 1)
-        tr["col"] = trace.get("col", 1)
+        tr["row"] = row
+        tr["col"] = col
         tr["kwargs"] = tr.get("kwargs", {})
         if tr["constructor"] != "text":
             if trace.get("showlegend", True):

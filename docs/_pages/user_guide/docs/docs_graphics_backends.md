@@ -29,6 +29,7 @@ from magpylib.graphics.backend import DisplayBackend
 class CounterBackend(DisplayBackend):
     name = "counter"
     description = "Reports what it was handed instead of drawing it"
+    api_version = 1
     supports_animation = False
 
     def show(self, scene):
@@ -40,7 +41,7 @@ src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
 print(magpy.show(src, backend="counter", return_fig=True))
 ```
 
-Declaring the class registers it. A backend shipped in a package should instead advertise itself in the `magpylib.backends` entry-point group, so that installing it is enough:
+Declaring the class registers it, and its `description`, with a `url` if you set one, is shown where Magpylib lists the backends, such as the error for an unknown backend name. A backend shipped in a package should instead advertise itself in the `magpylib.backends` entry-point group, so that installing it is enough:
 
 ```toml
 [project.entry-points."magpylib.backends"]
@@ -63,33 +64,34 @@ A `Scene` carries everything needed to draw:
 | `legend_maxitems`                      | most entries a legend lists; past it, list the first ones and sum up the rest in one entry. 0: no legend    |
 | `options`                              | arguments Magpylib does not interpret, forwarded verbatim; `fig_*` and `show_*` among them, see below       |
 
-Each `Frame` has `label`, `title`, `traces` and `native_traces`.
+Each `Frame` has `label`, `traces` and `native_traces`.
 
 ## The trace dialect
 
-Traces are plain dictionaries, deliberately: a new key or a whole new trace type then needs no API change. Keys use the magic underscore convention (`marker_line_color` means `marker.line.color`), so `magpylib._src.defaults.defaults_utility.magic_to_dict` turns them into nested form if that suits the backend better.
+Traces are plain dictionaries, deliberately: a new key or a whole new trace type then needs no API change. Keys use the magic underscore convention (`marker_line_color` means `marker.line.color`), so `magpylib.graphics.backend.magic_to_dict` turns them into nested form if that suits the backend better.
 
 Every trace has `type`, `row`, `col`, `name`, `legendgroup` and `showlegend`. Beyond that:
 
-- **`type="mesh3d"`** — `x`, `y`, `z` vertex arrays and `i`, `j`, `k` face indices, plus `opacity` and one of three _mutually exclusive_ colourings:
+- **`type="mesh3d"`** — `x`, `y`, `z` vertex arrays and `i`, `j`, `k` face indices, plus `opacity`, an optional `flatshading=True` asking for flat faces rather than normals smoothed across edges (a TriangularMesh sets it), and one of three _mutually exclusive_ colourings:
   - a flat `color`;
   - `intensity` per vertex with a `colorscale`, used for magnetization. The scale is **piecewise** — the default tricolor one holds green to `0.16`, grey from `0.26` to `0.74`, then red — so it must be applied per fragment, by interpolating the intensity. Sampling it per vertex instead loses every plateau: a Cuboid's eight vertices are all at intensity `0` or `1`, so none of them lands on the grey band and the result is a flat green-to-red ramp;
   - `facecolor`, one colour per triangle, used where a single object needs several — a Sensor's arrow bodies, its red/green/blue axis heads and its black pixels arrive as one trace. Values mix CSS names with hex. **A trace using `facecolor` has `color = None`**, so a backend that reads only `color` renders it as a uniform blob without erroring.
 - **`type="scatter3d"`** — `x`, `y`, `z` and a `mode` combining `"lines"`, `"markers"` and `"text"`, with `line_*` and `marker_*` styling.
-- **`type="scatter"`** — a 2D curve in a `chart2d` panel, with `x` and `y`. These carry no `opacity`.
+- **`type="scatter"`** — a 2D curve in a `chart2d` panel, with `x` and `y`. These carry no `opacity`; their `hovertemplate`, `legendgrouptitle_text` and `text` are Plotly-flavoured hints a backend may ignore.
 
-Values follow Magpylib's own vocabularies rather than any one library's: marker symbols come from `magpylib._src.defaults.defaults_utility.ALLOWED_SYMBOLS` and dash styles from `ALLOWED_LINESTYLES`, both Matplotlib-derived. Every built-in backend translates them — see `SYMBOLS_TO_PLOTLY` and `SYMBOLS_TO_PYVISTA`.
+Values follow Magpylib's own vocabularies rather than any one library's: marker symbols come from `magpylib.graphics.backend.ALLOWED_SYMBOLS` and dash styles from `ALLOWED_LINESTYLES`, both Matplotlib-derived. Every built-in backend translates them — see `SYMBOLS_TO_PLOTLY` and `SYMBOLS_TO_PYVISTA`.
 
 Traces also carry Magpylib **metadata** that is not a drawing property: `object_id` identifies the object a trace came from, for picking and per-object manipulation. It is `None` on a trace merged across several objects, and process-local — never persist or transmit it. On a 2D curve it names the object the curve is named after: its sensor, or its source when sources are not summed up. More metadata keys may follow in a later release, so strip them with `drawing_properties` rather than by name.
 
 `object_id` is also how a caller recovers an object's **transform**, which the payload does not contain: position and orientation are baked into the vertex arrays, and no trace carries them separately. A host that holds the same objects — the case `object_id` exists for — resolves the token against them and reads `position` and `orientation` from the object itself. This matters for anything that manipulates an object rather than only drawing it: a gizmo anchored on a mesh's bounding-box centre rotates about the wrong point for any object whose origin is not its centroid, a Sensor being the obvious case.
 
-Strip metadata before handing a trace to your plotting library, which will otherwise reject the unknown key:
+`row` and `col` place a trace in the subplot grid; no plotting library takes them as trace arguments either. `drawing_properties` strips both the metadata and the placement (`TRACE_META_KEYS`, `PLACEMENT_KEYS`), so read the placement first:
 
 ```python
 from magpylib.graphics.backend import drawing_properties
 
-fig.add_trace(go.Mesh3d(**drawing_properties(trace)))
+row, col = trace["row"], trace["col"]
+fig.add_trace(go.Mesh3d(**drawing_properties(trace)), row=row, col=col)
 ```
 
 Declaring `merge_traces = False` stops Magpylib merging traces _across_ objects, so that every object keeps its own geometry and identity — what picking and drag gizmos need. It affects only objects that would otherwise merge, which in practice means `Collection` children under default styling; separately styled objects are never merged, because each gets its own colour. Merges _within_ one object are always applied.
@@ -117,6 +119,10 @@ A few things are easy to miss:
 - **`scene.return_fig` decides whether to _display_, not what to return.** Magpylib discards whatever `show` returns unless it is set, so the question it answers is whether to call your library's blocking show/display — returning the figure either way is fine.
 - **`scene.canvas` is a Python object** — a Matplotlib `Figure`, a Plotly `Figure`, a PyVista `Plotter`. A backend that renders outside the Python process, in a browser for instance, has nothing to bind it to and should raise. For the same reason `backend="auto"`, which infers the backend from the canvas type, will never select one.
 - **The objects are there when the traces are not enough.** `Panel.objects` holds what was passed to `show` for that cell, collections whole. It is how a backend recovers what no trace carries: the `Collection` hierarchy — `legendgroup` names only the _outermost_ collection, so three levels of nesting arrive looking like one — and the object behind an `object_id`, by matching `id(obj)`. Lists are unpacked, so an object passed on its own and inside a collection passed with it appears both ways. They are live objects: a backend that keeps them keeps them alive.
-- **Scenes are z-up, and the legend is yours to draw.** Camera code needs the z-up convention stated explicitly. `Panel.labels` carries the axis titles and every trace carries `name`, `legendgroup` and `showlegend`, but nothing renders them for you: traces sharing a `legendgroup` belong to one legend entry — that is how a `Collection`'s children collapse into a single row — and `Scene.legend_maxitems` is the most entries a flat legend should list — the built-in backends list that many and sum up the rest in one "… and k more" entry. The cap is never applied to the traces themselves, so a backend whose legend scales another way, such as a collapsible tree, can ignore it.
+- **Scenes are z-up, and the legend is yours to draw.** Camera code needs the z-up convention stated explicitly. `Panel.labels` carries the axis titles and every trace carries `name`, `legendgroup` and `showlegend`, but nothing renders them for you: traces sharing a `legendgroup` belong to one legend entry — that is how a `Collection`'s children collapse into a single row; the group is a stable name such as `"Cuboid#0"`, the outermost object's class and position, so the same scene gives the same payload on every run — and `Scene.legend_maxitems` is the most entries a flat legend should list — the built-in backends list that many and sum up the rest in one "… and k more" entry. The cap is never applied to the traces themselves, so a backend whose legend scales another way, such as a collapsible tree, can ignore it.
+
+Backends drawing sensor pixels their own way, as instances in a scene graph for example, can size and colour them as the built-ins do: `sensor_pixel_fields(objects)` gives the field each sensor's pixels read, `scale_pixel_norms(norms, scaling, minimum=...)` turns field norms into the factors `style.pixel.field.sizescaling` and `colorscaling` ask for, and `colors_from_colorscale(values, colorscale)` maps values to hex colours. All three are in `magpylib.graphics.backend`.
 
 Capability flags (`supports_animation`, `supports_subplots`, `supports_colorgradient`, `supports_animation_output`) all default to `False`, so a capability added in a later Magpylib release never changes an existing backend's behaviour. `show()` warns and falls back rather than handing over something undeclared.
+
+Set `api_version = 1`, the version of this contract you wrote against. Left unset, a backend counts as written against version 1 and is warned once the contract moves on. The version goes up only when a backend written against the previous one could misread what it receives: a field, a trace key or a trace type removed, renamed or given another meaning. Additions never bump it.

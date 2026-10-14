@@ -15,6 +15,10 @@ from scipy.spatial import distance
 from scipy.spatial.distance import pdist
 from scipy.spatial.transform import Rotation as RotScipy
 
+from magpylib._src.display.backend_tools import (
+    colors_from_colorscale,
+    scale_pixel_norms,
+)
 from magpylib._src.display.sensor_mesh import get_sensor_mesh
 from magpylib._src.display.traces_base import make_Arrow as make_BaseArrow
 from magpylib._src.display.traces_base import make_Cuboid as make_BaseCuboid
@@ -33,7 +37,6 @@ from magpylib._src.display.traces_utility import (
     create_null_dim_trace,
     draw_arrow_from_vertices,
     draw_arrow_on_circle,
-    get_hexcolors_from_colormap,
     get_legend_label,
     get_orientation_from_vec,
     group_traces,
@@ -599,7 +602,9 @@ def make_TriangularMesh_single(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
     )
     trace["name"] = get_legend_label(obj)
     # make edges sharper in plotly
-    trace.update(flatshading=True, lighting_facenormalsepsilon=0, lighting_ambient=0.7)
+    # a hint, not a plotly setting: an arbitrary mesh reads better with flat,
+    # faceted faces than with normals smoothed across its edges
+    trace.update(flatshading=True)
     return {**trace, **kwargs}
 
 
@@ -878,30 +883,24 @@ def make_Sensor(
                 coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
                 other_coords = [i for i in range(3) if i not in coords]
                 field_array[..., other_coords] = 0  # set other components to zero
+                # the public helpers, so a backend drawing pixels its own way
+                # sizes and colours them as these traces do
                 norms = np.linalg.norm(field_array, axis=-1)
                 is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
-                norms[is_null_mask] = np.nan  # avoid -inf
-                nmin, nmax = np.nanmin(norms), np.nanmax(norms)
-                ptp = nmax - nmin
-                norms = (norms - nmin) / ptp if ptp != 0 else norms * 0 + 0.5
                 sizescaling = style.pixel.field.sizescaling
-                sizemin = style.pixel.field.sizemin
                 if sizescaling != "uniform":
-                    snorms_scaled = _apply_scaling_transformation(
-                        norms, sizescaling, is_null_mask, path_ind, min_=sizemin
-                    )
+                    snorms_scaled = scale_pixel_norms(
+                        norms, sizescaling, minimum=style.pixel.field.sizemin
+                    )[path_ind]
                     snorms_scaled[is_null_mask[path_ind]] = (
                         1  # keep null sizes unscaled
                     )
                     px_sizes *= snorms_scaled
                 colorscaling = style.pixel.field.colorscaling
                 if colorscaling != "uniform":
-                    cnorms_scaled = _apply_scaling_transformation(
-                        norms, colorscaling, is_null_mask, path_ind
-                    )
-                    px_colors = get_hexcolors_from_colormap(
-                        values=cnorms_scaled,
-                        colormap=style.pixel.field.colormap,
+                    px_colors = colors_from_colorscale(
+                        scale_pixel_norms(norms, colorscaling)[path_ind],
+                        style.pixel.field.colormap,
                         cmin=0,  # scaled values are normalized to [0, 1]
                         cmax=1,
                     )

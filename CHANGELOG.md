@@ -9,8 +9,9 @@
   ([#916](https://github.com/magpylib/magpylib/pull/916)).
 - Third-party display backends: register one with `magpy.register_backend()` or
   ship it through the `magpylib.backends` entry point. Backends receive a typed
-  `Scene`, declare what they can draw and which options they take, and can tell
-  objects apart ([#973](https://github.com/magpylib/magpylib/pull/973),
+  `Scene`, declare what they can draw and which options they take, can tell
+  objects apart, and can reuse magpylib's sensor-pixel helpers
+  ([#973](https://github.com/magpylib/magpylib/pull/973),
   [#999](https://github.com/magpylib/magpylib/pull/999),
   [#1011](https://github.com/magpylib/magpylib/pull/1011)).
 - Style and defaults expose `schema()`, `get()`/`set()` and `observe()`, for
