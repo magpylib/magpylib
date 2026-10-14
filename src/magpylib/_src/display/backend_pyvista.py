@@ -227,13 +227,20 @@ def generic_trace_to_pyvista(trace):
     for tr in traces_pv:
         tr["row"] = trace.get("row", 1) - 1
         tr["col"] = trace.get("col", 1) - 1
-        if tr["type"] != "point_labels" and showlegend:
+        if tr["type"] == "point_labels":
+            continue
+        if showlegend:
             showlegend = False  # show only first subtrace
             if "label" not in tr:
                 tr["label"] = trace.get("name", "")
             leg_title = trace.get("legendgrouptitle_text", None)
             if leg_title is not None:
                 tr["label"] += f" ({leg_title})"
+        else:
+            # a 2D line arrives labelled with the trace's name; a label is a
+            # legend entry in a chart, so every other subtrace -- and every
+            # subtrace of a trace left out of the legend -- drops it
+            tr.pop("label", None)
         if not tr.get("label", ""):
             tr.pop("label", None)
     return traces_pv
@@ -309,7 +316,13 @@ def display_pyvista(scene):
                 else:
                     if charts.get((row, col)) is None:
                         charts_max_ind += 1
-                        charts[(row, col)] = pv.Chart2D()
+                        # the chart is magpylib's own, even on a given
+                        # plotter, so it is labelled whatever canvas_update says
+                        axis_labels = panel.labels if panel is not None else {}
+                        charts[(row, col)] = pv.Chart2D(
+                            x_label=axis_labels.get("x", ""),
+                            y_label=axis_labels.get("y", ""),
+                        )
                         canvas.add_chart(charts[(row, col)])
                     getattr(charts[(row, col)], typ)(**tr1)
             # in pyvista there is no way to set the bounds so we add corners with

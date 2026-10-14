@@ -409,7 +409,13 @@ def display_matplotlib(scene):
                     # see https://github.com/matplotlib/matplotlib/pull/25565
                     draw_capped_legend(ax, legend_maxitems, **lg_kw)
             else:
-                ax.legend(loc="best")
+                if canvas_update and labels.get(row_col_num):
+                    ax.set_xlabel(labels[row_col_num]["x"])
+                    ax.set_ylabel(labels[row_col_num]["y"])
+                if ax.get_legend_handles_labels()[1]:
+                    # a 2D panel whose curves are all left out of the legend
+                    # has none to draw, and matplotlib warns about an empty one
+                    ax.legend(loc="best")
 
     def animate(ind):  # pragma: no cover
         for ax in axes.values():

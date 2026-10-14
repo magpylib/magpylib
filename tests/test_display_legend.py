@@ -1,5 +1,7 @@
-"""`legend_maxitems`: the most entries a legend lists, the rest summed up."""
+"""What a legend lists: `legend_maxitems`, the most entries, the rest summed
+up; and `style.legend.show`, which objects are listed at all."""
 
+import numpy as np
 import pytest
 
 import magpylib as magpy
@@ -98,3 +100,79 @@ def test_the_cap_leaves_the_scene_payload_whole():
         DisplayBackend.backends.pop("capture", None)
     (scene,) = scenes
     assert sum(1 for tr in scene.frames[0].traces if tr.get("showlegend")) == 5
+
+
+def chart_entries(backend, fig):
+    """The texts the legends of the figure's 2D panels list, in order. For
+    "capture", the scene a backend is handed: the curves it should list."""
+    if backend == "capture":
+        curves = [t for f in fig.frames[:1] for t in f.traces if t["type"] == "scatter"]
+        return [t["name"].split(" ")[0] for t in curves if t["showlegend"]]
+    if backend == "plotly":
+        listed = [
+            t for t in fig.data if t.type == "scatter" and t.showlegend is not False
+        ]
+        return [t.name.split(" ")[0] for t in listed]
+    if backend == "matplotlib":
+        legends = [ax.get_legend() for ax in fig.axes if ax.name != "3d"]
+        return [
+            t.get_text().split(" ")[0] for lg in legends if lg for t in lg.get_texts()
+        ]
+    plots = [p for r in fig.renderers for c in (r._charts or []) for p in c.plots()]  # pylint: disable=protected-access
+    return [p.label.split(" ")[0] for p in plots if p.label]
+
+
+@pytest.mark.parametrize(
+    ("backend", "hide", "sumup", "expected"),
+    [
+        # each backend draws a hidden curve its own way: pyvista used to keep
+        # its label, matplotlib warned about an empty legend
+        ("matplotlib", "show", True, []),
+        ("plotly", "show", True, []),
+        ("pyvista", "show", True, []),
+        # which object decides is settled before any backend, so the scene
+        # handed over is enough, and free
+        ("capture", None, True, ["s1", "s2"]),
+        ("capture", "s1", True, ["s2"]),
+        ("capture", "collection", True, []),
+        # summed up, a curve is named after its sensor; otherwise after its
+        # source, whose setting then decides
+        ("capture", "cube", True, ["s1", "s2"]),
+        ("capture", "cube", False, []),
+    ],
+)
+def test_2d_curves_follow_the_legend_setting(backend, hide, sumup, expected):
+    """`style_legend_show=False` hid only the 3D entries of a figure with a 2D
+    panel (#875, #672). A curve now follows the setting of the object it is
+    named after, resolved as for 3D: show() arguments, defaults, and a parent
+    collection's setting."""
+    cube = magpy.magnet.Cuboid(
+        dimension=(2, 2, 1), polarization=(0, 0, 1), style_label="cube"
+    )
+    s1, s2 = (
+        magpy.Sensor(
+            position=np.linspace((-2, y, 2), (2, y, 2), 5), style_label=f"s{y}"
+        )
+        for y in (1, 2)
+    )
+    sensors = magpy.Collection(s1, s2) if hide == "collection" else [s1, s2]
+    target = {"s1": s1, "cube": cube, "collection": sensors}.get(hide)
+    if target is not None:
+        target.style.legend.show = False
+    objects = [sensors, cube] if hide == "collection" else [*sensors, cube]
+    if backend == "capture":
+        scenes = []
+        magpy.register_backend("capture", scenes.append, supports_subplots=True)
+    try:
+        fig = magpy.show(
+            {"objects": objects, "col": 1},
+            {"objects": objects, "col": 2, "output": "Hz", "sumup": sumup},
+            backend=backend,
+            return_fig=True,
+            **({"style_legend_show": False} if hide == "show" else {}),
+        )
+    finally:
+        DisplayBackend.backends.pop("capture", None)
+    assert (
+        chart_entries(backend, scenes[0] if backend == "capture" else fig) == expected
+    )
