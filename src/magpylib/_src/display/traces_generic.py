@@ -235,6 +235,43 @@ def make_path(input_obj, label=None):
     }
 
 
+#: Unit of each field a 2D panel plots. The curves of a panel share one y
+#: axis, so the outputs of a panel must share one unit.
+FIELD_UNITS = {"B": "T", "J": "T", "H": "A/m", "M": "A/m"}
+
+
+def parse_2d_output(output):
+    """The outputs of a 2D panel as ``[(output, field, coords), ...]``, and
+    the unit they share.
+
+    ``"Bxy"`` is the norm of Bx and By, ``"B"`` the norm of all three.
+    """
+    outputs = list(output) if isinstance(output, list | tuple) else [output]
+    parsed = []
+    for out in outputs:
+        field_str, *coords_str = out if isinstance(out, str) and out else ("",)
+        coords_str = coords_str or list("xyz")
+        if field_str not in FIELD_UNITS or set(coords_str) - set("xyz"):
+            msg = (
+                "Input output must be a string starting with 'B', 'H', 'M', 'J' "
+                "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') ); "
+                f"instead received {out!r}."
+            )
+            raise ValueError(msg)
+        parsed.append((out, field_str, coords_str))
+    units = {FIELD_UNITS[field] for _, field, _ in parsed}
+    if len(units) > 1:
+        # outside a magnet H is B/mu0 numerically, so one curve of the two
+        # would sit some 800,000 times above the other and the other be flat
+        msg = (
+            f"Input output {tuple(outputs)!r} puts fields in T (B, J) and in "
+            "A/m (H, M) on one axis, where one of them could not be read; "
+            "give them separate panels, e.g. with col=1 and col=2."
+        )
+        raise ValueError(msg)
+    return parsed, units.pop()
+
+
 def get_trace2D_dict(
     BH,
     *,
@@ -245,8 +282,6 @@ def get_trace2D_dict(
     frames_indices,
     mode,
     label_suff,
-    units_polarization,
-    units_magnetization,
     **kwargs,
 ):
     """return a 2d trace based on field and parameters"""
@@ -256,13 +291,7 @@ def get_trace2D_dict(
     marker_size = np.array([3] * len(frames_indices))
     marker_size[np.clip(focus_inds, None, len(marker_size) - 1)] = 15
     title = f"{field_str}{''.join(coords_str)}"
-    unit = (
-        units_polarization
-        if field_str in "BJ"
-        else units_magnetization
-        if field_str in "HM"
-        else ""
-    )
+    unit = FIELD_UNITS[field_str]
     trace = {
         "mode": "lines+markers",
         "legendgrouptitle_text": f"{title}"
@@ -287,18 +316,22 @@ def get_trace2D_dict(
 
 def get_traces_2D(
     *objects,
+    legend_show=None,
     output=("Bx", "By", "Bz"),
     row=None,
     col=None,
     sumup=True,
     pixel_agg=None,
     in_out="auto",
-    units_polarization="T",
-    units_magnetization="A/m",
     units_length="m",  # noqa: ARG001
     zoom=0,  # noqa: ARG001
 ):
-    """draws and animates sensor values over a path in a subplot"""
+    """draws and animates sensor values over a path in a subplot
+
+    `legend_show` maps each object to whether it is listed in a legend; a
+    curve is listed when the object it is named after is -- the sensor when
+    sources are summed up, the source otherwise.
+    """
     # pylint: disable=import-outside-toplevel
     from magpylib._src.fields.field_BH import _getBH_level2  # noqa: PLC0415
 
@@ -315,28 +348,14 @@ def get_traces_2D(
         for sub_s in (s.sensors_all if isinstance(s, magpy.Collection) else [s])
     ]
 
-    if not isinstance(output, list | tuple):
-        output = [output]
-    output_params = {}
-    field_str_list = []
-    for out, linestyle in zip(output, cycle(ALLOWED_LINESTYLES[:6])):
-        field_str, *coords_str = out
-        if not coords_str:
-            coords_str = list("xyz")
-        if field_str not in "BHMJ" and set(coords_str).difference(set("xyz")):
-            msg = (
-                "Input output must be a string starting with 'B', 'H', 'M', 'J' "
-                "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') ); "
-                f"instead received {out!r}."
-            )
-            raise ValueError(msg)
-        field_str_list.append(field_str)
-        output_params[out] = {
-            "field_str": field_str,
-            "coords_str": coords_str,
-            "line_dash": linestyle,
-        }
-    field_str_list = list(dict.fromkeys(field_str_list))
+    parsed, _ = parse_2d_output(output)
+    output_params = {
+        out: {"field_str": field_str, "coords_str": coords_str, "line_dash": dash}
+        for (out, field_str, coords_str), dash in zip(
+            parsed, cycle(ALLOWED_LINESTYLES[:6]), strict=False
+        )
+    }
+    field_str_list = list(dict.fromkeys(field for _, field, _ in parsed))
     BH_array = {}
     for field_str in field_str_list:
         BH_array[field_str] = _getBH_level2(
@@ -397,12 +416,18 @@ def get_traces_2D(
             label = label_src
             line_color = color_src
             marker_color = color_sens if len(sensors) > 1 else None
+            named_after = src
             if sumup:
                 line_color = color_sens
                 label = label_sens
+                named_after = sens
                 label_suff = (
                     f"{label_src}" if len(sources) == 1 else f"{len(sources)} sources"
                 )
+            if legend_show is None or named_after not in legend_show:
+                showlegend = named_after.style.legend.show is not False
+            else:
+                showlegend = bool(legend_show[named_after])
             num_of_pix = (
                 len(sens.pixel.reshape(-1, 3))
                 if (not isinstance(sens, magpy.Collection))
@@ -435,11 +460,13 @@ def get_traces_2D(
                             marker_color=marker_color,
                             marker_line_color=marker_color,
                             marker_symbol=marker_symbol,
+                            showlegend=showlegend,
+                            # the object the curve is named after, as for
+                            # its legend entry
+                            object_id=id(named_after),
                             type="scatter",
                             row=row,
                             col=col,
-                            units_polarization=units_polarization,
-                            units_magnetization=units_magnetization,
                         )
                     )
     return traces
@@ -1026,6 +1053,7 @@ def draw_frame(
     if objs["rc_params"]["output"] != "model3d":
         traces2d = get_traces_2D(
             *objs["objects"],
+            legend_show=objs.get("legend_show"),
             **objs["rc_params"],
         )
         traces.extend(traces2d)
@@ -1158,16 +1186,21 @@ def get_frames(
         output = props["rc_params"].get("output", "model3d") if props else "model3d"
         is_3d = output == "model3d"
         rng = ranges_rc.get(rc)
+        if is_3d:
+            labels = dict(labels_rc.get(rc, {}))
+        else:
+            # a 2D panel plots its outputs, in one unit, over the path index;
+            # its 3D range and x/y/z labels describe nothing a chart can use
+            outputs, unit = parse_2d_output(output)
+            names = ", ".join(out for out, _, _ in outputs)
+            labels = {"x": "path index", "y": f"{names} ({unit})"}
         panels.append(
             Panel(
                 row=rc[0],
                 col=rc[1],
                 kind="scene3d" if is_3d else "chart2d",
-                # chart2d panels are emitted with a 3D range and x/y/z labels
-                # that describe nothing a 2D chart can use; drop them here
-                # rather than making every backend ignore them.
                 ranges=np.asarray(rng) if (is_3d and rng is not None) else None,
-                labels=dict(labels_rc.get(rc, {})) if is_3d else {},
+                labels=labels,
                 objects=tuple(given_rc.get(rc, {}).values()),
             )
         )

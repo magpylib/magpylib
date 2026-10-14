@@ -420,6 +420,16 @@ def display_plotly(scene):
                 labels_rc={(p.row, p.col): p.labels for p in scene.panels},
                 apply2d=isanimation,
             )
+            for panel in scene.panels:
+                if panel.kind == "chart2d" and panel.labels:
+                    # pylint: disable=protected-access
+                    cell = (
+                        {"row": panel.row, "col": panel.col}
+                        if fig._grid_ref is not None
+                        else {}
+                    )
+                    fig.update_xaxes(title_text=panel.labels["x"], **cell)
+                    fig.update_yaxes(title_text=panel.labels["y"], **cell)
             fig.update_layout(
                 legend_itemsizing="constant",
                 # legend_groupclick="toggleitem",

@@ -426,11 +426,26 @@ def get_objects_props_by_row_col(*objs, colorsequence, style_kwargs):
         style_kwargs=style_kwargs,
         colorsequence=colorsequence,
     )
+    # whether each object, children included, is listed in a legend: the
+    # parent collection's setting where there is one, else the object's own,
+    # resolved with defaults and show() arguments -- the rule 3D traces follow.
+    # 2D panels hold only the objects as given, so their children's settings
+    # would be lost without this.
+    legend_show = {
+        obj: props["style"].legend.show
+        if props["showlegend"] is None
+        else props["showlegend"]
+        for obj, props in flat_sub_objs.items()
+    }
     for obj, rc_params_list in rc_params_by_obj.items():
         for rc_params in rc_params_list:
             rc = rc_params["row"], rc_params["col"]
             if rc not in flat_objs_rc:
-                flat_objs_rc[rc] = {"objects": {}, "rc_params": rc_params}
+                flat_objs_rc[rc] = {
+                    "objects": {},
+                    "rc_params": rc_params,
+                    "legend_show": legend_show,
+                }
             if rc_params["output"] == "model3d" or obj in objs_by_rc[rc]:
                 flat_objs_rc[rc]["objects"][obj] = flat_sub_objs[obj]
     return flat_objs_rc

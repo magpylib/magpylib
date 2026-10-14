@@ -47,7 +47,8 @@ import numpy as np
 #: Trace keys carrying magpylib metadata rather than drawing properties.
 #: A backend must not pass these to its plotting library -- plotly rejects
 #: unknown properties outright, and magic-underscore would read ``object_id``
-#: as ``object.id``. Use `drawing_properties` to strip them.
+#: as ``object.id``. Use `drawing_properties` to strip them, never a list of
+#: your own: the set may grow in a later release.
 TRACE_META_KEYS = frozenset({"object_id"})
 
 #: Entry-point group third-party packages advertise backends under, so that
@@ -82,7 +83,9 @@ class Panel:
     #: (3, 2) of (min, max) per axis. None for chart2d -- magpylib emits a 3D
     #: range there too, but it describes nothing a 2D chart can use.
     ranges: np.ndarray | None = None
-    #: e.g. {"x": "x (m)", ...}. Empty for chart2d, for the same reason.
+    #: Axis titles. scene3d: {"x": "x (m)", "y": "y (m)", "z": "z (m)"}.
+    #: chart2d: {"x": "path index", "y": "Bx, Bz (T)"} -- the panel's
+    #: outputs, which always share one unit, over the path index.
     labels: dict[str, str] = field(default_factory=dict)
     #: The objects drawn in this cell, as they were passed to `show`: lists
     #: unpacked, collections whole, in the order given -- so an object passed

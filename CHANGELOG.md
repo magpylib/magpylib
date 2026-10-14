@@ -4,6 +4,10 @@
 
 ### Added
 
+- 2D field panels title their axes: the path index, and the outputs with their
+  unit. A display backend finds these titles in `Panel.labels`, and each 2D
+  curve's object in `object_id`
+  ([#1008](https://github.com/magpylib/magpylib/issues/1008)).
 - Physical properties such as `current`, `dimension` and `polarization` can vary
   along a path, and `obj.path_properties` lists which ones can
   ([#916](https://github.com/magpylib/magpylib/pull/916)).
@@ -24,6 +28,10 @@
 
 ### Changed
 
+- **Breaking:** one 2D panel no longer plots fields in T (`B`, `J`) together
+  with fields in A/m (`H`, `M`), which could not share an axis readably: give
+  them separate panels
+  ([#1008](https://github.com/magpylib/magpylib/issues/1008)).
 - **Breaking:** `style.model3d.data` is a tuple: use `data = [*data, trace]` or
   `add_trace()` instead of `data.append(trace)`
   ([#987](https://github.com/magpylib/magpylib/pull/987)).
@@ -57,6 +65,14 @@
 
 ### Fixed
 
+- A malformed 2D output such as `output="Bq"` is reported as such instead of
+  failing inside the field computation
+  ([#1008](https://github.com/magpylib/magpylib/issues/1008)).
+- Display: `style_legend_show=False` hid only the 3D entries of a figure with a
+  2D panel. A 2D curve now follows the legend setting of the object it is named
+  after, its sensor or, without `sumup`, its source, including a parent
+  collection's setting ([#875](https://github.com/magpylib/magpylib/issues/875),
+  [#672](https://github.com/magpylib/magpylib/issues/672)).
 - Display: `show(title=...)` and backend arguments such as `plotly_renderer=...`
   were ignored, `style.model3d` models given as `args` alone raised, and Pyvista
   silently dropped models addressed to it, which it now warns about

@@ -162,6 +162,8 @@ def show(
         Plot output type. ``'model3d'`` shows 3D geometry. Field plots are defined via
         component strings like ``'Bx'``, ``'Bxy'``, ``'Hyz'``. Multiple axes in a string
         imply vector norm combination (e.g., ``'Bxy'`` => ``sqrt(Bx**2 + By**2)``).
+        The outputs of one panel share its y axis and so its unit: ``B`` and ``J``
+        in T, or ``H`` and ``M`` in A/m.
     sumup : bool, default True
         Sum field contributions of sources.
     pixel_agg : str, default 'mean'
