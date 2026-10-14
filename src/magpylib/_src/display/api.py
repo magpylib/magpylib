@@ -71,7 +71,8 @@ ENTRY_POINT_GROUP = "magpylib.backends"
 #: removed, renamed or given another meaning. Not bumped for an addition: a
 #: new field with a default, a new trace key or trace type (`handles_traces`
 #: guards those), a new capability (False by default), a new metadata key
-#: (`drawing_properties` strips those).
+#: (`drawing_properties` strips those). `tests/test_display_contract.py` pins
+#: it: a change to its golden file is a decision about this number.
 API_VERSION = 1
 
 

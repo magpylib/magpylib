@@ -93,7 +93,9 @@ class MagpyMarkers:
         return trace
 
 
-def update_magnet_mesh(input_obj, style, mesh_dict, color_slicing=False, path_ind=None):
+def update_magnet_mesh(
+    input_obj, style, mesh_dict, color_slicing=False, path_ind=None, show_color=None
+):
     """
     Updates an existing plotly mesh3d dictionary of an object which has a magnetic vector. The
     object gets colorized, positioned and oriented based on provided arguments.
@@ -111,7 +113,7 @@ def update_magnet_mesh(input_obj, style, mesh_dict, color_slicing=False, path_in
         # lazy access: clamp path_ind when magnetization is stored shorter
         # than the object's overall path length
         magnetization = _get_prop(mag_arr, path_ind)
-    if mag_style.show:
+    if mag_style.show if show_color is None else show_color:
         vertices = np.array([mesh_dict[k] for k in "xyz"]).T
         color_middle = mag_color.middle
         if mag_color.mode == "tricycle":
@@ -537,14 +539,18 @@ def get_generic_traces3D(
     # pylint: disable=protected-access
     # pylint: disable=import-outside-toplevel
     style = input_obj.style
-    is_mag_arrows = False
+    is_mag_arrows = is_mag_color = False
     is_mag = hasattr(input_obj, "magnetization") and hasattr(style, "magnetization")
     if is_mag and style.magnetization.show:
-        magstyl = style.magnetization
-        if magstyl.mode == "auto":
-            magstyl.mode = "color" if supports_colorgradient else "arrow"
-        is_mag_arrows = "arrow" in magstyl.mode
-        magstyl.show = "color" in magstyl.mode
+        # resolved here, never written back: the style is the same object for
+        # every frame of an animation, and writing `show = False` for arrow
+        # mode while drawing the first frame left every later frame without
+        # its arrows
+        mode = style.magnetization.mode
+        if mode == "auto":
+            mode = "color" if supports_colorgradient else "arrow"
+        is_mag_arrows = "arrow" in mode
+        is_mag_color = "color" in mode
 
     get_trace_method = getattr(input_obj, "get_trace", None)
     if get_trace_method is not None:
@@ -618,6 +624,7 @@ def get_generic_traces3D(
                         p_tr,
                         color_slicing=not supports_colorgradient,
                         path_ind=path_ind,
+                        show_color=is_mag_color,
                     )
                     if is_mag_arrows:
                         tr_arrows = make_mag_arrows(input_obj, path_ind=path_ind)
@@ -788,14 +795,18 @@ def clean_legendgroups(frames, clean_2d=False):
                     else:  # tr.legendgrouptitle.text is None:
                         tr["showlegend"] = False
                     legendgroups[lg]["traces"].append(tr)
-                    if tr_showlegend is None:
+                    # the first eligible trace stands in, the object's own
+                    # mesh, not its path line further down the group
+                    if tr_showlegend is None and legendgroups[lg]["backup"] is None:
                         legendgroups[lg]["backup"] = tr
-    # legends with showlegend
-    for lg in legendgroups.values():  # pragma: no cover
-        if lg["backup"] is not None and all(
-            tr["showlegend"] is False for tr in lg["traces"]
-        ):
-            lg["backup"]["showlegend"] = True
+        # a group whose first trace is never listed, such as a magnetization
+        # arrow, lists its backup instead -- in every frame: this ran once,
+        # after the loop, so only the last frame of an animation had them
+        for lg in legendgroups.values():
+            if lg["backup"] is not None and all(
+                tr["showlegend"] is False for tr in lg["traces"]
+            ):
+                lg["backup"]["showlegend"] = True
 
 
 def process_animation_kwargs(obj_list, animation=False, **kwargs):
@@ -946,6 +957,9 @@ def get_sensor_pixel_field(objects):
     from magpylib._src.fields.field_BH import _getBH_level2  # noqa: PLC0415
 
     field_by_sens = {}
+    # `show(markers=...)` adds its markers to the panel's objects; they are
+    # neither sources nor sensors, and used to be refused as "bad sources"
+    objects = [o for o in objects if not isinstance(o, MagpyMarkers)]
     sensors = format_obj_input(objects, allow="sensors+collections")
     sensors = [
         sub_s

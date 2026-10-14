@@ -64,7 +64,7 @@ A `Scene` carries everything needed to draw:
 | `legend_maxitems`                      | most entries a legend lists; past it, list the first ones and sum up the rest in one entry. 0: no legend    |
 | `options`                              | arguments Magpylib does not interpret, forwarded verbatim; `fig_*` and `show_*` among them, see below       |
 
-Each `Frame` has `label`, `traces` and `native_traces`.
+Each `Frame` has `label`, `traces` and `native_traces`. Every frame carries the same traces in the same order, so a trace can be followed through an animation by its position.
 
 ## The trace dialect
 
@@ -72,11 +72,11 @@ Traces are plain dictionaries, deliberately: a new key or a whole new trace type
 
 Every trace has `type`, `row`, `col`, `name`, `legendgroup` and `showlegend`. Beyond that:
 
-- **`type="mesh3d"`** — `x`, `y`, `z` vertex arrays and `i`, `j`, `k` face indices, plus `opacity`, an optional `flatshading=True` asking for flat faces rather than normals smoothed across edges (a TriangularMesh sets it), and one of three _mutually exclusive_ colourings:
+- **`type="mesh3d"`** — `x`, `y`, `z` vertex arrays of floats and `i`, `j`, `k` face indices as integer arrays, plus `opacity`, an optional `flatshading=True` asking for flat faces rather than normals smoothed across edges (a TriangularMesh sets it), and one of three _mutually exclusive_ colourings:
   - a flat `color`;
   - `intensity` per vertex with a `colorscale`, used for magnetization. The scale is **piecewise** — the default tricolor one holds green to `0.16`, grey from `0.26` to `0.74`, then red — so it must be applied per fragment, by interpolating the intensity. Sampling it per vertex instead loses every plateau: a Cuboid's eight vertices are all at intensity `0` or `1`, so none of them lands on the grey band and the result is a flat green-to-red ramp;
   - `facecolor`, one colour per triangle, used where a single object needs several — a Sensor's arrow bodies, its red/green/blue axis heads and its black pixels arrive as one trace. Values mix CSS names with hex. **A trace using `facecolor` has `color = None`**, so a backend that reads only `color` renders it as a uniform blob without erroring.
-- **`type="scatter3d"`** — `x`, `y`, `z` and a `mode` combining `"lines"`, `"markers"` and `"text"`, with `line_*` and `marker_*` styling.
+- **`type="scatter3d"`** — `x`, `y`, `z`, arrays of floats, and a `mode` combining `"lines"`, `"markers"` and `"text"`, with `line_*` and `marker_*` styling.
 - **`type="scatter"`** — a 2D curve in a `chart2d` panel, with `x` and `y`. These carry no `opacity`; their `hovertemplate`, `legendgrouptitle_text` and `text` are Plotly-flavoured hints a backend may ignore.
 
 Values follow Magpylib's own vocabularies rather than any one library's: marker symbols come from `magpylib.graphics.backend.ALLOWED_SYMBOLS` and dash styles from `ALLOWED_LINESTYLES`, both Matplotlib-derived. Every built-in backend translates them — see `SYMBOLS_TO_PLOTLY` and `SYMBOLS_TO_PYVISTA`.
