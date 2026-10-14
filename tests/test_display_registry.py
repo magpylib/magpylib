@@ -1,10 +1,12 @@
 """Tests for the display-backend registry."""
 
+import dataclasses
 import subprocess
 import sys
 import types
 import warnings
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
@@ -221,7 +223,7 @@ def test_api_version_mismatch_warns():
             return scene
 
     try:
-        with pytest.warns(UserWarning, match="api_version"):
+        with pytest.warns(UserWarning, match=r"api_version 0, older"):
             magpy.show(make_source(), backend="stale")
     finally:
         DisplayBackend.backends.pop("stale", None)
@@ -436,13 +438,14 @@ def test_builtins_do_not_warn_about_their_own_traces(name):
 @pytest.mark.parametrize(
     ("name", "accepted"),
     [
-        ("matplotlib", {"antialiased", "return_animation"}),
-        ("plotly", {"renderer"}),
-        ("pyvista", {"jupyter_backend", "mp4_quality"}),
+        ("matplotlib", {"antialiased", "return_animation", "fig_*", "show_*"}),
+        ("plotly", {"renderer", "fig_*", "show_*"}),
+        ("pyvista", {"jupyter_backend", "mp4_quality", "fig_*", "show_*"}),
     ],
 )
 def test_builtins_declare_the_options_they_accept(name, accepted):
-    """Declared so a misspelled argument can be reported rather than ignored."""
+    """Declared so a misspelled argument can be reported rather than ignored.
+    The two starred namespaces are what each forwards to its library."""
     assert DisplayBackend.backends[name].accepts_options == frozenset(accepted)
 
 
@@ -871,3 +874,217 @@ def test_the_report_names_the_object_it_got(monkeypatch):
 
     with pytest.warns(UserWarning, match="Plain"):
         DisplayBackend.discover()
+
+
+# --- declarations are checked where they are written -------------------------
+
+
+@pytest.mark.parametrize(
+    ("attr", "value", "outcome"),
+    [
+        ("handles_traces", ["scatter3d"], frozenset({"scatter3d"})),  # coerced
+        ("accepts_options", (n for n in ["x"]), frozenset({"x"})),  # read once
+        ("accepts_options", {"*"}, frozenset({"*"})),
+        ("api_version", np.int64(1), 1),
+        ("handles_traces", "mesh3d", TypeError),  # a string is not a set of names
+        ("accepts_options", 3, TypeError),
+        ("accepts_options", {"fig*"}, ValueError),  # a namespace ends in `_*`
+        ("supports_animation", "yes", TypeError),
+        ("api_version", "1", TypeError),  # used to warn that 1 differs from 1
+        ("api_version", True, TypeError),
+        ("description", 3, TypeError),
+        ("name", 3, TypeError),
+        ("name", "auto", ValueError),  # show()'s inference, never a backend
+    ],
+)
+def test_a_declaration_is_checked_at_the_class_statement(attr, value, outcome):
+    """Reported where it is written, naming the attribute: a list in
+    `handles_traces` used to fail at the first show(), from inside a set
+    difference in the dispatcher."""
+    body = {attr: value, "show": staticmethod(lambda scene: scene)}
+    if attr != "name":
+        body["name"] = "checked"
+    try:
+        if isinstance(outcome, type) and issubclass(outcome, Exception):
+            with pytest.raises(outcome, match=attr):
+                type("Checked", (DisplayBackend,), body)
+            assert "checked" not in DisplayBackend.backends
+        else:
+            type("Checked", (DisplayBackend,), body)
+            assert getattr(DisplayBackend.backends["checked"], attr) == outcome
+    finally:
+        DisplayBackend.backends.pop("checked", None)
+
+
+@pytest.mark.parametrize(
+    ("name", "keyword", "error"),
+    [
+        ("leak", {"_discovered": True}, TypeError),  # any attribute used to pass
+        (None, {}, TypeError),  # used to fail on `.title()`
+        ("", {}, ValueError),  # used to register nothing, silently
+    ],
+)
+def test_register_backend_checks_its_arguments(name, keyword, error):
+    with pytest.raises(error, match=r"name|unknown backend capability"):
+        magpy.register_backend(name, lambda scene: scene, **keyword)
+    assert "leak" not in DisplayBackend.backends
+
+
+def test_a_class_from_elsewhere_replacing_a_backend_is_reported():
+    """A notebook re-running its cell is the same module and stays quiet; a
+    package, or this test module, taking over 'matplotlib' is worth a word.
+    Subclassing a registered backend without a `name` of its own registers
+    nothing: it used to replace what it subclassed."""
+    builtin = DisplayBackend.backends["matplotlib"]
+
+    class Tweaked(type(builtin)):
+        pass
+
+    assert DisplayBackend.backends["matplotlib"] is builtin
+
+    with pytest.warns(UserWarning, match=r"replaces the 'matplotlib' display backend"):
+
+        class Impostor(DisplayBackend):
+            name = "matplotlib"
+
+            def show(self, scene):
+                return scene
+
+    assert isinstance(DisplayBackend.backends["matplotlib"], Impostor)
+
+
+# --- option routing ----------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("accepts", "given", "expected", "warning"),
+    [
+        # `stylesheet` is the backend's, `style_color` is magpylib's: the
+        # underscore decides. `stylesheet` used to become the style property
+        # 'heet'; `figure` and `showcase` vanished.
+        (
+            {"stylesheet", "figure", "showcase"},
+            {"stylesheet": "dark", "figure": 1, "showcase": 2},
+            {"stylesheet": "dark", "figure": 1, "showcase": 2},
+            None,
+        ),
+        # names that never reach a backend are reported when declared
+        ({"legend_position", "zoom"}, {}, {}, r"legend_position.*zoom.*reserves"),
+        # fig_*/show_* are plain options, the dict spelling flattened one
+        # level with values verbatim; `Scene` has no field for them
+        (
+            None,
+            {"fig_width": 400, "show_block": False, "fig": {"layout": {"h": 3}}},
+            {"fig_width": 400, "fig_layout": {"h": 3}, "show_block": False},
+            None,
+        ),
+        # undeclared, `fig_width` is the typo it looks like on a backend with
+        # no figure constructor; a bare `figsize` used to vanish on any backend
+        (set(), {"fig_width": 400}, {"fig_width": 400}, r"unexpected.*fig_width"),
+        ({"fig_*", "show_*"}, {"figsize": 3}, {"figsize": 3}, r"unexpected.*figsize"),
+        # a trailing star accepts its namespace, and only that one
+        ({"fig_*"}, {"fig_x": 1, "show_block": False}, None, r"unexpected.*show_block"),
+        # `probe_fig_title` landed in two places and was reported as ignored
+        ({"fig_*"}, {"probe_fig_title": "x"}, {"fig_title": "x"}, None),
+        # magpylib's own arguments are read from the bare spelling only, and a
+        # typo is reported as typed, not with its prefix stripped
+        (
+            set(),
+            {"probe_return_fig": True},
+            {"return_fig": True},
+            r"unexpected.*probe_return_fig",
+        ),
+        # the ladder from #657: dict < underscore < backend-prefixed dict <
+        # backend-prefixed underscore, each flattened before the merge so a
+        # dict at one level does not wipe the keys of the one below
+        (
+            None,
+            {
+                "fig": {"a": 1, "b": 1, "c": 1, "d": 1, "e": 1},
+                "fig_b": 2,
+                "fig_c": 2,
+                "fig_d": 2,
+                "probe": {"fig": {"c": 3, "d": 3}},
+                "probe_fig": {"d": 4},
+                "probe_fig_e": 5,
+            },
+            {"fig_a": 1, "fig_b": 2, "fig_c": 3, "fig_d": 4, "fig_e": 5},
+            None,
+        ),
+    ],
+)
+def test_every_option_is_routed_through_accepts_options(
+    accepts, given, expected, warning
+):
+    seen = []
+    try:
+        magpy.register_backend("probe", seen.append, accepts_options=accepts)
+        if warning is None:
+            with warnings.catch_warnings():
+                warnings.simplefilter("error")
+                magpy.show(make_source(), backend="probe", **given)
+        else:
+            with pytest.warns(UserWarning, match=warning) as caught:
+                magpy.show(make_source(), backend="probe", **given)
+            # on the caller's line, not in magpylib's frames
+            assert all(w.filename == __file__ for w in caught)
+    finally:
+        DisplayBackend.backends.pop("probe", None)
+    if expected is not None:
+        assert seen[0].options == expected
+    assert seen[0].return_fig is False
+    fields = {f.name for f in dataclasses.fields(public_backend.Scene)}
+    assert not fields & {"fig_kwargs", "show_kwargs"}
+
+
+@pytest.mark.parametrize(
+    ("name", "extra", "warning"),
+    [
+        # with `return_fig` the show call never runs, so `show_*` went nowhere
+        ("matplotlib", {"return_fig": True, "show_block": False}, r"show_block"),
+        ("plotly", {"return_fig": True, "renderer": "png"}, r"renderer"),
+        ("pyvista", {"return_fig": True, "show_jupyter_backend": "x"}, r"show_jup"),
+        # nor does `fig_*` on a canvas the user gave
+        ("matplotlib", {"canvas": plt.figure, "fig_facecolor": "k"}, r"fig_facecolor"),
+    ],
+)
+def test_builtins_report_what_they_cannot_use(name, extra, warning):
+    extra = {k: v() if callable(v) else v for k, v in extra.items()}
+    with pytest.warns(UserWarning, match=warning + r".*ignored"):
+        magpy.show(make_source(), backend=name, **extra)
+
+
+# a `Plotter` whose constructor rejected an argument is half-built, and
+# pyvista's `__del__` raises again on it at garbage collection
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
+@pytest.mark.parametrize(
+    ("name", "given", "read", "expected"),
+    [
+        ("matplotlib", {"fig_figsize": (6, 6)}, "get_size_inches", (6, 6)),
+        ("plotly", {"fig_layout": {"width": 600}}, "layout.width", 600),
+        ("pyvista", {"fig_window_size": (600, 600)}, "window_size", (600, 600)),
+        # main raised "multiple values for keyword argument 'off_screen'"
+        ("pyvista", {"fig_off_screen": True}, "off_screen", True),
+        ("matplotlib", {"fig_nonsense": 1}, None, AttributeError),
+        ("plotly", {"fig_layout_width": -5}, None, ValueError),
+        ("pyvista", {"fig_window_size": "x"}, None, IndexError),
+        ("pyvista", {"fig_shape": (2, 2)}, None, MagpylibBadUserInput),  # magpylib's
+    ],
+)
+def test_fig_arguments_reach_the_library(name, given, read, expected):
+    """The value as given -- a revision once dropped the user's figsize -- and
+    the library's own error when it refuses, keeping its type, with a note
+    naming the show() argument. What the backend sets itself, such as
+    pyvista's subplot grid, is not the user's to override."""
+    if read is not None:
+        value = magpy.show(make_source(), backend=name, return_fig=True, **given)
+        for attr in read.split("."):
+            value = getattr(value, attr)
+        value = value() if callable(value) else value
+        assert tuple(np.atleast_1d(value)) == tuple(np.atleast_1d(expected))
+        return
+    with pytest.raises(expected) as info:
+        magpy.show(make_source(), backend=name, return_fig=True, **given)
+    (argument,) = given
+    if expected is not MagpylibBadUserInput:
+        assert any(argument in note for note in info.value.__notes__)

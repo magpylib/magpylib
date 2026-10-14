@@ -37,12 +37,16 @@ Four things not to do here:
   ugly, and it works.
 """
 
+import numbers
+import sys
 import warnings
 from dataclasses import dataclass, field
 from importlib.metadata import entry_points
 from typing import Any, ClassVar, Literal
 
 import numpy as np
+
+from magpylib._src.exceptions import MagpylibBadUserInput
 
 #: Trace keys carrying magpylib metadata rather than drawing properties.
 #: A backend must not pass these to its plotting library -- plotly rejects
@@ -59,6 +63,98 @@ ENTRY_POINT_GROUP = "magpylib.backends"
 #: Version of the payload contract. Bumped when the *envelope* changes shape
 #: in a way a backend written against an older magpylib could not handle.
 API_VERSION = 1
+
+
+def forward_options(call, prefix, options, /, defaults=None, **fixed):
+    """Call `call` with `options`, the user's ``<prefix>_*`` arguments, over
+    `defaults`, which they may override, and `fixed`, which they may not.
+
+    The built-in backends forward ``fig_*`` to their figure constructor and
+    ``show_*`` to their show call. magpylib cannot know what those accept,
+    so the library's own error is the check. It keeps its type -- plotly a
+    KeyError for an unknown key, a ValueError for a bad value, pyvista an
+    IndexError for a malformed window size -- and gains a note naming the
+    `show()` arguments that were passed, since the library names only its
+    own keyword. Nothing here claims they caused it.
+    """
+    clash = sorted(set(options) & set(fixed))
+    if clash:
+        what = ", ".join(f"{k}={fixed[k]!r}" for k in clash)
+        msg = (
+            f"show() got {[f'{prefix}_{k}' for k in clash]}, but this backend "
+            f"sets {what} itself."
+        )
+        raise MagpylibBadUserInput(msg)
+    try:
+        return call(**{**(defaults or {}), **options, **fixed})
+    except Exception as err:
+        if options:
+            names = sorted(f"{prefix}_{k}" for k in options)
+            err.add_note(
+                f"show() passed {getattr(call, '__qualname__', call)} the "
+                f"argument(s) {names}; check them first."
+            )
+        raise
+
+
+def warn_unused_options(names, reason):
+    """Say that the `show()` arguments `names` went nowhere, and why."""
+    if names:
+        warnings.warn(
+            f"show() got {sorted(names)}, but {reason}, so they are ignored.",
+            stacklevel=user_stacklevel(),
+        )
+
+
+def user_stacklevel():
+    """The ``stacklevel`` that points a warning raised by the caller at the
+    nearest frame outside magpylib, which is the user's `show()` call."""
+    frame = sys._getframe(1)
+    level = 1
+    while frame is not None and _in_magpylib(frame.f_globals.get("__name__", "")):
+        frame = frame.f_back
+        level += 1
+    return level
+
+
+def _in_magpylib(module):
+    return module == "magpylib" or module.startswith("magpylib.")
+
+
+def _iterable(value):
+    try:
+        iter(value)
+    except TypeError:
+        return False
+    return True
+
+
+def _option_matches(name, patterns):
+    """Whether `name` is in `patterns`, where a trailing ``*`` matches a prefix."""
+    return any(
+        name == p or (p.endswith("*") and name.startswith(p[:-1])) for p in patterns
+    )
+
+
+def _check_option_pattern(owner, attr, pattern):
+    """A declared option is a name, a ``<name>_*`` namespace, or ``*`` for
+    anything. Checked at declaration so the rule can only be relaxed later."""
+    ok = (
+        pattern
+        and ("*" not in pattern or pattern == "*" or pattern.endswith("_*"))
+        and pattern.count("*") <= 1
+    )
+    if not ok:
+        msg = (
+            f"{owner}.{attr} entry {pattern!r} must be an option name, a "
+            "namespace such as 'fig_*', or '*' for anything"
+        )
+        raise ValueError(msg)
+
+
+#: Names no backend can register under: ``auto`` is `show()`'s inference,
+#: ``fig`` and ``show`` are the two option namespaces.
+RESERVED_BACKEND_NAMES = frozenset({"auto", "fig", "show"})
 
 
 def drawing_properties(trace):
@@ -153,11 +249,14 @@ class Scene:
     #: ignore it. Never applied to the traces themselves: the payload stays
     #: whole.
     legend_maxitems: int = 20
-    fig_kwargs: dict[str, Any] = field(default_factory=dict)
-    show_kwargs: dict[str, Any] = field(default_factory=dict)
     #: Options magpylib does not interpret, forwarded verbatim. This is where
     #: backend-specific arguments live (plotly's `renderer`, pyvista's
-    #: `jupyter_backend`, matplotlib's `antialiased`, ...).
+    #: `jupyter_backend`, matplotlib's `antialiased`, ...), spelled bare or
+    #: with the backend's name as prefix (``plotly_renderer``). Two
+    #: conventional namespaces among them: ``fig_*`` for a figure
+    #: constructor and ``show_*`` for a show call, which the built-in
+    #: backends forward to their library; `prefixed_options` reads either.
+    #: A backend with no such library treats them as any other option.
     options: dict[str, Any] = field(default_factory=dict)
 
     @property
@@ -195,6 +294,19 @@ class Scene:
         """
         panel = self.panel(row, col)
         return "scene3d" if panel is None else panel.kind
+
+    def prefixed_options(self, prefix: str) -> dict[str, Any]:
+        """The options under ``<prefix>_``, with the prefix removed.
+
+        ``show(fig_figsize=(3, 3))`` arrives as ``options["fig_figsize"]`` and
+        ``scene.prefixed_options("fig")`` gives ``{"figsize": (3, 3)}``. The
+        built-in backends read their figure-constructor and show-call
+        arguments this way.
+        """
+        head = f"{prefix}_"
+        return {
+            k[len(head) :]: v for k, v in self.options.items() if k.startswith(head)
+        }
 
 
 class DisplayBackend:
@@ -238,7 +350,9 @@ class DisplayBackend:
     #: Names this backend accepts in `Scene.options`, the bag of arguments
     #: magpylib itself does not interpret. ``None`` means "accept anything",
     #: which is also what makes a typo like ``retrun_fig=True`` pass silently.
-    #: Declaring the set lets magpylib say so. Modelled on xarray's
+    #: Declaring the set lets magpylib say so. A trailing ``*`` accepts a
+    #: namespace: the built-ins declare ``"fig_*"`` and ``"show_*"``, which
+    #: they forward to their library. Modelled on xarray's
     #: `BackendEntrypoint.open_dataset_parameters`.
     accepts_options: ClassVar[frozenset[str] | None] = None
 
@@ -250,6 +364,9 @@ class DisplayBackend:
     handles_traces: ClassVar[frozenset[str] | None] = None
 
     _discovered: ClassVar[bool] = False
+    #: Whether the dispatcher has checked `accepts_options` against the names
+    #: magpylib reserves; done once, at the first `show()`.
+    _reserved_checked: bool = False
 
     #: Cleared at the end of ``magpylib/__init__.py``. Until then no entry
     #: point may be loaded: loading one runs third-party code that imports
@@ -261,11 +378,96 @@ class DisplayBackend:
     #: error and never registers.
     _importing: ClassVar[bool] = True
 
+    #: What a backend declares besides `name` and `show`: the names
+    #: `register_backend` accepts as keywords.
+    _declarable: ClassVar[frozenset[str]] = frozenset(
+        {
+            "api_version",
+            "description",
+            "url",
+            "supports_animation",
+            "supports_subplots",
+            "supports_colorgradient",
+            "supports_animation_output",
+            "supports_native_traces",
+            "merge_traces",
+            "accepts_options",
+            "handles_traces",
+        }
+    )
+
     def __init_subclass__(cls, **kwargs):
-        """Register any subclass that names itself."""
+        """Check the declaration and register any subclass that names itself.
+
+        Checked here, at the class statement, so a malformed declaration is
+        reported where it is written rather than at the first `show()` call,
+        from inside a set difference.
+        """
         super().__init_subclass__(**kwargs)
-        if cls.name:
-            cls.backends[cls.name] = cls()
+        for attr in ("handles_traces", "accepts_options"):
+            value = getattr(cls, attr)
+            if value is None:
+                continue
+            # materialised once: a generator would be spent by the check
+            names = (
+                None if isinstance(value, str) or not _iterable(value) else list(value)
+            )
+            if names is None or not all(isinstance(v, str) for v in names):
+                msg = (
+                    f"{cls.__name__}.{attr} must be a set of names or None, "
+                    f"not {value!r}"
+                )
+                raise TypeError(msg)
+            if attr == "accepts_options":
+                for pattern in names:
+                    _check_option_pattern(cls.__name__, attr, pattern)
+            setattr(cls, attr, frozenset(names))
+        for attr in ("description", "url"):
+            if not isinstance(getattr(cls, attr), str):
+                msg = f"{cls.__name__}.{attr} must be a string, not {getattr(cls, attr)!r}"
+                raise TypeError(msg)
+        for attr in (*cls._capability_attrs(), "merge_traces"):
+            if not isinstance(getattr(cls, attr), bool):
+                msg = (
+                    f"{cls.__name__}.{attr} must be True or False, "
+                    f"not {getattr(cls, attr)!r}"
+                )
+                raise TypeError(msg)
+        if isinstance(cls.api_version, bool) or not isinstance(
+            cls.api_version, numbers.Integral
+        ):
+            msg = (
+                f"{cls.__name__}.api_version must be an integer such as "
+                f"{API_VERSION}, not {cls.api_version!r}"
+            )
+            raise TypeError(msg)
+        cls.api_version = int(cls.api_version)
+        if not isinstance(cls.name, str):
+            msg = f"{cls.__name__}.name must be a string, not {cls.name!r}"
+            raise TypeError(msg)
+        if cls.name in RESERVED_BACKEND_NAMES:
+            msg = f"{cls.name!r} cannot name a display backend; it is reserved."
+            raise ValueError(msg)
+        # registered only by a class that names itself: subclassing a
+        # registered backend without a `name` of its own is a tweak, not a
+        # replacement of what it subclasses
+        name = cls.__dict__.get("name", "")
+        if name:
+            old = cls.backends.get(name)
+            if old is not None and type(old).__module__ != cls.__module__:
+                # a notebook re-running its cell is the same module and stays
+                # quiet; a package taking over "matplotlib" is worth a word
+                warnings.warn(
+                    f"{cls.__module__}.{cls.__qualname__} replaces the {name!r} "
+                    f"display backend from {type(old).__module__}.",
+                    stacklevel=user_stacklevel(),
+                )
+            cls.backends[name] = cls()
+
+    @classmethod
+    def _capability_attrs(cls):
+        """Every ``supports_*`` attribute, inherited or added by a subclass."""
+        return [name for name in dir(cls) if name.startswith("supports_")]
 
     @classmethod
     def discover(cls):
@@ -349,7 +551,9 @@ class DisplayBackend:
         """Option names in `scene` this backend does not declare."""
         if self.accepts_options is None:
             return frozenset()
-        return frozenset(set(scene.options) - self.accepts_options)
+        return frozenset(
+            n for n in scene.options if not _option_matches(n, self.accepts_options)
+        )
 
     def unhandled_trace_types(self, scene: Scene) -> frozenset[str]:
         """Trace types present in `scene` that this backend does not declare."""

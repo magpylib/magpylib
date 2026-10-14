@@ -10,12 +10,13 @@ time everything is loaded.
 
 # pylint: disable=import-outside-toplevel
 
+import inspect
 import warnings
 from dataclasses import replace
 from functools import cache
 from importlib import import_module
 
-from magpylib._src.display.api import API_VERSION, DisplayBackend
+from magpylib._src.display.api import API_VERSION, DisplayBackend, user_stacklevel
 
 
 @cache
@@ -26,6 +27,23 @@ def _display_arg_names():
     )
 
     return set(get_defaults_dict("display"))
+
+
+@cache
+def _consumed_arg_names():
+    """Names `show()` consumes before dispatch, which no backend can claim:
+    its own parameters, the per-panel ones, and what the dispatcher reads."""
+    from magpylib._src.display.display import show  # noqa: PLC0415
+    from magpylib._src.display.traces_utility import (  # noqa: PLC0415
+        DEFAULT_ROW_COL_PARAMS,
+    )
+
+    own = {
+        p for p in inspect.signature(show).parameters if p not in ("objects", "kwargs")
+    }
+    return frozenset(
+        own | set(DEFAULT_ROW_COL_PARAMS) | {"title", "repeat", "legend_maxitems"}
+    )
 
 
 def register_backend(name, show_func, **capabilities):
@@ -71,7 +89,7 @@ def register_backend(name, show_func, **capabilities):
         Extra keyword arguments this backend accepts, forwarded through
         `Scene.options`. ``None`` accepts anything, which also means a
         misspelled argument passes unnoticed; declaring the set lets magpylib
-        warn about it.
+        warn about it. A trailing ``*`` accepts a namespace, e.g. ``"fig_*"``.
 
     Returns
     -------
@@ -88,7 +106,13 @@ def register_backend(name, show_func, **capabilities):
     >>> magpy.show(src, backend="typelist", return_fig=True)
     ['mesh3d', 'scatter3d']
     """
-    unknown = set(capabilities) - set(vars(DisplayBackend))
+    if not isinstance(name, str):
+        msg = f"register_backend() needs a name string, not {name!r}"
+        raise TypeError(msg)
+    if not name:
+        msg = "register_backend() needs a non-empty name"
+        raise ValueError(msg)
+    unknown = set(capabilities) - DisplayBackend._declarable
     if unknown:
         msg = (
             f"register_backend() got unknown backend capability "
@@ -119,7 +143,7 @@ class ShowDispatcher:
             f"the {backend} backend does not support {feature!r}. "
             f"Use {supported_str} instead. "
             f"{resolution}",
-            stacklevel=3,
+            stacklevel=user_stacklevel(),
         )
 
     @classmethod
@@ -183,37 +207,78 @@ class ShowDispatcher:
         # before dispatch -- so it is detected from the resolved grid instead.
         if (max_rows, max_cols) != (None, None) and not self.supports["subplots"]:
             objs = cls._collapse_subplots(objs, backend)
-        display_kwargs = {
-            k: v
-            for k, v in kwargs.items()
-            if any(k.startswith(arg) for arg in disp_args)
+        consumed = _consumed_arg_names()
+        # the backend's own, spelled ``<backend>={...}`` or ``<backend>_<name>``.
+        # Its prefix is taken first, so that a backend called "units_probe"
+        # keeps "units_probe_x" -- unless the name *is* a show() argument:
+        # ``style_color`` stays magpylib's even for a backend called "style"
+        head = f"{backend}_"
+        owns_prefix = not (backend in disp_args or backend in consumed)
+        typed = {
+            k[len(head) :]: k for k in kwargs if owns_prefix and k.startswith(head)
         }
-        kwargs = {k: v for k, v in kwargs.items() if k not in display_kwargs}
-        backend_kwargs = {
-            k[len(backend) + 1 :]: v
-            for k, v in kwargs.items()
-            if k.startswith(f"{backend.lower()}_")
+        prefixed = {stripped: kwargs[k] for stripped, k in typed.items()}
+        rest = {k: v for k, v in kwargs.items() if k not in typed.values()}
+        # what magpylib interprets: the defaults tree's names, bare or as a
+        # ``<name>_`` prefix. The underscore matters: ``stylesheet`` is a
+        # backend's option, ``style_color`` is magpylib's.
+        display_kwargs = {k: v for k, v in rest.items() if _reserved(k, disp_args)}
+        options = {k: v for k, v in rest.items() if k not in display_kwargs}
+        # what the dispatcher itself reads, from the bare spelling only:
+        # ``plotly_return_fig`` is the backend's own option
+        canvas = options.pop("canvas", None)
+        canvas_update = options.pop("canvas_update", True)
+        return_fig = options.pop("return_fig", False)
+        repeat = options.pop("repeat", False)
+        own_dict = options.pop(backend, {})
+        if not isinstance(own_dict, dict):
+            msg = (
+                f"show() got {backend}={own_dict!r}; the backend-named argument "
+                f"takes a dict of that backend's options, e.g. "
+                f"{backend}={{'renderer': 'png'}}."
+            )
+            raise TypeError(msg)
+        # precedence, lowest first: ``fig={...}``, ``fig_a=``, the backend's
+        # dict, the backend's prefix -- each flattened one level before the
+        # merge, so ``probe={"fig": {"a": 1, "b": 1}}`` with ``probe_fig={"a": 2}``
+        # gives fig_a=2 and keeps fig_b=1
+        options = {
+            **_flat_namespaces(options),
+            **_flat_namespaces(own_dict),
+            **_flat_namespaces(prefixed),
         }
-        backend_kwargs = {**kwargs.pop(backend, {}), **backend_kwargs}
-        kwargs = {k: v for k, v in kwargs.items() if not k.startswith(backend)}
-        fig_kwargs = {
-            **kwargs.pop("fig", {}),
-            **{k[4:]: v for k, v in kwargs.items() if k.startswith("fig_")},
-            **backend_kwargs.pop("fig", {}),
-            **{k[4:]: v for k, v in backend_kwargs.items() if k.startswith("fig_")},
-        }
-        show_kwargs = {
-            **kwargs.pop("show", {}),
-            **{k[5:]: v for k, v in kwargs.items() if k.startswith("show_")},
-            **backend_kwargs.pop("show", {}),
-            **{k[5:]: v for k, v in backend_kwargs.items() if k.startswith("show_")},
-        }
-        kwargs = {
-            k: v for k, v in kwargs.items() if not (k.startswith(("fig", "show")))
-        }
-        # backend-prefixed arguments that are neither fig_ nor show_ are still
-        # meant for the backend, e.g. plotly_renderer=... -> renderer=...
-        kwargs = {**kwargs, **backend_kwargs}
+        if not self._reserved_checked:
+            claimed = sorted(
+                n
+                for n in self.accepts_options or ()
+                if _reserved(n, disp_args) or n in consumed
+            )
+            if claimed:
+                warnings.warn(
+                    f"The {backend} backend declares option(s) {claimed} that "
+                    f"magpylib reserves and never passes on: show()'s own "
+                    f"arguments, and any name equal to, or starting with, one "
+                    f"of {sorted(disp_args)} followed by an underscore.",
+                    stacklevel=user_stacklevel(),
+                )
+            own_prefix = sorted(
+                n for n in self.accepts_options or () if n.startswith(head)
+            )
+            if own_prefix:
+                warnings.warn(
+                    f"The {backend} backend declares option(s) {own_prefix} with "
+                    f"its own name as prefix; the prefix is stripped before the "
+                    "backend sees an option, so declare the bare name.",
+                    stacklevel=user_stacklevel(),
+                )
+            if not owns_prefix:
+                warnings.warn(
+                    f"The backend name {backend!r} is also a show() argument, so "
+                    f"{backend}={{...}} can never reach it; only "
+                    f"{backend}_<option> spellings do.",
+                    stacklevel=user_stacklevel(),
+                )
+            self._reserved_checked = True
         scene = get_frames(
             objs,
             supports_colorgradient=self.supports["colorgradient"],
@@ -227,36 +292,40 @@ class ShowDispatcher:
         # the dispatch point knows about the canvas and the user's options.
         scene = replace(
             scene,
-            canvas=kwargs.pop("canvas", None),
-            canvas_update=kwargs.pop("canvas_update", True),
-            return_fig=kwargs.pop("return_fig", False),
-            animation=replace(scene.animation, repeat=kwargs.pop("repeat", False)),
-            fig_kwargs=fig_kwargs,
-            show_kwargs=show_kwargs,
+            canvas=canvas,
+            canvas_update=canvas_update,
+            return_fig=return_fig,
+            animation=replace(scene.animation, repeat=repeat),
             # anything magpylib does not interpret is the backend's own
-            options=kwargs,
+            options=options,
         )
         if self.api_version != API_VERSION:
+            direction = "older" if self.api_version < API_VERSION else "newer"
+            advice = (
+                "The backend may misread what it is handed; look for an update of it."
+                if direction == "older"
+                else "It may expect what this magpylib does not send; update magpylib."
+            )
             warnings.warn(
                 f"The {backend!r} backend declares api_version "
-                f"{self.api_version}, but this magpylib emits version "
-                f"{API_VERSION}. The figure may be wrong or incomplete.",
-                stacklevel=2,
+                f"{self.api_version}, {direction} than the version "
+                f"{API_VERSION} this magpylib emits. {advice}",
+                stacklevel=user_stacklevel(),
             )
         unaccepted = self.unaccepted_options(scene)
         if unaccepted:
             warnings.warn(
                 f"show() got unexpected keyword argument(s) "
-                f"{sorted(unaccepted)!r} for the {backend} backend; they are "
-                "ignored. Check for a typo.",
-                stacklevel=2,
+                f"{sorted(typed.get(n, n) for n in unaccepted)!r} for the "
+                f"{backend} backend; they are ignored. Check for a typo.",
+                stacklevel=user_stacklevel(),
             )
         unhandled = self.unhandled_trace_types(scene)
         if unhandled:
             warnings.warn(
                 f"The {backend} backend does not declare support for trace "
                 f"type(s) {sorted(unhandled)!r}; they may not be drawn.",
-                stacklevel=2,
+                stacklevel=user_stacklevel(),
             )
         figure = self.show(scene)
         # show() documents that it returns the figure only when return_fig is
@@ -264,6 +333,35 @@ class ShowDispatcher:
         # held by convention rather than by construction -- a backend that
         # returns its figure unconditionally leaked it into the caller.
         return figure if scene.return_fig else None
+
+
+def _reserved(name, display_args):
+    """Whether `name` is one magpylib interprets: a display default's name,
+    bare or as the ``<name>_`` prefix of a nested one."""
+    return any(name == arg or name.startswith(f"{arg}_") for arg in display_args)
+
+
+def _flat_namespaces(options):
+    """``fig={...}`` and ``show={...}`` as ``fig_*``/``show_*`` keys.
+
+    One level, values verbatim: ``fig={"layout": {"width": 400}}`` is
+    ``fig_layout={"width": 400}``, exactly what the underscore spelling
+    passes. The dict spelling is the lower-precedence one: ``fig_a=2`` beats
+    ``fig={"a": 1}``, as it always has.
+    """
+    flat = {}
+    for namespace in ("fig", "show"):
+        nested = options.get(namespace)
+        if isinstance(nested, dict):
+            flat.update({f"{namespace}_{k}": v for k, v in nested.items()})
+    flat.update(
+        {
+            k: v
+            for k, v in options.items()
+            if not (k in ("fig", "show") and isinstance(v, dict))
+        }
+    )
+    return flat
 
 
 def get_show_func(backend):
@@ -279,7 +377,7 @@ register_backend(
     get_show_func("matplotlib"),
     supports_native_traces=True,
     handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
-    accepts_options=frozenset({"antialiased", "return_animation"}),
+    accepts_options=frozenset({"antialiased", "return_animation", "fig_*", "show_*"}),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=False,
@@ -292,7 +390,7 @@ register_backend(
     get_show_func("plotly"),
     supports_native_traces=True,
     handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
-    accepts_options=frozenset({"renderer"}),
+    accepts_options=frozenset({"renderer", "fig_*", "show_*"}),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
@@ -303,7 +401,7 @@ register_backend(
     "pyvista",
     get_show_func("pyvista"),
     handles_traces=frozenset({"mesh3d", "scatter3d", "scatter"}),
-    accepts_options=frozenset({"jupyter_backend", "mp4_quality"}),
+    accepts_options=frozenset({"jupyter_backend", "mp4_quality", "fig_*", "show_*"}),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,

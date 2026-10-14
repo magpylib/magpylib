@@ -24,7 +24,11 @@ except ImportError as missing_module:  # pragma: no cover
 from matplotlib.colors import LinearSegmentedColormap
 from pyvista.plotting.colors import Color  # pylint: disable=import-error
 
-from magpylib._src.display.api import drawing_properties
+from magpylib._src.display.api import (
+    drawing_properties,
+    forward_options,
+    warn_unused_options,
+)
 from magpylib._src.display.traces_utility import (
     get_trace_kw,
     legend_overflow_label,
@@ -277,18 +281,29 @@ def display_pyvista(scene):
     # native_traces are intentionally unused; see supports_native_traces
     frames = [fr.traces for fr in scene.frames]
 
-    fig_kwargs = dict(scene.fig_kwargs)
-    show_kwargs = dict(scene.show_kwargs)
+    fig_kwargs = scene.prefixed_options("fig")
+    show_kwargs = scene.prefixed_options("show")
+    unused_show = [f"show_{k}" for k in show_kwargs]
+    if jupyter_backend is not None:
+        unused_show.append("jupyter_backend")
 
     animation = scene.is_animation
     show_canvas = False
     if canvas is None:
         if not return_fig:
             show_canvas = True  # pragma: no cover
-        canvas = pv.Plotter(
+        # the subplot grid is magpylib's to set; off-screen rendering is the
+        # user's choice too, e.g. fig_off_screen=True to take a screenshot
+        canvas = forward_options(
+            pv.Plotter,
+            "fig",
+            fig_kwargs,
+            defaults={"off_screen": animation},
             shape=(scene.n_rows, scene.n_cols),
-            off_screen=animation,
-            **fig_kwargs,
+        )
+    else:
+        warn_unused_options(
+            [f"fig_{k}" for k in fig_kwargs], "the plotter was given as canvas"
         )
 
     charts = {}
@@ -399,8 +414,18 @@ def display_pyvista(scene):
         else:
             run_animation(animation_output, embed=True)
 
+    if not show_canvas:
+        warn_unused_options(
+            unused_show,
+            "the plotter is returned or was given as canvas rather than shown",
+        )
     if return_fig and not show_canvas:
         return canvas
-    if show_canvas:
-        canvas.show(jupyter_backend=jupyter_backend, **show_kwargs)  # pragma: no cover
+    if show_canvas:  # pragma: no cover
+        forward_options(
+            canvas.show,
+            "show",
+            show_kwargs,
+            defaults={"jupyter_backend": jupyter_backend},
+        )
     return None

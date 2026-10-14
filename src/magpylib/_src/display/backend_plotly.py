@@ -19,7 +19,11 @@ except ImportError as missing_module:  # pragma: no cover
     raise ModuleNotFoundError(msg) from missing_module
 
 from magpylib._src.defaults.defaults_utility import linearize_dict
-from magpylib._src.display.api import drawing_properties
+from magpylib._src.display.api import (
+    drawing_properties,
+    forward_options,
+    warn_unused_options,
+)
 from magpylib._src.display.traces_utility import (
     get_scene_ranges,
     legend_overflow_label,
@@ -345,8 +349,9 @@ def display_plotly(scene):
     canvas = scene.canvas
     canvas_update = scene.canvas_update
     return_fig = scene.return_fig
-    fig_kwargs = dict(scene.fig_kwargs)
-    show_kwargs = {"renderer": scene.options.get("renderer"), **scene.show_kwargs}
+    fig_kwargs = scene.prefixed_options("fig")
+    show_kwargs = scene.prefixed_options("show")
+    renderer = scene.options.get("renderer")
 
     # only update layout if canvas is not provided
     fig = canvas
@@ -434,10 +439,18 @@ def display_plotly(scene):
                 legend_itemsizing="constant",
                 # legend_groupclick="toggleitem",
             )
-        fig.update(fig_kwargs)
+        forward_options(fig.update, "fig", fig_kwargs)
 
+    unused = [f"show_{k}" for k in show_kwargs]
+    if renderer is not None:
+        unused.append("renderer")
     if return_fig and not show_fig:
+        warn_unused_options(unused, "the figure is returned rather than shown")
         return fig
     if show_fig:
-        fig.show(**show_kwargs)
+        forward_options(fig.show, "show", show_kwargs, defaults={"renderer": renderer})
+    else:
+        warn_unused_options(
+            unused, "the figure is drawn on a given canvas rather than shown"
+        )
     return None

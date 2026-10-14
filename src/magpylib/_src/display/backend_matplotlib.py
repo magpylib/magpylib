@@ -17,7 +17,11 @@ from matplotlib import patches
 from matplotlib.animation import FuncAnimation
 from matplotlib.lines import Line2D
 
-from magpylib._src.display.api import drawing_properties
+from magpylib._src.display.api import (
+    drawing_properties,
+    forward_options,
+    warn_unused_options,
+)
 from magpylib._src.display.traces_utility import (
     get_trace_kw,
     legend_overflow_label,
@@ -286,8 +290,8 @@ def display_matplotlib(scene):
     labels = {(p.row, p.col): p.labels for p in scene.panels}
 
     # only update layout if canvas is not provided
-    fig_kwargs = dict(scene.fig_kwargs)
-    show_kwargs = dict(scene.show_kwargs)
+    fig_kwargs = scene.prefixed_options("fig")
+    show_kwargs = scene.prefixed_options("show")
 
     # Scene frames are immutable; render into local dicts instead.
     frames = [
@@ -308,9 +312,12 @@ def display_matplotlib(scene):
 
     show_canvas = bool(canvas is None)
     axes = {}
+    # magpylib's own figure settings, which the user's fig_* may override
+    fig_defaults = {"tight_layout": True}
     if canvas_update:
-        fig_kwargs["dpi"] = fig_kwargs.get("dpi", 80)
+        fig_defaults["dpi"] = 80
         if fig_kwargs.get("figsize") is None:
+            fig_kwargs.pop("figsize", None)  # an explicit None takes the default
             figsize = (8, 8)
             ratio = scene.n_cols / scene.n_rows
             # the same rule `draw_capped_legend` draws by: a 3D panel with
@@ -321,9 +328,9 @@ def display_matplotlib(scene):
                 for tr in frames[0]["data"]
             ):
                 ratio *= 1.5  # extend horizontal ratio if legend is present
-            fig_kwargs["figsize"] = (figsize[0] * ratio, figsize[1])
+            fig_defaults["figsize"] = (figsize[0] * ratio, figsize[1])
     if canvas is None:
-        fig = plt.figure(**{"tight_layout": True, **fig_kwargs})
+        fig = forward_options(plt.figure, "fig", fig_kwargs, defaults=fig_defaults)
     elif isinstance(canvas, mpl.axes.Axes):
         fig = canvas.get_figure()
         if scene.has_subplots:
@@ -341,8 +348,16 @@ def display_matplotlib(scene):
         )
         raise TypeError(msg)
     if canvas is not None and canvas_update:
-        fig.set_size_inches(*fig_kwargs["figsize"], forward=True)
-        fig.set_dpi(fig_kwargs["dpi"])
+        size = {**fig_defaults, **fig_kwargs}
+        fig.set_size_inches(*size["figsize"], forward=True)
+        fig.set_dpi(size["dpi"])
+    if canvas is not None:
+        applied = {"figsize", "dpi"} if canvas_update else set()
+        warn_unused_options(
+            [f"fig_{k}" for k in fig_kwargs if k not in applied],
+            "the figure was given as canvas"
+            + ("" if canvas_update else " and canvas_update is off"),
+        )
     if not scene.has_subplots:
         if isinstance(canvas, mpl.axes.Axes):
             axes[(1, 1)] = canvas
@@ -447,7 +462,12 @@ def display_matplotlib(scene):
         show_canvas = False
         out += (anim,)
     if show_canvas:
-        plt.show(**show_kwargs)
+        forward_options(plt.show, "show", show_kwargs)
+    else:
+        warn_unused_options(
+            [f"show_{k}" for k in show_kwargs],
+            "the figure is returned or drawn on a given canvas rather than shown",
+        )
 
     if out:
         return out[0] if len(out) == 1 else out
