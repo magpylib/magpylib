@@ -772,7 +772,17 @@ def rescale_traces(traces, factors):
             tr["args"] = args
         if "z" in tr:  # rescale only 3d traces
             rc = tr.get("row", 1), tr.get("col", 1)
-            traces[ind] = place_and_orient_model3d(tr, length_factor=factors[rc])
+            placed = place_and_orient_model3d(tr, length_factor=factors[rc])
+            # one type whatever the user typed and whatever the unit: integer
+            # positions stayed integer arrays at a factor of 1, and a user
+            # model's face indices arrived as the lists it was given
+            for k in "xyz":
+                placed[k] = np.asarray(placed[k], dtype=float)
+            if placed.get("type") == "mesh3d":
+                for k in "ijk":
+                    if k in placed:
+                        placed[k] = np.asarray(placed[k], dtype=int)
+            traces[ind] = placed
     return traces
 
 

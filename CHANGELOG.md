@@ -63,6 +63,9 @@
 
 ### Fixed
 
+- Display: animations with magnetization arrows lost the arrows after the first
+  frame on Matplotlib, and their legend in every frame but the last;
+  `show(markers=...)` raised beside a sensor showing its pixel field.
 - 2D panels: `style_legend_show=False` left their curves in the legend, and
   their axes were untitled
   ([#1010](https://github.com/magpylib/magpylib/pull/1010)).
