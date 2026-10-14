@@ -55,7 +55,10 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.14"]
-        runs-on: [ubuntu-latest, windows-latest, macos-latest, macos-15-intel]
+        # macOS on Apple Silicon only: magpylib is pure Python, and the Intel
+        # runner -- GitHub's last, retired in fall 2027 -- took twice as long
+        # as any other job.
+        runs-on: [ubuntu-latest, windows-latest, macos-latest]
 
         # include:
         #   - python-version: "pypy-3.11"
