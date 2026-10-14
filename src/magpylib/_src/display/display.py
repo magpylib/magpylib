@@ -184,6 +184,16 @@ def show(
     style : dict | None, default None
         Global style overrides, e.g. ``{'color': 'red'}`` or via underscore magic
         (``style_color='red'``). Applied to matching objects.
+    **kwargs
+        Backend-specific arguments, forwarded unchanged: bare (``renderer='png'``)
+        or prefixed with the backend's name (``plotly_renderer='png'``, which
+        wins). ``fig_*`` reaches the backend's figure constructor and ``show_*``
+        its show call, e.g. ``fig_figsize=(6, 6)`` with Matplotlib or
+        ``fig_layout_width=600`` with Plotly; ``fig=dict(...)`` and
+        ``show=dict(...)`` are the same, spelled nested. A backend declares what
+        it accepts and magpylib warns about the rest; what the library then
+        rejects raises the library's own error, with a note naming the
+        argument.
 
     Returns
     -------

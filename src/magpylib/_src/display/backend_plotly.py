@@ -19,7 +19,11 @@ except ImportError as missing_module:  # pragma: no cover
     raise ModuleNotFoundError(msg) from missing_module
 
 from magpylib._src.defaults.defaults_utility import linearize_dict
-from magpylib._src.display.api import drawing_properties
+from magpylib._src.display.api import (
+    drawing_properties,
+    forward_options,
+    warn_unused_options,
+)
 from magpylib._src.display.traces_utility import (
     get_scene_ranges,
     legend_overflow_label,
@@ -242,14 +246,26 @@ def animate_path(
 
 def generic_trace_to_plotly(trace):
     """Transform a generic trace into a plotly trace"""
-    trace = drawing_properties(trace)
+    # the cell travels along: `display_plotly` places each trace by it
+    trace = {
+        **drawing_properties(trace),
+        "row": trace.get("row"),
+        "col": trace.get("col"),
+    }
+    if trace["type"] == "mesh3d":
+        # plotly draws a colorbar for any intensity unless told not to
+        trace.setdefault("showscale", False)
+        if trace.get("flatshading"):
+            # without these, plotly's lighting smudges flat faces at their edges
+            trace.setdefault("lighting_facenormalsepsilon", 0)
+            trace.setdefault("lighting_ambient", 0.7)
     if "scatter" in trace["type"]:
-        if trace.get("line_width", None):
+        if trace.get("line_width"):
             trace["line_width"] *= SIZE_FACTORS_TO_PLOTLY["line_width"]
-        dash = trace.get("line_dash", None)
+        dash = trace.get("line_dash")
         if dash is not None:
             trace["line_dash"] = LINESTYLES_TO_PLOTLY.get(dash, "solid")
-        symb = trace.get("marker_symbol", None)
+        symb = trace.get("marker_symbol")
         if symb is not None:
             trace["marker_symbol"] = SYMBOLS_TO_PLOTLY.get(symb, "circle")
         if "marker_size" in trace:
@@ -345,8 +361,9 @@ def display_plotly(scene):
     canvas = scene.canvas
     canvas_update = scene.canvas_update
     return_fig = scene.return_fig
-    fig_kwargs = dict(scene.fig_kwargs)
-    show_kwargs = {"renderer": scene.options.get("renderer"), **scene.show_kwargs}
+    fig_kwargs = scene.prefixed_options("fig")
+    show_kwargs = scene.prefixed_options("show")
+    renderer = scene.options.get("renderer")
 
     # only update layout if canvas is not provided
     fig = canvas
@@ -434,10 +451,18 @@ def display_plotly(scene):
                 legend_itemsizing="constant",
                 # legend_groupclick="toggleitem",
             )
-        fig.update(fig_kwargs)
+        forward_options(fig.update, "fig", fig_kwargs)
 
+    unused = [f"show_{k}" for k in show_kwargs]
+    if renderer is not None:
+        unused.append("renderer")
     if return_fig and not show_fig:
+        warn_unused_options(unused, "the figure is returned rather than shown")
         return fig
     if show_fig:
-        fig.show(**show_kwargs)
+        forward_options(fig.show, "show", show_kwargs, defaults={"renderer": renderer})
+    else:
+        warn_unused_options(
+            unused, "the figure is drawn on a given canvas rather than shown"
+        )
     return None

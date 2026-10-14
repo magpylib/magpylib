@@ -137,7 +137,6 @@ def update_magnet_mesh(input_obj, style, mesh_dict, color_slicing=False, path_in
                 vertices=vertices,
                 axis=magnetization,
             )
-        mesh_dict["showscale"] = False
         mesh_dict.pop("color_slicing", None)
     return mesh_dict
 
@@ -386,7 +385,7 @@ def get_traces_2D(
 
     def get_obj_list_str(objs):
         if len(objs) < 8:
-            obj_lst_str = "<br>".join(f" - {s}" for s in objs)
+            obj_lst_str = "<br>".join(f" - {get_legend_label(s)}" for s in objs)
         else:
             counts = Counter(s.__class__.__name__ for s in objs)
             obj_lst_str = "<br>".join(f" {v}x {k}" for k, v in counts.items())
@@ -650,7 +649,6 @@ def get_generic_traces3D(
                             f"{k}_color", style.color
                         )
                 elif ttype == "mesh3d":
-                    tr_non_generic["showscale"] = tr_non_generic.get("showscale", False)
                     tr_non_generic["color"] = tr_non_generic.get("color", style.color)
                 else:  # pragma: no cover
                     msg = (

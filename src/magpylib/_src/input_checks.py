@@ -654,7 +654,15 @@ def check_format_input_backend(inp):
         inp = default_settings.display.backend
     if inp in backends:
         return inp
-    msg = f"Input backend must be one of {[*backends, None]}; instead received {inp!r}."
+
+    def listed(name):
+        backend = DisplayBackend.backends.get(name)
+        about = [getattr(backend, "description", ""), getattr(backend, "url", "")]
+        about = ", ".join(a for a in about if a)
+        return f"{name!r} ({about})" if about else repr(name)
+
+    choices = ", ".join([*map(listed, backends), "None"])
+    msg = f"Input backend must be one of {choices}; instead received {inp!r}."
     raise MagpylibBadUserInput(msg)
 
 

@@ -131,7 +131,7 @@ There is a high level of **feature parity**, however, not all graphic features a
 
 [7]: Matplotlib does not support color gradient. Instead magnetization is shown through object slicing and coloring.
 
-`show()` will also pass on all kwargs to the respective plotting backends. For example, in the [animation sample code](guide-graphic-animations) the kwarg `show_legend` is forwarded to the Plotly backend.
+`show()` forwards the arguments it does not interpret to the plotting backend, spelled bare (`renderer="png"`) or with the backend's name as prefix (`plotly_renderer="png"`, which wins). Two namespaces reach the plotting library itself: `fig_*` goes to its figure constructor and `show_*` to its show call, e.g. `fig_figsize=(6, 6)` with Matplotlib or `fig_layout_showlegend=False` with Plotly; `fig=dict(...)` and `show=dict(...)` are the same thing spelled nested. A misspelled argument is reported, with one exception: Plotly's show call ignores unknown keywords. Prefer a Magpylib argument where one exists: `legend_maxitems=0` hides the legend, and `style_legend_show` sets it per object.
 
 (guide-graphics-custom-backend-pointer)=
 
