@@ -41,10 +41,14 @@
 - `show()` is about 3x faster
   ([#967](https://github.com/magpylib/magpylib/pull/967)).
 - Misspelled keyword arguments are no longer ignored: `getB()`, `getH()`,
-  `getJ()` and `getM()` raise `TypeError`, `show()` warns, `fig_*` and `show_*`
-  included ([#973](https://github.com/magpylib/magpylib/pull/973),
+  `getJ()` and `getM()` raise `TypeError`, and `show()` raises for its own, such
+  as `animation_tme=`. `show()` warns about options the backend does not
+  declare, and a `fig_*` or `show_*` argument its library rejects raises the
+  library's error, with a note naming the argument
+  ([#973](https://github.com/magpylib/magpylib/pull/973),
   [#1005](https://github.com/magpylib/magpylib/pull/1005),
-  [#1011](https://github.com/magpylib/magpylib/pull/1011)).
+  [#1011](https://github.com/magpylib/magpylib/pull/1011),
+  [#1014](https://github.com/magpylib/magpylib/pull/1014)).
 - Derived properties such as `dipole_moment` gain a path axis when their inputs
   vary along the path ([#916](https://github.com/magpylib/magpylib/pull/916)).
 
@@ -65,16 +69,25 @@
 
 - Display: animations with magnetization arrows lost the arrows after the first
   frame on Matplotlib, and their legend in every frame but the last;
-  `show(markers=...)` raised beside a sensor showing its pixel field.
-- 2D panels: `style_legend_show=False` left their curves in the legend, and
-  their axes were untitled
-  ([#1010](https://github.com/magpylib/magpylib/pull/1010)).
+  `show(markers=...)` raised beside a sensor showing its pixel field; Matplotlib
+  could not draw a pixel field as arrows, and a pixel field reading nothing
+  raised with `shownull=False`
+  ([#1013](https://github.com/magpylib/magpylib/pull/1013),
+  [#1014](https://github.com/magpylib/magpylib/pull/1014)).
+- 2D panels: `style_legend_show=False` left their curves in the legend, their
+  axes were untitled, and Plotly's legend toggled the curves of sensors labelled
+  alike together ([#1010](https://github.com/magpylib/magpylib/pull/1010),
+  [#1014](https://github.com/magpylib/magpylib/pull/1014)).
 - Display: `show(title=...)` and backend arguments such as `plotly_renderer=...`
-  were ignored, `style.model3d` models given as `args` alone raised, and Pyvista
-  silently dropped models addressed to it, which it now warns about
-  ([#973](https://github.com/magpylib/magpylib/pull/973)).
-- Colors given as lists or arrays, such as `[0.1, 0.2, 0.3]`, raised `TypeError`
-  ([#967](https://github.com/magpylib/magpylib/pull/967)).
+  were ignored, `show(animation=2.5)` and `style.model3d` models given as
+  positional `args` raised, Pyvista silently dropped models addressed to it,
+  which it now warns about, and Plotly drew `CustomSource` as a circle
+  ([#973](https://github.com/magpylib/magpylib/pull/973),
+  [#1014](https://github.com/magpylib/magpylib/pull/1014)).
+- Style: colors given as lists or arrays, such as `[0.1, 0.2, 0.3]`, raised
+  `TypeError`, and `style_line={...}` discarded a `style_line_color=...` given
+  beside it ([#967](https://github.com/magpylib/magpylib/pull/967),
+  [#1014](https://github.com/magpylib/magpylib/pull/1014)).
 - Pyvista face colors broke web scene exports
   ([#988](https://github.com/magpylib/magpylib/pull/988)).
 - A wrong observer or source, such as a JAX array or a misspelled item in a

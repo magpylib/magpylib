@@ -80,7 +80,8 @@ def forward_options(call, prefix, options, /, defaults=None, **fixed):
     """Call `call` with `options`, the user's ``<prefix>_*`` arguments, over
     `defaults`, which they may override, and `fixed`, which they may not.
 
-    The built-in backends forward ``fig_*`` to their figure constructor and
+    The built-in backends forward ``fig_*`` to their figure (Matplotlib's
+    `plt.figure`, Pyvista's `Plotter`, Plotly's `Figure.update`) and
     ``show_*`` to their show call. magpylib cannot know what those accept,
     so the library's own error is the check. It keeps its type -- plotly a
     KeyError for an unknown key, a ValueError for a bad value, pyvista an
@@ -167,6 +168,12 @@ def _check_option_pattern(owner, attr, pattern):
 #: ``fig`` and ``show`` are the two option namespaces.
 RESERVED_BACKEND_NAMES = frozenset({"auto", "fig", "show"})
 
+#: Members of `DisplayBackend` that magpylib itself uses: a subclass
+#: redefining one would break the registry or the dispatcher.
+_RESERVED_MEMBERS = frozenset(
+    {"backends", "supports", "discover", "unaccepted_options", "unhandled_trace_types"}
+)
+
 
 def drawing_properties(trace):
     """Return `trace` without magpylib's metadata and placement keys.
@@ -178,6 +185,9 @@ def drawing_properties(trace):
 
         row, col = trace["row"], trace["col"]
         fig.add_trace(go.Mesh3d(**drawing_properties(trace)), row=row, col=col)
+
+    with `fig` from `plotly.subplots.make_subplots`: a plain ``go.Figure()``
+    rejects `row` and `col`.
     """
     return {
         k: v
@@ -193,8 +203,8 @@ class Panel:
     row: int = 1
     col: int = 1
     kind: Literal["scene3d", "chart2d"] = "scene3d"
-    #: (3, 2) of (min, max) per axis. None for chart2d -- magpylib emits a 3D
-    #: range there too, but it describes nothing a 2D chart can use.
+    #: (3, 2) of (min, max) per axis, in the display unit, equal on the three
+    #: axes, `zoom` applied. None for chart2d, which has no 3D range.
     ranges: np.ndarray | None = None
     #: Axis titles. scene3d: {"x": "x (m)", "y": "y (m)", "z": "z (m)"}.
     #: chart2d: {"x": "path index", "y": "Bx, Bz (T)"} -- the panel's
@@ -212,16 +222,21 @@ class Panel:
 
 @dataclass(frozen=True)
 class Frame:
-    """One step of the timeline. A static scene has exactly one."""
+    """One step of the timeline. A static scene has exactly one. Every frame
+    carries the same traces in the same order."""
 
+    #: Display text: the 1-based path index ("0" for a static scene), as
+    #: plotly's slider shows it. Index with `AnimationSettings.path_indices`.
     label: str = ""
     #: Trace dicts in magpylib's dialect. Left as dicts on purpose -- see the
     #: module docstring.
     traces: tuple[dict[str, Any], ...] = ()
     #: Models the user supplied in *this* backend's own format, already
     #: positioned and oriented. Keys: constructor, args, kwargs, coordsargs,
-    #: kwargs_extra. **A backend that ignores these silently drops the user's
-    #: models** -- no warning, no error.
+    #: kwargs_extra, object_id. Handed over only with
+    #: `supports_native_traces`; without it magpylib warns and drops the
+    #: model. **A backend that declares it and ignores these drops the user's
+    #: models silently.**
     native_traces: tuple[dict[str, Any], ...] = ()
 
 
@@ -229,17 +244,20 @@ class Frame:
 class AnimationSettings:
     """Timing and playback parameters for an animated scene."""
 
+    #: The rate asked for. Fewer path steps than ``fps * time`` play slower:
+    #: play the frames at `frame_duration`.
     fps: int = 20
-    max_fps: int = 30
-    max_frames: int = 200
+    #: Total duration asked for, in seconds.
     time: float = 5
     slider: bool = True
+    #: Where a backend with `supports_animation_output` writes the animation:
+    #: a ``.gif`` or ``.mp4`` path, or only the suffix for a temporary file.
     output: str | None = None
     repeat: bool = False
-    #: Milliseconds per frame, derived from fps and downsampling. None when
-    #: the scene is static.
-    frame_duration: float | None = None
-    #: Which path steps the frames correspond to; may be downsampled.
+    #: Milliseconds per frame, an int: ``time`` spread over the frames handed
+    #: over. None when the scene is static.
+    frame_duration: int | None = None
+    #: The 0-based path step of each frame; may be downsampled.
     path_indices: tuple[int, ...] = ()
 
 
@@ -249,7 +267,8 @@ class Scene:
 
     panels: tuple[Panel, ...] = ()
     frames: tuple[Frame, ...] = ()
-    #: Figure title, or None. A property of the figure, not of a frame.
+    #: Figure title: `show(title=...)`, else a lone object's label, else None
+    #: ("No objects to be displayed" for an empty `show()`).
     title: str | None = None
     animation: AnimationSettings = field(default_factory=AnimationSettings)
     #: User-supplied figure/axes/plotter to draw into, or None.
@@ -259,19 +278,21 @@ class Scene:
     #: Return the figure instead of displaying it.
     return_fig: bool = False
     #: Most entries a flat legend lists. Past it the built-in backends list
-    #: the first ones and sum up the rest in one "... and k more" entry;
-    #: 0 means no legend. Matplotlib and pyvista
-    #: apply it per 3D panel, plotly to its one figure-wide legend. A backend
+    #: that many and sum up the rest in one more, "... and k more", entry;
+    #: 0 lists none. Matplotlib and pyvista apply it to each 3D panel's
+    #: legend, plotly to its one figure-wide legend. A backend
     #: whose legend scales another way, such as a collapsible tree, may
     #: ignore it. Never applied to the traces themselves: the payload stays
     #: whole.
     legend_maxitems: int = 20
-    #: Options magpylib does not interpret, forwarded verbatim. This is where
+    #: Options magpylib does not interpret, values forwarded verbatim, names
+    #: normalised (backend prefix removed, ``fig={...}`` flattened); one the
+    #: backend did not declare is reported, and still forwarded. This is where
     #: backend-specific arguments live (plotly's `renderer`, pyvista's
     #: `jupyter_backend`, matplotlib's `antialiased`, ...), spelled bare or
     #: with the backend's name as prefix (``plotly_renderer``). Two
-    #: conventional namespaces among them: ``fig_*`` for a figure
-    #: constructor and ``show_*`` for a show call, which the built-in
+    #: conventional namespaces among them: ``fig_*`` for the library's figure
+    #: (Plotly: `Figure.update`) and ``show_*`` for a show call, which the built-in
     #: backends forward to their library; `prefixed_options` reads either.
     #: A backend with no such library treats them as any other option.
     options: dict[str, Any] = field(default_factory=dict)
@@ -331,7 +352,11 @@ class DisplayBackend:
 
     Subclass, set `name`, implement `show`. Capability flags declare what the
     backend can do; `show` warns and falls back rather than handing over
-    something the backend cannot draw.
+    something the backend cannot draw. Two exceptions: without
+    `supports_colorgradient` the payload changes without a warning (arrows,
+    and magnets sliced into `facecolor` bands), and a grid mixing 3D and 2D
+    panels reaches a backend without `supports_subplots` unchanged, with a
+    warning.
 
     Capabilities default to False so that a capability added in a later
     magpylib release never silently changes an existing backend's behaviour.
@@ -339,6 +364,8 @@ class DisplayBackend:
 
     #: Every registered backend, keyed by name. Subclasses with a `name`
     #: register themselves here on definition.
+    #:
+    #: :meta hide-value:
     backends: ClassVar[dict[str, "DisplayBackend"]] = {}
 
     name: ClassVar[str] = ""
@@ -425,6 +452,24 @@ class DisplayBackend:
         from inside a set difference.
         """
         super().__init_subclass__(**kwargs)
+        clash = sorted(_RESERVED_MEMBERS & set(cls.__dict__))
+        if clash:
+            msg = (
+                f"{cls.__name__} redefines {clash}, which DisplayBackend uses "
+                "itself; choose other names."
+            )
+            raise TypeError(msg)
+        unknown = sorted(
+            n
+            for n in cls.__dict__
+            if n.startswith("supports_") and n not in DisplayBackend._declarable
+        )
+        if unknown:
+            warnings.warn(
+                f"{cls.__name__} declares {unknown}, which magpylib does not know "
+                "and ignores; a typo?",
+                stacklevel=user_stacklevel(),
+            )
         for attr in ("handles_traces", "accepts_options"):
             value = getattr(cls, attr)
             if value is None:
@@ -500,7 +545,7 @@ class DisplayBackend:
         validating its own default backend is one -- is not the first lookup
         for this purpose: it is answered from the built-ins alone, and the scan
         waits. Otherwise a third-party backend would be imported into a
-        half-built magpylib and fail (see `_importing`).
+        half-built magpylib and fail with a circular import.
 
         Deferring it also keeps the scan (a few ms, growing with the number of
         installed distributions) off the import path entirely, for a program
@@ -533,6 +578,13 @@ class DisplayBackend:
                 key = loaded.name or entry.name
                 if key not in cls.backends:
                     cls.backends[key] = loaded()
+                if key != entry.name:
+                    warnings.warn(
+                        f"Display backend {entry.value!r} is advertised as "
+                        f"{entry.name!r} but named {key!r}; select it by "
+                        f"{key!r}.",
+                        stacklevel=2,
+                    )
             elif entry.name not in cls.backends and set(cls.backends) == known:
                 # A module or an instance is a legitimate thing for an entry
                 # point to name -- importing it defines the subclass, which

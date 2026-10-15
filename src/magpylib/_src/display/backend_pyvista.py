@@ -144,6 +144,9 @@ def scatter_to_pyvista(trace):
 
     if trace["type"] == "scatter3d":
         points = np.array([trace[k] for k in "xyz"], dtype=float).T
+        if len(points) == 0:
+            # an empty trace, kept so that every frame has the same traces
+            return traces
         if "lines" in mode:
             for (lcol,), inds in split_input_arrays(line_color):
                 trace_pv_line = {

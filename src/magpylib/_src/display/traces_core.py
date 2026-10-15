@@ -74,7 +74,7 @@ def make_DefaultTrace(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
         "mode": "markers",
         "marker_size": 10,
         "marker_color": style.color,
-        "marker_symbol": "diamond",
+        "marker_symbol": "D",  # a diamond, in the dialect's own vocabulary
     }
     return {**trace, **kwargs}
 
@@ -754,15 +754,16 @@ def make_Pixels(
     if vectors is not None:
         orientations = get_orientation_from_vec(vectors)
         is_null_vec = (np.abs(vectors) < null_thresh).all(axis=1)
+    kw2d = {
+        "type": "scatter3d",
+        "mode": "markers+lines",
+        # a pixel's "cube" is a mesh; as a marker, the dialect's square
+        "marker_symbol": "s" if symbol == "cube" else symbol,
+        "marker_color": None,
+        "line_color": None,
+    }
     for ind, pos in enumerate(positions):
         kw = {"backend": "plotly-dict", "position": pos}
-        kw2d = {
-            "type": "scatter3d",
-            "mode": "markers+lines",
-            "marker_symbol": symbol,
-            "marker_color": None,
-            "line_color": None,
-        }
         pix = None
         size = sizes[ind] if is_array_like(sizes) else sizes
         if orientable and vectors is not None and not is_null_vec[ind]:
@@ -796,6 +797,25 @@ def make_Pixels(
                 else:
                     pix["facecolor"] = np.repeat(color, len(pix["i"]))
             pixels.append(pix)
+    if not pixels:
+        # every pixel reads nothing and null pixels are hidden: the trace one
+        # shown null pixel makes, emptied, so that every frame of an
+        # animation still carries the same traces
+        shown = make_Pixels(
+            positions=positions[:1],
+            vectors=vectors[:1],
+            colors=colors[:1] if is_array_like(colors) else colors,
+            symbol=symbol,
+            field_symbol=field_symbol,
+            shownull=True,
+            sizes=sizes[:1] if is_array_like(sizes) else sizes,
+            marker2d_default_size=marker2d_default_size,
+            null_thresh=null_thresh,
+        )
+        return {
+            k: np.asarray(v)[:0] if isinstance(v, list | np.ndarray) else v
+            for k, v in shown.items()
+        }
     pixels = group_traces(*pixels)
     if len(pixels) != 1:
         msg = (

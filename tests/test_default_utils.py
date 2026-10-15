@@ -18,6 +18,9 @@ def test_magic_to_dict():
     d = {"a.b": 1, "c": 2, "a": 3, "c.d": {"e": 6}}
     res = magic_to_dict(d, separator=".")
     assert res == {"a": 3, "c": {"d": {"e": 6}}}
+    # a dict after the flat spelling of its keys merges with it, at any depth
+    res = magic_to_dict({"a_b_c": 1, "a": {"b": {"d": 2}, "e": 3}})
+    assert res == {"a": {"b": {"c": 1, "d": 2}, "e": 3}}
     with pytest.raises(AssertionError):
         magic_to_dict(0, separator=".")
     with pytest.raises(AssertionError):

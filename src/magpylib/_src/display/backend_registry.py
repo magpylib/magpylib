@@ -11,6 +11,7 @@ time everything is loaded.
 # pylint: disable=import-outside-toplevel
 
 import inspect
+import sys
 import warnings
 from dataclasses import replace
 from functools import cache
@@ -61,26 +62,25 @@ def register_backend(name, show_func, **capabilities):
     Parameters
     ----------
     name : str
-        Name the backend is selected by. Re-registering a name replaces it.
+        Name the backend is selected by. Re-registering a name replaces it,
+        with a warning when the backend replaced was registered from another
+        module, such as a built-in.
     show_func : callable
         Called as ``show_func(scene)`` with a
         `magpylib.graphics.backend.Scene`; returns the figure object.
     supports_animation, supports_subplots, supports_colorgradient, supports_animation_output : bool, default False
         Capabilities. `show` warns and falls back rather than handing the
-        backend something it has not declared it can draw. They default to
-        False so a capability added in a later magpylib release never changes
-        an existing backend's behaviour.
+        backend something it has not declared it can draw, except that
+        without `supports_colorgradient` the payload changes without a
+        warning, and that a grid mixing 3D and 2D panels arrives unchanged,
+        with a warning. They default to False so a capability added in a
+        later magpylib release never changes an existing backend's behaviour.
     supports_native_traces : bool, default False
         Whether models attached via ``style.model3d.data`` naming this backend
         are rendered. False skips them with a warning.
     merge_traces : bool, default True
         Preference, not a capability: whether traces of different objects may
         be merged into fewer, larger ones.
-    **capabilities
-        Any ``supports_*`` flag, plus ``merge_traces``, ``handles_traces`` and
-        ``accepts_options``. Unknown names are rejected. See `DisplayBackend`
-        for the full list and defaults.
-
     handles_traces : set of str, optional
         Trace ``type`` values this backend draws. ``None`` assumes all.
         Declaring it lets magpylib warn about a type the backend never handles
@@ -90,6 +90,15 @@ def register_backend(name, show_func, **capabilities):
         `Scene.options`. ``None`` accepts anything, which also means a
         misspelled argument passes unnoticed; declaring the set lets magpylib
         warn about it. A trailing ``*`` accepts a namespace, e.g. ``"fig_*"``.
+    api_version : int, optional
+        The payload contract the backend was written against; pin it. Unset,
+        it counts as 1.
+    description, url : str, optional
+        Shown where magpylib lists the backends, such as the error for an
+        unknown backend name.
+
+    Any other keyword is rejected; `DisplayBackend` lists the same names as
+    class attributes.
 
     Returns
     -------
@@ -122,7 +131,14 @@ def register_backend(name, show_func, **capabilities):
     return type(
         f"{name.title()}Backend",
         (DisplayBackend,),
-        {"name": name, "show": staticmethod(show_func), **capabilities},
+        {
+            "name": name,
+            "show": staticmethod(show_func),
+            # the caller's module, so that replacing a backend registered
+            # elsewhere -- a built-in, say -- warns as a subclass would
+            "__module__": sys._getframe(1).f_globals.get("__name__", __name__),
+            **capabilities,
+        },
     )
 
 
@@ -274,8 +290,8 @@ class ShowDispatcher:
             if not owns_prefix:
                 warnings.warn(
                     f"The backend name {backend!r} is also a show() argument, so "
-                    f"{backend}={{...}} can never reach it; only "
-                    f"{backend}_<option> spellings do.",
+                    f"neither {backend}={{...}} nor {backend}_<option> can reach "
+                    "it; rename the backend.",
                     stacklevel=user_stacklevel(),
                 )
             self._reserved_checked = True
@@ -323,7 +339,8 @@ class ShowDispatcher:
             warnings.warn(
                 f"show() got unexpected keyword argument(s) "
                 f"{sorted(typed.get(n, n) for n in unaccepted)!r} for the "
-                f"{backend} backend; they are ignored. Check for a typo.",
+                f"{backend} backend, which does not declare them; they are "
+                "passed on in scene.options anyway. Check for a typo.",
                 stacklevel=user_stacklevel(),
             )
         unhandled = self.unhandled_trace_types(scene)

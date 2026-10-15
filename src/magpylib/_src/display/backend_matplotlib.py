@@ -156,6 +156,9 @@ def scatter_to_matplotlib(trace):
         marker_size = marker_size**2
 
     coords = np.array([trace[k] for k in coords_str], dtype=float)
+    if coords.shape[-1] == 0:
+        # an empty trace, kept so that every frame has the same traces
+        return traces
 
     # plot the marker part with `scatter` constructor
     if "markers" in mode:

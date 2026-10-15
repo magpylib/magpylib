@@ -3,13 +3,11 @@
     "animation": {
       "fps": "int",
       "frame_duration": "int",
-      "max_fps": "int",
-      "max_frames": "int",
       "output": "None",
       "path_indices": "tuple[int]",
       "repeat": "bool",
       "slider": "bool",
-      "time": "int"
+      "time": "float"
     },
     "frames": {
       "count": 2,
@@ -22,7 +20,8 @@
         "constructor": "str",
         "coordsargs": "dict{x:str,y:str,z:str}",
         "kwargs": "dict{x:ndarray[f,1d],y:ndarray[f,1d],z:ndarray[f,1d]}",
-        "kwargs_extra": "dict{col:int,color:str,legendgroup:str,name:str,opacity:int,row:int,showlegend:bool}"
+        "kwargs_extra": "dict{col:int,color:str,legendgroup:str,name:str,opacity:int,row:int,showlegend:bool}",
+        "object_id": "int"
       }
     ],
     "panels": [
@@ -50,8 +49,7 @@
           "Triangle",
           "CustomSource",
           "Sensor",
-          "Sensor",
-          "MagpyMarkers"
+          "Sensor"
         ],
         "ranges": "ndarray[f,2d]"
       },
@@ -240,7 +238,7 @@
         "marker_symbol": "str",
         "mode": "str",
         "name": "str",
-        "object_id": "int",
+        "object_id": "None",
         "opacity": "int",
         "row": "int",
         "showlegend": "bool",
@@ -257,6 +255,8 @@
         "marker_symbol": "str",
         "mode": "str",
         "name": "str",
+        "object_id": "int",
+        "opacity": "int",
         "row": "int",
         "showlegend": "bool",
         "type": "scatter3d",
@@ -270,13 +270,11 @@
     "animation": {
       "fps": "int",
       "frame_duration": "int",
-      "max_fps": "int",
-      "max_frames": "int",
       "output": "None",
       "path_indices": "tuple[int]",
       "repeat": "bool",
       "slider": "bool",
-      "time": "int"
+      "time": "float"
     },
     "frames": {
       "count": 2,
@@ -289,7 +287,8 @@
         "constructor": "str",
         "coordsargs": "dict{x:str,y:str,z:str}",
         "kwargs": "dict{x:ndarray[f,1d],y:ndarray[f,1d],z:ndarray[f,1d]}",
-        "kwargs_extra": "dict{col:int,color:str,legendgroup:str,name:str,opacity:int,row:int,showlegend:bool}"
+        "kwargs_extra": "dict{col:int,color:str,legendgroup:str,name:str,opacity:int,row:int,showlegend:bool}",
+        "object_id": "int"
       }
     ],
     "panels": [
@@ -317,8 +316,7 @@
           "Triangle",
           "CustomSource",
           "Sensor",
-          "Sensor",
-          "MagpyMarkers"
+          "Sensor"
         ],
         "ranges": "ndarray[f,2d]"
       },
@@ -488,7 +486,7 @@
         "marker_symbol": "str",
         "mode": "str",
         "name": "str",
-        "object_id": "int",
+        "object_id": "None",
         "opacity": "int",
         "row": "int",
         "showlegend": "bool",
@@ -505,6 +503,8 @@
         "marker_symbol": "str",
         "mode": "str",
         "name": "str",
+        "object_id": "int",
+        "opacity": "int",
         "row": "int",
         "showlegend": "bool",
         "type": "scatter3d",
@@ -518,13 +518,11 @@
     "animation": {
       "fps": "int",
       "frame_duration": "int",
-      "max_fps": "int",
-      "max_frames": "int",
       "output": "None",
       "path_indices": "tuple[int]",
       "repeat": "bool",
       "slider": "bool",
-      "time": "int"
+      "time": "float"
     },
     "frames": {
       "count": 2,
@@ -537,7 +535,8 @@
         "constructor": "str",
         "coordsargs": "dict{x:str,y:str,z:str}",
         "kwargs": "dict{x:ndarray[f,1d],y:ndarray[f,1d],z:ndarray[f,1d]}",
-        "kwargs_extra": "dict{col:int,color:str,legendgroup:str,name:str,opacity:int,row:int,showlegend:bool}"
+        "kwargs_extra": "dict{col:int,color:str,legendgroup:str,name:str,opacity:int,row:int,showlegend:bool}",
+        "object_id": "int"
       }
     ],
     "panels": [
@@ -565,8 +564,7 @@
           "Triangle",
           "CustomSource",
           "Sensor",
-          "Sensor",
-          "MagpyMarkers"
+          "Sensor"
         ],
         "ranges": "ndarray[f,2d]"
       },
@@ -749,7 +747,7 @@
         "marker_symbol": "str",
         "mode": "str",
         "name": "str",
-        "object_id": "int",
+        "object_id": "None",
         "opacity": "int",
         "row": "int",
         "showlegend": "bool",
@@ -766,6 +764,8 @@
         "marker_symbol": "str",
         "mode": "str",
         "name": "str",
+        "object_id": "int",
+        "opacity": "int",
         "row": "int",
         "showlegend": "bool",
         "type": "scatter3d",
@@ -779,13 +779,11 @@
     "animation": {
       "fps": "int",
       "frame_duration": "int",
-      "max_fps": "int",
-      "max_frames": "int",
       "output": "None",
       "path_indices": "tuple[int]",
       "repeat": "bool",
       "slider": "bool",
-      "time": "int"
+      "time": "float"
     },
     "frames": {
       "count": 2,
@@ -798,7 +796,8 @@
         "constructor": "str",
         "coordsargs": "dict{x:str,y:str,z:str}",
         "kwargs": "dict{x:ndarray[f,1d],y:ndarray[f,1d],z:ndarray[f,1d]}",
-        "kwargs_extra": "dict{col:int,color:str,legendgroup:str,name:str,opacity:int,row:int,showlegend:bool}"
+        "kwargs_extra": "dict{col:int,color:str,legendgroup:str,name:str,opacity:int,row:int,showlegend:bool}",
+        "object_id": "int"
       }
     ],
     "panels": [
@@ -826,8 +825,7 @@
           "Triangle",
           "CustomSource",
           "Sensor",
-          "Sensor",
-          "MagpyMarkers"
+          "Sensor"
         ],
         "ranges": "ndarray[f,2d]"
       },
@@ -976,7 +974,7 @@
         "marker_symbol": "str",
         "mode": "str",
         "name": "str",
-        "object_id": "int",
+        "object_id": "None",
         "opacity": "int",
         "row": "int",
         "showlegend": "bool",
@@ -993,6 +991,8 @@
         "marker_symbol": "str",
         "mode": "str",
         "name": "str",
+        "object_id": "int",
+        "opacity": "int",
         "row": "int",
         "showlegend": "bool",
         "type": "scatter3d",

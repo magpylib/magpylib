@@ -29,8 +29,7 @@ class AnimationOutput(Property):
 
 
 class Animation(PropertyNode):
-    """Defines the animation properties used by the `plotly` plotting backend
-    when `animation=True` in the `show` function.
+    """Defines the animation properties `show` uses with `animation=True`.
 
     Parameters
     ----------
@@ -42,8 +41,8 @@ class Animation(PropertyNode):
     maxframes: int, default=None
         Maximum total number of frames to be displayed before downsampling
         kicks in.
-    time: int, default=None
-        Default animation time.
+    time: float, default=None
+        Default animation time, in seconds.
     slider: bool, default=None
         If True, an interactive slider will be displayed and stay in sync with
         the animation, will be hidden otherwise.
@@ -64,7 +63,7 @@ class Animation(PropertyNode):
         exclusive_minimum=0,
         doc="Maximum total number of frames before downsampling kicks in.",
     )
-    time = Integer(exclusive_minimum=0, doc="Default animation time.")
+    time = Number(exclusive_minimum=0, doc="Default animation time, in seconds.")
     slider = Boolean(doc="Show/hide interactive animation slider.")
     output = AnimationOutput(doc="Animation output type ('mp4' or 'gif').")
 
