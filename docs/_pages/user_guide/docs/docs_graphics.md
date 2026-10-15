@@ -131,7 +131,7 @@ There is a high level of **feature parity**, however, not all graphic features a
 
 [7]: Matplotlib does not support color gradient. Instead magnetization is shown through object slicing and coloring.
 
-`show()` forwards the arguments it does not interpret to the plotting backend, spelled bare (`renderer="png"`) or with the backend's name as prefix (`plotly_renderer="png"`, which wins). Two namespaces reach the plotting library itself: `fig_*` goes to its figure constructor and `show_*` to its show call, e.g. `fig_figsize=(6, 6)` with Matplotlib or `fig_layout_showlegend=False` with Plotly; `fig=dict(...)` and `show=dict(...)` are the same thing spelled nested. A misspelled argument is reported, with one exception: Plotly's show call ignores unknown keywords. Prefer a Magpylib argument where one exists: `legend_maxitems=0` hides the legend, and `style_legend_show` sets it per object.
+`show()` forwards the arguments it does not interpret to the plotting backend, spelled bare (`renderer="png"`) or with the backend's name as prefix (`plotly_renderer="png"`, which wins). Two namespaces reach the plotting library itself: `fig_*` goes to its figure and `show_*` to its show call, e.g. `fig_figsize=(6, 6)` with Matplotlib or `fig_layout_showlegend=False` with Plotly; `fig=dict(...)` and `show=dict(...)` are the same thing spelled nested. Matplotlib passes `fig_*` to `plt.figure` and Pyvista to its `Plotter`, so with a given `canvas` Pyvista ignores it with a warning, and so does Matplotlib unless `canvas_update=True`; Plotly applies it with `Figure.update`, to a given canvas too. Misspellings are caught: an argument the backend does not take is reported with a warning, a misspelled Magpylib argument such as `style_colr` or `animation_tme` raises an error, and a `fig_*` or `show_*` argument the library rejects raises the library's own error, with a note naming the argument. The one exception is Plotly's show call, which ignores unknown keywords. Prefer a Magpylib argument where one exists: `legend_maxitems=0` hides the 3D legend, and `style_legend_show` sets it per object.
 
 (guide-graphics-custom-backend-pointer)=
 
@@ -288,11 +288,14 @@ The Magpylib [object paths](docs-position-paths) visualized with `show()` can be
 
 The animations can be fine-tuned with the following kwargs of `show()`:
 
-1. `animation_time` (default=3), must be a positive number that gives the animation time in seconds.
-2. `animation_slider` (default=`True`), is boolean and sets if a slider should be displayed.
-3. `animation_fps` (default=30), sets the maximal frames per second.
+1. `animation_time` (default=5), a positive number, the animation time in seconds.
+2. `animation_fps` (default=20), the frames per second requested.
+3. `animation_maxfps` (default=30), the most frames per second: a larger `animation_fps` is lowered to it, with a warning.
+4. `animation_maxframes` (default=200), the most frames.
+5. `animation_slider` (default=`True`), is boolean and sets if a slider should be displayed.
+6. `animation_output` (default=`None`), `'gif'` or `'mp4'`, or a file path ending in one of them, to export the animation (Pyvista).
 
-Each path step will generate one frame of the animation, unless `animation_fps` would be exceeded. In this case specific equidistant frames will be selected automatically to adjust to the limited display possibilities. For practicality, the input `animation=x` will automatically set `animation=True` and `animation_time=x`.
+Each path step will generate one frame of the animation, unless the animation would then have more than `animation_time` times `animation_fps` frames, or more than `animation_maxframes`. In this case equidistant frames, always including the last path step, are selected automatically. The animation lasts `animation_time` either way, so a short path plays at fewer frames per second than `animation_fps`. For practicality, a number `animation=x` will automatically set `animation=True` and `animation_time=x`. The defaults are in `magpy.defaults.display.animation`.
 
 The following example demonstrates the animation feature,
 
@@ -312,7 +315,7 @@ magpy.show(
     animation_fps=20,
     animation_slider=True,
     backend="plotly",
-    showlegend=False,
+    legend_maxitems=0,
 )
 ```
 

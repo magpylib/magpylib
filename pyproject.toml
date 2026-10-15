@@ -83,7 +83,7 @@ docs = [
   "pyvista[jupyter] >=0.48", # trame ships the scene exporter and the viewer
   "magpylib-material-response",
   "plotly>=7.0", # see https://github.com/executablebooks/myst-nb/issues/667
-  "kaleido==0.2.1", # ulterior versions don't ship chrome,
+  "kaleido>=1", # 1.x uses a system Chrome or downloads one on first use
   "sphinxcontrib-bibtex>=2.6",
   "sphinx-notfound-page",
 ]
