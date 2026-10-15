@@ -80,6 +80,9 @@
 - A wrong observer or source, such as a JAX array or a misspelled item in a
   list, was reported as "No observers provided" or "No sources provided"
   ([#1002](https://github.com/magpylib/magpylib/pull/1002)).
+- `meshing` accepted booleans, floats and Cuboid triples with negative or zero
+  entries, which gave wrong forces silently, and refused NumPy integers
+  ([#1016](https://github.com/magpylib/magpylib/pull/1016)).
 
 ## [5.2.3] 2026-05-15
 
