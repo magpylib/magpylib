@@ -278,7 +278,7 @@ def create_frames(frames):
             margin=dict(l=0, r=0, t=0, b=0),
         )
 
-        # Screenshot (requires kaleido package)
+        # Screenshot (requires kaleido>=1, which uses an installed Chrome)
         print(f"Writing frame {i + 1:3d}/{frames}")
         img = fig.to_image(format="png", width=500, height=500)
         images.append(img)
