@@ -61,6 +61,29 @@ def test_a_backend_receives_what_a_2d_panel_shows(output, sumup, y_title, named)
     assert scene.panels[0].labels == {"x": "path index", "y": y_title}
 
 
+@pytest.mark.parametrize(("sumup", "groups"), [(False, 4), (True, 2)])
+def test_a_2d_legend_group_is_one_output_in_one_panel(sumup, groups):
+    """Per sensor too when sources are not summed up, its title in
+    `legendgrouptitle_text`. Groups were named from labels, so two sensors
+    labelled alike, here both "Sensor", shared one."""
+    cube, sensor = cube_and_sensor()
+    twin = sensor.copy()
+    scenes = []
+    magpy.register_backend("capture2d", scenes.append, supports_subplots=True)
+    magpy.show(
+        {"objects": [cube, sensor, twin], "col": 1},
+        {"objects": [cube, sensor, twin], "col": 2},
+        output="Bz",
+        sumup=sumup,
+        backend="capture2d",
+    )
+    (scene,) = scenes
+    curves = [t for t in scene.frames[0].traces if t["type"] == "scatter"]
+    assert len(curves) == 4
+    assert len({t["legendgroup"] for t in curves}) == groups
+    assert all(t["legendgrouptitle_text"].startswith("Bz") for t in curves)
+
+
 @pytest.mark.parametrize("output", [("Bz", "Hx"), "Bq", "Xz"])
 def test_a_2d_output_is_checked(output):
     """Fields in T and in A/m cannot share an axis: outside a magnet H is B/mu0

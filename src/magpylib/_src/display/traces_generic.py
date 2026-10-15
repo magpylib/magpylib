@@ -465,6 +465,13 @@ def get_traces_2D(
                             # the object the curve is named after, as for
                             # its legend entry
                             object_id=id(named_after),
+                            # one group per output and panel, per sensor when
+                            # sources are not summed up; built from labels it
+                            # merged groups whose labels happened to match
+                            legendgroup=(
+                                f"{param['field_str']}{''.join(param['coords_str'])}"
+                                f"|{row},{col}" + ("" if sumup else f"|{sens_ind}")
+                            ),
                             type="scatter",
                             row=row,
                             col=col,
@@ -488,6 +495,7 @@ def process_extra_trace(model):
         "args": model_args,
         "coordsargs": extr.coordsargs,
         "kwargs_extra": model["kwargs_extra"],
+        "object_id": model.get("object_id"),
     }
     kwargs, args, coordsargs = place_and_orient_model3d(
         model_kwargs=model_kwargs,
@@ -598,10 +606,14 @@ def get_generic_traces3D(
 
     path_traces_extra_non_generic_backend = []
     if not has_path and make_func is not None:
+        # an object without a pose, the `show(markers=...)` markers: not one
+        # of the user's objects, so no object_id to resolve
         trs = make_func(**make_func_kwargs)
         for tr in trs:
             tr["row"] = row
             tr["col"] = col
+            tr.setdefault("object_id", None)
+            tr.setdefault("opacity", getattr(style, "opacity", None) or 1)
         out = {"generic": trs}
         if extra_backend:
             out.update({extra_backend: path_traces_extra_non_generic_backend})
@@ -754,6 +766,7 @@ def get_generic_traces3D(
             for path_ind in path_inds_minimal:
                 tr_non_generic = {
                     "model3d": extr,
+                    "object_id": id(input_obj),
                     "position": positions[path_ind],
                     "orientation": orientations[path_ind],
                     "kwargs_extra": {
@@ -838,7 +851,13 @@ def process_animation_kwargs(obj_list, animation=False, **kwargs):
 
     # pylint: disable=no-member
     anim_def = default_settings.display.animation.copy()
-    anim_def.update({k[10:]: v for k, v in kwargs.items()}, _match_properties=False)
+    anim_def.update(
+        {
+            k[len("animation_") :]: v
+            for k, v in kwargs.items()
+            if k.startswith("animation_")
+        }
+    )
     animation_kwargs = {f"animation_{k}": v for k, v in anim_def.as_dict().items()}
 
     path_indices, frame_duration = [-1], 0
@@ -1100,14 +1119,22 @@ def get_frames(
     style_kwargs = linearize_dict(style_kwargs, separator="_")
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
 
-    # extract animation info
+    # extract animation info; a misspelled animation_* is left to the check
+    # below, as a misspelled units_* is
+    known = {
+        "animation",
+        *(f"animation_{k}" for k in default_settings.display.animation.as_dict()),
+    }
     (
         is_animation,
         path_indices,
         frame_duration,
         animation_kwargs,
-    ) = process_animation_kwargs([o for obj in objs for o in obj["objects"]], **kwargs)
-    kwargs = {k: v for k, v in kwargs.items() if not k.startswith("animation")}
+    ) = process_animation_kwargs(
+        [o for obj in objs for o in obj["objects"]],
+        **{k: v for k, v in kwargs.items() if k in known},
+    )
+    kwargs = {k: v for k, v in kwargs.items() if k not in known}
 
     if kwargs:
         msg = f"show() got unexpected keyword argument(s) {kwargs!r}"
@@ -1131,7 +1158,8 @@ def get_frames(
     for obj in objs:
         given = given_rc.setdefault((obj["row"], obj["col"]), {})
         for o in obj["objects"]:
-            given.setdefault(id(o), o)
+            if not isinstance(o, MagpyMarkers):
+                given.setdefault(id(o), o)
     # create frame for each path index or downsampled path index
     style_kwargs = {}
     frames = [
@@ -1172,7 +1200,9 @@ def get_frames(
     ]
     zoom = {rc: v["rc_params"]["zoom"] for rc, v in objs_rc.items()}
     ranges_rc = get_scene_ranges(*all_traces, zoom=zoom)
-    labels_rc = {(1, 1): dict.fromkeys("xyz", "")}
+    # an empty show() still gets its one panel; an empty cell of a grid gets
+    # none, as `Scene.panel` promises
+    labels_rc = {} if objs_rc else {(1, 1): dict.fromkeys("xyz", "")}
     scale_factors_rc = {}
     for rc, props in objs_rc.items():
         params = props["rc_params"]
@@ -1220,9 +1250,7 @@ def get_frames(
     # process_animation_kwargs resolves every animation_* key from the defaults
     animation = AnimationSettings(
         fps=animation_kwargs["animation_fps"],
-        max_fps=animation_kwargs["animation_maxfps"],
-        max_frames=animation_kwargs["animation_maxframes"],
-        time=animation_kwargs["animation_time"],
+        time=float(animation_kwargs["animation_time"]),
         slider=animation_kwargs["animation_slider"],
         output=animation_kwargs["animation_output"],
         frame_duration=frame_duration if is_animation else None,

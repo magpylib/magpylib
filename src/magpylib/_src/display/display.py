@@ -134,16 +134,19 @@ def show(
     ----------
     *objects : Source | Sensor | Collection
         One or multiple Magpylib objects to be displayed.
-    backend : {'auto', 'matplotlib', 'plotly', 'pyvista'}, default 'auto'
-        With ``'auto'`` the backend becomes ``'plotly'`` inside
-        a notebook when Plotly is installed, otherwise ``'matplotlib'``. If
-        ``canvas`` is provided, its type determines the backend.
+    backend : {'auto', 'matplotlib', 'plotly', 'pyvista'} | str, default 'auto'
+        A built-in backend, or any backend registered with
+        `magpylib.register_backend` or installed through the
+        ``magpylib.backends`` entry point. With ``'auto'`` the backend becomes
+        ``'plotly'`` inside a notebook when Plotly is installed, otherwise
+        ``'matplotlib'``. If ``canvas`` is provided, its type determines the
+        backend.
     canvas : None | matplotlib.Figure | plotly.Figure | pyvista.Plotter, default None
         Existing canvas to draw on. If ``None``, a new canvas is created and
         displayed.
     animation : bool | float, default False
         If ``True`` and at least one object has a path, the path is animated.
-        A positive float sets the total animation duration in seconds (Plotly only).
+        A positive float sets the total animation duration in seconds.
     zoom : float, default 0.0
         3D plot zoom level. 0 means tight bounds.
     markers : array-like, shape (n, 3) | None, default None
@@ -177,18 +180,22 @@ def show(
         inferred from the extent of the displayed system. The default is configurable
         via ``magpy.defaults.display.units.length``.
     legend_maxitems : int, default 20
-        Most entries a legend lists. Past it, the first ones are listed and the
-        rest summed up in one "… and k more" entry; ``0`` hides the legend.
-        Matplotlib and Pyvista apply it per 3D subplot, Plotly to its one legend.
+        Most entries a legend lists. Past it, that many are listed and the rest
+        summed up in one more, "… and k more", entry; ``0`` hides the legend.
+        Matplotlib and Pyvista apply it to each 3D subplot's legend and leave 2D
+        legends whole; Plotly applies it to its one legend.
         The default is configurable via ``magpy.defaults.display.legend.maxitems``.
     style : dict | None, default None
         Global style overrides, e.g. ``{'color': 'red'}`` or via underscore magic
         (``style_color='red'``). Applied to matching objects.
+    title : str | None, default None
+        Figure title. Without one, a lone object's label is the title.
     **kwargs
         Backend-specific arguments, forwarded unchanged: bare (``renderer='png'``)
         or prefixed with the backend's name (``plotly_renderer='png'``, which
-        wins). ``fig_*`` reaches the backend's figure constructor and ``show_*``
-        its show call, e.g. ``fig_figsize=(6, 6)`` with Matplotlib or
+        wins). ``fig_*`` reaches the backend's figure (Matplotlib's
+        ``plt.figure``, Pyvista's ``Plotter``, Plotly's ``Figure.update``) and
+        ``show_*`` its show call, e.g. ``fig_figsize=(6, 6)`` with Matplotlib or
         ``fig_layout_width=600`` with Plotly; ``fig=dict(...)`` and
         ``show=dict(...)`` are the same, spelled nested. A backend declares what
         it accepts and magpylib warns about the rest; what the library then
@@ -320,13 +327,13 @@ def show_context(
     objects : Source | Sensor | Collection
         One or more Magpylib objects to register up-front for display.
     backend : str, default magpylib.defaults.display.backend
-        Plotting backend: ``'auto'``, ``'matplotlib'``, ``'plotly'``, or
-        ``'pyvista'``.
+        Plotting backend: ``'auto'``, ``'matplotlib'``, ``'plotly'``,
+        ``'pyvista'``, or a registered backend's name, as in `show`.
     canvas : None | matplotlib.Figure | plotly.Figure | pyvista.Plotter, default None
         Existing canvas to draw on. If ``None``, a new canvas is created.
     animation : bool | float, default False
         If ``True`` (and at least one object has a path) the path is animated.
-        A positive float sets total animation duration in seconds (Plotly only).
+        A positive float sets total animation duration in seconds.
     zoom : float, default 0.0
         3D plot zoom level 0.0 means tight bounds.
     markers : array-like, shape (n, 3) | None, default None

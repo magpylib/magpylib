@@ -101,6 +101,26 @@ def test_unsupported_animation_output_warns(noop_backend):
     assert any("does not support 'animation_output'" in m for m in messages)
 
 
+@pytest.mark.parametrize(
+    ("kwargs", "time"),
+    [
+        ({"animation": 2.5}, 2.5),  # a duration, as documented: used to raise
+        ({"animation": True, "animation_tme": 2.5}, TypeError),  # was dropped
+    ],
+)
+def test_animation_arguments_reach_the_scene_or_raise(kwargs, time):
+    scenes = []
+    magpy.register_backend("animated", scenes.append, supports_animation=True)
+    src = make_source()
+    src.move([(0, 0, 0), (0, 0, 1)], start=0)
+    if time is TypeError:
+        with pytest.raises(TypeError, match="animation_tme"):
+            magpy.show(src, backend="animated", **kwargs)
+    else:
+        magpy.show(src, backend="animated", **kwargs)
+        assert scenes[0].animation.time == time
+
+
 def test_subplot_grid_collapses_for_backend_without_subplots(noop_backend):
     """A homogeneous grid warns and is flattened onto a single plot.
 
@@ -697,17 +717,13 @@ def test_each_cell_carries_its_own_objects():
     assert [id(o) for o in scene.panel(1, 2).objects] == [id(b), id(a)]
 
 
-def test_panel_kind_defaults_absent_cells_to_3d():
-    """Every cell of a grid needs a kind, including empty ones."""
-    scene = public_backend.Scene(
-        panels=(
-            public_backend.Panel(row=1, col=1, kind="scene3d"),
-            public_backend.Panel(row=1, col=2, kind="chart2d"),
-        )
-    )
+def test_an_empty_cell_has_no_panel_and_a_3d_kind():
+    """Every cell of a grid needs a kind, including empty ones. Cell (1, 1)
+    used to come as a 3D panel with blank labels and no ranges."""
+    scene = _scene_of({"objects": [make_source()], "col": 2}, backend_name="empty_cell")
+    assert scene.n_cols == 2
+    assert scene.panel(1, 1) is None
     assert scene.panel_kind(1, 1) == "scene3d"
-    assert scene.panel_kind(1, 2) == "chart2d"
-    assert scene.panel_kind(9, 9) == "scene3d"
 
 
 @pytest.mark.parametrize(
@@ -908,6 +924,34 @@ def test_the_report_names_the_object_it_got(monkeypatch):
         DisplayBackend.discover()
 
 
+def test_an_entry_point_named_otherwise_than_its_backend_is_reported(monkeypatch):
+    """The backend registers under its class's `name`: selecting it by the
+    entry point's name used to fail as an unknown backend, with no hint why."""
+
+    class Svg(DisplayBackend):
+        name = "svg_backend"
+
+        def show(self, scene):
+            return scene
+
+    class Entry:
+        name = "svg"
+        value = "svg_package:Svg"
+
+        def load(self):
+            return Svg
+
+    monkeypatch.setattr(
+        "magpylib._src.display.api.entry_points",
+        lambda *, group: [Entry()],  # noqa: ARG005
+        raising=True,
+    )
+    monkeypatch.setattr(DisplayBackend, "_discovered", False, raising=False)
+
+    with pytest.warns(UserWarning, match="select it by 'svg_backend'"):
+        DisplayBackend.discover()
+
+
 # --- declarations are checked where they are written -------------------------
 
 
@@ -928,6 +972,11 @@ def test_the_report_names_the_object_it_got(monkeypatch):
         ("description", 3, TypeError),
         ("name", 3, TypeError),
         ("name", "auto", ValueError),  # show()'s inference, never a backend
+        # magpylib's own members: `backends` used to crash the class
+        # statement, `supports` to break the dispatcher for every backend
+        ("backends", ("svg",), TypeError),
+        ("supports", None, TypeError),
+        ("supports_animations", True, UserWarning),  # a typo, used to pass
     ],
 )
 def test_a_declaration_is_checked_at_the_class_statement(attr, value, outcome):
@@ -938,7 +987,10 @@ def test_a_declaration_is_checked_at_the_class_statement(attr, value, outcome):
     if attr != "name":
         body["name"] = "checked"
     try:
-        if isinstance(outcome, type) and issubclass(outcome, Exception):
+        if outcome is UserWarning:
+            with pytest.warns(outcome, match=attr):
+                type("Checked", (DisplayBackend,), body)
+        elif isinstance(outcome, type) and issubclass(outcome, Exception):
             with pytest.raises(outcome, match=attr):
                 type("Checked", (DisplayBackend,), body)
             assert "checked" not in DisplayBackend.backends
@@ -963,7 +1015,25 @@ def test_register_backend_checks_its_arguments(name, keyword, error):
     assert "leak" not in DisplayBackend.backends
 
 
-def test_a_class_from_elsewhere_replacing_a_backend_is_reported():
+def _subclass_named_matplotlib():
+    class Impostor(DisplayBackend):
+        name = "matplotlib"
+
+        def show(self, scene):
+            return scene
+
+    return Impostor
+
+
+@pytest.mark.parametrize(
+    "replace",
+    [
+        _subclass_named_matplotlib,
+        # used to replace it silently
+        lambda: magpy.register_backend("matplotlib", lambda scene: scene),
+    ],
+)
+def test_a_class_from_elsewhere_replacing_a_backend_is_reported(replace):
     """A notebook re-running its cell is the same module and stays quiet; a
     package, or this test module, taking over 'matplotlib' is worth a word.
     Subclassing a registered backend without a `name` of its own registers
@@ -976,14 +1046,9 @@ def test_a_class_from_elsewhere_replacing_a_backend_is_reported():
     assert DisplayBackend.backends["matplotlib"] is builtin
 
     with pytest.warns(UserWarning, match=r"replaces the 'matplotlib' display backend"):
+        replacement = replace()
 
-        class Impostor(DisplayBackend):
-            name = "matplotlib"
-
-            def show(self, scene):
-                return scene
-
-    assert isinstance(DisplayBackend.backends["matplotlib"], Impostor)
+    assert isinstance(DisplayBackend.backends["matplotlib"], replacement)
 
 
 # --- option routing ----------------------------------------------------------
@@ -1186,7 +1251,11 @@ def test_the_pixel_helpers_are_public():
     )
     fields = public_backend.sensor_pixel_fields([make_source(), probe, magpy.Sensor()])
     assert list(fields) == [probe]
-    assert fields[probe]["B"].shape == (3, 2, 3)
+    # one array of the source's field, the components it leaves out zero
+    assert fields[probe].shape == (3, 2, 3)
+    assert fields[probe][..., :2].any()
+    assert not fields[probe][..., 2].any()
+    assert public_backend.sensor_pixel_fields([probe]) == {}  # nothing to read
 
     norms = [[0, 1, 2, 4]]  # 0 reads nothing
     scale = public_backend.scale_pixel_norms
@@ -1197,8 +1266,23 @@ def test_the_pixel_helpers_are_public():
     np.testing.assert_allclose(scale(norms, "uniform"), [[np.nan, 1, 1, 1]])
     with pytest.raises(ValueError, match="scaling"):
         scale(norms, "cubic")
+    with pytest.raises(ValueError, match="minimum"):
+        scale(norms, "linear", minimum=1.5)
 
-    colors = public_backend.colors_from_colorscale(
-        [0, 1, np.nan], "Viridis", cmin=0, cmax=1
-    )
-    assert list(colors) == ["#440154", "#fde725", "#b2beb5"]
+    colors = public_backend.colors_from_colorscale
+    assert colors([0, 1, np.nan], "Viridis", cmin=0, cmax=1) == [
+        "#440154",
+        "#fde725",
+        "#b2beb5",
+    ]
+    # a trace's own colorscale, as (stop, colour) pairs, used to raise; so did
+    # all-NaN values, and a `nan_color` was cut to ten characters
+    pairs = [(0, "#000000"), (1, "#ffffff")]
+    assert colors([0, 1, np.nan], pairs, nan_color="lightslategray") == [
+        "#000000",
+        "#ffffff",
+        "lightslategray",
+    ]
+    assert colors([np.nan], pairs) == ["#b2beb5"]
+    with pytest.raises(ValueError, match="one-dimensional"):
+        colors([[0, 1], [1, 0]], pairs)  # used to come back flattened

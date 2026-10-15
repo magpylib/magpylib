@@ -70,6 +70,26 @@ def test_model3d_for_another_backend_is_ignored(backend):
     assert render(obj, backend) == render(source(), backend)
 
 
+def test_a_native_model_may_name_its_coordinates_with_positional_arguments():
+    """The positional arguments are Matplotlib's ``(xs, ys, zs)`` only when the
+    keywords do not name x, y and z: a model with both used to fail with a
+    bare IndexError. The model is placed with its object, and names it."""
+    scenes = []
+    magpy.register_backend("native", scenes.append, supports_native_traces=True)
+    obj = source()
+    obj.position = (1, 0, 0)
+    obj.style.model3d.add_trace(
+        backend="native",
+        constructor="Path",
+        args=("a label",),
+        kwargs={"x": [0, 1], "y": [0, 0], "z": [0, 0]},
+    )
+    magpy.show(obj, backend="native")
+    (model,) = scenes[0].frames[0].native_traces
+    np.testing.assert_allclose(model["kwargs"]["x"], [1, 2])
+    assert model["object_id"] == id(obj)
+
+
 @pytest.mark.parametrize("backend", NATIVE_BACKENDS)
 def test_model3d_show_false_suppresses_the_model(backend):
     """`show=False` on a trace keeps it out of the figure."""

@@ -128,7 +128,10 @@ def place_and_orient_model3d(
 
 def get_vertices_from_model(model_kwargs, model_args=None, coordsargs=None):
     """get vertices from model kwargs and args"""
-    if model_args and coordsargs is None:  # Matplotlib default
+    model_kwargs = model_kwargs or {}
+    if (
+        model_args and coordsargs is None and not all(k in model_kwargs for k in "xyz")
+    ):  # Matplotlib default, unless the kwargs name the coordinates
         coordsargs = {"x": "args[0]", "y": "args[1]", "z": "args[2]"}
     vertices = []
     if coordsargs is None:

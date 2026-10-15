@@ -28,7 +28,7 @@ import pytest
 
 import magpylib as magpy
 from magpylib._src.display.api import DisplayBackend
-from magpylib.graphics.backend import API_VERSION
+from magpylib.graphics.backend import ALLOWED_LINESTYLES, ALLOWED_SYMBOLS, API_VERSION
 
 GOLDEN = Path(__file__).parent / "testdata" / f"scene_contract_v{API_VERSION}.json"
 
@@ -219,3 +219,41 @@ def test_the_scene_a_backend_receives_is_pinned():
     expected = json.loads(GOLDEN.read_text())
     for variant in VARIANTS:
         assert found[variant] == expected[variant], variant
+
+
+def test_the_scene_names_symbols_and_dashes_in_the_dialect():
+    """Magpylib's names, which every backend translates: CustomSource used to
+    send plotly's 'diamond'."""
+    traces = [t for f in capture(True, False).frames for t in f.traces]
+    symbols = {t["marker_symbol"] for t in traces if t.get("marker_symbol")}
+    dashes = {t["line_dash"] for t in traces if t.get("line_dash")}
+    assert symbols <= set(ALLOWED_SYMBOLS)
+    assert dashes <= set(ALLOWED_LINESTYLES)
+
+
+@pytest.mark.parametrize("symbol", ["arrow", "cone"])
+def test_pixels_reading_nothing_keep_the_frames_in_line(symbol):
+    """The first frame's pixels read nothing, the second's do. Pixels all
+    reading nothing, null pixels hidden, used to raise on every backend, and
+    arrows sent the pixels' 'cube' as a marker symbol, which Matplotlib
+    rejected."""
+    scenes = []
+    magpy.register_backend("pixels_probe", scenes.append, supports_animation=True)
+    sensor = magpy.Sensor(
+        position=[(0, 0, 0), (1, 0, 0)],
+        pixel=[(0, 0, 1), (0, 0, 2)],  # first on the dipole's axis: no Bxy
+        style_pixel_field_source="Bxy",
+        style_pixel_field_symbol=symbol,
+        style_pixel_field_shownull=False,
+    )
+    dipole = magpy.misc.Dipole(moment=(0, 0, 1))
+    magpy.show(dipole, sensor, backend="pixels_probe", animation=True)
+    first, second = scenes[0].frames
+    assert [t["type"] for t in first.traces] == [t["type"] for t in second.traces]
+    symbols = {
+        s
+        for t in (*first.traces, *second.traces)
+        if t.get("marker_symbol") is not None
+        for s in np.atleast_1d(t["marker_symbol"])
+    }
+    assert symbols <= set(ALLOWED_SYMBOLS)

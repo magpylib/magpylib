@@ -118,7 +118,12 @@ def magic_to_dict(kwargs, separator="_") -> dict:
     for k, v in kwargs.items():
         keys = k.split(separator)
         if len(keys) == 1:
-            new_kwargs[keys[0]] = v
+            existing = new_kwargs.get(keys[0])
+            if isinstance(existing, dict) and isinstance(v, dict):
+                # merged, not replaced: "line_color" then "line={...}" keeps both
+                new_kwargs[keys[0]] = {**existing, **v}
+            else:
+                new_kwargs[keys[0]] = dict(v) if isinstance(v, dict) else v
         else:
             val = {separator.join(keys[1:]): v}
             if keys[0] in new_kwargs and isinstance(new_kwargs[keys[0]], dict):
