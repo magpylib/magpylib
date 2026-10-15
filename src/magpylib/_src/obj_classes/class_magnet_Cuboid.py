@@ -14,7 +14,7 @@ from magpylib._src.obj_classes.class_BaseProperties import (
     BaseDipoleMoment,
     BaseVolume,
 )
-from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget, _is_count
 from magpylib._src.obj_classes.target_meshing import generate_mesh_cuboid
 from magpylib._src.utility import unit_prefix
 
@@ -218,15 +218,17 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             synced["dimension"], synced["magnetization"], self.meshing
         )
 
-    def _validate_meshing(self, value):
-        """Cuboid meshing must be a positive integer or array-like of shape (3,)."""
-        if (isinstance(value, int) and value > 0) or (
-            isinstance(value, list | tuple | np.ndarray) and len(value) == 3
-        ):
-            pass
-        else:
-            msg = (
-                f"Input meshing of {self} must be positive integer or array-like of shape "
-                f"(3,); instead received {value}."
-            )
-            raise ValueError(msg)
+    def _validate_meshing(self, value, minimum=1):
+        """Cuboid meshing must be a positive integer or three positive integers."""
+        is_triple = isinstance(value, list | tuple) or (
+            isinstance(value, np.ndarray) and value.ndim == 1
+        )
+        if is_triple and len(value) == 3 and all(_is_count(n, minimum) for n in value):
+            return tuple(int(n) for n in value)
+        if _is_count(value, minimum):
+            return int(value)
+        msg = (
+            f"Input meshing of {self} must be a positive integer or three positive "
+            f"integers; instead received {value!r}."
+        )
+        raise ValueError(msg)

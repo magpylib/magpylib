@@ -323,13 +323,8 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
             self.meshing,
         )
 
-    def _validate_meshing(self, value):
+    def _validate_meshing(self, value, minimum=None):
         """Makes only sense with at least n_mesh = n_faces."""
-        if isinstance(value, int) and value >= len(self.vertices) - 2:
-            pass
-        else:
-            msg = (
-                f"Input meshing of {self} must be an integer >= number of faces; "
-                f"instead received {value}."
-            )
-            raise ValueError(msg)
+        if minimum is None:
+            minimum = len(self.vertices) - 2
+        return super()._validate_meshing(value, minimum)

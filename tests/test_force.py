@@ -2502,6 +2502,73 @@ def test_force_meshing_validation():
         getFT(cube, poly)
 
 
+def _meshing_targets():
+    tetra = [(1, 1, -1), (1, 1, 1), (-1, 1, 1), (1, -1, 1)]
+    faces = [(0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)]
+    strip = [(0, 0, 0), (0, 0, 1), (1, 0, 0), (1, 0, 1), (1, 1, 0), (1, 1, 1)]
+    return [
+        magpy.magnet.Cuboid(dimension=(3, 3, 3), polarization=(0, 0, 1)),
+        magpy.magnet.Cylinder(dimension=(3, 3), polarization=(0, 0, 1)),
+        magpy.magnet.CylinderSegment(
+            dimension=(1, 2, 3, 0, 360), polarization=(1, 2, 3)
+        ),
+        magpy.magnet.Tetrahedron(vertices=tetra, polarization=(0, 0, 1)),
+        magpy.magnet.TriangularMesh(
+            vertices=tetra, faces=faces, polarization=(0, 0, 1)
+        ),
+        magpy.current.Circle(diameter=3, current=1),
+        magpy.current.Polyline(vertices=[(0, 0, 0), (1, 1, 1), (2, 2, 2)], current=1),
+        magpy.current.TriangleStrip(vertices=strip, current=1),
+        magpy.current.TriangleSheet(
+            vertices=strip, faces=faces, current_densities=np.ones((4, 3))
+        ),
+    ]
+
+
+@pytest.mark.parametrize("bad", [True, 0, 2.0, np.float64(100.0), (100,), [100]])
+def test_meshing_rejects_non_positive_integers(bad):
+    """A mesh count must be a positive integer, not a bool, float or sequence."""
+    for obj in _meshing_targets():
+        with pytest.raises(ValueError, match="meshing"):
+            obj.meshing = bad
+
+
+def test_meshing_accepts_numpy_integers():
+    """np.int64 counts are valid and are stored as plain int."""
+    for obj in _meshing_targets():
+        obj.meshing = np.int64(100)
+        assert obj.meshing == 100
+        assert isinstance(obj.meshing, int)
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        (-1, 2, 2),
+        (0, 0, 0),
+        (2, 2),
+        (2, 2, 2, 2),
+        (2.0, 2, 2),
+        (True, 2, 2),
+        np.full((3, 3), 2),
+    ],
+)
+def test_cuboid_meshing_rejects_invalid_triples(bad):
+    """A Cuboid triple must be exactly three positive integers."""
+    cube = magpy.magnet.Cuboid(dimension=(3, 3, 3), polarization=(0, 0, 1))
+    with pytest.raises(ValueError, match="meshing"):
+        cube.meshing = bad
+
+
+@pytest.mark.parametrize("good", [(2, 3, 4), [2, 3, 4], np.array([2, 3, 4])])
+def test_cuboid_meshing_accepts_integer_triples(good):
+    """List, tuple and integer array triples are stored as a tuple of ints."""
+    cube = magpy.magnet.Cuboid(dimension=(3, 3, 3), polarization=(0, 0, 1))
+    cube.meshing = good
+    assert cube.meshing == (2, 3, 4)
+    assert all(isinstance(n, int) for n in cube.meshing)
+
+
 def test_centroid():
     """Test centroid calculation"""
     circ = magpy.current.Circle(diameter=1, current=1)

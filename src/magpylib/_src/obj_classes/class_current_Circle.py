@@ -171,13 +171,6 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         synced = self._sync_path_lengths(("diameter", "current"))
         return generate_mesh_circle(synced["diameter"], synced["current"], self.meshing)
 
-    def _validate_meshing(self, value):
+    def _validate_meshing(self, value, minimum=4):
         """Circle makes only sense with at least 4 mesh points."""
-        if isinstance(value, int) and value > 3:
-            pass
-        else:
-            msg = (
-                f"Input meshing must be an integer > 3 for {self!r}; "
-                f"instead received {value!r}."
-            )
-            raise ValueError(msg)
+        return super()._validate_meshing(value, minimum)

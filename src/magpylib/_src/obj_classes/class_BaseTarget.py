@@ -1,6 +1,16 @@
 """Base class for objects that can be targets of force computation."""
 
+import numbers
 from abc import ABC, abstractmethod
+
+
+def _is_count(value, minimum=1):
+    """Return True if value is an integer (not a bool) >= minimum."""
+    return (
+        isinstance(value, numbers.Integral)
+        and not isinstance(value, bool)
+        and value >= minimum
+    )
 
 
 class BaseTarget(ABC):
@@ -34,19 +44,21 @@ class BaseTarget(ABC):
         """
         # Basic validation - subclasses may override for specific requirements
         if value is not None:
-            self._validate_meshing(value)
+            value = self._validate_meshing(value)
         self._meshing = value
 
-    def _validate_meshing(self, value):
-        """Basic meshing validation: allow positive integers
+    def _validate_meshing(self, value, minimum=1):
+        """Return value as int if it is an integer >= minimum, else raise.
 
         Subclasses override this method with class-specific requirements.
         """
-        if isinstance(value, int) and value > 0:
-            pass
-        else:
-            msg = f"Input meshing must be positive integer for {self}; instead received {value}."
-            raise ValueError(msg)
+        if _is_count(value, minimum):
+            return int(value)
+        msg = (
+            f"Input meshing of {self} must be an integer >= {minimum}; "
+            f"instead received {value!r}."
+        )
+        raise ValueError(msg)
 
     @abstractmethod
     def _generate_mesh(self):
