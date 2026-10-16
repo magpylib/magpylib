@@ -938,8 +938,10 @@ def make_Sensor(
             )
 
             traces_to_merge.append(pixels_trace)
-        # Show hull over pixels only if no field values are provided
-        if not field_values:
+        # The hull stands in for pixels that show no field: never on a sensor
+        # styled to show one, whether its field was read or not -- hidden
+        # pixels have it skipped, and nothing to read leaves it empty
+        if not style.pixel.field.source:
             hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
             hull_dim[hull_dim == 0] = px_dim / 2
             hull_mesh = make_BaseCuboid(

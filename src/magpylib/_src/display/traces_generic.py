@@ -971,8 +971,14 @@ def get_traces_3D(
     return traces_dict, extra_backend_traces
 
 
-def get_sensor_pixel_field(objects):
-    """get field_by_sens if sensor has style pixel field"""
+def get_sensor_pixel_field(objects, *, drawn_only=False):
+    """get field_by_sens if sensor has style pixel field
+
+    With `drawn_only`, only for the sensors whose pixels are drawn: a pixel
+    size of 0 shows no reading, and reading it anyway, over the whole path,
+    was most of the cost of drawing a scene whose backend draws its pixels
+    itself.
+    """
     # pylint: disable=import-outside-toplevel
     from magpylib._src.fields.field_BH import _getBH_level2  # noqa: PLC0415
 
@@ -981,14 +987,17 @@ def get_sensor_pixel_field(objects):
     # neither sources nor sensors, and used to be refused as "bad sources"
     objects = [o for o in objects if not isinstance(o, MagpyMarkers)]
     sensors = format_obj_input(objects, allow="sensors+collections")
-    sensors = [
+    # once each: a sensor shown with the collection holding it was read twice
+    sensors = dict.fromkeys(
         sub_s
         for s in sensors
         for sub_s in (s.sensors_all if isinstance(s, magpy.Collection) else [s])
-    ]
+    )
     has_pix_field = False
     for sens in sensors:
         fsrc = sens.style.pixel.field.source
+        if drawn_only and sens.style.pixel.size == 0:
+            continue
         if fsrc:
             field_by_sens[sens] = {}
             if not has_pix_field:
@@ -1176,7 +1185,9 @@ def get_frames(
         styles = {obj: prop["style"] for obj, prop in props["objects"].items()}
         rc_params = None
         with style_temp_edit(*styles, styles_temp=styles):
-            field_by_sens = get_sensor_pixel_field(list(props["objects"]))
+            field_by_sens = get_sensor_pixel_field(
+                list(props["objects"]), drawn_only=True
+            )
             for frame, path_ind in zip(frames, path_indices, strict=False):
                 if is_animation:
                     style_kwargs["style_path_frames"] = [path_ind]

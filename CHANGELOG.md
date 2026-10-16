@@ -38,8 +38,10 @@
 - **Breaking:** past `legend_maxitems`, the legend lists its first entries and
   "… and k more" instead of disappearing
   ([#1007](https://github.com/magpylib/magpylib/pull/1007)).
-- `show()` is about 3x faster
-  ([#967](https://github.com/magpylib/magpylib/pull/967)).
+- `show()` is about 3x faster, and a sensor showing its pixel field is read
+  once, and not at all while its pixels are hidden
+  ([#967](https://github.com/magpylib/magpylib/pull/967),
+  [#1022](https://github.com/magpylib/magpylib/pull/1022)).
 - Misspelled keyword arguments are no longer ignored: `getB()`, `getH()`,
   `getJ()` and `getM()` raise `TypeError`, and `show()` raises for its own, such
   as `animation_tme=`. `show()` warns about options the backend does not
@@ -71,11 +73,13 @@
   frame on Matplotlib, and their legend in every frame but the last;
   `show(markers=...)` raised beside a sensor showing its pixel field; Matplotlib
   could not draw a pixel field as arrows, a pixel field reading nothing raised
-  with `shownull=False`, and Matplotlib and Pyvista could not draw some of the
-  allowed line styles, such as `'loosely dotted'`
+  with `shownull=False`, Matplotlib and Pyvista could not draw some of the
+  allowed line styles, such as `'loosely dotted'`, and a sensor styled to show
+  its pixel field got a box round its pixels when there was nothing to read
   ([#1013](https://github.com/magpylib/magpylib/pull/1013),
   [#1014](https://github.com/magpylib/magpylib/pull/1014),
-  [#1021](https://github.com/magpylib/magpylib/pull/1021)).
+  [#1021](https://github.com/magpylib/magpylib/pull/1021),
+  [#1022](https://github.com/magpylib/magpylib/pull/1022)).
 - 2D panels: `style_legend_show=False` left their curves in the legend, their
   axes were untitled, and Plotly's legend toggled the curves of sensors labelled
   alike together ([#1010](https://github.com/magpylib/magpylib/pull/1010),
