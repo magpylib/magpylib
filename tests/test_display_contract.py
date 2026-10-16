@@ -30,6 +30,9 @@ import magpylib as magpy
 from magpylib._src.display.api import DisplayBackend
 from magpylib.graphics.backend import ALLOWED_LINESTYLES, ALLOWED_SYMBOLS, API_VERSION
 
+#: What `line_dash` takes: the long names, one per style
+LINE_DASHES = ALLOWED_LINESTYLES[:6]
+
 GOLDEN = Path(__file__).parent / "testdata" / f"scene_contract_v{API_VERSION}.json"
 
 
@@ -228,7 +231,51 @@ def test_the_scene_names_symbols_and_dashes_in_the_dialect():
     symbols = {t["marker_symbol"] for t in traces if t.get("marker_symbol")}
     dashes = {t["line_dash"] for t in traces if t.get("line_dash")}
     assert symbols <= set(ALLOWED_SYMBOLS)
-    assert dashes <= set(ALLOWED_LINESTYLES)
+    assert dashes <= set(LINE_DASHES)
+
+
+@pytest.mark.parametrize(
+    ("style", "long_name"),
+    list(
+        zip(
+            ALLOWED_LINESTYLES,
+            [*LINE_DASHES, *LINE_DASHES[:2], "dashdot", *["dotted"] * 3],
+            strict=True,
+        )
+    ),
+)
+def test_a_line_style_reaches_the_backend_under_its_long_name(style, long_name):
+    """The style accepts twelve spellings, a dash tuple among them; a backend
+    used to receive whichever the user chose, and Matplotlib and Pyvista
+    failed on some of their own."""
+    scenes = []
+    magpy.register_backend("dash_probe", scenes.append)
+    coil = magpy.current.Circle(current=1, diameter=1, style_line_style=style)
+    coil.move([(0, 0, 0), (0, 0, 1)], start=0)
+    coil.style.path.line.style = style
+    magpy.show(coil, backend="dash_probe")
+    dashes = {t["line_dash"] for t in scenes[0].frames[0].traces if t.get("line_dash")}
+    assert long_name in dashes
+    assert dashes <= set(LINE_DASHES)
+
+
+@pytest.mark.parametrize("backend", ["matplotlib", "plotly", "pyvista"])
+def test_every_backend_draws_the_loose_line_styles(backend):
+    """Matplotlib rejected 'loosely dotted' and 'loosely dashdotted' as names,
+    and the dash tuple broke it and Pyvista inside an array conversion."""
+    coil = magpy.current.Circle(
+        current=1, diameter=1, style_line_style="loosely dotted"
+    )
+    coil.move([(0, 0, 0), (0, 0, 1)], start=0)
+    coil.style.path.line.style = (0, (1, 1))
+    cube = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1),
+        dimension=(1, 1, 1),
+        style_path_line_style="loosely dashdotted",
+    )
+    cube.move([(2, 0, 0), (2, 0, 1)], start=0)
+    extra = {"fig_off_screen": True} if backend == "pyvista" else {}
+    assert magpy.show(coil, cube, backend=backend, return_fig=True, **extra) is not None
 
 
 @pytest.mark.parametrize("symbol", ["arrow", "cone"])

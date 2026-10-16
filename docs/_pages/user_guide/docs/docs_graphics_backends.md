@@ -42,7 +42,7 @@ For a complete backend in real use, read the three.js backend of [Magpylib Studi
 
 ## Registering a backend
 
-A subclass that sets its own `name` registers itself at the class statement. A subclass without a `name` registers nothing, so it can hold declarations that several backends share. The `description`, with the `url` if you set one, is shown where Magpylib lists the backends, such as the error for an unknown backend name.
+A subclass that sets its own `name` registers itself at the class statement, instantiated without arguments: configure a backend through class attributes or the options a user passes, not through `__init__`. A subclass without a `name` registers nothing, so it can hold declarations that several backends share. The `description`, with the `url` if you set one, is shown where Magpylib lists the backends, such as the error for an unknown backend name.
 
 A backend shipped in a package should instead advertise itself in the `magpylib.backends` entry-point group (`ENTRY_POINT_GROUP`), so that installing it is enough:
 
@@ -173,7 +173,7 @@ A 2D curve has no `opacity` and no `line_width`.
 - **Coordinates** are float64 numpy arrays, in world coordinates and already in the display unit. Face indices are int64 arrays.
 - **Numbers** may be Python ints, such as `opacity=1` or `line_width=2`: convert with `float()` where your library needs floats.
 - **Colours** are CSS names or `"#rrggbb"` hex: a user's `"r"` arrives as `"red"`. Per-face and per-point colours are a numpy string array from Magpylib, and a plain list from a user's model.
-- **Symbols and dashes** follow Magpylib's own vocabularies, both Matplotlib-derived: `marker_symbol` is one of `ALLOWED_SYMBOLS` (`"o"`, `"D"`, `"+"`, ...) and `line_dash` one of `ALLOWED_LINESTYLES` (`"dashed"`, `"--"`, `(0, (1, 1))`, ...). Map them to your library. The exception is a user's `generic` [model](examples-own-3d-models), whose values pass through unchecked and may be Plotly names such as `"circle"`.
+- **Symbols and dashes** follow Magpylib's own vocabularies, both Matplotlib-derived: `marker_symbol` is one of `ALLOWED_SYMBOLS` (`"o"`, `"D"`, `"+"`, ...) and `line_dash` one of `"solid"`, `"dashed"`, `"dotted"`, `"dashdot"`, `"loosely dotted"` and `"loosely dashdotted"`, whichever of the spellings in `ALLOWED_LINESTYLES` the user chose. Map them to your library. The exception is a user's `generic` [model](examples-own-3d-models), whose values pass through unchecked and may be Plotly names such as `"circle"`.
 - **Sizes are nominal.** `line_width=2` and `marker_size=3` have no unit, and every backend scales them its own way. Plotly multiplies line widths by 2.2 and marker sizes by 0.7, in pixels; Studio uses the same factors.
 - **NaN is not JSON.** A backend that ships coordinates to a browser must encode it, as `null` for instance, and restore it there.
 - **Optional keys** appear only when they apply: `text`, `flatshading`, `intensity`, `colorscale`, `facecolor`. Read them with `trace.get`.

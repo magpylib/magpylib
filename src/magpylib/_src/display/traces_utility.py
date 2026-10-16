@@ -1086,3 +1086,27 @@ def get_trace_kw(trace, arg, *, none_replace=None):
     if res is None:
         return none_replace
     return res
+
+
+#: The spelling of each allowed line style in the trace dialect: the long
+#: names, so that a backend maps six values rather than every spelling the
+#: style accepts, a dash tuple among them.
+LINE_DASHES = {
+    "solid": "solid",
+    "-": "solid",
+    "dashed": "dashed",
+    "--": "dashed",
+    "dotted": "dotted",
+    ".": "dotted",
+    ":": "dotted",
+    (0, (1, 1)): "dotted",
+    "dashdot": "dashdot",
+    "-.": "dashdot",
+    "loosely dotted": "loosely dotted",
+    "loosely dashdotted": "loosely dashdotted",
+}
+
+
+def line_dash(style):
+    """The dialect's spelling of the line style `style`; None stays None."""
+    return None if style is None else LINE_DASHES.get(style, style)

@@ -36,6 +36,7 @@ from magpylib._src.display.traces_utility import (
     getColorscale,
     getIntensity,
     group_traces,
+    line_dash,
     path_frames_to_indices,
     place_and_orient_model3d,
     rescale_traces,
@@ -198,7 +199,7 @@ def make_mag_arrows(obj, path_ind=-1):
         "type": "scatter3d",
         "mode": "lines",
         "line_width": arrow.width,
-        "line_dash": arrow.style,
+        "line_dash": line_dash(arrow.style),
         "line_color": color,
         "x": x,
         "y": y,
@@ -220,7 +221,7 @@ def make_path(input_obj, label=None):
     marker["symbol"] = marker["symbol"]
     marker["color"] = style.color if marker["color"] is None else marker["color"]
     line = style.path.line.as_dict()
-    line["dash"] = line["style"]
+    line["dash"] = line_dash(line["style"])
     line["color"] = style.color if line["color"] is None else line["color"]
     line = {k: v for k, v in line.items() if k != "style"}
     return {
