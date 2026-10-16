@@ -130,6 +130,7 @@ def colors_from_colorscale(
     # pylint: disable=import-outside-toplevel
     from matplotlib.colors import rgb2hex, to_rgb  # noqa: PLC0415
     from plotly.colors import sample_colorscale  # noqa: PLC0415
+    from plotly.exceptions import PlotlyError  # noqa: PLC0415
 
     values = np.atleast_1d(np.asarray(values, dtype=float))
     if values.ndim != 1:
@@ -151,7 +152,14 @@ def colors_from_colorscale(
             r, g, b = (round(255 * c) for c in to_rgb(color))
             stops.append([float(stop), f"rgb({r}, {g}, {b})"])
         colorscale = stops
-    sampled = sample_colorscale(colorscale, np.clip(scaled, 0, 1), colortype=None)
+    try:
+        sampled = sample_colorscale(colorscale, np.clip(scaled, 0, 1), colortype=None)
+    except PlotlyError as err:  # an unknown scale name
+        msg = (
+            "colorscale must be a Plotly colorscale name or (stop, colour) "
+            f"pairs; instead received {colorscale!r}."
+        )
+        raise ValueError(msg) from err
     for index, rgb in zip(np.flatnonzero(valid), sampled, strict=True):
         colors[index] = rgb2hex(rgb)
     return colors

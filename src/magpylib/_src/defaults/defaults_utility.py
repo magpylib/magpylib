@@ -112,8 +112,12 @@ def magic_to_dict(kwargs, separator="_") -> dict:
     dict
         nested dictionary
     """
-    assert isinstance(kwargs, dict), "kwargs must be a dictionary"
-    assert isinstance(separator, str), "separator must be a string"
+    if not isinstance(kwargs, dict):
+        msg = f"kwargs must be a dictionary; instead received {type(kwargs).__name__}."
+        raise TypeError(msg)
+    if not isinstance(separator, str):
+        msg = f"separator must be a string; instead received {separator!r}."
+        raise TypeError(msg)
     new_kwargs = {}
     for k, v in kwargs.items():
         keys = k.split(separator)
@@ -168,8 +172,12 @@ def linearize_dict(kwargs, separator=".") -> dict:
      'marker.size': 1,
      'marker.symbol': 'o'}
     """
-    assert isinstance(kwargs, dict), "kwargs must be a dictionary"
-    assert isinstance(separator, str), "separator must be a string"
+    if not isinstance(kwargs, dict):
+        msg = f"kwargs must be a dictionary; instead received {type(kwargs).__name__}."
+        raise TypeError(msg)
+    if not isinstance(separator, str):
+        msg = f"separator must be a string; instead received {separator!r}."
+        raise TypeError(msg)
     dict_ = {}
     for k, v in kwargs.items():
         if isinstance(v, dict):

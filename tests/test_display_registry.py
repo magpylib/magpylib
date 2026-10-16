@@ -1286,3 +1286,5 @@ def test_the_pixel_helpers_are_public():
     assert colors([np.nan], pairs) == ["#b2beb5"]
     with pytest.raises(ValueError, match="one-dimensional"):
         colors([[0, 1], [1, 0]], pairs)  # used to come back flattened
+    with pytest.raises(ValueError, match="colorscale"):
+        colors([0, 1], "NoSuchScale")  # used to raise plotly's own error

@@ -40,6 +40,7 @@ from magpylib._src.display.traces_utility import (
     get_legend_label,
     get_orientation_from_vec,
     group_traces,
+    line_dash,
     merge_mesh3d,
     place_and_orient_model3d,
     triangles_area,
@@ -114,7 +115,7 @@ def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
                 "z": z,
                 "mode": "lines",
                 "line_width": kind_style.width,
-                "line_dash": kind_style.style,
+                "line_dash": line_dash(kind_style.style),
                 "line_color": color,
             }
             traces.append({**trace, **kwargs})
@@ -264,7 +265,7 @@ def make_Circle(
                 "z": z,
                 "mode": "lines",
                 "line_width": kind_style.width,
-                "line_dash": kind_style.style,
+                "line_dash": line_dash(kind_style.style),
                 "line_color": color,
             }
             traces.append({**trace, **kwargs})
@@ -537,7 +538,7 @@ def make_mesh_lines(obj, mode, path_ind=-1, **kwargs) -> dict[str, Any]:
         "marker_symbol": marker.symbol,
         "line_color": line.color,
         "line_width": line.width,
-        "line_dash": line.style,
+        "line_dash": line_dash(line.style),
         "legendgroup": f"{legendgroup} - {mode}edges",
         "name_suffix": f" - {mode}-edges",
         "name": get_legend_label(obj, suffix=False),

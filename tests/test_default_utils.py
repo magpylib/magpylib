@@ -21,9 +21,9 @@ def test_magic_to_dict():
     # a dict after the flat spelling of its keys merges with it, at any depth
     res = magic_to_dict({"a_b_c": 1, "a": {"b": {"d": 2}, "e": 3}})
     assert res == {"a": {"b": {"c": 1, "d": 2}, "e": 3}}
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         magic_to_dict(0, separator=".")
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         magic_to_dict(d, separator=0)
 
 
@@ -42,9 +42,9 @@ def test_linearize_dict():
         "marker.symbol": "o",
         "marker.color": None,
     }, "linearization of dict failed"
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         magic_to_dict(0, separator=".")
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         magic_to_dict(mydict, separator=0)
 
 

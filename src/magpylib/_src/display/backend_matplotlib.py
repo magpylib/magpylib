@@ -44,12 +44,18 @@ SYMBOLS_TO_MATPLOTLIB = {
 }
 
 LINE_STYLES_TO_MATPLOTLIB = {
+    # the dialect's names; the loose ones as matplotlib's named dash patterns
     "solid": "-",
-    "dash": "--",
+    "dashed": "--",
+    "dotted": ":",
     "dashdot": "-.",
-    "dot": (0, (1, 1)),
-    "longdash": "loosely dotted",
-    "longdashdot": "loosely dashdotted",
+    "loosely dotted": (0, (1, 10)),
+    "loosely dashdotted": (0, (3, 10, 1, 10)),
+    # plotly's, from a user's generic model
+    "dash": "--",
+    "dot": ":",
+    "longdash": (0, (1, 10)),
+    "longdashdot": (0, (3, 10, 1, 10)),
 }
 
 
