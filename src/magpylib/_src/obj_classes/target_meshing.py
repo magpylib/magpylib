@@ -164,6 +164,25 @@ def _cuboid_cells(dimension, meshing):
     }
 
 
+def _sectors_with_centroid_inside(r_in, r_out, span, n):
+    """Smallest number of sectors, at least n, that cuts the ring r_in..r_out over
+    span degrees so that each sector's centroid lies within a quarter of the ring's
+    thickness of its middle radius. The rule of magpylib-material-response, whose
+    demagnetization matches each cell's field at its centroid: a wide sector of a
+    thin ring has its centroid outside the material.
+    """
+    if r_in == 0:
+        return n
+    r_mid = (r_in + r_out) / 2
+    tolerance = (r_out - r_in) / 4
+    r_bar = 2 / 3 * (r_out**3 - r_in**3) / (r_out**2 - r_in**2)
+    while True:
+        half_angle = np.deg2rad(span / n) / 2
+        if r_mid - r_bar * np.sin(half_angle) / half_angle <= tolerance:
+            return n
+        n += 1
+
+
 def _cylinder_segment_cells(dimension, meshing):
     """Split a cylinder segment into cylinder-segment cells.
 
@@ -171,9 +190,10 @@ def _cylinder_segment_cells(dimension, meshing):
     and that box is split with ``_cells_from_dimension`` into (nphi, nr, nh)
     divisions. Each ring gets angular divisions in proportion to its middle radius,
     so that all cells have about the same arc length and the rings add up to
-    nphi * nr cells. When the segment is a full cylinder with at least 3 rings, the
-    innermost ring stays one cell per height layer. This is the rule of
-    ``mesh_Cylinder`` in magpylib-material-response.
+    nphi * nr cells. A thin ring gets more sectors where needed, so that each cell's
+    centroid lies near the ring's middle radius. When the segment is a full cylinder
+    with at least 3 rings, the innermost ring stays one cell per height layer. This
+    is the rule of ``mesh_Cylinder`` in magpylib-material-response.
 
     Parameters
     ----------
@@ -204,6 +224,7 @@ def _cylinder_segment_cells(dimension, meshing):
             nphi_r = 1
         else:
             nphi_r = max(1, round((r_in + r_out) / (r1 + r2) * nphi))
+            nphi_r = _sectors_with_centroid_inside(r_in, r_out, phi2 - phi1, nphi_r)
         phis = np.linspace(phi1, phi2, nphi_r + 1)
         ring = np.empty((nh, nphi_r, 5))
         ring[..., 0] = r_in
