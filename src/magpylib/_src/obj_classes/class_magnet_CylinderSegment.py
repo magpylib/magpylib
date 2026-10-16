@@ -53,8 +53,9 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
     meshing : int | None, default None
-        Mesh fineness for force computation. Must be a positive integer specifying
-        the target mesh size.
+        Discretization into cylinder-segment cells: the target number of cells,
+        split as close to cubes as possible. The force computation acts at the
+        cell centroids.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.

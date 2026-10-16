@@ -153,10 +153,13 @@ Set `meshing` to an integer representing the target number of mesh cells. The al
 
 **Class-specific meshing rules**
 
-- `Sphere` and `Dipole`: no meshing required (automatically uses 1 point at center for exact results)
-- `Cuboid`: accepts also tuple `meshing=(n1, n2, n3)` for explicit subdivision
-- `Circle`: minimum `meshing=4` (requires at least 4 points around circumference)
+What `meshing` means for each class, and the cells it produces, is listed in the [force computation docs](docs-forcecomp-meshing). In short:
+
+- `Sphere` and `Dipole`: no meshing required (exact result from 1 point at the center)
+- magnets: `meshing` is the target number of cells of the magnet's own kind, and the force acts at the cell centroids. `Cuboid` also accepts `meshing=(n1, n2, n3)` for an explicit subdivision, `Tetrahedron` is cut into the closest cube number of equal cells.
+- `Circle`: minimum `meshing=4` (segments around the circumference)
 - `Polyline`: minimum meshing must equal or exceed the number of line segments
+- `TriangleStrip` and `TriangleSheet`: minimum meshing must equal or exceed the number of faces
 
 **Mesh analysis with `meshreport`**
 
@@ -177,9 +180,9 @@ c3 = magpy.magnet.Cylinder(dimension=(2, 1), polarization=(0, 0, 1), meshing=100
 F, T = magpy.getFT(dipole, [c1, c2, c3], meshreport=True)
 
 # Mesh report:
-#   Target Cylinder(id=2589596340240): 2 points
-#   Target Cylinder(id=2589596291216): 20 points
-#   Target Cylinder(id=2589596292176): 124 points
+#   Target Cylinder(id=2589596340240): 1 points
+#   Target Cylinder(id=2589596291216): 10 points
+#   Target Cylinder(id=2589596292176): 100 points
 ```
 
 **Key insight:** The algorithm selects optimal cell distributions close to (but not exactly) your target `meshing` value.

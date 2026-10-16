@@ -42,7 +42,7 @@ See {ref}`docs-fieldcomp` for more information.
 
 **Force computation**
 
-* **`meshing`**: property which defines the mesh finesse (splitting of the target into small parts) for the force computation.
+* **`meshing`**: property which defines how finely the object is cut into cells (magnets) or elements (currents). The force computation uses it.
 
 A detailed overview of the force computation is found in {ref}`docs-forcecomp`. Note that force and torque computation is only available via the top-level function **`getFT()`**.
 

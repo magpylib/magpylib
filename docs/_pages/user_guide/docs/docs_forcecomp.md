@@ -30,7 +30,7 @@ where F is the force in units (N) and T is the torque in units (N*m) acting on t
 - **`meshreport`**: Set to `True` for printing the number of mesh points of each target giving you an idea of the involved computation effort.
 - **`return_mesh`**: Set to `True` for returning the mesh instead of F and T. In this case, a list of mesh dictionaries will be returned which have keys `"pts"`, `"moments"` (only magnets), and `"cvecs"` (only currents).
 
-Each target must have the **`meshing`** parameter set to define the mesh discretization finesse. This is an integer number which defines the target number of mesh points. The meshing algorithms will not always create exactly the given target number, but aim to create uniform meshes with aspect ratio = 1 cells.
+Each target except `Dipole` and `Sphere` must have its **`meshing`** parameter set, see [Meshing](docs-forcecomp-meshing) below.
 
 ```{warning}
 F and T are computed in SI units (N) for F and (N*m) T. Note that [scaling invariance](guide-docs-io-scale-invariance) does not hold for force computations! Be careful to provide the correct input units!
@@ -57,3 +57,20 @@ print(f"force: {np.round(F, decimals=2)} N")
 print(f"torque: {np.round(T, decimals=2)} N*m")
 # torque: [-8.54  4.27  0.  ] N*m
 ```
+
+-------------------------------------
+(docs-forcecomp-meshing)=
+## Meshing
+
+The `meshing` parameter is a positive integer: the target number of cells the target is cut into. Magnets are cut into cells of their own kind, and the force acts at the cell centroids with the cell volumes. Currents are cut into line or surface elements. The algorithms aim for uniform cells with aspect ratio close to 1, so the cell count is close to, but not always exactly, `meshing`. A bool is not a valid `meshing`, NumPy integers are.
+
+| Class | `meshing` | Cells |
+|---|---|---|
+| `Cuboid` | target number of cells, or `(n1, n2, n3)` divisions along the sides | cuboids, as close to cubes as possible |
+| `Cylinder`, `CylinderSegment` | target number of cells | cylinder segments of about equal size: rings cut along the angle in proportion to their middle radius; the innermost ring of a full cylinder with at least 3 rings stays a cylinder |
+| `Tetrahedron` | target number of cells, rounded to the closest cube number m³ | m³ tetrahedra of equal volume |
+| `TriangularMesh` | target number of cells | cubes on a regular grid inside the surface |
+| `Sphere`, `Dipole` | not needed | one point, exact |
+| `Circle` | number of segments, at least 4 | straight segments of a polygon with the circle's area |
+| `Polyline` | number of segments, at least the number of line segments | straight segments, distributed by length |
+| `TriangleStrip`, `TriangleSheet` | number of triangles, at least the number of faces | triangles, the largest cut along its longest edge |
