@@ -8,6 +8,7 @@ Nothing from magpylib is imported at module level: the display modules use
 these helpers too, and this module must be importable from any of them.
 """
 
+import functools
 import re
 
 import numpy as np
@@ -128,8 +129,6 @@ def colors_from_colorscale(
         One colour per value: ``"#rrggbb"``, or `nan_color` for NaN.
     """
     # pylint: disable=import-outside-toplevel
-    from matplotlib.colors import rgb2hex, to_rgb  # noqa: PLC0415
-    from plotly.colors import sample_colorscale  # noqa: PLC0415
     from plotly.exceptions import PlotlyError  # noqa: PLC0415
 
     values = np.atleast_1d(np.asarray(values, dtype=float))
@@ -145,21 +144,57 @@ def colors_from_colorscale(
     high = np.max(values[valid]) if cmax is None else cmax
     spread = high - low
     scaled = (values[valid] - low) / spread if spread != 0 else values[valid] * 0 + 0.5
-    if not isinstance(colorscale, str):
-        # plotly samples only its own colour notation
-        stops = []
-        for stop, color in colorscale:
-            r, g, b = (round(255 * c) for c in to_rgb(color))
-            stops.append([float(stop), f"rgb({r}, {g}, {b})"])
-        colorscale = stops
+    key = colorscale if isinstance(colorscale, str) else tuple(map(tuple, colorscale))
     try:
-        sampled = sample_colorscale(colorscale, np.clip(scaled, 0, 1), colortype=None)
+        stops, rgb = _colorscale_stops(key)
     except PlotlyError as err:  # an unknown scale name
         msg = (
             "colorscale must be a Plotly colorscale name or (stop, colour) "
             f"pairs; instead received {colorscale!r}."
         )
         raise ValueError(msg) from err
-    for index, rgb in zip(np.flatnonzero(valid), sampled, strict=True):
-        colors[index] = rgb2hex(rgb)
+    # Sampled as plotly's `sample_colorscale` samples, to the bit, for every
+    # value at once: one call per value was most of the cost of colouring a
+    # sensor's pixels. Each value lies between the first stop at or above it
+    # and the one before -- the last, for a value on the first stop, which
+    # comes to the first stop's colour all the same.
+    points = np.clip(scaled, 0, 1)
+    upper = np.searchsorted(stops, points, side="left")
+    lower = upper - 1
+    weight = (points - stops[lower]) / (stops[upper] - stops[lower])
+    sampled = rgb[lower] + weight[:, None] * (rgb[upper] - rgb[lower])
+    # rounded half to even, as matplotlib's `to_hex` rounds
+    channels = np.rint(sampled * 255).astype(int).tolist()
+    for index, (r, g, b) in zip(np.flatnonzero(valid), channels, strict=True):
+        colors[index] = f"#{r:02x}{g:02x}{b:02x}"
     return colors
+
+
+@functools.lru_cache(maxsize=64)
+def _colorscale_stops(colorscale):
+    """A colorscale's stops, shape ``(k,)``, and their colours as RGB in
+    [0, 1], shape ``(k, 3)``, read as plotly reads them. `colorscale` is a
+    name, or ``(stop, colour)`` pairs as tuples, to key the cache."""
+    # pylint: disable=import-outside-toplevel
+    from matplotlib.colors import to_rgb  # noqa: PLC0415
+    from plotly.colors import (  # noqa: PLC0415
+        colorscale_to_colors,
+        colorscale_to_scale,
+        get_colorscale,
+        validate_colors,
+        validate_scale_values,
+    )
+
+    if isinstance(colorscale, str):
+        colorscale = get_colorscale(colorscale)
+    else:
+        # plotly reads only its own colour notation
+        pairs = []
+        for stop, color in colorscale:
+            r, g, b = (round(255 * c) for c in to_rgb(color))
+            pairs.append([float(stop), f"rgb({r}, {g}, {b})"])
+        colorscale = pairs
+    stops = colorscale_to_scale(colorscale)
+    validate_scale_values(stops)
+    colors = validate_colors(colorscale_to_colors(colorscale), colortype="tuple")
+    return np.array(stops, dtype=float), np.array(colors, dtype=float)

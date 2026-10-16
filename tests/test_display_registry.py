@@ -1288,3 +1288,76 @@ def test_the_pixel_helpers_are_public():
         colors([[0, 1], [1, 0]], pairs)  # used to come back flattened
     with pytest.raises(ValueError, match="colorscale"):
         colors([0, 1], "NoSuchScale")  # used to raise plotly's own error
+
+
+@pytest.mark.parametrize(
+    "colorscale",
+    ["Viridis", "RdBu_r", [(0, "green"), (0.16, "green"), (0.26, "grey"), (1, "r")]],
+)
+def test_colors_from_colorscale_samples_as_plotly_does(colorscale):
+    """Sampled for every value at once, and still plotly's colours exactly:
+    on the stops, between them, and at both ends."""
+    from matplotlib.colors import rgb2hex, to_rgb  # noqa: PLC0415
+    from plotly.colors import sample_colorscale  # noqa: PLC0415
+
+    values = np.r_[np.linspace(0, 1, 101), 0.16, 0.26, 1 / 3]
+    plotly_scale = colorscale
+    if not isinstance(colorscale, str):
+        plotly_scale = [
+            [s, "rgb({}, {}, {})".format(*(round(255 * c) for c in to_rgb(col)))]
+            for s, col in colorscale
+        ]
+    expected = [
+        rgb2hex(c) for c in sample_colorscale(plotly_scale, values, colortype=None)
+    ]
+    colors = public_backend.colors_from_colorscale(values, colorscale, cmin=0, cmax=1)
+    assert colors == expected
+
+
+def _pixel_probe(source, size):
+    return magpy.Sensor(
+        position=(0, 0, 2),
+        pixel=[(x, y, 0) for x in (-1, 1) for y in (-1, 1)],
+        style_pixel_field_source=source,
+        style_pixel_size=size,
+    )
+
+
+@pytest.mark.parametrize(("size", "reads"), [(1, 1), (0, 0)])
+def test_a_pixel_field_is_read_once_and_only_where_drawn(monkeypatch, size, reads):
+    """Shown in a collection, a sensor is listed both on its own and among the
+    collection's members; it used to be read once for each. Pixels of size 0
+    show no reading, and are not read at all."""
+    from magpylib._src.fields import field_BH  # noqa: PLC0415
+
+    calls = []
+    read = field_BH._getBH_level2
+    monkeypatch.setattr(
+        field_BH, "_getBH_level2", lambda *a, **k: calls.append(1) or read(*a, **k)
+    )
+    probe = _pixel_probe("B", size)
+    _traces_of(magpy.Collection(make_source(), probe), backend_name="reads")
+    assert len(calls) == reads
+
+
+@pytest.mark.parametrize(
+    ("source", "with_source", "hull"),
+    [("B", True, False), ("B", False, False), (None, True, True)],
+)
+def test_a_pixel_hull_marks_pixels_styled_without_a_field(source, with_source, hull):
+    """The box round a sensor's pixels follows its style, not whether a field
+    was read: it was drawn round pixels styled to show one when nothing was
+    there to read them."""
+
+    def points(sensor, *others):
+        traces = _traces_of(sensor, *others, backend_name="hull")
+        return sum(
+            len(t["x"])
+            for t in traces
+            if t["type"] == "mesh3d" and t.get("object_id") == id(sensor)
+        )
+
+    bare = points(magpy.Sensor(position=(0, 0, 2)))  # its axes alone
+    probe = _pixel_probe(source, 0)
+    drawn = points(probe, make_source()) if with_source else points(probe)
+    assert drawn - bare == (8 if hull else 0)
