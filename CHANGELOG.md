@@ -43,7 +43,7 @@
   each force point sits at its cell's true centroid, and `Tetrahedron` is cut
   into the closest cube number of equal tetrahedra. A `Cuboid` triple
   `(n1, n2, n3)` is stored as a tuple of ints
-  ([#1009](https://github.com/magpylib/magpylib/issues/1009)).
+  ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
 - `show()` is about 3x faster, and a sensor showing its pixel field is read
   once, and not at all while its pixels are hidden
   ([#967](https://github.com/magpylib/magpylib/pull/967),
@@ -106,10 +106,10 @@
   list, was reported as "No observers provided" or "No sources provided"
   ([#1002](https://github.com/magpylib/magpylib/pull/1002)).
 - `Tetrahedron` force meshes were biased, so more mesh points could give a less
-  accurate force ([#1003](https://github.com/magpylib/magpylib/issues/1003)).
+  accurate force ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
 - Invalid `meshing` values such as `True`, `(-1, 2, 2)` or `(0, 0, 0)` were
   accepted and gave wrong forces, while NumPy integers were refused
-  ([#1004](https://github.com/magpylib/magpylib/issues/1004)).
+  ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
 
 ## [5.2.3] 2026-05-15
 
