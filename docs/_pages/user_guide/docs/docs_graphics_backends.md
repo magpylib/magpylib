@@ -353,6 +353,7 @@ In 3D, the traces sharing a `legendgroup` are one legend entry, which the trace 
 A backend drawing sensor pixels its own way, as instances in a scene graph for example, can size and colour them as the built-ins do:
 
 - `sensor_pixel_fields(objects)` returns `{sensor: field}`, the field each sensor showing its pixel field reads. `field` has the shape `(path_length, n_pixels, 3)`, in the sensor's own frame, summed over the sources among `objects`, with the components its `style.pixel.field.source` does not name set to 0. Sensors with nothing to read are left out.
+- `pixel_sizes(sensor, field=None, *, autosize=None, path_index=-1)` returns the size each pixel is drawn at: half the distance between the nearest two, or a fifth of the sensor where they coincide, times `style.pixel.size`, and scaled by `field`, from `sensor_pixel_fields`, as `style.pixel.field.sizescaling` and `sizemin` say. `autosize` is the size a sensor with `style.sizemode="scaled"` takes from the scene's extent, which only a lone pixel at the sensor's origin is sized against.
 - `scale_pixel_norms(norms, scaling, *, minimum=None)` turns field norms into factors in [`minimum` or 0, 1], scaled over the whole array, so pass `(path_length, n_pixels)` norms to scale over the path as the built-ins do. `scaling` is a value of `style.pixel.field.sizescaling` or `colorscaling`: `"uniform"`, `"linear"`, `"log"`, `"log^2"` to `"log^9"`. `minimum`, as `style.pixel.field.sizemin`, lies in [0, 1]. NaN marks a pixel that reads nothing.
 - `colors_from_colorscale(values, colorscale, *, cmin=None, cmax=None, nan_color="#b2beb5")` returns one colour per value of the 1-D `values`, as a list: `"#rrggbb"`, or `nan_color` for NaN. `colorscale` is a Plotly scale name such as `"Viridis"`, or `[(stop, colour), ...]` with any CSS name or hex colour, such as a `mesh3d` trace's own `colorscale`. `cmin` and `cmax` default to the range of `values`; for factors from `scale_pixel_norms`, pass `cmin=0, cmax=1`, as the built-ins do.
 
@@ -363,19 +364,20 @@ import numpy as np
 
 from magpylib.graphics.backend import (
     colors_from_colorscale,
+    pixel_sizes,
     scale_pixel_norms,
     sensor_pixel_fields,
 )
 
 for sensor, field in sensor_pixel_fields(panel.objects).items():
+    sizes = pixel_sizes(sensor, field, path_index=index)
     norms = np.linalg.norm(field, axis=-1)  # (path_length, n_pixels)
-    sizes = scale_pixel_norms(norms, "log", minimum=0.1)[index]
     colors = colors_from_colorscale(
         scale_pixel_norms(norms, "linear")[index], "Viridis", cmin=0, cmax=1
     )
 ```
 
-Read `"log"`, `0.1`, `"linear"` and `"Viridis"` from the sensor's `style.pixel.field` (`sizescaling`, `sizemin`, `colorscaling`, `colormap`), falling back to the defaults where unset. A size factor multiplies the pixel's own size; a NaN one keeps it, and its colour is `nan_color`. With `colorscaling="uniform"` the pixels keep `style.pixel.color`, black when unset. There is no opt-out yet: Magpylib still draws the pixels into the sensor's own `mesh3d`. Studio sets `style.pixel.size = 0` on such sensors while it captures the scene, and restores it afterwards.
+Read `"linear"` and `"Viridis"` from the sensor's `style.pixel.field` (`colorscaling`, `colormap`), falling back to the defaults where unset; `pixel_sizes` reads its own. A pixel that reads nothing keeps its size, and its colour is `nan_color`. With `colorscaling="uniform"` the pixels keep `style.pixel.color`, black when unset. There is no opt-out yet: Magpylib still draws the pixels into the sensor's own `mesh3d`. Studio sets `style.pixel.size = 0` on such sensors while it captures the scene, and restores it afterwards.
 
 ## Warnings a backend can trigger
 
