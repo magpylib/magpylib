@@ -52,7 +52,8 @@
   does. A Collection's `centroid` and `volume` count a nested Collection once,
   the centroid follows its members' paths, and a Collection without volume, such
   as a coil of current loops, has the mean of its members' centroids instead of
-  its own position ([#1018](https://github.com/magpylib/magpylib/issues/1018)).
+  its own position ([#1018](https://github.com/magpylib/magpylib/issues/1018),
+  [#1024](https://github.com/magpylib/magpylib/pull/1024)).
 - `show()` is about 3x faster, and a sensor showing its pixel field is read
   once, and not at all while its pixels are hidden
   ([#967](https://github.com/magpylib/magpylib/pull/967),
