@@ -81,7 +81,7 @@ def timestep(source, target, dt):
     dt: Euler scheme length of timestep
     """
     # Compute force
-    F, _ = magpy.getFT(source, target)
+    F, _ = magpy.getFT(source, target, meshing=(3, 3, 3))
 
     # Set new velocity and position
     target.v = target.v + dt/target.m * F
@@ -92,7 +92,6 @@ loop = magpy.current.Circle(diameter=10e-3, current=10)
 
 # Magnets which are accelerated in the loop-field
 cube1 = magpy.magnet.Cuboid(dimension=(5e-3, 5e-3, 5e-3), polarization=(0, 0, 1))
-cube1.meshing=(3, 3, 3)
 cube2 = cube1.copy(polarization=(0, 0, -1))
 
 # Simulate motion of both cubes
@@ -169,7 +168,7 @@ def timestep(source, target, dt):
     dt: Euler scheme length of timestep
     """
     # Compute force
-    F, T = magpy.getFT(source, target)
+    F, T = magpy.getFT(source, target, meshing=(3, 3, 3))
 
     # Set new velocity and position
     target.v = target.v + dt/target.m * F

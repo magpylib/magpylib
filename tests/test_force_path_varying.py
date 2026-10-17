@@ -20,15 +20,21 @@ _CURRENTS = np.array([100.0, 200.0, 300.0])
 
 
 def _assert_matches_manual_loop(
-    dipole, target_vectorized, target_factory, n_steps, rtol, atol=0
+    dipole, target_vectorized, target_factory, n_steps, rtol, atol=0, meshing=None
 ):
     """Compare vectorised getFT against a per-step manual loop."""
-    F_vec, T_vec = magpy.getFT(dipole, target_vectorized)
+    F_vec, T_vec = magpy.getFT(dipole, target_vectorized, meshing=meshing)
     F_man = np.array(
-        [magpy.getFT(dipole, target_factory(i))[0] for i in range(n_steps)]
+        [
+            magpy.getFT(dipole, target_factory(i), meshing=meshing)[0]
+            for i in range(n_steps)
+        ]
     )
     T_man = np.array(
-        [magpy.getFT(dipole, target_factory(i))[1] for i in range(n_steps)]
+        [
+            magpy.getFT(dipole, target_factory(i), meshing=meshing)[1]
+            for i in range(n_steps)
+        ]
     )
     np.testing.assert_allclose(F_vec, F_man, rtol=rtol, atol=atol)
     np.testing.assert_allclose(T_vec, T_man, rtol=rtol, atol=atol)
@@ -48,10 +54,10 @@ def test_path_varying_circle_current_diameter():
     positions = np.array([[0, 0, i] for i in range(4)])
 
     circle_varying = magpy.current.Circle(
-        diameter=diameters, current=currents, position=positions, meshing=20
+        diameter=diameters, current=currents, position=positions
     )
 
-    F_vectorized, T_vectorized = magpy.getFT(dipole, circle_varying)
+    F_vectorized, T_vectorized = magpy.getFT(dipole, circle_varying, meshing=20)
 
     F_manual, T_manual = [], []
     for i in range(len(diameters)):
@@ -61,8 +67,8 @@ def test_path_varying_circle_current_diameter():
                 diameter=diameters[i],
                 current=currents[i],
                 position=positions[i],
-                meshing=20,
             ),
+            meshing=20,
         )
         F_manual.append(F_i)
         T_manual.append(T_i)
@@ -76,17 +82,16 @@ def test_path_varying_circle_current_diameter():
 def test_mismatched_paths_circle_scalar_diameter():
     """Circle: scalar diameter (p=1), varying current (p=3)."""
     dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -5))
-    circle = magpy.current.Circle(
-        diameter=1.0, current=_CURRENTS, position=_POSITIONS, meshing=20
-    )
+    circle = magpy.current.Circle(diameter=1.0, current=_CURRENTS, position=_POSITIONS)
     _assert_matches_manual_loop(
         dipole,
         circle,
         lambda i: magpy.current.Circle(
-            diameter=1.0, current=_CURRENTS[i], position=_POSITIONS[i], meshing=20
+            diameter=1.0, current=_CURRENTS[i], position=_POSITIONS[i]
         ),
         n_steps=3,
         rtol=1e-10,
+        meshing=20,
     )
 
 
@@ -95,16 +100,17 @@ def test_mismatched_paths_circle_scalar_current():
     dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -5))
     diameters = np.array([1.0, 2.0, 3.0])
     circle = magpy.current.Circle(
-        diameter=diameters, current=100.0, position=_POSITIONS, meshing=20
+        diameter=diameters, current=100.0, position=_POSITIONS
     )
     _assert_matches_manual_loop(
         dipole,
         circle,
         lambda i: magpy.current.Circle(
-            diameter=diameters[i], current=100.0, position=_POSITIONS[i], meshing=20
+            diameter=diameters[i], current=100.0, position=_POSITIONS[i]
         ),
         n_steps=3,
         rtol=1e-10,
+        meshing=20,
     )
 
 
@@ -141,10 +147,10 @@ def test_path_varying_polyline_vertices():
     positions = np.array([[0, 0, i] for i in range(3)])
 
     polyline_varying = magpy.current.Polyline(
-        vertices=vertices_path, current=currents, position=positions, meshing=20
+        vertices=vertices_path, current=currents, position=positions
     )
 
-    F_vectorized, T_vectorized = magpy.getFT(dipole, polyline_varying)
+    F_vectorized, T_vectorized = magpy.getFT(dipole, polyline_varying, meshing=20)
 
     F_manual, T_manual = [], []
     for i in range(len(vertices_path)):
@@ -154,8 +160,8 @@ def test_path_varying_polyline_vertices():
                 vertices=vertices_path[i],
                 current=currents[i],
                 position=positions[i],
-                meshing=20,
             ),
+            meshing=20,
         )
         F_manual.append(F_i)
         T_manual.append(T_i)
@@ -175,16 +181,17 @@ def test_mismatched_paths_polyline_scalar_vertices():
         [[-0.5, 0, 0], [0.5, 0, 0], [0.5, 0.5, 0], [-0.5, 0.5, 0], [-0.5, 0, 0]]
     )
     polyline = magpy.current.Polyline(
-        vertices=verts, current=_CURRENTS, position=_POSITIONS, meshing=20
+        vertices=verts, current=_CURRENTS, position=_POSITIONS
     )
     _assert_matches_manual_loop(
         dipole,
         polyline,
         lambda i: magpy.current.Polyline(
-            vertices=verts, current=_CURRENTS[i], position=_POSITIONS[i], meshing=20
+            vertices=verts, current=_CURRENTS[i], position=_POSITIONS[i]
         ),
         n_steps=3,
         rtol=1e-10,
+        meshing=20,
     )
 
 
@@ -203,10 +210,10 @@ def test_path_varying_triangle_strip_vertices_current():
     positions = np.array([[0, 0, i * 0.5] for i in range(3)])
 
     strip_varying = magpy.current.TriangleStrip(
-        vertices=vertices_path, current=currents_path, position=positions, meshing=10
+        vertices=vertices_path, current=currents_path, position=positions
     )
 
-    F_vectorized, T_vectorized = magpy.getFT(dipole, strip_varying)
+    F_vectorized, T_vectorized = magpy.getFT(dipole, strip_varying, meshing=10)
 
     F_manual, T_manual = [], []
     for i in range(len(currents_path)):
@@ -216,8 +223,8 @@ def test_path_varying_triangle_strip_vertices_current():
                 vertices=vertices_path[i],
                 current=currents_path[i],
                 position=positions[i],
-                meshing=10,
             ),
+            meshing=10,
         )
         F_manual.append(F_i)
         T_manual.append(T_i)
@@ -233,16 +240,17 @@ def test_mismatched_paths_triangle_strip_scalar_vertices():
     dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -5))
     verts = np.array([[0, 0, 0], [1, 0, 0], [0, 0.5, 0], [1, 0.5, 0]])
     strip = magpy.current.TriangleStrip(
-        vertices=verts, current=_CURRENTS, position=_POSITIONS, meshing=10
+        vertices=verts, current=_CURRENTS, position=_POSITIONS
     )
     _assert_matches_manual_loop(
         dipole,
         strip,
         lambda i: magpy.current.TriangleStrip(
-            vertices=verts, current=_CURRENTS[i], position=_POSITIONS[i], meshing=10
+            vertices=verts, current=_CURRENTS[i], position=_POSITIONS[i]
         ),
         n_steps=3,
         rtol=1e-8,
+        meshing=10,
         atol=1e-30,
     )
 
@@ -270,10 +278,9 @@ def test_path_varying_triangle_sheet_vertices_current_densities():
         faces=faces,
         current_densities=current_densities_path,
         position=positions,
-        meshing=10,
     )
 
-    F_vectorized, T_vectorized = magpy.getFT(dipole, sheet_varying)
+    F_vectorized, T_vectorized = magpy.getFT(dipole, sheet_varying, meshing=10)
 
     F_manual, T_manual = [], []
     for i in range(len(current_densities_path)):
@@ -284,8 +291,8 @@ def test_path_varying_triangle_sheet_vertices_current_densities():
                 faces=faces,
                 current_densities=current_densities_path[i],
                 position=positions[i],
-                meshing=10,
             ),
+            meshing=10,
         )
         F_manual.append(F_i)
         T_manual.append(T_i)
@@ -310,7 +317,6 @@ def test_mismatched_paths_triangle_sheet_scalar_current_densities():
         faces=faces,
         current_densities=cd,
         position=_POSITIONS,
-        meshing=10,
     )
     _assert_matches_manual_loop(
         dipole,
@@ -320,10 +326,10 @@ def test_mismatched_paths_triangle_sheet_scalar_current_densities():
             faces=faces,
             current_densities=cd,
             position=_POSITIONS[i],
-            meshing=10,
         ),
         n_steps=3,
         rtol=1e-8,
+        meshing=10,
         atol=1e-30,
     )
 
@@ -351,10 +357,9 @@ def test_path_varying_cuboid_dimension_magnetization():
         dimension=dimensions_varying,
         magnetization=magnetizations_varying,
         position=positions,
-        meshing=50,
     )
 
-    F_vec, T_vec = magpy.getFT(dipole, cuboid_varying)
+    F_vec, T_vec = magpy.getFT(dipole, cuboid_varying, meshing=50)
 
     F_manual, T_manual = [], []
     for i in range(3):
@@ -364,8 +369,8 @@ def test_path_varying_cuboid_dimension_magnetization():
                 dimension=dimensions_varying[i],
                 magnetization=magnetizations_varying[i],
                 position=positions[i],
-                meshing=50,
             ),
+            meshing=50,
         )
         F_manual.append(F_i)
         T_manual.append(T_i)
@@ -383,7 +388,6 @@ def test_mismatched_paths_cuboid_scalar_dimension():
         dimension=(0.002, 0.002, 0.002),
         magnetization=_MAGS,
         position=_POSITIONS,
-        meshing=50,
     )
     _assert_matches_manual_loop(
         dipole,
@@ -392,10 +396,10 @@ def test_mismatched_paths_cuboid_scalar_dimension():
             dimension=(0.002, 0.002, 0.002),
             magnetization=_MAGS[i],
             position=_POSITIONS[i],
-            meshing=50,
         ),
         n_steps=3,
         rtol=1e-7,
+        meshing=50,
         atol=1e-30,
     )
 
@@ -410,7 +414,6 @@ def test_mismatched_paths_cuboid_scalar_magnetization():
         dimension=dims,
         magnetization=(0, 0, 1e6),
         position=_POSITIONS,
-        meshing=50,
     )
     _assert_matches_manual_loop(
         dipole,
@@ -419,10 +422,10 @@ def test_mismatched_paths_cuboid_scalar_magnetization():
             dimension=dims[i],
             magnetization=(0, 0, 1e6),
             position=_POSITIONS[i],
-            meshing=50,
         ),
         n_steps=3,
         rtol=1e-7,
+        meshing=50,
         atol=1e-30,
     )
 
@@ -445,10 +448,9 @@ def test_path_varying_cylinder_segment():
         dimension=dimensions_varying,
         magnetization=magnetizations_varying,
         position=positions,
-        meshing=50,
     )
 
-    F_vec, T_vec = magpy.getFT(dipole, cyl_seg_varying)
+    F_vec, T_vec = magpy.getFT(dipole, cyl_seg_varying, meshing=50)
 
     F_manual, T_manual = [], []
     for i in range(3):
@@ -458,8 +460,8 @@ def test_path_varying_cylinder_segment():
                 dimension=dimensions_varying[i],
                 magnetization=magnetizations_varying[i],
                 position=positions[i],
-                meshing=50,
             ),
+            meshing=50,
         )
         F_manual.append(F_i)
         T_manual.append(T_i)
@@ -476,7 +478,6 @@ def test_mismatched_paths_cylinder_segment_scalar_dimension():
         dimension=dim,
         magnetization=_MAGS,
         position=_POSITIONS,
-        meshing=30,
     )
     _assert_matches_manual_loop(
         dipole,
@@ -485,10 +486,10 @@ def test_mismatched_paths_cylinder_segment_scalar_dimension():
             dimension=dim,
             magnetization=_MAGS[i],
             position=_POSITIONS[i],
-            meshing=30,
         ),
         n_steps=3,
         rtol=1e-7,
+        meshing=30,
         atol=1e-30,
     )
 
@@ -599,10 +600,9 @@ def test_path_varying_tetrahedron():
         vertices=vertices_varying,
         magnetization=magnetizations_varying,
         position=positions,
-        meshing=50,
     )
 
-    F_vec, T_vec = magpy.getFT(dipole, tet_varying)
+    F_vec, T_vec = magpy.getFT(dipole, tet_varying, meshing=50)
 
     F_manual, T_manual = [], []
     for i in range(3):
@@ -612,8 +612,8 @@ def test_path_varying_tetrahedron():
                 vertices=vertices_varying[i],
                 magnetization=magnetizations_varying[i],
                 position=positions[i],
-                meshing=50,
             ),
+            meshing=50,
         )
         F_manual.append(F_i)
         T_manual.append(T_i)
@@ -630,7 +630,6 @@ def test_mismatched_paths_tetrahedron_scalar_vertices():
         vertices=verts,
         magnetization=_MAGS,
         position=_POSITIONS,
-        meshing=30,
     )
     _assert_matches_manual_loop(
         dipole,
@@ -639,10 +638,10 @@ def test_mismatched_paths_tetrahedron_scalar_vertices():
             vertices=verts,
             magnetization=_MAGS[i],
             position=_POSITIONS[i],
-            meshing=30,
         ),
         n_steps=3,
         rtol=1e-7,
+        meshing=30,
         atol=1e-30,
     )
 
@@ -700,10 +699,9 @@ def test_path_varying_triangularmesh():
         faces=faces,
         magnetization=magnetizations_varying,
         position=positions,
-        meshing=50,
     )
 
-    F_vec, T_vec = magpy.getFT(dipole, trimesh_varying)
+    F_vec, T_vec = magpy.getFT(dipole, trimesh_varying, meshing=50)
 
     F_manual, T_manual = [], []
     for i in range(3):
@@ -714,8 +712,8 @@ def test_path_varying_triangularmesh():
                 faces=faces,
                 magnetization=magnetizations_varying[i],
                 position=positions[i],
-                meshing=50,
             ),
+            meshing=50,
         )
         F_manual.append(F_i)
         T_manual.append(T_i)
@@ -760,7 +758,6 @@ def test_mismatched_paths_triangularmesh_scalar_vertices():
         faces=faces,
         magnetization=_MAGS,
         position=_POSITIONS,
-        meshing=30,
     )
     _assert_matches_manual_loop(
         dipole,
@@ -770,10 +767,10 @@ def test_mismatched_paths_triangularmesh_scalar_vertices():
             faces=faces,
             magnetization=_MAGS[i],
             position=_POSITIONS[i],
-            meshing=30,
         ),
         n_steps=3,
         rtol=1e-7,
+        meshing=30,
         atol=1e-30,
     )
 
@@ -787,19 +784,15 @@ def test_path_varying_with_collections():
     """Collection: forces summed correctly over path-varying members."""
     dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -3))
 
-    circle1 = magpy.current.Circle(
-        diameter=[1.0, 2.0], current=[100.0, 200.0], meshing=20
-    )
-    circle2 = magpy.current.Circle(
-        diameter=[1.5, 2.5], current=[150.0, 250.0], meshing=20
-    )
+    circle1 = magpy.current.Circle(diameter=[1.0, 2.0], current=[100.0, 200.0])
+    circle2 = magpy.current.Circle(diameter=[1.5, 2.5], current=[150.0, 250.0])
 
     coll = magpy.Collection(circle1, circle2)
     coll.position = [(0, 0, 0), (0, 0, 1)]
 
-    F_coll, T_coll = magpy.getFT(dipole, coll)
+    F_coll, T_coll = magpy.getFT(dipole, coll, meshing=20)
 
-    F1, T1 = magpy.getFT(dipole, [circle1, circle2])
+    F1, T1 = magpy.getFT(dipole, [circle1, circle2], meshing=20)
     F_manual = F1[:, 0, :] + F1[:, 1, :]
     T_manual = T1[:, 0, :] + T1[:, 1, :]
 
@@ -821,20 +814,17 @@ def test_mismatched_path_lengths():
         diameter=[1.0, 2.0],
         current=[100.0, 200.0],
         position=[(0, 0, 0), (0, 0, 1)],
-        meshing=20,
     )
 
-    F, T = magpy.getFT(dipole, circle)
+    F, T = magpy.getFT(dipole, circle, meshing=20)
 
     assert F.shape == (5, 3)
     assert T.shape == (5, 3)
 
     # Steps 2-4 use edge-padded values (last step of the target path).
     dipole_step2 = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -3))
-    circle_step2 = magpy.current.Circle(
-        diameter=2.0, current=200.0, position=(0, 0, 1), meshing=20
-    )
-    F_expected, T_expected = magpy.getFT(dipole_step2, circle_step2)
+    circle_step2 = magpy.current.Circle(diameter=2.0, current=200.0, position=(0, 0, 1))
+    F_expected, T_expected = magpy.getFT(dipole_step2, circle_step2, meshing=20)
 
     np.testing.assert_allclose(F[2], F_expected, rtol=1e-10)
     np.testing.assert_allclose(T[2], T_expected, rtol=1e-10)
@@ -845,14 +835,14 @@ def test_single_element_array_vs_scalar():
     dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -2))
 
     circle_scalar = magpy.current.Circle(
-        diameter=2.0, current=100.0, position=(0, 0, 0), meshing=20
+        diameter=2.0, current=100.0, position=(0, 0, 0)
     )
     circle_array = magpy.current.Circle(
-        diameter=[2.0], current=[100.0], position=[(0, 0, 0)], meshing=20
+        diameter=[2.0], current=[100.0], position=[(0, 0, 0)]
     )
 
-    F_scalar, T_scalar = magpy.getFT(dipole, circle_scalar)
-    F_array, T_array = magpy.getFT(dipole, circle_array)
+    F_scalar, T_scalar = magpy.getFT(dipole, circle_scalar, meshing=20)
+    F_array, T_array = magpy.getFT(dipole, circle_array, meshing=20)
 
     np.testing.assert_allclose(F_scalar, F_array, rtol=1e-15)
     np.testing.assert_allclose(T_scalar, T_array, rtol=1e-15)
@@ -867,9 +857,9 @@ def test_path_varying_with_centroid_pivot():
     positions = np.array([[0, 0, i] for i in range(3)])
 
     circle = magpy.current.Circle(
-        diameter=diameters, current=currents, position=positions, meshing=20
+        diameter=diameters, current=currents, position=positions
     )
-    _F_default, T_default = magpy.getFT(dipole, circle)
+    _F_default, T_default = magpy.getFT(dipole, circle, meshing=20)
 
     T_manual = []
     for i in range(len(diameters)):
@@ -879,9 +869,9 @@ def test_path_varying_with_centroid_pivot():
                 diameter=diameters[i],
                 current=currents[i],
                 position=positions[i],
-                meshing=20,
             ),
             pivot="centroid",
+            meshing=20,
         )
         T_manual.append(T_i)
 
@@ -904,8 +894,8 @@ def test_collection_source_path_restores_children():
     pos_before = src.position.copy()
     ori_before = src.orientation.as_quat().copy()
 
-    tgt = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1), meshing=2)
-    F_col, T_col = magpy.getFT(col, tgt)
+    tgt = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    F_col, T_col = magpy.getFT(col, tgt, meshing=2)
 
     # children restored exactly
     np.testing.assert_array_equal(src.position, pos_before)
@@ -916,8 +906,8 @@ def test_collection_source_path_restores_children():
         polarization=(0, 0, 1), dimension=(1, 1, 1), position=(0, 0, 2)
     )
     src2.move([(0, 0, 0), (1, 0, 0), (2, 0, 0)])
-    tgt2 = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1), meshing=2)
-    F_src, T_src = magpy.getFT(src2, tgt2)
+    tgt2 = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    F_src, T_src = magpy.getFT(src2, tgt2, meshing=2)
     np.testing.assert_allclose(F_col, F_src)
     np.testing.assert_allclose(T_col, T_src)
 
@@ -953,16 +943,12 @@ def test_trimesh_static_geometry_varying_mag_matches_per_step():
     )
     mags = np.array([[0, 0, 1e6], [0, 0, 1.5e6], [1e6, 0, 0]])
 
-    tm = magpy.magnet.TriangularMesh(
-        vertices=v, faces=f, magnetization=mags, meshing=30
-    )
-    F, T = magpy.getFT(src, tm)
+    tm = magpy.magnet.TriangularMesh(vertices=v, faces=f, magnetization=mags)
+    F, T = magpy.getFT(src, tm, meshing=30)
 
     for i, mag in enumerate(mags):
-        tm_i = magpy.magnet.TriangularMesh(
-            vertices=v, faces=f, magnetization=mag, meshing=30
-        )
-        F_i, T_i = magpy.getFT(src, tm_i)
+        tm_i = magpy.magnet.TriangularMesh(vertices=v, faces=f, magnetization=mag)
+        F_i, T_i = magpy.getFT(src, tm_i, meshing=30)
         np.testing.assert_allclose(F[i], F_i, rtol=1e-10)
         np.testing.assert_allclose(T[i], T_i, rtol=1e-10)
 
@@ -976,15 +962,13 @@ def test_trianglesheet_static_geometry_varying_current_matches_per_step():
         polarization=(0, 0, 1), dimension=(1, 1, 1), position=(0, 0, 3)
     )
 
-    ts = magpy.current.TriangleSheet(
-        vertices=verts, faces=faces, current_densities=cds, meshing=12
-    )
-    F, T = magpy.getFT(src, ts)
+    ts = magpy.current.TriangleSheet(vertices=verts, faces=faces, current_densities=cds)
+    F, T = magpy.getFT(src, ts, meshing=12)
 
     for i in range(len(cds)):
         ts_i = magpy.current.TriangleSheet(
-            vertices=verts, faces=faces, current_densities=cds[i], meshing=12
+            vertices=verts, faces=faces, current_densities=cds[i]
         )
-        F_i, T_i = magpy.getFT(src, ts_i)
+        F_i, T_i = magpy.getFT(src, ts_i, meshing=12)
         np.testing.assert_allclose(F[i], F_i, rtol=1e-10)
         np.testing.assert_allclose(T[i], T_i, rtol=1e-10)

@@ -38,11 +38,18 @@
 - **Breaking:** past `legend_maxitems`, the legend lists its first entries and
   "… and k more" instead of disappearing
   ([#1007](https://github.com/magpylib/magpylib/pull/1007)).
+- **Breaking:** `meshing` is an argument of `getFT`, not a property of the
+  targets: `getFT(sources, targets, meshing=100)` cuts every target, a dict
+  keyed by target gives each its own value,
+  `meshing={ring: 100, coil: 40, cube: (10, 10, 10)}`, and a Collection key
+  covers its members. The old constructor keyword raises with a pointer to the
+  call, and so does `getFT` for a target given no value
+  ([#1017](https://github.com/magpylib/magpylib/issues/1017)).
 - **Breaking:** `getFT` results change for cylinders and tetrahedra at the same
   `meshing`: cylinders get near-cubic cells, as cuboids do, instead of up to
   twice the requested count, each force point sits at its cell's true centroid,
   and `Tetrahedron` is cut into the closest cube number of equal tetrahedra. A
-  `Cuboid` triple `(n1, n2, n3)` is stored as a tuple of ints, and `Cylinder`
+  `Cuboid` triple `(n1, n2, n3)` is normalised to a tuple of ints, and `Cylinder`
   and `CylinderSegment` take a triple `(nphi, nr, nh)` too
   ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
 - **Breaking:** `getFT` torques on a Collection target are taken about the

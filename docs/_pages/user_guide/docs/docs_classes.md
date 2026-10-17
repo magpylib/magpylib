@@ -42,7 +42,7 @@ See {ref}`docs-fieldcomp` for more information.
 
 **Force computation**
 
-* **`meshing`**: property which defines how finely the object is cut into cells (magnets) or elements (currents). The force computation uses it.
+* Force targets are cut into cells (magnets) or elements (currents) by `getFT(sources, targets, meshing=...)`; what a value means for each class is listed in {ref}`docs-forcecomp-meshing`.
 
 A detailed overview of the force computation is found in {ref}`docs-forcecomp`. Note that force and torque computation is only available via the top-level function **`getFT()`**.
 
@@ -84,7 +84,7 @@ All magnets are sources. They have the **`polarization`** attribute which is of 
 ### Cuboid
 ```python
 magpylib.magnet.Cuboid(
-    position, orientation, dimension, polarization, magnetization, meshing, style
+    position, orientation, dimension, polarization, magnetization, style
 )
 ```
 
@@ -103,7 +103,7 @@ magpylib.magnet.Cuboid(
 ### Cylinder
 ```python
 magpylib.magnet.Cylinder(
-    position, orientation, dimension, polarization, magnetization, meshing, style
+    position, orientation, dimension, polarization, magnetization, style
 )
 ```
 
@@ -122,7 +122,7 @@ magpylib.magnet.Cylinder(
 ### CylinderSegment
 ```python
 magpylib.magnet.CylinderSegment(
-    position, orientation, dimension, polarization, magnetization, meshing, style
+    position, orientation, dimension, polarization, magnetization, style
 )
 ```
 
@@ -164,7 +164,7 @@ magpylib.magnet.Sphere(
 ### Tetrahedron
 ```python
 magpylib.magnet.Tetrahedron(
-    position, orientation, vertices, polarization, magnetization, meshing, style
+    position, orientation, vertices, polarization, magnetization, style
 )
 ```
 
@@ -194,7 +194,6 @@ magpylib.magnet.TriangularMesh(
     faces,
     polarization,
     magnetization,
-    meshing,
     check_open,
     check_disconnected,
     check_selfintersecting,
@@ -259,7 +258,7 @@ All currents are sources. Current objects (except `TriangleSheet`) have the **`c
 
 ### Circle
 ```python
-magpylib.current.Circle(position, orientation, diameter, current, meshing, style)
+magpylib.current.Circle(position, orientation, diameter, current, style)
 ```
 
 ::::{grid} 2
@@ -275,7 +274,7 @@ magpylib.current.Circle(position, orientation, diameter, current, meshing, style
 
 ### Polyline
 ```python
-magpylib.current.Polyline(position, orientation, vertices, current, meshing, style)
+magpylib.current.Polyline(position, orientation, vertices, current, style)
 ```
 
 ::::{grid} 2
@@ -291,7 +290,7 @@ magpylib.current.Polyline(position, orientation, vertices, current, meshing, sty
 
 ### TriangleStrip
 ```python
-magpylib.current.TriangleStrip(position, orientation, vertices, current, meshing, style)
+magpylib.current.TriangleStrip(position, orientation, vertices, current, style)
 ```
 
 ::::{grid} 2
@@ -308,7 +307,7 @@ magpylib.current.TriangleStrip(position, orientation, vertices, current, meshing
 ### TriangleSheet
 ```python
 magpylib.current.Polyline(
-    position, orientation, vertices, faces, current_densities, meshing, style
+    position, orientation, vertices, faces, current_densities, style
 )
 ```
 

@@ -18,73 +18,142 @@ from magpylib._src.utility import format_src_inputs
 logger = logging.getLogger(__name__)
 
 
-def _check_format_input_targets(targets):
+def _needs_mesh(t):
+    """Whether a target is cut into cells for the force computation."""
+    from magpylib._src.obj_classes.class_magnet_Sphere import Sphere  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_misc_Dipole import Dipole  # noqa: PLC0415
+
+    return not isinstance(t, Dipole | Sphere)
+
+
+def _resolve_meshing(meshing, flat_targets, given, keyable):
+    """Return the validated meshing value of every flat target.
+
+    Parameters
+    ----------
+    meshing : int | tuple | dict | None
+        The ``meshing`` input of getFT.
+    flat_targets : list
+        Targets with Collections flattened.
+    given : list
+        The target each flat target was given as (itself, or its Collection).
+    keyable : dict
+        id -> object for everything a dict key may name: the targets that take a
+        mesh, and the given Collections and their nested Collections.
+    """
+    from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid  # noqa: PLC0415
+
+    needs = [_needs_mesh(t) for t in flat_targets]
+    if isinstance(meshing, dict):
+        exact = [
+            k
+            for k in meshing
+            if any(k is t for t, n in zip(flat_targets, needs, strict=True) if not n)
+        ]
+        if exact:
+            msg = f"Input meshing has a value for {exact[0]}, which needs no meshing: it is exact."
+            raise ValueError(msg)
+        unknown = [k for k in meshing if id(k) not in keyable]
+        if unknown:
+            msg = (
+                "Input meshing has keys that are not targets of this getFT call: "
+                f"{unknown}."
+            )
+            raise ValueError(msg)
+
+    values = []
+    for t, g, need in zip(flat_targets, given, needs, strict=True):
+        if not need:
+            values.append(None)
+            continue
+        if isinstance(meshing, dict):
+            # the target itself wins, then the Collections it sits in; a key can
+            # only be a given target or a Collection under one, so the walk ends
+            # at the outermost given Collection at the latest
+            value = None
+            key = t
+            while key is not None:
+                if key in meshing:
+                    value = meshing[key]
+                    break
+                key = getattr(key, "parent", None)
+        else:
+            value = meshing
+        if value is None:
+            where = "" if t is g else f" (in {g})"
+            msg = (
+                f"Missing meshing input for target {t}{where}. Give the number of "
+                "cells to getFT, e.g. getFT(sources, targets, meshing=100), or a "
+                "dict with one value per target."
+            )
+            raise ValueError(msg)
+        if isinstance(value, list | tuple | np.ndarray) and not isinstance(t, Cuboid):
+            msg = (
+                f"Input meshing {value!r} for {t}: a triple (n1, n2, n3) only cuts "
+                "a Cuboid; give an integer, or a dict with one value per target."
+            )
+            raise ValueError(msg)  # noqa: TRY004  # every meshing error is a ValueError
+        values.append(t._validate_meshing(value))
+    return values
+
+
+def _check_format_input_targets(targets, meshing):
     """
     Check and format targets input
     - flatten Collections
     - check if allowed instance
-    - check if meshing parameter is set
+    - resolve and validate the meshing value of every target
 
     Returns
     -------
-    the targets as given (a list), the flat list of targets, and the list of
-    collection indices for summation
+    the targets as given (a list), the flat list of targets, the list of
+    collection indices for summation, and the meshing value of every flat target
     """
     if not isinstance(targets, list):
         targets = [targets]
 
+    from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
+
     # flatten out collections, keep indices for later summation in getFT
     flat_targets = []
+    given = []
+    keyable = {}
     coll_idx = []
     idx = 0
     for t in targets:
-        from magpylib._src.obj_classes.class_Collection import (  # noqa: PLC0415
-            Collection,
-        )
-
         if isinstance(t, Collection):
             len_sources = len(t.sources_all)
             if len_sources == 0:
                 msg = f"Given target Collection {t} has no target sources."
                 raise ValueError(msg)
             flat_targets.extend(t.sources_all)
+            given.extend([t] * len_sources)
+            keyable[id(t)] = t
+            keyable.update({id(c): c for c in t.collections_all})
             coll_idx.append(idx)
             idx += len_sources
         else:
             flat_targets.append(t)
+            given.append(t)
             coll_idx.append(idx)
             idx += 1
-
-    # check if all flat_targets are valid
 
     # check if dimensions and excitations are initialized
     check_dimensions(flat_targets)
     check_excitations(flat_targets)
 
     for t in flat_targets:
-        # exclude Dipole from check
-        from magpylib._src.obj_classes.class_magnet_Sphere import (  # noqa: PLC0415
-            Sphere,
-        )
-        from magpylib._src.obj_classes.class_misc_Dipole import Dipole  # noqa: PLC0415
+        if not hasattr(t, "_generate_mesh"):
+            msg = (
+                "Input targets must be allowed Magpylib target objects; "
+                f"instead received type {type(t)}."
+            )
+            raise ValueError(msg)
 
-        if not isinstance(t, Dipole | Sphere):
-            if not hasattr(t, "meshing"):
-                msg = (
-                    "Input targets must be allowed Magpylib target objects; "
-                    f"instead received type {type(t)}."
-                )
-                raise ValueError(msg)
+    keyable.update({id(t): t for t in flat_targets if _needs_mesh(t)})
+    meshings = _resolve_meshing(meshing, flat_targets, given, keyable)
 
-            # check if meshing parameter is explicitly set
-            if t.meshing is None:
-                msg = (
-                    f"Missing meshing input for target {t}. "
-                    "All targets must have the meshing parameter explicitly set."
-                )
-                raise ValueError(msg)
-
-    return targets, flat_targets, coll_idx
+    return targets, flat_targets, coll_idx, meshings
 
 
 def _create_eps_vector(eps):
@@ -175,7 +244,7 @@ def _check_eps(eps):
         raise ValueError(msg)
 
 
-def _generate_path_meshes(targets, n_path, eps):
+def _generate_path_meshes(targets, meshings, n_path, eps):
     """
     Generate meshes for each target at each path step.
 
@@ -183,6 +252,8 @@ def _generate_path_meshes(targets, n_path, eps):
     ----------
     targets : list
         List of target objects
+    meshings : list
+        Validated meshing value per target, None where the target needs none
     n_path : int
         Path length
     eps : float
@@ -201,9 +272,9 @@ def _generate_path_meshes(targets, n_path, eps):
     meshes = []
     eps_vec = _create_eps_vector(eps)
 
-    for tgt in targets:
+    for tgt, meshing in zip(targets, meshings, strict=True):
         # Get mesh (potentially path-varying)
-        base_mesh = tgt._generate_mesh()
+        base_mesh = tgt._generate_mesh(meshing)
 
         # Check if mesh is path-varying by dimensionality
         # Path-varying: shape (p_mesh, n_mesh, 3)
@@ -542,6 +613,8 @@ def getFT(
     squeeze=True,
     meshreport=False,
     return_mesh=False,
+    *,
+    meshing=None,
 ):
     """Compute magnetic force and torque on t targets from s sources.
 
@@ -555,8 +628,18 @@ def getFT(
         1D list of s source objects.
     targets : Target | list[Target]
         Objects on which the magnetic field acts, generating force and torque.
-        Can be a 1D list of t target objects. All targets (except Dipoles
-        and Spheres) must have a valid ``meshing`` parameter set.
+        Can be a 1D list of t target objects. A Collection counts as one target
+        and gives the force and torque on it as one body.
+    meshing : int | tuple | dict | None, default None, keyword-only
+        How finely each target is cut for the computation: the target number of
+        cells (magnets) or segments (currents). An integer applies to every
+        target, including each magnet inside a Collection. A dict keyed by
+        target gives one value per target, ``meshing={ring: 100, coil: 40}``;
+        a Collection key covers its members, and a Cuboid value may be a triple
+        ``(n1, n2, n3)`` of divisions along its sides. A bare triple applies when
+        every meshed target is a Cuboid. Required for every target but ``Dipole``
+        and ``Sphere``, which are exact. Each class documents what a value means
+        for it and its minimum, such as 4 for a ``Circle``.
     pivot : 'centroid' | None | array-like, shape (3,), (t, 3), (t, p, 3) or (p, 3), default 'centroid'
         Pivot point through which the force contributes to the torque. If
         ``'centroid'``, each target's centroid is used; for a Collection target
@@ -607,9 +690,8 @@ def getFT(
     ...     diameter=2.0,
     ...     current=1e3,
     ...     position=(0.0, 0.0, 1.0),
-    ...     meshing=50,
     ... )
-    >>> F, T = magpy.getFT(cube, circ)
+    >>> F, T = magpy.getFT(cube, circ, meshing=50)
     >>> print(f'force: {np.round(F, decimals=2)} N')
     force: [ 13.65  27.31 -81.93] N
     >>> print(f'torque: {np.round(T, decimals=2) + 0.0} N*m')
@@ -618,7 +700,9 @@ def getFT(
     # INPUT VALIDATION & NORMALIZATION ########################################
 
     # Validate and flatten targets (including collections)
-    targets_in, targets, coll_idx = _check_format_input_targets(targets)
+    targets_in, targets, coll_idx, meshings = _check_format_input_targets(
+        targets, meshing
+    )
     n_members = np.diff([*coll_idx, len(targets)])  # flat targets per given target
 
     # Validate sources
@@ -638,7 +722,7 @@ def getFT(
 
     # GENERATE PATH-AWARE MESHES ##############################################
 
-    target_meshes = _generate_path_meshes(targets, n_path, eps)
+    target_meshes = _generate_path_meshes(targets, meshings, n_path, eps)
 
     # Mesh report
     if meshreport:

@@ -48,37 +48,11 @@ def check_meshing_count_or_triple(value, obj):
 class BaseTarget(ABC):
     """Base class for Magpylib objects that can be targets of force computation.
 
-    - adds parameter meshing, default=None
-    - adds parameter meshing setter
-    - adds default method _validate_meshing()
-    - enforces _generate_mesh() as abstract method
+    - validates a ``meshing`` value for the class in ``_validate_meshing()``
+    - enforces ``_generate_mesh(meshing)`` as abstract method
     """
 
     _force_type: str = None
-
-    def __init__(self, meshing=None):
-        """Initialize BaseTarget with meshing parameters."""
-        self.meshing = meshing
-
-    @property
-    def meshing(self):
-        """Discretization setting: the target number of cells or elements the object
-        is cut into, or ``None``."""
-        return self._meshing
-
-    @meshing.setter
-    def meshing(self, value):
-        """Set meshing specification.
-
-        Parameters
-        ----------
-        value : int | None
-            Target number of cells or elements; a Cuboid also takes a triple.
-        """
-        # Subclasses override _validate_meshing for class-specific requirements
-        if value is not None:
-            value = self._validate_meshing(value)
-        self._meshing = value
 
     def _validate_meshing(self, value):
         """Check a meshing input and return it normalised: a positive integer.
@@ -88,8 +62,8 @@ class BaseTarget(ABC):
         return check_meshing_count(value, self)
 
     @abstractmethod
-    def _generate_mesh(self):
-        """Return meshing data structure.
+    def _generate_mesh(self, meshing):
+        """Return meshing data structure for the given, validated meshing value.
 
         Returns
         -------

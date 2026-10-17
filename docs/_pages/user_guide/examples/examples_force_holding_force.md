@@ -42,12 +42,11 @@ print('HOLDING FORCE COMPUTATION\n')
 cube = magpy.magnet.Cuboid(
     dimension=(5e-3, 2.5e-3, 1e-3),
     polarization=(0, 0, 1.33),
-    meshing = 100
 )
 mirror_image = cube.copy(position=(0, 0, 1e-3))
 
 # Compute force
-F,_ = magpy.getFT(mirror_image, cube)
+F,_ = magpy.getFT(mirror_image, cube, meshing=100)
 print(f"Holding Force: {F[2]*100:.3e} g")
 ```
 
