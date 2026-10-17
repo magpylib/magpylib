@@ -52,6 +52,66 @@ def sensor_pixel_fields(objects):
     return fields
 
 
+def pixel_sizes(sensor, field=None, *, autosize=None, path_index=-1):
+    """The size each of a sensor's pixels is drawn at, as magpylib draws it.
+
+    Parameters
+    ----------
+    sensor : Sensor
+        A sensor with pixels.
+    field : array-like, optional
+        The field its pixels read, of shape ``(path_length, n_pixels, 3)``,
+        as `sensor_pixel_fields` returns it. With it, the sizes are scaled by
+        its norms as ``style.pixel.field.sizescaling`` and ``sizemin`` say,
+        the scaling spanning the whole path; a pixel that reads nothing keeps
+        its size. Without it, every pixel has the same size.
+    autosize : float, optional
+        The size the built-in backends give a sensor whose ``style.sizemode``
+        is ``"scaled"``, from the extent of the scene. It only matters where
+        the pixels coincide -- a single pixel at the sensor's origin -- since
+        they are then sized against the sensor.
+    path_index : int, default -1
+        The path step the sizes are for.
+
+    Returns
+    -------
+    numpy.ndarray
+        One size per pixel, in the units of the sensor's position: with
+        ``style.pixel.sizemode="scaled"``, half the distance between the
+        nearest two pixels, or a fifth of the sensor where they coincide,
+        times ``style.pixel.size``; with ``"absolute"``, ``style.pixel.size``.
+        Empty for a sensor without pixels.
+    """
+    # pylint: disable=import-outside-toplevel
+    from magpylib._src.defaults.defaults_classes import (  # noqa: PLC0415
+        default_settings,
+    )
+    from magpylib._src.display.traces_core import (  # noqa: PLC0415
+        _pixel_base_size,
+        _scaled_pixel_sizes,
+        _sensor_extent,
+    )
+    from magpylib._src.style import get_style  # noqa: PLC0415
+
+    style = get_style(sensor, default_settings)
+    pixel, _, extent = _sensor_extent(sensor, style, autosize)
+    if pixel is None:
+        return np.zeros(0)
+    count = np.size(sensor.pixel) // 3
+    size = _pixel_base_size(pixel, extent, style) * style.pixel.size
+    if field is None:
+        return np.full(count, float(size))
+    norms = np.linalg.norm(np.asarray(field, dtype=float), axis=-1)
+    if norms.ndim != 2 or norms.shape[-1] != count:
+        msg = (
+            f"field must have the shape (path_length, {count}, 3) of the "
+            f"sensor's {count} pixels; instead received {np.shape(field)}."
+        )
+        raise ValueError(msg)
+    sizes = _scaled_pixel_sizes(size, norms, style.pixel.field, path_index)
+    return np.broadcast_to(np.asarray(sizes, dtype=float), (count,)).copy()
+
+
 def scale_pixel_norms(norms, scaling, *, minimum=None):
     """Factors for pixel sizes or colours, from field norms, as magpylib
     scales them.

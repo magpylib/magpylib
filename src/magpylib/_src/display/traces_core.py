@@ -831,6 +831,57 @@ def make_Pixels(
     return pixels[0]
 
 
+def _sensor_extent(obj, style, autosize):
+    """A sensor's pixels as rows -- with the origin added to a lone one, which
+    has no other to be measured from -- their spread along each axis, and the
+    extent its axes and pixels are sized against: its size, or its pixels'
+    smallest spread if larger. Without pixels, ``(None, None, size)``."""
+    dimension = getattr(obj, "dimension", style.size)
+    dim = np.array(
+        [dimension] * 3 if isinstance(dimension, float | int) else dimension[:3],
+        dtype=float,
+    )
+    if autosize is not None and style.sizemode == "scaled":
+        dim *= autosize
+    if obj.pixel is None:
+        return None, None, dim
+    pixel = np.array(obj.pixel).reshape((-1, 3))
+    if pixel.shape[0] == 1:
+        pixel = np.concatenate([[[0, 0, 0]], pixel])
+    hull_dim = pixel.max(axis=0) - pixel.min(axis=0)
+    return pixel, hull_dim, max(np.mean(dim), np.min(hull_dim))
+
+
+def _pixel_base_size(pixel, dim_ext, style):
+    """The size a pixel is drawn at for ``style.pixel.size=1``, before its
+    field scales it: half the distance between the nearest two pixels, or a
+    fifth of the sensor's extent where they coincide, under
+    ``style.pixel.sizemode="scaled"``; 1 otherwise."""
+    if style.pixel.sizemode != "scaled":
+        return 1
+    if len(pixel) < 1000:
+        min_dist = np.min(pdist(pixel))
+    else:
+        # when too many pixels, min_dist computation is too expensive (On^2)
+        # using volume/(side length) approximation instead
+        vol = np.prod(np.ptp(pixel, axis=0))
+        min_dist = (vol / len(pixel)) ** (1 / 3)
+    return dim_ext / 5 if min_dist == 0 else min_dist / 2
+
+
+def _scaled_pixel_sizes(size, norms, field_style, path_ind):
+    """`size`, scaled for each pixel by its field's norm as
+    ``field_style.sizescaling`` says, the scaling spanning all of `norms`; a
+    pixel that reads nothing keeps it. `size` itself under ``"uniform"``."""
+    if field_style.sizescaling == "uniform":
+        return size
+    factors = scale_pixel_norms(
+        norms, field_style.sizescaling, minimum=field_style.sizemin
+    )[path_ind]
+    factors[np.isnan(factors)] = 1  # keep null sizes unscaled
+    return size * factors
+
+
 def make_Sensor(
     obj, *, autosize, path_ind=None, field_values, **kwargs
 ) -> dict[str, Any]:
@@ -845,25 +896,9 @@ def make_Sensor(
     """
     style = obj.style
     traces_to_merge = []
-    dimension = getattr(obj, "dimension", style.size)
-    dim = np.array(
-        [dimension] * 3 if isinstance(dimension, float | int) else dimension[:3],
-        dtype=float,
-    )
-    pixel = obj.pixel
+    pixel, hull_dim, dim_ext = _sensor_extent(obj, style, autosize)
     no_pix = pixel is None
-    if not no_pix:
-        pixel = np.array(pixel).reshape((-1, 3))
-    one_pix = not no_pix and pixel.shape[0] == 1
-    if autosize is not None and style.sizemode == "scaled":
-        dim *= autosize
-    if no_pix:
-        dim_ext = dim
-    else:
-        if one_pix:
-            pixel = np.concatenate([[[0, 0, 0]], pixel])
-        hull_dim = pixel.max(axis=0) - pixel.min(axis=0)
-        dim_ext = max(np.mean(dim), np.min(hull_dim))
+    one_pix = not no_pix and np.size(obj.pixel) == 3
     style_arrows = style.arrows.as_dict(flatten=True, separator="_")
     if any(style_arrows[f"{k}_show"] for k in "xyz"):
         sens_mesh = get_sensor_mesh(
@@ -884,16 +919,7 @@ def make_Sensor(
     if not no_pix:
         px_color = style.pixel.color
         px_size = style.pixel.size
-        px_dim = 1
-        if style.pixel.sizemode == "scaled":
-            if len(pixel) < 1000:
-                min_dist = np.min(pdist(pixel))
-            else:
-                # when too many pixels, min_dist computation is too expensive (On^2)
-                # using volume/(side length) approximation instead
-                vol = np.prod(np.ptp(pixel, axis=0))
-                min_dist = (vol / len(pixel)) ** (1 / 3)
-            px_dim = dim_ext / 5 if min_dist == 0 else min_dist / 2
+        px_dim = _pixel_base_size(pixel, dim_ext, style)
         if px_size > 0:
             px_sizes = px_dim = px_dim * px_size
             px_positions = pixel[1:] if one_pix else pixel
@@ -911,16 +937,9 @@ def make_Sensor(
                 # the public helpers, so a backend drawing pixels its own way
                 # sizes and colours them as these traces do
                 norms = np.linalg.norm(field_array, axis=-1)
-                is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
-                sizescaling = style.pixel.field.sizescaling
-                if sizescaling != "uniform":
-                    snorms_scaled = scale_pixel_norms(
-                        norms, sizescaling, minimum=style.pixel.field.sizemin
-                    )[path_ind]
-                    snorms_scaled[is_null_mask[path_ind]] = (
-                        1  # keep null sizes unscaled
-                    )
-                    px_sizes *= snorms_scaled
+                px_sizes = _scaled_pixel_sizes(
+                    px_sizes, norms, style.pixel.field, path_ind
+                )
                 colorscaling = style.pixel.field.colorscaling
                 if colorscaling != "uniform":
                     px_colors = colors_from_colorscale(

@@ -1257,6 +1257,28 @@ def test_the_pixel_helpers_are_public():
     assert not fields[probe][..., 2].any()
     assert public_backend.sensor_pixel_fields([probe]) == {}  # nothing to read
 
+    sizes = public_backend.pixel_sizes
+    # half the distance between the nearest two pixels, times the style's size
+    np.testing.assert_allclose(sizes(probe), [0.05, 0.05])
+    probe.style.pixel.size = 2
+    np.testing.assert_allclose(sizes(probe), [0.1, 0.1])
+    # scaled by what they read, as sizescaling and sizemin say, over the path;
+    # the pixel on the source's axis reads no Bxy, and keeps its size
+    probe.style.pixel.field.sizescaling = "linear"
+    probe.style.pixel.field.sizemin = 0.5
+    read = np.linalg.norm(fields[probe], axis=-1)
+    factors = public_backend.scale_pixel_norms(read, "linear", minimum=0.5)[0]
+    assert np.isnan(factors[0])
+    np.testing.assert_allclose(
+        sizes(probe, fields[probe], path_index=0), [0.1, 0.1 * factors[1]]
+    )
+    # a lone pixel at the origin is sized against the sensor, a fifth of it
+    np.testing.assert_allclose(
+        sizes(magpy.Sensor(pixel=(0, 0, 0), style_size=1)), [0.2]
+    )
+    with pytest.raises(ValueError, match="shape"):
+        sizes(probe, np.zeros((1, 3, 3)))  # three pixels' field for two
+
     norms = [[0, 1, 2, 4]]  # 0 reads nothing
     scale = public_backend.scale_pixel_norms
     np.testing.assert_allclose(scale(norms, "linear"), [[np.nan, 0, 1 / 3, 1]])
