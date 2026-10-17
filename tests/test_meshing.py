@@ -32,8 +32,7 @@ def class_name(obj):
 def test_cells_fill_the_magnet(magnet, meshing):
     """The cells add up to the magnet, and the force mesh is their centroids and
     volumes."""
-    magnet.meshing = meshing
-    mesh = magnet._generate_mesh()
+    mesh = magnet._generate_mesh(magnet._validate_meshing(meshing))
     cells = mesh["cells"]
     volumes = cells["volumes"]
     np.testing.assert_allclose(volumes.sum(), magnet.volume)
@@ -89,8 +88,7 @@ def test_meshing_cell_counts(magnet, meshing, n_cells, cell_type):
     """An integer meshing is a target number of cells, split by one rule per class.
     Cuboids get near-cubic cells, as up to 5.2: 13 x 13 x 13 and 8 x 5 x 3 here."""
     magnet.polarization = POL
-    magnet.meshing = meshing
-    cells = magnet._generate_mesh()["cells"]
+    cells = magnet._generate_mesh(magnet._validate_meshing(meshing))["cells"]
     assert cells["type"] == cell_type
     assert len(cells["volumes"]) == n_cells
 
@@ -98,8 +96,8 @@ def test_meshing_cell_counts(magnet, meshing, n_cells, cell_type):
 def test_cylinder_inner_ring_stays_a_cylinder():
     """A full cylinder with at least 3 rings keeps one cell per layer in the middle,
     stored as a segment with r1 = 0 over 360 degrees and centered on the axis."""
-    cylinder = magpy.magnet.Cylinder(dimension=(1, 1), polarization=POL, meshing=200)
-    cells = cylinder._generate_mesh()["cells"]
+    cylinder = magpy.magnet.Cylinder(dimension=(1, 1), polarization=POL)
+    cells = cylinder._generate_mesh(200)["cells"]
     dims = cells["dimensions"]
     inner = (dims[:, 0] == 0) & (dims[:, 4] - dims[:, 3] == 360)
     assert inner.sum() == 6
@@ -115,10 +113,10 @@ def test_tetrahedron_force_converges():
     tetra = magpy.magnet.Tetrahedron(
         vertices=vertices, polarization=(0, 0, 1), position=(-1e-3, -1e-3, 0.5e-3)
     )
-    forces = []
-    for meshing in (1, 8, 27, 64, 343, 8000):
-        tetra.meshing = meshing
-        forces.append(getFT(source, tetra)[0][2])
+    forces = [
+        getFT(source, tetra, meshing=meshing)[0][2]
+        for meshing in (1, 8, 27, 64, 343, 8000)
+    ]
     errors = np.abs(np.array(forces[:-1]) / forces[-1] - 1)
     assert np.all(np.diff(errors) < 0)
     assert errors[-1] < 1e-4
@@ -163,10 +161,10 @@ def test_tetrahedron_force_converges():
     ],
 )
 def test_meshing_rejects_invalid_values(target, meshing):
-    """A meshing is a positive integer, not a bool, above the class minimum; a Cuboid
-    also takes a triple of them (#1004)."""
+    """A meshing is a positive integer, not a bool, above the class minimum; a
+    Cuboid, Cylinder or CylinderSegment also takes a triple of them (#1004)."""
     with pytest.raises(ValueError, match="Input meshing of"):
-        target.meshing = meshing
+        target._validate_meshing(meshing)
 
 
 @pytest.mark.parametrize(
@@ -176,23 +174,90 @@ def test_meshing_rejects_invalid_values(target, meshing):
         (magpy.magnet.Cuboid(dimension=(1, 1, 1)), [2, 2, 2], (2, 2, 2)),
         (magpy.magnet.Cuboid(dimension=(1, 1, 1)), np.array([2, 3, 4]), (2, 3, 4)),
         (magpy.magnet.Cylinder(dimension=(1, 1)), [8, 3, 2], (8, 3, 2)),
-        (magpy.magnet.Cuboid(dimension=(1, 1, 1)), None, None),
         (magpy.current.Circle(diameter=1, current=1), np.int64(4), 4),
     ],
 )
-def test_meshing_is_stored_as_ints(target, meshing, expected):
-    """Valid meshing inputs are stored as int or a tuple of 3 ints."""
-    target.meshing = meshing
-    assert target.meshing == expected
-    assert type(target.meshing) is type(expected)
+def test_meshing_is_normalised_to_ints(target, meshing, expected):
+    """Valid meshing inputs become an int or a tuple of 3 ints."""
+    value = target._validate_meshing(meshing)
+    assert value == expected
+    assert type(value) is type(expected)
 
 
 def test_polyline_meshing_below_segments_warns():
     """A Polyline with fewer mesh points than segments warns and uses one per
     segment."""
     cube = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=POL)
-    poly = magpy.current.Polyline(
-        vertices=[(0, 0, 0), (1, 1, 1), (2, 2, 2)], current=1, meshing=1
-    )
+    poly = magpy.current.Polyline(vertices=[(0, 0, 0), (1, 1, 1), (2, 2, 2)], current=1)
     with pytest.warns(UserWarning, match="Setting one point per segment"):
-        getFT(cube, poly)
+        getFT(cube, poly, meshing=1)
+
+
+def test_meshing_is_an_argument_of_getFT():
+    """``meshing`` moved from the targets to ``getFT`` (#1017): an integer for all
+    targets, a dict with one value per target, a Collection key for its members;
+    the old keyword and attribute point to the call."""
+    src = magpy.misc.Dipole(moment=(0, 0, 1e3), position=(0, 0, 2))
+    cube = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=POL)
+    loop = magpy.current.Circle(diameter=1, current=1, position=(0, 0, -1))
+    sphere = magpy.magnet.Sphere(diameter=1, polarization=POL, position=(0, 0, -2))
+    coll = magpy.Collection(cube, loop)
+
+    with pytest.raises(TypeError, match="argument of getFT"):
+        magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=POL, meshing=8)
+    assert not hasattr(cube, "meshing")
+    with pytest.raises(TypeError, match=r"unexpected keyword argument 'meshing'$"):
+        magpy.Sensor(meshing=3)  # not a target: the ordinary error, no pointer
+    assert "meshing" not in cube.describe(return_string=True)
+
+    F_int, _ = getFT(src, [cube, loop], meshing=8)
+    F_dict, _ = getFT(src, [cube, loop], meshing={cube: (2, 2, 2), loop: 8})
+    F_coll, _ = getFT(src, coll, meshing={coll: 8})
+    F_mixed, _ = getFT(src, coll, meshing={coll: 8, cube: (2, 2, 2)})
+    F_both, _ = getFT(src, [cube, coll], meshing={coll: 8})  # the key covers both
+    cyl = magpy.magnet.Cylinder(dimension=(1, 1), polarization=POL)
+    F_tri, _ = getFT(src, [cube, cyl], meshing=(4, 2, 2))  # every target cuts it
+    F_tri_dict, _ = getFT(src, [cube, cyl], meshing={cube: (4, 2, 2), cyl: (4, 2, 2)})
+    np.testing.assert_allclose(F_int, F_dict)
+    np.testing.assert_allclose(F_coll, F_int.sum(axis=0))
+    np.testing.assert_allclose(F_mixed, F_dict.sum(axis=0))
+    np.testing.assert_allclose(F_both, [F_int[0], F_int.sum(axis=0)])
+    np.testing.assert_allclose(F_tri, F_tri_dict)
+    assert getFT(src, sphere)[0].shape == (3,)  # exact targets need no meshing
+    assert getFT(src, [sphere, cube], meshing={cube: 1})[0].shape == (2, 3)
+
+    with pytest.raises(ValueError, match="Missing meshing input for target"):
+        getFT(src, cube)
+    with pytest.raises(ValueError, match="Missing meshing input for target"):
+        getFT(src, [cube, loop], meshing={cube: 8})
+    with pytest.raises(ValueError, match="keys that are not targets"):
+        getFT(src, cube, meshing={cube: 8, loop: 8})
+    other = cube.copy()
+    with pytest.raises(ValueError, match="keys that are not targets"):
+        getFT(
+            src,
+            magpy.Collection(other, magpy.Sensor()),
+            meshing={other: 8, magpy.Sensor(): 1},
+        )
+    with pytest.raises(ValueError, match="needs no meshing"):
+        getFT(src, [sphere, cube], meshing={sphere: 5, cube: 1})
+    with pytest.raises(ValueError, match="only cuts a Cuboid, Cylinder"):
+        getFT(src, coll, meshing={coll: (2, 2, 2)})
+    with pytest.raises(ValueError, match="only cuts a Cuboid, Cylinder"):
+        getFT(src, [cube, loop], meshing=(2, 2, 2))
+    with pytest.raises(ValueError, match="Input meshing of"):
+        getFT(src, loop, meshing=True)
+    with pytest.raises(ValueError, match="Input meshing of"):
+        getFT(src, loop, meshing={loop: 3})  # a Circle needs at least 4
+
+
+def test_strip_meshing_minimum_counts_faces_not_path_steps():
+    """A TriangleStrip with vertices varying along a path still needs at least one
+    mesh triangle per face."""
+    verts = np.array([(0, 0, 0), (1, 0, 0), (0, 1, 0), (1, 1, 0), (0, 2, 0)])
+    strip = magpy.current.TriangleStrip(
+        vertices=np.array([verts, verts + 0.01]), current=[1, 1]
+    )
+    assert strip._validate_meshing(3) == 3
+    with pytest.raises(ValueError, match="number of faces \\(3\\)"):
+        strip._validate_meshing(2)

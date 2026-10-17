@@ -67,9 +67,6 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
-    meshing : int | None, default None
-        Discretization into cube cells on a regular grid inside the surface: the
-        target number of cells. The force computation acts at the cell centers.
     reorient_faces : bool | {'warn', 'raise', 'ignore', 'skip'}, default 'warn'
         In a properly oriented mesh, all faces must be oriented outwards. If ``True``,
         check and fix the orientation of each triangle. ``True`` translates to ``'warn'``
@@ -101,8 +98,6 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``polarization``.
     magnetization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``magnetization``.
-    meshing : int | None
-        Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid.
     dipole_moment : ndarray, shape (3,) or (p, 3)
@@ -156,7 +151,6 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         faces=None,
         polarization=None,
         magnetization=None,
-        meshing=None,
         check_open="warn",
         check_disconnected="warn",
         check_selfintersecting="warn",
@@ -187,8 +181,6 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             style=style,
             **kwargs,
         )
-        # Initialize BaseTarget with meshing parameter
-        BaseTarget.__init__(self, meshing=meshing)
 
     # Properties
     @property
@@ -317,7 +309,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             return dipoles[0]
         return dipoles
 
-    def _generate_mesh(self):
+    def _generate_mesh(self, meshing):
         """Generate mesh for force computation."""
         if self.status_open is None:
             self.check_open()
@@ -327,9 +319,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         synced = self._sync_path_lengths(("vertices", "magnetization"))
         verts, mag = synced["vertices"], synced["magnetization"]
         volume = self._volume_from_verts_faces(verts, self._faces)
-        return generate_mesh_triangularmesh(
-            verts, self._faces, volume, mag, self.meshing
-        )
+        return generate_mesh_triangularmesh(verts, self._faces, volume, mag, meshing)
 
     @staticmethod
     def _validate_mode_arg(arg, arg_name="mode"):
@@ -616,7 +606,6 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         points=None,
         polarization=None,
         magnetization=None,
-        meshing=None,
         check_open="warn",
         check_disconnected="warn",
         reorient_faces=True,
@@ -631,7 +620,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         ----------
         points : array-like, shape (n, 3)
             Point cloud from which the convex hull is computed.
-        position, orientation, polarization, magnetization, meshing, reorient_faces, check_open, check_disconnected, style :
+        position, orientation, polarization, magnetization, reorient_faces, check_open, check_disconnected, style :
             See ``TriangularMesh`` for shared parameter semantics and defaults.
 
         Returns
@@ -646,7 +635,6 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             faces=ConvexHull(points).simplices,
             polarization=polarization,
             magnetization=magnetization,
-            meshing=meshing,
             reorient_faces=reorient_faces,
             check_open=check_open,
             check_disconnected=check_disconnected,
@@ -662,7 +650,6 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         polydata=None,
         polarization=None,
         magnetization=None,
-        meshing=None,
         check_open="warn",
         check_disconnected="warn",
         reorient_faces=True,
@@ -677,7 +664,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         ----------
         polydata : pyvista.core.pointset.PolyData
             A valid pyvista PolyData mesh object (e.g. ``pyvista.Sphere()``).
-        position, orientation, polarization, magnetization, meshing, reorient_faces, check_open, check_disconnected, style :
+        position, orientation, polarization, magnetization, reorient_faces, check_open, check_disconnected, style :
             See ``TriangularMesh`` for shared parameter semantics and defaults.
 
         Returns
@@ -712,7 +699,6 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             faces=faces,
             polarization=polarization,
             magnetization=magnetization,
-            meshing=meshing,
             reorient_faces=reorient_faces,
             check_open=check_open,
             check_disconnected=check_disconnected,
@@ -728,7 +714,6 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         triangles=None,
         polarization=None,
         magnetization=None,
-        meshing=None,
         reorient_faces=True,
         check_open="warn",
         check_disconnected="warn",
@@ -744,7 +729,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         triangles : list or Collection
             Only ``vertices`` of ``Triangle`` objects in list or collection are taken,
             ``magnetization`` is ignored.
-        position, orientation, polarization, magnetization, meshing, reorient_faces, check_open, check_disconnected, style :
+        position, orientation, polarization, magnetization, reorient_faces, check_open, check_disconnected, style :
             See ``TriangularMesh`` for shared parameter semantics and defaults.
 
         Returns
@@ -776,7 +761,6 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             faces=faces,
             polarization=polarization,
             magnetization=magnetization,
-            meshing=meshing,
             reorient_faces=reorient_faces,
             check_open=check_open,
             check_disconnected=check_disconnected,
@@ -792,7 +776,6 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         mesh=None,
         polarization=None,
         magnetization=None,
-        meshing=None,
         reorient_faces=True,
         check_open="warn",
         check_disconnected="warn",
@@ -807,7 +790,7 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         ----------
         mesh : array-like, shape (n, 3, 3)
             Triangular faces that make up a triangular mesh.
-        position, orientation, polarization, magnetization, meshing, reorient_faces, check_open, check_disconnected, style :
+        position, orientation, polarization, magnetization, reorient_faces, check_open, check_disconnected, style :
             See ``TriangularMesh`` for shared parameter semantics and defaults.
 
         Returns
@@ -831,7 +814,6 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             faces=faces,
             polarization=polarization,
             magnetization=magnetization,
-            meshing=meshing,
             reorient_faces=reorient_faces,
             check_open=check_open,
             check_disconnected=check_disconnected,

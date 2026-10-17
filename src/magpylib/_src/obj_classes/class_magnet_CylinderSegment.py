@@ -55,12 +55,6 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
-    meshing : None | int | array-like, shape (3,), default None
-        Discretization into cylinder-segment cells: the target number of cells,
-        split as close to cubes as possible, or the divisions (nphi, nr, nh) along
-        the arc at the mean radius, the radius and the height. Each ring's arc
-        divisions scale with its middle radius. The force computation acts at the
-        cell centroids.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -128,7 +122,6 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         dimension=None,
         polarization=None,
         magnetization=None,
-        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -141,8 +134,6 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             style=style,
             **kwargs,
         )
-
-        BaseTarget.__init__(self, meshing)
 
     # property getters and setters
     @property
@@ -248,7 +239,7 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             return dipoles[0]
         return dipoles
 
-    def _generate_mesh(self):
+    def _generate_mesh(self, meshing):
         """Generate mesh for force computation."""
         synced = self._sync_path_lengths(("dimension", "magnetization"))
         dim, mag = synced["dimension"], synced["magnetization"]
@@ -259,7 +250,7 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             dim[:, 3],  # phi1
             dim[:, 4],  # phi2
             mag,
-            self.meshing,
+            meshing,
         )
 
     def _validate_meshing(self, value):

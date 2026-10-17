@@ -18,6 +18,7 @@ from magpylib._src.input_checks import (
     check_format_input_numeric,
     check_format_input_orientation,
 )
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.class_BaseTransform import (
     BaseTransform,
     pad_path_property,
@@ -144,6 +145,13 @@ class BaseGeo(BaseTransform, ABC):
         style=None,
         **kwargs,
     ):
+        if "meshing" in kwargs and isinstance(self, BaseTarget):
+            msg = (
+                f"{type(self).__name__}() got an unexpected keyword argument "
+                "'meshing': since Magpylib 6 it is an argument of getFT, e.g. "
+                "getFT(sources, targets, meshing=100)."
+            )
+            raise TypeError(msg)
         self._style_kwargs = {}
         self._parent = None
 

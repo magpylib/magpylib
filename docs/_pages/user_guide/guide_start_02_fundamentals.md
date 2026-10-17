@@ -123,9 +123,8 @@ loop = magpy.current.Circle(
     diameter=2,
     current=1e3,
     position=(0, 0, 1),
-    meshing=40,
 )
-F, T = magpy.getFT(cube, loop)
+F, T = magpy.getFT(cube, loop, meshing=40)
 
 print(f"force: {F.round(2)} N")
 # force: [ 13.67  27.33 -82.  ] N
@@ -134,7 +133,7 @@ print(f"torque: {T.round(2)} N*m")
 # torque: [-8.54  4.27  0.  ] N*m
 ```
 
-Note that the target object (loop) on which the magnetic field acts must have a `meshing` parameter defined which is a discretizatione finesse for a numerical scheme. Detiled information on force computation is found [here](docs-forcecomp).
+The `meshing` argument says how finely the target (the loop) is cut for the numerical scheme. Detailed information on force computation is found [here](docs-forcecomp).
 
 --------------------------
 

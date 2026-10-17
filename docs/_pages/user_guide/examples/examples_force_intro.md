@@ -26,7 +26,7 @@ Magpylib computes magnetic forces and torques via the `getFT(sources, targets)` 
 
 - **`sources`**: Any Magpylib object that generates a magnetic field, or a 1D list thereof.
 - **`targets`**: Any Magpylib magnet, current, or `Dipole` object, or a 1D list thereof.
-- **`meshing`**: Each target object must have the `meshing` parameter explicitly set, which defines the discretization level.
+- **`meshing`**: How finely the targets are cut: an integer for all of them, or a dict with one value per target. Needed for every target except `Dipole` and `Sphere`.
 
 The following example computes the force and torque acting on a current loop positioned near a cubical permanent magnet:
 
@@ -48,11 +48,10 @@ loop = magpy.current.Circle(
     diameter=0.02,  # 2cm diameter
     current=1e3,  # 1000 A
     position=(0, 0, 0.001),  # 1mm above magnet center
-    meshing=40,  # discretization level
 )
 
-# Compute force and torque
-F, T = magpy.getFT(cube, loop)
+# Compute force and torque, cutting the loop into 40 segments
+F, T = magpy.getFT(cube, loop, meshing=40)
 
 print(f"Force:  {F} N")
 # Force:  [3.77e-01 3.77e-01 -7.53e-01] N
@@ -102,9 +101,7 @@ import magpylib as magpy
 np.set_printoptions(formatter={"float": "{:.2e}".format})
 
 # Rotor magnet
-cube = magpy.magnet.Cuboid(
-    dimension=(0.2, 0.2, 0.2), polarization=(0, 0, 1), meshing=1000
-)
+cube = magpy.magnet.Cuboid(dimension=(0.2, 0.2, 0.2), polarization=(0, 0, 1))
 
 # Stator coils
 loop1 = magpy.current.Circle(diameter=0.2, current=1e3, position=(0.1, 0, 0.15))
@@ -116,7 +113,7 @@ pivot_points = [None, "centroid", (0, 0, -0.5), (0, 0, -1)]
 pivot_labels = ["Intrinsic only", "Centroid", "Axle at z=-0.5", "Axle at z=-1.0"]
 
 for pivot, label in zip(pivot_points, pivot_labels):
-    F, T = magpy.getFT(stator, cube, pivot=pivot)
+    F, T = magpy.getFT(stator, cube, meshing=1000, pivot=pivot)
 
     print(f"{label}:  Force:  {np.round(F, 1)} N  Torque: {np.round(T, 1)} N*m")
 
@@ -145,10 +142,10 @@ for pivot, label in zip(pivot_points, pivot_labels):
 --------------------------------
 ## Meshing
 
-Force and torque computation is based on numerical discretization of target objects. The `meshing` parameter controls this discretization by specifying the target number of mesh cells, directly affecting both computational accuracy and performance. Higher `meshing` values mean more cells, better accuracy, but longer computation time.
+Force and torque computation is based on numerical discretization of target objects. The `meshing` argument of `getFT()` controls this discretization by specifying the target number of mesh cells, directly affecting both computational accuracy and performance. Higher `meshing` values mean more cells, better accuracy, but longer computation time. One integer applies to every target; a dict keyed by target, `meshing={ring: 100, coil: 40}`, gives each target its own value, and a `Collection` key covers its members.
 
 ```{hint}
-Set `meshing` to an integer representing the target number of mesh cells. The algorithms will select optimal cell distributions (homogeneous cells with aspect ratio close to 1) close to (but often not exactly) your target `meshing` value.
+Give `meshing` an integer representing the target number of mesh cells. The algorithms will select optimal cell distributions (homogeneous cells with aspect ratio close to 1) close to (but often not exactly) your target `meshing` value.
 ```
 
 **Class-specific meshing rules**
@@ -156,9 +153,9 @@ Set `meshing` to an integer representing the target number of mesh cells. The al
 What `meshing` means for each class, and the cells it produces, is listed in the [force computation docs](docs-forcecomp-meshing). In short:
 
 - `Sphere` and `Dipole`: no meshing required (exact result from 1 point at the center)
-- magnets: `meshing` is the target number of cells of the magnet's own kind, and the force acts at the cell centroids. `Cuboid` also accepts `meshing=(n1, n2, n3)` for an explicit subdivision, `Tetrahedron` is cut into the closest cube number of equal cells.
+- magnets: `meshing` is the target number of cells of the magnet's own kind, and the force acts at the cell centroids. `Cuboid` also accepts a triple `(n1, n2, n3)` for an explicit subdivision, `Cylinder` and `CylinderSegment` a triple `(nphi, nr, nh)`, `Tetrahedron` is cut into the closest cube number of equal cells.
 - `Circle`: minimum `meshing=4` (segments around the circumference)
-- `Polyline`: minimum meshing must equal or exceed the number of line segments
+- `Polyline`: fewer points than line segments warns and uses one point per segment
 - `TriangleStrip` and `TriangleSheet`: minimum meshing must equal or exceed the number of faces
 
 **Mesh analysis with `meshreport`**
@@ -172,12 +169,14 @@ import magpylib as magpy
 dipole = magpy.misc.Dipole(moment=(0, 0, 1e6))
 
 # Targets
-c1 = magpy.magnet.Cylinder(dimension=(2, 1), polarization=(0, 0, 1), meshing=1)
-c2 = magpy.magnet.Cylinder(dimension=(2, 1), polarization=(0, 0, 1), meshing=10)
-c3 = magpy.magnet.Cylinder(dimension=(2, 1), polarization=(0, 0, 1), meshing=100)
+c1 = magpy.magnet.Cylinder(dimension=(2, 1), polarization=(0, 0, 1))
+c2 = c1.copy()
+c3 = c1.copy()
 
 # Compute (F,T) AND generate mesh report
-F, T = magpy.getFT(dipole, [c1, c2, c3], meshreport=True)
+F, T = magpy.getFT(
+    dipole, [c1, c2, c3], meshing={c1: 1, c2: 10, c3: 100}, meshreport=True
+)
 
 # Mesh report:
 #   Target Cylinder(id=2589596340240): 1 points
@@ -201,12 +200,12 @@ dipole = magpy.misc.Dipole(moment=(0, 0, 1e6))
 
 # Targets with increasing mesh density
 i0 = 1
-t1 = magpy.current.Circle(diameter=1, current=i0, meshing=8)
-t2 = magpy.current.Circle(diameter=2, current=i0, meshing=24)
-t3 = magpy.current.Circle(diameter=3, current=i0, meshing=64)
+t1 = magpy.current.Circle(diameter=1, current=i0)
+t2 = magpy.current.Circle(diameter=2, current=i0)
+t3 = magpy.current.Circle(diameter=3, current=i0)
 
 # Return mesh data instead of forces
-meshes = magpy.getFT(dipole, [t1, t2, t3], return_mesh=True)
+meshes = magpy.getFT(dipole, [t1, t2, t3], meshing={t1: 8, t2: 24, t3: 64}, return_mesh=True)
 
 # Visualize mesh
 fig, ax = plt.subplots(subplot_kw={'projection': '3d'}, dpi=130)
@@ -257,13 +256,13 @@ np.set_printoptions(formatter={"float": "{:.5e}".format})
 
 # Example: magnet force computation with different eps values
 cube1 = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(1, 0, 0))
-cube2 = cube1.copy(position=(0.6, 0.7, 0.6), meshing=(4, 4, 4))
+cube2 = cube1.copy(position=(0.6, 0.7, 0.6))
 
 # Test different eps values
 eps_values = [1e-2, 1e-3, 1e-4, 1e-5, 1e-20]
 
 for eps in eps_values:
-    F, T = magpy.getFT(cube1, cube2, eps=eps)
+    F, T = magpy.getFT(cube1, cube2, meshing=(4, 4, 4), eps=eps)
     print(F)
 
 # [-1.32116e+04 1.96446e+04 4.72297e+04] - 1 correct digit
@@ -298,11 +297,8 @@ F0, T0 = magpy.getFT(loop, dipole, pivot=(0, 0, 0))
 
 # Backward (numerical), has opposite sign
 for meshing in [8, 40, 200, 1000]:
-    # Set meshing parameter
-    loop.meshing = meshing
-
     # Compute backward force and torque
-    F1, T1 = magpy.getFT(dipole, loop, pivot=(0, 0, 0))
+    F1, T1 = magpy.getFT(dipole, loop, meshing=meshing, pivot=(0, 0, 0))
 
     # Compute vectorwise relative error
     errF = np.linalg.norm(F1 + F0) / np.linalg.norm(F0)
@@ -331,11 +327,11 @@ A general ruleset for working properly with `getFT()` avoiding common pitfalls:
 **Single call of `getFT()`**
 ```python
 # Good: Single vectorized call
-F, T = magpy.getFT(sources, targets)  # Computes all forces at once
+F, T = magpy.getFT(sources, targets, meshing=100)  # Computes all forces at once
 
 # Avoid: Multiple separate calls
 for target in targets:
-    F, T = magpy.getFT(sources, target)  # Inefficient!
+    F, T = magpy.getFT(sources, target, meshing=100)  # Inefficient!
 ```
 
 **Unless memory considerations:**
@@ -347,16 +343,14 @@ Memory usage scales with the total number of mesh points. The bottleneck is crea
 F, T = magpy.getFT(cube, dipole)
 
 # Less efficient: Use complex object as target (many mesh points)
-F, T = magpy.getFT(dipole, cube)  # Requires meshing the cube
+F, T = magpy.getFT(dipole, cube, meshing=100)  # Requires meshing the cube
 ```
 
 **Verify convergence:**
 Ideally, vary both `meshing` and `eps` parameters for testing convergence.
 ```python
 # Test multiple mesh densities
-meshings = [50, 100, 200]
-for m in meshings:
-    target.meshing = m
-    F, T = magpy.getFT(source, target)
+for meshing in [50, 100, 200]:
+    F, T = magpy.getFT(source, target, meshing=meshing)
     # Compare results...
 ```

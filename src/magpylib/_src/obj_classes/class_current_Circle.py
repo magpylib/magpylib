@@ -40,9 +40,6 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         Loop diameter (m).
     current : float | array-like, shape (p,), default None
         Electrical current (A).
-    meshing : int | None, default None
-        Discretization into straight segments for the force computation: the number
-        of segments, at least 4, equally distributed on the circle.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -57,8 +54,6 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         Same as constructor parameter ``diameter``.
     current : None | float | ndarray, shape (p,)
         Same as constructor parameter ``current``.
-    meshing : None | int
-        Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
     dipole_moment : ndarray, shape (3,) or (p, 3)
@@ -100,7 +95,6 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
         orientation=None,
         diameter=None,
         current=None,
-        meshing=None,
         *,
         style=None,
         **kwargs,
@@ -113,8 +107,6 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
             style=style,
             **kwargs,
         )
-
-        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -169,10 +161,10 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
             return mom[0]
         return mom
 
-    def _generate_mesh(self):
+    def _generate_mesh(self, meshing):
         """Generate mesh for force computation."""
         synced = self._sync_path_lengths(("diameter", "current"))
-        return generate_mesh_circle(synced["diameter"], synced["current"], self.meshing)
+        return generate_mesh_circle(synced["diameter"], synced["current"], meshing)
 
     def _validate_meshing(self, value):
         """Circle makes only sense with at least 4 mesh points."""

@@ -648,7 +648,6 @@ def test_describe_with_label():
         "  • volume: 0 m³",
         "  • centroid: [0. 0. 0.]",
         "  • dipole_moment: [0. 0. 0.]",
-        "  • meshing: None",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
 
@@ -675,7 +674,6 @@ def test_describe_with_parent():
         "  • volume: 0 m³",
         "  • centroid: [0. 0. 0.]",
         "  • dipole_moment: [0. 0. 0.]",
-        "  • meshing: None",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
 
@@ -777,7 +775,6 @@ def test_describe_with_triangularmesh():
         "  • dipole_moment: [      0.          0.    2122065.908]",
         "  • faces: [[4 0 2]  [4 1 0]  [3 4 2]  [3 1 4]  [3 0 1]  [3 2 0]]",
         "  • mesh: shape(6, 3, 3)",
-        "  • meshing: None",
         "  • status_disconnected: False",
         "  • status_disconnected_data: 1 part",
         "  • status_open: False",

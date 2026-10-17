@@ -41,10 +41,6 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         least two vertices must be given.
     current : float | array-like, shape (p,), default None
         Electrical current (A).
-    meshing : int | None, default None
-        Discretization for the force computation: the number of mesh points, at
-        least the number of segments. Each segment gets one point at its center, the
-        remaining points are distributed evenly along the polyline.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -59,8 +55,6 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         Same as constructor parameter ``vertices``.
     current : None | float | ndarray, shape (p,)
         Same as constructor parameter ``current``.
-    meshing : None | int
-        Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid computed via mean of vertices in units (m)
         in global coordinates.
@@ -112,7 +106,6 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         vertices=None,
         position=(0, 0, 0),
         orientation=None,
-        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -124,8 +117,6 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
             style=style,
             **kwargs,
         )
-
-        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -215,20 +206,20 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
             return dipole_moments[0]
         return dipole_moments
 
-    def _generate_mesh(self):
+    def _generate_mesh(self, meshing):
         """Generate mesh for force computation."""
         synced = self._sync_path_lengths(("vertices", "current"))
         verts, curr = synced["vertices"], synced["current"]
 
-        n_points = self.meshing
+        n_points = meshing
         n_segments = len(verts[0]) - 1
-        if self.meshing < n_segments:
+        if meshing < n_segments:
             msg = (
                 f"Input meshing of {self} must be an integer > number of Polyline "
-                f"segments ({n_segments}); instead received {self.meshing}. "
+                f"segments ({n_segments}); instead received {meshing}. "
                 "Setting one point per segment in computation."
             )
-            warnings.warn(msg, UserWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=4)
             n_points = n_segments
 
         return generate_mesh_polyline(verts, curr, n_points)

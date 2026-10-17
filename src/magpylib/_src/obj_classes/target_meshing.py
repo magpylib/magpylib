@@ -67,7 +67,7 @@ def _cuboid_cells(dimension, meshing):
         ``centroids`` of shape (n, 3) (the positions), and ``volumes`` of shape (n,).
     """
     dimension = np.asarray(dimension, dtype=float)
-    if isinstance(meshing, tuple):
+    if np.ndim(meshing) == 1:
         divisions = np.array(meshing, dtype=int)
     else:
         divisions = _near_cubic_divisions(dimension, meshing)

@@ -57,14 +57,13 @@ sphere = magpy.magnet.Sphere(
 loop = magpy.current.Circle(
   diameter=2e-2,
   current=1000,
-  meshing=1200,
 )
 
 # Forward
 F_sphere, T_sphere = magpy.getFT(loop, sphere, pivot=(0, 0, 0))
 
 # Backward
-F_loop, T_loop = magpy.getFT(sphere, loop, pivot=(0, 0, 0))
+F_loop, T_loop = magpy.getFT(sphere, loop, meshing=1200, pivot=(0, 0, 0))
 
 print('\nForces:')
 print(f'  on loop:   {F_loop} N')
@@ -315,9 +314,8 @@ wire1 = Polyline(
 wire2 = Polyline(
     current=i2,
     vertices=[(0, 0, -L/2), (0, 0, L/2)],
-    meshing=10
 )
-F,_ = getFT(wire1, wire2)
+F,_ = getFT(wire1, wire2, meshing=10)
 
 print(f'Magpylib result:   F/L = {F[0]/L:.6e} N/m')
 print(f'Analytical result: F/L = {mu_0/2/pi*i1*i2/d:.6e} N/m')
@@ -372,9 +370,8 @@ source = magpy.misc.CustomSource(
 loop = magpy.current.Polyline(
     current=1,
     vertices=[(0, 0, 0), (1, 0, 0), (2, 2, 0), (3, -3, 0), (0, 0, 0)],
-    meshing=400,
 )
-F,T = magpy.getFT(source, loop)
+F,T = magpy.getFT(source, loop, meshing=400)
 
 print('\nClosed current loop:')
 print(f'  force:  {F} N')
@@ -384,9 +381,8 @@ print(f'  torque: {T} N*m')
 cube = magpy.magnet.Cuboid(
     dimension=(0.1, 0.2, 0.3),
     polarization=(.1, 0, 0),
-    meshing=(3, 6, 9),
 )
-F,T = magpy.getFT(source, cube)
+F,T = magpy.getFT(source, cube, meshing=(3, 6, 9))
 
 print('\nCuboid magnet:')
 print(f'  force:  {F} N')
@@ -444,13 +440,12 @@ needle = magpy.magnet.Cylinder(
     dimension=(0.5e-2, 10e-2),
     polarization=(0, 0, 0.1),
     position=equator_position,
-    meshing=20,
 )
 
 # Test needle at different orientation angles
 angles = [-135, -90, -45, 0, 45, 90, 135]
 needle.rotate_from_angax(angles, "y", start=0)
-F,T = magpy.getFT(earth, needle)
+F,T = magpy.getFT(earth, needle, meshing=20)
 
 print('\nCompass Needle: ( 0° = pointing North)')
 print('\tAngle \t Force \t\t\t\t\t Torque:')
