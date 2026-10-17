@@ -31,9 +31,9 @@ defined in a script or notebook.
 The user guide page "Writing a custom display backend" specifies the trace
 dialect a backend receives. Its vocabularies are `ALLOWED_SYMBOLS` and
 `ALLOWED_LINESTYLES`, and `magic_to_dict` nests its underscore keys.
-`sensor_pixel_fields`, `scale_pixel_norms` and `colors_from_colorscale` let a
-backend draw sensor pixels its own way while sizing and colouring them as the
-built-ins do.
+`sensor_pixel_fields`, `pixel_sizes`, `scale_pixel_norms` and
+`colors_from_colorscale` let a backend draw sensor pixels its own way while
+sizing and colouring them as the built-ins do.
 """
 
 __all__ = [
@@ -51,6 +51,7 @@ __all__ = [
     "colors_from_colorscale",
     "drawing_properties",
     "magic_to_dict",
+    "pixel_sizes",
     "scale_pixel_norms",
     "sensor_pixel_fields",
 ]
@@ -68,6 +69,7 @@ from magpylib._src.display.api import (
 )
 from magpylib._src.display.backend_tools import (
     colors_from_colorscale,
+    pixel_sizes,
     scale_pixel_norms,
     sensor_pixel_fields,
 )
