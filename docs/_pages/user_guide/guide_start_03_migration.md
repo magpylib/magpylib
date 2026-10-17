@@ -145,7 +145,7 @@ unless you relied on the legend vanishing.
 
 - `barycenter`, in favour of `centroid`
   ([#916](https://github.com/magpylib/magpylib/pull/916)). It warns in version 6
-  and will be removed in version 7.
+  and will be removed in a future version.
 
 ## Checklist
 

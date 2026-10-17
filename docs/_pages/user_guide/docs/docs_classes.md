@@ -306,7 +306,7 @@ magpylib.current.TriangleStrip(position, orientation, vertices, current, style)
 
 ### TriangleSheet
 ```python
-magpylib.current.Polyline(
+magpylib.current.TriangleSheet(
     position, orientation, vertices, faces, current_densities, style
 )
 ```
