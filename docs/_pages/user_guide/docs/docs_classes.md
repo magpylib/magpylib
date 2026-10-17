@@ -18,7 +18,7 @@ The following basic properties are shared by all Magpylib classes:
 
 * **`move()`** and **`rotate()`**: methods that enable relative object positioning. There are multiple `rotate()` methods allowing for all kinds of rotation inputs.
 
-* **`reset_path()`** method: Sets `position` and `orientation` to their default values.
+* **`reset_path()`** method: Sets `position` and `orientation` to their default values. Other path properties, such as a `current` given per path step, are left as they are.
 
 * **`path_properties`**: property (read only) which lists the attributes of this object that can carry a path. Besides `position` and `orientation` these are the physical attributes of the class, e.g. `current` and `vertices` for a `Polyline`, or `dimension`, `polarization` and `magnetization` for a `Cuboid`.
 
@@ -306,7 +306,7 @@ magpylib.current.TriangleStrip(position, orientation, vertices, current, style)
 
 ### TriangleSheet
 ```python
-magpylib.current.Polyline(
+magpylib.current.TriangleSheet(
     position, orientation, vertices, faces, current_densities, style
 )
 ```

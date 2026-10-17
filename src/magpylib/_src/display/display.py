@@ -348,7 +348,9 @@ def show_context(
     col : int | None, default None
         Subplot column index for all enclosed ``show()`` calls that omit ``col``.
     output : str | tuple[str, ...], default 'model3d'
-        Plot output type (e.g., ``'model3d'``, ``'Bx'``, ``'Bxy'``, ``'Hyz'``).
+        Plot output type (e.g., ``'model3d'``, ``'Bx'``, ``'Bxy'``, ``'Hyz'``). The
+        outputs of one panel share its y axis and so its unit: ``B`` and ``J`` in T,
+        or ``H`` and ``M`` in A/m.
     sumup : bool, default True
         Sum source contributions when ``output != 'model3d'``.
     pixel_agg : str, default 'mean'

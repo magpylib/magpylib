@@ -333,6 +333,10 @@ Even with some implemented fail safes, such as a maximum frame rate and frame co
 Coupled subplots
 :::
 
+:::{versionchanged} 6.0
+A 2D panel shows outputs in one unit: `B` and `J` (T) apart from `H` and `M` (A/m).
+:::
+
 It is often tedious to integrate the Magpylib `show()` output into sub-plots as shown above, especially when dealing with animations and combinations of 2D and 3D plots.
 
 For this, Magpylib offers the possibility to show the sensor output along a path in addition to the 3D-output, and to place 2D and 3D outputs in subplots.
@@ -346,7 +350,7 @@ All of this is achieved via the `show()` function by passing input objects as di
 3. `row`: int which selects the subplot row. Default is `row=1`.
 4. `output`: string which selects the type of output that should be displayed in this subplot. Options are
    1. `'model3d'` is the default value and selects the 3D output.
-   2. `'Xa'` selects a 2D line-plot of a field component (combination) as seen by the sensor(s) along their path. The sensor(s) must be part of the `objects` input. Here "X" selects the field and must be one of "BHJM", and "a" selects the respective component combination and must be a subset of "xyz". For example, `output=Hx` displays the x-component of the H-field, or `output=Bxz` displays `sqrt(|Bx|² + |Bz|²)`. By default, source outputs are summed up (`sumup=True`) and sensor pixels, are aggregated by mean (`pixel_agg='mean'`).
+   2. `'Xa'` selects a 2D line-plot of a field component (combination) as seen by the sensor(s) along their path. The sensor(s) must be part of the `objects` input. Here "X" selects the field and must be one of "BHJM", and "a" selects the respective component combination and must be a subset of "xyz". For example, `output=Hx` displays the x-component of the H-field, or `output=Bxz` displays `sqrt(|Bx|² + |Bz|²)`. By default, source outputs are summed up (`sumup=True`) and sensor pixels, are aggregated by mean (`pixel_agg='mean'`). A list of such strings, `output=["Hx", "Hy", "Hz"]`, draws several lines in one panel; they share its y axis and so its unit: `B` and `J` in T, or `H` and `M` in A/m.
 
 The following code demonstrates these features.
 

@@ -143,7 +143,7 @@ While most things can be achieved with the above, the following features will ma
 
 ### Paths
 
-Magpylib position and orientation attributes can store multiple values that are referred to as paths. The field will automatically be computed for all path positions. Use this feature to model objects that move to multiple locations.
+Magpylib position and orientation attributes can store multiple values that are referred to as paths. The field will automatically be computed for all path positions. Use this feature to model objects that move to multiple locations. Physical attributes can vary along a path too: a `current` that ramps, a `dimension` that grows. Each object lists what can in `path_properties`, see [here](docs-position-path-properties).
 
 ```python
 import numpy as np
