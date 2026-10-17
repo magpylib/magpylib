@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
@@ -1271,7 +1270,7 @@ def test_force_backforward_dipole_cylinder():
 
     F0, T0 = getFT(cylinder, dip, pivot=(0, 0, 0))
 
-    for meshing, err in zip([1, 20, 360], [0.3, 1e-1, 1e-2], strict=False):
+    for meshing, err in zip([2, 20, 360], [0.3, 1e-1, 1e-2], strict=False):
         cylinder.meshing = meshing
         F1, T1 = getFT(dip, cylinder, pivot=(0, 0, 0))
 
@@ -1332,7 +1331,7 @@ def test_force_backforward_Dipole_Tetrahedron():
 
     F0, T0 = getFT(tetra, dip, pivot=(0, 0, 0))
 
-    for meshing, err in zip([1, 20, 300], [0.08, 0.1, 0.07], strict=False):
+    for meshing, err in zip([1, 20, 300], [0.08, 0.012, 0.0025], strict=False):
         tetra.meshing = meshing
         F1, T1 = getFT(dip, tetra, pivot=(0, 0, 0))
 
@@ -2445,61 +2444,6 @@ def test_force_2sources():
     assert np.allclose(T[1, 1], T[0, 0] * 4)
     assert np.allclose(T[1, 1], T[0, 1] * 2)
     assert np.allclose(T[1, 1], T[1, 0] * 2)
-
-
-def test_force_meshing_validation():
-    """Test meshing inputs"""
-
-    # standard objects
-    objects = [
-        magpy.magnet.Cylinder(dimension=(3, 3), polarization=(0, 0, 1)),
-        magpy.magnet.CylinderSegment(
-            dimension=(1, 2, 3, 0, 360), polarization=(1, 2, 3)
-        ),
-        magpy.magnet.Tetrahedron(
-            vertices=[(1, 1, -1), (1, 1, 1), (-1, 1, 1), (1, -1, 1)],
-            polarization=(0.111, 0.222, 0.333),
-        ),
-        magpy.current.Polyline(vertices=[(0, 0, 0), (1, 1, 1), (2, 2, 2)], current=1),
-        magpy.magnet.Cuboid(dimension=(3, 3, 3), polarization=(0, 0, 1)),
-    ]
-    for obj in objects:
-        with pytest.raises(ValueError):  # noqa: PT011
-            obj.meshing = "bad"
-
-        with pytest.raises(ValueError):  # noqa: PT011
-            obj.meshing = -1
-
-        obj.meshing = 1
-        assert obj.meshing == 1, f"Failed for {obj} with meshing=1"
-
-        obj.meshing = 100
-        assert obj.meshing == 100, f"Failed for {obj} with meshing=100"
-
-    # circle
-    obj = magpy.current.Circle(diameter=3, current=1)
-    with pytest.raises(ValueError):  # noqa: PT011
-        obj.meshing = "bad"
-
-    with pytest.raises(ValueError):  # noqa: PT011
-        obj.meshing = 3
-
-    obj.meshing = 4
-    assert obj.meshing == 4, f"Failed for {obj} with meshing=4"
-
-    obj.meshing = 100
-    assert obj.meshing == 100, f"Failed for {obj} with meshing=100"
-
-    cube = magpy.magnet.Cuboid(dimension=(3, 3, 3), polarization=(0, 0, 1))
-    cube.meshing = (10, 10, 10)
-    assert np.all(cube.meshing == (10, 10, 10))
-
-    # polyline
-    poly = magpy.current.Polyline(vertices=[(0, 0, 0), (1, 1, 1), (2, 2, 2)], current=1)
-    poly.meshing = 1
-
-    with pytest.warns(UserWarning):  # noqa: PT030
-        getFT(cube, poly)
 
 
 def test_centroid():

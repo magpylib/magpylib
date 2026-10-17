@@ -38,6 +38,13 @@
 - **Breaking:** past `legend_maxitems`, the legend lists its first entries and
   "… and k more" instead of disappearing
   ([#1007](https://github.com/magpylib/magpylib/pull/1007)).
+- **Breaking:** `getFT` results change for cylinders and tetrahedra at the same
+  `meshing`: cylinders get near-cubic cells, as cuboids do, instead of up to
+  twice the requested count, each force point sits at its cell's true centroid,
+  and `Tetrahedron` is cut into the closest cube number of equal tetrahedra. A
+  `Cuboid` triple `(n1, n2, n3)` is stored as a tuple of ints, and `Cylinder`
+  and `CylinderSegment` take a triple `(nphi, nr, nh)` too
+  ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
 - `show()` is about 3x faster, and a sensor showing its pixel field is read
   once, and not at all while its pixels are hidden
   ([#967](https://github.com/magpylib/magpylib/pull/967),
@@ -99,6 +106,11 @@
 - A wrong observer or source, such as a JAX array or a misspelled item in a
   list, was reported as "No observers provided" or "No sources provided"
   ([#1002](https://github.com/magpylib/magpylib/pull/1002)).
+- `Tetrahedron` force meshes were biased, so more mesh points could give a less
+  accurate force ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
+- Invalid `meshing` values such as `True`, `(-1, 2, 2)` or `(0, 0, 0)` were
+  accepted and gave wrong forces, while NumPy integers were refused
+  ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
 
 ## [5.2.3] 2026-05-15
 

@@ -42,9 +42,9 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
     current : float | array-like, shape (p,), default None
         Electrical current (A).
     meshing : int | None, default None
-        Mesh fineness for force computation. Must be a positive integer at least the
-        number of segments. Each segment gets one mesh point at its center. All
-        remaining mesh points are distributed evenly along the polyline.
+        Discretization for the force computation: the number of mesh points, at
+        least the number of segments. Each segment gets one point at its center, the
+        remaining points are distributed evenly along the polyline.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.

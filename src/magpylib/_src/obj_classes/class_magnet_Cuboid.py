@@ -14,7 +14,10 @@ from magpylib._src.obj_classes.class_BaseProperties import (
     BaseDipoleMoment,
     BaseVolume,
 )
-from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.class_BaseTarget import (
+    BaseTarget,
+    check_meshing_count_or_triple,
+)
 from magpylib._src.obj_classes.target_meshing import generate_mesh_cuboid
 from magpylib._src.utility import unit_prefix
 
@@ -48,9 +51,9 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
     meshing : None | int | array-like, shape (3,), default None
-        Mesh fineness for force computation. Must be a positive integer specifying
-        the target mesh size or an explicit splitting of the cuboid into regular
-        cubic grid cells with shape (n1, n2, n3).
+        Discretization into cuboid cells: the target number of cells, split as
+        close to cubes as possible, or the number of divisions (n1, n2, n3) along
+        the sides. The force computation acts at the cell centroids.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -219,14 +222,6 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         )
 
     def _validate_meshing(self, value):
-        """Cuboid meshing must be a positive integer or array-like of shape (3,)."""
-        if (isinstance(value, int) and value > 0) or (
-            isinstance(value, list | tuple | np.ndarray) and len(value) == 3
-        ):
-            pass
-        else:
-            msg = (
-                f"Input meshing of {self} must be positive integer or array-like of shape "
-                f"(3,); instead received {value}."
-            )
-            raise ValueError(msg)
+        """Check a meshing input and return it normalised: a positive integer, or a
+        tuple of 3 positive integers (the divisions along the sides)."""
+        return check_meshing_count_or_triple(value, self)

@@ -68,8 +68,8 @@ class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
     meshing : int | None, default None
-        Mesh fineness for force computation. Must be a positive integer specifying
-        the target mesh size.
+        Discretization into cube cells on a regular grid inside the surface: the
+        target number of cells. The force computation acts at the cell centers.
     reorient_faces : bool | {'warn', 'raise', 'ignore', 'skip'}, default 'warn'
         In a properly oriented mesh, all faces must be oriented outwards. If ``True``,
         check and fix the orientation of each triangle. ``True`` translates to ``'warn'``

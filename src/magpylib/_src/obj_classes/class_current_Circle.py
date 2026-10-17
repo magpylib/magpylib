@@ -9,7 +9,10 @@ from magpylib._src.fields.field_BH_circle import _BHJM_circle
 from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
-from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.class_BaseTarget import (
+    BaseTarget,
+    check_meshing_count,
+)
 from magpylib._src.obj_classes.target_meshing import generate_mesh_circle
 
 
@@ -38,8 +41,8 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
     current : float | array-like, shape (p,), default None
         Electrical current (A).
     meshing : int | None, default None
-        Mesh fineness for force computation. Must be an integer ``>= 4``. Points
-        are equally distributed on the circle.
+        Discretization into straight segments for the force computation: the number
+        of segments, at least 4, equally distributed on the circle.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -173,11 +176,4 @@ class Circle(BaseCurrent, BaseTarget, BaseDipoleMoment):
 
     def _validate_meshing(self, value):
         """Circle makes only sense with at least 4 mesh points."""
-        if isinstance(value, int) and value > 3:
-            pass
-        else:
-            msg = (
-                f"Input meshing must be an integer > 3 for {self!r}; "
-                f"instead received {value!r}."
-            )
-            raise ValueError(msg)
+        return check_meshing_count(value, self, minimum=4)

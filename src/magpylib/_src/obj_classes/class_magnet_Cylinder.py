@@ -14,7 +14,10 @@ from magpylib._src.obj_classes.class_BaseProperties import (
     BaseDipoleMoment,
     BaseVolume,
 )
-from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.class_BaseTarget import (
+    BaseTarget,
+    check_meshing_count_or_triple,
+)
 from magpylib._src.obj_classes.target_meshing import generate_mesh_cylindersegment
 from magpylib._src.utility import unit_prefix
 
@@ -47,9 +50,12 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
-    meshing : int | None, default None
-        Mesh fineness for force computation. Must be a positive integer specifying
-        the target mesh size.
+    meshing : None | int | array-like, shape (3,), default None
+        Discretization into cylinder-segment cells: the target number of cells,
+        split as close to cubes as possible, or the divisions (nphi, nr, nh) along
+        the arc at the mean radius, the radius and the height. Each ring's arc
+        divisions scale with its middle radius. The force computation acts at the
+        cell centroids.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -227,3 +233,9 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             mag,
             self.meshing,
         )
+
+    def _validate_meshing(self, value):
+        """Check a meshing input and return it normalised: a positive integer, or a
+        tuple of 3 positive integers (divisions along the arc, the radius and the
+        height)."""
+        return check_meshing_count_or_triple(value, self)
