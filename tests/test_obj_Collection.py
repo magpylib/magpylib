@@ -594,13 +594,13 @@ def test_Collection_centroid_with_objects():
 
 
 def test_Collection_centroid_zero_volume():
-    """Test Collection centroid with zero-volume objects"""
-    expected = (1, 1, 1)  # should return position when all children have zero volume
+    """A Collection without volume has the mean of its members' centroids as its
+    centroid, not its own position (#1018)."""
     obj1 = magpy.current.Circle(diameter=1, current=1, position=(0, 0, 0))
     obj2 = magpy.misc.Dipole(moment=(1, 0, 0), position=(2, 0, 0))
 
-    col = magpy.Collection(obj1, obj2, position=expected)
-    assert np.allclose(col.centroid, expected)
+    col = magpy.Collection(obj1, obj2, position=(1, 1, 1))
+    assert np.allclose(col.centroid, (1, 0, 0))
 
 
 def test_Collection_centroid_path_object():
@@ -610,3 +610,52 @@ def test_Collection_centroid_path_object():
         dimension=(1, 1, 1), polarization=(0, 0, 1), position=expected
     )
     assert np.allclose(path_obj.centroid, expected)
+
+
+def test_collection_centroid_follows_child_paths():
+    """A Collection's centroid is the volume-weighted centroid of its children at
+    every path step; a child without a path keeps its value along the way."""
+    big = magpy.magnet.Cuboid(dimension=(2, 2, 2), polarization=(0, 0, 1))
+    small = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=(0, 0, 1),
+        position=[(9, 0, 0), (18, 0, 0)],
+    )
+    coll = magpy.Collection(big, small)
+    expected = np.array([(1, 0, 0), (2, 0, 0)])  # (8*0 + 1*9)/9, (8*0 + 1*18)/9
+    np.testing.assert_allclose(coll.centroid, expected)
+    np.testing.assert_allclose(coll._centroid, expected)
+    # without volume: the mean of the members' centroids, not the position
+    loop = magpy.current.Circle(diameter=1, current=1, position=(0, 0, 3))
+    coil = magpy.Collection(loop, loop.copy(position=(0, 0, 5)), position=(7, 7, 7))
+    np.testing.assert_allclose(coil.centroid, (0, 0, 4))
+    assert coil.volume == 0
+    # nested Collections count once
+    outer = magpy.Collection(
+        big.copy(position=(0, 0, 0)), magpy.Collection(big.copy(position=(10, 0, 0)))
+    )
+    np.testing.assert_allclose(outer.centroid, (5, 0, 0))
+    np.testing.assert_allclose(outer.volume, 16)
+    np.testing.assert_allclose(magpy.Collection(magpy.Sensor()).centroid, (0, 0, 0))
+    # volume and dipole moment follow the same rules: nested once, paths padded
+    np.testing.assert_allclose(outer.dipole_moment, 2 * big.dipole_moment)
+    mixed = magpy.Collection(
+        magpy.magnet.Cuboid(dimension=[(1, 1, 1), (2, 2, 2)], polarization=(0, 0, 1)),
+        magpy.magnet.Cuboid(
+            dimension=[(1, 1, 1), (2, 2, 2), (3, 3, 3)], polarization=(0, 0, 1)
+        ),
+    )
+    np.testing.assert_allclose(mixed.volume, [2, 16, 35])
+    assert mixed.dipole_moment.shape == (3, 3)
+    # a position path does not turn a constant volume into an array
+    moving = magpy.Collection(big.copy(position=[(0, 0, 0), (1, 0, 0)]))
+    assert moving.volume == 8
+    # grouping loops does not move a coil's centroid; empty groups count nothing
+    loops = [loop.copy(position=(0, 0, z)) for z in (0, 0, 0, 8)]
+    flat = magpy.Collection(*loops)
+    again = [lp.copy() for lp in loops]
+    grouped = magpy.Collection(magpy.Collection(*again[:3]), again[3])
+    np.testing.assert_allclose(grouped.centroid, flat.centroid)
+    np.testing.assert_allclose(flat.centroid, (0, 0, 2))
+    with_empty = magpy.Collection(loop.copy(), magpy.Collection(position=(9, 9, 9)))
+    np.testing.assert_allclose(with_empty.centroid, (0, 0, 3))

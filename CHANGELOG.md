@@ -45,6 +45,15 @@
   `Cuboid` triple `(n1, n2, n3)` is stored as a tuple of ints, and `Cylinder`
   and `CylinderSegment` take a triple `(nphi, nr, nh)` too
   ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
+- **Breaking:** `getFT` torques on a Collection target are taken about the
+  Collection's centroid, so they are the torque on one rigid body; before, each
+  magnet's torque was taken about its own centroid and the sum was not. Array
+  pivots now count the targets as given, a Collection as one, like the output
+  does. A Collection's `centroid` and `volume` count a nested Collection once,
+  the centroid follows its members' paths, and a Collection without volume, such
+  as a coil of current loops, has the mean of its members' centroids instead of
+  its own position ([#1018](https://github.com/magpylib/magpylib/issues/1018),
+  [#1024](https://github.com/magpylib/magpylib/pull/1024)).
 - `show()` is about 3x faster, and a sensor showing its pixel field is read
   once, and not at all while its pixels are hidden
   ([#967](https://github.com/magpylib/magpylib/pull/967),

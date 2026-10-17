@@ -27,7 +27,8 @@ def _check_format_input_targets(targets):
 
     Returns
     -------
-    flat list of targets , list of collection indices for summation
+    the targets as given (a list), the flat list of targets, and the list of
+    collection indices for summation
     """
     if not isinstance(targets, list):
         targets = [targets]
@@ -83,7 +84,7 @@ def _check_format_input_targets(targets):
                 )
                 raise ValueError(msg)
 
-    return flat_targets, coll_idx
+    return targets, flat_targets, coll_idx
 
 
 def _create_eps_vector(eps):
@@ -101,47 +102,65 @@ def _create_eps_vector(eps):
     )
 
 
-def _check_format_input_pivot(pivot, targets, n_path):
+def _target_centroids(targets, n_path):
+    """Centroid path of each target as given, shape (t, p, 3).
+
+    A Collection target gives its own volume-weighted centroid, so that the torque
+    on it is the torque on one rigid body.
+    """
+    return np.array([pad_path_property(t._centroid, n_path) for t in targets])
+
+
+def _check_format_input_pivot(pivot, targets, n_members, n_path):
     """
     Check and format pivot input
 
+    Parameters
+    ----------
+    pivot : 'centroid' | None | array-like
+        Pivot input of getFT.
+    targets : list
+        Targets as given, a Collection counting as one.
+    n_members : list of int
+        Number of flat targets each given target expands to.
+    n_path : int
+        Path length.
+
     Returns
     -------
-    array of pivots with shape (t, p, 3) or None
+    array of pivots with shape (t_flat, p, 3) or None
     """
+    n_tgt = len(targets)
     msg = (
         "Input pivot must be 'centroid', None, or array-like with shape "
-        "(3,), (t, 3), or (t, p, 3) when t targets are present and path "
-        f"length p are present; instead received {pivot!r}."
+        "(3,), (t, 3), (t, p, 3), or (p, 3) for one target, for t targets "
+        f"(a Collection counts as one) and path length p; instead received {pivot!r}."
     )
 
     if pivot is None:
         return None
 
     if isinstance(pivot, str) and pivot == "centroid":
-        return np.array(
-            [
-                np.pad(t._centroid, ((0, n_path - len(t._centroid)), (0, 0)), "edge")
-                for t in targets
-            ]
-        )
-
-    if isinstance(pivot, list | tuple | np.ndarray):
+        pivot = _target_centroids(targets, n_path)
+    elif isinstance(pivot, list | tuple | np.ndarray):
         try:
             pivot = np.array(pivot, dtype=float)
         except (ValueError, TypeError) as e:
             raise ValueError(msg) from e
 
-        n_tgt = len(targets)
-
         if pivot.shape == (3,):
-            return np.tile(pivot, (n_tgt, n_path, 1))
-        if pivot.shape == (n_tgt, 3):
-            return np.repeat(pivot[:, np.newaxis, :], n_path, axis=1)
-        if pivot.shape == (n_tgt, n_path, 3):
-            return pivot
+            pivot = np.tile(pivot, (n_tgt, n_path, 1))
+        elif pivot.shape == (n_tgt, 3):
+            pivot = np.repeat(pivot[:, np.newaxis, :], n_path, axis=1)
+        elif n_tgt == 1 and pivot.shape == (n_path, 3):
+            pivot = pivot[np.newaxis]  # one target on a path: its own centroid path
+        elif pivot.shape != (n_tgt, n_path, 3):
+            raise ValueError(msg)
+    else:
+        raise ValueError(msg)
 
-    raise ValueError(msg)
+    # every member of a Collection target shares the Collection's pivot
+    return np.repeat(pivot, n_members, axis=0)
 
 
 def _check_eps(eps):
@@ -538,12 +557,18 @@ def getFT(
         Objects on which the magnetic field acts, generating force and torque.
         Can be a 1D list of t target objects. All targets (except Dipoles
         and Spheres) must have a valid ``meshing`` parameter set.
-    pivot : 'centroid' | None | array-like, shape (3,) or (t, 3) or (t, p, 3), default 'centroid'
+    pivot : 'centroid' | None | array-like, shape (3,), (t, 3), (t, p, 3) or (p, 3), default 'centroid'
         Pivot point through which the force contributes to the torque. If
-        ``'centroid'``, each target's centroid is used. If ``None``, no pivot
-        is applied (may yield nonphysical results). If an array of shape
-        (3,), the same pivot is used for all targets. Shapes (t, 3)
-        and (t, p, 3) provide per-target or per-target-per-path pivots.
+        ``'centroid'``, each target's centroid is used; for a Collection target
+        this is the Collection's centroid, volume-weighted over its magnets or,
+        for a Collection without volume such as a coil, the mean of its members'
+        centroids, so that the torque is the torque on one rigid body. If
+        ``None``, no pivot is applied (may yield nonphysical
+        results). If an array of shape (3,), the same pivot is used for all
+        targets. Shapes (t, 3) and (t, p, 3) provide per-target or
+        per-target-per-path pivots, where t counts the targets as given, a
+        Collection counting as one, like the output does; a single target on a
+        path also takes shape (p, 3), such as its own ``centroid``.
     eps : float, default 1e-5
         Finite-difference step size for gradient-field computation for magnet
         targets. A good value is 1e-5 * characteristic_system_size (e.g.,
@@ -593,7 +618,8 @@ def getFT(
     # INPUT VALIDATION & NORMALIZATION ########################################
 
     # Validate and flatten targets (including collections)
-    targets, coll_idx = _check_format_input_targets(targets)
+    targets_in, targets, coll_idx = _check_format_input_targets(targets)
+    n_members = np.diff([*coll_idx, len(targets)])  # flat targets per given target
 
     # Validate sources
     sources, _ = format_src_inputs(sources)
@@ -604,8 +630,8 @@ def getFT(
     src_path_lengths = [src._get_path_len() for src in sources]
     n_path = max(tgt_path_lengths + src_path_lengths)
 
-    # Validate and broadcast pivot to (n_tgt, n_path, 3) or None
-    pivot = _check_format_input_pivot(pivot, targets, n_path)
+    # Validate and broadcast pivot to (n_tgt_flat, n_path, 3) or None
+    pivot = _check_format_input_pivot(pivot, targets_in, n_members, n_path)
 
     # Validate eps
     _check_eps(eps)
