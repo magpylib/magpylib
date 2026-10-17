@@ -2793,3 +2793,64 @@ def test_force_equivalent_Cuboid_Strip_Sheet():
     assert max(errT12) < 0.0008
     assert max(errT13) < 0.0008
     assert max(errT23) < 1e-12
+
+
+def test_force_collection_pivot_is_the_body_centroid():
+    """pivot='centroid' on a Collection target takes the torque about the
+    Collection's centroid, so body and source torques about that point cancel
+    (#1018). Array pivots count the targets as given, a Collection as one."""
+    src = magpy.misc.Dipole(moment=(0, 50, 30), position=(0, 0.004, 0.012))
+    body = magpy.Collection(
+        magpy.magnet.Cuboid(
+            dimension=(0.01,) * 3,
+            polarization=(0, 0, 1),
+            position=(-0.02, 0, 0),
+            meshing=125,
+        ),
+        magpy.magnet.Cuboid(
+            dimension=(0.01,) * 3,
+            polarization=(0, 0, 1),
+            position=(0.03, 0, 0),
+            meshing=125,
+        ),
+    )
+    F, T = magpy.getFT(src, body)
+    F_explicit, T_explicit = magpy.getFT(src, body, pivot=body.centroid)
+    _, T_one_per_target = magpy.getFT(src, body, pivot=[body.centroid])
+    _, T_src = magpy.getFT(body, src, pivot=body.centroid)
+
+    assert np.allclose(F, F_explicit)
+    assert np.allclose(T, T_explicit)
+    assert np.allclose(T, T_one_per_target)
+    assert np.linalg.norm(T + T_src) < 1e-4 * np.linalg.norm(T)
+
+    # one pivot per magnet inside the Collection is no longer a valid shape
+    with pytest.raises(ValueError, match="a Collection counts as one"):
+        magpy.getFT(src, body, pivot=[body.centroid, body.centroid])
+
+    # a Collection on a path: its centroid follows, one pivot per path step
+    body.position = [(0, 0, 0), (0, 0, 0.001), (0, 0, 0.002)]
+    assert body.centroid.shape == (3, 3)
+    F_path, T_path = magpy.getFT(src, body)
+    assert F_path.shape == (3, 3)
+    assert np.allclose(T_path[0], T)
+
+    # a single target on a path takes its own centroid path as pivot
+    _, T_own = magpy.getFT(src, body, pivot=body.centroid)
+    np.testing.assert_allclose(T_own, T_path)
+
+    # a Collection whose own path is longer than its members' is sliced, not an error
+    coil = magpy.Collection(position=[(0, 0, 0), (0, 0, 1), (0, 0, 2), (0, 0, 3)])
+    loop = magpy.current.Circle(
+        diameter=0.02, current=1, meshing=20, position=(0, 0, 0.03)
+    )
+    coil.add(loop)
+    np.testing.assert_allclose(coil.centroid, (0, 0, 0.03))  # the members' path
+    _, T_coil = magpy.getFT(src, coil)
+    _, T_loop = magpy.getFT(src, loop)
+    np.testing.assert_allclose(T_coil, T_loop)  # pivot at the loop's centre, as alone
+
+    # mixed targets: t counts the Collection as one, like the output
+    F_mix, T_mix = magpy.getFT(src, [body, loop], pivot=[(0.005, 0, 0), loop.position])
+    assert F_mix.shape == (3, 2, 3)
+    assert np.allclose(T_mix[0, 0], T)
