@@ -39,10 +39,10 @@
   "… and k more" instead of disappearing
   ([#1007](https://github.com/magpylib/magpylib/pull/1007)).
 - **Breaking:** `getFT` results change for cylinders and tetrahedra at the same
-  `meshing`: cylinders get about `meshing` cells instead of up to twice as many,
-  each force point sits at its cell's true centroid, and `Tetrahedron` is cut
-  into the closest cube number of equal tetrahedra. A `Cuboid` triple
-  `(n1, n2, n3)` is stored as a tuple of ints
+  `meshing`: cylinders get near-cubic cells, as cuboids do, instead of up to
+  twice the requested count, each force point sits at its cell's true centroid,
+  and `Tetrahedron` is cut into the closest cube number of equal tetrahedra. A
+  `Cuboid` triple `(n1, n2, n3)` is stored as a tuple of ints
   ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
 - `show()` is about 3x faster, and a sensor showing its pixel field is read
   once, and not at all while its pixels are hidden

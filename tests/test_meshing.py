@@ -54,10 +54,10 @@ def test_cells_fill_the_magnet(magnet, meshing):
         (magpy.magnet.Cuboid(dimension=(1, 1, 1)), 2000, 2197, "cuboid"),
         (magpy.magnet.Cuboid(dimension=(3, 2, 1)), 100, 120, "cuboid"),
         (magpy.magnet.Cuboid(dimension=(3, 2, 1)), (4, 3, 2), 24, "cuboid"),
-        (magpy.magnet.Cylinder(dimension=(1, 1)), 200, 196, "cylinder_segment"),
+        (magpy.magnet.Cylinder(dimension=(1, 1)), 200, 168, "cylinder_segment"),
         (
             magpy.magnet.CylinderSegment(dimension=(0.95, 1, 0.5, 0, 360)),
-            8,
+            1,
             12,
             "cylinder_segment",
         ),
@@ -71,7 +71,7 @@ def test_cells_fill_the_magnet(magnet, meshing):
         "Block-100",
         "Cuboid-triple",
         "Cylinder-200",
-        "ThinTube-8",
+        "ThinTube-1",
         "Tetrahedron-20",
         "Tetrahedron-84",
         "Tetrahedron-286",
@@ -95,7 +95,7 @@ def test_cylinder_inner_ring_stays_a_cylinder():
     cells = cylinder._generate_mesh()["cells"]
     dims = cells["dimensions"]
     inner = (dims[:, 0] == 0) & (dims[:, 4] - dims[:, 3] == 360)
-    assert inner.sum() == 7
+    assert inner.sum() == 6
     np.testing.assert_allclose(cells["centroids"][inner, :2], 0, atol=1e-15)
 
 

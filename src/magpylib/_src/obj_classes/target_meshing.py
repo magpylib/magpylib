@@ -4,114 +4,40 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=too-many-function-args
 
-from itertools import pairwise, product
+from itertools import pairwise
 
 import numpy as np
 
 
-def _apportion_triple(triple, min_val=1, max_iter=30):
-    """Apportion values of a triple, so that the minimum value `min_val` is respected
-    and the product of all values remains the same.
-    Example: _apportion_triple([1, 2, 50], min_val=3)
-    -> [ 2.99999999  3.         11.11111113]
-    """
-    triple = np.abs(np.array(triple, dtype=float))
-    count = 0
-    while any(n < min_val for n in triple) and count < max_iter:
-        count += 1
-        amin, amax = triple.argmin(), triple.argmax()
-        factor = min_val / triple[amin]
-        if triple[amax] >= factor * min_val:
-            triple /= factor**0.5
-            triple[amin] *= factor**1.5
-    return triple
+def _near_cubic_divisions(sides, meshing):
+    """Divisions of a box into about ``meshing`` cells as close to cubes as possible.
 
-
-def _cells_from_dimension(
-    dim,
-    target_elems,
-    min_val=1,
-    strict_max=False,
-    parity=None,
-):
-    """Divide a dimension triple with a target scalar of elements, while apportioning
-    the number of elements based on the dimension proportions. The resulting divisions
-    are the closest to cubes.
+    The cell edge is h = (volume / meshing)^(1/3), and each side is cut into
+    round(side / h) divisions, at least 1. ``meshing=1`` gives one cell. getFT has
+    cut cuboids this way since 5.2.
 
     Parameters
     ----------
-    dim: array-like of length 3
-        Dimensions of the object to be divided.
-    target_elems: int,
-        Total number of elements as target for the procedure. Actual final number is
-        likely to differ.
-    min_val: int
-        Minimum value of the number of divisions per dimension.
-    strict_max: bool
-        If ``True``, the ``target_elem`` value becomes a strict maximum and the product of
-        the resulting triple will be strictly smaller than the target.
-    parity: {None, 'odd', 'even'}
-        All elements of the resulting triple will match the given parity. If ``None``, no
-        parity check is performed.
+    sides : array-like, shape (3,)
+        Side lengths of the box.
+    meshing : int
+        Target number of cells.
 
     Returns
     -------
-    numpy.ndarray of length 3
-        array corresponding of the number of divisions for each dimension
+    ndarray, shape (3,)
+        Number of divisions along each side.
 
     Examples
     --------
-    >>> print(_cells_from_dimension([1, 2, 6], 926, parity=None, strict_max=True))
-    [ 4  9 25]
-    >>> print(_cells_from_dimension([1, 2, 6], 926, parity=None, strict_max=False))
-    [ 4  9 26]
-    >>> print(_cells_from_dimension([1, 2, 6], 926, parity='odd', strict_max=True))
-    [ 3 11 27]
-    >>> print(_cells_from_dimension([1, 2, 6], 926, parity='odd', strict_max=False))
-    [ 5  7 27]
-    >>> print(_cells_from_dimension([1, 2, 6], 926, parity='even', strict_max=True))
-    [ 4  8 26]
-    >>> print(_cells_from_dimension([1, 2, 6], 926, parity='even', strict_max=False))
-    [ 4 10 24]
+    >>> print(_near_cubic_divisions((3, 2, 1), 100))
+    [8 5 3]
     """
-    elems = np.prod(target_elems)  # in case target_elems is an iterable
-
-    # define parity functions
-    if parity == "odd":
-        funcs = [
-            lambda x, add=add, fn=fn: int(2 * fn(x / 2) + add)
-            for add in (-1, 1)
-            for fn in (np.ceil, np.floor)
-        ]
-    elif parity == "even":
-        funcs = [lambda x, fn=fn: int(2 * fn(x / 2)) for fn in (np.ceil, np.floor)]
-    else:
-        funcs = [np.ceil, np.floor]
-
-    # make sure the number of elements is sufficient
-    elems = max(min_val**3, elems)
-
-    # float estimate of the elements while product=target_elems and proportions are kept
-    x, y, z = np.abs(dim)
-    a = x ** (2 / 3) * (elems / y / z) ** (1 / 3)
-    b = y ** (2 / 3) * (elems / x / z) ** (1 / 3)
-    c = z ** (2 / 3) * (elems / x / y) ** (1 / 3)
-    a, b, c = _apportion_triple((a, b, c), min_val=min_val)
-    epsilon = elems
-    # run all combinations of rounding methods, including parity matching to find the
-    # closest triple with the target_elems constrain
-    result = [funcs[0](k) for k in (a, b, c)]  # first guess
-    for fn in product(*[funcs] * 3):
-        res = [f(k) for f, k in zip(fn, (a, b, c), strict=False)]
-        epsilon_new = elems - np.prod(res)
-        if (
-            np.abs(epsilon_new) <= epsilon
-            and all(r >= min_val for r in res)
-            and (not strict_max or epsilon_new >= 0)
-        ):
-            epsilon = np.abs(epsilon_new)
-            result = res
-    return np.array(result).astype(int)
+    sides = np.abs(np.asarray(sides, dtype=float))
+    if meshing == 1:
+        return np.ones(3, dtype=int)
+    edge = (np.prod(sides) / meshing) ** (1 / 3)
+    return np.maximum(1, np.round(sides / edge)).astype(int)
 
 
 # CELL MESHERS ################################################################
@@ -143,11 +69,8 @@ def _cuboid_cells(dimension, meshing):
     dimension = np.asarray(dimension, dtype=float)
     if isinstance(meshing, tuple):
         divisions = np.array(meshing, dtype=int)
-    elif meshing == 1:
-        divisions = np.ones(3, dtype=int)
     else:
-        cell_edge = (np.prod(dimension) / meshing) ** (1 / 3)
-        divisions = np.maximum(1, np.round(dimension / cell_edge)).astype(int)
+        divisions = _near_cubic_divisions(dimension, meshing)
     cell_dim = dimension / divisions
     axes = [
         (np.arange(n) + 0.5) * d / n - d / 2
@@ -187,8 +110,8 @@ def _cylinder_segment_cells(dimension, meshing):
     """Split a cylinder segment into cylinder-segment cells.
 
     The segment is unrolled into a box (arc length at the mean radius, r2 - r1, h),
-    and that box is split with ``_cells_from_dimension`` into (nphi, nr, nh)
-    divisions. Each ring gets angular divisions in proportion to its middle radius,
+    and that box is cut into (nphi, nr, nh) near-cubic divisions, as a Cuboid is.
+    Each ring gets angular divisions in proportion to its middle radius,
     so that all cells have about the same arc length and the rings add up to
     nphi * nr cells. A thin ring gets more sectors where needed, so that each cell's
     centroid lies near the ring's middle radius. When the segment is a full cylinder
@@ -212,7 +135,7 @@ def _cylinder_segment_cells(dimension, meshing):
     """
     r1, r2, h, phi1, phi2 = (float(x) for x in dimension)
     arclen = (r1 + r2) * np.pi * (phi2 - phi1) / 360
-    nphi, nr, nh = _cells_from_dimension((arclen, r2 - r1, h), meshing)
+    nphi, nr, nh = _near_cubic_divisions((arclen, r2 - r1, h), meshing)
     radii = np.linspace(r1, r2, nr + 1)
     dh = h / nh
     zs = (np.arange(nh) + 0.5) * dh - h / 2

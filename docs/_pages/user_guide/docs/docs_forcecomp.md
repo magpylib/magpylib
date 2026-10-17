@@ -67,7 +67,7 @@ The `meshing` parameter is a positive integer: the target number of cells the ta
 | Class | `meshing` | Cells |
 |---|---|---|
 | `Cuboid` | target number of cells, or `(n1, n2, n3)` divisions along the sides | cuboids, as close to cubes as possible |
-| `Cylinder`, `CylinderSegment` | target number of cells | cylinder segments of about equal size: rings cut along the angle in proportion to their middle radius, thin rings with enough cuts to keep each cell's centroid inside them; the innermost ring of a full cylinder with at least 3 rings stays a cylinder |
+| `Cylinder`, `CylinderSegment` | target number of cells | cylinder segments as close to cubes as possible, as for `Cuboid`: rings cut along the angle in proportion to their middle radius, thin rings with enough cuts to keep each cell's centroid inside them; the innermost ring of a full cylinder with at least 3 rings stays a cylinder |
 | `Tetrahedron` | target number of cells, rounded to the closest cube number m³ | m³ tetrahedra of equal volume |
 | `TriangularMesh` | target number of cells | cubes on a regular grid inside the surface |
 | `Sphere`, `Dipole` | not needed | one point, exact |
