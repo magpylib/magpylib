@@ -133,7 +133,8 @@
   `getFT` torques about the centroid of such currents were off by up to a factor
   100; `Collection.dipole_moment` added its members' moments without turning
   them into one frame, and is now in the Collection's own frame, as a magnet's
-  is in its own. `describe()` raised for an open `Polyline` or `TriangleStrip`.
+  is in its own. `describe()` raised for an open `Polyline` or `TriangleStrip`
+  ([#1030](https://github.com/magpylib/magpylib/pull/1030)).
 
 ## [5.2.3] 2026-05-15
 
