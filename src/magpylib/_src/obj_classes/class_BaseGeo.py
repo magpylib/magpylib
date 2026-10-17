@@ -716,12 +716,17 @@ class BaseGeo(BaseTransform, ABC):
                         val = getattr(self, k)
                         if val is not None:
                             val = f"{len(val)} part{'s'[: len(val) ^ 1]}"
-                    elif isinstance(getattr(self, k), list | tuple | np.ndarray):
-                        val = np.array(getattr(self, k))
-                        if len(val.flatten()) > 20:
-                            val = f"shape{val.shape}"
                     else:
-                        val = getattr(self, k)
+                        try:
+                            val = getattr(self, k)
+                        except ValueError:
+                            # a derived property this object does not define, such
+                            # as the dipole moment of an open current path
+                            val = "not defined"
+                        if isinstance(val, list | tuple | np.ndarray):
+                            val = np.array(val)
+                            if len(val.flatten()) > 20:
+                                val = f"shape{val.shape}"
                     if isinstance(val, float):
                         val = f"{unit_prefix(val, precision=precision)}"
                     val = str(val).replace("\n", " ")
