@@ -333,6 +333,10 @@ Even with some implemented fail safes, such as a maximum frame rate and frame co
 Coupled subplots
 :::
 
+:::{versionchanged} 6.0
+A 2D panel shows outputs in one unit: `B` and `J` (T) apart from `H` and `M` (A/m).
+:::
+
 It is often tedious to integrate the Magpylib `show()` output into sub-plots as shown above, especially when dealing with animations and combinations of 2D and 3D plots.
 
 For this, Magpylib offers the possibility to show the sensor output along a path in addition to the 3D-output, and to place 2D and 3D outputs in subplots.

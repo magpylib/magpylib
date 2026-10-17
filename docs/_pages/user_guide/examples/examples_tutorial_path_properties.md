@@ -16,6 +16,10 @@ orphan: true
 
 # Path-Varying Properties
 
+:::{versionadded} 6.0
+Physical attributes along a path
+:::
+
 Paths are not restricted to motion. Any attribute listed in an object's `path_properties` can vary along the path, which makes it possible to model a changing excitation, a deforming geometry or a changing size - with the same vectorized computation that already handles movement.
 
 The technical description is in {ref}`docs-position-path-properties`. This page shows what it is good for.

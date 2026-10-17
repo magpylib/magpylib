@@ -16,6 +16,10 @@ orphan: true
 
 # Writing a custom display backend
 
+:::{versionadded} 6.0
+Third-party display backends
+:::
+
 The three built-in backends are not privileged: Matplotlib, Plotly and Pyvista all go through the same public contract a third party uses. This page is for someone writing another one; see [](guide-graphics) for using the built-in backends. Everything it names is importable from `magpylib.graphics.backend`.
 
 ```{code-cell} ipython3

@@ -8,6 +8,10 @@ Force and torque computation in Magpylib stands in contrast to the analytical mo
 -------------------------------------
 ## Force Interface
 
+:::{versionchanged} 6.0
+`meshing` is an argument of `getFT()`, no longer of the targets, and the torque on a `Collection` target is taken about the Collection's centroid.
+:::
+
 Force and torque are computed in the [object-oriented interface](docs-fieldcomp-oo) via the top level function **`getFT()`**
 
 ```python
@@ -64,6 +68,10 @@ print(f"torque: {np.round(T, decimals=2)} N*m")
 -------------------------------------
 (docs-forcecomp-meshing)=
 ## Meshing
+
+:::{versionchanged} 6.0
+Cylinders are cut into near-cubic cells and tetrahedra into equal ones, so their forces change at the same `meshing`.
+:::
 
 The `meshing` argument of `getFT()` is a positive integer: the target number of cells the target is cut into. One integer applies to every target; a dict keyed by target, `meshing={ring: 100, coil: 40, cube: (10, 10, 10)}`, gives each its own. Magnets are cut into cells of their own kind, and the force acts at the cell centroids with the cell volumes. Currents are cut into line or surface elements. The algorithms aim for uniform cells with aspect ratio close to 1, so the cell count is close to, but not always exactly, `meshing`. A bool is not a valid `meshing`, NumPy integers are.
 

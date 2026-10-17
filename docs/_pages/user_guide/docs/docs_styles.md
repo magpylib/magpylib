@@ -253,6 +253,10 @@ magpy.defaults.display.style.as_dict(flatten=True, separator=".")
 (examples-own-3d-models)=
 ## Custom 3D Models
 
+:::{versionchanged} 6.0
+`style.model3d.data` is a tuple; add traces with `add_trace()`.
+:::
+
 Each Magpylib object has a default 3D representation that is displayed with `show()`. It is possible to disable the default model and to provide Magpylib with a custom model.
 
 There are several reasons why this can be of interest. For example,  the integration of a [custom source](guide-docs-classes-custom-source) object that has its own geometry, to display a sensor in the form of a realistic package provided in CAD form, representation of a [Collection](guide-docs-classes-collections) as a parts holder, integration of environmental parts to the Magpylib 3D plotting scene, or simply highlighting an object when colors do not suffice.
