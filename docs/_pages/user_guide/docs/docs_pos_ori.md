@@ -194,6 +194,8 @@ print(np.shape(cube.dipole_moment))
 #   --> (2, 3)
 ```
 
+A Collection's `centroid`, `volume` and `dipole_moment` follow its members' paths the same way, padded to the longest.
+
 Practical examples are shown in {ref}`examples-tutorial-path-properties`.
 
 --------------------------
