@@ -44,7 +44,8 @@
   `meshing={ring: 100, coil: 40, cube: (10, 10, 10)}`, and a Collection key
   covers its members. The old constructor keyword raises with a pointer to the
   call, and so does `getFT` for a target given no value
-  ([#1017](https://github.com/magpylib/magpylib/issues/1017)).
+  ([#1017](https://github.com/magpylib/magpylib/issues/1017),
+  [#1025](https://github.com/magpylib/magpylib/pull/1025)).
 - **Breaking:** `getFT` results change for cylinders and tetrahedra at the same
   `meshing`: cylinders get near-cubic cells, as cuboids do, instead of up to
   twice the requested count, each force point sits at its cell's true centroid,
