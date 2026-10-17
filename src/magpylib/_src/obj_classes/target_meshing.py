@@ -123,8 +123,9 @@ def _cylinder_segment_cells(dimension, meshing):
     dimension : array-like, shape (5,)
         (r1, r2, h, phi1, phi2) with the angles in degrees. A full cylinder of
         diameter d is (0, d/2, h, 0, 360).
-    meshing : int
-        Target number of cells.
+    meshing : int | tuple of int, shape (3,)
+        Target number of cells, or the divisions (nphi, nr, nh) along the arc at the
+        mean radius, the radius and the height.
 
     Returns
     -------
@@ -135,7 +136,10 @@ def _cylinder_segment_cells(dimension, meshing):
     """
     r1, r2, h, phi1, phi2 = (float(x) for x in dimension)
     arclen = (r1 + r2) * np.pi * (phi2 - phi1) / 360
-    nphi, nr, nh = _near_cubic_divisions((arclen, r2 - r1, h), meshing)
+    if isinstance(meshing, tuple):
+        nphi, nr, nh = meshing
+    else:
+        nphi, nr, nh = _near_cubic_divisions((arclen, r2 - r1, h), meshing)
     radii = np.linspace(r1, r2, nr + 1)
     dh = h / nh
     zs = (np.arange(nh) + 0.5) * dh - h / 2
@@ -442,8 +446,8 @@ def generate_mesh_cylindersegment(r1, r2, h, phi1, phi2, magnetization, meshing)
         path position. A full cylinder has r1 = 0, phi1 = 0 and phi2 = 360.
     magnetization : ndarray, shape (p, 3)
         Magnetization vector per path position.
-    meshing : int
-        Target number of cells.
+    meshing : int | tuple of int, shape (3,)
+        Target number of cells, or the divisions (nphi, nr, nh).
 
     Returns
     -------

@@ -29,6 +29,22 @@ def check_meshing_count(value, obj, minimum=1, what=None):
     raise ValueError(msg)
 
 
+def check_meshing_count_or_triple(value, obj):
+    """Check a meshing that is a positive integer or a triple of them, and return
+    it as an int or a tuple of 3 ints."""
+    what = "a positive integer or a triple of positive integers"
+    if isinstance(value, list | tuple) or (
+        hasattr(value, "shape") and getattr(value, "ndim", 0) > 0
+    ):
+        if len(value) != 3 or any(
+            isinstance(v, list | tuple) or getattr(v, "ndim", 0) > 0 for v in value
+        ):
+            msg = f"Input meshing of {obj} must be {what}; instead received {value!r}."
+            raise ValueError(msg)
+        return tuple(check_meshing_count(v, obj, what=what) for v in value)
+    return check_meshing_count(value, obj, what=what)
+
+
 class BaseTarget(ABC):
     """Base class for Magpylib objects that can be targets of force computation.
 

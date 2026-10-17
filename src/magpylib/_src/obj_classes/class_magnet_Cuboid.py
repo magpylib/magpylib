@@ -16,7 +16,7 @@ from magpylib._src.obj_classes.class_BaseProperties import (
 )
 from magpylib._src.obj_classes.class_BaseTarget import (
     BaseTarget,
-    check_meshing_count,
+    check_meshing_count_or_triple,
 )
 from magpylib._src.obj_classes.target_meshing import generate_mesh_cuboid
 from magpylib._src.utility import unit_prefix
@@ -224,10 +224,4 @@ class Cuboid(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     def _validate_meshing(self, value):
         """Check a meshing input and return it normalised: a positive integer, or a
         tuple of 3 positive integers (the divisions along the sides)."""
-        what = "a positive integer or a triple of positive integers"
-        if isinstance(value, list | tuple | np.ndarray):
-            if np.shape(value) != (3,):
-                msg = f"Input meshing of {self} must be {what}; instead received {value!r}."
-                raise ValueError(msg)
-            return tuple(check_meshing_count(v, self, what=what) for v in value)
-        return check_meshing_count(value, self, what=what)
+        return check_meshing_count_or_triple(value, self)

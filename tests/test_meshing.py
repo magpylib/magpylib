@@ -56,6 +56,12 @@ def test_cells_fill_the_magnet(magnet, meshing):
         (magpy.magnet.Cuboid(dimension=(3, 2, 1)), (4, 3, 2), 24, "cuboid"),
         (magpy.magnet.Cylinder(dimension=(1, 1)), 200, 168, "cylinder_segment"),
         (
+            magpy.magnet.CylinderSegment(dimension=(1, 2, 1, 45, 123)),
+            (4, 2, 3),
+            24,
+            "cylinder_segment",
+        ),
+        (
             magpy.magnet.CylinderSegment(dimension=(0.95, 1, 0.5, 0, 360)),
             1,
             12,
@@ -71,6 +77,7 @@ def test_cells_fill_the_magnet(magnet, meshing):
         "Block-100",
         "Cuboid-triple",
         "Cylinder-200",
+        "Segment-triple",
         "ThinTube-1",
         "Tetrahedron-20",
         "Tetrahedron-84",
@@ -135,7 +142,8 @@ def test_tetrahedron_force_converges():
                 np.full((3, 3), 2),
             ]
         ],
-        (magpy.magnet.Cylinder(dimension=(1, 1)), (2, 2, 2)),
+        (magpy.magnet.Cylinder(dimension=(1, 1)), (2, 0, 2)),
+        (magpy.magnet.CylinderSegment(dimension=(1, 2, 1, 0, 90)), (2, 2)),
         (magpy.current.Circle(diameter=1, current=1), 3),
         (magpy.current.Polyline(vertices=[(0, 0, 0), (1, 0, 0)], current=1), True),
         (
@@ -167,6 +175,7 @@ def test_meshing_rejects_invalid_values(target, meshing):
         (magpy.magnet.Cuboid(dimension=(1, 1, 1)), np.int64(8), 8),
         (magpy.magnet.Cuboid(dimension=(1, 1, 1)), [2, 2, 2], (2, 2, 2)),
         (magpy.magnet.Cuboid(dimension=(1, 1, 1)), np.array([2, 3, 4]), (2, 3, 4)),
+        (magpy.magnet.Cylinder(dimension=(1, 1)), [8, 3, 2], (8, 3, 2)),
         (magpy.magnet.Cuboid(dimension=(1, 1, 1)), None, None),
         (magpy.current.Circle(diameter=1, current=1), np.int64(4), 4),
     ],
