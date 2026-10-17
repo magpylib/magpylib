@@ -8,6 +8,7 @@ The user guide provides detailed descriptions of the Magpylib API with many inte
 :caption: Getting Started
 guide_start_01_install.md
 guide_start_02_fundamentals.md
+guide_start_03_migration.md
 ```
 
 ```{toctree}
