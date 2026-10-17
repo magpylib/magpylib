@@ -50,7 +50,7 @@ A detailed overview of the force computation is found in {ref}`docs-forcecomp`. 
 
 * **`volume`**: property (read only) which returns the volume of magnet bodies.
 
-* **`dipole_moment`**: property (read only) which returns the dipole moment of magnet bodies and closed currents.
+* **`dipole_moment`**: property (read only) which returns the dipole moment of magnet bodies and closed currents, in the object's own frame like its `polarization`. A `Collection`'s is in the Collection's own frame, so `Dipole(moment=obj.dipole_moment, position=obj.centroid, orientation=obj.orientation)` stands for the object in its far field.
 
 * **`parent`**: property which references a [Collection](guide-docs-classes-collections) that the object is part of.
 

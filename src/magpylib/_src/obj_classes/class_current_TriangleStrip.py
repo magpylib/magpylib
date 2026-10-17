@@ -157,17 +157,18 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
         if self._vertices is None:
-            return self._position
-
-        # Compute mean for each path along vertex axis: shape (p, 3)
-        centroids = np.mean(self._vertices, axis=1)  # mean over vertices dimension
-
-        # Add position: shape (p, 3) + (p, 3)
-        centroids = centroids + self._position
-
-        if squeeze and len(centroids) == 1:
-            return centroids[0]
-        return centroids
+            centroid = np.array([0.0, 0.0, 0.0])
+            orientation, position = self._orientation, self._position
+        else:
+            # vertices are local coordinates: pair each step's vertices with its
+            # pose so the centroid turns with the object
+            synced = self._sync_path_lengths(("vertices", "position", "orientation"))
+            centroid = np.mean(synced["vertices"], axis=1)  # (p, 3)
+            orientation, position = synced["orientation"], synced["position"]
+        result = orientation.apply(centroid) + position
+        if squeeze and len(result) == 1:
+            return result[0]
+        return result
 
     def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""

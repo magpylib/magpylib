@@ -1111,15 +1111,24 @@ class Collection(BaseGeo, BaseCollection, BaseVolume, BaseDipoleMoment):
         return np.squeeze(centroid) if squeeze else centroid
 
     def _get_dipole_moment(self, squeeze=True):
-        """Return magnetic dipole moment of the body (A·m²); a nested Collection
-        counts once, members' paths are padded to the longest."""
-        moments = [
-            np.atleast_2d(member._get_dipole_moment(squeeze=False))
-            for member in self._members()
-            if hasattr(member, "_get_dipole_moment")
-        ]
+        """Return magnetic dipole moment of the body (A·m²) in the Collection's own
+        frame, as a magnet's is in its own; a nested Collection counts once,
+        members' paths are padded to the longest.
+
+        Each member reports its moment in its own frame, so it is turned by the
+        member's orientation into the global frame before the sum, and the sum
+        by the Collection's orientation into the Collection's frame."""
+        moments = []
+        for member in self._members():
+            if not hasattr(member, "_get_dipole_moment"):
+                continue
+            own = np.atleast_2d(member._get_dipole_moment(squeeze=False))
+            n = max(len(own), len(member._orientation))
+            orientation = pad_path_property(member._orientation, n)
+            moments.append(orientation.apply(pad_path_property(own, n)))
         if not moments:
             return np.zeros(3) if squeeze else np.zeros((1, 3))
-        n_path = max(len(m) for m in moments)
+        n_path = max(len(self._orientation), *[len(m) for m in moments])
         moment = sum(pad_path_property(m, n_path) for m in moments)
+        moment = pad_path_property(self._orientation, n_path).inv().apply(moment)
         return np.squeeze(moment) if squeeze else moment
