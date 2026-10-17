@@ -14,9 +14,11 @@ How finely a target is cut describes one computation, not the magnet, so it
 moved from the target objects to the call
 ([#1017](https://github.com/magpylib/magpylib/issues/1017)). An integer applies
 to every target, including each magnet inside a Collection. A dict keyed by
-target gives each its own value, a Collection key covers its members, and a
-`Cuboid` value may be a triple of divisions along its sides. `Dipole` and
-`Sphere` targets are exact and need none.
+target gives each its own value, and a Collection key covers its members. A
+`Cuboid` value may also be a triple `(n1, n2, n3)` of divisions along its
+sides, and a `Cylinder` or `CylinderSegment` value a triple `(nphi, nr, nh)`
+along the arc, the radius and the height. `Dipole` and `Sphere` targets are
+exact and need none.
 
 ```python
 # version 5
@@ -62,8 +64,9 @@ A single target on a path may also pass its own centroid path, shape `(p, 3)`.
 
 ### Cylinder and tetrahedron forces change at the same `meshing`
 
-Cylinders and cylinder segments get about `meshing` cells instead of up to twice
-as many, each force point sits at its cell's true centroid, and a `Tetrahedron`
+Cylinders and cylinder segments are cut into near-cubic cells, as cuboids are,
+instead of getting up to twice the requested count, each force point sits at
+its cell's true centroid, and a `Tetrahedron`
 is cut into the closest cube number of equal tetrahedra, so that more cells no
 longer make its force worse
 ([#1023](https://github.com/magpylib/magpylib/pull/1023)). `Cuboid` results are
