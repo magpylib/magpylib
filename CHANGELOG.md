@@ -13,7 +13,8 @@
   objects apart, and can reuse magpylib's sensor-pixel helpers
   ([#973](https://github.com/magpylib/magpylib/pull/973),
   [#999](https://github.com/magpylib/magpylib/pull/999),
-  [#1011](https://github.com/magpylib/magpylib/pull/1011)).
+  [#1011](https://github.com/magpylib/magpylib/pull/1011),
+  [#1029](https://github.com/magpylib/magpylib/pull/1029)).
 - Style and defaults expose `schema()`, `get()`/`set()` and `observe()`, for
   tools that build GUIs on top
   ([#967](https://github.com/magpylib/magpylib/pull/967),
