@@ -161,8 +161,8 @@ def test_tetrahedron_force_converges():
     ],
 )
 def test_meshing_rejects_invalid_values(target, meshing):
-    """A meshing is a positive integer, not a bool, above the class minimum; a Cuboid
-    also takes a triple of them (#1004)."""
+    """A meshing is a positive integer, not a bool, above the class minimum; a
+    Cuboid, Cylinder or CylinderSegment also takes a triple of them (#1004)."""
     with pytest.raises(ValueError, match="Input meshing of"):
         target._validate_meshing(meshing)
 
@@ -215,10 +215,14 @@ def test_meshing_is_an_argument_of_getFT():
     F_coll, _ = getFT(src, coll, meshing={coll: 8})
     F_mixed, _ = getFT(src, coll, meshing={coll: 8, cube: (2, 2, 2)})
     F_both, _ = getFT(src, [cube, coll], meshing={coll: 8})  # the key covers both
+    cyl = magpy.magnet.Cylinder(dimension=(1, 1), polarization=POL)
+    F_tri, _ = getFT(src, [cube, cyl], meshing=(4, 2, 2))  # every target cuts it
+    F_tri_dict, _ = getFT(src, [cube, cyl], meshing={cube: (4, 2, 2), cyl: (4, 2, 2)})
     np.testing.assert_allclose(F_int, F_dict)
     np.testing.assert_allclose(F_coll, F_int.sum(axis=0))
     np.testing.assert_allclose(F_mixed, F_dict.sum(axis=0))
     np.testing.assert_allclose(F_both, [F_int[0], F_int.sum(axis=0)])
+    np.testing.assert_allclose(F_tri, F_tri_dict)
     assert getFT(src, sphere)[0].shape == (3,)  # exact targets need no meshing
     assert getFT(src, [sphere, cube], meshing={cube: 1})[0].shape == (2, 3)
 
@@ -237,9 +241,9 @@ def test_meshing_is_an_argument_of_getFT():
         )
     with pytest.raises(ValueError, match="needs no meshing"):
         getFT(src, [sphere, cube], meshing={sphere: 5, cube: 1})
-    with pytest.raises(ValueError, match="only cuts a Cuboid"):
+    with pytest.raises(ValueError, match="only cuts a Cuboid, Cylinder"):
         getFT(src, coll, meshing={coll: (2, 2, 2)})
-    with pytest.raises(ValueError, match="only cuts a Cuboid"):
+    with pytest.raises(ValueError, match="only cuts a Cuboid, Cylinder"):
         getFT(src, [cube, loop], meshing=(2, 2, 2))
     with pytest.raises(ValueError, match="Input meshing of"):
         getFT(src, loop, meshing=True)

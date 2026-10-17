@@ -42,6 +42,12 @@ def _resolve_meshing(meshing, flat_targets, given, keyable):
         mesh, and the given Collections and their nested Collections.
     """
     from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid  # noqa: PLC0415
+    from magpylib._src.obj_classes.class_magnet_Cylinder import (  # noqa: PLC0415
+        Cylinder,
+    )
+    from magpylib._src.obj_classes.class_magnet_CylinderSegment import (  # noqa: PLC0415
+        CylinderSegment,
+    )
 
     needs = [_needs_mesh(t) for t in flat_targets]
     if isinstance(meshing, dict):
@@ -87,10 +93,13 @@ def _resolve_meshing(meshing, flat_targets, given, keyable):
                 "dict with one value per target."
             )
             raise ValueError(msg)
-        if isinstance(value, list | tuple | np.ndarray) and not isinstance(t, Cuboid):
+        if isinstance(value, list | tuple | np.ndarray) and not isinstance(
+            t, Cuboid | Cylinder | CylinderSegment
+        ):
             msg = (
-                f"Input meshing {value!r} for {t}: a triple (n1, n2, n3) only cuts "
-                "a Cuboid; give an integer, or a dict with one value per target."
+                f"Input meshing {value!r} for {t}: a triple only cuts a Cuboid, "
+                "Cylinder or CylinderSegment; give an integer, or a dict with one "
+                "value per target."
             )
             raise ValueError(msg)  # noqa: TRY004  # every meshing error is a ValueError
         values.append(t._validate_meshing(value))
@@ -635,9 +644,11 @@ def getFT(
         cells (magnets) or segments (currents). An integer applies to every
         target, including each magnet inside a Collection. A dict keyed by
         target gives one value per target, ``meshing={ring: 100, coil: 40}``;
-        a Collection key covers its members, and a Cuboid value may be a triple
-        ``(n1, n2, n3)`` of divisions along its sides. A bare triple applies when
-        every meshed target is a Cuboid. Required for every target but ``Dipole``
+        a Collection key covers its members. A Cuboid value may be a triple
+        ``(n1, n2, n3)`` of divisions along its sides, and a Cylinder or
+        CylinderSegment value a triple ``(nphi, nr, nh)`` of divisions along the
+        arc, the radius and the height. A bare triple applies when every meshed
+        target takes one. Required for every target but ``Dipole``
         and ``Sphere``, which are exact. Each class documents what a value means
         for it and its minimum, such as 4 for a ``Circle``.
     pivot : 'centroid' | None | array-like, shape (3,), (t, 3), (t, p, 3) or (p, 3), default 'centroid'

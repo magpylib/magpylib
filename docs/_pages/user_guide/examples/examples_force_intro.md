@@ -153,7 +153,7 @@ Give `meshing` an integer representing the target number of mesh cells. The algo
 What `meshing` means for each class, and the cells it produces, is listed in the [force computation docs](docs-forcecomp-meshing). In short:
 
 - `Sphere` and `Dipole`: no meshing required (exact result from 1 point at the center)
-- magnets: `meshing` is the target number of cells of the magnet's own kind, and the force acts at the cell centroids. `Cuboid` also accepts `meshing=(n1, n2, n3)` for an explicit subdivision, `Tetrahedron` is cut into the closest cube number of equal cells.
+- magnets: `meshing` is the target number of cells of the magnet's own kind, and the force acts at the cell centroids. `Cuboid` also accepts a triple `(n1, n2, n3)` for an explicit subdivision, `Cylinder` and `CylinderSegment` a triple `(nphi, nr, nh)`, `Tetrahedron` is cut into the closest cube number of equal cells.
 - `Circle`: minimum `meshing=4` (segments around the circumference)
 - `Polyline`: fewer points than line segments warns and uses one point per segment
 - `TriangleStrip` and `TriangleSheet`: minimum meshing must equal or exceed the number of faces
