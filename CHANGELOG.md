@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [6.0.0rc0] 2026-10-17
 
 ### Added
 
@@ -11,7 +11,9 @@
   ship it through the `magpylib.backends` entry point. Backends receive a typed
   `Scene`, declare what they can draw and which options they take, can tell
   objects apart, and can reuse magpylib's sensor-pixel helpers
-  ([#973](https://github.com/magpylib/magpylib/pull/973),
+  ([#970](https://github.com/magpylib/magpylib/pull/970),
+  [#973](https://github.com/magpylib/magpylib/pull/973),
+  [#978](https://github.com/magpylib/magpylib/pull/978),
   [#999](https://github.com/magpylib/magpylib/pull/999),
   [#1011](https://github.com/magpylib/magpylib/pull/1011)).
 - Style and defaults expose `schema()`, `get()`/`set()` and `observe()`, for
