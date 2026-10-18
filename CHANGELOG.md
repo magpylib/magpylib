@@ -1,154 +1,124 @@
 # Changelog
 
-## [Unreleased]
+## [6.0.0rc0] 2026-10-18
 
 ### Added
 
-- Physical properties such as `current`, `dimension` and `polarization` can vary
-  along a path, and `obj.path_properties` lists which ones can
+- Physical properties such as `current`, `dimension` or `polarization` can vary
+  along a path; `obj.path_properties` lists them, and derived properties such as
+  `dipole_moment` follow the path
   ([#916](https://github.com/magpylib/magpylib/pull/916)).
-- Third-party display backends: register one with `magpy.register_backend()` or
-  ship it through the `magpylib.backends` entry point. Backends receive a typed
-  `Scene`, declare what they can draw and which options they take, can tell
-  objects apart, and can reuse magpylib's sensor-pixel helpers
-  ([#973](https://github.com/magpylib/magpylib/pull/973),
+- Third-party display backends, registered with `magpy.register_backend()` or a
+  `magpylib.backends` entry point, see the backend guide
+  ([#970](https://github.com/magpylib/magpylib/pull/970),
+  [#973](https://github.com/magpylib/magpylib/pull/973),
+  [#978](https://github.com/magpylib/magpylib/pull/978),
   [#999](https://github.com/magpylib/magpylib/pull/999),
   [#1011](https://github.com/magpylib/magpylib/pull/1011),
   [#1029](https://github.com/magpylib/magpylib/pull/1029)).
-- Style and defaults expose `schema()`, `get()`/`set()` and `observe()`, for
-  tools that build GUIs on top
+- Style and defaults expose `schema()`, `get()`/`set()` and `observe()` for GUI
+  tools, and `defaults.display.units.length` and
+  `defaults.display.legend.maxitems` set `show()`'s defaults
   ([#967](https://github.com/magpylib/magpylib/pull/967),
-  [#987](https://github.com/magpylib/magpylib/pull/987)).
-- Defaults for `show(units_length=...)` and `show(legend_maxitems=...)`:
-  `magpy.defaults.display.units.length` and
-  `magpy.defaults.display.legend.maxitems`
-  ([#973](https://github.com/magpylib/magpylib/pull/973),
+  [#973](https://github.com/magpylib/magpylib/pull/973),
+  [#987](https://github.com/magpylib/magpylib/pull/987),
   [#1007](https://github.com/magpylib/magpylib/pull/1007)).
 
 ### Changed
 
-- **Breaking:** a 2D panel no longer mixes outputs in T (`B`, `J`) with outputs
-  in A/m (`H`, `M`): give them separate panels
-  ([#1010](https://github.com/magpylib/magpylib/pull/1010)).
-- **Breaking:** `style.model3d.data` is a tuple: use `data = [*data, trace]` or
-  `add_trace()` instead of `data.append(trace)`
-  ([#987](https://github.com/magpylib/magpylib/pull/987)).
-- **Breaking:** invalid style and defaults values raise `ValueError` instead of
-  `AssertionError`, and number-valued style properties reject booleans
-  ([#967](https://github.com/magpylib/magpylib/pull/967)).
-- **Breaking:** past `legend_maxitems`, the legend lists its first entries and
-  "… and k more" instead of disappearing
-  ([#1007](https://github.com/magpylib/magpylib/pull/1007)).
-- **Breaking:** `meshing` is an argument of `getFT`, not a property of the
-  targets: `getFT(sources, targets, meshing=100)` cuts every target, a dict
-  keyed by target gives each its own value,
-  `meshing={ring: 100, coil: 40, cube: (10, 10, 10)}`, and a Collection key
-  covers its members. The old constructor keyword raises with a pointer to the
-  call, and so does `getFT` for a target given no value
-  ([#1017](https://github.com/magpylib/magpylib/issues/1017),
-  [#1025](https://github.com/magpylib/magpylib/pull/1025)).
-- **Breaking:** `getFT` results change for cylinders and tetrahedra at the same
-  `meshing`: cylinders get near-cubic cells, as cuboids do, instead of up to
-  twice the requested count, each force point sits at its cell's true centroid,
-  and `Tetrahedron` is cut into the closest cube number of equal tetrahedra. A
-  `Cuboid` triple `(n1, n2, n3)` is normalised to a tuple of ints, and
-  `Cylinder` and `CylinderSegment` take a triple `(nphi, nr, nh)` too
-  ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
-- **Breaking:** `getFT` torques on a Collection target are taken about the
-  Collection's centroid, so they are the torque on one rigid body; before, each
-  magnet's torque was taken about its own centroid and the sum was not. Array
-  pivots now count the targets as given, a Collection as one, like the output
-  does. A Collection's `centroid` and `volume` count a nested Collection once,
-  the centroid follows its members' paths, and a Collection without volume, such
-  as a coil of current loops, has the mean of its members' centroids instead of
-  its own position ([#1018](https://github.com/magpylib/magpylib/issues/1018),
-  [#1024](https://github.com/magpylib/magpylib/pull/1024)).
-- Magpylib's input errors are `ValueError`s, so `except ValueError` catches
-  them, and a `TriangleSheet` whose faces do not match its vertices raises
-  `ValueError` instead of `IndexError`
-  ([#1031](https://github.com/magpylib/magpylib/pull/1031)).
-- `show()` is about 3x faster, and a sensor showing its pixel field is read
-  once, and not at all while its pixels are hidden
-  ([#967](https://github.com/magpylib/magpylib/pull/967),
-  [#1022](https://github.com/magpylib/magpylib/pull/1022)).
-- Misspelled keyword arguments are no longer ignored: `getB()`, `getH()`,
-  `getJ()` and `getM()` raise `TypeError`, and `show()` raises for its own, such
-  as `animation_tme=`. `show()` warns about options the backend does not
-  declare, and a `fig_*` or `show_*` argument its library rejects raises the
-  library's error, with a note naming the argument
+- **Breaking:** force and torque (`getFT`)
+  - `meshing` is an argument of `getFT`, not of the targets: an integer for all
+    targets or a dict per target, `meshing={ring: 100, coil: 40}`. The old
+    constructor keyword raises with a pointer to the call
+    ([#1017](https://github.com/magpylib/magpylib/issues/1017),
+    [#1025](https://github.com/magpylib/magpylib/pull/1025)).
+  - Cylinders get near-cubic cells, tetrahedra equal sub-tetrahedra, and forces
+    act at the true cell centroids, so results for these classes change at the
+    same `meshing`. `Cylinder` and `CylinderSegment` take a triple
+    `(nphi, nr, nh)` ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
+  - The torque on a Collection target is taken about the Collection's centroid,
+    as for one rigid body, and array pivots count a Collection as one target. A
+    Collection without volume, such as a coil, has the mean of its members'
+    centroids as centroid
+    ([#1018](https://github.com/magpylib/magpylib/issues/1018),
+    [#1024](https://github.com/magpylib/magpylib/pull/1024)).
+- **Breaking:** display and style
+  - A 2D panel no longer mixes outputs in T (`B`, `J`) and in A/m (`H`, `M`)
+    ([#1010](https://github.com/magpylib/magpylib/pull/1010)).
+  - `style.model3d.data` is a tuple: use `add_trace()` instead of
+    `data.append()` ([#987](https://github.com/magpylib/magpylib/pull/987)).
+  - Invalid style values raise `ValueError` instead of `AssertionError`, and
+    number-valued style properties reject booleans
+    ([#967](https://github.com/magpylib/magpylib/pull/967)).
+  - Past `legend_maxitems`, the legend shows its first entries and "… and k
+    more" instead of disappearing
+    ([#1007](https://github.com/magpylib/magpylib/pull/1007)).
+- **Breaking:** misspelled keyword arguments of `getB()`, `getH()`, `getJ()`,
+  `getM()` and `show()` raise instead of being ignored
   ([#973](https://github.com/magpylib/magpylib/pull/973),
   [#1005](https://github.com/magpylib/magpylib/pull/1005),
   [#1011](https://github.com/magpylib/magpylib/pull/1011),
   [#1014](https://github.com/magpylib/magpylib/pull/1014)).
-- Derived properties such as `dipole_moment` gain a path axis when their inputs
-  vary along the path ([#916](https://github.com/magpylib/magpylib/pull/916)).
+- Magpylib's input errors are `ValueError`s
+  ([#1031](https://github.com/magpylib/magpylib/pull/1031)).
+- `show()` is about 3x faster
+  ([#967](https://github.com/magpylib/magpylib/pull/967),
+  [#1022](https://github.com/magpylib/magpylib/pull/1022)).
 
 ### Deprecated
 
-- `barycenter` of `CylinderSegment`, `Tetrahedron`, `TriangularMesh` and
-  `Triangle`, in favour of `centroid`
+- `barycenter`, in favor of `centroid`
   ([#916](https://github.com/magpylib/magpylib/pull/916),
   [#1031](https://github.com/magpylib/magpylib/pull/1031)).
-- `getFT(..., return_mesh=True)`, which returns the force mesh instead of force
-  and torque; a function returning a target's cells is planned
-  ([#1027](https://github.com/magpylib/magpylib/issues/1027),
+- `getFT(..., return_mesh=True)`; a function returning a target's cells is
+  planned ([#1027](https://github.com/magpylib/magpylib/issues/1027),
   [#1032](https://github.com/magpylib/magpylib/pull/1032)).
 
 ### Removed
 
 - **Breaking:** `getB("Cuboid", ...)` and `getH("Cuboid", ...)`, deprecated in
-  5.2: use `magpylib.func`, e.g. `magpy.func.cuboid_field(...)`
+  5.2: use `magpylib.func`
   ([#1005](https://github.com/magpylib/magpylib/pull/1005)).
-- **Breaking:** the deprecated `magnetization.size` key from `as_dict()`
+- **Breaking:** the deprecated `magnetization.size` key of `as_dict()`
   ([#967](https://github.com/magpylib/magpylib/pull/967)).
-- **Breaking:** the `meshreport` argument of `getFT`, which logged the mesh size
-  where it is not shown by default
+- **Breaking:** `getFT(..., meshreport=True)`
   ([#1032](https://github.com/magpylib/magpylib/pull/1032)).
 
 ### Fixed
 
-- Display: animations with magnetization arrows lost the arrows after the first
-  frame on Matplotlib, and their legend in every frame but the last;
-  `show(markers=...)` raised beside a sensor showing its pixel field; Matplotlib
-  could not draw a pixel field as arrows, a pixel field reading nothing raised
-  with `shownull=False`, Matplotlib and Pyvista could not draw some of the
-  allowed line styles, such as `'loosely dotted'`, and a sensor styled to show
-  its pixel field got a box round its pixels when there was nothing to read
-  ([#1013](https://github.com/magpylib/magpylib/pull/1013),
+- Display: arrows and legends in Matplotlib animations, pixel fields, 2D panel
+  legends and axis titles, `show(title=...)` and backend arguments that were
+  ignored, some allowed line styles, `show(markers=...)` given as an array,
+  `CustomSource` in Plotly, and Pyvista web exports; drawing no longer sets
+  `faces` and `mesh` on a `TriangleStrip` or `TriangleSheet`
+  ([#973](https://github.com/magpylib/magpylib/pull/973),
+  [#988](https://github.com/magpylib/magpylib/pull/988),
+  [#1010](https://github.com/magpylib/magpylib/pull/1010),
+  [#1013](https://github.com/magpylib/magpylib/pull/1013),
   [#1014](https://github.com/magpylib/magpylib/pull/1014),
   [#1021](https://github.com/magpylib/magpylib/pull/1021),
-  [#1022](https://github.com/magpylib/magpylib/pull/1022)).
-- 2D panels: `style_legend_show=False` left their curves in the legend, their
-  axes were untitled, and Plotly's legend toggled the curves of sensors labelled
-  alike together ([#1010](https://github.com/magpylib/magpylib/pull/1010),
-  [#1014](https://github.com/magpylib/magpylib/pull/1014)).
-- Display: `show(title=...)` and backend arguments such as `plotly_renderer=...`
-  were ignored, `show(animation=2.5)` and `style.model3d` models given as
-  positional `args` raised, Pyvista silently dropped models addressed to it,
-  which it now warns about, and Plotly drew `CustomSource` as a circle
-  ([#973](https://github.com/magpylib/magpylib/pull/973),
-  [#1014](https://github.com/magpylib/magpylib/pull/1014)).
-- Style: colors given as lists or arrays, such as `[0.1, 0.2, 0.3]`, raised
-  `TypeError`, and `style_line={...}` discarded a `style_line_color=...` given
-  beside it ([#967](https://github.com/magpylib/magpylib/pull/967),
-  [#1014](https://github.com/magpylib/magpylib/pull/1014)).
-- Pyvista face colors broke web scene exports
-  ([#988](https://github.com/magpylib/magpylib/pull/988)).
-- A wrong observer or source, such as a JAX array or a misspelled item in a
-  list, was reported as "No observers provided" or "No sources provided"
-  ([#1002](https://github.com/magpylib/magpylib/pull/1002)).
-- `Tetrahedron` force meshes were biased, so more mesh points could give a less
-  accurate force ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
-- Invalid `meshing` values such as `True`, `(-1, 2, 2)` or `(0, 0, 0)` were
-  accepted and gave wrong forces, while NumPy integers were refused
-  ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
-- Derived properties in the wrong frame: the `centroid` of a rotated `Polyline`,
-  `TriangleStrip`, `TriangleSheet` or `Sensor` ignored its orientation, so
-  `getFT` torques about the centroid of such currents were off by up to a factor
-  100; `Collection.dipole_moment` added its members' moments without turning
-  them into one frame, and is now in the Collection's own frame, as a magnet's
-  is in its own. `describe()` raised for an open `Polyline` or `TriangleStrip`
+  [#1022](https://github.com/magpylib/magpylib/pull/1022),
+  [#1037](https://github.com/magpylib/magpylib/pull/1037),
+  [#1039](https://github.com/magpylib/magpylib/pull/1039)).
+- Style: colors given as lists or arrays raised, `style_line={...}` discarded a
+  `style_line_color=...` beside it, and `style.pixel.field.source` accepted an
+  unknown field such as `"Bq"`
+  ([#967](https://github.com/magpylib/magpylib/pull/967),
+  [#1014](https://github.com/magpylib/magpylib/pull/1014),
+  [#1037](https://github.com/magpylib/magpylib/pull/1037)).
+- Force: biased `Tetrahedron` meshes and invalid `meshing` values gave wrong
+  forces ([#1023](https://github.com/magpylib/magpylib/pull/1023)); the centroid
+  of a rotated `Polyline`, `TriangleStrip`, `TriangleSheet` or `Sensor` ignored
+  its orientation, so torques about it were wrong
   ([#1030](https://github.com/magpylib/magpylib/pull/1030)).
+- `Collection.dipole_moment` mixed its members' frames and is now in the
+  Collection's own frame; `describe()` raised for an open `Polyline` or
+  `TriangleStrip`; a `TriangularMesh` kept the results of its mesh checks after
+  its `faces` or `vertices` changed
+  ([#1030](https://github.com/magpylib/magpylib/pull/1030),
+  [#1037](https://github.com/magpylib/magpylib/pull/1037)).
+- A wrong observer or source was reported as "No observers provided" or "No
+  sources provided" ([#1002](https://github.com/magpylib/magpylib/pull/1002)).
 
 ## [5.2.3] 2026-05-15
 
