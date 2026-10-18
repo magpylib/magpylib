@@ -88,18 +88,24 @@
 
 - Display: arrows and legends in Matplotlib animations, pixel fields, 2D panel
   legends and axis titles, `show(title=...)` and backend arguments that were
-  ignored, some allowed line styles, `CustomSource` in Plotly, and Pyvista web
-  exports ([#973](https://github.com/magpylib/magpylib/pull/973),
+  ignored, some allowed line styles, `show(markers=...)` given as an array,
+  `CustomSource` in Plotly, and Pyvista web exports; drawing no longer sets
+  `faces` and `mesh` on a `TriangleStrip` or `TriangleSheet`
+  ([#973](https://github.com/magpylib/magpylib/pull/973),
   [#988](https://github.com/magpylib/magpylib/pull/988),
   [#1010](https://github.com/magpylib/magpylib/pull/1010),
   [#1013](https://github.com/magpylib/magpylib/pull/1013),
   [#1014](https://github.com/magpylib/magpylib/pull/1014),
   [#1021](https://github.com/magpylib/magpylib/pull/1021),
-  [#1022](https://github.com/magpylib/magpylib/pull/1022)).
-- Style: colors given as lists or arrays raised, and `style_line={...}`
-  discarded a `style_line_color=...` beside it
+  [#1022](https://github.com/magpylib/magpylib/pull/1022),
+  [#1037](https://github.com/magpylib/magpylib/pull/1037),
+  [#1039](https://github.com/magpylib/magpylib/pull/1039)).
+- Style: colors given as lists or arrays raised, `style_line={...}` discarded a
+  `style_line_color=...` beside it, and `style.pixel.field.source` accepted an
+  unknown field such as `"Bq"`
   ([#967](https://github.com/magpylib/magpylib/pull/967),
-  [#1014](https://github.com/magpylib/magpylib/pull/1014)).
+  [#1014](https://github.com/magpylib/magpylib/pull/1014),
+  [#1037](https://github.com/magpylib/magpylib/pull/1037)).
 - Force: biased `Tetrahedron` meshes and invalid `meshing` values gave wrong
   forces ([#1023](https://github.com/magpylib/magpylib/pull/1023)); the centroid
   of a rotated `Polyline`, `TriangleStrip`, `TriangleSheet` or `Sensor` ignored
@@ -107,7 +113,10 @@
   ([#1030](https://github.com/magpylib/magpylib/pull/1030)).
 - `Collection.dipole_moment` mixed its members' frames and is now in the
   Collection's own frame; `describe()` raised for an open `Polyline` or
-  `TriangleStrip` ([#1030](https://github.com/magpylib/magpylib/pull/1030)).
+  `TriangleStrip`; a `TriangularMesh` kept the results of its mesh checks after
+  its `faces` or `vertices` changed
+  ([#1030](https://github.com/magpylib/magpylib/pull/1030),
+  [#1037](https://github.com/magpylib/magpylib/pull/1037)).
 - A wrong observer or source was reported as "No observers provided" or "No
   sources provided" ([#1002](https://github.com/magpylib/magpylib/pull/1002)).
 
