@@ -1284,6 +1284,15 @@ def test_the_pixel_helpers_are_public():
     assert colors(probe, fields[probe]) == ["#b2beb5", "#440154"]
     assert colors(magpy.Sensor()) == []
 
+    norms = [[0, 1, 2, 4]]  # 0 reads nothing
+    scale = public_backend.scaled_norms
+    np.testing.assert_allclose(scale(norms, "linear"), [[np.nan, 0, 1 / 3, 1]])
+    np.testing.assert_allclose(
+        scale(norms, "linear", minimum=0.1), [[np.nan, 0.1, 0.4, 1]]
+    )
+    with pytest.raises(ValueError, match="scaling"):
+        scale(norms, "cubic")
+
     colors = public_backend.colors_from_colorscale
     assert colors([0, 1, np.nan], "Viridis", cmin=0, cmax=1) == [
         "#440154",

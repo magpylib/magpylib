@@ -16,8 +16,8 @@ from scipy.spatial.distance import pdist
 from scipy.spatial.transform import Rotation as RotScipy
 
 from magpylib._src.display.backend_tools import (
-    _scale_pixel_norms,
     colors_from_colorscale,
+    scaled_norms,
 )
 from magpylib._src.display.sensor_mesh import get_sensor_mesh
 from magpylib._src.display.traces_base import make_Arrow as make_BaseArrow
@@ -693,19 +693,19 @@ def make_TriangularMesh(
 def _apply_scaling_transformation(
     norms, scaling_type, is_null_mask, path_ind, min_=None
 ):
-    scaled_norms = norms.copy()
+    scaled = norms.copy()
     log_iterations = (
         int(scaling_type[4])
         if scaling_type.startswith("log^")
         else scaling_type.count("log")
     )
     for _ in range(log_iterations):
-        scaled_norms += np.nanmin(scaled_norms) + 1  # shift to positive range
-        scaled_norms[~is_null_mask] = np.log(scaled_norms[~is_null_mask])
-    scaled_norms /= np.nanmax(scaled_norms)
+        scaled += np.nanmin(scaled) + 1  # shift to positive range
+        scaled[~is_null_mask] = np.log(scaled[~is_null_mask])
+    scaled /= np.nanmax(scaled)
     if min_ is not None:
-        scaled_norms = min_ + scaled_norms * (1 - min_)
-    return scaled_norms[path_ind]
+        scaled = min_ + scaled * (1 - min_)
+    return scaled[path_ind]
 
 
 def make_Pixels(
@@ -877,9 +877,9 @@ def _scaled_pixel_sizes(size, norms, field_style, path_ind):
     pixel that reads nothing keeps it. `size` itself under ``"uniform"``."""
     if field_style.sizescaling == "uniform":
         return size
-    factors = _scale_pixel_norms(
-        norms, field_style.sizescaling, minimum=field_style.sizemin
-    )[path_ind]
+    factors = scaled_norms(norms, field_style.sizescaling, minimum=field_style.sizemin)[
+        path_ind
+    ]
     factors[np.isnan(factors)] = 1  # keep null sizes unscaled
     return size * factors
 
@@ -892,7 +892,7 @@ def _scaled_pixel_colors(color, norms, field_style, path_ind):
     if field_style.colorscaling == "uniform":
         return color
     return colors_from_colorscale(
-        _scale_pixel_norms(norms, field_style.colorscaling)[path_ind],
+        scaled_norms(norms, field_style.colorscaling)[path_ind],
         field_style.colormap,
         cmin=0,  # scaled values are normalized to [0, 1]
         cmax=1,

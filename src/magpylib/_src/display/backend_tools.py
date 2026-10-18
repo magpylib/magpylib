@@ -166,9 +166,13 @@ def _pixel_norms(field, count):
     return norms
 
 
-def _scale_pixel_norms(norms, scaling, *, minimum=None):
-    """Factors for pixel sizes or colors, from field norms, as magpylib
-    scales them.
+def scaled_norms(norms, scaling, *, minimum=None):
+    """Return field norms scaled to factors in [0, 1], as magpylib scales a
+    sensor's pixel field for sizes and colors.
+
+    For coloring or sizing something else on the same scale as the pixels,
+    such as field lines or a color bar: pass its norms along with the
+    pixels'.
 
     Parameters
     ----------
@@ -232,7 +236,7 @@ def colors_from_colorscale(
     cmin, cmax : float, optional
         The values mapped to the two ends of the scale; by default the
         smallest and largest of `values`, a single value mapping to the
-        middle. For factors in [0, 1], pass ``cmin=0, cmax=1``,
+        middle. For factors from `scaled_norms`, pass ``cmin=0, cmax=1``,
         as the built-in backends do.
     nan_color : str, default "#b2beb5"
         The color of a NaN value, returned as given.

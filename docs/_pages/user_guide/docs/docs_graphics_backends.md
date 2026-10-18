@@ -367,7 +367,9 @@ for sensor, field in pixel_fields(panel.objects).items():
     colors = pixel_colors(sensor, field, path_index=index)
 ```
 
-`colors_from_colorscale(values, colorscale, *, cmin=None, cmax=None, nan_color="#b2beb5")` maps values onto a colorscale as the built-ins do, for a color bar for example. It returns one color per value of the 1-D `values`, as a list: `"#rrggbb"`, or `nan_color` for NaN. `colorscale` is a Plotly scale name such as `"Viridis"`, or `[(stop, color), ...]` with any CSS name or hex color, such as a `mesh3d` trace's own `colorscale`. `cmin` and `cmax` default to the range of `values`.
+`scaled_norms(norms, scaling, *, minimum=None)` scales field norms to factors in [`minimum` or 0, 1] as the built-ins scale a pixel field, over the whole array: pass `(path_length, n_pixels)` norms to scale over the path, and add the norms of anything else to color on the pixels' scale, such as field lines. `scaling` is a value of `style.pixel.field.sizescaling` or `colorscaling`: `"uniform"`, `"linear"`, `"log"`, `"log^2"` to `"log^9"`. NaN marks a norm that reads nothing.
+
+`colors_from_colorscale(values, colorscale, *, cmin=None, cmax=None, nan_color="#b2beb5")` maps values onto a colorscale as the built-ins do, for a color bar for example; for factors from `scaled_norms`, pass `cmin=0, cmax=1`. It returns one color per value of the 1-D `values`, as a list: `"#rrggbb"`, or `nan_color` for NaN. `colorscale` is a Plotly scale name such as `"Viridis"`, or `[(stop, color), ...]` with any CSS name or hex color, such as a `mesh3d` trace's own `colorscale`. `cmin` and `cmax` default to the range of `values`.
 
 There is no opt-out yet: Magpylib still draws the pixels into the sensor's own `mesh3d`. Studio sets `style.pixel.size = 0` on such sensors while it captures the scene and restores it afterwards, so it computes the sizes before or after, not during, the capture.
 
