@@ -21,8 +21,6 @@ F, T = magpylib.getFT(
     pivot="centroid",
     eps=1e-5,
     squeeze=True,
-    meshreport=False,
-    return_mesh=False,
     *,
     meshing=None,
 )
@@ -35,8 +33,6 @@ where F is the force in units (N) and T is the torque in units (N*m) acting on t
 - **`meshing`**: how finely each target is cut for the computation. An integer applies to every target, a dict keyed by target gives one value per target, `meshing={ring: 100, coil: 40}`, and a `Collection` key covers its members. Required for every target except `Dipole` and `Sphere`, see [Meshing](docs-forcecomp-meshing) below.
 - **`pivot`**: The torque is always defined relative to a pivot point $\vec{r}_\text{piv}$, and the force adds to it via $\vec{T}_F = \vec{F} \times (\vec{r}_\text{piv} - \vec{r}_\text{pos})$. For a freely floating magnet this would be the barycenter (= centroid when the density is homogeneous). If `pivot='centroid'` each target's centroid is the pivot point, for a `Collection` target the centroid of the Collection. If `pivot=None` no pivot is used. This will give nonphysical results. If `pivot` is array-like of shape (3,) the same pivot is used for all targets. Alternatively one can provide an individual pivot point for each target.
 - **`eps`**: finite difference step size for computation of the magnetic field gradient (only needed for magnet targets). A good number is 1e-6 * characteristic source size.
-- **`meshreport`**: Set to `True` for printing the number of mesh points of each target giving you an idea of the involved computation effort.
-- **`return_mesh`**: Set to `True` for returning the mesh instead of F and T. In this case, a list of mesh dictionaries will be returned which have keys `"pts"`, `"moments"` (only magnets), and `"cvecs"` (only currents).
 
 ```{warning}
 F and T are computed in SI units (N) for F and (N*m) T. Note that [scaling invariance](guide-docs-io-scale-invariance) does not hold for force computations! Be careful to provide the correct input units!

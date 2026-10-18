@@ -140,6 +140,9 @@ unless you relied on the legend vanishing.
   ([#1005](https://github.com/magpylib/magpylib/pull/1005)).
 - The deprecated `magnetization.size` key of a style's `as_dict()`
   ([#967](https://github.com/magpylib/magpylib/pull/967)).
+- `getFT(..., meshreport=True)` and `getFT(..., return_mesh=True)`. A function
+  returning a target's cells is planned
+  ([#1027](https://github.com/magpylib/magpylib/issues/1027)).
 
 ## Deprecated
 

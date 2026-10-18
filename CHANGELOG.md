@@ -96,6 +96,11 @@
   ([#1005](https://github.com/magpylib/magpylib/pull/1005)).
 - **Breaking:** the deprecated `magnetization.size` key from `as_dict()`
   ([#967](https://github.com/magpylib/magpylib/pull/967)).
+- **Breaking:** the `meshreport` and `return_mesh` arguments of `getFT`, which
+  printed or returned the force mesh instead of force and torque. A function
+  returning a target's cells is planned
+  ([#1027](https://github.com/magpylib/magpylib/issues/1027),
+  [#1032](https://github.com/magpylib/magpylib/pull/1032)).
 
 ### Fixed
 
@@ -134,9 +139,6 @@
 - Invalid `meshing` values such as `True`, `(-1, 2, 2)` or `(0, 0, 0)` were
   accepted and gave wrong forces, while NumPy integers were refused
   ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
-- `getFT(..., meshreport=True)` printed nothing: it logged at INFO level, which
-  Python hides by default. It prints the mesh points of each target
-  ([#1032](https://github.com/magpylib/magpylib/pull/1032)).
 - Derived properties in the wrong frame: the `centroid` of a rotated `Polyline`,
   `TriangleStrip`, `TriangleSheet` or `Sensor` ignored its orientation, so
   `getFT` torques about the centroid of such currents were off by up to a factor

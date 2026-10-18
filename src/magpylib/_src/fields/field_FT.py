@@ -616,8 +616,6 @@ def getFT(
     pivot="centroid",
     eps=1e-5,
     squeeze=True,
-    meshreport=False,
-    return_mesh=False,
     *,
     meshing=None,
 ):
@@ -665,11 +663,6 @@ def getFT(
         magnet size or source-target distance).
     squeeze : bool, default True
         If ``True``, dimensions of size 1 in the output are removed.
-    meshreport : bool, default False
-        If ``True``, prints a brief report of the mesh used for each target.
-    return_mesh : bool, default False
-        If ``True``, returns the meshes as a list of dictionaries instead of
-        force and torque.
 
     Returns
     -------
@@ -677,7 +670,6 @@ def getFT(
         Force and torque with shapes (s, p, t, 3), where s is the
         number of sources, p the path length, and t the number of
         targets. If ``squeeze`` is ``True``, dimensions of size 1 are removed.
-        If ``return_mesh`` is ``True``, returns the meshes list instead.
 
     Notes
     -----
@@ -730,30 +722,6 @@ def getFT(
     # GENERATE PATH-AWARE MESHES ##############################################
 
     target_meshes = _generate_path_meshes(targets, meshings, n_path, eps)
-
-    # Mesh report
-    if meshreport:
-        print("Mesh report:")  # noqa: T201
-        for t, mesh in zip(targets, target_meshes, strict=False):
-            n = mesh["n_mesh"]
-            print(f"  Target {t}: {n} point{'s' if n != 1 else ''}")  # noqa: T201
-
-    # Return mesh for analysis
-    if return_mesh:
-        # Return old-style mesh format for compatibility
-        return [
-            {
-                "pts": m["observers"][0, :, 0, :]
-                if m["type"] == "magnet"
-                else m["observers"][0],
-                **(
-                    {"moments": m["moments"][0]}
-                    if m["type"] == "magnet"
-                    else {"cvecs": m["cvecs"][0]}
-                ),
-            }
-            for m in target_meshes
-        ]
 
     # FLATTEN OBSERVERS FOR B-FIELD COMPUTATION ###############################
 
