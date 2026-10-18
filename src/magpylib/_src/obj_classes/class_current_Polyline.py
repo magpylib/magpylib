@@ -169,15 +169,21 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         """Magnetic moment of object in units (A*m²)."""
         # test init
         if self._vertices is None or self._current is None:
-            return np.zeros_like(self._position)
+            dip = np.zeros_like(self._position)
+            if squeeze and len(dip) == 1:
+                return dip[0]
+            return dip
+
+        synced = self._sync_path_lengths(("vertices", "current"))
+        vertices, current = synced["vertices"], synced["current"]
 
         # Check if all paths are closed polylines
-        first_vertices = self._vertices[:, 0, :]  # shape (p, 3)
-        last_vertices = self._vertices[:, -1, :]  # shape (p, 3)
+        first_vertices = vertices[:, 0, :]  # shape (p, 3)
+        last_vertices = vertices[:, -1, :]  # shape (p, 3)
         is_closed = np.all(first_vertices == last_vertices, axis=1)  # shape (p,)
 
         # Check if any path is not closed and has more than 1 vertex
-        has_multiple_vertices = self._vertices.shape[1] > 1
+        has_multiple_vertices = vertices.shape[1] > 1
         invalid_paths = has_multiple_vertices & ~is_closed
 
         if np.any(invalid_paths):
@@ -192,8 +198,8 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         # Compute dipole moments for all paths (vectorized)
         # Prepare vertices pairs: v[:-1] and v[1:] for cross product
         # Shape: (p, n-1, 3) where p is path length, n is number of vertices
-        v_start = self._vertices[:, :-1, :]  # shape (p, n-1, 3)
-        v_end = self._vertices[:, 1:, :]  # shape (p, n-1, 3)
+        v_start = vertices[:, :-1, :]  # shape (p, n-1, 3)
+        v_end = vertices[:, 1:, :]  # shape (p, n-1, 3)
 
         # Cross product along segments: shape (p, n-1, 3)
         crosses = np.cross(v_start, v_end)
@@ -202,7 +208,7 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         cross_sums = np.sum(crosses, axis=1)
 
         # Multiply by current/2: shape (p, 3)
-        dipole_moments = self._current[:, np.newaxis] / 2 * cross_sums
+        dipole_moments = current[:, np.newaxis] / 2 * cross_sums
         if squeeze and len(dipole_moments) == 1:
             return dipole_moments[0]
         return dipole_moments

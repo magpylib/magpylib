@@ -81,7 +81,7 @@ def _show(
     # input checks
     backend = check_format_input_backend(backend)
     check_input_animation(animation)
-    check_format_input_numeric(
+    markers = check_format_input_numeric(
         markers,
         dtype=float,
         shapes=((None, 3),),
@@ -89,7 +89,7 @@ def _show(
         allow_None=True,
     )
 
-    if markers:
+    if markers is not None and len(markers) > 0:
         objects.append({"objects": [MagpyMarkers(*markers)], **row_col_defaults()})
 
     if backend == "auto":

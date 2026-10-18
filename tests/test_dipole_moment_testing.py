@@ -253,3 +253,53 @@ def test_open_triangle_strip_error():
     curr_open = magpy.current.TriangleStrip(current=i0_open, vertices=vertices_open)
     with pytest.raises(ValueError):  # noqa: PT011
         _ = curr_open.dipole_moment
+
+
+def test_derived_properties_pad_path_properties_of_different_length():
+    """Two path properties of different lengths pad to the longer one."""
+    square = np.array([(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 0)], dtype=float)
+    strip = np.array(
+        [(0, 0, 0), (0, 1, 0), (1, 0, 0), (1, 1, 0), (0, 0, 0), (0, 1, 0)], float
+    )
+    tet = np.array([(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)], dtype=float)
+    faces = [(0, 2, 1), (0, 1, 3), (0, 3, 2), (1, 2, 3)]
+    objs = [
+        (
+            magpy.current.Polyline,
+            {"current": [1, 2, 3], "vertices": [square, 2 * square]},
+        ),
+        (
+            magpy.current.TriangleStrip,
+            {"current": [1, 2, 3], "vertices": [strip, 2 * strip]},
+        ),
+        (
+            magpy.magnet.TriangularMesh,
+            {
+                "vertices": [tet, 2 * tet],
+                "faces": faces,
+                "magnetization": [(0, 0, 1)] * 3,
+            },
+        ),
+    ]
+    for cls, kwargs in objs:
+        obj = cls(**kwargs)
+        last = cls(**{k: (v[-1] if k != "faces" else v) for k, v in kwargs.items()})
+        moment = obj.dipole_moment
+        assert moment.shape == (3, 3)
+        np.testing.assert_allclose(moment[-1], last.dipole_moment)
+
+    # a mesh with a 2-step vertices path and a 3-step position path
+    mesh = magpy.magnet.TriangularMesh(
+        vertices=[tet, 2 * tet],
+        faces=faces,
+        polarization=(0, 0, 1),
+        position=[(0, 0, 0), (1, 0, 0), (2, 0, 0)],
+    )
+    centroid = mesh.centroid
+    assert centroid.shape == (3, 3)
+    last = magpy.magnet.TriangularMesh(
+        vertices=2 * tet, faces=faces, polarization=(0, 0, 1), position=(2, 0, 0)
+    )
+    np.testing.assert_allclose(centroid[-1], last.centroid)
+    src = magpy.magnet.Sphere(diameter=0.1, polarization=(1, 0, 0), position=(5, 5, 5))
+    assert magpy.getFT(src, mesh, meshing=20)[0].shape == (3, 3)

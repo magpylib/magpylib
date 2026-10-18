@@ -162,13 +162,7 @@ class TriangularMesh(
         **kwargs,
     ):
         self._vertices, self._faces = self._input_check(vertices, faces)
-        self._status_disconnected = None
-        self._status_open = None
-        self._status_reoriented = False
-        self._status_selfintersecting = None
-        self._status_disconnected_data = None
-        self._status_open_data = None
-        self._status_selfintersecting_data = None
+        self._reset_status()
 
         self.check_open(mode=check_open)
         self.check_disconnected(mode=check_disconnected)
@@ -201,10 +195,7 @@ class TriangularMesh(
             Mesh vertices in local object coordinates in units (m).
         """
         self._vertices, self._faces = self._input_check(val, self._faces)
-        self._status_disconnected = None
-        self._status_open = None
-        self._status_reoriented = False
-        self._status_selfintersecting = None
+        self._reset_status()
 
     @property
     def faces(self):
@@ -221,10 +212,17 @@ class TriangularMesh(
             Triplets of vertex indices.
         """
         self._vertices, self._faces = self._input_check(self._vertices, val)
+        self._reset_status()
+
+    def _reset_status(self):
+        """Forget the mesh checks and their data; the mesh changed."""
         self._status_disconnected = None
         self._status_open = None
         self._status_reoriented = False
         self._status_selfintersecting = None
+        self._status_disconnected_data = None
+        self._status_open_data = None
+        self._status_selfintersecting_data = None
 
     @property
     def mesh(self):
@@ -293,10 +291,14 @@ class TriangularMesh(
         """Centroid of object in units (m)."""
         if self._vertices is None:
             centroid = np.array([0.0, 0.0, 0.0])
+            orientation, position = self._orientation, self._position
         else:
-            centroid = _calculate_centroid(self._vertices, self._faces)
-
-        result = self._orientation.apply(centroid) + self._position
+            # vertices are local coordinates: pair each step's vertices with its
+            # pose so the centroid turns with the object
+            synced = self._sync_path_lengths(("vertices", "position", "orientation"))
+            centroid = _calculate_centroid(synced["vertices"], self._faces)
+            orientation, position = synced["orientation"], synced["position"]
+        result = orientation.apply(centroid) + position
         if squeeze and len(result) == 1:
             return result[0]
         return result
@@ -305,9 +307,14 @@ class TriangularMesh(
         """Magnetic moment of object in units (A*m²)."""
         # test init
         if self._magnetization is None or self._vertices is None or self._faces is None:
-            return np.array((0.0, 0.0, 0.0))
-        volume = self._get_volume(squeeze=False)
-        dipoles = self._magnetization * volume[:, np.newaxis]
+            dip = np.zeros_like(self._position)
+            if squeeze and len(dip) == 1:
+                return dip[0]
+            return dip
+        self._get_volume(squeeze=False)  # raises for an open mesh
+        synced = self._sync_path_lengths(("vertices", "magnetization"))
+        volume = self._volume_from_verts_faces(synced["vertices"], self._faces)
+        dipoles = synced["magnetization"] * volume[:, np.newaxis]
         if squeeze and len(dipoles) == 1:
             return dipoles[0]
         return dipoles

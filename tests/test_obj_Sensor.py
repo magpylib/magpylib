@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 import magpylib as magpy
 
@@ -145,3 +146,10 @@ def test_Sensor_centroid_with_pixels():
     expected = (12.333333, 13.333333, 14.0)  # position + mean(pixels)
     sensor = magpy.Sensor(position=position, pixel=pixels)
     assert np.allclose(sensor.centroid, expected)
+
+
+@pytest.mark.parametrize("source", ["Q", "Bq", "bx", ("Bxy", "Bz")])
+def test_pixel_field_source_rejects_bad_fields_and_components(source):
+    sensor = magpy.Sensor()
+    with pytest.raises(ValueError, match="Input source"):
+        sensor.style.pixel.field.source = source

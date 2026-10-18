@@ -737,3 +737,11 @@ def test_animation_title_matches_the_static_one():
     assert _plotly_title(obj, animation=True, title="MY TITLE") == "MY TITLE"
     assert _plotly_title(obj, animation=True) == "Magnet A"
     assert "path index" not in str(_plotly_title(obj, animation=True))
+
+
+def test_markers_as_array():
+    src = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
+    fig = magpy.show(
+        src, markers=np.array([(0, 0, 0), (1, 1, 1)]), backend="plotly", return_fig=True
+    )
+    assert any("Markers" in (tr.name or "") for tr in fig.data)
