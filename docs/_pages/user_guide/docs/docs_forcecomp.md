@@ -21,9 +21,8 @@ F, T = magpylib.getFT(
     pivot="centroid",
     eps=1e-5,
     squeeze=True,
-    *,
-    meshing=None,
-    return_mesh=False,
+    meshing=None,  # keyword-only
+    return_mesh=False,  # keyword-only
 )
 ```
 

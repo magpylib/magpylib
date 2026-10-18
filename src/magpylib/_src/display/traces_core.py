@@ -61,10 +61,8 @@ def _get_current_arrow_offset(obj, line_style, path_ind):
 
 
 def make_DefaultTrace(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
-    """
-    Creates the plotly scatter3d parameters for an object with no specifically supported
-    representation. The object will be represented by a scatter point and text above with object
-    name.
+    """Return the generic scatter3d trace of an object with no dedicated
+    representation: a marker at its position.
     """
     style = obj.style
     trace = {
@@ -83,10 +81,7 @@ def make_DefaultTrace(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
 def make_Polyline(
     obj, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
-    """
-    Creates the plotly scatter3d parameters for a Polyline current in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic scatter3d traces of a Polyline current."""
     style = obj.style
     vertices = obj._vertices
     if vertices is None:
@@ -127,10 +122,7 @@ def make_Polyline(
 def make_TriangleStrip(
     obj, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
-    """
-    Creates the plotly scatter3d parameters for a TriangleStrip current in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic traces of a TriangleStrip current."""
     style = obj.style
     if obj.vertices is None:
         trace = create_null_dim_trace(color=style.color)
@@ -173,10 +165,7 @@ def make_TriangleStrip(
 def make_TriangleSheet(
     obj, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
-    """
-    Creates the plotly scatter3d parameters for a TriangleSheet current in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic traces of a TriangleSheet current."""
     style = obj.style
 
     verts = _get_prop(obj._vertices, path_index)
@@ -230,10 +219,7 @@ def make_TriangleSheet(
 def make_Circle(
     obj, base=72, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
-    """
-    Creates the plotly scatter3d parameters for a Circle current in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic scatter3d traces of a Circle current."""
     style = obj.style
     if obj.diameter is None:
         trace = create_null_dim_trace(color=style.color)
@@ -275,10 +261,7 @@ def make_Circle(
 
 
 def make_Dipole(obj, autosize=None, *, path_index=-1, **kwargs) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a dipole in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic mesh3d trace of a Dipole."""
     style = obj.style
     moment = (
         np.array([0.0, 0.0, 0.0])
@@ -316,10 +299,7 @@ def make_Dipole(obj, autosize=None, *, path_index=-1, **kwargs) -> dict[str, Any
 
 
 def make_Cuboid(obj, *, path_index=-1, **kwargs) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a Cuboid Magnet in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic mesh3d trace of a Cuboid magnet."""
     style = obj.style
     if obj._dimension is None:
         trace = create_null_dim_trace(color=style.color)
@@ -333,10 +313,7 @@ def make_Cuboid(obj, *, path_index=-1, **kwargs) -> dict[str, Any]:
 
 
 def make_Cylinder(obj, base=50, *, path_index=-1, **kwargs) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a Cylinder Magnet in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic mesh3d trace of a Cylinder magnet."""
     style = obj.style
     if obj._dimension is None:
         trace = create_null_dim_trace(color=style.color)
@@ -355,10 +332,7 @@ def make_Cylinder(obj, base=50, *, path_index=-1, **kwargs) -> dict[str, Any]:
 def make_CylinderSegment(
     obj, vertices=25, *, path_index=-1, **kwargs
 ) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a Cylinder Segment Magnet in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic mesh3d trace of a CylinderSegment magnet."""
     style = obj.style
     if obj.dimension is None:
         trace = create_null_dim_trace(color=style.color)
@@ -373,10 +347,7 @@ def make_CylinderSegment(
 
 
 def make_Sphere(obj, vertices=15, *, path_index=-1, **kwargs) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a Sphere Magnet in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic mesh3d trace of a Sphere magnet."""
     style = obj.style
 
     if obj._diameter is None:
@@ -393,10 +364,7 @@ def make_Sphere(obj, vertices=15, *, path_index=-1, **kwargs) -> dict[str, Any]:
 
 
 def make_Tetrahedron(obj, *, path_index=-1, **kwargs) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a Tetrahedron Magnet in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic mesh3d trace of a Tetrahedron magnet."""
     style = obj.style
     if obj.vertices is None:
         trace = create_null_dim_trace(color=style.color)
@@ -412,9 +380,8 @@ def make_Tetrahedron(obj, *, path_index=-1, **kwargs) -> dict[str, Any]:
 def make_triangle_orientations(
     obj, vectors=None, sizefactor=1, path_ind=-1, **kwargs
 ) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a triangle orientation cone or arrow3d in a dictionary
-    based on the provided arguments.
+    """Return the generic mesh3d traces of the orientation markers of triangular
+    faces.
     """
     # pylint: disable=protected-access
     style = obj.style
@@ -553,10 +520,7 @@ def make_mesh_lines(obj, mode, path_ind=-1, **kwargs) -> dict[str, Any]:
 def make_Triangle(
     obj, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
-    """
-    Creates the plotly mesh3d parameters for a Triangular facet in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic traces of a Triangle."""
     style = obj.style
     vert = _get_prop(obj._vertices, path_index) if obj._vertices is not None else None
 
@@ -595,10 +559,7 @@ def make_Triangle(
 
 
 def make_TriangularMesh_single(obj, *, path_ind=-1, **kwargs) -> dict[str, Any]:
-    """
-    Creates the plotly mesh3d parameters for a Triangular facet mesh in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic mesh3d trace of one triangular mesh."""
     style = obj.style
     vertices = obj._vertices
     trace = make_BaseTriangularMesh(
@@ -618,10 +579,7 @@ def make_TriangularMesh_single(obj, *, path_ind=-1, **kwargs) -> dict[str, Any]:
 def make_TriangularMesh(
     obj, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
-    """
-    Creates the plotly mesh3d parameters for a Triangular facet mesh in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic traces of a TriangularMesh magnet."""
     # pylint: disable=protected-access
     style = obj.style
     is_disconnected = False
@@ -720,10 +678,7 @@ def make_Pixels(
     marker2d_default_size,
     null_thresh=1e-12,
 ) -> dict[str, Any]:
-    """
-    Create the plotly dict for Sensor pixels based on pixel positions and chosen size
-    For now, only "cube" shape is provided.
-    """
+    """Return the generic mesh3d trace of a sensor's pixels, drawn as cubes."""
     # Note: the function must return a single object after grouping
     # This is relevant for animation in plotly where a different number of traces
     # in each frame results in weird artifacts.
@@ -902,15 +857,7 @@ def _scaled_pixel_colors(color, norms, field_style, path_ind):
 def make_Sensor(
     obj, *, autosize, path_index=None, field_values, **kwargs
 ) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
-    provided arguments.
-
-    size_pixels: float, default=1
-        A positive number. Adjusts automatic display size of sensor pixels. When set to 0,
-        pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
-        distance between any pixel of the same sensor, equal to `size_pixel`.
-    """
+    """Return the generic traces of a Sensor: its arrows and pixels."""
     style = obj.style
     traces_to_merge = []
     pixel, hull_dim, dim_ext = _sensor_extent(obj, style, autosize)
