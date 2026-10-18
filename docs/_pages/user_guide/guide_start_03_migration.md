@@ -34,8 +34,8 @@ F, T = magpy.getFT(
 ```
 
 `meshing` is keyword-only. The old constructor keyword raises `TypeError`
-naming the call, and so does `getFT()` for a target given no value. The old
-attribute is gone. Saved scenes no longer carry a
+naming the call, and `getFT()` raises `ValueError` for a target given no value.
+The old attribute is gone. Saved scenes no longer carry a
 numerical setting, and a Collection no longer needs a value on every member.
 
 ### Torque on a Collection target is about the Collection's centroid

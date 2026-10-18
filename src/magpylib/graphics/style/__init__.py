@@ -1,5 +1,5 @@
 """
-The `magpylib.display.style` sub-package provides different object styles.
+The `magpylib.graphics.style` sub-package provides the style classes of Magpylib objects.
 """
 
 __all__ = [

@@ -12,9 +12,9 @@ The following basic properties are shared by all Magpylib classes:
 
 * **`position`**: property that describes the object placement in the global coordinate system. Can also describe a path, i.e. a vector of position vectors.
 
-* **`orientation`**: property that describes the object orientation in the global coordinate system using the `scipy.spatial.transform.Rpotation` class. Can also describe a path, i.e. a vector of orientations.
+* **`orientation`**: property that describes the object orientation in the global coordinate system using the `scipy.spatial.transform.Rotation` class. Can also describe a path, i.e. a vector of orientations.
 
-* **`centroid`**: property (read only) which returns the object barycenter assuming homogeneous mass density. It is often the same as the `position`.
+* **`centroid`**: property (read only) which returns the geometric center of the object, its center of mass for a homogeneous mass density. It is often the same as the `position`.
 
 * **`move()`** and **`rotate()`**: methods that enable relative object positioning. There are multiple `rotate()` methods allowing for all kinds of rotation inputs.
 

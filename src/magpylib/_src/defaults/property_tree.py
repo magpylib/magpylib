@@ -502,12 +502,16 @@ class PropertyNode:
 
         Parameters
         ----------
+        arg : dict | None, default None
+            Properties to set, nested or in magic underscore notation.
         _match_properties: bool
             If ``True`` (default), unknown property names raise an
             AttributeError; if ``False`` they are silently ignored.
         _replace_None_only: bool
             If ``True``, only properties that are not explicitly set get
             updated.
+        **kwargs
+            Properties to set, as keyword arguments.
         """
         data = magic_to_dict({**(arg or {}), **kwargs})
         for key, value in data.items():

@@ -72,10 +72,10 @@ def make_Cuboid(
     dimension : tuple[float, float, float], default (1.0, 1.0, 1.0)
         Side lengths along the ``x``, ``y``, and ``z`` axes.
     position : array-like, shape (3,), default None
-        Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses (0, 0, 0).
+        Position of the model's center in the parent object's own frame, so
+        the model moves and rotates with its parent. If ``None``, uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
-        Orientation to apply in the global CS.
+        Rotation about the model's center, in the parent object's own frame.
     show : bool, default True
         Show or hide the resulting ``model3d`` object.
     scale : float, default 1
@@ -128,10 +128,10 @@ def make_Prism(
     height : float, default 1.0
         Prism height along the ``z``-direction.
     position : array-like, shape (3,), default None
-        Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses (0, 0, 0).
+        Position of the model's center in the parent object's own frame, so
+        the model moves and rotates with its parent. If ``None``, uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
-        Orientation to apply in the global CS.
+        Rotation about the model's center, in the parent object's own frame.
     show : bool, default True
         Show or hide the resulting ``model3d`` object.
     scale : float, default 1
@@ -203,10 +203,10 @@ def make_Ellipsoid(
     vert : int, default 15
         Sampling density used to approximate the surface.
     position : array-like, shape (3,), default None
-        Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses (0.0, 0.0, 0.0).
+        Position of the model's center in the parent object's own frame, so
+        the model moves and rotates with its parent. If ``None``, uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
-        Orientation to apply in the global CS.
+        Rotation about the model's center, in the parent object's own frame.
     show : bool, default True
         Show or hide the resulting ``model3d`` object.
     scale : float, default 1
@@ -285,10 +285,10 @@ def make_CylinderSegment(
         Sampling density along a full 360° arc. Along ``[phi1, phi2]`` it uses
         ``max(5, int(vert * abs(phi2 - phi1) / 360))``.
     position : array-like, shape (3,), default None
-        Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses (0, 0, 0).
+        Position of the full cylinder's center in the parent object's own frame, so
+        the model moves and rotates with its parent. If ``None``, uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
-        Orientation to apply in the global CS.
+        Rotation about the full cylinder's center, in the parent object's own frame.
     show : bool, default True
         Show or hide the resulting ``model3d`` object.
     scale : float, default 1
@@ -352,8 +352,8 @@ def make_CylinderSegment(
 def make_Pyramid(
     backend="generic",
     base=3,
-    diameter=1,
-    height=1,
+    diameter=1.0,
+    height=1.0,
     pivot="middle",
     position=None,
     orientation=None,
@@ -376,10 +376,10 @@ def make_Pyramid(
     pivot : {'tail', 'middle', 'tip'}, default 'middle'
         Anchor point about which the pyramid rotates.
     position : array-like, shape (3,), default None
-        Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses (0, 0, 0).
+        Position of the ``pivot`` point in the parent object's own frame, so
+        the model moves and rotates with its parent. If ``None``, uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
-        Orientation to apply in the global CS.
+        Rotation about the ``pivot`` point, in the parent object's own frame.
     show : bool, default True
         Show or hide the resulting ``model3d`` object.
     scale : float, default 1
@@ -424,7 +424,7 @@ def make_Arrow(
     backend="generic",
     base=3,
     diameter=0.3,
-    height=1,
+    height=1.0,
     pivot="middle",
     position=None,
     orientation=None,
@@ -447,10 +447,10 @@ def make_Arrow(
     pivot : {'tail', 'middle', 'tip'}, default 'middle'
         Anchor point about which the arrow rotates.
     position : array-like, shape (3,), default None
-        Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses (0, 0, 0).
+        Position of the ``pivot`` point in the parent object's own frame, so
+        the model moves and rotates with its parent. If ``None``, uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
-        Orientation to apply in the global CS.
+        Rotation about the ``pivot`` point, in the parent object's own frame.
     show : bool, default True
         Show or hide the resulting ``model3d`` object.
     scale : float, default 1
@@ -515,10 +515,11 @@ def make_Tetrahedron(
         Vertex coordinates (x1, y1, z1), …, (x4, y4, z4) in the tetrahedron's
         local coordinate system.
     position : array-like, shape (3,), default None
-        Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses (0, 0, 0).
+        Shift applied to ``vertices`` after ``orientation``, in the parent object's
+        own frame, so the model moves and rotates with its parent. If ``None``,
+        uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
-        Orientation to apply in the global CS.
+        Rotation of ``vertices`` about the origin, in the parent object's own frame.
     show : bool, default True
         Show or hide the resulting ``model3d`` object.
     scale : float, default 1
@@ -565,10 +566,11 @@ def make_TriangularMesh(
         For each triangle, the indices of its three vertices in anticlockwise
         order. If ``None``, a ``scipy.spatial.ConvexHull`` triangulation is used.
     position : array-like, shape (3,), default None
-        Reference position of the vertices in the global CS. The zero position is in
-        the centroid of the vertices. If ``None``, uses (0, 0, 0).
+        Shift applied to ``vertices`` after ``orientation``, in the parent object's
+        own frame, so the model moves and rotates with its parent. If ``None``,
+        uses (0, 0, 0).
     orientation : scipy.spatial.transform.Rotation | None, default None
-        Orientation to apply in the global CS.
+        Rotation of ``vertices`` about the origin, in the parent object's own frame.
     show : bool, default True
         Show or hide the resulting ``model3d`` object.
     scale : float, default 1
