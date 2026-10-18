@@ -2,6 +2,8 @@
 
 # pylint: disable=import-outside-toplevel
 
+import warnings
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
@@ -618,6 +620,7 @@ def getFT(
     squeeze=True,
     *,
     meshing=None,
+    return_mesh=False,
 ):
     """Compute magnetic force and torque on t targets from s sources.
 
@@ -663,6 +666,13 @@ def getFT(
         magnet size or source-target distance).
     squeeze : bool, default True
         If ``True``, dimensions of size 1 in the output are removed.
+    return_mesh : bool, default False, keyword-only
+        If ``True``, returns the force mesh of each target instead of force and
+        torque, as a list of dictionaries with keys ``'pts'``, and ``'moments'``
+        (magnets) or ``'cvecs'`` (currents).
+
+        .. deprecated:: 6.0.0
+            A function returning a target's cells is planned.
 
     Returns
     -------
@@ -722,6 +732,27 @@ def getFT(
     # GENERATE PATH-AWARE MESHES ##############################################
 
     target_meshes = _generate_path_meshes(targets, meshings, n_path, eps)
+
+    if return_mesh:
+        warnings.warn(
+            "getFT(..., return_mesh=True) is deprecated and will be removed in a "
+            "future version.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return [
+            {
+                "pts": m["observers"][0, :, 0, :]
+                if m["type"] == "magnet"
+                else m["observers"][0],
+                **(
+                    {"moments": m["moments"][0]}
+                    if m["type"] == "magnet"
+                    else {"cvecs": m["cvecs"][0]}
+                ),
+            }
+            for m in target_meshes
+        ]
 
     # FLATTEN OBSERVERS FOR B-FIELD COMPUTATION ###############################
 
