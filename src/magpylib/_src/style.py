@@ -420,7 +420,8 @@ class Trace3d(PropertyNode):
         given = {
             k: v
             for k, v in given.items()
-            if v is not None and not (k in defaults and v == defaults[k])
+            if v is not None
+            and not (k in defaults and (type(v), v) == (type(defaults[k]), defaults[k]))
         }
         super().__init__(**given, **params)
 

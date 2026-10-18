@@ -695,6 +695,8 @@ def check_format_input_observers(inp, pixel_agg=None):
         pix_shapes = [(1, 3) if inp.shape == (3,) else inp.shape]
         return [_src.obj_classes.class_Sensor.Sensor(pixel=inp)], pix_shapes
     except (TypeError, ValueError) as err:  # if not, it must be [pos_vec, sens, coll]
+        if isinstance(err, MagpylibBadUserInput):
+            raise  # positions Sensor refused, e.g. of shape (n, 2): keep its message
         sensors = []
         for obj_item in inp:
             obj = obj_item

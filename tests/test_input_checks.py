@@ -1156,14 +1156,14 @@ def test_reshape_must_be_a_tuple():
 @pytest.mark.parametrize(
     "call",
     [
-        lambda: magpy.getB("not a source", (0, 0, 0)),
+        lambda: magpy.getB(magpy.misc.Dipole(moment=(0, 0, 1)), [1, 2, 3, 4]),
         lambda: magpy.current.TriangleSheet(
             vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)],
             faces=[(0, 1, 5)],
             current_densities=[(1, 0, 0)],
         ),
     ],
-    ids=["bad source", "faces vs vertices"],
+    ids=["observer shape", "faces vs vertices"],
 )
 def test_input_errors_are_value_errors(call):
     """Magpylib's input errors are ValueErrors, so a standard except catches them."""
