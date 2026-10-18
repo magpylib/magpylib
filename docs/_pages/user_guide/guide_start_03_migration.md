@@ -140,6 +140,9 @@ unless you relied on the legend vanishing.
   ([#1005](https://github.com/magpylib/magpylib/pull/1005)).
 - The deprecated `magnetization.size` key of a style's `as_dict()`
   ([#967](https://github.com/magpylib/magpylib/pull/967)).
+- `getFT(..., meshreport=True)`. To count a target's mesh points, use
+  `getFT(..., return_mesh=True)` while it lasts
+  ([#1032](https://github.com/magpylib/magpylib/pull/1032)).
 
 ## Deprecated
 
@@ -147,6 +150,9 @@ unless you relied on the legend vanishing.
   `Triangle`, in favour of `centroid`
   ([#916](https://github.com/magpylib/magpylib/pull/916)). It warns in version 6
   and will be removed in a future version.
+- `getFT(..., return_mesh=True)`. It warns in version 6 and will be removed in
+  a future version; a function returning a target's cells is planned
+  ([#1027](https://github.com/magpylib/magpylib/issues/1027)).
 
 ## Checklist
 

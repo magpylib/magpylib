@@ -88,6 +88,10 @@
   `Triangle`, in favour of `centroid`
   ([#916](https://github.com/magpylib/magpylib/pull/916),
   [#1031](https://github.com/magpylib/magpylib/pull/1031)).
+- `getFT(..., return_mesh=True)`, which returns the force mesh instead of force
+  and torque; a function returning a target's cells is planned
+  ([#1027](https://github.com/magpylib/magpylib/issues/1027),
+  [#1032](https://github.com/magpylib/magpylib/pull/1032)).
 
 ### Removed
 
@@ -96,6 +100,9 @@
   ([#1005](https://github.com/magpylib/magpylib/pull/1005)).
 - **Breaking:** the deprecated `magnetization.size` key from `as_dict()`
   ([#967](https://github.com/magpylib/magpylib/pull/967)).
+- **Breaking:** the `meshreport` argument of `getFT`, which logged the mesh size
+  where it is not shown by default
+  ([#1032](https://github.com/magpylib/magpylib/pull/1032)).
 
 ### Fixed
 

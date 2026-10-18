@@ -184,6 +184,15 @@ def test_meshing_is_normalised_to_ints(target, meshing, expected):
     assert type(value) is type(expected)
 
 
+def test_return_mesh_is_deprecated():
+    """getFT(..., return_mesh=True) still returns the mesh, with a warning."""
+    src = magpy.misc.Dipole(moment=(0, 0, 1), position=(0, 0, 2))
+    cube = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=POL)
+    with pytest.warns(DeprecationWarning, match="return_mesh"):
+        (mesh,) = getFT(src, [cube], meshing=8, return_mesh=True)
+    assert mesh["pts"].shape == (8, 3)
+
+
 def test_polyline_meshing_below_segments_warns():
     """A Polyline with fewer mesh points than segments warns and uses one per
     segment."""

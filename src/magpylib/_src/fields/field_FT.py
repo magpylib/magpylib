@@ -2,7 +2,7 @@
 
 # pylint: disable=import-outside-toplevel
 
-import logging
+import warnings
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -14,8 +14,6 @@ from magpylib._src.obj_classes.class_BaseTransform import (
     pad_path_property,
 )
 from magpylib._src.utility import format_src_inputs
-
-logger = logging.getLogger(__name__)
 
 
 def _needs_mesh(t):
@@ -620,10 +618,9 @@ def getFT(
     pivot="centroid",
     eps=1e-5,
     squeeze=True,
-    meshreport=False,
-    return_mesh=False,
     *,
     meshing=None,
+    return_mesh=False,
 ):
     """Compute magnetic force and torque on t targets from s sources.
 
@@ -669,11 +666,13 @@ def getFT(
         magnet size or source-target distance).
     squeeze : bool, default True
         If ``True``, dimensions of size 1 in the output are removed.
-    meshreport : bool, default False
-        If ``True``, prints a brief report of the mesh used for each target.
-    return_mesh : bool, default False
-        If ``True``, returns the meshes as a list of dictionaries instead of
-        force and torque.
+    return_mesh : bool, default False, keyword-only
+        If ``True``, returns the force mesh of each target instead of force and
+        torque, as a list of dictionaries with keys ``'pts'``, and ``'moments'``
+        (magnets) or ``'cvecs'`` (currents).
+
+        .. deprecated:: 6.0.0
+            A function returning a target's cells is planned.
 
     Returns
     -------
@@ -681,7 +680,6 @@ def getFT(
         Force and torque with shapes (s, p, t, 3), where s is the
         number of sources, p the path length, and t the number of
         targets. If ``squeeze`` is ``True``, dimensions of size 1 are removed.
-        If ``return_mesh`` is ``True``, returns the meshes list instead.
 
     Notes
     -----
@@ -735,16 +733,13 @@ def getFT(
 
     target_meshes = _generate_path_meshes(targets, meshings, n_path, eps)
 
-    # Mesh report
-    if meshreport:
-        logger.info("Mesh report:")
-        for t, mesh in zip(targets, target_meshes, strict=False):
-            logger.info("  Target %s: %d points", t, mesh["n_mesh"])
-        logger.info("")
-
-    # Return mesh for analysis
     if return_mesh:
-        # Return old-style mesh format for compatibility
+        warnings.warn(
+            "getFT(..., return_mesh=True) is deprecated and will be removed in a "
+            "future version.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return [
             {
                 "pts": m["observers"][0, :, 0, :]
