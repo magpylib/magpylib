@@ -154,7 +154,7 @@ def show(
     return_fig : bool, default False
         If ``True``, return the underlying figure object (Figure / FigureWidget / Plotter).
     canvas_update : str | bool, default 'auto'
-        Layout update behaviour when using a provided canvas. With ``'auto'``
+        Layout update behavior when using a provided canvas. With ``'auto'``
         applies internal layout only for newly created canvases. ``True`` forces
         update, ``False`` suppresses it.
     row : int | None, default None
@@ -341,7 +341,7 @@ def show_context(
     return_fig : bool, default False
         If ``True``, return the underlying figure from the final render.
     canvas_update : str | bool, default 'auto'
-        Layout update behaviour when using a provided canvas: ``'auto'``,
+        Layout update behavior when using a provided canvas: ``'auto'``,
         ``True``, or ``False``.
     row : int | None, default None
         Subplot row index for all enclosed ``show()`` calls that omit ``row``.

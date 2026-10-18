@@ -81,7 +81,7 @@ def make_DefaultTrace(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
 
 
 def make_Polyline(
-    obj, *, path_ind=-1, **kwargs
+    obj, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly scatter3d parameters for a Polyline current in a dictionary based on the
@@ -99,17 +99,17 @@ def make_Polyline(
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
             if kind == "arrow":
-                current, offset = _get_current_arrow_offset(obj, kind_style, path_ind)
+                current, offset = _get_current_arrow_offset(obj, kind_style, path_index)
                 x, y, z = draw_arrow_from_vertices(
-                    vertices=_get_prop(vertices, path_ind),
-                    sign=np.sign(_get_prop(current, path_ind)),
+                    vertices=_get_prop(vertices, path_index),
+                    sign=np.sign(_get_prop(current, path_index)),
                     arrow_size=kind_style.size,
                     arrow_pos=offset,
                     scaled=kind_style.sizemode == "scaled",
                     include_line=False,
                 ).T
             else:
-                x, y, z = _get_prop(vertices, path_ind).T
+                x, y, z = _get_prop(vertices, path_index).T
             trace = {
                 "type": "scatter3d",
                 "x": x,
@@ -125,7 +125,7 @@ def make_Polyline(
 
 
 def make_TriangleStrip(
-    obj, *, path_ind=-1, **kwargs
+    obj, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly scatter3d parameters for a TriangleStrip current in a dictionary based on the
@@ -139,7 +139,7 @@ def make_TriangleStrip(
     obj.faces = []
     # every two consecutive triangles share an edge, so we alternate the vertex order
     # this allows to have all normals pointing in the same direction for a properly oriented mesh
-    vertices = _get_prop(obj._vertices, path_ind)
+    vertices = _get_prop(obj._vertices, path_index)
     for i in range(len(vertices) - 2):
         if i % 2 == 0:
             obj.faces.append((i, i + 1, i + 2))
@@ -164,14 +164,14 @@ def make_TriangleStrip(
         if getattr(style.mesh, mode).show:
             kw = {**kwargs, "legendgroup": trace.get("legendgroup")}
             kw["showlegend"] = False
-            trace = make_mesh_lines(obj, mode, path_ind=path_ind, **kw)
+            trace = make_mesh_lines(obj, mode, path_ind=path_index, **kw)
             if trace:
                 traces.append(trace)
     return traces
 
 
 def make_TriangleSheet(
-    obj, *, path_ind=-1, **kwargs
+    obj, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly scatter3d parameters for a TriangleSheet current in a dictionary based on the
@@ -179,14 +179,14 @@ def make_TriangleSheet(
     """
     style = obj.style
 
-    verts = _get_prop(obj._vertices, path_ind)
+    verts = _get_prop(obj._vertices, path_index)
 
     trace = make_BaseTriangularMesh(
         "plotly-dict", vertices=verts, faces=obj.faces, color=style.color
     )
     traces = [{**trace, **kwargs}]
     obj.mesh = verts[obj.faces]
-    vectors = _get_prop(obj._current_densities, path_ind)
+    vectors = _get_prop(obj._current_densities, path_index)
 
     if vectors is None:
         return traces
@@ -221,14 +221,14 @@ def make_TriangleSheet(
         if getattr(style.mesh, mode).show:
             kw = {**kwargs, "legendgroup": trace.get("legendgroup")}
             kw["showlegend"] = False
-            trace = make_mesh_lines(obj, mode, path_ind=path_ind, **kw)
+            trace = make_mesh_lines(obj, mode, path_ind=path_index, **kw)
             if trace:
                 traces.append(trace)
     return traces
 
 
 def make_Circle(
-    obj, base=72, *, path_ind=-1, **kwargs
+    obj, base=72, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly scatter3d parameters for a Circle current in a dictionary based on the
@@ -243,12 +243,12 @@ def make_Circle(
         kind_style = getattr(style, kind)
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
-            diameter = _get_prop(obj._diameter, path_ind)
+            diameter = _get_prop(obj._diameter, path_index)
             if kind == "arrow":
-                current, offset = _get_current_arrow_offset(obj, kind_style, path_ind)
+                current, offset = _get_current_arrow_offset(obj, kind_style, path_index)
                 angle_pos_deg = 360 * np.round(offset * base) / base
                 vertices = draw_arrow_on_circle(
-                    sign=np.sign(_get_prop(current, path_ind)),
+                    sign=np.sign(_get_prop(current, path_index)),
                     diameter=diameter,
                     arrow_size=style.arrow.size,
                     scaled=kind_style.sizemode == "scaled",
@@ -274,7 +274,7 @@ def make_Circle(
     return traces
 
 
-def make_Dipole(obj, autosize=None, *, path_ind=-1, **kwargs) -> dict[str, Any]:
+def make_Dipole(obj, autosize=None, *, path_index=-1, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a dipole in a dictionary based on the
     provided arguments.
@@ -283,7 +283,7 @@ def make_Dipole(obj, autosize=None, *, path_ind=-1, **kwargs) -> dict[str, Any]:
     moment = (
         np.array([0.0, 0.0, 0.0])
         if obj._moment is None
-        else _get_prop(obj._moment, path_ind)
+        else _get_prop(obj._moment, path_index)
     )
     moment_mag = np.linalg.norm(moment)
     size = style.size
@@ -315,7 +315,7 @@ def make_Dipole(obj, autosize=None, *, path_ind=-1, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_Cuboid(obj, *, path_ind=-1, **kwargs) -> dict[str, Any]:
+def make_Cuboid(obj, *, path_index=-1, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Cuboid Magnet in a dictionary based on the
     provided arguments.
@@ -326,13 +326,13 @@ def make_Cuboid(obj, *, path_ind=-1, **kwargs) -> dict[str, Any]:
     else:
         trace = make_BaseCuboid(
             "plotly-dict",
-            dimension=_get_prop(obj._dimension, path_ind),
+            dimension=_get_prop(obj._dimension, path_index),
             color=style.color,
         )
     return {**trace, **kwargs}
 
 
-def make_Cylinder(obj, base=50, *, path_ind=-1, **kwargs) -> dict[str, Any]:
+def make_Cylinder(obj, base=50, *, path_index=-1, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Cylinder Magnet in a dictionary based on the
     provided arguments.
@@ -341,7 +341,7 @@ def make_Cylinder(obj, base=50, *, path_ind=-1, **kwargs) -> dict[str, Any]:
     if obj._dimension is None:
         trace = create_null_dim_trace(color=style.color)
     else:
-        diameter, height = _get_prop(obj._dimension, path_ind)
+        diameter, height = _get_prop(obj._dimension, path_index)
         trace = make_BasePrism(
             "plotly-dict",
             base=base,
@@ -352,7 +352,9 @@ def make_Cylinder(obj, base=50, *, path_ind=-1, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_CylinderSegment(obj, vertices=25, *, path_ind=-1, **kwargs) -> dict[str, Any]:
+def make_CylinderSegment(
+    obj, vertices=25, *, path_index=-1, **kwargs
+) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Cylinder Segment Magnet in a dictionary based on the
     provided arguments.
@@ -363,14 +365,14 @@ def make_CylinderSegment(obj, vertices=25, *, path_ind=-1, **kwargs) -> dict[str
     else:
         trace = make_BaseCylinderSegment(
             "plotly-dict",
-            dimension=_get_prop(obj._dimension, path_ind),
+            dimension=_get_prop(obj._dimension, path_index),
             vert=vertices,
             color=style.color,
         )
     return {**trace, **kwargs}
 
 
-def make_Sphere(obj, vertices=15, *, path_ind=-1, **kwargs) -> dict[str, Any]:
+def make_Sphere(obj, vertices=15, *, path_index=-1, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Sphere Magnet in a dictionary based on the
     provided arguments.
@@ -384,13 +386,13 @@ def make_Sphere(obj, vertices=15, *, path_ind=-1, **kwargs) -> dict[str, Any]:
         trace = make_BaseEllipsoid(
             "plotly-dict",
             vert=vertices,
-            dimension=[_get_prop(obj._diameter, path_ind)] * 3,
+            dimension=[_get_prop(obj._diameter, path_index)] * 3,
             color=style.color,
         )
     return {**trace, **kwargs}
 
 
-def make_Tetrahedron(obj, *, path_ind=-1, **kwargs) -> dict[str, Any]:
+def make_Tetrahedron(obj, *, path_index=-1, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Tetrahedron Magnet in a dictionary based on the
     provided arguments.
@@ -401,7 +403,7 @@ def make_Tetrahedron(obj, *, path_ind=-1, **kwargs) -> dict[str, Any]:
     else:
         trace = make_BaseTetrahedron(
             "plotly-dict",
-            vertices=_get_prop(obj._vertices, path_ind),
+            vertices=_get_prop(obj._vertices, path_index),
             color=style.color,
         )
     return {**trace, **kwargs}
@@ -549,14 +551,14 @@ def make_mesh_lines(obj, mode, path_ind=-1, **kwargs) -> dict[str, Any]:
 
 
 def make_Triangle(
-    obj, *, path_ind=-1, **kwargs
+    obj, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly mesh3d parameters for a Triangular facet in a dictionary based on the
     provided arguments.
     """
     style = obj.style
-    vert = _get_prop(obj._vertices, path_ind) if obj._vertices is not None else None
+    vert = _get_prop(obj._vertices, path_index) if obj._vertices is not None else None
 
     if vert is None:
         trace = create_null_dim_trace(color=style.color)
@@ -568,7 +570,7 @@ def make_Triangle(
         magnetization = (
             np.array([0.0, 0.0, 0.0])
             if obj._magnetization is None
-            else _get_prop(obj._magnetization, path_ind)
+            else _get_prop(obj._magnetization, path_index)
         )
         if np.all(np.cross(magnetization, vec) == 0):
             epsilon = 1e-3 * vec
@@ -588,7 +590,7 @@ def make_Triangle(
         )
     traces = [{**trace, **kwargs}]
     if vert is not None and style.orientation.show:
-        traces.append(make_triangle_orientations(obj, path_ind=path_ind, **kwargs))
+        traces.append(make_triangle_orientations(obj, path_ind=path_index, **kwargs))
     return traces
 
 
@@ -614,7 +616,7 @@ def make_TriangularMesh_single(obj, *, path_ind=-1, **kwargs) -> dict[str, Any]:
 
 
 def make_TriangularMesh(
-    obj, *, path_ind=-1, **kwargs
+    obj, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly mesh3d parameters for a Triangular facet mesh in a dictionary based on the
@@ -682,7 +684,7 @@ def make_TriangularMesh(
             )
     for mode in ("grid", "open", "disconnected", "selfintersecting"):
         if getattr(style.mesh, mode).show:
-            trace = make_mesh_lines(obj, mode, path_ind=path_ind, **kwargs)
+            trace = make_mesh_lines(obj, mode, path_ind=path_index, **kwargs)
             if trace:
                 traces.append(trace)
     return traces
@@ -898,7 +900,7 @@ def _scaled_pixel_colors(color, norms, field_style, path_ind):
 
 
 def make_Sensor(
-    obj, *, autosize, path_ind=None, field_values, **kwargs
+    obj, *, autosize, path_index=None, field_values, **kwargs
 ) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
@@ -944,7 +946,7 @@ def make_Sensor(
                 fsrc = style.pixel.field.source
                 field, *coords_str = fsrc
                 field_array = field_values[field]
-                px_vectors = field_values[field][path_ind]
+                px_vectors = field_values[field][path_index]
                 coords_str = coords_str or "xyz"
                 coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
                 other_coords = [i for i in range(3) if i not in coords]
@@ -953,10 +955,10 @@ def make_Sensor(
                 # sizes and colors them as these traces do
                 norms = np.linalg.norm(field_array, axis=-1)
                 px_sizes = _scaled_pixel_sizes(
-                    px_sizes, norms, style.pixel.field, path_ind
+                    px_sizes, norms, style.pixel.field, path_index
                 )
                 px_colors = _scaled_pixel_colors(
-                    px_colors, norms, style.pixel.field, path_ind
+                    px_colors, norms, style.pixel.field, path_index
                 )
             pixels_trace = make_Pixels(
                 positions=px_positions,

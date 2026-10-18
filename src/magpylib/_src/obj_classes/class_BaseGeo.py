@@ -194,7 +194,7 @@ class BaseGeo(BaseTransform, ABC):
         Every base is consulted, not just the nearest one: concrete classes
         mix several bases (e.g. ``Cuboid(BaseMagnet, BaseTarget, BaseVolume,
         BaseDipoleMoment)``) and a path property declared on any of them must
-        be honoured. Order is MRO order with duplicates dropped, so a property
+        be honored. Order is MRO order with duplicates dropped, so a property
         keeps the position of its first-declaring base.
         """
         super().__init_subclass__()

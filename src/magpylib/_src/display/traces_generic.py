@@ -692,7 +692,7 @@ def get_generic_traces3D(
             orient = _get_prop(orientations, path_ind)
             tr_list = [trg]
             if trg is None:
-                tr_list = get_traces_func(path_ind=path_ind)
+                tr_list = get_traces_func(path_index=path_ind)
                 tr_list = [tr_list] if isinstance(tr_list, dict) else tr_list
             for tr in tr_list:
                 if ind == 0:

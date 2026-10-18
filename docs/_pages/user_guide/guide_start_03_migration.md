@@ -147,7 +147,7 @@ unless you relied on the legend vanishing.
 ## Deprecated
 
 - `barycenter` of `CylinderSegment`, `Tetrahedron`, `TriangularMesh` and
-  `Triangle`, in favour of `centroid`
+  `Triangle`, in favor of `centroid`
   ([#916](https://github.com/magpylib/magpylib/pull/916)). It warns in version 6
   and will be removed in a future version.
 - `getFT(..., return_mesh=True)`. It warns in version 6 and will be removed in

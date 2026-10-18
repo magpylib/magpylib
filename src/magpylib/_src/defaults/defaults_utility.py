@@ -280,7 +280,7 @@ def _color_validator_cached(color_input, allow_None=True, parent_name=""):
             "    - A hex string (e.g. '#ff0000')\n"
             "    - A rgb string (e.g. 'rgb(185, 204, 255)')\n"
             "    - A rgb tuple (e.g. (120, 125, 126))\n"
-            "    - A number between 0 and 1 (for grey scale) (e.g. '.5' or .8)\n"
+            "    - A number between 0 and 1 (for grayscale) (e.g. '.5' or .8)\n"
             f"    - A named CSS color:\n{list(mcolors.keys())}"
         )
         raise ValueError(msg)

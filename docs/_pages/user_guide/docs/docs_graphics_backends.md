@@ -132,7 +132,7 @@ A 3D trace also has `opacity`, from 0 to 1.
 
 The colorings are not exclusive. `intensity` with `colorscale` wins, then `facecolor`, then `color`: a magnet's mesh carries both `intensity` and its base `color`.
 
-- **The colorscale is piecewise.** The default tricolor scale holds green to `0.16`, grey from `0.26` to `0.74`, then red. Apply it per fragment: interpolate the intensity across each face and look the color up there. Sampling it per vertex loses every plateau: a Cuboid polarized along z has its eight vertices at intensity `0` or `1`, none on the grey band, and the result is a flat green-to-red ramp. Studio, like Plotly's shader, samples the scale into a lookup texture and hands the intensity over as a texture coordinate:
+- **The colorscale is piecewise.** The default tricolor scale holds green to `0.16`, gray from `0.26` to `0.74`, then red. Apply it per fragment: interpolate the intensity across each face and look the color up there. Sampling it per vertex loses every plateau: a Cuboid polarized along z has its eight vertices at intensity `0` or `1`, none on the gray band, and the result is a flat green-to-red ramp. Studio, like Plotly's shader, samples the scale into a lookup texture and hands the intensity over as a texture coordinate:
 
   ```python
   lut = colors_from_colorscale(
@@ -191,7 +191,7 @@ Traces also carry Magpylib **metadata** that is not a drawing property. `object_
 
 Studio keeps one scene-graph node per object. It maps each `object_id` to a key of its own, through the objects it holds, and hangs every trace with that key on the node, so that a click selects an object rather than one of its traces.
 
-`object_id` is also how a caller recovers an object's **transform**, which the payload does not contain: position and orientation are baked into the vertex arrays, and no trace carries them separately. A host that holds the same objects, the case `object_id` exists for, resolves the token against them and reads `position` and `orientation` from the object itself. This matters for anything that manipulates an object rather than only drawing it: a gizmo anchored on a mesh's bounding-box centre rotates about the wrong point for any object whose origin is not its centroid, a Sensor being the obvious case.
+`object_id` is also how a caller recovers an object's **transform**, which the payload does not contain: position and orientation are baked into the vertex arrays, and no trace carries them separately. A host that holds the same objects, the case `object_id` exists for, resolves the token against them and reads `position` and `orientation` from the object itself. This matters for anything that manipulates an object rather than only drawing it: a gizmo anchored on a mesh's bounding-box center rotates about the wrong point for any object whose origin is not its centroid, a Sensor being the obvious case.
 
 `row` and `col` place a trace in the subplot grid; no plotting library takes them as trace arguments either. `drawing_properties` strips both the metadata and the placement (`TRACE_META_KEYS`, `PLACEMENT_KEYS`), so read the placement first:
 
@@ -210,9 +210,9 @@ Here `fig` must come from `plotly.subplots.make_subplots`: a plain `go.Figure()`
 | object                                                                         | traces                                                                                                                                           |
 | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | magnet: `Cuboid`, `Cylinder`, `CylinderSegment`, `Sphere`, `Tetrahedron`, `TriangularMesh` | one `mesh3d`, plus a `scatter3d` arrow when the magnetization is shown as an arrow; the default mode, `"auto"`, picks color with `supports_colorgradient` and the arrow without |
-| `Triangle`                                                                     | a `mesh3d`, plus a grey `mesh3d` arrow                                                                                                           |
+| `Triangle`                                                                     | a `mesh3d`, plus a gray `mesh3d` arrow                                                                                                           |
 | `Circle`, `Polyline`                                                           | two `scatter3d`: the line and its current arrows                                                                                                |
-| `TriangleSheet`, `TriangleStrip`                                               | a `mesh3d` for the sheet, plus a grey `mesh3d` for its current arrows                                                                            |
+| `TriangleSheet`, `TriangleStrip`                                               | a `mesh3d` for the sheet, plus a gray `mesh3d` for its current arrows                                                                            |
 | `Dipole`                                                                       | one `mesh3d`, an arrow                                                                                                                           |
 | `Sensor`                                                                       | one `mesh3d` with `facecolor`: axes, arrows and pixels. Pixels drawn as 2D symbols or `arrow`s come as a `scatter3d` instead                    |
 | `CustomSource`                                                                 | one `scatter3d` marker                                                                                                                           |
@@ -228,7 +228,7 @@ An object passed to `show` both on its own and inside a collection is drawn once
 
 ## Capabilities
 
-A backend declares what it can draw. Every flag defaults to `False`, so a capability added in a later Magpylib release never changes an existing backend's behaviour. `backend.supports` lists them by short name.
+A backend declares what it can draw. Every flag defaults to `False`, so a capability added in a later Magpylib release never changes an existing backend's behavior. `backend.supports` lists them by short name.
 
 | flag                        | when `False`                                                                                                                                                                                                                       |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -247,7 +247,7 @@ Two more declarations shape the payload:
 
 ## Options
 
-`scene.options` holds the `show()` arguments Magpylib does not interpret, such as Plotly's `renderer`. Their values arrive unchanged. Their names are normalised:
+`scene.options` holds the `show()` arguments Magpylib does not interpret, such as Plotly's `renderer`. Their values arrive unchanged. Their names are normalized:
 
 - A user may prefix an option with your backend's name: `counter_alpha=1` and `counter={"alpha": 1}` arrive as `alpha`. With several spellings, the prefixed one wins over the dict, and the dict over the bare name.
 - `fig={"width": 400}` arrives as `fig_width`, and `show={...}` likewise. An explicit `fig_width=` wins over the dict.

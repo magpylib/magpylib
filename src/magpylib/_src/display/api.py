@@ -26,11 +26,11 @@ Four things not to do here:
   already a plain dict of numpy arrays that matplotlib, plotly and pyvista all
   consume, so an IR would be a translation layer with no consumer.
 - **Do not remove `group_traces` or the cross-object merge.** It is a real
-  optimisation for scenes where objects share a legendgroup and color. It is
+  optimization for scenes where objects share a legendgroup and color. It is
   optional per backend via `DisplayBackend.merge_traces`; do not delete it.
   The four merges *within* one object are unconditional by design.
 - **Do not change what `legendgroup` means.** Collection-scoped legend grouping
-  is correct behaviour. Identity is a separate axis and lives in `object_id`.
+  is correct behavior. Identity is a separate axis and lives in `object_id`.
 - **Do not "fix" the capability-driven geometry.** `supports_colorgradient=False`
   triggers geometric mesh slicing per color band in `update_magnet_mesh`,
   because matplotlib cannot interpolate vertex colors. It is a seam, it is
@@ -188,6 +188,17 @@ def drawing_properties(trace):
 
     with `fig` from `plotly.subplots.make_subplots`: a plain ``go.Figure()``
     rejects `row` and `col`.
+
+    Parameters
+    ----------
+    trace : dict
+        A trace from `Frame.traces`.
+
+    Returns
+    -------
+    dict
+        A copy of `trace` without the keys in `TRACE_META_KEYS` and
+        `PLACEMENT_KEYS`.
     """
     return {
         k: v
@@ -293,7 +304,7 @@ class Scene:
     #: whole.
     legend_maxitems: int = 20
     #: Options magpylib does not interpret, values forwarded verbatim, names
-    #: normalised (backend prefix removed, ``fig={...}`` flattened); one the
+    #: normalized (backend prefix removed, ``fig={...}`` flattened); one the
     #: backend did not declare is reported, and still forwarded. This is where
     #: backend-specific arguments live (plotly's `renderer`, pyvista's
     #: `jupyter_backend`, matplotlib's `antialiased`, ...), spelled bare or
@@ -366,7 +377,7 @@ class DisplayBackend:
     warning.
 
     Capabilities default to False so that a capability added in a later
-    magpylib release never silently changes an existing backend's behaviour.
+    magpylib release never silently changes an existing backend's behavior.
     """
 
     #: Every registered backend, keyed by name. Subclasses with a `name`

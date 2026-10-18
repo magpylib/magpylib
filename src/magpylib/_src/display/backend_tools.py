@@ -18,7 +18,7 @@ _SCALINGS = re.compile(r"uniform|linear|log|log\^[2-9]")
 
 
 def pixel_fields(objects):
-    """The field each sensor's pixels read, for the sensors that show it.
+    """Return the field each sensor's pixels read, for the sensors that show it.
 
     Parameters
     ----------
@@ -53,7 +53,8 @@ def pixel_fields(objects):
 
 
 def pixel_sizes(sensor, field=None, *, autosize=None, path_index=-1):
-    """The size each of a sensor's pixels is drawn at, as magpylib draws it.
+    """Return the size each of a sensor's pixels is drawn at, as magpylib draws
+    it.
 
     Parameters
     ----------
@@ -107,7 +108,8 @@ def pixel_sizes(sensor, field=None, *, autosize=None, path_index=-1):
 
 
 def pixel_colors(sensor, field=None, *, path_index=-1):
-    """The color each of a sensor's pixels is drawn in, as magpylib draws it.
+    """Return the color each of a sensor's pixels is drawn in, as magpylib draws
+    it.
 
     Parameters
     ----------
@@ -217,7 +219,7 @@ def _scale_pixel_norms(norms, scaling, *, minimum=None):
 def colors_from_colorscale(
     values, colorscale, *, cmin=None, cmax=None, nan_color="#b2beb5"
 ):
-    """Hex colors for `values` along a colorscale.
+    """Return the hex colors of `values` along a colorscale.
 
     Parameters
     ----------
