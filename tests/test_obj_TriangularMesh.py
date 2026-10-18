@@ -532,3 +532,15 @@ def test_TriangularMesh_centroid2():
     )
     expected = [6.26289171, 7.26289171, 8.26289171]  # centroid offset from position
     assert np.allclose(tri_mesh.centroid, expected)
+
+
+def test_faces_change_forgets_the_mesh_checks():
+    """Dropping a face from a closed mesh makes it open, cache or not."""
+    verts = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
+    faces = [(0, 2, 1), (0, 1, 3), (0, 3, 2), (1, 2, 3)]
+    mesh = magpy.magnet.TriangularMesh(
+        vertices=verts, faces=faces, polarization=(0, 0, 1)
+    )
+    assert mesh.check_open() is False
+    mesh.faces = faces[:3]
+    assert mesh.check_open(mode="ignore") is True

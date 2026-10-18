@@ -67,8 +67,7 @@ class MagpyMarkers:
         return self._style
 
     def get_trace(self, **kwargs):
-        """Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
-        provided arguments."""
+        """Return the generic scatter3d trace of the markers."""
         style = self.style
         x, y, z = self.markers.T
         marker_kwargs = {
@@ -658,7 +657,6 @@ def get_generic_traces3D(
                 continue
             extr.update(extr.updatefunc())  # update before checking backend
             if extr.backend == "generic":
-                extr.update(extr.updatefunc())
                 tr_non_generic = {"opacity": style.opacity}
                 ttype = extr.constructor.lower()
                 obj_extr_trace = extr.kwargs() if callable(extr.kwargs) else extr.kwargs

@@ -539,7 +539,7 @@ def check_format_input_vertices(inp, minlength=2):
         if inp.shape[-2] < minlength:
             msg = (
                 f"Input vertices must have at least {minlength} vertices; "
-                f"instead received {inp.shape[0]}."
+                f"instead received {inp.shape[-2]}."
             )
             raise MagpylibBadUserInput(msg)
     return inp

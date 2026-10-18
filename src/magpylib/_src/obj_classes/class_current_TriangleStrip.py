@@ -174,12 +174,18 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         """Magnetic moment of object in units (A*m²)."""
         # test init
         if self._vertices is None or self._current is None:
-            return np.zeros_like(self._position)
+            dip = np.zeros_like(self._position)
+            if squeeze and len(dip) == 1:
+                return dip[0]
+            return dip
+
+        synced = self._sync_path_lengths(("vertices", "current"))
+        vertices, current = synced["vertices"], synced["current"]
 
         # Check if all paths are closed (first two and last two vertices identical)
-        # Shape: _vertices is (p, n, 3)
-        first_two = self._vertices[:, :2, :]  # shape (p, 2, 3)
-        last_two = self._vertices[:, -2:, :]  # shape (p, 2, 3)
+        # Shape: vertices is (p, n, 3)
+        first_two = vertices[:, :2, :]  # shape (p, 2, 3)
+        last_two = vertices[:, -2:, :]  # shape (p, 2, 3)
         # tolerance-based (matches main): strips closed only to floating-point
         # precision (e.g. from trig-computed vertices) must still be accepted
         is_closed = np.isclose(first_two, last_two).all(axis=(1, 2))  # shape (p,)
@@ -198,9 +204,9 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         # Each triangle has vertices [i, i+1, i+2]
         trias = np.stack(
             [
-                self._vertices[:, :-2, :],  # shape (p, n-2, 3)
-                self._vertices[:, 1:-1, :],  # shape (p, n-2, 3)
-                self._vertices[:, 2:, :],  # shape (p, n-2, 3)
+                vertices[:, :-2, :],  # shape (p, n-2, 3)
+                vertices[:, 1:-1, :],  # shape (p, n-2, 3)
+                vertices[:, 2:, :],  # shape (p, n-2, 3)
             ],
             axis=2,
         )  # shape (p, n-2, 3, 3)
@@ -233,7 +239,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         h[mask] = np.sqrt(v1v1[mask] - (v1v2[mask] ** 2 / v2v2[mask]))
 
         # Expand current for broadcasting: shape (p, 1)
-        current_expanded = self._current[:, np.newaxis]
+        current_expanded = current[:, np.newaxis]
 
         # Compute current densities where mask is True
         # Shape calculations: v2[mask] has shape (k, 3) where k = number of True in mask

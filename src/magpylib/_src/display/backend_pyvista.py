@@ -192,7 +192,7 @@ def scatter_to_pyvista(trace):
                     "style": ldash,
                     "label": trace.get("name", ""),
                 }
-            traces.append(trace_pv_line)
+                traces.append(trace_pv_line)
         if "markers" in mode:
             for (msize,), inds in split_input_arrays(marker_size, ordered=False):
                 if msize != 0:
