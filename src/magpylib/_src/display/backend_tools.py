@@ -2,7 +2,7 @@
 
 Exported from `magpylib.graphics.backend`. They take and return plain values,
 so a backend drawing sensor pixels its own way -- as instances in a scene
-graph, say -- sizes and colours them exactly as the built-ins do.
+graph, say -- sizes and colors them exactly as the built-ins do.
 
 Nothing from magpylib is imported at module level: the display modules use
 these helpers too, and this module must be importable from any of them.
@@ -17,7 +17,7 @@ import numpy as np
 _SCALINGS = re.compile(r"uniform|linear|log|log\^[2-9]")
 
 
-def sensor_pixel_fields(objects):
+def pixel_fields(objects):
     """The field each sensor's pixels read, for the sensors that show it.
 
     Parameters
@@ -61,15 +61,15 @@ def pixel_sizes(sensor, field=None, *, autosize=None, path_index=-1):
         A sensor with pixels.
     field : array-like, optional
         The field its pixels read, of shape ``(path_length, n_pixels, 3)``,
-        as `sensor_pixel_fields` returns it. With it, the sizes are scaled by
+        as `pixel_fields` returns it. With it, the sizes are scaled by
         its norms as ``style.pixel.field.sizescaling`` and ``sizemin`` say,
         the scaling spanning the whole path; a pixel that reads nothing keeps
         its size. Without it, every pixel has the same size.
     autosize : float, optional
         The size the built-in backends give a sensor whose ``style.sizemode``
-        is ``"scaled"``, from the extent of the scene. It only matters where
-        the pixels coincide -- a single pixel at the sensor's origin -- since
-        they are then sized against the sensor.
+        is ``"scaled"``: pass the `Panel.autosize` of the panel the sensor is
+        drawn in. It only matters where the pixels coincide -- a single pixel
+        at the sensor's origin -- since they are then sized against the sensor.
     path_index : int, default -1
         The path step the sizes are for.
 
@@ -101,6 +101,59 @@ def pixel_sizes(sensor, field=None, *, autosize=None, path_index=-1):
     size = _pixel_base_size(pixel, extent, style) * style.pixel.size
     if field is None:
         return np.full(count, float(size))
+    norms = _pixel_norms(field, count)
+    sizes = _scaled_pixel_sizes(size, norms, style.pixel.field, path_index)
+    return np.broadcast_to(np.asarray(sizes, dtype=float), (count,)).copy()
+
+
+def pixel_colors(sensor, field=None, *, path_index=-1):
+    """The color each of a sensor's pixels is drawn in, as magpylib draws it.
+
+    Parameters
+    ----------
+    sensor : Sensor
+        A sensor with pixels.
+    field : array-like, optional
+        The field its pixels read, of shape ``(path_length, n_pixels, 3)``,
+        as `pixel_fields` returns it. With it, and with
+        ``style.pixel.field.colorscaling`` other than ``"uniform"``, each pixel
+        takes the color of ``style.pixel.field.colormap`` for its field's
+        norm, the scaling spanning the whole path; a pixel that reads nothing
+        is ``"#b2beb5"``. Otherwise every pixel has ``style.pixel.color``.
+    path_index : int, default -1
+        The path step the colors are for.
+
+    Returns
+    -------
+    list of str
+        One color per pixel: ``style.pixel.color``, black when unset, or a
+        ``"#rrggbb"`` color of the colormap. Empty for a sensor without
+        pixels.
+    """
+    # pylint: disable=import-outside-toplevel
+    from magpylib._src.defaults.defaults_classes import (  # noqa: PLC0415
+        default_settings,
+    )
+    from magpylib._src.display.traces_core import (  # noqa: PLC0415
+        _scaled_pixel_colors,
+    )
+    from magpylib._src.style import get_style  # noqa: PLC0415
+
+    if sensor.pixel is None:
+        return []
+    style = get_style(sensor, default_settings)
+    count = np.size(sensor.pixel) // 3
+    color = "black" if style.pixel.color is None else style.pixel.color
+    if field is None:
+        return [color] * count
+    norms = _pixel_norms(field, count)
+    colors = _scaled_pixel_colors(color, norms, style.pixel.field, path_index)
+    return [colors] * count if isinstance(colors, str) else list(colors)
+
+
+def _pixel_norms(field, count):
+    """The norms of a field read by `count` pixels, of shape
+    ``(path_length, count)``; ValueError for a field of another shape."""
     norms = np.linalg.norm(np.asarray(field, dtype=float), axis=-1)
     if norms.ndim != 2 or norms.shape[-1] != count:
         msg = (
@@ -108,12 +161,11 @@ def pixel_sizes(sensor, field=None, *, autosize=None, path_index=-1):
             f"sensor's {count} pixels; instead received {np.shape(field)}."
         )
         raise ValueError(msg)
-    sizes = _scaled_pixel_sizes(size, norms, style.pixel.field, path_index)
-    return np.broadcast_to(np.asarray(sizes, dtype=float), (count,)).copy()
+    return norms
 
 
-def scale_pixel_norms(norms, scaling, *, minimum=None):
-    """Factors for pixel sizes or colours, from field norms, as magpylib
+def _scale_pixel_norms(norms, scaling, *, minimum=None):
+    """Factors for pixel sizes or colors, from field norms, as magpylib
     scales them.
 
     Parameters
@@ -165,35 +217,35 @@ def scale_pixel_norms(norms, scaling, *, minimum=None):
 def colors_from_colorscale(
     values, colorscale, *, cmin=None, cmax=None, nan_color="#b2beb5"
 ):
-    """Hex colours for `values` along a colorscale.
+    """Hex colors for `values` along a colorscale.
 
     Parameters
     ----------
     values : array-like, shape (n,)
-        The values to colour.
+        The values to color.
     colorscale : str | sequence
-        A Plotly colorscale name such as ``"Viridis"``, or ``[(stop, colour),
-        ...]`` with stops from 0 to 1 and any CSS name or hex colour, as a
+        A Plotly colorscale name such as ``"Viridis"``, or ``[(stop, color),
+        ...]`` with stops from 0 to 1 and any CSS name or hex color, as a
         mesh trace's own ``colorscale``.
     cmin, cmax : float, optional
         The values mapped to the two ends of the scale; by default the
         smallest and largest of `values`, a single value mapping to the
-        middle. For factors from `scale_pixel_norms`, pass ``cmin=0, cmax=1``,
+        middle. For factors in [0, 1], pass ``cmin=0, cmax=1``,
         as the built-in backends do.
     nan_color : str, default "#b2beb5"
-        The colour of a NaN value, returned as given.
+        The color of a NaN value, returned as given.
 
     Returns
     -------
     list of str
-        One colour per value: ``"#rrggbb"``, or `nan_color` for NaN.
+        One color per value: ``"#rrggbb"``, or `nan_color` for NaN.
     """
     # pylint: disable=import-outside-toplevel
     from plotly.exceptions import PlotlyError  # noqa: PLC0415
 
     values = np.atleast_1d(np.asarray(values, dtype=float))
     if values.ndim != 1:
-        # a (path, n) array flattened would colour every path step at once
+        # a (path, n) array flattened would color every path step at once
         msg = f"values must be one-dimensional; instead received shape {values.shape}."
         raise ValueError(msg)
     valid = ~np.isnan(values)
@@ -209,15 +261,15 @@ def colors_from_colorscale(
         stops, rgb = _colorscale_stops(key)
     except PlotlyError as err:  # an unknown scale name
         msg = (
-            "colorscale must be a Plotly colorscale name or (stop, colour) "
+            "colorscale must be a Plotly colorscale name or (stop, color) "
             f"pairs; instead received {colorscale!r}."
         )
         raise ValueError(msg) from err
     # Sampled as plotly's `sample_colorscale` samples, to the bit, for every
-    # value at once: one call per value was most of the cost of colouring a
+    # value at once: one call per value was most of the cost of coloring a
     # sensor's pixels. Each value lies between the first stop at or above it
     # and the one before -- the last, for a value on the first stop, which
-    # comes to the first stop's colour all the same.
+    # comes to the first stop's color all the same.
     points = np.clip(scaled, 0, 1)
     upper = np.searchsorted(stops, points, side="left")
     lower = upper - 1
@@ -232,9 +284,9 @@ def colors_from_colorscale(
 
 @functools.lru_cache(maxsize=64)
 def _colorscale_stops(colorscale):
-    """A colorscale's stops, shape ``(k,)``, and their colours as RGB in
+    """A colorscale's stops, shape ``(k,)``, and their colors as RGB in
     [0, 1], shape ``(k, 3)``, read as plotly reads them. `colorscale` is a
-    name, or ``(stop, colour)`` pairs as tuples, to key the cache."""
+    name, or ``(stop, color)`` pairs as tuples, to key the cache."""
     # pylint: disable=import-outside-toplevel
     from matplotlib.colors import to_rgb  # noqa: PLC0415
     from plotly.colors import (  # noqa: PLC0415
@@ -248,7 +300,7 @@ def _colorscale_stops(colorscale):
     if isinstance(colorscale, str):
         colorscale = get_colorscale(colorscale)
     else:
-        # plotly reads only its own colour notation
+        # plotly reads only its own color notation
         pairs = []
         for stop, color in colorscale:
             r, g, b = (round(255 * c) for c in to_rgb(color))

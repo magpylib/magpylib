@@ -263,7 +263,7 @@ def add_capped_legend(canvas, labels, maxitems):
     if hidden <= 0:
         canvas.add_legend(bcolor=None)
         return
-    # a bare label takes its face and colour from the labelled actor at the
+    # a bare label takes its face and color from the labelled actor at the
     # same index, so the entries kept look as they would uncapped
     entries = [
         *labels[:maxitems],

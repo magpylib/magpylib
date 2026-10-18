@@ -1181,7 +1181,8 @@ def get_frames(
         }
         for path_ind in path_indices
     ]
-    for props in objs_rc.values():
+    autosize_rc = {}
+    for rc, props in objs_rc.items():
         styles = {obj: prop["style"] for obj, prop in props["objects"].items()}
         rc_params = None
         with style_temp_edit(*styles, styles_temp=styles):
@@ -1203,6 +1204,7 @@ def get_frames(
                 )
                 frame["data"].extend(traces)
                 frame["extra_backend_traces"].extend(extra_backend_traces)
+        autosize_rc[rc] = (rc_params or {}).get("autosize")
 
     clean_legendgroups(frames)
     all_traces = [
@@ -1254,6 +1256,7 @@ def get_frames(
                 col=rc[1],
                 kind="scene3d" if is_3d else "chart2d",
                 ranges=np.asarray(rng) if (is_3d and rng is not None) else None,
+                autosize=autosize_rc.get(rc) if is_3d else None,
                 labels=labels,
                 objects=tuple(given_rc.get(rc, {}).values()),
             )

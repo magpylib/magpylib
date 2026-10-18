@@ -1243,19 +1243,19 @@ def test_the_payload_is_backend_neutral_and_deterministic():
 
 def test_the_pixel_helpers_are_public():
     """What magpylib-studio imported from `_src` to draw sensor pixels as
-    instances, sized and coloured as the built-ins do them."""
+    instances, sized and colored as the built-ins do them."""
     probe = magpy.Sensor(
         position=[(0, 0, 1), (0, 0, 2), (0, 0, 3)],
         pixel=[(0, 0, 0), (0.1, 0, 0)],
         style_pixel_field_source="Bxy",
     )
-    fields = public_backend.sensor_pixel_fields([make_source(), probe, magpy.Sensor()])
+    fields = public_backend.pixel_fields([make_source(), probe, magpy.Sensor()])
     assert list(fields) == [probe]
     # one array of the source's field, the components it leaves out zero
     assert fields[probe].shape == (3, 2, 3)
     assert fields[probe][..., :2].any()
     assert not fields[probe][..., 2].any()
-    assert public_backend.sensor_pixel_fields([probe]) == {}  # nothing to read
+    assert public_backend.pixel_fields([probe]) == {}  # nothing to read
 
     sizes = public_backend.pixel_sizes
     # half the distance between the nearest two pixels, times the style's size
@@ -1266,12 +1266,8 @@ def test_the_pixel_helpers_are_public():
     # the pixel on the source's axis reads no Bxy, and keeps its size
     probe.style.pixel.field.sizescaling = "linear"
     probe.style.pixel.field.sizemin = 0.5
-    read = np.linalg.norm(fields[probe], axis=-1)
-    factors = public_backend.scale_pixel_norms(read, "linear", minimum=0.5)[0]
-    assert np.isnan(factors[0])
-    np.testing.assert_allclose(
-        sizes(probe, fields[probe], path_index=0), [0.1, 0.1 * factors[1]]
-    )
+    np.testing.assert_allclose(sizes(probe, fields[probe], path_index=0), [0.1, 0.1])
+    np.testing.assert_allclose(sizes(probe, fields[probe]), [0.1, 0.05])
     # a lone pixel at the origin is sized against the sensor, a fifth of it
     np.testing.assert_allclose(
         sizes(magpy.Sensor(pixel=(0, 0, 0), style_size=1)), [0.2]
@@ -1279,17 +1275,14 @@ def test_the_pixel_helpers_are_public():
     with pytest.raises(ValueError, match="shape"):
         sizes(probe, np.zeros((1, 3, 3)))  # three pixels' field for two
 
-    norms = [[0, 1, 2, 4]]  # 0 reads nothing
-    scale = public_backend.scale_pixel_norms
-    np.testing.assert_allclose(scale(norms, "linear"), [[np.nan, 0, 1 / 3, 1]])
-    np.testing.assert_allclose(
-        scale(norms, "linear", minimum=0.1), [[np.nan, 0.1, 0.4, 1]]
-    )
-    np.testing.assert_allclose(scale(norms, "uniform"), [[np.nan, 1, 1, 1]])
-    with pytest.raises(ValueError, match="scaling"):
-        scale(norms, "cubic")
-    with pytest.raises(ValueError, match="minimum"):
-        scale(norms, "linear", minimum=1.5)
+    # the pixel color, black when unset, or the colormap's color for the field;
+    # grey for the pixel that reads nothing
+    colors = public_backend.pixel_colors
+    assert colors(probe) == ["black", "black"]
+    probe.style.pixel.field.colorscaling = "linear"
+    assert colors(probe, fields[probe], path_index=0) == ["#b2beb5", "#fde725"]
+    assert colors(probe, fields[probe]) == ["#b2beb5", "#440154"]
+    assert colors(magpy.Sensor()) == []
 
     colors = public_backend.colors_from_colorscale
     assert colors([0, 1, np.nan], "Viridis", cmin=0, cmax=1) == [
@@ -1297,7 +1290,7 @@ def test_the_pixel_helpers_are_public():
         "#fde725",
         "#b2beb5",
     ]
-    # a trace's own colorscale, as (stop, colour) pairs, used to raise; so did
+    # a trace's own colorscale, as (stop, color) pairs, used to raise; so did
     # all-NaN values, and a `nan_color` was cut to ten characters
     pairs = [(0, "#000000"), (1, "#ffffff")]
     assert colors([0, 1, np.nan], pairs, nan_color="lightslategray") == [
@@ -1317,7 +1310,7 @@ def test_the_pixel_helpers_are_public():
     ["Viridis", "RdBu_r", [(0, "green"), (0.16, "green"), (0.26, "grey"), (1, "r")]],
 )
 def test_colors_from_colorscale_samples_as_plotly_does(colorscale):
-    """Sampled for every value at once, and still plotly's colours exactly:
+    """Sampled for every value at once, and still plotly's colors exactly:
     on the stops, between them, and at both ends."""
     from matplotlib.colors import rgb2hex, to_rgb  # noqa: PLC0415
     from plotly.colors import sample_colorscale  # noqa: PLC0415

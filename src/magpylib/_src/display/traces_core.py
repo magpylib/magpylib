@@ -16,8 +16,8 @@ from scipy.spatial.distance import pdist
 from scipy.spatial.transform import Rotation as RotScipy
 
 from magpylib._src.display.backend_tools import (
+    _scale_pixel_norms,
     colors_from_colorscale,
-    scale_pixel_norms,
 )
 from magpylib._src.display.sensor_mesh import get_sensor_mesh
 from magpylib._src.display.traces_base import make_Arrow as make_BaseArrow
@@ -875,11 +875,26 @@ def _scaled_pixel_sizes(size, norms, field_style, path_ind):
     pixel that reads nothing keeps it. `size` itself under ``"uniform"``."""
     if field_style.sizescaling == "uniform":
         return size
-    factors = scale_pixel_norms(
+    factors = _scale_pixel_norms(
         norms, field_style.sizescaling, minimum=field_style.sizemin
     )[path_ind]
     factors[np.isnan(factors)] = 1  # keep null sizes unscaled
     return size * factors
+
+
+def _scaled_pixel_colors(color, norms, field_style, path_ind):
+    """For each pixel, the color of ``field_style.colormap`` for its field's
+    norm as ``field_style.colorscaling`` says, the scaling spanning all of
+    `norms`; ``"#b2beb5"`` for a pixel that reads nothing. `color` itself
+    under ``"uniform"``."""
+    if field_style.colorscaling == "uniform":
+        return color
+    return colors_from_colorscale(
+        _scale_pixel_norms(norms, field_style.colorscaling)[path_ind],
+        field_style.colormap,
+        cmin=0,  # scaled values are normalized to [0, 1]
+        cmax=1,
+    )
 
 
 def make_Sensor(
@@ -935,19 +950,14 @@ def make_Sensor(
                 other_coords = [i for i in range(3) if i not in coords]
                 field_array[..., other_coords] = 0  # set other components to zero
                 # the public helpers, so a backend drawing pixels its own way
-                # sizes and colours them as these traces do
+                # sizes and colors them as these traces do
                 norms = np.linalg.norm(field_array, axis=-1)
                 px_sizes = _scaled_pixel_sizes(
                     px_sizes, norms, style.pixel.field, path_ind
                 )
-                colorscaling = style.pixel.field.colorscaling
-                if colorscaling != "uniform":
-                    px_colors = colors_from_colorscale(
-                        scale_pixel_norms(norms, colorscaling)[path_ind],
-                        style.pixel.field.colormap,
-                        cmin=0,  # scaled values are normalized to [0, 1]
-                        cmax=1,
-                    )
+                px_colors = _scaled_pixel_colors(
+                    px_colors, norms, style.pixel.field, path_ind
+                )
             pixels_trace = make_Pixels(
                 positions=px_positions,
                 vectors=px_vectors,

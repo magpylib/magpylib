@@ -89,6 +89,7 @@ The declaration is checked where it is written, at the class statement or in `re
 | `row`, `col`  | `int`                         | the cell, 1-based                                                                                                                                                    |
 | `kind`        | `"scene3d"` or `"chart2d"`    | a 3D scene, or a 2D field plot over the path                                                                                                                         |
 | `ranges`      | float array `(3, 2)`, or `None` | `(min, max)` of x, y and z, in the display unit. The three spans are equal, and `zoom` is applied (`zoom=1` doubles them). `None` for a `chart2d` panel              |
+| `autosize`    | float, or `None`              | the size, in m like the objects' positions and not in the display unit, the built-in backends give a sensor or dipole with `style.sizemode="scaled"` in this cell; pass it to `pixel_sizes`. `None` for a `chart2d` panel |
 | `labels`      | `dict[str, str]`              | axis titles: `{"x": "x (mm)", "y": "y (mm)", "z": "z (mm)"}` for `scene3d`, `{"x": "path index", "y": "Bx, Bz (T)"}` for `chart2d`                                   |
 | `objects`     | tuple                         | the objects passed to `show` for this cell, see [](guide-graphics-custom-backend-details)                                                                            |
 
@@ -123,15 +124,15 @@ A 3D trace also has `opacity`, from 0 to 1.
 | ------------- | ------------------------------------ | --------------------------------------------------------------------------------------------- |
 | `x`, `y`, `z` | float arrays `(n,)`                  | vertex coordinates                                                                            |
 | `i`, `j`, `k` | integer arrays `(m,)`                | the three vertex indices of each triangle                                                     |
-| `color`       | `str` or `None`                      | the object's base colour: its legend swatch, and the fallback. `None` when `facecolor` is set |
-| `intensity`   | float array `(n,)`, optional         | one value per vertex, already in [0, 1], to colour with `colorscale`                          |
-| `colorscale`  | tuple of `(stop, colour)`, optional  | comes with `intensity`; stops from 0 to 1                                                     |
-| `facecolor`   | array of `str`, `(m,)`, optional     | one colour per triangle                                                                       |
+| `color`       | `str` or `None`                      | the object's base color: its legend swatch, and the fallback. `None` when `facecolor` is set |
+| `intensity`   | float array `(n,)`, optional         | one value per vertex, already in [0, 1], to color with `colorscale`                          |
+| `colorscale`  | tuple of `(stop, color)`, optional  | comes with `intensity`; stops from 0 to 1                                                     |
+| `facecolor`   | array of `str`, `(m,)`, optional     | one color per triangle                                                                       |
 | `flatshading` | `bool`, optional                     | `True` asks for flat faces rather than normals smoothed across edges (a TriangularMesh)       |
 
-The colourings are not exclusive. `intensity` with `colorscale` wins, then `facecolor`, then `color`: a magnet's mesh carries both `intensity` and its base `color`.
+The colorings are not exclusive. `intensity` with `colorscale` wins, then `facecolor`, then `color`: a magnet's mesh carries both `intensity` and its base `color`.
 
-- **The colorscale is piecewise.** The default tricolor scale holds green to `0.16`, grey from `0.26` to `0.74`, then red. Apply it per fragment: interpolate the intensity across each face and look the colour up there. Sampling it per vertex loses every plateau: a Cuboid polarized along z has its eight vertices at intensity `0` or `1`, none on the grey band, and the result is a flat green-to-red ramp. Studio, like Plotly's shader, samples the scale into a lookup texture and hands the intensity over as a texture coordinate:
+- **The colorscale is piecewise.** The default tricolor scale holds green to `0.16`, grey from `0.26` to `0.74`, then red. Apply it per fragment: interpolate the intensity across each face and look the color up there. Sampling it per vertex loses every plateau: a Cuboid polarized along z has its eight vertices at intensity `0` or `1`, none on the grey band, and the result is a flat green-to-red ramp. Studio, like Plotly's shader, samples the scale into a lookup texture and hands the intensity over as a texture coordinate:
 
   ```python
   lut = colors_from_colorscale(
@@ -140,7 +141,7 @@ The colourings are not exclusive. `intensity` with `colorscale` wins, then `face
   uv = np.stack([trace["intensity"], np.full(len(trace["x"]), 0.5)], axis=1)
   ```
 
-- **`facecolor` is for one object of several colours.** A Sensor's axes, arrow heads and pixels arrive as one trace. So does a magnet sliced into colour bands for a backend without colour gradients, see [](guide-graphics-custom-backend-capabilities). Such a trace has `color = None`, so a backend that reads only `color` draws it wrong without an error.
+- **`facecolor` is for one object of several colors.** A Sensor's axes, arrow heads and pixels arrive as one trace. So does a magnet sliced into color bands for a backend without color gradients, see [](guide-graphics-custom-backend-capabilities). Such a trace has `color = None`, so a backend that reads only `color` draws it wrong without an error.
 
 **`type="scatter3d"`**, points and lines:
 
@@ -176,7 +177,7 @@ A 2D curve has no `opacity` and no `line_width`.
 
 - **Coordinates** are float64 numpy arrays, in world coordinates and already in the display unit. Face indices are int64 arrays.
 - **Numbers** may be Python ints, such as `opacity=1` or `line_width=2`: convert with `float()` where your library needs floats.
-- **Colours** are CSS names or `"#rrggbb"` hex: a user's `"r"` arrives as `"red"`. Per-face and per-point colours are a numpy string array from Magpylib, and a plain list from a user's model.
+- **Colors** are CSS names or `"#rrggbb"` hex: a user's `"r"` arrives as `"red"`. Per-face and per-point colors are a numpy string array from Magpylib, and a plain list from a user's model.
 - **Symbols and dashes** follow Magpylib's own vocabularies, both Matplotlib-derived: `marker_symbol` is one of `ALLOWED_SYMBOLS` (`"o"`, `"D"`, `"+"`, ...) and `line_dash` one of `"solid"`, `"dashed"`, `"dotted"`, `"dashdot"`, `"loosely dotted"` and `"loosely dashdotted"`, whichever of the spellings in `ALLOWED_LINESTYLES` the user chose. Map them to your library. The exception is a user's `generic` [model](examples-own-3d-models), whose values pass through unchecked and may be Plotly names such as `"circle"`.
 - **Sizes are nominal.** `line_width=2` and `marker_size=3` have no unit, and every backend scales them its own way. Plotly multiplies line widths by 2.2 and marker sizes by 0.7, in pixels; Studio uses the same factors.
 - **NaN is not JSON.** A backend that ships coordinates to a browser must encode it, as `null` for instance, and restore it there.
@@ -208,7 +209,7 @@ Here `fig` must come from `plotly.subplots.make_subplots`: a plain `go.Figure()`
 
 | object                                                                         | traces                                                                                                                                           |
 | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| magnet: `Cuboid`, `Cylinder`, `CylinderSegment`, `Sphere`, `Tetrahedron`, `TriangularMesh` | one `mesh3d`, plus a `scatter3d` arrow when the magnetization is shown as an arrow; the default mode, `"auto"`, picks colour with `supports_colorgradient` and the arrow without |
+| magnet: `Cuboid`, `Cylinder`, `CylinderSegment`, `Sphere`, `Tetrahedron`, `TriangularMesh` | one `mesh3d`, plus a `scatter3d` arrow when the magnetization is shown as an arrow; the default mode, `"auto"`, picks color with `supports_colorgradient` and the arrow without |
 | `Triangle`                                                                     | a `mesh3d`, plus a grey `mesh3d` arrow                                                                                                           |
 | `Circle`, `Polyline`                                                           | two `scatter3d`: the line and its current arrows                                                                                                |
 | `TriangleSheet`, `TriangleStrip`                                               | a `mesh3d` for the sheet, plus a grey `mesh3d` for its current arrows                                                                            |
@@ -219,7 +220,7 @@ Here `fig` must come from `plotly.subplots.make_subplots`: a plain `go.Figure()`
 | `show(markers=...)`                                                            | one `scatter3d`, with `object_id = None`                                                                                                         |
 | a `generic` model in `style.model3d.data`                                      | the model's trace, positioned and oriented with its object                                                                                      |
 
-By default Magpylib merges the traces of objects that share a legend group and a style into one trace: in practice, the children of a `Collection` drawn in the collection's colour. A merged trace has `object_id = None`. Declaring `merge_traces = False` keeps every object's own traces and `object_id`, which picking and drag gizmos need; Studio declares it. The children's traces still carry the collection's `name` and `legendgroup`. Merges _within_ one object, such as all the current arrows of a `Polyline`, always apply.
+By default Magpylib merges the traces of objects that share a legend group and a style into one trace: in practice, the children of a `Collection` drawn in the collection's color. A merged trace has `object_id = None`. Declaring `merge_traces = False` keeps every object's own traces and `object_id`, which picking and drag gizmos need; Studio declares it. The children's traces still carry the collection's `name` and `legendgroup`. Merges _within_ one object, such as all the current arrows of a `Polyline`, always apply.
 
 An object passed to `show` both on its own and inside a collection is drawn once, under its own entry. The collection's trace leaves it out, but its name still counts it.
 
@@ -233,7 +234,7 @@ A backend declares what it can draw. Every flag defaults to `False`, so a capabi
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `supports_animation`        | `show(animation=...)` warns and draws a static scene                                                                                                                                                                               |
 | `supports_subplots`         | a grid warns and is collapsed onto one cell. A grid mixing 3D and 2D panels cannot be collapsed: it is handed over unchanged, with a warning                                                                                        |
-| `supports_colorgradient`    | no warning, but the payload changes. Magnetization mode `"auto"` gives a flat-coloured mesh plus a `scatter3d` arrow. A mode with `"color"` slices each magnet into one band per colour, as `facecolor`, with `color = None` |
+| `supports_colorgradient`    | no warning, but the payload changes. Magnetization mode `"auto"` gives a flat-colored mesh plus a `scatter3d` arrow. A mode with `"color"` slices each magnet into one band per color, as `facecolor`, with `color = None` |
 | `supports_animation_output` | `animation_output=...` warns, and `scene.animation.output` is `None`                                                                                                                                                               |
 | `supports_native_traces`    | a user model attached for this backend warns and is not drawn; `Frame.native_traces` stays empty                                                                                                                                   |
 
@@ -274,7 +275,7 @@ Each item is a dict:
 | `kwargs_extra` | dict    | `row`, `col`, `name`, `legendgroup`, `showlegend`, `color` and `opacity`, from the object                                                  |
 | `object_id`    | `int`   | the object, as on traces                                                                                                                   |
 
-`coordsargs` is the user's, or by default `args[0]` to `args[2]` when the model has positional arguments and its keywords do not name all of `x`, `y` and `z`, and the keywords otherwise. Placement, legend and colour are in `kwargs_extra`, not in `kwargs`: combine them as your constructor expects.
+`coordsargs` is the user's, or by default `args[0]` to `args[2]` when the model has positional arguments and its keywords do not name all of `x`, `y` and `z`, and the keywords otherwise. Placement, legend and color are in `kwargs_extra`, not in `kwargs`: combine them as your constructor expects.
 
 (guide-graphics-custom-backend-2d)=
 
@@ -314,7 +315,7 @@ Magpylib picks the frames from the path length and the user's animation settings
 
 - **Autosize** scales sensors and dipoles, which have no physical size of their own, by the scene extent. It varies continuously, so moving any object rescales every autosized object.
 - **`units_length="auto"`** picks an SI prefix from the largest absolute value in the ranges, zoom included, and rescales _every_ trace by the corresponding factor. It is quantized: nothing changes until that value crosses a threshold (0.1 m and 1000 m around metres), and then the entire scene jumps by a factor of 1000.
-- **A sensor showing its pixel field** (`style.pixel.field.source` set) reads every source in the scene: its pixels change size and colour when any source moves, whatever is pinned.
+- **A sensor showing its pixel field** (`style.pixel.field.source` set) reads every source in the scene: its pixels change size and color when any source moves, whatever is pinned.
 
 A backend that re-renders whole scenes need not care. One that splices or updates incrementally does, and the first two can be pinned, per call or globally through `magpy.defaults.display`. Studio pins them for as long as it draws, and puts the user's defaults back afterwards:
 
@@ -350,41 +351,32 @@ In 3D, the traces sharing a `legendgroup` are one legend entry, which the trace 
 
 ## Helpers for sensor pixels
 
-A backend drawing sensor pixels its own way, as instances in a scene graph for example, can size and colour them as the built-ins do:
+A backend drawing sensor pixels its own way, as instances in a scene graph for example, can size and color them as the built-ins do:
 
-- `sensor_pixel_fields(objects)` returns `{sensor: field}`, the field each sensor showing its pixel field reads. `field` has the shape `(path_length, n_pixels, 3)`, in the sensor's own frame, summed over the sources among `objects`, with the components its `style.pixel.field.source` does not name set to 0. Sensors with nothing to read are left out.
-- `pixel_sizes(sensor, field=None, *, autosize=None, path_index=-1)` returns the size each pixel is drawn at: half the distance between the nearest two, or a fifth of the sensor where they coincide, times `style.pixel.size`, and scaled by `field`, from `sensor_pixel_fields`, as `style.pixel.field.sizescaling` and `sizemin` say. `autosize` is the size a sensor with `style.sizemode="scaled"` takes from the scene's extent, which only a lone pixel at the sensor's origin is sized against.
-- `scale_pixel_norms(norms, scaling, *, minimum=None)` turns field norms into factors in [`minimum` or 0, 1], scaled over the whole array, so pass `(path_length, n_pixels)` norms to scale over the path as the built-ins do. `scaling` is a value of `style.pixel.field.sizescaling` or `colorscaling`: `"uniform"`, `"linear"`, `"log"`, `"log^2"` to `"log^9"`. `minimum`, as `style.pixel.field.sizemin`, lies in [0, 1]. NaN marks a pixel that reads nothing.
-- `colors_from_colorscale(values, colorscale, *, cmin=None, cmax=None, nan_color="#b2beb5")` returns one colour per value of the 1-D `values`, as a list: `"#rrggbb"`, or `nan_color` for NaN. `colorscale` is a Plotly scale name such as `"Viridis"`, or `[(stop, colour), ...]` with any CSS name or hex colour, such as a `mesh3d` trace's own `colorscale`. `cmin` and `cmax` default to the range of `values`; for factors from `scale_pixel_norms`, pass `cmin=0, cmax=1`, as the built-ins do.
+- `pixel_fields(objects)` returns `{sensor: field}`, the field each sensor showing its pixel field reads. `field` has the shape `(path_length, n_pixels, 3)`, in the sensor's own frame, summed over the sources among `objects`, with the components its `style.pixel.field.source` does not name set to 0. Sensors with nothing to read are left out.
+- `pixel_sizes(sensor, field=None, *, autosize=None, path_index=-1)` returns the size each pixel is drawn at: half the distance between the nearest two, or a fifth of the sensor where they coincide, times `style.pixel.size`, and scaled by `field` as `style.pixel.field.sizescaling` and `sizemin` say. Pass the panel's `autosize`, which sizes a lone pixel at the sensor's origin when `style.sizemode` is `"scaled"`.
+- `pixel_colors(sensor, field=None, *, path_index=-1)` returns the color each pixel is drawn in: `style.pixel.color`, black when unset, or with `field` the color of `style.pixel.field.colormap` for its norm, as `colorscaling` says.
 
-Studio draws such pixels as instances of one shape. For one sensor at path index `index`, `-1` for a static scene:
+Both read the sensor's own style, the defaults filling in what it leaves unset, and scale over the whole path, as the built-ins do. A pixel that reads nothing keeps its size and is `"#b2beb5"`. For one sensor at path index `index`, `-1` for a static scene:
 
 ```python
-import numpy as np
+from magpylib.graphics.backend import pixel_colors, pixel_fields, pixel_sizes
 
-from magpylib.graphics.backend import (
-    colors_from_colorscale,
-    pixel_sizes,
-    scale_pixel_norms,
-    sensor_pixel_fields,
-)
-
-for sensor, field in sensor_pixel_fields(panel.objects).items():
-    sizes = pixel_sizes(sensor, field, path_index=index)
-    norms = np.linalg.norm(field, axis=-1)  # (path_length, n_pixels)
-    colors = colors_from_colorscale(
-        scale_pixel_norms(norms, "linear")[index], "Viridis", cmin=0, cmax=1
-    )
+for sensor, field in pixel_fields(panel.objects).items():
+    sizes = pixel_sizes(sensor, field, autosize=panel.autosize, path_index=index)
+    colors = pixel_colors(sensor, field, path_index=index)
 ```
 
-Read `"linear"` and `"Viridis"` from the sensor's `style.pixel.field` (`colorscaling`, `colormap`), falling back to the defaults where unset; `pixel_sizes` reads its own. A pixel that reads nothing keeps its size, and its colour is `nan_color`. With `colorscaling="uniform"` the pixels keep `style.pixel.color`, black when unset. There is no opt-out yet: Magpylib still draws the pixels into the sensor's own `mesh3d`. Studio sets `style.pixel.size = 0` on such sensors while it captures the scene, and restores it afterwards.
+`colors_from_colorscale(values, colorscale, *, cmin=None, cmax=None, nan_color="#b2beb5")` maps values onto a colorscale as the built-ins do, for a color bar for example. It returns one color per value of the 1-D `values`, as a list: `"#rrggbb"`, or `nan_color` for NaN. `colorscale` is a Plotly scale name such as `"Viridis"`, or `[(stop, color), ...]` with any CSS name or hex color, such as a `mesh3d` trace's own `colorscale`. `cmin` and `cmax` default to the range of `values`.
+
+There is no opt-out yet: Magpylib still draws the pixels into the sensor's own `mesh3d`. Studio sets `style.pixel.size = 0` on such sensors while it captures the scene and restores it afterwards, so it computes the sizes before or after, not during, the capture.
 
 ## Warnings a backend can trigger
 
 - **At the class statement:** a misspelled `supports_*` flag; taking a name another module's backend holds.
 - **On discovery:** an entry point that fails to load or registers no backend; an entry-point key that differs from the class's `name`.
 - **At the first `show()`:** declared options that Magpylib reserves or that carry your own prefix; a backend name equal to a `show()` argument.
-- **At every `show()`:** an `api_version` other than the current one; options you do not declare; trace types outside `handles_traces`; a capability the call needs and you do not declare, except colour gradients.
+- **At every `show()`:** an `api_version` other than the current one; options you do not declare; trace types outside `handles_traces`; a capability the call needs and you do not declare, except color gradients.
 
 (guide-graphics-custom-backend-reserved)=
 
