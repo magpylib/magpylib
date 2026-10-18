@@ -267,12 +267,19 @@ class TriangleSheet(BaseSource, BaseTarget):
     # Methods
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
-        # For path arrays (p, n, 3), mean over axis 1 to get (p, 3)
-        # For non-path arrays (1, n, 3), mean over axis 1 to get (1, 3)
-        centr = np.mean(self._vertices, axis=-2) + self._position
-        if squeeze:
-            return np.squeeze(centr)
-        return centr
+        if self._vertices is None:
+            centroid = np.array([0.0, 0.0, 0.0])
+            orientation, position = self._orientation, self._position
+        else:
+            # vertices are local coordinates: pair each step's vertices with its
+            # pose so the centroid turns with the object
+            synced = self._sync_path_lengths(("vertices", "position", "orientation"))
+            centroid = np.mean(synced["vertices"], axis=1)  # (p, 3)
+            orientation, position = synced["orientation"], synced["position"]
+        result = orientation.apply(centroid) + position
+        if squeeze and len(result) == 1:
+            return result[0]
+        return result
 
     def _generate_mesh(self, meshing):
         """Generate mesh for force computation."""

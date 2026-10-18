@@ -13,7 +13,8 @@ class BaseDipoleMoment(ABC):
 
     @property
     def dipole_moment(self):
-        """Return dipole moment vector (A·m²)."""
+        """Return dipole moment vector (A·m²) in the object's own frame, like its
+        polarization; a Collection's is in the Collection's own frame."""
         return self._get_dipole_moment(squeeze=True)
 
     @property

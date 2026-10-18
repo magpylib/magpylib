@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 
@@ -153,6 +154,34 @@ def test_collection_dipole_moment():
     assert np.all(
         coll.dipole_moment
         == cub.dipole_moment + cyl.dipole_moment + sph.dipole_moment + tet.dipole_moment
+    )
+
+
+def test_collection_dipole_moment_is_in_its_own_frame():
+    """Members' moments are turned into one frame before they are summed: spheres
+    at one point, rotated and in rotated nested Collections, have exactly the
+    field of the Dipole with the Collection's moment and orientation."""
+    rng = np.random.default_rng(5)
+    center = np.array([0.01, -0.02, 0.005])
+    spheres = [
+        magpy.magnet.Sphere(
+            diameter=0.004,
+            polarization=rng.normal(size=3),
+            position=center,
+            orientation=R.from_rotvec(rng.normal(size=3)),
+        )
+        for _ in range(4)
+    ]
+    inner = magpy.Collection(spheres[2], spheres[3])
+    inner.rotate(R.from_rotvec((0.4, 0.9, -0.2)), anchor=center)
+    coll = magpy.Collection(spheres[0], spheres[1], inner)
+    coll.rotate(R.from_rotvec((-1.0, 0.3, 0.6)), anchor=center)
+    dipole = magpy.misc.Dipole(
+        moment=coll.dipole_moment, position=center, orientation=coll.orientation
+    )
+    observers = center + rng.normal(size=(5, 3))
+    np.testing.assert_allclose(
+        magpy.getB(coll, observers, sumup=True), dipole.getB(observers), rtol=1e-12
     )
 
 
