@@ -128,25 +128,24 @@ def make_TriangleStrip(
         trace = create_null_dim_trace(color=style.color)
         return {**trace, **kwargs}
 
-    obj.faces = []
     # every two consecutive triangles share an edge, so we alternate the vertex order
     # this allows to have all normals pointing in the same direction for a properly oriented mesh
     vertices = _get_prop(obj._vertices, path_index)
-    for i in range(len(vertices) - 2):
-        if i % 2 == 0:
-            obj.faces.append((i, i + 1, i + 2))
-        else:
-            obj.faces.append((i + 1, i, i + 2))
-    obj.faces = np.array(obj.faces)
+    faces = np.array(
+        [
+            (i, i + 1, i + 2) if i % 2 == 0 else (i + 1, i, i + 2)
+            for i in range(len(vertices) - 2)
+        ]
+    )
     trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=vertices, faces=obj.faces, color=style.color
+        "plotly-dict", vertices=vertices, faces=faces, color=style.color
     )
     traces = [{**trace, **kwargs}]
-    obj.mesh = vertices[obj.faces]
-    if vertices is not None and style.direction.show:
+    if style.direction.show:
         traces.append(
             make_triangle_orientations(
                 obj,
+                mesh=vertices[faces],
                 vectors=vertices[2:] - vertices[:-2],
                 sizefactor=2.5,
                 **{**kwargs, "legendgroup": trace.get("legendgroup")},
@@ -156,7 +155,7 @@ def make_TriangleStrip(
         if getattr(style.mesh, mode).show:
             kw = {**kwargs, "legendgroup": trace.get("legendgroup")}
             kw["showlegend"] = False
-            trace = make_mesh_lines(obj, mode, path_ind=path_index, **kw)
+            trace = make_mesh_lines(obj, mode, path_ind=path_index, faces=faces, **kw)
             if trace:
                 traces.append(trace)
     return traces
@@ -174,14 +173,13 @@ def make_TriangleSheet(
         "plotly-dict", vertices=verts, faces=obj.faces, color=style.color
     )
     traces = [{**trace, **kwargs}]
-    obj.mesh = verts[obj.faces]
+    tris = verts[obj.faces]
     vectors = _get_prop(obj._current_densities, path_index)
 
     if vectors is None:
         return traces
 
     # Project vectors onto triangle surfaces
-    tris = obj.mesh
     v1 = tris[:, 1] - tris[:, 0]
     v2 = tris[:, 2] - tris[:, 0]
     normals = np.cross(v1, v2)
@@ -201,6 +199,7 @@ def make_TriangleSheet(
         traces.append(
             make_triangle_orientations(
                 obj,
+                mesh=tris,
                 vectors=vectors_proj,
                 sizefactor=2.5,
                 **{**kwargs, "legendgroup": trace.get("legendgroup")},
@@ -378,10 +377,11 @@ def make_Tetrahedron(obj, *, path_index=-1, **kwargs) -> dict[str, Any]:
 
 
 def make_triangle_orientations(
-    obj, vectors=None, sizefactor=1, path_ind=-1, **kwargs
+    obj, vectors=None, sizefactor=1, path_ind=-1, *, mesh=None, **kwargs
 ) -> dict[str, Any]:
     """Return the generic mesh3d traces of the orientation markers of triangular
-    faces.
+    faces: those of `mesh`, shape (n, 3, 3), or of the object's own vertices at
+    `path_ind`.
     """
     # pylint: disable=protected-access
     style = obj.style
@@ -391,8 +391,8 @@ def make_triangle_orientations(
     symbol = orient.symbol
     offset = getattr(orient, "offset", 0.5)
     color = style.color if orient.color is None else orient.color
-    if hasattr(obj, "mesh"):
-        vertices = obj.mesh
+    if mesh is not None:
+        vertices = mesh
     else:
         vertices = (
             [(_get_prop(obj._vertices, path_ind))]
@@ -475,15 +475,16 @@ def get_closest_vertices(faces_subsets, vertices):
     return np.array(closest_verts_list)
 
 
-def make_mesh_lines(obj, mode, path_ind=-1, **kwargs) -> dict[str, Any]:
-    """Draw mesh lines and vertices"""
+def make_mesh_lines(obj, mode, path_ind=-1, *, faces=None, **kwargs) -> dict[str, Any]:
+    """Draw mesh lines and vertices, of `faces` or of the object's own."""
     # pylint: disable=protected-access
     kwargs.pop("color", None)
     legendgroup = kwargs.pop("legendgroup", obj)
     style = obj.style
     mesh = getattr(style.mesh, mode)
     marker, line = mesh.marker, mesh.line
-    tr, vert = obj.faces, _get_prop(obj._vertices, path_ind)
+    tr = obj.faces if faces is None else faces
+    vert = _get_prop(obj._vertices, path_ind)
     if mode == "disconnected":
         subsets = obj.get_faces_subsets()
         lines = get_closest_vertices(subsets, vert)
@@ -558,14 +559,13 @@ def make_Triangle(
     return traces
 
 
-def make_TriangularMesh_single(obj, *, path_ind=-1, **kwargs) -> dict[str, Any]:
-    """Return the generic mesh3d trace of one triangular mesh."""
+def make_TriangularMesh_single(obj, faces, *, path_ind=-1, **kwargs) -> dict[str, Any]:
+    """Return the generic mesh3d trace of the `faces` of a triangular mesh."""
     style = obj.style
-    vertices = obj._vertices
     trace = make_BaseTriangularMesh(
         "plotly-dict",
-        vertices=_get_prop(vertices, path_ind),
-        faces=obj.faces,
+        vertices=_get_prop(obj._vertices, path_ind),
+        faces=faces,
         color=style.color,
     )
     trace["name"] = get_legend_label(obj)
@@ -606,18 +606,18 @@ def make_TriangularMesh(
             )
             obj.check_selfintersecting()
 
+    vertices = _get_prop(obj._vertices, path_index)
     if is_disconnected:
-        tria_orig = obj._faces
-        obj.style.magnetization.mode = "arrow"
         traces = []
         subsets = obj.get_faces_subsets()
-        col_seq = cycle(obj.style.mesh.disconnected.colorsequence)
+        col_seq = cycle(style.mesh.disconnected.colorsequence)
         exponent = np.log10(len(subsets)).astype(int) + 1
         for ind, (tri, dis_color) in enumerate(zip(subsets, col_seq, strict=False)):
-            # temporary mutate faces from subset
-            obj._faces = tri
-            obj.style.magnetization.show = False
-            tr = make_TriangularMesh_single(obj, **{**kwargs, "color": dis_color})
+            tr = make_TriangularMesh_single(
+                obj, tri, path_ind=path_index, **{**kwargs, "color": dis_color}
+            )
+            # each part keeps its own color, so the magnetization shows as an arrow
+            tr["magnetization_mode"] = "arrow"
             # match first group with path scatter trace
             lg_suff = "" if ind == 0 else f"- part_{ind + 1:02d}"
             tr["legendgroup"] = f"{kwargs.get('legendgroup', obj)}{lg_suff}"
@@ -627,18 +627,17 @@ def make_TriangularMesh(
                 traces.append(
                     make_triangle_orientations(
                         obj,
+                        mesh=vertices[tri],
                         **{**kwargs, "legendgroup": tr["legendgroup"]},
                     )
                 )
-        obj._faces = tria_orig
     else:
-        traces = [make_TriangularMesh_single(obj, **kwargs)]
+        traces = [
+            make_TriangularMesh_single(obj, obj.faces, path_ind=path_index, **kwargs)
+        ]
         if style.orientation.show:
             traces.append(
-                make_triangle_orientations(
-                    obj,
-                    **kwargs,
-                )
+                make_triangle_orientations(obj, mesh=vertices[obj.faces], **kwargs)
             )
     for mode in ("grid", "open", "disconnected", "selfintersecting"):
         if getattr(style.mesh, mode).show:

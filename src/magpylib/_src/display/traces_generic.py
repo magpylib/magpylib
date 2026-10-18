@@ -620,29 +620,38 @@ def get_generic_traces3D(
         return out
 
     def get_traces_func(**extra_kwargs):
-        nonlocal is_mag
         traces_generic_temp = []
-        path_ind = extra_kwargs.get("path_ind", -1)
+        path_ind = extra_kwargs.get("path_index", -1)
         if style.model3d.showdefault and make_func is not None:
             p_trs = make_func(**make_func_kwargs, **extra_kwargs)
+            arrows = False
             for p_tr_item in p_trs:
-                p_tr_item.pop("path_ind", None)
                 p_tr = p_tr_item.copy()
-                is_mag = p_tr.pop("ismagnet", is_mag)
-                if is_mag and p_tr.get("type", "") == "mesh3d":
+                # a get_trace without a path_index argument passes it through
+                p_tr.pop("path_index", None)
+                # a trace marked as not the magnet's body, such as orientation
+                # markers, is drawn as it comes
+                body = p_tr.pop("ismagnet", is_mag)
+                # a body that keeps its own color shows the magnetization as an
+                # arrow, as the parts of a disconnected mesh do
+                arrow_only = p_tr.pop("magnetization_mode", None) == "arrow"
+                if body and p_tr.get("type", "") == "mesh3d":
                     p_tr = update_magnet_mesh(
                         input_obj,
                         style,
                         p_tr,
                         color_slicing=not supports_colorgradient,
                         path_ind=path_ind,
-                        show_color=is_mag_color,
+                        show_color=is_mag_color and not arrow_only,
                     )
-                    if is_mag_arrows:
-                        tr_arrows = make_mag_arrows(input_obj, path_ind=path_ind)
-                        if tr_arrows is not None:
-                            traces_generic_temp.append(tr_arrows)
+                    arrows |= is_mag_arrows or (
+                        arrow_only and bool(style.magnetization.show)
+                    )
                 traces_generic_temp.append(p_tr)
+            if arrows:  # one per object, however many parts its body has
+                tr_arrows = make_mag_arrows(input_obj, path_ind=path_ind)
+                if tr_arrows is not None:
+                    traces_generic_temp.insert(0, tr_arrows)
         return traces_generic_temp
 
     traces_generic = []

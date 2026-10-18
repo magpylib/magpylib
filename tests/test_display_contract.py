@@ -304,3 +304,88 @@ def test_pixels_reading_nothing_keep_the_frames_in_line(symbol):
         for s in np.atleast_1d(t["marker_symbol"])
     }
     assert symbols <= set(ALLOWED_SYMBOLS)
+
+
+def drawn_scene(*objects, **kwargs):
+    """The scene a backend with color gradients receives for `objects`."""
+    scenes = []
+    magpy.register_backend("trace_probe", scenes.append, supports_colorgradient=True)
+    try:
+        magpy.show(*objects, backend="trace_probe", units_length="m", **kwargs)
+    finally:
+        DisplayBackend.backends.pop("trace_probe", None)
+    return scenes[0]
+
+
+TETRA = np.array([(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)], dtype=float)
+TETRA_FACES = [(0, 2, 1), (0, 1, 3), (0, 3, 2), (1, 2, 3)]
+
+
+def test_drawing_writes_nothing_to_the_objects():
+    """Drawing a TriangleStrip set `faces` and `mesh` on it, and a
+    TriangleSheet `mesh`."""
+    strip = magpy.current.TriangleStrip(
+        current=1,
+        vertices=[(0, 0, 0), (0, 1, 0), (1, 0, 0), (1, 1, 0)],
+        style_mesh_grid_show=True,
+    )
+    sheet = magpy.current.TriangleSheet(
+        vertices=TETRA[:3], faces=[(0, 1, 2)], current_densities=[(1, 0, 0)]
+    )
+    before = [set(vars(obj)) for obj in (strip, sheet) if obj.style]  # style is lazy
+    drawn_scene(strip, sheet)
+    assert [set(vars(obj)) for obj in (strip, sheet)] == before
+
+
+def test_each_copy_along_a_path_is_drawn_at_its_own_step():
+    """A TriangularMesh drew its last vertices at every path step; every copy
+    took the last step's magnetization; and a Triangle's orientation markers
+    left the copies after them uncolored."""
+    mesh = magpy.magnet.TriangularMesh(
+        vertices=[TETRA, 3 * TETRA],
+        faces=TETRA_FACES,
+        polarization=(0, 0, 1),
+        style_path_frames=[0],
+    )
+    (trace,) = [t for t in drawn_scene(mesh).frames[0].traces if t["type"] == "mesh3d"]
+    assert np.max(trace["x"]) == 1
+
+    cube = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1),
+        polarization=[(0, 0, 1), (1, 0, 0)],
+        position=[(0, 0, 0), (3, 0, 0)],
+        style_path_frames=[0, 1],
+    )
+    (trace,) = [t for t in drawn_scene(cube).frames[0].traces if t["type"] == "mesh3d"]
+    x, z, intensity = (np.asarray(trace[k]) for k in ("x", "z", "intensity"))
+    assert np.corrcoef(z[x < 2], intensity[x < 2])[0, 1] > 0.99
+    assert np.corrcoef(x[x > 2], intensity[x > 2])[0, 1] > 0.99
+
+    triangle = magpy.misc.Triangle(
+        vertices=[TETRA[:3], 2 * TETRA[:3]],
+        polarization=(0, 0, 1),
+        position=[(0, 0, 0), (5, 0, 0)],
+        style_path_frames=[0, 1],
+    )
+    traces = drawn_scene(triangle).frames[0].traces
+    colored = [t for t in traces if t.get("intensity") is not None]
+    x = np.concatenate([t["x"] for t in colored])
+    assert x.min() < 2
+    assert x.max() > 4
+
+
+def test_disconnected_mesh_parts_keep_their_colors():
+    """Each part is drawn in its own color, the magnetization as one arrow;
+    6.0 colored the parts by magnetization again, so they looked alike."""
+    mesh = magpy.magnet.TriangularMesh(
+        vertices=np.vstack([TETRA, TETRA + np.array((3, 0, 0))]),
+        faces=TETRA_FACES + [tuple(i + 4 for i in f) for f in TETRA_FACES],
+        polarization=(0, 0, 1),
+        check_disconnected="ignore",
+        style_mesh_disconnected_show=True,
+    )
+    traces = drawn_scene(mesh).frames[0].traces
+    parts = [t for t in traces if t["type"] == "mesh3d"]
+    assert [t["color"] for t in parts] == ["red", "blue"]
+    assert all(t.get("intensity") is None for t in parts)
+    assert sum(t.get("mode") == "lines" for t in traces) == 1
