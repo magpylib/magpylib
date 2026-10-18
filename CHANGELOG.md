@@ -135,7 +135,8 @@
   accepted and gave wrong forces, while NumPy integers were refused
   ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
 - `getFT(..., meshreport=True)` printed nothing: it logged at INFO level, which
-  Python hides by default. It prints the mesh points of each target.
+  Python hides by default. It prints the mesh points of each target
+  ([#1032](https://github.com/magpylib/magpylib/pull/1032)).
 - Derived properties in the wrong frame: the `centroid` of a rotated `Polyline`,
   `TriangleStrip`, `TriangleSheet` or `Sensor` ignored its orientation, so
   `getFT` torques about the centroid of such currents were off by up to a factor
