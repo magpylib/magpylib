@@ -1151,3 +1151,21 @@ def test_reshape_must_be_a_tuple():
         check_format_input_numeric(
             2.0, dtype=float, shapes=None, reshape=[1, 1], name="x"
         )
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        lambda: magpy.getB(magpy.misc.Dipole(moment=(0, 0, 1)), [1, 2, 3, 4]),
+        lambda: magpy.current.TriangleSheet(
+            vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)],
+            faces=[(0, 1, 5)],
+            current_densities=[(1, 0, 0)],
+        ),
+    ],
+    ids=["observer shape", "faces vs vertices"],
+)
+def test_input_errors_are_value_errors(call):
+    """Magpylib's input errors are ValueErrors, so a standard except catches them."""
+    with pytest.raises(ValueError):  # noqa: PT011
+        call()

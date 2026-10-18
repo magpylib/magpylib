@@ -143,7 +143,8 @@ unless you relied on the legend vanishing.
 
 ## Deprecated
 
-- `barycenter`, in favour of `centroid`
+- `barycenter` of `CylinderSegment`, `Tetrahedron`, `TriangularMesh` and
+  `Triangle`, in favour of `centroid`
   ([#916](https://github.com/magpylib/magpylib/pull/916)). It warns in version 6
   and will be removed in a future version.
 

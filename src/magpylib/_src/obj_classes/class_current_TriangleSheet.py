@@ -260,7 +260,7 @@ class TriangleSheet(BaseSource, BaseTarget):
             verts[0][fac]
         except IndexError as e:
             msg = f"Some faces indices of {self} do not match with vertices array."
-            raise IndexError(msg) from e
+            raise ValueError(msg) from e
 
         return cd, verts, fac
 

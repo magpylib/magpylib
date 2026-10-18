@@ -80,7 +80,9 @@ def make_DefaultTrace(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
     return {**trace, **kwargs}
 
 
-def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+def make_Polyline(
+    obj, *, path_ind=-1, **kwargs
+) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly scatter3d parameters for a Polyline current in a dictionary based on the
     provided arguments.
@@ -123,7 +125,7 @@ def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
 
 
 def make_TriangleStrip(
-    obj, path_ind=-1, **kwargs
+    obj, *, path_ind=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly scatter3d parameters for a TriangleStrip current in a dictionary based on the
@@ -169,7 +171,7 @@ def make_TriangleStrip(
 
 
 def make_TriangleSheet(
-    obj, path_ind=-1, **kwargs
+    obj, *, path_ind=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly scatter3d parameters for a TriangleSheet current in a dictionary based on the
@@ -226,7 +228,7 @@ def make_TriangleSheet(
 
 
 def make_Circle(
-    obj, base=72, path_ind=-1, **kwargs
+    obj, base=72, *, path_ind=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly scatter3d parameters for a Circle current in a dictionary based on the
@@ -272,7 +274,7 @@ def make_Circle(
     return traces
 
 
-def make_Dipole(obj, path_ind=-1, autosize=None, **kwargs) -> dict[str, Any]:
+def make_Dipole(obj, autosize=None, *, path_ind=-1, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a dipole in a dictionary based on the
     provided arguments.
@@ -313,7 +315,7 @@ def make_Dipole(obj, path_ind=-1, autosize=None, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_Cuboid(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
+def make_Cuboid(obj, *, path_ind=-1, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Cuboid Magnet in a dictionary based on the
     provided arguments.
@@ -330,7 +332,7 @@ def make_Cuboid(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_Cylinder(obj, path_ind=-1, base=50, **kwargs) -> dict[str, Any]:
+def make_Cylinder(obj, base=50, *, path_ind=-1, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Cylinder Magnet in a dictionary based on the
     provided arguments.
@@ -350,7 +352,7 @@ def make_Cylinder(obj, path_ind=-1, base=50, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_CylinderSegment(obj, path_ind=-1, vertices=25, **kwargs) -> dict[str, Any]:
+def make_CylinderSegment(obj, vertices=25, *, path_ind=-1, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Cylinder Segment Magnet in a dictionary based on the
     provided arguments.
@@ -368,7 +370,7 @@ def make_CylinderSegment(obj, path_ind=-1, vertices=25, **kwargs) -> dict[str, A
     return {**trace, **kwargs}
 
 
-def make_Sphere(obj, path_ind=-1, vertices=15, **kwargs) -> dict[str, Any]:
+def make_Sphere(obj, vertices=15, *, path_ind=-1, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Sphere Magnet in a dictionary based on the
     provided arguments.
@@ -388,7 +390,7 @@ def make_Sphere(obj, path_ind=-1, vertices=15, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_Tetrahedron(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
+def make_Tetrahedron(obj, *, path_ind=-1, **kwargs) -> dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Tetrahedron Magnet in a dictionary based on the
     provided arguments.
@@ -546,7 +548,9 @@ def make_mesh_lines(obj, mode, path_ind=-1, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_Triangle(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+def make_Triangle(
+    obj, *, path_ind=-1, **kwargs
+) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly mesh3d parameters for a Triangular facet in a dictionary based on the
     provided arguments.
@@ -588,7 +592,7 @@ def make_Triangle(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
     return traces
 
 
-def make_TriangularMesh_single(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
+def make_TriangularMesh_single(obj, *, path_ind=-1, **kwargs) -> dict[str, Any]:
     """
     Creates the plotly mesh3d parameters for a Triangular facet mesh in a dictionary based on the
     provided arguments.
@@ -610,7 +614,7 @@ def make_TriangularMesh_single(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
 
 
 def make_TriangularMesh(
-    obj, path_ind=-1, **kwargs
+    obj, *, path_ind=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
     """
     Creates the plotly mesh3d parameters for a Triangular facet mesh in a dictionary based on the

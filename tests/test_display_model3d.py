@@ -143,3 +143,9 @@ def test_model3d_updatefunc_is_called_at_show_time(backend):
     before = len(calls)
     magpy.show(obj, backend=backend, return_fig=True)
     assert len(calls) > before, "updatefunc not re-evaluated on the second show"
+
+
+def test_trace3d_takes_positional_arguments():
+    """Trace3d keeps its version 5 positional parameters."""
+    trace = magpy.graphics.Trace3d("generic", "Mesh3d")
+    assert (trace.backend, trace.constructor) == ("generic", "Mesh3d")

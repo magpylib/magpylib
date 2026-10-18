@@ -10,10 +10,11 @@ from magpylib._src.display.traces_core import make_Triangle
 from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
 from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_BaseProperties import BaseBarycenter
 from magpylib._src.style import TriangleStyle
 
 
-class Triangle(BaseMagnet):
+class Triangle(BaseMagnet, BaseBarycenter):
     """Triangular surface with homogeneous magnetic surface charge.
 
     Can be used as ``sources`` input for magnetic field computation and ``target``

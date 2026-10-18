@@ -392,6 +392,39 @@ class Trace3d(PropertyNode):
         doc="Callable updating the trace parameters at show time.",
     )
 
+    def __init__(
+        self,
+        backend="generic",
+        constructor=None,
+        args=None,
+        kwargs=None,
+        coordsargs=None,
+        show=True,
+        scale=1,
+        updatefunc=None,
+        **params,
+    ):
+        # pass only what differs from a field's default, so is_set() reports
+        # what the caller set
+        given = {
+            "backend": backend,
+            "constructor": constructor,
+            "args": args,
+            "kwargs": kwargs,
+            "coordsargs": coordsargs,
+            "show": show,
+            "scale": scale,
+            "updatefunc": updatefunc,
+        }
+        defaults = {"backend": "generic", "show": True, "scale": 1}
+        given = {
+            k: v
+            for k, v in given.items()
+            if v is not None
+            and not (k in defaults and (type(v), v) == (type(defaults[k]), defaults[k]))
+        }
+        super().__init__(**given, **params)
+
 
 class TraceData(NodeSequence):
     """Tuple of Trace3d objects; accepts single/list of Trace3d, dict or callable."""
