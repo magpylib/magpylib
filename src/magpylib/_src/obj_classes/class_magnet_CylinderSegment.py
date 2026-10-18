@@ -257,7 +257,7 @@ class CylinderSegment(
         )
 
     def _validate_meshing(self, value):
-        """Check a meshing input and return it normalised: a positive integer, or a
+        """Check a meshing input and return it normalized: a positive integer, or a
         tuple of 3 positive integers (divisions along the arc, the radius and the
         height)."""
         return check_meshing_count_or_triple(value, self)

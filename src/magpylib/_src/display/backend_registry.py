@@ -74,7 +74,7 @@ def register_backend(name, show_func, **capabilities):
         without `supports_colorgradient` the payload changes without a
         warning, and that a grid mixing 3D and 2D panels arrives unchanged,
         with a warning. They default to False so a capability added in a
-        later magpylib release never changes an existing backend's behaviour.
+        later magpylib release never changes an existing backend's behavior.
     supports_native_traces : bool, default False
         Whether models attached via ``style.model3d.data`` naming this backend
         are rendered. False skips them with a warning.

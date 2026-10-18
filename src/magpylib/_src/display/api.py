@@ -26,14 +26,14 @@ Four things not to do here:
   already a plain dict of numpy arrays that matplotlib, plotly and pyvista all
   consume, so an IR would be a translation layer with no consumer.
 - **Do not remove `group_traces` or the cross-object merge.** It is a real
-  optimisation for scenes where objects share a legendgroup and colour. It is
+  optimization for scenes where objects share a legendgroup and color. It is
   optional per backend via `DisplayBackend.merge_traces`; do not delete it.
   The four merges *within* one object are unconditional by design.
 - **Do not change what `legendgroup` means.** Collection-scoped legend grouping
-  is correct behaviour. Identity is a separate axis and lives in `object_id`.
+  is correct behavior. Identity is a separate axis and lives in `object_id`.
 - **Do not "fix" the capability-driven geometry.** `supports_colorgradient=False`
-  triggers geometric mesh slicing per colour band in `update_magnet_mesh`,
-  because matplotlib cannot interpolate vertex colours. It is a seam, it is
+  triggers geometric mesh slicing per color band in `update_magnet_mesh`,
+  because matplotlib cannot interpolate vertex colors. It is a seam, it is
   ugly, and it works.
 """
 
@@ -188,6 +188,17 @@ def drawing_properties(trace):
 
     with `fig` from `plotly.subplots.make_subplots`: a plain ``go.Figure()``
     rejects `row` and `col`.
+
+    Parameters
+    ----------
+    trace : dict
+        A trace from `Frame.traces`.
+
+    Returns
+    -------
+    dict
+        A copy of `trace` without the keys in `TRACE_META_KEYS` and
+        `PLACEMENT_KEYS`.
     """
     return {
         k: v
@@ -206,6 +217,11 @@ class Panel:
     #: (3, 2) of (min, max) per axis, in the display unit, equal on the three
     #: axes, `zoom` applied. None for chart2d, which has no 3D range.
     ranges: np.ndarray | None = None
+    #: The size, in m like the objects' positions and not in the display unit,
+    #: the built-in backends give a sensor or dipole with
+    #: ``style.sizemode="scaled"`` in this cell, from its extent; pass it to
+    #: `pixel_sizes`. None for chart2d.
+    autosize: float | None = None
     #: Axis titles. scene3d: {"x": "x (m)", "y": "y (m)", "z": "z (m)"}.
     #: chart2d: {"x": "path index", "y": "Bx, Bz (T)"} -- the panel's
     #: outputs, which always share one unit, over the path index.
@@ -249,10 +265,12 @@ class AnimationSettings:
     fps: int = 20
     #: Total duration asked for, in seconds.
     time: float = 5
+    #: Whether a slider over the path steps is shown.
     slider: bool = True
     #: Where a backend with `supports_animation_output` writes the animation:
     #: a ``.gif`` or ``.mp4`` path, or only the suffix for a temporary file.
     output: str | None = None
+    #: Whether the animation starts again when it reaches its end.
     repeat: bool = False
     #: Milliseconds per frame, an int: ``time`` spread over the frames handed
     #: over. None when the scene is static.
@@ -286,7 +304,7 @@ class Scene:
     #: whole.
     legend_maxitems: int = 20
     #: Options magpylib does not interpret, values forwarded verbatim, names
-    #: normalised (backend prefix removed, ``fig={...}`` flattened); one the
+    #: normalized (backend prefix removed, ``fig={...}`` flattened); one the
     #: backend did not declare is reported, and still forwarded. This is where
     #: backend-specific arguments live (plotly's `renderer`, pyvista's
     #: `jupyter_backend`, matplotlib's `antialiased`, ...), spelled bare or
@@ -359,7 +377,7 @@ class DisplayBackend:
     warning.
 
     Capabilities default to False so that a capability added in a later
-    magpylib release never silently changes an existing backend's behaviour.
+    magpylib release never silently changes an existing backend's behavior.
     """
 
     #: Every registered backend, keyed by name. Subclasses with a `name`

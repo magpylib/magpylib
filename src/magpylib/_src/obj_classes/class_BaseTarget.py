@@ -55,7 +55,7 @@ class BaseTarget(ABC):
     _force_type: str = None
 
     def _validate_meshing(self, value):
-        """Check a meshing input and return it normalised: a positive integer.
+        """Check a meshing input and return it normalized: a positive integer.
 
         Subclasses override this method with class-specific requirements.
         """

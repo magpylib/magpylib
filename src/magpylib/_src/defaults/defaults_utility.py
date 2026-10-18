@@ -95,31 +95,36 @@ def get_defaults_dict(arg=None) -> dict:
     return dict_
 
 
-def magic_to_dict(kwargs, separator="_") -> dict:
-    """decomposes recursively a dictionary with keys with underscores into a nested dictionary
-    example : {'magnet_color':'blue'} -> {'magnet': {'color':'blue'}}
-    see: https://plotly.com/python/creating-and-updating-figures/#magic-underscore-notation
+def magic_to_dict(mapping, separator="_") -> dict:
+    """Nest a dictionary whose keys join levels with `separator`.
+
+    The magic underscore notation of Plotly and of magpylib's styles:
+    ``{"line_color": "red", "line_width": 2}`` becomes
+    ``{"line": {"color": "red", "width": 2}}``, recursively. A key that is
+    also given as a dictionary, ``"line": {...}``, is merged with it.
 
     Parameters
     ----------
-    kwargs : dict
-        dictionary of keys to be decomposed into a nested dictionary
+    mapping : dict
+        The dictionary to nest.
+    separator : str, default "_"
+        The string joining the levels in a key.
 
-    separator: str, default='_'
-        defines the separator to apply the magic parsing with
     Returns
     -------
     dict
-        nested dictionary
+        The nested dictionary.
     """
-    if not isinstance(kwargs, dict):
-        msg = f"kwargs must be a dictionary; instead received {type(kwargs).__name__}."
+    if not isinstance(mapping, dict):
+        msg = (
+            f"mapping must be a dictionary; instead received {type(mapping).__name__}."
+        )
         raise TypeError(msg)
     if not isinstance(separator, str):
         msg = f"separator must be a string; instead received {separator!r}."
         raise TypeError(msg)
     new_kwargs = {}
-    for k, v in kwargs.items():
+    for k, v in mapping.items():
         keys = k.split(separator)
         if len(keys) == 1:
             existing = new_kwargs.get(keys[0])
@@ -275,7 +280,7 @@ def _color_validator_cached(color_input, allow_None=True, parent_name=""):
             "    - A hex string (e.g. '#ff0000')\n"
             "    - A rgb string (e.g. 'rgb(185, 204, 255)')\n"
             "    - A rgb tuple (e.g. (120, 125, 126))\n"
-            "    - A number between 0 and 1 (for grey scale) (e.g. '.5' or .8)\n"
+            "    - A number between 0 and 1 (for grayscale) (e.g. '.5' or .8)\n"
             f"    - A named CSS color:\n{list(mcolors.keys())}"
         )
         raise ValueError(msg)
