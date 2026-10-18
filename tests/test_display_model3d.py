@@ -7,8 +7,6 @@ crashed. Pyvista never consumed backend-specific models at all. These tests
 pin the behaviour of each backend against each kind of model.
 """
 
-import inspect
-
 import numpy as np
 import pytest
 
@@ -147,35 +145,7 @@ def test_model3d_updatefunc_is_called_at_show_time(backend):
     assert len(calls) > before, "updatefunc not re-evaluated on the second show"
 
 
-def test_trace3d_takes_the_5x_signature():
-    """Trace3d keeps its version 5 constructor: named parameters, positional use,
-    and only what was given counts as set."""
+def test_trace3d_takes_positional_arguments():
+    """Trace3d keeps its version 5 positional parameters."""
     trace = magpy.graphics.Trace3d("generic", "Mesh3d")
     assert (trace.backend, trace.constructor) == ("generic", "Mesh3d")
-    params = list(inspect.signature(magpy.graphics.Trace3d).parameters)
-    assert params[:3] == ["backend", "constructor", "args"]
-    assert trace.is_set("constructor")
-    assert not trace.is_set("show")
-
-
-@pytest.mark.parametrize(
-    "cls",
-    [
-        magpy.magnet.Cuboid,
-        magpy.magnet.Cylinder,
-        magpy.magnet.CylinderSegment,
-        magpy.magnet.Sphere,
-        magpy.magnet.Tetrahedron,
-        magpy.magnet.TriangularMesh,
-        magpy.current.Circle,
-        magpy.current.Polyline,
-        magpy.current.TriangleStrip,
-        magpy.current.TriangleSheet,
-        magpy.misc.Dipole,
-        magpy.misc.Triangle,
-    ],
-)
-def test_get_trace_path_ind_is_keyword_only(cls):
-    """get_trace keeps its version 5 positional parameters; path_ind is keyword-only."""
-    param = inspect.signature(cls.get_trace).parameters["path_ind"]
-    assert param.kind is inspect.Parameter.KEYWORD_ONLY

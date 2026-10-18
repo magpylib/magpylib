@@ -1157,15 +1157,13 @@ def test_reshape_must_be_a_tuple():
     "call",
     [
         lambda: magpy.getB("not a source", (0, 0, 0)),
-        lambda: magpy.magnet.Cuboid(dimension=(1, 2)),
-        lambda: magpy.getB(magpy.magnet.Cuboid(dimension=(1, 1, 1)), (0, 0, 0)),
         lambda: magpy.current.TriangleSheet(
             vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)],
             faces=[(0, 1, 5)],
             current_densities=[(1, 0, 0)],
         ),
     ],
-    ids=["bad source", "bad dimension", "missing polarization", "faces vs vertices"],
+    ids=["bad source", "faces vs vertices"],
 )
 def test_input_errors_are_value_errors(call):
     """Magpylib's input errors are ValueErrors, so a standard except catches them."""

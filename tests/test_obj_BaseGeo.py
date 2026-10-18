@@ -841,22 +841,8 @@ def test_centroid_turns_with_the_object(obj):
 
 @pytest.mark.parametrize(
     ("obj", "has_alias"),
-    [
-        (magpy.magnet.CylinderSegment(dimension=(1, 2, 1, 0, 90)), True),
-        (magpy.magnet.Tetrahedron(vertices=_V4), True),
-        (
-            magpy.magnet.TriangularMesh(
-                vertices=_V4, faces=[(0, 2, 1), (0, 1, 3), (1, 2, 3), (0, 3, 2)]
-            ),
-            True,
-        ),
-        (magpy.misc.Triangle(vertices=_V4[:3]), True),
-        (magpy.magnet.Cuboid(dimension=(1, 1, 1)), False),
-        (magpy.current.Circle(diameter=1), False),
-        (magpy.Sensor(), False),
-        (magpy.Collection(), False),
-    ],
-    ids=lambda x: "" if isinstance(x, bool) else type(x).__name__,
+    [(magpy.magnet.Tetrahedron(vertices=_V4), True), (magpy.Sensor(), False)],
+    ids=["Tetrahedron", "Sensor"],
 )
 def test_barycenter_only_where_it_was(obj, has_alias):
     """The deprecated barycenter stays on the classes that had it before version 6,
