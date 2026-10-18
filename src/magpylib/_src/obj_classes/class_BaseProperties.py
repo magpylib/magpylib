@@ -5,6 +5,7 @@ Dipole moment is a separate class from BaseMagnet because this property is inher
 Volume is a separate class from BaseMagnet because Dipole has no volume property
 """
 
+import warnings
 from abc import ABC, abstractmethod
 
 
@@ -68,3 +69,24 @@ class BaseVolume(ABC):
         float
             Volume in units (m³).
         """
+
+
+class BaseBarycenter:
+    """Deprecated ``barycenter`` alias of ``centroid``, on the classes that had it
+    before version 6."""
+
+    @property
+    def barycenter(self):
+        """Return barycenter (m).
+
+        .. deprecated:: 6.0.0
+            Use :attr:`centroid` instead. The ``barycenter`` property will be removed
+            in a future version.
+        """
+        warnings.warn(
+            "The 'barycenter' property is deprecated and will be removed in a future "
+            "version. Use 'centroid' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.centroid  # pylint: disable=no-member  # mixed into BaseGeo classes

@@ -839,6 +839,35 @@ def test_centroid_turns_with_the_object(obj):
     np.testing.assert_allclose(obj.centroid, rot.apply(before), atol=1e-14)
 
 
+@pytest.mark.parametrize(
+    ("obj", "has_alias"),
+    [
+        (magpy.magnet.CylinderSegment(dimension=(1, 2, 1, 0, 90)), True),
+        (magpy.magnet.Tetrahedron(vertices=_V4), True),
+        (
+            magpy.magnet.TriangularMesh(
+                vertices=_V4, faces=[(0, 2, 1), (0, 1, 3), (1, 2, 3), (0, 3, 2)]
+            ),
+            True,
+        ),
+        (magpy.misc.Triangle(vertices=_V4[:3]), True),
+        (magpy.magnet.Cuboid(dimension=(1, 1, 1)), False),
+        (magpy.current.Circle(diameter=1), False),
+        (magpy.Sensor(), False),
+        (magpy.Collection(), False),
+    ],
+    ids=lambda x: "" if isinstance(x, bool) else type(x).__name__,
+)
+def test_barycenter_only_where_it_was(obj, has_alias):
+    """The deprecated barycenter stays on the classes that had it before version 6,
+    and no other class gains it."""
+    if has_alias:
+        with pytest.warns(DeprecationWarning, match="centroid"):
+            np.testing.assert_allclose(obj.barycenter, obj.centroid)
+    else:
+        assert not hasattr(obj, "barycenter")
+
+
 def test_unset_describe():
     """test describe completely unset objects"""
     objs = [

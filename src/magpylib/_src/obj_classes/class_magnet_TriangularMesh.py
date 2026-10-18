@@ -27,6 +27,7 @@ from magpylib._src.input_checks import (
 )
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import (
+    BaseBarycenter,
     BaseDipoleMoment,
     BaseVolume,
 )
@@ -37,7 +38,9 @@ from magpylib._src.obj_classes.target_meshing import generate_mesh_triangularmes
 from magpylib._src.style import TriangularMeshStyle
 
 
-class TriangularMesh(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
+class TriangularMesh(
+    BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment, BaseBarycenter
+):
     """Magnet with homogeneous magnetization defined by a triangular surface mesh.
 
     Can be used as ``sources`` input for magnetic field computation and ``target``

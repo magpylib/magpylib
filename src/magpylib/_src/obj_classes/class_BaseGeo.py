@@ -5,7 +5,6 @@
 # pylint: disable=protected-access
 # pylint: disable=import-outside-toplevel
 
-import warnings
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -509,27 +508,6 @@ class BaseGeo(BaseTransform, ABC):
         raise AttributeError(msg)
 
     @property
-    def barycenter(self):
-        """Return barycenter (m).
-
-        .. deprecated:: 6.0.0
-            Use :attr:`centroid` instead. The ``barycenter`` property will be removed
-            in a future version.
-        """
-        warnings.warn(
-            "The 'barycenter' property is deprecated and will be removed in a future "
-            "version. Use 'centroid' instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.centroid
-
-    @property
-    def _barycenter(self):
-        """Return barycenter without squeezing (internal, deprecated)."""
-        return self._centroid
-
-    @property
     def style(self):
         """Return object style as a ``BaseStyle`` instance."""
         if getattr(self, "_style", None) is None:
@@ -541,7 +519,7 @@ class BaseGeo(BaseTransform, ABC):
                 self._style.update(style_kwargs)
             except (AttributeError, ValueError) as e:
                 e.args = (
-                    f"{self!r} has been initialized with some invalid style arguments."
+                    f"{self!r} has been initialized with some invalid style arguments. "
                     + str(e),
                 )
                 raise
