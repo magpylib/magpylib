@@ -179,9 +179,9 @@ F, T = magpy.getFT(
 )
 
 # Mesh report:
-#   Target Cylinder(id=2589596340240): 1 points
-#   Target Cylinder(id=2589596291216): 10 points
-#   Target Cylinder(id=2589596292176): 100 points
+#   Target Cylinder(id=2589596340240): 1 point
+#   Target Cylinder(id=2589596291216): 5 points
+#   Target Cylinder(id=2589596292176): 84 points
 ```
 
 **Key insight:** The algorithm selects optimal cell distributions close to (but not exactly) your target `meshing` value.

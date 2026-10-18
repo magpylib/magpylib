@@ -184,6 +184,18 @@ def test_meshing_is_normalised_to_ints(target, meshing, expected):
     assert type(value) is type(expected)
 
 
+def test_meshreport_prints_the_points_of_each_target(capsys):
+    """meshreport=True prints how many mesh points each target is cut into."""
+    src = magpy.misc.Dipole(moment=(0, 0, 1), position=(0, 0, 2))
+    cube = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=POL)
+    loop = magpy.current.Circle(diameter=1, current=1)
+    getFT(src, [cube, loop], meshing={cube: 1, loop: 8}, meshreport=True)
+    out = capsys.readouterr().out
+    assert "Mesh report:" in out
+    assert ": 1 point\n" in out
+    assert ": 8 points\n" in out
+
+
 def test_polyline_meshing_below_segments_warns():
     """A Polyline with fewer mesh points than segments warns and uses one per
     segment."""

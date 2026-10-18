@@ -2,8 +2,6 @@
 
 # pylint: disable=import-outside-toplevel
 
-import logging
-
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
@@ -14,8 +12,6 @@ from magpylib._src.obj_classes.class_BaseTransform import (
     pad_path_property,
 )
 from magpylib._src.utility import format_src_inputs
-
-logger = logging.getLogger(__name__)
 
 
 def _needs_mesh(t):
@@ -737,10 +733,10 @@ def getFT(
 
     # Mesh report
     if meshreport:
-        logger.info("Mesh report:")
+        print("Mesh report:")  # noqa: T201
         for t, mesh in zip(targets, target_meshes, strict=False):
-            logger.info("  Target %s: %d points", t, mesh["n_mesh"])
-        logger.info("")
+            n = mesh["n_mesh"]
+            print(f"  Target {t}: {n} point{'s' if n != 1 else ''}")  # noqa: T201
 
     # Return mesh for analysis
     if return_mesh:
