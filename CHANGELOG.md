@@ -64,7 +64,8 @@
   [#1024](https://github.com/magpylib/magpylib/pull/1024)).
 - Magpylib's input errors are `ValueError`s, so `except ValueError` catches
   them, and a `TriangleSheet` whose faces do not match its vertices raises
-  `ValueError` instead of `IndexError`.
+  `ValueError` instead of `IndexError`
+  ([#1031](https://github.com/magpylib/magpylib/pull/1031)).
 - `show()` is about 3x faster, and a sensor showing its pixel field is read
   once, and not at all while its pixels are hidden
   ([#967](https://github.com/magpylib/magpylib/pull/967),
@@ -85,7 +86,8 @@
 
 - `barycenter` of `CylinderSegment`, `Tetrahedron`, `TriangularMesh` and
   `Triangle`, in favour of `centroid`
-  ([#916](https://github.com/magpylib/magpylib/pull/916)).
+  ([#916](https://github.com/magpylib/magpylib/pull/916),
+  [#1031](https://github.com/magpylib/magpylib/pull/1031)).
 
 ### Removed
 
