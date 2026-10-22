@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- TriangleStrip and TriangleSheet force/torque meshes now follow each path
+  step's triangle areas, so deforming paths agree with separate static
+  calculations ([#1033](https://github.com/magpylib/magpylib/issues/1033)).
+
 ## [6.0.0] 2026-10-19
 
 ### Added

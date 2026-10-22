@@ -7,6 +7,7 @@ Each target class has two test functions:
 """
 
 import numpy as np
+import pytest
 
 import magpylib as magpy
 
@@ -972,3 +973,36 @@ def test_trianglesheet_static_geometry_varying_current_matches_per_step():
         F_i, T_i = magpy.getFT(src, ts_i, meshing=12)
         np.testing.assert_allclose(F[i], F_i, rtol=1e-10)
         np.testing.assert_allclose(T[i], T_i, rtol=1e-10)
+
+
+@pytest.mark.parametrize("kind", ["strip", "sheet"])
+def test_triangle_current_varying_area_matches_static_steps(kind):
+    """Mesh each geometry independently, including repeated and reordered steps."""
+    vertices = np.random.default_rng(3).normal(size=(4, 4, 3)) * 0.01
+    indices = [0, 1, 2, 3, 1, 0]
+    vertices = vertices[indices]
+    current = np.array([1, 2, -1, 3, 4, -2])
+    densities = (vertices[:, 2:] - vertices[:, :-2]) * current[:, None, None]
+    faces = [[0, 1, 2], [1, 2, 3]]
+    source = magpy.misc.Dipole(moment=(1, 2, 3))
+
+    def make_target(index):
+        if kind == "strip":
+            return magpy.current.TriangleStrip(
+                vertices=vertices[index], current=current[index]
+            )
+        return magpy.current.TriangleSheet(
+            vertices=vertices[index], faces=faces, current_densities=densities[index]
+        )
+
+    expected = np.array(
+        [magpy.getFT(source, make_target(i), meshing=40) for i in range(len(indices))]
+    ).transpose(1, 0, 2)
+    target = make_target(slice(None))
+    actual = np.array(magpy.getFT(source, target, meshing=40))
+    np.testing.assert_allclose(actual, expected, rtol=1e-12, atol=1e-20)
+    np.testing.assert_array_equal(target.vertices, vertices)
+
+    order = np.array([2, 5, 3, 0, 4, 1])
+    reordered = np.array(magpy.getFT(source, make_target(order), meshing=40))
+    np.testing.assert_allclose(reordered, expected[:, order], rtol=1e-12, atol=1e-20)
