@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Accept bound methods and callable objects as custom field functions, and keep
+  copied sources independent in the subclassing example
+  ([#1041](https://github.com/magpylib/magpylib/issues/1041)).
+
 ## [6.0.0] 2026-10-19
 
 ### Added

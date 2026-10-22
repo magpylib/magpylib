@@ -577,6 +577,7 @@ def test_input_objects_field_func_good():
     [
         pytest.param(1, id="non-callable"),
         pytest.param(lambda fieldd, observers, whatever: None, id="bad-arg-names"),  # noqa: ARG005
+        pytest.param(lambda *, field, observers: observers, id="keyword-only"),  # noqa: ARG005
         pytest.param(
             lambda field, observers: 1 if field == "B" else None,  # noqa: ARG005
             id="no-ndarray-return-on-B",

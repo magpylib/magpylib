@@ -76,3 +76,58 @@ def test_CustomSource_centroid():
 
     custom_source = magpy.misc.CustomSource(field_func=custom_field, position=expected)
     assert np.allclose(custom_source.centroid, expected)
+
+
+@pytest.mark.parametrize("in_collection", [False, True])
+def test_CustomSource_bound_method_copy(in_collection):
+    """A copied source's bound field method reads the copy's own state."""
+
+    class UniformSource(magpy.misc.CustomSource):
+        """Uniform field with mutable strength."""
+
+        def __init__(self, strength):
+            self.strength = strength
+            super().__init__(field_func=self.compute_field)
+
+        def compute_field(self, field, observers):
+            """Return a uniform local x-directed field."""
+            result = np.zeros(observers.shape)
+            result[:, 0] = self.strength
+            return result if field == "B" else result / magpy.mu_0
+
+    source = UniformSource(1)
+    original = magpy.Collection(source) if in_collection else source
+    duplicate = original.copy()
+    copied_source = duplicate[0] if in_collection else duplicate
+    source.strength = 2
+    np.testing.assert_allclose(original.getB((1, 0, 0)), (2, 0, 0))
+    np.testing.assert_allclose(duplicate.getB((1, 0, 0)), (1, 0, 0))
+
+    copied_source.strength = 3
+    duplicate.rotate_from_angax(90, "z")
+    np.testing.assert_allclose(duplicate.getB((1, 0, 0)), (0, 3, 0), atol=1e-14)
+    np.testing.assert_allclose(
+        duplicate.getH((1, 0, 0)) * magpy.mu_0, (0, 3, 0), atol=1e-14
+    )
+    np.testing.assert_allclose(original.getB((1, 0, 0)), (2, 0, 0))
+
+
+def test_CustomSource_callable_object_copy():
+    """A callable object can supply an independently copied field."""
+
+    class UniformField:
+        """Uniform field callback."""
+
+        def __init__(self, strength):
+            self.strength = strength
+
+        def __call__(self, field, observers):
+            result = np.full(observers.shape, self.strength, dtype=float)
+            return result if field == "B" else result / magpy.mu_0
+
+    callback = UniformField(1)
+    source = magpy.misc.CustomSource(field_func=callback)
+    duplicate = source.copy()
+    callback.strength = 2
+    np.testing.assert_allclose(source.getB((1, 0, 0)), (2, 2, 2))
+    np.testing.assert_allclose(duplicate.getB((1, 0, 0)), (1, 1, 1))
