@@ -598,11 +598,13 @@ def get_generic_traces3D(
             if name in ("position", "orientation"):
                 continue
             prop_w_path = getattr(input_obj, f"_{name}")
-            if isinstance(prop_w_path, np.ndarray):
-                axis = None if prop_w_path.ndim <= 1 else 0
-                if np.unique(prop_w_path, axis=axis).shape[0] > 1:
-                    is_frame_dependent = True
-                    break
+            if (
+                isinstance(prop_w_path, np.ndarray)
+                and len(prop_w_path) > 1
+                and (prop_w_path[1:] != prop_w_path[:1]).any()
+            ):
+                is_frame_dependent = True
+                break
 
     path_traces_extra_non_generic_backend = []
     if not has_path and make_func is not None:
