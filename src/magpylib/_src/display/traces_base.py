@@ -54,6 +54,19 @@ def get_model(trace, *, backend, show, scale, kwargs):
     return model
 
 
+# built once; every trace gets its own copy of the faces
+_CUBOID_FACES = {
+    "i": np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
+    "j": np.array([0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2]),
+    "k": np.array([3, 4, 2, 3, 5, 6, 5, 5, 0, 1, 7, 6]),
+}
+_CUBOID_HALF = {
+    "x": np.array([-1, -1, 1, 1, -1, -1, 1, 1]) * 0.5,
+    "y": np.array([-1, 1, 1, -1, -1, 1, 1, -1]) * 0.5,
+    "z": np.array([-1, -1, -1, -1, 1, 1, 1, 1]) * 0.5,
+}
+
+
 def make_Cuboid(
     backend="generic",
     dimension=(1.0, 1.0, 1.0),
@@ -92,12 +105,8 @@ def make_Cuboid(
     dimension = np.array(dimension, dtype=float)
     trace = {
         "type": "mesh3d",
-        "i": np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
-        "j": np.array([0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2]),
-        "k": np.array([3, 4, 2, 3, 5, 6, 5, 5, 0, 1, 7, 6]),
-        "x": np.array([-1, -1, 1, 1, -1, -1, 1, 1]) * 0.5 * dimension[0],
-        "y": np.array([-1, 1, 1, -1, -1, 1, 1, -1]) * 0.5 * dimension[1],
-        "z": np.array([-1, -1, -1, -1, 1, 1, 1, 1]) * 0.5 * dimension[2],
+        **{k: v.copy() for k, v in _CUBOID_FACES.items()},
+        **{k: _CUBOID_HALF[k] * dimension[i] for i, k in enumerate("xyz")},
     }
 
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)

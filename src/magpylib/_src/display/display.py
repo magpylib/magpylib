@@ -2,9 +2,6 @@
 
 from contextlib import contextmanager
 
-from matplotlib.axes import Axes as mplAxes
-from matplotlib.figure import Figure as mplFig
-
 from magpylib._src.defaults.defaults_utility import _DefaultValue
 from magpylib._src.display.backend_registry import ShowDispatcher
 from magpylib._src.display.traces_generic import MagpyMarkers
@@ -25,7 +22,6 @@ def infer_backend(canvas):
     """Infers the plotting backend from canvas and environment"""
     # pylint: disable=import-outside-toplevel
     backend = "matplotlib"
-    in_notebook = False
     plotly_available = False
     try:
         # pylint: disable=unused-import
@@ -33,11 +29,17 @@ def infer_backend(canvas):
         from magpylib._src.utility import is_notebook  # noqa: PLC0415
 
         plotly_available = True
-        in_notebook = is_notebook()
-        if in_notebook:
+        if is_notebook():
             backend = "plotly"
     except ImportError:  # pragma: no cover
         pass
+    if canvas is None:
+        # nothing to recognize: importing matplotlib and pyvista to compare
+        # None with their figure types cost a first show() its import time
+        return backend
+    from matplotlib.axes import Axes as mplAxes  # noqa: PLC0415
+    from matplotlib.figure import Figure as mplFig  # noqa: PLC0415
+
     if isinstance(canvas, mplAxes | mplFig):
         backend = "matplotlib"
     elif plotly_available and isinstance(

@@ -2,8 +2,17 @@
 
 ## [Unreleased]
 
+### Changed
+
+- `import magpylib` no longer loads matplotlib or plotly, `show()` builds scenes
+  of many objects in less than half the time, and fields along a path take up to
+  40 % less time to compute
+  ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
+
 ### Fixed
 
+- An animation whose only path sits in a nested `Collection` had no frames
+  ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
 - TriangleStrip and TriangleSheet force/torque meshes now follow each path
   step's triangle areas, so deforming paths agree with separate static
   calculations ([#1046](https://github.com/magpylib/magpylib/pull/1046)).
