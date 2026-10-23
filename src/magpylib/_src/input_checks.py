@@ -106,7 +106,11 @@ def validate_field_func(val):
         )
         raise MagpylibBadUserInput(msg)
 
-    fn_args = inspect.getfullargspec(val).args
+    fn_args = [
+        param.name
+        for param in inspect.signature(val).parameters.values()
+        if param.kind in (param.POSITIONAL_ONLY, param.POSITIONAL_OR_KEYWORD)
+    ]
     if fn_args[:2] != ["field", "observers"]:
         msg = (
             "Input field_func must have two positional arguments called field and observers; "
