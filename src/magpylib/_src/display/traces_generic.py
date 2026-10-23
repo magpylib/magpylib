@@ -573,43 +573,15 @@ def get_generic_traces3D(
     make_func_kwargs = {"legendgroup": legendgroup, **kwargs}
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
+    if hasattr(style, "pixel"):
+        make_func_kwargs["field_values"] = field_values
 
     positions = getattr(input_obj, "_position", None)
     orientations = getattr(input_obj, "_orientation", None)
-    has_path = positions is not None and orientations is not None
-    # Use _get_path_len() for the true path length, including path properties
-    # that are stored lazily (minimal form) beyond position/orientation.
-    if hasattr(input_obj, "_get_path_len"):
-        path_len = input_obj._get_path_len()
-    else:
-        path_len = 1 if positions is None else len(positions)
-    is_frame_dependent = False
-    path_inds = path_inds_minimal = path_frames_to_indices(style.path.frames, path_len)
-    if hasattr(style, "pixel"):
-        make_func_kwargs["field_values"] = field_values
-        frsc = style.pixel.field.source
-        is_frame_dependent = frsc and field_values
-        if is_frame_dependent:
-            path_len = len(next(iter(field_values.values())))
-            path_inds = path_frames_to_indices(style.path.frames, path_len)
-    if getattr(input_obj, "_path_properties", None):
-        for name in input_obj._path_properties:
-            # Skip position and orientation as they're handled separately
-            if name in ("position", "orientation"):
-                continue
-            prop_w_path = getattr(input_obj, f"_{name}")
-            if (
-                isinstance(prop_w_path, np.ndarray)
-                and len(prop_w_path) > 1
-                and (prop_w_path[1:] != prop_w_path[:1]).any()
-            ):
-                is_frame_dependent = True
-                break
-
-    path_traces_extra_non_generic_backend = []
-    if not has_path and make_func is not None:
+    if positions is None or orientations is None:
         # an object without a pose, the `show(markers=...)` markers: not one
-        # of the user's objects, so no object_id to resolve
+        # of the user's objects, so no object_id to resolve. Every other
+        # object reaching here is a `BaseGeo`, which `show()` checks.
         trs = make_func(**make_func_kwargs)
         for tr in trs:
             tr["row"] = row
@@ -618,8 +590,31 @@ def get_generic_traces3D(
             tr.setdefault("opacity", getattr(style, "opacity", None) or 1)
         out = {"generic": trs}
         if extra_backend:
-            out.update({extra_backend: path_traces_extra_non_generic_backend})
+            out[extra_backend] = []
         return out
+
+    # the true path length, including path properties that are stored
+    # lazily (minimal form) beyond position/orientation
+    path_len = input_obj._get_path_len()
+    path_inds = path_inds_minimal = path_frames_to_indices(style.path.frames, path_len)
+    is_frame_dependent = False
+    if hasattr(style, "pixel"):
+        is_frame_dependent = style.pixel.field.source and field_values
+        if is_frame_dependent:
+            path_len = len(next(iter(field_values.values())))
+            path_inds = path_frames_to_indices(style.path.frames, path_len)
+    for name in input_obj._path_properties:
+        # Skip position and orientation as they're handled separately
+        if name in ("position", "orientation"):
+            continue
+        prop_w_path = getattr(input_obj, f"_{name}")
+        if (
+            isinstance(prop_w_path, np.ndarray)
+            and len(prop_w_path) > 1
+            and (prop_w_path[1:] != prop_w_path[:1]).any()
+        ):
+            is_frame_dependent = True
+            break
 
     def get_traces_func(**extra_kwargs):
         traces_generic_temp = []
@@ -656,39 +651,36 @@ def get_generic_traces3D(
                     traces_generic_temp.insert(0, tr_arrows)
         return traces_generic_temp
 
-    traces_generic = []
-    if path_inds.size != 0:
-        if is_frame_dependent:
-            traces_generic.append(None)
-        else:
-            traces_generic.extend(get_traces_func())
-        extra_model3d_traces = style.model3d.data
-        for extr in extra_model3d_traces:
-            if not extr.show:
-                continue
-            extr.update(extr.updatefunc())  # update before checking backend
-            if extr.backend == "generic":
-                tr_non_generic = {"opacity": style.opacity}
-                ttype = extr.constructor.lower()
-                obj_extr_trace = extr.kwargs() if callable(extr.kwargs) else extr.kwargs
-                obj_extr_trace = {"type": ttype, **obj_extr_trace}
-                if ttype == "scatter3d":
-                    for k in ("marker", "line"):
-                        tr_non_generic[f"{k}_color"] = tr_non_generic.get(
-                            f"{k}_color", style.color
-                        )
-                elif ttype == "mesh3d":
-                    tr_non_generic["color"] = tr_non_generic.get("color", style.color)
-                else:  # pragma: no cover
-                    msg = (
-                        f"Unsupported extra model3d constructor {ttype!r}; "
-                        "only scatter3d and mesh3d are supported."
+    # None stands for traces rebuilt at every path index
+    traces_generic = [None] if is_frame_dependent else get_traces_func()
+    extra_model3d_traces = style.model3d.data
+    for extr in extra_model3d_traces:
+        if not extr.show:
+            continue
+        extr.update(extr.updatefunc())  # update before checking backend
+        if extr.backend == "generic":
+            tr_non_generic = {"opacity": style.opacity}
+            ttype = extr.constructor.lower()
+            obj_extr_trace = extr.kwargs() if callable(extr.kwargs) else extr.kwargs
+            obj_extr_trace = {"type": ttype, **obj_extr_trace}
+            if ttype == "scatter3d":
+                for k in ("marker", "line"):
+                    tr_non_generic[f"{k}_color"] = tr_non_generic.get(
+                        f"{k}_color", style.color
                     )
-                    raise ValueError(msg)
-                tr_non_generic.update(linearize_dict(obj_extr_trace, separator="_"))
-                traces_generic.append(tr_non_generic)
+            elif ttype == "mesh3d":
+                tr_non_generic["color"] = tr_non_generic.get("color", style.color)
+            else:  # pragma: no cover
+                msg = (
+                    f"Unsupported extra model3d constructor {ttype!r}; "
+                    "only scatter3d and mesh3d are supported."
+                )
+                raise ValueError(msg)
+            tr_non_generic.update(linearize_dict(obj_extr_trace, separator="_"))
+            traces_generic.append(tr_non_generic)
 
-    legend_label = get_legend_label(input_obj)
+    # a given legend text names every trace, the path's included
+    legend_label = legendtext or get_legend_label(input_obj)
     path_traces_generic = []
     for trg in traces_generic:
         temp_rot_traces = []
@@ -698,11 +690,14 @@ def get_generic_traces3D(
             # without materializing the full path (returns the single stored
             # value for any index when the property is not path-varying).
             pos = _get_prop(positions, path_ind)
-            orient = _get_prop(orientations, path_ind)
-            tr_list = [trg]
-            if trg is None:
-                tr_list = get_traces_func(path_index=path_ind)
-                tr_list = [tr_list] if isinstance(tr_list, dict) else tr_list
+            # one stored orientation is applied as stored: indexing it builds
+            # a new Rotation per object, for bit-identical vertices
+            orient = (
+                orientations
+                if orientations.single or len(orientations) == 1
+                else _get_prop(orientations, path_ind)
+            )
+            tr_list = [trg] if trg is not None else get_traces_func(path_index=path_ind)
             for tr in tr_list:
                 if ind == 0:
                     name_suff = tr.pop("name_suffix", None)
@@ -713,21 +708,13 @@ def get_generic_traces3D(
                 temp_rot_traces.append(tr1)
         path_traces_generic.extend(group_traces(*temp_rot_traces))
 
-    geom_path_len = (
-        input_obj._get_geometric_path_len()
-        if hasattr(input_obj, "_get_geometric_path_len")
-        else input_obj._get_path_len()
-        if hasattr(input_obj, "_get_path_len")
-        else getattr(input_obj, "_position", np.array((0.0, 0.0, 0.0))).shape[0]
-    )
-    if geom_path_len > 1 and style.path.show:
+    if input_obj._get_geometric_path_len() > 1 and style.path.show:
         scatter_path = make_path(input_obj, legend_label)
         path_traces_generic.append(scatter_path)
 
     path_traces_generic = group_traces(*path_traces_generic)
 
     for tr in path_traces_generic:
-        tr.update(place_and_orient_model3d(tr))
         tr.update(row=row, col=col)
         # identity token: process-local and only valid while the object is
         # alive, which is all an interactive viewer holding the same objects
@@ -757,6 +744,7 @@ def get_generic_traces3D(
     out = {"generic": path_traces_generic}
 
     if extra_backend:
+        path_traces_extra_non_generic_backend = []
         for extr in extra_model3d_traces:
             if not extr.show:
                 continue
@@ -797,7 +785,7 @@ def get_generic_traces3D(
                 }
                 tr_non_generic = process_extra_trace(tr_non_generic)
                 path_traces_extra_non_generic_backend.append(tr_non_generic)
-        out.update({extra_backend: path_traces_extra_non_generic_backend})
+        out[extra_backend] = path_traces_extra_non_generic_backend
     return out
 
 

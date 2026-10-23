@@ -101,14 +101,17 @@ def place_and_orient_model3d(
         )
         # sometimes traces come as (n, m, 3) shape
         vert_shape = vertices.shape
-        vertices = np.reshape(vertices.astype(float), (3, -1))
-
-        vertices = vertices.T
+        vertices = vertices.astype(float, copy=False).reshape(3, -1).T
 
         if orientation is not None:
             vertices = orientation.apply(vertices)
-        new_vertices = (vertices * scale + position).T * length_factor
-        new_vertices = np.reshape(new_vertices, vert_shape)
+        # multiplying by 1 changes no float: skip those passes
+        if scale != 1:
+            vertices = vertices * scale
+        new_vertices = (vertices + position).T
+        if length_factor != 1:
+            new_vertices = new_vertices * length_factor
+        new_vertices = new_vertices.reshape(vert_shape)
         for i, k in enumerate("xyz"):
             key = coordsargs[k]
             if useargs:
@@ -638,13 +641,15 @@ def getIntensity(vertices, axis) -> np.ndarray:
     Intensity values: ndarray, shape (n,)
     """
     p = np.array(vertices).T
-    pos = np.mean(p, axis=1)
-    m = np.array(axis)
-    intensity = (p[0] - pos[0]) * m[0] + (p[1] - pos[1]) * m[1] + (p[2] - pos[2]) * m[2]
+    # what np.mean and np.ptp compute, without their dispatch overhead
+    pos = p.sum(axis=1) / p.shape[1]
+    d = (p - pos[:, None]) * np.array(axis)[:, None]
+    intensity = d[0] + d[1] + d[2]
     # normalize to interval [0, 1] (necessary for when merging mesh3d traces)
-    ptp = np.ptp(intensity)
+    lo = intensity.min()
+    ptp = intensity.max() - lo
     ptp = ptp if ptp != 0 else 1
-    return (intensity - np.min(intensity)) / ptp
+    return (intensity - lo) / ptp
 
 
 @lru_cache(maxsize=32)
@@ -718,7 +723,7 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
             tr = dict(zip("xyz", verts, strict=False))
             rc = kwex["row"], kwex["col"]
         if rc not in ranges_rc:
-            ranges_rc[rc] = {k: [] for k in "xyz"}
+            ranges_rc[rc] = []  # each trace's min and max, as rows
             tr_dim_count[rc] = {"2D": 0, "3D": 0}
         if "z" not in tr:  # only extend range for 3d traces
             tr_dim_count[rc]["2D"] += 1
@@ -733,18 +738,16 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
                 pass
             pts = pts.reshape(-1, 3)
             if pts.size != 0:
-                min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
-                for v, min_, max_ in zip(
-                    ranges_rc[rc].values(), *min_max, strict=False
-                ):
-                    v.extend([min_, max_])
+                ranges_rc[rc].append(np.nanmin(pts, axis=0))
+                ranges_rc[rc].append(np.nanmax(pts, axis=0))
     for rc, ranges_item in ranges_rc.items():
         ranges = ranges_item
         if tr_dim_count[rc]["3D"]:
             zo = zoom[rc] if isinstance(zoom, dict) else zoom
             # SET 3D PLOT BOUNDARIES
-            # collect min/max from all elements
-            r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
+            # collect min/max from all elements, axis by axis
+            columns = np.reshape(ranges, (-1, 3)).T
+            r = np.array([[np.nanmin(v), np.nanmax(v)] for v in columns])
             size = np.diff(r, axis=1)
             m = size.max() / 2
             m = 1 if m == 0 else m
@@ -789,40 +792,40 @@ def rescale_traces(traces, factors):
     return traces
 
 
+_GROUP_KEYS = ("legendgroup", "opacity", "row", "col", "color")
+_GROUP_KEYS_BY_TYPE = {
+    "mesh3d": ("colorscale", "facecolor"),
+    "scatter3d": (
+        "marker",
+        "line_dash",
+        "line_color",
+        "line_width",
+        "marker_color",
+        "marker_symbol",
+        "marker_size",
+        "mode",
+    ),
+}
+
+
 def group_traces(*traces):
     """Group and merge mesh traces with similar properties. This drastically improves
     browser rendering performance when displaying a lot of mesh3d objects."""
-    mesh_groups = {}
-    common_keys = ["legendgroup", "opacity", "row", "col", "color"]
-    spec_keys = {
-        "mesh3d": ["colorscale", "facecolor"],
-        "scatter3d": [
-            "marker",
-            "line_dash",
-            "line_color",
-            "line_width",
-            "marker_color",
-            "marker_symbol",
-            "marker_size",
-            "mode",
-        ],
-    }
-    for tr_item in traces:
-        tr = linearize_dict(tr_item, separator="_")
+    traces = [linearize_dict(tr, separator="_") for tr in traces]
+    if len(traces) < 2:
+        return traces
+    groups = {}
+    for tr in traces:
         tr_typ = tr["type"]
-        gr = [tr_typ]
-        for k in [*common_keys, *spec_keys.get(tr_typ, [])]:
+        key = [tr_typ]
+        for k in (*_GROUP_KEYS, *_GROUP_KEYS_BY_TYPE.get(tr_typ, ())):
             v = tr.get(k, None)
             # colorscales cannot merged in mesh3d (yet)
             if k != "colorscale" and is_array_like(v):
                 v = "array"
-            gr.append(str(v))
-        gr = hash(tuple(gr))
-        mesh_groups.setdefault(gr, []).append(tr)
-    traces = []
-    for group in mesh_groups.values():
-        traces.extend(merge_traces(*group))
-    return traces
+            key.append(str(v))
+        groups.setdefault(tuple(key), []).append(tr)
+    return [tr for group in groups.values() for tr in merge_traces(*group)]
 
 
 def subdivide_mesh_by_facecolor(trace):
