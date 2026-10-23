@@ -686,24 +686,29 @@ def get_generic_traces3D(
             tr_non_generic.update(linearize_dict(obj_extr_trace, separator="_"))
             traces_generic.append(tr_non_generic)
 
-    # a given legend text names every trace, the path's included
+    # the object's own label is needed only without a legend text, which
+    # otherwise names all its traces, the path's included
     legend_label = legendtext or get_legend_label(input_obj)
+    # the pose at each drawn path index. Lazy access: _get_prop reads the
+    # stored value without materializing the full path. One stored
+    # orientation is applied as stored: indexing it builds a new Rotation per
+    # object, for bit-identical vertices.
+    poses = [
+        (
+            _get_prop(positions, path_ind),
+            orientations
+            if len(orientations) == 1
+            else _get_prop(orientations, path_ind),
+        )
+        for path_ind in path_inds
+    ]
     path_traces_generic = []
     for trg in traces_generic:
         temp_rot_traces = []
         name, name_suff = "", None
-        for ind, path_ind in enumerate(path_inds):
-            # Lazy access: _get_prop reads the stored value for this frame
-            # without materializing the full path (returns the single stored
-            # value for any index when the property is not path-varying).
-            pos = _get_prop(positions, path_ind)
-            # one stored orientation is applied as stored: indexing it builds
-            # a new Rotation per object, for bit-identical vertices
-            orient = (
-                orientations
-                if len(orientations) == 1
-                else _get_prop(orientations, path_ind)
-            )
+        for ind, (path_ind, (pos, orient)) in enumerate(
+            zip(path_inds, poses, strict=True)
+        ):
             tr_list = [trg] if trg is not None else get_traces_func(path_index=path_ind)
             for tr in tr_list:
                 if ind == 0:
@@ -785,7 +790,7 @@ def get_generic_traces3D(
                             if style.legend.show
                             else False
                         ),
-                        "name": legendtext or legend_label,
+                        "name": legend_label,
                         "row": row,
                         "col": col,
                     },

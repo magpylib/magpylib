@@ -1,5 +1,7 @@
+import os
 import subprocess
 import sys
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -28,7 +30,13 @@ def test_import_loads_no_plotting_library():
         "import sys, magpylib; "
         "print([m for m in ('matplotlib', 'plotly', 'pyvista') if m in sys.modules])"
     )
+    # the magpylib under test, wherever this process imported it from
+    path = [str(Path(magpy.__file__).parents[1]), os.environ.get("PYTHONPATH", "")]
     out = subprocess.run(
-        [sys.executable, "-c", code], capture_output=True, text=True, check=True
+        [sys.executable, "-c", code],
+        capture_output=True,
+        text=True,
+        check=True,
+        env={**os.environ, "PYTHONPATH": os.pathsep.join(filter(None, path))},
     )
     assert out.stdout.strip() == "[]"

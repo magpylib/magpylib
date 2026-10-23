@@ -324,7 +324,7 @@ def pad_path_property(prop, new_path_len):
 def _edge_pad_end(arr, n):
     """``np.pad(arr, ((0, n), (0, 0), ...), "edge")`` without np.pad's per-call
     setup, which dominated a field computation along a path."""
-    if not len(arr):
+    if arr.shape[0] == 0:
         # no edge to repeat: np.pad raises, and so does this
         return np.pad(arr, ((0, n), *((0, 0),) * (arr.ndim - 1)), "edge")
     out = np.empty((len(arr) + n, *arr.shape[1:]), dtype=arr.dtype)
