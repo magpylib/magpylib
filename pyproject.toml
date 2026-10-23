@@ -67,7 +67,7 @@ lint = [
   # Pinned, and the only pins here: a release of either changes what pylint
   # reports, and that should land as a bump of these two lines, not as a red
   # check on every open PR. uv.lock is not committed, so nothing else holds them.
-  "pylint ==4.1.2",
+  "pylint ==4.1.3",
   "astroid ==4.3.4",
 ]
 
