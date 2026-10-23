@@ -313,10 +313,9 @@ def pad_path_property(prop, new_path_len):
 
     pad_end = max(0, new_path_len - prop_len)
     if pad_end > 0:
-        pad_width = (0, pad_end)
-        if prop.ndim > 1:
-            pad_width = (pad_width, *((0, 0),) * (prop.ndim - 1))
-        prop = np.pad(prop, pad_width, "edge")
+        # what np.pad(..., "edge") does at the end of the path, without its
+        # per-call setup, which dominated a field computation along a path
+        prop = np.concatenate([prop, np.repeat(prop[-1:], pad_end, axis=0)])
     if len(prop) > new_path_len:
         prop = prop[-new_path_len:]
     if is_rot:

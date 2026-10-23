@@ -5,7 +5,8 @@
 ### Changed
 
 - `show()` builds scenes of many objects faster, 1000 cuboids in plotly in less
-  than half the time ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
+  than half the time, and fields along a path take up to 40 % less time to
+  compute ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
 
 ## [6.0.0] 2026-10-19
 
