@@ -313,14 +313,24 @@ def pad_path_property(prop, new_path_len):
 
     pad_end = max(0, new_path_len - prop_len)
     if pad_end > 0:
-        # what np.pad(..., "edge") does at the end of the path, without its
-        # per-call setup, which dominated a field computation along a path
-        prop = np.concatenate([prop, np.repeat(prop[-1:], pad_end, axis=0)])
+        prop = _edge_pad_end(prop, pad_end)
     if len(prop) > new_path_len:
         prop = prop[-new_path_len:]
     if is_rot:
         prop = R.from_quat(prop)
     return prop
+
+
+def _edge_pad_end(arr, n):
+    """``np.pad(arr, ((0, n), (0, 0), ...), "edge")`` without np.pad's per-call
+    setup, which dominated a field computation along a path."""
+    if not len(arr):
+        # no edge to repeat: np.pad raises, and so does this
+        return np.pad(arr, ((0, n), *((0, 0),) * (arr.ndim - 1)), "edge")
+    out = np.empty((len(arr) + n, *arr.shape[1:]), dtype=arr.dtype)
+    out[: len(arr)] = arr
+    out[len(arr) :] = arr[-1]
+    return out
 
 
 def pad_path_properties(target_object, new_path_len, path_properties=None):

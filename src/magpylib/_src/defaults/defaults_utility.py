@@ -7,7 +7,6 @@ from copy import deepcopy
 from functools import lru_cache
 
 import numpy as np
-from matplotlib.colors import CSS4_COLORS as mcolors
 
 from magpylib._src.defaults.defaults_values import DEFAULTS
 from magpylib._src.display.api import DisplayBackend
@@ -53,6 +52,9 @@ COLORS_SHORT_TO_LONG = {
     "k": "black",
     "w": "white",
 }
+#: CSS color names known to be valid without asking matplotlib: the defaults
+#: use only these, so validating the defaults does not import it
+BASIC_COLOR_NAMES = frozenset({*COLORS_SHORT_TO_LONG.values(), "grey"})
 
 
 class _DefaultType:
@@ -271,19 +273,23 @@ def _color_validator_cached(color_input, allow_None=True, parent_name=""):
         re_hex = re.compile(r"#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})")
         fail = not re_hex.fullmatch(color_new)
 
-    if fail and str(color_new) not in mcolors:
-        msg = (
-            f"Invalid value of type '{type(color_input)}' "
-            f"received for the color property of {parent_name}"
-            f"\n   Received value: {color_input!r}"
-            f"\n\nThe 'color' property is a color and may be specified as:\n"
-            "    - A hex string (e.g. '#ff0000')\n"
-            "    - A rgb string (e.g. 'rgb(185, 204, 255)')\n"
-            "    - A rgb tuple (e.g. (120, 125, 126))\n"
-            "    - A number between 0 and 1 (for grayscale) (e.g. '.5' or .8)\n"
-            f"    - A named CSS color:\n{list(mcolors.keys())}"
-        )
-        raise ValueError(msg)
+    if fail and str(color_new) not in BASIC_COLOR_NAMES:
+        # pylint: disable=import-outside-toplevel
+        from matplotlib.colors import CSS4_COLORS as mcolors  # noqa: PLC0415
+
+        if str(color_new) not in mcolors:
+            msg = (
+                f"Invalid value of type '{type(color_input)}' "
+                f"received for the color property of {parent_name}"
+                f"\n   Received value: {color_input!r}"
+                f"\n\nThe 'color' property is a color and may be specified as:\n"
+                "    - A hex string (e.g. '#ff0000')\n"
+                "    - A rgb string (e.g. 'rgb(185, 204, 255)')\n"
+                "    - A rgb tuple (e.g. (120, 125, 126))\n"
+                "    - A number between 0 and 1 (for grayscale) (e.g. '.5' or .8)\n"
+                f"    - A named CSS color:\n{list(mcolors.keys())}"
+            )
+            raise ValueError(msg)
     return color_new
 
 

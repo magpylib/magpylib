@@ -4,9 +4,15 @@
 
 ### Changed
 
-- `show()` builds scenes of many objects faster, 1000 cuboids in plotly in less
-  than half the time, and fields along a path take up to 40 % less time to
-  compute ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
+- `import magpylib` no longer loads matplotlib or plotly, `show()` builds scenes
+  of many objects in less than half the time, and fields along a path take up to
+  40 % less time to compute
+  ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
+
+### Fixed
+
+- An animation whose only path sits in a nested `Collection` had no frames
+  ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
 
 ## [6.0.0] 2026-10-19
 

@@ -106,7 +106,7 @@ def make_Cuboid(
     trace = {
         "type": "mesh3d",
         **{k: v.copy() for k, v in _CUBOID_FACES.items()},
-        **{k: v * dimension[i] for i, (k, v) in enumerate(_CUBOID_HALF.items())},
+        **{k: _CUBOID_HALF[k] * dimension[i] for i, k in enumerate("xyz")},
     }
 
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)

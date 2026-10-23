@@ -739,6 +739,24 @@ def test_animation_title_matches_the_static_one():
     assert "path index" not in str(_plotly_title(obj, animation=True))
 
 
+def test_animation_reaches_a_path_in_a_nested_collection():
+    """Animation frames cover paths held by nested collections, not only by
+    the collection's own children: such a scene used to get no frames."""
+    cube = magpy.magnet.Cuboid(
+        polarization=(0, 0, 1),
+        dimension=(1, 1, 1),
+        position=np.linspace((0, 0, 0), (5, 0, 0), 10),
+    )
+    fig = magpy.show(
+        magpy.Collection(magpy.Collection(cube)),
+        backend="plotly",
+        return_fig=True,
+        animation=True,
+        animation_time=10,
+    )
+    assert len(fig.frames) == 10
+
+
 def test_markers_as_array():
     src = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
     fig = magpy.show(

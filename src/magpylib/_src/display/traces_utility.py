@@ -4,13 +4,10 @@
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-positional-arguments
 
-from collections import defaultdict
 from functools import lru_cache
 from itertools import chain, cycle
 
 import numpy as np
-from matplotlib.colors import rgb2hex
-from plotly.colors import sample_colorscale
 from scipy.spatial.transform import Rotation as RotScipy
 
 from magpylib._src.defaults.defaults_classes import default_settings
@@ -584,14 +581,6 @@ def merge_scatter3d(*traces):
     return merged_trace
 
 
-def aggregate_by_trace_type(traces):
-    """aggregate traces by type"""
-    result_dict = defaultdict(list)
-    for item in traces:
-        result_dict[item["type"]].append(item)
-    yield from result_dict.items()
-
-
 def _reconcile_object_id(merged, sources):
     """Keep `object_id` only when every merged trace came from one object.
 
@@ -603,25 +592,6 @@ def _reconcile_object_id(merged, sources):
     ids = {tr.get("object_id") for tr in sources}
     merged["object_id"] = ids.pop() if len(ids) == 1 else None
     return merged
-
-
-def merge_traces(*traces):
-    """Merges a list of plotly 3d-traces. Supported trace types are `mesh3d` and `scatter3d`.
-    All traces have be of the same type when merging. Keys are taken from the first object, other
-    keys from further objects are ignored.
-    """
-    new_traces = []
-    for ttype, tlist in aggregate_by_trace_type(traces):
-        if len(tlist) > 1:
-            if ttype == "mesh3d":
-                new_traces.append(_reconcile_object_id(merge_mesh3d(*tlist), tlist))
-            elif ttype == "scatter3d":
-                new_traces.append(_reconcile_object_id(merge_scatter3d(*tlist), tlist))
-            else:  # pragma: no cover
-                new_traces.extend(tlist)
-        elif len(tlist) == 1:
-            new_traces.append(tlist[0])
-    return new_traces
 
 
 def getIntensity(vertices, axis) -> np.ndarray:
@@ -792,6 +762,7 @@ def rescale_traces(traces, factors):
     return traces
 
 
+_MERGERS = {"mesh3d": merge_mesh3d, "scatter3d": merge_scatter3d}
 _GROUP_KEYS = ("legendgroup", "opacity", "row", "col", "color")
 _GROUP_KEYS_BY_TYPE = {
     "mesh3d": ("colorscale", "facecolor"),
@@ -825,7 +796,14 @@ def group_traces(*traces):
                 v = "array"
             key.append(str(v))
         groups.setdefault(tuple(key), []).append(tr)
-    return [tr for group in groups.values() for tr in merge_traces(*group)]
+    merged = []
+    for (tr_typ, *_), group in groups.items():
+        merge = _MERGERS.get(tr_typ) if len(group) > 1 else None
+        if merge is None:
+            merged.extend(group)
+        else:
+            merged.append(_reconcile_object_id(merge(*group), group))
+    return merged
 
 
 def subdivide_mesh_by_facecolor(trace):
@@ -1010,30 +988,6 @@ def create_null_dim_trace(color=None, **kwargs):
     if color is not None:
         trace["marker_color"] = color
     return {**trace, **kwargs}
-
-
-def get_hexcolors_from_colormap(
-    values,
-    colormap,
-    cmin=None,
-    cmax=None,
-    nan_color="#b2beb5",
-):
-    """Convert numerical values to hexadecimal colors based on a color scale.
-    Invalid value in the array a converted to the specified `nan_color`."""
-    values = np.array(values)
-    nan_mask = np.isnan(values)
-    valid = values[~nan_mask]
-    cmin = np.nanmin(valid) if cmin is None else cmin
-    cmax = np.nanmax(valid) if cmax is None else cmax
-    ptp = cmax - cmin
-    values = (values - cmin) / ptp if ptp != 0 else values * 0 + 0.5
-    rgb_colors = sample_colorscale(colormap, values[~nan_mask], colortype=None)
-    hex_colors = [rgb2hex(rgb) for rgb in rgb_colors]
-    out = np.array([""] * len(values), dtype="<U10")
-    out[nan_mask] = nan_color
-    out[~nan_mask] = hex_colors
-    return out
 
 
 def split_input_arrays(*input_arrays, ordered=True):

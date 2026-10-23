@@ -513,6 +513,17 @@ def process_extra_trace(model):
     return trace3d
 
 
+def _varies_along_path(prop):
+    """Whether a path property takes more than one value along the path, counted
+    as ``np.unique`` did: all NaNs as one value in 1D, NaN rows as different."""
+    if len(prop) < 2:
+        return False
+    diff = prop[1:] != prop[:1]
+    if prop.ndim == 1 and prop.dtype.kind in "fc":
+        diff &= ~(np.isnan(prop[1:]) & np.isnan(prop[:1]))
+    return bool(diff.any())
+
+
 def get_generic_traces3D(
     input_obj,
     autosize=None,
@@ -608,11 +619,7 @@ def get_generic_traces3D(
         if name in ("position", "orientation"):
             continue
         prop_w_path = getattr(input_obj, f"_{name}")
-        if (
-            isinstance(prop_w_path, np.ndarray)
-            and len(prop_w_path) > 1
-            and (prop_w_path[1:] != prop_w_path[:1]).any()
-        ):
+        if isinstance(prop_w_path, np.ndarray) and _varies_along_path(prop_w_path):
             is_frame_dependent = True
             break
 
@@ -694,7 +701,7 @@ def get_generic_traces3D(
             # a new Rotation per object, for bit-identical vertices
             orient = (
                 orientations
-                if orientations.single or len(orientations) == 1
+                if len(orientations) == 1
                 else _get_prop(orientations, path_ind)
             )
             tr_list = [trg] if trg is not None else get_traces_func(path_index=path_ind)
@@ -831,15 +838,7 @@ def process_animation_kwargs(obj_list, animation=False, **kwargs):
         kwargs["animation_time"] = animation
         animation = True
     if (
-        not any(
-            (
-                obj._get_path_len()
-                if hasattr(obj, "_get_path_len")
-                else getattr(obj, "_position", np.empty((1, 3))).shape[0]
-            )
-            > 1
-            for obj in flat_obj_list
-        )
+        not any(obj._get_path_len() > 1 for obj in flat_obj_list)
         and animation is not False
     ):  # check if some path exist for any object
         animation = False
@@ -884,14 +883,10 @@ def extract_animation_properties(
     for obj in objs:
         subobjs = [obj]
         if isinstance(obj, Collection):
-            subobjs.extend(obj.children)
-        for subobj in subobjs:
-            path_len = (
-                subobj._get_path_len()
-                if hasattr(subobj, "_get_path_len")
-                else getattr(subobj, "_position", np.empty((1, 3))).shape[0]
-            )
-            path_lengths.append(path_len)
+            # all of them: a path in a nested collection was left out, and
+            # its animation came out empty
+            subobjs.extend(obj.children_all)
+        path_lengths.extend(subobj._get_path_len() for subobj in subobjs)
 
     max_pl = max(path_lengths)
     if animation_fps > animation_maxfps:
