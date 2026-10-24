@@ -146,8 +146,8 @@ def test_model3d_updatefunc_is_called_at_show_time(backend):
 
 
 def test_model3d_bound_method_is_shown_and_copied():
-    """A model drawn by a method of its own object can be shown, and a copy of
-    the object draws its model from the copy."""
+    """A model drawn by a method of its own object is drawn from that object,
+    and a copy of the object draws its model from the copy."""
 
     class Scaled(magpy.magnet.Cuboid):
         def model(self):
@@ -155,7 +155,10 @@ def test_model3d_bound_method_is_shown_and_copied():
 
     obj = Scaled(polarization=(0, 0, 1), dimension=(1, 1, 1))
     obj.style.model3d.add_trace(obj.model)
-    assert render(obj, "matplotlib")
+    magpy.Collection(obj, source())
+    assert render(obj, "plotly") > render(source(), "plotly")
+    # show() draws from a copy of the style
+    assert obj.style.copy().model3d.data[0].updatefunc.__self__ is obj
     dup = obj.copy()
     assert dup.style.model3d.data[0].updatefunc.__self__ is dup
 
