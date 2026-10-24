@@ -24,6 +24,9 @@ except ImportError as missing_module:  # pragma: no cover
 
 from matplotlib.colors import LinearSegmentedColormap
 from pyvista.plotting.colors import Color  # pylint: disable=import-error
+from vtkmodules.vtkInteractionWidgets import (  # pylint: disable=no-name-in-module
+    vtkWidgetRepresentation,
+)
 from vtkmodules.vtkRenderingContext2D import (  # pylint: disable=no-name-in-module
     vtkContextActor,
 )
@@ -41,6 +44,9 @@ from magpylib._src.display.traces_utility import (
 from magpylib._src.utility import is_array_like, open_animation
 
 # from magpylib._src.utility import format_obj_input
+
+# props in a renderer that no animation frame draws: the charts, the slider
+NOT_FRAMES = (vtkContextActor, vtkWidgetRepresentation)
 
 SYMBOLS_TO_PYVISTA = {
     ".": "o",
@@ -384,11 +390,11 @@ def display_pyvista(scene):
         canvas.suppress_rendering = True
         try:
             # only what the frames drew goes, not clear_actors: it would take
-            # the title, a given canvas's own actors and the actor that draws
-            # the charts. A chart stays in its subplot, its curves are redrawn
+            # the title, a given canvas's own actors, the slider and the actor
+            # that draws the charts. A chart stays, its curves are redrawn
             for renderer in canvas.renderers:
                 for name, actor in renderer.actors.items():
-                    if name not in kept and not isinstance(actor, vtkContextActor):
+                    if name not in kept and not isinstance(actor, NOT_FRAMES):
                         renderer.remove_actor(name, reset_camera=False, render=False)
             for chart in charts.values():
                 chart.clear()
@@ -423,6 +429,63 @@ def display_pyvista(scene):
         show_canvas = False
         return open_animation(filename, embed=embed)
 
+    def play_live():
+        # the timer starts with the window; the scene stays free to turn and
+        # zoom while the frames replace each other. Dragging the slider
+        # pauses them and seeks
+        n_frames = len(frames)
+        labels = np.array(scene.animation.path_indices) + 1  # as plotly's slider
+        frame, dragging, slider = 0, False, None
+
+        def tick(_step):
+            nonlocal frame
+            if dragging or (not repeat and frame == n_frames - 1):
+                return
+            frame = (frame + 1) % n_frames
+            redraw(frame)
+            if slider is not None:
+                slider.GetRepresentation().SetValue(labels[frame])
+
+        def seek(value):
+            nonlocal frame
+            frame = int(np.abs(labels - value).argmin())
+            redraw(frame)
+
+        def drag(start):
+            nonlocal dragging
+            dragging = start
+            if not start:  # land on the frame shown
+                slider.GetRepresentation().SetValue(labels[frame])
+
+        draw_frame(0)
+        if scene.animation.slider:
+            # along the bottom of the last 3D panel, clear of its axes
+            cells = [(r, c) for r in range(scene.n_rows) for c in range(scene.n_cols)]
+            in_3d = [
+                rc
+                for rc in cells
+                if scene.panel_kind(rc[0] + 1, rc[1] + 1) == "scene3d"
+            ]
+            canvas.subplot(*(in_3d or cells)[-1])
+            slider = canvas.add_slider_widget(
+                seek,
+                rng=[labels[0], labels[-1]],
+                value=labels[0],
+                title="Path index",
+                pointa=(0.25, 0.08),  # within the panel
+                pointb=(0.95, 0.08),
+                interaction_event="always",
+                style="modern",
+                fmt="%.0f",
+            )
+            slider.AddObserver("StartInteractionEvent", lambda *_: drag(True))
+            slider.AddObserver("EndInteractionEvent", lambda *_: drag(False))
+        canvas.add_timer_event(
+            max_steps=sys.maxsize,
+            duration=scene.animation.frame_duration,
+            callback=tick,
+        )
+
     # pyvista has no figure-level title: add_title applies to the active
     # subplot, so on a grid it would read as that one panel's title
     if canvas_update and scene.title and not scene.has_subplots:
@@ -433,15 +496,7 @@ def display_pyvista(scene):
     if not scene.is_animation:
         draw_frame(0)
     elif live:
-        # the timer starts with the window; the scene stays free to turn and
-        # zoom while the frames replace each other
-        draw_frame(0)
-        n_frames = len(frames)
-        canvas.add_timer_event(
-            max_steps=sys.maxsize if repeat else n_frames - 1,
-            duration=scene.animation.frame_duration,
-            callback=lambda step: redraw((step + 1) % n_frames),
-        )
+        play_live()
     elif animation:
         animation_output = scene.animation.output
         animation_output = "gif" if animation_output is None else animation_output

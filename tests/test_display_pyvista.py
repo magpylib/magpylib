@@ -157,7 +157,8 @@ def test_pyvista_animation(
 def test_pyvista_animation_plays_live(subplots, tmp_path, monkeypatch):
     """From a script the window plays the frames on a timer and writes no
     file. A frame replaces only what the last one drew: the title and the
-    chart stay, and looping stacks no actors and repeats no legend entry"""
+    chart stay, and looping stacks no actors and repeats no legend entry.
+    The slider follows the frames; dragging it pauses them and seeks"""
     monkeypatch.setattr(pv, "OFF_SCREEN", False)
     monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
     src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
@@ -165,6 +166,7 @@ def test_pyvista_animation_plays_live(subplots, tmp_path, monkeypatch):
     objs = [src, magpy.Sensor()]
     # two labels at a cap of two: one counted twice would add an overflow entry
     kwargs = {"backend": "pyvista", "animation": True, "legend_maxitems": 2}
+    kwargs["repeat"] = True
     with (
         patch.object(pv.Plotter, "show", autospec=True) as show,
         patch.object(pv.Plotter, "add_timer_event") as add_timer_event,
@@ -192,6 +194,17 @@ def test_pyvista_animation_plays_live(subplots, tmp_path, monkeypatch):
         assert any(isinstance(a, vtkContextActor) for a in chart_actors)
     else:
         assert "title" in pl.renderer.actors
+    slider = pl.widgets.slider_widgets[0]
+    path_index = slider.GetRepresentation().GetValue
+    assert path_index() == 2  # 1-based, five steps from frame 0
+    slider.InvokeEvent("StartInteractionEvent")
+    slider.GetRepresentation().SetValue(1)
+    slider.InvokeEvent("InteractionEvent")
+    play(5)  # paused while dragging
+    slider.InvokeEvent("EndInteractionEvent")
+    assert path_index() == 1
+    play(6)
+    assert path_index() == 2
     browser_open.assert_not_called()
     assert not list(tmp_path.iterdir())
     pl.close()
