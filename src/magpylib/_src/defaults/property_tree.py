@@ -30,7 +30,6 @@ Public contract for GUIs and third-party tooling:
 """
 
 from copy import deepcopy
-from types import MethodType
 from typing import ClassVar
 
 from magpylib._src.defaults.defaults_utility import (
@@ -540,45 +539,51 @@ class PropertyNode:
     _IMMUTABLE_TYPES = (str, int, float, bool, type(None))
 
     def __deepcopy__(self, memo):
-        """Deep copies are detached, like `copy()`: a node is copied with its
-        own subtree, never with the tree it hangs in — whose observers would
-        otherwise fire for edits made to the copy."""
-        new = self._copy(memo)
-        memo[id(self)] = new
-        return new
+        """Deep copies are detached: a node is copied with its own subtree,
+        never with the tree it hangs in — whose observers would otherwise fire
+        for edits made to the copy. Unlike `copy()`, values are deep-copied
+        with ``memo``, callables included, so copying an object binds the
+        methods of its style (a 3D model drawn by the object) to the copy."""
+        return self._copy(memo)
 
     def copy(self):
-        """Return a detached, unobserved deep copy."""
+        """Return a detached, unobserved deep copy. Callables, such as a 3D
+        model drawn by a method of the styled object, are shared, as functions
+        are by `copy.deepcopy`: copying a style never copies an object."""
         return self._copy(None)
 
     def _copy(self, memo):
-        """Copy this node and its subtree; ``memo`` is `copy.deepcopy`'s, or None."""
+        """Copy this node and its subtree; ``memo`` is `copy.deepcopy`'s, or
+        None for `copy()`."""
         new = type(self).__new__(type(self))
+        if memo is not None:
+            memo[id(self)] = new
         for key, value in self.__dict__.items():
             field = self._fields.get(key)
             if field is None:
                 continue
             if isinstance(value, PropertyNode):
-                new.__dict__[key] = _adopt_child(new, value._copy(memo), key)
+                new.__dict__[key] = _adopt_child(new, value._copy_child(memo), key)
             elif isinstance(value, self._IMMUTABLE_TYPES):
                 new.__dict__[key] = value
             elif isinstance(field, NodeSequence):
                 new.__dict__[key] = tuple(
-                    _adopt_child(new, child._copy(memo), f"{key}.{index}")
+                    _adopt_child(new, child._copy_child(memo), f"{key}.{index}")
                     for index, child in enumerate(value)
                 )
-            elif isinstance(value, MethodType):
-                # a method, e.g. a 3D model drawn by the styled object, keeps its
-                # object as a closure would, unless that object is being copied
-                # too. Copying the method would copy its object, whose style
-                # holds the method again.
-                owner = memo.get(id(value.__self__)) if memo else None
-                new.__dict__[key] = (
-                    value if owner is None else MethodType(value.__func__, owner)
-                )
+            elif memo is None and callable(value):
+                new.__dict__[key] = value
             else:
                 new.__dict__[key] = deepcopy(value, memo)
         return new
+
+    def _copy_child(self, memo):
+        """This node copied as a child: once per deep copy, as `copy.deepcopy`
+        would, without its overhead."""
+        if memo is None:
+            return self.copy()
+        copied = memo.get(id(self))
+        return self._copy(memo) if copied is None else copied
 
     # public contract for GUIs / third-party tooling ---------------------
 
