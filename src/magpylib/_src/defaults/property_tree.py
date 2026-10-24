@@ -542,28 +542,34 @@ class PropertyNode:
         """Deep copies are detached, like `copy()`: a node is copied with its
         own subtree, never with the tree it hangs in — whose observers would
         otherwise fire for edits made to the copy."""
-        new = self.copy()
-        memo[id(self)] = new
-        return new
+        return self.copy(memo)
 
-    def copy(self):
-        """Return a detached, unobserved deep copy."""
+    def copy(self, memo=None):
+        """Return a detached, unobserved deep copy.
+
+        ``memo`` is the one of `copy.deepcopy`. Values copied here share it, so
+        a value that refers back to the object this tree styles, such as a
+        bound method of it used as a 3D-model trace, is copied once, not without
+        end.
+        """
         new = type(self).__new__(type(self))
+        if memo is not None:
+            memo[id(self)] = new
         for key, value in self.__dict__.items():
             field = self._fields.get(key)
             if field is None:
                 continue
             if isinstance(value, PropertyNode):
-                new.__dict__[key] = _adopt_child(new, value.copy(), key)
+                new.__dict__[key] = _adopt_child(new, value.copy(memo), key)
             elif isinstance(value, self._IMMUTABLE_TYPES):
                 new.__dict__[key] = value
             elif isinstance(field, NodeSequence):
                 new.__dict__[key] = tuple(
-                    _adopt_child(new, child.copy(), f"{key}.{index}")
+                    _adopt_child(new, child.copy(memo), f"{key}.{index}")
                     for index, child in enumerate(value)
                 )
             else:
-                new.__dict__[key] = deepcopy(value)
+                new.__dict__[key] = deepcopy(value, memo)
         return new
 
     # public contract for GUIs / third-party tooling ---------------------
