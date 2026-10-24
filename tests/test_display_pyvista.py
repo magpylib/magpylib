@@ -196,15 +196,15 @@ def test_pyvista_animation_plays_live(subplots, tmp_path, monkeypatch):
         assert "title" in pl.renderer.actors
     slider = pl.widgets.slider_widgets[0]
     path_index = slider.GetRepresentation().GetValue
-    assert path_index() == 2  # 1-based, five steps from frame 0
+    assert path_index() == 1  # five steps from frame 0
     slider.InvokeEvent("StartInteractionEvent")
-    slider.GetRepresentation().SetValue(1)
+    slider.GetRepresentation().SetValue(0)
     slider.InvokeEvent("InteractionEvent")
     play(5)  # paused while dragging
     slider.InvokeEvent("EndInteractionEvent")
-    assert path_index() == 1
+    assert path_index() == 0
     play(6)
-    assert path_index() == 2
+    assert path_index() == 1
     browser_open.assert_not_called()
     assert not list(tmp_path.iterdir())
     pl.close()
