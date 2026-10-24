@@ -816,9 +816,11 @@ def generate_mesh_polyline(vertices, current, target_elems):
         proportional_extra = (
             segment_lengths / total_lengths[:, np.newaxis]
         ) * remaining_points
-        # float32 drops the rounding noise of the lengths: equal segments get the
-        # same number of points wherever the polyline sits
-        extra_points = np.round(proportional_extra.astype(np.float32)).astype(int)
+        # Shares within rounding noise of k + 0.5 count as k + 0.5, so that equal
+        # segments get the same number of points wherever the polyline sits
+        half = np.floor(proportional_extra) + 0.5
+        tied = np.isclose(proportional_extra, half, rtol=_TIE_RTOL, atol=0)
+        extra_points = np.round(np.where(tied, half, proportional_extra)).astype(int)
         points_per_segment += extra_points
 
     # Update target_elems to actual distributed points for each path position
@@ -872,9 +874,5 @@ def generate_mesh_polyline(vertices, current, target_elems):
     # If no path variation, return squeezed arrays
     if not has_path_varying:
         pts, cvecs = pts[0], cvecs[0]
-        # Remove padding zeros
-        if max_n_points > actual_n_points[0]:
-            pts = pts[: actual_n_points[0]]
-            cvecs = cvecs[: actual_n_points[0]]
 
     return {"pts": pts, "cvecs": cvecs}
