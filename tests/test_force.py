@@ -1442,7 +1442,7 @@ def test_force_backforward_dipole_trisheet():
     F0, T0 = getFT(strip, dip, pivot=(0, 0, 0))
 
     for meshing, errf, errt in zip(
-        [50, 300, 2000], [0.2, 0.006, 0.0003], [0.015, 0.003, 0.0004], strict=False
+        [100, 300, 2000], [0.2, 0.007, 0.0003], [0.012, 0.003, 0.0004], strict=False
     ):
         F1, T1 = getFT(dip, strip, pivot=(0, 0, 0), meshing=meshing)
 
@@ -2730,8 +2730,8 @@ def test_force_equivalent_Cuboid_Strip_Sheet():
     errT12 = np.linalg.norm(T1 - T2, axis=1) / np.linalg.norm(T1 + T2, axis=1)
     errT13 = np.linalg.norm(T1 - T3, axis=1) / np.linalg.norm(T1 + T3, axis=1)
     errT23 = np.linalg.norm(T2 - T3, axis=1) / np.linalg.norm(T2 + T3, axis=1)
-    assert max(errT12) < 0.008
-    assert max(errT13) < 0.008
+    assert max(errT12) < 0.006
+    assert max(errT13) < 0.006
     assert max(errT23) < 1e-12
 
     F1, T1 = magpy.getFT(src, cube, meshing=(nn, 3 * nn, 2 * nn), pivot=(0, 0, 0))
@@ -2748,8 +2748,8 @@ def test_force_equivalent_Cuboid_Strip_Sheet():
     errT12 = np.linalg.norm(T1 - T2, axis=1) / np.linalg.norm(T1 + T2, axis=1)
     errT13 = np.linalg.norm(T1 - T3, axis=1) / np.linalg.norm(T1 + T3, axis=1)
     errT23 = np.linalg.norm(T2 - T3, axis=1) / np.linalg.norm(T2 + T3, axis=1)
-    assert max(errT12) < 0.001
-    assert max(errT13) < 0.001
+    assert max(errT12) < 0.0008
+    assert max(errT13) < 0.0008
     assert max(errT23) < 1e-12
 
 

@@ -15,8 +15,7 @@
   ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
 - Force meshes of TriangleStrip, TriangleSheet and Polyline no longer change
   with where the object sits, triangles are bisected along their longest edge as
-  documented and equal triangles alike (so the cell count can land further from
-  `meshing`), and each path step is meshed like the static object there. Path
+  documented, and each path step is meshed like the static object there. Path
   steps with fewer mesh points no longer give NaN when a source sits at the
   target's origin, and a Polyline step whose vertices coincide no longer fails
   ([#1046](https://github.com/magpylib/magpylib/pull/1046),
