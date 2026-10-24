@@ -7,6 +7,7 @@ Each target class has two test functions:
 """
 
 import numpy as np
+import pytest
 
 import magpylib as magpy
 
@@ -202,8 +203,8 @@ def test_path_varying_triangle_strip_vertices_current():
     vertices_path = np.array(
         [
             [[0, 0, 0], [1, 0, 0], [0, 0.5, 0], [1, 0.5, 0]],
-            [[0, 0, 0.1], [1, 0, 0.1], [0, 0.5, 0.15], [1, 0.5, 0.15]],
-            [[0, 0, 0.2], [1, 0, 0.2], [0, 0.5, 0.3], [1, 0.5, 0.3]],
+            [[0, 0, 0.1], [1, 0, 0.1], [0, 0.5, 0.15], [3, 0.5, 0.15]],
+            [[0, 0, 0.2], [1, 0, 0.2], [0, 0.5, 0.3], [0.1, 0.5, 0.3]],
         ]
     )
     currents_path = np.array([50, 100, 150])
@@ -213,24 +214,21 @@ def test_path_varying_triangle_strip_vertices_current():
         vertices=vertices_path, current=currents_path, position=positions
     )
 
-    F_vectorized, T_vectorized = magpy.getFT(dipole, strip_varying, meshing=10)
+    F_vectorized, _ = magpy.getFT(dipole, strip_varying, meshing=10)
 
-    F_manual, T_manual = [], []
-    for i in range(len(currents_path)):
-        F_i, T_i = magpy.getFT(
-            dipole,
-            magpy.current.TriangleStrip(
-                vertices=vertices_path[i],
-                current=currents_path[i],
-                position=positions[i],
-            ),
-            meshing=10,
-        )
-        F_manual.append(F_i)
-        T_manual.append(T_i)
-
-    np.testing.assert_allclose(F_vectorized, np.array(F_manual), rtol=1e-8, atol=1e-10)
-    np.testing.assert_allclose(T_vectorized, np.array(T_manual), rtol=1e-8, atol=1e-10)
+    _assert_matches_manual_loop(
+        dipole,
+        strip_varying,
+        lambda i: magpy.current.TriangleStrip(
+            vertices=vertices_path[i],
+            current=currents_path[i],
+            position=positions[i],
+        ),
+        n_steps=3,
+        rtol=1e-8,
+        atol=1e-10,
+        meshing=10,
+    )
     assert F_vectorized.shape == (3, 3)
     assert not np.allclose(F_vectorized[0], F_vectorized[1])
 
@@ -308,7 +306,7 @@ def test_mismatched_paths_triangle_sheet_scalar_current_densities():
     """TriangleSheet: varying vertices (p=3), scalar current_densities (p=1)."""
     dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -5))
     verts1 = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]])
-    verts2 = np.array([[0, 0, 0], [2, 0, 0], [0, 2, 0], [2, 2, 0]])
+    verts2 = np.array([[0, 0, 0], [2, 0, 0], [0, 2, 0], [6, 2, 0]])
     verts_path = np.array([verts1, verts2, verts1])
     faces = np.array([[0, 1, 2], [1, 3, 2]])
     cd = np.array([[100.0, 0, 0], [100.0, 0, 0]])
@@ -972,3 +970,72 @@ def test_trianglesheet_static_geometry_varying_current_matches_per_step():
         F_i, T_i = magpy.getFT(src, ts_i, meshing=12)
         np.testing.assert_allclose(F[i], F_i, rtol=1e-10)
         np.testing.assert_allclose(T[i], T_i, rtol=1e-10)
+
+
+_STRIP = np.array([[x, y, 0] for x in range(5) for y in (0, 0.5)]) * 0.01
+_SQUARE = np.array([[-1, -1, 0], [1, -1, 0], [1, 1, 0], [-1, 1, 0], [-1, -1, 0]]) * 0.01
+_RINGS = np.array([(0.01, 0.02, 0.01, 0, 360), (0.01, 0.03, 0.01, 0, 360)])
+
+
+@pytest.mark.parametrize(
+    ("cls", "vertices", "meshing"),
+    [(magpy.current.TriangleStrip, _STRIP, 40), (magpy.current.Polyline, _SQUARE, 10)],
+    ids=["trianglestrip", "polyline"],
+)
+def test_current_meshed_alike_wherever_it_sits(cls, vertices, meshing):
+    """Equal areas, edges and segment lengths tie up to rounding noise. A target moved
+    through its vertices must be meshed like the same target moved by position."""
+    shifts = np.arange(8)[:, np.newaxis] * [0.0123, 0.0071, 0.0031]
+    src = magpy.misc.Dipole(
+        moment=(0.1, 0.2, 1), position=np.array([0.021, 0.003, 0.006]) + shifts
+    )
+    by_vertices = cls(vertices=vertices + shifts[:, np.newaxis], current=1)
+    by_position = cls(vertices=vertices, current=1, position=shifts)
+
+    F_vertices, _ = magpy.getFT(src, by_vertices, meshing=meshing)
+    F_position, _ = magpy.getFT(src, by_position, meshing=meshing)
+    np.testing.assert_allclose(F_vertices, F_position, rtol=1e-10)
+
+
+@pytest.mark.parametrize(
+    ("make_target", "meshing"),
+    [
+        (
+            lambda i: magpy.current.Polyline(
+                vertices=np.array([_SQUARE, _SQUARE * [2, 1, 1]])[i], current=1
+            ),
+            10,
+        ),
+        (
+            lambda i: magpy.magnet.CylinderSegment(
+                dimension=_RINGS[i], polarization=(0, 0, 1)
+            ),
+            30,
+        ),
+    ],
+    ids=["polyline", "cylindersegment"],
+)
+def test_mesh_padding_avoids_source_at_target_origin(make_target, meshing):
+    """Path steps with fewer mesh points are padded. A dipole at the target's local
+    origin must give the static result there, not NaN."""
+    sizes = [len(make_target(i)._generate_mesh(meshing)["pts"]) for i in range(2)]
+    assert sizes[0] != sizes[1]  # one step is padded
+    _assert_matches_manual_loop(
+        magpy.misc.Dipole(moment=(1, 2, 3)),
+        make_target(slice(None)),
+        make_target,
+        n_steps=2,
+        rtol=1e-10,
+        atol=1e-18,
+        meshing=meshing,
+    )
+
+
+def test_polyline_step_of_zero_length():
+    """A path step whose vertices all coincide carries no current: zero force there,
+    not 0/0 cast to int."""
+    coil = magpy.current.Polyline(vertices=[_SQUARE * 0, _SQUARE], current=1)
+    dipole = magpy.misc.Dipole(moment=(1, 2, 3), position=(0, 0, 0.01))
+    F, _ = magpy.getFT(dipole, coil, meshing=10)
+    np.testing.assert_array_equal(F[0], 0)
+    assert np.all(np.isfinite(F[1]))

@@ -1385,7 +1385,7 @@ def test_force_backforward_dipole_tristrip():
     F0, T0 = getFT(strip, dip, pivot=(0, 0, 0))
 
     for meshing, errf, errt in zip(
-        [500, 2000, 5000], [0.08, 0.007, 0.0007], [0.003, 0.0004, 7e-5], strict=False
+        [500, 2000, 5000], [0.08, 0.007, 0.001], [0.003, 0.0004, 1e-4], strict=False
     ):
         F1, T1 = getFT(dip, strip, pivot=(0, 0, 0), meshing=meshing)
 
@@ -1442,7 +1442,7 @@ def test_force_backforward_dipole_trisheet():
     F0, T0 = getFT(strip, dip, pivot=(0, 0, 0))
 
     for meshing, errf, errt in zip(
-        [50, 300, 2000], [0.35, 0.02, 0.003], [0.035, 0.003, 0.0004], strict=False
+        [100, 300, 2000], [0.2, 0.007, 0.0003], [0.012, 0.003, 0.0004], strict=False
     ):
         F1, T1 = getFT(dip, strip, pivot=(0, 0, 0), meshing=meshing)
 
