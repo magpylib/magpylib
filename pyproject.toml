@@ -35,7 +35,7 @@ classifiers = [
 dynamic = ["version"]
 dependencies = [
     "numpy>=1.23",
-    "scipy>=1.17",
+    "scipy>=1.17.1",
     "matplotlib>=3.6",
     "plotly>=5.16",
 ]

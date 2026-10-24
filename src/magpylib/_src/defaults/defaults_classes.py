@@ -48,8 +48,9 @@ class Animation(PropertyNode):
         the animation, will be hidden otherwise.
     output: str, default=None
         The path where to store the animation. Must end with `.mp4` or `.gif`.
-        If only the suffix is used, the file is only stored in a temporary
-        folder and deleted after the animation is done.
+        If only the suffix is used, the file goes to a temporary folder. It is
+        deleted once a notebook embeds it, and kept there when a viewer opens
+        it from a script.
     """
 
     fps = Integer(

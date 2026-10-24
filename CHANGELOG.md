@@ -8,6 +8,8 @@
   of many objects in less than half the time, and fields along a path take up to
   40 % less time to compute
   ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
+- Requires scipy 1.17.1 or newer: `from_mrp` in 1.17.0 builds rotations that
+  fail when applied ([#936](https://github.com/magpylib/magpylib/issues/936)).
 
 ### Fixed
 
@@ -23,6 +25,10 @@
   target's origin, and a Polyline step whose vertices coincide no longer fails
   ([#1046](https://github.com/magpylib/magpylib/pull/1046),
   [#1050](https://github.com/magpylib/magpylib/pull/1050)).
+- A pyvista animation shown from a script now opens, also without IPython
+  installed: it raised `TypeError` on macOS and Linux, and on Windows the file
+  was deleted before the viewer could read it
+  ([#1051](https://github.com/magpylib/magpylib/pull/1051)).
 
 ## [6.0.0] 2026-10-19
 
