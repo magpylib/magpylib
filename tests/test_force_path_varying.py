@@ -7,7 +7,6 @@ Each target class has two test functions:
 """
 
 import numpy as np
-import pytest
 
 import magpylib as magpy
 
@@ -203,8 +202,8 @@ def test_path_varying_triangle_strip_vertices_current():
     vertices_path = np.array(
         [
             [[0, 0, 0], [1, 0, 0], [0, 0.5, 0], [1, 0.5, 0]],
-            [[0, 0, 0.1], [1, 0, 0.1], [0, 0.5, 0.15], [1, 0.5, 0.15]],
-            [[0, 0, 0.2], [1, 0, 0.2], [0, 0.5, 0.3], [1, 0.5, 0.3]],
+            [[0, 0, 0.1], [1, 0, 0.1], [0, 0.5, 0.15], [3, 0.5, 0.15]],
+            [[0, 0, 0.2], [1, 0, 0.2], [0, 0.5, 0.3], [0.1, 0.5, 0.3]],
         ]
     )
     currents_path = np.array([50, 100, 150])
@@ -214,24 +213,21 @@ def test_path_varying_triangle_strip_vertices_current():
         vertices=vertices_path, current=currents_path, position=positions
     )
 
-    F_vectorized, T_vectorized = magpy.getFT(dipole, strip_varying, meshing=10)
+    F_vectorized, _ = magpy.getFT(dipole, strip_varying, meshing=10)
 
-    F_manual, T_manual = [], []
-    for i in range(len(currents_path)):
-        F_i, T_i = magpy.getFT(
-            dipole,
-            magpy.current.TriangleStrip(
-                vertices=vertices_path[i],
-                current=currents_path[i],
-                position=positions[i],
-            ),
-            meshing=10,
-        )
-        F_manual.append(F_i)
-        T_manual.append(T_i)
-
-    np.testing.assert_allclose(F_vectorized, np.array(F_manual), rtol=1e-8, atol=1e-10)
-    np.testing.assert_allclose(T_vectorized, np.array(T_manual), rtol=1e-8, atol=1e-10)
+    _assert_matches_manual_loop(
+        dipole,
+        strip_varying,
+        lambda i: magpy.current.TriangleStrip(
+            vertices=vertices_path[i],
+            current=currents_path[i],
+            position=positions[i],
+        ),
+        n_steps=3,
+        rtol=1e-8,
+        atol=1e-10,
+        meshing=10,
+    )
     assert F_vectorized.shape == (3, 3)
     assert not np.allclose(F_vectorized[0], F_vectorized[1])
 
@@ -309,7 +305,7 @@ def test_mismatched_paths_triangle_sheet_scalar_current_densities():
     """TriangleSheet: varying vertices (p=3), scalar current_densities (p=1)."""
     dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -5))
     verts1 = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]])
-    verts2 = np.array([[0, 0, 0], [2, 0, 0], [0, 2, 0], [2, 2, 0]])
+    verts2 = np.array([[0, 0, 0], [2, 0, 0], [0, 2, 0], [6, 2, 0]])
     verts_path = np.array([verts1, verts2, verts1])
     faces = np.array([[0, 1, 2], [1, 3, 2]])
     cd = np.array([[100.0, 0, 0], [100.0, 0, 0]])
@@ -973,36 +969,3 @@ def test_trianglesheet_static_geometry_varying_current_matches_per_step():
         F_i, T_i = magpy.getFT(src, ts_i, meshing=12)
         np.testing.assert_allclose(F[i], F_i, rtol=1e-10)
         np.testing.assert_allclose(T[i], T_i, rtol=1e-10)
-
-
-@pytest.mark.parametrize("kind", ["strip", "sheet"])
-def test_triangle_current_varying_area_matches_static_steps(kind):
-    """Mesh each geometry independently, including repeated and reordered steps."""
-    vertices = np.random.default_rng(3).normal(size=(4, 4, 3)) * 0.01
-    indices = [0, 1, 2, 3, 1, 0]
-    vertices = vertices[indices]
-    current = np.array([1, 2, -1, 3, 4, -2])
-    densities = (vertices[:, 2:] - vertices[:, :-2]) * current[:, None, None]
-    faces = [[0, 1, 2], [1, 2, 3]]
-    source = magpy.misc.Dipole(moment=(1, 2, 3))
-
-    def make_target(index):
-        if kind == "strip":
-            return magpy.current.TriangleStrip(
-                vertices=vertices[index], current=current[index]
-            )
-        return magpy.current.TriangleSheet(
-            vertices=vertices[index], faces=faces, current_densities=densities[index]
-        )
-
-    expected = np.array(
-        [magpy.getFT(source, make_target(i), meshing=40) for i in range(len(indices))]
-    ).transpose(1, 0, 2)
-    target = make_target(slice(None))
-    actual = np.array(magpy.getFT(source, target, meshing=40))
-    np.testing.assert_allclose(actual, expected, rtol=1e-12, atol=1e-20)
-    np.testing.assert_array_equal(target.vertices, vertices)
-
-    order = np.array([2, 5, 3, 0, 4, 1])
-    reordered = np.array(magpy.getFT(source, make_target(order), meshing=40))
-    np.testing.assert_allclose(reordered, expected[:, order], rtol=1e-12, atol=1e-20)

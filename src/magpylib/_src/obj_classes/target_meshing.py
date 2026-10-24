@@ -689,6 +689,8 @@ def generate_mesh_triangle_current(
     -------
     dict
         {"pts": ndarray, shape (p, m, 3), "cvecs": ndarray, shape (p, m, 3)}
+        ``m`` is the largest mesh size over the path. Shorter meshes are padded
+        with zero current vectors at their last centroid.
     """
     # Inputs are already path-enabled from the class with shape (p, n, 3, 3) and (p, n, 3)
     p_len = triangles.shape[0]
@@ -721,7 +723,7 @@ def generate_mesh_triangle_current(
             idx = np.argmax(areas_temp)
             areas_temp[idx] /= 2.0
             splits[idx] += 1
-            n_refined = np.sum(2**splits)
+            n_refined += 2 ** (splits[idx] - 1)
 
         repeats = 2**splits
         refined_unique.append(np.mean(_subdiv(tria, splits), axis=1))
