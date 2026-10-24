@@ -1029,3 +1029,13 @@ def test_mesh_padding_avoids_source_at_target_origin(make_target, meshing):
         atol=1e-18,
         meshing=meshing,
     )
+
+
+def test_polyline_step_of_zero_length():
+    """A path step whose vertices all coincide carries no current: zero force there,
+    not 0/0 cast to int."""
+    coil = magpy.current.Polyline(vertices=[_SQUARE * 0, _SQUARE], current=1)
+    dipole = magpy.misc.Dipole(moment=(1, 2, 3), position=(0, 0, 0.01))
+    F, _ = magpy.getFT(dipole, coil, meshing=10)
+    np.testing.assert_array_equal(F[0], 0)
+    assert np.all(np.isfinite(F[1]))

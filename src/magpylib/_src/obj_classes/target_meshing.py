@@ -609,18 +609,24 @@ def _split_counts(areas, n_target):
     n = len(areas)
     if n_target <= n:
         return np.zeros(n, dtype=int)
-    k = np.arange(int(np.ceil(np.log2(n_target))) + 1)  # enough bisections each
-    area = (areas[:, np.newaxis] / 2.0**k).ravel()
-    tria = np.repeat(np.arange(n), len(k))
+    # A triangle is bisected at most log2(n_target - n) + 1 times, and less when
+    # it is small: its last bisection halves an area above sum(areas) / n_target
+    n_k = np.full(n, int(np.log2(n_target - n)) + 1, dtype=np.int64)
+    total = areas.sum()
+    if total > 0:
+        with np.errstate(divide="ignore"):
+            cap = np.floor(np.log2(areas * (n_target / total))) + 2
+        n_k = np.clip(cap, 0, n_k).astype(np.int64)
+    tria = np.repeat(np.arange(n), n_k)
+    k = np.arange(len(tria), dtype=np.int64) - np.repeat(np.cumsum(n_k) - n_k, n_k)
+    area = areas[tria] / 2.0**k
     order = np.argsort(-area, kind="stable")
     sorted_area = area[order]
     tie_group = np.cumsum(
         np.r_[0, sorted_area[1:] < sorted_area[:-1] * (1 - _TIE_RTOL)]
     )
     order = order[np.lexsort((tria[order], tie_group))]
-    n_bisections = (
-        np.searchsorted(np.cumsum(2 ** np.tile(k, n)[order]), n_target - n) + 1
-    )
+    n_bisections = np.searchsorted(np.cumsum(2 ** k[order]), n_target - n) + 1
     return np.bincount(tria[order[:n_bisections]], minlength=n)
 
 
@@ -841,10 +847,18 @@ def generate_mesh_polyline(vertices, current, target_elems):
     # 2. distribute remaining points proportionally to segment lengths
     remaining_points = target_elems - n_segments
     if remaining_points > 0:
-        # Calculate how many extra points each segment should get for each path position
+        # Calculate how many extra points each segment should get for each path
+        # position, none in a step whose vertices all coincide
+        total = total_lengths[:, np.newaxis]
         proportional_extra = (
-            segment_lengths / total_lengths[:, np.newaxis]
-        ) * remaining_points
+            np.divide(
+                segment_lengths,
+                total,
+                out=np.zeros_like(segment_lengths),
+                where=total > 0,
+            )
+            * remaining_points
+        )
         # Shares within rounding noise of k + 0.5 count as k + 0.5, so that equal
         # segments get the same number of points wherever the polyline sits
         half = np.floor(proportional_extra) + 0.5
