@@ -17,7 +17,8 @@
   with where the object sits, triangles are bisected along their longest edge as
   documented, and each path step is meshed like the static object there. Path
   steps with fewer mesh points no longer give NaN when a source sits at the
-  target's origin ([#1046](https://github.com/magpylib/magpylib/pull/1046),
+  target's origin, and a Polyline step whose vertices coincide no longer fails
+  ([#1046](https://github.com/magpylib/magpylib/pull/1046),
   [#1050](https://github.com/magpylib/magpylib/pull/1050)).
 
 ## [6.0.0] 2026-10-19
