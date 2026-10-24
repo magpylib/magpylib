@@ -4,6 +4,11 @@
 
 ### Changed
 
+- From a script, a Pyvista animation plays in Pyvista's window, where the scene
+  can be turned and zoomed while it plays, instead of going through a gif opened
+  in another app (Pyvista 0.43 or later). In a notebook, or with
+  `animation_output`, it is still a gif or mp4, now written about a quarter
+  faster ([#PRNUM](https://github.com/magpylib/magpylib/pull/PRNUM)).
 - `import magpylib` no longer loads matplotlib or plotly, `show()` builds scenes
   of many objects in less than half the time, and fields along a path take up to
   40 % less time to compute
@@ -26,6 +31,9 @@
   installed: it raised `TypeError` on macOS and Linux, and on Windows the file
   was deleted before the viewer could read it
   ([#1051](https://github.com/magpylib/magpylib/pull/1051)).
+- Pyvista animations lost their title and a given canvas's own objects, and
+  their 2D chart panels after the first frame
+  ([#PRNUM](https://github.com/magpylib/magpylib/pull/PRNUM)).
 
 ## [6.0.0] 2026-10-19
 
