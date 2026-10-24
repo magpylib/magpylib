@@ -1,4 +1,5 @@
 import array
+from functools import reduce
 
 import numpy as np
 import pytest
@@ -577,6 +578,11 @@ def test_input_objects_field_func_good():
     [
         pytest.param(1, id="non-callable"),
         pytest.param(lambda fieldd, observers, whatever: None, id="bad-arg-names"),  # noqa: ARG005
+        pytest.param(lambda *, field, observers: observers, id="keyword-only"),  # noqa: ARG005
+        pytest.param(lambda field, observers, /: observers, id="positional-only"),  # noqa: ARG005
+        pytest.param(lambda field, /, observers: observers, id="mixed-positional-only"),  # noqa: ARG005
+        pytest.param(reduce, id="non-introspectable-builtin"),
+        pytest.param(lambda field, observers, extra: observers, id="required-extra"),  # noqa: ARG005
         pytest.param(
             lambda field, observers: 1 if field == "B" else None,  # noqa: ARG005
             id="no-ndarray-return-on-B",

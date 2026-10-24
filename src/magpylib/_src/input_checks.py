@@ -106,13 +106,29 @@ def validate_field_func(val):
         )
         raise MagpylibBadUserInput(msg)
 
-    fn_args = inspect.getfullargspec(val).args
+    try:
+        signature = inspect.signature(val, follow_wrapped=False)
+    except (TypeError, ValueError) as err:
+        msg = "Input field_func must have an inspectable call signature."
+        raise MagpylibBadUserInput(msg) from err
+
+    fn_args = [
+        param.name
+        for param in signature.parameters.values()
+        if param.kind in (param.POSITIONAL_ONLY, param.POSITIONAL_OR_KEYWORD)
+    ]
     if fn_args[:2] != ["field", "observers"]:
         msg = (
             "Input field_func must have two positional arguments called field and observers; "
             f"instead received a callable where the first two arguments are: {fn_args[:2]!r}."
         )
         raise MagpylibBadUserInput(msg)
+
+    try:
+        signature.bind(field="B", observers=None)
+    except TypeError as err:
+        msg = "Input field_func must accept field and observers as keyword arguments."
+        raise MagpylibBadUserInput(msg) from err
 
     for field in ["B", "H"]:
         out = val(field, np.array([[1, 2, 3], [4, 5, 6]]))

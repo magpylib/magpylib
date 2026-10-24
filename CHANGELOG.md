@@ -21,6 +21,9 @@
 
 - An animation whose only path sits in a nested `Collection` had no frames
   ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
+- Accept bound methods and callable objects as custom field functions, and keep
+  copied sources independent in the subclassing example
+  ([#1045](https://github.com/magpylib/magpylib/pull/1045)).
 - Force meshes of TriangleStrip, TriangleSheet and Polyline no longer change
   with where the object sits, triangles are bisected along their longest edge as
   documented, and each path step is meshed like the static object there. Path

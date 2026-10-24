@@ -135,6 +135,10 @@ magpy.show(mono1, mono2)
 
 In the above example it would be nice to make the `CustomSource` dynamic, so that it would have a property `charge` that can be changed at will, rather than having to redefine the `field_func` and initialize a new object every time. In the following example we show how to sub-class `CustomSource` to achieve this. The problem is reminiscent of {ref}`examples-misc-compound`.
 
+Use a bound method for the field calculation so that a copied source reads its own charge. This also works when copying a `Collection` containing the source.
+
+Copying a source also deep-copies the state held by its bound field method or callable object, which duplicates large data and can fail for objects such as locks that cannot be copied.
+
 ```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
@@ -150,7 +154,7 @@ class Monopole(magpy.misc.CustomSource):
 
     def __init__(self, charge, **kwargs):
         super().__init__(**kwargs)  # hand over style kwargs
-        self._charge = charge
+        self.charge = charge
 
         # Add spherical 3d model
         trace_pole = magpy.graphics.model3d.make_Ellipsoid(
@@ -160,26 +164,20 @@ class Monopole(magpy.misc.CustomSource):
         self.style.model3d.add_trace(trace_pole)
 
         # Add monopole field_func
-        self._update()
+        self.field_func = self._mono_field
 
-    def _update(self):
-        """Apply monopole field function"""
-
-        def mono_field(field, observers):
-            """monopole field"""
-            Qm = self._charge  # unit (T·m²)
-            obs = np.array(observers).T  # unit (m)
-            B = Qm * (obs / np.linalg.norm(obs, axis=0) ** 3).T  # unit (T)
-            if field == "B":
-                return B  # unit (T)
-            elif field == "H":
-                H = B / magpy.mu_0  # unit (A/m)
-                return H
-            else:
-                raise ValueError("Field Value must be either 'B' or 'H'")
-
-        self.style.label = f"Monopole (charge={self._charge} (T·m²))"
-        self.field_func = mono_field
+    def _mono_field(self, field, observers):
+        """Monopole field"""
+        Qm = self._charge  # unit (T·m²)
+        obs = np.array(observers).T  # unit (m)
+        B = Qm * (obs / np.linalg.norm(obs, axis=0) ** 3).T  # unit (T)
+        if field == "B":
+            return B  # unit (T)
+        elif field == "H":
+            H = B / magpy.mu_0  # unit (A/m)
+            return H
+        else:
+            raise ValueError("Field Value must be either 'B' or 'H'")
 
     @property
     def charge(self):
@@ -190,15 +188,17 @@ class Monopole(magpy.misc.CustomSource):
     def charge(self, input):
         """Set charge"""
         self._charge = input
-        self._update()
+        self.style.label = f"Monopole (charge={self._charge} (T·m²))"
 
 # Use new class
 mono = Monopole(charge=1)
 print(mono.getB((1, 0, 0)))
 
-# Change property charge of object
+# Copy the source, then change the original's charge
+duplicate = mono.copy()
 mono.charge = -1
 print(mono.getB((1, 0, 0)))
+print(duplicate.getB((1, 0, 0)))  # retains charge=1
 ```
 
 The new class seamlessly integrates into the Magpylib interface as we show in the following example where we have a look at the Quadrupole field.
