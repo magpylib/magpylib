@@ -14,10 +14,10 @@
 - An animation whose only path sits in a nested `Collection` had no frames
   ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
 - Force meshes of TriangleStrip, TriangleSheet and Polyline no longer change
-  with where the object sits, and each path step is meshed like the static
-  object there. Path steps with fewer mesh points no longer give NaN when a
-  source sits at the target's origin
-  ([#1046](https://github.com/magpylib/magpylib/pull/1046),
+  with where the object sits, triangles are bisected along their longest edge as
+  documented, and each path step is meshed like the static object there. Path
+  steps with fewer mesh points no longer give NaN when a source sits at the
+  target's origin ([#1046](https://github.com/magpylib/magpylib/pull/1046),
   [#1050](https://github.com/magpylib/magpylib/pull/1050)).
 
 ## [6.0.0] 2026-10-19

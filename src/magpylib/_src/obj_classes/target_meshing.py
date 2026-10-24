@@ -585,6 +585,45 @@ def generate_mesh_circle(diameter, current, target_elems):
 _TIE_RTOL = 1e-9
 
 
+def _split_counts(areas, n_target):
+    """Number of bisections per triangle, so that the mesh has at least n_target
+    triangles.
+
+    Same as bisecting the largest triangle, the first of equal ones, until there
+    are n_target triangles, in one sort: bisecting triangle i for the (k+1)-th time
+    halves an area of areas[i] / 2**k and adds 2**k triangles, and these bisections
+    are taken by decreasing area. Areas equal up to rounding noise count as equal,
+    so that congruent triangles are split alike wherever they sit.
+
+    Parameters
+    ----------
+    areas : ndarray, shape (n,)
+        Triangle areas.
+    n_target : int
+        Target number of triangles.
+
+    Returns
+    -------
+    ndarray, shape (n,), dtype int
+    """
+    n = len(areas)
+    if n_target <= n:
+        return np.zeros(n, dtype=int)
+    k = np.arange(int(np.ceil(np.log2(n_target))) + 1)  # enough bisections each
+    area = (areas[:, np.newaxis] / 2.0**k).ravel()
+    tria = np.repeat(np.arange(n), len(k))
+    order = np.argsort(-area, kind="stable")
+    sorted_area = area[order]
+    tie_group = np.cumsum(
+        np.r_[0, sorted_area[1:] < sorted_area[:-1] * (1 - _TIE_RTOL)]
+    )
+    order = order[np.lexsort((tria[order], tie_group))]
+    n_bisections = (
+        np.searchsorted(np.cumsum(2 ** np.tile(k, n)[order]), n_target - n) + 1
+    )
+    return np.bincount(tria[order[:n_bisections]], minlength=n)
+
+
 def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
     """
     Subdivides the given triangles based on the specified number of splits
@@ -639,11 +678,12 @@ def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
         d2_BC = np.sum((C - B) ** 2, axis=1)
         d2_CA = np.sum((A - C) ** 2, axis=1)
 
-        # Edges equal up to rounding noise count as equal, so that congruent
-        # triangles are split alike wherever they sit
-        tie = 1 - _TIE_RTOL
-        case1 = (d2_AB >= d2_BC * tie) * (d2_AB >= d2_CA * tie)
-        case2 = d2_BC >= d2_CA * tie
+        # Split the longest edge. Edges equal up to rounding noise count as equal
+        # and the first one wins, so that congruent triangles are split alike
+        # wherever they sit
+        d2_tie = np.maximum(np.maximum(d2_AB, d2_BC), d2_CA) * (1 - _TIE_RTOL)
+        case1 = d2_AB >= d2_tie
+        case2 = ~case1 & (d2_BC >= d2_tie)
         case3 = ~(case1 | case2)
 
         # instead of creating this array, we could direvctly use TRIA
@@ -705,7 +745,6 @@ def generate_mesh_triangle_current(
     """
     # Inputs are already path-enabled from the class with shape (p, n, 3, 3) and (p, n, 3)
     p_len = triangles.shape[0]
-    n_tria = triangles.shape[1]
 
     # Check for path-varying parameters. Keep the triangle-geometry dedup
     # (unique rows + inverse map) so the expensive _subdiv runs once per unique
@@ -727,17 +766,7 @@ def generate_mesh_triangle_current(
     repeats_unique = []
     areas_unique = []
     for tria, areas in zip(unique_trias, surfaces, strict=True):
-        splits = np.zeros(n_tria, dtype=int)
-        areas_temp = areas.copy()
-        n_refined = n_tria
-        while n_refined < n_target:
-            # Split the first of the largest triangles, equal up to rounding
-            # noise, so that congruent triangles are split alike wherever they sit
-            idx = np.argmax(areas_temp >= areas_temp.max() * (1 - _TIE_RTOL))
-            areas_temp[idx] /= 2.0
-            splits[idx] += 1
-            n_refined += 2 ** (splits[idx] - 1)
-
+        splits = _split_counts(areas, n_target)
         repeats = 2**splits
         refined_unique.append(np.mean(_subdiv(tria, splits), axis=1))
         repeats_unique.append(repeats)
