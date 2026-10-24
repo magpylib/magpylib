@@ -8,6 +8,8 @@
   of many objects in less than half the time, and fields along a path take up to
   40 % less time to compute
   ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
+- Requires scipy 1.17.1 or newer: `from_mrp` in 1.17.0 builds rotations that
+  fail when applied ([#936](https://github.com/magpylib/magpylib/issues/936)).
 
 ### Fixed
 

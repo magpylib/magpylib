@@ -898,8 +898,6 @@ class BaseTransform:
         [  0.   0. -90.]
         """
         rot = R.from_mrp(mrp)
-        rot = rot.as_quat()  # bug in scipy 1.17 requires this workaround
-        rot = R.from_quat(rot)
         return self.rotate(rot, anchor=anchor, start=start)
 
     def rotate_from_quat(self, quat, anchor=None, start="auto"):
