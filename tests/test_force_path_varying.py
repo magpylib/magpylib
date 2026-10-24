@@ -1018,6 +1018,8 @@ def test_current_meshed_alike_wherever_it_sits(cls, vertices, meshing):
 def test_mesh_padding_avoids_source_at_target_origin(make_target, meshing):
     """Path steps with fewer mesh points are padded. A dipole at the target's local
     origin must give the static result there, not NaN."""
+    sizes = [len(make_target(i)._generate_mesh(meshing)["pts"]) for i in range(2)]
+    assert sizes[0] != sizes[1]  # one step is padded
     _assert_matches_manual_loop(
         magpy.misc.Dipole(moment=(1, 2, 3)),
         make_target(slice(None)),

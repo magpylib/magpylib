@@ -581,6 +581,10 @@ def generate_mesh_circle(diameter, current, target_elems):
     return {"pts": pts, "cvecs": cvecs}
 
 
+# Relative difference below which triangle areas and edge lengths count as equal
+_TIE_RTOL = 1e-9
+
+
 def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
     """
     Subdivides the given triangles based on the specified number of splits
@@ -630,15 +634,16 @@ def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
         B = triangles[:, 1]
         C = triangles[:, 2]
 
-        # Squared lengths of edges, rounded to float32 so that edges of equal
-        # length up to rounding noise tie exactly, and congruent triangles are
-        # split along the same edge wherever they sit
-        d2_AB = np.sum((B - A) ** 2, axis=1).astype(np.float32)
-        d2_BC = np.sum((C - B) ** 2, axis=1).astype(np.float32)
-        d2_CA = np.sum((A - C) ** 2, axis=1).astype(np.float32)
+        # Squared lengths of edges
+        d2_AB = np.sum((B - A) ** 2, axis=1)
+        d2_BC = np.sum((C - B) ** 2, axis=1)
+        d2_CA = np.sum((A - C) ** 2, axis=1)
 
-        case1 = (d2_AB >= d2_BC) * (d2_AB >= d2_CA)
-        case2 = d2_BC >= d2_CA
+        # Edges equal up to rounding noise count as equal, so that congruent
+        # triangles are split alike wherever they sit
+        tie = 1 - _TIE_RTOL
+        case1 = (d2_AB >= d2_BC * tie) * (d2_AB >= d2_CA * tie)
+        case2 = d2_BC >= d2_CA * tie
         case3 = ~(case1 | case2)
 
         # instead of creating this array, we could direvctly use TRIA
@@ -693,9 +698,10 @@ def generate_mesh_triangle_current(
     Returns
     -------
     dict
-        {"pts": ndarray, shape (p, m, 3), "cvecs": ndarray, shape (p, m, 3)}
-        ``m`` is the largest mesh size over the path. Shorter meshes are padded
-        with zero current vectors at their last centroid.
+        {"pts": ndarray, shape (p, m, 3), "cvecs": ndarray, shape (p, m, 3)}, or
+        shape (m, 3) when nothing varies along the path. ``m`` is the largest mesh
+        size over the path. Shorter meshes are padded with zero current vectors at
+        their last centroid.
     """
     # Inputs are already path-enabled from the class with shape (p, n, 3, 3) and (p, n, 3)
     p_len = triangles.shape[0]
@@ -722,12 +728,12 @@ def generate_mesh_triangle_current(
     areas_unique = []
     for tria, areas in zip(unique_trias, surfaces, strict=True):
         splits = np.zeros(n_tria, dtype=int)
-        # float32 drops the rounding noise of the areas: equal areas tie exactly
-        # and congruent triangles are split in the same order wherever they sit
-        areas_temp = areas.astype(np.float32)
+        areas_temp = areas.copy()
         n_refined = n_tria
         while n_refined < n_target:
-            idx = np.argmax(areas_temp)
+            # Split the first of the largest triangles, equal up to rounding
+            # noise, so that congruent triangles are split alike wherever they sit
+            idx = np.argmax(areas_temp >= areas_temp.max() * (1 - _TIE_RTOL))
             areas_temp[idx] /= 2.0
             splits[idx] += 1
             n_refined += 2 ** (splits[idx] - 1)
@@ -778,9 +784,10 @@ def generate_mesh_polyline(vertices, current, target_elems):
     Returns
     -------
     dict
-        {"pts": ndarray, shape (p, m, 3), "cvecs": ndarray, shape (p, m, 3)}
-        ``m`` is the largest mesh size over the path. Shorter meshes are padded
-        with zero current vectors at their last point.
+        {"pts": ndarray, shape (p, m, 3), "cvecs": ndarray, shape (p, m, 3)}, or
+        shape (m, 3) when nothing varies along the path. ``m`` is the largest mesh
+        size over the path. Shorter meshes are padded with zero current vectors at
+        their last point.
     """
     # Inputs are already path-enabled from the class
     p_len = len(current)
