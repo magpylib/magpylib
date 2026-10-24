@@ -372,9 +372,9 @@ def _mesh_magnet(geometry, magnetization, cells_at):
     dict
         ``pts`` the cell centroids and ``moments`` the cell volumes times the
         magnetization, of shape (n, 3) when neither geometry nor magnetization varies
-        along the path and (p, n, 3) otherwise, zero-padded when the cell count
-        varies; and ``cells``, the cells dict, or a list of p cells dicts when the
-        mesh has a path axis.
+        along the path and (p, n, 3) otherwise, padded with zero moments at the last
+        centroid when the cell count varies; and ``cells``, the cells dict, or a
+        list of p cells dicts when the mesh has a path axis.
     """
     p_len = len(geometry)
     flat = np.asarray(geometry).reshape(p_len, -1)
@@ -402,6 +402,8 @@ def _mesh_magnet(geometry, magnetization, cells_at):
             "cells": [cells] * p_len,
         }
 
+    # Pad shorter meshes with zero moments at a real centroid: padding at the
+    # local origin would sample a source sitting there and give NaN.
     cells_path = [cells_unique[g] for g in inverse]
     n_max = max(len(cells["volumes"]) for cells in cells_unique)
     pts = np.zeros((p_len, n_max, 3))
@@ -409,6 +411,7 @@ def _mesh_magnet(geometry, magnetization, cells_at):
     for p, (cells, mag) in enumerate(zip(cells_path, magnetization, strict=True)):
         n = len(cells["volumes"])
         pts[p, :n] = cells["centroids"]
+        pts[p, n:] = cells["centroids"][-1]
         moments[p, :n] = cells["volumes"][:, np.newaxis] * mag
     return {"pts": pts, "moments": moments, "cells": cells_path}
 
@@ -578,6 +581,55 @@ def generate_mesh_circle(diameter, current, target_elems):
     return {"pts": pts, "cvecs": cvecs}
 
 
+# Relative difference below which triangle areas and edge lengths count as equal
+_TIE_RTOL = 1e-9
+
+
+def _split_counts(areas, n_target):
+    """Number of bisections per triangle, so that the mesh has at least n_target
+    triangles.
+
+    Same as bisecting the largest triangle, the first of equal ones, until there
+    are n_target triangles, in one sort: bisecting triangle i for the (k+1)-th time
+    halves an area of areas[i] / 2**k and adds 2**k triangles, and these bisections
+    are taken by decreasing area. Areas equal up to rounding noise count as equal,
+    so that congruent triangles are split alike wherever they sit.
+
+    Parameters
+    ----------
+    areas : ndarray, shape (n,)
+        Triangle areas.
+    n_target : int
+        Target number of triangles.
+
+    Returns
+    -------
+    ndarray, shape (n,), dtype int
+    """
+    n = len(areas)
+    if n_target <= n:
+        return np.zeros(n, dtype=int)
+    # A triangle is bisected at most log2(n_target - n) + 1 times, and less when
+    # it is small: its last bisection halves an area above sum(areas) / n_target
+    n_k = np.full(n, int(np.log2(n_target - n)) + 1, dtype=np.int64)
+    total = areas.sum()
+    if total > 0:
+        with np.errstate(divide="ignore"):
+            cap = np.floor(np.log2(areas * (n_target / total))) + 2
+        n_k = np.clip(cap, 0, n_k).astype(np.int64)
+    tria = np.repeat(np.arange(n), n_k)
+    k = np.arange(len(tria), dtype=np.int64) - np.repeat(np.cumsum(n_k) - n_k, n_k)
+    area = areas[tria] / 2.0**k
+    order = np.argsort(-area, kind="stable")
+    sorted_area = area[order]
+    tie_group = np.cumsum(
+        np.r_[0, sorted_area[1:] < sorted_area[:-1] * (1 - _TIE_RTOL)]
+    )
+    order = order[np.lexsort((tria[order], tie_group))]
+    n_bisections = np.searchsorted(np.cumsum(2 ** k[order]), n_target - n) + 1
+    return np.bincount(tria[order[:n_bisections]], minlength=n)
+
+
 def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
     """
     Subdivides the given triangles based on the specified number of splits
@@ -632,8 +684,12 @@ def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
         d2_BC = np.sum((C - B) ** 2, axis=1)
         d2_CA = np.sum((A - C) ** 2, axis=1)
 
-        case1 = (d2_AB >= d2_BC) * (d2_AB >= d2_CA)
-        case2 = d2_BC >= d2_CA
+        # Split the longest edge. Edges equal up to rounding noise count as equal
+        # and the first one wins, so that congruent triangles are split alike
+        # wherever they sit
+        d2_tie = np.maximum(np.maximum(d2_AB, d2_BC), d2_CA) * (1 - _TIE_RTOL)
+        case1 = d2_AB >= d2_tie
+        case2 = ~case1 & (d2_BC >= d2_tie)
         case3 = ~(case1 | case2)
 
         # instead of creating this array, we could direvctly use TRIA
@@ -688,13 +744,13 @@ def generate_mesh_triangle_current(
     Returns
     -------
     dict
-        {"pts": ndarray, shape (p, m, 3), "cvecs": ndarray, shape (p, m, 3)}
-        ``m`` is the largest mesh size over the path. Shorter meshes are padded
-        with zero current vectors at their last centroid.
+        {"pts": ndarray, shape (p, m, 3), "cvecs": ndarray, shape (p, m, 3)}, or
+        shape (m, 3) when nothing varies along the path. ``m`` is the largest mesh
+        size over the path. Shorter meshes are padded with zero current vectors at
+        their last centroid.
     """
     # Inputs are already path-enabled from the class with shape (p, n, 3, 3) and (p, n, 3)
     p_len = triangles.shape[0]
-    n_tria = triangles.shape[1]
 
     # Check for path-varying parameters. Keep the triangle-geometry dedup
     # (unique rows + inverse map) so the expensive _subdiv runs once per unique
@@ -716,15 +772,7 @@ def generate_mesh_triangle_current(
     repeats_unique = []
     areas_unique = []
     for tria, areas in zip(unique_trias, surfaces, strict=True):
-        splits = np.zeros(n_tria, dtype=int)
-        areas_temp = areas.copy()
-        n_refined = n_tria
-        while n_refined < n_target:
-            idx = np.argmax(areas_temp)
-            areas_temp[idx] /= 2.0
-            splits[idx] += 1
-            n_refined += 2 ** (splits[idx] - 1)
-
+        splits = _split_counts(areas, n_target)
         repeats = 2**splits
         refined_unique.append(np.mean(_subdiv(tria, splits), axis=1))
         repeats_unique.append(repeats)
@@ -771,7 +819,10 @@ def generate_mesh_polyline(vertices, current, target_elems):
     Returns
     -------
     dict
-        {"pts": ndarray, shape (p, m, 3), "cvecs": ndarray, shape (p, m, 3)}
+        {"pts": ndarray, shape (p, m, 3), "cvecs": ndarray, shape (p, m, 3)}, or
+        shape (m, 3) when nothing varies along the path. ``m`` is the largest mesh
+        size over the path. Shorter meshes are padded with zero current vectors at
+        their last point.
     """
     # Inputs are already path-enabled from the class
     p_len = len(current)
@@ -796,11 +847,23 @@ def generate_mesh_polyline(vertices, current, target_elems):
     # 2. distribute remaining points proportionally to segment lengths
     remaining_points = target_elems - n_segments
     if remaining_points > 0:
-        # Calculate how many extra points each segment should get for each path position
+        # Calculate how many extra points each segment should get for each path
+        # position, none in a step whose vertices all coincide
+        total = total_lengths[:, np.newaxis]
         proportional_extra = (
-            segment_lengths / total_lengths[:, np.newaxis]
-        ) * remaining_points
-        extra_points = np.round(proportional_extra).astype(int)
+            np.divide(
+                segment_lengths,
+                total,
+                out=np.zeros_like(segment_lengths),
+                where=total > 0,
+            )
+            * remaining_points
+        )
+        # Shares within rounding noise of k + 0.5 count as k + 0.5, so that equal
+        # segments get the same number of points wherever the polyline sits
+        half = np.floor(proportional_extra) + 0.5
+        tied = np.isclose(proportional_extra, half, rtol=_TIE_RTOL, atol=0)
+        extra_points = np.round(np.where(tied, half, proportional_extra)).astype(int)
         points_per_segment += extra_points
 
     # Update target_elems to actual distributed points for each path position
@@ -840,21 +903,19 @@ def generate_mesh_polyline(vertices, current, target_elems):
         cvecs_list.append(cvecs_path)
 
     # Convert to arrays with consistent shapes
-    # Pad shorter arrays with zeros to match max_n_points
+    # Pad shorter meshes with zero current vectors at a real point: padding at the
+    # local origin would sample a source sitting there and give NaN.
     pts = np.zeros((p_len, max_n_points, 3))
     cvecs = np.zeros((p_len, max_n_points, 3))
 
     for p_idx in range(p_len):
         n_pts = len(pts_list[p_idx])
         pts[p_idx, :n_pts] = pts_list[p_idx]
+        pts[p_idx, n_pts:] = pts_list[p_idx][-1]
         cvecs[p_idx, :n_pts] = cvecs_list[p_idx]
 
     # If no path variation, return squeezed arrays
     if not has_path_varying:
         pts, cvecs = pts[0], cvecs[0]
-        # Remove padding zeros
-        if max_n_points > actual_n_points[0]:
-            pts = pts[: actual_n_points[0]]
-            cvecs = cvecs[: actual_n_points[0]]
 
     return {"pts": pts, "cvecs": cvecs}
