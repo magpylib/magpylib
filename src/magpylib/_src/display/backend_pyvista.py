@@ -434,7 +434,7 @@ def display_pyvista(scene):
         # zoom while the frames replace each other. Dragging the slider
         # pauses them and seeks
         n_frames = len(frames)
-        labels = np.array(scene.animation.path_indices)  # from 0, as the chart's
+        labels = np.array(scene.animation.path_indices) + 1  # as plotly's slider
         frame, dragging, slider = 0, False, None
 
         def tick(_step):
