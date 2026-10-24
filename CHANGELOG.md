@@ -22,6 +22,10 @@
   target's origin, and a Polyline step whose vertices coincide no longer fails
   ([#1046](https://github.com/magpylib/magpylib/pull/1046),
   [#1050](https://github.com/magpylib/magpylib/pull/1050)).
+- A pyvista animation shown from a script now opens, also without IPython
+  installed: it raised `TypeError` on macOS and Linux, and on Windows the file
+  was deleted before the viewer could read it
+  ([#1051](https://github.com/magpylib/magpylib/pull/1051)).
 
 ## [6.0.0] 2026-10-19
 

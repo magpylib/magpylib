@@ -1,3 +1,4 @@
+import sys
 from unittest.mock import patch
 
 import matplotlib.pyplot as plt
@@ -13,6 +14,7 @@ from magpylib._src.display.traces_utility import (
     merge_scatter3d,
 )
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.utility import is_notebook, open_animation
 
 
 def test_draw_arrow_from_vertices():
@@ -94,6 +96,22 @@ def test_infer_backend(canvas, is_notebook_result, backend):
         from magpylib._src.display.display import infer_backend  # noqa: PLC0415
 
         assert infer_backend(canvas) == backend
+
+
+def test_is_notebook_without_ipython():
+    """IPython is optional: without it, a script is no notebook"""
+    with patch.dict(sys.modules, {"IPython": None}):
+        assert not is_notebook()
+
+
+def test_open_animation_without_viewer(tmp_path):
+    """When no viewer opens the animation, the user learns where it is"""
+    with (
+        patch("magpylib._src.utility.is_notebook", return_value=False),
+        patch("webbrowser.open", return_value=False),
+        pytest.warns(UserWarning, match="saved at"),
+    ):
+        assert open_animation(tmp_path / "anim.gif")
 
 
 def test_merge_scatter3d():

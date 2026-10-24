@@ -1,8 +1,6 @@
-import contextlib
 import os
 import sys
 import tempfile
-from pathlib import Path
 from unittest.mock import patch
 
 import numpy as np
@@ -108,7 +106,9 @@ def test_animation_warning():
 @pytest.mark.parametrize("is_notebook_result", [True, False])
 @pytest.mark.parametrize("extension", ["mp4", "gif"])
 @pytest.mark.parametrize("filename", [True, False])
-def test_pyvista_animation(is_notebook_result, extension, filename):
+def test_pyvista_animation(
+    is_notebook_result, extension, filename, tmp_path, monkeypatch
+):
     """Test pyvista animation"""
     # define sensor and source
     pv.OFF_SCREEN = True
@@ -123,26 +123,31 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
     src.move([[0, 0, 0], [0, 0, 1]], start=0)
     objs = [src, sens]
 
+    # temp files land in tmp_path, so what show() leaves behind is listed there
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
+    output = tmp_path / f"anim.{extension}"
     with (
         patch("magpylib._src.utility.is_notebook", return_value=is_notebook_result),
-        patch("webbrowser.open"),
+        patch("webbrowser.open") as browser_open,
     ):
-        try:
-            temp = Path(tempfile.gettempdir()) / os.urandom(24).hex()
-            temp = temp.with_suffix(f".{extension}")
-            animation_output = temp if filename else extension
-            magpy.show(
-                {"objects": objs, "col": 1, "output": ("Bx", "By", "Bz")},
-                {"objects": objs, "col": 2},
-                backend="pyvista",
-                animation=True,
-                animation_output=animation_output,
-                mp4_quality=1,
-                return_fig=True,
-            )
-        finally:
-            with contextlib.suppress(FileNotFoundError):
-                temp.unlink()
+        magpy.show(
+            {"objects": objs, "col": 1, "output": ("Bx", "By", "Bz")},
+            {"objects": objs, "col": 2},
+            backend="pyvista",
+            animation=True,
+            animation_output=output if filename else extension,
+            mp4_quality=1,
+            return_fig=True,
+        )
+    kept = list(tmp_path.iterdir())
+    if is_notebook_result:
+        # embedded: only a file the user named stays
+        assert kept == ([output] if filename else [])
+    else:
+        # the viewer reads the file after show() returns, so it stays
+        assert len(kept) == 1
+        (url,), _ = browser_open.call_args
+        assert url in (kept[0].as_uri(), str(kept[0]))
 
 
 def test_pyvista_warns_on_backend_specific_model3d():
