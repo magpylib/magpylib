@@ -13,6 +13,7 @@ from functools import cache
 from inspect import signature
 from math import log10
 from pathlib import Path
+from weakref import WeakKeyDictionary
 
 import numpy as np
 
@@ -429,11 +430,20 @@ def open_animation(filepath, embed=True):
     return True
 
 
-@cache
+# weak keys: a cached field function must not keep its source (bound method)
+# or the state it closes over alive
+_PARAMETER_NAMES = WeakKeyDictionary()
+
+
 def has_parameter(func: Callable, param_name: str) -> bool:
     """Check if input function has a specific parameter"""
-    sig = signature(func)
-    return param_name in sig.parameters
+    try:
+        names = _PARAMETER_NAMES[func]
+    except KeyError:
+        names = _PARAMETER_NAMES[func] = frozenset(signature(func).parameters)
+    except TypeError:  # unhashable, or no weak reference
+        names = frozenset(signature(func).parameters)
+    return param_name in names
 
 
 def merge_dicts_with_conflict_check(objs, *, target, identifiers, unique_fields):

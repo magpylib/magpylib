@@ -1,3 +1,7 @@
+import dataclasses
+import gc
+import weakref
+
 import numpy as np
 import pytest
 
@@ -400,3 +404,37 @@ def test_getHBMJ_self_consistency(field):
     np.testing.assert_allclose(F1, F2)
     np.testing.assert_allclose(F1, F3)
     np.testing.assert_allclose(F1, F4)
+
+
+def test_getB_field_funcs_equal_but_distinct():
+    """Sources whose field functions compare equal keep their own field."""
+
+    @dataclasses.dataclass  # compares equal, and cannot be hashed
+    class Uniform:
+        strength: float = dataclasses.field(compare=False)
+
+        def __call__(self, field, observers):  # noqa: ARG002
+            return np.full(observers.shape, self.strength)
+
+    sources = [magpy.misc.CustomSource(field_func=Uniform(s)) for s in (1, 2)]
+    np.testing.assert_allclose(magpy.getB(sources, (1, 0, 0)), [(1, 1, 1), (2, 2, 2)])
+
+
+def test_getB_does_not_keep_source_alive():
+    """A field function that references its source does not keep it alive."""
+
+    def make_source():
+        src = magpy.misc.CustomSource()
+
+        def field_func(field, observers):  # noqa: ARG001
+            return np.full(observers.shape, src.position[0])
+
+        src.field_func = field_func
+        return src
+
+    src = make_source()
+    src.getB((1, 0, 0))
+    ref = weakref.ref(src)
+    del src
+    gc.collect()
+    assert ref() is None
