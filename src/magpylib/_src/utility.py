@@ -429,11 +429,19 @@ def open_animation(filepath, embed=True):
     return True
 
 
-@cache
 def has_parameter(func: Callable, param_name: str) -> bool:
     """Check if input function has a specific parameter"""
-    sig = signature(func)
-    return param_name in sig.parameters
+    # only Magpylib's own field functions are cached: they live for the whole
+    # session, while a cached user callable would keep its source alive
+    if (getattr(func, "__module__", None) or "").startswith("magpylib."):
+        return param_name in _own_parameter_names(func)
+    return param_name in signature(func, follow_wrapped=False).parameters
+
+
+@cache
+def _own_parameter_names(func: Callable) -> frozenset:
+    """Parameter names of a Magpylib field function"""
+    return frozenset(signature(func, follow_wrapped=False).parameters)
 
 
 def merge_dicts_with_conflict_check(objs, *, target, identifiers, unique_fields):

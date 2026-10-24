@@ -24,6 +24,9 @@
 - Accept bound methods and callable objects as custom field functions, and keep
   copied sources independent in the subclassing example
   ([#1045](https://github.com/magpylib/magpylib/pull/1045)).
+- A custom source whose field function references it, such as a closure over the
+  source or a bound method, is now freed: since 5.0.0 a cache kept every such
+  source alive ([#1054](https://github.com/magpylib/magpylib/pull/1054)).
 - Force meshes of TriangleStrip, TriangleSheet and Polyline no longer change
   with where the object sits, triangles are bisected along their longest edge as
   documented, and each path step is meshed like the static object there. Path
