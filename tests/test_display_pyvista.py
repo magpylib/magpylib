@@ -6,6 +6,9 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 import pyvista as pv
+from vtkmodules.vtkRenderingContext2D import (  # pylint: disable=no-name-in-module
+    vtkContextActor,
+)
 
 import magpylib as magpy
 
@@ -148,6 +151,69 @@ def test_pyvista_animation(
         assert len(kept) == 1
         (url,), _ = browser_open.call_args
         assert url in (kept[0].as_uri(), str(kept[0]))
+
+
+@pytest.mark.parametrize("subplots", [True, False])
+def test_pyvista_animation_plays_live(subplots, tmp_path, monkeypatch):
+    """From a script the window plays the frames on a timer and writes no
+    file. A frame replaces only what the last one drew: the title and the
+    chart stay, and looping stacks no actors and repeats no legend entry.
+    The slider follows the frames and dragging it seeks; the button pauses"""
+    monkeypatch.setattr(pv, "OFF_SCREEN", False)
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
+    src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    src.move([[0, 0, 0], [0, 0, 1]], start=0)
+    objs = [src, magpy.Sensor()]
+    # two labels at a cap of two: one counted twice would add an overflow entry
+    kwargs = {"backend": "pyvista", "animation": True, "legend_maxitems": 2}
+    kwargs["repeat"] = True
+    with (
+        patch.object(pv.Plotter, "show", autospec=True) as show,
+        patch.object(pv.Plotter, "add_timer_event") as add_timer_event,
+        patch("webbrowser.open") as browser_open,
+    ):
+        if subplots:
+            magpy.show(
+                {"objects": objs, "col": 1, "output": "Bx"},
+                {"objects": objs, "col": 2},
+                **kwargs,
+            )
+        else:
+            magpy.show(*objs, title="Title", **kwargs)
+    pl = show.call_args.args[0]
+    play = add_timer_event.call_args.kwargs["callback"]
+    play(0)
+    drawn = [len(r.actors) for r in pl.renderers]
+    entries = pl.renderers[-1].legend.GetNumberOfEntries()
+    for step in range(1, 5):  # two more loops over the two frames
+        play(step)
+    assert [len(r.actors) for r in pl.renderers] == drawn
+    assert pl.renderers[-1].legend.GetNumberOfEntries() == entries
+    if subplots:
+        chart_actors = pl.renderers[0].actors.values()
+        assert any(isinstance(a, vtkContextActor) for a in chart_actors)
+    else:
+        assert "title" in pl.renderer.actors
+    slider = pl.widgets.slider_widgets[0]
+    path_index = slider.GetRepresentation().GetValue
+    assert path_index() == 2  # 1-based, five steps from frame 0
+    slider.InvokeEvent("StartInteractionEvent")
+    slider.GetRepresentation().SetValue(1)
+    slider.InvokeEvent("InteractionEvent")
+    play(5)  # paused while dragging
+    slider.InvokeEvent("EndInteractionEvent")
+    assert path_index() == 1
+    play(6)
+    assert path_index() == 2
+    button = pl.widgets.button_widgets[0]
+    for playing, expected in ((0, 2), (1, 1)):  # pause, then play again
+        button.GetRepresentation().SetState(playing)
+        button.InvokeEvent("StateChangedEvent")
+        play(7)
+        assert path_index() == expected
+    browser_open.assert_not_called()
+    assert not list(tmp_path.iterdir())
+    pl.close()
 
 
 def test_pyvista_warns_on_backend_specific_model3d():

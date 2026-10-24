@@ -108,7 +108,7 @@ There is a high level of **feature parity**, however, not all graphic features a
 |        animation        |     ✔️     |   ✔️   |  ✔️[5]  |
 |     animation time      |     ✔️     |   ✔️   |  ✔️[5]  |
 |      animation fps      |     ✔️     |   ✔️   |  ✔️[5]  |
-|    animation slider     |   ✔️[1]    |   ✔️   |   ❌    |
+|    animation slider     |   ✔️[1]    |   ✔️   |  ✔️[9]  |
 |       subplots 2D       |     ✔️     |   ✔️   |  ✔️[6]  |
 |       subplots 3D       |     ✔️     |   ✔️   |   ✔️    |
 |       user canvas       |     ✔️     |   ✔️   |   ✔️    |
@@ -123,11 +123,13 @@ There is a high level of **feature parity**, however, not all graphic features a
 
 [4]: backend-specific trace constructors are supported by Matplotlib and Plotly, whose constructors take the named coordinate arrays that Magpylib transforms. Pyvista constructors take points, centers and radii instead, so they do not fit that contract; attaching one emits a warning and the model is not displayed. Generic `model3d` traces work with every backend, Pyvista included.
 
-[5]: animation is only available through export as `gif` or `mp4`
+[5]: from a script, the animation plays in Pyvista's window (Pyvista 0.43 or later); in a notebook, or with `animation_output`, it is exported as a `gif` or `mp4`.
 
 [6]: 2D plots are not supported for all jupyter_backends. As of pyvista>=0.38 these are deprecated and replaced by the [trame](https://docs.pyvista.org/api/plotting/trame.html) backend.
 
 [8]: Pyvista has no figure-level title -- `add_title` applies to the active subplot -- so the title is shown for a single panel and omitted on a subplot grid.
+
+[9]: in Pyvista's window, when run from a script.
 
 [7]: Matplotlib does not support color gradient. Instead magnetization is shown through object slicing and coloring.
 
@@ -293,7 +295,7 @@ The animations can be fine-tuned with the following kwargs of `show()`:
 3. `animation_maxfps` (default=30), the most frames per second: a larger `animation_fps` is lowered to it, with a warning.
 4. `animation_maxframes` (default=200), the most frames.
 5. `animation_slider` (default=`True`), is boolean and sets if a slider should be displayed.
-6. `animation_output` (default=`None`), `'gif'` or `'mp4'`, or a file path ending in one of them, to export the animation (Pyvista).
+6. `animation_output` (default=`None`), `'gif'` or `'mp4'`, or a file path ending in one of them, to export the animation (Pyvista). Without it, Pyvista plays the animation in its own window when run from a script, and embeds a gif in a notebook.
 
 Each path step will generate one frame of the animation, unless the animation would then have more than `animation_time` times `animation_fps` frames, or more than `animation_maxframes`. In this case equidistant frames, always including the last path step, are selected automatically. The animation lasts `animation_time` either way, so a short path plays at fewer frames per second than `animation_fps`. For practicality, a number `animation=x` will automatically set `animation=True` and `animation_time=x`. The defaults are in `magpy.defaults.display.animation`.
 
