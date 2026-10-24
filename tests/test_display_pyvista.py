@@ -4,6 +4,8 @@ import sys
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 import numpy as np
 import pytest
@@ -125,11 +127,15 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
 
     with (
         patch("magpylib._src.utility.is_notebook", return_value=is_notebook_result),
-        patch("webbrowser.open"),
+        patch(
+            "magpylib._src.display.backend_pyvista.is_notebook",
+            return_value=is_notebook_result,
+        ),
+        patch("webbrowser.open") as browser_open,
     ):
+        temp = Path(tempfile.gettempdir()) / os.urandom(24).hex()
+        temp = temp.with_suffix(f".{extension}")
         try:
-            temp = Path(tempfile.gettempdir()) / os.urandom(24).hex()
-            temp = temp.with_suffix(f".{extension}")
             animation_output = temp if filename else extension
             magpy.show(
                 {"objects": objs, "col": 1, "output": ("Bx", "By", "Bz")},
@@ -140,6 +146,12 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
                 mp4_quality=1,
                 return_fig=True,
             )
+            if not is_notebook_result:
+                # the browser gets a file URL to a file that outlives show()
+                (url,), _ = browser_open.call_args
+                assert url.startswith("file://")
+                temp = Path(url2pathname(urlparse(url).path))
+                assert temp.exists()
         finally:
             with contextlib.suppress(FileNotFoundError):
                 temp.unlink()

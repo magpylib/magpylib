@@ -11,6 +11,7 @@ from contextlib import contextmanager
 from functools import cache
 from inspect import signature
 from math import log10
+from pathlib import Path
 
 import numpy as np
 
@@ -413,7 +414,8 @@ def open_animation(filepath, embed=True):
     else:
         import webbrowser  # noqa: PLC0415
 
-        webbrowser.open(filepath)
+        # webbrowser expects a URL string, a Path breaks it on macOS
+        webbrowser.open(Path(filepath).resolve().as_uri())
 
 
 @cache

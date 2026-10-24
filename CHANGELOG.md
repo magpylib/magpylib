@@ -20,6 +20,9 @@
   target's origin, and a Polyline step whose vertices coincide no longer fails
   ([#1046](https://github.com/magpylib/magpylib/pull/1046),
   [#1050](https://github.com/magpylib/magpylib/pull/1050)).
+- A pyvista animation shown from a script now opens: it failed on macOS, and on
+  other systems the file was deleted before the viewer could read it
+  ([#1040](https://github.com/magpylib/magpylib/issues/1040)).
 
 ## [6.0.0] 2026-10-19
 

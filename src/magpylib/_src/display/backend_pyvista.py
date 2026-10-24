@@ -34,7 +34,7 @@ from magpylib._src.display.traces_utility import (
     legend_overflow_label,
     split_input_arrays,
 )
-from magpylib._src.utility import is_array_like, open_animation
+from magpylib._src.utility import is_array_like, is_notebook, open_animation
 
 # from magpylib._src.utility import format_obj_input
 
@@ -408,13 +408,16 @@ def display_pyvista(scene):
         animation_output = scene.animation.output
         animation_output = "gif" if animation_output is None else animation_output
         if animation_output in ("gif", "mp4"):
+            temp = Path(tempfile.gettempdir()) / os.urandom(24).hex()
+            temp = temp.with_suffix(f".{animation_output}")
             try:
-                temp = Path(tempfile.gettempdir()) / os.urandom(24).hex()
-                temp = temp.with_suffix(f".{animation_output}")
                 run_animation(temp, embed=True)
             finally:
-                with contextlib.suppress(FileNotFoundError):  # pragma: no cover
-                    temp.unlink()
+                # a notebook embeds the file, a browser reads it after show()
+                # returns, so outside a notebook it stays in the temp dir
+                if is_notebook():
+                    with contextlib.suppress(FileNotFoundError):  # pragma: no cover
+                        temp.unlink()
         else:
             run_animation(animation_output, embed=True)
 
