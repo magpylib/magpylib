@@ -5,11 +5,11 @@
 ### Changed
 
 - From a script, a Pyvista animation plays in Pyvista's window, where the scene
-  can be turned and zoomed while it plays and a slider seeks the path index,
-  instead of going through a gif opened in another app (Pyvista 0.43 or later).
-  In a notebook, or with `animation_output`, it is still a gif or mp4, now
-  written about a quarter faster
-  ([#1053](https://github.com/magpylib/magpylib/pull/1053)).
+  can be turned and zoomed while it plays, a button or the space bar pauses it
+  and a slider seeks the path index, instead of going through a gif opened in
+  another app (Pyvista 0.43 or later). In a notebook, or with
+  `animation_output`, it is still a gif or mp4, now written about a quarter
+  faster ([#1053](https://github.com/magpylib/magpylib/pull/1053)).
 - `import magpylib` no longer loads matplotlib or plotly, `show()` builds scenes
   of many objects in less than half the time, and fields along a path take up to
   40 % less time to compute

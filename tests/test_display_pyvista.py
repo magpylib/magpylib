@@ -158,7 +158,7 @@ def test_pyvista_animation_plays_live(subplots, tmp_path, monkeypatch):
     """From a script the window plays the frames on a timer and writes no
     file. A frame replaces only what the last one drew: the title and the
     chart stay, and looping stacks no actors and repeats no legend entry.
-    The slider follows the frames; dragging it pauses them and seeks"""
+    The slider follows the frames and dragging it seeks; the button pauses"""
     monkeypatch.setattr(pv, "OFF_SCREEN", False)
     monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
     src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
@@ -205,6 +205,12 @@ def test_pyvista_animation_plays_live(subplots, tmp_path, monkeypatch):
     assert path_index() == 1
     play(6)
     assert path_index() == 2
+    button = pl.widgets.button_widgets[0]
+    for playing, expected in ((0, 2), (1, 1)):  # pause, then play again
+        button.GetRepresentation().SetState(playing)
+        button.InvokeEvent("StateChangedEvent")
+        play(7)
+        assert path_index() == expected
     browser_open.assert_not_called()
     assert not list(tmp_path.iterdir())
     pl.close()

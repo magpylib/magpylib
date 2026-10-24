@@ -47,6 +47,10 @@ from magpylib._src.utility import is_array_like, open_animation
 
 # props in a renderer that no animation frame draws: the charts, the slider
 NOT_FRAMES = (vtkContextActor, vtkWidgetRepresentation)
+# the controls of a live animation: where the slider starts and its height,
+# relative to the panel, and the play/pause button's size in pixels
+SLIDER_START, SLIDER_HEIGHT = 0.3, 0.08
+BUTTON_SIZE = 36
 
 SYMBOLS_TO_PYVISTA = {
     ".": "o",
@@ -264,6 +268,21 @@ def generic_trace_to_pyvista(trace):
     return traces_pv
 
 
+def play_pause_icons(size):
+    """Textures of the play/pause button: a triangle and two bars, dark on
+    light, for its paused and playing states"""
+    y, x = np.mgrid[0:size, 0:size] / (size - 1)
+    play = (x >= 0.3) & (np.abs(y - 0.5) <= 0.6 * (0.75 - x))
+    pause = (np.abs(y - 0.5) <= 0.25) & (np.abs(np.abs(x - 0.5) - 0.12) <= 0.06)
+    icons = []
+    for shape in (play, pause):
+        icon = pv.ImageData(dimensions=(size, size, 1))
+        gray = np.where(shape, 80, 230).astype(np.uint8).reshape(-1, 1)
+        icon.point_data["texture"] = np.repeat(gray, 3, axis=1)
+        icons.append(icon)
+    return icons
+
+
 def add_capped_legend(canvas, labels, maxitems):
     """Add the active subplot's legend with at most `maxitems` of its
     `labels`, the rest summed up in one entry. 0 adds none."""
@@ -431,20 +450,34 @@ def display_pyvista(scene):
 
     def play_live():
         # the timer starts with the window; the scene stays free to turn and
-        # zoom while the frames replace each other. Dragging the slider
-        # pauses them and seeks
+        # zoom while the frames replace each other. The button or the space
+        # bar plays and pauses, the slider seeks
         n_frames = len(frames)
         labels = np.array(scene.animation.path_indices) + 1  # as plotly's slider
-        frame, dragging, slider = 0, False, None
+        frame, playing, dragging = 0, True, False
+        slider = button = None
 
-        def tick(_step):
+        def show_frame(ind):
             nonlocal frame
-            if dragging or (not repeat and frame == n_frames - 1):
-                return
-            frame = (frame + 1) % n_frames
+            frame = ind
             redraw(frame)
             if slider is not None:
                 slider.GetRepresentation().SetValue(labels[frame])
+
+        def set_playing(state):
+            nonlocal playing
+            if state and not repeat and frame == n_frames - 1:
+                show_frame(0)  # from the start again, as plotly does
+            playing = state
+            button.GetRepresentation().SetState(int(state))
+
+        def tick(_step):
+            if not playing or dragging:
+                return
+            if not repeat and frame == n_frames - 1:
+                set_playing(False)
+            else:
+                show_frame((frame + 1) % n_frames)
 
         def seek(value):
             nonlocal frame
@@ -457,23 +490,38 @@ def display_pyvista(scene):
             if not start:  # land on the frame shown
                 slider.GetRepresentation().SetValue(labels[frame])
 
+        def place_button(*_):
+            # in pixels within the panel, so again when the window is
+            # resized: left of where the slider starts, on its line
+            width, height = canvas.render_window.GetSize()
+            x0, y0, x1, y1 = panel.GetViewport()
+            x = SLIDER_START * (x1 - x0) * width - 1.5 * BUTTON_SIZE
+            y = SLIDER_HEIGHT * (y1 - y0) * height - 0.5 * BUTTON_SIZE
+            bounds = [x, x + BUTTON_SIZE, y, y + BUTTON_SIZE, 0, 0]
+            button.GetRepresentation().PlaceWidget(bounds)
+
         draw_frame(0)
+        # controls along the bottom of the last 3D panel, clear of its axes
+        cells = [(r, c) for r in range(scene.n_rows) for c in range(scene.n_cols)]
+        in_3d = [
+            rc for rc in cells if scene.panel_kind(rc[0] + 1, rc[1] + 1) == "scene3d"
+        ]
+        canvas.subplot(*(in_3d or cells)[-1])
+        panel = canvas.renderer
+        button = canvas.add_checkbox_button_widget(set_playing, value=True)
+        for state, icon in enumerate(play_pause_icons(BUTTON_SIZE)):
+            button.GetRepresentation().SetButtonTexture(state, icon)
+        place_button()
+        canvas.render_window.AddObserver("WindowResizeEvent", place_button)
+        canvas.add_key_event("space", lambda: set_playing(not playing))
         if scene.animation.slider:
-            # along the bottom of the last 3D panel, clear of its axes
-            cells = [(r, c) for r in range(scene.n_rows) for c in range(scene.n_cols)]
-            in_3d = [
-                rc
-                for rc in cells
-                if scene.panel_kind(rc[0] + 1, rc[1] + 1) == "scene3d"
-            ]
-            canvas.subplot(*(in_3d or cells)[-1])
             slider = canvas.add_slider_widget(
                 seek,
                 rng=[labels[0], labels[-1]],
                 value=labels[0],
                 title="Path index",
-                pointa=(0.25, 0.08),  # within the panel
-                pointb=(0.95, 0.08),
+                pointa=(SLIDER_START, SLIDER_HEIGHT),  # within the panel
+                pointb=(0.95, SLIDER_HEIGHT),
                 interaction_event="always",
                 style="modern",
                 fmt="%.0f",
