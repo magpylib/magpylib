@@ -406,18 +406,31 @@ def test_getHBMJ_self_consistency(field):
     np.testing.assert_allclose(F1, F4)
 
 
-def test_getB_field_funcs_equal_but_distinct():
-    """Sources whose field functions compare equal keep their own field."""
+@pytest.mark.parametrize("case", ["equal", "equal-hashable", "shared-bound-method"])
+def test_getB_groups_by_field_func(case):
+    """Sources sharing a field function share one call, sources whose field
+    functions only compare equal keep their own field."""
+    calls = []
 
-    @dataclasses.dataclass  # compares equal, and cannot be hashed
+    @dataclasses.dataclass(frozen=case == "equal-hashable")
     class Uniform:
         strength: float = dataclasses.field(compare=False)
 
-        def __call__(self, field, observers):  # noqa: ARG002
+        def compute(self, field, observers):
+            calls.append(field)
             return np.full(observers.shape, self.strength)
 
-    sources = [magpy.misc.CustomSource(field_func=Uniform(s)) for s in (1, 2)]
-    np.testing.assert_allclose(magpy.getB(sources, (1, 0, 0)), [(1, 1, 1), (2, 2, 2)])
+        __call__ = compute
+
+    if case == "shared-bound-method":
+        uniform = Uniform(1)
+        funcs, expected = [uniform.compute, uniform.compute], [1, 1]
+    else:
+        funcs, expected = [Uniform(1), Uniform(2)], [1, 2]
+    sources = [magpy.misc.CustomSource(field_func=f) for f in funcs]
+    calls.clear()
+    np.testing.assert_allclose(magpy.getB(sources, (1, 0, 0))[:, 0], expected)
+    assert len(calls) == len(set(expected))
 
 
 def test_getB_does_not_keep_source_alive():

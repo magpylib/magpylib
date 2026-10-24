@@ -13,7 +13,6 @@ from functools import cache
 from inspect import signature
 from math import log10
 from pathlib import Path
-from weakref import WeakKeyDictionary
 
 import numpy as np
 
@@ -430,20 +429,19 @@ def open_animation(filepath, embed=True):
     return True
 
 
-# weak keys: a cached field function must not keep its source (bound method)
-# or the state it closes over alive
-_PARAMETER_NAMES = WeakKeyDictionary()
-
-
 def has_parameter(func: Callable, param_name: str) -> bool:
     """Check if input function has a specific parameter"""
-    try:
-        names = _PARAMETER_NAMES[func]
-    except KeyError:
-        names = _PARAMETER_NAMES[func] = frozenset(signature(func).parameters)
-    except TypeError:  # unhashable, or no weak reference
-        names = frozenset(signature(func).parameters)
-    return param_name in names
+    # only Magpylib's own field functions are cached: they live for the whole
+    # session, while a cached user callable would keep its source alive
+    if (getattr(func, "__module__", None) or "").startswith("magpylib."):
+        return param_name in _own_parameter_names(func)
+    return param_name in signature(func, follow_wrapped=False).parameters
+
+
+@cache
+def _own_parameter_names(func: Callable) -> frozenset:
+    """Parameter names of a Magpylib field function"""
+    return frozenset(signature(func, follow_wrapped=False).parameters)
 
 
 def merge_dicts_with_conflict_check(objs, *, target, identifiers, unique_fields):

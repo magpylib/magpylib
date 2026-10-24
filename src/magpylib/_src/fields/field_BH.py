@@ -45,6 +45,7 @@ import warnings
 from collections.abc import Callable
 from contextlib import contextmanager
 from itertools import product
+from types import MethodType
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -387,7 +388,9 @@ def _getBH_level2(
 
         # group similar source types----------------------------------------------
         # by identity: callables that compare equal may still compute different
-        # fields, and some cannot be hashed
+        # fields, and some cannot be hashed. A bound method is built anew on each
+        # attribute access, so its object and function identify it. Each group
+        # holds its field_func, which keeps these ids valid.
         field_func_groups = {}
         for ind, src in enumerate(src_list):
             field_func = src.field_func
@@ -397,7 +400,10 @@ def _getBH_level2(
                     f"field_func of {src} has undefined {field}-field computation."
                 )
                 raise MagpylibMissingInput(msg)
-            group_key = id(field_func)
+            if isinstance(field_func, MethodType):
+                group_key = (id(field_func.__self__), id(field_func.__func__))
+            else:
+                group_key = id(field_func)
             if group_key not in field_func_groups:
                 field_func_groups[group_key] = {
                     "field_func": field_func,
