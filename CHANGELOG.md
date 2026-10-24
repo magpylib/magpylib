@@ -16,6 +16,10 @@
 - TriangleStrip and TriangleSheet force/torque meshes now follow each path
   step's triangle areas, so deforming paths agree with separate static
   calculations ([#1046](https://github.com/magpylib/magpylib/pull/1046)).
+- Force meshes of Polyline, TriangleStrip and TriangleSheet no longer change
+  with where the object sits, and path steps with fewer mesh points no longer
+  give NaN when a source sits at the target's origin
+  ([#1050](https://github.com/magpylib/magpylib/pull/1050)).
 
 ## [6.0.0] 2026-10-19
 

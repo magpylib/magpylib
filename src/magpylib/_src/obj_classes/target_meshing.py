@@ -372,9 +372,9 @@ def _mesh_magnet(geometry, magnetization, cells_at):
     dict
         ``pts`` the cell centroids and ``moments`` the cell volumes times the
         magnetization, of shape (n, 3) when neither geometry nor magnetization varies
-        along the path and (p, n, 3) otherwise, zero-padded when the cell count
-        varies; and ``cells``, the cells dict, or a list of p cells dicts when the
-        mesh has a path axis.
+        along the path and (p, n, 3) otherwise, padded with zero moments at the last
+        centroid when the cell count varies; and ``cells``, the cells dict, or a
+        list of p cells dicts when the mesh has a path axis.
     """
     p_len = len(geometry)
     flat = np.asarray(geometry).reshape(p_len, -1)
@@ -402,6 +402,8 @@ def _mesh_magnet(geometry, magnetization, cells_at):
             "cells": [cells] * p_len,
         }
 
+    # Pad shorter meshes with zero moments at a real centroid: padding at the
+    # local origin would sample a source sitting there and give NaN.
     cells_path = [cells_unique[g] for g in inverse]
     n_max = max(len(cells["volumes"]) for cells in cells_unique)
     pts = np.zeros((p_len, n_max, 3))
@@ -409,6 +411,7 @@ def _mesh_magnet(geometry, magnetization, cells_at):
     for p, (cells, mag) in enumerate(zip(cells_path, magnetization, strict=True)):
         n = len(cells["volumes"])
         pts[p, :n] = cells["centroids"]
+        pts[p, n:] = cells["centroids"][-1]
         moments[p, :n] = cells["volumes"][:, np.newaxis] * mag
     return {"pts": pts, "moments": moments, "cells": cells_path}
 
@@ -627,10 +630,12 @@ def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
         B = triangles[:, 1]
         C = triangles[:, 2]
 
-        # Squared lengths of edges
-        d2_AB = np.sum((B - A) ** 2, axis=1)
-        d2_BC = np.sum((C - B) ** 2, axis=1)
-        d2_CA = np.sum((A - C) ** 2, axis=1)
+        # Squared lengths of edges, rounded to float32 so that edges of equal
+        # length up to rounding noise tie exactly, and congruent triangles are
+        # split along the same edge wherever they sit
+        d2_AB = np.sum((B - A) ** 2, axis=1).astype(np.float32)
+        d2_BC = np.sum((C - B) ** 2, axis=1).astype(np.float32)
+        d2_CA = np.sum((A - C) ** 2, axis=1).astype(np.float32)
 
         case1 = (d2_AB >= d2_BC) * (d2_AB >= d2_CA)
         case2 = d2_BC >= d2_CA
@@ -717,7 +722,9 @@ def generate_mesh_triangle_current(
     areas_unique = []
     for tria, areas in zip(unique_trias, surfaces, strict=True):
         splits = np.zeros(n_tria, dtype=int)
-        areas_temp = areas.copy()
+        # float32 drops the rounding noise of the areas: equal areas tie exactly
+        # and congruent triangles are split in the same order wherever they sit
+        areas_temp = areas.astype(np.float32)
         n_refined = n_tria
         while n_refined < n_target:
             idx = np.argmax(areas_temp)
@@ -772,6 +779,8 @@ def generate_mesh_polyline(vertices, current, target_elems):
     -------
     dict
         {"pts": ndarray, shape (p, m, 3), "cvecs": ndarray, shape (p, m, 3)}
+        ``m`` is the largest mesh size over the path. Shorter meshes are padded
+        with zero current vectors at their last point.
     """
     # Inputs are already path-enabled from the class
     p_len = len(current)
@@ -800,7 +809,9 @@ def generate_mesh_polyline(vertices, current, target_elems):
         proportional_extra = (
             segment_lengths / total_lengths[:, np.newaxis]
         ) * remaining_points
-        extra_points = np.round(proportional_extra).astype(int)
+        # float32 drops the rounding noise of the lengths: equal segments get the
+        # same number of points wherever the polyline sits
+        extra_points = np.round(proportional_extra.astype(np.float32)).astype(int)
         points_per_segment += extra_points
 
     # Update target_elems to actual distributed points for each path position
@@ -840,13 +851,15 @@ def generate_mesh_polyline(vertices, current, target_elems):
         cvecs_list.append(cvecs_path)
 
     # Convert to arrays with consistent shapes
-    # Pad shorter arrays with zeros to match max_n_points
+    # Pad shorter meshes with zero current vectors at a real point: padding at the
+    # local origin would sample a source sitting there and give NaN.
     pts = np.zeros((p_len, max_n_points, 3))
     cvecs = np.zeros((p_len, max_n_points, 3))
 
     for p_idx in range(p_len):
         n_pts = len(pts_list[p_idx])
         pts[p_idx, :n_pts] = pts_list[p_idx]
+        pts[p_idx, n_pts:] = pts_list[p_idx][-1]
         cvecs[p_idx, :n_pts] = cvecs_list[p_idx]
 
     # If no path variation, return squeezed arrays
