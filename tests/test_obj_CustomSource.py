@@ -1,7 +1,10 @@
+from functools import reduce, wraps
+
 import numpy as np
 import pytest
 
 import magpylib as magpy
+from magpylib._src.exceptions import MagpylibBadUserInput
 
 # pylint: disable=assignment-from-no-return
 # pylint: disable=unused-argument
@@ -131,3 +134,33 @@ def test_CustomSource_callable_object_copy():
     callback.strength = 2
     np.testing.assert_allclose(source.getB((1, 0, 0)), (2, 2, 2))
     np.testing.assert_allclose(duplicate.getB((1, 0, 0)), (1, 1, 1))
+
+
+def test_CustomSource_wrapped_field():
+    """Validate the wrapper that receives the actual field arguments."""
+
+    def original(points):
+        return points
+
+    @wraps(original)
+    def field_function(field, observers):
+        return original(observers) if field == "B" else original(observers) / magpy.mu_0
+
+    source = magpy.misc.CustomSource(field_func=field_function)
+    np.testing.assert_allclose(source.getB((1, 2, 3)), (1, 2, 3))
+    np.testing.assert_allclose(source.getH((1, 2, 3)) * magpy.mu_0, (1, 2, 3))
+
+
+@pytest.mark.parametrize(
+    "callback",
+    [
+        pytest.param(lambda field, observers, /: observers, id="positional-only"),  # noqa: ARG005
+        pytest.param(lambda field, /, observers: observers, id="mixed-positional-only"),  # noqa: ARG005
+        pytest.param(reduce, id="non-introspectable-builtin"),
+        pytest.param(lambda field, observers, extra: observers, id="required-extra"),  # noqa: ARG005
+    ],
+)
+def test_CustomSource_invalid_signature(callback):
+    """Invalid callbacks fail at construction with the input exception."""
+    with pytest.raises(MagpylibBadUserInput, match="Input field_func must"):
+        magpy.misc.CustomSource(field_func=callback)

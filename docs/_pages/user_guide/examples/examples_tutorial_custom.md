@@ -137,6 +137,8 @@ In the above example it would be nice to make the `CustomSource` dynamic, so tha
 
 Use a bound method for the field calculation so that a copied source reads its own charge. This also works when copying a `Collection` containing the source.
 
+Copying a source also deep-copies the state held by its bound field method or callable object, which duplicates large data and can fail for objects such as locks that cannot be copied.
+
 ```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
