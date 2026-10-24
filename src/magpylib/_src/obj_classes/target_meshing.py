@@ -586,14 +586,15 @@ _TIE_RTOL = 1e-9
 
 
 def _split_counts(areas, n_target):
-    """Number of bisections per triangle, so that the mesh has at least n_target
+    """Number of bisections per triangle, so that the mesh has about n_target
     triangles.
 
-    Same as bisecting the largest triangle, the first of equal ones, until there
-    are n_target triangles, in one sort: bisecting triangle i for the (k+1)-th time
-    halves an area of areas[i] / 2**k and adds 2**k triangles, and these bisections
-    are taken by decreasing area. Areas equal up to rounding noise count as equal,
-    so that congruent triangles are split alike wherever they sit.
+    Bisects the largest triangle until there are n_target triangles, in one sort:
+    bisecting triangle i for the (k+1)-th time halves an area of areas[i] / 2**k and
+    adds 2**k triangles, and these bisections are taken by decreasing area. Areas
+    equal up to rounding noise are bisected all or none, so that equal triangles
+    are refined alike, within one object and wherever it sits: the mesh stops after
+    the equal areas where it reaches n_target, or before them when that is closer.
 
     Parameters
     ----------
@@ -609,9 +610,10 @@ def _split_counts(areas, n_target):
     n = len(areas)
     if n_target <= n:
         return np.zeros(n, dtype=int)
-    # A triangle is bisected at most log2(n_target - n) + 1 times, and less when
-    # it is small: its last bisection halves an area above sum(areas) / n_target
-    n_k = np.full(n, int(np.log2(n_target - n)) + 1, dtype=np.int64)
+    # A triangle is bisected at most about log2(n_target - n) times, and less when
+    # it is small: its last bisection halves an area above about
+    # sum(areas) / n_target. Both bounds keep one bisection of margin.
+    n_k = np.full(n, int(np.log2(n_target - n)) + 2, dtype=np.int64)
     total = areas.sum()
     if total > 0:
         with np.errstate(divide="ignore"):
@@ -622,12 +624,19 @@ def _split_counts(areas, n_target):
     area = areas[tria] / 2.0**k
     order = np.argsort(-area, kind="stable")
     sorted_area = area[order]
-    tie_group = np.cumsum(
-        np.r_[0, sorted_area[1:] < sorted_area[:-1] * (1 - _TIE_RTOL)]
+    count = n + np.cumsum(2 ** k[order])
+
+    # Group ends of equal areas, and the group in which the mesh reaches n_target
+    ends = np.flatnonzero(
+        np.r_[sorted_area[1:] < sorted_area[:-1] * (1 - _TIE_RTOL), True]
     )
-    order = order[np.lexsort((tria[order], tie_group))]
-    n_bisections = np.searchsorted(np.cumsum(2 ** k[order]), n_target - n) + 1
-    return np.bincount(tria[order[:n_bisections]], minlength=n)
+    cut = np.searchsorted(count[ends], n_target)
+    start = ends[cut - 1] + 1 if cut > 0 else 0
+    stop = ends[cut] + 1
+    count_before = count[start - 1] if start > 0 else n
+    if stop - start > 1 and n_target - count_before < count[stop - 1] - n_target:
+        stop = start
+    return np.bincount(tria[order[:stop]], minlength=n)
 
 
 def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
@@ -729,8 +738,9 @@ def generate_mesh_triangle_current(
 ):
     """Generate mesh for triangle current sources.
 
-    Refines input triangles using bisection along longest edge until reaching n_target
-    mesh points. Returns centroids and current vectors.
+    Refines input triangles using bisection along longest edge until reaching about
+    n_target mesh points, refining equal triangles alike (see ``_split_counts``).
+    Returns centroids and current vectors.
 
     Parameters
     ----------
