@@ -5,6 +5,7 @@
 # import numbers
 
 import reprlib
+import sys
 import warnings
 from collections.abc import Callable, Sequence
 from contextlib import contextmanager
@@ -390,13 +391,17 @@ def is_notebook() -> bool:  # pragma: no cover
         from IPython import get_ipython  # noqa: PLC0415
 
         shell = get_ipython().__class__.__name__
-    except NameError:
-        return False  # Probably standard Python interpreter
+    except (ImportError, NameError):
+        return False  # standard Python interpreter, or no IPython installed
     return shell == "ZMQInteractiveShell"  # True only for Jupyter notebook or qtconsole
 
 
 def open_animation(filepath, embed=True):
-    """Display video or gif file using tkinter or IPython"""
+    """Display a gif or mp4 file in the notebook, or open it in the system viewer.
+
+    Return True when a viewer outside the notebook got the file: it reads it
+    after this call returns, so the file must stay.
+    """
     # pylint: disable=import-outside-toplevel
     if is_notebook():
         if str(filepath).lower().endswith(".gif"):
@@ -411,11 +416,17 @@ def open_animation(filepath, embed=True):
         else:  # pragma: no cover
             msg = "Filetype not supported, only 'mp4 or 'gif' allowed."
             raise TypeError(msg)
-    else:
-        import webbrowser  # noqa: PLC0415
+        return False
+    import webbrowser  # noqa: PLC0415
 
-        # webbrowser expects a URL string, a Path breaks it on macOS
-        webbrowser.open(Path(filepath).resolve().as_uri())
+    path = Path(filepath).absolute()
+    # the openers want a string, a Path raises on macOS and Linux; Windows
+    # takes the path itself, as it can misread non-ASCII escapes in a file URL
+    url = str(path) if sys.platform == "win32" else path.as_uri()
+    if not webbrowser.open(url):
+        msg = f"No viewer could open the animation, it is saved at {path}"
+        warnings.warn(msg, UserWarning, stacklevel=2)
+    return True
 
 
 @cache

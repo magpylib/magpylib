@@ -34,7 +34,7 @@ from magpylib._src.display.traces_utility import (
     legend_overflow_label,
     split_input_arrays,
 )
-from magpylib._src.utility import is_array_like, is_notebook, open_animation
+from magpylib._src.utility import is_array_like, open_animation
 
 # from magpylib._src.utility import format_obj_input
 
@@ -371,7 +371,10 @@ def display_pyvista(scene):
         # embed=True, embeds the animation into the notebook page and is necessary when using
         # temp files
         nonlocal show_canvas, charts_max_ind, charts
-        suff = Path(filename).suffix
+        # absolute here, so the writer and the viewer get the same file
+        # (imageio expands ~, pyvista prepends pv.FIGURE_PATH to relative names)
+        filename = Path(filename).expanduser().absolute()
+        suff = filename.suffix
         if suff == ".gif":
             loop = 1 if repeat is False else 0 if repeat is True else int(repeat)
             canvas.open_gif(
@@ -394,7 +397,7 @@ def display_pyvista(scene):
             canvas.write_frame()
         canvas.close()
         show_canvas = False
-        open_animation(filename, embed=embed)
+        return open_animation(filename, embed=embed)
 
     # pyvista has no figure-level title: add_title applies to the active
     # subplot, so on a grid it would read as that one panel's title
@@ -408,16 +411,18 @@ def display_pyvista(scene):
         animation_output = scene.animation.output
         animation_output = "gif" if animation_output is None else animation_output
         if animation_output in ("gif", "mp4"):
-            temp = Path(tempfile.gettempdir()) / os.urandom(24).hex()
-            temp = temp.with_suffix(f".{animation_output}")
+            fd, temp = tempfile.mkstemp(
+                prefix="magpylib_animation_", suffix=f".{animation_output}"
+            )
+            os.close(fd)
+            viewer_has_file = False
             try:
-                run_animation(temp, embed=True)
+                viewer_has_file = run_animation(temp, embed=True)
             finally:
-                # a notebook embeds the file, a browser reads it after show()
-                # returns, so outside a notebook it stays in the temp dir
-                if is_notebook():
-                    with contextlib.suppress(FileNotFoundError):  # pragma: no cover
-                        temp.unlink()
+                # a notebook embeds the file; a viewer outside reads it after
+                # show() returns, so then it stays in the temp dir
+                if not viewer_has_file:
+                    Path(temp).unlink(missing_ok=True)
         else:
             run_animation(animation_output, embed=True)
 
