@@ -13,6 +13,9 @@
 
 - An animation whose only path sits in a nested `Collection` had no frames
   ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
+- TriangleStrip and TriangleSheet force/torque meshes now follow each path
+  step's triangle areas, so deforming paths agree with separate static
+  calculations ([#1046](https://github.com/magpylib/magpylib/pull/1046)).
 
 ## [6.0.0] 2026-10-19
 

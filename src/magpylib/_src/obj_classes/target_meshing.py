@@ -689,6 +689,8 @@ def generate_mesh_triangle_current(
     -------
     dict
         {"pts": ndarray, shape (p, m, 3), "cvecs": ndarray, shape (p, m, 3)}
+        ``m`` is the largest mesh size over the path. Shorter meshes are padded
+        with zero current vectors at their last centroid.
     """
     # Inputs are already path-enabled from the class with shape (p, n, 3, 3) and (p, n, 3)
     p_len = triangles.shape[0]
@@ -702,54 +704,46 @@ def generate_mesh_triangle_current(
     triangles_varying = unique_trias.shape[0] > 1
     has_path_varying = triangles_varying or (np.unique(cds, axis=0).shape[0] > 1)
 
-    # Vectorized computation of surfaces for all paths: shape (p, n)
+    # Compute areas and subdivision counts independently for each unique geometry.
     surfaces = 0.5 * np.linalg.norm(
         np.cross(
-            triangles[:, :, 1] - triangles[:, :, 0],
-            triangles[:, :, 2] - triangles[:, :, 0],
+            unique_trias[:, :, 1] - unique_trias[:, :, 0],
+            unique_trias[:, :, 2] - unique_trias[:, :, 0],
         ),
         axis=2,
     )
+    refined_unique = []
+    repeats_unique = []
+    areas_unique = []
+    for tria, areas in zip(unique_trias, surfaces, strict=True):
+        splits = np.zeros(n_tria, dtype=int)
+        areas_temp = areas.copy()
+        n_refined = n_tria
+        while n_refined < n_target:
+            idx = np.argmax(areas_temp)
+            areas_temp[idx] /= 2.0
+            splits[idx] += 1
+            n_refined += 2 ** (splits[idx] - 1)
 
-    # Calculate splits for all paths
-    # Note: splits are the same for all paths since they're based on n_target
-    splits = np.zeros(n_tria, dtype=int)
-    surfaces_temp = surfaces[0].copy()  # Use first path for split calculation
-    n_tria_temp = n_tria
-    while n_tria_temp < n_target:
-        idx = np.argmax(surfaces_temp)
-        surfaces_temp[idx] /= 2.0
-        splits[idx] += 1
-        n_tria_temp = np.sum(2**splits)
+        repeats = 2**splits
+        refined_unique.append(np.mean(_subdiv(tria, splits), axis=1))
+        repeats_unique.append(repeats)
+        areas_unique.append(np.repeat(areas / repeats, repeats))
 
-    # Apply the surface divisions to all paths (vectorized)
-    # Each surface gets divided by 2^splits[i]
-    surfaces = surfaces / (2.0 ** splits[np.newaxis, :])
-
-    # Vectorized subdivision and centroid calculation for all paths.
-    # _subdiv depends only on the (path-independent) splits and the per-step
-    # geometry, so run it once per unique geometry and scatter back.
-    refined_unique = [_subdiv(tria, splits) for tria in unique_trias]
-    trias_refined = np.stack(
-        [refined_unique[k] for k in tria_inv], axis=0
-    )  # Shape: (p, n_refined, 3, 3)
-
-    # Calculate centroids for all paths at once: shape (p, n_refined, 3)
-    pts = np.mean(trias_refined, axis=2)
-
-    # Expand surfaces and cds for all paths
-    # We need to repeat along the triangle dimension (axis=1 after adding path dim)
-    surfaces_expanded_list = [
-        np.repeat(surfaces[p_idx], 2**splits) for p_idx in range(p_len)
-    ]
-    cvecs_list = [
-        np.repeat(cds[p_idx], 2**splits, axis=0)
-        * surfaces_expanded_list[p_idx][:, np.newaxis]
-        for p_idx in range(p_len)
-    ]
-
-    # Stack results: shape (p, n_refined, 3)
-    cvecs = np.stack(cvecs_list, axis=0)
+    # Different area ratios can produce different mesh sizes. Pad current vectors
+    # with zero and reuse a real centroid to avoid sampling an unrelated singularity.
+    max_points = max(len(refined) for refined in refined_unique)
+    pts = np.empty((p_len, max_points, 3))
+    cvecs = np.zeros_like(pts)
+    for p_idx, k in enumerate(tria_inv):
+        refined = refined_unique[k]
+        n_points = len(refined)
+        pts[p_idx, :n_points] = refined
+        pts[p_idx, n_points:] = refined[-1]
+        cvecs[p_idx, :n_points] = (
+            np.repeat(cds[p_idx], repeats_unique[k], axis=0)
+            * areas_unique[k][:, np.newaxis]
+        )
 
     # If no path variation, return squeezed arrays
     if not has_path_varying:

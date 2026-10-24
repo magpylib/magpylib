@@ -202,8 +202,8 @@ def test_path_varying_triangle_strip_vertices_current():
     vertices_path = np.array(
         [
             [[0, 0, 0], [1, 0, 0], [0, 0.5, 0], [1, 0.5, 0]],
-            [[0, 0, 0.1], [1, 0, 0.1], [0, 0.5, 0.15], [1, 0.5, 0.15]],
-            [[0, 0, 0.2], [1, 0, 0.2], [0, 0.5, 0.3], [1, 0.5, 0.3]],
+            [[0, 0, 0.1], [1, 0, 0.1], [0, 0.5, 0.15], [3, 0.5, 0.15]],
+            [[0, 0, 0.2], [1, 0, 0.2], [0, 0.5, 0.3], [0.1, 0.5, 0.3]],
         ]
     )
     currents_path = np.array([50, 100, 150])
@@ -213,24 +213,21 @@ def test_path_varying_triangle_strip_vertices_current():
         vertices=vertices_path, current=currents_path, position=positions
     )
 
-    F_vectorized, T_vectorized = magpy.getFT(dipole, strip_varying, meshing=10)
+    F_vectorized, _ = magpy.getFT(dipole, strip_varying, meshing=10)
 
-    F_manual, T_manual = [], []
-    for i in range(len(currents_path)):
-        F_i, T_i = magpy.getFT(
-            dipole,
-            magpy.current.TriangleStrip(
-                vertices=vertices_path[i],
-                current=currents_path[i],
-                position=positions[i],
-            ),
-            meshing=10,
-        )
-        F_manual.append(F_i)
-        T_manual.append(T_i)
-
-    np.testing.assert_allclose(F_vectorized, np.array(F_manual), rtol=1e-8, atol=1e-10)
-    np.testing.assert_allclose(T_vectorized, np.array(T_manual), rtol=1e-8, atol=1e-10)
+    _assert_matches_manual_loop(
+        dipole,
+        strip_varying,
+        lambda i: magpy.current.TriangleStrip(
+            vertices=vertices_path[i],
+            current=currents_path[i],
+            position=positions[i],
+        ),
+        n_steps=3,
+        rtol=1e-8,
+        atol=1e-10,
+        meshing=10,
+    )
     assert F_vectorized.shape == (3, 3)
     assert not np.allclose(F_vectorized[0], F_vectorized[1])
 
@@ -308,7 +305,7 @@ def test_mismatched_paths_triangle_sheet_scalar_current_densities():
     """TriangleSheet: varying vertices (p=3), scalar current_densities (p=1)."""
     dipole = magpy.misc.Dipole(moment=(1e3, 0, 0), position=(0, 0, -5))
     verts1 = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]])
-    verts2 = np.array([[0, 0, 0], [2, 0, 0], [0, 2, 0], [2, 2, 0]])
+    verts2 = np.array([[0, 0, 0], [2, 0, 0], [0, 2, 0], [6, 2, 0]])
     verts_path = np.array([verts1, verts2, verts1])
     faces = np.array([[0, 1, 2], [1, 3, 2]])
     cd = np.array([[100.0, 0, 0], [100.0, 0, 0]])
