@@ -7,6 +7,8 @@ crashed. Pyvista never consumed backend-specific models at all. These tests
 pin the behaviour of each backend against each kind of model.
 """
 
+from copy import deepcopy
+
 import numpy as np
 import pytest
 
@@ -143,6 +145,31 @@ def test_model3d_updatefunc_is_called_at_show_time(backend):
     before = len(calls)
     magpy.show(obj, backend=backend, return_fig=True)
     assert len(calls) > before, "updatefunc not re-evaluated on the second show"
+
+
+def test_model3d_bound_method_is_shown_and_copied():
+    """A model drawn by a method of an object is drawn by that object, and by
+    its copy in copies of the object."""
+
+    class Scaled(magpy.magnet.Cuboid):
+        def model(self):
+            return make_Cuboid(dimension=2 * self.dimension)
+
+    obj, other = (Scaled(polarization=(0, 0, 1), dimension=(1, 1, 1)) for _ in "ab")
+    obj.style.model3d.add_trace(obj.model)
+    other.style.model3d.add_trace(obj.model)
+    magpy.Collection(other, obj)  # other is copied before obj
+    assert render(obj, "plotly") > render(source(), "plotly")
+    for trace in (
+        obj.style.copy().model3d.data[0],  # what show() draws from
+        deepcopy(obj.style.model3d.data[0]),
+    ):
+        assert trace.updatefunc.__self__ is obj
+    dup = obj.copy(dimension=(5, 5, 5))
+    assert dup.style.model3d.data[0].updatefunc.__self__ is dup
+    other2, obj2 = obj.parent.copy().children
+    for copied in (other2, obj2):
+        assert copied.style.model3d.data[0].updatefunc.__self__ is obj2
 
 
 def test_trace3d_takes_positional_arguments():
