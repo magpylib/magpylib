@@ -1,51 +1,35 @@
 # Changelog
 
-## [Unreleased]
+## [6.0.1] 2026-10-25
 
 ### Changed
 
-- From a script, a Pyvista animation plays in Pyvista's window, where the scene
-  can be turned and zoomed while it plays, a button or the space bar pauses it
-  and a slider seeks the path index, instead of going through a gif opened in
-  another app (Pyvista 0.43 or later). In a notebook, or with
-  `animation_output`, it is still a gif or mp4, now written about a quarter
-  faster ([#1053](https://github.com/magpylib/magpylib/pull/1053)).
-- `import magpylib` no longer loads matplotlib or plotly, `show()` builds scenes
-  of many objects in less than half the time, and fields along a path take up to
-  40 % less time to compute
+- Requires scipy 1.17.1 or newer
+  ([#1052](https://github.com/magpylib/magpylib/pull/1052)).
+- Faster `import magpylib`, `show()` and fields along paths
   ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
-- Requires scipy 1.17.1 or newer: `from_mrp` in 1.17.0 builds rotations that
-  fail when applied ([#936](https://github.com/magpylib/magpylib/issues/936)).
+- From a script, Pyvista animations play live in Pyvista's window
+  ([#1051](https://github.com/magpylib/magpylib/pull/1051),
+  [#1053](https://github.com/magpylib/magpylib/pull/1053)).
 
 ### Fixed
 
-- An animation whose only path sits in a nested `Collection` had no frames
+- Pyvista animations open from scripts on every OS and keep their title, canvas
+  objects and chart panels in every frame
+  ([#1051](https://github.com/magpylib/magpylib/pull/1051),
+  [#1053](https://github.com/magpylib/magpylib/pull/1053)).
+- Animations of paths inside nested Collections
   ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
-- Accept bound methods and callable objects as custom field functions, and keep
-  copied sources independent in the subclassing example
-  ([#1045](https://github.com/magpylib/magpylib/pull/1045)).
-- A custom source whose field function references it, such as a closure over the
-  source or a bound method, is now freed: since 5.0.0 a cache kept every such
-  source alive ([#1054](https://github.com/magpylib/magpylib/pull/1054)).
-- An object whose 3D model is drawn by one of its own methods can be shown and
-  copied again; in 6.0.0 both failed with `RecursionError`. A copy draws its
-  model with its own method, so it follows the copy's changes; 5.x drew it from
-  a hidden snapshot of the original
-  ([#1055](https://github.com/magpylib/magpylib/pull/1055)).
-- Force meshes of TriangleStrip, TriangleSheet and Polyline no longer change
-  with where the object sits, triangles are bisected along their longest edge as
-  documented, and each path step is meshed like the static object there. Path
-  steps with fewer mesh points no longer give NaN when a source sits at the
-  target's origin, and a Polyline step whose vertices coincide no longer fails
+- Force meshes of TriangleStrip, TriangleSheet and Polyline: the same wherever
+  the object sits, and no NaN or failure on path steps
   ([#1046](https://github.com/magpylib/magpylib/pull/1046),
   [#1050](https://github.com/magpylib/magpylib/pull/1050)).
-- A pyvista animation shown from a script now opens, also without IPython
-  installed: it raised `TypeError` on macOS and Linux, and on Windows the file
-  was deleted before the viewer could read it
-  ([#1051](https://github.com/magpylib/magpylib/pull/1051)).
-- Pyvista animations lost their title and a given canvas's own objects, and
-  their 2D chart panels after the first frame
-  ([#1053](https://github.com/magpylib/magpylib/pull/1053)).
+- Custom sources accept bound methods and callable objects as field functions,
+  and are freed when their field function references them
+  ([#1045](https://github.com/magpylib/magpylib/pull/1045),
+  [#1054](https://github.com/magpylib/magpylib/pull/1054)).
+- Objects whose 3D model is drawn by one of their own methods can be shown and
+  copied ([#1055](https://github.com/magpylib/magpylib/pull/1055)).
 
 ## [6.0.0] 2026-10-19
 
