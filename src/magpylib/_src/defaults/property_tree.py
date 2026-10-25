@@ -30,6 +30,7 @@ Public contract for GUIs and third-party tooling:
 """
 
 from copy import deepcopy
+from types import MethodType
 from typing import ClassVar
 
 from magpylib._src.defaults.defaults_utility import (
@@ -547,10 +548,12 @@ class PropertyNode:
         return new
 
     def copy(self):
-        """Return a detached, unobserved deep copy. Callables are shared, as
-        `copy.deepcopy` shares functions: a method of the styled object (a 3D
-        model it draws) would otherwise copy that object, whose style holds the
-        method again."""
+        """Return a detached, unobserved deep copy, which shares the callables
+        held directly in the tree (functions, methods, callable objects) rather
+        than copying them. Deep-copying a method copies its object, and a
+        method of the styled object (a 3D model it draws) would copy that
+        object, whose style holds the method again. `BaseGeo.copy` binds the
+        methods of copied objects to the copies afterwards."""
         new = type(self).__new__(type(self))
         for key, value in self.__dict__.items():
             field = self._fields.get(key)
@@ -568,6 +571,23 @@ class PropertyNode:
             else:
                 new.__dict__[key] = deepcopy(value)
         return new
+
+    def _rebind_methods(self, memo):
+        """Bind the methods held in this copied tree to the copies of their
+        objects, as `copy.deepcopy` recorded them in ``memo``; methods of
+        objects that were not copied are left as they are."""
+        for key, value in self.__dict__.items():
+            field = self._fields.get(key)
+            if field is None:
+                continue
+            if isinstance(value, PropertyNode):
+                value._rebind_methods(memo)
+            elif isinstance(field, NodeSequence):
+                for child in value:
+                    child._rebind_methods(memo)
+            elif isinstance(value, MethodType) and id(value.__self__) in memo:
+                owner = memo[id(value.__self__)]
+                self.__dict__[key] = MethodType(value.__func__, owner)
 
     # public contract for GUIs / third-party tooling ---------------------
 

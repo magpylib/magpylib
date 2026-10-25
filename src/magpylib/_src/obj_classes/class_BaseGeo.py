@@ -596,14 +596,21 @@ class BaseGeo(BaseTransform, ABC):
         from copy import deepcopy  # noqa: PLC0415
 
         # avoid deepcopying the deep dependency upwards the tree structure
+        memo = {}
         if self.parent is not None:
             # using private attributes to avoid triggering `.add` method (see #530 bug)
             parent = self._parent
             self._parent = None
-            obj_copy = deepcopy(self)
+            obj_copy = deepcopy(self, memo)
             self._parent = parent
         else:
-            obj_copy = deepcopy(self)
+            obj_copy = deepcopy(self, memo)
+
+        # style copies share methods: a 3D model drawn by a copied object is
+        # drawn by its copy, whatever order the copies were made in
+        for copied in (obj_copy, *getattr(obj_copy, "children_all", ())):
+            if getattr(copied, "_style", None) is not None:
+                copied._style._rebind_methods(memo)
 
         if getattr(self, "_style", None) is not None or bool(
             getattr(self, "_style_kwargs", False)

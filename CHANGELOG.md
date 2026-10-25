@@ -28,7 +28,9 @@
   source or a bound method, is now freed: since 5.0.0 a cache kept every such
   source alive ([#1054](https://github.com/magpylib/magpylib/pull/1054)).
 - An object whose 3D model is drawn by one of its own methods can be shown and
-  copied again; in 6.0.0 both failed with `RecursionError`
+  copied again; in 6.0.0 both failed with `RecursionError`. A copy draws its
+  model with its own method, so it follows the copy's changes; 5.x drew it from
+  a hidden snapshot of the original
   ([#1055](https://github.com/magpylib/magpylib/pull/1055)).
 - Force meshes of TriangleStrip, TriangleSheet and Polyline no longer change
   with where the object sits, triangles are bisected along their longest edge as
