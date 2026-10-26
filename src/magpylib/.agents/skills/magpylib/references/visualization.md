@@ -10,32 +10,33 @@ magpy.show(
     *objects,
     backend,
     canvas,
-    canvas_update,
     animation,
     zoom,
     markers,
     return_fig,
+    canvas_update,
     row,
     col,
     output,
     sumup,
     pixel_agg,
     style,
-    **kwargs,
+    **kwargs,  # in_out, units_length, legend_maxitems, title, repeat, style_*
 )
 ```
 
 `show()` takes any number of sources, sensors, and collections. It is also a
 method on every object (`cube.show()`), and `magpy.show(cube, sensor)` draws
-them in one scene. Every keyword defaults to the matching entry in
-`magpy.defaults` rather than to a literal in the signature, so changing a
-default globally changes what an unqualified `show()` does.
+them in one scene. `backend`, `animation`, `units_length`, `legend_maxitems` and
+the styles default to entries under `magpy.defaults.display`, so changing one
+there changes every unqualified `show()`; the other keywords have fixed
+defaults.
 
 - `return_fig=True` returns the backend figure instead of displaying it — use
   this in scripts, tests, and docs builds rather than relying on a display.
 - `canvas` draws into an existing figure/axes/plotter, which is how Magpylib
   scenes get embedded in a larger dashboard.
-- `zoom` widens (positive) or tightens the automatic bounds.
+- `zoom` widens the automatic bounds; `0`, the default, is the tightest.
 - `markers` adds plain position markers for reference points.
 
 ## Backends
@@ -84,8 +85,8 @@ magpy.show(cube, animation=True)
 
 `animation=True` plays the object path; `animation=<seconds>` sets the duration.
 All three built-in backends animate, but only pyvista can write the animation to
-a file (gif or mp4). Check `magpy.defaults.display.animation` for frame-rate and
-looping options.
+a file (gif or mp4). `magpy.defaults.display.animation` holds the frame rate,
+duration, frame limits and slider; `repeat=True` loops the animation.
 
 ## Subplots
 
