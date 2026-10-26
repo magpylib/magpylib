@@ -53,6 +53,11 @@ class BaseSource(BaseGeo):  # pylint: disable=abstract-method
             raise AttributeError(msg)
         self._field_func = val
 
+    def _kernel_rows_per_observer(self):
+        """Kernel rows computed per observer, which sizes the chunks of a field
+        computation: one, or one per segment or face of the source."""
+        return 1
+
     def getB(
         self, *observers, squeeze=True, pixel_agg=None, output="ndarray", in_out="auto"
     ):

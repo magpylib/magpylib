@@ -271,6 +271,39 @@ def _getBH_level1(
     return BH
 
 
+# Kernel rows per chunk: one row is one source, path step and pixel, times the
+# segments or faces the source is computed from. Every input is tiled to the
+# rows before the kernel runs, and kernels hold several temporaries per row, so
+# memory grows with this number; above it, a group is computed in chunks.
+CHUNK_ROWS = 50_000
+
+
+def _chunk_slices(rows_per_obs, n_path, n_pix):
+    """(source slice, pixel slice) pairs covering a group in chunks of about
+    CHUNK_ROWS kernel rows. ``rows_per_obs`` holds each source's kernel rows per
+    observer. Whole sources are packed together; a source above CHUNK_ROWS on
+    its own is split along the pixels."""
+    chunks, start, rows = [], 0, 0
+    for ind, rpo in enumerate(rows_per_obs):
+        src_rows = rpo * n_path * n_pix
+        if src_rows > CHUNK_ROWS:
+            if start < ind:
+                chunks.append((slice(start, ind), slice(None)))
+            step = max(1, CHUNK_ROWS // (rpo * n_path))
+            chunks.extend(
+                (slice(ind, ind + 1), slice(p, p + step)) for p in range(0, n_pix, step)
+            )
+            start, rows = ind + 1, 0
+        elif rows + src_rows > CHUNK_ROWS:
+            chunks.append((slice(start, ind), slice(None)))
+            start, rows = ind, src_rows
+        else:
+            rows += src_rows
+    if start < len(rows_per_obs):
+        chunks.append((slice(start, len(rows_per_obs)), slice(None)))
+    return chunks
+
+
 def _getBH_level2(
     sources, observers, *, field, sumup, squeeze, pixel_agg, output, in_out
 ) -> np.ndarray:
@@ -424,30 +457,39 @@ def _getBH_level2(
             field_func_groups[group_key]["sources"].append(src)
             field_func_groups[group_key]["order"].append(ind)
 
-        # evaluate each group in one vectorized step -------------------------------
+        # evaluate each group in vectorized chunks ---------------------------------
         B = np.empty((num_of_src_list, max_path_len, n_pix, 3))  # allocate B
+        poso_pix = poso.reshape((max_path_len, n_pix, 3))
         for group in field_func_groups.values():
             field_func = group["field_func"]
-            lg = len(group["sources"])
             gr = group["sources"]
-            src_dict = _get_src_dict(
-                gr, n_pix, n_pp, poso
-            )  # compute array dict for level1
-            # compute field
-            B_group = _getBH_level1(
-                field_func=field_func, field=field, in_out=in_out, **src_dict
-            )
-            if B_group is None:
-                msg = (
-                    f"Cannot compute {field}-field because input "
-                    f"field_func {field_func} has undefined {field}-field computation."
+            order = np.array(group["order"])
+
+            def compute(chunk, field_func=field_func, gr=gr, order=order):
+                src_sl, pix_sl = chunk
+                sub = gr[src_sl]
+                poso_chunk = poso_pix[:, pix_sl].reshape(-1, 3)
+                n_pix_chunk = len(poso_chunk) // max_path_len
+                src_dict = _get_src_dict(sub, n_pix_chunk, len(poso_chunk), poso_chunk)
+                B_chunk = _getBH_level1(
+                    field_func=field_func, field=field, in_out=in_out, **src_dict
                 )
-                raise MagpylibMissingInput(msg)
-            B_group = B_group.reshape(
-                (lg, max_path_len, n_pix, 3)
-            )  # reshape (2% slower for large arrays)
-            for gr_ind in range(lg):  # put into dedicated positions in B
-                B[group["order"][gr_ind]] = B_group[gr_ind]
+                if B_chunk is None:
+                    msg = (
+                        f"Cannot compute {field}-field because input "
+                        f"field_func {field_func} has undefined {field}-field computation."
+                    )
+                    raise MagpylibMissingInput(msg)
+                # put into dedicated positions in B
+                B[order[src_sl], :, pix_sl] = B_chunk.reshape(
+                    (len(sub), max_path_len, n_pix_chunk, 3)
+                )
+
+            chunks = _chunk_slices(
+                [src._kernel_rows_per_observer() for src in gr], max_path_len, n_pix
+            )
+            for chunk in chunks:
+                compute(chunk)
 
         # reshape output ----------------------------------------------------------------
         # rearrange B when there is at least one Collection with more than one source

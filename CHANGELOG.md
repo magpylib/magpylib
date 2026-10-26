@@ -6,6 +6,8 @@
 
 - Faster fields along long paths: sensor pixels are placed for all path steps at
   once ([#1061](https://github.com/magpylib/magpylib/pull/1061)).
+- Large field computations run in chunks, with a fraction of the memory
+  ([#1059](https://github.com/magpylib/magpylib/pull/1059)).
 
 ### Fixed
 

@@ -73,6 +73,8 @@ The output of a field computation `magpy.getB(sources, observers)` is by default
 Magpylib collects all inputs (object parameters), and vectorizes them for the computation which reduces the computation time dramatically for large inputs.
 
 Try to make all field computations with as few calls to `getBHJM` as possible. Avoid Python loops at all costs!
+
+Large computations are split into chunks, which keeps the memory they need small.
 ```
 
 -------------------------------------

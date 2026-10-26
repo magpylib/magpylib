@@ -287,6 +287,9 @@ class TriangularMesh(
             return abs_volume[0]
         return abs_volume
 
+    def _kernel_rows_per_observer(self):
+        return len(self._faces)
+
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
         if self._vertices is None:

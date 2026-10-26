@@ -7,6 +7,7 @@ from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.fields import field_BH
 from magpylib._src.fields.field_BH import _preserve_paths
 
 
@@ -774,3 +775,74 @@ def test_sensor_on_a_path_reads_each_step_by_hand(name):
         if sens.handedness == "left":
             B_step[:, 0] *= -1
         np.testing.assert_allclose(B[step], B_step, rtol=1e-12, atol=1e-15)
+
+
+POL = (0.1, 0.2, 1.0)
+CHUNK_SOURCES = {
+    "cuboids, one on a path": lambda: [
+        magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=POL),
+        magpy.magnet.Cuboid(
+            dimension=(1, 2, 1),
+            polarization=POL,
+            position=[(0, 0, 0), (0.1, 0, 0), (0.2, 0, 0)],
+            orientation=R.from_euler("x", 20, degrees=True),
+        ),
+    ],
+    "sphere": lambda: magpy.magnet.Sphere(diameter=1, polarization=POL),
+    "tetrahedron": lambda: magpy.magnet.Tetrahedron(
+        vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)], polarization=POL
+    ),
+    "triangular mesh": lambda: magpy.magnet.TriangularMesh.from_ConvexHull(
+        points=np.random.default_rng(1).normal(size=(10, 3)), polarization=POL
+    ),
+    "cylinder segment": lambda: magpy.magnet.CylinderSegment(
+        dimension=(0.5, 1, 1, 0, 90), polarization=POL
+    ),
+    "circle": lambda: magpy.current.Circle(diameter=1, current=1),
+    "polylines, ragged": lambda: [
+        magpy.current.Polyline(
+            vertices=[(0, 0, -1), (1, 0, -1), (1, 1, -1)], current=1
+        ),
+        magpy.current.Polyline(
+            vertices=[(0, 0, -2), (1, 0, -2), (1, 1, -2), (0, 1, -2), (0, 0, -2)],
+            current=2,
+        ),
+    ],
+    "triangle strip": lambda: magpy.current.TriangleStrip(
+        vertices=[(0, 0, -1), (1, 0, -1), (0, 1, -1), (1, 1, -1), (0, 2, -1)], current=1
+    ),
+    "triangle sheet": lambda: magpy.current.TriangleSheet(
+        current_densities=[(1, 0, 0), (0, 1, 0)],
+        vertices=[(0, 0, -1), (1, 0, -1), (0, 1, -1), (1, 1, -1)],
+        faces=[(0, 1, 2), (1, 3, 2)],
+    ),
+    "dipole and triangle": lambda: [
+        magpy.misc.Dipole(moment=POL, position=(0, 0, -1)),
+        magpy.misc.Triangle(
+            vertices=[(0, 0, -1), (1, 0, -1), (0, 1, -1)], polarization=POL
+        ),
+    ],
+    "custom source": lambda: magpy.misc.CustomSource(
+        field_func=lambda field, observers: observers * (2.0 if field == "B" else 3.0)
+    ),
+}
+
+
+@pytest.mark.parametrize("name", CHUNK_SOURCES)
+def test_chunks_and_threads_match_one_vectorized_step(name, monkeypatch):
+    """Computations above CHUNK_ROWS run in chunks: the field is the one-step
+    field."""
+    sources = CHUNK_SOURCES[name]()
+    grid = np.linspace(-1, 1, 4)
+    pixel = np.array([[(x, y, 0.3) for y in np.linspace(-1, 1, 5)] for x in grid])
+    sensors = [
+        magpy.Sensor(pixel=pixel, position=[(0, 0, 0), (0, 0.1, 0.2), (0.3, 0, 0.1)]),
+        magpy.Sensor(pixel=pixel, orientation=R.from_euler("z", 30, degrees=True)),
+    ]
+    B_one_step = magpy.getB(sources, sensors)
+
+    monkeypatch.setattr(field_BH, "CHUNK_ROWS", 7)
+    B_chunks = magpy.getB(sources, sensors)
+
+    atol = 1e-13 * np.nanmax(np.abs(B_one_step))
+    np.testing.assert_allclose(B_chunks, B_one_step, rtol=1e-12, atol=atol)

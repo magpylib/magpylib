@@ -154,6 +154,9 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         return super()._default_style_description
 
     # Methods
+    def _kernel_rows_per_observer(self):
+        return max(1, np.shape(self._vertices)[-2] - 2)  # triangles
+
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
         if self._vertices is None:
