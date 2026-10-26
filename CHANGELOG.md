@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Added
+
+- An Agent Skill ships inside the package, so AI coding assistants write current
+  Magpylib code (SI units, `polarization`, `getFT(..., meshing=...)`); add it to
+  a project with `uvx library-skills`
+  ([#992](https://github.com/magpylib/magpylib/pull/992)).
+
 ### Fixed
 
 - `magpy.func` raises a `TypeError` on values with units instead of dropping
