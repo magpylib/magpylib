@@ -162,9 +162,14 @@ class DefaultSettings(PropertyNode):
     display: dict or `Display` object
         `Display` class containing display settings
         ('backend', 'animation', 'colorsequence', ...).
+    threads: int
+        Threads that compute fields too large for one vectorized step, which
+        are then split into chunks. The default is one per CPU core, up to 8;
+        1 computes the chunks one after the other.
     """
 
     display = Nested(Display, doc="Display settings.")
+    threads = Integer(minimum=1, doc="Threads for large field computations.")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

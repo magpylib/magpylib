@@ -43,6 +43,7 @@ level4(src.getB/H, sensor.getB/H, collection.getB/H):   <--- USER INTERFACE
 
 import warnings
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from itertools import product
 from types import MethodType
@@ -50,6 +51,7 @@ from types import MethodType
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
+from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.input_checks import (
     check_dimensions,
@@ -304,6 +306,20 @@ def _chunk_slices(rows_per_obs, n_path, n_pix):
     return chunks
 
 
+def _run_chunks(compute, chunks, threaded):
+    """Run ``compute`` on every chunk, on ``defaults.threads`` threads when
+    ``threaded``. NumPy releases the GIL inside the kernels, so the threads run
+    in parallel. The chunks do not depend on the thread count, so neither do
+    the results."""
+    threads = min(default_settings.threads, len(chunks)) if threaded else 1
+    if threads == 1:
+        for chunk in chunks:
+            compute(chunk)
+        return
+    with ThreadPoolExecutor(threads) as pool:
+        list(pool.map(compute, chunks))  # list() re-raises a chunk's error
+
+
 def _getBH_level2(
     sources, observers, *, field, sumup, squeeze, pixel_agg, output, in_out
 ) -> np.ndarray:
@@ -488,8 +504,11 @@ def _getBH_level2(
             chunks = _chunk_slices(
                 [src._kernel_rows_per_observer() for src in gr], max_path_len, n_pix
             )
-            for chunk in chunks:
-                compute(chunk)
+            # Magpylib's own kernels only: a user field_func may not be thread-safe
+            threaded = (getattr(field_func, "__module__", None) or "").startswith(
+                "magpylib."
+            )
+            _run_chunks(compute, chunks, threaded)
 
         # reshape output ----------------------------------------------------------------
         # rearrange B when there is at least one Collection with more than one source

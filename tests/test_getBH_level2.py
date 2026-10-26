@@ -1,3 +1,4 @@
+import threading
 import unittest
 import warnings
 
@@ -830,8 +831,8 @@ CHUNK_SOURCES = {
 
 @pytest.mark.parametrize("name", CHUNK_SOURCES)
 def test_chunks_and_threads_match_one_vectorized_step(name, monkeypatch):
-    """Computations above CHUNK_ROWS run in chunks: the field is the one-step
-    field."""
+    """Computations above CHUNK_ROWS run in chunks, on threads: the field is the
+    one-step field, and the same for any thread count."""
     sources = CHUNK_SOURCES[name]()
     grid = np.linspace(-1, 1, 4)
     pixel = np.array([[(x, y, 0.3) for y in np.linspace(-1, 1, 5)] for x in grid])
@@ -842,7 +843,28 @@ def test_chunks_and_threads_match_one_vectorized_step(name, monkeypatch):
     B_one_step = magpy.getB(sources, sensors)
 
     monkeypatch.setattr(field_BH, "CHUNK_ROWS", 7)
-    B_chunks = magpy.getB(sources, sensors)
+    B_chunks = []
+    for threads in (1, 4):
+        monkeypatch.setattr(magpy.defaults, "threads", threads)
+        B_chunks.append(magpy.getB(sources, sensors))
 
+    np.testing.assert_array_equal(B_chunks[0], B_chunks[1])
     atol = 1e-13 * np.nanmax(np.abs(B_one_step))
-    np.testing.assert_allclose(B_chunks, B_one_step, rtol=1e-12, atol=atol)
+    np.testing.assert_allclose(B_chunks[0], B_one_step, rtol=1e-12, atol=atol)
+
+
+def test_user_field_func_runs_on_the_calling_thread(monkeypatch):
+    """A user field_func is computed in chunks, but never on other threads: it
+    may not be thread-safe."""
+    threads_seen = []
+
+    def field_func(field, observers):  # noqa: ARG001
+        threads_seen.append(threading.get_ident())
+        return observers
+
+    monkeypatch.setattr(field_BH, "CHUNK_ROWS", 7)
+    src = magpy.misc.CustomSource(field_func=field_func)
+    src.getB(np.random.default_rng(0).random((50, 3)))
+
+    assert len(threads_seen) > 1
+    assert set(threads_seen) == {threading.get_ident()}

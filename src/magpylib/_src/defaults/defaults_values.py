@@ -1,5 +1,7 @@
 """Package level config defaults"""
 
+import os
+
 DEFAULTS = {
     "display": {
         "autosizefactor": 10,
@@ -200,4 +202,6 @@ DEFAULTS = {
             "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},
         },
     },
+    # one per core, up to 8: more gained little on a 10-core laptop
+    "threads": min(8, os.cpu_count() or 1),
 }

@@ -6,7 +6,9 @@
 
 - Faster fields along long paths: sensor pixels are placed for all path steps at
   once ([#1061](https://github.com/magpylib/magpylib/pull/1061)).
-- Large field computations run in chunks, with a fraction of the memory
+- Large field computations run in chunks, on several threads: a fraction of the
+  memory, and several times faster on multi-core machines. Set the thread count
+  with `magpy.defaults.threads`
   ([#1059](https://github.com/magpylib/magpylib/pull/1059)).
 
 ### Fixed
