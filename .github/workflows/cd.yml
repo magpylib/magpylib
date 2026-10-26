@@ -39,6 +39,17 @@ jobs:
       # It has to be v3 at least -- v2 pins Twine 6.2, which rejects the
       # Metadata-Version 2.5 that hatchling now writes, failing every build.
       - uses: hynek/build-and-inspect-python-package@v3.0.1
+        id: baipp
+
+      # The Agent Skill is package data in a dot-directory; check that both
+      # distributions carry every file of it.
+      - name: Check the Agent Skill ships
+        env:
+          DIST: ${{ steps.baipp.outputs.dist }}
+        run: |
+          expected=$(cd src && find magpylib/.agents -type f | sort)
+          diff <(echo "$expected") <(unzip -Z1 "$DIST"/*.whl | grep '^magpylib/\.agents/' | sort)
+          diff <(echo "$expected") <(tar -tzf "$DIST"/*.tar.gz | grep -o 'magpylib/\.agents/.*[^/]$' | sort)
 
   publish:
     needs: [dist]

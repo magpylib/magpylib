@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- An Agent Skill ships inside the package, so AI coding assistants write current
+  Magpylib code (SI units, `polarization`, `getFT(..., meshing=...)`); add it to
+  a project with `uvx library-skills`
+  ([#992](https://github.com/magpylib/magpylib/pull/992)).
+
 ## [6.0.1] 2026-10-25
 
 ### Changed
