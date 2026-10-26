@@ -54,9 +54,11 @@ project.
 - New unit tests are written aiming for 100% code coverage. We use
   [Coverage](https://coverage.readthedocs.io/en/) to test this.
 - [Pylint](https://pylint.readthedocs.io/en/stable/) rates your code 10/10 and
-  there are no formatting issues reported (e.g. line-too-long).
+  there are no formatting issues reported (e.g. line-too-long). Pylint runs in
+  CI, not in the pre-commit hooks; run it with `uvx nox -s pylint`.
 - Your code is PEP8 compliant and formatted with
-  [Black](https://black.readthedocs.io/en/stable/) default settings.
+  [Ruff](https://docs.astral.sh/ruff/formatter/), which the pre-commit hooks
+  run.
 - User-facing changes get one line in `CHANGELOG.md` under `## [Unreleased]`, in
   the matching [Keep a Changelog](https://keepachangelog.com) section (Added,
   Changed, Deprecated, Removed, Fixed), linking the PR. Group related changes
