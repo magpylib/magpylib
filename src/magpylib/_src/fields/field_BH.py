@@ -151,6 +151,23 @@ def _tile_group_property(group: list, n_pp: int, prop_name: str):
     return np.repeat(out, n_pp, axis=0)
 
 
+def _pixel_positions(sens, static_orientation: bool) -> np.ndarray:
+    """Global positions of a sensor's pixels at every path step, shape (p, n, 3).
+
+    A Rotation rotates n pixels as ``np.dot(matrix, pixels.T).T``, so this
+    matches applying each path step's Rotation in turn bit for bit, without
+    building a Rotation per step: a static orientation rotates the pixels once.
+    """
+    # pylint: disable=protected-access
+    pos = sens._position[:, None, :]
+    if sens.pixel is None:
+        return np.zeros((1, 1, 3)) + pos
+    pix = sens.pixel.reshape(-1, 3)
+    if static_orientation:
+        return sens._orientation[0].apply(pix) + pos
+    return np.array([np.dot(m, pix.T).T for m in sens._orientation.as_matrix()]) + pos
+
+
 def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     """create dictionaries for level1 input.
 
@@ -325,7 +342,7 @@ def _getBH_level2(
     #   this check is made now when sensor paths are not yet tiled.
     unitQ = np.array([0, 0, 0, 1.0])
     unrotated_sensors = [
-        all(all(r == unitQ) for r in sens._orientation.as_quat()) for sens in sensors
+        bool(np.all(sens._orientation.as_quat() == unitQ)) for sens in sensors
     ]
 
     # check which sensors have a static orientation
@@ -371,16 +388,8 @@ def _getBH_level2(
         #   shape (m * concat all sens flat pixel, 3)
         #   allows sensors with different pixel shapes <- relevant?
         poso = [
-            [
-                (
-                    np.array([[0, 0, 0]])
-                    if sens.pixel is None
-                    else r.apply(sens.pixel.reshape(-1, 3))
-                )
-                + p
-                for r, p in zip(sens._orientation, sens._position, strict=False)
-            ]
-            for sens in sensors
+            _pixel_positions(sens, static)
+            for sens, static in zip(sensors, static_sensor_rot, strict=True)
         ]
         poso = np.concatenate(poso, axis=1).reshape(-1, 3)
         n_pp = len(poso)

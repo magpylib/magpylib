@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- Faster fields along long paths: sensor pixels are placed for all path steps at
+  once ([#1061](https://github.com/magpylib/magpylib/pull/1061)).
+
 ## [6.0.1] 2026-10-25
 
 ### Changed

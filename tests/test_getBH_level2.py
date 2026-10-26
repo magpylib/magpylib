@@ -7,7 +7,7 @@ from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.fields.field_BH import _preserve_paths
+from magpylib._src.fields.field_BH import _pixel_positions, _preserve_paths
 
 
 def test_getB_level2_input_simple():
@@ -735,3 +735,36 @@ def test_unknown_keyword_raises(func):
     src = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
     with pytest.raises(TypeError, match="sum_up"):
         func(src, (0, 0, 1), sum_up=True)
+
+
+PIXEL = np.random.default_rng(3).normal(size=(4, 5, 3))
+ANGLES = np.linspace(0, 330, 12)
+PIXEL_SENSORS = {
+    "no pixel, path": lambda: magpy.Sensor(position=[(0, 0, 0), (1, 2, 3)]),
+    "unrotated": lambda: magpy.Sensor(pixel=PIXEL, position=(0.1, 0.2, 0.3)),
+    "rotated, translation path": lambda: magpy.Sensor(
+        pixel=PIXEL,
+        position=np.linspace((0, 0, 0), (1, 2, 3), 7),
+        orientation=R.from_rotvec((0.3, -0.2, 0.9)),
+    ),
+    "rotating along a path": lambda: magpy.Sensor(pixel=PIXEL).rotate_from_angax(
+        ANGLES, (1, 2, 3), anchor=(0.5, 0, 0)
+    ),
+}
+
+
+@pytest.mark.parametrize("name", PIXEL_SENSORS)
+def test_pixel_positions_match_rotating_each_path_step(name):
+    """Pixel positions of all path steps at once equal those of applying each
+    step's Rotation in turn, bit for bit."""
+    sens = PIXEL_SENSORS[name]()
+    pixel = np.array([[0, 0, 0]]) if sens.pixel is None else sens.pixel.reshape(-1, 3)
+    expected = np.array(
+        [
+            r.apply(pixel) + p
+            for r, p in zip(sens._orientation, sens._position, strict=True)
+        ]
+    )
+    static = len(np.unique(sens._orientation.as_quat(), axis=0)) == 1
+
+    np.testing.assert_array_equal(_pixel_positions(sens, static), expected)
