@@ -108,7 +108,7 @@ There is a high level of **feature parity**, however, not all graphic features a
 |        animation        |     ✔️     |   ✔️   |  ✔️[5]  |
 |     animation time      |     ✔️     |   ✔️   |  ✔️[5]  |
 |      animation fps      |     ✔️     |   ✔️   |  ✔️[5]  |
-|    animation slider     |   ✔️[1]    |   ✔️   |   ❌    |
+|    animation slider     |   ✔️[1]    |   ✔️   |  ✔️[9]  |
 |       subplots 2D       |     ✔️     |   ✔️   |  ✔️[6]  |
 |       subplots 3D       |     ✔️     |   ✔️   |   ✔️    |
 |       user canvas       |     ✔️     |   ✔️   |   ✔️    |
@@ -123,15 +123,17 @@ There is a high level of **feature parity**, however, not all graphic features a
 
 [4]: backend-specific trace constructors are supported by Matplotlib and Plotly, whose constructors take the named coordinate arrays that Magpylib transforms. Pyvista constructors take points, centers and radii instead, so they do not fit that contract; attaching one emits a warning and the model is not displayed. Generic `model3d` traces work with every backend, Pyvista included.
 
-[5]: animation is only available through export as `gif` or `mp4`
+[5]: from a script, the animation plays in Pyvista's window (Pyvista 0.43 or later); in a notebook, or with `animation_output`, it is exported as a `gif` or `mp4`.
 
 [6]: 2D plots are not supported for all jupyter_backends. As of pyvista>=0.38 these are deprecated and replaced by the [trame](https://docs.pyvista.org/api/plotting/trame.html) backend.
 
 [8]: Pyvista has no figure-level title -- `add_title` applies to the active subplot -- so the title is shown for a single panel and omitted on a subplot grid.
 
+[9]: in Pyvista's window, when run from a script.
+
 [7]: Matplotlib does not support color gradient. Instead magnetization is shown through object slicing and coloring.
 
-`show()` will also pass on all kwargs to the respective plotting backends. For example, in the [animation sample code](guide-graphic-animations) the kwarg `show_legend` is forwarded to the Plotly backend.
+`show()` forwards the arguments it does not interpret to the plotting backend, spelled bare (`renderer="png"`) or with the backend's name as prefix (`plotly_renderer="png"`, which wins). Two namespaces reach the plotting library itself: `fig_*` goes to its figure and `show_*` to its show call, e.g. `fig_figsize=(6, 6)` with Matplotlib or `fig_layout_showlegend=False` with Plotly; `fig=dict(...)` and `show=dict(...)` are the same thing spelled nested. Matplotlib passes `fig_*` to `plt.figure` and Pyvista to its `Plotter`, so with a given `canvas` Pyvista ignores it with a warning, and so does Matplotlib unless `canvas_update=True`; Plotly applies it with `Figure.update`, to a given canvas too. Misspellings are caught: an argument the backend does not take is reported with a warning, a misspelled Magpylib argument such as `style_colr` or `animation_tme` raises an error, and a `fig_*` or `show_*` argument the library rejects raises the library's own error, with a note naming the argument. The one exception is Plotly's show call, which ignores unknown keywords. Prefer a Magpylib argument where one exists: `legend_maxitems=0` hides the 3D legend, and `style_legend_show` sets it per object.
 
 (guide-graphics-custom-backend-pointer)=
 
@@ -288,11 +290,14 @@ The Magpylib [object paths](docs-position-paths) visualized with `show()` can be
 
 The animations can be fine-tuned with the following kwargs of `show()`:
 
-1. `animation_time` (default=3), must be a positive number that gives the animation time in seconds.
-2. `animation_slider` (default=`True`), is boolean and sets if a slider should be displayed.
-3. `animation_fps` (default=30), sets the maximal frames per second.
+1. `animation_time` (default=5), a positive number, the animation time in seconds.
+2. `animation_fps` (default=20), the frames per second requested.
+3. `animation_maxfps` (default=30), the most frames per second: a larger `animation_fps` is lowered to it, with a warning.
+4. `animation_maxframes` (default=200), the most frames.
+5. `animation_slider` (default=`True`), is boolean and sets if a slider should be displayed.
+6. `animation_output` (default=`None`), `'gif'` or `'mp4'`, or a file path ending in one of them, to export the animation (Pyvista). Without it, Pyvista plays the animation in its own window when run from a script, and embeds a gif in a notebook.
 
-Each path step will generate one frame of the animation, unless `animation_fps` would be exceeded. In this case specific equidistant frames will be selected automatically to adjust to the limited display possibilities. For practicality, the input `animation=x` will automatically set `animation=True` and `animation_time=x`.
+Each path step will generate one frame of the animation, unless the animation would then have more than `animation_time` times `animation_fps` frames, or more than `animation_maxframes`. In this case equidistant frames, always including the last path step, are selected automatically. The animation lasts `animation_time` either way, so a short path plays at fewer frames per second than `animation_fps`. For practicality, a number `animation=x` will automatically set `animation=True` and `animation_time=x`. The defaults are in `magpy.defaults.display.animation`.
 
 The following example demonstrates the animation feature,
 
@@ -312,7 +317,7 @@ magpy.show(
     animation_fps=20,
     animation_slider=True,
     backend="plotly",
-    showlegend=False,
+    legend_maxitems=0,
 )
 ```
 
@@ -330,6 +335,10 @@ Even with some implemented fail safes, such as a maximum frame rate and frame co
 Coupled subplots
 :::
 
+:::{versionchanged} 6.0
+A 2D panel shows outputs in one unit: `B` and `J` (T) apart from `H` and `M` (A/m).
+:::
+
 It is often tedious to integrate the Magpylib `show()` output into sub-plots as shown above, especially when dealing with animations and combinations of 2D and 3D plots.
 
 For this, Magpylib offers the possibility to show the sensor output along a path in addition to the 3D-output, and to place 2D and 3D outputs in subplots.
@@ -343,7 +352,7 @@ All of this is achieved via the `show()` function by passing input objects as di
 3. `row`: int which selects the subplot row. Default is `row=1`.
 4. `output`: string which selects the type of output that should be displayed in this subplot. Options are
    1. `'model3d'` is the default value and selects the 3D output.
-   2. `'Xa'` selects a 2D line-plot of a field component (combination) as seen by the sensor(s) along their path. The sensor(s) must be part of the `objects` input. Here "X" selects the field and must be one of "BHJM", and "a" selects the respective component combination and must be a subset of "xyz". For example, `output=Hx` displays the x-component of the H-field, or `output=Bxz` displays `sqrt(|Bx|² + |Bz|²)`. By default, source outputs are summed up (`sumup=True`) and sensor pixels, are aggregated by mean (`pixel_agg='mean'`).
+   2. `'Xa'` selects a 2D line-plot of a field component (combination) as seen by the sensor(s) along their path. The sensor(s) must be part of the `objects` input. Here "X" selects the field and must be one of "BHJM", and "a" selects the respective component combination and must be a subset of "xyz". For example, `output=Hx` displays the x-component of the H-field, or `output=Bxz` displays `sqrt(|Bx|² + |Bz|²)`. By default, source outputs are summed up (`sumup=True`) and sensor pixels, are aggregated by mean (`pixel_agg='mean'`). A list of such strings, `output=["Hx", "Hy", "Hz"]`, draws several lines in one panel; they share its y axis and so its unit: `B` and `J` in T, or `H` and `M` in A/m.
 
 The following code demonstrates these features.
 

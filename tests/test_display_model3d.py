@@ -7,6 +7,8 @@ crashed. Pyvista never consumed backend-specific models at all. These tests
 pin the behaviour of each backend against each kind of model.
 """
 
+from copy import deepcopy
+
 import numpy as np
 import pytest
 
@@ -70,6 +72,26 @@ def test_model3d_for_another_backend_is_ignored(backend):
     assert render(obj, backend) == render(source(), backend)
 
 
+def test_a_native_model_may_name_its_coordinates_with_positional_arguments():
+    """The positional arguments are Matplotlib's ``(xs, ys, zs)`` only when the
+    keywords do not name x, y and z: a model with both used to fail with a
+    bare IndexError. The model is placed with its object, and names it."""
+    scenes = []
+    magpy.register_backend("native", scenes.append, supports_native_traces=True)
+    obj = source()
+    obj.position = (1, 0, 0)
+    obj.style.model3d.add_trace(
+        backend="native",
+        constructor="Path",
+        args=("a label",),
+        kwargs={"x": [0, 1], "y": [0, 0], "z": [0, 0]},
+    )
+    magpy.show(obj, backend="native")
+    (model,) = scenes[0].frames[0].native_traces
+    np.testing.assert_allclose(model["kwargs"]["x"], [1, 2])
+    assert model["object_id"] == id(obj)
+
+
 @pytest.mark.parametrize("backend", NATIVE_BACKENDS)
 def test_model3d_show_false_suppresses_the_model(backend):
     """`show=False` on a trace keeps it out of the figure."""
@@ -123,3 +145,34 @@ def test_model3d_updatefunc_is_called_at_show_time(backend):
     before = len(calls)
     magpy.show(obj, backend=backend, return_fig=True)
     assert len(calls) > before, "updatefunc not re-evaluated on the second show"
+
+
+def test_model3d_bound_method_is_shown_and_copied():
+    """A model drawn by a method of an object is drawn by that object, and by
+    its copy in copies of the object."""
+
+    class Scaled(magpy.magnet.Cuboid):
+        def model(self):
+            return make_Cuboid(dimension=2 * self.dimension)
+
+    obj, other = (Scaled(polarization=(0, 0, 1), dimension=(1, 1, 1)) for _ in "ab")
+    obj.style.model3d.add_trace(obj.model)
+    other.style.model3d.add_trace(obj.model)
+    magpy.Collection(other, obj)  # other is copied before obj
+    assert render(obj, "plotly") > render(source(), "plotly")
+    for trace in (
+        obj.style.copy().model3d.data[0],  # what show() draws from
+        deepcopy(obj.style.model3d.data[0]),
+    ):
+        assert trace.updatefunc.__self__ is obj
+    dup = obj.copy(dimension=(5, 5, 5))
+    assert dup.style.model3d.data[0].updatefunc.__self__ is dup
+    other2, obj2 = obj.parent.copy().children
+    for copied in (other2, obj2):
+        assert copied.style.model3d.data[0].updatefunc.__self__ is obj2
+
+
+def test_trace3d_takes_positional_arguments():
+    """Trace3d keeps its version 5 positional parameters."""
+    trace = magpy.graphics.Trace3d("generic", "Mesh3d")
+    assert (trace.backend, trace.constructor) == ("generic", "Mesh3d")

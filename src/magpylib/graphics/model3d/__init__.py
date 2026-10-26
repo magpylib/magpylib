@@ -1,7 +1,7 @@
 """
-The `magpylib.display.plotly` sub-package provides useful functions for
-convenient creation of 3D traces for commonly used objects in the
-library.
+The `magpylib.graphics.model3d` sub-package provides functions that build
+3D model traces of common shapes, to attach to Magpylib objects with
+`obj.style.model3d.add_trace()`.
 """
 
 __all__ = [

@@ -6,6 +6,7 @@
 
 import contextlib
 import os
+import sys
 import tempfile
 from functools import lru_cache
 from pathlib import Path
@@ -23,12 +24,33 @@ except ImportError as missing_module:  # pragma: no cover
 
 from matplotlib.colors import LinearSegmentedColormap
 from pyvista.plotting.colors import Color  # pylint: disable=import-error
+from vtkmodules.vtkInteractionWidgets import (  # pylint: disable=no-name-in-module
+    vtkWidgetRepresentation,
+)
+from vtkmodules.vtkRenderingContext2D import (  # pylint: disable=no-name-in-module
+    vtkContextActor,
+)
 
-from magpylib._src.display.api import drawing_properties
-from magpylib._src.display.traces_utility import get_trace_kw, split_input_arrays
+from magpylib._src.display.api import (
+    drawing_properties,
+    forward_options,
+    warn_unused_options,
+)
+from magpylib._src.display.traces_utility import (
+    get_trace_kw,
+    legend_overflow_label,
+    split_input_arrays,
+)
 from magpylib._src.utility import is_array_like, open_animation
 
 # from magpylib._src.utility import format_obj_input
+
+# props in a renderer that no animation frame draws: the charts, the slider
+NOT_FRAMES = (vtkContextActor, vtkWidgetRepresentation)
+# the controls of a live animation: where the slider starts and its height,
+# relative to the panel, and the play/pause button's size in pixels
+SLIDER_START, SLIDER_HEIGHT = 0.3, 0.08
+BUTTON_SIZE = 36
 
 SYMBOLS_TO_PYVISTA = {
     ".": "o",
@@ -136,6 +158,9 @@ def scatter_to_pyvista(trace):
 
     if trace["type"] == "scatter3d":
         points = np.array([trace[k] for k in "xyz"], dtype=float).T
+        if len(points) == 0:
+            # an empty trace, kept so that every frame has the same traces
+            return traces
         if "lines" in mode:
             for (lcol,), inds in split_input_arrays(line_color):
                 trace_pv_line = {
@@ -181,7 +206,7 @@ def scatter_to_pyvista(trace):
                     "style": ldash,
                     "label": trace.get("name", ""),
                 }
-            traces.append(trace_pv_line)
+                traces.append(trace_pv_line)
         if "markers" in mode:
             for (msize,), inds in split_input_arrays(marker_size, ordered=False):
                 if msize != 0:
@@ -207,6 +232,7 @@ def scatter_to_pyvista(trace):
 
 def generic_trace_to_pyvista(trace):
     """Transform a generic trace into a pyvista traces"""
+    row, col = trace.get("row", 1), trace.get("col", 1)
     trace = drawing_properties(trace)
     traces_pv = []
     if trace["type"] == "mesh3d":
@@ -221,18 +247,58 @@ def generic_trace_to_pyvista(trace):
         raise ValueError(msg2)
     showlegend = trace.get("showlegend", False)
     for tr in traces_pv:
-        tr["row"] = trace.get("row", 1) - 1
-        tr["col"] = trace.get("col", 1) - 1
-        if tr["type"] != "point_labels" and showlegend:
+        tr["row"] = row - 1
+        tr["col"] = col - 1
+        if tr["type"] == "point_labels":
+            continue
+        if showlegend:
             showlegend = False  # show only first subtrace
             if "label" not in tr:
                 tr["label"] = trace.get("name", "")
             leg_title = trace.get("legendgrouptitle_text", None)
             if leg_title is not None:
                 tr["label"] += f" ({leg_title})"
+        else:
+            # a 2D line arrives labelled with the trace's name; a label is a
+            # legend entry in a chart, so every other subtrace -- and every
+            # subtrace of a trace left out of the legend -- drops it
+            tr.pop("label", None)
         if not tr.get("label", ""):
             tr.pop("label", None)
     return traces_pv
+
+
+def play_pause_icons(size):
+    """Textures of the play/pause button: a triangle and two bars, dark on
+    light, for its paused and playing states"""
+    y, x = np.mgrid[0:size, 0:size] / (size - 1)
+    play = (x >= 0.3) & (np.abs(y - 0.5) <= 0.6 * (0.75 - x))
+    pause = (np.abs(y - 0.5) <= 0.25) & (np.abs(np.abs(x - 0.5) - 0.12) <= 0.06)
+    icons = []
+    for shape in (play, pause):
+        icon = pv.ImageData(dimensions=(size, size, 1))
+        gray = np.where(shape, 80, 230).astype(np.uint8).reshape(-1, 1)
+        icon.point_data["texture"] = np.repeat(gray, 3, axis=1)
+        icons.append(icon)
+    return icons
+
+
+def add_capped_legend(canvas, labels, maxitems):
+    """Add the active subplot's legend with at most `maxitems` of its
+    `labels`, the rest summed up in one entry. 0 adds none."""
+    if maxitems == 0 or not labels:
+        return
+    hidden = len(labels) - maxitems
+    if hidden <= 0:
+        canvas.add_legend(bcolor=None)
+        return
+    # a bare label takes its face and color from the labelled actor at the
+    # same index, so the entries kept look as they would uncapped
+    entries = [
+        *labels[:maxitems],
+        {"label": legend_overflow_label(hidden), "color": "gray", "face": "none"},
+    ]
+    canvas.add_legend(labels=entries, bcolor=None)
 
 
 def display_pyvista(scene):
@@ -248,47 +314,70 @@ def display_pyvista(scene):
     # native_traces are intentionally unused; see supports_native_traces
     frames = [fr.traces for fr in scene.frames]
 
-    fig_kwargs = dict(scene.fig_kwargs)
-    show_kwargs = dict(scene.show_kwargs)
+    fig_kwargs = scene.prefixed_options("fig")
+    show_kwargs = scene.prefixed_options("show")
+    unused_show = [f"show_{k}" for k in show_kwargs]
+    if jupyter_backend is not None:
+        unused_show.append("jupyter_backend")
 
     animation = scene.is_animation
     show_canvas = False
+    # a window magpylib shows plays the animation itself; off-screen (in a
+    # notebook, with pv.OFF_SCREEN) or into a named file, it is written out
+    live = False
     if canvas is None:
         if not return_fig:
-            show_canvas = True  # pragma: no cover
-        canvas = pv.Plotter(
+            show_canvas = True
+        live = animation and show_canvas and scene.animation.output is None
+        # the subplot grid is magpylib's to set; off-screen rendering is the
+        # user's choice too, e.g. fig_off_screen=True to take a screenshot
+        canvas = forward_options(
+            pv.Plotter,
+            "fig",
+            fig_kwargs,
+            # None lets pyvista decide, it renders off-screen in a notebook
+            defaults={"off_screen": None if live else animation},
             shape=(scene.n_rows, scene.n_cols),
-            off_screen=animation,
-            **fig_kwargs,
+        )
+        # pyvista < 0.43 has no timer events
+        live = live and not canvas.off_screen and hasattr(canvas, "add_timer_event")
+    else:
+        warn_unused_options(
+            [f"fig_{k}" for k in fig_kwargs], "the plotter was given as canvas"
         )
 
     charts = {}
     jupyter_backend = show_kwargs.pop("jupyter_backend", jupyter_backend)
     if jupyter_backend is None:
         jupyter_backend = pv.global_theme.jupyter_backend
-    count_with_labels = {}
-    charts_max_ind = 0
+    legend_labels = {}
 
     def draw_frame(frame_ind):
-        nonlocal count_with_labels, charts_max_ind
+        # the legend lists frame 0's traces, once: a live animation draws
+        # frame 0 again at every loop
+        collect_labels = frame_ind == 0 and not legend_labels
         for tr0 in frames[frame_ind]:
             for tr1 in generic_trace_to_pyvista(tr0):
                 row = tr1.pop("row", 1)
                 col = tr1.pop("col", 1)
                 typ = tr1.pop("type")
-                if frame_ind == 0:
-                    if (row, col) not in count_with_labels:
-                        count_with_labels[(row, col)] = 0
+                if collect_labels:
+                    labels_rc = legend_labels.setdefault((row, col), [])
                     if tr1.get("label", ""):
-                        count_with_labels[(row, col)] += 1
+                        labels_rc.append(tr1["label"])
                 canvas.subplot(row, col)
                 panel = scene.panel(row + 1, col + 1)
                 if panel is None or panel.kind == "scene3d":
                     getattr(canvas, f"add_{typ}")(**tr1)
                 else:
                     if charts.get((row, col)) is None:
-                        charts_max_ind += 1
-                        charts[(row, col)] = pv.Chart2D()
+                        # the chart is magpylib's own, even on a given
+                        # plotter, so it is labelled whatever canvas_update says
+                        axis_labels = panel.labels if panel is not None else {}
+                        charts[(row, col)] = pv.Chart2D(
+                            x_label=axis_labels.get("x", ""),
+                            y_label=axis_labels.get("y", ""),
+                        )
                         canvas.add_chart(charts[(row, col)])
                     getattr(charts[(row, col)], typ)(**tr1)
             # in pyvista there is no way to set the bounds so we add corners with
@@ -303,7 +392,7 @@ def display_pyvista(scene):
                 # needs to happen in the loop otherwise they cummulate
                 # while the max of 10 is reached and throws a ValueError
 
-        for (row, col), count in count_with_labels.items():
+        for (row, col), labels_rc in legend_labels.items():
             canvas.subplot(row, col)
             # match other backends plotter properties
             if canvas_update:
@@ -311,17 +400,35 @@ def display_pyvista(scene):
                     canvas.show_axes()
                 canvas.camera.azimuth = -90
                 canvas.set_background("gray", top="white")
-            if (
-                0 < count <= legend_maxitems
-                and scene.panel_kind(row + 1, col + 1) == "scene3d"
-            ):
-                canvas.add_legend(bcolor=None)
+            if scene.panel_kind(row + 1, col + 1) == "scene3d":
+                add_capped_legend(canvas, labels_rc, legend_maxitems)
+
+    def redraw(frame_ind):
+        # the caller renders the frame once; in a shown window every actor
+        # added or removed would render it again
+        canvas.suppress_rendering = True
+        try:
+            # only what the frames drew goes, not clear_actors: it would take
+            # the title, a given canvas's own actors, the slider and the actor
+            # that draws the charts. A chart stays, its curves are redrawn
+            for renderer in canvas.renderers:
+                for name, actor in renderer.actors.items():
+                    if name not in kept and not isinstance(actor, NOT_FRAMES):
+                        renderer.remove_actor(name, reset_camera=False, render=False)
+            for chart in charts.values():
+                chart.clear()
+            draw_frame(frame_ind)
+        finally:
+            canvas.suppress_rendering = False
 
     def run_animation(filename, embed=True):
         # embed=True, embeds the animation into the notebook page and is necessary when using
         # temp files
-        nonlocal show_canvas, charts_max_ind, charts
-        suff = Path(filename).suffix
+        nonlocal show_canvas
+        # absolute here, so the writer and the viewer get the same file
+        # (imageio expands ~, pyvista prepends pv.FIGURE_PATH to relative names)
+        filename = Path(filename).expanduser().absolute()
+        suff = filename.suffix
         if suff == ".gif":
             loop = 1 if repeat is False else 0 if repeat is True else int(repeat)
             canvas.open_gif(
@@ -334,17 +441,98 @@ def display_pyvista(scene):
                 quality=mp4_quality,
             )
 
-        for frame_ind, _ in enumerate(frames):
-            canvas.clear_actors()
-            for ind in range(charts_max_ind):
-                canvas.remove_chart(ind)
-            charts_max_ind = 0
-            charts = {}
-            draw_frame(frame_ind)
+        for frame_ind in range(len(frames)):
+            redraw(frame_ind)
             canvas.write_frame()
         canvas.close()
         show_canvas = False
-        open_animation(filename, embed=embed)
+        return open_animation(filename, embed=embed)
+
+    def play_live():
+        # the timer starts with the window; the scene stays free to turn and
+        # zoom while the frames replace each other. The button or the space
+        # bar plays and pauses, the slider seeks
+        n_frames = len(frames)
+        labels = np.array(scene.animation.path_indices) + 1  # as plotly's slider
+        frame, playing, dragging = 0, True, False
+        slider = button = None
+
+        def show_frame(ind):
+            nonlocal frame
+            frame = ind
+            redraw(frame)
+            if slider is not None:
+                slider.GetRepresentation().SetValue(labels[frame])
+
+        def set_playing(state):
+            nonlocal playing
+            if state and not repeat and frame == n_frames - 1:
+                show_frame(0)  # from the start again, as plotly does
+            playing = state
+            button.GetRepresentation().SetState(int(state))
+
+        def tick(_step):
+            if not playing or dragging:
+                return
+            if not repeat and frame == n_frames - 1:
+                set_playing(False)
+            else:
+                show_frame((frame + 1) % n_frames)
+
+        def seek(value):
+            nonlocal frame
+            frame = int(np.abs(labels - value).argmin())
+            redraw(frame)
+
+        def drag(start):
+            nonlocal dragging
+            dragging = start
+            if not start:  # land on the frame shown
+                slider.GetRepresentation().SetValue(labels[frame])
+
+        def place_button(*_):
+            # in pixels within the panel, so again when the window is
+            # resized: left of where the slider starts, on its line
+            width, height = canvas.render_window.GetSize()
+            x0, y0, x1, y1 = panel.GetViewport()
+            x = SLIDER_START * (x1 - x0) * width - 1.5 * BUTTON_SIZE
+            y = SLIDER_HEIGHT * (y1 - y0) * height - 0.5 * BUTTON_SIZE
+            bounds = [x, x + BUTTON_SIZE, y, y + BUTTON_SIZE, 0, 0]
+            button.GetRepresentation().PlaceWidget(bounds)
+
+        draw_frame(0)
+        # controls along the bottom of the last 3D panel, clear of its axes
+        cells = [(r, c) for r in range(scene.n_rows) for c in range(scene.n_cols)]
+        in_3d = [
+            rc for rc in cells if scene.panel_kind(rc[0] + 1, rc[1] + 1) == "scene3d"
+        ]
+        canvas.subplot(*(in_3d or cells)[-1])
+        panel = canvas.renderer
+        button = canvas.add_checkbox_button_widget(set_playing, value=True)
+        for state, icon in enumerate(play_pause_icons(BUTTON_SIZE)):
+            button.GetRepresentation().SetButtonTexture(state, icon)
+        place_button()
+        canvas.render_window.AddObserver("WindowResizeEvent", place_button)
+        canvas.add_key_event("space", lambda: set_playing(not playing))
+        if scene.animation.slider:
+            slider = canvas.add_slider_widget(
+                seek,
+                rng=[labels[0], labels[-1]],
+                value=labels[0],
+                title="Path index",
+                pointa=(SLIDER_START, SLIDER_HEIGHT),  # within the panel
+                pointb=(0.95, SLIDER_HEIGHT),
+                interaction_event="always",
+                style="modern",
+                fmt="%.0f",
+            )
+            slider.AddObserver("StartInteractionEvent", lambda *_: drag(True))
+            slider.AddObserver("EndInteractionEvent", lambda *_: drag(False))
+        canvas.add_timer_event(
+            max_steps=sys.maxsize,
+            duration=scene.animation.frame_duration,
+            callback=tick,
+        )
 
     # pyvista has no figure-level title: add_title applies to the active
     # subplot, so on a grid it would read as that one panel's title
@@ -352,24 +540,42 @@ def display_pyvista(scene):
         canvas.subplot(0, 0)
         canvas.add_title(scene.title)
 
+    kept = {name for renderer in canvas.renderers for name in renderer.actors}
     if not scene.is_animation:
         draw_frame(0)
+    elif live:
+        play_live()
     elif animation:
         animation_output = scene.animation.output
         animation_output = "gif" if animation_output is None else animation_output
         if animation_output in ("gif", "mp4"):
+            fd, temp = tempfile.mkstemp(
+                prefix="magpylib_animation_", suffix=f".{animation_output}"
+            )
+            os.close(fd)
+            viewer_has_file = False
             try:
-                temp = Path(tempfile.gettempdir()) / os.urandom(24).hex()
-                temp = temp.with_suffix(f".{animation_output}")
-                run_animation(temp, embed=True)
+                viewer_has_file = run_animation(temp, embed=True)
             finally:
-                with contextlib.suppress(FileNotFoundError):  # pragma: no cover
-                    temp.unlink()
+                # a notebook embeds the file; a viewer outside reads it after
+                # show() returns, so then it stays in the temp dir
+                if not viewer_has_file:
+                    Path(temp).unlink(missing_ok=True)
         else:
             run_animation(animation_output, embed=True)
 
+    if not show_canvas:
+        warn_unused_options(
+            unused_show,
+            "the plotter is returned or was given as canvas rather than shown",
+        )
     if return_fig and not show_canvas:
         return canvas
     if show_canvas:
-        canvas.show(jupyter_backend=jupyter_backend, **show_kwargs)  # pragma: no cover
+        forward_options(
+            canvas.show,
+            "show",
+            show_kwargs,
+            defaults={"jupyter_backend": jupyter_backend},
+        )
     return None

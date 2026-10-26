@@ -5,7 +5,6 @@
 # pylint: disable=protected-access
 # pylint: disable=import-outside-toplevel
 
-import warnings
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -18,6 +17,7 @@ from magpylib._src.input_checks import (
     check_format_input_numeric,
     check_format_input_orientation,
 )
+from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.class_BaseTransform import (
     BaseTransform,
     pad_path_property,
@@ -144,6 +144,13 @@ class BaseGeo(BaseTransform, ABC):
         style=None,
         **kwargs,
     ):
+        if "meshing" in kwargs and isinstance(self, BaseTarget):
+            msg = (
+                f"{type(self).__name__}() got an unexpected keyword argument "
+                "'meshing': since Magpylib 6 it is an argument of getFT, e.g. "
+                "getFT(sources, targets, meshing=100)."
+            )
+            raise TypeError(msg)
         self._style_kwargs = {}
         self._parent = None
 
@@ -187,7 +194,7 @@ class BaseGeo(BaseTransform, ABC):
         Every base is consulted, not just the nearest one: concrete classes
         mix several bases (e.g. ``Cuboid(BaseMagnet, BaseTarget, BaseVolume,
         BaseDipoleMoment)``) and a path property declared on any of them must
-        be honoured. Order is MRO order with duplicates dropped, so a property
+        be honored. Order is MRO order with duplicates dropped, so a property
         keeps the position of its first-declaring base.
         """
         super().__init_subclass__()
@@ -336,7 +343,7 @@ class BaseGeo(BaseTransform, ABC):
 
         >>> cuboid = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
         >>> cuboid.path_properties
-        ('position', 'orientation', 'dimension', 'polarization')
+        ('position', 'orientation', 'polarization', 'magnetization', 'dimension')
         """
         return self._path_properties
 
@@ -501,27 +508,6 @@ class BaseGeo(BaseTransform, ABC):
         raise AttributeError(msg)
 
     @property
-    def barycenter(self):
-        """Return barycenter (m).
-
-        .. deprecated:: 6.0.0
-            Use :attr:`centroid` instead. The ``barycenter`` property will be removed
-            in a future version.
-        """
-        warnings.warn(
-            "The 'barycenter' property is deprecated and will be removed in a future "
-            "version. Use 'centroid' instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.centroid
-
-    @property
-    def _barycenter(self):
-        """Return barycenter without squeezing (internal, deprecated)."""
-        return self._centroid
-
-    @property
     def style(self):
         """Return object style as a ``BaseStyle`` instance."""
         if getattr(self, "_style", None) is None:
@@ -533,7 +519,7 @@ class BaseGeo(BaseTransform, ABC):
                 self._style.update(style_kwargs)
             except (AttributeError, ValueError) as e:
                 e.args = (
-                    f"{self!r} has been initialized with some invalid style arguments."
+                    f"{self!r} has been initialized with some invalid style arguments. "
                     + str(e),
                 )
                 raise
@@ -610,14 +596,21 @@ class BaseGeo(BaseTransform, ABC):
         from copy import deepcopy  # noqa: PLC0415
 
         # avoid deepcopying the deep dependency upwards the tree structure
+        memo = {}
         if self.parent is not None:
             # using private attributes to avoid triggering `.add` method (see #530 bug)
             parent = self._parent
             self._parent = None
-            obj_copy = deepcopy(self)
+            obj_copy = deepcopy(self, memo)
             self._parent = parent
         else:
-            obj_copy = deepcopy(self)
+            obj_copy = deepcopy(self, memo)
+
+        # style copies share methods: a 3D model drawn by a copied object is
+        # drawn by its copy, whatever order the copies were made in
+        for copied in (obj_copy, *getattr(obj_copy, "children_all", ())):
+            if getattr(copied, "_style", None) is not None:
+                copied._style._rebind_methods(memo)
 
         if getattr(self, "_style", None) is not None or bool(
             getattr(self, "_style_kwargs", False)
@@ -708,12 +701,17 @@ class BaseGeo(BaseTransform, ABC):
                         val = getattr(self, k)
                         if val is not None:
                             val = f"{len(val)} part{'s'[: len(val) ^ 1]}"
-                    elif isinstance(getattr(self, k), list | tuple | np.ndarray):
-                        val = np.array(getattr(self, k))
-                        if len(val.flatten()) > 20:
-                            val = f"shape{val.shape}"
                     else:
-                        val = getattr(self, k)
+                        try:
+                            val = getattr(self, k)
+                        except ValueError:
+                            # a derived property this object does not define, such
+                            # as the dipole moment of an open current path
+                            val = "not defined"
+                        if isinstance(val, list | tuple | np.ndarray):
+                            val = np.array(val)
+                            if len(val.flatten()) > 20:
+                                val = f"shape{val.shape}"
                     if isinstance(val, float):
                         val = f"{unit_prefix(val, precision=precision)}"
                     val = str(val).replace("\n", " ")

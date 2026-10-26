@@ -30,10 +30,12 @@
 
 <!-- prettier-ignore-end -->
 
-> [!WARNING] Version 5 introduces critical breaking changes with, among others,
-> the _move to SI units_. We recommended to pin your dependencies to
-> `magpylib>=4.5<5` until you are ready to migrate to the latest version!
-> ([see details](https://github.com/magpylib/magpylib/discussions/647))
+<!-- prettier-ignore-start -->
+> [!IMPORTANT]
+> Version 6 has breaking changes. Read the
+> [migration guide](https://magpylib.readthedocs.io/en/latest/_pages/user_guide/guide_start_03_migration.html)
+> to update code written for version 5.
+<!-- prettier-ignore-end -->
 
 <p align="left"><img align="center" src=docs/_static/images/magpylib_flag.png width=35%>
 </p>
@@ -178,7 +180,7 @@ A valid software citation could be
     author = {{Michael-Ortner et al.}},
     title = {magpylib},
     url = {https://magpylib.readthedocs.io/en/latest/},
-    version = {5.2.2},
-    date = {2023-06-25},
+    version = {6.0.1},
+    date = {2026-10-25},
 }
 ```

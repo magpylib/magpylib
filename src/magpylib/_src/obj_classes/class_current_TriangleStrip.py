@@ -13,7 +13,10 @@ from magpylib._src.fields.field_BH_current_sheet import _BHJM_current_tristrip
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseProperties import BaseDipoleMoment
-from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.class_BaseTarget import (
+    BaseTarget,
+    check_meshing_count,
+)
 from magpylib._src.obj_classes.target_meshing import generate_mesh_triangle_current
 from magpylib._src.style import CurrentSheetStyle
 
@@ -47,10 +50,6 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
     current : float | array-like, shape (p,), default None
         Total current flowing through the strip in units (A). It flows in the
         direction V1→V3 in the first triangle, V2→V4 in the second, ...
-    meshing : int | None, default None
-        Mesh fineness for force computation. Must be an integer >= number of
-        faces specifying the target mesh size. The mesh is generated via bisection
-        along longest edges until target number is reached.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -65,8 +64,6 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         Same as constructor parameter ``vertices``.
     current : None | float | ndarray, shape (p,)
         Same as constructor parameter ``current``.
-    meshing : None | int
-        Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid computed via mean of vertices in units (m)
         in global coordinates.
@@ -118,7 +115,6 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         vertices=None,
         position=(0, 0, 0),
         orientation=None,
-        meshing=None,
         *,
         style=None,
         **kwargs,
@@ -131,7 +127,6 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
             style=style,
             **kwargs,
         )
-        BaseTarget.__init__(self, meshing)
 
     # property getters and setters
     @property
@@ -162,28 +157,35 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
         if self._vertices is None:
-            return self._position
-
-        # Compute mean for each path along vertex axis: shape (p, 3)
-        centroids = np.mean(self._vertices, axis=1)  # mean over vertices dimension
-
-        # Add position: shape (p, 3) + (p, 3)
-        centroids = centroids + self._position
-
-        if squeeze and len(centroids) == 1:
-            return centroids[0]
-        return centroids
+            centroid = np.array([0.0, 0.0, 0.0])
+            orientation, position = self._orientation, self._position
+        else:
+            # vertices are local coordinates: pair each step's vertices with its
+            # pose so the centroid turns with the object
+            synced = self._sync_path_lengths(("vertices", "position", "orientation"))
+            centroid = np.mean(synced["vertices"], axis=1)  # (p, 3)
+            orientation, position = synced["orientation"], synced["position"]
+        result = orientation.apply(centroid) + position
+        if squeeze and len(result) == 1:
+            return result[0]
+        return result
 
     def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
         # test init
         if self._vertices is None or self._current is None:
-            return np.zeros_like(self._position)
+            dip = np.zeros_like(self._position)
+            if squeeze and len(dip) == 1:
+                return dip[0]
+            return dip
+
+        synced = self._sync_path_lengths(("vertices", "current"))
+        vertices, current = synced["vertices"], synced["current"]
 
         # Check if all paths are closed (first two and last two vertices identical)
-        # Shape: _vertices is (p, n, 3)
-        first_two = self._vertices[:, :2, :]  # shape (p, 2, 3)
-        last_two = self._vertices[:, -2:, :]  # shape (p, 2, 3)
+        # Shape: vertices is (p, n, 3)
+        first_two = vertices[:, :2, :]  # shape (p, 2, 3)
+        last_two = vertices[:, -2:, :]  # shape (p, 2, 3)
         # tolerance-based (matches main): strips closed only to floating-point
         # precision (e.g. from trig-computed vertices) must still be accepted
         is_closed = np.isclose(first_two, last_two).all(axis=(1, 2))  # shape (p,)
@@ -202,9 +204,9 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         # Each triangle has vertices [i, i+1, i+2]
         trias = np.stack(
             [
-                self._vertices[:, :-2, :],  # shape (p, n-2, 3)
-                self._vertices[:, 1:-1, :],  # shape (p, n-2, 3)
-                self._vertices[:, 2:, :],  # shape (p, n-2, 3)
+                vertices[:, :-2, :],  # shape (p, n-2, 3)
+                vertices[:, 1:-1, :],  # shape (p, n-2, 3)
+                vertices[:, 2:, :],  # shape (p, n-2, 3)
             ],
             axis=2,
         )  # shape (p, n-2, 3, 3)
@@ -237,7 +239,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         h[mask] = np.sqrt(v1v1[mask] - (v1v2[mask] ** 2 / v2v2[mask]))
 
         # Expand current for broadcasting: shape (p, 1)
-        current_expanded = self._current[:, np.newaxis]
+        current_expanded = current[:, np.newaxis]
 
         # Compute current densities where mask is True
         # Shape calculations: v2[mask] has shape (k, 3) where k = number of True in mask
@@ -264,7 +266,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
             return dipole_moments[0]
         return dipole_moments
 
-    def _generate_mesh(self):
+    def _generate_mesh(self, meshing):
         """Generate mesh for force computation."""
         # TODO with path: suppress all triangles in computation that are ~1e-9 times
         # smaller than the total mesh surface, not sure how to handle this since the
@@ -320,16 +322,11 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         return generate_mesh_triangle_current(
             triangles,
             cds,
-            self.meshing,
+            meshing,
         )
 
     def _validate_meshing(self, value):
         """Makes only sense with at least n_mesh = n_faces."""
-        if isinstance(value, int) and value >= len(self.vertices) - 2:
-            pass
-        else:
-            msg = (
-                f"Input meshing of {self} must be an integer >= number of faces; "
-                f"instead received {value}."
-            )
-            raise ValueError(msg)
+        n_faces = 1 if self._vertices is None else np.shape(self._vertices)[-2] - 2
+        what = f"an integer >= the number of faces ({n_faces})"
+        return check_meshing_count(value, self, minimum=n_faces, what=what)

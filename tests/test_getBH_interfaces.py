@@ -1,3 +1,7 @@
+import dataclasses
+import gc
+import weakref
+
 import numpy as np
 import pytest
 
@@ -400,3 +404,50 @@ def test_getHBMJ_self_consistency(field):
     np.testing.assert_allclose(F1, F2)
     np.testing.assert_allclose(F1, F3)
     np.testing.assert_allclose(F1, F4)
+
+
+@pytest.mark.parametrize("case", ["equal", "equal-hashable", "shared-bound-method"])
+def test_getB_groups_by_field_func(case):
+    """Sources sharing a field function share one call, sources whose field
+    functions only compare equal keep their own field."""
+    calls = []
+
+    @dataclasses.dataclass(frozen=case == "equal-hashable")
+    class Uniform:
+        strength: float = dataclasses.field(compare=False)
+
+        def compute(self, field, observers):
+            calls.append(field)
+            return np.full(observers.shape, self.strength)
+
+        __call__ = compute
+
+    if case == "shared-bound-method":
+        uniform = Uniform(1)
+        funcs, expected = [uniform.compute, uniform.compute], [1, 1]
+    else:
+        funcs, expected = [Uniform(1), Uniform(2)], [1, 2]
+    sources = [magpy.misc.CustomSource(field_func=f) for f in funcs]
+    calls.clear()
+    np.testing.assert_allclose(magpy.getB(sources, (1, 0, 0))[:, 0], expected)
+    assert len(calls) == len(set(expected))
+
+
+def test_getB_does_not_keep_source_alive():
+    """A field function that references its source does not keep it alive."""
+
+    def make_source():
+        src = magpy.misc.CustomSource()
+
+        def field_func(field, observers):  # noqa: ARG001
+            return np.full(observers.shape, src.position[0])
+
+        src.field_func = field_func
+        return src
+
+    src = make_source()
+    src.getB((1, 0, 0))
+    ref = weakref.ref(src)
+    del src
+    gc.collect()
+    assert ref() is None

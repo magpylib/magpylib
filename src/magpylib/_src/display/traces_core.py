@@ -15,6 +15,10 @@ from scipy.spatial import distance
 from scipy.spatial.distance import pdist
 from scipy.spatial.transform import Rotation as RotScipy
 
+from magpylib._src.display.backend_tools import (
+    colors_from_colorscale,
+    scaled_norms,
+)
 from magpylib._src.display.sensor_mesh import get_sensor_mesh
 from magpylib._src.display.traces_base import make_Arrow as make_BaseArrow
 from magpylib._src.display.traces_base import make_Cuboid as make_BaseCuboid
@@ -33,10 +37,10 @@ from magpylib._src.display.traces_utility import (
     create_null_dim_trace,
     draw_arrow_from_vertices,
     draw_arrow_on_circle,
-    get_hexcolors_from_colormap,
     get_legend_label,
     get_orientation_from_vec,
     group_traces,
+    line_dash,
     merge_mesh3d,
     place_and_orient_model3d,
     triangles_area,
@@ -57,10 +61,8 @@ def _get_current_arrow_offset(obj, line_style, path_ind):
 
 
 def make_DefaultTrace(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
-    """
-    Creates the plotly scatter3d parameters for an object with no specifically supported
-    representation. The object will be represented by a scatter point and text above with object
-    name.
+    """Return the generic scatter3d trace of an object with no dedicated
+    representation: a marker at its position.
     """
     style = obj.style
     trace = {
@@ -71,16 +73,15 @@ def make_DefaultTrace(obj, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
         "mode": "markers",
         "marker_size": 10,
         "marker_color": style.color,
-        "marker_symbol": "diamond",
+        "marker_symbol": "D",  # a diamond, in the dialect's own vocabulary
     }
     return {**trace, **kwargs}
 
 
-def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
-    """
-    Creates the plotly scatter3d parameters for a Polyline current in a dictionary based on the
-    provided arguments.
-    """
+def make_Polyline(
+    obj, *, path_index=-1, **kwargs
+) -> dict[str, Any] | list[dict[str, Any]]:
+    """Return the generic scatter3d traces of a Polyline current."""
     style = obj.style
     vertices = obj._vertices
     if vertices is None:
@@ -93,17 +94,17 @@ def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
             if kind == "arrow":
-                current, offset = _get_current_arrow_offset(obj, kind_style, path_ind)
+                current, offset = _get_current_arrow_offset(obj, kind_style, path_index)
                 x, y, z = draw_arrow_from_vertices(
-                    vertices=_get_prop(vertices, path_ind),
-                    sign=np.sign(_get_prop(current, path_ind)),
+                    vertices=_get_prop(vertices, path_index),
+                    sign=np.sign(_get_prop(current, path_index)),
                     arrow_size=kind_style.size,
                     arrow_pos=offset,
                     scaled=kind_style.sizemode == "scaled",
                     include_line=False,
                 ).T
             else:
-                x, y, z = _get_prop(vertices, path_ind).T
+                x, y, z = _get_prop(vertices, path_index).T
             trace = {
                 "type": "scatter3d",
                 "x": x,
@@ -111,7 +112,7 @@ def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
                 "z": z,
                 "mode": "lines",
                 "line_width": kind_style.width,
-                "line_dash": kind_style.style,
+                "line_dash": line_dash(kind_style.style),
                 "line_color": color,
             }
             traces.append({**trace, **kwargs})
@@ -119,36 +120,32 @@ def make_Polyline(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
 
 
 def make_TriangleStrip(
-    obj, path_ind=-1, **kwargs
+    obj, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
-    """
-    Creates the plotly scatter3d parameters for a TriangleStrip current in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic traces of a TriangleStrip current."""
     style = obj.style
     if obj.vertices is None:
         trace = create_null_dim_trace(color=style.color)
         return {**trace, **kwargs}
 
-    obj.faces = []
     # every two consecutive triangles share an edge, so we alternate the vertex order
     # this allows to have all normals pointing in the same direction for a properly oriented mesh
-    vertices = _get_prop(obj._vertices, path_ind)
-    for i in range(len(vertices) - 2):
-        if i % 2 == 0:
-            obj.faces.append((i, i + 1, i + 2))
-        else:
-            obj.faces.append((i + 1, i, i + 2))
-    obj.faces = np.array(obj.faces)
+    vertices = _get_prop(obj._vertices, path_index)
+    faces = np.array(
+        [
+            (i, i + 1, i + 2) if i % 2 == 0 else (i + 1, i, i + 2)
+            for i in range(len(vertices) - 2)
+        ]
+    )
     trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=vertices, faces=obj.faces, color=style.color
+        "plotly-dict", vertices=vertices, faces=faces, color=style.color
     )
     traces = [{**trace, **kwargs}]
-    obj.mesh = vertices[obj.faces]
-    if vertices is not None and style.direction.show:
+    if style.direction.show:
         traces.append(
             make_triangle_orientations(
                 obj,
+                mesh=vertices[faces],
                 vectors=vertices[2:] - vertices[:-2],
                 sizefactor=2.5,
                 **{**kwargs, "legendgroup": trace.get("legendgroup")},
@@ -158,35 +155,31 @@ def make_TriangleStrip(
         if getattr(style.mesh, mode).show:
             kw = {**kwargs, "legendgroup": trace.get("legendgroup")}
             kw["showlegend"] = False
-            trace = make_mesh_lines(obj, mode, path_ind=path_ind, **kw)
+            trace = make_mesh_lines(obj, mode, path_ind=path_index, faces=faces, **kw)
             if trace:
                 traces.append(trace)
     return traces
 
 
 def make_TriangleSheet(
-    obj, path_ind=-1, **kwargs
+    obj, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
-    """
-    Creates the plotly scatter3d parameters for a TriangleSheet current in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic traces of a TriangleSheet current."""
     style = obj.style
 
-    verts = _get_prop(obj._vertices, path_ind)
+    verts = _get_prop(obj._vertices, path_index)
 
     trace = make_BaseTriangularMesh(
         "plotly-dict", vertices=verts, faces=obj.faces, color=style.color
     )
     traces = [{**trace, **kwargs}]
-    obj.mesh = verts[obj.faces]
-    vectors = _get_prop(obj._current_densities, path_ind)
+    tris = verts[obj.faces]
+    vectors = _get_prop(obj._current_densities, path_index)
 
     if vectors is None:
         return traces
 
     # Project vectors onto triangle surfaces
-    tris = obj.mesh
     v1 = tris[:, 1] - tris[:, 0]
     v2 = tris[:, 2] - tris[:, 0]
     normals = np.cross(v1, v2)
@@ -206,6 +199,7 @@ def make_TriangleSheet(
         traces.append(
             make_triangle_orientations(
                 obj,
+                mesh=tris,
                 vectors=vectors_proj,
                 sizefactor=2.5,
                 **{**kwargs, "legendgroup": trace.get("legendgroup")},
@@ -215,19 +209,16 @@ def make_TriangleSheet(
         if getattr(style.mesh, mode).show:
             kw = {**kwargs, "legendgroup": trace.get("legendgroup")}
             kw["showlegend"] = False
-            trace = make_mesh_lines(obj, mode, path_ind=path_ind, **kw)
+            trace = make_mesh_lines(obj, mode, path_ind=path_index, **kw)
             if trace:
                 traces.append(trace)
     return traces
 
 
 def make_Circle(
-    obj, base=72, path_ind=-1, **kwargs
+    obj, base=72, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
-    """
-    Creates the plotly scatter3d parameters for a Circle current in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic scatter3d traces of a Circle current."""
     style = obj.style
     if obj.diameter is None:
         trace = create_null_dim_trace(color=style.color)
@@ -237,12 +228,12 @@ def make_Circle(
         kind_style = getattr(style, kind)
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
-            diameter = _get_prop(obj._diameter, path_ind)
+            diameter = _get_prop(obj._diameter, path_index)
             if kind == "arrow":
-                current, offset = _get_current_arrow_offset(obj, kind_style, path_ind)
+                current, offset = _get_current_arrow_offset(obj, kind_style, path_index)
                 angle_pos_deg = 360 * np.round(offset * base) / base
                 vertices = draw_arrow_on_circle(
-                    sign=np.sign(_get_prop(current, path_ind)),
+                    sign=np.sign(_get_prop(current, path_index)),
                     diameter=diameter,
                     arrow_size=style.arrow.size,
                     scaled=kind_style.sizemode == "scaled",
@@ -261,23 +252,20 @@ def make_Circle(
                 "z": z,
                 "mode": "lines",
                 "line_width": kind_style.width,
-                "line_dash": kind_style.style,
+                "line_dash": line_dash(kind_style.style),
                 "line_color": color,
             }
             traces.append({**trace, **kwargs})
     return traces
 
 
-def make_Dipole(obj, path_ind=-1, autosize=None, **kwargs) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a dipole in a dictionary based on the
-    provided arguments.
-    """
+def make_Dipole(obj, autosize=None, *, path_index=-1, **kwargs) -> dict[str, Any]:
+    """Return the generic mesh3d trace of a Dipole."""
     style = obj.style
     moment = (
         np.array([0.0, 0.0, 0.0])
         if obj._moment is None
-        else _get_prop(obj._moment, path_ind)
+        else _get_prop(obj._moment, path_index)
     )
     moment_mag = np.linalg.norm(moment)
     size = style.size
@@ -309,33 +297,27 @@ def make_Dipole(obj, path_ind=-1, autosize=None, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_Cuboid(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a Cuboid Magnet in a dictionary based on the
-    provided arguments.
-    """
+def make_Cuboid(obj, *, path_index=-1, **kwargs) -> dict[str, Any]:
+    """Return the generic mesh3d trace of a Cuboid magnet."""
     style = obj.style
     if obj._dimension is None:
         trace = create_null_dim_trace(color=style.color)
     else:
         trace = make_BaseCuboid(
             "plotly-dict",
-            dimension=_get_prop(obj._dimension, path_ind),
+            dimension=_get_prop(obj._dimension, path_index),
             color=style.color,
         )
     return {**trace, **kwargs}
 
 
-def make_Cylinder(obj, path_ind=-1, base=50, **kwargs) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a Cylinder Magnet in a dictionary based on the
-    provided arguments.
-    """
+def make_Cylinder(obj, base=50, *, path_index=-1, **kwargs) -> dict[str, Any]:
+    """Return the generic mesh3d trace of a Cylinder magnet."""
     style = obj.style
     if obj._dimension is None:
         trace = create_null_dim_trace(color=style.color)
     else:
-        diameter, height = _get_prop(obj._dimension, path_ind)
+        diameter, height = _get_prop(obj._dimension, path_index)
         trace = make_BasePrism(
             "plotly-dict",
             base=base,
@@ -346,29 +328,25 @@ def make_Cylinder(obj, path_ind=-1, base=50, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_CylinderSegment(obj, path_ind=-1, vertices=25, **kwargs) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a Cylinder Segment Magnet in a dictionary based on the
-    provided arguments.
-    """
+def make_CylinderSegment(
+    obj, vertices=25, *, path_index=-1, **kwargs
+) -> dict[str, Any]:
+    """Return the generic mesh3d trace of a CylinderSegment magnet."""
     style = obj.style
     if obj.dimension is None:
         trace = create_null_dim_trace(color=style.color)
     else:
         trace = make_BaseCylinderSegment(
             "plotly-dict",
-            dimension=_get_prop(obj._dimension, path_ind),
+            dimension=_get_prop(obj._dimension, path_index),
             vert=vertices,
             color=style.color,
         )
     return {**trace, **kwargs}
 
 
-def make_Sphere(obj, path_ind=-1, vertices=15, **kwargs) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a Sphere Magnet in a dictionary based on the
-    provided arguments.
-    """
+def make_Sphere(obj, vertices=15, *, path_index=-1, **kwargs) -> dict[str, Any]:
+    """Return the generic mesh3d trace of a Sphere magnet."""
     style = obj.style
 
     if obj._diameter is None:
@@ -378,35 +356,32 @@ def make_Sphere(obj, path_ind=-1, vertices=15, **kwargs) -> dict[str, Any]:
         trace = make_BaseEllipsoid(
             "plotly-dict",
             vert=vertices,
-            dimension=[_get_prop(obj._diameter, path_ind)] * 3,
+            dimension=[_get_prop(obj._diameter, path_index)] * 3,
             color=style.color,
         )
     return {**trace, **kwargs}
 
 
-def make_Tetrahedron(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a Tetrahedron Magnet in a dictionary based on the
-    provided arguments.
-    """
+def make_Tetrahedron(obj, *, path_index=-1, **kwargs) -> dict[str, Any]:
+    """Return the generic mesh3d trace of a Tetrahedron magnet."""
     style = obj.style
     if obj.vertices is None:
         trace = create_null_dim_trace(color=style.color)
     else:
         trace = make_BaseTetrahedron(
             "plotly-dict",
-            vertices=_get_prop(obj._vertices, path_ind),
+            vertices=_get_prop(obj._vertices, path_index),
             color=style.color,
         )
     return {**trace, **kwargs}
 
 
 def make_triangle_orientations(
-    obj, vectors=None, sizefactor=1, path_ind=-1, **kwargs
+    obj, vectors=None, sizefactor=1, path_ind=-1, *, mesh=None, **kwargs
 ) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a triangle orientation cone or arrow3d in a dictionary
-    based on the provided arguments.
+    """Return the generic mesh3d traces of the orientation markers of triangular
+    faces: those of `mesh`, shape (n, 3, 3), or of the object's own vertices at
+    `path_ind`.
     """
     # pylint: disable=protected-access
     style = obj.style
@@ -416,8 +391,8 @@ def make_triangle_orientations(
     symbol = orient.symbol
     offset = getattr(orient, "offset", 0.5)
     color = style.color if orient.color is None else orient.color
-    if hasattr(obj, "mesh"):
-        vertices = obj.mesh
+    if mesh is not None:
+        vertices = mesh
     else:
         vertices = (
             [(_get_prop(obj._vertices, path_ind))]
@@ -473,7 +448,6 @@ def make_triangle_orientations(
 
 def get_closest_vertices(faces_subsets, vertices):
     """Get closest pairs of points between disconnected subsets of faces indices"""
-    # pylint: disable=used-before-assignment
     nparts = len(faces_subsets)
     inds_subsets = [np.unique(v) for v in faces_subsets]
     closest_verts_list = []
@@ -481,6 +455,9 @@ def get_closest_vertices(faces_subsets, vertices):
         connected = [np.min(inds_subsets[0])]
         while len(connected) < nparts:
             prev_min = float("inf")
+            # Always set in the loops below: some part is still unconnected,
+            # and its distance to a connected one is finite.
+            closest_verts = connected_ind = None
             for i in connected:
                 for j in range(nparts):
                     if j not in connected:
@@ -498,15 +475,16 @@ def get_closest_vertices(faces_subsets, vertices):
     return np.array(closest_verts_list)
 
 
-def make_mesh_lines(obj, mode, path_ind=-1, **kwargs) -> dict[str, Any]:
-    """Draw mesh lines and vertices"""
+def make_mesh_lines(obj, mode, path_ind=-1, *, faces=None, **kwargs) -> dict[str, Any]:
+    """Draw mesh lines and vertices, of `faces` or of the object's own."""
     # pylint: disable=protected-access
     kwargs.pop("color", None)
     legendgroup = kwargs.pop("legendgroup", obj)
     style = obj.style
     mesh = getattr(style.mesh, mode)
     marker, line = mesh.marker, mesh.line
-    tr, vert = obj.faces, _get_prop(obj._vertices, path_ind)
+    tr = obj.faces if faces is None else faces
+    vert = _get_prop(obj._vertices, path_ind)
     if mode == "disconnected":
         subsets = obj.get_faces_subsets()
         lines = get_closest_vertices(subsets, vert)
@@ -532,7 +510,7 @@ def make_mesh_lines(obj, mode, path_ind=-1, **kwargs) -> dict[str, Any]:
         "marker_symbol": marker.symbol,
         "line_color": line.color,
         "line_width": line.width,
-        "line_dash": line.style,
+        "line_dash": line_dash(line.style),
         "legendgroup": f"{legendgroup} - {mode}edges",
         "name_suffix": f" - {mode}-edges",
         "name": get_legend_label(obj, suffix=False),
@@ -540,13 +518,12 @@ def make_mesh_lines(obj, mode, path_ind=-1, **kwargs) -> dict[str, Any]:
     return {**trace, **kwargs}
 
 
-def make_Triangle(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
-    """
-    Creates the plotly mesh3d parameters for a Triangular facet in a dictionary based on the
-    provided arguments.
-    """
+def make_Triangle(
+    obj, *, path_index=-1, **kwargs
+) -> dict[str, Any] | list[dict[str, Any]]:
+    """Return the generic traces of a Triangle."""
     style = obj.style
-    vert = _get_prop(obj._vertices, path_ind) if obj._vertices is not None else None
+    vert = _get_prop(obj._vertices, path_index) if obj._vertices is not None else None
 
     if vert is None:
         trace = create_null_dim_trace(color=style.color)
@@ -558,7 +535,7 @@ def make_Triangle(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
         magnetization = (
             np.array([0.0, 0.0, 0.0])
             if obj._magnetization is None
-            else _get_prop(obj._magnetization, path_ind)
+            else _get_prop(obj._magnetization, path_index)
         )
         if np.all(np.cross(magnetization, vec) == 0):
             epsilon = 1e-3 * vec
@@ -578,36 +555,31 @@ def make_Triangle(obj, path_ind=-1, **kwargs) -> dict[str, Any] | list[dict[str,
         )
     traces = [{**trace, **kwargs}]
     if vert is not None and style.orientation.show:
-        traces.append(make_triangle_orientations(obj, path_ind=path_ind, **kwargs))
+        traces.append(make_triangle_orientations(obj, path_ind=path_index, **kwargs))
     return traces
 
 
-def make_TriangularMesh_single(obj, path_ind=-1, **kwargs) -> dict[str, Any]:
-    """
-    Creates the plotly mesh3d parameters for a Triangular facet mesh in a dictionary based on the
-    provided arguments.
-    """
+def make_TriangularMesh_single(obj, faces, *, path_ind=-1, **kwargs) -> dict[str, Any]:
+    """Return the generic mesh3d trace of the `faces` of a triangular mesh."""
     style = obj.style
-    vertices = obj._vertices
     trace = make_BaseTriangularMesh(
         "plotly-dict",
-        vertices=_get_prop(vertices, path_ind),
-        faces=obj.faces,
+        vertices=_get_prop(obj._vertices, path_ind),
+        faces=faces,
         color=style.color,
     )
     trace["name"] = get_legend_label(obj)
     # make edges sharper in plotly
-    trace.update(flatshading=True, lighting_facenormalsepsilon=0, lighting_ambient=0.7)
+    # a hint, not a plotly setting: an arbitrary mesh reads better with flat,
+    # faceted faces than with normals smoothed across its edges
+    trace.update(flatshading=True)
     return {**trace, **kwargs}
 
 
 def make_TriangularMesh(
-    obj, path_ind=-1, **kwargs
+    obj, *, path_index=-1, **kwargs
 ) -> dict[str, Any] | list[dict[str, Any]]:
-    """
-    Creates the plotly mesh3d parameters for a Triangular facet mesh in a dictionary based on the
-    provided arguments.
-    """
+    """Return the generic traces of a TriangularMesh magnet."""
     # pylint: disable=protected-access
     style = obj.style
     is_disconnected = False
@@ -634,18 +606,18 @@ def make_TriangularMesh(
             )
             obj.check_selfintersecting()
 
+    vertices = _get_prop(obj._vertices, path_index)
     if is_disconnected:
-        tria_orig = obj._faces
-        obj.style.magnetization.mode = "arrow"
         traces = []
         subsets = obj.get_faces_subsets()
-        col_seq = cycle(obj.style.mesh.disconnected.colorsequence)
+        col_seq = cycle(style.mesh.disconnected.colorsequence)
         exponent = np.log10(len(subsets)).astype(int) + 1
         for ind, (tri, dis_color) in enumerate(zip(subsets, col_seq, strict=False)):
-            # temporary mutate faces from subset
-            obj._faces = tri
-            obj.style.magnetization.show = False
-            tr = make_TriangularMesh_single(obj, **{**kwargs, "color": dis_color})
+            tr = make_TriangularMesh_single(
+                obj, tri, path_ind=path_index, **{**kwargs, "color": dis_color}
+            )
+            # each part keeps its own color, so the magnetization shows as an arrow
+            tr["magnetization_mode"] = "arrow"
             # match first group with path scatter trace
             lg_suff = "" if ind == 0 else f"- part_{ind + 1:02d}"
             tr["legendgroup"] = f"{kwargs.get('legendgroup', obj)}{lg_suff}"
@@ -655,22 +627,21 @@ def make_TriangularMesh(
                 traces.append(
                     make_triangle_orientations(
                         obj,
+                        mesh=vertices[tri],
                         **{**kwargs, "legendgroup": tr["legendgroup"]},
                     )
                 )
-        obj._faces = tria_orig
     else:
-        traces = [make_TriangularMesh_single(obj, **kwargs)]
+        traces = [
+            make_TriangularMesh_single(obj, obj.faces, path_ind=path_index, **kwargs)
+        ]
         if style.orientation.show:
             traces.append(
-                make_triangle_orientations(
-                    obj,
-                    **kwargs,
-                )
+                make_triangle_orientations(obj, mesh=vertices[obj.faces], **kwargs)
             )
     for mode in ("grid", "open", "disconnected", "selfintersecting"):
         if getattr(style.mesh, mode).show:
-            trace = make_mesh_lines(obj, mode, path_ind=path_ind, **kwargs)
+            trace = make_mesh_lines(obj, mode, path_ind=path_index, **kwargs)
             if trace:
                 traces.append(trace)
     return traces
@@ -679,19 +650,19 @@ def make_TriangularMesh(
 def _apply_scaling_transformation(
     norms, scaling_type, is_null_mask, path_ind, min_=None
 ):
-    scaled_norms = norms.copy()
+    scaled = norms.copy()
     log_iterations = (
         int(scaling_type[4])
         if scaling_type.startswith("log^")
         else scaling_type.count("log")
     )
     for _ in range(log_iterations):
-        scaled_norms += np.nanmin(scaled_norms) + 1  # shift to positive range
-        scaled_norms[~is_null_mask] = np.log(scaled_norms[~is_null_mask])
-    scaled_norms /= np.nanmax(scaled_norms)
+        scaled += np.nanmin(scaled) + 1  # shift to positive range
+        scaled[~is_null_mask] = np.log(scaled[~is_null_mask])
+    scaled /= np.nanmax(scaled)
     if min_ is not None:
-        scaled_norms = min_ + scaled_norms * (1 - min_)
-    return scaled_norms[path_ind]
+        scaled = min_ + scaled * (1 - min_)
+    return scaled[path_ind]
 
 
 def make_Pixels(
@@ -706,10 +677,7 @@ def make_Pixels(
     marker2d_default_size,
     null_thresh=1e-12,
 ) -> dict[str, Any]:
-    """
-    Create the plotly dict for Sensor pixels based on pixel positions and chosen size
-    For now, only "cube" shape is provided.
-    """
+    """Return the generic mesh3d trace of a sensor's pixels, drawn as cubes."""
     # Note: the function must return a single object after grouping
     # This is relevant for animation in plotly where a different number of traces
     # in each frame results in weird artifacts.
@@ -747,15 +715,16 @@ def make_Pixels(
     if vectors is not None:
         orientations = get_orientation_from_vec(vectors)
         is_null_vec = (np.abs(vectors) < null_thresh).all(axis=1)
+    kw2d = {
+        "type": "scatter3d",
+        "mode": "markers+lines",
+        # a pixel's "cube" is a mesh; as a marker, the dialect's square
+        "marker_symbol": "s" if symbol == "cube" else symbol,
+        "marker_color": None,
+        "line_color": None,
+    }
     for ind, pos in enumerate(positions):
         kw = {"backend": "plotly-dict", "position": pos}
-        kw2d = {
-            "type": "scatter3d",
-            "mode": "markers+lines",
-            "marker_symbol": symbol,
-            "marker_color": None,
-            "line_color": None,
-        }
         pix = None
         size = sizes[ind] if is_array_like(sizes) else sizes
         if orientable and vectors is not None and not is_null_vec[ind]:
@@ -789,6 +758,25 @@ def make_Pixels(
                 else:
                     pix["facecolor"] = np.repeat(color, len(pix["i"]))
             pixels.append(pix)
+    if not pixels:
+        # every pixel reads nothing and null pixels are hidden: the trace one
+        # shown null pixel makes, emptied, so that every frame of an
+        # animation still carries the same traces
+        shown = make_Pixels(
+            positions=positions[:1],
+            vectors=vectors[:1],
+            colors=colors[:1] if is_array_like(colors) else colors,
+            symbol=symbol,
+            field_symbol=field_symbol,
+            shownull=True,
+            sizes=sizes[:1] if is_array_like(sizes) else sizes,
+            marker2d_default_size=marker2d_default_size,
+            null_thresh=null_thresh,
+        )
+        return {
+            k: np.asarray(v)[:0] if isinstance(v, list | np.ndarray) else v
+            for k, v in shown.items()
+        }
     pixels = group_traces(*pixels)
     if len(pixels) != 1:
         msg = (
@@ -799,39 +787,81 @@ def make_Pixels(
     return pixels[0]
 
 
-def make_Sensor(
-    obj, *, autosize, path_ind=None, field_values, **kwargs
-) -> dict[str, Any]:
-    """
-    Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
-    provided arguments.
-
-    size_pixels: float, default=1
-        A positive number. Adjusts automatic display size of sensor pixels. When set to 0,
-        pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
-        distance between any pixel of the same sensor, equal to `size_pixel`.
-    """
-    style = obj.style
-    traces_to_merge = []
+def _sensor_extent(obj, style, autosize):
+    """A sensor's pixels as rows -- with the origin added to a lone one, which
+    has no other to be measured from -- their spread along each axis, and the
+    extent its axes and pixels are sized against: its size, or its pixels'
+    smallest spread if larger. Without pixels, ``(None, None, size)``."""
     dimension = getattr(obj, "dimension", style.size)
     dim = np.array(
         [dimension] * 3 if isinstance(dimension, float | int) else dimension[:3],
         dtype=float,
     )
-    pixel = obj.pixel
-    no_pix = pixel is None
-    if not no_pix:
-        pixel = np.array(pixel).reshape((-1, 3))
-    one_pix = not no_pix and pixel.shape[0] == 1
     if autosize is not None and style.sizemode == "scaled":
         dim *= autosize
-    if no_pix:
-        dim_ext = dim
+    if obj.pixel is None:
+        return None, None, dim
+    pixel = np.array(obj.pixel).reshape((-1, 3))
+    if pixel.shape[0] == 1:
+        pixel = np.concatenate([[[0, 0, 0]], pixel])
+    hull_dim = pixel.max(axis=0) - pixel.min(axis=0)
+    return pixel, hull_dim, max(np.mean(dim), np.min(hull_dim))
+
+
+def _pixel_base_size(pixel, dim_ext, style):
+    """The size a pixel is drawn at for ``style.pixel.size=1``, before its
+    field scales it: half the distance between the nearest two pixels, or a
+    fifth of the sensor's extent where they coincide, under
+    ``style.pixel.sizemode="scaled"``; 1 otherwise."""
+    if style.pixel.sizemode != "scaled":
+        return 1
+    if len(pixel) < 1000:
+        min_dist = np.min(pdist(pixel))
     else:
-        if one_pix:
-            pixel = np.concatenate([[[0, 0, 0]], pixel])
-        hull_dim = pixel.max(axis=0) - pixel.min(axis=0)
-        dim_ext = max(np.mean(dim), np.min(hull_dim))
+        # when too many pixels, min_dist computation is too expensive (On^2)
+        # using volume/(side length) approximation instead
+        vol = np.prod(np.ptp(pixel, axis=0))
+        min_dist = (vol / len(pixel)) ** (1 / 3)
+    return dim_ext / 5 if min_dist == 0 else min_dist / 2
+
+
+def _scaled_pixel_sizes(size, norms, field_style, path_ind):
+    """`size`, scaled for each pixel by its field's norm as
+    ``field_style.sizescaling`` says, the scaling spanning all of `norms`; a
+    pixel that reads nothing keeps it. `size` itself under ``"uniform"``."""
+    if field_style.sizescaling == "uniform":
+        return size
+    factors = scaled_norms(norms, field_style.sizescaling, minimum=field_style.sizemin)[
+        path_ind
+    ]
+    factors[np.isnan(factors)] = 1  # keep null sizes unscaled
+    return size * factors
+
+
+def _scaled_pixel_colors(color, norms, field_style, path_ind):
+    """For each pixel, the color of ``field_style.colormap`` for its field's
+    norm as ``field_style.colorscaling`` says, the scaling spanning all of
+    `norms`; ``"#b2beb5"`` for a pixel that reads nothing. `color` itself
+    under ``"uniform"``."""
+    if field_style.colorscaling == "uniform":
+        return color
+    return colors_from_colorscale(
+        scaled_norms(norms, field_style.colorscaling)[path_ind],
+        field_style.colormap,
+        cmin=0,  # scaled values are normalized to [0, 1]
+        cmax=1,
+    )
+
+
+def make_Sensor(
+    obj, *, autosize, path_index=None, field_values, **kwargs
+) -> dict[str, Any]:
+    """Return the generic traces of a Sensor: its arrows and pixels."""
+    style = obj.style
+    traces_to_merge = []
+    pixel, hull_dim, dim_ext = _sensor_extent(obj, style, autosize)
+    no_pix = pixel is None
+    one_pix = not no_pix and np.size(obj.pixel) == 3
     style_arrows = style.arrows.as_dict(flatten=True, separator="_")
     if any(style_arrows[f"{k}_show"] for k in "xyz"):
         sens_mesh = get_sensor_mesh(
@@ -852,16 +882,7 @@ def make_Sensor(
     if not no_pix:
         px_color = style.pixel.color
         px_size = style.pixel.size
-        px_dim = 1
-        if style.pixel.sizemode == "scaled":
-            if len(pixel) < 1000:
-                min_dist = np.min(pdist(pixel))
-            else:
-                # when too many pixels, min_dist computation is too expensive (On^2)
-                # using volume/(side length) approximation instead
-                vol = np.prod(np.ptp(pixel, axis=0))
-                min_dist = (vol / len(pixel)) ** (1 / 3)
-            px_dim = dim_ext / 5 if min_dist == 0 else min_dist / 2
+        px_dim = _pixel_base_size(pixel, dim_ext, style)
         if px_size > 0:
             px_sizes = px_dim = px_dim * px_size
             px_positions = pixel[1:] if one_pix else pixel
@@ -871,38 +892,20 @@ def make_Sensor(
                 fsrc = style.pixel.field.source
                 field, *coords_str = fsrc
                 field_array = field_values[field]
-                px_vectors = field_values[field][path_ind]
+                px_vectors = field_values[field][path_index]
                 coords_str = coords_str or "xyz"
                 coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
                 other_coords = [i for i in range(3) if i not in coords]
                 field_array[..., other_coords] = 0  # set other components to zero
+                # the public helpers, so a backend drawing pixels its own way
+                # sizes and colors them as these traces do
                 norms = np.linalg.norm(field_array, axis=-1)
-                is_null_mask = np.logical_or(norms == 0, np.isnan(norms))
-                norms[is_null_mask] = np.nan  # avoid -inf
-                nmin, nmax = np.nanmin(norms), np.nanmax(norms)
-                ptp = nmax - nmin
-                norms = (norms - nmin) / ptp if ptp != 0 else norms * 0 + 0.5
-                sizescaling = style.pixel.field.sizescaling
-                sizemin = style.pixel.field.sizemin
-                if sizescaling != "uniform":
-                    snorms_scaled = _apply_scaling_transformation(
-                        norms, sizescaling, is_null_mask, path_ind, min_=sizemin
-                    )
-                    snorms_scaled[is_null_mask[path_ind]] = (
-                        1  # keep null sizes unscaled
-                    )
-                    px_sizes *= snorms_scaled
-                colorscaling = style.pixel.field.colorscaling
-                if colorscaling != "uniform":
-                    cnorms_scaled = _apply_scaling_transformation(
-                        norms, colorscaling, is_null_mask, path_ind
-                    )
-                    px_colors = get_hexcolors_from_colormap(
-                        values=cnorms_scaled,
-                        colormap=style.pixel.field.colormap,
-                        cmin=0,  # scaled values are normalized to [0, 1]
-                        cmax=1,
-                    )
+                px_sizes = _scaled_pixel_sizes(
+                    px_sizes, norms, style.pixel.field, path_index
+                )
+                px_colors = _scaled_pixel_colors(
+                    px_colors, norms, style.pixel.field, path_index
+                )
             pixels_trace = make_Pixels(
                 positions=px_positions,
                 vectors=px_vectors,
@@ -916,8 +919,10 @@ def make_Sensor(
             )
 
             traces_to_merge.append(pixels_trace)
-        # Show hull over pixels only if no field values are provided
-        if not field_values:
+        # The hull stands in for pixels that show no field: never on a sensor
+        # styled to show one, whether its field was read or not -- hidden
+        # pixels have it skipped, and nothing to read leaves it empty
+        if not style.pixel.field.source:
             hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
             hull_dim[hull_dim == 0] = px_dim / 2
             hull_mesh = make_BaseCuboid(

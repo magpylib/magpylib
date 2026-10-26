@@ -15,10 +15,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import patches
 from matplotlib.animation import FuncAnimation
+from matplotlib.lines import Line2D
 
-from magpylib._src.display.api import drawing_properties
+from magpylib._src.display.api import (
+    drawing_properties,
+    forward_options,
+    warn_unused_options,
+)
 from magpylib._src.display.traces_utility import (
     get_trace_kw,
+    legend_overflow_label,
     split_input_arrays,
     subdivide_mesh_by_facecolor,
 )
@@ -38,12 +44,18 @@ SYMBOLS_TO_MATPLOTLIB = {
 }
 
 LINE_STYLES_TO_MATPLOTLIB = {
+    # the dialect's names; the loose ones as matplotlib's named dash patterns
     "solid": "-",
-    "dash": "--",
+    "dashed": "--",
+    "dotted": ":",
     "dashdot": "-.",
-    "dot": (0, (1, 1)),
-    "longdash": "loosely dotted",
-    "longdashdot": "loosely dashdotted",
+    "loosely dotted": (0, (1, 10)),
+    "loosely dashdotted": (0, (3, 10, 1, 10)),
+    # plotly's, from a user's generic model
+    "dash": "--",
+    "dot": ":",
+    "longdash": (0, (1, 10)),
+    "longdashdot": (0, (3, 10, 1, 10)),
 }
 
 
@@ -150,6 +162,9 @@ def scatter_to_matplotlib(trace):
         marker_size = marker_size**2
 
     coords = np.array([trace[k] for k in coords_str], dtype=float)
+    if coords.shape[-1] == 0:
+        # an empty trace, kept so that every frame has the same traces
+        return traces
 
     # plot the marker part with `scatter` constructor
     if "markers" in mode:
@@ -193,6 +208,7 @@ def scatter_to_matplotlib(trace):
 
 def generic_trace_to_matplotlib(trace, antialiased=True):
     """Transform a generic trace into a matplotlib trace"""
+    row, col = trace.get("row", 1), trace.get("col", 1)
     trace = drawing_properties(trace)
     traces_mpl = []
     if trace["type"] == "mesh3d":
@@ -203,8 +219,8 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
         msg = f"Trace type {trace['type']!r} cannot be transformed into a Matplotlib trace."
         raise ValueError(msg)
     for tr in traces_mpl:
-        tr["row"] = trace.get("row", 1)
-        tr["col"] = trace.get("col", 1)
+        tr["row"] = row
+        tr["col"] = col
         tr["kwargs"] = tr.get("kwargs", {})
         if tr["constructor"] != "text":
             if trace.get("showlegend", True):
@@ -250,6 +266,26 @@ def process_extra_trace(model):
     return trace3d
 
 
+def is_legend_entry(trace):
+    """Whether a matplotlib trace gets a legend entry: matplotlib skips
+    labels starting with an underscore."""
+    label = trace.get("kwargs", {}).get("label")
+    return bool(label) and not str(label).startswith("_")
+
+
+def draw_capped_legend(ax, maxitems, **kwargs):
+    """Draw the legend of `ax` with at most `maxitems` entries, the rest
+    summed up in one. 0 draws none."""
+    handles, labels = ax.get_legend_handles_labels()
+    if maxitems == 0 or not labels:
+        return
+    hidden = len(labels) - maxitems
+    if hidden > 0:
+        handles = [*handles[:maxitems], Line2D([], [], linestyle="none")]
+        labels = [*labels[:maxitems], legend_overflow_label(hidden)]
+    ax.legend(handles, labels, **kwargs)
+
+
 def display_matplotlib(scene):
     """Display objects and paths graphically using the Matplotlib library."""
     canvas = scene.canvas
@@ -264,8 +300,8 @@ def display_matplotlib(scene):
     labels = {(p.row, p.col): p.labels for p in scene.panels}
 
     # only update layout if canvas is not provided
-    fig_kwargs = dict(scene.fig_kwargs)
-    show_kwargs = dict(scene.show_kwargs)
+    fig_kwargs = scene.prefixed_options("fig")
+    show_kwargs = scene.prefixed_options("show")
 
     # Scene frames are immutable; render into local dicts instead.
     frames = [
@@ -286,16 +322,25 @@ def display_matplotlib(scene):
 
     show_canvas = bool(canvas is None)
     axes = {}
+    # magpylib's own figure settings, which the user's fig_* may override
+    fig_defaults = {"tight_layout": True}
     if canvas_update:
-        fig_kwargs["dpi"] = fig_kwargs.get("dpi", 80)
+        fig_defaults["dpi"] = 80
         if fig_kwargs.get("figsize") is None:
+            fig_kwargs.pop("figsize", None)  # an explicit None takes the default
             figsize = (8, 8)
             ratio = scene.n_cols / scene.n_rows
-            if legend_maxitems != 0:
+            # the same rule `draw_capped_legend` draws by: a 3D panel with
+            # at least one entry, and a cap above 0
+            if legend_maxitems > 0 and any(
+                is_legend_entry(tr)
+                and scene.panel_kind(tr["row"], tr["col"]) == "scene3d"
+                for tr in frames[0]["data"]
+            ):
                 ratio *= 1.5  # extend horizontal ratio if legend is present
-            fig_kwargs["figsize"] = (figsize[0] * ratio, figsize[1])
+            fig_defaults["figsize"] = (figsize[0] * ratio, figsize[1])
     if canvas is None:
-        fig = plt.figure(**{"tight_layout": True, **fig_kwargs})
+        fig = forward_options(plt.figure, "fig", fig_kwargs, defaults=fig_defaults)
     elif isinstance(canvas, mpl.axes.Axes):
         fig = canvas.get_figure()
         if scene.has_subplots:
@@ -313,8 +358,16 @@ def display_matplotlib(scene):
         )
         raise TypeError(msg)
     if canvas is not None and canvas_update:
-        fig.set_size_inches(*fig_kwargs["figsize"], forward=True)
-        fig.set_dpi(fig_kwargs["dpi"])
+        size = {**fig_defaults, **fig_kwargs}
+        fig.set_size_inches(*size["figsize"], forward=True)
+        fig.set_dpi(size["dpi"])
+    if canvas is not None:
+        applied = {"figsize", "dpi"} if canvas_update else set()
+        warn_unused_options(
+            [f"fig_{k}" for k in fig_kwargs if k not in applied],
+            "the figure was given as canvas"
+            + ("" if canvas_update else " and canvas_update is off"),
+        )
     if not scene.has_subplots:
         if isinstance(canvas, mpl.axes.Axes):
             axes[(1, 1)] = canvas
@@ -343,7 +396,6 @@ def display_matplotlib(scene):
                     axes[row_col_num].set_box_aspect((1, 1, 1))
 
     def draw_frame(frame_ind):
-        count_with_labels = {}
         handler_map = {}
         for tr in frames[frame_ind]["data"]:
             row_col_num = (tr["row"], tr["col"])
@@ -351,12 +403,6 @@ def display_matplotlib(scene):
             constructor = tr["constructor"]
             args = tr.get("args", ())
             kwargs = tr.get("kwargs", {})
-            if frame_ind == 0:
-                if row_col_num not in count_with_labels:
-                    count_with_labels[row_col_num] = 0
-                label = kwargs.get("label", "_")
-                if label and not label.startswith("_"):
-                    count_with_labels[row_col_num] += 1
             trace = getattr(ax, constructor)(*args, **kwargs)
             if "legend_handler" in tr:
                 handler_map[trace] = tr["legend_handler"]
@@ -371,7 +417,6 @@ def display_matplotlib(scene):
                     )
                     setattr(trace, f"_{arg}colors2d", color)
         for row_col_num, ax in axes.items():
-            count = count_with_labels.get(row_col_num, 0)
             if ax.name == "3d":
                 if row_col_num in ranges and canvas_update:
                     ax.set(
@@ -382,15 +427,20 @@ def display_matplotlib(scene):
                         },
                     )
                 ax.set_box_aspect(aspect=(1, 1, 1))
-                if 0 < count <= legend_maxitems:
-                    lg_kw = {"bbox_to_anchor": (1.04, 1), "loc": "upper left"}
-                    if handler_map:
-                        lg_kw["handler_map"] = handler_map
-                    with contextlib.suppress(AttributeError):
-                        # see https://github.com/matplotlib/matplotlib/pull/25565
-                        ax.legend(**lg_kw)
+                lg_kw = {"bbox_to_anchor": (1.04, 1), "loc": "upper left"}
+                if handler_map:
+                    lg_kw["handler_map"] = handler_map
+                with contextlib.suppress(AttributeError):
+                    # see https://github.com/matplotlib/matplotlib/pull/25565
+                    draw_capped_legend(ax, legend_maxitems, **lg_kw)
             else:
-                ax.legend(loc="best")
+                if canvas_update and labels.get(row_col_num):
+                    ax.set_xlabel(labels[row_col_num]["x"])
+                    ax.set_ylabel(labels[row_col_num]["y"])
+                if ax.get_legend_handles_labels()[1]:
+                    # a 2D panel whose curves are all left out of the legend
+                    # has none to draw, and matplotlib warns about an empty one
+                    ax.legend(loc="best")
 
     def animate(ind):  # pragma: no cover
         for ax in axes.values():
@@ -422,7 +472,12 @@ def display_matplotlib(scene):
         show_canvas = False
         out += (anim,)
     if show_canvas:
-        plt.show(**show_kwargs)
+        forward_options(plt.show, "show", show_kwargs)
+    else:
+        warn_unused_options(
+            [f"show_{k}" for k in show_kwargs],
+            "the figure is returned or drawn on a given canvas rather than shown",
+        )
 
     if out:
         return out[0] if len(out) == 1 else out

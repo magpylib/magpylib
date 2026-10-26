@@ -32,8 +32,8 @@ parameter names, and most pre-trained code reproduces the old API.
 - Never loop in Python over positions or parameters — use a path or the
   functional interface. Paths carry physical attributes too, not just motion:
   see [Path-varying properties](#path-varying-properties).
-- Force and torque: `magpy.getFT(sources, targets)`, and every target except
-  `Dipole` and `Sphere` needs `meshing` set. See
+- Force and torque: `magpy.getFT(sources, targets, meshing=...)`; every target
+  except `Dipole` and `Sphere` needs a `meshing` value. See
   [Force and torque](#force-and-torque).
 - Read [Gotchas](#gotchas) when a result is off by a suspicious factor, has an
   unexpected array shape, or a path did not behave as written.
@@ -86,10 +86,10 @@ thumb, exactly the J at the working point). For an inhomogeneous treatment see
 the `magpylib-material-response` package.
 
 Every source constructor takes `position`, `orientation`, its shape parameters,
-`meshing` (for force targets), and `style`. Shape parameters are given in the
-object's **local** coordinates; `position`/`orientation` place that local frame
-in the global one. `obj.copy(**kwargs)` clones an object with overrides, which
-is how arrays of near-identical magnets are built.
+and `style`. Shape parameters are given in the object's **local** coordinates;
+`position`/`orientation` place that local frame in the global one.
+`obj.copy(**kwargs)` clones an object with overrides, which is how arrays of
+near-identical magnets are built.
 
 Two classes need more than a constructor call:
 
@@ -120,8 +120,8 @@ same array.
 
 `getJ` and `getM` describe the material, not a field in space: they return the
 body's own polarization/magnetization **inside** it and exactly zero everywhere
-outside. Inside a magnet the H-field opposes J (the demagnetising field), so
-`getB` inside is not µ₀·`getH` + J by inspection — it is smaller than J.
+outside. B = µ₀·H + J holds everywhere, and inside a magnet the H-field opposes
+J (the demagnetising field), so `getB` there is smaller than J.
 
 `observers` is an array of positions with shape `(..., 3)`, a `Sensor`, a
 `Collection`, or a flat list of those. Note the asymmetry on the source side: a
@@ -249,16 +249,16 @@ constructor arguments while keeping the full Magpylib API.
 ## Force and torque
 
 ```python
-loop = magpy.current.Circle(diameter=0.02, current=10, meshing=40)
-F, T = magpy.getFT(cube, loop, pivot="centroid")
+loop = magpy.current.Circle(diameter=0.02, current=10)
+F, T = magpy.getFT(cube, loop, meshing=40)
 ```
 
-- Numerical, not analytical: targets are discretised, so results depend on
-  `meshing`. Every target except `Dipole` and `Sphere` **must** have `meshing`
-  set, as an integer target number of mesh cells.
-- `getFT` returns one array whose leading axis stacks force and torque, which is
-  what `F, T = ...` unpacks. Each of the two is `(s, p, t, 3)` before squeezing,
-  in N and N·m, so the full return is `(2, s, p, t, 3)`.
+- Numerical, not analytical: targets are cut into cells, so results depend on
+  `meshing`, a keyword of `getFT` (since v6, not of the targets). It is required
+  for every target except `Dipole` and `Sphere`: an integer target cell count
+  for all targets, or a dict per target, `meshing={ring: 100, coil: 40}`.
+- `getFT` returns a tuple `(F, T)` in N and N·m, each `(s, p, t, 3)` before
+  squeezing. A Collection target counts as one rigid body.
 - Torque needs a pivot. `pivot="centroid"` (default) is right for a free body;
   `pivot=None` gives nonphysical results.
 - **Scale invariance does not hold for forces.** Field results are invariant if
@@ -266,7 +266,7 @@ F, T = magpy.getFT(cube, loop, pivot="centroid")
   metres.
 
 See [references/force-torque.md](references/force-torque.md) for meshing
-convergence, `eps`, and `return_mesh`.
+convergence, pivots and `eps`.
 
 ## Visualisation
 
@@ -294,8 +294,8 @@ subplots. Styling is per-object via `obj.style` or globally via
   to transform the existing path instead.
 - `squeeze=True` changes the output rank based on input. Code that indexes
   `B[:, 0]` breaks the moment a second source or a path appears.
-- `getFT` without `meshing` on a magnet or current target raises — `Dipole` and
-  `Sphere` are the only exceptions.
+- `meshing` moved to `getFT` in v6: `Cuboid(..., meshing=100)` raises, and
+  `getFT` without `meshing=` raises for any target but `Dipole` and `Sphere`.
 - The functional interface moved in v5.2: `getB("Cuboid", ...)` and `getB_dict`
   are gone, replaced by `magpy.func.cuboid_field(...)` and friends.
 - `misc.Triangle` is a single charged facet, not a closed body. For a solid mesh

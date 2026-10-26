@@ -217,20 +217,17 @@ class PixelSource(Property):
     _allowed_vectors = ("B", "H", "M", "J")
 
     def validate(self, obj, value):
-        valid = True
-        if value is not False:
+        valid = value is False
+        if isinstance(value, str) and value:
             field_str, *coords_str = value
-            if not coords_str:
-                coords_str = list("xyz")
-            if field_str not in self._allowed_vectors and set(coords_str).difference(
-                set("xyz")
-            ):
-                valid = False
+            valid = field_str in self._allowed_vectors and not set(coords_str) - set(
+                "xyz"
+            )
         if not valid:
             msg = (
                 f"Input source of {type(obj).__name__} must be None or False or start"
                 f" with either {self._allowed_vectors} and be followed by a combination"
-                f" of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Bz') );"
+                f" of 'x', 'y', 'z' (e.g. 'Bxy');"
                 f" instead received {value!r}."
             )
             raise ValueError(msg)
@@ -391,6 +388,39 @@ class Trace3d(PropertyNode):
         default=_empty_updatefunc,
         doc="Callable updating the trace parameters at show time.",
     )
+
+    def __init__(
+        self,
+        backend="generic",
+        constructor=None,
+        args=None,
+        kwargs=None,
+        coordsargs=None,
+        show=True,
+        scale=1,
+        updatefunc=None,
+        **params,
+    ):
+        # pass only what differs from a field's default, so is_set() reports
+        # what the caller set
+        given = {
+            "backend": backend,
+            "constructor": constructor,
+            "args": args,
+            "kwargs": kwargs,
+            "coordsargs": coordsargs,
+            "show": show,
+            "scale": scale,
+            "updatefunc": updatefunc,
+        }
+        defaults = {"backend": "generic", "show": True, "scale": 1}
+        given = {
+            k: v
+            for k, v in given.items()
+            if v is not None
+            and not (k in defaults and (type(v), v) == (type(defaults[k]), defaults[k]))
+        }
+        super().__init__(**given, **params)
 
 
 class TraceData(NodeSequence):

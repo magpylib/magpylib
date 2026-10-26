@@ -154,6 +154,10 @@ Several extensions of the `rotate()` method give a lot of flexibility with objec
 (docs-position-path-properties)=
 ## Paths Beyond Position and Orientation
 
+:::{versionadded} 6.0
+Physical attributes along a path
+:::
+
 A path is not restricted to motion. Physical attributes can vary along a path as well, so that a current ramps, a coil deforms, or a magnet expands as the object moves. Which attributes support this is listed per object by the read-only `path_properties` - besides `position` and `orientation` these are the physical attributes of the class.
 
 `position` and `orientation` are special in exactly one respect: they stay **eagerly synchronized with each other**, because geometric consistency is always required. All other path properties are independent - setting one does not change the others.
@@ -193,6 +197,8 @@ cube.polarization = [(0, 0, 1), (0, 0, 2)]
 print(np.shape(cube.dipole_moment))
 #   --> (2, 3)
 ```
+
+A Collection's `centroid`, `volume` and `dipole_moment` follow its members' paths the same way, padded to the longest.
 
 Practical examples are shown in {ref}`examples-tutorial-path-properties`.
 

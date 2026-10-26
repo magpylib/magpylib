@@ -12,13 +12,13 @@ The following basic properties are shared by all Magpylib classes:
 
 * **`position`**: property that describes the object placement in the global coordinate system. Can also describe a path, i.e. a vector of position vectors.
 
-* **`orientation`**: property that describes the object orientation in the global coordinate system using the `scipy.spatial.transform.Rpotation` class. Can also describe a path, i.e. a vector of orientations.
+* **`orientation`**: property that describes the object orientation in the global coordinate system using the `scipy.spatial.transform.Rotation` class. Can also describe a path, i.e. a vector of orientations.
 
-* **`centroid`**: property (read only) which returns the object barycenter assuming homogeneous mass density. It is often the same as the `position`.
+* **`centroid`**: property (read only) which returns the geometric center of the object, its center of mass for a homogeneous mass density. It is often the same as the `position`.
 
 * **`move()`** and **`rotate()`**: methods that enable relative object positioning. There are multiple `rotate()` methods allowing for all kinds of rotation inputs.
 
-* **`reset_path()`** method: Sets `position` and `orientation` to their default values.
+* **`reset_path()`** method: Sets `position` and `orientation` to their default values. Other path properties, such as a `current` given per path step, are left as they are.
 
 * **`path_properties`**: property (read only) which lists the attributes of this object that can carry a path. Besides `position` and `orientation` these are the physical attributes of the class, e.g. `current` and `vertices` for a `Polyline`, or `dimension`, `polarization` and `magnetization` for a `Cuboid`.
 
@@ -42,7 +42,7 @@ See {ref}`docs-fieldcomp` for more information.
 
 **Force computation**
 
-* **`meshing`**: property which defines the mesh finesse (splitting of the target into small parts) for the force computation.
+* Force targets are cut into cells (magnets) or elements (currents) by `getFT(sources, targets, meshing=...)`; what a value means for each class is listed in {ref}`docs-forcecomp-meshing`.
 
 A detailed overview of the force computation is found in {ref}`docs-forcecomp`. Note that force and torque computation is only available via the top-level function **`getFT()`**.
 
@@ -50,7 +50,7 @@ A detailed overview of the force computation is found in {ref}`docs-forcecomp`. 
 
 * **`volume`**: property (read only) which returns the volume of magnet bodies.
 
-* **`dipole_moment`**: property (read only) which returns the dipole moment of magnet bodies and closed currents.
+* **`dipole_moment`**: property (read only) which returns the dipole moment of magnet bodies and closed currents, in the object's own frame like its `polarization`. A `Collection`'s is in the Collection's own frame, so `Dipole(moment=obj.dipole_moment, position=obj.centroid, orientation=obj.orientation)` stands for the object in its far field.
 
 * **`parent`**: property which references a [Collection](guide-docs-classes-collections) that the object is part of.
 
@@ -84,7 +84,7 @@ All magnets are sources. They have the **`polarization`** attribute which is of 
 ### Cuboid
 ```python
 magpylib.magnet.Cuboid(
-    position, orientation, dimension, polarization, magnetization, meshing, style
+    position, orientation, dimension, polarization, magnetization, style
 )
 ```
 
@@ -103,7 +103,7 @@ magpylib.magnet.Cuboid(
 ### Cylinder
 ```python
 magpylib.magnet.Cylinder(
-    position, orientation, dimension, polarization, magnetization, meshing, style
+    position, orientation, dimension, polarization, magnetization, style
 )
 ```
 
@@ -122,7 +122,7 @@ magpylib.magnet.Cylinder(
 ### CylinderSegment
 ```python
 magpylib.magnet.CylinderSegment(
-    position, orientation, dimension, polarization, magnetization, meshing, style
+    position, orientation, dimension, polarization, magnetization, style
 )
 ```
 
@@ -164,7 +164,7 @@ magpylib.magnet.Sphere(
 ### Tetrahedron
 ```python
 magpylib.magnet.Tetrahedron(
-    position, orientation, vertices, polarization, magnetization, meshing, style
+    position, orientation, vertices, polarization, magnetization, style
 )
 ```
 
@@ -194,7 +194,6 @@ magpylib.magnet.TriangularMesh(
     faces,
     polarization,
     magnetization,
-    meshing,
     check_open,
     check_disconnected,
     check_selfintersecting,
@@ -259,7 +258,7 @@ All currents are sources. Current objects (except `TriangleSheet`) have the **`c
 
 ### Circle
 ```python
-magpylib.current.Circle(position, orientation, diameter, current, meshing, style)
+magpylib.current.Circle(position, orientation, diameter, current, style)
 ```
 
 ::::{grid} 2
@@ -275,7 +274,7 @@ magpylib.current.Circle(position, orientation, diameter, current, meshing, style
 
 ### Polyline
 ```python
-magpylib.current.Polyline(position, orientation, vertices, current, meshing, style)
+magpylib.current.Polyline(position, orientation, vertices, current, style)
 ```
 
 ::::{grid} 2
@@ -291,7 +290,7 @@ magpylib.current.Polyline(position, orientation, vertices, current, meshing, sty
 
 ### TriangleStrip
 ```python
-magpylib.current.TriangleStrip(position, orientation, vertices, current, meshing, style)
+magpylib.current.TriangleStrip(position, orientation, vertices, current, style)
 ```
 
 ::::{grid} 2
@@ -307,8 +306,8 @@ magpylib.current.TriangleStrip(position, orientation, vertices, current, meshing
 
 ### TriangleSheet
 ```python
-magpylib.current.Polyline(
-    position, orientation, vertices, faces, current_densities, meshing, style
+magpylib.current.TriangleSheet(
+    position, orientation, vertices, faces, current_densities, style
 )
 ```
 

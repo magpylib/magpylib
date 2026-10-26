@@ -40,6 +40,15 @@ def check_input_zoom(inp):
         raise MagpylibBadUserInput(msg)
 
 
+def check_input_legend_maxitems(inp):
+    """check show legend_maxitems input"""
+    if isinstance(inp, bool) or not isinstance(inp, int) or inp < 0:
+        msg = (
+            f"Input legend_maxitems must be an integer >= 0; instead received {inp!r}."
+        )
+        raise MagpylibBadUserInput(msg)
+
+
 def check_input_animation(inp):
     """check show animation input"""
     msg = (
@@ -97,13 +106,29 @@ def validate_field_func(val):
         )
         raise MagpylibBadUserInput(msg)
 
-    fn_args = inspect.getfullargspec(val).args
+    try:
+        signature = inspect.signature(val, follow_wrapped=False)
+    except (TypeError, ValueError) as err:
+        msg = "Input field_func must have an inspectable call signature."
+        raise MagpylibBadUserInput(msg) from err
+
+    fn_args = [
+        param.name
+        for param in signature.parameters.values()
+        if param.kind in (param.POSITIONAL_ONLY, param.POSITIONAL_OR_KEYWORD)
+    ]
     if fn_args[:2] != ["field", "observers"]:
         msg = (
             "Input field_func must have two positional arguments called field and observers; "
             f"instead received a callable where the first two arguments are: {fn_args[:2]!r}."
         )
         raise MagpylibBadUserInput(msg)
+
+    try:
+        signature.bind(field="B", observers=None)
+    except TypeError as err:
+        msg = "Input field_func must accept field and observers as keyword arguments."
+        raise MagpylibBadUserInput(msg) from err
 
     for field in ["B", "H"]:
         out = val(field, np.array([[1, 2, 3], [4, 5, 6]]))
@@ -530,7 +555,7 @@ def check_format_input_vertices(inp, minlength=2):
         if inp.shape[-2] < minlength:
             msg = (
                 f"Input vertices must have at least {minlength} vertices; "
-                f"instead received {inp.shape[0]}."
+                f"instead received {inp.shape[-2]}."
             )
             raise MagpylibBadUserInput(msg)
     return inp
@@ -645,7 +670,15 @@ def check_format_input_backend(inp):
         inp = default_settings.display.backend
     if inp in backends:
         return inp
-    msg = f"Input backend must be one of {[*backends, None]}; instead received {inp!r}."
+
+    def listed(name):
+        backend = DisplayBackend.backends.get(name)
+        about = [getattr(backend, "description", ""), getattr(backend, "url", "")]
+        about = ", ".join(a for a in about if a)
+        return f"{name!r} ({about})" if about else repr(name)
+
+    choices = ", ".join([*map(listed, backends), "None"])
+    msg = f"Input backend must be one of {choices}; instead received {inp!r}."
     raise MagpylibBadUserInput(msg)
 
 
@@ -678,6 +711,8 @@ def check_format_input_observers(inp, pixel_agg=None):
         pix_shapes = [(1, 3) if inp.shape == (3,) else inp.shape]
         return [_src.obj_classes.class_Sensor.Sensor(pixel=inp)], pix_shapes
     except (TypeError, ValueError) as err:  # if not, it must be [pos_vec, sens, coll]
+        if isinstance(err, MagpylibBadUserInput):
+            raise  # positions Sensor refused, e.g. of shape (n, 2): keep its message
         sensors = []
         for obj_item in inp:
             obj = obj_item

@@ -10,42 +10,43 @@ F, T = magpy.getFT(
     pivot="centroid",
     eps=1e-5,
     squeeze=True,
-    meshreport=False,
-    return_mesh=False,
+    meshing=None,
 )
 ```
 
-`F` is in newtons, `T` in newton-metres, both shaped `(s, p, t, 3)` — sources,
-path, targets, components — before squeezing. They arrive stacked: `getFT`
-returns one `(2, s, p, t, 3)` array, and the two-name assignment above unpacks
-its leading axis. Bind a single name instead and that axis is still there.
+`getFT` returns a tuple `(F, T)`: `F` in newtons, `T` in newton-metres, each
+shaped `(s, p, t, 3)` — sources, path, targets, components — before squeezing. A
+Collection target counts as one body.
 
 ## Meshing is mandatory
 
-Unlike field computation, force is numerical: each target is discretised and the
-force integral summed over cells. Every target **except `Dipole` and `Sphere`**
-must have `meshing` set, or `getFT` raises `ValueError`.
+Unlike field computation, force is numerical: each target is cut into cells and
+the force summed over them. `meshing` is a keyword of `getFT`, required for
+every target **except `Dipole` and `Sphere`**, which are exact; without it
+`getFT` raises `ValueError`. Since v6 it is no longer a target attribute, and
+`Cuboid(..., meshing=100)` raises `TypeError`.
 
 ```python
-loop = magpy.current.Circle(diameter=0.02, current=10, meshing=40)
-cube = magpy.magnet.Cuboid(
-    dimension=(0.01, 0.01, 0.01), polarization=(0, 0, 1.2), meshing=1000
+loop = magpy.current.Circle(diameter=0.02, current=10)
+ring = magpy.magnet.Cylinder(
+    dimension=(0.01, 0.005), polarization=(0, 0, 1.2), position=(0, 0, 0.03)
 )
+F, T = magpy.getFT(cube, [loop, ring], meshing={loop: 40, ring: 1000})
 ```
 
-`meshing` is an integer _target_ cell count; the mesher aims for uniform,
-aspect-ratio-1 cells and will not hit the number exactly. Pass `meshreport=True`
-to print the realised cell count per target, and `return_mesh=True` to get the
-mesh dictionaries (`"pts"`, `"moments"` for magnets, `"cvecs"` for currents)
-instead of F and T.
+- An integer is a _target_ cell count (segments for currents) for every target,
+  including each magnet in a Collection. The mesher aims for near-cubic cells
+  and will not hit the number exactly.
+- A dict gives one value per target; a Collection key covers its members.
+- A `Cuboid` also takes a triple `(n1, n2, n3)` of divisions along its sides, a
+  `Cylinder` or `CylinderSegment` a triple `(nphi, nr, nh)`.
 
 **Always run a convergence check** — double `meshing` until the result stops
 moving:
 
 ```python
 for n in (100, 400, 1600, 6400):
-    cube.meshing = n
-    F, _ = magpy.getFT(source, cube)
+    F, _ = magpy.getFT(source, cube, meshing=n)
     print(n, F)
 ```
 
@@ -61,18 +62,21 @@ meaningless.
 Torque is defined about a pivot, and the force contributes
 `T_F = F × (r_pivot − r_position)`:
 
-- `pivot="centroid"` (default) — the target's barycenter, correct for a freely
-  floating body.
+- `pivot="centroid"` (default) — the target's centroid, correct for a freely
+  floating body. For a Collection it is the volume-weighted centroid of its
+  magnets (the mean of its members' centroids for a coil), so the torque is that
+  on one rigid body.
 - array-like `(3,)` — the same pivot point for every target, e.g. a shaft axis.
-- one pivot per target — an array with one row per target.
+- `(t, 3)` or `(t, p, 3)` — one pivot per target, or per target and path step.
 - `pivot=None` — no pivot; results are nonphysical, use only when you know why.
 
 ## eps
 
 `eps` is the finite-difference step used for the field gradient on magnet
-targets. The default `1e-5` suits metre-scale problems; a good value is roughly
-`1e-6 ×` the characteristic source size. Too large smears the gradient, too
-small loses precision to floating-point cancellation. It is unused for current
+targets. A good value is `1e-5 ×` the characteristic system size (magnet size or
+source-target distance), so the default `1e-5` suits metre-scale problems and
+centimetre magnets want about `1e-7`. Too large smears the gradient, too small
+loses precision to floating-point cancellation. It is unused for current
 targets.
 
 ## Sanity checks

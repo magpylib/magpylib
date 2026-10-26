@@ -648,7 +648,6 @@ def test_describe_with_label():
         "  • volume: 0 m³",
         "  • centroid: [0. 0. 0.]",
         "  • dipole_moment: [0. 0. 0.]",
-        "  • meshing: None",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
 
@@ -675,7 +674,6 @@ def test_describe_with_parent():
         "  • volume: 0 m³",
         "  • centroid: [0. 0. 0.]",
         "  • dipole_moment: [0. 0. 0.]",
-        "  • meshing: None",
     ]
     match_string_up_to_id(test, x.describe(return_string=True))
 
@@ -777,7 +775,6 @@ def test_describe_with_triangularmesh():
         "  • dipole_moment: [      0.          0.    2122065.908]",
         "  • faces: [[4 0 2]  [4 1 0]  [3 4 2]  [3 1 4]  [3 0 1]  [3 2 0]]",
         "  • mesh: shape(6, 3, 3)",
-        "  • meshing: None",
         "  • status_disconnected: False",
         "  • status_disconnected_data: 1 part",
         "  • status_open: False",
@@ -788,6 +785,73 @@ def test_describe_with_triangularmesh():
     ]
 
     match_string_up_to_id(test, x.describe(return_string=True))
+
+
+def test_describe_open_current_path():
+    """An open current path has no dipole moment; describe says so instead of
+    raising."""
+    wire = magpy.current.Polyline(vertices=[(0, 0, 0), (1, 0, 0), (1, 1, 0)], current=1)
+    assert "dipole_moment: not defined" in wire.describe(return_string=True)
+
+
+_V4 = np.array([(0.5, 0, 0), (1, 0.2, 0), (0.7, 1, 0.1), (1.2, 1.1, 0.3)])
+
+
+@pytest.mark.parametrize(
+    "obj",
+    [
+        magpy.magnet.Cuboid(dimension=(1, 2, 3), polarization=(0, 0, 1)),
+        magpy.magnet.Cylinder(dimension=(1, 2), polarization=(0, 0, 1)),
+        magpy.magnet.CylinderSegment(
+            dimension=(0.5, 1, 1, 0, 90), polarization=(0, 0, 1)
+        ),
+        magpy.magnet.Sphere(diameter=1, polarization=(0, 0, 1)),
+        magpy.magnet.Tetrahedron(vertices=_V4, polarization=(0, 0, 1)),
+        magpy.magnet.TriangularMesh(
+            vertices=_V4,
+            faces=[(0, 2, 1), (0, 1, 3), (1, 2, 3), (0, 3, 2)],
+            polarization=(0, 0, 1),
+        ),
+        magpy.current.Circle(diameter=1, current=1),
+        magpy.current.Polyline(vertices=_V4, current=1),
+        magpy.current.TriangleStrip(vertices=_V4, current=1),
+        magpy.current.TriangleSheet(
+            vertices=_V4,
+            faces=[(0, 1, 2), (1, 3, 2)],
+            current_densities=[(1, 0, 0), (0, 1, 0)],
+        ),
+        magpy.misc.Triangle(vertices=_V4[:3], polarization=(0, 0, 1)),
+        magpy.misc.Dipole(moment=(0, 0, 1)),
+        magpy.Sensor(pixel=_V4),
+        magpy.Collection(
+            magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1)),
+            magpy.current.Polyline(vertices=_V4, current=1, position=(2, 0, 0)),
+        ),
+    ],
+    ids=lambda obj: type(obj).__name__,
+)
+def test_centroid_turns_with_the_object(obj):
+    """Rotating an object about the origin rotates its centroid with it."""
+    obj.move((0.1, -0.2, 0.3))
+    rot = R.from_rotvec((0.3, -1.1, 0.7))
+    before = obj.centroid
+    obj.rotate(rot, anchor=0)
+    np.testing.assert_allclose(obj.centroid, rot.apply(before), atol=1e-14)
+
+
+@pytest.mark.parametrize(
+    ("obj", "has_alias"),
+    [(magpy.magnet.Tetrahedron(vertices=_V4), True), (magpy.Sensor(), False)],
+    ids=["Tetrahedron", "Sensor"],
+)
+def test_barycenter_only_where_it_was(obj, has_alias):
+    """The deprecated barycenter stays on the classes that had it before version 6,
+    and no other class gains it."""
+    if has_alias:
+        with pytest.warns(DeprecationWarning, match="centroid"):
+            np.testing.assert_allclose(obj.barycenter, obj.centroid)
+    else:
+        assert not hasattr(obj, "barycenter")
 
 
 def test_unset_describe():
@@ -1011,3 +1075,33 @@ def test_path_properties_unchanged_for_builtin_classes():
         "vertices",
     )
     assert magpy.misc.Dipole._path_properties == ("position", "orientation", "moment")
+
+
+def test_rotate_from_euler_flat_angle_path_single_axis():
+    """a flat (n,) angle path with a one-character seq behaves like (n, 1)"""
+    angs = np.array([15, 30, 45])
+    flat = magpy.Sensor(position=(1, 0, 0)).rotate_from_euler(
+        angs, "z", anchor=0, degrees=True
+    )
+    column = magpy.Sensor(position=(1, 0, 0)).rotate_from_euler(
+        angs[:, np.newaxis], "z", anchor=0, degrees=True
+    )
+    assert flat.position.shape == (4, 3)
+    np.testing.assert_allclose(flat.position, column.position)
+    np.testing.assert_allclose(
+        flat.orientation.as_rotvec(), column.orientation.as_rotvec()
+    )
+    np.testing.assert_allclose(
+        flat.orientation.as_euler("xyz", degrees=True)[:, 2], [0, 15, 30, 45]
+    )
+    # one angle in a list appends a step, and an empty list adds none, as
+    # rotate_from_angax does
+    for angle, steps in (([45], 2), ([], 1)):
+        euler = magpy.Sensor(position=(1, 0, 0)).rotate_from_euler(
+            angle, "z", anchor=0, degrees=True
+        )
+        angax = magpy.Sensor(position=(1, 0, 0)).rotate_from_angax(
+            angle, "z", anchor=0, degrees=True
+        )
+        assert len(np.atleast_2d(euler.position)) == steps
+        np.testing.assert_allclose(euler.position, angax.position, atol=1e-12)

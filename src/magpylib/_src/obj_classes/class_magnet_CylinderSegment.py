@@ -13,15 +13,21 @@ from magpylib._src.fields.field_BH_cylinder_segment import (
 from magpylib._src.input_checks import check_format_input_cylinder_segment
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import (
+    BaseBarycenter,
     BaseDipoleMoment,
     BaseVolume,
 )
-from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.class_BaseTarget import (
+    BaseTarget,
+    check_meshing_count_or_triple,
+)
 from magpylib._src.obj_classes.target_meshing import generate_mesh_cylindersegment
 from magpylib._src.utility import unit_prefix
 
 
-class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
+class CylinderSegment(
+    BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment, BaseBarycenter
+):
     """Cylinder segment (ring-section) magnet with homogeneous magnetization.
 
     Can be used as ``sources`` input for magnetic field computation and ``target``
@@ -52,9 +58,6 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
-    meshing : int | None, default None
-        Mesh fineness for force computation. Must be a positive integer specifying
-        the target mesh size.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -122,7 +125,6 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         dimension=None,
         polarization=None,
         magnetization=None,
-        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -135,8 +137,6 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             style=style,
             **kwargs,
         )
-
-        BaseTarget.__init__(self, meshing)
 
     # property getters and setters
     @property
@@ -242,7 +242,7 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             return dipoles[0]
         return dipoles
 
-    def _generate_mesh(self):
+    def _generate_mesh(self, meshing):
         """Generate mesh for force computation."""
         synced = self._sync_path_lengths(("dimension", "magnetization"))
         dim, mag = synced["dimension"], synced["magnetization"]
@@ -253,5 +253,11 @@ class CylinderSegment(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             dim[:, 3],  # phi1
             dim[:, 4],  # phi2
             mag,
-            self.meshing,
+            meshing,
         )
+
+    def _validate_meshing(self, value):
+        """Check a meshing input and return it normalized: a positive integer, or a
+        tuple of 3 positive integers (divisions along the arc, the radius and the
+        height)."""
+        return check_meshing_count_or_triple(value, self)

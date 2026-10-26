@@ -21,7 +21,7 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
     """Spherical magnet with homogeneous magnetization.
 
     Can be used as ``sources`` input for magnetic field computation and ``target``
-    input for force computation. No ``meshing`` parameter is required.
+    input for force computation. ``getFT`` needs no ``meshing`` for it.
 
     When ``position=(0, 0, 0)`` and ``orientation=None`` the sphere center is located
     in the origin of the global coordinate system.
@@ -182,7 +182,7 @@ class Sphere(BaseMagnet, BaseVolume, BaseDipoleMoment):
             return dipoles[0]
         return dipoles
 
-    def _generate_mesh(self):
+    def _generate_mesh(self, _meshing=None):
         """Generate mesh for force computation."""
         synced = self._sync_path_lengths(("diameter", "magnetization"))
         diam, mag = synced["diameter"], synced["magnetization"]

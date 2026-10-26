@@ -35,7 +35,7 @@ jobs:
         with:
           python-version: "3.x"
 
-      - uses: astral-sh/setup-uv@v10.0.1
+      - uses: astral-sh/setup-uv@v10.3.0
 
       - uses: j178/prek-action@v2
 
@@ -55,7 +55,10 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.14"]
-        runs-on: [ubuntu-latest, windows-latest, macos-latest, macos-15-intel]
+        # macOS on Apple Silicon only: magpylib is pure Python, and the Intel
+        # runner -- GitHub's last, retired in fall 2027 -- took twice as long
+        # as any other job.
+        runs-on: [ubuntu-latest, windows-latest, macos-latest]
 
         # include:
         #   - python-version: "pypy-3.11"
@@ -64,7 +67,7 @@ jobs:
 
     steps:
       - name: Setup headless display
-        uses: pyvista/setup-headless-display-action@v4
+        uses: pyvista/setup-headless-display-action@v5
 
       - uses: actions/checkout@v7
         with:
@@ -80,7 +83,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
 
-      - uses: astral-sh/setup-uv@v10.0.1
+      - uses: astral-sh/setup-uv@v10.3.0
 
       - name: Install package
         run: uv sync
@@ -94,6 +97,11 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+      # A run of its own: collecting src/ next to tests/ imports pyvista
+      # before test_show_with_missing_pyvista can hide it.
+      - name: Test docstring examples
+        run: uv run pytest --doctest-modules src/magpylib -q
 
   pass:
     if: always()

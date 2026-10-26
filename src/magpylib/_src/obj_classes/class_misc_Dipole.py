@@ -138,7 +138,7 @@ class Dipole(BaseSource, BaseDipoleMoment):
             return self.position
         return self._position
 
-    def _generate_mesh(self):
+    def _generate_mesh(self, _meshing=None):
         """Generate mesh for force computation."""
         if self._moment is None:
             return {"pts": np.array([(0, 0, 0)]), "moments": np.array([(0, 0, 0)])}

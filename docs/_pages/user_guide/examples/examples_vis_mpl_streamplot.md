@@ -99,11 +99,11 @@ grid = np.mgrid[-.05:.05:100j, -.05:.05:100j, 0:0:1j].T[0]
 X, Y, _ = np.moveaxis(grid, 2, 0)
 
 # Compute magnetic field on grid - using the functional interface
-B = magpy.getB(
-    "CylinderSegment",
+B = magpy.func.cylinder_segment_field(
+    field="B",
     observers=grid.reshape(-1, 3),
-    dimension=(0.02, 0.03, 0.05, 0, 360),
-    polarization=(0.1, 0, 0),
+    dimensions=(0.02, 0.03, 0.05, 0, 360),
+    polarizations=(0.1, 0, 0),
 )
 B = B.reshape(grid.shape)
 Bx, By, _ = np.moveaxis(B, 2, 0)

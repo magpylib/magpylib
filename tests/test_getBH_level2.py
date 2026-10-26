@@ -717,3 +717,21 @@ def test_path_varying_property_multi_pixel_ragged_group():
         B_ref2 = magpy.current.Polyline(current=1, vertices=verts2).getB(pixel)
         np.testing.assert_allclose(B[0, i], B_ref1)
         np.testing.assert_allclose(B[1, i], B_ref2)
+
+
+@pytest.mark.parametrize("func", [magpy.getB, magpy.getH, magpy.getJ, magpy.getM])
+def test_string_sources_are_rejected(func):
+    """The v5 functional call ``getB("Cuboid", ...)`` was removed in v6; the
+    error must not offer a string as a valid source."""
+    with pytest.raises(MagpylibBadUserInput, match="received 'Cuboid'") as err:
+        func("Cuboid", (0, 0, 1))
+    assert "string" not in str(err.value).split("received")[0]
+
+
+@pytest.mark.parametrize("func", [magpy.getB, magpy.getH, magpy.getJ, magpy.getM])
+def test_unknown_keyword_raises(func):
+    """Keywords that only fed the removed functional call are no longer
+    swallowed silently."""
+    src = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
+    with pytest.raises(TypeError, match="sum_up"):
+        func(src, (0, 0, 1), sum_up=True)

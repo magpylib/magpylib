@@ -2,135 +2,163 @@
 
 ## [Unreleased]
 
-- Magpylib now ships an official [Agent Skill](https://agentskills.io) at
-  `magpylib/.agents/skills/magpylib/`, so AI coding assistants get the current
-  API instead of the pre-v5 one they were trained on — SI units, `polarization`
-  over `magnetization`, output shapes, path semantics, and the `meshing`
-  requirement of `getFT()`. It travels inside the wheel and is therefore always
-  in sync with the installed version. Users pick it up with `uvx library-skills`
-  (see [library-skills.io](https://library-skills.io)), which symlinks it into
-  their project's `.agents/skills/`.
-- Extended the path system beyond `position`/`orientation` to object attributes
-  ([#916](https://github.com/magpylib/magpylib/pull/916)). Physical properties
-  such as `current`, `diameter`, `dimension`, `polarization`, `magnetization`,
-  `moment` and `vertices` can now vary along a path, enabling AC/ramped
-  currents, deforming geometries and thermal-expansion studies:
+### Added
 
-  ```python
-  circle = magpy.current.Circle(
-      diameter=np.linspace(0.01, 0.05, 10),
-      current=np.linspace(1, 10, 10),
-  )
-  ```
+- An Agent Skill ships inside the package, so AI coding assistants write current
+  Magpylib code (SI units, `polarization`, `getFT(..., meshing=...)`); add it to
+  a project with `uvx library-skills`
+  ([#992](https://github.com/magpylib/magpylib/pull/992)).
 
-  Storage stays minimal — a property is kept in the form the user gave it, and
-  is edge-padded to the common path length only during field, force and display
-  computation, then restored. Objects with properties of differing path lengths
-  are padded to the longest.
+## [6.0.1] 2026-10-25
 
-- Derived properties (`dipole_moment`, `barycenter`, …) gain a leading path axis
-  when the inputs they derive from are path-varying. Shapes for non-path-varying
-  objects are unchanged.
-- Added `obj.path_properties`, listing which of an object's attributes support a
-  path dimension. Classes declare their own via `_path_properties`, which is
-  aggregated across all base classes.
-- Rewrote numeric input validation around a single `check_format_input_numeric`
-  with shape-pattern matching (wildcards and ellipsis) and value conditions,
-  giving consistent messages across all object attributes.
-- Removed the internal `magpylib._src.utility.check_path_format`; path
-  consistency is now maintained by the path-property machinery itself.
-- Rewrote the style and defaults internals as a declarative typed-property tree,
-  replacing `MagicProperties`
-  ([#967](https://github.com/magpylib/magpylib/pull/967)). Style _usage_ is
-  unchanged — nested attribute access, magic underscore kwargs, dict assignment
-  and `None`-defers-to-defaults all behave as before — but `show()` is about 3x
-  faster on typical scenes and `get_style()` about 50x faster per object.
-- Added a public introspection contract on every style and defaults node, so
-  third-party tools can build GUIs on top: `schema()` (JSON Schema),
-  `get(path)`/`set(path, value)` (dotted paths), `observe(callback)` (change
-  events), and `is_set`/`set_values()`/`merged()` (set-vs-inherited resolution).
-- Collections of child nodes (currently `style.model3d.data`) take part in that
-  contract like any other node: an edit inside a trace reports as
-  `model3d.data.0.show` to observers, `get`/`set` address traces by index
-  through the same path, and `schema()` describes the collection as an array of
-  trace objects.
-- **Breaking:** invalid style and defaults values now raise `ValueError` instead
-  of `AssertionError`. The old checks were `assert` statements and silently
-  vanished under `python -O`.
-- **Breaking:** number-valued style properties no longer accept booleans (`bool`
-  is an `int` subclass, so the old checks let `size=True` through).
-- **Breaking:** assigning `None` to an always-set property such as
-  `style.model3d.showdefault` now resets it to its default instead of raising.
-- **Breaking:** `style.model3d.data` is always a tuple, where it used to be a
-  list. Traces are replaced rather than mutated in place —
-  `data = [*data, trace]` (or `add_trace()`) instead of `data.append(trace)`,
-  and `data = []` instead of `data.clear()`. In-place mutation bypassed both
-  validation and change notification, so an unvalidated entry could reach
-  `show()` and a GUI observing the style never learned of it.
-- **Breaking:** `as_dict()` no longer includes the deprecated
-  `magnetization.size` key. It remains readable and writable as an attribute.
-- `magpy.defaults.display.backend` and `style.model3d.data[].backend` now accept
-  any backend present in the display registry, resolved per call instead of
-  frozen at import. `magpylib.SUPPORTED_PLOTTING_BACKENDS` is unchanged and
-  still lists the built-in backends.
-- Fixed `color_validator` raising `TypeError: unhashable type` on the documented
-  list and array color forms.
-- Added a public display-backend API, making a third-party backend a first-class
-  citizen instead of a monkeypatch
-  ([#973](https://github.com/magpylib/magpylib/pull/973)). Register one at
-  runtime with `magpy.register_backend(name, show_func, **capabilities)`, or
-  ship it in a package through the `magpylib.backends` entry-point group, where
-  `pip install` is enough to make it available. A registered name is then
-  accepted everywhere a built-in one is: `show(backend=...)`,
-  `magpy.defaults.display.backend` and `style.model3d.data[].backend`. Entry
-  points are resolved on the first backend-name lookup after `import magpylib`
-  returns, rather than during the import itself, so importing magpylib no longer
-  loads the backends installed alongside it.
-- `show()` now hands a backend a single typed `Scene` — panels, frames,
-  animation settings, canvas and leftover options — rather than seven loose
-  arguments. Traces stay plain dicts in Magpylib's own dialect, so the envelope
-  is typed without freezing the payload. The contract is exported from
-  `magpylib.graphics.backend`: `Scene`, `Panel`, `Frame`, `AnimationSettings`,
-  `DisplayBackend`, `drawing_properties`, `TRACE_META_KEYS`, `API_VERSION` and
-  `ENTRY_POINT_GROUP`.
-- Backends declare what they can draw — `supports_animation`,
-  `supports_subplots`, `supports_colorgradient`, `supports_animation_output`,
-  `supports_native_traces`, plus `handles_traces` and `accepts_options`. Every
-  flag defaults to off or undeclared, so a capability added in a later Magpylib
-  release never silently changes an existing backend's behaviour, and `show()`
-  warns and falls back instead of handing over something the backend never
-  claimed to support.
-- Traces now carry `object_id`, and a backend can set `merge_traces = False` to
-  keep each object's geometry and identity separate — what picking and drag
-  gizmos need. `drawing_properties(trace)` strips Magpylib's metadata keys
-  before a trace is passed to a plotting library.
-- Fixed a series of display bugs this rework exposed, several of which had never
-  worked ([#973](https://github.com/magpylib/magpylib/pull/973)):
-  `style.model3d` traces given as `args` without `kwargs` raised, although that
-  is the form the style docs describe; Pyvista silently discarded models
-  addressed to it, having never consumed them at all, and now declares
-  `supports_native_traces = False` and warns; `show(title=...)` reached no
-  backend; a backend declaring `supports_subplots = False` was still handed a
-  subplot grid; misspelled arguments and backend-prefixed ones such as
-  `plotly_renderer=...` were dropped without a word; and the Plotly backend
-  mutated the payload it was given. `show()` also returned whatever the backend
-  returned even with `return_fig=False`, contradicting its own documented return
-  value — the built-in backends happened to return `None` there, so only a
-  third-party backend could expose it.
-- Added `magpy.defaults.display.units.length`, so the `show(units_length=...)`
-  default is configurable like every other display setting
-  ([#973](https://github.com/magpylib/magpylib/pull/973)). It was the only
-  display parameter with no defaults entry. Pinning it to a fixed unit — with
-  `sizemode='absolute'` for sensors and dipoles — keeps the coordinates handed
-  to a display backend dependent only on the objects themselves, rather than on
-  the extent of the whole scene, which is what a backend that updates a figure
-  incrementally needs. As a side effect of `units` becoming a defaults
-  namespace, a misspelled `units...` argument to `show()` now raises `TypeError`
-  instead of warning, matching how the other namespaces (`animation...`,
-  `style...`) already behaved.
-- Reworked the docs build (theme-aware figures, on-demand Pyvista scenes,
-  parallel notebooks) and fixed Pyvista face colors breaking web scene exports
-  ([#988](https://github.com/magpylib/magpylib/pull/988)).
+### Changed
+
+- Requires scipy 1.17.1 or newer
+  ([#1052](https://github.com/magpylib/magpylib/pull/1052)).
+- Faster `import magpylib`, `show()` and fields along paths
+  ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
+- From a script, Pyvista animations play live in Pyvista's window
+  ([#1051](https://github.com/magpylib/magpylib/pull/1051),
+  [#1053](https://github.com/magpylib/magpylib/pull/1053)).
+
+### Fixed
+
+- Pyvista animations open from scripts on every OS and keep their title, canvas
+  objects and chart panels in every frame
+  ([#1051](https://github.com/magpylib/magpylib/pull/1051),
+  [#1053](https://github.com/magpylib/magpylib/pull/1053)).
+- Animations of paths inside nested Collections
+  ([#1049](https://github.com/magpylib/magpylib/pull/1049)).
+- Force meshes of TriangleStrip, TriangleSheet and Polyline: the same wherever
+  the object sits, and no NaN or failure on path steps
+  ([#1046](https://github.com/magpylib/magpylib/pull/1046),
+  [#1050](https://github.com/magpylib/magpylib/pull/1050)).
+- Custom sources accept bound methods and callable objects as field functions,
+  and are freed when their field function references them
+  ([#1045](https://github.com/magpylib/magpylib/pull/1045),
+  [#1054](https://github.com/magpylib/magpylib/pull/1054)).
+- Objects whose 3D model is drawn by one of their own methods can be shown and
+  copied ([#1055](https://github.com/magpylib/magpylib/pull/1055)).
+
+## [6.0.0] 2026-10-19
+
+### Added
+
+- Physical properties such as `current`, `dimension` or `polarization` can vary
+  along a path; `obj.path_properties` lists them, and derived properties such as
+  `dipole_moment` follow the path
+  ([#916](https://github.com/magpylib/magpylib/pull/916)).
+- Third-party display backends, registered with `magpy.register_backend()` or a
+  `magpylib.backends` entry point, see the backend guide
+  ([#970](https://github.com/magpylib/magpylib/pull/970),
+  [#973](https://github.com/magpylib/magpylib/pull/973),
+  [#978](https://github.com/magpylib/magpylib/pull/978),
+  [#999](https://github.com/magpylib/magpylib/pull/999),
+  [#1011](https://github.com/magpylib/magpylib/pull/1011),
+  [#1029](https://github.com/magpylib/magpylib/pull/1029)).
+- Style and defaults expose `schema()`, `get()`/`set()` and `observe()` for GUI
+  tools, and `defaults.display.units.length` and
+  `defaults.display.legend.maxitems` set `show()`'s defaults
+  ([#967](https://github.com/magpylib/magpylib/pull/967),
+  [#973](https://github.com/magpylib/magpylib/pull/973),
+  [#987](https://github.com/magpylib/magpylib/pull/987),
+  [#1007](https://github.com/magpylib/magpylib/pull/1007)).
+
+### Changed
+
+- **Breaking:** force and torque (`getFT`)
+  - `meshing` is an argument of `getFT`, not of the targets: an integer for all
+    targets or a dict per target, `meshing={ring: 100, coil: 40}`. The old
+    constructor keyword raises with a pointer to the call
+    ([#1017](https://github.com/magpylib/magpylib/issues/1017),
+    [#1025](https://github.com/magpylib/magpylib/pull/1025)).
+  - Cylinders get near-cubic cells, tetrahedra equal sub-tetrahedra, and forces
+    act at the true cell centroids, so results for these classes change at the
+    same `meshing`. `Cylinder` and `CylinderSegment` take a triple
+    `(nphi, nr, nh)` ([#1023](https://github.com/magpylib/magpylib/pull/1023)).
+  - The torque on a Collection target is taken about the Collection's centroid,
+    as for one rigid body, and array pivots count a Collection as one target. A
+    Collection without volume, such as a coil, has the mean of its members'
+    centroids as centroid
+    ([#1018](https://github.com/magpylib/magpylib/issues/1018),
+    [#1024](https://github.com/magpylib/magpylib/pull/1024)).
+- **Breaking:** display and style
+  - A 2D panel no longer mixes outputs in T (`B`, `J`) and in A/m (`H`, `M`)
+    ([#1010](https://github.com/magpylib/magpylib/pull/1010)).
+  - `style.model3d.data` is a tuple: use `add_trace()` instead of
+    `data.append()` ([#987](https://github.com/magpylib/magpylib/pull/987)).
+  - Invalid style values raise `ValueError` instead of `AssertionError`, and
+    number-valued style properties reject booleans
+    ([#967](https://github.com/magpylib/magpylib/pull/967)).
+  - Past `legend_maxitems`, the legend shows its first entries and "… and k
+    more" instead of disappearing
+    ([#1007](https://github.com/magpylib/magpylib/pull/1007)).
+- **Breaking:** misspelled keyword arguments of `getB()`, `getH()`, `getJ()`,
+  `getM()` and `show()` raise instead of being ignored
+  ([#973](https://github.com/magpylib/magpylib/pull/973),
+  [#1005](https://github.com/magpylib/magpylib/pull/1005),
+  [#1011](https://github.com/magpylib/magpylib/pull/1011),
+  [#1014](https://github.com/magpylib/magpylib/pull/1014)).
+- Magpylib's input errors are `ValueError`s
+  ([#1031](https://github.com/magpylib/magpylib/pull/1031)).
+- `show()` is about 3x faster
+  ([#967](https://github.com/magpylib/magpylib/pull/967),
+  [#1022](https://github.com/magpylib/magpylib/pull/1022)).
+
+### Deprecated
+
+- `barycenter`, in favor of `centroid`
+  ([#916](https://github.com/magpylib/magpylib/pull/916),
+  [#1031](https://github.com/magpylib/magpylib/pull/1031)).
+- `getFT(..., return_mesh=True)`; a function returning a target's cells is
+  planned ([#1027](https://github.com/magpylib/magpylib/issues/1027),
+  [#1032](https://github.com/magpylib/magpylib/pull/1032)).
+
+### Removed
+
+- **Breaking:** `getB("Cuboid", ...)` and `getH("Cuboid", ...)`, deprecated in
+  5.2: use `magpylib.func`
+  ([#1005](https://github.com/magpylib/magpylib/pull/1005)).
+- **Breaking:** the deprecated `magnetization.size` key of `as_dict()`
+  ([#967](https://github.com/magpylib/magpylib/pull/967)).
+- **Breaking:** `getFT(..., meshreport=True)`
+  ([#1032](https://github.com/magpylib/magpylib/pull/1032)).
+
+### Fixed
+
+- Display: arrows and legends in Matplotlib animations, pixel fields, 2D panel
+  legends and axis titles, `show(title=...)` and backend arguments that were
+  ignored, some allowed line styles, `show(markers=...)` given as an array,
+  `CustomSource` in Plotly, and Pyvista web exports; drawing no longer sets
+  `faces` and `mesh` on a `TriangleStrip` or `TriangleSheet`
+  ([#973](https://github.com/magpylib/magpylib/pull/973),
+  [#988](https://github.com/magpylib/magpylib/pull/988),
+  [#1010](https://github.com/magpylib/magpylib/pull/1010),
+  [#1013](https://github.com/magpylib/magpylib/pull/1013),
+  [#1014](https://github.com/magpylib/magpylib/pull/1014),
+  [#1021](https://github.com/magpylib/magpylib/pull/1021),
+  [#1022](https://github.com/magpylib/magpylib/pull/1022),
+  [#1037](https://github.com/magpylib/magpylib/pull/1037),
+  [#1039](https://github.com/magpylib/magpylib/pull/1039)).
+- Style: colors given as lists or arrays raised, `style_line={...}` discarded a
+  `style_line_color=...` beside it, and `style.pixel.field.source` accepted an
+  unknown field such as `"Bq"`
+  ([#967](https://github.com/magpylib/magpylib/pull/967),
+  [#1014](https://github.com/magpylib/magpylib/pull/1014),
+  [#1037](https://github.com/magpylib/magpylib/pull/1037)).
+- Force: biased `Tetrahedron` meshes and invalid `meshing` values gave wrong
+  forces ([#1023](https://github.com/magpylib/magpylib/pull/1023)); the centroid
+  of a rotated `Polyline`, `TriangleStrip`, `TriangleSheet` or `Sensor` ignored
+  its orientation, so torques about it were wrong
+  ([#1030](https://github.com/magpylib/magpylib/pull/1030)).
+- `Collection.dipole_moment` mixed its members' frames and is now in the
+  Collection's own frame; `describe()` raised for an open `Polyline` or
+  `TriangleStrip`; a `TriangularMesh` kept the results of its mesh checks after
+  its `faces` or `vertices` changed
+  ([#1030](https://github.com/magpylib/magpylib/pull/1030),
+  [#1037](https://github.com/magpylib/magpylib/pull/1037)).
+- A wrong observer or source was reported as "No observers provided" or "No
+  sources provided" ([#1002](https://github.com/magpylib/magpylib/pull/1002)).
 
 ## [5.2.3] 2026-05-15
 

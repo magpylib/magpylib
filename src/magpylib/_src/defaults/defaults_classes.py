@@ -29,8 +29,7 @@ class AnimationOutput(Property):
 
 
 class Animation(PropertyNode):
-    """Defines the animation properties used by the `plotly` plotting backend
-    when `animation=True` in the `show` function.
+    """Defines the animation properties `show` uses with `animation=True`.
 
     Parameters
     ----------
@@ -42,15 +41,16 @@ class Animation(PropertyNode):
     maxframes: int, default=None
         Maximum total number of frames to be displayed before downsampling
         kicks in.
-    time: int, default=None
-        Default animation time.
+    time: float, default=None
+        Default animation time, in seconds.
     slider: bool, default=None
         If True, an interactive slider will be displayed and stay in sync with
         the animation, will be hidden otherwise.
     output: str, default=None
         The path where to store the animation. Must end with `.mp4` or `.gif`.
-        If only the suffix is used, the file is only stored in a temporary
-        folder and deleted after the animation is done.
+        If only the suffix is used, the file goes to a temporary folder. It is
+        deleted once a notebook embeds it, and kept there when a viewer opens
+        it from a script.
     """
 
     fps = Integer(
@@ -64,7 +64,7 @@ class Animation(PropertyNode):
         exclusive_minimum=0,
         doc="Maximum total number of frames before downsampling kicks in.",
     )
-    time = Integer(exclusive_minimum=0, doc="Default animation time.")
+    time = Number(exclusive_minimum=0, doc="Default animation time, in seconds.")
     slider = Boolean(doc="Show/hide interactive animation slider.")
     output = AnimationOutput(doc="Animation output type ('mp4' or 'gif').")
 
@@ -86,6 +86,25 @@ class Units(PropertyNode):
         "auto",
         *LENGTH_UNITS,
         doc="Length unit the scene is drawn in ('auto' infers it from the scene).",
+    )
+
+
+class Legend(PropertyNode):
+    """Defines how legends are drawn.
+
+    Parameters
+    ----------
+    maxitems: int, default=20
+        Most entries a legend lists, overridable per call with
+        `show(legend_maxitems=...)`. Past it, the first ones are listed and the
+        rest summed up in one "... and k more" entry; 0 hides the legend.
+    """
+
+    # always set: None resets it to 20 rather than leaving show() nothing
+    maxitems = Integer(
+        default=20,
+        minimum=0,
+        doc="Most entries a legend lists (0 hides the legend).",
     )
 
 
@@ -112,6 +131,9 @@ class Display(PropertyNode):
     units: dict or `Units` object, default=None
         Units the scene is drawn in. Reachable as `units.length` or, via magic
         underscore, as `units_length` -- matching the `show()` argument.
+    legend: dict or `Legend` object, default=None
+        How legends are drawn. Reachable as `legend.maxitems` or, via magic
+        underscore, as `legend_maxitems` -- matching the `show()` argument.
     style: dict or `DisplayStyle` object, default=None
         Display styling properties for all object families.
     """
@@ -128,6 +150,7 @@ class Display(PropertyNode):
         exclusive_minimum=0, doc="Display scale of autosized objects."
     )
     units = Nested(Units, doc="Units the scene is drawn in.")
+    legend = Nested(Legend, doc="How legends are drawn.")
     style = Nested(DisplayStyle, doc="Display styling properties for all families.")
 
 

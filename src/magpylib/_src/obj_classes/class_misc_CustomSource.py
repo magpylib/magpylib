@@ -46,8 +46,8 @@ class CustomSource(BaseSource):
 
     Examples
     --------
-    With version 4, ``CustomSource`` objects enable users to define their own source
-    objects and embed them in the Magpylib object-oriented interface. In this example
+    ``CustomSource`` objects enable users to define their own source objects and
+    embed them in the Magpylib object-oriented interface. In this example
     we create a source that generates a constant field and evaluate the field at the
     observer position ``(0.01, 0.01, 0.01)`` in units (m):
 

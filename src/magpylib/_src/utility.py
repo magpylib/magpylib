@@ -4,12 +4,15 @@
 # pylint: disable=cyclic-import
 # import numbers
 
+import reprlib
+import sys
 import warnings
 from collections.abc import Callable, Sequence
 from contextlib import contextmanager
 from functools import cache
 from inspect import signature
 from math import log10
+from pathlib import Path
 
 import numpy as np
 
@@ -23,8 +26,7 @@ def get_allowed_sources_msg():
     return f"""Sources must be either
 - one of type {srcs}
 - Collection with at least one of the above
-- 1D list of the above
-- string {srcs}"""
+- 1D list of the above"""
 
 
 ALLOWED_OBSERVER_MSG = """Observers must be either
@@ -43,17 +45,19 @@ def wrong_obj_msg(*objs, allow="sources"):
     """return error message for wrong object type provided"""
     assert len(objs) <= 1, "only max one obj allowed"
     allowed = allow.split("+")
-    prefix = "No" if len(allowed) == 1 else "Bad"
-    msg = f"{prefix} {'/'.join(allowed)} provided"
+    obj = objs[0] if objs else None
+    given = obj is not None and not (
+        isinstance(obj, list | tuple | np.ndarray) and len(obj) == 0
+    )
+    msg = f"{'Bad' if given else 'No'} {'/'.join(allowed)} provided"
     if "sources" in allowed:
         msg += "\n" + get_allowed_sources_msg()
     if "observers" in allowed:
         msg += "\n" + ALLOWED_OBSERVER_MSG
     if "sensors" in allowed:
         msg += "\n" + ALLOWED_SENSORS_MSG
-    if objs:
-        obj = objs[0]
-        msg += f"\nreceived {obj!r} of type {type(obj).__name__!r} instead."
+    if given:
+        msg += f"\nreceived {reprlib.repr(obj)} of type {type(obj).__name__!r} instead."
     return msg
 
 
@@ -387,13 +391,17 @@ def is_notebook() -> bool:  # pragma: no cover
         from IPython import get_ipython  # noqa: PLC0415
 
         shell = get_ipython().__class__.__name__
-    except NameError:
-        return False  # Probably standard Python interpreter
+    except (ImportError, NameError):
+        return False  # standard Python interpreter, or no IPython installed
     return shell == "ZMQInteractiveShell"  # True only for Jupyter notebook or qtconsole
 
 
 def open_animation(filepath, embed=True):
-    """Display video or gif file using tkinter or IPython"""
+    """Display a gif or mp4 file in the notebook, or open it in the system viewer.
+
+    Return True when a viewer outside the notebook got the file: it reads it
+    after this call returns, so the file must stay.
+    """
     # pylint: disable=import-outside-toplevel
     if is_notebook():
         if str(filepath).lower().endswith(".gif"):
@@ -408,17 +416,32 @@ def open_animation(filepath, embed=True):
         else:  # pragma: no cover
             msg = "Filetype not supported, only 'mp4 or 'gif' allowed."
             raise TypeError(msg)
-    else:
-        import webbrowser  # noqa: PLC0415
+        return False
+    import webbrowser  # noqa: PLC0415
 
-        webbrowser.open(filepath)
+    path = Path(filepath).absolute()
+    # the openers want a string, a Path raises on macOS and Linux; Windows
+    # takes the path itself, as it can misread non-ASCII escapes in a file URL
+    url = str(path) if sys.platform == "win32" else path.as_uri()
+    if not webbrowser.open(url):
+        msg = f"No viewer could open the animation, it is saved at {path}"
+        warnings.warn(msg, UserWarning, stacklevel=2)
+    return True
+
+
+def has_parameter(func: Callable, param_name: str) -> bool:
+    """Check if input function has a specific parameter"""
+    # only Magpylib's own field functions are cached: they live for the whole
+    # session, while a cached user callable would keep its source alive
+    if (getattr(func, "__module__", None) or "").startswith("magpylib."):
+        return param_name in _own_parameter_names(func)
+    return param_name in signature(func, follow_wrapped=False).parameters
 
 
 @cache
-def has_parameter(func: Callable, param_name: str) -> bool:
-    """Check if input function has a specific parameter"""
-    sig = signature(func)
-    return param_name in sig.parameters
+def _own_parameter_names(func: Callable) -> frozenset:
+    """Parameter names of a Magpylib field function"""
+    return frozenset(signature(func, follow_wrapped=False).parameters)
 
 
 def merge_dicts_with_conflict_check(objs, *, target, identifiers, unique_fields):

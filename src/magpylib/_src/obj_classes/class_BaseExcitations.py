@@ -18,7 +18,9 @@ from magpylib._src.style import CurrentStyle, MagnetStyle
 from magpylib._src.utility import format_star_input, unit_prefix
 
 
-class BaseSource(BaseGeo):
+# BaseSource, BaseMagnet and BaseCurrent are abstract themselves: `_get_centroid`
+# is each concrete class's to implement, as BaseGeo declares.
+class BaseSource(BaseGeo):  # pylint: disable=abstract-method
     """Base class for all source objects providing getBHJM and field function hook."""
 
     _field_func = None
@@ -313,7 +315,7 @@ class BaseSource(BaseGeo):
         )
 
 
-class BaseMagnet(BaseSource):
+class BaseMagnet(BaseSource):  # pylint: disable=abstract-method
     """Provide magnetization and polarization attributes for magnet sources."""
 
     _style_class = MagnetStyle
@@ -400,7 +402,7 @@ class BaseMagnet(BaseSource):
         self._check_input_format_mag_pol(mag, "polarization")
 
 
-class BaseCurrent(BaseSource):
+class BaseCurrent(BaseSource):  # pylint: disable=abstract-method
     """Provide scalar electric current attribute for current sources."""
 
     _style_class = CurrentStyle

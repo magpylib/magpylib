@@ -11,6 +11,7 @@ from magpylib._src.fields.field_BH_tetrahedron import _BHJM_magnet_tetrahedron
 from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_BaseProperties import (
+    BaseBarycenter,
     BaseDipoleMoment,
     BaseVolume,
 )
@@ -18,7 +19,7 @@ from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
 from magpylib._src.obj_classes.target_meshing import generate_mesh_tetrahedron
 
 
-class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
+class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment, BaseBarycenter):
     """Tetrahedron magnet with homogeneous magnetization.
 
     Can be used as ``sources`` input for magnetic field computation and ``target``
@@ -49,9 +50,6 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
-    meshing : int | None, default None
-        Mesh fineness for force computation. Must be a positive integer specifying
-        the target mesh size.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -68,8 +66,6 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         Same as constructor parameter ``polarization``.
     magnetization : None | ndarray, shape (3,) or (p, 3)
         Same as constructor parameter ``magnetization``.
-    meshing : int | None
-        Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid in units (m) in global coordinates.
     dipole_moment : ndarray, shape (3,) or (p, 3)
@@ -118,7 +114,6 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         vertices=None,
         polarization=None,
         magnetization=None,
-        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -131,8 +126,6 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             style=style,
             **kwargs,
         )
-
-        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -225,9 +218,9 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             return dipoles[0]
         return dipoles
 
-    def _generate_mesh(self):
+    def _generate_mesh(self, meshing):
         """Generate mesh for force computation by delegating to target mesher."""
         synced = self._sync_path_lengths(("vertices", "magnetization"))
         return generate_mesh_tetrahedron(
-            synced["vertices"], synced["magnetization"], self.meshing
+            synced["vertices"], synced["magnetization"], meshing
         )

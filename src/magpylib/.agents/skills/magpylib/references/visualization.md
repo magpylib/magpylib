@@ -5,7 +5,7 @@ objects.
 
 ## show()
 
-```python
+```text
 magpy.show(
     *objects,
     backend,
@@ -65,9 +65,10 @@ high-quality 3D. Matplotlib's 3D compositing has no real depth sorting, so
 overlapping bodies can render misleadingly — prefer plotly or pyvista for dense
 scenes.
 
-A backend handed something it never declared support for warns and falls back
-rather than producing silently wrong output — custom `style.model3d` traces sent
-to pyvista, for instance.
+Generic `style.model3d` traces render on every backend. A backend-specific one
+(`backend="plotly"`, say) is drawn only by its own backend and skipped by the
+others without a warning; pyvista takes no native traces and warns when given a
+pyvista one.
 
 Third-party backends register at runtime with
 `magpy.register_backend(name, show_func, **capabilities)`, or ship in a package
@@ -128,4 +129,5 @@ Build traces with the helpers in `magpy.graphics.model3d`: `make_Cuboid`,
 `make_Tetrahedron`, `make_TriangularMesh`, `make_Arrow`; or pass a
 backend-native trace via `magpy.graphics.Trace3d`. Set
 `style.model3d.showdefault = False` to replace the default representation rather
-than add to it. Pyvista does not consume these (see the capability table above).
+than add to it. The `make_*` traces are generic and render on every backend;
+only backend-native traces depend on the capability table above.

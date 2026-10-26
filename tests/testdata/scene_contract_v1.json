@@ -1,0 +1,1005 @@
+{
+  "gradient, merged": {
+    "animation": {
+      "fps": "int",
+      "frame_duration": "int",
+      "output": "None",
+      "path_indices": "tuple[int]",
+      "repeat": "bool",
+      "slider": "bool",
+      "time": "float"
+    },
+    "frames": {
+      "count": 2,
+      "label": "str",
+      "same traces in every frame": true
+    },
+    "native_traces": [
+      {
+        "args": "list[]",
+        "constructor": "str",
+        "coordsargs": "dict{x:str,y:str,z:str}",
+        "kwargs": "dict{x:ndarray[f,1d],y:ndarray[f,1d],z:ndarray[f,1d]}",
+        "kwargs_extra": "dict{col:int,color:str,legendgroup:str,name:str,opacity:int,row:int,showlegend:bool}",
+        "object_id": "int"
+      }
+    ],
+    "panels": [
+      {
+        "cell": [
+          1,
+          1
+        ],
+        "kind": "scene3d",
+        "labels": [
+          "x",
+          "y",
+          "z"
+        ],
+        "objects": [
+          "Cuboid",
+          "Collection",
+          "Tetrahedron",
+          "TriangularMesh",
+          "Circle",
+          "Polyline",
+          "TriangleStrip",
+          "TriangleSheet",
+          "Dipole",
+          "Triangle",
+          "CustomSource",
+          "Sensor",
+          "Sensor"
+        ],
+        "ranges": "ndarray[f,2d]"
+      },
+      {
+        "cell": [
+          1,
+          2
+        ],
+        "kind": "chart2d",
+        "labels": [
+          "x",
+          "y"
+        ],
+        "objects": [
+          "Cuboid",
+          "Sensor"
+        ],
+        "ranges": "None"
+      }
+    ],
+    "scene": {
+      "canvas": "None",
+      "canvas_update": "bool",
+      "legend_maxitems": "int",
+      "options": "dict{}",
+      "return_fig": "bool",
+      "title": "None"
+    },
+    "traces": [
+      {
+        "col": "int",
+        "color": "None",
+        "facecolor": "ndarray[U,1d]",
+        "i": "ndarray[i,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "color": "str",
+        "colorscale": "tuple[tuple[float|str]]",
+        "flatshading": "bool",
+        "i": "ndarray[i,1d]",
+        "intensity": "ndarray[f,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "color": "str",
+        "colorscale": "tuple[tuple[float|str]]",
+        "i": "ndarray[i,1d]",
+        "intensity": "ndarray[f,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "None",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "color": "str",
+        "colorscale": "tuple[tuple[float|str]]",
+        "i": "ndarray[i,1d]",
+        "intensity": "ndarray[f,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "color": "str",
+        "i": "ndarray[i,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "hovertemplate": "str",
+        "legendgroup": "str",
+        "legendgrouptitle_text": "str",
+        "line_color": "str",
+        "line_dash": "str",
+        "marker_color": "None",
+        "marker_line_color": "None",
+        "marker_size": "ndarray[i,1d]",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "text": "str",
+        "type": "scatter",
+        "x": "ndarray[i,1d]",
+        "y": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "line_color": "str",
+        "line_dash": "str",
+        "line_width": "int",
+        "marker_color": "str",
+        "marker_size": "int",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "line_color": "str",
+        "line_dash": "str",
+        "line_width": "int",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "marker_color": "str",
+        "marker_size": "int",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "None",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "marker_color": "str",
+        "marker_size": "int",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      }
+    ]
+  },
+  "gradient, unmerged": {
+    "animation": {
+      "fps": "int",
+      "frame_duration": "int",
+      "output": "None",
+      "path_indices": "tuple[int]",
+      "repeat": "bool",
+      "slider": "bool",
+      "time": "float"
+    },
+    "frames": {
+      "count": 2,
+      "label": "str",
+      "same traces in every frame": true
+    },
+    "native_traces": [
+      {
+        "args": "list[]",
+        "constructor": "str",
+        "coordsargs": "dict{x:str,y:str,z:str}",
+        "kwargs": "dict{x:ndarray[f,1d],y:ndarray[f,1d],z:ndarray[f,1d]}",
+        "kwargs_extra": "dict{col:int,color:str,legendgroup:str,name:str,opacity:int,row:int,showlegend:bool}",
+        "object_id": "int"
+      }
+    ],
+    "panels": [
+      {
+        "cell": [
+          1,
+          1
+        ],
+        "kind": "scene3d",
+        "labels": [
+          "x",
+          "y",
+          "z"
+        ],
+        "objects": [
+          "Cuboid",
+          "Collection",
+          "Tetrahedron",
+          "TriangularMesh",
+          "Circle",
+          "Polyline",
+          "TriangleStrip",
+          "TriangleSheet",
+          "Dipole",
+          "Triangle",
+          "CustomSource",
+          "Sensor",
+          "Sensor"
+        ],
+        "ranges": "ndarray[f,2d]"
+      },
+      {
+        "cell": [
+          1,
+          2
+        ],
+        "kind": "chart2d",
+        "labels": [
+          "x",
+          "y"
+        ],
+        "objects": [
+          "Cuboid",
+          "Sensor"
+        ],
+        "ranges": "None"
+      }
+    ],
+    "scene": {
+      "canvas": "None",
+      "canvas_update": "bool",
+      "legend_maxitems": "int",
+      "options": "dict{}",
+      "return_fig": "bool",
+      "title": "None"
+    },
+    "traces": [
+      {
+        "col": "int",
+        "color": "None",
+        "facecolor": "ndarray[U,1d]",
+        "i": "ndarray[i,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "color": "str",
+        "colorscale": "tuple[tuple[float|str]]",
+        "flatshading": "bool",
+        "i": "ndarray[i,1d]",
+        "intensity": "ndarray[f,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "color": "str",
+        "colorscale": "tuple[tuple[float|str]]",
+        "i": "ndarray[i,1d]",
+        "intensity": "ndarray[f,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "color": "str",
+        "i": "ndarray[i,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "hovertemplate": "str",
+        "legendgroup": "str",
+        "legendgrouptitle_text": "str",
+        "line_color": "str",
+        "line_dash": "str",
+        "marker_color": "None",
+        "marker_line_color": "None",
+        "marker_size": "ndarray[i,1d]",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "text": "str",
+        "type": "scatter",
+        "x": "ndarray[i,1d]",
+        "y": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "line_color": "str",
+        "line_dash": "str",
+        "line_width": "int",
+        "marker_color": "str",
+        "marker_size": "int",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "line_color": "str",
+        "line_dash": "str",
+        "line_width": "int",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "marker_color": "str",
+        "marker_size": "int",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "None",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "marker_color": "str",
+        "marker_size": "int",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      }
+    ]
+  },
+  "sliced, merged": {
+    "animation": {
+      "fps": "int",
+      "frame_duration": "int",
+      "output": "None",
+      "path_indices": "tuple[int]",
+      "repeat": "bool",
+      "slider": "bool",
+      "time": "float"
+    },
+    "frames": {
+      "count": 2,
+      "label": "str",
+      "same traces in every frame": true
+    },
+    "native_traces": [
+      {
+        "args": "list[]",
+        "constructor": "str",
+        "coordsargs": "dict{x:str,y:str,z:str}",
+        "kwargs": "dict{x:ndarray[f,1d],y:ndarray[f,1d],z:ndarray[f,1d]}",
+        "kwargs_extra": "dict{col:int,color:str,legendgroup:str,name:str,opacity:int,row:int,showlegend:bool}",
+        "object_id": "int"
+      }
+    ],
+    "panels": [
+      {
+        "cell": [
+          1,
+          1
+        ],
+        "kind": "scene3d",
+        "labels": [
+          "x",
+          "y",
+          "z"
+        ],
+        "objects": [
+          "Cuboid",
+          "Collection",
+          "Tetrahedron",
+          "TriangularMesh",
+          "Circle",
+          "Polyline",
+          "TriangleStrip",
+          "TriangleSheet",
+          "Dipole",
+          "Triangle",
+          "CustomSource",
+          "Sensor",
+          "Sensor"
+        ],
+        "ranges": "ndarray[f,2d]"
+      },
+      {
+        "cell": [
+          1,
+          2
+        ],
+        "kind": "chart2d",
+        "labels": [
+          "x",
+          "y"
+        ],
+        "objects": [
+          "Cuboid",
+          "Sensor"
+        ],
+        "ranges": "None"
+      }
+    ],
+    "scene": {
+      "canvas": "None",
+      "canvas_update": "bool",
+      "legend_maxitems": "int",
+      "options": "dict{}",
+      "return_fig": "bool",
+      "title": "None"
+    },
+    "traces": [
+      {
+        "col": "int",
+        "color": "None",
+        "facecolor": "ndarray[U,1d]",
+        "i": "ndarray[i,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "color": "str",
+        "flatshading": "bool",
+        "i": "ndarray[i,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "color": "str",
+        "i": "ndarray[i,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "None",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "color": "str",
+        "i": "ndarray[i,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "hovertemplate": "str",
+        "legendgroup": "str",
+        "legendgrouptitle_text": "str",
+        "line_color": "str",
+        "line_dash": "str",
+        "marker_color": "None",
+        "marker_line_color": "None",
+        "marker_size": "ndarray[i,1d]",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "text": "str",
+        "type": "scatter",
+        "x": "ndarray[i,1d]",
+        "y": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "line_color": "str",
+        "line_dash": "str",
+        "line_width": "int",
+        "marker_color": "str",
+        "marker_size": "int",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "line_color": "str",
+        "line_dash": "str",
+        "line_width": "int",
+        "mode": "str",
+        "name": "str",
+        "object_id": "None",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "line_color": "str",
+        "line_dash": "str",
+        "line_width": "int",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "marker_color": "str",
+        "marker_size": "int",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "None",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "marker_color": "str",
+        "marker_size": "int",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      }
+    ]
+  },
+  "sliced, unmerged": {
+    "animation": {
+      "fps": "int",
+      "frame_duration": "int",
+      "output": "None",
+      "path_indices": "tuple[int]",
+      "repeat": "bool",
+      "slider": "bool",
+      "time": "float"
+    },
+    "frames": {
+      "count": 2,
+      "label": "str",
+      "same traces in every frame": true
+    },
+    "native_traces": [
+      {
+        "args": "list[]",
+        "constructor": "str",
+        "coordsargs": "dict{x:str,y:str,z:str}",
+        "kwargs": "dict{x:ndarray[f,1d],y:ndarray[f,1d],z:ndarray[f,1d]}",
+        "kwargs_extra": "dict{col:int,color:str,legendgroup:str,name:str,opacity:int,row:int,showlegend:bool}",
+        "object_id": "int"
+      }
+    ],
+    "panels": [
+      {
+        "cell": [
+          1,
+          1
+        ],
+        "kind": "scene3d",
+        "labels": [
+          "x",
+          "y",
+          "z"
+        ],
+        "objects": [
+          "Cuboid",
+          "Collection",
+          "Tetrahedron",
+          "TriangularMesh",
+          "Circle",
+          "Polyline",
+          "TriangleStrip",
+          "TriangleSheet",
+          "Dipole",
+          "Triangle",
+          "CustomSource",
+          "Sensor",
+          "Sensor"
+        ],
+        "ranges": "ndarray[f,2d]"
+      },
+      {
+        "cell": [
+          1,
+          2
+        ],
+        "kind": "chart2d",
+        "labels": [
+          "x",
+          "y"
+        ],
+        "objects": [
+          "Cuboid",
+          "Sensor"
+        ],
+        "ranges": "None"
+      }
+    ],
+    "scene": {
+      "canvas": "None",
+      "canvas_update": "bool",
+      "legend_maxitems": "int",
+      "options": "dict{}",
+      "return_fig": "bool",
+      "title": "None"
+    },
+    "traces": [
+      {
+        "col": "int",
+        "color": "None",
+        "facecolor": "ndarray[U,1d]",
+        "i": "ndarray[i,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "color": "str",
+        "flatshading": "bool",
+        "i": "ndarray[i,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "color": "str",
+        "i": "ndarray[i,1d]",
+        "j": "ndarray[i,1d]",
+        "k": "ndarray[i,1d]",
+        "legendgroup": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "hovertemplate": "str",
+        "legendgroup": "str",
+        "legendgrouptitle_text": "str",
+        "line_color": "str",
+        "line_dash": "str",
+        "marker_color": "None",
+        "marker_line_color": "None",
+        "marker_size": "ndarray[i,1d]",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "text": "str",
+        "type": "scatter",
+        "x": "ndarray[i,1d]",
+        "y": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "line_color": "str",
+        "line_dash": "str",
+        "line_width": "int",
+        "marker_color": "str",
+        "marker_size": "int",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "line_color": "str",
+        "line_dash": "str",
+        "line_width": "int",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "marker_color": "str",
+        "marker_size": "int",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "None",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "legendgroup": "str",
+        "marker_color": "str",
+        "marker_size": "int",
+        "marker_symbol": "str",
+        "mode": "str",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "type": "scatter3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      }
+    ]
+  }
+}

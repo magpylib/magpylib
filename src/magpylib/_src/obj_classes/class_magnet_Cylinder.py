@@ -14,7 +14,10 @@ from magpylib._src.obj_classes.class_BaseProperties import (
     BaseDipoleMoment,
     BaseVolume,
 )
-from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.class_BaseTarget import (
+    BaseTarget,
+    check_meshing_count_or_triple,
+)
 from magpylib._src.obj_classes.target_meshing import generate_mesh_cylindersegment
 from magpylib._src.utility import unit_prefix
 
@@ -47,9 +50,6 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
     magnetization : None | array-like, shape (3,) or (p, 3), default None
         Magnetization vector M = J/mu0 in units (A/m), given in the local
         object coordinates. Sets also ``polarization``.
-    meshing : int | None, default None
-        Mesh fineness for force computation. Must be a positive integer specifying
-        the target mesh size.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -112,7 +112,6 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
         dimension=None,
         polarization=None,
         magnetization=None,
-        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -125,8 +124,6 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             style=style,
             **kwargs,
         )
-
-        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -214,7 +211,7 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             return dipoles[0]
         return dipoles
 
-    def _generate_mesh(self):
+    def _generate_mesh(self, meshing):
         """Generate mesh for force computation."""
         synced = self._sync_path_lengths(("dimension", "magnetization"))
         dim, mag = synced["dimension"], synced["magnetization"]
@@ -225,5 +222,11 @@ class Cylinder(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment):
             np.zeros(dim.shape[0]),  # phi1 = 0
             np.full(dim.shape[0], 360),  # phi2 = 360 (full cylinder)
             mag,
-            self.meshing,
+            meshing,
         )
+
+    def _validate_meshing(self, value):
+        """Check a meshing input and return it normalized: a positive integer, or a
+        tuple of 3 positive integers (divisions along the arc, the radius and the
+        height)."""
+        return check_meshing_count_or_triple(value, self)

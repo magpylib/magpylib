@@ -30,6 +30,7 @@ Public contract for GUIs and third-party tooling:
 """
 
 from copy import deepcopy
+from types import MethodType
 from typing import ClassVar
 
 from magpylib._src.defaults.defaults_utility import (
@@ -502,12 +503,16 @@ class PropertyNode:
 
         Parameters
         ----------
+        arg : dict | None, default None
+            Properties to set, nested or in magic underscore notation.
         _match_properties: bool
             If ``True`` (default), unknown property names raise an
             AttributeError; if ``False`` they are silently ignored.
         _replace_None_only: bool
             If ``True``, only properties that are not explicitly set get
             updated.
+        **kwargs
+            Properties to set, as keyword arguments.
         """
         data = magic_to_dict({**(arg or {}), **kwargs})
         for key, value in data.items():
@@ -543,7 +548,12 @@ class PropertyNode:
         return new
 
     def copy(self):
-        """Return a detached, unobserved deep copy."""
+        """Return a detached, unobserved deep copy, which shares the callables
+        held directly in the tree (functions, methods, callable objects) rather
+        than copying them. Deep-copying a method copies its object, and a
+        method of the styled object (a 3D model it draws) would copy that
+        object, whose style holds the method again. `BaseGeo.copy` binds the
+        methods of copied objects to the copies afterwards."""
         new = type(self).__new__(type(self))
         for key, value in self.__dict__.items():
             field = self._fields.get(key)
@@ -551,7 +561,7 @@ class PropertyNode:
                 continue
             if isinstance(value, PropertyNode):
                 new.__dict__[key] = _adopt_child(new, value.copy(), key)
-            elif isinstance(value, self._IMMUTABLE_TYPES):
+            elif isinstance(value, self._IMMUTABLE_TYPES) or callable(value):
                 new.__dict__[key] = value
             elif isinstance(field, NodeSequence):
                 new.__dict__[key] = tuple(
@@ -561,6 +571,23 @@ class PropertyNode:
             else:
                 new.__dict__[key] = deepcopy(value)
         return new
+
+    def _rebind_methods(self, memo):
+        """Bind the methods held in this copied tree to the copies of their
+        objects, as `copy.deepcopy` recorded them in ``memo``; methods of
+        objects that were not copied are left as they are."""
+        for key, value in self.__dict__.items():
+            field = self._fields.get(key)
+            if field is None:
+                continue
+            if isinstance(value, PropertyNode):
+                value._rebind_methods(memo)
+            elif isinstance(field, NodeSequence):
+                for child in value:
+                    child._rebind_methods(memo)
+            elif isinstance(value, MethodType) and id(value.__self__) in memo:
+                owner = memo[id(value.__self__)]
+                self.__dict__[key] = MethodType(value.__func__, owner)
 
     # public contract for GUIs / third-party tooling ---------------------
 

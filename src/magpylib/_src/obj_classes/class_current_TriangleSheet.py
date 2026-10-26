@@ -12,7 +12,10 @@ from magpylib._src.display.traces_core import make_TriangleSheet
 from magpylib._src.fields.field_BH_current_sheet import _BHJM_current_trisheet
 from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
-from magpylib._src.obj_classes.class_BaseTarget import BaseTarget
+from magpylib._src.obj_classes.class_BaseTarget import (
+    BaseTarget,
+    check_meshing_count,
+)
 from magpylib._src.obj_classes.target_meshing import generate_mesh_triangle_current
 from magpylib._src.style import CurrentSheetStyle
 
@@ -46,10 +49,6 @@ class TriangleSheet(BaseSource, BaseTarget):
         Electrical current densities flowing on the faces in units (A/m). The
         effective current density is a projection of the given current density
         vector into the face planes. Input must have the same length as ``faces``.
-    meshing : int | None, default None
-        Mesh fineness for force computation. Must be an integer >= number of
-        faces specifying the target mesh size. The mesh is generated via bisection
-        along longest edges until target number is reached.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -66,8 +65,6 @@ class TriangleSheet(BaseSource, BaseTarget):
         Same as constructor parameter ``faces``.
     current_densities : None | ndarray, shape (n, 3) or (p, n, 3)
         Same as constructor parameter ``current_densities``.
-    meshing : None | int
-        Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid computed via mean of vertices in units (m)
         in global coordinates.
@@ -115,7 +112,6 @@ class TriangleSheet(BaseSource, BaseTarget):
         vertices=None,
         faces=None,
         current_densities=None,
-        meshing=None,
         *,
         style=None,
         **kwargs,
@@ -127,7 +123,6 @@ class TriangleSheet(BaseSource, BaseTarget):
 
         # Inherit
         super().__init__(position, orientation, style=style, **kwargs)
-        BaseTarget.__init__(self, meshing)
 
     # property getters and setters
     @property
@@ -265,21 +260,28 @@ class TriangleSheet(BaseSource, BaseTarget):
             verts[0][fac]
         except IndexError as e:
             msg = f"Some faces indices of {self} do not match with vertices array."
-            raise IndexError(msg) from e
+            raise ValueError(msg) from e
 
         return cd, verts, fac
 
     # Methods
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
-        # For path arrays (p, n, 3), mean over axis 1 to get (p, 3)
-        # For non-path arrays (1, n, 3), mean over axis 1 to get (1, 3)
-        centr = np.mean(self._vertices, axis=-2) + self._position
-        if squeeze:
-            return np.squeeze(centr)
-        return centr
+        if self._vertices is None:
+            centroid = np.array([0.0, 0.0, 0.0])
+            orientation, position = self._orientation, self._position
+        else:
+            # vertices are local coordinates: pair each step's vertices with its
+            # pose so the centroid turns with the object
+            synced = self._sync_path_lengths(("vertices", "position", "orientation"))
+            centroid = np.mean(synced["vertices"], axis=1)  # (p, 3)
+            orientation, position = synced["orientation"], synced["position"]
+        result = orientation.apply(centroid) + position
+        if squeeze and len(result) == 1:
+            return result[0]
+        return result
 
-    def _generate_mesh(self):
+    def _generate_mesh(self, meshing):
         """Generate mesh for force computation."""
         synced = self._sync_path_lengths(("vertices", "current_densities"))
         verts = synced["vertices"]  # shape (p, n, 3)
@@ -290,16 +292,11 @@ class TriangleSheet(BaseSource, BaseTarget):
         return generate_mesh_triangle_current(
             triangles,
             cd,
-            self.meshing,
+            meshing,
         )
 
     def _validate_meshing(self, value):
         """Makes only sense with at least n_mesh = n_faces."""
-        if isinstance(value, int) and value >= len(self.faces):
-            pass
-        else:
-            msg = (
-                f"Input meshing of {self} must be an integer >= number of faces; "
-                f"instead received {value}."
-            )
-            raise ValueError(msg)
+        n_faces = len(self.faces)
+        what = f"an integer >= the number of faces ({n_faces})"
+        return check_meshing_count(value, self, minimum=n_faces, what=what)

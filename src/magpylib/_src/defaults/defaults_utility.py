@@ -7,7 +7,6 @@ from copy import deepcopy
 from functools import lru_cache
 
 import numpy as np
-from matplotlib.colors import CSS4_COLORS as mcolors
 
 from magpylib._src.defaults.defaults_values import DEFAULTS
 from magpylib._src.display.api import DisplayBackend
@@ -53,6 +52,9 @@ COLORS_SHORT_TO_LONG = {
     "k": "black",
     "w": "white",
 }
+#: CSS color names known to be valid without asking matplotlib: the defaults
+#: use only these, so validating the defaults does not import it
+BASIC_COLOR_NAMES = frozenset({*COLORS_SHORT_TO_LONG.values(), "grey"})
 
 
 class _DefaultType:
@@ -95,30 +97,44 @@ def get_defaults_dict(arg=None) -> dict:
     return dict_
 
 
-def magic_to_dict(kwargs, separator="_") -> dict:
-    """decomposes recursively a dictionary with keys with underscores into a nested dictionary
-    example : {'magnet_color':'blue'} -> {'magnet': {'color':'blue'}}
-    see: https://plotly.com/python/creating-and-updating-figures/#magic-underscore-notation
+def magic_to_dict(mapping, separator="_") -> dict:
+    """Nest a dictionary whose keys join levels with `separator`.
+
+    The magic underscore notation of Plotly and of magpylib's styles:
+    ``{"line_color": "red", "line_width": 2}`` becomes
+    ``{"line": {"color": "red", "width": 2}}``, recursively. A key that is
+    also given as a dictionary, ``"line": {...}``, is merged with it.
 
     Parameters
     ----------
-    kwargs : dict
-        dictionary of keys to be decomposed into a nested dictionary
+    mapping : dict
+        The dictionary to nest.
+    separator : str, default "_"
+        The string joining the levels in a key.
 
-    separator: str, default='_'
-        defines the separator to apply the magic parsing with
     Returns
     -------
     dict
-        nested dictionary
+        The nested dictionary.
     """
-    assert isinstance(kwargs, dict), "kwargs must be a dictionary"
-    assert isinstance(separator, str), "separator must be a string"
+    if not isinstance(mapping, dict):
+        msg = (
+            f"mapping must be a dictionary; instead received {type(mapping).__name__}."
+        )
+        raise TypeError(msg)
+    if not isinstance(separator, str):
+        msg = f"separator must be a string; instead received {separator!r}."
+        raise TypeError(msg)
     new_kwargs = {}
-    for k, v in kwargs.items():
+    for k, v in mapping.items():
         keys = k.split(separator)
         if len(keys) == 1:
-            new_kwargs[keys[0]] = v
+            existing = new_kwargs.get(keys[0])
+            if isinstance(existing, dict) and isinstance(v, dict):
+                # merged, not replaced: "line_color" then "line={...}" keeps both
+                new_kwargs[keys[0]] = {**existing, **v}
+            else:
+                new_kwargs[keys[0]] = dict(v) if isinstance(v, dict) else v
         else:
             val = {separator.join(keys[1:]): v}
             if keys[0] in new_kwargs and isinstance(new_kwargs[keys[0]], dict):
@@ -163,8 +179,12 @@ def linearize_dict(kwargs, separator=".") -> dict:
      'marker.size': 1,
      'marker.symbol': 'o'}
     """
-    assert isinstance(kwargs, dict), "kwargs must be a dictionary"
-    assert isinstance(separator, str), "separator must be a string"
+    if not isinstance(kwargs, dict):
+        msg = f"kwargs must be a dictionary; instead received {type(kwargs).__name__}."
+        raise TypeError(msg)
+    if not isinstance(separator, str):
+        msg = f"separator must be a string; instead received {separator!r}."
+        raise TypeError(msg)
     dict_ = {}
     for k, v in kwargs.items():
         if isinstance(v, dict):
@@ -253,19 +273,23 @@ def _color_validator_cached(color_input, allow_None=True, parent_name=""):
         re_hex = re.compile(r"#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})")
         fail = not re_hex.fullmatch(color_new)
 
-    if fail and str(color_new) not in mcolors:
-        msg = (
-            f"Invalid value of type '{type(color_input)}' "
-            f"received for the color property of {parent_name}"
-            f"\n   Received value: {color_input!r}"
-            f"\n\nThe 'color' property is a color and may be specified as:\n"
-            "    - A hex string (e.g. '#ff0000')\n"
-            "    - A rgb string (e.g. 'rgb(185, 204, 255)')\n"
-            "    - A rgb tuple (e.g. (120, 125, 126))\n"
-            "    - A number between 0 and 1 (for grey scale) (e.g. '.5' or .8)\n"
-            f"    - A named CSS color:\n{list(mcolors.keys())}"
-        )
-        raise ValueError(msg)
+    if fail and str(color_new) not in BASIC_COLOR_NAMES:
+        # pylint: disable=import-outside-toplevel
+        from matplotlib.colors import CSS4_COLORS as mcolors  # noqa: PLC0415
+
+        if str(color_new) not in mcolors:
+            msg = (
+                f"Invalid value of type '{type(color_input)}' "
+                f"received for the color property of {parent_name}"
+                f"\n   Received value: {color_input!r}"
+                f"\n\nThe 'color' property is a color and may be specified as:\n"
+                "    - A hex string (e.g. '#ff0000')\n"
+                "    - A rgb string (e.g. 'rgb(185, 204, 255)')\n"
+                "    - A rgb tuple (e.g. (120, 125, 126))\n"
+                "    - A number between 0 and 1 (for grayscale) (e.g. '.5' or .8)\n"
+                f"    - A named CSS color:\n{list(mcolors.keys())}"
+            )
+            raise ValueError(msg)
     return color_new
 
 

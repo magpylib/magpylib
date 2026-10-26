@@ -258,8 +258,20 @@ elif version_match == "stable":
     version_match = f"{release}"
 
 
+# The theme pastes this HTML as it is into pages at every depth, so the link is
+# absolute: to the version being built on Read the Docs, PR previews included,
+# and to latest for a local build.
+docs_url = os.environ.get(
+    "READTHEDOCS_CANONICAL_URL", "https://magpylib.readthedocs.io/en/latest/"
+).rstrip("/")
+announcement = (
+    "Magpylib 6 has breaking changes. "
+    f'<a href="{docs_url}/_pages/user_guide/guide_start_03_migration.html">'
+    "Read the migration guide</a> to update code written for version 5."
+)
+
 html_theme_options = {
-    # "announcement": announcement,
+    "announcement": announcement,
     "logo": {
         "text": "Magpylib",
         "image_dark": "./_static/images/magpylib_logo.png",

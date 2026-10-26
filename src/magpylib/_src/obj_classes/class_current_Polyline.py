@@ -41,10 +41,6 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         least two vertices must be given.
     current : float | array-like, shape (p,), default None
         Electrical current (A).
-    meshing : int | None, default None
-        Mesh fineness for force computation. Must be a positive integer at least the
-        number of segments. Each segment gets one mesh point at its center. All
-        remaining mesh points are distributed evenly along the polyline.
     style : dict | None, default None
         Style dictionary. Can also be provided via style underscore magic, e.g.
         ``style_color='red'``.
@@ -59,8 +55,6 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         Same as constructor parameter ``vertices``.
     current : None | float | ndarray, shape (p,)
         Same as constructor parameter ``current``.
-    meshing : None | int
-        Same as constructor parameter ``meshing``.
     centroid : ndarray, shape (3,) or (p, 3)
         Read-only. Object centroid computed via mean of vertices in units (m)
         in global coordinates.
@@ -112,7 +106,6 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         vertices=None,
         position=(0, 0, 0),
         orientation=None,
-        meshing=None,
         style=None,
         **kwargs,
     ):
@@ -124,8 +117,6 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
             style=style,
             **kwargs,
         )
-
-        BaseTarget.__init__(self, meshing)
 
     # Properties
     @property
@@ -161,31 +152,38 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
         if self._vertices is None:
-            return self._position
-
-        # Compute mean for each path along vertex axis: shape (p, 3)
-        centroids = np.mean(self._vertices, axis=1)  # mean over vertices dimension
-
-        # Add position: shape (p, 3) + (p, 3)
-        centroids = centroids + self._position
-
-        if squeeze and len(centroids) == 1:
-            return centroids[0]
-        return centroids
+            centroid = np.array([0.0, 0.0, 0.0])
+            orientation, position = self._orientation, self._position
+        else:
+            # vertices are local coordinates: pair each step's vertices with its
+            # pose so the centroid turns with the object
+            synced = self._sync_path_lengths(("vertices", "position", "orientation"))
+            centroid = np.mean(synced["vertices"], axis=1)  # (p, 3)
+            orientation, position = synced["orientation"], synced["position"]
+        result = orientation.apply(centroid) + position
+        if squeeze and len(result) == 1:
+            return result[0]
+        return result
 
     def _get_dipole_moment(self, squeeze=True):
         """Magnetic moment of object in units (A*m²)."""
         # test init
         if self._vertices is None or self._current is None:
-            return np.zeros_like(self._position)
+            dip = np.zeros_like(self._position)
+            if squeeze and len(dip) == 1:
+                return dip[0]
+            return dip
+
+        synced = self._sync_path_lengths(("vertices", "current"))
+        vertices, current = synced["vertices"], synced["current"]
 
         # Check if all paths are closed polylines
-        first_vertices = self._vertices[:, 0, :]  # shape (p, 3)
-        last_vertices = self._vertices[:, -1, :]  # shape (p, 3)
+        first_vertices = vertices[:, 0, :]  # shape (p, 3)
+        last_vertices = vertices[:, -1, :]  # shape (p, 3)
         is_closed = np.all(first_vertices == last_vertices, axis=1)  # shape (p,)
 
         # Check if any path is not closed and has more than 1 vertex
-        has_multiple_vertices = self._vertices.shape[1] > 1
+        has_multiple_vertices = vertices.shape[1] > 1
         invalid_paths = has_multiple_vertices & ~is_closed
 
         if np.any(invalid_paths):
@@ -200,8 +198,8 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         # Compute dipole moments for all paths (vectorized)
         # Prepare vertices pairs: v[:-1] and v[1:] for cross product
         # Shape: (p, n-1, 3) where p is path length, n is number of vertices
-        v_start = self._vertices[:, :-1, :]  # shape (p, n-1, 3)
-        v_end = self._vertices[:, 1:, :]  # shape (p, n-1, 3)
+        v_start = vertices[:, :-1, :]  # shape (p, n-1, 3)
+        v_end = vertices[:, 1:, :]  # shape (p, n-1, 3)
 
         # Cross product along segments: shape (p, n-1, 3)
         crosses = np.cross(v_start, v_end)
@@ -210,25 +208,25 @@ class Polyline(BaseCurrent, BaseTarget, BaseDipoleMoment):
         cross_sums = np.sum(crosses, axis=1)
 
         # Multiply by current/2: shape (p, 3)
-        dipole_moments = self._current[:, np.newaxis] / 2 * cross_sums
+        dipole_moments = current[:, np.newaxis] / 2 * cross_sums
         if squeeze and len(dipole_moments) == 1:
             return dipole_moments[0]
         return dipole_moments
 
-    def _generate_mesh(self):
+    def _generate_mesh(self, meshing):
         """Generate mesh for force computation."""
         synced = self._sync_path_lengths(("vertices", "current"))
         verts, curr = synced["vertices"], synced["current"]
 
-        n_points = self.meshing
+        n_points = meshing
         n_segments = len(verts[0]) - 1
-        if self.meshing < n_segments:
+        if meshing < n_segments:
             msg = (
                 f"Input meshing of {self} must be an integer > number of Polyline "
-                f"segments ({n_segments}); instead received {self.meshing}. "
+                f"segments ({n_segments}); instead received {meshing}. "
                 "Setting one point per segment in computation."
             )
-            warnings.warn(msg, UserWarning, stacklevel=2)
+            warnings.warn(msg, UserWarning, stacklevel=4)
             n_points = n_segments
 
         return generate_mesh_polyline(verts, curr, n_points)

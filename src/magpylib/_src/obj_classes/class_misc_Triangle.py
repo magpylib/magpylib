@@ -10,10 +10,11 @@ from magpylib._src.display.traces_core import make_Triangle
 from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
 from magpylib._src.input_checks import check_format_input_numeric
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_BaseProperties import BaseBarycenter
 from magpylib._src.style import TriangleStyle
 
 
-class Triangle(BaseMagnet):
+class Triangle(BaseMagnet, BaseBarycenter):
     """Triangular surface with homogeneous magnetic surface charge.
 
     Can be used as ``sources`` input for magnetic field computation and ``target``
@@ -150,10 +151,14 @@ class Triangle(BaseMagnet):
         """Centroid of object in units (m)."""
         if self._vertices is None:
             centroid = np.array([0.0, 0.0, 0.0])
+            orientation, position = self._orientation, self._position
         else:
-            # vertices shape is (p, 3, 3), mean over axis 1 to get (p, 3)
-            centroid = np.mean(self._vertices, axis=1)
-        result = self._orientation.apply(centroid) + self._position
+            # vertices are local coordinates: pair each step's vertices with its
+            # pose so the centroid turns with the object
+            synced = self._sync_path_lengths(("vertices", "position", "orientation"))
+            centroid = np.mean(synced["vertices"], axis=1)  # (p, 3)
+            orientation, position = synced["orientation"], synced["position"]
+        result = orientation.apply(centroid) + position
         if squeeze and len(result) == 1:
             return result[0]
         return result

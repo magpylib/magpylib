@@ -253,6 +253,10 @@ magpy.defaults.display.style.as_dict(flatten=True, separator=".")
 (examples-own-3d-models)=
 ## Custom 3D Models
 
+:::{versionchanged} 6.0
+`style.model3d.data` is a tuple; add traces with `add_trace()`.
+:::
+
 Each Magpylib object has a default 3D representation that is displayed with `show()`. It is possible to disable the default model and to provide Magpylib with a custom model.
 
 There are several reasons why this can be of interest. For example,  the integration of a [custom source](guide-docs-classes-custom-source) object that has its own geometry, to display a sensor in the form of a realistic package provided in CAD form, representation of a [Collection](guide-docs-classes-collections) as a parts holder, integration of environmental parts to the Magpylib 3D plotting scene, or simply highlighting an object when colors do not suffice.
@@ -265,11 +269,11 @@ To enable visualization of custom objects with different graphic backends Magpyl
 
 A trace-dictionary has the following keys:
 
-1. `'backend'`: `'generic'`, `'matplotlib'` or `'plotly'`
+1. `'backend'`: `'generic'`, or the name of a registered backend such as `'matplotlib'` or `'plotly'`. A trace for a specific backend is shown only by that backend, and only if it draws such traces: Pyvista does not, see [](guide-graphics-custom-backend-native).
 2. `'constructor'`: name of the plotting constructor from the respective backend, e.g. plotly `'Mesh3d'` or Matplotlib `'plot_surface'`
 3. `'args'`: default `None`, positional arguments handed to constructor
 4. `'kwargs'`: default `None`, keyword arguments handed to constructor
-5. `'coordsargs'`: tells Magpylib which input corresponds to which coordinate direction, so that geometric representation becomes possible. By default `{'x': 'x', 'y': 'y', 'z': 'z'}` for the `'generic'` backend and Plotly backend,  and `{'x': 'args[0]', 'y': 'args[1]', 'z': 'args[2]'}` for the Matplotlib backend.
+5. `'coordsargs'`: tells Magpylib which input corresponds to which coordinate direction, so that geometric representation becomes possible. By default `{'x': 'args[0]', 'y': 'args[1]', 'z': 'args[2]'}` when the trace has positional `args` and its `kwargs` do not name all of `x`, `y` and `z`, as for Matplotlib's `plot(xs, ys, zs)`, and `{'x': 'x', 'y': 'y', 'z': 'z'}` otherwise.
 6. `'show'`: default `True`, toggle if this trace should be displayed
 7. `'scale'`: default 1, object geometric scaling factor
 8. `'updatefunc'`: default `None`, updates the trace parameters when `show()` is called. Used to generate dynamic traces.
