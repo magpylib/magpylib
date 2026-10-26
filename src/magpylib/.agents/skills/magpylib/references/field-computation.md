@@ -88,7 +88,8 @@ Available: `circle_field`, `polyline_field`, `cuboid_field`, `cylinder_field`,
 
 Every function takes `field` (`"B"` or `"H"`), `observers`, its shape and
 excitation parameters, and optional `positions`, `orientations`, `squeeze`.
-Scalar inputs are tiled to the longest input length. Output is `(i, 3)`.
+Scalar inputs are tiled to the longest input length. Output is `(i, 3)`,
+squeezed like `getB`'s, so one parameter set returns `(3,)`.
 
 This replaced the v4-era string dispatch: `getB("Cuboid", ...)` and `getB_dict`
 no longer exist.

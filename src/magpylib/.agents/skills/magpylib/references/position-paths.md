@@ -40,7 +40,8 @@ most common source of surprise:
 
 So `obj.move((0, 0, 0.01))` shifts an existing 50-step path bodily, while
 `obj.move(np.linspace((0, 0, 0), (0, 0, 0.01), 10))` grows the path by 10 steps.
-Pass an explicit `start=0` to overwrite instead of append.
+With an explicit `start=0`, vector input is applied step by step on top of the
+existing path from its first entry; nothing is replaced.
 
 `anchor` is the pivot for rotation: `anchor=None` (default) spins the object
 about its own `position`, an array-like `(3,)` rotates it about that global
@@ -59,17 +60,17 @@ take the same `anchor` and `start`:
 | `rotate_from_mrp(mrp)`           | modified Rodrigues params    |
 
 Each accepts vector input as well, so
-`sensor.rotate_from_angax(np.linspace(0, 360, 37), "z", start=0)` writes a full
-37-step spin over an existing path.
+`sensor.rotate_from_angax(np.linspace(0, 360, 37), "z", start=0)` applies a full
+37-step spin to an existing path, step by step.
 
 ```python
 # 8 magnets evenly placed on a circle, each rotated about the origin
-magnets = []
-for i in range(8):
-    m = magpy.magnet.Cuboid(dimension=(0.01, 0.01, 0.01), polarization=(0, 0, 1))
-    m.position = (0.05, 0, 0)
-    m.rotate(R.from_rotvec((0, 0, i * 45), degrees=True), anchor=(0, 0, 0))
-    magnets.append(m)
+template = magpy.magnet.Cuboid(
+    dimension=(0.01, 0.01, 0.01), polarization=(0, 0, 1), position=(0.05, 0, 0)
+)
+magnets = [
+    template.copy().rotate_from_angax(i * 45, "z", anchor=(0, 0, 0)) for i in range(8)
+]
 ```
 
 Chained calls compose, and `reset_path()` restores `position=(0, 0, 0)` and

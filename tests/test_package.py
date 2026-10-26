@@ -1,9 +1,12 @@
+import ast
 import functools
 import importlib.metadata
 import os
 import re
+import sys
 from pathlib import Path
 
+import numpy as np
 import plotly.io as pio
 import pytest
 
@@ -52,15 +55,46 @@ def test_version() -> None:
     assert importlib.metadata.version("magpylib") == m.__version__
 
 
+def _prose(path):
+    """A skill file's text without its code blocks."""
+    text = path.read_text(encoding="utf-8")
+    return re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+
+
+def _anchors(path):
+    headings = re.findall(r"^#+ (.+)$", _prose(path), re.MULTILINE)
+    return {re.sub(r"[^\w\- ]", "", h.lower()).replace(" ", "-") for h in headings}
+
+
 def test_agent_skill_is_well_formed() -> None:
-    """Frontmatter follows the Agent Skills spec and relative links resolve."""
-    text = (SKILL_DIR / "SKILL.md").read_text(encoding="utf-8")
-    head = text.split("---\n")[1]
+    """Frontmatter follows the Agent Skills spec and every relative link resolves."""
+    head = (SKILL_DIR / "SKILL.md").read_text(encoding="utf-8").split("---\n")[1]
     assert re.search(r"^name: magpylib$", head, re.MULTILINE)
     description = re.search(r"^description: >-\n((?:  .*\n)+)", head, re.MULTILINE)
-    assert 0 < len(" ".join(description[1].split())) <= 1024
-    links = re.findall(r"\]\((?!https?://|#)([^)]+)\)", text)
-    assert [link for link in links if not (SKILL_DIR / link).is_file()] == []
+    assert description, "description must be a folded block (description: >-)"
+    assert len(" ".join(description[1].split())) <= 1024
+    broken = []
+    for path in sorted(SKILL_DIR.rglob("*.md")):
+        for link in re.findall(r"\]\((?!https?://)([^)]+)\)", _prose(path)):
+            target, _, anchor = link.partition("#")
+            target = path.parent / target if target else path
+            if not target.is_file() or (anchor and anchor not in _anchors(target)):
+                broken.append(f"{path.name}: {link}")
+    assert broken == []
+
+
+def _with_shape_checks(code):
+    """Assert the shapes that trailing comments such as ``# (50, 3)`` state."""
+    lines = code.splitlines()
+    for node in reversed(ast.parse(code).body):
+        comment = lines[node.end_lineno - 1].partition("#")[2]
+        shape = re.match(r"\s*(?:shape )?(\([\d, ]*\))", comment)
+        if shape is None or not isinstance(node, ast.Assign | ast.Expr):
+            continue
+        value = ast.unparse(node.targets[0] if isinstance(node, ast.Assign) else node)
+        check = f"assert _shape({value}) == {shape[1]}, _shape({value})"
+        lines.insert(node.end_lineno, check)
+    return "\n".join(lines)
 
 
 def _skill_examples():
@@ -76,10 +110,14 @@ def _skill_examples():
 
 @pytest.mark.parametrize("code", _skill_examples())
 def test_agent_skill_examples_run(code, monkeypatch) -> None:
-    """Every example in the skill runs on this version of Magpylib."""
+    """Every example in the skill runs and gives the shapes its comments state."""
     monkeypatch.setattr(m, "show", functools.partial(m.show, return_fig=True))
     monkeypatch.setattr(m.defaults.display, "backend", "plotly")
     monkeypatch.setattr(pio.renderers, "default", "json")
-    namespace = {}
+    namespace = {"_shape": lambda x: x if isinstance(x, tuple) else np.shape(x)}
     exec(SKILL_EXAMPLE_NAMES, namespace)  # noqa: S102  # pylint: disable=exec-used
-    exec(code, namespace)  # noqa: S102  # pylint: disable=exec-used
+    try:
+        exec(_with_shape_checks(code), namespace)  # noqa: S102  # pylint: disable=exec-used
+    finally:
+        if pyvista := sys.modules.get("pyvista"):
+            pyvista.close_all()
