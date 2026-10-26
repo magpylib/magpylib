@@ -53,9 +53,8 @@ project.
   [Pytest](https://docs.pytest.org/en/7.4.x/) package.
 - New unit tests are written aiming for 100% code coverage. We use
   [Coverage](https://coverage.readthedocs.io/en/) to test this.
-- [Pylint](https://pylint.readthedocs.io/en/stable/) rates your code 10/10 and
-  there are no formatting issues reported (e.g. line-too-long). Pylint runs in
-  CI, not in the pre-commit hooks; run it with `uvx nox -s pylint`.
+- [Pylint](https://pylint.readthedocs.io/en/stable/) rates your code 10/10. It
+  runs in CI, not in the pre-commit hooks; run it with `uvx nox -s pylint`.
 - Your code is PEP8 compliant and formatted with
   [Ruff](https://docs.astral.sh/ruff/formatter/), which the pre-commit hooks
   run.
