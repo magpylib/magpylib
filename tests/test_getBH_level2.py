@@ -735,3 +735,42 @@ def test_unknown_keyword_raises(func):
     src = magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=(0, 0, 1))
     with pytest.raises(TypeError, match="sum_up"):
         func(src, (0, 0, 1), sum_up=True)
+
+
+PIXEL = np.random.default_rng(3).normal(size=(4, 5, 3))
+ANGLES = np.linspace(0, 330, 12)
+PATH_SENSORS = {
+    "no pixel, path": lambda: magpy.Sensor(position=[(0, 0, 0), (1, 2, 3)]),
+    "unrotated": lambda: magpy.Sensor(pixel=PIXEL, position=(0.1, 0.2, 0.3)),
+    "rotated, translation path": lambda: magpy.Sensor(
+        pixel=PIXEL,
+        position=np.linspace((0, 0, 0), (1, 2, 3), 7),
+        orientation=R.from_rotvec((0.3, -0.2, 0.9)),
+    ),
+    "rotating along a path": lambda: magpy.Sensor(pixel=PIXEL).rotate_from_angax(
+        ANGLES, (1, 2, 3), anchor=(0.5, 0, 0)
+    ),
+    "rotating, left-handed": lambda: magpy.Sensor(
+        pixel=PIXEL, handedness="left"
+    ).rotate_from_angax(ANGLES, "z", anchor=(0, 0.5, 0)),
+}
+
+
+@pytest.mark.parametrize("name", PATH_SENSORS)
+def test_sensor_on_a_path_reads_each_step_by_hand(name):
+    """At each path step a sensor reads the field at its pixels, placed by that
+    step's position and orientation, in its own frame."""
+    sens = PATH_SENSORS[name]()
+    src = magpy.magnet.Cuboid(
+        dimension=(1, 1, 1), polarization=(0.1, 0.2, 1.0), position=(0, 0, -2)
+    )
+    B = src.getB(sens, squeeze=False).reshape(len(sens._position), -1, 3)
+
+    pixel = np.zeros((1, 3)) if sens.pixel is None else sens.pixel.reshape(-1, 3)
+    steps = zip(sens._position, sens._orientation, strict=True)
+    for step, (pos, rot) in enumerate(steps):
+        B_global = src.getB(rot.apply(pixel) + pos, squeeze=False).reshape(-1, 3)
+        B_step = rot.inv().apply(B_global)
+        if sens.handedness == "left":
+            B_step[:, 0] *= -1
+        np.testing.assert_allclose(B[step], B_step, rtol=1e-12, atol=1e-15)

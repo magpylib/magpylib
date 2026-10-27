@@ -141,22 +141,6 @@ def format_src_inputs(sources) -> list:
     return list(sources), src_list
 
 
-def check_static_sensor_orient(sensors):
-    """test which sensors have a static orientation"""
-    # pylint: disable=protected-access
-    static_sensor_rot = []
-    for sens in sensors:
-        if sens.orientation.single:  # no sensor path (sensor is static)
-            static_sensor_rot += [True]
-        else:  # there is a sensor path
-            rot = sens.orientation.as_quat()
-            if np.all(rot == rot[0]):  # path with static orient (e.g. translation)
-                static_sensor_rot += [True]
-            else:  # sensor rotation changes along path
-                static_sensor_rot += [False]
-    return static_sensor_rot
-
-
 def check_duplicates(obj_list: Sequence) -> list:
     """checks for and eliminates source duplicates in a list of sources
     ### Args:

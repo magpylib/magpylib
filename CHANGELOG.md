@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Faster fields along long paths: sensor pixels are placed for all path steps at
+  once ([#1061](https://github.com/magpylib/magpylib/pull/1061)).
+
 ### Fixed
 
 - The field of several different `TriangularMesh` magnets on one observer: the
