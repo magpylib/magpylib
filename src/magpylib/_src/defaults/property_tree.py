@@ -29,6 +29,7 @@ Public contract for GUIs and third-party tooling:
 - ``merged(*layers)``: first-set-wins resolution across defaults layers
 """
 
+import numbers
 from copy import deepcopy
 from types import MethodType
 from typing import ClassVar
@@ -152,6 +153,11 @@ class Integer(Number):
     kind = "integer"
     json_type = "integer"
     _types = (int,)
+
+    def validate(self, obj, value):
+        if isinstance(value, numbers.Integral) and not isinstance(value, bool):
+            value = int(value)  # NumPy integers too, stored as int
+        return super().validate(obj, value)
 
 
 class Boolean(Property):

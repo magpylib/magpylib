@@ -74,7 +74,7 @@ Magpylib collects all inputs (object parameters), and vectorizes them for the co
 
 Try to make all field computations with as few calls to `getBHJM` as possible. Avoid Python loops at all costs!
 
-Large computations are split into chunks, which keeps the memory they need small, and the chunks run on `magpy.defaults.threads` threads: one per CPU core, up to 8. Set it to 1 to compute the chunks one after the other, for example when you already run several Magpylib computations in parallel processes.
+Large `getBHJM` computations are split into chunks, which keeps the memory they need small, and the chunks run on `magpy.defaults.threads` threads: one per CPU core this process may use, up to 8. Set it to 1 to compute the chunks one after the other, for example when you already run several Magpylib computations in parallel processes. The field function of a `CustomSource` is called once with all observers, on the calling thread.
 ```
 
 -------------------------------------

@@ -413,11 +413,18 @@ def open_animation(filepath, embed=True):
     return True
 
 
+def is_magpylib_field_func(func: Callable) -> bool:
+    """Check if func is one of Magpylib's own field functions. They live for the
+    whole session and are thread-safe, unlike a user field_func."""
+    module = getattr(func, "__module__", None) or ""
+    return module.startswith("magpylib._src.fields.")
+
+
 def has_parameter(func: Callable, param_name: str) -> bool:
     """Check if input function has a specific parameter"""
     # only Magpylib's own field functions are cached: they live for the whole
     # session, while a cached user callable would keep its source alive
-    if (getattr(func, "__module__", None) or "").startswith("magpylib."):
+    if is_magpylib_field_func(func):
         return param_name in _own_parameter_names(func)
     return param_name in signature(func, follow_wrapped=False).parameters
 

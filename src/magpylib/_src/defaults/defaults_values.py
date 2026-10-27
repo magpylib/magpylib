@@ -1,6 +1,20 @@
 """Package level config defaults"""
 
 import os
+import sys
+
+
+def _cpu_count():
+    """CPUs this process may use: the affinity mask where Python exposes it, and
+    one in WebAssembly builds such as Pyodide, which cannot start threads."""
+    if sys.platform in ("emscripten", "wasi"):
+        return 1
+    if hasattr(os, "process_cpu_count"):  # Python 3.13+
+        return os.process_cpu_count() or 1
+    if hasattr(os, "sched_getaffinity"):  # Linux
+        return len(os.sched_getaffinity(0)) or 1
+    return os.cpu_count() or 1
+
 
 DEFAULTS = {
     "display": {
@@ -203,5 +217,5 @@ DEFAULTS = {
         },
     },
     # one per core, up to 8: more gained little on a 10-core laptop
-    "threads": min(8, os.cpu_count() or 1),
+    "threads": min(8, _cpu_count()),
 }

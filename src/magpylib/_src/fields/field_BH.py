@@ -68,6 +68,7 @@ from magpylib._src.utility import (
     format_obj_input,
     format_src_inputs,
     has_parameter,
+    is_magpylib_field_func,
 )
 
 
@@ -306,18 +307,23 @@ def _chunk_slices(rows_per_obs, n_path, n_pix):
     return chunks
 
 
-def _run_chunks(compute, chunks, threaded):
-    """Run ``compute`` on every chunk, on ``defaults.threads`` threads when
-    ``threaded``. NumPy releases the GIL inside the kernels, so the threads run
-    in parallel. The chunks do not depend on the thread count, so neither do
-    the results."""
-    threads = min(default_settings.threads, len(chunks)) if threaded else 1
+def _run_chunks(tasks, threads):
+    """Run every ``(compute, chunk)`` task, on ``threads`` threads. NumPy
+    releases the GIL inside the kernels, so the threads run in parallel. The
+    chunks do not depend on the thread count, so neither do the results."""
     if threads == 1:
-        for chunk in chunks:
+        for compute, chunk in tasks:
             compute(chunk)
         return
+    errstate = np.geterr()  # a new thread starts from NumPy's default settings
+
+    def run(task):
+        compute, chunk = task
+        with np.errstate(**errstate):
+            compute(chunk)
+
     with ThreadPoolExecutor(threads) as pool:
-        list(pool.map(compute, chunks))  # list() re-raises a chunk's error
+        list(pool.map(run, tasks))  # list() re-raises a chunk's error
 
 
 def _getBH_level2(
@@ -476,6 +482,7 @@ def _getBH_level2(
         # evaluate each group in vectorized chunks ---------------------------------
         B = np.empty((num_of_src_list, max_path_len, n_pix, 3))  # allocate B
         poso_pix = poso.reshape((max_path_len, n_pix, 3))
+        tasks, rows = [], 0  # chunks of Magpylib's own kernels, all groups
         for group in field_func_groups.values():
             field_func = group["field_func"]
             gr = group["sources"]
@@ -501,14 +508,17 @@ def _getBH_level2(
                     (len(sub), max_path_len, n_pix_chunk, 3)
                 )
 
-            chunks = _chunk_slices(
-                [src._kernel_rows_per_observer() for src in gr], max_path_len, n_pix
-            )
-            # Magpylib's own kernels only: a user field_func may not be thread-safe
-            threaded = (getattr(field_func, "__module__", None) or "").startswith(
-                "magpylib."
-            )
-            _run_chunks(compute, chunks, threaded)
+            if is_magpylib_field_func(field_func):
+                rows_per_obs = [src._kernel_rows_per_observer() for src in gr]
+                rows += sum(rows_per_obs) * max_path_len * n_pix
+                chunks = _chunk_slices(rows_per_obs, max_path_len, n_pix)
+                tasks.extend((compute, chunk) for chunk in chunks)
+            else:  # a user field_func gets all observers at once, on this
+                # thread: it may not be thread-safe, nor compute point by point
+                compute((slice(None), slice(None)))
+
+        threads = min(default_settings.threads, len(tasks)) if rows > CHUNK_ROWS else 1
+        _run_chunks(tasks, threads)
 
         # reshape output ----------------------------------------------------------------
         # rearrange B when there is at least one Collection with more than one source

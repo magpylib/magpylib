@@ -1,5 +1,6 @@
 import sys
 
+import numpy as np
 import pytest
 
 import magpylib as magpy
@@ -176,6 +177,7 @@ good_inputs = {
     "display_style_markers_marker_size": (0, 1),  # float>=0
     "display_style_markers_marker_color": ("blue", "#2E91E5"),
     "display_style_markers_marker_symbol": ALLOWED_SYMBOLS,
+    "threads": (1, np.int64(4)),  # NumPy integers too
 }
 
 

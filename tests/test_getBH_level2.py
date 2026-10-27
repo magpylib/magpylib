@@ -790,6 +790,10 @@ CHUNK_SOURCES = {
         ),
     ],
     "sphere": lambda: magpy.magnet.Sphere(diameter=1, polarization=POL),
+    "five spheres": lambda: [
+        magpy.magnet.Sphere(diameter=1, polarization=POL, position=(i, 0, -2))
+        for i in range(5)
+    ],
     "tetrahedron": lambda: magpy.magnet.Tetrahedron(
         vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)], polarization=POL
     ),
@@ -841,30 +845,39 @@ def test_chunks_and_threads_match_one_vectorized_step(name, monkeypatch):
         magpy.Sensor(pixel=pixel, orientation=R.from_euler("z", 30, degrees=True)),
     ]
     B_one_step = magpy.getB(sources, sensors)
-
-    monkeypatch.setattr(field_BH, "CHUNK_ROWS", 7)
-    B_chunks = []
-    for threads in (1, 4):
-        monkeypatch.setattr(magpy.defaults, "threads", threads)
-        B_chunks.append(magpy.getB(sources, sensors))
-
-    np.testing.assert_array_equal(B_chunks[0], B_chunks[1])
     atol = 1e-13 * np.nanmax(np.abs(B_one_step))
-    np.testing.assert_allclose(B_chunks[0], B_one_step, rtol=1e-12, atol=atol)
+
+    for chunk_rows in (7, 300):  # pixels of one source, or whole sources packed
+        monkeypatch.setattr(field_BH, "CHUNK_ROWS", chunk_rows)
+        B_chunks = []
+        for threads in (1, 4):
+            monkeypatch.setattr(magpy.defaults, "threads", threads)
+            B_chunks.append(magpy.getB(sources, sensors))
+        np.testing.assert_array_equal(B_chunks[0], B_chunks[1])
+        np.testing.assert_allclose(B_chunks[0], B_one_step, rtol=1e-12, atol=atol)
 
 
-def test_user_field_func_runs_on_the_calling_thread(monkeypatch):
-    """A user field_func is computed in chunks, but never on other threads: it
-    may not be thread-safe."""
-    threads_seen = []
+def test_user_field_func_gets_all_observers_on_the_calling_thread(monkeypatch):
+    """A user field_func is called once with all observers, on the calling
+    thread: it may not be thread-safe, nor compute point by point."""
+    calls = []
 
     def field_func(field, observers):  # noqa: ARG001
-        threads_seen.append(threading.get_ident())
+        calls.append((threading.get_ident(), len(observers)))
         return observers
 
     monkeypatch.setattr(field_BH, "CHUNK_ROWS", 7)
     src = magpy.misc.CustomSource(field_func=field_func)
+    calls.clear()  # the constructor tries field_func on two points
     src.getB(np.random.default_rng(0).random((50, 3)))
 
-    assert len(threads_seen) > 1
-    assert set(threads_seen) == {threading.get_ident()}
+    assert calls == [(threading.get_ident(), 50)]
+
+
+def test_threads_keep_the_callers_numpy_error_settings(monkeypatch):
+    """np.errstate applies to chunks computed on other threads too."""
+    monkeypatch.setattr(field_BH, "CHUNK_ROWS", 7)
+    monkeypatch.setattr(magpy.defaults, "threads", 4)
+    sphere = magpy.magnet.Sphere(diameter=1, polarization=POL)
+    with np.errstate(all="raise"), pytest.raises(FloatingPointError):
+        sphere.getB(np.full((50, 3), 1e120))
