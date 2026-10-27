@@ -6,7 +6,8 @@
 
 - The field of the last of several different `TriangularMesh` magnets on a
   single observer: the inside test used the mesh before it, adding or dropping
-  that magnet's polarization.
+  that magnet's polarization
+  ([#1062](https://github.com/magpylib/magpylib/pull/1062)).
 
 ## [6.0.1] 2026-10-25
 
