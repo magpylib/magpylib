@@ -5,6 +5,7 @@ from collections.abc import Callable
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
+from magpylib._src.fields import chunks
 from magpylib._src.fields.field_BH_circle import _BHJM_circle
 from magpylib._src.fields.field_BH_cuboid import _BHJM_magnet_cuboid
 from magpylib._src.fields.field_BH_current_sheet import _BHJM_current_sheet
@@ -355,7 +356,9 @@ def cylinder_segment_field(
         "orientation": orientations,
     }
     shapes = {"dimension": (5,)}
-    return _getBH_func(_BHJM_cylinder_segment, field, params, squeeze, shapes)
+    return _getBH_func(
+        _BHJM_cylinder_segment, field, params, squeeze, shapes, kernel_rows=8
+    )
 
 
 def sphere_field(
@@ -487,7 +490,9 @@ def tetrahedron_field(
         "orientation": orientations,
     }
     shapes = {"vertices": (4, 3)}
-    return _getBH_func(_BHJM_magnet_tetrahedron, field, params, squeeze, shapes)
+    return _getBH_func(
+        _BHJM_magnet_tetrahedron, field, params, squeeze, shapes, kernel_rows=4
+    )
 
 
 def dipole_field(
@@ -722,7 +727,7 @@ SHAPE = {
 }
 
 
-def _getBH_func(field_func, field, params, squeeze, shapes=None):
+def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
     """Functional interface for magnetic field computation
 
     field_func: callable
@@ -733,6 +738,10 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
     shapes: dict | None, default None
         extra shapes that are class specific (e.g. dimension can
         have multiple shapes).
+    kernel_rows: int, default 1
+        kernel rows field_func computes per input row (4 faces of a
+        tetrahedron, 8 corner terms of a cylinder segment), which size the
+        chunks the inputs are computed in.
     """
     # Check field input
     if field not in {"B", "H"}:
@@ -776,7 +785,7 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
         n = params[key].shape[0]
         nmax = max(nmax, n)
 
-    # Check if shapes are correct, Tile to maxlength
+    # Check if shapes are correct
     # include extra shapes
     SHAPES = SHAPE if shapes is None else SHAPE | shapes
     for key, val in params.items():
@@ -792,19 +801,28 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None):
                 f"instead received {val.shape[0]}."
             )
             raise ValueError(msg)
-        # tile up to nmax if only 1 instance is given
-        if nmax > 1 and val.shape[0] == 1:
-            params[key] = np.tile(val, [nmax] + [1] * (val.ndim - 1))
 
-    # Transform Quat to Rotation object
-    params["orientation"] = R.from_quat(params["orientation"])
+    # Compute in chunks of rows, each tiling single instances to its rows
+    BH = np.empty((nmax, 3))
 
-    # Call to level1, squeeze, return
-    field = _getBH_level1(field_func=field_func, field=field, **params)
+    def compute(rows):
+        n = len(range(nmax)[rows])
+        kwargs = {
+            key: val[rows]
+            if len(val) == nmax
+            else np.tile(val, [n] + [1] * (val.ndim - 1))
+            for key, val in params.items()
+        }
+        kwargs["orientation"] = R.from_quat(kwargs["orientation"])
+        BH[rows] = _getBH_level1(field_func=field_func, field=field, **kwargs)
+
+    step = max(1, chunks.CHUNK_ROWS // kernel_rows)
+    tasks = [(compute, slice(i, i + step)) for i in range(0, nmax, step)]
+    chunks.run_chunks(tasks, nmax * kernel_rows)
 
     if squeeze:
-        return np.squeeze(field)
-    return field
+        return np.squeeze(BH)
+    return BH
 
 
 def _getBH_level1(

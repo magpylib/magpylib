@@ -85,6 +85,8 @@ Users can bypass the object-oriented interface and compute fields for i paramete
 
 Inputs may be scalars or array-like of length i. Scalar inputs are automatically tiled to length i, creating i computation instances. The field is returned with shape (i, 3); when `squeeze=True` and `i=1`, the shape is (3,).
 
+Large computations run in chunks on `magpy.defaults.threads` threads, as with `getBHJM`, and scalar inputs are tiled one chunk at a time.
+
 For all functions, set `field` to `'B'` or `'H'`. The common defaults are `positions=(0, 0, 0)`, `orientations=None`, and `squeeze=True`.
 
 The following functions, with their specific parameters (see individual docstrings), make up the subpackage:

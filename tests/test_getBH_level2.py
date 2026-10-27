@@ -8,7 +8,7 @@ from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.fields import field_BH
+from magpylib._src.fields import chunks, field_BH
 from magpylib._src.fields.field_BH import _preserve_paths
 
 
@@ -853,7 +853,7 @@ def test_chunks_and_threads_match_one_vectorized_step(name, monkeypatch):
     atol = 1e-13 * np.nanmax(np.abs(B_one_step))
 
     for chunk_rows in (2, 7, 300):  # path steps, pixels, or whole sources packed
-        monkeypatch.setattr(field_BH, "CHUNK_ROWS", chunk_rows)
+        monkeypatch.setattr(chunks, "CHUNK_ROWS", chunk_rows)
         B_chunks = []
         for threads in (1, 4):
             monkeypatch.setattr(magpy.defaults, "threads", threads)
@@ -871,7 +871,7 @@ def test_user_field_func_gets_all_observers_on_the_calling_thread(monkeypatch):
         calls.append((threading.get_ident(), len(observers)))
         return observers
 
-    monkeypatch.setattr(field_BH, "CHUNK_ROWS", 7)
+    monkeypatch.setattr(chunks, "CHUNK_ROWS", 7)
     src = magpy.misc.CustomSource(field_func=field_func)
     calls.clear()  # the constructor tries field_func on two points
     src.getB(np.random.default_rng(0).random((50, 3)))
@@ -898,14 +898,14 @@ def test_chunks_cover_every_row_once_within_chunk_rows(rows_per_obs, n_path, n_p
             * len(range(n_path)[path_sl])
             * len(range(n_pix)[pix_sl])
         )
-        assert rows <= max(field_BH.CHUNK_ROWS, *rows_per_obs[src_sl])
+        assert rows <= max(chunks.CHUNK_ROWS, *rows_per_obs[src_sl])
     assert np.all(covered == 1)
 
 
 def test_threads_keep_the_callers_numpy_error_settings(monkeypatch):
     """np.errstate applies to chunks computed on other threads too, a callback
     included."""
-    monkeypatch.setattr(field_BH, "CHUNK_ROWS", 7)
+    monkeypatch.setattr(chunks, "CHUNK_ROWS", 7)
     monkeypatch.setattr(magpy.defaults, "threads", 4)
     sphere = magpy.magnet.Sphere(diameter=1, polarization=POL)
     observers = np.full((50, 3), 1e120)
@@ -925,11 +925,11 @@ def test_chunks_run_on_the_calling_thread_when_no_thread_starts(monkeypatch):
         msg = "cannot schedule new futures after interpreter shutdown"
         raise RuntimeError(msg)
 
-    monkeypatch.setattr(field_BH, "CHUNK_ROWS", 7)
+    monkeypatch.setattr(chunks, "CHUNK_ROWS", 7)
     sphere = magpy.magnet.Sphere(diameter=1, polarization=POL)
     observers = np.random.default_rng(0).normal(size=(50, 3))
     monkeypatch.setattr(magpy.defaults, "threads", 1)
     B_sequential = sphere.getB(observers)
     monkeypatch.setattr(magpy.defaults, "threads", 4)
-    monkeypatch.setattr(field_BH.ThreadPoolExecutor, "submit", refuse)
+    monkeypatch.setattr(chunks.ThreadPoolExecutor, "submit", refuse)
     np.testing.assert_array_equal(sphere.getB(observers), B_sequential)

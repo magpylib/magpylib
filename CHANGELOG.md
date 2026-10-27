@@ -6,9 +6,10 @@
 
 - Faster fields along long paths: sensor pixels are placed for all path steps at
   once ([#1061](https://github.com/magpylib/magpylib/pull/1061)).
-- Large `getB`, `getH`, `getJ` and `getM` computations run in chunks, on several
-  threads: a fraction of the memory, and several times faster on multi-core
-  machines. Set the thread count with `magpy.defaults.threads`
+- Large `getB`, `getH`, `getJ` and `getM` computations, and the functional
+  interface `magpy.func`, run in chunks, on several threads: a fraction of the
+  memory, and several times faster on multi-core machines. Set the thread count
+  with `magpy.defaults.threads`
   ([#1059](https://github.com/magpylib/magpylib/pull/1059)).
 
 ### Fixed

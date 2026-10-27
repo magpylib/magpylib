@@ -43,7 +43,6 @@ level4(src.getB/H, sensor.getB/H, collection.getB/H):   <--- USER INTERFACE
 
 import warnings
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from itertools import product
 from types import MethodType
@@ -51,8 +50,8 @@ from types import MethodType
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.exceptions import MagpylibMissingInput
+from magpylib._src.fields import chunks
 from magpylib._src.input_checks import (
     check_dimensions,
     check_excitations,
@@ -278,68 +277,35 @@ def _getBH_level1(
     return BH
 
 
-# Kernel rows per chunk: one row is one source, path step and pixel, times the
-# segments or faces the source is computed from. Every input is tiled to the
-# rows before the kernel runs, and kernels hold several temporaries per row, so
-# memory grows with this number; above it, a group is computed in chunks.
-CHUNK_ROWS = 50_000
-
-
 def _chunk_slices(rows_per_obs, n_path, n_pix):
     """(source, path step, pixel) slices covering a group in chunks of about
-    CHUNK_ROWS kernel rows. ``rows_per_obs`` holds each source's kernel rows per
-    observer. Whole sources are packed together; a source above CHUNK_ROWS on
+    chunks.CHUNK_ROWS kernel rows. ``rows_per_obs`` holds each source's kernel
+    rows per observer. Whole sources are packed together; a source above it on
     its own is split along the pixels, and along the path steps when one pixel
     on the whole path is above it too."""
     whole = slice(None)
-    chunks, start, rows = [], 0, 0
+    out, start, rows = [], 0, 0
     for ind, rpo in enumerate(rows_per_obs):
         src_rows = rpo * n_path * n_pix
-        if src_rows > CHUNK_ROWS:
+        if src_rows > chunks.CHUNK_ROWS:
             if start < ind:
-                chunks.append((slice(start, ind), whole, whole))
-            path_step = max(1, min(n_path, CHUNK_ROWS // rpo))
-            pix_step = max(1, CHUNK_ROWS // (rpo * path_step))
-            chunks.extend(
+                out.append((slice(start, ind), whole, whole))
+            path_step = max(1, min(n_path, chunks.CHUNK_ROWS // rpo))
+            pix_step = max(1, chunks.CHUNK_ROWS // (rpo * path_step))
+            out.extend(
                 (slice(ind, ind + 1), slice(q, q + path_step), slice(p, p + pix_step))
                 for q in range(0, n_path, path_step)
                 for p in range(0, n_pix, pix_step)
             )
             start, rows = ind + 1, 0
-        elif rows + src_rows > CHUNK_ROWS:
-            chunks.append((slice(start, ind), whole, whole))
+        elif rows + src_rows > chunks.CHUNK_ROWS:
+            out.append((slice(start, ind), whole, whole))
             start, rows = ind, src_rows
         else:
             rows += src_rows
     if start < len(rows_per_obs):
-        chunks.append((slice(start, len(rows_per_obs)), whole, whole))
-    return chunks
-
-
-def _run_chunks(tasks, threads):
-    """Run every ``(compute, chunk)`` task, on ``threads`` threads. NumPy
-    releases the GIL inside most kernels, so the threads run in parallel. The
-    chunks do not depend on the thread count, so neither do the results."""
-    if threads > 1:
-        # a new thread starts from NumPy's default error settings
-        errstate, errcall = np.geterr(), np.geterrcall()
-
-        def run(task):
-            compute, chunk = task
-            with np.errstate(call=errcall, **errstate):
-                compute(chunk)
-
-        try:
-            with ThreadPoolExecutor(threads) as pool:
-                futures = [pool.submit(run, task) for task in tasks]
-        except RuntimeError:  # no thread starts, e.g. at interpreter shutdown
-            pass
-        else:
-            for future in futures:
-                future.result()  # re-raises a chunk's error
-            return
-    for compute, chunk in tasks:
-        compute(chunk)
+        out.append((slice(start, len(rows_per_obs)), whole, whole))
+    return out
 
 
 def _getBH_level2(
@@ -530,14 +496,13 @@ def _getBH_level2(
             if is_magpylib_field_func(field_func):
                 rows_per_obs = [src._kernel_rows_per_observer() for src in gr]
                 rows += sum(rows_per_obs) * max_path_len * n_pix
-                chunks = _chunk_slices(rows_per_obs, max_path_len, n_pix)
-                tasks.extend((compute, chunk) for chunk in chunks)
+                slices = _chunk_slices(rows_per_obs, max_path_len, n_pix)
+                tasks.extend((compute, chunk) for chunk in slices)
             else:  # a user field_func gets all observers at once, on this
                 # thread: it may not be thread-safe, nor compute point by point
                 compute((slice(None), slice(None), slice(None)))
 
-        threads = min(default_settings.threads, len(tasks)) if rows > CHUNK_ROWS else 1
-        _run_chunks(tasks, threads)
+        chunks.run_chunks(tasks, rows)
 
         # reshape output ----------------------------------------------------------------
         # rearrange B when there is at least one Collection with more than one source
