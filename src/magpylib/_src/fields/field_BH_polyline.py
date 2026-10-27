@@ -18,18 +18,22 @@ def _current_vertices_field(
     segment_end=None,
 ) -> np.ndarray:
     """
-    This function accepts n (mi, 3) shaped vertex-sets, creates a single long
-    input array for field_BH_polyline(), computes, sums and returns a single field for each
-    vertex-set at respective n observer positions.
+    This function accepts n vertex sets, creates a single long input array of
+    segments for _BHJM_current_polyline(), computes, sums and returns a single
+    field for each vertex set at respective n observer positions.
 
     ### Args:
-    - bh (boolean): True=B, False=H
+    - field (str): "B", "H", "J" or "M"
+    - observers (ndarray nx3): n observer positions in units (m)
     - current (ndarray n): current on line in units (A)
-    - vertex_sets (list of len n): n vertex sets (each of shape (mi, 3))
-    - pos_obs (ndarray nx3): n observer positions in units (m)
+    - vertices (ndarray nxmx3): n vertex sets in units (m), each of at least 2
+      vertices; when their lengths mi differ, a list or object array of n
+      arrays of shape (mi, 3)
+    - segment_start, segment_end (ndarray nx3): single segments, used when
+      vertices is None
 
     ### Returns:
-    - B-field (ndarray nx3): B-field vectors at pos_obs in units (T)
+    - BH (ndarray nx3): field at the observers in units (T) or (A/m)
     """
     if vertices is None:
         return _BHJM_current_polyline(
@@ -40,8 +44,8 @@ def _current_vertices_field(
             segment_end=segment_end,
         )
 
-    # vertex sets of differing lengths arrive as an object array
-    if vertices.dtype != object:  # all vertex sets have the same length
+    # vertex sets of differing lengths arrive as an object array or a list
+    if isinstance(vertices, np.ndarray) and vertices.dtype != object:
         n0, n1, *_ = vertices.shape
         BH = _BHJM_current_polyline(
             field=field,
@@ -53,17 +57,22 @@ def _current_vertices_field(
         BH = BH.reshape((n0, n1 - 1, 3))
         BH = np.sum(BH, axis=1)
     else:
-        nvs = np.array([f.shape[0] for f in vertices])  # lengths of vertices sets
-        split_indices = np.cumsum(nvs - 1)[:-1]  # remove last to avoid empty split
+        nvs = np.fromiter(map(len, vertices), int, len(vertices))  # set lengths
+        verts = np.concatenate(vertices)
+        last = np.cumsum(nvs) - 1  # index of the last vertex of each set in verts
+        not_last = np.ones(len(verts), dtype=bool)
+        not_last[last] = False
+        not_first = np.ones(len(verts), dtype=bool)
+        not_first[last - nvs + 1] = False
         BH = _BHJM_current_polyline(
             field=field,
             observers=np.repeat(observers, nvs - 1, axis=0),
             current=np.repeat(current, nvs - 1, axis=0),
-            segment_start=np.concatenate([vert[:-1] for vert in vertices]),
-            segment_end=np.concatenate([vert[1:] for vert in vertices]),
+            segment_start=verts[not_last],
+            segment_end=verts[not_first],
         )
-        bh_split = np.split(BH, split_indices)
-        BH = np.array([np.sum(bh, axis=0) for bh in bh_split])
+        first_segment = np.cumsum(nvs - 1) - (nvs - 1)  # of each set in BH
+        BH = np.add.reduceat(BH, first_segment, axis=0)
     return BH
 
 

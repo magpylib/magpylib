@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 import magpylib as magpy
 
@@ -127,3 +128,17 @@ def test_Polyline_centroid():
     )
     expected = (9, 9, 10)
     assert np.allclose(polyline.centroid, expected)
+
+
+@pytest.mark.parametrize("n_verts", [(2, 2), (2, 3)])
+def test_Polyline_field_func_vertex_list(n_verts):
+    """field_func takes vertex sets as a list, of equal or differing lengths"""
+    verts = [np.array([(0, 0, 0), (1, 0, 0), (1, 1, 0.0)])[:n] for n in n_verts]
+    obs = np.array([(1, 2, 3.0), (3, 2, 1.0)])
+    src = magpy.current.Polyline(current=1, vertices=verts[0])
+    B = src.field_func(field="B", observers=obs, current=np.ones(2), vertices=verts)
+    B_ref = [
+        magpy.current.Polyline(current=1, vertices=v).getB(o)
+        for v, o in zip(verts, obs, strict=True)
+    ]
+    np.testing.assert_allclose(B, B_ref)
