@@ -4,8 +4,10 @@
 
 ### Changed
 
-- Faster fields along long paths: sensor pixels are placed for all path steps at
-  once ([#1061](https://github.com/magpylib/magpylib/pull/1061)).
+- Faster fields along long paths, where sensor pixels are placed for all path
+  steps at once, and of Polylines on many observers
+  ([#1061](https://github.com/magpylib/magpylib/pull/1061),
+  [#1063](https://github.com/magpylib/magpylib/pull/1063)).
 
 ### Fixed
 
