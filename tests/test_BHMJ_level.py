@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import mu_0 as MU0
 
@@ -746,21 +747,20 @@ def test_field_loop2():
     assert_allclose(B, (B2[1],))
 
 
-def test_field_line_from_vert():
-    """test the Polyline field from vertex input"""
-    observers = np.array([(1, 2, 2), (1, 2, 3), (-1, 0, -3)])
-    current = np.array([1, 5, -3])
+@pytest.mark.parametrize("container", ["object array", "list"])
+def test_field_line_from_vert(container):
+    """test the Polyline field from vertex input; a single vertex gives zero"""
+    observers = np.array([(1, 2, 2), (1, 2, 3), (0, 1, 1), (-1, 0, -3)])
+    current = np.array([1, 5, 2, -3])
 
-    vertices = np.array(
-        [
-            np.array(
-                [(0, 0, 0), (1, 1, 1), (2, 2, 2), (3, 3, 3), (1, 2, 3), (-3, 4, -5)]
-            ),
-            np.array([(0, 0, 0), (3, 3, 3), (-3, 4, -5)]),
-            np.array([(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)]),
-        ],
-        dtype="object",
-    )
+    vertices = [
+        np.array([(0, 0, 0), (1, 1, 1), (2, 2, 2), (3, 3, 3), (1, 2, 3), (-3, 4, -5)]),
+        np.array([(0, 0, 0), (3, 3, 3), (-3, 4, -5)]),
+        np.array([(1, 1, 1)]),
+        np.array([(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)]),
+    ]
+    if container == "object array":
+        vertices = np.array(vertices, dtype="object")
 
     B_vert = _current_vertices_field(
         field="B",
@@ -773,7 +773,7 @@ def test_field_line_from_vert():
     for obs, vert, curr in zip(observers, vertices, current, strict=False):
         p1 = vert[:-1]
         p2 = vert[1:]
-        po = np.array([obs] * (len(vert) - 1))
+        po = np.tile(obs, (len(vert) - 1, 1))
         cu = np.array([curr] * (len(vert) - 1))
         B += [
             np.sum(
