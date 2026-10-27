@@ -177,7 +177,7 @@ good_inputs = {
     "display_style_markers_marker_size": (0, 1),  # float>=0
     "display_style_markers_marker_color": ("blue", "#2E91E5"),
     "display_style_markers_marker_symbol": ALLOWED_SYMBOLS,
-    "threads": (1, np.int64(4)),  # NumPy integers too
+    "threads": (1, 4),
 }
 
 
@@ -205,6 +205,17 @@ def test_defaults_good_inputs(key, value, expected):
     for v in key.split("_"):
         v0 = getattr(v0, v)
     assert v0 == expected, f"Input {key} should be {expected}; instead received {v0}."
+
+
+def test_threads_stores_an_int_and_none_restores_the_default():
+    """NumPy integers are stored as int, and None restores the CPU count rather
+    than leaving field computations without one."""
+    c = DefaultSettings()
+    default = c.threads
+    c.threads = np.int64(4)
+    assert type(c.threads) is int
+    c.threads = None
+    assert c.threads == default >= 1
 
 
 @pytest.mark.parametrize(

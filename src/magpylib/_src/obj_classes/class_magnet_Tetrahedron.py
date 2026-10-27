@@ -159,6 +159,9 @@ class Tetrahedron(BaseMagnet, BaseTarget, BaseVolume, BaseDipoleMoment, BaseBary
         return ""
 
     # Methods
+    def _kernel_rows_per_observer(self):
+        return 4  # faces
+
     def _get_volume(self, squeeze=True):
         """Volume of object in units (m³)."""
         if self._vertices is None:

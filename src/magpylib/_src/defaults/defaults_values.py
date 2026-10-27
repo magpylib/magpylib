@@ -216,6 +216,6 @@ DEFAULTS = {
             "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},
         },
     },
-    # one per core, up to 8: more gained little on a 10-core laptop
+    # one per logical CPU, up to 8: more gained little on a 14-core laptop
     "threads": min(8, _cpu_count()),
 }

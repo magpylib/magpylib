@@ -4,6 +4,7 @@ from magpylib._src.defaults.defaults_utility import (
     get_defaults_dict,
     get_registered_backends,
 )
+from magpylib._src.defaults.defaults_values import DEFAULTS
 from magpylib._src.defaults.property_tree import (
     Boolean,
     Choice,
@@ -164,12 +165,17 @@ class DefaultSettings(PropertyNode):
         ('backend', 'animation', 'colorsequence', ...).
     threads: int
         Threads that compute fields too large for one vectorized step, which
-        are then split into chunks. The default is one per CPU core, up to 8;
-        1 computes the chunks one after the other.
+        are then split into chunks. The default is one per logical CPU this
+        process may use, up to 8; 1 computes the chunks one after the other.
     """
 
     display = Nested(Display, doc="Display settings.")
-    threads = Integer(minimum=1, doc="Threads for large field computations.")
+    # always set: None restores the default rather than leaving getB no count
+    threads = Integer(
+        default=DEFAULTS["threads"],
+        minimum=1,
+        doc="Threads for large field computations.",
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

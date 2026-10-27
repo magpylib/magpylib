@@ -184,6 +184,9 @@ class CylinderSegment(
         return ", ".join(parts)
 
     # Methods
+    def _kernel_rows_per_observer(self):
+        return 8  # corner terms
+
     def _get_volume(self, squeeze=True):
         """Volume of object in units (m³)."""
         if self._dimension is None:

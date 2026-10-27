@@ -118,8 +118,8 @@ def _preserve_paths(input_objs, path_properties=None, copy=False):
                 setattr(obj, f"_{prop}", path_orig[key])
 
 
-def _tile_group_property_path(group: list, n_pix: int, prop_name: str):
-    """tile up group property with path support.
+def _tile_group_property_path(group: list, n_pix: int, prop_name: str, path_sl: slice):
+    """tile up group property with path support, for the path steps ``path_sl``.
 
     Every object is edge-padded to the common max path length by _getBH_level2
     before this runs, so each stored value already carries the full path length.
@@ -130,7 +130,7 @@ def _tile_group_property_path(group: list, n_pix: int, prop_name: str):
         if val is None:
             msg = f"Input {prop_name} of {src} must be set before computing the field."
             raise MagpylibMissingInput(msg)
-        out.append(val)
+        out.append(val[path_sl])
 
     # repeat each path entry n_pix times: rows must be path-major/pixel-minor
     # to match the position/orientation/observer layout in _get_src_dict
@@ -182,8 +182,10 @@ def _pixel_positions(sens, static_orientation: bool) -> np.ndarray:
     return np.matmul(rot.as_matrix(), pix_t).transpose(0, 2, 1) + pos
 
 
-def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
-    """create dictionaries for level1 input.
+def _get_src_dict(
+    group: list, n_pix: int, n_pp: int, poso: np.ndarray, path_sl: slice
+) -> dict:
+    """create dictionaries for level1 input, for the path steps ``path_sl``.
 
     Every object is edge-padded to the common max path length by _getBH_level2
     before this runs, so ``_position``/``_orientation`` already carry the full
@@ -194,11 +196,11 @@ def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     # tile up basic attributes that all sources have
     # Position
-    poss = np.array([src._position for src in group])
+    poss = np.array([src._position[path_sl] for src in group])
     posv = np.tile(poss, n_pix).reshape((-1, 3))
 
     # Orientation - convert Rotation to quat, tile, convert back
-    rots = np.array([src._orientation.as_quat() for src in group])
+    rots = np.array([src._orientation.as_quat()[path_sl] for src in group])
     rotv = np.tile(rots, n_pix).reshape((-1, 4))
     rotobj = R.from_quat(rotv)
 
@@ -228,7 +230,9 @@ def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
             and prop_name not in ("position", "orientation")
             and prop_name in props_in_field_func
         ):
-            kwargs[prop_name] = _tile_group_property_path(group, n_pix, prop_name)
+            kwargs[prop_name] = _tile_group_property_path(
+                group, n_pix, prop_name, path_sl
+            )
 
     return kwargs
 
@@ -282,48 +286,60 @@ CHUNK_ROWS = 50_000
 
 
 def _chunk_slices(rows_per_obs, n_path, n_pix):
-    """(source slice, pixel slice) pairs covering a group in chunks of about
+    """(source, path step, pixel) slices covering a group in chunks of about
     CHUNK_ROWS kernel rows. ``rows_per_obs`` holds each source's kernel rows per
     observer. Whole sources are packed together; a source above CHUNK_ROWS on
-    its own is split along the pixels."""
+    its own is split along the pixels, and along the path steps when one pixel
+    on the whole path is above it too."""
+    whole = slice(None)
     chunks, start, rows = [], 0, 0
     for ind, rpo in enumerate(rows_per_obs):
         src_rows = rpo * n_path * n_pix
         if src_rows > CHUNK_ROWS:
             if start < ind:
-                chunks.append((slice(start, ind), slice(None)))
-            step = max(1, CHUNK_ROWS // (rpo * n_path))
+                chunks.append((slice(start, ind), whole, whole))
+            path_step = max(1, min(n_path, CHUNK_ROWS // rpo))
+            pix_step = max(1, CHUNK_ROWS // (rpo * path_step))
             chunks.extend(
-                (slice(ind, ind + 1), slice(p, p + step)) for p in range(0, n_pix, step)
+                (slice(ind, ind + 1), slice(q, q + path_step), slice(p, p + pix_step))
+                for q in range(0, n_path, path_step)
+                for p in range(0, n_pix, pix_step)
             )
             start, rows = ind + 1, 0
         elif rows + src_rows > CHUNK_ROWS:
-            chunks.append((slice(start, ind), slice(None)))
+            chunks.append((slice(start, ind), whole, whole))
             start, rows = ind, src_rows
         else:
             rows += src_rows
     if start < len(rows_per_obs):
-        chunks.append((slice(start, len(rows_per_obs)), slice(None)))
+        chunks.append((slice(start, len(rows_per_obs)), whole, whole))
     return chunks
 
 
 def _run_chunks(tasks, threads):
     """Run every ``(compute, chunk)`` task, on ``threads`` threads. NumPy
-    releases the GIL inside the kernels, so the threads run in parallel. The
+    releases the GIL inside most kernels, so the threads run in parallel. The
     chunks do not depend on the thread count, so neither do the results."""
-    if threads == 1:
-        for compute, chunk in tasks:
-            compute(chunk)
-        return
-    errstate = np.geterr()  # a new thread starts from NumPy's default settings
+    if threads > 1:
+        # a new thread starts from NumPy's default error settings
+        errstate, errcall = np.geterr(), np.geterrcall()
 
-    def run(task):
-        compute, chunk = task
-        with np.errstate(**errstate):
-            compute(chunk)
+        def run(task):
+            compute, chunk = task
+            with np.errstate(call=errcall, **errstate):
+                compute(chunk)
 
-    with ThreadPoolExecutor(threads) as pool:
-        list(pool.map(run, tasks))  # list() re-raises a chunk's error
+        try:
+            with ThreadPoolExecutor(threads) as pool:
+                futures = [pool.submit(run, task) for task in tasks]
+        except RuntimeError:  # no thread starts, e.g. at interpreter shutdown
+            pass
+        else:
+            for future in futures:
+                future.result()  # re-raises a chunk's error
+            return
+    for compute, chunk in tasks:
+        compute(chunk)
 
 
 def _getBH_level2(
@@ -489,11 +505,14 @@ def _getBH_level2(
             order = np.array(group["order"])
 
             def compute(chunk, field_func=field_func, gr=gr, order=order):
-                src_sl, pix_sl = chunk
+                src_sl, path_sl, pix_sl = chunk
                 sub = gr[src_sl]
-                poso_chunk = poso_pix[:, pix_sl].reshape(-1, 3)
-                n_pix_chunk = len(poso_chunk) // max_path_len
-                src_dict = _get_src_dict(sub, n_pix_chunk, len(poso_chunk), poso_chunk)
+                poso_chunk = poso_pix[path_sl, pix_sl]
+                n_path_chunk, n_pix_chunk = poso_chunk.shape[:2]
+                poso_chunk = poso_chunk.reshape(-1, 3)
+                src_dict = _get_src_dict(
+                    sub, n_pix_chunk, len(poso_chunk), poso_chunk, path_sl
+                )
                 B_chunk = _getBH_level1(
                     field_func=field_func, field=field, in_out=in_out, **src_dict
                 )
@@ -504,8 +523,8 @@ def _getBH_level2(
                     )
                     raise MagpylibMissingInput(msg)
                 # put into dedicated positions in B
-                B[order[src_sl], :, pix_sl] = B_chunk.reshape(
-                    (len(sub), max_path_len, n_pix_chunk, 3)
+                B[order[src_sl], path_sl, pix_sl] = B_chunk.reshape(
+                    (len(sub), n_path_chunk, n_pix_chunk, 3)
                 )
 
             if is_magpylib_field_func(field_func):
@@ -515,7 +534,7 @@ def _getBH_level2(
                 tasks.extend((compute, chunk) for chunk in chunks)
             else:  # a user field_func gets all observers at once, on this
                 # thread: it may not be thread-safe, nor compute point by point
-                compute((slice(None), slice(None)))
+                compute((slice(None), slice(None), slice(None)))
 
         threads = min(default_settings.threads, len(tasks)) if rows > CHUNK_ROWS else 1
         _run_chunks(tasks, threads)
