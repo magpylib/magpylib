@@ -63,7 +63,6 @@ from magpylib._src.obj_classes.class_BaseTransform import (
     path_property_len,
 )
 from magpylib._src.utility import (
-    check_static_sensor_orient,
     format_obj_input,
     format_src_inputs,
     has_parameter,
@@ -151,21 +150,33 @@ def _tile_group_property(group: list, n_pp: int, prop_name: str):
     return np.repeat(out, n_pp, axis=0)
 
 
-def _pixel_positions(sens, static_orientation: bool) -> np.ndarray:
-    """Global positions of a sensor's pixels at every path step, shape (p, n, 3).
+def _sensor_orientation_flags(sensors: list) -> tuple[list[bool], list[bool]]:
+    """For each sensor, whether it is unrotated and whether its orientation is
+    static (no path, or a translation path), both read from one quaternion
+    array. Unrotated sensors skip rotating their field back into the sensor
+    frame; static ones place pixels and rotate the field with one rotation.
+    Padding a path repeats its last orientation, so both hold after padding."""
+    # pylint: disable=protected-access
+    unit = np.array([0, 0, 0, 1.0])
+    unrotated, static = [], []
+    for sens in sensors:
+        quats = sens._orientation.as_quat()
+        unrotated.append(bool(np.all(quats == unit)))
+        static.append(bool(np.all(quats == quats[0])))
+    return unrotated, static
 
-    A Rotation rotates n pixels as ``np.dot(matrix, pixels.T).T``, so this
-    matches applying each path step's Rotation in turn bit for bit, without
-    building a Rotation per step: a static orientation rotates the pixels once.
-    """
+
+def _pixel_positions(sens, static_orientation: bool) -> np.ndarray:
+    """Global positions of a sensor's pixels at every path step, shape (p, n, 3):
+    one matmul over all path steps, ``matrix @ pixels.T`` for each, the product
+    Rotation.apply computes. A static orientation uses one matrix."""
     # pylint: disable=protected-access
     pos = sens._position[:, None, :]
     if sens.pixel is None:
         return np.zeros((1, 1, 3)) + pos
-    pix = sens.pixel.reshape(-1, 3)
-    if static_orientation:
-        return sens._orientation[0].apply(pix) + pos
-    return np.array([np.dot(m, pix.T).T for m in sens._orientation.as_matrix()]) + pos
+    rot = sens._orientation[:1] if static_orientation else sens._orientation
+    pix_t = sens.pixel.reshape(-1, 3).T
+    return np.matmul(rot.as_matrix(), pix_t).transpose(0, 2, 1) + pos
 
 
 def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
@@ -337,18 +348,9 @@ def _getBH_level2(
     pix_inds = np.cumsum([0, *pix_nums])  # cumulative indices of pixel for each sensor
     pix_all_same = len(set(pix_shapes)) == 1
 
-    # check which sensors have unit rotation
-    #   so that they dont have to be rotated back later (performance issue)
+    # check which sensors are unrotated or have a static orientation (performance)
     #   this check is made now when sensor paths are not yet tiled.
-    unitQ = np.array([0, 0, 0, 1.0])
-    unrotated_sensors = [
-        bool(np.all(sens._orientation.as_quat() == unitQ)) for sens in sensors
-    ]
-
-    # check which sensors have a static orientation
-    #   either static sensor or translation path
-    #   later such sensors require less back-rotation effort (performance issue)
-    static_sensor_rot = check_static_sensor_orient(sensors)
+    unrotated_sensors, static_sensor_rot = _sensor_orientation_flags(sensors)
 
     # some important quantities -------------------------------------------------
     obj_list = set(src_list + sensors)  # unique obj entries only !!!
