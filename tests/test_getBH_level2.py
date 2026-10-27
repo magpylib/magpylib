@@ -1,6 +1,8 @@
 import threading
+import time
 import unittest
 import warnings
+from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 import pytest
@@ -917,19 +919,75 @@ def test_threads_keep_the_callers_numpy_error_settings(monkeypatch):
     assert calls
 
 
-def test_chunks_run_on_the_calling_thread_when_no_thread_starts(monkeypatch):
-    """At interpreter shutdown, or where threads cannot start, the chunks run
-    one after the other."""
+@pytest.mark.parametrize(
+    ("source", "pool_sizes"),
+    [
+        (lambda: magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=POL), [4]),
+        # 12 faces: one observer is a 12-row chunk, above CHUNK_ROWS = 7
+        (
+            lambda: magpy.magnet.TriangularMesh.from_ConvexHull(
+                points=[(x, y, z) for x in (0, 1) for y in (0, 1) for z in (0, 1)],
+                polarization=POL,
+            ),
+            [2],
+        ),
+    ],
+)
+def test_chunks_run_on_threads(source, pool_sizes, monkeypatch):
+    """Chunks run on defaults.threads threads, and on fewer when one observer
+    of a source is above CHUNK_ROWS, so that memory stays near threads times
+    CHUNK_ROWS rows."""
+    sizes = []
 
-    def refuse(*args, **kwargs):  # noqa: ARG001
-        msg = "cannot schedule new futures after interpreter shutdown"
-        raise RuntimeError(msg)
+    class Recording(ThreadPoolExecutor):
+        def __init__(self, max_workers):
+            sizes.append(max_workers)
+            super().__init__(max_workers)
 
+    monkeypatch.setattr(chunks, "ThreadPoolExecutor", Recording)
     monkeypatch.setattr(chunks, "CHUNK_ROWS", 7)
-    sphere = magpy.magnet.Sphere(diameter=1, polarization=POL)
-    observers = np.random.default_rng(0).normal(size=(50, 3))
-    monkeypatch.setattr(magpy.defaults, "threads", 1)
-    B_sequential = sphere.getB(observers)
     monkeypatch.setattr(magpy.defaults, "threads", 4)
-    monkeypatch.setattr(chunks.ThreadPoolExecutor, "submit", refuse)
-    np.testing.assert_array_equal(sphere.getB(observers), B_sequential)
+    magpy.getB(source(), np.random.default_rng(0).normal(size=(50, 3)) * 3)
+    assert sizes == pool_sizes
+
+
+def test_an_error_in_a_chunk_drops_the_queued_chunks(monkeypatch):
+    """The first error, or Ctrl+C, cancels the queued chunks: the threads only
+    finish the chunks they hold before it is raised."""
+
+    def fail(chunk):  # noqa: ARG001
+        msg = "chunk failed"
+        raise ValueError(msg)
+
+    done = []
+
+    def slow(chunk):
+        time.sleep(0.01)
+        done.append(chunk)
+
+    monkeypatch.setattr(magpy.defaults, "threads", 2)
+    tasks = [(fail, 0)] + [(slow, i) for i in range(1, 101)]
+    with pytest.raises(ValueError, match="chunk failed"):
+        chunks.run_chunks(tasks, rows=10**6)
+    assert len(done) < 10
+
+
+@pytest.mark.parametrize("started", [0, 2])
+def test_chunks_no_thread_takes_run_on_the_calling_thread(started, monkeypatch):
+    """At interpreter shutdown, or where threads cannot start, the chunks no
+    thread took run on the calling thread, each chunk once."""
+    submitted = []
+
+    class Refusing(ThreadPoolExecutor):
+        def submit(self, fn, /, *args, **kwargs):
+            if len(submitted) == started:
+                msg = "cannot schedule new futures after interpreter shutdown"
+                raise RuntimeError(msg)
+            submitted.append(fn)
+            return super().submit(fn, *args, **kwargs)
+
+    monkeypatch.setattr(chunks, "ThreadPoolExecutor", Refusing)
+    monkeypatch.setattr(magpy.defaults, "threads", 4)
+    ran = []
+    chunks.run_chunks([(ran.append, i) for i in range(10)], rows=10**6)
+    assert sorted(ran) == list(range(10))

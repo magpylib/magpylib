@@ -207,13 +207,15 @@ def test_defaults_good_inputs(key, value, expected):
     assert v0 == expected, f"Input {key} should be {expected}; instead received {v0}."
 
 
-def test_threads_stores_an_int_and_none_restores_the_default():
-    """NumPy integers are stored as int, and None restores the CPU count rather
-    than leaving field computations without one."""
+def test_numpy_numbers_are_stored_as_python_numbers():
+    """NumPy scalars are stored as int or float, and threads = None restores the
+    CPU count rather than leaving field computations without one."""
     c = DefaultSettings()
     default = c.threads
     c.threads = np.int64(4)
+    c.display.autosizefactor = np.float32(5)
     assert type(c.threads) is int
+    assert type(c.display.autosizefactor) is float
     c.threads = None
     assert c.threads == default >= 1
 

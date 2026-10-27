@@ -117,6 +117,9 @@ class Number(Property):
         self.exclusive_minimum = exclusive_minimum
 
     def validate(self, obj, value):
+        if isinstance(value, numbers.Real) and not isinstance(value, bool):
+            # NumPy scalars too, stored as int or float
+            value = int(value) if isinstance(value, numbers.Integral) else float(value)
         if (
             not isinstance(value, self._types)
             or isinstance(value, bool)
@@ -153,11 +156,6 @@ class Integer(Number):
     kind = "integer"
     json_type = "integer"
     _types = (int,)
-
-    def validate(self, obj, value):
-        if isinstance(value, numbers.Integral) and not isinstance(value, bool):
-            value = int(value)  # NumPy integers too, stored as int
-        return super().validate(obj, value)
 
 
 class Boolean(Property):

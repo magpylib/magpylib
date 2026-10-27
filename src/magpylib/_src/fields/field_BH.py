@@ -67,7 +67,6 @@ from magpylib._src.utility import (
     format_obj_input,
     format_src_inputs,
     has_parameter,
-    is_magpylib_field_func,
 )
 
 
@@ -464,7 +463,7 @@ def _getBH_level2(
         # evaluate each group in vectorized chunks ---------------------------------
         B = np.empty((num_of_src_list, max_path_len, n_pix, 3))  # allocate B
         poso_pix = poso.reshape((max_path_len, n_pix, 3))
-        tasks, rows = [], 0  # chunks of Magpylib's own kernels, all groups
+        tasks, rows, largest = [], 0, 0  # chunks of Magpylib's own kernels
         for group in field_func_groups.values():
             field_func = group["field_func"]
             gr = group["sources"]
@@ -493,16 +492,17 @@ def _getBH_level2(
                     (len(sub), n_path_chunk, n_pix_chunk, 3)
                 )
 
-            if is_magpylib_field_func(field_func):
+            if not gr[0]._editable_field_func:  # one of Magpylib's own kernels
                 rows_per_obs = [src._kernel_rows_per_observer() for src in gr]
                 rows += sum(rows_per_obs) * max_path_len * n_pix
+                largest = max(largest, *rows_per_obs)
                 slices = _chunk_slices(rows_per_obs, max_path_len, n_pix)
                 tasks.extend((compute, chunk) for chunk in slices)
             else:  # a user field_func gets all observers at once, on this
                 # thread: it may not be thread-safe, nor compute point by point
                 compute((slice(None), slice(None), slice(None)))
 
-        chunks.run_chunks(tasks, rows)
+        chunks.run_chunks(tasks, rows, largest)
 
         # reshape output ----------------------------------------------------------------
         # rearrange B when there is at least one Collection with more than one source
