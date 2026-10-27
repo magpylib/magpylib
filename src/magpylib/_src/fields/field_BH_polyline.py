@@ -40,8 +40,8 @@ def _current_vertices_field(
             segment_end=segment_end,
         )
 
-    nvs = np.array([f.shape[0] for f in vertices])  # lengths of vertices sets
-    if all(v == nvs[0] for v in nvs):  # if all vertices sets have the same lengths
+    # vertex sets of differing lengths arrive as an object array
+    if vertices.dtype != object:  # all vertex sets have the same length
         n0, n1, *_ = vertices.shape
         BH = _BHJM_current_polyline(
             field=field,
@@ -53,6 +53,7 @@ def _current_vertices_field(
         BH = BH.reshape((n0, n1 - 1, 3))
         BH = np.sum(BH, axis=1)
     else:
+        nvs = np.array([f.shape[0] for f in vertices])  # lengths of vertices sets
         split_indices = np.cumsum(nvs - 1)[:-1]  # remove last to avoid empty split
         BH = _BHJM_current_polyline(
             field=field,
