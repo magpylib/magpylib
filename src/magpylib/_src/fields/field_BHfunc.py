@@ -356,9 +356,8 @@ def cylinder_segment_field(
         "orientation": orientations,
     }
     shapes = {"dimension": (5,)}
-    return _getBH_func(
-        _BHJM_cylinder_segment, field, params, squeeze, shapes, kernel_rows=8
-    )
+    # one row per observer: see CylinderSegment._kernel_rows_per_observer
+    return _getBH_func(_BHJM_cylinder_segment, field, params, squeeze, shapes)
 
 
 def sphere_field(
@@ -740,8 +739,7 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
         have multiple shapes).
     kernel_rows: int, default 1
         kernel rows field_func computes per input row (4 faces of a
-        tetrahedron, 8 corner terms of a cylinder segment), which size the
-        chunks the inputs are computed in.
+        tetrahedron), which size the chunks the inputs are computed in.
     """
     # Check field input
     if field not in {"B", "H"}:
