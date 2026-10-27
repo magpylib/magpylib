@@ -4,9 +4,10 @@
 
 ### Fixed
 
-- The field of the last of several different `TriangularMesh` magnets on a
-  single observer: the inside test used the mesh before it, adding or dropping
-  that magnet's polarization
+- The field of several different `TriangularMesh` magnets on one observer: the
+  last was tested for the observer inside against the mesh before it, adding or
+  dropping its polarization; meshes with equal face counts but different vertex
+  counts raised an error, or gave zero inside
   ([#1062](https://github.com/magpylib/magpylib/pull/1062)).
 
 ## [6.0.1] 2026-10-25

@@ -150,20 +150,50 @@ def test_magnet_trimesh_func():
     np.testing.assert_allclose(B0, B2)
 
 
+def _tetrahedron(x0, unused_vertex=False):
+    vertices = [(x0, 0, 0), (x0 + 1, 0, 0), (x0, 1, 0), (x0, 0, 1)]
+    return magpy.magnet.TriangularMesh(
+        vertices=vertices + [(9, 9, 9)] * unused_vertex,
+        faces=[(0, 2, 1), (0, 1, 3), (0, 3, 2), (1, 2, 3)],
+        polarization=(0, 0, 1),
+    )
+
+
+def _cube(x0):
+    return magpy.magnet.TriangularMesh.from_pyvista(
+        polarization=(0, 0, 1), polydata=pv.Cube(center=(x0, 0, 0))
+    )
+
+
+TWO_MESHES = {  # two different meshes, and a point inside each
+    "equal face counts": lambda: ([_cube(0), _cube(2)], [(0, 0, 0), (2, 0, 0)]),
+    "different face counts": lambda: (
+        [_tetrahedron(0), _cube(2)],
+        [(0.2, 0.2, 0.2), (2, 0, 0)],
+    ),
+    "equal face counts, different vertex counts": lambda: (
+        [_tetrahedron(0), _tetrahedron(2, unused_vertex=True)],
+        [(0.2, 0.2, 0.2), (2.2, 0.2, 0.2)],
+    ),
+}
+
+
+@pytest.mark.parametrize("pair", TWO_MESHES)
 @pytest.mark.parametrize("inside", [0, 1], ids=["inside_first", "inside_last"])
-def test_TriangularMesh_inside_last_of_several_meshes(inside):
+def test_TriangularMesh_inside_last_of_several_meshes(pair, inside):
     """The last of several different meshes on one observer is tested against
     its own mesh, not the one before it."""
-    meshes = [
-        magpy.magnet.TriangularMesh.from_pyvista(
-            polarization=(0, 0, 1), polydata=pv.Cube(center=(x, 0, 0))
-        )
-        for x in (0, 2)
-    ]
-    observer = (2 * inside, 0, 0)
-    together = magpy.getB(meshes, observer)
-    alone = [magpy.getB(mesh, observer) for mesh in meshes]
-    np.testing.assert_allclose(together, alone)
+    meshes, points = TWO_MESHES[pair]()
+    for get in (magpy.getB, magpy.getJ):
+        together = get(meshes, points[inside])
+        alone = [get(mesh, points[inside]) for mesh in meshes]
+        np.testing.assert_allclose(together, alone)
+
+
+def test_TriangularMesh_no_observers():
+    """A sensor without pixels gives an empty field, as for other magnets."""
+    sensor = magpy.Sensor(pixel=np.zeros((0, 3)))
+    assert magpy.getB(_cube(0), sensor).shape == (0, 3)
 
 
 def test_bad_triangle_indices():

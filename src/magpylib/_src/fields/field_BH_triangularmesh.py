@@ -497,6 +497,9 @@ def _BHJM_magnet_trimesh(
     - Closed meshes are assumed (input comes only from TriangularMesh class)
     - Field computations via publication: Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
+    if len(observers) == 0:
+        return np.zeros((0, 3))
+
     if mesh is None:
         if vertices is None or faces is None:
             msg = "Either 'mesh' or 'vertices' and 'faces' must be provided."
@@ -505,9 +508,11 @@ def _BHJM_magnet_trimesh(
         # vertices: (p, n, 3), faces: (p, m, 3)
         n = len(vertices)
         if object in (vertices.dtype, faces.dtype):
-            mesh = np.array(
-                [v[f] for v, f in zip(vertices, faces, strict=True)], dtype=object
-            )
+            meshes = [v[f] for v, f in zip(vertices, faces, strict=True)]
+            # one float array when the meshes have equal face counts, even with
+            # different vertex counts; one entry per mesh otherwise
+            same_shape = len({m.shape for m in meshes}) == 1
+            mesh = np.array(meshes, dtype=float if same_shape else object)
         else:
             mesh = vertices[np.arange(n)[:, None, None], faces]
 
