@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- The field of the last of several different `TriangularMesh` magnets on a
+  single observer: the inside test used the mesh before it, adding or dropping
+  that magnet's polarization.
+
 ## [6.0.1] 2026-10-25
 
 ### Changed

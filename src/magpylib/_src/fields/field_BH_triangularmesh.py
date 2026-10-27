@@ -546,25 +546,21 @@ def _BHJM_magnet_trimesh(
         return BHJM / MU0
 
     if in_out == "auto":
-        prev_ind = 0
-        # group similar meshes for inside-outside evaluation and adding B
-        for new_ind_item, _ in enumerate(BHJM):
-            new_ind = new_ind_item
-            if (
-                new_ind == len(BHJM) - 1
-                or mesh[new_ind].shape != mesh[prev_ind].shape
-                or not np.all(mesh[new_ind] == mesh[prev_ind])
-            ):
-                if new_ind == len(BHJM) - 1:
-                    new_ind = len(BHJM)
-                mask_inside = _mask_inside_trimesh(
-                    observers[prev_ind:new_ind], mesh[prev_ind]
-                )
-                # if inside magnet add polarization vector
-                BHJM[prev_ind:new_ind][mask_inside] += polarization[prev_ind:new_ind][
-                    mask_inside
-                ]
-                prev_ind = new_ind
+        # test each run of rows with the same mesh against that mesh, the last
+        # run included, and add the polarization where the observer is inside
+        if mesh.ndim != 1:  # all meshes have the same number of faces
+            changed = np.any(mesh[1:] != mesh[:-1], axis=(1, 2, 3))
+            starts = (np.flatnonzero(changed) + 1).tolist()
+        else:
+            starts = [
+                i
+                for i in range(1, len(mesh))
+                if mesh[i].shape != mesh[i - 1].shape
+                or not np.array_equal(mesh[i], mesh[i - 1])
+            ]
+        for start, end in zip([0, *starts], [*starts, len(BHJM)], strict=True):
+            mask_inside = _mask_inside_trimesh(observers[start:end], mesh[start])
+            BHJM[start:end][mask_inside] += polarization[start:end][mask_inside]
     elif in_out == "inside":
         BHJM += polarization
 

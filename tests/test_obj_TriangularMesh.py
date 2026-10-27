@@ -150,6 +150,22 @@ def test_magnet_trimesh_func():
     np.testing.assert_allclose(B0, B2)
 
 
+@pytest.mark.parametrize("inside", [0, 1], ids=["inside_first", "inside_last"])
+def test_TriangularMesh_inside_last_of_several_meshes(inside):
+    """The last of several different meshes on one observer is tested against
+    its own mesh, not the one before it."""
+    meshes = [
+        magpy.magnet.TriangularMesh.from_pyvista(
+            polarization=(0, 0, 1), polydata=pv.Cube(center=(x, 0, 0))
+        )
+        for x in (0, 2)
+    ]
+    observer = (2 * inside, 0, 0)
+    together = magpy.getB(meshes, observer)
+    alone = [magpy.getB(mesh, observer) for mesh in meshes]
+    np.testing.assert_allclose(together, alone)
+
+
 def test_bad_triangle_indices():
     "raise ValueError if faces index > len(vertices)"
     vertices = [[0, 0, 0], [0, 0, 1], [1, 0, 0]]
