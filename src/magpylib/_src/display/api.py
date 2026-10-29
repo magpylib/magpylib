@@ -525,6 +525,14 @@ class DisplayBackend:
                     f"not {getattr(cls, attr)!r}"
                 )
                 raise TypeError(msg)
+        handled = cls.handles_traces
+        if cls.draws_pixels and handled is not None and "pixels" not in handled:
+            warnings.warn(
+                f"{cls.__name__} declares draws_pixels but leaves 'pixels' out "
+                "of handles_traces; add it, or every scene with sensor pixels "
+                "warns that they may not be drawn.",
+                stacklevel=user_stacklevel(),
+            )
         if cls.api_version is not None:
             if isinstance(cls.api_version, bool) or not isinstance(
                 cls.api_version, numbers.Integral

@@ -564,6 +564,7 @@
           "Triangle",
           "CustomSource",
           "Sensor",
+          "Sensor",
           "Sensor"
         ],
         "ranges": "ndarray[f,2d]"
@@ -664,6 +665,26 @@
         "row": "int",
         "showlegend": "bool",
         "type": "mesh3d",
+        "x": "ndarray[f,1d]",
+        "y": "ndarray[f,1d]",
+        "z": "ndarray[f,1d]"
+      },
+      {
+        "col": "int",
+        "field_symbol": "None",
+        "legendgroup": "str",
+        "marker_color": "ndarray[U,1d]",
+        "marker_size": "ndarray[f,1d]",
+        "name": "str",
+        "object_id": "int",
+        "opacity": "int",
+        "row": "int",
+        "showlegend": "bool",
+        "symbol": "str",
+        "type": "pixels",
+        "u": "None",
+        "v": "None",
+        "w": "None",
         "x": "ndarray[f,1d]",
         "y": "ndarray[f,1d]",
         "z": "ndarray[f,1d]"

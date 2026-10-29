@@ -3,8 +3,9 @@
 A fixed scene -- every object class, a nested collection, a path, a user
 model of each kind, markers, a 3D and a 2D panel, two animation frames -- is
 captured under each combination of the two declarations that change what a
-backend receives, and once more with the pixels as data, and reduced to its structure: the envelope's fields, and
-for every kind of trace its keys and the type of each value, arrays by rank.
+backend receives, then once with sensor pixels handed over as data. Each
+capture is reduced to its structure: the envelope's fields, and for every
+kind of trace its keys and the type of each value, arrays by rank.
 Geometry is left out, so a finer mesh passes; a key added, renamed, removed
 or retyped does not.
 
@@ -188,10 +189,14 @@ def capture(gradient, merge, pixels=False):
             style_pixel_field_source="Bz",
         )
         bare = magpy.Sensor(position=(2, 2, 2))
+        # pixels showing no field: a layout of their own as data
+        plain = [magpy.Sensor(position=(4, 2, 2), pixel=[(0, 0, 0), (0.1, 0, 0)])]
         group = magpy.Collection(
             magpy.Collection(*magnets[1:3]), magnets[3], style_label="group"
         )
         shown = [moving, group, *magnets[4:], *others, probe, bare]
+        if pixels:
+            shown += plain
         magpy.show(
             {"objects": shown, "col": 1},
             {"objects": [moving, probe], "col": 2, "output": "Bz"},
