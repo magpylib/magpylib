@@ -3,7 +3,7 @@
 A fixed scene -- every object class, a nested collection, a path, a user
 model of each kind, markers, a 3D and a 2D panel, two animation frames -- is
 captured under each combination of the two declarations that change what a
-backend receives, and reduced to its structure: the envelope's fields, and
+backend receives, and once more with the pixels as data, and reduced to its structure: the envelope's fields, and
 for every kind of trace its keys and the type of each value, arrays by rank.
 Geometry is left out, so a finer mesh passes; a key added, renamed, removed
 or retyped does not.
@@ -116,8 +116,9 @@ def structure(scene):
     }
 
 
-def capture(gradient, merge):
-    """The scene a backend declaring `gradient` and `merge` receives."""
+def capture(gradient, merge, pixels=False):
+    """The scene a backend declaring `gradient`, `merge` and, with `pixels`,
+    `draws_pixels` receives."""
     scenes = []
     name = "contract_probe"
     magpy.register_backend(
@@ -129,6 +130,7 @@ def capture(gradient, merge):
         supports_colorgradient=gradient,
         supports_native_traces=True,
         merge_traces=merge,
+        draws_pixels=pixels,
     )
     try:
         triangle = [(0, 0, 0), (1, 0, 0), (0, 1, 0)]
@@ -208,6 +210,7 @@ VARIANTS = {
     "gradient, unmerged": (True, False),
     "sliced, merged": (False, True),
     "sliced, unmerged": (False, False),
+    "gradient, unmerged, pixels as data": (True, False, True),
 }
 
 

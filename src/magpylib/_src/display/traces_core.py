@@ -787,6 +787,37 @@ def make_Pixels(
     return pixels[0]
 
 
+def make_PixelsData(
+    positions, vectors, colors, sizes, symbol, field_symbol, shownull, null_thresh
+) -> dict[str, Any]:
+    """Return a sensor's pixels as one ``pixels`` trace, for a backend that
+    draws them itself: per pixel its position, the field it reads -- exactly
+    0 where it reads nothing -- its size and its color. Pixels reading
+    nothing are left out unless `shownull`."""
+    count = len(positions)
+    sizes = np.broadcast_to(np.asarray(sizes, dtype=float), (count,))
+    colors = np.broadcast_to(np.asarray(colors), (count,))
+    shown, uvw, along = slice(None), (None, None, None), None
+    if vectors is not None:
+        null = (np.abs(vectors) < null_thresh).all(axis=1)
+        if not shownull:
+            shown = ~null
+        uvw = np.where(null[:, None], 0.0, vectors)[shown].T
+        along = None if field_symbol == "none" else field_symbol
+    x, y, z = positions[shown].T
+    return {
+        "type": "pixels",
+        "x": x,
+        "y": y,
+        "z": z,
+        **dict(zip("uvw", uvw, strict=True)),
+        "marker_size": sizes[shown].copy(),
+        "marker_color": colors[shown].copy(),
+        "symbol": symbol,
+        "field_symbol": along,
+    }
+
+
 def _sensor_extent(obj, style, autosize):
     """A sensor's pixels as rows -- with the origin added to a lone one, which
     has no other to be measured from -- their spread along each axis, and the
@@ -854,9 +885,11 @@ def _scaled_pixel_colors(color, norms, field_style, path_ind):
 
 
 def make_Sensor(
-    obj, *, autosize, path_index=None, field_values, **kwargs
+    obj, *, autosize, path_index=None, field_values, draws_pixels=False, **kwargs
 ) -> dict[str, Any]:
-    """Return the generic traces of a Sensor: its arrows and pixels."""
+    """Return the generic traces of a Sensor: its arrows and pixels, the
+    pixels as a ``pixels`` trace of their own for a backend that `draws_pixels`
+    itself."""
     style = obj.style
     traces_to_merge = []
     pixel, hull_dim, dim_ext = _sensor_extent(obj, style, autosize)
@@ -906,17 +939,22 @@ def make_Sensor(
                 px_colors = _scaled_pixel_colors(
                     px_colors, norms, style.pixel.field, path_index
                 )
-            pixels_trace = make_Pixels(
-                positions=px_positions,
-                vectors=px_vectors,
-                colors=px_colors,
-                sizes=px_sizes,
-                symbol=style.pixel.symbol,
-                field_symbol=style.pixel.field.symbol,
-                shownull=style.pixel.field.shownull,
-                null_thresh=null_thresh,
-                marker2d_default_size=10 * px_size,
-            )
+            pixels_kwargs = {
+                "positions": px_positions,
+                "vectors": px_vectors,
+                "colors": px_colors,
+                "sizes": px_sizes,
+                "symbol": style.pixel.symbol,
+                "field_symbol": style.pixel.field.symbol,
+                "shownull": style.pixel.field.shownull,
+                "null_thresh": null_thresh,
+            }
+            if draws_pixels:
+                pixels_trace = make_PixelsData(**pixels_kwargs)
+            else:
+                pixels_trace = make_Pixels(
+                    **pixels_kwargs, marker2d_default_size=10 * px_size
+                )
 
             traces_to_merge.append(pixels_trace)
         # The hull stands in for pixels that show no field: never on a sensor

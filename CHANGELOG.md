@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Added
+
+- A display backend can draw sensor pixels itself: declaring `draws_pixels`
+  hands it each sensor's pixels as one `pixels` trace, positions, field, sizes
+  and colors, instead of a mesh per pixel: 3 ms rather than 70 ms for 2,500
+  cones ([#1035](https://github.com/magpylib/magpylib/issues/1035)).
+
 ### Changed
 
 - Faster fields along long paths, where sensor pixels are placed for all path
