@@ -13,7 +13,7 @@
 
 - Cuboid fields close to edges remain finite and accurate, preventing NaN fields
   in collections of cuboid cells
-  ([#1058](https://github.com/magpylib/magpylib/issues/1058)).
+  ([#1066](https://github.com/magpylib/magpylib/pull/1066)).
 - The field of several different `TriangularMesh` magnets on one observer: the
   last was tested for the observer inside against the mesh before it, adding or
   dropping its polarization; meshes with equal face counts but different vertex
