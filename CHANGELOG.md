@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Cuboid fields close to edges remain finite and accurate, preventing NaN fields
+  in collections of cuboid cells
+  ([#1066](https://github.com/magpylib/magpylib/pull/1066)).
+
 ## [6.3.0] 2026-11-07
 
 ### Added
