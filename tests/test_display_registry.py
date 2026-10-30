@@ -5,10 +5,12 @@ import subprocess
 import sys
 import types
 import warnings
+from functools import partial
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
+from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.display.api import DisplayBackend
@@ -967,6 +969,7 @@ def test_an_entry_point_named_otherwise_than_its_backend_is_reported(monkeypatch
         ("accepts_options", 3, TypeError),
         ("accepts_options", {"fig*"}, ValueError),  # a namespace ends in `_*`
         ("supports_animation", "yes", TypeError),
+        ("draws_pixels", 1, TypeError),
         ("api_version", "1", TypeError),  # used to warn that 1 differs from 1
         ("api_version", True, TypeError),
         ("description", 3, TypeError),
@@ -1385,3 +1388,104 @@ def test_a_pixel_hull_marks_pixels_styled_without_a_field(source, with_source, h
     probe = _pixel_probe(source, 0)
     drawn = points(probe, make_source()) if with_source else points(probe)
     assert drawn - bare == (8 if hull else 0)
+
+
+@pytest.mark.parametrize("source", ["B", None])
+def test_a_backend_drawing_pixels_gets_them_as_data(source):
+    """One `pixels` trace per sensor, its pixels where the built-ins draw them,
+    sized and colored as the helpers say, reading the field in world axes --
+    a left-handed sensor's mirrored back, which the built-in arrows were not
+    -- with the style given to show(), which the helpers cannot see; the
+    sensor's mesh without them, in a panel ranged as the built-ins range it,
+    within a pixel's size. A backend used to set the pixel size to 0 while
+    magpylib drew, and build them again after."""
+    scenes = {}
+    for flag in (False, True):
+        magpy.register_backend(
+            f"pixels{flag}", partial(scenes.__setitem__, flag), draws_pixels=flag
+        )
+    probe = magpy.Sensor(
+        position=(0, 0, 2),
+        orientation=R.from_euler("xz", (90, 20), degrees=True),
+        pixel=[(x, y, 0) for x in (-1, 1) for y in (-1, 1)],
+        handedness="left",
+    )
+    style = {} if source is None else {"style_pixel_field_source": source}
+    try:
+        for flag in (False, True):
+            magpy.show(make_source(), probe, backend=f"pixels{flag}", **style)
+    finally:
+        for flag in (False, True):
+            DisplayBackend.backends.pop(f"pixels{flag}", None)
+    mesh, data = scenes[False], scenes[True]
+    (pixels,) = (t for t in data.frames[0].traces if t["type"] == "pixels")
+    for got, expected in zip(data.panels, mesh.panels, strict=True):
+        reach = pixels["marker_size"].max()
+        np.testing.assert_allclose(got.ranges, expected.ranges, atol=reach)
+        assert (got.autosize, got.labels) == (expected.autosize, expected.labels)
+    assert pixels["object_id"] == id(probe)
+    np.testing.assert_allclose(
+        np.column_stack([pixels[k] for k in "xyz"]),
+        probe.orientation.apply(probe.pixel) + probe.position,
+        atol=1e-12,
+    )
+    probe.style.pixel.field.source = source  # for the helpers to see
+    field = public_backend.pixel_fields([make_source(), probe]).get(probe)
+    np.testing.assert_allclose(
+        pixels["marker_size"],
+        public_backend.pixel_sizes(probe, field, autosize=data.panels[0].autosize),
+    )
+    assert list(pixels["marker_color"]) == public_backend.pixel_colors(probe, field)
+    if source is None:
+        assert pixels["u"] is None
+        assert pixels["field_symbol"] is None
+    else:
+        np.testing.assert_allclose(
+            np.column_stack([pixels[k] for k in "uvw"]),
+            magpy.getB(make_source(), np.column_stack([pixels[k] for k in "xyz"])),
+        )
+        assert pixels["field_symbol"] == "cone"
+
+    def mesh_points(scene):
+        return sum(
+            len(t["x"])
+            for t in scene.frames[0].traces
+            if t["type"] == "mesh3d" and t["object_id"] == id(probe)
+        )
+
+    probe.style.pixel.size = 0
+    magpy.register_backend("pixels_none", partial(scenes.__setitem__, None))
+    try:
+        magpy.show(make_source(), probe, backend="pixels_none", **style)
+    finally:
+        DisplayBackend.backends.pop("pixels_none", None)
+    # its axes, and the box round pixels that show no field
+    assert mesh_points(data) == mesh_points(scenes[None])
+    with pytest.warns(UserWarning, match="'pixels' out of handles_traces"):
+        magpy.register_backend(
+            "pixels_undeclared", print, draws_pixels=True, handles_traces={"mesh3d"}
+        )
+    DisplayBackend.backends.pop("pixels_undeclared", None)
+
+
+def test_hiding_null_pixels_leaves_the_others_drawn():
+    """With null pixels hidden and a field that orients nothing, the reading
+    pixel used to vanish with the null one."""
+    probe = magpy.Sensor(
+        position=(0, 0, 2),
+        pixel=[(0, 0, 0), (1, 0, 0)],  # the first on the source's axis
+        style_pixel_field_source="Bxy",
+        style_pixel_field_symbol="none",
+        style_pixel_field_shownull=False,
+    )
+
+    def points(sensor):
+        traces = _traces_of(sensor, make_source(), backend_name="nulls")
+        return sum(
+            len(t["x"])
+            for t in traces
+            if t["type"] == "mesh3d" and t.get("object_id") == id(sensor)
+        )
+
+    bare = points(magpy.Sensor(position=(0, 0, 2)))  # its axes alone
+    assert points(probe) - bare == 8  # one cube

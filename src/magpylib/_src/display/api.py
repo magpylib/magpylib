@@ -413,6 +413,13 @@ class DisplayBackend:
     # traces, some simply prefer fewer and larger ones.
     merge_traces: ClassVar[bool] = True
 
+    #: Whether this backend draws sensor pixels itself. True hands each
+    #: sensor's pixels over as a ``pixels`` trace -- per pixel a position,
+    #: the field it reads, a size and a color -- instead of building a cube
+    #: or an arrow per pixel into the sensor's mesh. False by default: a
+    #: backend that never reads that trace would draw no pixels.
+    draws_pixels: ClassVar[bool] = False
+
     #: Names this backend accepts in `Scene.options`, the bag of arguments
     #: magpylib itself does not interpret. ``None`` means "accept anything",
     #: which is also what makes a typo like ``retrun_fig=True`` pass silently.
@@ -457,6 +464,7 @@ class DisplayBackend:
             "supports_animation_output",
             "supports_native_traces",
             "merge_traces",
+            "draws_pixels",
             "accepts_options",
             "handles_traces",
         }
@@ -510,13 +518,21 @@ class DisplayBackend:
             if not isinstance(getattr(cls, attr), str):
                 msg = f"{cls.__name__}.{attr} must be a string, not {getattr(cls, attr)!r}"
                 raise TypeError(msg)
-        for attr in (*cls._capability_attrs(), "merge_traces"):
+        for attr in (*cls._capability_attrs(), "merge_traces", "draws_pixels"):
             if not isinstance(getattr(cls, attr), bool):
                 msg = (
                     f"{cls.__name__}.{attr} must be True or False, "
                     f"not {getattr(cls, attr)!r}"
                 )
                 raise TypeError(msg)
+        handled = cls.handles_traces
+        if cls.draws_pixels and handled is not None and "pixels" not in handled:
+            warnings.warn(
+                f"{cls.__name__} declares draws_pixels but leaves 'pixels' out "
+                "of handles_traces; add it, or every scene with sensor pixels "
+                "warns that they may not be drawn.",
+                stacklevel=user_stacklevel(),
+            )
         if cls.api_version is not None:
             if isinstance(cls.api_version, bool) or not isinstance(
                 cls.api_version, numbers.Integral

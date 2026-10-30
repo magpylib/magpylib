@@ -81,6 +81,9 @@ def register_backend(name, show_func, **capabilities):
     merge_traces : bool, default True
         Preference, not a capability: whether traces of different objects may
         be merged into fewer, larger ones.
+    draws_pixels : bool, default False
+        Whether the backend draws sensor pixels itself, from one ``pixels``
+        trace per sensor, rather than as part of the sensor's mesh.
     handles_traces : set of str, optional
         Trace ``type`` values this backend draws. ``None`` assumes all.
         Declaring it lets magpylib warn about a type the backend never handles
@@ -301,6 +304,7 @@ class ShowDispatcher:
             backend=backend,
             title=title,
             merge_traces=self.merge_traces,
+            draws_pixels=self.draws_pixels,
             supports_native_traces=self.supports["native_traces"],
             **display_kwargs,
         )

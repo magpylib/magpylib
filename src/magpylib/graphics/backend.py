@@ -31,8 +31,9 @@ defined in a script or notebook.
 The user guide page "Writing a custom display backend" specifies the trace
 dialect a backend receives. Its vocabularies are `ALLOWED_SYMBOLS` and
 `ALLOWED_LINESTYLES`, and `magic_to_dict` nests its underscore keys.
-`pixel_fields`, `pixel_sizes` and `pixel_colors` let a backend draw sensor
-pixels its own way while sizing and coloring them as the built-ins do;
+A backend declaring `DisplayBackend.draws_pixels` draws sensor pixels itself,
+from a ``pixels`` trace per sensor. `pixel_fields`, `pixel_sizes` and
+`pixel_colors` size and color pixels as the built-ins do outside a scene;
 `scaled_norms` and `colors_from_colorscale` scale and color other field
 magnitudes, such as field lines, on the same scale.
 """

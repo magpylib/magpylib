@@ -534,6 +534,7 @@ def get_generic_traces3D(
     extra_backend=False,
     supports_native_traces=False,
     field_values=None,
+    draws_pixels=False,
     row=1,
     col=1,
     **kwargs,
@@ -586,6 +587,7 @@ def get_generic_traces3D(
         make_func_kwargs["autosize"] = autosize
     if hasattr(style, "pixel"):
         make_func_kwargs["field_values"] = field_values
+        make_func_kwargs["draws_pixels"] = draws_pixels
 
     positions = getattr(input_obj, "_position", None)
     orientations = getattr(input_obj, "_orientation", None)
@@ -1105,6 +1107,7 @@ def get_frames(
     supports_colorgradient,
     backend,
     merge_traces=True,
+    draws_pixels=False,
     supports_native_traces=False,
     **kwargs,
 ):
@@ -1195,6 +1198,7 @@ def get_frames(
                     rc_params=rc_params,
                     supports_colorgradient=supports_colorgradient,
                     merge_traces=merge_traces,
+                    draws_pixels=draws_pixels,
                     supports_native_traces=supports_native_traces,
                     extra_backend=backend,
                     style_kwargs=style_kwargs,

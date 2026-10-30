@@ -57,7 +57,7 @@ counter = "my_package:CounterBackend"
 
 Entry points are resolved lazily, the first time a backend name is looked up after `import magpylib` has returned. So magpylib is fully imported before your module runs, and `from magpylib.graphics.backend import DisplayBackend` at module scope is safe. An entry point may name the class or the module that defines it. The backend registers under its class's `name`, so keep the entry-point key equal to it: Magpylib warns when they differ. A class without a `name` registers under the entry-point key. If loading fails, or registers no backend, Magpylib warns and carries on without it.
 
-For a backend defined in a script or notebook, `magpy.register_backend(name, show_func, **declarations)` is the imperative equivalent. `show_func(scene)` plays the part of `show`. The keywords are the class declarations: `api_version`, `description`, `url`, `supports_animation`, `supports_subplots`, `supports_colorgradient`, `supports_animation_output`, `supports_native_traces`, `merge_traces`, `handles_traces` and `accepts_options`. Any other name raises `TypeError`. It returns the generated class.
+For a backend defined in a script or notebook, `magpy.register_backend(name, show_func, **declarations)` is the imperative equivalent. `show_func(scene)` plays the part of `show`. The keywords are the class declarations: `api_version`, `description`, `url`, `supports_animation`, `supports_subplots`, `supports_colorgradient`, `supports_animation_output`, `supports_native_traces`, `merge_traces`, `draws_pixels`, `handles_traces` and `accepts_options`. Any other name raises `TypeError`. It returns the generated class.
 
 The declaration is checked where it is written, at the class statement or in `register_backend`:
 
@@ -109,7 +109,7 @@ Every trace has these keys:
 
 | key           | type            | meaning                                                                          |
 | ------------- | --------------- | -------------------------------------------------------------------------------- |
-| `type`        | `str`           | `"mesh3d"`, `"scatter3d"` or `"scatter"`                                         |
+| `type`        | `str`           | `"mesh3d"`, `"scatter3d"` or `"scatter"`; also `"pixels"` with `draws_pixels`   |
 | `row`, `col`  | `int`           | the panel the trace belongs to                                                   |
 | `name`        | `str`           | the legend text                                                                  |
 | `legendgroup` | `str`           | the legend entry (3D) or legend group (2D) of the trace                          |
@@ -155,6 +155,19 @@ The colorings are not exclusive. `intensity` with `colorscale` wins, then `facec
 
 On a sensor's pixel trace, drawn when its pixels are 2D symbols or `arrow`s, `line_color`, `marker_color` and `marker_size` are arrays with one value per point.
 
+**`type="pixels"`**, a sensor's pixels, only for a backend that declares `draws_pixels`, see [](guide-graphics-custom-backend-pixels):
+
+| key            | type                            | meaning                                                                                                                                                                                       |
+| -------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `x`, `y`, `z`  | float arrays `(n,)`             | the pixels' centers                                                                                                                                                                           |
+| `u`, `v`, `w`  | float arrays `(n,)`, or `None`  | the field each pixel reads, in its own unit, turned from the sensor's axes into the world's. The components `style.pixel.field.source` does not name are 0 in the sensor's axes, and all three are 0 for a pixel that reads nothing, or not a number. `None` when the pixels show no field |
+| `marker_size`  | float array `(n,)`              | each pixel's size, a length in the display unit: a cube's edge, or the base diameter of a symbol drawn along the field, which is twice as long                                               |
+| `marker_color` | array of `str`, `(n,)`          | each pixel's color                                                                                                                                                                            |
+| `symbol`       | `str`                           | what a pixel along no field is drawn as, as the built-ins draw it: `"cube"`, or one of `ALLOWED_SYMBOLS`                                                                                                          |
+| `field_symbol` | `str` or `None`                 | what a pixel is drawn as along a non-zero `(u, v, w)`: `"cone"`, `"arrow3d"`, or `"arrow"`, a 2D arrow. `None`: every pixel is drawn as `symbol`                                            |
+
+Pixels that read nothing are left out when `style.pixel.field.shownull` is `False`. A sensor has one `pixels` trace per path step drawn, never merged with another one.
+
 **`type="scatter"`**, a 2D curve in a `chart2d` panel, see [](guide-graphics-custom-backend-2d):
 
 | key                                 | type            | meaning                                                                   |
@@ -179,7 +192,7 @@ A 2D curve has no `opacity` and no `line_width`.
 - **Numbers** may be Python ints, such as `opacity=1` or `line_width=2`: convert with `float()` where your library needs floats.
 - **Colors** are CSS names or `"#rrggbb"` hex: a user's `"r"` arrives as `"red"`. Per-face and per-point colors are a numpy string array from Magpylib, and a plain list from a user's model.
 - **Symbols and dashes** follow Magpylib's own vocabularies, both Matplotlib-derived: `marker_symbol` is one of `ALLOWED_SYMBOLS` (`"o"`, `"D"`, `"+"`, ...) and `line_dash` one of `"solid"`, `"dashed"`, `"dotted"`, `"dashdot"`, `"loosely dotted"` and `"loosely dashdotted"`, whichever of the spellings in `ALLOWED_LINESTYLES` the user chose. Map them to your library. The exception is a user's `generic` [model](examples-own-3d-models), whose values pass through unchecked and may be Plotly names such as `"circle"`.
-- **Sizes are nominal.** `line_width=2` and `marker_size=3` have no unit, and every backend scales them its own way. Plotly multiplies line widths by 2.2 and marker sizes by 0.7, in pixels; Studio uses the same factors.
+- **Sizes are nominal.** `line_width=2` and `marker_size=3` have no unit, and every backend scales them its own way. A `pixels` trace's `marker_size` is the exception: a length. Plotly multiplies line widths by 2.2 and marker sizes by 0.7, in pixels; Studio uses the same factors.
 - **NaN is not JSON.** A backend that ships coordinates to a browser must encode it, as `null` for instance, and restore it there.
 - **Optional keys** appear only when they apply: `text`, `flatshading`, `intensity`, `colorscale`, `facecolor`. Read them with `trace.get`.
 
@@ -214,7 +227,7 @@ Here `fig` must come from `plotly.subplots.make_subplots`: a plain `go.Figure()`
 | `Circle`, `Polyline`                                                           | two `scatter3d`: the line and its current arrows                                                                                                |
 | `TriangleSheet`, `TriangleStrip`                                               | a `mesh3d` for the sheet, plus a gray `mesh3d` for its current arrows                                                                            |
 | `Dipole`                                                                       | one `mesh3d`, an arrow                                                                                                                           |
-| `Sensor`                                                                       | one `mesh3d` with `facecolor`: axes, arrows and pixels. Pixels drawn as 2D symbols or `arrow`s come as a `scatter3d` instead                    |
+| `Sensor`                                                                       | one `mesh3d` with `facecolor`: axes, arrows and pixels. Pixels drawn as 2D symbols or `arrow`s come as a `scatter3d` instead, and with `draws_pixels` as a `pixels` trace |
 | `CustomSource`                                                                 | one `scatter3d` marker                                                                                                                           |
 | any object with a path                                                         | one more `scatter3d` for the path                                                                                                                |
 | `show(markers=...)`                                                            | one `scatter3d`, with `object_id = None`                                                                                                         |
@@ -238,9 +251,10 @@ A backend declares what it can draw. Every flag defaults to `False`, so a capabi
 | `supports_animation_output` | `animation_output=...` warns, and `scene.animation.output` is `None`                                                                                                                                                               |
 | `supports_native_traces`    | a user model attached for this backend warns and is not drawn; `Frame.native_traces` stays empty                                                                                                                                   |
 
-Two more declarations shape the payload:
+Three more declarations shape the payload:
 
 - **`merge_traces`** (default `True`) is a preference, not a capability: see above.
+- **`draws_pixels`** (default `False`) hands sensor pixels over as data, for you to draw: see [](guide-graphics-custom-backend-pixels).
 - **`handles_traces`** lists the trace types you draw, such as `{"mesh3d", "scatter3d"}`. Magpylib then warns about a type you never handle, instead of producing a quietly incomplete figure, which is what makes new trace types safe to add. `None`, the default, assumes you draw everything.
 
 (guide-graphics-custom-backend-options)=
@@ -349,15 +363,19 @@ In 3D, the traces sharing a `legendgroup` are one legend entry, which the trace 
 
 `Scene.legend_maxitems` is the most entries a legend should list. The built-in backends list that many, then one "… and k more" row; `0` hides their 3D legends, while Matplotlib still draws its 2D legends. The cap is never applied to the traces themselves, so a backend whose legend scales another way, such as a collapsible tree, can ignore it.
 
-## Helpers for sensor pixels
+(guide-graphics-custom-backend-pixels)=
 
-A backend drawing sensor pixels its own way, as instances in a scene graph for example, can size and color them as the built-ins do:
+## Sensor pixels
+
+Building a cube or a cone per pixel into the sensor's mesh is most of what a sensor with many pixels costs to draw: 2,500 cones take 70 ms to build as meshes. A backend that can draw many copies of one shape, as instances in a scene graph for example, declares **`draws_pixels = True`** instead. Magpylib then hands each sensor's pixels over as one `pixels` trace, in 3 ms: where each pixel is, the field it reads, and the size and color the built-ins draw it in. The `style` arguments given to `show()` apply to it too. The sensor's mesh keeps its axes, and the box around pixels that show no field. A backend that declares `handles_traces` adds `"pixels"` to it.
+
+The helpers below size and color pixels as the built-ins do, outside a scene: for a color bar, say, or for field lines colored on the pixels' scale:
 
 - `pixel_fields(objects)` returns `{sensor: field}`, the field each sensor showing its pixel field reads. `field` has the shape `(path_length, n_pixels, 3)`, in the sensor's own frame, summed over the sources among `objects`, with the components its `style.pixel.field.source` does not name set to 0. Sensors with nothing to read are left out.
 - `pixel_sizes(sensor, field=None, *, autosize=None, path_index=-1)` returns the size each pixel is drawn at: half the distance between the nearest two, or a fifth of the sensor where they coincide, times `style.pixel.size`, and scaled by `field` as `style.pixel.field.sizescaling` and `sizemin` say. Pass the panel's `autosize`, which sizes a lone pixel at the sensor's origin when `style.sizemode` is `"scaled"`.
 - `pixel_colors(sensor, field=None, *, path_index=-1)` returns the color each pixel is drawn in: `style.pixel.color`, black when unset, or with `field` the color of `style.pixel.field.colormap` for its norm, as `colorscaling` says.
 
-Both read the sensor's own style, the defaults filling in what it leaves unset, and scale over the whole path, as the built-ins do. A pixel that reads nothing keeps its size and is `"#b2beb5"`. For one sensor at path index `index`, `-1` for a static scene:
+Both read the sensor's own style, the defaults filling in what it leaves unset, but not the `style` arguments given to `show()`, and scale over the whole path, as the built-ins do. A pixel that reads nothing keeps its size and is `"#b2beb5"`. For one sensor at path index `index`, `-1` for a static scene:
 
 ```python
 from magpylib.graphics.backend import pixel_colors, pixel_fields, pixel_sizes
@@ -370,8 +388,6 @@ for sensor, field in pixel_fields(panel.objects).items():
 `scaled_norms(norms, scaling, *, minimum=None)` scales field norms to factors in [`minimum` or 0, 1] as the built-ins scale a pixel field, over the whole array: pass `(path_length, n_pixels)` norms to scale over the path, and add the norms of anything else to color on the pixels' scale, such as field lines. `scaling` is a value of `style.pixel.field.sizescaling` or `colorscaling`: `"uniform"`, `"linear"`, `"log"`, `"log^2"` to `"log^9"`. NaN marks a norm that reads nothing.
 
 `colors_from_colorscale(values, colorscale, *, cmin=None, cmax=None, nan_color="#b2beb5")` maps values onto a colorscale as the built-ins do, for a color bar for example; for factors from `scaled_norms`, pass `cmin=0, cmax=1`. It returns one color per value of the 1-D `values`, as a list: `"#rrggbb"`, or `nan_color` for NaN. `colorscale` is a Plotly scale name such as `"Viridis"`, or `[(stop, color), ...]` with any CSS name or hex color, such as a `mesh3d` trace's own `colorscale`. `cmin` and `cmax` default to the range of `values`.
-
-There is no opt-out yet: Magpylib still draws the pixels into the sensor's own `mesh3d`. Studio sets `style.pixel.size = 0` on such sensors while it captures the scene and restores it afterwards, so it computes the sizes before or after, not during, the capture.
 
 ## Warnings a backend can trigger
 

@@ -116,6 +116,13 @@ def place_and_orient_model3d(
                 new_model_args[ind] = new_vertices[i]
             else:
                 new_model_dict[key] = new_vertices[i]
+        is_field = (
+            model_kwargs.get("type") == "pixels" and model_kwargs["u"] is not None
+        )
+        if orientation is not None and is_field:
+            # the field the pixels read turns with them, and does not move
+            uvw = np.column_stack([model_kwargs[k] for k in "uvw"])
+            new_model_dict.update(zip("uvw", orientation.apply(uvw).T, strict=True))
         new_model_kwargs = {**model_kwargs, **new_model_dict, **kwargs}
 
     out = (new_model_kwargs,)
@@ -707,6 +714,13 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
                 # for 2d meshes, nothing special needed
                 pass
             pts = pts.reshape(-1, 3)
+            if tr.get("type") == "pixels":
+                # as far as drawn: a symbol along the field its size from its
+                # center, a cube half of it
+                reach = np.asarray(tr["marker_size"], dtype=float) / 2
+                if tr["field_symbol"] is not None:
+                    reach[np.any([tr["u"], tr["v"], tr["w"]], axis=0)] *= 2
+                pts = np.concatenate([pts - reach[:, None], pts + reach[:, None]])
             if pts.size != 0:
                 ranges_rc[rc].append(np.nanmin(pts, axis=0))
                 ranges_rc[rc].append(np.nanmax(pts, axis=0))
@@ -758,6 +772,8 @@ def rescale_traces(traces, factors):
                 for k in "ijk":
                     if k in placed:
                         placed[k] = np.asarray(placed[k], dtype=int)
+            if placed.get("type") == "pixels":
+                placed["marker_size"] = placed["marker_size"] * factors[rc]
             traces[ind] = placed
     return traces
 

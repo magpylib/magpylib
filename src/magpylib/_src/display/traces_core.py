@@ -714,7 +714,7 @@ def make_Pixels(
     is_null_vec = None
     if vectors is not None:
         orientations = get_orientation_from_vec(vectors)
-        is_null_vec = (np.abs(vectors) < null_thresh).all(axis=1)
+        is_null_vec = _null_readings(vectors, null_thresh)
     kw2d = {
         "type": "scatter3d",
         "mode": "markers+lines",
@@ -737,7 +737,7 @@ def make_Pixels(
             elif field_symbol == "arrow":
                 pix = make_BaseArrow(**kw, **kw2d)
                 pix["marker_size"] = np.repeat(0.0, len(pix["x"]))
-        elif vectors is None or shownull:
+        elif vectors is None or shownull or not is_null_vec[ind]:
             if ttype_field == "scatter3d":
                 x, y, z = pos[:, None]
                 pix = {
@@ -785,6 +785,51 @@ def make_Pixels(
         )
         raise ValueError(msg)
     return pixels[0]
+
+
+def _null_readings(vectors, null_thresh):
+    """Which pixels read nothing: every component below `null_thresh`, or not
+    a number."""
+    return ~(np.abs(vectors) >= null_thresh).any(axis=1)
+
+
+def make_PixelsData(
+    positions, vectors, colors, sizes, symbol, field_symbol, shownull, null_thresh
+) -> dict[str, Any]:
+    """Return a sensor's pixels as one ``pixels`` trace, for a backend that
+    draws them itself: per pixel its position, the field it reads -- exactly
+    0 where it reads nothing -- its size and its color, and what `make_Pixels`
+    draws a pixel as, along its field or not. Pixels reading nothing are left
+    out unless `shownull`."""
+    count = len(positions)
+    sizes = np.broadcast_to(np.asarray(sizes, dtype=float), (count,))
+    colors = np.broadcast_to(np.asarray(colors), (count,))
+    shown = np.ones(count, dtype=bool)
+    uvw, along = (None, None, None), None
+    if vectors is not None:
+        null = _null_readings(vectors, null_thresh)
+        if not shownull:
+            shown = ~null
+        uvw = np.where(null[:, None], 0.0, vectors)[shown].T
+        along = None if field_symbol == "none" else field_symbol
+        # a pixel along no field is drawn as its field symbol's kind is: a
+        # cube beside cones, a 2D marker beside 2D arrows
+        if along in ("cone", "arrow3d"):
+            symbol = "cube"
+        elif along == "arrow" and symbol == "cube":
+            symbol = "s"
+    x, y, z = positions[shown].T
+    return {
+        "type": "pixels",
+        "x": x,
+        "y": y,
+        "z": z,
+        **dict(zip("uvw", uvw, strict=True)),
+        "marker_size": sizes[shown],
+        "marker_color": colors[shown],
+        "symbol": symbol,
+        "field_symbol": along,
+    }
 
 
 def _sensor_extent(obj, style, autosize):
@@ -854,9 +899,11 @@ def _scaled_pixel_colors(color, norms, field_style, path_ind):
 
 
 def make_Sensor(
-    obj, *, autosize, path_index=None, field_values, **kwargs
+    obj, *, autosize, path_index=None, field_values, draws_pixels=False, **kwargs
 ) -> dict[str, Any]:
-    """Return the generic traces of a Sensor: its arrows and pixels."""
+    """Return the generic traces of a Sensor: its arrows and pixels, the
+    pixels as a ``pixels`` trace of their own for a backend that `draws_pixels`
+    itself."""
     style = obj.style
     traces_to_merge = []
     pixel, hull_dim, dim_ext = _sensor_extent(obj, style, autosize)
@@ -897,6 +944,10 @@ def make_Sensor(
                 coords = list({"xyz".index(v) for v in coords_str if v in "xyz"})
                 other_coords = [i for i in range(3) if i not in coords]
                 field_array[..., other_coords] = 0  # set other components to zero
+                if obj.handedness == "left":
+                    # read with its x mirrored, drawn in the sensor's own
+                    # right-handed frame: mirrored back
+                    px_vectors = px_vectors * (-1, 1, 1)
                 # the public helpers, so a backend drawing pixels its own way
                 # sizes and colors them as these traces do
                 norms = np.linalg.norm(field_array, axis=-1)
@@ -906,17 +957,22 @@ def make_Sensor(
                 px_colors = _scaled_pixel_colors(
                     px_colors, norms, style.pixel.field, path_index
                 )
-            pixels_trace = make_Pixels(
-                positions=px_positions,
-                vectors=px_vectors,
-                colors=px_colors,
-                sizes=px_sizes,
-                symbol=style.pixel.symbol,
-                field_symbol=style.pixel.field.symbol,
-                shownull=style.pixel.field.shownull,
-                null_thresh=null_thresh,
-                marker2d_default_size=10 * px_size,
-            )
+            pixels_kwargs = {
+                "positions": px_positions,
+                "vectors": px_vectors,
+                "colors": px_colors,
+                "sizes": px_sizes,
+                "symbol": style.pixel.symbol,
+                "field_symbol": style.pixel.field.symbol,
+                "shownull": style.pixel.field.shownull,
+                "null_thresh": null_thresh,
+            }
+            if draws_pixels:
+                pixels_trace = make_PixelsData(**pixels_kwargs)
+            else:
+                pixels_trace = make_Pixels(
+                    **pixels_kwargs, marker2d_default_size=10 * px_size
+                )
 
             traces_to_merge.append(pixels_trace)
         # The hull stands in for pixels that show no field: never on a sensor
