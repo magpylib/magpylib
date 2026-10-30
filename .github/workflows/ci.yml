@@ -33,7 +33,9 @@ jobs:
 
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.x"
+          # The newest Python the checks run on, not "3.x": pylint has to
+          # import vtk, whose wheels reach a new Python release late.
+          python-version: "3.14"
 
       - uses: astral-sh/setup-uv@v10.3.0
 
