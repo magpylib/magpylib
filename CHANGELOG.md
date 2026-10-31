@@ -1,35 +1,31 @@
 # Changelog
 
-## [Unreleased]
+## [6.1.0] 2026-10-31
 
 ### Added
 
-- A display backend can draw sensor pixels itself: declaring `draws_pixels`
-  hands it each sensor's pixels as one `pixels` trace, positions, field, sizes
-  and colors, instead of a mesh per pixel: 3 ms rather than 70 ms for 2,500
-  cones ([#1065](https://github.com/magpylib/magpylib/pull/1065)).
+- A display backend can draw sensor pixels itself: with `draws_pixels` it gets
+  them as one `pixels` trace instead of a mesh per pixel
+  ([#1065](https://github.com/magpylib/magpylib/pull/1065)).
 
 ### Changed
 
-- Faster fields along long paths, where sensor pixels are placed for all path
-  steps at once, and of Polylines on many observers
+- Large field computations, `magpy.func` included, run in chunks on several
+  threads: far less memory, and several times faster on multi-core machines. Set
+  `magpy.defaults.threads` to choose the count, to 1 if you already run
+  computations in parallel
+  ([#1059](https://github.com/magpylib/magpylib/pull/1059)).
+- Faster fields along long paths, and of Polylines on many observers
   ([#1061](https://github.com/magpylib/magpylib/pull/1061),
   [#1063](https://github.com/magpylib/magpylib/pull/1063)).
-- Large `getB`, `getH`, `getJ` and `getM` computations, and the functional
-  interface `magpy.func`, run in chunks, on several threads: a fraction of the
-  memory, and several times faster on multi-core machines. Set the thread count
-  with `magpy.defaults.threads`
-  ([#1059](https://github.com/magpylib/magpylib/pull/1059)).
 
 ### Fixed
 
-- Sensor pixels: the field arrows of a left-handed sensor pointed mirrored, and
-  with `style.pixel.field.symbol="none"` and `shownull=False` no pixel was drawn
-  at all ([#1065](https://github.com/magpylib/magpylib/pull/1065)).
-- The field of several different `TriangularMesh` magnets on one observer: the
-  last was tested for the observer inside against the mesh before it, adding or
-  dropping its polarization; meshes with equal face counts but different vertex
-  counts raised an error, or gave zero inside
+- Sensor pixels: field arrows of left-handed sensors no longer point mirrored,
+  and `style.pixel.field.symbol="none"` with `shownull=False` draws the pixels
+  ([#1065](https://github.com/magpylib/magpylib/pull/1065)).
+- The field of several different `TriangularMesh` magnets on one observer, which
+  could be wrong inside the last magnet or raise an error
   ([#1062](https://github.com/magpylib/magpylib/pull/1062)).
 
 ## [6.0.1] 2026-10-25
