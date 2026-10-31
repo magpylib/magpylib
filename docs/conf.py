@@ -104,6 +104,18 @@ def _absolutise_404_body_links(app, doctree, docname):
 
     replace_uris(app, doctree, docutils.nodes.reference, "refuri")
 
+    # the same goes for the game's frame, which docutils only knows as raw HTML
+    prefix = app.config.notfound_urls_prefix
+    for node in doctree.findall(docutils.nodes.raw):
+        html = node.astext()
+        if 'src="_static/' in html:
+            node.replace(
+                node[0],
+                docutils.nodes.Text(
+                    html.replace('src="_static/', f'src="{prefix}_static/')
+                ),
+            )
+
 
 def setup(app):
     app.connect("builder-inited", _record_builder)

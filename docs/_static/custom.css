@@ -307,6 +307,16 @@ html[data-theme="dark"] .mag-bird--flying {
     color: transparent;
 }
 
+/* Super Magrio, in a frame so that it keeps its keys to itself */
+.mag404__game {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    margin: 16px 0;
+    border: 0;
+    border-radius: 12px;
+}
+
 
 /* while a letter is riding on the pointer, the letter is the cursor */
 html.mag-carrying,

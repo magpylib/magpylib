@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Super Magrio</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../images/magpylib_logo_bird.png">
+<style>
+  :root { --ink: #2a2939; --paper: #f6f3ea; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--ink); color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+  #stage { position: fixed; inset: 0; display: grid; place-items: center; }
+  #game { display: block; width: min(100vw, calc(100vh * 16 / 9)); aspect-ratio: 16 / 9;
+    background: var(--paper); touch-action: none; }
+
+  .corner { position: fixed; right: 12px; bottom: 10px; display: flex; gap: 8px; z-index: 2; }
+  .corner button { font: 600 13px system-ui, sans-serif; color: var(--ink);
+    background: rgba(255, 255, 255, 0.88); border: 0; border-radius: 7px; padding: 5px 10px;
+    cursor: pointer; }
+  .corner button:hover { background: #fff; }
+
+  #pad { display: none; position: fixed; left: 0; right: 0; bottom: 44px; padding: 0 14px;
+    justify-content: space-between; pointer-events: none; z-index: 2; }
+  #pad > div { display: flex; gap: 12px; }
+  #pad button { pointer-events: auto; touch-action: none; width: 68px; height: 68px;
+    border-radius: 50%; border: 0; font: 700 15px system-ui, sans-serif; color: #fff;
+    background: rgba(96, 95, 118, 0.78); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55);
+    user-select: none; -webkit-user-select: none; }
+  #pad button.on { background: var(--ink); }
+  #pad button[data-key="flip"] { background: rgba(170, 0, 0, 0.8); }
+  @media (pointer: coarse) { #pad { display: flex; } }
+
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="game" aria-label="Super Magrio, a platform game about magnetic fields."></canvas></div>
+
+<div class="corner">
+  <button id="sound" type="button">Sound: on</button>
+</div>
+
+<div id="pad">
+  <div><button data-key="left" aria-label="Left">&#9664;</button><button data-key="right" aria-label="Right">&#9654;</button></div>
+  <div><button data-key="flip">Flip</button><button data-key="jump">Jump</button></div>
+</div>
+
+<script src="field.js"></script>
+<script src="sim.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
