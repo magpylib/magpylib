@@ -73,6 +73,16 @@ def test_section_J_on_a_surface_ignores_other_observers():
     np.testing.assert_array_equal(magnet.getJ(face), magnet.getJ([face, (9, 9, 9)])[0])
 
 
+def test_section_full_turn_with_rounding_is_accepted():
+    """phi2 - phi1 rounds to just over 360 for this full turn"""
+    phi1 = 152.2
+    assert (phi1 + 360) - phi1 > 360
+    magnet = magpy.magnet.CylinderSegment(
+        polarization=(0, 0, 1), dimension=(0.2, 0.6, 1, phi1, phi1 + 360)
+    )
+    np.testing.assert_array_equal(magnet.getJ((0.4, 0.1, 0)), (0, 0, 1))
+
+
 def test_section_span_over_a_turn_raises():
     """magpy.func does not validate dimension up front"""
     with pytest.raises(ValueError, match="phi2 - phi1 <= 360"):

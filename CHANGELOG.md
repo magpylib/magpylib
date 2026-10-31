@@ -7,8 +7,9 @@
 - `CylinderSegment`: B, J and M were wrong in part of the magnet with an angle
   past ±360, and faces at or past ±360 and the axis of a section with `r1=0` now
   count as surfaces, where B and H are 0 instead of a field or NaN. J and M on a
-  surface no longer depend on the other observers, and `magpy.func` rejects a
-  span over 360 ([#1070](https://github.com/magpylib/magpylib/pull/1070)).
+  surface no longer depend on the other observers, `magpy.func` rejects a span
+  over 360, and a full turn that rounds to just over 360 is accepted
+  ([#1070](https://github.com/magpylib/magpylib/pull/1070)).
 
 ## [6.1.0] 2026-10-31
 

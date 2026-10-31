@@ -13,7 +13,7 @@ from scipy.special import ellipeinc, ellipkinc
 
 from magpylib._src.fields.field_BH_cylinder import _BHJM_magnet_cylinder
 from magpylib._src.fields.special_el3 import _el3_angle
-from magpylib._src.input_checks import check_field_input
+from magpylib._src.input_checks import ANGLE_TOLERANCE, check_field_input
 
 
 def _arctan_k_tan_2(k, phi):
@@ -2368,13 +2368,14 @@ def _BHJM_cylinder_segment(
     h = abs(h)
     z1, z2 = -h / 2, h / 2
 
-    if np.any(phi2 - phi1 > 360 + 1e-8):
+    if np.any(phi2 - phi1 > 360 + ANGLE_TOLERANCE):
         msg = "Input dimension of a CylinderSegment must have phi2 - phi1 <= 360."
         raise ValueError(msg)
 
     # the checks below need angles within +-360 deg and no face at +-360, so a
     # section reaching that far shifts by full turns
-    past = (abs(phi1) > 360 - 1e-8) | (abs(phi2) > 360 - 1e-8)
+    reach = 360 - ANGLE_TOLERANCE
+    past = (abs(phi1) > reach) | (abs(phi2) > reach)
     if np.any(past):
         turns = np.where(past, np.round((phi1 + phi2) / 720), 0)
         phi1 = phi1 - 360 * turns
