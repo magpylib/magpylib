@@ -726,6 +726,16 @@ SHAPE = {
 }
 
 
+def _is_foreign_array(val):
+    """True for an array of another library, as np.array would drop what it
+    carries (units, device). Tables that convert with to_numpy are fine."""
+    if isinstance(val, np.ndarray):
+        return hasattr(val, "unit")  # an astropy Quantity is an ndarray subclass
+    if isinstance(val, np.generic):
+        return False
+    return hasattr(val, "__array__") and not hasattr(val, "to_numpy")
+
+
 def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
     """Functional interface for magnetic field computation
 
@@ -761,6 +771,13 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
 
     # Transform all inputs to ndarray
     for key, val in params.items():
+        if _is_foreign_array(val):
+            msg = (
+                f"Input {key} must be a list, tuple or NumPy array; "
+                f"instead received type {type(val).__name__}. "
+                "Convert it to a NumPy array first."
+            )
+            raise TypeError(msg)
         try:
             if not isinstance(val, np.ndarray):
                 params[key] = np.array(val, dtype=float)

@@ -33,6 +33,42 @@ def test_getBHfunc_bad_inputs1():
         _getBH_func(_BHJM_circle, "B", dic, True, {})
 
 
+class _ForeignArray:
+    """converts with np.array, as pint and JAX arrays do"""
+
+    def __array__(self, dtype=None, copy=None):
+        return np.array([0, 0, 0.01], dtype=dtype, copy=copy)
+
+
+class _Table(_ForeignArray):
+    """converts with to_numpy too, as pandas and xarray do"""
+
+    def to_numpy(self):
+        return np.array(self)
+
+
+class _UnitArray(np.ndarray):
+    """an ndarray subclass with units, as an astropy Quantity"""
+
+    unit = "mm"
+
+
+@pytest.mark.parametrize(
+    "observers", [_ForeignArray(), np.zeros(3).view(_UnitArray)], ids=["array", "unit"]
+)
+def test_getBHfunc_rejects_foreign_arrays(observers):
+    """other libraries' arrays raise instead of losing their units or device"""
+    with pytest.raises(TypeError, match="must be a list, tuple or NumPy array"):
+        circle_field("B", observers=observers, diameters=1, currents=1)
+
+
+def test_getBHfunc_accepts_tables_and_numpy_scalars():
+    """what np.array converts without loss keeps working"""
+    ref = circle_field("B", observers=(0, 0, 0.01), diameters=1, currents=1)
+    B = circle_field("B", observers=_Table(), diameters=np.float64(1), currents=1)
+    np.testing.assert_array_equal(B, ref)
+
+
 def test_getBHfunc_bad_inputs2():
     """test bad orientation input"""
     dic = {

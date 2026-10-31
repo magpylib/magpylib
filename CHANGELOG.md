@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- `magpy.func` raises a `TypeError` on arrays of other libraries instead of
+  silently converting them, which dropped pint and astropy units: 10 mm was read
+  as 10 m. Convert with `np.asarray` first.
+
 ## [6.1.0] 2026-10-31
 
 ### Added
