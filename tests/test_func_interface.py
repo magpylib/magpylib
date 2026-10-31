@@ -33,6 +33,68 @@ def test_getBHfunc_bad_inputs1():
         _getBH_func(_BHJM_circle, "B", dic, True, {})
 
 
+class _Quantity:
+    """converts with np.array and loses its units, as a pint Quantity"""
+
+    units = "mm"
+
+    def __array__(self, dtype=None, copy=None):
+        return np.array([0, 0, 0.01], dtype=dtype, copy=copy)
+
+
+class _UnitArray(np.ndarray):
+    """an ndarray subclass with units, as an astropy Quantity"""
+
+    unit = "mm"
+
+
+class _NoUnitArray(np.ndarray):
+    """an ndarray subclass without units, as an astropy Column"""
+
+    unit = None
+
+
+class _OtherArray:
+    """converts with np.array and loses nothing, as a JAX array"""
+
+    def __array__(self, dtype=None, copy=None):
+        return np.array([0, 0, 0.01], dtype=dtype, copy=copy)
+
+
+class _Table(_Quantity):
+    """a table can have a column named units, as a pandas DataFrame"""
+
+    def to_numpy(self):
+        return np.array(self)
+
+
+@pytest.mark.parametrize(
+    "observers",
+    [_Quantity(), np.zeros(3).view(_UnitArray), [_Quantity()], [[_Quantity()]]],
+    ids=["quantity", "ndarray subclass", "in a list", "in a nested list"],
+)
+def test_getBHfunc_rejects_units(observers):
+    """values with units raise instead of being read as SI values"""
+    with pytest.raises(TypeError, match="carries units"):
+        circle_field("B", observers=observers, diameters=1, currents=1)
+
+
+@pytest.mark.parametrize(
+    "observers",
+    [
+        _OtherArray(),
+        _Table(),
+        np.array([0, 0, 0.01]).view(_NoUnitArray),
+    ],
+    ids=["other array", "table", "ndarray subclass"],
+)
+def test_getBHfunc_accepts_values_without_units(observers):
+    """what np.array converts without loss keeps working"""
+    ref = circle_field("B", observers=(0, 0, 0.01), diameters=1, currents=1)
+    B = circle_field("B", observers=observers, diameters=np.float64(1), currents=1)
+    np.testing.assert_array_equal(B, ref)
+
+
 def test_getBHfunc_bad_inputs2():
     """test bad orientation input"""
     dic = {
