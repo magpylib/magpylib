@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- `CylinderSegment` with an angle past ±360: B, J and M were wrong in part of
+  the magnet, and a face at exactly ±360 did not count as a surface.
+
 ## [6.1.0] 2026-10-31
 
 ### Added

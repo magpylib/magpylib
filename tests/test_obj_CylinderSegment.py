@@ -1,6 +1,32 @@
 import numpy as np
+import pytest
 
 import magpylib as magpy
+
+
+@pytest.mark.parametrize("turns", [-1, 1, 2])
+@pytest.mark.parametrize("angles", [(-350, 9), (40, 130)])
+def test_section_angles_wrap(angles, turns):
+    """a section gives the same field when its angles are shifted by full turns"""
+    obs = np.array(
+        [(r * np.cos(a), r * np.sin(a), 0.1) for r in (0.1, 0.4) for a in range(-3, 4)]
+    )
+    dimension = np.array([0.2, 0.6, 1, *angles], dtype=float)
+    ref = magpy.magnet.CylinderSegment(
+        polarization=(0.3, -0.5, 0.8), dimension=dimension
+    )
+    shifted = ref.copy(dimension=dimension + 360 * turns * np.array([0, 0, 0, 1, 1]))
+    np.testing.assert_allclose(shifted.getJ(obs), ref.getJ(obs))
+    np.testing.assert_allclose(shifted.getB(obs), ref.getB(obs), atol=1e-12)
+
+
+@pytest.mark.parametrize("angles", [(90, 360), (-360, -90), (0, 270)])
+def test_section_face_at_zero_angle_is_a_surface(angles):
+    """on a face the field is 0, also where the face angle is +-360"""
+    magnet = magpy.magnet.CylinderSegment(
+        polarization=(0, 0, 1), dimension=(0, 0.5, 1, *angles)
+    )
+    np.testing.assert_array_equal(magnet.getB((0.25, 0, 0.2)), 0)
 
 
 def test_repr():

@@ -2368,6 +2368,18 @@ def _BHJM_cylinder_segment(
     h = abs(h)
     z1, z2 = -h / 2, h / 2
 
+    # only sections reaching +-360 deg need the extra steps, NaN angles count too
+    reaches_full_turn = not (
+        abs(phi1).max(initial=0) < 360 - 1e-8 and abs(phi2).max(initial=0) < 360 - 1e-8
+    )
+
+    if reaches_full_turn:
+        # bring a section past +-360 deg back within, by full turns
+        past = (abs(phi1) > 360) | (abs(phi2) > 360)
+        turns = np.where(past, np.round((phi1 + phi2) / 720), 0)
+        phi1 = phi1 - 360 * turns
+        phi2 = phi2 - 360 * turns
+
     # transform dim deg->rad
     phi1 = phi1 / 180 * np.pi
     phi2 = phi2 / 180 * np.pi
@@ -2396,6 +2408,13 @@ def _BHJM_cylinder_segment(
         np.sign(phio2 - phi1) != np.sign(phio2 - phi2)
     )
     mask_z_in = (z1 - 1e-14 < z) & (z < z2 + 1e-14)
+
+    if reaches_full_turn:
+        # a face at +-2pi also lies at phi=0, reached by one turn to either side
+        for phio in (phi - 2 * np.pi, phi + 2 * np.pi):
+            mask_phi1 |= _close(phio, phi1)
+            mask_phi2 |= _close(phio, phi2)
+            mask_phi_in |= np.sign(phio - phi1) != np.sign(phio - phi2)
 
     # on surface
     mask_surf_z = (
