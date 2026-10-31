@@ -13,7 +13,7 @@ from scipy.special import ellipeinc, ellipkinc
 
 from magpylib._src.fields.field_BH_cylinder import _BHJM_magnet_cylinder
 from magpylib._src.fields.special_el3 import _el3_angle
-from magpylib._src.input_checks import check_field_input
+from magpylib._src.input_checks import ANGLE_TOLERANCE, check_field_input
 
 
 def _arctan_k_tan_2(k, phi):
@@ -2368,6 +2368,19 @@ def _BHJM_cylinder_segment(
     h = abs(h)
     z1, z2 = -h / 2, h / 2
 
+    if np.any(phi2 - phi1 > 360 + ANGLE_TOLERANCE):
+        msg = "Input dimension of a CylinderSegment must have phi2 - phi1 <= 360."
+        raise ValueError(msg)
+
+    # the checks below need angles within +-360 deg and no face at +-360, so a
+    # section reaching that far shifts by full turns
+    reach = 360 - ANGLE_TOLERANCE
+    past = (abs(phi1) > reach) | (abs(phi2) > reach)
+    if np.any(past):
+        turns = np.where(past, np.round((phi1 + phi2) / 720), 0)
+        phi1 = phi1 - 360 * turns
+        phi2 = phi2 - 360 * turns
+
     # transform dim deg->rad
     phi1 = phi1 / 180 * np.pi
     phi2 = phi2 / 180 * np.pi
@@ -2386,16 +2399,29 @@ def _BHJM_cylinder_segment(
     phio1 = phi
     phio2 = phi - np.sign(phi) * 2 * np.pi
 
-    # phi=phi1, phi=phi2
-    mask_phi1 = _close(phio1, phi1) | _close(phio2, phi1)
-    mask_phi2 = _close(phio1, phi2) | _close(phio2, phi2)
-
     # r, phi ,z lies in-between, avoid numerical fluctuations (e.g. due to rotations) by including 1e-14
     mask_r_in = (r1 - 1e-14 < r) & (r < r2 + 1e-14)
     mask_phi_in = (np.sign(phio1 - phi1) != np.sign(phio1 - phi2)) | (
         np.sign(phio2 - phi1) != np.sign(phio2 - phi2)
     )
+    # with r1=0 the axis belongs to every section, whatever its phi is
+    mask_phi_in |= (r1 < 1e-12) & (r < 1e-12)
     mask_z_in = (z1 - 1e-14 < z) & (z < z2 + 1e-14)
+
+    # inside
+    mask_inside = mask_r_in & mask_phi_in & mask_z_in
+
+    if field == "J":
+        BHJM[~mask_inside] = 0
+        return BHJM
+
+    if field == "M":
+        BHJM[~mask_inside] = 0
+        return BHJM / MU0
+
+    # phi=phi1, phi=phi2
+    mask_phi1 = _close(phio1, phi1) | _close(phio2, phi1)
+    mask_phi2 = _close(phio1, phi2) | _close(phio2, phi2)
 
     # on surface
     mask_surf_z = (
@@ -2405,25 +2431,9 @@ def _BHJM_cylinder_segment(
     mask_surf_phi = (mask_phi1 | mask_phi2) & mask_r_in & mask_z_in  # in / out
     mask_not_on_surf = ~(mask_surf_z | mask_surf_r | mask_surf_phi)
 
-    # inside
-    mask_inside = mask_r_in & mask_phi_in & mask_z_in
-    # else:
-    #     mask_inside = np.full(len(observers), in_out == "inside")
-    #     mask_not_on_surf = np.full(len(observers), True)
-    # WARNING @alex
-    #   1. inside and not_on_surface are not the same! Can't just put to true.
-
     # return 0 when all points are on surface
     if not np.any(mask_not_on_surf):
         return BHJM * 0
-
-    if field == "J":
-        BHJM[~mask_inside] = 0
-        return BHJM
-
-    if field == "M":
-        BHJM[~mask_inside] = 0
-        return BHJM / MU0
 
     BHJM *= 0
 

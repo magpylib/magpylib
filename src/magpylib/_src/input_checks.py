@@ -23,6 +23,10 @@ from magpylib._src.exceptions import (
 )
 from magpylib._src.utility import format_obj_input, wrong_obj_msg
 
+# Tolerance in deg on the section angles of a CylinderSegment. Above the rounding
+# of phi2 - phi1 (1e-13) and of what _close takes for a face at 360 (4e-10).
+ANGLE_TOLERANCE = 1e-8
+
 #################################################################
 #################################################################
 # FUNDAMENTAL CHECKS
@@ -647,7 +651,7 @@ def check_format_input_cylinder_segment(inp):
         raise MagpylibBadUserInput(msg)
 
     # Check phi2 - phi1 <= 360
-    bad_idx = (phi2 - phi1) > 360
+    bad_idx = (phi2 - phi1) > 360 + ANGLE_TOLERANCE
     if bad_idx.any():
         indices = np.where(bad_idx)[0]
         idx_msg = format_index_msg(indices)
