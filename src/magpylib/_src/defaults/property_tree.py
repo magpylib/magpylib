@@ -29,6 +29,7 @@ Public contract for GUIs and third-party tooling:
 - ``merged(*layers)``: first-set-wins resolution across defaults layers
 """
 
+import numbers
 from copy import deepcopy
 from types import MethodType
 from typing import ClassVar
@@ -116,6 +117,9 @@ class Number(Property):
         self.exclusive_minimum = exclusive_minimum
 
     def validate(self, obj, value):
+        if isinstance(value, numbers.Real) and not isinstance(value, bool):
+            # NumPy scalars too, stored as int or float
+            value = int(value) if isinstance(value, numbers.Integral) else float(value)
         if (
             not isinstance(value, self._types)
             or isinstance(value, bool)

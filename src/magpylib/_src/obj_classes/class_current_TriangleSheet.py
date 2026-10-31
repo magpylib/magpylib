@@ -265,6 +265,9 @@ class TriangleSheet(BaseSource, BaseTarget):
         return cd, verts, fac
 
     # Methods
+    def _kernel_rows_per_observer(self):
+        return len(self._faces)
+
     def _get_centroid(self, squeeze=True):
         """Centroid of object in units (m)."""
         if self._vertices is None:

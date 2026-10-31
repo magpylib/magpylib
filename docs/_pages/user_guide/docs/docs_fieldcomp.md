@@ -73,6 +73,8 @@ The output of a field computation `magpy.getB(sources, observers)` is by default
 Magpylib collects all inputs (object parameters), and vectorizes them for the computation which reduces the computation time dramatically for large inputs.
 
 Try to make all field computations with as few calls to `getBHJM` as possible. Avoid Python loops at all costs!
+
+Large `getBHJM` computations are split into chunks, which keeps the memory they need small, and the chunks run on `magpy.defaults.threads` threads: one per logical CPU this process may use, up to 8. Set it to 1 to compute the chunks one after the other, for example when you already run several Magpylib computations in parallel, on threads or processes. The field function of a `CustomSource` is called once with all observers, on the calling thread.
 ```
 
 -------------------------------------
@@ -82,6 +84,8 @@ Try to make all field computations with as few calls to `getBHJM` as possible. A
 Users can bypass the object-oriented interface and compute fields for i parameter sets via the functional interface—functions provided in the `magpylib.func` subpackage. These functions offer field computation, including source position and orientation.
 
 Inputs may be scalars or array-like of length i. Scalar inputs are automatically tiled to length i, creating i computation instances. The field is returned with shape (i, 3); when `squeeze=True` and `i=1`, the shape is (3,).
+
+Large computations run in chunks on `magpy.defaults.threads` threads, as with `getBHJM`, and scalar inputs are tiled one chunk at a time.
 
 For all functions, set `field` to `'B'` or `'H'`. The common defaults are `positions=(0, 0, 0)`, `orientations=None`, and `squeeze=True`.
 

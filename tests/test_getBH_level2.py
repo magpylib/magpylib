@@ -1,5 +1,8 @@
+import threading
+import time
 import unittest
 import warnings
+from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 import pytest
@@ -7,6 +10,7 @@ from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.fields import chunks, field_BH
 from magpylib._src.fields.field_BH import _preserve_paths
 
 
@@ -774,3 +778,216 @@ def test_sensor_on_a_path_reads_each_step_by_hand(name):
         if sens.handedness == "left":
             B_step[:, 0] *= -1
         np.testing.assert_allclose(B[step], B_step, rtol=1e-12, atol=1e-15)
+
+
+POL = (0.1, 0.2, 1.0)
+CHUNK_SOURCES = {
+    "cuboids, one on a path": lambda: [
+        magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=POL),
+        magpy.magnet.Cuboid(
+            dimension=(1, 2, 1),
+            polarization=POL,
+            position=[(0, 0, 0), (0.1, 0, 0), (0.2, 0, 0)],
+            orientation=R.from_euler("x", 20, degrees=True),
+        ),
+    ],
+    "sphere": lambda: magpy.magnet.Sphere(diameter=1, polarization=POL),
+    "five spheres": lambda: [
+        magpy.magnet.Sphere(diameter=1, polarization=POL, position=(i, 0, -2))
+        for i in range(5)
+    ],
+    "tetrahedron": lambda: magpy.magnet.Tetrahedron(
+        vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)], polarization=POL
+    ),
+    "triangular mesh": lambda: magpy.magnet.TriangularMesh.from_ConvexHull(
+        points=np.random.default_rng(1).normal(size=(10, 3)), polarization=POL
+    ),
+    "cylinder segment": lambda: magpy.magnet.CylinderSegment(
+        dimension=(0.5, 1, 1, 0, 90), polarization=POL
+    ),
+    "circle": lambda: magpy.current.Circle(diameter=1, current=1),
+    "polylines, ragged": lambda: [
+        magpy.current.Polyline(
+            vertices=[(0, 0, -1), (1, 0, -1), (1, 1, -1)], current=1
+        ),
+        magpy.current.Polyline(
+            vertices=[(0, 0, -2), (1, 0, -2), (1, 1, -2), (0, 1, -2), (0, 0, -2)],
+            current=2,
+        ),
+    ],
+    "triangle strip": lambda: magpy.current.TriangleStrip(
+        vertices=[(0, 0, -1), (1, 0, -1), (0, 1, -1), (1, 1, -1), (0, 2, -1)], current=1
+    ),
+    "triangle sheet": lambda: magpy.current.TriangleSheet(
+        current_densities=[(1, 0, 0), (0, 1, 0)],
+        vertices=[(0, 0, -1), (1, 0, -1), (0, 1, -1), (1, 1, -1)],
+        faces=[(0, 1, 2), (1, 3, 2)],
+    ),
+    "dipole and triangle": lambda: [
+        magpy.misc.Dipole(moment=POL, position=(0, 0, -1)),
+        magpy.misc.Triangle(
+            vertices=[(0, 0, -1), (1, 0, -1), (0, 1, -1)], polarization=POL
+        ),
+    ],
+    "custom source and cuboid": lambda: [
+        magpy.misc.CustomSource(
+            field_func=lambda field, observers: (
+                observers * (2.0 if field == "B" else 3.0)
+            )
+        ),
+        magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=POL),
+    ],
+}
+
+
+@pytest.mark.parametrize("name", CHUNK_SOURCES)
+def test_chunks_and_threads_match_one_vectorized_step(name, monkeypatch):
+    """Computations above CHUNK_ROWS run in chunks, on threads: the field is the
+    one-step field, and the same for any thread count."""
+    sources = CHUNK_SOURCES[name]()
+    grid = np.linspace(-1, 1, 4)
+    pixel = np.array([[(x, y, 0.3) for y in np.linspace(-1, 1, 5)] for x in grid])
+    sensors = [
+        magpy.Sensor(pixel=pixel, position=[(0, 0, 0), (0, 0.1, 0.2), (0.3, 0, 0.1)]),
+        magpy.Sensor(pixel=pixel, orientation=R.from_euler("z", 30, degrees=True)),
+    ]
+    B_one_step = magpy.getB(sources, sensors)
+    atol = 1e-13 * np.nanmax(np.abs(B_one_step))
+
+    for chunk_rows in (2, 7, 300):  # path steps, pixels, or whole sources packed
+        monkeypatch.setattr(chunks, "CHUNK_ROWS", chunk_rows)
+        B_chunks = []
+        for threads in (1, 4):
+            monkeypatch.setattr(magpy.defaults, "threads", threads)
+            B_chunks.append(magpy.getB(sources, sensors))
+        np.testing.assert_array_equal(B_chunks[0], B_chunks[1])
+        np.testing.assert_allclose(B_chunks[0], B_one_step, rtol=1e-12, atol=atol)
+
+
+def test_user_field_func_gets_all_observers_on_the_calling_thread(monkeypatch):
+    """A user field_func is called once with all observers, on the calling
+    thread: it may not be thread-safe, nor compute point by point."""
+    calls = []
+
+    def field_func(field, observers):  # noqa: ARG001
+        calls.append((threading.get_ident(), len(observers)))
+        return observers
+
+    monkeypatch.setattr(chunks, "CHUNK_ROWS", 7)
+    src = magpy.misc.CustomSource(field_func=field_func)
+    calls.clear()  # the constructor tries field_func on two points
+    src.getB(np.random.default_rng(0).random((50, 3)))
+
+    assert calls == [(threading.get_ident(), 50)]
+
+
+@pytest.mark.parametrize(
+    ("rows_per_obs", "n_path", "n_pix"),
+    [
+        ([1] * 5, 1, 30_000),  # sources packed, then pixel slices
+        ([17_000], 100, 10),  # a mesh on a long path: path slices
+        ([1, 60_000, 3], 1, 2),  # a source above CHUNK_ROWS for one pixel
+    ],
+)
+def test_chunks_cover_every_row_once_within_chunk_rows(rows_per_obs, n_path, n_pix):
+    """Chunks hold at most CHUNK_ROWS kernel rows, or one source at one path
+    step and pixel, and cover every row once."""
+    covered = np.zeros((len(rows_per_obs), n_path, n_pix), dtype=int)
+    for src_sl, path_sl, pix_sl in field_BH._chunk_slices(rows_per_obs, n_path, n_pix):
+        covered[src_sl, path_sl, pix_sl] += 1
+        rows = (
+            sum(rows_per_obs[src_sl])
+            * len(range(n_path)[path_sl])
+            * len(range(n_pix)[pix_sl])
+        )
+        assert rows <= max(chunks.CHUNK_ROWS, *rows_per_obs[src_sl])
+    assert np.all(covered == 1)
+
+
+def test_threads_keep_the_callers_numpy_error_settings(monkeypatch):
+    """np.errstate applies to chunks computed on other threads too, a callback
+    included."""
+    monkeypatch.setattr(chunks, "CHUNK_ROWS", 7)
+    monkeypatch.setattr(magpy.defaults, "threads", 4)
+    sphere = magpy.magnet.Sphere(diameter=1, polarization=POL)
+    observers = np.full((50, 3), 1e120)
+    with np.errstate(all="raise"), pytest.raises(FloatingPointError):
+        sphere.getB(observers)
+    calls = []
+    with np.errstate(all="call", call=lambda *args: calls.append(args)):
+        sphere.getB(observers)
+    assert calls
+
+
+@pytest.mark.parametrize(
+    ("source", "pool_sizes"),
+    [
+        (lambda: magpy.magnet.Cuboid(dimension=(1, 1, 1), polarization=POL), [4]),
+        # 12 faces: one observer is a 12-row chunk, above CHUNK_ROWS = 7
+        (
+            lambda: magpy.magnet.TriangularMesh.from_ConvexHull(
+                points=[(x, y, z) for x in (0, 1) for y in (0, 1) for z in (0, 1)],
+                polarization=POL,
+            ),
+            [2],
+        ),
+    ],
+)
+def test_chunks_run_on_threads(source, pool_sizes, monkeypatch):
+    """Chunks run on defaults.threads threads, and on fewer when one observer
+    of a source is above CHUNK_ROWS, so that memory stays near threads times
+    CHUNK_ROWS rows."""
+    sizes = []
+
+    class Recording(ThreadPoolExecutor):
+        def __init__(self, max_workers):
+            sizes.append(max_workers)
+            super().__init__(max_workers)
+
+    monkeypatch.setattr(chunks, "ThreadPoolExecutor", Recording)
+    monkeypatch.setattr(chunks, "CHUNK_ROWS", 7)
+    monkeypatch.setattr(magpy.defaults, "threads", 4)
+    magpy.getB(source(), np.random.default_rng(0).normal(size=(50, 3)) * 3)
+    assert sizes == pool_sizes
+
+
+def test_an_error_in_a_chunk_drops_the_queued_chunks(monkeypatch):
+    """The first error, or Ctrl+C, cancels the queued chunks: the threads only
+    finish the chunks they hold before it is raised."""
+
+    def fail(chunk):  # noqa: ARG001
+        msg = "chunk failed"
+        raise ValueError(msg)
+
+    done = []
+
+    def slow(chunk):
+        time.sleep(0.01)
+        done.append(chunk)
+
+    monkeypatch.setattr(magpy.defaults, "threads", 2)
+    tasks = [(fail, 0)] + [(slow, i) for i in range(1, 101)]
+    with pytest.raises(ValueError, match="chunk failed"):
+        chunks.run_chunks(tasks, rows=10**6)
+    assert len(done) < 10
+
+
+@pytest.mark.parametrize("started", [0, 2])
+def test_chunks_no_thread_takes_run_on_the_calling_thread(started, monkeypatch):
+    """At interpreter shutdown, or where threads cannot start, the chunks no
+    thread took run on the calling thread, each chunk once."""
+    submitted = []
+
+    class Refusing(ThreadPoolExecutor):
+        def submit(self, fn, /, *args, **kwargs):
+            if len(submitted) == started:
+                msg = "cannot schedule new futures after interpreter shutdown"
+                raise RuntimeError(msg)
+            submitted.append(fn)
+            return super().submit(fn, *args, **kwargs)
+
+    monkeypatch.setattr(chunks, "ThreadPoolExecutor", Refusing)
+    monkeypatch.setattr(magpy.defaults, "threads", 4)
+    ran = []
+    chunks.run_chunks([(ran.append, i) for i in range(10)], rows=10**6)
+    assert sorted(ran) == list(range(10))

@@ -184,6 +184,12 @@ class CylinderSegment(
         return ", ".join(parts)
 
     # Methods
+    def _kernel_rows_per_observer(self):
+        # one, though the kernel computes 8 corner terms per observer: it
+        # spends much of each call in Python, so threads gain only on chunks
+        # of about 50,000 observers; smaller ones contend for the GIL
+        return 1
+
     def _get_volume(self, squeeze=True):
         """Volume of object in units (m³)."""
         if self._dimension is None:

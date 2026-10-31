@@ -15,6 +15,11 @@
   steps at once, and of Polylines on many observers
   ([#1061](https://github.com/magpylib/magpylib/pull/1061),
   [#1063](https://github.com/magpylib/magpylib/pull/1063)).
+- Large `getB`, `getH`, `getJ` and `getM` computations, and the functional
+  interface `magpy.func`, run in chunks, on several threads: a fraction of the
+  memory, and several times faster on multi-core machines. Set the thread count
+  with `magpy.defaults.threads`
+  ([#1059](https://github.com/magpylib/magpylib/pull/1059)).
 
 ### Fixed
 

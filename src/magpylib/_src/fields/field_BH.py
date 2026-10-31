@@ -51,6 +51,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.exceptions import MagpylibMissingInput
+from magpylib._src.fields import chunks
 from magpylib._src.input_checks import (
     check_dimensions,
     check_excitations,
@@ -115,8 +116,8 @@ def _preserve_paths(input_objs, path_properties=None, copy=False):
                 setattr(obj, f"_{prop}", path_orig[key])
 
 
-def _tile_group_property_path(group: list, n_pix: int, prop_name: str):
-    """tile up group property with path support.
+def _tile_group_property_path(group: list, n_pix: int, prop_name: str, path_sl: slice):
+    """tile up group property with path support, for the path steps ``path_sl``.
 
     Every object is edge-padded to the common max path length by _getBH_level2
     before this runs, so each stored value already carries the full path length.
@@ -127,7 +128,7 @@ def _tile_group_property_path(group: list, n_pix: int, prop_name: str):
         if val is None:
             msg = f"Input {prop_name} of {src} must be set before computing the field."
             raise MagpylibMissingInput(msg)
-        out.append(val)
+        out.append(val[path_sl])
 
     # repeat each path entry n_pix times: rows must be path-major/pixel-minor
     # to match the position/orientation/observer layout in _get_src_dict
@@ -179,8 +180,10 @@ def _pixel_positions(sens, static_orientation: bool) -> np.ndarray:
     return np.matmul(rot.as_matrix(), pix_t).transpose(0, 2, 1) + pos
 
 
-def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
-    """create dictionaries for level1 input.
+def _get_src_dict(
+    group: list, n_pix: int, n_pp: int, poso: np.ndarray, path_sl: slice
+) -> dict:
+    """create dictionaries for level1 input, for the path steps ``path_sl``.
 
     Every object is edge-padded to the common max path length by _getBH_level2
     before this runs, so ``_position``/``_orientation`` already carry the full
@@ -191,11 +194,11 @@ def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     # tile up basic attributes that all sources have
     # Position
-    poss = np.array([src._position for src in group])
+    poss = np.array([src._position[path_sl] for src in group])
     posv = np.tile(poss, n_pix).reshape((-1, 3))
 
     # Orientation - convert Rotation to quat, tile, convert back
-    rots = np.array([src._orientation.as_quat() for src in group])
+    rots = np.array([src._orientation.as_quat()[path_sl] for src in group])
     rotv = np.tile(rots, n_pix).reshape((-1, 4))
     rotobj = R.from_quat(rotv)
 
@@ -225,7 +228,9 @@ def _get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
             and prop_name not in ("position", "orientation")
             and prop_name in props_in_field_func
         ):
-            kwargs[prop_name] = _tile_group_property_path(group, n_pix, prop_name)
+            kwargs[prop_name] = _tile_group_property_path(
+                group, n_pix, prop_name, path_sl
+            )
 
     return kwargs
 
@@ -269,6 +274,37 @@ def _getBH_level1(
         BH = orientation.apply(BH)
 
     return BH
+
+
+def _chunk_slices(rows_per_obs, n_path, n_pix):
+    """(source, path step, pixel) slices covering a group in chunks of about
+    chunks.CHUNK_ROWS kernel rows. ``rows_per_obs`` holds each source's kernel
+    rows per observer. Whole sources are packed together; a source above it on
+    its own is split along the pixels, and along the path steps when one pixel
+    on the whole path is above it too."""
+    whole = slice(None)
+    out, start, rows = [], 0, 0
+    for ind, rpo in enumerate(rows_per_obs):
+        src_rows = rpo * n_path * n_pix
+        if src_rows > chunks.CHUNK_ROWS:
+            if start < ind:
+                out.append((slice(start, ind), whole, whole))
+            path_step = max(1, min(n_path, chunks.CHUNK_ROWS // rpo))
+            pix_step = max(1, chunks.CHUNK_ROWS // (rpo * path_step))
+            out.extend(
+                (slice(ind, ind + 1), slice(q, q + path_step), slice(p, p + pix_step))
+                for q in range(0, n_path, path_step)
+                for p in range(0, n_pix, pix_step)
+            )
+            start, rows = ind + 1, 0
+        elif rows + src_rows > chunks.CHUNK_ROWS:
+            out.append((slice(start, ind), whole, whole))
+            start, rows = ind, src_rows
+        else:
+            rows += src_rows
+    if start < len(rows_per_obs):
+        out.append((slice(start, len(rows_per_obs)), whole, whole))
+    return out
 
 
 def _getBH_level2(
@@ -424,30 +460,49 @@ def _getBH_level2(
             field_func_groups[group_key]["sources"].append(src)
             field_func_groups[group_key]["order"].append(ind)
 
-        # evaluate each group in one vectorized step -------------------------------
+        # evaluate each group in vectorized chunks ---------------------------------
         B = np.empty((num_of_src_list, max_path_len, n_pix, 3))  # allocate B
+        poso_pix = poso.reshape((max_path_len, n_pix, 3))
+        tasks, rows, largest = [], 0, 0  # chunks of Magpylib's own kernels
         for group in field_func_groups.values():
             field_func = group["field_func"]
-            lg = len(group["sources"])
             gr = group["sources"]
-            src_dict = _get_src_dict(
-                gr, n_pix, n_pp, poso
-            )  # compute array dict for level1
-            # compute field
-            B_group = _getBH_level1(
-                field_func=field_func, field=field, in_out=in_out, **src_dict
-            )
-            if B_group is None:
-                msg = (
-                    f"Cannot compute {field}-field because input "
-                    f"field_func {field_func} has undefined {field}-field computation."
+            order = np.array(group["order"])
+
+            def compute(chunk, field_func=field_func, gr=gr, order=order):
+                src_sl, path_sl, pix_sl = chunk
+                sub = gr[src_sl]
+                poso_chunk = poso_pix[path_sl, pix_sl]
+                n_path_chunk, n_pix_chunk = poso_chunk.shape[:2]
+                poso_chunk = poso_chunk.reshape(-1, 3)
+                src_dict = _get_src_dict(
+                    sub, n_pix_chunk, len(poso_chunk), poso_chunk, path_sl
                 )
-                raise MagpylibMissingInput(msg)
-            B_group = B_group.reshape(
-                (lg, max_path_len, n_pix, 3)
-            )  # reshape (2% slower for large arrays)
-            for gr_ind in range(lg):  # put into dedicated positions in B
-                B[group["order"][gr_ind]] = B_group[gr_ind]
+                B_chunk = _getBH_level1(
+                    field_func=field_func, field=field, in_out=in_out, **src_dict
+                )
+                if B_chunk is None:
+                    msg = (
+                        f"Cannot compute {field}-field because input "
+                        f"field_func {field_func} has undefined {field}-field computation."
+                    )
+                    raise MagpylibMissingInput(msg)
+                # put into dedicated positions in B
+                B[order[src_sl], path_sl, pix_sl] = B_chunk.reshape(
+                    (len(sub), n_path_chunk, n_pix_chunk, 3)
+                )
+
+            if not gr[0]._editable_field_func:  # one of Magpylib's own kernels
+                rows_per_obs = [src._kernel_rows_per_observer() for src in gr]
+                rows += sum(rows_per_obs) * max_path_len * n_pix
+                largest = max(largest, *rows_per_obs)
+                slices = _chunk_slices(rows_per_obs, max_path_len, n_pix)
+                tasks.extend((compute, chunk) for chunk in slices)
+            else:  # a user field_func gets all observers at once, on this
+                # thread: it may not be thread-safe, nor compute point by point
+                compute((slice(None), slice(None), slice(None)))
+
+        chunks.run_chunks(tasks, rows, largest)
 
         # reshape output ----------------------------------------------------------------
         # rearrange B when there is at least one Collection with more than one source

@@ -3,6 +3,7 @@ import pytest
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
+from magpylib._src.fields import chunks
 from magpylib._src.fields.field_BH_circle import _BHJM_circle
 from magpylib._src.fields.field_BHfunc import _getBH_func
 from magpylib.func import (
@@ -492,3 +493,59 @@ def test_func_tetrahedron():
         "B", obs, tetra.vertices, tetra.polarization, tetra.position, tetra.orientation
     )
     np.testing.assert_allclose(B1, B2, rtol=1e-12, atol=1e-12)
+
+
+POL = (0.1, 0.2, 1.0)
+TRIANGLE = [(0, 0, 0), (1, 0, 0), (0, 1, 0)]
+FUNC_INPUTS = {
+    "circle": (circle_field, {"diameters": 1.0, "currents": 1.0}),
+    "polyline": (
+        polyline_field,
+        {"segments_start": (0, 0, 0), "segments_end": (1, 0, 0), "currents": 1.0},
+    ),
+    "cuboid": (cuboid_field, {"dimensions": (1, 1, 1), "polarizations": POL}),
+    "cylinder": (cylinder_field, {"dimensions": (1, 1), "polarizations": POL}),
+    "cylinder segment": (
+        cylinder_segment_field,
+        {"dimensions": (0.5, 1, 1, 0, 90), "polarizations": POL},
+    ),
+    "sphere": (sphere_field, {"diameters": 1.0, "polarizations": POL}),
+    "tetrahedron": (
+        tetrahedron_field,
+        {"vertices": [*TRIANGLE, (0, 0, 1)], "polarizations": POL},
+    ),
+    "dipole": (dipole_field, {"moments": POL}),
+    "triangle charge": (
+        triangle_charge_field,
+        {"vertices": TRIANGLE, "polarizations": POL},
+    ),
+    "triangle current": (
+        triangle_current_field,
+        {"vertices": TRIANGLE, "current_densities": (1, 0, 0)},
+    ),
+}
+
+
+@pytest.mark.parametrize("name", FUNC_INPUTS)
+def test_func_chunks_and_threads_match_one_vectorized_step(name, monkeypatch):
+    """Inputs above CHUNK_ROWS kernel rows run in chunks, on threads, with
+    single instances tiled to each chunk: the field is the one-step field, and
+    the same for any thread count."""
+    func, kwargs = FUNC_INPUTS[name]
+    rng = np.random.default_rng(0)
+    kwargs = {
+        "observers": rng.uniform(-2, 2, (40, 3)),
+        "positions": rng.normal(size=(40, 3)) * 0.1,
+        "orientations": R.from_euler("xyz", (10, 20, 30), degrees=True),
+        **kwargs,
+    }
+    B_one_step = func("B", **kwargs)
+
+    monkeypatch.setattr(chunks, "CHUNK_ROWS", 7)
+    B_chunks = []
+    for threads in (1, 4):
+        monkeypatch.setattr(magpy.defaults, "threads", threads)
+        B_chunks.append(func("B", **kwargs))
+    np.testing.assert_array_equal(B_chunks[0], B_chunks[1])
+    atol = 1e-13 * np.nanmax(np.abs(B_one_step))
+    np.testing.assert_allclose(B_chunks[0], B_one_step, rtol=1e-12, atol=atol)
