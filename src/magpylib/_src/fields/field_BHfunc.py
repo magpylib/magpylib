@@ -726,14 +726,18 @@ SHAPE = {
 }
 
 
-def _is_foreign_array(val):
-    """True for an array of another library, as np.array would drop what it
-    carries (units, device). Tables that convert with to_numpy are fine."""
-    if isinstance(val, np.ndarray):
-        return hasattr(val, "unit")  # an astropy Quantity is an ndarray subclass
-    if isinstance(val, np.generic):
+def _has_units(val):
+    """True for a quantity of a units package, or a list of them, as np.array
+    would silently drop its units. Tables can name a column "units", so they
+    are not asked."""
+    while isinstance(val, list | tuple) and val:
+        val = val[0]
+    if hasattr(val, "to_numpy"):
         return False
-    return hasattr(val, "__array__") and not hasattr(val, "to_numpy")
+    return (
+        getattr(val, "unit", None) is not None
+        or getattr(val, "units", None) is not None
+    )
 
 
 def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
@@ -771,11 +775,12 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
 
     # Transform all inputs to ndarray
     for key, val in params.items():
-        if _is_foreign_array(val):
+        if _has_units(val):
             msg = (
-                f"Input {key} must be a list, tuple or NumPy array; "
-                f"instead received type {type(val).__name__}. "
-                "Convert it to a NumPy array first."
+                f"Input {key} carries units (type {type(val).__name__}), which "
+                "would be dropped; Magpylib takes plain values in SI units. "
+                "Convert it first, e.g. with .to('m').magnitude for pint or "
+                ".to_value('m') for astropy."
             )
             raise TypeError(msg)
         try:
