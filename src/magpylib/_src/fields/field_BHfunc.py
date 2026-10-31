@@ -726,6 +726,20 @@ SHAPE = {
 }
 
 
+def _has_units(val):
+    """True for a quantity of a units package, or a list of them, as np.array
+    would silently drop its units. Tables can name a column "units", so they
+    are not asked."""
+    while isinstance(val, list | tuple) and val:
+        val = val[0]
+    if hasattr(val, "to_numpy"):
+        return False
+    return (
+        getattr(val, "unit", None) is not None
+        or getattr(val, "units", None) is not None
+    )
+
+
 def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
     """Functional interface for magnetic field computation
 
@@ -761,6 +775,14 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
 
     # Transform all inputs to ndarray
     for key, val in params.items():
+        if _has_units(val):
+            msg = (
+                f"Input {key} carries units (type {type(val).__name__}), which "
+                "would be dropped; Magpylib takes plain values in SI units. "
+                "Convert it first, e.g. with .to('m').magnitude for pint or "
+                ".to_value('m') for astropy."
+            )
+            raise TypeError(msg)
         try:
             if not isinstance(val, np.ndarray):
                 params[key] = np.array(val, dtype=float)

@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- `magpy.func` raises a `TypeError` on values with units instead of dropping
+  them, which read a pint or astropy length of 10 mm as 10 m
+  ([#1071](https://github.com/magpylib/magpylib/pull/1071)).
+
 ## [6.1.0] 2026-10-31
 
 ### Added
