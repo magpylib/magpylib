@@ -6,7 +6,7 @@ from magpylib.func import cylinder_segment_field
 
 
 @pytest.mark.parametrize("turns", [-1, 1, 2])
-@pytest.mark.parametrize("angles", [(-350, -170, 9), (40, 85, 130)])
+@pytest.mark.parametrize("angles", [(-350, -170, 9), (40, 85, 130), (-10, 3, 10)])
 def test_section_angles_wrap(angles, turns):
     """a section shifted by full turns has the field of its two halves"""
     phi1, phi_mid, phi2 = angles

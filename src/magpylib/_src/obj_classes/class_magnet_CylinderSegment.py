@@ -51,7 +51,8 @@ class CylinderSegment(
     dimension : None | array-like, shape (5,) or (p, 5), default None
         Cylinder segment size (r1, r2, h, phi1, phi2) where r1 < r2 are inner
         and outer radii in units (m), phi1 < phi2 are section angles in units (deg),
-        and h is the height in units (m).
+        and h is the height in units (m). The angles can start anywhere, up to one
+        turn apart: (350, 370) and (-10, 10) are the same section across 0 (deg).
     polarization : None | array-like, shape (3,) or (p, 3), default None
         Magnetic polarization vector J = mu0*M in units (T), given in the
         local object coordinates. Sets also ``magnetization``.
@@ -144,7 +145,9 @@ class CylinderSegment(
         """Cylinder segment size (r1, r2, h, phi1, phi2).
 
         r1 < r2 denote inner and outer radii in units (m), phi1 < phi2 the
-        section angles in units (deg), and h the height in units (m).
+        section angles in units (deg), and h the height in units (m). The angles
+        can start anywhere, up to one turn apart: (350, 370) and (-10, 10) are
+        the same section across 0 (deg).
         """
         return self._squeeze_path_property(self._dimension)
 
