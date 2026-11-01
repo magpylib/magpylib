@@ -3,7 +3,8 @@
  *
  * Scalar versions of magnet_cuboid_Bfield (field_BH_cuboid.py),
  * magnet_cylinder_axial_Bfield (field_BH_cylinder.py), the sphere branch of
- * _BHJM_magnet_sphere (field_BH_sphere.py) and _cel_scalar (special_cel.py).
+ * _BHJM_magnet_sphere (field_BH_sphere.py), current_circle_Hfield
+ * (field_BH_circle.py), _cel_scalar and _cel_iter_scalarvector (special_cel.py).
  * The variable names follow those files so the two can be read side by side.
  *
  * Lengths may be in any unit, B comes out in the unit of the polarization. A
@@ -11,6 +12,8 @@
  *   cuboid    dim = [a, b, c]   J = [Jx, Jy, Jz]
  *   cylinder  dim = [d, h]      J = [0, 0, Jz]  (axial only)
  *   sphere    dim = d           J = [Jx, Jy, Jz]
+ *   coil      dim = d, h, n, I  n loops of diameter d stacked over height h, I in
+ *                               ampere, lengths in centimetres so that B is in tesla
  */
 (function (root) {
   "use strict";
@@ -129,9 +132,53 @@
     out[2] += k * (dot * z - J[2] * r2);
   }
 
+  function celIter(qc, p, g, cc, ss, em, kk) {
+    while (Math.abs(g - qc) > g * CEL_ERRORTOL) {
+      qc = 2 * Math.sqrt(kk);
+      kk = em * qc;
+      g = kk / p;
+      const ccNext = cc + ss / p;
+      ss = 2 * (ss + cc * g);
+      cc = ccNext;
+      p += g;
+      g = em;
+      em += qc;
+    }
+    return ((Math.PI / 2) * (ss + cc * em)) / (em * (em + p));
+  }
+
+  const MU0_PER_CM = 4e-7 * Math.PI * 100; /* mu0 times A per cm, in tesla */
+
+  function circle(x, y, z, d, i0, out) {
+    const r0 = d / 2, rho = Math.sqrt(x * x + y * y);
+    const r = rho / r0, zz = z / r0;
+    if (Math.abs(r - 1) < 1e-15 && zz === 0) return; /* on the wire, 0 in magpylib too */
+    const z2 = zz * zz, x0 = z2 + (r + 1) * (r + 1);
+    const k2 = (4 * r) / x0, q2 = (z2 + (r - 1) * (r - 1)) / x0;
+    const q = Math.sqrt(q2), p = 1 + q;
+    const pf = (MU0_PER_CM * i0) / (4 * Math.PI * r0 * Math.sqrt(x0) * q2);
+
+    let cc = (k2 * 4 * zz) / x0, ss = (2 * cc * q) / p;
+    const Br = pf * celIter(q, p, 1, cc, ss, p, q);
+    const k4 = k2 * k2;
+    cc = k4 - (q2 + 1) * (4 / x0);
+    ss = 2 * q * (k4 / p - (4 / x0) * p);
+    const Bz = -pf * celIter(q, p, 1, cc, ss, p, q);
+
+    if (rho > 0) {
+      out[0] += (Br * x) / rho;
+      out[1] += (Br * y) / rho;
+    }
+    out[2] += Bz;
+  }
+
   /* Adds one magnet's field at the world point (x, y, z) to out. */
   function addB(m, x, y, z, out) {
-    if (m.kind === "cuboid") cuboid(x - m.x, y, z - m.z, m.dim, m.J, out);
+    if (m.kind === "coil") {
+      for (let i = 0; i < m.n; i++) {
+        circle(x - m.x, y, z - m.z - m.h * ((i + 0.5) / m.n - 0.5), m.dim, m.I, out);
+      }
+    } else if (m.kind === "cuboid") cuboid(x - m.x, y, z - m.z, m.dim, m.J, out);
     else if (m.kind === "cylinder") cylinderAxial(x - m.x, y, z - m.z, m.dim, m.J, out);
     else sphere(x - m.x, y, z - m.z, m.dim, m.J, out);
   }

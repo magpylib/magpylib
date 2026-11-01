@@ -10,40 +10,57 @@
   :root { --ink: #2a2939; --paper: #f6f3ea; }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--ink); color: var(--ink);
-    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
-  #stage { position: fixed; inset: 0; display: grid; place-items: center; }
-  #game { display: block; width: min(100vw, calc(100vh * 16 / 9)); aspect-ratio: 16 / 9;
-    background: var(--paper); touch-action: none; }
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden;
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; }
+  #stage { position: fixed; inset: 0; display: flex; flex-direction: column; }
+  #game { display: block; flex: 1 1 auto; min-height: 0; width: 100%; background: var(--paper); touch-action: none; }
 
-  .corner { position: fixed; right: 12px; bottom: 10px; display: flex; gap: 8px; z-index: 2; }
+  .corner { position: fixed; right: 10px; bottom: 8px; display: flex; gap: 6px; z-index: 2; }
   .corner button { font: 600 13px system-ui, sans-serif; color: var(--ink);
     background: rgba(255, 255, 255, 0.88); border: 0; border-radius: 7px; padding: 5px 10px;
     cursor: pointer; }
   .corner button:hover { background: #fff; }
 
-  #pad { display: none; position: fixed; left: 0; right: 0; bottom: 44px; padding: 0 14px;
-    justify-content: space-between; pointer-events: none; z-index: 2; }
-  #pad > div { display: flex; gap: 12px; }
-  #pad button { pointer-events: auto; touch-action: none; width: 68px; height: 68px;
+  /* the pad only exists full screen: in the small frame a tap goes full screen first */
+  #pad { display: none; pointer-events: none; z-index: 2; }
+  #pad > div { display: flex; gap: 12px; align-items: center; }
+  #pad button { pointer-events: auto; touch-action: none; width: 72px; height: 72px; padding: 0;
     border-radius: 50%; border: 0; font: 700 15px system-ui, sans-serif; color: #fff;
-    background: rgba(96, 95, 118, 0.78); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55);
-    user-select: none; -webkit-user-select: none; }
-  #pad button.on { background: var(--ink); }
-  #pad button[data-key="flip"] { background: rgba(170, 0, 0, 0.8); }
-  @media (pointer: coarse) { #pad { display: flex; } }
+    background: rgba(96, 95, 118, 0.72); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55); }
+  #pad button.on { filter: brightness(0.7); }
+
+  @media (pointer: coarse) {
+    body:not(.full) .corner { display: none; }
+    body.full .corner { left: 50%; right: auto; transform: translateX(-50%); bottom: 6px; }
+    body.full #pad { display: flex; justify-content: space-between; }
+  }
+  /* sideways: the game fills the screen, thumbs on either side of it */
+  @media (pointer: coarse) and (orientation: landscape) {
+    body.full #pad { position: fixed; left: max(10px, env(safe-area-inset-left));
+      right: max(10px, env(safe-area-inset-right)); bottom: 14px; }
+    body.full #pad button { width: 64px; height: 64px; opacity: 0.8; }
+  }
+  /* upright: a square of game on top, the controls below it, like a Game Boy */
+  @media (pointer: coarse) and (orientation: portrait) {
+    body.full #game { flex: 0 1 min(112vw, calc(100dvh - 150px)); }
+    body.full #pad { flex: 1 1 auto; align-items: center; padding: 0 14px 34px; }
+    body.full #pad button { width: 78px; height: 78px; background-color: #55546a; }
+  }
 
 </style>
 </head>
 <body>
-<div id="stage"><canvas id="game" aria-label="Super Magrio, a platform game about magnetic fields."></canvas></div>
+<div id="stage">
+  <canvas id="game" aria-label="Super Magrio, a platform game about magnetic fields."></canvas>
+  <div id="pad">
+    <div><button data-key="left" aria-label="Left">&#9664;</button><button data-key="right" aria-label="Right">&#9654;</button></div>
+    <div><button data-key="flip">Flip</button><button data-key="jump">Jump</button></div>
+  </div>
+</div>
 
 <div class="corner">
   <button id="sound" type="button">Sound: on</button>
-</div>
-
-<div id="pad">
-  <div><button data-key="left" aria-label="Left">&#9664;</button><button data-key="right" aria-label="Right">&#9654;</button></div>
-  <div><button data-key="flip">Flip</button><button data-key="jump">Jump</button></div>
+  <button id="full" type="button">Full screen</button>
 </div>
 
 <script src="field.js"></script>

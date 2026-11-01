@@ -1,19 +1,22 @@
 /*
  * Super Magrio: drawing, input and sound on top of sim.js.
  *
- * Canvas pixels are 36 to the tile at zoom 1, in a 960 x 540 view. The background
- * glow and the field lines are computed once from the same formulas the hero
- * feels, so what is drawn is what pushes.
+ * Canvas pixels are 36 to the tile at zoom 1, in a view 540 high and as wide as the
+ * screen allows. The background glow and the field lines are computed once from the
+ * same formulas the hero feels, so what is drawn is what pushes. Colours follow
+ * Magpylib's: north is red, south is green, for magnets, coils and the hero alike.
  */
 (() => {
   "use strict";
 
   const Sim = globalThis.MagrioSim, Field = globalThis.MagField;
-  const { W, H, GROUND, TOP, LEVEL_W, MAGNETS, SOLIDS, CHECKPOINTS } = Sim;
+  const { H, BIG, GROUND, LEVEL_W, MAGNETS, SOLIDS, CHECKPOINTS, BORE, RIM } = Sim;
 
-  const T = 36, VW = 960, VH = 540, Z_MAX = 26;
-  const RED = "#aa0000", INK = "#2a2939", PAPER = "#f6f3ea", BLUE = "#2e91e5", PUSH = "#1f74c4";
+  const T = 36, VH = 540, Z_MAX = 26;
+  let VW = 960;
+  const RED = "#aa0000", INK = "#2a2939", PAPER = "#f6f3ea", BLUE = "#2e91e5";
   const NORTH = "#e71111", MIDDLE = "#dddddd", SOUTH = "#00b050", GOLD = "#d9a441";
+  const COPPER = "#c8763a", COPPER_LIT = "#eaa873";
   /* the logo's own proportions, in the pixels of magpylib_logo.png */
   const LOGO = { cx: 160.5, cz: 198.5, s: H / 283, arch: 173, outer: 115.5, inner: 59.5 };
   const BIRD_BOX = { x: 0, y: 0, w: 117, h: 188 }; /* magpylib_logo_bird.png sits at the top left of the logo */
@@ -34,6 +37,8 @@
   /* a press stays noted until a step has read it, however short the tap and slow the frame */
   const tapped = { jump: false, flip: false };
   const view = { x: 13, z: 0.6, zoom: 2.1 };
+  /* the title frames the logo and the wordmark, about 10.5 tiles across */
+  const titleZoom = () => Math.min(2.1, VW / (10.5 * T));
   let particles = [], clock = 0, winT = 0;
   let hintText = "", hintShown = "", hintFade = 0;
 
@@ -64,14 +69,14 @@
   function B2(x, z) {
     out[0] = out[1] = out[2] = 0;
     for (const m of MAGNETS) {
-      const half = m.kind === "cuboid" ? m.dim[0] / 2 : 3;
-      if (Math.abs(x - m.x) < 40 + half) Field.addB(m, x, 0, z, out);
+      if (Math.abs(x - m.x) < 40 + m.half) Field.addB(m, x, 0, z, out);
     }
     return out;
   }
 
   function insideMagnet(x, z) {
     for (const m of MAGNETS) {
+      if (m.kind === "coil") continue; /* lines run through the bore */
       if (m.kind === "sphere") {
         if (Math.hypot(x - m.x, z - m.z) < m.dim / 2) return true;
       } else {
@@ -82,9 +87,9 @@
     return false;
   }
 
-  /* follows B from a point just outside a north face until it lands on something */
-  function trace(x, z) {
-    const h = 0.2, pts = [[x, z]];
+  /* follows B, or against it for sign -1, until it lands on something or closes */
+  function trace(x, z, sign) {
+    const h = 0.2 * sign, pts = [[x, z]], x0 = x, z0 = z;
     for (let i = 0; i < 900; i++) {
       let b = B2(x, z);
       let n = Math.hypot(b[0], b[2]) || 1;
@@ -95,23 +100,32 @@
       z += (h * b[2]) / n;
       pts.push([x, z]);
       if (z < -1 || z > Z_MAX || insideMagnet(x, z)) break;
+      if (i > 30 && Math.hypot(x - x0, z - z0) < 0.3) break;
     }
-    return pts;
+    return sign > 0 ? pts : pts.reverse();
   }
 
+  /* [x, z, sign] to start a line from: north faces outwards, and any south face in view */
   function seeds(m) {
-    const up = m.J[2] > 0 ? 1 : -1, list = [];
+    const list = [];
+    if (m.kind === "coil") {
+      const top = m.z + m.h / 2, sign = m.I > 0 ? 1 : -1;
+      for (const dx of [-0.9, -0.3, 0.3, 0.9]) list.push([m.x + dx, top, sign]);
+      return list;
+    }
     if (m.kind === "sphere") {
       for (const deg of [-60, -36, -14, 14, 36, 60]) {
         const a = (deg * Math.PI) / 180, r = m.dim / 2 + 0.03;
-        list.push([m.x + r * Math.sin(a), m.z + up * r * Math.cos(a)]);
+        list.push([m.x + r * Math.sin(a), m.z + r * Math.cos(a), 1]);
       }
       return list;
     }
     const [w, h] = m.kind === "cuboid" ? [m.dim[0], m.dim[2]] : m.dim;
     const n = Math.min(14, Math.max(5, Math.round(w / 1.1)));
     for (let i = 0; i < n; i++) {
-      list.push([m.x + (w * (i + 0.5)) / n - w / 2, m.z + up * (h / 2 + 0.03)]);
+      const x = m.x + (w * (i + 0.5)) / n - w / 2;
+      list.push([x, m.z + h / 2 + 0.03, 1]);
+      if (m.z - h / 2 > GROUND) list.push([x, m.z - h / 2 - 0.03, -1]);
     }
     return list;
   }
@@ -121,9 +135,8 @@
     for (const m of MAGNETS) {
       const path = new Path2D();
       let x0 = Infinity, x1 = -Infinity;
-      for (const [sx, sz] of seeds(m)) {
-        const pts = trace(sx, sz);
-        pts.forEach(([x, z], i) => {
+      for (const [sx, sz, sign] of seeds(m)) {
+        trace(sx, sz, sign).forEach(([x, z], i) => {
           if (i) path.lineTo(x * T, -z * T);
           else path.moveTo(x * T, -z * T);
           x0 = Math.min(x0, x);
@@ -160,6 +173,10 @@
     pluck: () => blip(880, 1400, 0.05, "triangle", 0.04),
     check: () => blip(520, 780, 0.2, "triangle", 0.06),
     clink: () => blip(1700, 1500, 0.08, "triangle", 0.05),
+    bump: () => blip(300, 520, 0.12, "square", 0.05),
+    grow: () => [392, 523, 659].forEach((f, i) => setTimeout(() => blip(f, f * 1.05, 0.09, "square", 0.05), i * 70)),
+    shrink: () => blip(660, 180, 0.3, "square", 0.05),
+    warp: () => blip(140, 900, 0.3, "sawtooth", 0.04),
     win: () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => blip(f, f, 0.2, "triangle", 0.08), i * 110)),
   };
 
@@ -169,9 +186,9 @@
     ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
   }
 
-  function drawMagnetBody(color, liftL, liftR, eyes) {
+  function drawMagnetBody(top, feet, liftL, liftR, eyes) {
     const { arch, outer, inner, cx } = LOGO;
-    ctx.fillStyle = color;
+    ctx.fillStyle = top;
     ctx.beginPath();
     ctx.arc(cx, arch, outer, Math.PI, 0);
     ctx.arc(cx, arch, inner, 0, Math.PI, true);
@@ -180,6 +197,7 @@
     /* the legs shorten as the feet lift, the white gap above each foot stays */
     rect(cx - outer, arch - 1, cx - inner, 264 - liftL);
     rect(cx + inner, arch - 1, cx + outer, 264 - liftR);
+    ctx.fillStyle = feet;
     rect(cx - outer, 284 - liftL, cx - inner, 340 - liftL);
     rect(cx + inner, 284 - liftR, cx + outer, 340 - liftR);
 
@@ -201,25 +219,26 @@
   function drawHero() {
     const p = s.p;
     if (p.safe && Math.floor(clock * 14) % 2) return;
-    const k = LOGO.s * T;
+    const k = LOGO.s * T * (p.big ? BIG : 1);
     ctx.save();
-    ctx.translate(p.x * T, -(p.z + H / 2) * T);
-    ctx.rotate(p.angle);
+    ctx.translate(p.x * T, -(p.z + p.h / 2) * T);
     const flip = p.flipT > 0 ? Math.abs(Math.cos((Math.PI * p.flipT) / 0.28)) : 1;
     const squash = p.land / 0.16;
     ctx.scale(k * Math.max(0.12, flip) * (1 + 0.12 * squash), k * (1 - 0.14 * squash));
     ctx.translate(-LOGO.cx, -LOGO.cz);
-    const moving = p.grounded || p.stuck, step = Math.sin(p.walk);
+    const moving = p.grounded || p.hang, step = Math.sin(p.walk);
     let liftL = 0, liftR = 0;
     if (s.phase === "play" || s.phase === "won") {
       if (!moving) liftL = liftR = 24;
-      else if (Math.abs(p.vx) + Math.abs(p.vz) > 0.8) {
+      else if (Math.abs(p.vx) > 0.8) {
         liftL = Math.max(0, step) * 34;
         liftR = Math.max(0, -step) * 34;
       }
     }
     const eyes = s.phase === "title" ? 0 : Math.min(1, s.t * 3);
-    drawMagnetBody(p.pol > 0 ? RED : PUSH, liftL, liftR, eyes);
+    /* on the title it is the logo, all one red. Awake it has poles: a real magnet does */
+    if (s.phase === "title") drawMagnetBody(RED, RED, 0, 0, 0);
+    else drawMagnetBody(p.pol > 0 ? NORTH : SOUTH, p.pol > 0 ? SOUTH : NORTH, liftL, liftR, eyes);
     if (s.bird.mode === "logo" && birdStill.complete) {
       ctx.drawImage(birdStill, BIRD_BOX.x, BIRD_BOX.y);
     }
@@ -229,8 +248,8 @@
     const a = Math.hypot(p.a.x, p.a.z), g = a / 38;
     if (g > 0.15 && s.phase === "play") {
       const len = Math.min(3, 0.45 + g * 0.5) * T, ux = p.a.x / a, uz = p.a.z / a;
-      const x0 = p.x * T, y0 = -(p.z + H / 2) * T, x1 = x0 + ux * len, y1 = y0 - uz * len;
-      ctx.strokeStyle = ctx.fillStyle = p.pol > 0 ? RED : PUSH;
+      const x0 = p.x * T, y0 = -(p.z + p.h / 2) * T, x1 = x0 + ux * len, y1 = y0 - uz * len;
+      ctx.strokeStyle = ctx.fillStyle = INK;
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(x0, y0);
@@ -354,9 +373,25 @@
 
   function drawSolid(q) {
     const x = q.x0 * T, y = -q.z1 * T, w = (q.x1 - q.x0) * T, h = (q.z1 - q.z0) * T;
+    if (q.kind === "coil") return;
     if (q.kind === "post") {
       ctx.fillStyle = INK;
       ctx.fillRect(x, y, w, h);
+      return;
+    }
+    if (q.kind === "block") {
+      ctx.fillStyle = q.used ? "#6d6c80" : INK;
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = q.used ? "#8a8998" : GOLD;
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(x + 2, y + 2, w - 4, h - 4);
+      if (!q.used) {
+        ctx.fillStyle = GOLD;
+        ctx.font = "800 32px system-ui, -apple-system, 'Segoe UI', sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("?", x + w / 2, y + h / 2 + 2);
+      }
       return;
     }
     ctx.fillStyle = INK;
@@ -368,6 +403,7 @@
       ctx.lineWidth = 2;
       ctx.strokeRect(x + 6, y + 10, w - 12, h - 16);
     }
+    if (q.kind === "crate") return;
     /* solder pads along the ground */
     ctx.fillStyle = GOLD;
     for (let i = Math.ceil(q.x0 / 2) * 2 + 1; i < q.x1; i += 2) {
@@ -390,42 +426,160 @@
     return g;
   }
 
-  function magnetText(m, x, y) {
-    ctx.fillStyle = "#fff";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = "700 13px ui-monospace, Menlo, Consolas, monospace";
-    ctx.save();
-    ctx.shadowColor = "rgba(0,0,0,0.55)";
-    ctx.shadowBlur = 3;
-    ctx.fillText(m.name, x, y);
-    ctx.restore();
+  /* a cuboid in oblique view: the front is the slice the hero plays in */
+  function drawCuboid(m) {
+    const w = m.dim[0] * T, h = m.dim[2] * T, up = m.J[2] > 0;
+    const d = Math.min(1, m.dim[1] * 0.28) * T, dx = d * 0.75, dy = d * 0.6;
+    const x = (m.x - m.dim[0] / 2) * T, y = -(m.z + m.dim[2] / 2) * T;
+    ctx.fillStyle = up ? "#f45454" : "#2fce76";
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + w, y);
+    ctx.lineTo(x + w + dx, y - dy);
+    ctx.lineTo(x + dx, y - dy);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = poleGradient(x, y - dy, y + h - dy, up);
+    ctx.beginPath();
+    ctx.moveTo(x + w, y);
+    ctx.lineTo(x + w + dx, y - dy);
+    ctx.lineTo(x + w + dx, y + h - dy);
+    ctx.lineTo(x + w, y + h);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "rgba(0,0,0,0.28)";
+    ctx.fill();
+    ctx.fillStyle = poleGradient(x, y, y + h, up);
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = "rgba(42,41,57,0.5)";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x, y, w, h);
+  }
+
+  function drawCylinder(m) {
+    const [d, h] = m.dim, w = d * T, rx = w / 2, ry = rx * 0.26;
+    const x = (m.x - d / 2) * T, y = -(m.z + h / 2) * T, H_ = h * T, up = m.J[2] > 0;
+    ctx.fillStyle = poleGradient(x, y, y + H_, up);
+    ctx.fillRect(x, y, w, H_);
+    /* rounded sides are what make it read as a cylinder */
+    const g = ctx.createLinearGradient(x, 0, x + w, 0);
+    g.addColorStop(0, "rgba(0,0,0,0.42)");
+    g.addColorStop(0.3, "rgba(255,255,255,0.12)");
+    g.addColorStop(0.55, "rgba(255,255,255,0)");
+    g.addColorStop(1, "rgba(0,0,0,0.42)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x, y, w, H_);
+    ctx.fillStyle = up ? "#f45454" : "#2fce76";
+    ctx.beginPath();
+    ctx.ellipse(x + rx, y, rx, ry, 0, 0, 7);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(42,41,57,0.45)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  function drawSphere(x, y, r, up) {
+    ctx.fillStyle = poleGradient(x, y - r, y + r, up);
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, 7);
+    ctx.fill();
+    const g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.05, x, y, r);
+    g.addColorStop(0, "rgba(255,255,255,0.55)");
+    g.addColorStop(0.4, "rgba(255,255,255,0)");
+    g.addColorStop(0.8, "rgba(0,0,0,0.12)");
+    g.addColorStop(1, "rgba(0,0,0,0.45)");
+    ctx.fillStyle = g;
+    ctx.fill();
   }
 
   function drawMagnet(m) {
-    const up = m.J[2] > 0;
-    if (m.kind === "sphere") {
-      const r = (m.dim / 2) * T, x = m.x * T, y = -m.z * T;
-      ctx.fillStyle = poleGradient(x, y - r, y + r, up);
+    if (m.kind === "sphere") drawSphere(m.x * T, -m.z * T, (m.dim / 2) * T, m.J[2] > 0);
+    else if (m.kind === "cylinder") drawCylinder(m);
+    else if (m.kind === "cuboid") drawCuboid(m);
+  }
+
+  /* A coil in two halves with the hero between them, so you are seen inside it */
+  const coilTop = (m) => m.z + m.h / 2;
+
+  function drawCoilBack(m) {
+    const x = m.x * T, y = -coilTop(m) * T, w = RIM * T, ry = w * 0.26;
+    const north = m.I > 0;
+    ctx.fillStyle = "#1c1b28";
+    ctx.fillRect(x - w, y, 2 * w, (coilTop(m) - GROUND) * T);
+    /* the far half of the windings, and of the mouth's ring, shows through the bore */
+    ctx.strokeStyle = "#7a4a26";
+    ctx.lineWidth = 6;
+    for (let i = 0; i < m.n; i++) {
+      const z = m.z - m.h / 2 + (m.h * (i + 0.5)) / m.n;
+      if (z < GROUND) continue;
       ctx.beginPath();
-      ctx.arc(x, y, r, 0, 7);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(42,41,57,0.5)";
-      ctx.lineWidth = 2;
+      ctx.ellipse(x, -z * T, w - 3, ry, 0, Math.PI, 0);
       ctx.stroke();
-      magnetText(m, x, y);
-      return;
     }
-    const [w, h] = m.kind === "cuboid" ? [m.dim[0], m.dim[2]] : m.dim;
-    const x = (m.x - w / 2) * T, y = -(m.z + h / 2) * T;
-    ctx.fillStyle = poleGradient(x, y, y + h * T, up);
-    ctx.fillRect(x, y, w * T, h * T);
-    ctx.strokeStyle = "rgba(42,41,57,0.5)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x, y, w * T, h * T);
-    /* buried cylinders show their name where the player can see it */
-    const label = m.kind === "cylinder" ? y + 22 : y + (h * T) / 2;
-    magnetText(m, m.x * T, label);
+    ctx.strokeStyle = north ? NORTH : SOUTH;
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.ellipse(x, y, w - 3, ry, 0, Math.PI, 0);
+    ctx.stroke();
+  }
+
+  function drawCoilFront(m) {
+    const x = m.x * T, y = -coilTop(m) * T, w = RIM * T, ry = w * 0.26;
+    const north = m.I > 0, dir = north ? 1 : -1;
+    for (let i = 0; i < m.n; i++) {
+      const z = m.z - m.h / 2 + (m.h * (i + 0.5)) / m.n;
+      if (z < GROUND) continue;
+      ctx.strokeStyle = COPPER;
+      ctx.lineWidth = 9;
+      ctx.beginPath();
+      ctx.ellipse(x, -z * T, w - 3, ry, 0, 0, Math.PI);
+      ctx.stroke();
+      ctx.strokeStyle = COPPER_LIT;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.ellipse(x, -z * T - 2, w - 3, ry, 0, 0, Math.PI);
+      ctx.stroke();
+      /* the current itself: at the front of a loop it runs right when B points up */
+      ctx.strokeStyle = "rgba(255,255,255,0.85)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([3, 15]);
+      ctx.lineDashOffset = reduced ? 0 : clock * 42 * dir;
+      ctx.beginPath();
+      ctx.ellipse(x, -z * T, w - 3, ry, 0, 0, Math.PI);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    /* the mouth is the pole you are dealing with: red pulls green feet, green pushes them */
+    ctx.strokeStyle = north ? NORTH : SOUTH;
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.ellipse(x, y, w - 3, ry, 0, 0, Math.PI);
+    ctx.stroke();
+  }
+
+  /* the mushroom: a Collection of a Sphere on a Cylinder */
+  function drawMushroom(m) {
+    const x = m.x * T, y = -m.z * T;
+    const stem = 0.3 * T, h = 0.5 * T, r = 0.42 * T;
+    ctx.fillStyle = SOUTH;
+    ctx.fillRect(x - stem / 2, y - h, stem, h);
+    const g = ctx.createLinearGradient(x - stem / 2, 0, x + stem / 2, 0);
+    g.addColorStop(0, "rgba(0,0,0,0.35)");
+    g.addColorStop(0.5, "rgba(255,255,255,0.15)");
+    g.addColorStop(1, "rgba(0,0,0,0.35)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x - stem / 2, y - h, stem, h);
+    const R = r, cy = y - h - R * 0.55;
+    ctx.fillStyle = NORTH;
+    ctx.beginPath();
+    ctx.arc(x, cy, R, 0, 7);
+    ctx.fill();
+    const c = ctx.createRadialGradient(x - R * 0.35, cy - R * 0.4, R * 0.05, x, cy, R);
+    c.addColorStop(0, "rgba(255,255,255,0.6)");
+    c.addColorStop(0.45, "rgba(255,255,255,0)");
+    c.addColorStop(1, "rgba(0,0,0,0.4)");
+    ctx.fillStyle = c;
+    ctx.fill();
   }
 
   function drawSensor(c) {
@@ -442,33 +596,41 @@
     ctx.fill();
   }
 
-  function drawNut(n) {
+  /* the enemy: a Tetrahedron on the march, one face in shadow */
+  function drawWalker(n) {
     const x = n.x * T, y = -n.z * T;
     if (n.dead) {
       if (n.dead < 0.4) return;
-      ctx.fillStyle = "#7a7a88";
-      ctx.fillRect(x - 15, y - 5, 30, 5);
+      ctx.fillStyle = "#b5605f";
+      ctx.fillRect(x - 15, y - 4, 30, 4);
       return;
     }
-    const r = 15, wob = Math.sin(clock * 9 + n.x) * 2.5;
+    const wob = Math.sin(clock * 9 + n.x) * 2.5, h = 32, r = 17, apex = n.dir * 3;
     ctx.fillStyle = INK;
     ctx.fillRect(x - 11 + wob, y - 4, 7, 4);
     ctx.fillRect(x + 4 - wob, y - 4, 7, 4);
-    ctx.fillStyle = "#8a8b98";
-    ctx.beginPath();
-    for (let i = 0; i < 6; i++) {
-      const a = (i * Math.PI) / 3;
-      ctx.lineTo(x + r * Math.cos(a), y - 18 + r * Math.sin(a));
-    }
-    ctx.closePath();
-    ctx.fill();
+    const base = y - 3, top = base - h;
+    const face = (x0, x1, shade) => {
+      ctx.fillStyle = poleGradient(x, top, base, true);
+      ctx.beginPath();
+      ctx.moveTo(x + apex, top);
+      ctx.lineTo(x0, base);
+      ctx.lineTo(x1, base);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = shade;
+      ctx.fill();
+    };
+    const mid = x + n.dir * 5;
+    face(x - r, mid, n.dir > 0 ? "rgba(0,0,0,0.28)" : "rgba(255,255,255,0.08)");
+    face(mid, x + r, n.dir > 0 ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.28)");
     ctx.fillStyle = PAPER;
     ctx.beginPath();
-    ctx.arc(x, y - 18, 6.5, 0, 7);
+    ctx.arc(x + n.dir * 4, base - 13, 5, 0, 7);
     ctx.fill();
     ctx.fillStyle = INK;
     ctx.beginPath();
-    ctx.arc(x + n.dir * 2.5, y - 18, 3, 0, 7);
+    ctx.arc(x + n.dir * 6, base - 13, 2.4, 0, 7);
     ctx.fill();
   }
 
@@ -493,16 +655,34 @@
 
   const FLIP_NAME = touchUI ? "Flip" : "F";
   const HINTS = [
-    [37, () => `Thief! Get our letters back. ${touchUI ? "Use the buttons below." : "← → to walk, Space to jump."}`],
-    [42, () => "A Cuboid. You are a magnet too, and that pull is its real field."],
-    [50, () => `Stuck on it? Press ${FLIP_NAME} to flip your magnet: pull becomes push.`],
-    [59, () => "Jump under the long Cuboid. The field catches you."],
-    [81, () => `Walk across upside down, and press ${FLIP_NAME} over the far ground to let go.`],
-    [91, () => `Cylinders. Press ${FLIP_NAME} to push, then hover on the field.`],
-    [121, () => "Pushing, you can jump straight off the field. Hop across."],
-    [137, () => `A Sphere. Pull: stick to it, walk to the top. Then press ${FLIP_NAME}.`],
+    [16, () => `Thief! Get our letters back. ${touchUI ? "" : "\u2190 \u2192 walk, Space jumps."}`],
+    [34, () => "Bump the ? block from below."],
+    [50, () => `Green feet stick to red: north attracts south. Stuck? ${FLIP_NAME} swaps your poles.`],
+    [59, () => "Green feet, jump: your red top sticks to the green underside."],
+    [81, () => `Walk across, then ${FLIP_NAME} over the far ground to let go.`],
+    [97, () => `A red mouth sucks in green feet. Inside, ${FLIP_NAME}: red on red fires you out.`],
+    [134, () => "Red feet hover over red. Jump off the field, hop across."],
+    [153, () => `Green feet: this coil swallows you. ${FLIP_NAME} if you're red.`],
+    [164, () => "A green mouth throws green feet back out."],
+    [176, () => `Land on the red top with green feet, then ${FLIP_NAME}.`],
     [Infinity, () => (s.drop ? "It dropped the M! Grab it." : "There's the magpie.")],
   ];
+
+  function wrapText(text, maxWidth) {
+    const out = [];
+    let line = "";
+    for (const word of text.split(" ")) {
+      const next = line ? `${line} ${word}` : word;
+      if (ctx.measureText(next).width > maxWidth && line) {
+        out.push(line);
+        line = word;
+      } else {
+        line = next;
+      }
+    }
+    out.push(line);
+    return out;
+  }
 
   function drawHint(dt) {
     hintText = s.phase === "play" ? HINTS.find((h) => s.p.x < h[0])[1]() : "";
@@ -519,14 +699,15 @@
     ctx.save();
     ctx.globalAlpha = hintFade;
     ctx.font = "600 17px system-ui, -apple-system, 'Segoe UI', sans-serif";
-    const w = ctx.measureText(hintShown).width + 36;
-    roundRect(VW / 2 - w / 2, 58, w, 36, 18);
+    const rows = wrapText(hintShown, VW - 56);
+    const w = Math.max(...rows.map((r) => ctx.measureText(r).width)) + 36, h = 14 + rows.length * 22;
+    roundRect(VW / 2 - w / 2, 54, w, h, 16);
     ctx.fillStyle = "rgba(42,41,57,0.92)";
     ctx.fill();
     ctx.fillStyle = "#fff";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(hintShown, VW / 2, 76.5);
+    rows.forEach((r, i) => ctx.fillText(r, VW / 2, 54 + 18 + i * 22));
     ctx.restore();
   }
 
@@ -535,12 +716,16 @@
   }
 
   function drawHUD() {
+    /* on a plate, or the letters vanish whenever a dark wall scrolls behind them */
+    roundRect(8, 12, 232, 30, 8);
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.fill();
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
     ctx.font = "800 22px system-ui, -apple-system, 'Segoe UI', sans-serif";
     [..."MAGPYLIB"].forEach((ch, i) => {
       const lit = i === 0 && s.phase === "won" && winT > 0.8;
-      ctx.fillStyle = lit ? RED : "rgba(42,41,57,0.2)";
+      ctx.fillStyle = lit ? RED : "rgba(42,41,57,0.28)";
       ctx.fillText(ch, slot(i).x, slot(i).y);
     });
 
@@ -558,27 +743,36 @@
 
     /* the reading: same |B| the force is the gradient of */
     const b = Sim.absB(s.p.x, s.p.z + H / 2);
-    const px = VW - 262, py = 12;
-    roundRect(px, py, 180, 30, 8);
-    ctx.fillStyle = "rgba(255,255,255,0.85)";
-    ctx.fill();
-    ctx.fillStyle = INK;
-    ctx.fillText(`|B| ${b.toFixed(3).padStart(5)} T`, px + 10, py + 15.5);
-    const bar = Math.max(0, Math.min(1, (Math.log10(b + 1e-9) + 2.6) / 2.4));
-    ctx.fillStyle = "rgba(42,41,57,0.12)";
-    ctx.fillRect(px + 124, py + 11, 46, 8);
-    ctx.fillStyle = BLUE;
-    ctx.fillRect(px + 124, py + 11, 46 * bar, 8);
+    /* on an upright phone there is only room for the number, or not even that */
+    const narrow = VW < 660, py = 12;
+    if (VW > 480) {
+      const w = narrow ? 118 : 180, px = VW - 82 - w;
+      roundRect(px, py, w, 30, 8);
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.fill();
+      ctx.fillStyle = INK;
+      ctx.textAlign = "left";
+      ctx.fillText(`|B| ${b.toFixed(3).padStart(5)} T`, px + 8, py + 15.5);
+      if (!narrow) {
+        const bar = Math.max(0, Math.min(1, (Math.log10(b + 1e-9) + 2.6) / 2.4));
+        ctx.fillStyle = "rgba(42,41,57,0.12)";
+        ctx.fillRect(px + 124, py + 11, 46, 8);
+        ctx.fillStyle = BLUE;
+        ctx.fillRect(px + 124, py + 11, 46 * bar, 8);
+      }
+    }
 
-    const pull = s.p.pol > 0;
+    /* what your feet are right now: that decides who pulls and who pushes */
+    const feetNorth = s.p.pol < 0;
     roundRect(VW - 74, py, 62, 30, 8);
-    ctx.fillStyle = pull ? RED : PUSH;
+    ctx.fillStyle = feetNorth ? NORTH : SOUTH;
     ctx.fill();
     ctx.fillStyle = "#fff";
     ctx.textAlign = "center";
-    ctx.fillText(pull ? "PULL" : "PUSH", VW - 43, py + 15.5);
+    ctx.fillText(feetNorth ? "feet N" : "feet S", VW - 43, py + 15.5);
 
-    /* scale bar */
+    /* scale bar, where no thumb is */
+    if (touchUI) return;
     const sb = T * view.zoom;
     roundRect(10, VH - 36, sb + 58, 26, 7);
     ctx.fillStyle = "rgba(255,255,255,0.88)";
@@ -615,7 +809,7 @@
     if (s.phase === "title" && Math.floor(clock * 1.6) % 2 === 0) {
       ctx.font = "700 22px system-ui, -apple-system, 'Segoe UI', sans-serif";
       ctx.fillStyle = "#fff";
-      ctx.fillText(touchUI ? "Tap to start" : "Press Space to start", VW / 2, VH - 42);
+      ctx.fillText(touchUI ? "Tap to play" : "Press Space to start", VW / 2, VH - 42);
     }
     ctx.restore();
   }
@@ -687,7 +881,8 @@
   function updateCamera(dt) {
     const p = s.p, title = s.phase === "title";
     const into = title ? 0 : Math.min(1, s.t / 1.5), e = into * into * (3 - 2 * into);
-    view.zoom = 2.1 + (1 - 2.1) * e;
+    const tz0 = titleZoom();
+    view.zoom = tz0 + (1 - tz0) * e;
     const halfW = VW / (T * view.zoom) / 2;
 
     let tx, tz;
@@ -704,6 +899,7 @@
       view.z += (tz - view.z) * (1 - Math.exp(-dt * 6));
     }
     view.x = Math.max(-6 + halfW, Math.min(LEVEL_W - halfW, view.x));
+    if (title) view.x = 13;
   }
 
   /* ---------- one frame ---------- */
@@ -716,18 +912,19 @@
 
     drawBackdrop(b.left, b.right, b.bottom, b.top);
     for (const cp of CHECKPOINTS) drawCheck(cp);
+    const seen = (m) => m.x + m.half + 1 > b.left && m.x - m.half - 1 < b.right;
+    for (const m of MAGNETS) if (seen(m)) drawMagnet(m);
     for (const q of SOLIDS) {
       if (!q.magnet && q.x1 > b.left && q.x0 < b.right) drawSolid(q);
     }
-    for (const m of MAGNETS) {
-      const half = m.kind === "cuboid" ? m.dim[0] / 2 : 4;
-      if (m.x + half > b.left && m.x - half < b.right) drawMagnet(m);
-    }
+    for (const m of MAGNETS) if (m.kind === "coil" && seen(m)) drawCoilBack(m);
     for (const c of s.sensors) if (!c.got && c.x > b.left - 1 && c.x < b.right + 1) drawSensor(c);
-    for (const n of s.nuts) if (n.x > b.left - 1 && n.x < b.right + 1) drawNut(n);
+    for (const n of s.walkers) if (n.x > b.left - 1 && n.x < b.right + 1) drawWalker(n);
+    if (s.shroom) drawMushroom(s.shroom);
     drawLetters();
     drawBird();
     drawHero();
+    for (const m of MAGNETS) if (m.kind === "coil" && seen(m)) drawCoilFront(m);
     drawParticles(dt);
 
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
@@ -749,7 +946,8 @@
     if (s.phase !== "won" || winT < WON_WAIT) return;
     s = Sim.create();
     winT = 0;
-    Object.assign(view, { x: 13, z: 0.6, zoom: 2.1 });
+    Object.assign(view, { x: 13, z: 0.6, zoom: titleZoom() });
+    syncFlip();
   }
 
   function wake() {
@@ -782,6 +980,7 @@
     input.left = input.right = input.jump = input.flip = false;
   });
   canvas.addEventListener("pointerdown", () => {
+    if (touchUI && !full) setFull(true);
     playAgain();
     wake();
   });
@@ -810,13 +1009,49 @@
     soundBtn.blur();
   });
 
+  /* ---------- full screen ----------
+     An iPhone has no fullscreen API for pages, so full screen here means the frame
+     covering the whole window. Where the real thing exists it is asked for as well. */
+
+  const frameEl = window.frameElement;
+  const outerDoc = frameEl ? frameEl.ownerDocument : document;
+  const fullBtn = document.getElementById("full");
+  let full = false;
+
+  function setFull(on) {
+    full = on;
+    document.body.classList.toggle("full", on);
+    if (frameEl) frameEl.classList.toggle("mag404__game--full", on);
+    outerDoc.documentElement.classList.toggle("mag404-playing", on);
+    fullBtn.textContent = on ? "Exit" : "Full screen";
+    fullBtn.blur();
+    const target = frameEl || document.documentElement;
+    if (on && target.requestFullscreen) target.requestFullscreen().catch(() => {});
+    if (!on && outerDoc.fullscreenElement) outerDoc.exitFullscreen().catch(() => {});
+    resize();
+  }
+
+  fullBtn.addEventListener("click", () => setFull(!full));
+  /* Esc leaves real fullscreen without asking us */
+  outerDoc.addEventListener("fullscreenchange", () => {
+    if (!outerDoc.fullscreenElement && full && !touchUI) setFull(false);
+  });
+
+  const flipBtn = document.querySelector('[data-key="flip"]');
+  function syncFlip() {
+    flipBtn.style.background = s.p.pol > 0 ? SOUTH : NORTH;
+  }
+
   function resize() {
     const ratio = Math.min(devicePixelRatio || 1, 2);
     const box = canvas.getBoundingClientRect();
+    if (!box.width || !box.height) return;
     canvas.width = Math.round(box.width * ratio);
     canvas.height = Math.round(box.height * ratio);
+    VW = (VH * box.width) / box.height;
   }
   addEventListener("resize", resize);
+  new ResizeObserver(resize).observe(canvas);
 
   /* ---------- the loop ---------- */
 
@@ -825,10 +1060,14 @@
   function consumeEvents() {
     for (const ev of s.events) {
       if (SOUND[ev]) SOUND[ev]();
-      const p = s.p, cx = p.x, cz = p.z + H / 2;
+      const p = s.p, cx = p.x, cz = p.z + p.h / 2;
       if (ev === "sensor") burst(cx, cz, GOLD, 7);
-      else if (ev === "flip") burst(cx, cz, p.pol > 0 ? RED : PUSH, 10);
-      else if (ev === "stomp") burst(cx, p.z, "#8a8b98", 8);
+      else if (ev === "flip") {
+        burst(cx, p.z, p.pol > 0 ? SOUTH : NORTH, 10);
+        syncFlip();
+      } else if (ev === "hurt") syncFlip();
+      else if (ev === "stomp") burst(cx, p.z, NORTH, 8);
+      else if (ev === "grow" || ev === "warp") burst(cx, cz, GOLD, 14);
       else if (ev === "win") burst(cx, cz, RED, 24);
     }
     s.events.length = 0;
@@ -857,6 +1096,7 @@
   }
 
   resize();
+  syncFlip();
   const bakeStart = performance.now();
   bakeHeat();
   bakeLines();

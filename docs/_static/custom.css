@@ -317,6 +317,24 @@ html[data-theme="dark"] .mag-bird--flying {
     border-radius: 12px;
 }
 
+/* full screen is this frame covering everything, the one way that works on an iPhone */
+.mag404__game--full {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    margin: 0;
+    aspect-ratio: auto;
+    border-radius: 0;
+}
+
+html.mag404-playing,
+html.mag404-playing body {
+    overflow: hidden;
+}
+
 
 /* while a letter is riding on the pointer, the letter is the cursor */
 html.mag-carrying,
