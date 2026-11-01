@@ -1254,9 +1254,10 @@
     input.left = input.right = input.jump = input.flip = input.fire = false;
   });
   canvas.addEventListener("pointerdown", () => {
-    if (touchUI && !full) setFull(true);
+    /* the game first, so that nothing about full screen can stand in its way */
     playAgain();
     wake();
+    if (touchUI && !full) setFull(true);
   });
 
   for (const btn of document.querySelectorAll("[data-key]")) {
@@ -1300,8 +1301,13 @@
     fullBtn.textContent = on ? "Exit" : "Full screen";
     fullBtn.blur();
     const target = frameEl || document.documentElement;
-    if (on && target.requestFullscreen) target.requestFullscreen().catch(() => {});
-    if (!on && outerDoc.fullscreenElement) outerDoc.exitFullscreen().catch(() => {});
+    /* the frame covering the window already did the job, the real thing is a bonus */
+    try {
+      if (on && target.requestFullscreen) target.requestFullscreen()?.catch(() => {});
+      if (!on && outerDoc.fullscreenElement) outerDoc.exitFullscreen()?.catch(() => {});
+    } catch {
+      /* some browsers refuse it outright */
+    }
     resize();
   }
 

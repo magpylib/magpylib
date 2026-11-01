@@ -65,8 +65,11 @@
   <button id="full" type="button">Full screen</button>
 </div>
 
-<script src="field.js"></script>
-<script src="sim.js"></script>
-<script src="game.js"></script>
+<script>
+  /* these three must come from one build: the 404 page puts that build's stamp on this page's address */
+  for (const file of ["field.js", "sim.js", "game.js"]) {
+    document.write(`<script src="${file}${location.search}"><\/script>`);
+  }
+</script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+import hashlib
 import importlib.metadata
 import os
 import platform
@@ -104,17 +105,21 @@ def _absolutise_404_body_links(app, doctree, docname):
 
     replace_uris(app, doctree, docutils.nodes.reference, "refuri")
 
-    # the same goes for the game's frame, which docutils only knows as raw HTML
+    # the same goes for the game's frame, which docutils only knows as raw HTML. Its
+    # files are cached one by one for half an hour, and a mix of two builds' files
+    # crashes it, so this build's stamp goes on the frame and the page hands it on.
     prefix = app.config.notfound_urls_prefix
+    play = Path(app.srcdir) / "_static" / "play"
+    digest = hashlib.sha256()
+    for file in sorted(play.iterdir()):
+        digest.update(file.read_bytes())
+    stamp = digest.hexdigest()[:10]
     for node in doctree.findall(docutils.nodes.raw):
         html = node.astext()
         if 'src="_static/' in html:
-            node.replace(
-                node[0],
-                docutils.nodes.Text(
-                    html.replace('src="_static/', f'src="{prefix}_static/')
-                ),
-            )
+            html = html.replace('src="_static/', f'src="{prefix}_static/')
+            html = html.replace('play/index.html"', f'play/index.html?v={stamp}"')
+            node.replace(node[0], docutils.nodes.Text(html))
 
 
 def setup(app):
