@@ -28,6 +28,8 @@
     border-radius: 50%; border: 0; font: 700 15px system-ui, sans-serif; color: #fff;
     background: rgba(96, 95, 118, 0.72); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55); }
   #pad button.on { filter: brightness(0.7); }
+  #pad button[hidden] { display: none; }
+  #pad button[data-key="fire"] { background: #c8763a; }
 
   @media (pointer: coarse) {
     body:not(.full) .corner { display: none; }
@@ -54,7 +56,7 @@
   <canvas id="game" aria-label="Super Magrio, a platform game about magnetic fields."></canvas>
   <div id="pad">
     <div><button data-key="left" aria-label="Left">&#9664;</button><button data-key="right" aria-label="Right">&#9654;</button></div>
-    <div><button data-key="flip">Flip</button><button data-key="jump">Jump</button></div>
+    <div><button data-key="fire" hidden>Fire</button><button data-key="flip">Flip</button><button data-key="jump">Jump</button></div>
   </div>
 </div>
 
