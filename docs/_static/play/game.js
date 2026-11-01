@@ -17,6 +17,15 @@
   const RED = "#aa0000", INK = "#2a2939", PAPER = "#f6f3ea", BLUE = "#2e91e5";
   const NORTH = "#e71111", MIDDLE = "#dddddd", SOUTH = "#00b050", GOLD = "#d9a441";
   const COPPER = "#c8763a", COPPER_LIT = "#eaa873";
+  /* Field lines as Magpylib Studio draws them: fine solid lines, stronger where the field
+     is, gone where it fades, with a short pulse running the way B points. Quieter here,
+     a hint of where the magnets reach and no more. */
+  const LINE_RGB = "59,79,160", LINE_END = 0.03;
+  const LINE_BANDS = [
+    { below: 0.06, alpha: 0.16, width: 1 },
+    { below: 0.14, alpha: 0.3, width: 1.2 },
+    { below: Infinity, alpha: 0.5, width: 1.5 },
+  ];
   /* the logo's own proportions, in the pixels of magpylib_logo.png */
   const LOGO = { cx: 160.5, cz: 198.5, s: H / 283, arch: 173, outer: 115.5, inner: 59.5 };
   const BIRD_BOX = { x: 0, y: 0, w: 117, h: 188 }; /* magpylib_logo_bird.png sits at the top left of the logo */
@@ -55,11 +64,11 @@
       const z = Z_MAX - (j + 0.5) / HEAT_RES;
       for (let i = 0; i < heat.width; i++, k += 4) {
         const b = Sim.absB(i / HEAT_RES - 4, z);
-        const t = Math.max(0, Math.min(1, (Math.log10(b + 1e-9) + 2.6) / 2.4));
+        const t = Math.max(0, Math.min(1, (Math.log10(b + 1e-9) + 1.7) / 1.7));
         img.data[k] = 46;
-        img.data[k + 1] = 145;
-        img.data[k + 2] = 229;
-        img.data[k + 3] = 150 * t * t;
+        img.data[k + 1] = 120;
+        img.data[k + 2] = 220;
+        img.data[k + 3] = 62 * t * t;
       }
     }
     g.putImageData(img, 0, 0);
@@ -87,7 +96,7 @@
     return false;
   }
 
-  /* follows B, or against it for sign -1, until it lands on something or closes */
+  /* follows B, or against it for sign -1, until it lands on something, closes or fades */
   function trace(x, z, sign) {
     const h = 0.2 * sign, pts = [[x, z]], x0 = x, z0 = z;
     for (let i = 0; i < 900; i++) {
@@ -101,6 +110,8 @@
       pts.push([x, z]);
       if (z < -1 || z > Z_MAX || insideMagnet(x, z)) break;
       if (i > 30 && Math.hypot(x - x0, z - z0) < 0.3) break;
+      const here = B2(x, z);
+      if (Math.hypot(here[0], here[2]) < LINE_END) break;
     }
     return sign > 0 ? pts : pts.reverse();
   }
@@ -110,18 +121,18 @@
     const list = [];
     if (m.kind === "coil") {
       const top = m.z + m.h / 2, sign = m.I > 0 ? 1 : -1;
-      for (const dx of [-0.9, -0.3, 0.3, 0.9]) list.push([m.x + dx, top, sign]);
+      for (const dx of [-0.8, 0, 0.8]) list.push([m.x + dx, top, sign]);
       return list;
     }
     if (m.kind === "sphere") {
-      for (const deg of [-60, -36, -14, 14, 36, 60]) {
+      for (const deg of [-56, -30, 0, 30, 56]) {
         const a = (deg * Math.PI) / 180, r = m.dim / 2 + 0.03;
         list.push([m.x + r * Math.sin(a), m.z + r * Math.cos(a), 1]);
       }
       return list;
     }
     const [w, h] = m.kind === "cuboid" ? [m.dim[0], m.dim[2]] : m.dim;
-    const n = Math.min(14, Math.max(5, Math.round(w / 1.1)));
+    const n = Math.min(12, Math.max(3, Math.round(w / 2.4)));
     for (let i = 0; i < n; i++) {
       const x = m.x + (w * (i + 0.5)) / n - w / 2;
       list.push([x, m.z + h / 2 + 0.03, 1]);
@@ -133,17 +144,23 @@
   const lines = [];
   function bakeLines() {
     for (const m of MAGNETS) {
-      const path = new Path2D();
+      const bands = LINE_BANDS.map(() => new Path2D());
+      const whole = new Path2D();
       let x0 = Infinity, x1 = -Infinity;
       for (const [sx, sz, sign] of seeds(m)) {
-        trace(sx, sz, sign).forEach(([x, z], i) => {
-          if (i) path.lineTo(x * T, -z * T);
-          else path.moveTo(x * T, -z * T);
+        trace(sx, sz, sign).forEach(([x, z], i, pts) => {
+          if (i) whole.lineTo(x * T, -z * T);
+          else whole.moveTo(x * T, -z * T);
           x0 = Math.min(x0, x);
           x1 = Math.max(x1, x);
+          if (!i) return;
+          const b = B2(x, z), mag = Math.hypot(b[0], b[2]);
+          const path = bands[LINE_BANDS.findIndex((band) => mag < band.below)];
+          path.moveTo(pts[i - 1][0] * T, -pts[i - 1][1] * T);
+          path.lineTo(x * T, -z * T);
         });
       }
-      lines.push({ path, x0, x1 });
+      lines.push({ bands, whole, x0, x1 });
     }
   }
 
@@ -186,6 +203,38 @@
     ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
   }
 
+  /* The force shows on the hero, eased so that it never snaps. Its eyes watch the magnet.
+     Drawn in, it stretches towards it wide-eyed, and flattens on arriving. Pushed away,
+     it squints and braces against the push. */
+  const cue = { s: 0, ang: 0, lookX: 7, lookY: 0, eye: 1, wide: 1 };
+
+  function updateCue(p, dt) {
+    const a = Math.hypot(p.a.x, p.a.z), g = s.phase === "play" ? a / 38 : 0;
+    const m = Math.min(1, Math.max(0, (g - 0.12) / 1.6));
+    const contact = p.grounded || p.hang;
+    let stretch = 0, lookX = p.face * 7, lookY = 0, eye = 1, wide = 1;
+    if (m > 0) {
+      const ux = p.a.x / a, uy = -p.a.z / a; /* towards the magnet if drawn in, away if pushed */
+      const sign = p.attract ? 1 : -1;
+      stretch = p.attract ? (contact ? -0.16 : 0.22) * m : (contact ? 0.08 : -0.15) * m;
+      eye = p.attract ? 1 : 1 - 0.5 * m;
+      wide = p.attract ? 1 + 0.18 * m : 1;
+      const c = Math.cos(p.tilt), n = Math.sin(p.tilt), w = Math.min(1, m * 2.5);
+      lookX += ((sign * (ux * c + uy * n) * 8) - lookX) * w;
+      lookY += (sign * (-ux * n + uy * c) * 7 - lookY) * w;
+      /* the short way round, so the axis never spins through a turn */
+      let da = Math.atan2(uy, ux) - cue.ang;
+      da = Math.atan2(Math.sin(2 * da), Math.cos(2 * da)) / 2;
+      cue.ang += da * (1 - Math.exp(-dt * 14));
+    }
+    const k = 1 - Math.exp(-dt * 12);
+    cue.s += (stretch - cue.s) * k;
+    cue.lookX += (lookX - cue.lookX) * k;
+    cue.lookY += (lookY - cue.lookY) * k;
+    cue.eye += (eye - cue.eye) * k;
+    cue.wide += (wide - cue.wide) * k;
+  }
+
   function drawMagnetBody(top, feet, liftL, liftR, eyes) {
     const { arch, outer, inner, cx } = LOGO;
     ctx.fillStyle = top;
@@ -202,29 +251,32 @@
     rect(cx + inner, 284 - liftR, cx + outer, 340 - liftR);
 
     if (eyes > 0) {
-      const look = s.p.face * 7, blink = (clock % 3.7) < 0.1 ? 0.15 : 1;
+      const blink = (clock % 3.7) < 0.1 ? 0.15 : 1, open = eyes * blink * cue.eye;
       for (const ex of [cx - 30, cx + 30]) {
         ctx.fillStyle = "#fff";
         ctx.beginPath();
-        ctx.ellipse(ex, 86, 19, 19 * eyes * blink, 0, 0, 7);
+        ctx.ellipse(ex, 86, 19 * cue.wide, 19 * cue.wide * open, 0, 0, 7);
         ctx.fill();
         ctx.fillStyle = INK;
         ctx.beginPath();
-        ctx.ellipse(ex + look, 87, 10, 10 * eyes * blink, 0, 0, 7);
+        ctx.ellipse(ex + cue.lookX, 87 + cue.lookY, 10, 10 * open, 0, 0, 7);
         ctx.fill();
       }
     }
   }
 
-  function drawHero() {
+  function drawHero(dt) {
     const p = s.p;
+    updateCue(p, dt);
     if (p.safe && Math.floor(clock * 14) % 2) return;
     const k = LOGO.s * T * (p.big ? BIG : 1);
     ctx.save();
     /* leaning on flat ground, the lower foot rests on it rather than digging in */
     const lift = p.onSphere ? 0 : Math.max(0, -p.pivot) * (p.w / 2) * Math.abs(Math.sin(p.tilt));
     ctx.translate(p.x * T, -(p.z + lift + (p.h * (1 + p.pivot)) / 2) * T);
-    ctx.rotate(p.tilt);
+    ctx.rotate(cue.ang);
+    ctx.scale(1 + cue.s, 1 - cue.s * 0.55);
+    ctx.rotate(p.tilt - cue.ang);
     ctx.translate(0, ((p.pivot * p.h) / 2) * T);
     const flip = p.flipT > 0 ? Math.abs(Math.cos((Math.PI * p.flipT) / 0.28)) : 1;
     const squash = p.land / 0.16;
@@ -248,23 +300,6 @@
     }
     ctx.restore();
 
-    /* the force the hero feels right now, the thing the game teaches */
-    const a = Math.hypot(p.a.x, p.a.z), g = a / 38;
-    if (g > 0.15 && s.phase === "play") {
-      const len = Math.min(3, 0.45 + g * 0.5) * T, ux = p.a.x / a, uz = p.a.z / a;
-      const x0 = p.x * T, y0 = -(p.z + p.h / 2) * T, x1 = x0 + ux * len, y1 = y0 - uz * len;
-      ctx.strokeStyle = ctx.fillStyle = INK;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(x0, y0);
-      ctx.lineTo(x1, y1);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(x1 + ux * 8, y1 - uz * 8);
-      ctx.lineTo(x1 - uz * 6, y1 - ux * 6);
-      ctx.lineTo(x1 + uz * 6, y1 + ux * 6);
-      ctx.fill();
-    }
   }
 
   /* ---------- the magpie ---------- */
@@ -272,6 +307,7 @@
   function drawBird() {
     const b = s.bird;
     if (b.mode === "logo" || b.mode === "gone") return;
+    drawBag(b);
     const k = LOGO.s * T;
     ctx.save();
     ctx.translate(b.x * T, -b.z * T);
@@ -282,7 +318,7 @@
     } else {
       /* the sheet is drawn flying left */
       ctx.scale(b.face > 0 ? -k : k, k);
-      const f = Math.floor(b.flap * 16) % FRAME.n;
+      const f = Math.floor(b.flap * 13) % FRAME.n;
       if (birdFly.complete) {
         ctx.drawImage(birdFly, f * FRAME.w, 0, FRAME.w, FRAME.h, -FRAME.w / 2, -FRAME.h / 2, FRAME.w, FRAME.h);
       }
@@ -290,23 +326,38 @@
     ctx.restore();
   }
 
-  function drawLetters() {
-    const b = s.bird;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = "800 34px system-ui, -apple-system, 'Segoe UI', sans-serif";
-    if (s.rope.length) {
+  function drawBag(b) {
+    const [x, z] = Sim.bagAt(b);
+    const perched = b.mode === "perched";
+    const r = (0.3 + 0.03 * b.loot) * T * (1 + (b.bump > 0 ? 0.25 * (b.bump / 0.14) : 0)) * Math.min(1, s.t * 4);
+    const cx = x * T, cy = -z * T;
+    if (!perched) {
+      /* the cord up to the claws */
       ctx.strokeStyle = INK;
-      ctx.lineWidth = 1.2;
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      const [ax, az] = Sim.ropeAnchor(b);
-      ctx.moveTo(ax * T, -az * T);
-      for (const l of s.rope) ctx.lineTo(l.x * T, -l.z * T);
+      ctx.moveTo(b.x * T, -(b.z - 0.5) * T);
+      ctx.lineTo(cx, cy - r * 0.9);
       ctx.stroke();
     }
     ctx.fillStyle = INK;
+    ctx.beginPath();
+    ctx.moveTo(cx - r * 0.3, cy - r * 0.95);
+    ctx.bezierCurveTo(cx - r * 1.3, cy - r * 0.5, cx - r * 1.15, cy + r, cx, cy + r);
+    ctx.bezierCurveTo(cx + r * 1.15, cy + r, cx + r * 1.3, cy - r * 0.5, cx + r * 0.3, cy - r * 0.95);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = GOLD;
+    ctx.fillRect(cx - r * 0.42, cy - r * 0.98, r * 0.84, r * 0.2);
+  }
+
+  function drawLetters() {
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = INK;
     for (const l of s.letters) {
-      if (s.drop && l.ch === s.drop.ch) continue;
+      if (l.t === 1) continue;
+      ctx.font = `800 ${34 * l.size}px system-ui, -apple-system, 'Segoe UI', sans-serif`;
       ctx.fillText(l.ch, l.x * T, -l.z * T);
     }
     if (s.drop && s.phase !== "won") {
@@ -364,15 +415,24 @@
     ctx.imageSmoothingQuality = "high";
     ctx.drawImage(heat, -4 * T, -Z_MAX * T, (LEVEL_W + 8) * T, Z_MAX * T);
 
-    ctx.strokeStyle = "rgba(31,116,196,0.62)";
-    ctx.lineWidth = 1.3;
-    ctx.setLineDash([7, 9]);
-    ctx.lineDashOffset = reduced ? 0 : -clock * 34;
     for (const l of lines) {
       if (l.x1 < left || l.x0 > right) continue;
-      ctx.stroke(l.path);
+      LINE_BANDS.forEach((band, i) => {
+        ctx.strokeStyle = `rgba(${LINE_RGB},${band.alpha})`;
+        ctx.lineWidth = band.width;
+        ctx.stroke(l.bands[i]);
+      });
+      if (!reduced) {
+        ctx.strokeStyle = `rgba(${LINE_RGB},0.55)`;
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.setLineDash([5, 62]);
+        ctx.lineDashOffset = -clock * 26;
+        ctx.stroke(l.whole);
+        ctx.setLineDash([]);
+        ctx.lineCap = "butt";
+      }
     }
-    ctx.setLineDash([]);
   }
 
   function drawSolid(q) {
@@ -926,7 +986,7 @@
     if (s.shroom) drawMushroom(s.shroom);
     drawLetters();
     drawBird();
-    drawHero();
+    drawHero(dt);
     for (const m of MAGNETS) if (m.kind === "coil" && seen(m)) drawCoilFront(m);
     drawParticles(dt);
 

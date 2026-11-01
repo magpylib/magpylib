@@ -86,7 +86,7 @@
   ];
   const WORD = "Magpylib";
   const START_X = 9;
-  const LETTER_Z = GROUND + 0.75;
+  const LETTER_Z = GROUND + 0.75, LETTER_HOP = 0.42;
   const LETTER_X = [11.1, 11.93, 12.61, 13.31, 13.97, 14.44, 14.8, 15.35]; /* set like the wordmark */
   /* where the magpie waits, always the right edge of something so its tail hangs free */
   const PERCHES = [
@@ -169,6 +169,7 @@
     }
     out.x = ax;
     out.z = az;
+    p.attract = p.pol * alongBody(t, cx, cz) > 0; /* m along B: being drawn in, else pushed out */
   }
 
   /* ---------- state ---------- */
@@ -191,11 +192,10 @@
       walkers: WALKERS(),
       shroom: null,
       deaths: 0,
-      bird: { x: 0, z: 0, mode: "logo", route: [], perch: -1, face: 1, flap: 0 },
+      bird: { x: 0, z: 0, mode: "logo", route: [], perch: -1, face: 1, flap: 0, swing: 0, bump: 0, loot: 0 },
       letters: [...WORD].map((ch, i) => ({
-        ch, i, x: LETTER_X[i], z: LETTER_Z, px: 0, pz: 0, on: false,
+        ch, i, x: LETTER_X[i], z: LETTER_Z, x0: LETTER_X[i], z0: LETTER_Z, size: 1, t: -1,
       })),
-      rope: [],
       drop: null,
       events: [],
     };
@@ -210,10 +210,11 @@
     b.x = START_X - 0.65;
     b.z = GROUND + 2.3;
     b.route = [
-      { x: LETTER_X[0] - 0.5, z: GROUND + 3, v: 11 },
-      { x: LETTER_X[7] + 0.6, z: GROUND + 2.4, v: 7 },
-      { x: 34, z: 13.5, v: 24 },
-      { ...PERCHES[0], v: 27, perch: 0 },
+      { x: LETTER_X[0] - 0.6, z: GROUND + 3.2, v: 9 },
+      { x: LETTER_X[7] + 1.4, z: GROUND + 3.2, v: 7 },
+      { x: 30, z: 14, v: 20 },
+      { x: PERCHES[0].x - 3, z: 15, v: 26 },
+      { ...PERCHES[0], v: 18, perch: 0 },
     ];
     s.events.push("squawk");
   }
@@ -449,11 +450,11 @@
     }
   }
 
-  /* ---------- the magpie and its rope of stolen letters ---------- */
+  /* ---------- the magpie and its bag of stolen letters ---------- */
 
-  /* on a perch the tail hangs over the edge, in flight it trails behind */
-  function ropeAnchor(b) {
-    return b.mode === "perched" ? [b.x + 0.55, b.z - 0.6] : [b.x - b.face * 0.45, b.z - 0.25];
+  /* The loot bag: hanging from the claws in flight, set down beside the magpie on a perch. */
+  function bagAt(b) {
+    return b.mode === "perched" ? [b.x - 0.75, b.z + 0.34] : [b.x + Math.sin(b.swing) * 0.62, b.z - 0.5 - Math.cos(b.swing) * 0.62];
   }
 
   function stepBird(s, dt) {
@@ -485,8 +486,11 @@
         s.events.push("squawk");
         b.mode = "fly";
         if (here.last) {
-          const tail = s.rope.pop();
-          s.drop = { x: Math.min(tail.x, POST - 1.2), z: tail.z, vx: -2.5, vz: 3, ch: tail.ch, rest: false };
+          /* the bag gives up the first letter it took */
+          const [bx, bz] = bagAt(b);
+          s.drop = { x: Math.min(bx, POST - 1.2), z: bz, vx: -2.5, vz: 9, ch: WORD[0], rest: false };
+          b.loot--;
+          b.bump = 0.2;
           b.route = [{ x: LEVEL_W + 6, z: 22, v: 26 }];
         } else {
           b.route = [
@@ -498,35 +502,29 @@
       }
     }
 
-    /* the magpie collects M first, each later letter goes on nearest its tail */
+    /* the bag swings behind the way it is carried */
+    const vx = b.mode === "fly" && b.route[0] ? Math.sign(b.route[0].x - b.x) * b.route[0].v : 0;
+    b.swing += (-vx * 0.022 - b.swing) * (1 - Math.exp(-dt * 6));
+    b.bump = Math.max(0, b.bump - dt);
+
+    /* as the magpie passes, each letter hops up and drops into the bag */
+    const [bagX, bagZ] = bagAt(b);
     for (const l of s.letters) {
-      if (!l.on && b.mode === "fly" && b.x > l.x - 0.2 && s.phase !== "title") {
-        l.on = true;
-        l.px = l.x;
-        l.pz = l.z;
-        s.rope.unshift(l);
+      if (l.t < 0 && b.mode === "fly" && b.x > l.x0 - 0.5 && s.phase !== "title") {
+        l.t = 0;
         s.events.push("pluck");
       }
-    }
-
-    let [ax, az] = ropeAnchor(b);
-    for (const l of s.rope) {
-      const nx = l.x + (l.x - l.px) * 0.985, nz = l.z + (l.z - l.pz) * 0.985 - 16 * dt * dt;
-      l.px = l.x;
-      l.pz = l.z;
-      l.x = nx;
-      l.z = nz;
-      const dx = l.x - ax, dz = l.z - az, d = Math.hypot(dx, dz) || 1, rest = 1.02;
-      if (d > rest) {
-        l.x = ax + (dx / d) * rest;
-        l.z = az + (dz / d) * rest;
+      if (l.t >= 0 && l.t < 1) {
+        l.t = Math.min(1, l.t + dt / LETTER_HOP);
+        const e = l.t * l.t * (3 - 2 * l.t);
+        l.x = l.x0 + (bagX - l.x0) * e;
+        l.z = l.z0 + (bagZ - l.z0) * e + Math.sin(Math.PI * l.t) * 0.9;
+        l.size = 1 - 0.75 * e;
+        if (l.t === 1) {
+          b.loot++;
+          b.bump = 0.14;
+        }
       }
-      /* the rope drags along the ground rather than sinking into it */
-      for (const q of SOLIDS) {
-        if (!q.magnet && l.x > q.x0 && l.x < q.x1 && l.z < q.z1 + 0.45) l.z = q.z1 + 0.45;
-      }
-      ax = l.x;
-      az = l.z;
     }
 
     if (s.drop && !s.drop.rest) {
@@ -578,7 +576,7 @@
   }
 
   root.MagrioSim = {
-    create, start, step, absB, ropeAnchor, STEP, W, H, BIG, GROUND, TOP, LEVEL_W, K, BORE, RIM,
+    create, start, step, absB, bagAt, STEP, W, H, BIG, GROUND, TOP, LEVEL_W, K, BORE, RIM,
     MAGNETS, SOLIDS, CHECKPOINTS, PERCHES, START_X,
   };
 })(globalThis);
