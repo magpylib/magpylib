@@ -1,9 +1,11 @@
 import ast
 import functools
 import importlib.metadata
+import io
 import os
 import re
 import sys
+import tokenize
 from pathlib import Path
 
 import numpy as np
@@ -61,15 +63,19 @@ def _prose(path):
     return re.sub(r"```.*?```", "", text, flags=re.DOTALL)
 
 
+@functools.cache
 def _anchors(path):
     headings = re.findall(r"^#+ (.+)$", _prose(path), re.MULTILINE)
     return {re.sub(r"[^\w\- ]", "", h.lower()).replace(" ", "-") for h in headings}
 
 
 def test_agent_skill_is_well_formed() -> None:
-    """Frontmatter follows the Agent Skills spec and every relative link resolves."""
-    head = (SKILL_DIR / "SKILL.md").read_text(encoding="utf-8").split("---\n")[1]
+    """Frontmatter follows the Agent Skills spec, the skill names the shipped
+    major version, and every relative link resolves."""
+    text = (SKILL_DIR / "SKILL.md").read_text(encoding="utf-8")
+    head = text.split("---\n")[1]
     assert re.search(r"^name: magpylib$", head, re.MULTILINE)
+    assert f"Magpylib {m.__version__.split('.')[0]}.x" in text
     description = re.search(r"^description: >-\n((?:  .*\n)+)", head, re.MULTILINE)
     assert description, "description must be a folded block (description: >-)"
     assert len(" ".join(description[1].split())) <= 1024
@@ -84,16 +90,25 @@ def test_agent_skill_is_well_formed() -> None:
 
 
 def _with_shape_checks(code):
-    """Assert the shapes that trailing comments such as ``# (50, 3)`` state."""
+    """Assert the shapes that trailing comments such as ``# (50, 3)`` state.
+
+    On a tuple-unpacking line the comment states the shape of each name.
+    """
     lines = code.splitlines()
+    comments = {
+        token.start[0]: token.string
+        for token in tokenize.generate_tokens(io.StringIO(code).readline)
+        if token.type == tokenize.COMMENT
+    }
     for node in reversed(ast.parse(code).body):
-        comment = lines[node.end_lineno - 1].partition("#")[2]
-        shape = re.match(r"\s*(?:shape )?(\([\d, ]*\))", comment)
+        comment = comments.get(node.end_lineno, "")
+        shape = re.match(r"#\s*(?:shape )?(\([\d, ]*\))", comment)
         if shape is None or not isinstance(node, ast.Assign | ast.Expr):
             continue
-        value = ast.unparse(node.targets[0] if isinstance(node, ast.Assign) else node)
-        check = f"assert _shape({value}) == {shape[1]}, _shape({value})"
-        lines.insert(node.end_lineno, check)
+        target = node.targets[0] if isinstance(node, ast.Assign) else node
+        for value in map(ast.unparse, getattr(target, "elts", [target])):
+            check = f"assert _shape({value}) == {shape[1]}, _shape({value})"
+            lines.insert(node.end_lineno, check)
     return "\n".join(lines)
 
 
@@ -112,6 +127,9 @@ def _skill_examples():
 def test_agent_skill_examples_run(code, monkeypatch) -> None:
     """Every example in the skill runs and gives the shapes its comments state."""
     monkeypatch.setattr(m, "show", functools.partial(m.show, return_fig=True))
+    monkeypatch.setattr(
+        m, "show_context", functools.partial(m.show_context, return_fig=True)
+    )
     monkeypatch.setattr(m.defaults.display, "backend", "plotly")
     monkeypatch.setattr(pio.renderers, "default", "json")
     namespace = {"_shape": lambda x: x if isinstance(x, tuple) else np.shape(x)}

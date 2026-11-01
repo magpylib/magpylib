@@ -111,6 +111,10 @@ B = magpy.getB(cube, [(0, 0, z) for z in heights])
 The same applies to moving sources — set a path rather than repositioning in a
 loop (see [position-paths.md](position-paths.md)).
 
+Large computations run in chunks on several threads (since v6.1). Set
+`magpy.defaults.threads = 1` when you already run Magpylib computations in
+parallel yourself.
+
 If observers sit inside `Tetrahedron` or `TriangularMesh` bodies and their
 location is known, `in_out="inside"` / `"outside"` skips the per-observer
 containment test.

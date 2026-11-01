@@ -50,12 +50,13 @@ for n in (100, 400, 1600, 6400):
     print(n, F)
 ```
 
-## Scale invariance does NOT hold
+## Scale matters
 
-Field computation is scale invariant: a 1 mm magnet at 1 mm distance gives the
-same field as a 1 m magnet at 1 m, so any consistent length unit works. **Force
-and torque break this.** Inputs must be true SI metres or the newtons are
-meaningless.
+Magnetic field results of magnets are independent of the chosen length unit: a
+magnet 1 mm wide at 1 mm distance gives the same field as one 1 m wide at 1 m.
+Current-generated fields at fixed current are not — a loop's field scales with
+`current / diameter` — and **forces and torques generally depend on the physical
+scale**. Inputs must be true SI metres or the newtons are meaningless.
 
 ## Pivot
 

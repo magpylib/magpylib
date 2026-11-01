@@ -9,16 +9,29 @@ description: >-
   getFT, the functional interface, and show() visualisation. Magpylib v5+ takes
   SI units (metres, tesla, amperes) and prefers `polarization` over
   `magnetization`; code written from pre-v5 memory silently produces answers
-  that are wrong by factors of 1e3 to 1e9, so use this skill before writing any
+  that are wrong by orders of magnitude, so use this skill before writing any
   Magpylib code rather than after the numbers look odd.
 license: BSD-3-Clause
 ---
 
 # Magpylib
 
-Official skill, shipped inside the `magpylib` package and versioned with it.
-Prefer it over recalled API knowledge: the v4 → v5 transition changed units and
-parameter names, and most pre-trained code reproduces the old API.
+Official skill for Magpylib 6.x, shipped inside the `magpylib` package and
+versioned with it. Prefer it over recalled API knowledge: the v4 → v5 transition
+changed units and parameter names, and most pre-trained code reproduces the old
+API.
+
+Before generating Magpylib code, check the installed version and use the API
+that version supports: this skill describes 6.x, and anything marked "since v6"
+or "since v6.1" below needs at least that version. Prefer working examples from
+the matching documentation over recalled API patterns, and validate numerical
+results and array shapes when feasible.
+
+```python
+import magpylib as magpy
+
+magpy.__version__  # e.g. '6.1.0'
+```
 
 ## Quick reference
 
@@ -79,11 +92,15 @@ Available classes:
 
 All magnets accept `polarization` (T) **or** `magnetization` (A/m). The two are
 codependent, kept in sync as J = µ₀·M, so set one and read either. Prefer
-`polarization`: a datasheet's remanence B_r is a polarization. Use B_r directly
-only when ignoring material response — a real magnet demagnetises itself, so the
-mean polarization sits a few percent below B_r (about 95% of it as a rule of
-thumb, exactly the J at the working point). For an inhomogeneous treatment see
-the `magpylib-material-response` package.
+`polarization`: a datasheet's remanence B_r is a polarization. Real magnets
+exhibit a material response that causes local variations in polarization. When
+external fields (e.g. from surrounding sources) are small compared to the
+remanence, the aspect ratio is L/D > 0.1, and the relative recoil permeability
+is below 1.1 (typical for sintered NdFeB, SmCo and many hard ferrites), the mean
+polarization is typically only a few percent below B_r. For materials with a
+higher recoil permeability, such as AlNiCo or bonded NdFeB, this approximation
+may be inaccurate. For an inhomogeneous polarization treatment see the
+`magpylib-material-response` package.
 
 Every source constructor takes `position`, `orientation`, its shape parameters,
 and `style`. Shape parameters are given in the object's **local** coordinates;
@@ -152,7 +169,9 @@ code indexes axes positionally.
 
 **One call, many inputs.** Magpylib vectorises everything it is handed. A Python
 loop over `getB` is the single most common performance mistake — it is routinely
-100× slower than passing a path or an observer array. See
+100× slower than passing a path or an observer array. Since v6.1 large calls run
+in chunks on several threads (`magpy.defaults.threads`; set it to 1 when you
+parallelise outside Magpylib). See
 [references/field-computation.md](references/field-computation.md) for the
 functional interface (`magpy.func.*`), which computes many parameter sets at
 once without creating objects.
@@ -261,9 +280,10 @@ F, T = magpy.getFT(cube, loop, meshing=40)
   squeezing. A Collection target counts as one rigid body.
 - Torque needs a pivot. `pivot="centroid"` (default) is right for a free body;
   `pivot=None` gives nonphysical results.
-- **Scale invariance does not hold for forces.** Field results are invariant if
-  every length uses the same unit, but force and torque are not — pass true SI
-  metres.
+- **Scale matters.** Magnetic field results of magnets are independent of the
+  chosen length unit. Geometric scaling does affect current-generated fields at
+  fixed current, and forces and torques generally depend on the physical scale —
+  pass true SI metres.
 
 See [references/force-torque.md](references/force-torque.md) for meshing
 convergence, pivots and `eps`.
@@ -285,8 +305,9 @@ subplots. Styling is per-object via `obj.style` or globally via
 
 - **v4 code is silently wrong, not broken.**
   `Cuboid(magnetization=(0, 0, 1000), dimension=(5, 5, 5))` is valid v5 — it
-  means 1000 A/m and a 5 metre cube. Nothing raises; the answer is off by ~1e9.
-  If input looks like millimetres, convert rather than run it.
+  means 1000 A/m and a 5 metre cube. Nothing raises; the answer is off by orders
+  of magnitude (the polarization alone by ~800×). If input looks like
+  millimetres, convert rather than run it.
 - `magnetization` in v4 meant _polarization_. A v4 script's
   `magnetization=(0, 0, 1000)` (mT) becomes `polarization=(0, 0, 1.0)` (T).
 - `orientation` is a scipy `Rotation`. Passing a tuple of angles raises.
