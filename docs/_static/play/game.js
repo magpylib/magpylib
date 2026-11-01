@@ -221,7 +221,11 @@
     if (p.safe && Math.floor(clock * 14) % 2) return;
     const k = LOGO.s * T * (p.big ? BIG : 1);
     ctx.save();
-    ctx.translate(p.x * T, -(p.z + p.h / 2) * T);
+    /* leaning on flat ground, the lower foot rests on it rather than digging in */
+    const lift = p.onSphere ? 0 : Math.max(0, -p.pivot) * (p.w / 2) * Math.abs(Math.sin(p.tilt));
+    ctx.translate(p.x * T, -(p.z + lift + (p.h * (1 + p.pivot)) / 2) * T);
+    ctx.rotate(p.tilt);
+    ctx.translate(0, ((p.pivot * p.h) / 2) * T);
     const flip = p.flipT > 0 ? Math.abs(Math.cos((Math.PI * p.flipT) / 0.28)) : 1;
     const squash = p.land / 0.16;
     ctx.scale(k * Math.max(0.12, flip) * (1 + 0.12 * squash), k * (1 - 0.14 * squash));
@@ -885,17 +889,16 @@
     view.zoom = tz0 + (1 - tz0) * e;
     const halfW = VW / (T * view.zoom) / 2;
 
-    let tx, tz;
+    /* Like Mario's camera: the hero walks freely inside a window left of centre, so
+       turning round moves nothing, and the view only scrolls when pushed at its edges.
+       No easing and no looking ahead: either would swing the world on every turn. */
+    const playHalf = VW / T / 2, windowL = -0.55 * playHalf, windowR = -0.05 * playHalf;
     if (s.phase === "intro" || title) {
-      tx = 13 + (Math.max(p.x + 3, 13.34) - 13) * e;
-      tz = 0.6 * (1 - e);
-      view.x = tx;
-      view.z = tz;
+      view.x = 13 + (Math.max(p.x - (windowL + windowR) / 2, 13.34) - 13) * e;
+      view.z = 0.6 * (1 - e);
     } else {
-      tx = p.x + p.face * 2.5 + p.vx * 0.12;
-      tz = Math.max(0, p.z + H + 2 - VH / T);
-      const k = 1 - Math.exp(-dt * 5);
-      view.x += (tx - view.x) * k;
+      view.x = Math.max(p.x - windowR, Math.min(p.x - windowL, view.x));
+      const tz = Math.max(0, p.z + p.h + 2 - VH / T);
       view.z += (tz - view.z) * (1 - Math.exp(-dt * 6));
     }
     view.x = Math.max(-6 + halfW, Math.min(LEVEL_W - halfW, view.x));

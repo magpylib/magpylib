@@ -7,11 +7,13 @@
  * and point along z, so B lies in the plane too and the field lines drawn on screen
  * are the true ones.
  *
- * The hero is a magnetic moment m at its own centre, standing upright: pol = +1 has
- * m up, so a north (red) top and south (green) feet, and flipping swaps them. Its
- * force is then the textbook F = grad(m . B) = m_z grad(B_z), so north attracts south
- * and repels north without any rule saying so. What is tuned for play is |m|, standing
- * in for mass (K below), and one liberty is taken: a free magnet would tip over.
+ * The hero is a magnetic moment m at its own centre, along its body: pol = +1 has a
+ * north (red) top and south (green) feet, and flipping swaps them. Its force is the
+ * textbook F = grad(m . B), so north attracts south and repels north without any rule
+ * saying so. The torque m x B tilts the body towards the local field line, like a
+ * compass needle. What is tuned for play is |m|, standing in for mass (K below), and
+ * one liberty is taken: the tilt is partial and it never turns a magnet right over,
+ * where a free one that is being repelled would spin round and attract instead.
  */
 (function (root) {
   "use strict";
@@ -24,6 +26,8 @@
   const K = 870; /* |m| / mass, in tile^2 / s^2 per tesla */
   const FIELD_MAX = 220; /* the force is capped so no corner can fling the hero */
   const FALL_MAX = 34, DE = 0.05, REACH = 26;
+  const TILT_FOLLOW = 0.7, TILT_MAX = 1.05, TILT_FLAT = 0.3, TILT_RATE = 9, TILT_B0 = 0.015;
+  const CAPSULE = 0.75; /* against a sphere the hero is rounded, so its feet meet the curve */
   const GROUND = 3, TOP = 11.5, LEVEL_W = 208;
   const POST = 190, WARP_WAIT = 0.3, RIM_SLIDE = 5;
 
@@ -134,12 +138,30 @@
     return Math.hypot(b[0], b[1], b[2]);
   }
 
-  const Bz = (x, z) => fieldAt(x, z)[2];
+  /* B along the hero's body, m . B per unit of m */
+  function alongBody(tilt, x, z) {
+    const b = fieldAt(x, z);
+    return Math.sin(tilt) * b[0] + Math.cos(tilt) * b[2];
+  }
+
+  /* The field line through the hero, as the tilt nearest to upright. Weak fields hardly
+     turn it, and flat on the ground it can only lean, or its feet would dig in. */
+  function tiltTarget(p) {
+    const b = fieldAt(p.x, p.z + p.h / 2);
+    const mag = Math.hypot(b[0], b[2]);
+    if (mag === 0) return 0;
+    let line = Math.atan2(b[0], b[2]);
+    if (line > Math.PI / 2) line -= Math.PI;
+    else if (line < -Math.PI / 2) line += Math.PI;
+    const max = (p.grounded || p.hang) && !p.onSphere ? TILT_FLAT : TILT_MAX;
+    const want = TILT_FOLLOW * line * (mag / (mag + TILT_B0));
+    return Math.max(-max, Math.min(max, want));
+  }
 
   function fieldAccel(p, out) {
-    const cx = p.x, cz = p.z + p.h / 2, k = p.pol * K * (p.big ? BIG_K : 1);
-    let ax = (k * (Bz(cx + DE, cz) - Bz(cx - DE, cz))) / (2 * DE);
-    let az = (k * (Bz(cx, cz + DE) - Bz(cx, cz - DE))) / (2 * DE);
+    const cx = p.x, cz = p.z + p.h / 2, k = p.pol * K * (p.big ? BIG_K : 1), t = p.tilt;
+    let ax = (k * (alongBody(t, cx + DE, cz) - alongBody(t, cx - DE, cz))) / (2 * DE);
+    let az = (k * (alongBody(t, cx, cz + DE) - alongBody(t, cx, cz - DE))) / (2 * DE);
     const a = Math.hypot(ax, az);
     if (a > FIELD_MAX) {
       ax *= FIELD_MAX / a;
@@ -159,7 +181,7 @@
       p: {
         x: START_X, z: GROUND, vx: 0, vz: 0, pol: 1, face: 1, w: W, h: H, big: false,
         grounded: false, coyote: 0, buffer: 0, cut: false, hang: false, onRail: false, rim: null,
-        walk: 0, land: 0, flipT: 0, safe: 0, warp: 0,
+        walk: 0, land: 0, flipT: 0, safe: 0, warp: 0, tilt: 0, pivot: 0, onSphere: false,
         a: { x: 0, z: 0 },
       },
       prev: { jump: false, flip: false },
@@ -204,6 +226,7 @@
 
   function move(s, p, dt) {
     p.onRail = false;
+    p.onSphere = false;
     p.rim = null;
     const wasGrounded = p.grounded;
     p.grounded = false;
@@ -236,14 +259,14 @@
     }
 
     for (const m of SPHERES) {
-      const r = m.dim / 2;
-      const qx = Math.max(p.x - p.w / 2, Math.min(m.x, p.x + p.w / 2));
-      const qz = Math.max(p.z, Math.min(m.z, p.z + p.h));
-      const dx = qx - m.x, dz = qz - m.z, d = Math.hypot(dx, dz);
+      const r = m.dim / 2 + CAPSULE;
+      const qz = Math.max(p.z + CAPSULE, Math.min(m.z, p.z + p.h - CAPSULE));
+      const dx = p.x - m.x, dz = qz - m.z, d = Math.hypot(dx, dz);
       if (d >= r) continue;
       const nx = d > 0 ? dx / d : 0, nz = d > 0 ? dz / d : 1;
       p.x += nx * (r - d);
       p.z += nz * (r - d);
+      p.onSphere = true;
       const vn = p.vx * nx + p.vz * nz;
       if (vn < 0) {
         p.vx -= vn * nx;
@@ -270,6 +293,7 @@
     p.hang = false;
     p.safe = 1.5;
     p.warp = 0;
+    p.tilt = 0;
     s.deaths++;
     s.events.push("hurt");
   }
@@ -357,6 +381,11 @@
     const was = p.vz;
     move(s, p, dt);
     if (p.grounded && was < -14) p.land = 0.16;
+
+    p.tilt += (tiltTarget(p) - p.tilt) * (1 - Math.exp(-dt * TILT_RATE));
+    /* turns about whatever it is standing on or hanging from, in the air about its middle */
+    const pivotTo = p.grounded ? -1 : p.hang ? 1 : 0;
+    p.pivot += (pivotTo - p.pivot) * (1 - Math.exp(-dt * 14));
 
     p.walk += Math.abs(p.vx) * dt * 2.6;
     p.land = Math.max(0, p.land - dt);
