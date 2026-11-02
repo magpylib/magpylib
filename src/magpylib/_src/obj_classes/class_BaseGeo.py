@@ -361,7 +361,7 @@ class BaseGeo(BaseTransform, ABC):
         parent : Collection or None
             New parent collection. Use ``None`` to detach.
         """
-        from magpylib._src.obj_classes.class_Collection import Collection  # noqa: I001, PLC0415
+        from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
 
         if isinstance(parent, Collection):
             parent.add(self, override_parent=True)

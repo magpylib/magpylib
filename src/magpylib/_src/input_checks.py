@@ -766,7 +766,7 @@ def check_format_input_obj(
     recursive: bool
         Flatten Collection objects
     """
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: PLC0415
     from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
     from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
 
