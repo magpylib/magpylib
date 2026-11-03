@@ -255,7 +255,7 @@ def test_open_triangle_strip_error():
         _ = curr_open.dipole_moment
 
 
-def test_derived_properties_pad_path_properties_of_different_length():
+def test_derived_properties_pad_path_lengths_to_the_longer_one():
     """Two path properties of different lengths pad to the longer one."""
     square = np.array([(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 0)], dtype=float)
     strip = np.array(

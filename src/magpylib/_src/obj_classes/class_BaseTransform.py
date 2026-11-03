@@ -258,7 +258,7 @@ def _apply_rotation(
 
     # Lazy storage: rotation only touches position/orientation. Other path
     # properties are left in their minimal stored form and padded just-in-time
-    # at field/force computation (see pad_path_properties in field_BH/field_FT).
+    # at field/force computation (see _path_steps in field_BH).
 
     return target_object
 
@@ -267,15 +267,14 @@ def _apply_rotation(
 # Path-property length & just-in-time padding helpers
 #
 # These implement the "lazy storage + just-in-time padding" path model
-# (see BaseGeo._path_properties). Three complementary primitives:
+# (see BaseGeo._path_properties). Two primitives:
 #   - path_property_len(value)     : number of path steps a stored value spans
 #   - pad_path_property(value, n)  : pad ONE value to length n (pure, returns new)
-#   - pad_path_properties(obj, n)  : pad ALL of obj's properties IN PLACE
 #
-# To read padded copies of an object's properties WITHOUT mutating it, use
+# To read padded copies of an object's properties, use
 # BaseGeo._sync_path_lengths() (returns a dict; built on pad_path_property).
-# pad_path_properties mutates and is only used transiently during vectorized
-# field/force computation, always under the _preserve_paths context manager.
+# Nothing pads an object in place: threads may compute with it at the same
+# time (#1074).
 # ---------------------------------------------------------------------------
 
 
@@ -331,20 +330,6 @@ def _edge_pad_end(arr, n):
     out[: len(arr)] = arr
     out[len(arr) :] = arr[-1]
     return out
-
-
-def pad_path_properties(target_object, new_path_len, path_properties=None):
-    """Just-in-time pad all path properties of target_object to new_path_len.
-
-    Mutates the object's stored attributes in place; callers that must preserve
-    the minimal (lazy) storage wrap this in ``_preserve_paths``.
-    """
-    if path_properties is None:
-        path_properties = target_object._path_properties
-    for name in path_properties:
-        val = getattr(target_object, f"_{name}", None)
-        val = pad_path_property(val, new_path_len)
-        setattr(target_object, f"_{name}", val)
 
 
 class BaseTransform:

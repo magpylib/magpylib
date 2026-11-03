@@ -14,6 +14,12 @@
 - `magpy.func` raises a `TypeError` on values with units instead of dropping
   them, which read a pint or astropy length of 10 mm as 10 m
   ([#1071](https://github.com/magpylib/magpylib/pull/1071)).
+- Field and force computations no longer change the paths of the objects, so
+  threads can share objects on paths: `getB` could fail with
+  `operands could not be broadcast together`, and `getFT` gave wrong forces.
+  `getFT` along a source path is several times faster, and sources inside
+  Collections get their own paths right
+  ([#1074](https://github.com/magpylib/magpylib/issues/1074)).
 
 ## [6.1.0] 2026-10-31
 

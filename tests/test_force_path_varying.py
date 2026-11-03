@@ -876,38 +876,59 @@ def test_path_varying_with_centroid_pivot():
     np.testing.assert_allclose(T_default, np.array(T_manual), rtol=1e-10)
 
 
-def test_collection_source_path_restores_children():
-    """A Collection source with a path must not permanently displace its children.
+_PATH = [(0, 0, 0), (1, 0, 0), (2, 0, 0)]
 
-    Regression: _compute_B_with_paths moves a Collection source per path step
-    via the public position/orientation setters (which propagate to children),
-    but _preserve_paths only restored the Collection's own attributes, leaving
-    children permanently displaced (and their paths collapsed).
-    """
-    src = magpy.magnet.Cuboid(
-        polarization=(0, 0, 1), dimension=(1, 1, 1), position=(0, 0, 2)
+
+def _cube(position=(0, 0, 2)):
+    return magpy.magnet.Cuboid(
+        polarization=(0, 0, 1), dimension=(1, 1, 1), position=position
     )
-    col = magpy.Collection(src)
-    col.move([(0, 0, 0), (1, 0, 0), (2, 0, 0)])
-    pos_before = src.position.copy()
-    ori_before = src.orientation.as_quat().copy()
 
+
+def _collection_moved():
+    return magpy.Collection(_cube()).move(_PATH), [_cube().move(_PATH)]
+
+
+def _child_moved():
+    col = magpy.Collection(_cube())
+    col.children[0].move(_PATH)
+    return col, [_cube().move(_PATH)]
+
+
+def _own_path_longer():
+    col = magpy.Collection(position=[(0, 0, i) for i in range(4)])
+    col.add(_cube())  # added after, the child keeps its place
+    return col, [_cube()]
+
+
+def _nested_and_mixed():
+    inner = magpy.Collection(_cube((3, 0, 2)), _cube((0, 3, 2)))
+    inner.children[0].move(_PATH)
+    sources = [magpy.Collection(_cube(), inner), _cube((-3, 0, 2))]
+    bare = [_cube(), _cube((3, 0, 2)).move(_PATH), _cube((0, 3, 2)), _cube((-3, 0, 2))]
+    return sources, bare
+
+
+@pytest.mark.parametrize(
+    "scene", [_collection_moved, _child_moved, _own_path_longer, _nested_and_mixed]
+)
+def test_collection_sources_on_paths_equal_their_sources(scene):
+    """Collection sources give the summed force of their sources on their own
+    paths: moved as a whole, a child moved alone, the Collection's own path
+    longer than its child's, nested and mixed with a bare source. Regression:
+    the path of a child was ignored beyond its first step, and children were
+    moved along the Collection's own path."""
+    sources, bare = scene()
     tgt = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
-    F_col, T_col = magpy.getFT(col, tgt, meshing=2)
+    F, T = magpy.getFT(sources, tgt, meshing=2, squeeze=False)
 
-    # children restored exactly
-    np.testing.assert_array_equal(src.position, pos_before)
-    np.testing.assert_allclose(src.orientation.as_quat(), ori_before)
-
-    # a Collection of one source equals the bare source
-    src2 = magpy.magnet.Cuboid(
-        polarization=(0, 0, 1), dimension=(1, 1, 1), position=(0, 0, 2)
-    )
-    src2.move([(0, 0, 0), (1, 0, 0), (2, 0, 0)])
-    tgt2 = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
-    F_src, T_src = magpy.getFT(src2, tgt2, meshing=2)
-    np.testing.assert_allclose(F_col, F_src)
-    np.testing.assert_allclose(T_col, T_src)
+    assert F.shape[1] == 4  # the longest path among the sources
+    bare_ft = [magpy.getFT(b, tgt, meshing=2, squeeze=False) for b in bare]
+    F_bare = sum(np.broadcast_to(f[0], F.shape[1:]) for f, _ in bare_ft)
+    T_bare = sum(np.broadcast_to(t[0], T.shape[1:]) for _, t in bare_ft)
+    # fields of a Collection are summed before the force, rounding differently
+    for got, want in ((F.sum(axis=0), F_bare), (T.sum(axis=0), T_bare)):
+        np.testing.assert_allclose(got, want, rtol=0, atol=1e-10 * np.abs(want).max())
 
 
 def test_trimesh_static_geometry_varying_mag_matches_per_step():
