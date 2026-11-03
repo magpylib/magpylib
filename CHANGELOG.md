@@ -19,7 +19,7 @@
   `operands could not be broadcast together`, and `getFT` gave wrong forces.
   `getFT` along a source path is several times faster, and sources inside
   Collections get their own paths right
-  ([#1074](https://github.com/magpylib/magpylib/issues/1074)).
+  ([#1075](https://github.com/magpylib/magpylib/pull/1075)).
 
 ## [6.1.0] 2026-10-31
 
