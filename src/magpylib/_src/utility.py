@@ -80,7 +80,7 @@ def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> 
     ### Info:
     - exits if invalid sources are given
     """
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: PLC0415
     from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
 
     obj_list = []
@@ -115,7 +115,7 @@ def format_src_inputs(sources) -> list:
     - raises an error if sources format is bad
     """
 
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: PLC0415
     from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
 
     # store all sources here
@@ -165,7 +165,7 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
     """
     return only allowed objects - e.g. no sensors. Throw a warning when something is eliminated.
     """
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: I001, PLC0415
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource  # noqa: PLC0415
     from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
     from magpylib._src.obj_classes.class_Sensor import Sensor  # noqa: PLC0415
 
