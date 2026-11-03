@@ -49,6 +49,7 @@ from types import MethodType
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
+from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields import chunks
 from magpylib._src.input_checks import (
@@ -327,19 +328,14 @@ def _check_sources(sources, field, in_out, stacklevel=3):
     return sources, src_list
 
 
-def _field_on_path(
-    src_list, poso_pix, field, in_out, path_start=0, path_len=None
-) -> np.ndarray:
+def _field_on_path(src_list, poso_pix, field, in_out) -> np.ndarray:
     """Field of each source of ``src_list`` at the observers ``poso_pix``, shape
-    (p, n, 3): n observers at each of p path steps, the steps ``path_start`` on
-    of a path ``path_len`` steps long (default p), at least every source's
+    (p, n, 3): n observers at each of p path steps, p at least every source's
     path length. Returns shape (len(src_list), p, n, 3). The sources are only
     read, so threads can compute with them at the same time (#1074)."""
     # pylint: disable=protected-access
     # pylint: disable=too-many-locals
     max_path_len, n_pix = poso_pix.shape[:2]
-    if path_len is None:
-        path_len = max_path_len
 
     # group similar source types----------------------------------------------
     # by identity: callables that compare equal may still compute different
@@ -382,10 +378,8 @@ def _field_on_path(
             poso_chunk = poso_pix[path_sl, pix_sl]
             n_path_chunk, n_pix_chunk = poso_chunk.shape[:2]
             poso_chunk = poso_chunk.reshape(-1, 3)
-            start, stop, _ = path_sl.indices(max_path_len)
-            src_steps = slice(path_start + start, path_start + stop)
             src_dict = _get_src_dict(
-                sub, n_pix_chunk, len(poso_chunk), poso_chunk, src_steps, path_len
+                sub, n_pix_chunk, len(poso_chunk), poso_chunk, path_sl, max_path_len
             )
             B_chunk = _getBH_level1(
                 field_func=field_func, field=field, in_out=in_out, **src_dict
@@ -416,58 +410,52 @@ def _field_on_path(
     return B
 
 
-def _sum_collections(B, sources) -> np.ndarray:
-    """Sum the fields of the sources of each Collection in ``sources``: B has
-    one entry per source with collections flattened, the result one per entry
-    of ``sources``."""
+def _owners(sources) -> np.ndarray:
+    """For each source of ``sources`` with collections flattened, the index of
+    the entry of ``sources`` it belongs to."""
     # pylint: disable=import-outside-toplevel
     from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
 
-    # rearrange B when there is at least one Collection with more than one source
-    if len(B) > len(sources):
-        for src_ind, src in enumerate(sources):
-            if isinstance(src, Collection):
-                col_len = len(format_obj_input(src, allow="sources"))
-                # set B[i] to sum of slice
-                B[src_ind] = np.sum(B[src_ind : src_ind + col_len], axis=0)
-                B = np.delete(
-                    B, np.s_[src_ind + 1 : src_ind + col_len], 0
-                )  # delete remaining part of slice
-    return B
+    counts = [
+        len(format_obj_input(src, allow="sources"))
+        if isinstance(src, Collection)
+        else 1
+        for src in sources
+    ]
+    return np.repeat(np.arange(len(sources)), counts)
 
 
-# rows of field, each 3 floats, held at once for the sources of Collections
-# before they are summed: about 24 MB
-_COLLECTION_BLOCK_ROWS = 1_000_000
+# chunks per thread in a block of the sources of Collections: enough that the
+# threads stay busy to the end of a block, and its field, 3 floats a row, is
+# held at once before it is summed: 4 M rows, about 100 MB, on 8 threads
+_BLOCK_CHUNKS_PER_THREAD = 10
 
 
 def _summed_field_on_path(sources, src_list, poso_pix, field, in_out) -> np.ndarray:
     """Field of each entry of ``sources`` at the observers ``poso_pix``, shape
     (p, n, 3), the sources of each Collection summed: shape (len(sources), p,
-    n, 3). The sources of Collections are computed in blocks of path steps, so
-    that their fields are held for one block at a time, not for the whole
-    path. A user field_func still gets all observers at once."""
-    # pylint: disable=protected-access
-    path_len, n_pix = poso_pix.shape[:2]
+    n, 3). The sources are computed in blocks of whole sources over the whole
+    path, so that the fields of a Collection's sources are held for one block
+    at a time, and each source is prepared once and its user field_func, if
+    any, gets all observers at once."""
     if len(src_list) == len(sources):  # no Collection of several sources
         return _field_on_path(src_list, poso_pix, field, in_out)
-    step = max(1, _COLLECTION_BLOCK_ROWS // (len(src_list) * max(n_pix, 1)))
-    if step >= path_len:
-        return _sum_collections(
-            _field_on_path(src_list, poso_pix, field, in_out), sources
-        )
-    user = [i for i, src in enumerate(src_list) if src._editable_field_func]
-    own = [i for i, src in enumerate(src_list) if not src._editable_field_func]
-    B_user = _field_on_path([src_list[i] for i in user], poso_pix, field, in_out)
+    path_len, n_pix = poso_pix.shape[:2]
+    owners = _owners(sources)
+    first = np.r_[True, owners[1:] != owners[:-1]]
+    block_rows = _BLOCK_CHUNKS_PER_THREAD * default_settings.threads * chunks.CHUNK_ROWS
+    step = max(1, block_rows // (path_len * max(n_pix, 1)))
     B = np.empty((len(sources), path_len, n_pix, 3))
-    for start in range(0, path_len, step):
-        block = poso_pix[start : start + step]
-        B_block = np.empty((len(src_list), len(block), n_pix, 3))
-        B_block[user] = B_user[:, start : start + step]
-        B_block[own] = _field_on_path(
-            [src_list[i] for i in own], block, field, in_out, start, path_len
+    for start in range(0, len(src_list), step):
+        B_block = _field_on_path(
+            src_list[start : start + step], poso_pix, field, in_out
         )
-        B[:, start : start + step] = _sum_collections(B_block, sources)
+        # one source after the other, in the order np.sum adds them
+        for ind, B_src in enumerate(B_block, start):
+            if first[ind]:
+                B[owners[ind]] = B_src
+            else:
+                B[owners[ind]] += B_src
     return B
 
 

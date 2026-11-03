@@ -907,7 +907,7 @@ CHUNK_SOURCES = {
 @pytest.mark.parametrize("name", CHUNK_SOURCES)
 def test_chunks_and_threads_match_one_vectorized_step(name, monkeypatch):
     """Computations above CHUNK_ROWS run in chunks, on threads, and Collections
-    in blocks of path steps: the field is the one-step field, and the same for
+    in blocks of sources: the field is the one-step field, and the same for
     any thread count."""
     sources = CHUNK_SOURCES[name]()
     grid = np.linspace(-1, 1, 4)
@@ -921,7 +921,6 @@ def test_chunks_and_threads_match_one_vectorized_step(name, monkeypatch):
 
     for chunk_rows in (2, 7, 300):  # path steps, pixels, or whole sources packed
         monkeypatch.setattr(chunks, "CHUNK_ROWS", chunk_rows)
-        monkeypatch.setattr(field_BH, "_COLLECTION_BLOCK_ROWS", chunk_rows)
         B_chunks = []
         for threads in (1, 4):
             monkeypatch.setattr(magpy.defaults, "threads", threads)
@@ -932,7 +931,7 @@ def test_chunks_and_threads_match_one_vectorized_step(name, monkeypatch):
 
 def test_user_field_func_gets_all_observers_on_the_calling_thread(monkeypatch):
     """A user field_func is called once with all observers, on the calling
-    thread, also in a Collection computed in blocks of path steps: it may not
+    thread, also in a Collection computed in blocks of sources: it may not
     be thread-safe, nor compute point by point."""
     calls = []
 
@@ -941,7 +940,7 @@ def test_user_field_func_gets_all_observers_on_the_calling_thread(monkeypatch):
         return observers
 
     monkeypatch.setattr(chunks, "CHUNK_ROWS", 7)
-    monkeypatch.setattr(field_BH, "_COLLECTION_BLOCK_ROWS", 7)
+    monkeypatch.setattr(field_BH, "_BLOCK_CHUNKS_PER_THREAD", 1)  # a source a block
     src = magpy.misc.CustomSource(field_func=field_func)
     points = np.random.default_rng(0).random((50, 3))
     calls.clear()  # the constructor tries field_func on two points
