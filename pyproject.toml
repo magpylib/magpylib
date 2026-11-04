@@ -53,6 +53,7 @@ test = [
   "pytest-cov >=7",
   "pandas",
   "pyvista",
+  "vtk !=9.7.2", # no macOS arm64 wheel; drop once it has one
   "imageio[tifffile,ffmpeg]",
   "jupyterlab",
   "ipywidgets",  # for FigureWidget (plotly v5)
@@ -81,6 +82,7 @@ docs = [
   "pandas",
   "numpy-stl",
   "pyvista[jupyter] >=0.48", # trame ships the scene exporter and the viewer
+  "vtk !=9.7.2", # no macOS arm64 wheel; drop once it has one
   "magpylib-material-response",
   "plotly>=7.0", # see https://github.com/executablebooks/myst-nb/issues/667
   "kaleido>=1", # 1.x uses a system Chrome or downloads one on first use
