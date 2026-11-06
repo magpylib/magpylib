@@ -4,8 +4,8 @@
         "url": "https://magpylib.readthedocs.io/en/latest/"
     },
     {
-        "name": "6.1.0 (stable)",
-        "version": "6.1.0",
+        "name": "6.2.0 (stable)",
+        "version": "6.2.0",
         "url": "https://magpylib.readthedocs.io/en/stable",
         "preferred": true
     },
