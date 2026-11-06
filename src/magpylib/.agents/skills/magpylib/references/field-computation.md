@@ -113,7 +113,8 @@ loop (see [position-paths.md](position-paths.md)).
 
 Large computations run in chunks on several threads (since v6.1). Set
 `magpy.defaults.threads = 1` when you already run Magpylib computations in
-parallel yourself.
+parallel yourself. Since v6.2 your threads may share the same objects; before,
+objects on paths could fail or give wrong forces.
 
 If observers sit inside `Tetrahedron` or `TriangularMesh` bodies and their
 location is known, `in_out="inside"` / `"outside"` skips the per-observer
