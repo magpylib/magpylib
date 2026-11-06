@@ -43,13 +43,13 @@ level4(src.getB/H, sensor.getB/H, collection.getB/H):   <--- USER INTERFACE
 
 import warnings
 from collections.abc import Callable
-from contextlib import contextmanager
 from itertools import product
 from types import MethodType
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
+from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields import chunks
 from magpylib._src.input_checks import (
@@ -60,7 +60,7 @@ from magpylib._src.input_checks import (
     check_getBH_output_type,
 )
 from magpylib._src.obj_classes.class_BaseTransform import (
-    pad_path_properties,
+    pad_path_property,
     path_property_len,
 )
 from magpylib._src.utility import (
@@ -70,65 +70,27 @@ from magpylib._src.utility import (
 )
 
 
-@contextmanager
-def _preserve_paths(input_objs, path_properties=None, copy=False):
-    """
-    Context manager to store and restore original source paths.
-
-    Parameters
-    ----------
-    input_objs : list
-        List of objects whose paths need to be preserved.
-    copy : bool, default False
-        If ``True``, creates a copy of the input objects before modifying their paths.
-
-    Yields
-    ------
-    None
-        Context where source paths can be temporarily modified.
-    """
-    # Store original paths
-    path_orig = {}
-    for obj in input_objs:
-        path_props_obj = (
-            obj._path_properties if path_properties is None else path_properties
-        )
-        for prop in path_props_obj:
-            key = (id(obj), prop)
-            val = getattr(obj, f"_{prop}", None)
-            if copy and val is not None:
-                # scipy Rotation has no .copy(); reconstruct from quaternion array
-                if hasattr(val, "as_quat"):
-                    val = R.from_quat(val.as_quat().copy())
-                else:
-                    val = val.copy()
-            path_orig[key] = val
-    try:
-        yield
-    finally:
-        # Restore original paths
-        for obj in input_objs:
-            path_props_obj = (
-                obj._path_properties if path_properties is None else path_properties
-            )
-            for prop in path_props_obj:
-                key = (id(obj), prop)
-                setattr(obj, f"_{prop}", path_orig[key])
+def _path_steps(val: np.ndarray, path_sl: slice, path_len: int) -> np.ndarray:
+    """The path steps ``path_sl`` of a stored path property, as if edge-padded to
+    ``path_len`` steps: a shorter property repeats its last entry. The object is
+    only read, so threads can compute with it at the same time, see #1074."""
+    if len(val) >= path_len:
+        return val[path_sl]
+    return val[np.minimum(np.arange(*path_sl.indices(path_len)), len(val) - 1)]
 
 
-def _tile_group_property_path(group: list, n_pix: int, prop_name: str, path_sl: slice):
-    """tile up group property with path support, for the path steps ``path_sl``.
-
-    Every object is edge-padded to the common max path length by _getBH_level2
-    before this runs, so each stored value already carries the full path length.
-    """
+def _tile_group_property_path(
+    group: list, n_pix: int, prop_name: str, path_sl: slice, path_len: int
+):
+    """tile up group property with path support, for the path steps ``path_sl``
+    of a path ``path_len`` steps long."""
     out = []
     for src in group:
         val = getattr(src, f"_{prop_name}")
         if val is None:
             msg = f"Input {prop_name} of {src} must be set before computing the field."
             raise MagpylibMissingInput(msg)
-        out.append(val[path_sl])
+        out.append(_path_steps(val, path_sl, path_len))
 
     # repeat each path entry n_pix times: rows must be path-major/pixel-minor
     # to match the position/orientation/observer layout in _get_src_dict
@@ -167,38 +129,44 @@ def _sensor_orientation_flags(sensors: list) -> tuple[list[bool], list[bool]]:
     return unrotated, static
 
 
-def _pixel_positions(sens, static_orientation: bool) -> np.ndarray:
+def _pixel_positions(
+    sens, static_orientation: bool, position: np.ndarray, orientation: R
+) -> np.ndarray:
     """Global positions of a sensor's pixels at every path step, shape (p, n, 3):
     one matmul over all path steps, ``matrix @ pixels.T`` for each, the product
-    Rotation.apply computes. A static orientation uses one matrix."""
-    # pylint: disable=protected-access
-    pos = sens._position[:, None, :]
+    Rotation.apply computes. A static orientation uses one matrix.
+    ``position`` and ``orientation`` are the sensor's, padded to p steps."""
+    pos = position[:, None, :]
     if sens.pixel is None:
         return np.zeros((1, 1, 3)) + pos
-    rot = sens._orientation[:1] if static_orientation else sens._orientation
+    rot = orientation[:1] if static_orientation else orientation
     pix_t = sens.pixel.reshape(-1, 3).T
     return np.matmul(rot.as_matrix(), pix_t).transpose(0, 2, 1) + pos
 
 
 def _get_src_dict(
-    group: list, n_pix: int, n_pp: int, poso: np.ndarray, path_sl: slice
+    group: list,
+    n_pix: int,
+    n_pp: int,
+    poso: np.ndarray,
+    path_sl: slice,
+    path_len: int,
 ) -> dict:
-    """create dictionaries for level1 input, for the path steps ``path_sl``.
-
-    Every object is edge-padded to the common max path length by _getBH_level2
-    before this runs, so ``_position``/``_orientation`` already carry the full
-    path length.
-    """
+    """create dictionaries for level1 input, for the path steps ``path_sl`` of a
+    path ``path_len`` steps long. Shorter path properties repeat their last
+    entry."""
     # pylint: disable=protected-access
     # pylint: disable=too-many-return-statements
 
     # tile up basic attributes that all sources have
     # Position
-    poss = np.array([src._position[path_sl] for src in group])
+    poss = np.array([_path_steps(src._position, path_sl, path_len) for src in group])
     posv = np.tile(poss, n_pix).reshape((-1, 3))
 
     # Orientation - convert Rotation to quat, tile, convert back
-    rots = np.array([src._orientation.as_quat()[path_sl] for src in group])
+    rots = np.array(
+        [_path_steps(src._orientation.as_quat(), path_sl, path_len) for src in group]
+    )
     rotv = np.tile(rots, n_pix).reshape((-1, 4))
     rotobj = R.from_quat(rotv)
 
@@ -229,7 +197,7 @@ def _get_src_dict(
             and prop_name in props_in_field_func
         ):
             kwargs[prop_name] = _tile_group_property_path(
-                group, n_pix, prop_name, path_sl
+                group, n_pix, prop_name, path_sl, path_len
             )
 
     return kwargs
@@ -307,25 +275,11 @@ def _chunk_slices(rows_per_obs, n_path, n_pix):
     return out
 
 
-def _getBH_level2(
-    sources, observers, *, field, sumup, squeeze, pixel_agg, output, in_out
-) -> np.ndarray:
-    """Compute field for given sources and observers.
-    Info:
-    -----
-    - generates a 1D list of sources (collections flattened) and a 1D list of sensors from input
-    - tile all paths of static (path_length=1) objects
-    - combine all sensor pixel positions for joint evaluation
-    - group similar source types for joint evaluation
-    - compute field and store in allocated array
-    - rearrange the array in the shape squeeze((L, M, K, N1, N2, ..., 3))
-    """
-    # pylint: disable=protected-access
-    # pylint: disable=too-many-branches
-    # pylint: disable=too-many-statements
+def _check_sources(sources, field, in_out, stacklevel=3):
+    """Format and check the sources of a field computation: return the ordered
+    list of sources, and the list with collections flattened. ``stacklevel``
+    is the warnings' stack level, seen from this function."""
     # pylint: disable=import-outside-toplevel
-
-    from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
     from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh  # noqa: PLC0415
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
@@ -350,7 +304,7 @@ def _getBH_level2(
                 "Parameter in_out was explicitly set but is ignored in the computation. "
                 "It applies only to classes Tetrahedron and TriangularMesh.",
                 UserWarning,
-                stacklevel=2,
+                stacklevel=stacklevel,
             )
 
     # make sure that TriangularMesh sources have a closed mesh when getB is called - warn if not
@@ -362,14 +316,167 @@ def _getBH_level2(
                     warnings.warn(
                         f"Unchecked open mesh status in {src!r} detected before B-field computation. "
                         "An open mesh may return bad results.",
-                        stacklevel=2,
+                        stacklevel=stacklevel,
                     )
                 elif src.status_open:  # mesh is open
                     warnings.warn(
                         f"Open mesh detected in {src!r} before B-field computation. "
                         "An open mesh may return bad results.",
-                        stacklevel=2,
+                        stacklevel=stacklevel,
                     )
+
+    return sources, src_list
+
+
+def _field_on_path(src_list, poso_pix, field, in_out) -> np.ndarray:
+    """Field of each source of ``src_list`` at the observers ``poso_pix``, shape
+    (p, n, 3): n observers at each of p path steps, p at least every source's
+    path length. Returns shape (len(src_list), p, n, 3). The sources are only
+    read, so threads can compute with them at the same time (#1074)."""
+    # pylint: disable=protected-access
+    # pylint: disable=too-many-locals
+    max_path_len, n_pix = poso_pix.shape[:2]
+
+    # group similar source types----------------------------------------------
+    # by identity: callables that compare equal may still compute different
+    # fields, and some cannot be hashed. A bound method is built anew on each
+    # attribute access, so its object and function identify it. Each group
+    # holds its field_func, which keeps these ids valid.
+    field_func_groups = {}
+    for ind, src in enumerate(src_list):
+        field_func = src.field_func
+        if field_func is None:
+            msg = (
+                f"Cannot compute {field}-field because input "
+                f"field_func of {src} has undefined {field}-field computation."
+            )
+            raise MagpylibMissingInput(msg)
+        if isinstance(field_func, MethodType):
+            group_key = (id(field_func.__self__), id(field_func.__func__))
+        else:
+            group_key = id(field_func)
+        if group_key not in field_func_groups:
+            field_func_groups[group_key] = {
+                "field_func": field_func,
+                "sources": [],
+                "order": [],
+            }
+        field_func_groups[group_key]["sources"].append(src)
+        field_func_groups[group_key]["order"].append(ind)
+
+    # evaluate each group in vectorized chunks ---------------------------------
+    B = np.empty((len(src_list), max_path_len, n_pix, 3))  # allocate B
+    tasks, rows, largest = [], 0, 0  # chunks of Magpylib's own kernels
+    for group in field_func_groups.values():
+        field_func = group["field_func"]
+        gr = group["sources"]
+        order = np.array(group["order"])
+
+        def compute(chunk, field_func=field_func, gr=gr, order=order):
+            src_sl, path_sl, pix_sl = chunk
+            sub = gr[src_sl]
+            poso_chunk = poso_pix[path_sl, pix_sl]
+            n_path_chunk, n_pix_chunk = poso_chunk.shape[:2]
+            poso_chunk = poso_chunk.reshape(-1, 3)
+            src_dict = _get_src_dict(
+                sub, n_pix_chunk, len(poso_chunk), poso_chunk, path_sl, max_path_len
+            )
+            B_chunk = _getBH_level1(
+                field_func=field_func, field=field, in_out=in_out, **src_dict
+            )
+            if B_chunk is None:
+                msg = (
+                    f"Cannot compute {field}-field because input "
+                    f"field_func {field_func} has undefined {field}-field computation."
+                )
+                raise MagpylibMissingInput(msg)
+            # put into dedicated positions in B
+            B[order[src_sl], path_sl, pix_sl] = B_chunk.reshape(
+                (len(sub), n_path_chunk, n_pix_chunk, 3)
+            )
+
+        if not gr[0]._editable_field_func:  # one of Magpylib's own kernels
+            rows_per_obs = [src._kernel_rows_per_observer() for src in gr]
+            rows += sum(rows_per_obs) * max_path_len * n_pix
+            largest = max(largest, *rows_per_obs)
+            slices = _chunk_slices(rows_per_obs, max_path_len, n_pix)
+            tasks.extend((compute, chunk) for chunk in slices)
+        else:  # a user field_func gets all observers at once, on this
+            # thread: it may not be thread-safe, nor compute point by point
+            compute((slice(None), slice(None), slice(None)))
+
+    chunks.run_chunks(tasks, rows, largest)
+
+    return B
+
+
+def _owners(sources) -> np.ndarray:
+    """For each source of ``sources`` with collections flattened, the index of
+    the entry of ``sources`` it belongs to."""
+    # pylint: disable=import-outside-toplevel
+    from magpylib._src.obj_classes.class_Collection import Collection  # noqa: PLC0415
+
+    counts = [
+        len(format_obj_input(src, allow="sources"))
+        if isinstance(src, Collection)
+        else 1
+        for src in sources
+    ]
+    return np.repeat(np.arange(len(sources)), counts)
+
+
+# chunks per thread in a block of the sources of Collections: enough that the
+# threads stay busy to the end of a block, and its field, 3 floats a row, is
+# held at once before it is summed: 4 M rows, about 100 MB, on 8 threads
+_BLOCK_CHUNKS_PER_THREAD = 10
+
+
+def _summed_field_on_path(sources, src_list, poso_pix, field, in_out) -> np.ndarray:
+    """Field of each entry of ``sources`` at the observers ``poso_pix``, shape
+    (p, n, 3), the sources of each Collection summed: shape (len(sources), p,
+    n, 3). The sources are computed in blocks of whole sources over the whole
+    path, so that the fields of a Collection's sources are held for one block
+    at a time, and each source is prepared once and its user field_func, if
+    any, gets all observers at once."""
+    if len(src_list) == len(sources):  # no Collection of several sources
+        return _field_on_path(src_list, poso_pix, field, in_out)
+    path_len, n_pix = poso_pix.shape[:2]
+    owners = _owners(sources)
+    first = np.r_[True, owners[1:] != owners[:-1]]
+    block_rows = _BLOCK_CHUNKS_PER_THREAD * default_settings.threads * chunks.CHUNK_ROWS
+    step = max(1, block_rows // (path_len * max(n_pix, 1)))
+    B = np.empty((len(sources), path_len, n_pix, 3))
+    for start in range(0, len(src_list), step):
+        B_block = _field_on_path(
+            src_list[start : start + step], poso_pix, field, in_out
+        )
+        # one source after the other, in the order np.sum adds them
+        for ind, B_src in enumerate(B_block, start):
+            if first[ind]:
+                B[owners[ind]] = B_src
+            else:
+                B[owners[ind]] += B_src
+    return B
+
+
+def _getBH_level2(
+    sources, observers, *, field, sumup, squeeze, pixel_agg, output, in_out
+) -> np.ndarray:
+    """Compute field for given sources and observers.
+    Info:
+    -----
+    - generates a 1D list of sources (collections flattened) and a 1D list of sensors from input
+    - read shorter paths as if edge-padded, without changing the objects
+    - combine all sensor pixel positions for joint evaluation
+    - group similar source types for joint evaluation
+    - compute field and store in allocated array
+    - rearrange the array in the shape squeeze((L, M, K, N1, N2, ..., 3))
+    """
+    # pylint: disable=protected-access
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
+
+    sources, src_list = _check_sources(sources, field, in_out)
 
     # format observers input:
     #   allow only bare sensor, collection, pos_vec or list thereof
@@ -385,180 +492,80 @@ def _getBH_level2(
     pix_all_same = len(set(pix_shapes)) == 1
 
     # check which sensors are unrotated or have a static orientation (performance)
-    #   this check is made now when sensor paths are not yet tiled.
+    #   on the stored paths: padding repeats the last orientation.
     unrotated_sensors, static_sensor_rot = _sensor_orientation_flags(sensors)
 
     # some important quantities -------------------------------------------------
     obj_list = set(src_list + sensors)  # unique obj entries only !!!
     num_of_sources = len(sources)
-    num_of_src_list = len(src_list)
     num_of_sensors = len(sensors)
 
-    # tile up paths -------------------------------------------------------------
-    #   any path property shorter than the global max is edge-padded (JIT) up to
-    #   max_path_len for the computation, then restored by _preserve_paths.
+    # path length ------------------------------------------------------------------
+    #   a path property shorter than max_path_len repeats its last entry. It is
+    #   read that way (_path_steps), not padded on the object: other threads
+    #   may compute with the same object at the same time (#1074).
     max_path_len = max(obj._get_path_len() for obj in obj_list)
 
-    # An object needs padding iff any of its (non-None) path properties is
-    # shorter than max_path_len. _get_path_len() only reflects the longest
-    # property, so a per-property scan is required to also catch objects whose
-    # longest property reaches the max while others (e.g. dimension) are shorter.
-    def _needs_padding(obj):
-        # default None: a declared path property need not have been assigned
-        # yet, and matches _get_path_len / _sync_path_lengths
-        return any(
-            (val := getattr(obj, f"_{prop}", None)) is not None
-            and path_property_len(val) < max_path_len
-            for prop in obj._path_properties
+    def padded(val):  # sensors are small: pad a copy
+        if path_property_len(val) < max_path_len:
+            return pad_path_property(val, max_path_len)
+        return val
+
+    sens_paths = [(padded(s._position), padded(s._orientation)) for s in sensors]
+
+    # combine information form all sensors to generate pos_obs with-------------
+    #   shape (m * concat all sens flat pixel, 3)
+    #   allows sensors with different pixel shapes <- relevant?
+    poso = [
+        _pixel_positions(sens, static, *path)
+        for sens, static, path in zip(
+            sensors, static_sensor_rot, sens_paths, strict=True
         )
+    ]
+    poso = np.concatenate(poso, axis=1)  # (max_path_len, all pixels, 3)
 
-    objs_to_pad = [obj for obj in obj_list if _needs_padding(obj)]
+    B = _summed_field_on_path(sources, src_list, poso, field, in_out)
 
-    with _preserve_paths(objs_to_pad, copy=False):
-        for obj in objs_to_pad:
-            pad_path_properties(
-                obj,
-                max_path_len,
-                path_properties=obj._path_properties,
-            )
-
-        # combine information form all sensors to generate pos_obs with-------------
-        #   shape (m * concat all sens flat pixel, 3)
-        #   allows sensors with different pixel shapes <- relevant?
-        poso = [
-            _pixel_positions(sens, static)
-            for sens, static in zip(sensors, static_sensor_rot, strict=True)
-        ]
-        poso = np.concatenate(poso, axis=1).reshape(-1, 3)
-        n_pp = len(poso)
-        n_pix = int(n_pp / max_path_len)
-
-        # group similar source types----------------------------------------------
-        # by identity: callables that compare equal may still compute different
-        # fields, and some cannot be hashed. A bound method is built anew on each
-        # attribute access, so its object and function identify it. Each group
-        # holds its field_func, which keeps these ids valid.
-        field_func_groups = {}
-        for ind, src in enumerate(src_list):
-            field_func = src.field_func
-            if field_func is None:
-                msg = (
-                    f"Cannot compute {field}-field because input "
-                    f"field_func of {src} has undefined {field}-field computation."
-                )
-                raise MagpylibMissingInput(msg)
-            if isinstance(field_func, MethodType):
-                group_key = (id(field_func.__self__), id(field_func.__func__))
+    # reshape output ----------------------------------------------------------------
+    # apply sensor rotations (after summation over collections to reduce rot.apply operations)
+    for sens_ind, sens in enumerate(sensors):  # cycle through all sensors
+        pix_slice = slice(pix_inds[sens_ind], pix_inds[sens_ind + 1])
+        if not unrotated_sensors[sens_ind]:  # apply operations only to rotated sensors
+            # select part where rot is applied
+            Bpart = B[:, :, pix_slice]
+            # change shape to (P, 3) for rot package
+            Bpart_orig_shape = Bpart.shape
+            Bpart_flat = np.reshape(Bpart, (-1, 3))
+            # apply sensor rotation
+            if static_sensor_rot[sens_ind]:  # special case: same rotation along path
+                sens_orient = sens._orientation[0]
             else:
-                group_key = id(field_func)
-            if group_key not in field_func_groups:
-                field_func_groups[group_key] = {
-                    "field_func": field_func,
-                    "sources": [],
-                    "order": [],
-                }
-            field_func_groups[group_key]["sources"].append(src)
-            field_func_groups[group_key]["order"].append(ind)
-
-        # evaluate each group in vectorized chunks ---------------------------------
-        B = np.empty((num_of_src_list, max_path_len, n_pix, 3))  # allocate B
-        poso_pix = poso.reshape((max_path_len, n_pix, 3))
-        tasks, rows, largest = [], 0, 0  # chunks of Magpylib's own kernels
-        for group in field_func_groups.values():
-            field_func = group["field_func"]
-            gr = group["sources"]
-            order = np.array(group["order"])
-
-            def compute(chunk, field_func=field_func, gr=gr, order=order):
-                src_sl, path_sl, pix_sl = chunk
-                sub = gr[src_sl]
-                poso_chunk = poso_pix[path_sl, pix_sl]
-                n_path_chunk, n_pix_chunk = poso_chunk.shape[:2]
-                poso_chunk = poso_chunk.reshape(-1, 3)
-                src_dict = _get_src_dict(
-                    sub, n_pix_chunk, len(poso_chunk), poso_chunk, path_sl
-                )
-                B_chunk = _getBH_level1(
-                    field_func=field_func, field=field, in_out=in_out, **src_dict
-                )
-                if B_chunk is None:
-                    msg = (
-                        f"Cannot compute {field}-field because input "
-                        f"field_func {field_func} has undefined {field}-field computation."
+                sens_orient = R.from_quat(
+                    np.tile(  # tile for each source from list
+                        np.repeat(  # same orientation path index for all indices
+                            sens_paths[sens_ind][1].as_quat(),
+                            pix_nums[sens_ind],
+                            axis=0,
+                        ),
+                        (num_of_sources, 1),
                     )
-                    raise MagpylibMissingInput(msg)
-                # put into dedicated positions in B
-                B[order[src_sl], path_sl, pix_sl] = B_chunk.reshape(
-                    (len(sub), n_path_chunk, n_pix_chunk, 3)
                 )
+            Bpart_flat_rot = sens_orient.inv().apply(Bpart_flat)
+            # overwrite Bpart in B
+            B[:, :, pix_slice] = np.reshape(Bpart_flat_rot, Bpart_orig_shape)
+        if sens.handedness == "left":
+            B[..., pix_slice, 0] *= -1
 
-            if not gr[0]._editable_field_func:  # one of Magpylib's own kernels
-                rows_per_obs = [src._kernel_rows_per_observer() for src in gr]
-                rows += sum(rows_per_obs) * max_path_len * n_pix
-                largest = max(largest, *rows_per_obs)
-                slices = _chunk_slices(rows_per_obs, max_path_len, n_pix)
-                tasks.extend((compute, chunk) for chunk in slices)
-            else:  # a user field_func gets all observers at once, on this
-                # thread: it may not be thread-safe, nor compute point by point
-                compute((slice(None), slice(None), slice(None)))
-
-        chunks.run_chunks(tasks, rows, largest)
-
-        # reshape output ----------------------------------------------------------------
-        # rearrange B when there is at least one Collection with more than one source
-        if num_of_src_list > num_of_sources:
-            for src_ind, src in enumerate(sources):
-                if isinstance(src, Collection):
-                    col_len = len(format_obj_input(src, allow="sources"))
-                    # set B[i] to sum of slice
-                    B[src_ind] = np.sum(B[src_ind : src_ind + col_len], axis=0)
-                    B = np.delete(
-                        B, np.s_[src_ind + 1 : src_ind + col_len], 0
-                    )  # delete remaining part of slice
-
-        # apply sensor rotations (after summation over collections to reduce rot.apply operations)
-        for sens_ind, sens in enumerate(sensors):  # cycle through all sensors
-            pix_slice = slice(pix_inds[sens_ind], pix_inds[sens_ind + 1])
-            if not unrotated_sensors[
-                sens_ind
-            ]:  # apply operations only to rotated sensors
-                # select part where rot is applied
-                Bpart = B[:, :, pix_slice]
-                # change shape to (P, 3) for rot package
-                Bpart_orig_shape = Bpart.shape
-                Bpart_flat = np.reshape(Bpart, (-1, 3))
-                # apply sensor rotation
-                if static_sensor_rot[
-                    sens_ind
-                ]:  # special case: same rotation along path
-                    sens_orient = sens._orientation[0]
-                else:
-                    sens_orient = R.from_quat(
-                        np.tile(  # tile for each source from list
-                            np.repeat(  # same orientation path index for all indices
-                                sens._orientation.as_quat(), pix_nums[sens_ind], axis=0
-                            ),
-                            (num_of_sources, 1),
-                        )
-                    )
-                Bpart_flat_rot = sens_orient.inv().apply(Bpart_flat)
-                # overwrite Bpart in B
-                B[:, :, pix_slice] = np.reshape(Bpart_flat_rot, Bpart_orig_shape)
-            if sens.handedness == "left":
-                B[..., pix_slice, 0] *= -1
-
-        # rearrange sensor-pixel shape
-        if pix_all_same:
-            B = B.reshape(
-                (num_of_sources, max_path_len, num_of_sensors, *pix_shapes[0])
-            )
-            # aggregate pixel values
-            if pixel_agg is not None:
-                B = pixel_agg_func(B, axis=tuple(range(3 - B.ndim, -1)))
-        else:  # pixel_agg is not None when pix_all_same, checked with
-            Bsplit = np.split(B, pix_inds[1:-1], axis=2)
-            Bagg = [np.expand_dims(pixel_agg_func(b, axis=2), axis=2) for b in Bsplit]
-            B = np.concatenate(Bagg, axis=2)
+    # rearrange sensor-pixel shape
+    if pix_all_same:
+        B = B.reshape((num_of_sources, max_path_len, num_of_sensors, *pix_shapes[0]))
+        # aggregate pixel values
+        if pixel_agg is not None:
+            B = pixel_agg_func(B, axis=tuple(range(3 - B.ndim, -1)))
+    else:  # pixel_agg is not None when pix_all_same, checked with
+        Bsplit = np.split(B, pix_inds[1:-1], axis=2)
+        Bagg = [np.expand_dims(pixel_agg_func(b, axis=2), axis=2) for b in Bsplit]
+        B = np.concatenate(Bagg, axis=2)
 
     # sumup over sources
     if sumup:

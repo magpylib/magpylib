@@ -125,10 +125,11 @@ class BaseGeo(BaseTransform, ABC):
     #   - Storage is lazy: each property is kept in its minimal user-given form
     #     (length 1 unless explicitly path-varying); move/rotate only touch
     #     position/orientation and leave the rest minimal.
-    #   - Padding is just-in-time: at field/force/display time the minimal
-    #     arrays are edge-padded up to the common max path length (materialized
-    #     copies, not broadcast views) via pad_path_propert(y|ies) /
-    #     _sync_path_lengths, then restored by _preserve_paths.
+    #   - Padding is just-in-time: where a computation needs them, the minimal
+    #     arrays are edge-padded up to the common max path length on copies
+    #     (pad_path_property / _sync_path_lengths), or read as if padded
+    #     (field_BH._path_steps). The object itself is never padded, so
+    #     threads can compute with it at the same time.
     # Note position and orientation additionally stay eagerly synced to each
     # other for geometric consistency.
     _path_properties = ("position", "orientation")
@@ -235,10 +236,6 @@ class BaseGeo(BaseTransform, ABC):
         -------
         dict of {str: ndarray | Rotation}
             Each value is edge-padded to the same max path length.
-
-        See Also
-        --------
-        pad_path_properties : in-place variant used during field/force computation.
         """
         if prop_names is None:
             prop_names = self._path_properties

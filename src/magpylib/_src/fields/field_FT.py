@@ -7,12 +7,9 @@ import warnings
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from magpylib._src.fields.field_BH import _preserve_paths, getB
+from magpylib._src.fields.field_BH import _check_sources, _summed_field_on_path
 from magpylib._src.input_checks import check_dimensions, check_excitations
-from magpylib._src.obj_classes.class_BaseTransform import (
-    pad_path_properties,
-    pad_path_property,
-)
+from magpylib._src.obj_classes.class_BaseTransform import pad_path_property
 from magpylib._src.utility import format_src_inputs
 
 
@@ -430,7 +427,7 @@ def _flatten_observers(target_meshes):
     return obs_flat, mesh_info
 
 
-def _compute_B_with_paths(sources, obs_flat, n_path):
+def _compute_B_with_paths(sources, obs_flat):
     """
     Compute B-field with native path support.
 
@@ -439,75 +436,20 @@ def _compute_B_with_paths(sources, obs_flat, n_path):
     sources : list
         List of source objects
     obs_flat : ndarray
-        Observer points with shape (n_path, n_obs, 3)
-    n_path : int
-        Path length
+        Observer points with shape (n_path, n_obs, 3), where n_path is at least
+        every source's path length. The observers of path step j see the
+        sources at their path step j.
 
     Returns
     -------
     B_flat : ndarray
         B-field with shape (n_src, n_path, n_obs, 3)
     """
-    n_src = len(sources)
-    n_obs = obs_flat.shape[1]
-
-    # Check if any source has a path
-    src_path_lengths = [src._get_path_len() for src in sources]
-    n_src_path = max(src_path_lengths)
-
-    # Simple case: no source paths
-    if n_src_path == 1:
-        return getB(sources, obs_flat, squeeze=False)[:, 0, 0, :]
-
-    # General case: sources have paths
-    B_flat = np.empty((n_src, n_path, n_obs, 3))
-
-    # A Collection source is moved per path step via its public position/
-    # orientation setters, which displace its descendants. Preserve those
-    # descendants too so their paths are restored on exit (setattr on the
-    # Collection alone would leave children permanently displaced).
-    from magpylib._src.obj_classes.class_Collection import (  # noqa: PLC0415
-        Collection,
-    )
-
-    preserve_objs = list(sources)
-    for src in sources:
-        if isinstance(src, Collection):
-            preserve_objs.extend(src.children_all)
-
-    # Preserve original source paths and pad them to n_path
-    with _preserve_paths(preserve_objs, path_properties=None, copy=False):
-        # Pad all source paths to n_path
-        for src in sources:
-            pad_path_properties(
-                src,
-                n_path,
-                path_properties=src._path_properties,
-            )
-
-        # Store references to padded path properties (no copy needed - restored by context manager)
-        src_path_data = [
-            {prop: getattr(src, f"_{prop}", None) for prop in src._path_properties}
-            for src in sources
-        ]
-
-        # Compute for each path step
-        for j in range(n_path):
-            # Set each source to its j-th path position
-            for i, src in enumerate(sources):
-                for prop in src._path_properties:
-                    prop_val = src_path_data[i][prop]
-                    if prop == "position":
-                        src.position = prop_val[j]
-                    elif prop == "orientation":
-                        src.orientation = prop_val[j]
-                    else:
-                        setattr(src, f"_{prop}", np.array([prop_val[j]]))
-
-            # Compute B-field at this path step
-            B_flat[:, j] = getB(sources, obs_flat[j], squeeze=True)
-
-    return B_flat
+    # all path steps in one computation, on the chunks and threads of getB. The
+    # sources are only read, so threads can compute with them at the same time
+    # (#1074). Warnings point at the caller of getFT.
+    sources, src_list = _check_sources(sources, "B", "auto", stacklevel=4)
+    return _summed_field_on_path(sources, src_list, obs_flat, "B", "auto")
 
 
 def _compute_force_torque(B_flat, target_meshes, mesh_info, pivot, eps, n_src, n_path):
@@ -715,12 +657,13 @@ def getFT(
     n_members = np.diff([*coll_idx, len(targets)])  # flat targets per given target
 
     # Validate sources
-    sources, _ = format_src_inputs(sources)
+    sources, src_list = format_src_inputs(sources)
     n_src = len(sources)
 
-    # Determine path length (max across all sources and targets)
+    # Determine path length (max across all sources and targets), with the
+    # sources of a Collection, which may have paths of their own
     tgt_path_lengths = [tgt._get_path_len() for tgt in targets]
-    src_path_lengths = [src._get_path_len() for src in sources]
+    src_path_lengths = [src._get_path_len() for src in sources + src_list]
     n_path = max(tgt_path_lengths + src_path_lengths)
 
     # Validate and broadcast pivot to (n_tgt_flat, n_path, 3) or None
@@ -760,7 +703,7 @@ def getFT(
 
     # COMPUTE B-FIELD #########################################################
 
-    B_flat = _compute_B_with_paths(sources, obs_flat, n_path)
+    B_flat = _compute_B_with_paths(sources, obs_flat)
 
     # COMPUTE FORCES & TORQUES ################################################
 
