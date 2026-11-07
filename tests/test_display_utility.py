@@ -186,3 +186,16 @@ def test_scene_box_leaves_out_the_object_drawn_from_it(path):
         [d.z for d in f.data if d.name.startswith("Dipole")] for f in (alone, fig)
     ]
     np.testing.assert_allclose(np.ptp(arrows[0][0]), np.ptp(arrows[1][0]))
+
+
+def test_scene_box_alone_in_a_subplot_is_none():
+    """A subplot with nothing else to fill a box gives get_trace none."""
+    cube = magpy.magnet.Cuboid(dimension=(2, 4, 6), polarization=(0, 0, 1))
+    boxed = BoxedSource()
+    magpy.show(
+        {"objects": [cube], "col": 1},
+        {"objects": [boxed], "col": 2},
+        backend="plotly",
+        return_fig=True,
+    )
+    assert boxed.calls == [(None, -1)]

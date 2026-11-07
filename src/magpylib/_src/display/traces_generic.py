@@ -586,7 +586,7 @@ def get_generic_traces3D(
     make_func_kwargs = {"legendgroup": legendgroup, **kwargs}
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
-    # an object drawn from the scene's box, such as an arrow past its corner
+    # an object drawn from the scene's box, such as an arrow above it
     scene_anchored = getattr(input_obj, "_scene_box", False)
     if scene_anchored:
         make_func_kwargs["scene_box"] = scene_box
@@ -1089,7 +1089,9 @@ def draw_frame(
             ranges_rc = get_scene_ranges(*traces, *traces_ex1, zoom=zoom)
             # pylint: disable=no-member
             factor = default_settings.display.autosizefactor
-            rc_params["autosize"] = np.mean(np.diff(ranges_rc[rc])) / factor
+            # a panel of such objects alone has no range: the default one
+            rng = ranges_rc.get(rc, np.array([[-1.0, 1.0]] * 3))
+            rc_params["autosize"] = np.mean(np.diff(rng)) / factor
             box = get_scene_ranges(*traces, *traces_ex1, tight=True).get(rc)
             rc_params["scene_box"] = box
         to_resize_keys = {k for k, v in traces_d1.items() if v and "_autosize" in v[0]}
