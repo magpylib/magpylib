@@ -679,10 +679,13 @@ def getColorscale(
     return colorscale
 
 
-def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
+def get_scene_ranges(*traces, zoom=0, tight=False) -> np.ndarray:
     """
     Returns 3x2 array of the min and max ranges in x, y, z directions of input traces. Traces can be
     any plotly trace object or a dict, with x, y, z numbered parameters.
+
+    With ``tight``, the box the 3D traces fill, axis by axis, for the panels
+    that have any: not made cubic, not zoomed, no default.
     """
     ranges_rc = {}
     tr_dim_count = {}
@@ -732,6 +735,9 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
             # collect min/max from all elements, axis by axis
             columns = np.reshape(ranges, (-1, 3)).T
             r = np.array([[np.nanmin(v), np.nanmax(v)] for v in columns])
+            if tight:
+                ranges_rc[rc] = r
+                continue
             size = np.diff(r, axis=1)
             m = size.max() / 2
             m = 1 if m == 0 else m
@@ -740,6 +746,8 @@ def get_scene_ranges(*traces, zoom=0) -> np.ndarray:
         else:
             ranges = np.array([[-1.0, 1.0]] * 3)
         ranges_rc[rc] = ranges
+    if tight:
+        return {rc: r for rc, r in ranges_rc.items() if tr_dim_count[rc]["3D"]}
     if not ranges_rc:
         ranges_rc[(1, 1)] = np.array([[-1.0, 1.0]] * 3)
     return ranges_rc
