@@ -7,8 +7,8 @@
 - An object with its own `get_trace` can draw itself from the scene: with
   `_scene_box = True`, `show` gives it `scene_box`, the box the other objects
   fill in metres, and the path index of each pose it is drawn at. Magpylib
-  Material Response uses it to draw a `UniformField` as an arrow above the
-  scene.
+  Material Response uses it to draw a `UniformField` as an arrow above the scene
+  ([#1079](https://github.com/magpylib/magpylib/pull/1079)).
 
 ## [6.2.0] 2026-11-06
 
