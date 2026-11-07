@@ -314,7 +314,9 @@ def cylinder_segment_field(
     dimensions : array-like, shape (5,) or (i, 5)
         Segment dimensions (r1, r2, h, φ1, φ2) where r1 < r2 are inner
         and outer radii in units (m), h is the height in units (m), and
-        φ1 < φ2 are azimuth section angles in radians (rad).
+        φ1 < φ2 are azimuth section angles in units (deg). The angles can
+        start anywhere, up to one turn apart: (350, 370) and (-10, 10) are
+        the same section across 0 (deg).
     polarizations : array-like, shape (3,) or (i, 3)
         Magnetic polarization in units (T).
     positions : array-like, shape (3,) or (i, 3), default (0, 0, 0)
