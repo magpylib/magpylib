@@ -180,7 +180,7 @@ A valid software citation could be
     author = {{Michael-Ortner et al.}},
     title = {magpylib},
     url = {https://magpylib.readthedocs.io/en/latest/},
-    version = {6.2.0},
-    date = {2026-11-06},
+    version = {6.3.0},
+    date = {2026-11-07},
 }
 ```
