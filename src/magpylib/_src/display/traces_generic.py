@@ -527,6 +527,7 @@ def _varies_along_path(prop):
 def get_generic_traces3D(
     input_obj,
     autosize=None,
+    scene_box=None,
     legendgroup=None,
     legendtext=None,
     showlegend=None,
@@ -585,6 +586,10 @@ def get_generic_traces3D(
     make_func_kwargs = {"legendgroup": legendgroup, **kwargs}
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
+    # an object drawn from the scene's box, such as an arrow past its corner
+    scene_anchored = getattr(input_obj, "_scene_box", False)
+    if scene_anchored:
+        make_func_kwargs["scene_box"] = scene_box
     if hasattr(style, "pixel"):
         make_func_kwargs["field_values"] = field_values
         make_func_kwargs["draws_pixels"] = draws_pixels
@@ -624,6 +629,10 @@ def get_generic_traces3D(
         if isinstance(prop_w_path, np.ndarray) and _varies_along_path(prop_w_path):
             is_frame_dependent = True
             break
+    # its traces sit in the scene, not at its pose: each pose undoes its own,
+    # so get_trace learns which pose it is drawn at
+    if scene_anchored:
+        is_frame_dependent = True
 
     def get_traces_func(**extra_kwargs):
         traces_generic_temp = []
@@ -939,6 +948,7 @@ def get_traces_3D(
     extra_backend=False,
     supports_native_traces=False,
     autosize=None,
+    scene_box=None,
     **kwargs,
 ):
     """Return traces, traces to resize and extra_backend_traces"""
@@ -947,7 +957,8 @@ def get_traces_3D(
     field_by_sens = kwargs.pop("field_by_sens", {})
     for obj, params_item in flat_objs_props.items():
         params = {**params_item, **kwargs}
-        if autosize is None and getattr(obj, "_autosize", False):
+        deferred = getattr(obj, "_autosize", False) or getattr(obj, "_scene_box", False)
+        if autosize is None and deferred:
             # temporary coordinates to be able to calculate ranges
             # pylint: disable=protected-access
             x, y, z = obj._position.T
@@ -961,6 +972,7 @@ def get_traces_3D(
                 extra_backend=extra_backend,
                 supports_native_traces=supports_native_traces,
                 autosize=autosize,
+                scene_box=scene_box,
                 field_values=field_by_sens.get(obj, None),
                 **params,
             )
@@ -1066,11 +1078,20 @@ def draw_frame(
             # get the dipoles and sensors autosize from first frame
             # rc_params gets returned and passed back to the function
             zoom = rc_params["zoom"] = objs["rc_params"]["zoom"]
-            traces = [t for tr in traces_d1.values() for t in tr]
+            # an object drawn from the scene's box is not where its stand-in
+            # point is: it counts in neither the scene's size nor its box
+            traces = [
+                t
+                for obj, trs in traces_d1.items()
+                if not getattr(obj, "_scene_box", False)
+                for t in trs
+            ]
             ranges_rc = get_scene_ranges(*traces, *traces_ex1, zoom=zoom)
             # pylint: disable=no-member
             factor = default_settings.display.autosizefactor
             rc_params["autosize"] = np.mean(np.diff(ranges_rc[rc])) / factor
+            box = get_scene_ranges(*traces, *traces_ex1, tight=True).get(rc)
+            rc_params["scene_box"] = box
         to_resize_keys = {k for k, v in traces_d1.items() if v and "_autosize" in v[0]}
         flat_objs_props = {
             k: v for k, v in objs["objects"].items() if k in to_resize_keys
@@ -1078,6 +1099,7 @@ def draw_frame(
         traces_d2, traces_ex2 = get_traces_3D(
             flat_objs_props,
             autosize=rc_params["autosize"],
+            scene_box=rc_params.get("scene_box"),
             supports_native_traces=supports_native_traces,
             **kwargs,
         )

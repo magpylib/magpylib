@@ -147,3 +147,42 @@ def test_get_orientation_from_vec():
     orient = get_orientation_from_vec(vec, ref_axis=ref_axis)
     vec[hasnan] = ref_axis
     np.testing.assert_allclose(vec, orient.apply(ref_axis), atol=1e-8)
+
+
+class BoxedSource(magpy.misc.CustomSource):
+    """A source drawn from the scene's box, recording what get_trace is given."""
+
+    _scene_box = True
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.calls = []
+
+    def get_trace(self, scene_box=None, path_index=-1, **kwargs):
+        self.calls.append((scene_box, path_index))
+        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        return {**trace, "mode": "markers", **kwargs}
+
+
+@pytest.mark.parametrize("path", [False, True])
+def test_scene_box_leaves_out_the_object_drawn_from_it(path):
+    """An object with `_scene_box` gets the box the other objects fill, its own
+    position left out of it and of the dipoles' size, at each pose it is drawn."""
+    cube = magpy.magnet.Cuboid(dimension=(2, 4, 6), polarization=(0, 0, 1))
+    dipole = magpy.misc.Dipole(moment=(0, 0, 1), position=(1, 2, 3))
+    boxed = BoxedSource(position=(50, 0, 0))
+    if path:
+        boxed.position = [(50, 0, 0), (60, 0, 0)]
+        boxed.style.path.frames = [0, 1]
+    alone = magpy.show(cube, dipole, backend="plotly", return_fig=True)
+    fig = magpy.show(cube, dipole, boxed, backend="plotly", return_fig=True)
+
+    expected = [[-1, 1], [-2, 2], [-3, 3]]
+    assert [c[1] for c in boxed.calls] == ([0, 1] if path else [-1])
+    for box, _ in boxed.calls:
+        np.testing.assert_allclose(box, expected)
+    # the dipole's arrow is as long as without the boxed source
+    arrows = [
+        [d.z for d in f.data if d.name.startswith("Dipole")] for f in (alone, fig)
+    ]
+    np.testing.assert_allclose(np.ptp(arrows[0][0]), np.ptp(arrows[1][0]))
