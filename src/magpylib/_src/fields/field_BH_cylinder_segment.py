@@ -2369,7 +2369,7 @@ def _BHJM_cylinder_segment(
     z1, z2 = -h / 2, h / 2
 
     if np.any(phi2 - phi1 > 360 + ANGLE_TOLERANCE):
-        msg = "Input dimension of a CylinderSegment must have phi2 - phi1 <= 360."
+        msg = "Input dimensions of cylinder_segment_field must have phi2 - phi1 <= 360."
         raise ValueError(msg)
 
     # the checks below need angles within +-360 deg and no face at +-360, so a

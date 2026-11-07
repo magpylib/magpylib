@@ -85,7 +85,9 @@ def test_section_full_turn_with_rounding_is_accepted():
 
 def test_section_span_over_a_turn_raises():
     """magpy.func does not validate dimension up front"""
-    with pytest.raises(ValueError, match="phi2 - phi1 <= 360"):
+    with pytest.raises(
+        ValueError, match="cylinder_segment_field must have phi2 - phi1 <= 360"
+    ):
         cylinder_segment_field(
             "B",
             observers=(0, 0, 0),
