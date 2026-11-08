@@ -42,7 +42,7 @@ def pylint(session: nox.Session) -> None:
     # than as a red check on an unrelated PR. This needs the package
     # environment, and is slower than a pre-commit check.
     session.install("--group", "dev", "--group", "lint", "-e", ".")
-    session.run("pylint", "magpylib", *session.posargs,  env={"PYTHONPATH": "src"})
+    session.run("pylint", "magpylib", *session.posargs, env={"PYTHONPATH": "src"})
 
 
 @nox.session
