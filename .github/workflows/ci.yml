@@ -88,11 +88,13 @@ jobs:
       - uses: astral-sh/setup-uv@v10.3.3
 
       - name: Install package
-        run: uv sync
+        run: |
+          uv pip install --system -e .
+          uv pip install --system --group dev
 
       - name: Test package
         run: >-
-          uv run pytest -ra --cov --cov-report=xml --cov-report=term
+          uv run --no-sync pytest -ra --cov --cov-report=xml --cov-report=term
           --durations=20
 
       - name: Upload coverage report
@@ -103,7 +105,7 @@ jobs:
       # A run of its own: collecting src/ next to tests/ imports pyvista
       # before test_show_with_missing_pyvista can hide it.
       - name: Test docstring examples
-        run: uv run pytest --doctest-modules src/magpylib -q
+        run: uv run --no-sync pytest --doctest-modules src/magpylib -q
 
   pass:
     if: always()
