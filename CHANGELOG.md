@@ -1,5 +1,21 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- The functions of `magpylib.core` and `magpylib.func` follow the Python array
+  API standard: with JAX or PyTorch arrays as input they compute in that library
+  and return its arrays, so that fields can be differentiated. Precision follows
+  the input arrays, with a warning when it is not float64. The cylinder segment
+  needs SciPy's incomplete elliptic integrals and takes NumPy input only.
+  `array-api-compat` and `array-api-extra` are new dependencies.
+
+### Changed
+
+- `triangle_Bfield` returns (0, 0, 0) at the corners of every triangle, as
+  documented, where triangles in a general position gave infinite components.
+
 ## [6.3.0] 2026-11-07
 
 ### Added

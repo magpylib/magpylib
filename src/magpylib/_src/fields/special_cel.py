@@ -3,6 +3,9 @@
 import math as m
 
 import numpy as np
+from array_api_compat import array_namespace, is_numpy_namespace
+
+from magpylib._src.array_api_utils import xp_promote
 
 _CEL_SCALAR_THRESHOLD = 10
 _CEL_ERRORTOL = 1e-8
@@ -54,56 +57,53 @@ def _cel_vector(kc, p, c, s):
     """
     Vectorized version of Bulirsch cel algorithm.
     """
-
-    n = len(kc)
-
-    p = p.copy()
-    c = c.copy()
-    s = s.copy()
+    xp = array_namespace(kc, p, c, s)
+    kc, p, c, s = xp_promote(kc, p, c, s, xp=xp)
 
     mask = p <= 0
-    pos = ~mask
-
-    p[pos] = np.sqrt(p[pos])
-    s[pos] /= p[pos]
-
-    if np.any(mask):
-        f = kc[mask] * kc[mask]
-        q = 1 - f
-        g = 1 - p[mask]
-        f -= p[mask]
-        q *= s[mask] - c[mask] * p[mask]
-
-        p[mask] = np.sqrt(f / g)
-        c[mask] = (c[mask] - s[mask]) / g
-        s[mask] = -q / (g * g * p[mask]) + c[mask] * p[mask]
-
-    em = np.ones(n)
     kc_zero = kc == 0
+    kc = xp.where(kc_zero, 1.0, kc)  # NaN is returned for these in the end
 
-    qc = np.abs(kc)
-    qc[kc_zero] = 1.0
+    # case p > 0, computed with p=1 where it does not apply
+    p_pos = xp.sqrt(xp.where(mask, 1.0, p))
+    s_pos = s / p_pos
 
-    kk = qc.copy()
+    # case p <= 0, computed with p=-1 where it does not apply
+    p_neg = xp.where(mask, p, -1.0)
+    f = kc * kc
+    q = 1 - f
+    g = 1 - p_neg
+    f = f - p_neg
+    q = q * (s - c * p_neg)
+
+    p_neg = xp.sqrt(f / g)
+    c_neg = (c - s) / g
+    s_neg = -q / (g * g * p_neg) + c_neg * p_neg
+
+    p = xp.where(mask, p_neg, p_pos)
+    c = xp.where(mask, c_neg, c)
+    s = xp.where(mask, s_neg, s_pos)
+
+    em = xp.ones_like(kc)
+    qc = xp.abs(kc)
+    kk = qc
 
     while True:
         g = kk / p
         c, s = c + s / p, 2 * (s + c * g)
-        p += g
+        p = p + g
 
-        g = em.copy()
-        em += qc
+        g = em
+        em = em + qc
 
-        if np.all(np.abs(g - qc) <= g * _CEL_ERRORTOL):
+        if bool(xp.all(xp.abs(g - qc) <= g * _CEL_ERRORTOL)):
             break
 
-        qc = 2 * np.sqrt(kk)
+        qc = 2 * xp.sqrt(kk)
         kk = em * qc
 
-    result = (np.pi / 2) * (s + c * em) / (em * (em + p))
-    result[kc_zero] = np.nan
-
-    return result
+    result = (xp.pi / 2) * (s + c * em) / (em * (em + p))
+    return xp.where(kc_zero, xp.nan, result)
 
 
 def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndarray:
@@ -114,7 +114,8 @@ def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndar
     cel(kc, p, c, s) = |  ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯  ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
                        ⌡   cos²𝜗 + p sin²𝜗   √(cos²𝜗 + kc² sin²𝜗)
                        0
-    Combines vectorized and non-vectorized implementations for improved performance.
+    Combines vectorized and non-vectorized implementations for improved performance:
+    small NumPy arrays are computed element by element, all other input vectorized.
 
     See also:
     R. Bulirsch, Numerical Calculation of Elliptic Integrals and Elliptic Functions. III
@@ -127,7 +128,8 @@ def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndar
     Π(a²,k²) = cel(sqrt(1 - k²), 1 - a², 1, 1)
     """
 
-    if kc.size < _CEL_SCALAR_THRESHOLD:
+    xp = array_namespace(kc, p, c, s)
+    if is_numpy_namespace(xp) and kc.size < _CEL_SCALAR_THRESHOLD:
         return np.array([_cel_scalar(*args)
                          for args in zip(kc, p, c, s, strict=False)])  # fmt: skip
     return _cel_vector(kc, p, c, s)
@@ -141,7 +143,7 @@ def _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=m, any_=lambda b: b):
     Iterative part of the Bulirsch cel algorithm.
     This routine continues the iteration from an already prepared state.
 
-    Handles scalar (xp=m) or vectorized (xp=np, any=np.any) inputs.
+    Handles scalar (xp=m) or vectorized (xp an array namespace, any_=xp.any) inputs.
     Does not modify input arrays in-place.
     """
 
@@ -174,10 +176,11 @@ def _cel_iter(
     implementation above.
     """
 
-    if qc.size < _CEL_SCALAR_THRESHOLD:
+    xp = array_namespace(qc, p, g, cc, ss, em, kk)
+    if is_numpy_namespace(xp) and qc.size < _CEL_SCALAR_THRESHOLD:
         return np.array([_cel_iter_scalarvector(*args)
                          for args in zip(qc, p, g, cc, ss, em, kk, strict=False)])  # fmt: skip
-    return _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=np, any_=np.any)
+    return _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=xp, any_=xp.any)
 
 
 # import math as m

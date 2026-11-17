@@ -1,8 +1,10 @@
 """Dipole field implementation."""
 
 import numpy as np
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
+from magpylib._src.array_api_utils import xp_promote
 from magpylib._src.input_checks import check_field_input
 
 
@@ -50,28 +52,20 @@ def dipole_Hfield(
      [1.914e+02 1.914e+02 3.619e-14]]
     """
 
-    x, y, z = observers.T
-    r = np.sqrt(x**2 + y**2 + z**2)  # faster than np.linalg.norm
-    with np.errstate(divide="ignore", invalid="ignore"):
-        # 0/0 produces invalid warn and results in np.nan
-        # x/0 produces divide warn and results in np.inf
-        H = (
-            (
-                3 * np.sum(moments * observers, axis=1) * observers.T / r**5
-                - moments.T / r**3
-            ).T
-            / 4
-            / np.pi
-        )
+    xp = array_namespace(observers, moments)
+    observers, moments = xp_promote(observers, moments, xp=xp)
 
-    # when r=0 return np.inf in all non-zero moments directions
-    mask1 = r == 0
-    if np.any(mask1):
-        with np.errstate(divide="ignore", invalid="ignore"):
-            H[mask1] = moments[mask1] / 0.0
-            np.nan_to_num(H, copy=False, posinf=np.inf, neginf=-np.inf)
+    r = xp.linalg.vector_norm(observers, axis=-1, keepdims=True)
 
-    return H
+    # at r=0 return inf in the direction of all non-zero moment components
+    mask_origin = r == 0
+    H_origin = xp.where(moments > 0, xp.inf, xp.where(moments < 0, -xp.inf, 0.0))
+
+    r = xp.where(mask_origin, 1.0, r)  # avoid 0/0
+    dotprod = xp.sum(moments * observers, axis=-1, keepdims=True)
+    H = (3 * dotprod * observers / r**5 - moments / r**3) / 4 / xp.pi
+
+    return xp.where(mask_origin, H_origin, H)
 
 
 def _BHJM_dipole(
@@ -85,7 +79,8 @@ def _BHJM_dipole(
     check_field_input(field)
 
     if field in "MJ":
-        return np.zeros_like(observers, dtype=float)
+        xp = array_namespace(observers, moment)
+        return xp.zeros_like(xp_promote(observers, xp=xp))
 
     BHJM = dipole_Hfield(
         observers=observers,

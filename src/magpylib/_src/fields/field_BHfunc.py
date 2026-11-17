@@ -1,10 +1,13 @@
 """Magnetic field computation functional interface"""
 
+import warnings
 from collections.abc import Callable
 
 import numpy as np
+from array_api_compat import device, is_array_api_obj, is_numpy_namespace
 from scipy.spatial.transform import Rotation as R
 
+from magpylib._src.array_api_utils import input_namespace, rotate, xp_promote
 from magpylib._src.fields import chunks
 from magpylib._src.fields.field_BH_circle import _BHJM_circle
 from magpylib._src.fields.field_BH_cuboid import _BHJM_magnet_cuboid
@@ -775,7 +778,9 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
     # Transform Rotation to Quat
     params["orientation"] = params["orientation"].as_quat()
 
-    # Transform all inputs to ndarray
+    # Transform all inputs to arrays: lists and scalars to ndarray, and all
+    # to the namespace of the arrays that are not NumPy, if there are any
+    xp = input_namespace(*params.values())
     for key, val in params.items():
         if _has_units(val):
             msg = (
@@ -786,17 +791,32 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
             )
             raise TypeError(msg)
         try:
-            if not isinstance(val, np.ndarray):
+            if not is_array_api_obj(val):
                 params[key] = np.array(val, dtype=float)
         except ValueError as err:
             msg = f"Input {key} must be array-like; instead received {val!r}."
             raise ValueError(msg) from err
 
+    if not is_numpy_namespace(xp):
+        arrays = [val for val in params.values() if not isinstance(val, np.ndarray)]
+        dtype = xp_promote(arrays[0], *arrays[1:], xp=xp)[0].dtype
+        if dtype != xp.float64:
+            msg = (
+                f"Field computation in {dtype} instead of float64, as given by "
+                f"the {xp.__name__} input arrays: expect a reduced precision."
+            )
+            warnings.warn(msg, UserWarning, stacklevel=3)
+        for key, val in params.items():
+            if isinstance(val, np.ndarray):
+                params[key] = xp.asarray(val, dtype=dtype, device=device(arrays[0]))
+            else:
+                params[key] = xp.astype(val, dtype, copy=False)
+
     # Tile missing ndims, Find maxlength
     nmax = 1
     for key, val in params.items():
         if val.ndim < DIM[key]:
-            params[key] = np.expand_dims(val, axis=0)
+            params[key] = val[xp.newaxis, ...]
         if val.ndim > DIM[key]:
             msg = (
                 f"Input {key} must have at most {DIM[key]} dimensions; "
@@ -811,10 +831,10 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
     # include extra shapes
     SHAPES = SHAPE if shapes is None else SHAPE | shapes
     for key, val in params.items():
-        if val.shape[1:] != SHAPES[key]:
+        if tuple(val.shape[1:]) != SHAPES[key]:
             msg = (
                 f"Input {key} must have shape {SHAPES[key]} for ndim > 0; "
-                f"instead received shape {val.shape[1:]}"
+                f"instead received shape {tuple(val.shape[1:])}"
             )
             raise ValueError(msg)
         if val.shape[0] not in (1, nmax):
@@ -825,25 +845,27 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
             raise ValueError(msg)
 
     # Compute in chunks of rows, each tiling single instances to its rows
-    BH = np.empty((nmax, 3))
+    step = max(1, chunks.CHUNK_ROWS // kernel_rows)
+    starts = range(0, nmax, step)
+    BH = [None] * len(starts)
 
-    def compute(rows):
+    def compute(chunk):
+        rows = slice(starts[chunk], starts[chunk] + step)
         n = len(range(nmax)[rows])
         kwargs = {
             key: val[rows]
-            if len(val) == nmax
-            else np.tile(val, [n] + [1] * (val.ndim - 1))
+            if val.shape[0] == nmax
+            else xp.tile(val, (n,) + (1,) * (val.ndim - 1))
             for key, val in params.items()
         }
-        kwargs["orientation"] = R.from_quat(kwargs["orientation"])
-        BH[rows] = _getBH_level1(field_func=field_func, field=field, **kwargs)
+        BH[chunk] = _getBH_level1(field_func=field_func, field=field, **kwargs)
 
-    step = max(1, chunks.CHUNK_ROWS // kernel_rows)
-    tasks = [(compute, slice(i, i + step)) for i in range(0, nmax, step)]
+    tasks = [(compute, chunk) for chunk in range(len(starts))]
     chunks.run_chunks(tasks, nmax * kernel_rows)
+    BH = BH[0] if len(BH) == 1 else xp.concat(BH)
 
-    if squeeze:
-        return np.squeeze(BH)
+    if squeeze and nmax == 1:
+        return BH[0]
     return BH
 
 
@@ -857,15 +879,14 @@ def _getBH_level1(
     **kwargs: dict,
 ) -> np.ndarray:
     """
-    COPY FROM field_BH TO AVOID CIRCULAR IMPORT
-
-    Vectorized field computation
+    Vectorized field computation in the namespace of the inputs
 
     - applies spatial transformations global CS <-> source CS
     - selects the correct Bfield_XXX function from input
 
     Args
     ----
+    orientation: array, shape (N, 4), unit quaternions (scalar-last)
     kwargs: dict of shape (N, x) input vectors that describes the computation.
 
     Returns
@@ -875,7 +896,7 @@ def _getBH_level1(
     """
 
     # transform obs_pos into source CS
-    pos_rel_rot = orientation.apply(observers - position, inverse=True)
+    pos_rel_rot = rotate(orientation, observers - position, inverse=True)
 
     # filter arguments
     if not has_parameter(field_func, "in_out"):  # in_out passed only to magnets
@@ -886,6 +907,6 @@ def _getBH_level1(
 
     # transform field back into global CS
     if BH is not None:  # catch non-implemented field_func a level above
-        BH = orientation.apply(BH)
+        BH = rotate(orientation, BH)
 
     return BH

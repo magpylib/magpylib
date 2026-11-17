@@ -3,8 +3,10 @@
 # pylint: disable=too-many-statements
 
 import numpy as np
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
+from magpylib._src.array_api_utils import xp_promote
 from magpylib._src.input_checks import check_field_input
 
 
@@ -61,9 +63,14 @@ def magnet_cuboid_Bfield(
      [ 7.732e-03  6.544e-03  1.048e-02]]
 
     """
-    pol_x, pol_y, pol_z = polarizations.T
-    a, b, c = dimensions.T / 2
-    x, y, z = np.copy(observers).T
+    xp = array_namespace(observers, dimensions, polarizations)
+    observers, dimensions, polarizations = xp_promote(
+        observers, dimensions, polarizations, xp=xp
+    )
+
+    pol_x, pol_y, pol_z = xp.unstack(polarizations, axis=-1)
+    a, b, c = xp.unstack(dimensions / 2, axis=-1)
+    x, y, z = xp.unstack(observers, axis=-1)
 
     # avoid indeterminate forms by evaluating in bottQ4 only --------
     # basic masks
@@ -72,27 +79,24 @@ def magnet_cuboid_Bfield(
     maskz = z > 0
 
     # change all positions to their bottQ4 counterparts
-    x[maskx] = x[maskx] * -1
-    y[masky] = y[masky] * -1
-    z[maskz] = z[maskz] * -1
+    x = xp.where(maskx, -x, x)
+    y = xp.where(masky, -y, y)
+    z = xp.where(maskz, -z, z)
 
-    # create sign flips for position changes
-    qsigns = np.ones((len(pol_x), 3, 3))
-    qs_flipx = np.array([[1, -1, -1], [-1, 1, 1], [-1, 1, 1]])
-    qs_flipy = np.array([[1, -1, 1], [-1, 1, -1], [1, -1, 1]])
-    qs_flipz = np.array([[1, 1, -1], [1, 1, -1], [-1, -1, 1]])
-    # signs flips can be applied subsequently
-    qsigns[maskx] = qsigns[maskx] * qs_flipx
-    qsigns[masky] = qsigns[masky] * qs_flipy
-    qsigns[maskz] = qsigns[maskz] * qs_flipz
+    # sign flips for position changes: a field component changes sign with
+    # every flipped axis that is either its own or that of the polarization
+    sign_x = xp.where(maskx, -1.0, 1.0)
+    sign_y = xp.where(masky, -1.0, 1.0)
+    sign_z = xp.where(maskz, -1.0, 1.0)
+    sign_xy = sign_x * sign_y
+    sign_xz = sign_x * sign_z
+    sign_yz = sign_y * sign_z
 
     # field computations --------------------------------------------
     # Note: in principle the computation for all three polarization-components can be
     #   vectorized itself using symmetries. However, tiling the three
     #   components will cost more than is gained by the vectorized evaluation
 
-    # Note: making the following computation steps is not necessary
-    #   as mkl will cache such small computations
     xma, xpa = x - a, x + a
     ymb, ypb = y - b, y + b
     zmc, zpc = z - c, z + c
@@ -101,85 +105,70 @@ def magnet_cuboid_Bfield(
     ymb2, ypb2 = ymb**2, ypb**2
     zmc2, zpc2 = zmc**2, zpc**2
 
-    mmm = np.sqrt(xma2 + ymb2 + zmc2)
-    pmp = np.sqrt(xpa2 + ymb2 + zpc2)
-    pmm = np.sqrt(xpa2 + ymb2 + zmc2)
-    mmp = np.sqrt(xma2 + ymb2 + zpc2)
-    mpm = np.sqrt(xma2 + ypb2 + zmc2)
-    ppp = np.sqrt(xpa2 + ypb2 + zpc2)
-    ppm = np.sqrt(xpa2 + ypb2 + zmc2)
-    mpp = np.sqrt(xma2 + ypb2 + zpc2)
+    mmm = xp.sqrt(xma2 + ymb2 + zmc2)
+    pmp = xp.sqrt(xpa2 + ymb2 + zpc2)
+    pmm = xp.sqrt(xpa2 + ymb2 + zmc2)
+    mmp = xp.sqrt(xma2 + ymb2 + zpc2)
+    mpm = xp.sqrt(xma2 + ypb2 + zmc2)
+    ppp = xp.sqrt(xpa2 + ypb2 + zpc2)
+    ppm = xp.sqrt(xpa2 + ypb2 + zmc2)
+    mpp = xp.sqrt(xma2 + ypb2 + zpc2)
 
+    # next to the extension of an edge an argument is 0: the result is inf
+    # there, which NumPy would warn about
     with np.errstate(divide="ignore", invalid="ignore"):
-        ff2x = np.log((xma + mmm) * (xpa + ppm) * (xpa + pmp) * (xma + mpp)) - np.log(
+        ff2x = xp.log((xma + mmm) * (xpa + ppm) * (xpa + pmp) * (xma + mpp)) - xp.log(
             (xpa + pmm) * (xma + mpm) * (xma + mmp) * (xpa + ppp)
         )
 
-        ff2y = np.log(
+        ff2y = xp.log(
             (-ymb + mmm) * (-ypb + ppm) * (-ymb + pmp) * (-ypb + mpp)
-        ) - np.log((-ymb + pmm) * (-ypb + mpm) * (ymb - mmp) * (ypb - ppp))
+        ) - xp.log((-ymb + pmm) * (-ypb + mpm) * (ymb - mmp) * (ypb - ppp))
 
-        ff2z = np.log(
+        ff2z = xp.log(
             (-zmc + mmm) * (-zmc + ppm) * (-zpc + pmp) * (-zpc + mpp)
-        ) - np.log((-zmc + pmm) * (zmc - mpm) * (-zpc + mmp) * (zpc - ppp))
+        ) - xp.log((-zmc + pmm) * (zmc - mpm) * (-zpc + mmp) * (zpc - ppp))
 
     ff1x = (
-        np.arctan2((ymb * zmc), (xma * mmm))
-        - np.arctan2((ymb * zmc), (xpa * pmm))
-        - np.arctan2((ypb * zmc), (xma * mpm))
-        + np.arctan2((ypb * zmc), (xpa * ppm))
-        - np.arctan2((ymb * zpc), (xma * mmp))
-        + np.arctan2((ymb * zpc), (xpa * pmp))
-        + np.arctan2((ypb * zpc), (xma * mpp))
-        - np.arctan2((ypb * zpc), (xpa * ppp))
+        xp.atan2((ymb * zmc), (xma * mmm))
+        - xp.atan2((ymb * zmc), (xpa * pmm))
+        - xp.atan2((ypb * zmc), (xma * mpm))
+        + xp.atan2((ypb * zmc), (xpa * ppm))
+        - xp.atan2((ymb * zpc), (xma * mmp))
+        + xp.atan2((ymb * zpc), (xpa * pmp))
+        + xp.atan2((ypb * zpc), (xma * mpp))
+        - xp.atan2((ypb * zpc), (xpa * ppp))
     )
 
     ff1y = (
-        np.arctan2((xma * zmc), (ymb * mmm))
-        - np.arctan2((xpa * zmc), (ymb * pmm))
-        - np.arctan2((xma * zmc), (ypb * mpm))
-        + np.arctan2((xpa * zmc), (ypb * ppm))
-        - np.arctan2((xma * zpc), (ymb * mmp))
-        + np.arctan2((xpa * zpc), (ymb * pmp))
-        + np.arctan2((xma * zpc), (ypb * mpp))
-        - np.arctan2((xpa * zpc), (ypb * ppp))
+        xp.atan2((xma * zmc), (ymb * mmm))
+        - xp.atan2((xpa * zmc), (ymb * pmm))
+        - xp.atan2((xma * zmc), (ypb * mpm))
+        + xp.atan2((xpa * zmc), (ypb * ppm))
+        - xp.atan2((xma * zpc), (ymb * mmp))
+        + xp.atan2((xpa * zpc), (ymb * pmp))
+        + xp.atan2((xma * zpc), (ypb * mpp))
+        - xp.atan2((xpa * zpc), (ypb * ppp))
     )
 
     ff1z = (
-        np.arctan2((xma * ymb), (zmc * mmm))
-        - np.arctan2((xpa * ymb), (zmc * pmm))
-        - np.arctan2((xma * ypb), (zmc * mpm))
-        + np.arctan2((xpa * ypb), (zmc * ppm))
-        - np.arctan2((xma * ymb), (zpc * mmp))
-        + np.arctan2((xpa * ymb), (zpc * pmp))
-        + np.arctan2((xma * ypb), (zpc * mpp))
-        - np.arctan2((xpa * ypb), (zpc * ppp))
+        xp.atan2((xma * ymb), (zmc * mmm))
+        - xp.atan2((xpa * ymb), (zmc * pmm))
+        - xp.atan2((xma * ypb), (zmc * mpm))
+        + xp.atan2((xpa * ypb), (zmc * ppm))
+        - xp.atan2((xma * ymb), (zpc * mmp))
+        + xp.atan2((xpa * ymb), (zpc * pmp))
+        + xp.atan2((xma * ypb), (zpc * mpp))
+        - xp.atan2((xpa * ypb), (zpc * ppp))
     )
 
-    # contributions from x-polarization
-    #    the 'missing' third sign is hidden in ff1x
-    bx_pol_x = pol_x * ff1x * qsigns[:, 0, 0]
-    by_pol_x = pol_x * ff2z * qsigns[:, 0, 1]
-    bz_pol_x = pol_x * ff2y * qsigns[:, 0, 2]
-    # contributions from y-polarization
-    bx_pol_y = pol_y * ff2z * qsigns[:, 1, 0]
-    by_pol_y = pol_y * ff1y * qsigns[:, 1, 1]
-    bz_pol_y = -pol_y * ff2x * qsigns[:, 1, 2]
-    # contributions from z-polarization
-    bx_pol_z = pol_z * ff2y * qsigns[:, 2, 0]
-    by_pol_z = -pol_z * ff2x * qsigns[:, 2, 1]
-    bz_pol_z = pol_z * ff1z * qsigns[:, 2, 2]
+    # contributions from x-, y- and z-polarization
+    #    the 'missing' third sign is hidden in ff1x, ff1y, ff1z
+    bx_tot = pol_x * ff1x + pol_y * ff2z * sign_xy + pol_z * ff2y * sign_xz
+    by_tot = pol_x * ff2z * sign_xy + pol_y * ff1y - pol_z * ff2x * sign_yz
+    bz_tot = pol_x * ff2y * sign_xz - pol_y * ff2x * sign_yz + pol_z * ff1z
 
-    # summing all contributions
-    bx_tot = bx_pol_x + bx_pol_y + bx_pol_z
-    by_tot = by_pol_x + by_pol_y + by_pol_z
-    bz_tot = bz_pol_x + bz_pol_y + bz_pol_z
-
-    # B = np.c_[bx_tot, by_tot, bz_tot]      # faster for 10^5 and more evaluations
-    B = np.concatenate(((bx_tot,), (by_tot,), (bz_tot,)), axis=0).T
-
-    B /= 4 * np.pi
-    return B
+    return xp.stack((bx_tot, by_tot, bz_tot), axis=-1) / (4 * xp.pi)
 
 
 def _BHJM_magnet_cuboid(
@@ -197,36 +186,31 @@ def _BHJM_magnet_cuboid(
 
     check_field_input(field)
 
-    pol_x, pol_y, pol_z = polarization.T
-    a, b, c = np.abs(dimension.T) / 2
-    x, y, z = observers.T
+    xp = array_namespace(observers, dimension, polarization)
+    observers, dimension, polarization = xp_promote(
+        observers, dimension, polarization, xp=xp
+    )
 
-    # allocate for output
-    BHJM = polarization.astype(float)
+    half = xp.abs(dimension) / 2
+    dist = xp.abs(observers) - half  # distance to the faces, per axis
 
     # SPECIAL CASE 1: polarization = (0, 0, 0)
-    mask_pol_not_null = ~(
-        (pol_x == 0) * (pol_y == 0) * (pol_z == 0)
-    )  # 2x faster than np.all()
+    mask_pol_not_null = xp.any(polarization != 0, axis=-1)
 
     # SPECIAL CASE 2: 0 in dimension
-    mask_dim_not_null = (a * b * c).astype(bool)
+    mask_dim_not_null = xp.all(half != 0, axis=-1)
 
     # SPECIAL CASE 3: observer lies on-edge/corner
-    #   EPSILON to account for numerical imprecision when e.g. rotating
-    #   /a /b /c to account for the missing scaling (EPSILON is large when
-    #    a is e.g. EPSILON itself)
-
+    #   RTOL_SURFACE to account for numerical imprecision when e.g. rotating,
+    #   relative to the side length
     # on-surface is not a special case
-    mask_surf_x = abs(x_dist := abs(x) - a) < RTOL_SURFACE * a  # on surface
-    mask_surf_y = abs(y_dist := abs(y) - b) < RTOL_SURFACE * b  # on surface
-    mask_surf_z = abs(z_dist := abs(z) - c) < RTOL_SURFACE * c  # on surface
+    mask_surf = xp.abs(dist) < RTOL_SURFACE * half
+    mask_surf_x, mask_surf_y, mask_surf_z = xp.unstack(mask_surf, axis=-1)
 
     # inside-outside
-    mask_inside_x = x_dist < RTOL_SURFACE * a
-    mask_inside_y = y_dist < RTOL_SURFACE * b
-    mask_inside_z = z_dist < RTOL_SURFACE * c
-    mask_inside = mask_inside_x & mask_inside_y & mask_inside_z
+    mask_inside_xyz = dist < RTOL_SURFACE * half
+    mask_inside_x, mask_inside_y, mask_inside_z = xp.unstack(mask_inside_xyz, axis=-1)
+    mask_inside = xp.all(mask_inside_xyz, axis=-1, keepdims=True)
 
     # on edge (requires on-surface and inside-outside)
     mask_xedge = mask_surf_y & mask_surf_z & mask_inside_x
@@ -234,28 +218,31 @@ def _BHJM_magnet_cuboid(
     mask_zedge = mask_surf_x & mask_surf_y & mask_inside_z
     mask_not_edge = ~(mask_xedge | mask_yedge | mask_zedge)
 
-    mask_gen = mask_pol_not_null & mask_dim_not_null & mask_not_edge
+    mask_gen = (mask_pol_not_null & mask_dim_not_null & mask_not_edge)[:, xp.newaxis]
 
     if field == "J":
-        BHJM[~mask_inside] = 0
-        return BHJM
+        return xp.where(mask_inside, polarization, 0.0)
 
     if field == "M":
-        BHJM[~mask_inside] = 0
-        return BHJM / MU0
+        return xp.where(mask_inside, polarization, 0.0) / MU0
 
-    BHJM *= 0  # return (0, 0, 0) for all special cases
-    BHJM[mask_gen] = magnet_cuboid_Bfield(
-        observers=observers[mask_gen],
-        dimensions=dimension[mask_gen],
-        polarizations=polarization[mask_gen],
+    # return (0, 0, 0) for all special cases, which are computed as the center
+    # of a unit cube to stay clear of the singularities
+    BHJM = xp.where(
+        mask_gen,
+        magnet_cuboid_Bfield(
+            observers=xp.where(mask_gen, observers, 0.0),
+            dimensions=xp.where(mask_gen, dimension, 1.0),
+            polarizations=polarization,
+        ),
+        0.0,
     )
+
     if field == "B":
         return BHJM
 
     if field == "H":
-        BHJM[mask_inside] -= polarization[mask_inside]
-        return BHJM / MU0
+        return (BHJM - xp.where(mask_inside, polarization, 0.0)) / MU0
 
     msg = (
         "Input output_field_type must be one of {'B', 'H', 'M', 'J'}; "

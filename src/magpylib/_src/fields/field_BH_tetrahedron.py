@@ -1,8 +1,10 @@
 """Homogeneously magnetized tetrahedron field implementation."""
 
 import numpy as np
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
+from magpylib._src.array_api_utils import xp_promote
 from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
 from magpylib._src.input_checks import check_field_input
 
@@ -19,22 +21,19 @@ def _check_chirality(points: np.ndarray) -> np.ndarray:
 
     Returns
     ----------
-    new list of points, where p2 and p3 are possibly exchanged so that all
+    new array of points, where p2 and p3 are possibly exchanged so that all
     tetrahedron is given in a right-handed system.
     """
 
-    vecs = np.zeros((len(points), 3, 3))
-    vecs[:, :, 0] = points[:, 1, :] - points[:, 0, :]
-    vecs[:, :, 1] = points[:, 2, :] - points[:, 0, :]
-    vecs[:, :, 2] = points[:, 3, :] - points[:, 0, :]
+    xp = array_namespace(points)
 
-    dets = np.linalg.det(vecs)
-    dets_neg = dets < 0
-
-    if np.any(dets_neg):
-        points[dets_neg, 2:, :] = points[dets_neg, 3:1:-1, :]
-
-    return points
+    # the determinant of the three edge vectors from p0 is negative for a
+    # left-handed system
+    dets = xp.linalg.det(points[:, 1:, :] - points[:, :1, :])
+    swapped = xp.stack(
+        (points[:, 0, :], points[:, 1, :], points[:, 3, :], points[:, 2, :]), axis=1
+    )
+    return xp.where((dets < 0)[:, xp.newaxis, xp.newaxis], swapped, points)
 
 
 def _point_inside(points: np.ndarray, vertices: np.ndarray, in_out: str) -> np.ndarray:
@@ -42,22 +41,24 @@ def _point_inside(points: np.ndarray, vertices: np.ndarray, in_out: str) -> np.n
     Takes points, as well as the vertices of a tetrahedra.
     Returns boolean array indicating whether the points are inside the tetrahedra.
     """
+    xp = array_namespace(points, vertices)
+    n = points.shape[0]
+
     if in_out == "inside":
-        return np.array([True] * len(points))
+        return xp.ones(n, dtype=xp.bool)
 
     if in_out == "outside":
-        return np.array([False] * len(points))
+        return xp.zeros(n, dtype=xp.bool)
 
-    mat = vertices[:, 1:].swapaxes(0, 1) - vertices[:, 0]
-    mat = np.transpose(mat.swapaxes(0, 1), (0, 2, 1))
-
-    tetra = np.linalg.inv(mat)
-    newp = np.matmul(tetra, np.reshape(points - vertices[:, 0, :], (*points.shape, 1)))
+    # coordinates of the points in the basis of the three edges from p0
+    mat = xp.matrix_transpose(vertices[:, 1:, :] - vertices[:, :1, :])
+    tetra = xp.linalg.inv(mat)
+    newp = xp.matmul(tetra, (points - vertices[:, 0, :])[:, :, xp.newaxis])[:, :, 0]
     return (
-        np.all(newp >= 0, axis=1)
-        & np.all(newp <= 1, axis=1)
-        & (np.sum(newp, axis=1) <= 1)
-    ).flatten()
+        xp.all(newp >= 0, axis=1)
+        & xp.all(newp <= 1, axis=1)
+        & (xp.sum(newp, axis=1) <= 1)
+    )
 
 
 def _BHJM_magnet_tetrahedron(
@@ -75,51 +76,44 @@ def _BHJM_magnet_tetrahedron(
 
     check_field_input(field)
 
-    # allocate - try not to generate more arrays
-    BHJM = polarization.astype(float)
+    xp = array_namespace(observers, vertices, polarization)
+    observers, vertices, polarization = xp_promote(
+        observers, vertices, polarization, xp=xp
+    )
 
-    if field == "J":
-        mask_inside = _point_inside(observers, vertices, in_out)
-        BHJM[~mask_inside] = 0
-        return BHJM
-
-    if field == "M":
-        mask_inside = _point_inside(observers, vertices, in_out)
-        BHJM[~mask_inside] = 0
-        return BHJM / MU0
+    if field in "JM":
+        mask_inside = _point_inside(observers, vertices, in_out)[:, xp.newaxis]
+        BHJM = xp.where(mask_inside, polarization, 0.0)
+        return BHJM if field == "J" else BHJM / MU0
 
     vertices = _check_chirality(vertices)
 
-    tri_vertices = np.concatenate(
-        (
-            vertices[:, (0, 2, 1), :],
-            vertices[:, (0, 1, 3), :],
-            vertices[:, (1, 2, 3), :],
-            vertices[:, (0, 3, 2), :],
-        ),
+    # the four faces, with their normal vectors pointing outwards
+    faces = ((0, 2, 1), (0, 1, 3), (1, 2, 3), (0, 3, 2))
+    tri_vertices = xp.concat(
+        [xp.stack([vertices[:, i, :] for i in face], axis=1) for face in faces],
         axis=0,
     )
     tri_field = _BHJM_triangle(
         field=field,
-        observers=np.tile(observers, (4, 1)),
+        observers=xp.tile(observers, (4, 1)),
         vertices=tri_vertices,
-        polarization=np.tile(polarization, (4, 1)),
+        polarization=xp.tile(polarization, (4, 1)),
     )
-    n = len(observers)
-    BHJM = (  # slightly faster than reshape + sum
-        tri_field[:n]
-        + tri_field[n : 2 * n]
-        + tri_field[2 * n : 3 * n]
-        + tri_field[3 * n :]
+    n = observers.shape[0]
+    BHJM = (
+        tri_field[:n, :]
+        + tri_field[n : 2 * n, :]
+        + tri_field[2 * n : 3 * n, :]
+        + tri_field[3 * n :, :]
     )
 
     if field == "H":
         return BHJM
 
     if field == "B":
-        mask_inside = _point_inside(observers, vertices, in_out)
-        BHJM[mask_inside] += polarization[mask_inside]
-        return BHJM
+        mask_inside = _point_inside(observers, vertices, in_out)[:, xp.newaxis]
+        return xp.where(mask_inside, BHJM + polarization, BHJM)
 
     msg = (
         "Input output_field_type must be one of {'B', 'H', 'M', 'J'}; "

@@ -15,6 +15,7 @@ from math import log10
 from pathlib import Path
 
 import numpy as np
+from array_api_compat import array_namespace
 
 from magpylib._src.exceptions import MagpylibBadUserInput
 
@@ -303,10 +304,11 @@ def add_iteration_suffix(name):
 def cart_to_cyl_coordinates(observer):
     """
     cartesian observer positions to cylindrical coordinates
-    observer: ndarray, shape (n, 3)
+    observer: array, shape (n, 3)
     """
-    x, y, z = observer.T
-    r, phi = np.sqrt(x**2 + y**2), np.arctan2(y, x)
+    xp = array_namespace(observer)
+    x, y, z = xp.unstack(observer, axis=-1)
+    r, phi = xp.sqrt(x**2 + y**2), xp.atan2(y, x)
     return r, phi, z
 
 
@@ -314,12 +316,13 @@ def cyl_field_to_cart(phi, Br, Bphi=None):
     """
     transform Br, Bphi to Bx, By
     """
+    xp = array_namespace(phi, Br)
     if Bphi is not None:
-        Bx = Br * np.cos(phi) - Bphi * np.sin(phi)
-        By = Br * np.sin(phi) + Bphi * np.cos(phi)
+        Bx = Br * xp.cos(phi) - Bphi * xp.sin(phi)
+        By = Br * xp.sin(phi) + Bphi * xp.cos(phi)
     else:
-        Bx = Br * np.cos(phi)
-        By = Br * np.sin(phi)
+        Bx = Br * xp.cos(phi)
+        By = Br * xp.sin(phi)
 
     return Bx, By
 

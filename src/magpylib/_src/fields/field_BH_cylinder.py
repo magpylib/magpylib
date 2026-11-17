@@ -1,11 +1,10 @@
 """Homogeneously magnetized cylinder field implementation."""
 
-# pylint: disable = no-name-in-module
-
 import numpy as np
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
-from scipy.special import ellipe, ellipk
 
+from magpylib._src.array_api_utils import xp_promote
 from magpylib._src.fields.special_cel import _cel
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
@@ -55,22 +54,23 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
      [0.    0.   ]
      [0.067 0.018]]
     """
-    n = len(z0)
+    xp = array_namespace(z0, r, z)
+    z0, r, z = xp_promote(z0, r, z, xp=xp)
 
     # some important quantities
     zph, zmh = z + z0, z - z0
     dpr, dmr = 1 + r, 1 - r
 
-    sq0 = np.sqrt(zmh**2 + dpr**2)
-    sq1 = np.sqrt(zph**2 + dpr**2)
+    sq0 = xp.sqrt(zmh**2 + dpr**2)
+    sq1 = xp.sqrt(zph**2 + dpr**2)
 
-    k1 = np.sqrt((zph**2 + dmr**2) / (zph**2 + dpr**2))
-    k0 = np.sqrt((zmh**2 + dmr**2) / (zmh**2 + dpr**2))
+    k1 = xp.sqrt((zph**2 + dmr**2) / (zph**2 + dpr**2))
+    k0 = xp.sqrt((zmh**2 + dmr**2) / (zmh**2 + dpr**2))
     gamma = dmr / dpr
-    one = np.ones(n)
+    one = xp.ones_like(z0)
 
     # radial field (unit polarization)
-    Br = (_cel(k1, one, one, -one) / sq1 - _cel(k0, one, one, -one) / sq0) / np.pi
+    Br = (_cel(k1, one, one, -one) / sq1 - _cel(k0, one, one, -one) / sq0) / xp.pi
 
     # axial field (unit polarization)
     Bz = (
@@ -80,10 +80,10 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
             zph * _cel(k1, gamma**2, one, gamma) / sq1
             - zmh * _cel(k0, gamma**2, one, gamma) / sq0
         )
-        / np.pi
+        / xp.pi
     )
 
-    return np.vstack((Br, np.zeros(n), Bz))
+    return xp.stack((Br, xp.zeros_like(Br), Bz))
 
 
 def magnet_cylinder_diametral_Hfield(
@@ -141,10 +141,8 @@ def magnet_cylinder_diametral_Hfield(
     """
     # pylint: disable=too-many-statements
 
-    n = len(z0)
-
-    # allocate to treat small r special cases
-    Hr, Hphi, Hz = np.empty((3, n))
+    xp = array_namespace(z0, r, z, phi)
+    z0, r, z, phi = xp_promote(z0, r, z, phi, xp=xp)
 
     # compute repeated quantities for all cases
     zp = z + z0
@@ -152,139 +150,136 @@ def magnet_cylinder_diametral_Hfield(
 
     zp2 = zp**2
     zm2 = zm**2
-    r2 = r**2
 
     # case small_r: numerical instability of general solution
     mask_small_r = r < 0.05
-    mask_general = ~mask_small_r
-    if np.any(mask_small_r):
-        phiX = phi[mask_small_r]
-        zpX, zmX = zp[mask_small_r], zm[mask_small_r]
-        zp2X, zm2X = zp2[mask_small_r], zm2[mask_small_r]
-        rX, r2X = r[mask_small_r], r2[mask_small_r]
 
-        # taylor series for small r
-        zpp = zp2X + 1
-        zmm = zm2X + 1
-        sqrt_p = np.sqrt(zpp)
-        sqrt_m = np.sqrt(zmm)
+    # both cases are computed for all instances: with r=0 in the small_r case
+    # and r=2 in the general case where they do not apply
+    rX = xp.where(mask_small_r, r, 0.0)
+    r2X = rX**2
 
-        frac1 = zpX / sqrt_p
-        frac2 = zmX / sqrt_m
+    # taylor series for small r
+    zpp = zp2 + 1
+    zmm = zm2 + 1
+    sqrt_p = xp.sqrt(zpp)
+    sqrt_m = xp.sqrt(zmm)
 
-        r3X = r2X * rX
-        r4X = r3X * rX
-        r5X = r4X * rX
+    frac1 = zp / sqrt_p
+    frac2 = zm / sqrt_m
 
-        term1 = frac1 - frac2
-        term2 = (frac1 / zpp**2 - frac2 / zmm**2) * r2X / 8
-        term3 = (
-            ((3 - 4 * zp2X) * frac1 / zpp**4 - (3 - 4 * zm2X) * frac2 / zmm**4)
+    r3X = r2X * rX
+    r4X = r3X * rX
+    r5X = r4X * rX
+
+    term1 = frac1 - frac2
+    term2 = (frac1 / zpp**2 - frac2 / zmm**2) * r2X / 8
+    term3 = ((3 - 4 * zp2) * frac1 / zpp**4 - (3 - 4 * zm2) * frac2 / zmm**4) / 64 * r4X
+
+    Hr_small = -xp.cos(phi) / 4 * (term1 + 9 * term2 + 25 * term3)
+
+    Hphi_small = xp.sin(phi) / 4 * (term1 + 3 * term2 + 5 * term3)
+
+    Hz_small = (
+        -xp.cos(phi)
+        / 4
+        * (
+            rX * (1 / zpp / sqrt_p - 1 / zmm / sqrt_m)
+            + 3
+            / 8
+            * r3X
+            * ((1 - 4 * zp2) / zpp**3 / sqrt_p - (1 - 4 * zm2) / zmm**3 / sqrt_m)
+            + 15
             / 64
-            * r4X
-        )
-
-        Hr[mask_small_r] = -np.cos(phiX) / 4 * (term1 + 9 * term2 + 25 * term3)
-
-        Hphi[mask_small_r] = np.sin(phiX) / 4 * (term1 + 3 * term2 + 5 * term3)
-
-        Hz[mask_small_r] = (
-            -np.cos(phiX)
-            / 4
+            * r5X
             * (
-                rX * (1 / zpp / sqrt_p - 1 / zmm / sqrt_m)
-                + 3
-                / 8
-                * r3X
-                * ((1 - 4 * zp2X) / zpp**3 / sqrt_p - (1 - 4 * zm2X) / zmm**3 / sqrt_m)
-                + 15
-                / 64
-                * r5X
-                * (
-                    (1 - 12 * zp2X + 8 * zp2X**2) / zpp**5 / sqrt_p
-                    - (1 - 12 * zm2X + 8 * zm2X**2) / zmm**5 / sqrt_m
-                )
+                (1 - 12 * zp2 + 8 * zp2**2) / zpp**5 / sqrt_p
+                - (1 - 12 * zm2 + 8 * zm2**2) / zmm**5 / sqrt_m
             )
         )
+    )
 
-        # if there are small_r, select the general/case variables
-        # when there are no small_r cases it is not necessary to slice with [True, True, Tue, ...]
-        phi = phi[mask_general]
-        n = len(phi)
-        zp, zm = zp[mask_general], zm[mask_general]
-        zp2, zm2 = zp2[mask_general], zm2[mask_general]
-        r, r2 = r[mask_general], r2[mask_general]
+    # general case
+    r = xp.where(mask_small_r, 2.0, r)
+    r2 = r**2
 
-    if np.any(mask_general):
-        rp = r + 1
-        rm = r - 1
-        rp2 = rp**2
-        rm2 = rm**2
+    rp = r + 1
+    rm = r - 1
+    rp2 = rp**2
 
-        ap2 = zp2 + rm**2
-        am2 = zm2 + rm**2
-        ap = np.sqrt(ap2)
-        am = np.sqrt(am2)
+    ap2 = zp2 + rm**2
+    am2 = zm2 + rm**2
+    ap = xp.sqrt(ap2)
+    am = xp.sqrt(am2)
 
-        argp = -4 * r / ap2
-        argm = -4 * r / am2
+    argp = -4 * r / ap2
+    argm = -4 * r / am2
 
-        # special case r=r0 : indefinite form
-        #   result is numerically stable in the vicinity of of r=r0
-        #   so only the special case must be caught (not the surroundings)
-        mask_special = rm == 0
-        argc = np.ones(n) * 1e16  # should be np.Inf but leads to 1/0 problems in cel
-        argc[~mask_special] = -4 * r[~mask_special] / rm2[~mask_special]
-        # special case 1/rm
-        one_over_rm = np.zeros(n)
-        one_over_rm[~mask_special] = 1 / rm[~mask_special]
+    # special case r=r0 : indefinite form
+    #   result is numerically stable in the vicinity of of r=r0
+    #   so only the special case must be caught (not the surroundings)
+    mask_special = rm == 0
+    rm = xp.where(mask_special, 1.0, rm)  # avoid 1/0
+    # should be np.inf but leads to 1/0 problems in cel
+    argc = xp.where(mask_special, 1e16, -4 * r / rm**2)
+    # special case 1/rm
+    one_over_rm = xp.where(mask_special, 0.0, 1 / rm)
 
-        elle_p = ellipe(argp)
-        elle_m = ellipe(argm)
-        ellk_p = ellipk(argp)
-        ellk_m = ellipk(argm)
-        onez = np.ones(n)
-        ellpi_p = _cel(np.sqrt(1 - argp), 1 - argc, onez, onez)  # elliptic_Pi
-        ellpi_m = _cel(np.sqrt(1 - argm), 1 - argc, onez, onez)  # elliptic_Pi
+    # complete elliptic integrals E, K and Pi through cel
+    onez = xp.ones_like(r)
+    kcp = xp.sqrt(1 - argp)
+    kcm = xp.sqrt(1 - argm)
+    elle_p = _cel(kcp, onez, onez, 1 - argp)
+    elle_m = _cel(kcm, onez, onez, 1 - argm)
+    ellk_p = _cel(kcp, onez, onez, onez)
+    ellk_m = _cel(kcm, onez, onez, onez)
+    ellpi_p = _cel(kcp, 1 - argc, onez, onez)  # elliptic_Pi
+    ellpi_m = _cel(kcm, 1 - argc, onez, onez)  # elliptic_Pi
 
-        # compute fields
-        Hr[mask_general] = (
-            -np.cos(phi)
-            / (4 * np.pi * r2)
-            * (
-                -zm * am * elle_m
-                + zp * ap * elle_p
-                + zm / am * (2 + zm2) * ellk_m
-                - zp / ap * (2 + zp2) * ellk_p
-                + (zm / am * ellpi_m - zp / ap * ellpi_p) * rp * (r2 + 1) * one_over_rm
-            )
+    # compute fields
+    Hr = (
+        -xp.cos(phi)
+        / (4 * xp.pi * r2)
+        * (
+            -zm * am * elle_m
+            + zp * ap * elle_p
+            + zm / am * (2 + zm2) * ellk_m
+            - zp / ap * (2 + zp2) * ellk_p
+            + (zm / am * ellpi_m - zp / ap * ellpi_p) * rp * (r2 + 1) * one_over_rm
         )
+    )
 
-        Hphi[mask_general] = (
-            np.sin(phi)
-            / (4 * np.pi * r2)
-            * (
-                +zm * am * elle_m
-                - zp * ap * elle_p
-                - zm / am * (2 + zm2 + 2 * r2) * ellk_m
-                + zp / ap * (2 + zp2 + 2 * r2) * ellk_p
-                + zm / am * rp2 * ellpi_m
-                - zp / ap * rp2 * ellpi_p
-            )
+    Hphi = (
+        xp.sin(phi)
+        / (4 * xp.pi * r2)
+        * (
+            +zm * am * elle_m
+            - zp * ap * elle_p
+            - zm / am * (2 + zm2 + 2 * r2) * ellk_m
+            + zp / ap * (2 + zp2 + 2 * r2) * ellk_p
+            + zm / am * rp2 * ellpi_m
+            - zp / ap * rp2 * ellpi_p
         )
+    )
 
-        Hz[mask_general] = (
-            -np.cos(phi)
-            / (2 * np.pi * r)
-            * (
-                +am * elle_m
-                - ap * elle_p
-                - (1 + zm2 + r2) / am * ellk_m
-                + (1 + zp2 + r2) / ap * ellk_p
-            )
+    Hz = (
+        -xp.cos(phi)
+        / (2 * xp.pi * r)
+        * (
+            +am * elle_m
+            - ap * elle_p
+            - (1 + zm2 + r2) / am * ellk_m
+            + (1 + zp2 + r2) / ap * ellk_p
         )
+    )
 
-    return np.vstack((Hr, Hphi, Hz))
+    return xp.stack(
+        (
+            xp.where(mask_small_r, Hr_small, Hr),
+            xp.where(mask_small_r, Hphi_small, Hphi),
+            xp.where(mask_small_r, Hz_small, Hz),
+        )
+    )
 
 
 def _BHJM_magnet_cylinder(
@@ -300,43 +295,44 @@ def _BHJM_magnet_cylinder(
 
     check_field_input(field)
 
+    xp = array_namespace(observers, dimension, polarization)
+    observers, dimension, polarization = xp_promote(
+        observers, dimension, polarization, xp=xp
+    )
+
     # transform to Cy CS --------------------------------------------
     r, phi, z = cart_to_cyl_coordinates(observers)
-    r0, z0 = dimension.T / 2
+    r0, z0 = xp.unstack(dimension / 2, axis=-1)
 
     # scale invariance (make dimensionless)
     r = r / r0
     z = z / r0
     z0 = z0 / r0
 
-    # allocate for output
-    BHJM = polarization.astype(float)
-
     # inside/outside
-    mask_between_bases = np.abs(z) <= z0  # in-between top and bottom plane
+    mask_between_bases = xp.abs(z) <= z0  # in-between top and bottom plane
     mask_inside_hull = r <= 1  # inside Cylinder hull plane
     mask_inside = mask_between_bases & mask_inside_hull
 
     if field == "J":
-        BHJM[~mask_inside] = 0
-        return BHJM
+        return xp.where(mask_inside[:, xp.newaxis], polarization, 0.0)
 
     if field == "M":
-        BHJM[~mask_inside] = 0
-        return BHJM / MU0
+        return xp.where(mask_inside[:, xp.newaxis], polarization, 0.0) / MU0
 
     # SPECIAL CASE 1: on Cylinder edge
-    mask_on_hull = np.isclose(r, 1, rtol=1e-15, atol=0)  # on Cylinder hull plane
-    mask_on_bases = np.isclose(abs(z), z0, rtol=1e-15, atol=0)  # on top or bottom plane
+    mask_on_hull = xp.abs(r - 1) <= 1e-15  # on Cylinder hull plane
+    # on top or bottom plane
+    mask_on_bases = xp.abs(xp.abs(z) - z0) <= 1e-15 * xp.abs(z0)
     mask_not_on_edge = ~(mask_on_hull & mask_on_bases)
 
     # axial/transv polarization cases
-    pol_x, pol_y, pol_z = polarization.T
+    pol_x, pol_y, pol_z = xp.unstack(polarization, axis=-1)
     mask_pol_tv = (pol_x != 0) | (pol_y != 0)
     mask_pol_ax = pol_z != 0
 
     # SPECIAL CASE 2: pol = 0
-    mask_pol_not_null = ~((pol_x == 0) * (pol_y == 0) * (pol_z == 0))
+    mask_pol_not_null = mask_pol_tv | mask_pol_ax
 
     # general case
     mask_gen = mask_pol_not_null & mask_not_on_edge
@@ -346,49 +342,51 @@ def _BHJM_magnet_cylinder(
     mask_pol_ax = mask_pol_ax & mask_gen
     mask_inside = mask_inside & mask_gen
 
-    BHJM *= 0
+    # the core functions are computed for all instances: in the center of a
+    # cylinder with z0=1 where they do not apply, to stay clear of the
+    # singularities
 
     # transversal polarization contributions -----------------------
-    if any(mask_pol_tv):
-        pol_xy = np.sqrt(pol_x**2 + pol_y**2)[mask_pol_tv]
-        tetta = np.arctan2(pol_y[mask_pol_tv], pol_x[mask_pol_tv])
-
-        BHJM[mask_pol_tv] = (
-            magnet_cylinder_diametral_Hfield(
-                z0=z0[mask_pol_tv],
-                r=r[mask_pol_tv],
-                z=z[mask_pol_tv],
-                phi=phi[mask_pol_tv] - tetta,
-            )
-            * pol_xy
-        ).T
+    pol_xy = xp.sqrt(pol_x**2 + pol_y**2)
+    tetta = xp.atan2(pol_y, pol_x)
+    H_tv = xp.where(
+        mask_pol_tv,
+        magnet_cylinder_diametral_Hfield(
+            z0=xp.where(mask_pol_tv, z0, 1.0),
+            r=xp.where(mask_pol_tv, r, 0.0),
+            z=xp.where(mask_pol_tv, z, 0.0),
+            phi=phi - tetta,
+        )
+        * pol_xy,
+        0.0,
+    )
 
     # axial polarization contributions ----------------------------
-    if any(mask_pol_ax):
-        BHJM[mask_pol_ax] += (
-            magnet_cylinder_axial_Bfield(
-                z0=z0[mask_pol_ax],
-                r=r[mask_pol_ax],
-                z=z[mask_pol_ax],
-            )
-            * pol_z[mask_pol_ax]
-        ).T
+    B_ax = xp.where(
+        mask_pol_ax,
+        magnet_cylinder_axial_Bfield(
+            z0=xp.where(mask_pol_ax, z0, 1.0),
+            r=xp.where(mask_pol_ax, r, 0.0),
+            z=xp.where(mask_pol_ax, z, 0.0),
+        )
+        * pol_z,
+        0.0,
+    )
 
-    BHJM[:, 0], BHJM[:, 1] = cyl_field_to_cart(phi, BHJM[:, 0], BHJM[:, 1])
+    Br, Bphi, Bz = xp.unstack(H_tv + B_ax)
+    Bx, By = cyl_field_to_cart(phi, Br, Bphi)
 
     # add/subtract Mag when inside for B/H
     if field == "B":
-        mask_tv_inside = mask_pol_tv * mask_inside
-        if any(mask_tv_inside):  # tv computes H-field
-            BHJM[mask_tv_inside, 0] += pol_x[mask_tv_inside]
-            BHJM[mask_tv_inside, 1] += pol_y[mask_tv_inside]
-        return BHJM
+        mask_tv_inside = mask_pol_tv & mask_inside  # tv computes H-field
+        Bx = xp.where(mask_tv_inside, Bx + pol_x, Bx)
+        By = xp.where(mask_tv_inside, By + pol_y, By)
+        return xp.stack((Bx, By, Bz), axis=-1)
 
     if field == "H":
-        mask_ax_inside = mask_pol_ax * mask_inside
-        if any(mask_ax_inside):  # ax computes B-field
-            BHJM[mask_ax_inside, 2] -= pol_z[mask_ax_inside]
-        return BHJM / MU0
+        mask_ax_inside = mask_pol_ax & mask_inside  # ax computes B-field
+        Bz = xp.where(mask_ax_inside, Bz - pol_z, Bz)
+        return xp.stack((Bx, By, Bz), axis=-1) / MU0
 
     msg = (
         "Input output_field_type must be one of {'B', 'H', 'M', 'J'}; "

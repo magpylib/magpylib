@@ -3,72 +3,53 @@
 # pylance: disable=Code is unreachable
 
 import numpy as np
+from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
+from magpylib._src.array_api_utils import xp_promote
 from magpylib._src.input_checks import check_field_input
-
-
-def _vcross3(a: np.ndarray, b: np.ndarray) -> np.ndarray:
-    """
-    vectorized cross product for 3d vectors. Is ~4x faster than np.cross when
-    arrays are smallish. Only slightly faster for large arrays.
-    input shape a, b: (n, 3)
-    returns: (n, 3)
-    """
-    # receives nan values at corners
-    with np.errstate(invalid="ignore"):
-        result = np.array(
-            [
-                a[:, 1] * b[:, 2] - a[:, 2] * b[:, 1],
-                a[:, 2] * b[:, 0] - a[:, 0] * b[:, 2],
-                a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0],
-            ]
-        )
-    return result.T
 
 
 def _norm_vector(v) -> np.ndarray:
     """
     Calculates normalized orthogonal vector on a plane defined by three vertices.
+    v: shape (n, 3, 3), returns: shape (n, 3)
     """
-    a = v[:, 1] - v[:, 0]
-    b = v[:, 2] - v[:, 0]
-    n = _vcross3(a, b)
-    n_norm = np.linalg.norm(n, axis=-1)
-    return n / np.expand_dims(n_norm, axis=-1)
+    xp = array_namespace(v)
+    n = xp.linalg.cross(v[:, 1, :] - v[:, 0, :], v[:, 2, :] - v[:, 0, :])
+    return n / xp.linalg.vector_norm(n, axis=-1, keepdims=True)
 
 
 def _solid_angle(R: np.ndarray, r: np.ndarray) -> np.ndarray:
     """
     Vectorized computation of the solid angle of triangles.
 
-    Triangle point indices are 1, 2, 3, different triangles are denoted by a, b, c, ...
-    The first triangle is defined as R1a, R2a, R3a.
-
     Input:
-    R = [(R1a, R1b, R1c, ...), (R2a, R2b, R2c, ...), (R3a, R3b, R3c, ...)]
-    r = [(|R1a|, |R1b|, |R1c|, ...), (|R2a|, |R2b|, |R2c|, ...), (|R3a|, |R3b|, |R3c|, ...)]
+    R: shape (n, 3, 3), vectors from the observer to the three vertices
+    r: shape (n, 3), their lengths
 
-    Returns:
-    [sangle_a, sangle_b, sangle_c, ...]
+    Returns: shape (n,)
     """
+    xp = array_namespace(R, r)
+    R0, R1, R2 = R[:, 0, :], R[:, 1, :], R[:, 2, :]
+    r0, r1, r2 = r[:, 0], r[:, 1], r[:, 2]
 
     # Calculates (oriented) volume of the parallelepiped in vectorized form.
-    N = np.einsum("ij, ij->i", R[2], _vcross3(R[1], R[0]))
+    N = xp.sum(R2 * xp.linalg.cross(R1, R0), axis=-1)
 
     D = (
-        r[0] * r[1] * r[2]
-        + np.einsum("ij, ij->i", R[2], R[1]) * r[0]
-        + np.einsum("ij, ij->i", R[2], R[0]) * r[1]
-        + np.einsum("ij, ij->i", R[1], R[0]) * r[2]
+        r0 * r1 * r2
+        + xp.sum(R2 * R1, axis=-1) * r0
+        + xp.sum(R2 * R0, axis=-1) * r1
+        + xp.sum(R1 * R0, axis=-1) * r2
     )
-    result = 2.0 * np.arctan2(N, D)
+    result = 2.0 * xp.atan2(N, D)
 
     # modulus 2pi to avoid jumps on edges in line
     # "B = sigma * ((n.T * _solid_angle(R, r)) - _vcross3(n, PQR).T)"
     # <-- bad fix :(
 
-    return np.where(abs(result) > 6.2831853, 0, result)
+    return xp.where(xp.abs(result) > 6.2831853, 0.0, result)
 
 
 def triangle_Bfield(
@@ -128,24 +109,28 @@ def triangle_Bfield(
     [[7.452 4.62  3.136]
      [2.213 2.677 2.213]]
     """
-    n = _norm_vector(vertices)
-    sigma = np.einsum("ij, ij->i", n, polarizations)  # vectorized inner product
+    xp = array_namespace(observers, vertices, polarizations)
+    observers, vertices, polarizations = xp_promote(
+        observers, vertices, polarizations, xp=xp
+    )
 
-    # vertex <-> observer
-    R = np.swapaxes(vertices, 0, 1) - observers
-    r2 = np.sum(R * R, axis=-1)
-    r = np.sqrt(r2)
+    n = _norm_vector(vertices)
+    sigma = xp.sum(n * polarizations, axis=-1, keepdims=True)  # inner product
+
+    # vertex <-> observer, shape (i, 3 vertices, 3)
+    R = vertices - observers[:, xp.newaxis, :]
+    r2 = xp.sum(R * R, axis=-1)
+    r = xp.sqrt(r2)
 
     # vertex <-> vertex
-    L = vertices[:, (1, 2, 0)] - vertices[:, (0, 1, 2)]
-    L = np.swapaxes(L, 0, 1)
-    l2 = np.sum(L * L, axis=-1)
-    l1 = np.sqrt(l2)
+    L = xp.roll(vertices, -1, axis=1) - vertices
+    l2 = xp.sum(L * L, axis=-1)
+    l1 = xp.sqrt(l2)
 
     # vert-vert -- vert-obs
-    b = np.einsum("ijk, ijk->ij", R, L)
+    b = xp.sum(R * L, axis=-1)
     bl = b / l1
-    ind = np.fabs(r + bl)  # closeness measure to corner and edge
+    ind = xp.abs(r + bl)  # closeness measure to corner and edge
 
     # The computation of ind is the origin of a major numerical instability
     #    when approaching the triangle because r ~ -bl. This number
@@ -155,29 +140,29 @@ def triangle_Bfield(
     # The second problem is at corner and edge extensions where ind also computes
     #    as 0. Here one approaches a special case where another evaluation should
     #    be used. This problem is solved in the following lines.
-    # np.seterr must be used because of a NumPy bug. It does not interpret where
-    #   correctly. The following code will raise a NumPy warning - but obviously shouldn't
-    #
-    # x = np.array([(0, 1, 2), (0, 0, 1)])
-    # np.where(
-    #     x>0,
-    #     1/x,
-    #     0
-    # )
+    mask_gen = ind > 1.0e-12
 
-    with np.errstate(divide="ignore", invalid="ignore"):
-        I = np.where(
-            ind > 1.0e-12,
-            1.0 / l1 * np.log((np.sqrt(l2 + 2 * b + r2) + l1 + bl) / ind),
-            -(1.0 / l1) * np.log(np.fabs(l1 - r) / r),
-        )
-    PQR = np.einsum("ij, ijk -> jk", I, L)
-    B = sigma * (n.T * _solid_angle(R, r) - _vcross3(n, PQR).T)
-    B = B / np.pi / 4.0
+    # the other evaluation is singular at the two ends of an edge: the corners
+    mask_end = (r == 0) | (r == l1)
+    mask_corner = xp.any(~mask_gen & mask_end, axis=-1, keepdims=True)
 
-    B[np.isnan(B)] = 0.0  # set corners nan to 0
+    # both evaluations are computed for all edges, with harmless arguments
+    # where they are not used or singular
+    arg_gen = xp.sqrt(xp.where(mask_gen, l2 + 2 * b + r2, 1.0)) + l1 + bl
+    arg_gen = arg_gen / xp.where(mask_gen, ind, 1.0)
+    arg_ext = xp.abs(l1 - r) / xp.where(mask_end, 1.0, r)
+    integral = xp.where(
+        mask_gen,
+        xp.log(xp.where(mask_gen, arg_gen, 1.0)),
+        -xp.log(xp.where(mask_end, 1.0, arg_ext)),
+    )
 
-    return B.T
+    PQR = xp.sum((integral / l1)[:, :, xp.newaxis] * L, axis=1)
+    B = sigma * (n * _solid_angle(R, r)[:, xp.newaxis] - xp.linalg.cross(n, PQR))
+    B = B / xp.pi / 4.0
+
+    # return (0, 0, 0) at corners
+    return xp.where(mask_corner | xp.isnan(B), 0.0, B)
 
 
 def _BHJM_triangle(
@@ -191,13 +176,9 @@ def _BHJM_triangle(
     """
     check_field_input(field)
 
-    BHJM = polarization.astype(float) * 0.0
-
-    if field == "M":
-        return BHJM
-
-    if field == "J":
-        return BHJM
+    if field in "MJ":
+        xp = array_namespace(observers, vertices, polarization)
+        return xp.zeros_like(xp_promote(polarization, xp=xp))
 
     BHJM = triangle_Bfield(
         observers=observers,
