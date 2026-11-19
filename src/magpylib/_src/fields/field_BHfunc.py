@@ -853,6 +853,15 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
 _IDENTITY = np.eye(3)
 
 
+def _unrotated(vectors: np.ndarray) -> np.ndarray:
+    """``vectors`` rotated by the identity, without a Rotation (#1089): the
+    identity's product gives what the rotation gives, -0.0 made 0.0 and an
+    infinite component NaN in the others. That NaN warns on some platforms
+    (0 * inf); scipy's rotation gives it silently."""
+    with np.errstate(invalid="ignore"):
+        return vectors @ _IDENTITY
+
+
 def _getBH_level1(
     *,
     field_func: Callable,
@@ -880,11 +889,9 @@ def _getBH_level1(
 
     """
 
-    # transform obs_pos into source CS. Orientation None is unrotated: the
-    # identity's product, without a Rotation (#1089), gives what the rotation
-    # gives, -0.0 made 0.0 and an infinite component NaN in the others
+    # transform obs_pos into source CS; orientation None is unrotated
     if orientation is None:
-        pos_rel_rot = (observers - position) @ _IDENTITY
+        pos_rel_rot = _unrotated(observers - position)
     else:
         pos_rel_rot = orientation.apply(observers - position, inverse=True)
 
@@ -897,6 +904,6 @@ def _getBH_level1(
 
     # transform field back into global CS
     if BH is not None:  # catch non-implemented field_func a level above
-        BH = BH @ _IDENTITY if orientation is None else orientation.apply(BH)
+        BH = _unrotated(BH) if orientation is None else orientation.apply(BH)
 
     return BH
