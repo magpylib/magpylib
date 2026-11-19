@@ -42,7 +42,6 @@ level4(src.getB/H, sensor.getB/H, collection.getB/H):   <--- USER INTERFACE
 # pylint: disable=too-many-positional-arguments
 
 import warnings
-from collections.abc import Callable
 from itertools import product
 from types import MethodType
 
@@ -52,6 +51,7 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields import chunks
+from magpylib._src.fields.field_BHfunc import _UNIT_QUAT, _getBH_level1
 from magpylib._src.input_checks import (
     check_dimensions,
     check_excitations,
@@ -66,7 +66,6 @@ from magpylib._src.obj_classes.class_BaseTransform import (
 from magpylib._src.utility import (
     format_obj_input,
     format_src_inputs,
-    has_parameter,
 )
 
 
@@ -120,11 +119,10 @@ def _sensor_orientation_flags(sensors: list) -> tuple[list[bool], list[bool]]:
     frame; static ones place pixels and rotate the field with one rotation.
     Padding a path repeats its last orientation, so both hold after padding."""
     # pylint: disable=protected-access
-    unit = np.array([0, 0, 0, 1.0])
     unrotated, static = [], []
     for sens in sensors:
         quats = sens._orientation.as_quat()
-        unrotated.append(bool(np.all(quats == unit)))
+        unrotated.append(bool(np.all(quats == _UNIT_QUAT)))
         static.append(bool(np.all(quats == quats[0])))
     return unrotated, static
 
@@ -139,9 +137,11 @@ def _pixel_positions(
     pos = position[:, None, :]
     if sens.pixel is None:
         return np.zeros((1, 1, 3)) + pos
-    rot = orientation[:1] if static_orientation else orientation
+    matrix = orientation.as_matrix()
+    if static_orientation:
+        matrix = matrix[:1]
     pix_t = sens.pixel.reshape(-1, 3).T
-    return np.matmul(rot.as_matrix(), pix_t).transpose(0, 2, 1) + pos
+    return np.matmul(matrix, pix_t).transpose(0, 2, 1) + pos
 
 
 def _get_src_dict(
@@ -168,7 +168,8 @@ def _get_src_dict(
         [_path_steps(src._orientation.as_quat(), path_sl, path_len) for src in group]
     )
     rotv = np.tile(rots, n_pix).reshape((-1, 4))
-    rotobj = R.from_quat(rotv)
+    # unrotated sources, the common case, skip the rotation (#1089)
+    rotobj = None if np.all(rotv == _UNIT_QUAT) else R.from_quat(rotv)
 
     # Sile up observer positions
     posov = np.tile(poso, (len(group), 1))
@@ -184,64 +185,24 @@ def _get_src_dict(
     prop_with_path = group[0]._path_properties
     props_in_field_func = group[0]._field_func_kwargs_ndim.keys()
 
-    # Process non-path properties
+    # Process non-path properties. The names are checked before hasattr,
+    # which runs the property's getter
     for prop_name in group[0]._field_func_kwargs_ndim:
-        if hasattr(group[0], prop_name) and prop_name not in prop_with_path:
+        if prop_name not in prop_with_path and hasattr(group[0], prop_name):
             kwargs[prop_name] = _tile_group_property(group, n_pp, prop_name)
 
     # Process other path properties (position and orientation already handled above)
     for prop_name in prop_with_path:
         if (
-            hasattr(group[0], prop_name)
-            and prop_name not in ("position", "orientation")
+            prop_name not in ("position", "orientation")
             and prop_name in props_in_field_func
+            and hasattr(group[0], prop_name)
         ):
             kwargs[prop_name] = _tile_group_property_path(
                 group, n_pix, prop_name, path_sl, path_len
             )
 
     return kwargs
-
-
-def _getBH_level1(
-    *,
-    field_func: Callable,
-    field: str,
-    position: np.ndarray,
-    orientation: np.ndarray,
-    observers: np.ndarray,
-    **kwargs: dict,
-) -> np.ndarray:
-    """Vectorized field computation
-
-    - applies spatial transformations global CS <-> source CS
-    - selects the correct Bfield_XXX function from input
-
-    Args
-    ----
-    kwargs: dict of shape (i, x) input vectors that describes the computation.
-
-    Returns
-    -------
-    field: ndarray, shape (i, 3)
-
-    """
-
-    # transform obs_pos into source CS
-    pos_rel_rot = orientation.apply(observers - position, inverse=True)
-
-    # filter arguments
-    if not has_parameter(field_func, "in_out"):  # in_out passed only to magnets
-        kwargs.pop("in_out", None)
-
-    # compute field
-    BH = field_func(field=field, observers=pos_rel_rot, **kwargs)
-
-    # transform field back into global CS
-    if BH is not None:  # catch non-implemented field_func a level above
-        BH = orientation.apply(BH)
-
-    return BH
 
 
 def _chunk_slices(rows_per_obs, n_path, n_pix):

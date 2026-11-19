@@ -18,6 +18,9 @@ from magpylib._src.fields.field_BH_tetrahedron import _BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
 from magpylib._src.utility import has_parameter
 
+_IDENTITY = np.eye(3)
+_UNIT_QUAT = np.array([0, 0, 0, 1.0])  # scalar last, as scipy
+
 
 def circle_field(
     field,
@@ -835,7 +838,10 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
             else np.tile(val, [n] + [1] * (val.ndim - 1))
             for key, val in params.items()
         }
-        kwargs["orientation"] = R.from_quat(kwargs["orientation"])
+        quats = kwargs["orientation"]
+        kwargs["orientation"] = (
+            None if np.all(quats == _UNIT_QUAT) else R.from_quat(quats)
+        )
         BH[rows] = _getBH_level1(field_func=field_func, field=field, **kwargs)
 
     step = max(1, chunks.CHUNK_ROWS // kernel_rows)
@@ -847,19 +853,26 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
     return BH
 
 
+def _unrotated(vectors: np.ndarray) -> np.ndarray:
+    """``vectors`` rotated by the identity, without a Rotation (#1089): the
+    identity's product gives what the rotation gives, -0.0 made 0.0 and an
+    infinite component NaN in the others. That NaN warns on some platforms
+    (0 * inf); scipy's rotation gives it silently."""
+    with np.errstate(invalid="ignore"):
+        return vectors @ _IDENTITY
+
+
 def _getBH_level1(
     *,
     field_func: Callable,
     field: str,
     position: np.ndarray,
-    orientation: np.ndarray,
+    orientation: R | None,
     observers: np.ndarray,
     **kwargs: dict,
 ) -> np.ndarray:
-    """
-    COPY FROM field_BH TO AVOID CIRCULAR IMPORT
-
-    Vectorized field computation
+    """Vectorized field computation, of the functional interface and of
+    getB and the like (field_BH)
 
     - applies spatial transformations global CS <-> source CS
     - selects the correct Bfield_XXX function from input
@@ -874,8 +887,11 @@ def _getBH_level1(
 
     """
 
-    # transform obs_pos into source CS
-    pos_rel_rot = orientation.apply(observers - position, inverse=True)
+    # transform obs_pos into source CS; orientation None is unrotated
+    if orientation is None:
+        pos_rel_rot = _unrotated(observers - position)
+    else:
+        pos_rel_rot = orientation.apply(observers - position, inverse=True)
 
     # filter arguments
     if not has_parameter(field_func, "in_out"):  # in_out passed only to magnets
@@ -886,6 +902,6 @@ def _getBH_level1(
 
     # transform field back into global CS
     if BH is not None:  # catch non-implemented field_func a level above
-        BH = orientation.apply(BH)
+        BH = _unrotated(BH) if orientation is None else orientation.apply(BH)
 
     return BH

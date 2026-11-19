@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Small field computations are up to 1.3x faster: unrotated sources no longer
+  build scipy rotations
+  ([#1091](https://github.com/magpylib/magpylib/pull/1091)).
+
 ### Fixed
 
 - Cuboid fields close to edges remain finite and accurate, preventing NaN fields
