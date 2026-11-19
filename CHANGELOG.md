@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Small field computations are up to 1.3x faster: unrotated sources no longer
+  build scipy rotations.
+
 ### Fixed
 
 - Cuboid fields close to edges remain finite and accurate, preventing NaN fields

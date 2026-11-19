@@ -835,7 +835,10 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
             else np.tile(val, [n] + [1] * (val.ndim - 1))
             for key, val in params.items()
         }
-        kwargs["orientation"] = R.from_quat(kwargs["orientation"])
+        quats = kwargs["orientation"]
+        kwargs["orientation"] = (
+            None if np.all(quats == (0, 0, 0, 1.0)) else R.from_quat(quats)
+        )
         BH[rows] = _getBH_level1(field_func=field_func, field=field, **kwargs)
 
     step = max(1, chunks.CHUNK_ROWS // kernel_rows)
@@ -847,12 +850,15 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
     return BH
 
 
+_IDENTITY = np.eye(3)
+
+
 def _getBH_level1(
     *,
     field_func: Callable,
     field: str,
     position: np.ndarray,
-    orientation: np.ndarray,
+    orientation: R | None,
     observers: np.ndarray,
     **kwargs: dict,
 ) -> np.ndarray:
@@ -874,8 +880,13 @@ def _getBH_level1(
 
     """
 
-    # transform obs_pos into source CS
-    pos_rel_rot = orientation.apply(observers - position, inverse=True)
+    # transform obs_pos into source CS. Orientation None is unrotated: the
+    # identity's product, without a Rotation (#1089), gives what the rotation
+    # gives, -0.0 made 0.0 and an infinite component NaN in the others
+    if orientation is None:
+        pos_rel_rot = (observers - position) @ _IDENTITY
+    else:
+        pos_rel_rot = orientation.apply(observers - position, inverse=True)
 
     # filter arguments
     if not has_parameter(field_func, "in_out"):  # in_out passed only to magnets
@@ -886,6 +897,6 @@ def _getBH_level1(
 
     # transform field back into global CS
     if BH is not None:  # catch non-implemented field_func a level above
-        BH = orientation.apply(BH)
+        BH = BH @ _IDENTITY if orientation is None else orientation.apply(BH)
 
     return BH
