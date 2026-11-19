@@ -1,5 +1,7 @@
 """Special functions el3."""
 
+import math
+
 import numpy as np
 
 from magpylib._src.fields.special_cel import _cel
@@ -18,6 +20,11 @@ def _el30(x, kc, p):
 
     if x == 0:
         return 0.0
+
+    # non-finite input gives NaN, as in the vectorized _el3v, instead of a
+    # ValueError from int(NaN) further down
+    if not (math.isfinite(x) and math.isfinite(kc) and math.isfinite(p)):
+        return np.nan
 
     ye = 0.0
     k = km2 = l = m = n = 0

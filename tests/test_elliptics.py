@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+import magpylib as magpy
 from magpylib._src.fields.special_cel import _cel, _cel_scalar, _cel_vector
 from magpylib._src.fields.special_el3 import _el3, _el3_angle, _el3v, _el30
 
@@ -131,3 +132,47 @@ def test_cel_Bulirsch():
         [-0.67687378198360556],
         nulp=2,
     )
+
+
+@pytest.mark.parametrize("n", [1, 12], ids=["scalar cel", "vector cel"])
+@pytest.mark.parametrize(
+    ("src", "obs"),
+    [
+        (
+            magpy.magnet.Cylinder(dimension=(2, 1), polarization=(0, 0, 1)),
+            (np.nan, 0, 0),
+        ),
+        (
+            magpy.magnet.Cylinder(dimension=(2, 1), polarization=(1, 0, 0)),
+            (np.inf, 0, 0),
+        ),
+        (
+            magpy.magnet.Cylinder(dimension=(2, 1), polarization=(0, 0, 1)),
+            (1e300, 0, 0),
+        ),
+        (
+            magpy.magnet.CylinderSegment(
+                dimension=(1, 2, 1, 0, 90), polarization=(0.1, -0.2, 1)
+            ),
+            (-1e300, -1e300, 1e300),
+        ),
+        (
+            magpy.magnet.CylinderSegment(
+                dimension=(0.5, 1, 2, 0, 90), polarization=(0.6, 0, 0.8)
+            ),
+            (1 + 1.7e-9, 3.4e-9, 1 + 5.1e-9),
+        ),
+    ],
+    ids=[
+        "Cylinder nan",
+        "Cylinder inf",
+        "Cylinder 1e300",
+        "CylinderSegment 1e300",
+        "CylinderSegment near corner",
+    ],
+)
+def test_elliptic_nonfinite_returns_nan(src, obs, n):
+    """Non-finite values in cel or el3 return NaN, not a hang or a ValueError (#1092, #1082)"""
+    with np.errstate(all="ignore"):
+        B = src.getB(np.tile(obs, (n, 1)))
+    assert np.isnan(B).all()
