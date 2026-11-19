@@ -13,9 +13,9 @@
 - Cuboid fields close to edges remain finite and accurate, preventing NaN fields
   in collections of cuboid cells
   ([#1066](https://github.com/magpylib/magpylib/pull/1066)).
-- Cylinder and CylinderSegment fields return NaN instead of hanging forever when
-  an observer is NaN, infinite, very large, or very close to a CylinderSegment
-  corner ([#1092](https://github.com/magpylib/magpylib/issues/1092)).
+- Cylinder and CylinderSegment fields no longer hang forever or raise ValueError
+  for NaN, infinite or very large observers, or close to CylinderSegment corners
+  ([#1094](https://github.com/magpylib/magpylib/pull/1094)).
 
 ## [6.3.0] 2026-11-07
 
