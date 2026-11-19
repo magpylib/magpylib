@@ -228,7 +228,6 @@ XFAIL = {
 }
 XFAIL_SINGULAR = "finite value where the field is infinite (#1073)"
 XFAIL_NEAR = {
-    "Cuboid edge": "NaN band near edges (#1058, #1066)",
     "CylinderSegment end": "NaN or ValueError within 3e-12..3e-9 m of an end face",
     "CylinderSegment corner": "NaN or ValueError near an end face",
     "Tetrahedron edge": "snaps to the edge value where |r + b/l| < 1e-12 m",
