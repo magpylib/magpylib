@@ -18,6 +18,9 @@ from magpylib._src.fields.field_BH_tetrahedron import _BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
 from magpylib._src.utility import has_parameter
 
+_IDENTITY = np.eye(3)
+_UNIT_QUAT = np.array([0, 0, 0, 1.0])  # scalar last, as scipy
+
 
 def circle_field(
     field,
@@ -837,7 +840,7 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
         }
         quats = kwargs["orientation"]
         kwargs["orientation"] = (
-            None if np.all(quats == (0, 0, 0, 1.0)) else R.from_quat(quats)
+            None if np.all(quats == _UNIT_QUAT) else R.from_quat(quats)
         )
         BH[rows] = _getBH_level1(field_func=field_func, field=field, **kwargs)
 
@@ -848,9 +851,6 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
     if squeeze:
         return np.squeeze(BH)
     return BH
-
-
-_IDENTITY = np.eye(3)
 
 
 def _unrotated(vectors: np.ndarray) -> np.ndarray:
@@ -871,10 +871,8 @@ def _getBH_level1(
     observers: np.ndarray,
     **kwargs: dict,
 ) -> np.ndarray:
-    """
-    COPY FROM field_BH TO AVOID CIRCULAR IMPORT
-
-    Vectorized field computation
+    """Vectorized field computation, of the functional interface and of
+    getB and the like (field_BH)
 
     - applies spatial transformations global CS <-> source CS
     - selects the correct Bfield_XXX function from input

@@ -42,7 +42,6 @@ level4(src.getB/H, sensor.getB/H, collection.getB/H):   <--- USER INTERFACE
 # pylint: disable=too-many-positional-arguments
 
 import warnings
-from collections.abc import Callable
 from itertools import product
 from types import MethodType
 
@@ -52,6 +51,7 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields import chunks
+from magpylib._src.fields.field_BHfunc import _UNIT_QUAT, _getBH_level1
 from magpylib._src.input_checks import (
     check_dimensions,
     check_excitations,
@@ -66,7 +66,6 @@ from magpylib._src.obj_classes.class_BaseTransform import (
 from magpylib._src.utility import (
     format_obj_input,
     format_src_inputs,
-    has_parameter,
 )
 
 
@@ -111,9 +110,6 @@ def _tile_group_property(group: list, n_pp: int, prop_name: str):
     else:
         out = np.array(out)
     return np.repeat(out, n_pp, axis=0)
-
-
-_UNIT_QUAT = np.array([0, 0, 0, 1.0])
 
 
 def _sensor_orientation_flags(sensors: list) -> tuple[list[bool], list[bool]]:
@@ -207,62 +203,6 @@ def _get_src_dict(
             )
 
     return kwargs
-
-
-_IDENTITY = np.eye(3)
-
-
-def _unrotated(vectors: np.ndarray) -> np.ndarray:
-    """``vectors`` rotated by the identity, without a Rotation (#1089): the
-    identity's product gives what the rotation gives, -0.0 made 0.0 and an
-    infinite component NaN in the others. That NaN warns on some platforms
-    (0 * inf); scipy's rotation gives it silently."""
-    with np.errstate(invalid="ignore"):
-        return vectors @ _IDENTITY
-
-
-def _getBH_level1(
-    *,
-    field_func: Callable,
-    field: str,
-    position: np.ndarray,
-    orientation: R | None,
-    observers: np.ndarray,
-    **kwargs: dict,
-) -> np.ndarray:
-    """Vectorized field computation
-
-    - applies spatial transformations global CS <-> source CS
-    - selects the correct Bfield_XXX function from input
-
-    Args
-    ----
-    kwargs: dict of shape (i, x) input vectors that describes the computation.
-
-    Returns
-    -------
-    field: ndarray, shape (i, 3)
-
-    """
-
-    # transform obs_pos into source CS; orientation None is unrotated
-    if orientation is None:
-        pos_rel_rot = _unrotated(observers - position)
-    else:
-        pos_rel_rot = orientation.apply(observers - position, inverse=True)
-
-    # filter arguments
-    if not has_parameter(field_func, "in_out"):  # in_out passed only to magnets
-        kwargs.pop("in_out", None)
-
-    # compute field
-    BH = field_func(field=field, observers=pos_rel_rot, **kwargs)
-
-    # transform field back into global CS
-    if BH is not None:  # catch non-implemented field_func a level above
-        BH = _unrotated(BH) if orientation is None else orientation.apply(BH)
-
-    return BH
 
 
 def _chunk_slices(rows_per_obs, n_path, n_pix):
