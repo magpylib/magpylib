@@ -41,7 +41,9 @@ def _cel_scalar(kc, p, c, s):
         g = em
         em += qc
 
-        if abs(g - qc) <= g * _CEL_ERRORTOL:
+        # written as `not >` so that NaN (from NaN, inf or overflowing input) stops
+        # the loop and returns NaN instead of iterating forever
+        if not abs(g - qc) > g * _CEL_ERRORTOL:
             break
 
         qc = 2 * m.sqrt(kk)
@@ -94,7 +96,8 @@ def _cel_vector(kc, p, c, s):
         g = em.copy()
         em += qc
 
-        if np.all(np.abs(g - qc) <= g * _CEL_ERRORTOL):
+        # NaN entries count as converged, see _cel_scalar
+        if not np.any(np.abs(g - qc) > g * _CEL_ERRORTOL):
             break
 
         qc = 2 * np.sqrt(kk)
