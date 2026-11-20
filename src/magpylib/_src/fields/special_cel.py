@@ -121,10 +121,10 @@ def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndar
     Numerische Mathematik 13, 305-315 (1969).
     https://dlmf.nist.gov/19.2#E11, and other pages in https://dlmf.nist.gov/19
 
-    The following identities hold:
-    K(k²)  = cel(sqrt(1 - k²), 1, 1, 1)
-    E(k²)  = cel(sqrt(1 - k²), 1, 1, 1 - k²)
-    Π(a²,k²) = cel(sqrt(1 - k²), 1 - a², 1, 1)
+    The complete elliptic integrals K, E, and Π are related to cel() via:
+    K(k) = cel(sqrt(1 - k²), 1, 1, 1)
+    E(k) = cel(sqrt(1 - k²), 1, 1, 1 - k²)
+    Π(α², k) = cel(sqrt(1 - k²), 1 - α², 1, 1)
     """
 
     if kc.size < _CEL_SCALAR_THRESHOLD:
