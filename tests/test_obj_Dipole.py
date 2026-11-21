@@ -26,9 +26,8 @@ def test_Dipole_zero_position():
     """Basic dipole class test"""
     src = magpy.misc.Dipole(moment=(1, 2, 3))
     sens = magpy.Sensor()
-    np.seterr(all="ignore")
-    B = magpy.getB(src, sens)
-    np.seterr(all="print")
+    with np.errstate(all="ignore"):
+        B = magpy.getB(src, sens)
     assert all(np.isnan(B))
 
 
