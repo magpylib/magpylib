@@ -10,6 +10,8 @@
 
 ### Fixed
 
+- `cylinder_segment_field` returns the field inside a full ring on its angular
+  seam ([#1083](https://github.com/magpylib/magpylib/issues/1083)).
 - Cuboid fields close to edges remain finite and accurate, preventing NaN fields
   in collections of cuboid cells
   ([#1066](https://github.com/magpylib/magpylib/pull/1066)).
