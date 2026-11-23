@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 
 import magpylib as magpy
+from magpylib._src.array_api_utils import padded_size
 
 DATA = Path(__file__).parent / "testdata" / ("regression_reference" + ".npz")
 
@@ -215,3 +216,32 @@ def test_elliptic_iteration_ends():
     with np.errstate(all="ignore"):
         h = magpy.func.circle_field("H", (1.0, 0.0, 1e-170), 2.0, 1.0)
     assert np.isnan(h).all()
+
+
+def test_padded_size():
+    """Row counts are rounded up to four sizes per power of two."""
+    sizes = [padded_size(n) for n in (1, 2, 7, 8, 9, 10, 11, 17, 1000, 1025)]
+    assert sizes == [1, 2, 7, 8, 10, 10, 12, 20, 1024, 1280]
+    assert all(n <= padded_size(n) <= 1.25 * n for n in range(1, 5000))
+
+
+@pytest.mark.parametrize("n", [1, 2, 9, 11, 33])
+@pytest.mark.parametrize(
+    "name", sorted(set(magpy.core.__all__) - {"magnet_cylinder_segment_Hfield"})
+)
+def test_jax_padded_rows(name, n, reference):
+    """JAX computes with rows padded to a size it has compiled before, and
+    returns the NumPy result for the rows that were given."""
+    jax = pytest.importorskip("jax")
+    jax.config.update("jax_enable_x64", True)
+    prefix = f"core/{name}|in|"
+    inputs = {
+        key.removeprefix(prefix): val[:n]
+        for key, val in reference.items()
+        if key.startswith(prefix)
+    }
+    func = getattr(magpy.core, name)
+    expected = func(**inputs)
+    out = func(**{key: jax.numpy.asarray(val) for key, val in inputs.items()})
+    assert isinstance(out, jax.Array)
+    np.testing.assert_allclose(out, expected, rtol=1e-9, atol=1e-12)

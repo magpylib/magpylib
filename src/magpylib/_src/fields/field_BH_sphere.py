@@ -4,10 +4,11 @@ import numpy as np
 from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.array_api_utils import xp_promote
+from magpylib._src.array_api_utils import jax_padded, xp_promote
 from magpylib._src.input_checks import check_field_input
 
 
+@jax_padded()
 def magnet_sphere_Bfield(
     observers: np.ndarray,
     diameters: np.ndarray,

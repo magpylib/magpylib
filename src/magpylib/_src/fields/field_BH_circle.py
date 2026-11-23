@@ -4,12 +4,13 @@ import numpy as np
 from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.array_api_utils import xp_promote
+from magpylib._src.array_api_utils import jax_padded, xp_promote
 from magpylib._src.fields.special_cel import _cel_iter
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
 
 
+@jax_padded(out_axis=1)
 def current_circle_Hfield(
     r0: np.ndarray,
     r: np.ndarray,

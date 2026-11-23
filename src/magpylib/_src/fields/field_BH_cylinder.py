@@ -4,12 +4,13 @@ import numpy as np
 from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.array_api_utils import xp_promote
+from magpylib._src.array_api_utils import jax_padded, xp_promote
 from magpylib._src.fields.special_cel import _cel
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
 
 
+@jax_padded(out_axis=1)
 def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -> list:
     """B-field of i axially magnetized cylinders in cylindrical coordinates.
 
@@ -86,6 +87,7 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
     return xp.stack((Br, xp.zeros_like(Br), Bz))
 
 
+@jax_padded(out_axis=1)
 def magnet_cylinder_diametral_Hfield(
     z0: np.ndarray,
     r: np.ndarray,

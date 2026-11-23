@@ -12,7 +12,13 @@ from array_api_compat import (
 )
 from scipy.spatial.transform import Rotation as R
 
-from magpylib._src.array_api_utils import input_namespace, rotate, xp_promote
+from magpylib._src.array_api_utils import (
+    cut_rows,
+    input_namespace,
+    pad_rows,
+    rotate,
+    xp_promote,
+)
 from magpylib._src.fields import chunks
 from magpylib._src.fields.field_BH_circle import _BHJM_circle
 from magpylib._src.fields.field_BH_cuboid import _BHJM_magnet_cuboid
@@ -853,7 +859,8 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
             raise ValueError(msg)
 
     # Compute in chunks of rows, each tiling single instances to its rows.
-    # JAX gets one chunk: it cannot trace a computation across threads.
+    # JAX gets one chunk, which it cannot trace across threads, with the rows
+    # padded to a size that it has compiled before.
     step = max(1, chunks.CHUNK_ROWS // kernel_rows)
     if is_jax_namespace(xp):
         step = nmax
@@ -861,6 +868,11 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
     BH = [None] * len(starts)
 
     def compute(chunk):
+        if is_jax_namespace(xp):
+            kwargs = pad_rows(params, nmax, xp)
+            out = _getBH_level1(field_func=field_func, field=field, **kwargs)
+            BH[chunk] = cut_rows(out, nmax, xp)
+            return
         rows = slice(starts[chunk], starts[chunk] + step)
         n = len(range(nmax)[rows])
         kwargs = {

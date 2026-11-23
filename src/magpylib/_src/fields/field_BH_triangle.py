@@ -6,7 +6,7 @@ import numpy as np
 from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.array_api_utils import xp_promote
+from magpylib._src.array_api_utils import jax_padded, xp_promote
 from magpylib._src.input_checks import check_field_input
 
 
@@ -52,6 +52,7 @@ def _solid_angle(R: np.ndarray, r: np.ndarray) -> np.ndarray:
     return xp.where(xp.abs(result) > 6.2831853, 0.0, result)
 
 
+@jax_padded()
 def triangle_Bfield(
     observers: np.ndarray,
     vertices: np.ndarray,

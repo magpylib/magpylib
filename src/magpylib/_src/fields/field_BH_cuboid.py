@@ -6,7 +6,7 @@ import numpy as np
 from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.array_api_utils import xp_promote
+from magpylib._src.array_api_utils import jax_padded, xp_promote
 from magpylib._src.input_checks import check_field_input
 
 
@@ -16,6 +16,7 @@ def _sqrt_plus_signed(q, radius, transverse_squared):
     return xp.where(q < 0, transverse_squared / (radius - q), radius + q)
 
 
+@jax_padded()
 def magnet_cuboid_Bfield(
     observers: np.ndarray,
     dimensions: np.ndarray,

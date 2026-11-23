@@ -1,5 +1,8 @@
 """Helpers for field code written against the Python array API standard."""
 
+import functools
+import inspect
+
 import numpy as np
 from array_api_compat import (
     array_namespace,
@@ -75,6 +78,87 @@ def while_loop(cond, body, state, max_iter):
             break
         state = body(state)
     return state
+
+
+def padded_size(n):
+    """Round a number of rows up to one of four sizes per power of two.
+
+    That is at most a quarter more rows: 5, 6, 7, 8, 10, 12, 14, 16, 20, ...
+    """
+    shift = max(n.bit_length() - 3, 0)
+    return -(-n >> shift) << shift
+
+
+def pad_rows(arrays, n, xp):
+    """Give every array of a dict ``padded_size(n)`` rows, for JAX.
+
+    The arrays have ``n`` rows or one. JAX compiles each operation once for
+    every array shape, also without ``jax.jit``, so that every new number of
+    rows costs a compilation of the whole computation. With the rows padded,
+    by repeating the last one, only the padded sizes are compiled. This is
+    done with NumPy, because JAX would compile the padding for every shape as
+    well.
+
+    Arrays that JAX is tracing (``jit``, ``grad``, ``vmap``) are not padded,
+    only tiled to ``n`` rows: there the user is in charge of the shapes.
+    """
+    import jax  # noqa: PLC0415  # pylint: disable=import-outside-toplevel
+
+    if any(isinstance(val, jax.core.Tracer) for val in arrays.values()):
+        return {
+            key: val
+            if val.shape[0] == n
+            else xp.tile(val, (n,) + (1,) * (val.ndim - 1))
+            for key, val in arrays.items()
+        }
+    size = padded_size(n)
+    out = {}
+    for key, val in arrays.items():
+        out[key] = val
+        if val.shape[0] != size:
+            # ponytail: arrays on an accelerator are copied to the host and
+            # back, pad with jax.numpy.pad there if that copy costs more than
+            # compiling the padding once per size
+            rows = np.asarray(val)
+            last = np.broadcast_to(rows[-1:], (size - rows.shape[0], *rows.shape[1:]))
+            out[key] = xp.asarray(np.concatenate((rows, last)))
+    return out
+
+
+def cut_rows(array, n, xp, axis=0):
+    """Cut the rows that ``pad_rows`` added from a result, with NumPy."""
+    if array.shape[axis] == n:
+        return array
+    array = np.asarray(array)
+    return xp.asarray(array[:n] if axis == 0 else array[:, :n])
+
+
+def jax_padded(out_axis=0):  # 0 or 1
+    """Pad the inputs of a kernel when it is called with JAX arrays.
+
+    All inputs of the kernel are arrays with the instances along the first
+    axis, and its output has them along ``out_axis``, see ``pad_rows``.
+    """
+
+    def decorator(func):
+        signature = inspect.signature(func)
+
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            arrays = signature.bind(*args, **kwargs).arguments
+            xp = input_namespace(*arrays.values())
+            sizes = {
+                val.shape[0] if getattr(val, "ndim", 0) else None
+                for val in arrays.values()
+            }
+            n = sizes.pop()
+            if not is_jax_namespace(xp) or sizes or not n:
+                return func(*args, **kwargs)
+            return cut_rows(func(**pad_rows(arrays, n, xp)), n, xp, out_axis)
+
+        return wrapper
+
+    return decorator
 
 
 def rotate(quat, vectors, *, inverse=False):

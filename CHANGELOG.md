@@ -12,6 +12,10 @@
   `array-api-compat` and `array-api-extra` are new dependencies.
 - With JAX arrays the functions of `magpylib.core` and `magpylib.func` can be
   transformed by the user with `jax.jit`, `jax.grad` and `jax.vmap`.
+- JAX compiles every operation once per array shape, so each new number of
+  instances used to cost a compilation of the whole computation. The inputs are
+  now padded to one of four sizes per power of two, at most a quarter more
+  instances, so that only those sizes are compiled.
 
 ### Changed
 
