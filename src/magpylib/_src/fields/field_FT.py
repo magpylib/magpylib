@@ -8,6 +8,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.fields.field_BH import _check_sources, _summed_field_on_path
+from magpylib._src.fields.field_FT_func import _cell_force_torque, _check_eps
 from magpylib._src.input_checks import check_dimensions, check_excitations
 from magpylib._src.obj_classes.class_BaseTransform import pad_path_property
 from magpylib._src.utility import format_src_inputs
@@ -160,21 +161,6 @@ def _check_format_input_targets(targets, meshing):
     return targets, flat_targets, coll_idx, meshings
 
 
-def _create_eps_vector(eps):
-    """Create a vector vector of shape (7, 3) for finite difference calculations with step size eps."""
-    return np.array(
-        [
-            (0, 0, 0),
-            (eps, 0, 0),
-            (-eps, 0, 0),
-            (0, eps, 0),
-            (0, -eps, 0),
-            (0, 0, eps),
-            (0, 0, -eps),
-        ]
-    )
-
-
 def _target_centroids(targets, n_path):
     """Centroid path of each target as given, shape (t, p, 3).
 
@@ -236,19 +222,7 @@ def _check_format_input_pivot(pivot, targets, n_members, n_path):
     return np.repeat(pivot, n_members, axis=0)
 
 
-def _check_eps(eps):
-    """
-    check FD step
-    """
-    if not isinstance(eps, float):
-        msg = f"Input eps must be a float; instead received {eps!r}."
-        raise TypeError(msg)
-    if eps <= 0:
-        msg = f"Input eps must be a positive float; instead received {eps!r}."
-        raise ValueError(msg)
-
-
-def _generate_path_meshes(targets, meshings, n_path, eps):
+def _generate_path_meshes(targets, meshings, n_path):
     """
     Generate meshes for each target at each path step.
 
@@ -260,21 +234,17 @@ def _generate_path_meshes(targets, meshings, n_path, eps):
         Validated meshing value per target, None where the target needs none
     n_path : int
         Path length
-    eps : float
-        Finite difference step size
 
     Returns
     -------
     list of dict
         Each dict contains:
-        - 'observers': (n_path, n_mesh, 3) or (n_path, n_mesh, 7, 3) for magnets
-        - 'type': 'magnet' or 'current'
+        - 'observers': (n_path, n_mesh, 3)
         - 'moments': (n_path, n_mesh, 3) for magnets
         - 'cvecs': (n_path, n_mesh, 3) for currents
         - 'n_mesh': number of mesh points
     """
     meshes = []
-    eps_vec = _create_eps_vector(eps)
 
     for tgt, meshing in zip(targets, meshings, strict=True):
         # Get mesh (potentially path-varying)
@@ -337,23 +307,16 @@ def _generate_path_meshes(targets, meshings, n_path, eps):
                 n_path, n_mesh, 3
             )
 
-        # Add finite difference steps for magnets
         if is_magnet:
-            observers = (
-                obs_all[:, :, np.newaxis, :] + eps_vec[np.newaxis, np.newaxis, :, :]
-            )
             mesh_data = {
-                "observers": observers,
+                "observers": obs_all,
                 "moments": moments,
-                "type": "magnet",
                 "n_mesh": n_mesh,
             }
         else:
-            observers = obs_all
             mesh_data = {
-                "observers": observers,
+                "observers": obs_all,
                 "cvecs": cvecs,
-                "type": "current",
                 "n_mesh": n_mesh,
             }
 
@@ -362,116 +325,23 @@ def _generate_path_meshes(targets, meshings, n_path, eps):
     return meshes
 
 
-def _flatten_observers(target_meshes):
+def _compute_force_torque(sources, target_meshes, pivot, eps, n_path):
     """
-    Flatten all observer points into a single array.
-
-    Parameters
-    ----------
-    target_meshes : list of dict
-        Mesh data from _generate_path_meshes
-
-    Returns
-    -------
-    obs_flat : ndarray
-        Shape (n_path, n_total_obs, 3)
-    mesh_info : dict
-        Metadata for unflattening:
-        - 'starts': start indices for each target
-        - 'ends': end indices for each target
-        - 'starts_7': start indices including FD steps
-        - 'ends_7': end indices including FD steps
-        - 'is_magnet': boolean array
-        - 'mesh_sizes': number of mesh points per target
-    """
-    n_path = target_meshes[0]["observers"].shape[0]
-
-    # Calculate total observer points
-    mesh_sizes = np.array([m["n_mesh"] for m in target_meshes])
-    is_magnet = np.array([m["type"] == "magnet" for m in target_meshes])
-    mesh_sizes_7 = mesh_sizes * np.where(is_magnet, 7, 1)
-
-    n_total = np.sum(mesh_sizes_7)
-
-    # Allocate flat array
-    obs_flat = np.empty((n_path, n_total, 3))
-
-    # Fill flat array
-    starts_7 = np.r_[0, np.cumsum(mesh_sizes_7)[:-1]]
-    ends_7 = np.cumsum(mesh_sizes_7)
-
-    for i, mesh in enumerate(target_meshes):
-        start = starts_7[i]
-        end = ends_7[i]
-
-        if mesh["type"] == "magnet":
-            # Flatten the (n_mesh, 7, 3) to (n_mesh*7, 3)
-            obs_flat[:, start:end, :] = mesh["observers"].reshape(n_path, -1, 3)
-        else:
-            obs_flat[:, start:end, :] = mesh["observers"]
-
-    # Create index arrays for unflattening
-    starts = np.r_[0, np.cumsum(mesh_sizes)[:-1]]
-    ends = np.cumsum(mesh_sizes)
-
-    mesh_info = {
-        "starts": starts,
-        "ends": ends,
-        "starts_7": starts_7,
-        "ends_7": ends_7,
-        "is_magnet": is_magnet,
-        "mesh_sizes": mesh_sizes,
-        "mesh_sizes_7": mesh_sizes_7,
-    }
-
-    return obs_flat, mesh_info
-
-
-def _compute_B_with_paths(sources, obs_flat):
-    """
-    Compute B-field with native path support.
+    Compute forces and torques on the meshed targets.
 
     Parameters
     ----------
     sources : list
         List of source objects
-    obs_flat : ndarray
-        Observer points with shape (n_path, n_obs, 3), where n_path is at least
-        every source's path length. The observers of path step j see the
-        sources at their path step j.
-
-    Returns
-    -------
-    B_flat : ndarray
-        B-field with shape (n_src, n_path, n_obs, 3)
-    """
-    # all path steps in one computation, on the chunks and threads of getB. The
-    # sources are only read, so threads can compute with them at the same time
-    # (#1074). Warnings point at the caller of getFT.
-    sources, src_list = _check_sources(sources, "B", "auto", stacklevel=4)
-    return _summed_field_on_path(sources, src_list, obs_flat, "B", "auto")
-
-
-def _compute_force_torque(B_flat, target_meshes, mesh_info, pivot, eps, n_src, n_path):
-    """
-    Compute forces and torques from B-field.
-
-    Parameters
-    ----------
-    B_flat : ndarray
-        B-field with shape (n_src, n_path, n_obs_total, 3)
     target_meshes : list of dict
         Mesh data from _generate_path_meshes
-    mesh_info : dict
-        Metadata from _flatten_observers
     pivot : ndarray or None
         Pivot points with shape (n_tgt, n_path, 3) or None
     eps : float
         Finite difference step size
-    n_src : int
-        Number of sources
     n_path : int
-        Path length
+        Path length, at least every source's path length. The cells of path
+        step j see the sources at their path step j.
 
     Returns
     -------
@@ -480,76 +350,41 @@ def _compute_force_torque(B_flat, target_meshes, mesh_info, pivot, eps, n_src, n
     T_all : ndarray
         Torques with shape (n_src, n_path, n_tgt, 3)
     """
+    # all path steps in one computation, on the chunks and threads of getB. The
+    # sources are only read, so threads can compute with them at the same time
+    # (#1074). Warnings point at the caller of getFT.
+    sources, src_list = _check_sources(sources, "B", "auto", stacklevel=4)
+
+    def field(observers):
+        return _summed_field_on_path(sources, src_list, observers, "B", "auto")
+
     n_tgt = len(target_meshes)
-    F_all = np.zeros((n_src, n_path, n_tgt, 3))
-    T_all = np.zeros((n_src, n_path, n_tgt, 3))
+    F_all = np.zeros((len(sources), n_path, n_tgt, 3))
+    T_all = np.zeros((len(sources), n_path, n_tgt, 3))
 
-    for tgt_idx, mesh in enumerate(target_meshes):
-        start_7 = mesh_info["starts_7"][tgt_idx]
-        end_7 = mesh_info["ends_7"][tgt_idx]
-        n_mesh = mesh["n_mesh"]
-
-        # Extract B-field for this target
-        B_tgt = B_flat[:, :, start_7:end_7, :]  # (n_src, n_path, n_mesh*7 or n_mesh, 3)
-
-        if mesh["type"] == "magnet":
-            # Reshape to separate FD steps
-            B_tgt = B_tgt.reshape(n_src, n_path, n_mesh, 7, 3)
-
-            # Compute gradient using finite differences
-            dB = np.empty((n_src, n_path, n_mesh, 3, 3))
-            for i in range(3):  # ∂B/∂x, ∂B/∂y, ∂B/∂z
-                dB[:, :, :, i, :] = (
-                    B_tgt[:, :, :, 2 * i + 1, :] - B_tgt[:, :, :, 2 * i + 2, :]
-                )
-            dB /= 2 * eps
-
-            # B at center points
-            B_center = B_tgt[:, :, :, 0, :]  # (n_src, n_path, n_mesh, 3)
-
-            # Broadcast moments
-            moments = mesh["moments"]  # (n_path, n_mesh, 3)
-            moments = moments[np.newaxis, :, :, :]  # (1, n_path, n_mesh, 3)
-
-            # Force: F = (∇B) · m
-            F = np.einsum("spijk,spik->spij", dB, moments)  # (n_src, n_path, n_mesh, 3)
-
-            # Torque: T = m x B
-            T = np.cross(moments, B_center, axis=-1)  # (n_src, n_path, n_mesh, 3)
-
-        else:  # current
-            # B at mesh points
-            B_center = B_tgt  # (n_src, n_path, n_mesh, 3)
-
-            # Broadcast current vectors
-            cvecs = mesh["cvecs"]  # (n_path, n_mesh, 3)
-            cvecs = cvecs[np.newaxis, :, :, :]  # (1, n_path, n_mesh, 3)
-
-            # Force: F = I*dl x B
-            F = np.cross(cvecs, B_center, axis=-1)  # (n_src, n_path, n_mesh, 3)
-            T = np.zeros_like(F)
-
-        # Add pivot contribution to torque
-        if pivot is not None:
-            # Get observer positions at centers
-            if mesh["type"] == "magnet":
-                obs_center = mesh["observers"][:, :, 0, :]  # (n_path, n_mesh, 3)
-            else:
-                obs_center = mesh["observers"]  # (n_path, n_mesh, 3)
-
-            # Pivot for this target: (n_path, 3)
-            piv = pivot[tgt_idx]  # (n_path, 3)
-
-            # Position relative to pivot
-            r = obs_center - piv[:, np.newaxis, :]  # (n_path, n_mesh, 3)
-            r = r[np.newaxis, :, :, :]  # (1, n_path, n_mesh, 3)
-
-            # T += r x F
-            T += np.cross(r, F, axis=-1)
-
-        # Sum over mesh points
-        F_all[:, :, tgt_idx, :] = np.sum(F, axis=2)
-        T_all[:, :, tgt_idx, :] = np.sum(T, axis=2)
+    # the cells of all magnets in one field computation, then of all currents
+    for kind in ("moments", "cvecs"):
+        inds = [i for i, mesh in enumerate(target_meshes) if kind in mesh]
+        if not inds:
+            continue
+        meshes = [target_meshes[i] for i in inds]
+        F, T = _cell_force_torque(
+            field,
+            np.concatenate([mesh["observers"] for mesh in meshes], axis=1),
+            **{kind: np.concatenate([mesh[kind] for mesh in meshes], axis=1)},
+            pivot=None
+            if pivot is None
+            else np.repeat(
+                pivot[inds], [mesh["n_mesh"] for mesh in meshes], axis=0
+            ).swapaxes(0, 1),
+            eps=eps,
+        )
+        ends = np.cumsum([mesh["n_mesh"] for mesh in meshes])
+        for i, start, end in zip(
+            inds, ends - np.diff(ends, prepend=0), ends, strict=True
+        ):
+            F_all[:, :, i] = np.sum(F[:, :, start:end], axis=2)
+            T_all[:, :, i] = np.sum(T[:, :, start:end], axis=2)
 
     return F_all, T_all
 
@@ -658,7 +493,6 @@ def getFT(
 
     # Validate sources
     sources, src_list = format_src_inputs(sources)
-    n_src = len(sources)
 
     # Determine path length (max across all sources and targets), with the
     # sources of a Collection, which may have paths of their own
@@ -674,7 +508,7 @@ def getFT(
 
     # GENERATE PATH-AWARE MESHES ##############################################
 
-    target_meshes = _generate_path_meshes(targets, meshings, n_path, eps)
+    target_meshes = _generate_path_meshes(targets, meshings, n_path)
 
     if return_mesh:
         warnings.warn(
@@ -685,31 +519,15 @@ def getFT(
         )
         return [
             {
-                "pts": m["observers"][0, :, 0, :]
-                if m["type"] == "magnet"
-                else m["observers"][0],
-                **(
-                    {"moments": m["moments"][0]}
-                    if m["type"] == "magnet"
-                    else {"cvecs": m["cvecs"][0]}
-                ),
+                "pts": m["observers"][0],
+                **{k: m[k][0] for k in ("moments", "cvecs") if k in m},
             }
             for m in target_meshes
         ]
 
-    # FLATTEN OBSERVERS FOR B-FIELD COMPUTATION ###############################
-
-    obs_flat, mesh_info = _flatten_observers(target_meshes)
-
-    # COMPUTE B-FIELD #########################################################
-
-    B_flat = _compute_B_with_paths(sources, obs_flat)
-
     # COMPUTE FORCES & TORQUES ################################################
 
-    F_all, T_all = _compute_force_torque(
-        B_flat, target_meshes, mesh_info, pivot, eps, n_src, n_path
-    )
+    F_all, T_all = _compute_force_torque(sources, target_meshes, pivot, eps, n_path)
 
     # REDUCE COLLECTIONS ######################################################
 

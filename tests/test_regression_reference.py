@@ -1150,7 +1150,8 @@ def test_regression_backend(name, xp, reference):
 
 def test_regression_covers_public_api():
     """Every core function, functional interface function and source class
-    has cases, so that a new one cannot be added without a reference."""
+    has cases, so that a new one cannot be added without a reference. The
+    force and mesh functions are tested in test_array_api.py."""
     classes = [
         name
         for module in (magpy.magnet, magpy.current, magpy.misc)
@@ -1159,7 +1160,11 @@ def test_regression_covers_public_api():
     ]
     expected = (
         [f"core/{name}" for name in magpy.core.__all__]
-        + [f"func/{name}/" for name in magpy.func.__all__]
+        + [
+            f"func/{name}/"
+            for name in magpy.func.__all__
+            if name != "force_torque" and not name.endswith("_mesh")
+        ]
         + [f"obj/{name}/" for name in classes]
     )
     missing = [exp for exp in expected if not any(c.startswith(exp) for c in CASES)]

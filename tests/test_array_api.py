@@ -12,6 +12,15 @@ from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 
+pytestmark = [
+    # torch looks for a Metal GPU on its first backward pass and warns on the
+    # virtual macOS machines of CI, which have none
+    pytest.mark.filterwarnings("ignore:Skipping device Apple Paravirtual:UserWarning"),
+    # torch.func.jvp loads decompositions that torch compiles with its own
+    # deprecated torch.jit.script
+    pytest.mark.filterwarnings("ignore:`torch.jit.script` is deprecated:FutureWarning"),
+]
+
 DATA = Path(__file__).parent / "testdata" / ("regression_reference" + ".npz")
 
 
@@ -35,9 +44,14 @@ def _is_array(xp, val):
     return isinstance(val, xp.Tensor if xp.__name__ == "torch" else xp.ndarray)
 
 
-@pytest.mark.parametrize(
-    "name", sorted(set(magpy.func.__all__) - {"cylinder_segment_field"})
+FIELD_FUNCS = sorted(
+    name
+    for name in magpy.func.__all__
+    if name.endswith("_field") and name != "cylinder_segment_field"
 )
+
+
+@pytest.mark.parametrize("name", FIELD_FUNCS)
 def test_backend_output(name, xp, reference):
     """The functional interface returns an array of the input library, also
     when only one input is such an array and the others are lists."""
@@ -122,7 +136,6 @@ def _jacobian_fd(func, point, step=1e-5):
     )
 
 
-@pytest.mark.filterwarnings("ignore:Skipping device Apple Paravirtual:UserWarning")
 @pytest.mark.parametrize("radius", [0.0, 1e-12, 1e-7])
 @pytest.mark.parametrize(
     "source",
@@ -191,7 +204,7 @@ OBSERVERS = np.array([(0.3, 2.1, 0.4), (-1.7, 0.6, 1.2)])
 
 
 def test_jax_inputs_cover_func():
-    assert set(JAX_INPUTS) == set(magpy.func.__all__) - {"cylinder_segment_field"}
+    assert set(JAX_INPUTS) == set(FIELD_FUNCS)
 
 
 @pytest.mark.parametrize("name", JAX_INPUTS)
@@ -264,3 +277,54 @@ def test_elliptic_iteration_ends():
     with np.errstate(all="ignore"):
         h = magpy.func.circle_field("H", (1.0, 0.0, 1e-170), 2.0, 1.0)
     assert np.isnan(h).all()
+
+
+# FORCE AND TORQUE ------------------------------------------------------------
+
+
+def _loop_field(observers):
+    return magpy.func.circle_field("B", observers, 2.0, 1e3)
+
+
+CELLS = np.random.default_rng(0).uniform((-0.5, -0.5, 0.5), (0.5, 0.5, 1.5), (2, 7, 3))
+PIVOT = (0.1, 0.2, 0.3)
+
+
+def test_force_torque_is_getFT():
+    """With NumPy arrays force_torque is the computation of getFT."""
+    loop = magpy.current.Circle(diameter=2.0, current=1e3)
+    dipole = magpy.misc.Dipole(moment=(1.0, 2.0, 3.0), position=(0.1, 0.2, 1.0))
+    out = magpy.func.force_torque(
+        _loop_field, [dipole.position], moments=[dipole.moment], pivot=PIVOT
+    )
+    np.testing.assert_allclose(out, magpy.getFT(loop, dipole, pivot=PIVOT), rtol=1e-14)
+
+
+def test_force_torque_bad_input():
+    with pytest.raises(ValueError, match="moments or current_vectors"):
+        magpy.func.force_torque(_loop_field, CELLS[0])
+    with pytest.raises(ValueError, match="moments or current_vectors"):
+        magpy.func.force_torque(
+            _loop_field, CELLS[0], moments=CELLS[1], current_vectors=CELLS[1]
+        )
+    with pytest.raises(ValueError, match="shape"):
+        magpy.func.force_torque(_loop_field, CELLS[0, 0], moments=CELLS[1, 0])
+    with pytest.raises(ValueError, match="eps"):
+        magpy.func.force_torque(_loop_field, CELLS[0], moments=CELLS[1], eps=0.0)
+
+
+@pytest.mark.parametrize("kind", ["moments", "current_vectors"])
+def test_force_torque_backend(kind, xp):
+    """Force and torque are arrays of the input library. On a magnet they
+    have the gradient of the field from automatic differentiation, which the
+    finite differences of NumPy match within their error."""
+    points, vectors = CELLS
+    expected = magpy.func.force_torque(
+        _loop_field, points, **{kind: vectors}, pivot=PIVOT
+    )
+    out = magpy.func.force_torque(
+        _loop_field, xp.asarray(points), **{kind: vectors}, pivot=PIVOT
+    )
+    assert all(_is_array(xp, val) for val in out)
+    rtol = 1e-8 if kind == "moments" else 1e-13
+    np.testing.assert_allclose([np.asarray(val) for val in out], expected, rtol=rtol)
