@@ -8,6 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 
@@ -104,6 +105,55 @@ def test_backend_gradient(xp):
     np.testing.assert_allclose(np.asarray(grad), expected, rtol=1e-6)
 
 
+def _jacobian(xp, func, point):
+    """Jacobian of func at a point, by reverse mode differentiation."""
+    if xp.__name__ == "torch":
+        return np.asarray(xp.func.jacrev(func)(xp.asarray(point)))
+    import jax  # noqa: PLC0415
+
+    return np.asarray(jax.jacrev(func)(xp.asarray(point)))
+
+
+def _jacobian_fd(func, point, step=1e-5):
+    """Jacobian of func at a point, by central finite differences."""
+    return np.stack(
+        [(func(point + d) - func(point - d)) / (2 * step) for d in step * np.eye(3)],
+        axis=-1,
+    )
+
+
+@pytest.mark.filterwarnings("ignore:Skipping device Apple Paravirtual:UserWarning")
+@pytest.mark.parametrize("radius", [0.0, 1e-12, 1e-7])
+@pytest.mark.parametrize(
+    "source",
+    [
+        ("circle_field", 2.0, 1e3),
+        ("cylinder_field", (1.0, 2.0), (0.0, 0.0, 1.0)),
+        ("cylinder_field", (1.0, 2.0), (0.3, -0.7, 0.0)),
+        ("cylinder_field", (1.0, 2.0), (0.3, -0.7, 0.5)),
+    ],
+)
+def test_backend_jacobian_on_axis(source, radius, xp):
+    """The field of a circle and a cylinder can be differentiated on the axis
+    and next to it, in- and outside of the cylinder, where the cylindrical
+    coordinates of the observer cannot."""
+    name, *inputs = source
+    position = np.array((0.1, -0.2, 0.3))
+    rotation = R.from_rotvec((0.3, -0.2, 0.5))
+
+    def field(observer):
+        return getattr(magpy.func, name)(
+            "B", observer, *inputs, positions=position, orientations=rotation
+        )
+
+    for z in (-2.5, -0.4, 0.7):
+        point = position + rotation.apply((radius, 0.0, z))
+        expected = _jacobian_fd(field, point)
+        np.testing.assert_allclose(
+            _jacobian(xp, field, point), expected, atol=1e-8 * np.abs(expected).max()
+        )
+
+
 JAX_INPUTS = {
     "circle_field": {"diameters": [2.0, 1.5], "currents": [1.0, 3.0]},
     "cuboid_field": {
@@ -148,8 +198,7 @@ def test_jax_inputs_cover_func():
 def test_jax_transformations(name):
     """The functional interface can be compiled and differentiated by the
     user: under jax.jit it gives the NumPy field, and the compiled gradient
-    with respect to the observers is the finite difference of the field.
-    Not on the axis of a circle or cylinder, where the gradient is NaN."""
+    with respect to the observers is the finite difference of the field."""
     jax = pytest.importorskip("jax")
     jax.config.update("jax_enable_x64", True)
     func = getattr(magpy.func, name)

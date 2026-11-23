@@ -7,7 +7,7 @@ from scipy.constants import mu_0 as MU0
 from magpylib._src.array_api_utils import xp_promote
 from magpylib._src.fields.special_cel import _cel
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
+from magpylib._src.utility import cart_to_cyl_coordinates, radial_field_to_cart
 
 
 def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -> list:
@@ -139,10 +139,25 @@ def magnet_cylinder_diametral_Hfield(
      [ 0.005  0.02 ]
      [ 0.055  0.029]]
     """
-    # pylint: disable=too-many-statements
-
     xp = array_namespace(z0, r, z, phi)
     z0, r, z, phi = xp_promote(z0, r, z, phi, xp=xp)
+    cos, sin = xp.cos(phi), xp.sin(phi)
+    Hu, Hv, Hz = xp.unstack(_diametral_Hfield_cart(z0, r, r * cos, r * sin, z))
+    return xp.stack((Hu * cos + Hv * sin, Hv * cos - Hu * sin, Hz))
+
+
+def _diametral_Hfield_cart(z0, r, u, v, z):
+    """H-field of ``magnet_cylinder_diametral_Hfield`` in Cartesian components
+    (Hu, Hv, Hz), with the magnetization along u.
+
+    ``u`` and ``v`` are the observer coordinates across the axis and ``r``
+    their distance from it. Close to the axis the field is a polynomial of u
+    and v, which is smooth on the axis, where the cylindrical components are
+    not.
+    """
+    # pylint: disable=too-many-statements
+
+    xp = array_namespace(z0, r, u, v, z)
 
     # compute repeated quantities for all cases
     zp = z + z0
@@ -156,8 +171,10 @@ def magnet_cylinder_diametral_Hfield(
 
     # both cases are computed for all instances: with r=0 in the small_r case
     # and r=2 in the general case where they do not apply
-    rX = xp.where(mask_small_r, r, 0.0)
-    r2X = rX**2
+    uX = xp.where(mask_small_r, u, 0.0)
+    vX = xp.where(mask_small_r, v, 0.0)
+    u2X, v2X = uX**2, vX**2
+    r2X = u2X + v2X
 
     # taylor series for small r
     zpp = zp2 + 1
@@ -168,30 +185,30 @@ def magnet_cylinder_diametral_Hfield(
     frac1 = zp / sqrt_p
     frac2 = zm / sqrt_m
 
-    r3X = r2X * rX
-    r4X = r3X * rX
-    r5X = r4X * rX
-
     term1 = frac1 - frac2
-    term2 = (frac1 / zpp**2 - frac2 / zmm**2) * r2X / 8
-    term3 = ((3 - 4 * zp2) * frac1 / zpp**4 - (3 - 4 * zm2) * frac2 / zmm**4) / 64 * r4X
+    term2 = (frac1 / zpp**2 - frac2 / zmm**2) / 8
+    term3 = ((3 - 4 * zp2) * frac1 / zpp**4 - (3 - 4 * zm2) * frac2 / zmm**4) / 64
 
-    Hr_small = -xp.cos(phi) / 4 * (term1 + 9 * term2 + 25 * term3)
-
-    Hphi_small = xp.sin(phi) / 4 * (term1 + 3 * term2 + 5 * term3)
+    # Hr * cos(phi) - Hphi * sin(phi) and Hr * sin(phi) + Hphi * cos(phi) of
+    # Hr = -cos(phi) / 4 * (term1 + 9 * term2 * r**2 + 25 * term3 * r**4)
+    # Hphi = sin(phi) / 4 * (term1 + 3 * term2 * r**2 + 5 * term3 * r**4)
+    Hu_small = (
+        -(term1 + term2 * (9 * u2X + 3 * v2X) + term3 * r2X * (25 * u2X + 5 * v2X)) / 4
+    )
+    Hv_small = -uX * vX * (6 * term2 + 20 * term3 * r2X) / 4
 
     Hz_small = (
-        -xp.cos(phi)
+        -uX
         / 4
         * (
-            rX * (1 / zpp / sqrt_p - 1 / zmm / sqrt_m)
+            (1 / zpp / sqrt_p - 1 / zmm / sqrt_m)
             + 3
             / 8
-            * r3X
+            * r2X
             * ((1 - 4 * zp2) / zpp**3 / sqrt_p - (1 - 4 * zm2) / zmm**3 / sqrt_m)
             + 15
             / 64
-            * r5X
+            * r2X**2
             * (
                 (1 - 12 * zp2 + 8 * zp2**2) / zpp**5 / sqrt_p
                 - (1 - 12 * zm2 + 8 * zm2**2) / zmm**5 / sqrt_m
@@ -202,6 +219,7 @@ def magnet_cylinder_diametral_Hfield(
     # general case
     r = xp.where(mask_small_r, 2.0, r)
     r2 = r**2
+    cos, sin = u / r, v / r
 
     rp = r + 1
     rm = r - 1
@@ -238,7 +256,7 @@ def magnet_cylinder_diametral_Hfield(
 
     # compute fields
     Hr = (
-        -xp.cos(phi)
+        -cos
         / (4 * xp.pi * r2)
         * (
             -zm * am * elle_m
@@ -250,7 +268,7 @@ def magnet_cylinder_diametral_Hfield(
     )
 
     Hphi = (
-        xp.sin(phi)
+        sin
         / (4 * xp.pi * r2)
         * (
             +zm * am * elle_m
@@ -263,7 +281,7 @@ def magnet_cylinder_diametral_Hfield(
     )
 
     Hz = (
-        -xp.cos(phi)
+        -cos
         / (2 * xp.pi * r)
         * (
             +am * elle_m
@@ -275,8 +293,8 @@ def magnet_cylinder_diametral_Hfield(
 
     return xp.stack(
         (
-            xp.where(mask_small_r, Hr_small, Hr),
-            xp.where(mask_small_r, Hphi_small, Hphi),
+            xp.where(mask_small_r, Hu_small, Hr * cos - Hphi * sin),
+            xp.where(mask_small_r, Hv_small, Hr * sin + Hphi * cos),
             xp.where(mask_small_r, Hz_small, Hz),
         )
     )
@@ -301,10 +319,12 @@ def _BHJM_magnet_cylinder(
     )
 
     # transform to Cy CS --------------------------------------------
-    r, phi, z = cart_to_cyl_coordinates(observers)
+    x, y, z, r = cart_to_cyl_coordinates(observers)
     r0, z0 = xp.unstack(dimension / 2, axis=-1)
 
     # scale invariance (make dimensionless)
+    x = x / r0
+    y = y / r0
     r = r / r0
     z = z / r0
     z0 = z0 / r0
@@ -347,34 +367,56 @@ def _BHJM_magnet_cylinder(
     # singularities
 
     # transversal polarization contributions -----------------------
+    # in the coordinates u along the transversal polarization and v across
     pol_xy = xp.sqrt(pol_x**2 + pol_y**2)
-    tetta = xp.atan2(pol_y, pol_x)
-    H_tv = xp.where(
-        mask_pol_tv,
-        magnet_cylinder_diametral_Hfield(
-            z0=xp.where(mask_pol_tv, z0, 1.0),
-            r=xp.where(mask_pol_tv, r, 0.0),
-            z=xp.where(mask_pol_tv, z, 0.0),
-            phi=phi - tetta,
+    tetta = xp.atan2(
+        xp.where(mask_pol_tv, pol_y, 0.0), xp.where(mask_pol_tv, pol_x, 1.0)
+    )
+    cos, sin = xp.cos(tetta), xp.sin(tetta)
+    Hu, Hv, Hz_tv = xp.unstack(
+        xp.where(
+            mask_pol_tv,
+            _diametral_Hfield_cart(
+                z0=xp.where(mask_pol_tv, z0, 1.0),
+                r=xp.where(mask_pol_tv, r, 0.0),
+                u=xp.where(mask_pol_tv, x * cos + y * sin, 0.0),
+                v=xp.where(mask_pol_tv, y * cos - x * sin, 0.0),
+                z=xp.where(mask_pol_tv, z, 0.0),
+            )
+            * pol_xy,
+            0.0,
         )
-        * pol_xy,
-        0.0,
     )
 
     # axial polarization contributions ----------------------------
-    B_ax = xp.where(
-        mask_pol_ax,
-        magnet_cylinder_axial_Bfield(
-            z0=xp.where(mask_pol_ax, z0, 1.0),
-            r=xp.where(mask_pol_ax, r, 0.0),
-            z=xp.where(mask_pol_ax, z, 0.0),
+    z0_ax = xp.where(mask_pol_ax, z0, 1.0)
+    z_ax = xp.where(mask_pol_ax, z, 0.0)
+    Br, _, Bz_ax = xp.unstack(
+        xp.where(
+            mask_pol_ax,
+            magnet_cylinder_axial_Bfield(
+                z0=z0_ax, r=xp.where(mask_pol_ax, r, 0.0), z=z_ax
+            )
+            * pol_z,
+            0.0,
         )
-        * pol_z,
-        0.0,
+    )
+    # on the axis Br / r is -dBz/dz / 2, as the field has no divergence. Br
+    # is a difference with an absolute error of eps, and Br / r is off from
+    # its limit by r**2: next to the axis the limit is the better value
+    slope = ((z_ax - z0_ax) ** 2 + 1) ** -1.5 - ((z_ax + z0_ax) ** 2 + 1) ** -1.5
+    Bx_ax, By_ax = radial_field_to_cart(
+        x,
+        y,
+        r,
+        Br,
+        xp.where(mask_pol_ax, slope * pol_z / 4, 0.0),
+        r_min=xp.finfo(r.dtype).eps ** (1 / 3),
     )
 
-    Br, Bphi, Bz = xp.unstack(H_tv + B_ax)
-    Bx, By = cyl_field_to_cart(phi, Br, Bphi)
+    Bx = Hu * cos - Hv * sin + Bx_ax
+    By = Hu * sin + Hv * cos + By_ax
+    Bz = Hz_tv + Bz_ax
 
     # add/subtract Mag when inside for B/H
     if field == "B":

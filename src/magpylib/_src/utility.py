@@ -303,28 +303,35 @@ def add_iteration_suffix(name):
 
 def cart_to_cyl_coordinates(observer):
     """
-    cartesian observer positions to cylindrical coordinates
+    cartesian observer positions to x, y, z and the distance r from the z-axis
     observer: array, shape (n, 3)
+
+    On the axis r is 0 with a derivative of 0 instead of the undefined one of
+    the root, so that automatic differentiation stays finite there. First
+    derivatives of a field that is smooth on the axis are then correct, second
+    derivatives across the axis are not.
     """
     xp = array_namespace(observer)
     x, y, z = xp.unstack(observer, axis=-1)
-    r, phi = xp.sqrt(x**2 + y**2), xp.atan2(y, x)
-    return r, phi, z
+    r2 = x**2 + y**2
+    on_axis = r2 == 0
+    r = xp.where(on_axis, 0.0, xp.sqrt(xp.where(on_axis, 1.0, r2)))
+    return x, y, z, r
 
 
-def cyl_field_to_cart(phi, Br, Bphi=None):
+def radial_field_to_cart(x, y, r, Br, slope, r_min=0.0):
     """
-    transform Br, Bphi to Bx, By
-    """
-    xp = array_namespace(phi, Br)
-    if Bphi is not None:
-        Bx = Br * xp.cos(phi) - Bphi * xp.sin(phi)
-        By = Br * xp.sin(phi) + Bphi * xp.cos(phi)
-    else:
-        Bx = Br * xp.cos(phi)
-        By = Br * xp.sin(phi)
+    transform the radial component Br of an axisymmetric field to Bx, By
 
-    return Bx, By
+    Br is odd in r, so that Br / r is smooth. For r <= r_min it is ``slope``,
+    the limit of Br / r on the axis, which keeps the derivatives of Bx and By
+    with respect to x and y on the axis, and next to it where Br has lost
+    its digits.
+    """
+    xp = array_namespace(r, Br)
+    near_axis = r <= r_min
+    Br_r = xp.where(near_axis, slope, Br / xp.where(near_axis, 1.0, r))
+    return Br_r * x, Br_r * y
 
 
 def rec_obj_remover(parent, child):

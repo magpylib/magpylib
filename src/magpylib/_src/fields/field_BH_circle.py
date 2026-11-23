@@ -7,7 +7,7 @@ from scipy.constants import mu_0 as MU0
 from magpylib._src.array_api_utils import xp_promote
 from magpylib._src.fields.special_cel import _cel_iter
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
+from magpylib._src.utility import cart_to_cyl_coordinates, radial_field_to_cart
 
 
 def current_circle_Hfield(
@@ -114,7 +114,7 @@ def _BHJM_circle(
     if field in "MJ":
         return xp.zeros_like(observers)
 
-    r, phi, z = cart_to_cyl_coordinates(observers)
+    x, y, z, r = cart_to_cyl_coordinates(observers)
     r0 = xp.abs(diameter / 2)
 
     # Special cases:
@@ -128,18 +128,19 @@ def _BHJM_circle(
 
     # the special cases are computed as the center of a unit loop to stay
     # clear of the singularities
+    r0 = xp.where(mask3, r0, 1.0)
+    z = xp.where(mask3, z, 0.0)
     Hr, _, Hz = xp.unstack(
-        current_circle_Hfield(
-            r0=xp.where(mask3, r0, 1.0),
-            r=xp.where(mask3, r, 0.0),
-            z=xp.where(mask3, z, 0.0),
-            i0=current,
-        )
+        current_circle_Hfield(r0=r0, r=xp.where(mask3, r, 0.0), z=z, i0=current)
     )
-    Hr = xp.where(mask3, Hr, 0.0)
+    # on the axis Hr / r is -dHz/dz / 2, as the field has no divergence
+    q = 1 / (1 + (z / r0) ** 2)
+    slope = 0.75 * current / r0 * (z / r0) / r0 * q**2 * xp.sqrt(q)
+    Hx, Hy = radial_field_to_cart(x, y, r, Hr, slope)
+    Hx = xp.where(mask3, Hx, 0.0)
+    Hy = xp.where(mask3, Hy, 0.0)
     Hz = xp.where(mask3, Hz, 0.0)
 
-    Hx, Hy = cyl_field_to_cart(phi, Hr)
     BHJM = xp.stack((Hx, Hy, Hz), axis=-1)
 
     if field == "H":
