@@ -10,6 +10,12 @@ from magpylib._src.array_api_utils import xp_promote
 from magpylib._src.input_checks import check_field_input
 
 
+def _sqrt_plus_signed(q, radius, transverse_squared):
+    """Evaluate sqrt(q**2 + transverse_squared) + q without cancellation."""
+    xp = array_namespace(q, radius, transverse_squared)
+    return xp.where(q < 0, transverse_squared / (radius - q), radius + q)
+
+
 def magnet_cuboid_Bfield(
     observers: np.ndarray,
     dimensions: np.ndarray,
@@ -117,17 +123,44 @@ def magnet_cuboid_Bfield(
     # next to the extension of an edge an argument is 0: the result is inf
     # there, which NumPy would warn about
     with np.errstate(divide="ignore", invalid="ignore"):
-        ff2x = xp.log((xma + mmm) * (xpa + ppm) * (xpa + pmp) * (xma + mpp)) - xp.log(
-            (xpa + pmm) * (xma + mpm) * (xma + mmp) * (xpa + ppp)
+        # A radius can round to abs(q) near an edge, although the transverse
+        # distance is nonzero. Rationalize the potentially cancelling sums;
+        # widening the on-edge tolerance would discard a finite physical field.
+        ff2x = xp.log(
+            _sqrt_plus_signed(xma, mmm, ymb2 + zmc2)
+            * (xpa + ppm)
+            * (xpa + pmp)
+            * _sqrt_plus_signed(xma, mpp, ypb2 + zpc2)
+        ) - xp.log(
+            (xpa + pmm)
+            * _sqrt_plus_signed(xma, mpm, ypb2 + zmc2)
+            * _sqrt_plus_signed(xma, mmp, ymb2 + zpc2)
+            * (xpa + ppp)
         )
 
         ff2y = xp.log(
-            (-ymb + mmm) * (-ypb + ppm) * (-ymb + pmp) * (-ypb + mpp)
-        ) - xp.log((-ymb + pmm) * (-ypb + mpm) * (ymb - mmp) * (ypb - ppp))
+            (-ymb + mmm)
+            * _sqrt_plus_signed(-ypb, ppm, xpa2 + zmc2)
+            * (-ymb + pmp)
+            * _sqrt_plus_signed(-ypb, mpp, xma2 + zpc2)
+        ) - xp.log(
+            (-ymb + pmm)
+            * _sqrt_plus_signed(-ypb, mpm, xma2 + zmc2)
+            * (-ymb + mmp)
+            * _sqrt_plus_signed(-ypb, ppp, xpa2 + zpc2)
+        )
 
         ff2z = xp.log(
-            (-zmc + mmm) * (-zmc + ppm) * (-zpc + pmp) * (-zpc + mpp)
-        ) - xp.log((-zmc + pmm) * (zmc - mpm) * (-zpc + mmp) * (zpc - ppp))
+            (-zmc + mmm)
+            * (-zmc + ppm)
+            * _sqrt_plus_signed(-zpc, pmp, xpa2 + ymb2)
+            * _sqrt_plus_signed(-zpc, mpp, xma2 + ypb2)
+        ) - xp.log(
+            (-zmc + pmm)
+            * (-zmc + mpm)
+            * _sqrt_plus_signed(-zpc, mmp, xma2 + ymb2)
+            * _sqrt_plus_signed(-zpc, ppp, xpa2 + ypb2)
+        )
 
     ff1x = (
         xp.atan2((ymb * zmc), (xma * mmm))

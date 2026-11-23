@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+import magpylib as magpy
 from magpylib._src.fields.special_cel import _cel, _cel_scalar, _cel_vector
 from magpylib._src.fields.special_el3 import _el3, _el3_angle, _el3v, _el30
 
@@ -131,3 +132,73 @@ def test_cel_Bulirsch():
         [-0.67687378198360556],
         nulp=2,
     )
+
+
+CYL_AX = magpy.magnet.Cylinder(dimension=(2, 1), polarization=(0, 0, 1))
+CYL_DIA = magpy.magnet.Cylinder(dimension=(2, 1), polarization=(1, 0, 0))
+SEG = magpy.magnet.CylinderSegment(
+    dimension=(1, 2, 1, 0, 90), polarization=(0.1, -0.2, 1)
+)
+SEG_CORNER = magpy.magnet.CylinderSegment(
+    dimension=(0.5, 1, 2, 0, 90), polarization=(0.6, 0, 0.8)
+)
+FINITE = np.array([(1.5, 0.3, 0.2), (0.4, -0.7, 0.9), (2, 2, -1)] * 4)  # 12 points
+
+
+@pytest.mark.parametrize("n", [1, 12], ids=["1 point", "12 points"])
+@pytest.mark.parametrize(
+    ("src", "obs", "expect_nan"),
+    [
+        (CYL_AX, (np.nan, 0, 0), True),
+        (CYL_AX, (np.inf, 0, 0), True),
+        (CYL_AX, (0, 0, np.inf), True),
+        (CYL_DIA, (np.inf, 0, 0), True),
+        (SEG, (np.nan, 1, 0), True),
+        # finite observers: only check that the call returns; the value is the
+        # subject of #1073 and #1082
+        (CYL_AX, (1e300, 0, 0), False),
+        (SEG, (-1e300, -1e300, 1e300), False),
+        (SEG_CORNER, (1 + 1.7e-9, 3.4e-9, 1 + 5.1e-9), False),
+    ],
+    ids=[
+        "Cylinder axial nan",
+        "Cylinder axial x inf",
+        "Cylinder axial z inf",
+        "Cylinder diametral inf",
+        "CylinderSegment nan",
+        "Cylinder 1e300",
+        "CylinderSegment 1e300",
+        "CylinderSegment near corner",
+    ],
+)
+def test_elliptic_nonfinite_returns(src, obs, expect_nan, n):
+    """Non-finite values in cel or el3 do not hang or raise (#1092, #1082)"""
+    with np.errstate(all="ignore"):
+        B = src.getB(np.tile(obs, (n, 1)))
+    if expect_nan:
+        assert np.isnan(B).all()
+
+
+@pytest.mark.parametrize(
+    "src",
+    [CYL_AX, CYL_DIA, SEG],
+    ids=["Cylinder axial", "Cylinder diametral", "CylinderSegment"],
+)
+def test_elliptic_nan_does_not_disturb_batch(src):
+    """A NaN observer in a batch leaves the other observers' fields unchanged"""
+    with np.errstate(all="ignore"):
+        B = src.getB(np.vstack([FINITE, (np.nan, 0, 0)]))
+    np.testing.assert_array_equal(B[:-1], src.getB(FINITE))
+    assert np.isnan(B[-1]).all()
+
+
+def test_el3_odd_in_x():
+    """el3 is odd in x; negative x raised ValueError in the scalar version"""
+    x = np.array([-1.0, -0.5, -3.0, -40.0] * 3)
+    kc = np.array([0.5, 2.0, 0.01, 0.07] * 3)
+    p = np.array([0.5, 3.0, -2.0, 0.02] * 3)
+    v = _el3v(x, kc, p)
+    assert np.isfinite(v).all()
+    np.testing.assert_array_equal(v, -_el3v(-x, kc, p))
+    for args in zip(x[:4], kc[:4], p[:4], strict=True):
+        assert _el30(*args) == -_el30(-args[0], *args[1:])

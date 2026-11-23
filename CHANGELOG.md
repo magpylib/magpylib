@@ -15,6 +15,18 @@
 
 - `triangle_Bfield` returns (0, 0, 0) at the corners of every triangle, as
   documented, where triangles in a general position gave infinite components.
+- Small field computations are up to 1.3x faster: unrotated sources no longer
+  build scipy rotations
+  ([#1091](https://github.com/magpylib/magpylib/pull/1091)).
+
+### Fixed
+
+- Cuboid fields close to edges remain finite and accurate, preventing NaN fields
+  in collections of cuboid cells
+  ([#1066](https://github.com/magpylib/magpylib/pull/1066)).
+- Cylinder and CylinderSegment fields no longer hang forever or raise ValueError
+  for NaN, infinite or very large observers, or close to CylinderSegment corners
+  ([#1094](https://github.com/magpylib/magpylib/pull/1094)).
 
 ## [6.3.0] 2026-11-07
 

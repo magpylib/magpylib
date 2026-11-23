@@ -1,5 +1,7 @@
 """Special functions el3."""
 
+import math
+
 import numpy as np
 
 from magpylib._src.fields.special_cel import _cel
@@ -18,6 +20,11 @@ def _el30(x, kc, p):
 
     if x == 0:
         return 0.0
+
+    # non-finite input gives NaN, as in the vectorized _el3v, instead of a
+    # ValueError from int(NaN) further down
+    if not (math.isfinite(x) and math.isfinite(kc) and math.isfinite(p)):
+        return np.nan
 
     ye = 0.0
     k = km2 = l = m = n = 0
@@ -185,7 +192,7 @@ def _el30(x, kc, p):
                 bk = np.abs(ye) < 1.0
             else:
                 b_crack = ln2
-                a_crack = np.log(x)
+                a_crack = np.log(np.abs(x))
                 k = int(a_crack / b_crack) + 1
                 a_crack = a_crack - k * b_crack
                 m = np.exp(a_crack)
@@ -479,7 +486,7 @@ def _el3v(x, kc, p):
                 de[bo10x_bk] = de[bo10x_bk] * (u[bo10x_bk] - hh[bo10x_bk])
                 bk[bo10x_bk] = np.abs(ye[bo10x_bk]) < 1
             if np.any(bo10x_bkx):
-                a_crack = np.log(x[bo10x_bkx])
+                a_crack = np.log(np.abs(x[bo10x_bkx]))
                 k[bo10x_bkx] = (a_crack / ln2).astype(int) + 1
                 a_crack = a_crack - k[bo10x_bkx] * ln2
                 m[bo10x_bkx] = np.exp(a_crack)

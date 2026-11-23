@@ -44,7 +44,9 @@ def _cel_scalar(kc, p, c, s):
         g = em
         em += qc
 
-        if abs(g - qc) <= g * _CEL_ERRORTOL:
+        # written as `not >` so that NaN (from NaN, inf or overflowing input) stops
+        # the loop and returns NaN instead of iterating forever
+        if not abs(g - qc) > g * _CEL_ERRORTOL:
             break
 
         qc = 2 * m.sqrt(kk)
@@ -96,7 +98,8 @@ def _cel_vector(kc, p, c, s):
         g = em
         em = em + qc
 
-        if bool(xp.all(xp.abs(g - qc) <= g * _CEL_ERRORTOL)):
+        # NaN entries count as converged, see _cel_scalar
+        if not bool(xp.any(xp.abs(g - qc) > g * _CEL_ERRORTOL)):
             break
 
         qc = 2 * xp.sqrt(kk)
@@ -122,10 +125,10 @@ def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndar
     Numerische Mathematik 13, 305-315 (1969).
     https://dlmf.nist.gov/19.2#E11, and other pages in https://dlmf.nist.gov/19
 
-    The following identities hold:
-    K(k²)  = cel(sqrt(1 - k²), 1, 1, 1)
-    E(k²)  = cel(sqrt(1 - k²), 1, 1, 1 - k²)
-    Π(a²,k²) = cel(sqrt(1 - k²), 1 - a², 1, 1)
+    The complete elliptic integrals K, E, and Π are related to cel() via:
+    K(k) = cel(sqrt(1 - k²), 1, 1, 1)
+    E(k) = cel(sqrt(1 - k²), 1, 1, 1 - k²)
+    Π(α², k) = cel(sqrt(1 - k²), 1 - α², 1, 1)
     """
 
     xp = array_namespace(kc, p, c, s)

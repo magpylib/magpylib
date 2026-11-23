@@ -21,6 +21,9 @@ from magpylib._src.fields.field_BH_tetrahedron import _BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
 from magpylib._src.utility import has_parameter
 
+_IDENTITY = np.eye(3)
+_UNIT_QUAT = np.array([0, 0, 0, 1.0])  # scalar last, as scipy
+
 
 def circle_field(
     field,
@@ -858,6 +861,8 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
             else xp.tile(val, (n,) + (1,) * (val.ndim - 1))
             for key, val in params.items()
         }
+        if is_numpy_namespace(xp) and np.all(kwargs["orientation"] == _UNIT_QUAT):
+            kwargs["orientation"] = None  # unrotated, skips the rotation (#1089)
         BH[chunk] = _getBH_level1(field_func=field_func, field=field, **kwargs)
 
     tasks = [(compute, chunk) for chunk in range(len(starts))]
@@ -869,24 +874,44 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
     return BH
 
 
+def _unrotated(vectors: np.ndarray) -> np.ndarray:
+    """``vectors`` rotated by the identity, without a Rotation (#1089): the
+    identity's product gives what the rotation gives, -0.0 made 0.0 and an
+    infinite component NaN in the others. That NaN warns on some platforms
+    (0 * inf); scipy's rotation gives it silently."""
+    with np.errstate(invalid="ignore"):
+        return vectors @ _IDENTITY
+
+
+def _rotated(orientation, vectors, inverse=False):
+    """``vectors`` rotated by an orientation: None for unrotated, a Rotation
+    (field_BH), or unit quaternions in the namespace of the vectors."""
+    if orientation is None:
+        return _unrotated(vectors)
+    if isinstance(orientation, R):
+        return orientation.apply(vectors, inverse=inverse)
+    return rotate(orientation, vectors, inverse=inverse)
+
+
 def _getBH_level1(
     *,
     field_func: Callable,
     field: str,
     position: np.ndarray,
-    orientation: np.ndarray,
+    orientation: R | np.ndarray | None,
     observers: np.ndarray,
     **kwargs: dict,
 ) -> np.ndarray:
-    """
-    Vectorized field computation in the namespace of the inputs
+    """Vectorized field computation in the namespace of the inputs, of the
+    functional interface and of getB and the like (field_BH)
 
     - applies spatial transformations global CS <-> source CS
     - selects the correct Bfield_XXX function from input
 
     Args
     ----
-    orientation: array, shape (N, 4), unit quaternions (scalar-last)
+    orientation: None, Rotation, or array of shape (N, 4), unit quaternions
+        (scalar-last)
     kwargs: dict of shape (N, x) input vectors that describes the computation.
 
     Returns
@@ -895,8 +920,7 @@ def _getBH_level1(
 
     """
 
-    # transform obs_pos into source CS
-    pos_rel_rot = rotate(orientation, observers - position, inverse=True)
+    pos_rel_rot = _rotated(orientation, observers - position, inverse=True)
 
     # filter arguments
     if not has_parameter(field_func, "in_out"):  # in_out passed only to magnets
@@ -907,6 +931,6 @@ def _getBH_level1(
 
     # transform field back into global CS
     if BH is not None:  # catch non-implemented field_func a level above
-        BH = rotate(orientation, BH)
+        BH = _rotated(orientation, BH)
 
     return BH
