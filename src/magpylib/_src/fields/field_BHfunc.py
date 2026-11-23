@@ -4,7 +4,12 @@ import warnings
 from collections.abc import Callable
 
 import numpy as np
-from array_api_compat import device, is_array_api_obj, is_numpy_namespace
+from array_api_compat import (
+    device,
+    is_array_api_obj,
+    is_jax_namespace,
+    is_numpy_namespace,
+)
 from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.array_api_utils import input_namespace, rotate, xp_promote
@@ -847,8 +852,11 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
             )
             raise ValueError(msg)
 
-    # Compute in chunks of rows, each tiling single instances to its rows
+    # Compute in chunks of rows, each tiling single instances to its rows.
+    # JAX gets one chunk: it cannot trace a computation across threads.
     step = max(1, chunks.CHUNK_ROWS // kernel_rows)
+    if is_jax_namespace(xp):
+        step = nmax
     starts = range(0, nmax, step)
     BH = [None] * len(starts)
 

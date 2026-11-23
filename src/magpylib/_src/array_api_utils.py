@@ -1,7 +1,12 @@
 """Helpers for field code written against the Python array API standard."""
 
 import numpy as np
-from array_api_compat import array_namespace, is_array_api_obj, is_numpy_namespace
+from array_api_compat import (
+    array_namespace,
+    is_array_api_obj,
+    is_jax_namespace,
+    is_numpy_namespace,
+)
 
 
 def input_namespace(*args):
@@ -39,6 +44,37 @@ def require_numpy(xp, name):
             f"instead received arrays of {xp.__name__}."
         )
         raise NotImplementedError(msg)
+
+
+def while_loop(cond, body, state, max_iter):
+    """Repeat ``state = body(state)`` for as long as ``cond(state)`` is true,
+    at most ``max_iter`` times.
+
+    ``state`` is a tuple of arrays. When JAX traces the loop, the condition
+    has no value yet. The loop then always runs ``max_iter`` times and keeps
+    the state once the condition is false, because JAX cannot differentiate
+    a loop of unknown length in reverse mode.
+    """
+    xp = array_namespace(*state)
+    if is_jax_namespace(xp):
+        import jax  # noqa: PLC0415  # pylint: disable=import-outside-toplevel
+
+        def step(_, state):
+            go = cond(state)
+            return tuple(
+                xp.where(go, new, old)
+                for new, old in zip(body(state), state, strict=True)
+            )
+
+        try:
+            bool(cond(state))
+        except jax.errors.TracerBoolConversionError:
+            return jax.lax.fori_loop(0, max_iter, step, state)
+    for _ in range(max_iter):
+        if not bool(cond(state)):
+            break
+        state = body(state)
+    return state
 
 
 def rotate(quat, vectors, *, inverse=False):

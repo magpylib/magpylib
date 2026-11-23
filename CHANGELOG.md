@@ -10,6 +10,8 @@
   the input arrays, with a warning when it is not float64. The cylinder segment
   needs SciPy's incomplete elliptic integrals and takes NumPy input only.
   `array-api-compat` and `array-api-extra` are new dependencies.
+- With JAX arrays the functions of `magpylib.core` and `magpylib.func` can be
+  transformed by the user with `jax.jit`, `jax.grad` and `jax.vmap`.
 
 ### Changed
 
@@ -27,6 +29,8 @@
 - Cylinder and CylinderSegment fields no longer hang forever or raise ValueError
   for NaN, infinite or very large observers, or close to CylinderSegment corners
   ([#1094](https://github.com/magpylib/magpylib/pull/1094)).
+- Circle fields return NaN instead of computing forever for an observer on the
+  loop that is closer to its plane than 1e-162.
 
 ## [6.3.0] 2026-11-07
 

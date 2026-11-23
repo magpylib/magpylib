@@ -1,14 +1,18 @@
 """Special functions cel."""
 
 import math as m
+import sys
 
 import numpy as np
 from array_api_compat import array_namespace, is_numpy_namespace
 
-from magpylib._src.array_api_utils import xp_promote
+from magpylib._src.array_api_utils import while_loop, xp_promote
 
 _CEL_SCALAR_THRESHOLD = 10
-_CEL_ERRORTOL = 1e-8
+_CEL_ERRORTOL = 1e-8  # for float64, the root of its precision
+# The iteration converges quadratically: float64 input needs at most 13 steps.
+# The limit ends it for input that never converges, like NaN.
+_CEL_MAXITER = 20
 
 
 def _cel_scalar(kc, p, c, s):
@@ -36,7 +40,7 @@ def _cel_scalar(kc, p, c, s):
     qc = abs(kc)
     kk = qc
 
-    while True:
+    for _ in range(_CEL_MAXITER):
         g = kk / p
         c, s = c + s / p, 2 * (s + c * g)
         p += g
@@ -90,22 +94,12 @@ def _cel_vector(kc, p, c, s):
     qc = xp.abs(kc)
     kk = qc
 
-    while True:
-        g = kk / p
-        c, s = c + s / p, 2 * (s + c * g)
-        p = p + g
-
-        g = em
-        em = em + qc
-
-        # NaN entries count as converged, see _cel_scalar
-        if not bool(xp.any(xp.abs(g - qc) > g * _CEL_ERRORTOL)):
-            break
-
-        qc = 2 * xp.sqrt(kk)
-        kk = em * qc
-
-    result = (xp.pi / 2) * (s + c * em) / (em * (em + p))
+    # first half of the first iteration, the rest is shared with _cel_iter
+    # first half of the first iteration, the rest is shared with _cel_iter
+    g = kk / p
+    c, s = c + s / p, 2 * (s + c * g)
+    p = p + g
+    result = _cel_iter_vector(qc, p, em, c, s, em + qc, kk)
     return xp.where(kc_zero, xp.nan, result)
 
 
@@ -132,7 +126,7 @@ def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndar
     """
 
     xp = array_namespace(kc, p, c, s)
-    if is_numpy_namespace(xp) and kc.size < _CEL_SCALAR_THRESHOLD:
+    if is_numpy_namespace(xp) and kc.size < _CEL_SCALAR_THRESHOLD and kc.dtype == float:
         return np.array([_cel_scalar(*args)
                          for args in zip(kc, p, c, s, strict=False)])  # fmt: skip
     return _cel_vector(kc, p, c, s)
@@ -141,17 +135,16 @@ def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndar
 # pylint: disable=too-many-positional-arguments
 
 
-def _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=m, any_=lambda b: b):
+def _cel_iter_scalar(qc, p, g, cc, ss, em, kk):
     """
-    Iterative part of the Bulirsch cel algorithm.
+    Iterative part of the Bulirsch cel algorithm for scalar input.
     This routine continues the iteration from an already prepared state.
-
-    Handles scalar (xp=m) or vectorized (xp an array namespace, any_=xp.any) inputs.
-    Does not modify input arrays in-place.
     """
 
-    while any_(abs(g - qc) > g * _CEL_ERRORTOL):
-        qc = 2 * xp.sqrt(kk)
+    for _ in range(_CEL_MAXITER):
+        if abs(g - qc) <= g * _CEL_ERRORTOL:
+            break
+        qc = 2 * m.sqrt(kk)
         kk = em * qc
 
         g = kk / p
@@ -161,6 +154,38 @@ def _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=m, any_=lambda b: b):
         g = em
         em = em + qc
 
+    return (m.pi / 2) * (ss + cc * em) / (em * (em + p))
+
+
+def _cel_iter_vector(qc, p, g, cc, ss, em, kk):
+    """
+    Iterative part of the Bulirsch cel algorithm for arrays.
+    This routine continues the iteration from an already prepared state,
+    for all instances until the last one has converged.
+    """
+    xp = array_namespace(qc, p, g, cc, ss, em, kk)
+
+    # the tolerance grows with the root of the precision of the input
+    eps = xp.finfo(qc.dtype).eps / sys.float_info.epsilon
+    errtol = _CEL_ERRORTOL * m.sqrt(eps)
+
+    def unconverged(state):
+        qc, _, g, *_ = state
+        return xp.any(xp.abs(g - qc) > g * errtol)
+
+    def step(state):
+        qc, p, _, cc, ss, em, kk = state
+        qc = 2 * xp.sqrt(kk)
+        kk = em * qc
+
+        g = kk / p
+        cc, ss = cc + ss / p, 2 * (ss + cc * g)
+        p = p + g
+
+        return qc, p, em, cc, ss, em + qc, kk
+
+    state = (qc, p, g, cc, ss, em, kk)
+    _, p, _, cc, ss, em, _ = while_loop(unconverged, step, state, _CEL_MAXITER)
     return (xp.pi / 2) * (ss + cc * em) / (em * (em + p))
 
 
@@ -180,10 +205,10 @@ def _cel_iter(
     """
 
     xp = array_namespace(qc, p, g, cc, ss, em, kk)
-    if is_numpy_namespace(xp) and qc.size < _CEL_SCALAR_THRESHOLD:
-        return np.array([_cel_iter_scalarvector(*args)
+    if is_numpy_namespace(xp) and qc.size < _CEL_SCALAR_THRESHOLD and qc.dtype == float:
+        return np.array([_cel_iter_scalar(*args)
                          for args in zip(qc, p, g, cc, ss, em, kk, strict=False)])  # fmt: skip
-    return _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=xp, any_=xp.any)
+    return _cel_iter_vector(qc, p, g, cc, ss, em, kk)
 
 
 # import math as m
