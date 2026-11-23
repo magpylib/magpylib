@@ -9,8 +9,25 @@ from array_api_compat import (
     is_numpy_namespace,
     is_torch_namespace,
 )
+from scipy.constants import mu_0 as MU0
+from scipy.spatial.transform import Rotation as R
 
-from magpylib._src.array_api_utils import input_namespace, xp_promote
+from magpylib._src.array_api_utils import (
+    constant,
+    input_namespace,
+    rotate,
+    xp_promote,
+)
+from magpylib._src.obj_classes.class_BaseTarget import (
+    check_meshing_count,
+    check_meshing_count_or_triple,
+)
+from magpylib._src.obj_classes.target_meshing import (
+    _circle_segments,
+    _cuboid_cells,
+    _cylinder_segment_cells,
+    _tetrahedron_cells,
+)
 
 
 def _to_namespace(*values):
@@ -95,9 +112,7 @@ def _field_gradient(field, points, eps):
     if is_jax_namespace(xp) or is_torch_namespace(xp):
         units = [
             xp.broadcast_to(unit, points.shape)
-            for unit in xp.unstack(
-                xp.eye(3, dtype=points.dtype, device=device(points))
-            )
+            for unit in xp.unstack(xp.eye(3, dtype=points.dtype, device=device(points)))
         ]
         if is_jax_namespace(xp):
             import jax  # noqa: PLC0415  # pylint: disable=import-outside-toplevel
@@ -220,3 +235,371 @@ def force_torque(
     )
     xp = array_namespace(F)
     return xp.sum(F, axis=-2), xp.sum(T, axis=-2)
+
+
+# MESHES ######################################################################
+
+
+def _check_shapes(func, shapes, **inputs):
+    """Check the shapes of the inputs of a mesh function."""
+    for (name, value), shape in zip(inputs.items(), shapes, strict=True):
+        if tuple(value.shape) != shape:
+            msg = (
+                f"Input {name} of {func} must have shape {shape}; instead "
+                f"received shape {tuple(value.shape)}."
+            )
+            raise ValueError(msg)
+
+
+def _place(points, vectors, position, orientation):
+    """Return the cell positions and the moments or current vectors of a mesh
+    in the local frame of its target at the position and orientation of the
+    target."""
+    if orientation is not None:
+        if not isinstance(orientation, R):
+            msg = (
+                "Input orientation must be a SciPy Rotation instance or None; "
+                f"instead received type {type(orientation).__name__}."
+            )
+            raise TypeError(msg)
+        if orientation.as_quat().size != 4:
+            msg = (
+                "Input orientation of a mesh must be a single rotation; instead "
+                f"received {len(orientation)} rotations."
+            )
+            raise ValueError(msg)
+        quat = constant(orientation.as_quat().reshape(1, 4), points)
+        points, vectors = rotate(quat, points), rotate(quat, vectors)
+    return points + position, vectors
+
+
+def _magnet_mesh(cells, polarization, position, orientation):
+    """Return the placed cell centroids and magnetic moments of magnet cells."""
+    moments = cells["volumes"][:, np.newaxis] * (polarization / MU0)
+    return _place(cells["centroids"], moments, position, orientation)
+
+
+def cuboid_mesh(dimension, polarization, meshing, position=(0, 0, 0), orientation=None):
+    """Return the cells of a cuboid magnet for the force computation.
+
+    The cuboid is cut into cuboid cells. With ``position=(0, 0, 0)`` and
+    ``orientation=None`` its sides are parallel to the coordinate axes and
+    its geometric center lies at the origin.
+
+    Parameters
+    ----------
+    dimension : array-like, shape (3,)
+        Cuboid sides (a, b, c) in units (m).
+    polarization : array-like, shape (3,)
+        Magnetic polarization in units (T).
+    meshing : int | tuple of int, shape (3,)
+        Target number of cells, or the number of divisions (n1, n2, n3) along
+        the sides. An integer gives cells that are as close to cubes as
+        possible.
+    position : array-like, shape (3,), default (0, 0, 0)
+        Cuboid center in units (m).
+    orientation : None | Rotation, default None
+        Cuboid orientation. If ``None``, the unit rotation is applied.
+
+    Returns
+    -------
+    tuple[array, array]
+        Cell positions in units (m) and magnetic moments of the cells in
+        units (A*m²), each of shape (n, 3), as inputs of ``force_torque``.
+
+    Notes
+    -----
+    With JAX or PyTorch arrays the mesh is computed in that library and can be
+    differentiated with respect to the inputs. An integer ``meshing`` takes
+    the number of divisions from the values of ``dimension``, which have to
+    be known: under ``jax.jit`` give the divisions.
+
+    Examples
+    --------
+    >>> import magpylib as magpy
+    >>> points, moments = magpy.func.cuboid_mesh(
+    ...     dimension=(1.0, 1.0, 2.0),
+    ...     polarization=(0.0, 0.0, 1.0),
+    ...     meshing=(1, 1, 2),
+    ... )
+    >>> print(points)
+    [[ 0.   0.  -0.5]
+     [ 0.   0.   0.5]]
+    >>> print(moments.round())
+    [[     0.      0. 795775.]
+     [     0.      0. 795775.]]
+    """
+    meshing = check_meshing_count_or_triple(meshing, "cuboid_mesh")
+    _, (dimension, polarization, position) = _to_namespace(
+        dimension, polarization, position
+    )
+    _check_shapes(
+        "cuboid_mesh",
+        ((3,), (3,), (3,)),
+        dimension=dimension,
+        polarization=polarization,
+        position=position,
+    )
+    cells = _cuboid_cells(dimension, meshing)
+    return _magnet_mesh(cells, polarization, position, orientation)
+
+
+def cylinder_mesh(
+    dimension, polarization, meshing, position=(0, 0, 0), orientation=None
+):
+    """Return the cells of a cylinder magnet for the force computation.
+
+    The cylinder is cut into cylinder-segment cells in rings and layers. With
+    ``position=(0, 0, 0)`` and ``orientation=None`` its axis coincides with
+    the z-axis and its geometric center lies at the origin.
+
+    Parameters
+    ----------
+    dimension : array-like, shape (2,)
+        Cylinder dimension (diameter, height) in units (m).
+    polarization : array-like, shape (3,)
+        Magnetic polarization in units (T).
+    meshing : int | tuple of int, shape (3,)
+        Target number of cells, or the divisions (nphi, nr, nh) along the
+        circumference at half the radius, the radius and the height. An
+        integer gives cells that are as close to cubes as possible.
+    position : array-like, shape (3,), default (0, 0, 0)
+        Cylinder center in units (m).
+    orientation : None | Rotation, default None
+        Cylinder orientation. If ``None``, the unit rotation is applied.
+
+    Returns
+    -------
+    tuple[array, array]
+        Cell positions in units (m), which are the cell centroids, and
+        magnetic moments of the cells in units (A*m²), each of shape (n, 3),
+        as inputs of ``force_torque``.
+
+    Notes
+    -----
+    With JAX or PyTorch arrays the mesh is computed in that library and can be
+    differentiated with respect to the inputs. The number of cells in each
+    ring is taken from the values of ``dimension``, which have to be known:
+    the mesh cannot be created under ``jax.jit``.
+
+    Examples
+    --------
+    >>> import magpylib as magpy
+    >>> points, moments = magpy.func.cylinder_mesh(
+    ...     dimension=(1.0, 2.0),
+    ...     polarization=(0.0, 0.0, 1.0),
+    ...     meshing=(1, 1, 2),
+    ... )
+    >>> print(points.round(3) + 0.0)
+    [[ 0.   0.  -0.5]
+     [ 0.   0.   0.5]]
+    >>> print(moments.round())
+    [[     0.      0. 625000.]
+     [     0.      0. 625000.]]
+    """
+    meshing = check_meshing_count_or_triple(meshing, "cylinder_mesh")
+    xp, (dimension, polarization, position) = _to_namespace(
+        dimension, polarization, position
+    )
+    _check_shapes(
+        "cylinder_mesh",
+        ((2,), (3,), (3,)),
+        dimension=dimension,
+        polarization=polarization,
+        position=position,
+    )
+    zero = dimension[0] * 0
+    segment = xp.stack([zero, dimension[0] / 2, dimension[1], zero, zero + 360])
+    cells = _cylinder_segment_cells(segment, meshing)
+    return _magnet_mesh(cells, polarization, position, orientation)
+
+
+def cylinder_segment_mesh(
+    dimension, polarization, meshing, position=(0, 0, 0), orientation=None
+):
+    """Return the cells of a cylinder-segment magnet for the force computation.
+
+    The segment is cut into cylinder-segment cells in rings and layers. With
+    ``position=(0, 0, 0)`` and ``orientation=None`` the cylinder axis
+    coincides with the z-axis and the segment lies between z = -h/2 and h/2.
+
+    Parameters
+    ----------
+    dimension : array-like, shape (5,)
+        Segment dimension (r1, r2, h, φ1, φ2) where r1 < r2 are inner and
+        outer radii in units (m), h is the height in units (m), and φ1 < φ2
+        are azimuth section angles in units (deg).
+    polarization : array-like, shape (3,)
+        Magnetic polarization in units (T).
+    meshing : int | tuple of int, shape (3,)
+        Target number of cells, or the divisions (nphi, nr, nh) along the arc
+        at the mean radius, the radius and the height. An integer gives cells
+        that are as close to cubes as possible.
+    position : array-like, shape (3,), default (0, 0, 0)
+        Position of the cylinder axis at half the height in units (m).
+    orientation : None | Rotation, default None
+        Segment orientation. If ``None``, the unit rotation is applied.
+
+    Returns
+    -------
+    tuple[array, array]
+        Cell positions in units (m), which are the cell centroids, and
+        magnetic moments of the cells in units (A*m²), each of shape (n, 3),
+        as inputs of ``force_torque``.
+
+    Notes
+    -----
+    With JAX or PyTorch arrays the mesh is computed in that library and can be
+    differentiated with respect to the inputs. The number of cells in each
+    ring is taken from the values of ``dimension``, which have to be known:
+    the mesh cannot be created under ``jax.jit``.
+
+    Examples
+    --------
+    >>> import magpylib as magpy
+    >>> points, moments = magpy.func.cylinder_segment_mesh(
+    ...     dimension=(1.0, 2.0, 1.0, 0.0, 90.0),
+    ...     polarization=(0.0, 0.0, 1.0),
+    ...     meshing=(2, 1, 1),
+    ... )
+    >>> print(points.round(3))
+    [[1.4  0.58 0.  ]
+     [0.58 1.4  0.  ]]
+    """
+    meshing = check_meshing_count_or_triple(meshing, "cylinder_segment_mesh")
+    _, (dimension, polarization, position) = _to_namespace(
+        dimension, polarization, position
+    )
+    _check_shapes(
+        "cylinder_segment_mesh",
+        ((5,), (3,), (3,)),
+        dimension=dimension,
+        polarization=polarization,
+        position=position,
+    )
+    cells = _cylinder_segment_cells(dimension, meshing)
+    return _magnet_mesh(cells, polarization, position, orientation)
+
+
+def tetrahedron_mesh(
+    vertices, polarization, meshing, position=(0, 0, 0), orientation=None
+):
+    """Return the cells of a tetrahedron magnet for the force computation.
+
+    The tetrahedron is cut into tetrahedron cells of equal volume. With
+    ``position=(0, 0, 0)`` and ``orientation=None`` local and global
+    coordinates coincide.
+
+    Parameters
+    ----------
+    vertices : array-like, shape (4, 3)
+        Tetrahedron vertices in units (m).
+    polarization : array-like, shape (3,)
+        Magnetic polarization in units (T).
+    meshing : int
+        Target number of cells. The tetrahedron is cut into the cube number
+        of cells that is closest to it.
+    position : array-like, shape (3,), default (0, 0, 0)
+        Local coordinate origin in units (m).
+    orientation : None | Rotation, default None
+        Local coordinate orientation. If ``None``, the unit rotation is
+        applied.
+
+    Returns
+    -------
+    tuple[array, array]
+        Cell positions in units (m), which are the cell centroids, and
+        magnetic moments of the cells in units (A*m²), each of shape (n, 3),
+        as inputs of ``force_torque``.
+
+    Notes
+    -----
+    With JAX or PyTorch arrays the mesh is computed in that library and can be
+    differentiated with respect to the inputs, also under ``jax.jit``.
+
+    Examples
+    --------
+    >>> import magpylib as magpy
+    >>> points, moments = magpy.func.tetrahedron_mesh(
+    ...     vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)],
+    ...     polarization=(0.0, 0.0, 1.0),
+    ...     meshing=8,
+    ... )
+    >>> print(points.shape)
+    (8, 3)
+    >>> print(moments.sum(axis=0).round())
+    [     0.      0. 132629.]
+    """
+    meshing = check_meshing_count(meshing, "tetrahedron_mesh")
+    _, (vertices, polarization, position) = _to_namespace(
+        vertices, polarization, position
+    )
+    _check_shapes(
+        "tetrahedron_mesh",
+        ((4, 3), (3,), (3,)),
+        vertices=vertices,
+        polarization=polarization,
+        position=position,
+    )
+    cells = _tetrahedron_cells(vertices, meshing)
+    return _magnet_mesh(cells, polarization, position, orientation)
+
+
+def circle_mesh(diameter, current, meshing, position=(0, 0, 0), orientation=None):
+    """Return the segments of a circular current loop for the force computation.
+
+    The loop is cut into straight segments, the sides of the regular polygon
+    with the area of the circle. With ``position=(0, 0, 0)`` and
+    ``orientation=None`` the loop lies in the ``z=0`` plane with its center
+    at the origin.
+
+    Parameters
+    ----------
+    diameter : float | array-like, shape ()
+        Loop diameter in units (m).
+    current : float | array-like, shape ()
+        Electric current in units (A).
+    meshing : int
+        Number of segments, at least 4.
+    position : array-like, shape (3,), default (0, 0, 0)
+        Loop center in units (m).
+    orientation : None | Rotation, default None
+        Loop orientation. If ``None``, the unit rotation is applied.
+
+    Returns
+    -------
+    tuple[array, array]
+        Segment midpoints in units (m) and current vectors, the current times
+        the segment vectors, in units (A*m), each of shape (n, 3), as inputs
+        of ``force_torque``.
+
+    Notes
+    -----
+    With JAX or PyTorch arrays the mesh is computed in that library and can be
+    differentiated with respect to the inputs, also under ``jax.jit``.
+
+    Examples
+    --------
+    >>> import magpylib as magpy
+    >>> points, current_vectors = magpy.func.circle_mesh(
+    ...     diameter=2.0,
+    ...     current=1.0,
+    ...     meshing=4,
+    ... )
+    >>> print(points.round(3) + 0.0)
+    [[ 0.627  0.627  0.   ]
+     [-0.627  0.627  0.   ]
+     [-0.627 -0.627  0.   ]
+     [ 0.627 -0.627  0.   ]]
+    """
+    meshing = check_meshing_count(meshing, "circle_mesh", minimum=4)
+    _, (diameter, current, position) = _to_namespace(diameter, current, position)
+    _check_shapes(
+        "circle_mesh",
+        ((), (), (3,)),
+        diameter=diameter,
+        current=current,
+        position=position,
+    )
+    points, cvecs = _circle_segments(diameter / 2, current, meshing)
+    return _place(points, cvecs, position, orientation)

@@ -3,9 +3,11 @@
 import numpy as np
 from array_api_compat import (
     array_namespace,
+    device,
     is_array_api_obj,
     is_jax_namespace,
     is_numpy_namespace,
+    is_torch_namespace,
 )
 
 
@@ -33,6 +35,42 @@ def xp_promote(*args, xp):
     dtype = xp.result_type(*floats) if floats else xp.asarray(1.0).dtype
     out = tuple(xp.astype(arg, dtype, copy=False) for arg in args)
     return out[0] if len(out) == 1 else out
+
+
+def constant(values, like):
+    """Return NumPy values as an array of the namespace and device of ``like``,
+    floating values in its dtype."""
+    values = np.asarray(values)
+    dtype = like.dtype if values.dtype.kind == "f" else None
+    xp = array_namespace(like)
+    return xp.asarray(values, dtype=dtype, device=device(like))
+
+
+def concrete(value, name):
+    """Return the values of an input array as a NumPy array, detached from
+    automatic differentiation: for decisions that cannot be traced, such as
+    a number of cells.
+
+    The input has no values while ``jax.jit`` or a ``vmap`` traces it, which
+    is an error."""
+    xp = array_namespace(value)
+    try:
+        if is_jax_namespace(xp):
+            import jax  # noqa: PLC0415  # pylint: disable=import-outside-toplevel
+
+            value = jax.lax.stop_gradient(value)
+        elif is_torch_namespace(xp):
+            value = value.detach().tolist()
+        return np.asarray(value, dtype=float)
+    except (TypeError, RuntimeError) as err:
+        msg = (
+            f"Input {name} has no values while it is traced, as under jax.jit or "
+            "a vmap, but the cells of the mesh are laid out from them. Create "
+            "the mesh outside of the traced function, or use a mesh whose "
+            "layout is fixed by the meshing input, such as a cuboid with the "
+            "divisions (n1, n2, n3)."
+        )
+        raise ValueError(msg) from err
 
 
 def require_numpy(xp, name):

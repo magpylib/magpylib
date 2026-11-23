@@ -7,6 +7,9 @@
 from itertools import pairwise
 
 import numpy as np
+from array_api_compat import array_namespace, is_array_api_obj
+
+from magpylib._src.array_api_utils import concrete, constant
 
 
 def _near_cubic_divisions(sides, meshing):
@@ -45,6 +48,26 @@ def _near_cubic_divisions(sides, meshing):
 # cells. It returns a dict with the cell geometry, the cell centroids, and the
 # cell volumes. The force computation uses the centroids and volumes; the cell
 # geometry is what a cell-based computation such as demagnetization needs.
+#
+# The cell meshers follow the array API standard: the number and layout of the
+# cells come from the values of the inputs, in NumPy, and the coordinates are
+# computed from the inputs in their library, so that they can be differentiated.
+
+
+def _floats(value):
+    """Return lists and NumPy arrays as float ndarray, and arrays of another
+    library as they are."""
+    if is_array_api_obj(value) and not isinstance(value, np.ndarray | np.generic):
+        return value
+    return np.asarray(value, dtype=float)
+
+
+def _linspace(start, stop, num):
+    """Return num + 1 evenly spaced values from start to stop, which are 0-d
+    arrays: the values of np.linspace, differentiable in start and stop."""
+    xp = array_namespace(start)
+    steps = constant(np.arange(num, dtype=float), start)
+    return xp.concat([steps * ((stop - start) / num) + start, xp.reshape(stop, (1,))])
 
 
 def _cuboid_cells(dimension, meshing):
@@ -66,24 +89,25 @@ def _cuboid_cells(dimension, meshing):
         ``type`` 'cuboid', cell ``positions`` and ``dimensions`` of shape (n, 3),
         ``centroids`` of shape (n, 3) (the positions), and ``volumes`` of shape (n,).
     """
-    dimension = np.asarray(dimension, dtype=float)
+    dimension = _floats(dimension)
+    xp = array_namespace(dimension)
     if np.ndim(meshing) == 1:
         divisions = np.array(meshing, dtype=int)
     else:
-        divisions = _near_cubic_divisions(dimension, meshing)
-    cell_dim = dimension / divisions
+        divisions = _near_cubic_divisions(concrete(dimension, "dimension"), meshing)
+    cell_dim = dimension / constant(divisions, dimension)
     axes = [
-        (np.arange(n) + 0.5) * d / n - d / 2
-        for d, n in zip(dimension, divisions, strict=True)
+        constant(np.arange(n) + 0.5, dimension) * d / n - d / 2
+        for d, n in zip(xp.unstack(dimension), divisions.tolist(), strict=True)
     ]
-    centers = np.stack(np.meshgrid(*axes, indexing="ij"), axis=-1).reshape(-1, 3)
-    n_cells = len(centers)
+    centers = xp.reshape(xp.stack(xp.meshgrid(*axes, indexing="ij"), axis=-1), (-1, 3))
+    n_cells = centers.shape[0]
     return {
         "type": "cuboid",
         "positions": centers,
-        "dimensions": np.tile(cell_dim, (n_cells, 1)),
+        "dimensions": xp.tile(cell_dim, (n_cells, 1)),
         "centroids": centers,
-        "volumes": np.full(n_cells, np.prod(cell_dim)),
+        "volumes": xp.tile(xp.prod(cell_dim), (n_cells,)),
     }
 
 
@@ -134,55 +158,68 @@ def _cylinder_segment_cells(dimension, meshing):
         cell ``dimensions`` of shape (n, 5) as (r1, r2, h, phi1, phi2), ``centroids``
         of shape (n, 3), and ``volumes`` of shape (n,).
     """
-    r1, r2, h, phi1, phi2 = (float(x) for x in dimension)
-    arclen = (r1 + r2) * np.pi * (phi2 - phi1) / 360
+    dimension = _floats(dimension)
+    xp = array_namespace(dimension)
+    r1, r2, h, phi1, phi2 = xp.unstack(dimension)
+
+    # the layout of the cells, from the values of the dimension
+    v_r1, v_r2, v_h, v_phi1, v_phi2 = concrete(dimension, "dimension").tolist()
+    if not (0 <= v_r1 < v_r2 and v_h > 0 and 0 < v_phi2 - v_phi1 <= 360):
+        msg = (
+            "Input dimension of a cylinder segment must be (r1, r2, h, phi1, phi2) "
+            "with 0 <= r1 < r2, h > 0 and phi1 < phi2 <= phi1 + 360; instead "
+            f"received {(v_r1, v_r2, v_h, v_phi1, v_phi2)}."
+        )
+        raise ValueError(msg)
+    arclen = (v_r1 + v_r2) * np.pi * (v_phi2 - v_phi1) / 360
     if isinstance(meshing, tuple):
         nphi, nr, nh = meshing
     else:
-        nphi, nr, nh = _near_cubic_divisions((arclen, r2 - r1, h), meshing)
-    radii = np.linspace(r1, r2, nr + 1)
-    dh = h / nh
-    zs = (np.arange(nh) + 0.5) * dh - h / 2
-    is_full = phi2 - phi1 == 360
-
-    dims, poss = [], []
-    for r_in, r_out in pairwise(radii):
+        nphi, nr, nh = _near_cubic_divisions(
+            (arclen, v_r2 - v_r1, v_h), meshing
+        ).tolist()
+    is_full = v_phi2 - v_phi1 == 360
+    nphi_rings = []
+    for r_in, r_out in pairwise(np.linspace(v_r1, v_r2, nr + 1)):
         if nr >= 3 and r_in == 0 and is_full:
             nphi_r = 1
         else:
-            nphi_r = max(1, round((r_in + r_out) / (r1 + r2) * nphi))
-            nphi_r = _sectors_with_centroid_inside(r_in, r_out, phi2 - phi1, nphi_r)
-        phis = np.linspace(phi1, phi2, nphi_r + 1)
-        ring = np.empty((nh, nphi_r, 5))
-        ring[..., 0] = r_in
-        ring[..., 1] = r_out
-        ring[..., 2] = dh
-        ring[..., 3] = phis[:-1]
-        ring[..., 4] = phis[1:]
-        ring_pos = np.zeros((nh, nphi_r, 3))
-        ring_pos[..., 2] = zs[:, np.newaxis]
-        dims.append(ring.reshape(-1, 5))
-        poss.append(ring_pos.reshape(-1, 3))
-    dims = np.concatenate(dims)
-    poss = np.concatenate(poss)
+            nphi_r = max(1, round((r_in + r_out) / (v_r1 + v_r2) * nphi))
+            nphi_r = _sectors_with_centroid_inside(r_in, r_out, v_phi2 - v_phi1, nphi_r)
+        nphi_rings.append(nphi_r)
+
+    # the cells, ring by ring and layer by layer
+    radii = _linspace(r1, r2, nr)
+    dh = h / nh
+    zs = constant(np.arange(nh) + 0.5, dimension) * dh - h / 2
+    columns = []
+    for ring, nphi_r in enumerate(nphi_rings):
+        phis = _linspace(phi1, phi2, nphi_r)
+        z, p_a = xp.meshgrid(zs, phis[:-1], indexing="ij")
+        _, p_b = xp.meshgrid(zs, phis[1:], indexing="ij")
+        columns.append(
+            [
+                xp.reshape(col, (-1,))
+                for col in (z, p_a, p_b, z * 0 + radii[ring], z * 0 + radii[ring + 1])
+            ]
+        )
+    z, p_a, p_b, r_in, r_out = (xp.concat(col) for col in zip(*columns, strict=True))
+    dh = z * 0 + dh
+    zeros = xp.zeros_like(z)
 
     # centroid of an annular sector: on its bisector, at
     # 2/3 * (r2³ - r1³) / (r2² - r1²) * sin(alpha/2) / (alpha/2) from the axis
-    r_in, r_out, dh, p_a, p_b = dims.T
-    alpha = np.deg2rad(p_b - p_a)
-    mid = np.deg2rad((p_a + p_b) / 2)
+    alpha = (p_b - p_a) * (xp.pi / 180)
+    mid = (p_a + p_b) / 2 * (xp.pi / 180)
+    half = xp.pi * (alpha / (2 * xp.pi))
     r_c = 2 / 3 * (r_out**3 - r_in**3) / (r_out**2 - r_in**2)
-    r_c = r_c * np.sinc(alpha / (2 * np.pi))
-    centroids = poss + np.column_stack(
-        [r_c * np.cos(mid), r_c * np.sin(mid), np.zeros_like(r_c)]
-    )
-    volumes = alpha / 2 * (r_out**2 - r_in**2) * dh
+    r_c = r_c * (xp.sin(half) / half)
     return {
         "type": "cylinder_segment",
-        "positions": poss,
-        "dimensions": dims,
-        "centroids": centroids,
-        "volumes": volumes,
+        "positions": xp.stack([zeros, zeros, z], axis=-1),
+        "dimensions": xp.stack([r_in, r_out, dh, p_a, p_b], axis=-1),
+        "centroids": xp.stack([r_c * xp.cos(mid), r_c * xp.sin(mid), z], axis=-1),
+        "volumes": alpha / 2 * (r_out**2 - r_in**2) * dh,
     }
 
 
@@ -249,14 +286,16 @@ def _tetrahedron_cells(vertices, meshing):
     n_div = max(1, int(np.floor(np.cbrt(meshing))))
     if abs((n_div + 1) ** 3 - meshing) < abs(n_div**3 - meshing):
         n_div += 1
-    lattice = _tetrahedron_lattice(n_div)
-    cell_verts = lattice @ np.asarray(vertices, dtype=float) / n_div
+    vertices = _floats(vertices)
+    xp = array_namespace(vertices)
+    lattice = constant(_tetrahedron_lattice(n_div).astype(float), vertices)
+    cell_verts = xp.matmul(lattice, vertices) / n_div
     edges = cell_verts[:, 1:] - cell_verts[:, :1]
     return {
         "type": "tetrahedron",
         "vertices": cell_verts,
-        "centroids": cell_verts.mean(axis=1),
-        "volumes": np.abs(np.linalg.det(edges)) / 6,
+        "centroids": xp.mean(cell_verts, axis=1),
+        "volumes": xp.abs(xp.linalg.det(edges)) / 6,
     }
 
 
@@ -538,47 +577,55 @@ def generate_mesh_circle(diameter, current, target_elems):
          "cvecs": ndarray, shape (n, 3) or (p, n, 3)}
     """
     r, i0 = diameter / 2, current
-    n = target_elems
-    p_len = len(r)
     has_path_varying = (np.unique(r).shape[0] > 1) or (np.unique(i0).shape[0] > 1)
 
     if not has_path_varying:
         r, i0 = r[:1], i0[:1]
-        p_len = 1
-
-    # Pre-compute angle arrays
-    angles = 2 * np.pi * np.arange(n + 1) / n
-
-    # Vectorized computation for all path positions
-    # Shape: (p,) -> (p, 1) for broadcasting
-    r_expanded = r.reshape(-1, 1)
-    i0_expanded = i0.reshape(-1, 1)
-
-    # construct polygon with same area as circle for all path positions
-    r1 = r_expanded * np.sqrt((2 * np.pi) / (n * np.sin(2 * np.pi / n)))
-
-    # Compute vertices for all path positions: shape (p, n+1)
-    vx = r1 * np.cos(angles)  # Broadcasting: (p, 1) * (n+1,) -> (p, n+1)
-    vy = r1 * np.sin(angles)
-
-    # compute midpoints: shape (p, n)
-    midx = (vx[:, :-1] + vx[:, 1:]) / 2
-    midy = (vy[:, :-1] + vy[:, 1:]) / 2
-    midz = np.zeros((p_len, n))
-
-    # compute tangents: shape (p, n)
-    tx = vx[:, 1:] - vx[:, :-1]
-    ty = vy[:, 1:] - vy[:, :-1]
-
-    # Stack to create pts: shape (p, n, 3)
-    pts = np.stack([midx, midy, midz], axis=2)
-
-    # Create cvecs with current scaling: shape (p, n, 3)
-    cvecs = np.stack([tx, ty, midz], axis=2) * i0_expanded.reshape(p_len, 1, 1)
-
+    pts, cvecs = _circle_segments(r, i0, target_elems)
     if not has_path_varying:
         pts, cvecs = pts[0], cvecs[0]
     return {"pts": pts, "cvecs": cvecs}
+
+
+def _circle_segments(radius, current, n):
+    """Cut circular current loops into n straight segments each.
+
+    Follows the array API standard.
+
+    Parameters
+    ----------
+    radius, current : array, shape (...)
+        Loop radii and currents.
+    n : int
+        Number of segments.
+
+    Returns
+    -------
+    tuple[array, array]
+        Segment midpoints and current vectors, each of shape (..., n, 3).
+    """
+    xp = array_namespace(radius)
+    angles = constant(2 * np.pi * np.arange(n + 1) / n, radius)
+
+    # construct polygon with same area as circle
+    r1 = radius[..., xp.newaxis] * float(
+        np.sqrt((2 * np.pi) / (n * np.sin(2 * np.pi / n)))
+    )
+
+    # vertices: shape (..., n+1)
+    vx = r1 * xp.cos(angles)
+    vy = r1 * xp.sin(angles)
+
+    # midpoints and tangents: shape (..., n)
+    midx = (vx[..., :-1] + vx[..., 1:]) / 2
+    midy = (vy[..., :-1] + vy[..., 1:]) / 2
+    midz = xp.zeros_like(midx)
+    tx = vx[..., 1:] - vx[..., :-1]
+    ty = vy[..., 1:] - vy[..., :-1]
+
+    pts = xp.stack([midx, midy, midz], axis=-1)
+    cvecs = xp.stack([tx, ty, midz], axis=-1) * current[..., xp.newaxis, xp.newaxis]
+    return pts, cvecs
 
 
 # Relative difference below which triangle areas and edge lengths count as equal

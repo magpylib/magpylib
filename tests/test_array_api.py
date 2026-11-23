@@ -8,6 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from array_api_compat import array_namespace
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
@@ -328,3 +329,229 @@ def test_force_torque_backend(kind, xp):
     assert all(_is_array(xp, val) for val in out)
     rtol = 1e-8 if kind == "moments" else 1e-13
     np.testing.assert_allclose([np.asarray(val) for val in out], expected, rtol=rtol)
+
+
+POSITION = (0.3, -0.2, 1.1)
+ROTATION = R.from_rotvec((0.2, 0.5, -0.3))
+POL = (0.1, 0.2, 1.0)
+# mesh function: target class, inputs, meshing values
+MESHES = {
+    "cuboid_mesh": (
+        magpy.magnet.Cuboid,
+        {"dimension": (1.0, 0.7, 0.4), "polarization": POL},
+        [30, (2, 3, 4)],
+    ),
+    "cylinder_mesh": (
+        magpy.magnet.Cylinder,
+        {"dimension": (1.0, 0.7), "polarization": POL},
+        [200, (5, 2, 3)],
+    ),
+    "cylinder_segment_mesh": (
+        magpy.magnet.CylinderSegment,
+        {"dimension": (0.3, 1.0, 0.7, 20.0, 250.0), "polarization": POL},
+        [30, (5, 2, 3)],
+    ),
+    "tetrahedron_mesh": (
+        magpy.magnet.Tetrahedron,
+        {
+            "vertices": [(0, 0, 0), (1, 0, 0), (0.2, 1, 0), (0.1, 0.3, 0.9)],
+            "polarization": POL,
+        },
+        [30],
+    ),
+    "circle_mesh": (magpy.current.Circle, {"diameter": 1.2, "current": 2.0}, [31]),
+}
+
+
+def test_meshes_cover_func():
+    meshes = {name for name in magpy.func.__all__ if name.endswith("_mesh")}
+    assert set(MESHES) == meshes
+
+
+def _to_xp(xp, inputs):
+    """Inputs as arrays of the library, face indices staying a list."""
+    return {
+        key: val if key == "faces" else xp.asarray(np.array(val, dtype=float))
+        for key, val in inputs.items()
+    }
+
+
+@pytest.mark.parametrize("name", MESHES)
+def test_mesh_is_target_mesh(name):
+    """With NumPy arrays a mesh function gives the mesh of its target in
+    getFT."""
+    cls, inputs, meshings = MESHES[name]
+    target = cls(**inputs, position=POSITION, orientation=ROTATION)
+    for meshing in meshings:
+        with pytest.warns(DeprecationWarning, match="return_mesh"):
+            (expected,) = magpy.getFT(target, target, meshing=meshing, return_mesh=True)
+        out = getattr(magpy.func, name)(
+            **inputs, meshing=meshing, position=POSITION, orientation=ROTATION
+        )
+        for val, exp in zip(out, expected.values(), strict=True):
+            np.testing.assert_allclose(val, exp, rtol=1e-13, atol=1e-15)
+
+
+@pytest.mark.parametrize("name", MESHES)
+def test_mesh_backend(name, xp):
+    """A mesh function returns arrays of the input library with the values
+    of NumPy."""
+    _, inputs, meshings = MESHES[name]
+    func = getattr(magpy.func, name)
+    for meshing in meshings:
+        expected = func(
+            **inputs, meshing=meshing, position=POSITION, orientation=ROTATION
+        )
+        out = func(
+            **_to_xp(xp, inputs),
+            meshing=meshing,
+            position=POSITION,
+            orientation=ROTATION,
+        )
+        for val, exp in zip(out, expected, strict=True):
+            assert _is_array(xp, val)
+            np.testing.assert_allclose(
+                np.asarray(val), exp, rtol=1e-13, atol=1e-15 * np.abs(exp).max()
+            )
+
+
+def test_mesh_bad_input():
+    with pytest.raises(ValueError, match="meshing of cuboid_mesh"):
+        magpy.func.cuboid_mesh((1, 1, 1), POL, meshing=1.5)
+    with pytest.raises(ValueError, match="dimension of cuboid_mesh"):
+        magpy.func.cuboid_mesh((1, 1), POL, meshing=8)
+    with pytest.raises(TypeError, match="orientation"):
+        magpy.func.cuboid_mesh((1, 1, 1), POL, meshing=8, orientation=(0, 0, 1))
+    with pytest.raises(ValueError, match="single rotation"):
+        magpy.func.cuboid_mesh(
+            (1, 1, 1), POL, meshing=8, orientation=R.from_rotvec([(0, 0, 1)] * 2)
+        )
+    with pytest.raises(ValueError, match="polarization of cuboid_mesh"):
+        magpy.func.cuboid_mesh((1, 1, 1), 1.0, meshing=8)
+    with pytest.raises(ValueError, match="position of circle_mesh"):
+        magpy.func.circle_mesh(1.0, 1.0, meshing=8, position=1.0)
+    with pytest.raises(ValueError, match="0 <= r1 < r2"):
+        magpy.func.cylinder_segment_mesh((2, 1, 1, 0, 90), POL, meshing=8)
+
+
+@pytest.mark.parametrize("name", MESHES)
+def test_mesh_gradient(name, xp):
+    """A mesh can be differentiated with respect to its geometry."""
+    _, inputs, meshings = MESHES[name]
+    key = next(iter(inputs))
+    geometry = np.array(inputs[key], dtype=float)
+
+    def scalar(geometry):
+        points, vectors = getattr(magpy.func, name)(
+            **(_to_xp(array_namespace(geometry), inputs) | {key: geometry}),
+            meshing=meshings[0],
+            position=POSITION,
+            orientation=ROTATION,
+        )
+        return (points**2).sum() + 1e-10 * (vectors**2).sum()
+
+    if xp.__name__ == "torch":
+        arg = xp.asarray(geometry).requires_grad_()
+        (grad,) = xp.autograd.grad(scalar(arg), arg)
+    else:
+        import jax  # noqa: PLC0415
+
+        grad = jax.grad(scalar)(xp.asarray(geometry))
+    expected = np.empty(geometry.size)
+    for ind in range(geometry.size):
+        step = np.zeros(geometry.size)
+        step[ind] = 1e-6
+        step = step.reshape(geometry.shape)
+        expected[ind] = (scalar(geometry + step) - scalar(geometry - step)) / 2e-6
+    np.testing.assert_allclose(
+        np.asarray(grad).ravel(),
+        expected,
+        rtol=1e-6,
+        atol=1e-8 * np.abs(expected).max(),
+    )
+
+
+def _cuboid_force(dimension, position, meshing=(2, 3, 2)):
+    """Force of a current loop on a cuboid magnet."""
+    points, moments = magpy.func.cuboid_mesh(dimension, POL, meshing, position)
+    return magpy.func.force_torque(_loop_field, points, moments=moments)[0]
+
+
+@pytest.mark.parametrize("meshing", [12, (2, 3, 2)])
+def test_force_gradient_geometry(meshing, xp):
+    """The force can be differentiated with respect to the position and the
+    dimension of the target, also when the number of cells comes from the
+    values of the dimension."""
+    dimension, position = np.array((1.0, 0.7, 0.4)), np.array(POSITION)
+
+    def force_z(dimension, position):
+        return _cuboid_force(dimension, position, meshing)[2]
+
+    if xp.__name__ == "torch":
+        args = [xp.asarray(val).requires_grad_() for val in (dimension, position)]
+        grads = xp.autograd.grad(force_z(*args), args)
+    else:
+        import jax  # noqa: PLC0415
+
+        grads = jax.grad(force_z, argnums=(0, 1))(
+            xp.asarray(dimension), xp.asarray(position)
+        )
+    for arg, grad in enumerate(grads):
+        expected = np.empty(3)
+        for axis, step in enumerate(1e-4 * np.eye(3)):
+            ahead, behind = [dimension, position], [dimension, position]
+            ahead[arg], behind[arg] = ahead[arg] + step, behind[arg] - step
+            expected[axis] = (force_z(*ahead) - force_z(*behind)) / 2e-4
+        np.testing.assert_allclose(np.asarray(grad), expected, rtol=1e-6)
+
+
+def test_jax_jit_force():
+    """Mesh and force can be compiled when the meshing fixes the number of
+    cells. A number of cells that comes from the values of the dimension
+    cannot be traced, which is an error."""
+    jax = pytest.importorskip("jax")
+    jax.config.update("jax_enable_x64", True)
+    dimension, position = np.array((1.0, 0.7, 0.4)), np.array(POSITION)
+    out = jax.jit(_cuboid_force)(jax.numpy.asarray(dimension), position)
+    np.testing.assert_allclose(out, _cuboid_force(dimension, position), rtol=1e-8)
+    with pytest.raises(ValueError, match="has no values while it is traced"):
+        jax.jit(lambda dim: _cuboid_force(dim, position, 12))(
+            jax.numpy.asarray(dimension)
+        )
+
+
+@pytest.mark.parametrize(
+    "target",
+    [("cuboid_mesh", (1.0, 1.0, 1.0), (3, 3, 3)), ("cylinder_mesh", (1.0, 1.0), 200)],
+)
+@pytest.mark.parametrize(
+    "source",
+    [
+        ("circle_field", 2.0, 1e3),
+        ("cylinder_field", (2.0, 1.0), (0.3, 0.0, 1.0)),
+    ],
+)
+def test_force_coaxial(source, target, xp):
+    """The force on a magnet that shares the axis of a current loop or a
+    cylinder magnet is finite and the one of NumPy: it has cells on that
+    axis (cuboid) or within rounding of it (cylinder)."""
+    name, *inputs = source
+    mesh, dimension, meshing = target
+    position = (0.0, 0.0, 2.0)
+
+    def field(observers):
+        return getattr(magpy.func, name)("B", observers, *inputs)
+
+    def force_torque(dimension):
+        points, moments = getattr(magpy.func, mesh)(
+            dimension, (0.0, 0.0, 1.0), meshing, position
+        )
+        radius = np.hypot(*np.asarray(points)[:, :2].T)
+        assert (radius < 1e-15).any()
+        assert (radius == 0).any() == (mesh == "cuboid_mesh")
+        return magpy.func.force_torque(field, points, moments=moments, pivot=position)
+
+    expected = force_torque(np.array(dimension))
+    out = [np.asarray(val) for val in force_torque(xp.asarray(np.array(dimension)))]
+    scale = np.abs(expected[0]).max()
+    np.testing.assert_allclose(out, expected, rtol=1e-7, atol=1e-9 * scale)
