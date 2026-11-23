@@ -32,7 +32,7 @@ where F is the force in units (N) and T is the torque in units (N*m) acting on t
 - **`targets`**: single or 1D list of targets (all Magpylib currents, magnets, and `Dipole`). A `Collection` counts as one target and gets the force and torque on it as one body.
 - **`meshing`**: how finely each target is cut for the computation. An integer applies to every target, a dict keyed by target gives one value per target, `meshing={ring: 100, coil: 40}`, and a `Collection` key covers its members. Required for every target except `Dipole` and `Sphere`, see [Meshing](docs-forcecomp-meshing) below.
 - **`pivot`**: The torque is always defined relative to a pivot point $\vec{r}_\text{piv}$, and the force adds to it via $\vec{T}_F = \vec{F} \times (\vec{r}_\text{piv} - \vec{r}_\text{pos})$. For a freely floating magnet this would be the barycenter (= centroid when the density is homogeneous). If `pivot='centroid'` each target's centroid is the pivot point, for a `Collection` target the centroid of the Collection. If `pivot=None` no pivot is used. This will give nonphysical results. If `pivot` is array-like of shape (3,) the same pivot is used for all targets. Alternatively one can provide an individual pivot point for each target.
-- **`eps`**: finite difference step size for computation of the magnetic field gradient (only needed for magnet targets). A good number is 1e-6 * characteristic source size.
+- **`eps`**: finite difference step size for computation of the magnetic field gradient (only needed for magnet targets). A good number is 1e-6 * characteristic source size. `getFT()` computes with NumPy and always uses it; the [functional interface](docs-forcecomp-functional) uses it with NumPy arrays only.
 - **`return_mesh`**: deprecated. Set to `True` for returning the force mesh instead of F and T, as a list of dictionaries with keys `"pts"`, and `"moments"` (magnets) or `"cvecs"` (currents).
 
 ```{warning}
@@ -80,3 +80,88 @@ The `meshing` argument of `getFT()` is a positive integer: the target number of 
 | `Circle` | number of segments, at least 4 | straight segments of a polygon with the circle's area |
 | `Polyline` | number of mesh points, at least the number of line segments; fewer warns and uses one per segment | straight segments, one point each, the rest distributed by length |
 | `TriangleStrip`, `TriangleSheet` | number of triangles, at least the number of faces | triangles, the largest cut along its longest edge |
+
+-------------------------------------
+(docs-forcecomp-functional)=
+## Functional Interface
+
+The functions of `getFT()` are also available without objects in the `magpylib.func` subpackage, next to the [field functions](docs-field-functional). They follow the Python array API standard: with NumPy arrays they compute what `getFT()` computes, and with JAX or PyTorch arrays they compute in that library, so that force and torque can be differentiated with respect to the geometry, and compiled.
+
+A computation has two steps. A mesh function cuts one target into cells, with the same `meshing` as in the [table above](docs-forcecomp-meshing), and returns the cell positions together with the magnetic moments of the cells (magnets) or the current vectors of the segments (currents):
+
+| Target | Mesh function | Returns |
+|---|---|---|
+| `Cuboid` | `cuboid_mesh(dimension, polarization, meshing)` | points, moments |
+| `Cylinder` | `cylinder_mesh(dimension, polarization, meshing)` | points, moments |
+| `CylinderSegment` | `cylinder_segment_mesh(dimension, polarization, meshing)` | points, moments |
+| `Tetrahedron` | `tetrahedron_mesh(vertices, polarization, meshing)` | points, moments |
+| `Circle` | `circle_mesh(diameter, current, meshing)` | points, current vectors |
+| `Polyline` | `polyline_mesh(vertices, current, meshing)` | points, current vectors |
+| `TriangleSheet` | `triangle_sheet_mesh(vertices, faces, current_densities, meshing)` | points, current vectors |
+| `TriangleStrip` | `triangle_strip_mesh(vertices, current, meshing)` | points, current vectors |
+
+All of them take the `position` and `orientation` of the target. A `Sphere` or `Dipole` needs no mesh function: it is one point with one moment. There is no mesh function for `TriangularMesh`.
+
+Then **`force_torque()`** computes force and torque on these cells in a field that is given as a function of the observers, for example one of the field functions:
+
+```python
+F, T = magpylib.func.force_torque(
+    field,  # function: observers of shape (n, 3) -> B-field of shape (n, 3)
+    points,
+    moments=None,  # keyword-only, magnets
+    current_vectors=None,  # keyword-only, currents
+    pivot=None,  # keyword-only
+    eps=1e-5,  # keyword-only
+)
+```
+
+F and T have shape (3,). There are no paths, and each call takes one target; sum the fields of several sources in `field`. `pivot` is `None` or a point, there is no `'centroid'`.
+
+The gradient of the field at the cells of a magnet comes from automatic differentiation with JAX and PyTorch arrays, which is exact and does not use `eps`, and from finite differences with step `eps` with NumPy arrays. Automatic differentiation takes that the field at an observer depends on this observer only, which holds for the field functions.
+
+The following example computes the force of a current loop on a cuboid magnet, and then, with JAX, how the force changes with the position of the magnet.
+
+```python
+import jax
+import numpy as np
+import magpylib as magpy
+
+jax.config.update("jax_enable_x64", True)
+
+
+def field(observers):
+    return magpy.func.circle_field("B", observers, diameters=2.0, currents=1e3)
+
+
+points, moments = magpy.func.cuboid_mesh(
+    dimension=(1, 1, 1),
+    polarization=(0.1, 0.2, 0.3),
+    meshing=(4, 4, 4),
+    position=(0, 0, 1),
+)
+F, T = magpy.func.force_torque(field, points, moments=moments, pivot=(0, 0, 1))
+
+print(f"force: {np.round(F, decimals=2)} N")
+# force: [ 13.63  27.26 -81.78] N
+
+
+def force_z(position):
+    points, moments = magpy.func.cuboid_mesh(
+        (1, 1, 1), (0.1, 0.2, 0.3), (4, 4, 4), position
+    )
+    return magpy.func.force_torque(field, points, moments=moments)[0][2]
+
+
+gradient = jax.jit(jax.grad(force_z))(jax.numpy.array((0.0, 0.0, 1.0)))
+
+print(f"gradient of Fz: {np.round(gradient, decimals=2)} N/m")
+# gradient of Fz: [-21.69 -43.39 130.17] N/m
+```
+
+```{note}
+The number of cells and their layout are integers that cannot be differentiated or traced. They are taken from the values of the geometry once, and the mesh is then differentiated with this layout. Under `jax.jit` or a `vmap` the geometry has no values: there only meshes with a layout that is fixed by `meshing` can be created, which are `cuboid_mesh` with the divisions `(n1, n2, n3)`, `tetrahedron_mesh` and `circle_mesh`. Create the other meshes outside of the compiled function.
+```
+
+```{note}
+The fields of `Circle` and `Cylinder` can be differentiated on their axis, where target cells of a coaxial arrangement lie. Only first derivatives are correct there. The field of a `CylinderSegment` is computed with NumPy only, so that a cylinder segment can be a target with JAX and PyTorch arrays, but not a source.
+```

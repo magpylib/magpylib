@@ -12,6 +12,14 @@
   `array-api-compat` and `array-api-extra` are new dependencies.
 - With JAX arrays the functions of `magpylib.core` and `magpylib.func` can be
   transformed by the user with `jax.jit`, `jax.grad` and `jax.vmap`.
+- Force and torque in the functional interface: `magpylib.func.force_torque`
+  computes them on the cells that the new mesh functions (`cuboid_mesh`,
+  `cylinder_mesh`, `cylinder_segment_mesh`, `tetrahedron_mesh`, `circle_mesh`,
+  `polyline_mesh`, `triangle_sheet_mesh`, `triangle_strip_mesh`) cut a target
+  into. They follow the array API standard: with JAX or PyTorch arrays the
+  gradient of the field comes from automatic differentiation instead of finite
+  differences, and force and torque can be differentiated with respect to the
+  geometry. `getFT` computes with the same functions and gives the same results.
 
 ### Changed
 
@@ -31,6 +39,8 @@
   ([#1094](https://github.com/magpylib/magpylib/pull/1094)).
 - Circle fields return NaN instead of computing forever for an observer on the
   loop that is closer to its plane than 1e-162.
+- The fields of `circle_field` and `cylinder_field` can be differentiated with
+  JAX and PyTorch for observers on the axis, where the gradient was NaN.
 
 ## [6.3.0] 2026-11-07
 
