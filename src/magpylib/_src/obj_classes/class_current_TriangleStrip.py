@@ -17,7 +17,10 @@ from magpylib._src.obj_classes.class_BaseTarget import (
     BaseTarget,
     check_meshing_count,
 )
-from magpylib._src.obj_classes.target_meshing import generate_mesh_triangle_current
+from magpylib._src.obj_classes.target_meshing import (
+    _strip_triangles,
+    generate_mesh_triangle_current,
+)
 from magpylib._src.style import CurrentSheetStyle
 
 
@@ -276,51 +279,7 @@ class TriangleStrip(BaseCurrent, BaseTarget, BaseDipoleMoment):
         # areas are changing along path
         synced = self._sync_path_lengths(("vertices", "current"))
         verts, curr = synced["vertices"], synced["current"]
-        # verts has shape (p, n, 3) where p is path dimension, n is number of vertices
-        # Create triangles for each path: shape (p, n-2, 3, 3)
-        # Vectorized triangle creation using advanced indexing
-        triangles = np.stack(
-            [
-                verts[:, :-2, :],  # First vertex of each triangle: shape (p, n-2, 3)
-                verts[:, 1:-1, :],  # Second vertex of each triangle: shape (p, n-2, 3)
-                verts[:, 2:, :],  # Third vertex of each triangle: shape (p, n-2, 3)
-            ],
-            axis=2,
-        )  # Final shape: (p, n-2, 3, 3)
-
-        # sideA and sideB shape: (p, n-2, 3)
-        sideA = triangles[:, :, 1] - triangles[:, :, 0]
-        sideB = triangles[:, :, 2] - triangles[:, :, 0]
-
-        # sideAA, sideBB, sideAB shape: (p, n-2)
-        sideAA = np.sum(sideA * sideA, axis=2)
-        sideBB = np.sum(sideB * sideB, axis=2)
-        sideAB = np.sum(sideA * sideB, axis=2)
-        area2 = sideAA * sideBB - sideAB * sideAB
-
-        # Suppress degenerate triangles using the same relative-area threshold as
-        # the single-path implementation. A triangle whose area is < 1e-19 of the
-        # total strip area at that path step contributes zero current density.
-        area2_total = np.sum(area2, axis=1, keepdims=True)  # (p, 1)
-        with np.errstate(invalid="ignore", divide="ignore"):
-            area2_rel = np.where(area2_total > 0, area2 / area2_total, 0.0)
-        good = area2_rel >= 1e-19  # (p, n_tri)
-
-        base_length = np.linalg.norm(sideB, axis=2)
-        safe_base = np.where(good, base_length, 1.0)
-        height = np.sqrt(np.where(good, area2, 0.0)) / safe_base
-
-        # curr shape: (p,) needs to be broadcast to match triangles shape (p, n-2)
-        curr_expanded = np.repeat(curr[:, np.newaxis], triangles.shape[1], axis=1)
-
-        # Current densities shape: (p, n-2, 3); zero for degenerate triangles
-        cds = (
-            sideB
-            / safe_base[:, :, np.newaxis]
-            * curr_expanded[:, :, np.newaxis]
-            / np.where(good, height, 1.0)[:, :, np.newaxis]
-        )
-        cds = np.where(good[:, :, np.newaxis], cds, 0.0)
+        triangles, cds = _strip_triangles(verts, curr)
 
         return generate_mesh_triangle_current(
             triangles,

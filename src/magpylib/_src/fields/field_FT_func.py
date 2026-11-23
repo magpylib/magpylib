@@ -13,6 +13,7 @@ from scipy.constants import mu_0 as MU0
 from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.array_api_utils import (
+    concrete,
     constant,
     input_namespace,
     rotate,
@@ -26,7 +27,11 @@ from magpylib._src.obj_classes.target_meshing import (
     _circle_segments,
     _cuboid_cells,
     _cylinder_segment_cells,
+    _polyline_counts,
+    _polyline_segments,
+    _strip_triangles,
     _tetrahedron_cells,
+    _triangle_cells,
 )
 
 
@@ -241,11 +246,16 @@ def force_torque(
 
 
 def _check_shapes(func, shapes, **inputs):
-    """Check the shapes of the inputs of a mesh function."""
+    """Check the shapes of the inputs of a mesh function, with 'n' for an
+    axis of any length."""
     for (name, value), shape in zip(inputs.items(), shapes, strict=True):
-        if tuple(value.shape) != shape:
+        if value.ndim != len(shape) or any(
+            want not in ("n", have)
+            for want, have in zip(shape, value.shape, strict=True)
+        ):
+            want = ", ".join(str(n) for n in shape) + ("," if len(shape) == 1 else "")
             msg = (
-                f"Input {name} of {func} must have shape {shape}; instead "
+                f"Input {name} of {func} must have shape ({want}); instead "
                 f"received shape {tuple(value.shape)}."
             )
             raise ValueError(msg)
@@ -603,3 +613,268 @@ def circle_mesh(diameter, current, meshing, position=(0, 0, 0), orientation=None
     )
     points, cvecs = _circle_segments(diameter / 2, current, meshing)
     return _place(points, cvecs, position, orientation)
+
+
+def polyline_mesh(vertices, current, meshing, position=(0, 0, 0), orientation=None):
+    """Return the segments of a polyline current for the force computation.
+
+    The straight segments of the polyline are cut into equal parts. With
+    ``position=(0, 0, 0)`` and ``orientation=None`` local and global
+    coordinates coincide.
+
+    Parameters
+    ----------
+    vertices : array-like, shape (n, 3)
+        Polyline vertices in units (m). The current flows from each vertex to
+        the next.
+    current : float | array-like, shape ()
+        Electric current in units (A).
+    meshing : int
+        Target number of parts, which are distributed over the segments in
+        proportion to their lengths, at least one on each segment.
+    position : array-like, shape (3,), default (0, 0, 0)
+        Local coordinate origin in units (m).
+    orientation : None | Rotation, default None
+        Local coordinate orientation. If ``None``, the unit rotation is
+        applied.
+
+    Returns
+    -------
+    tuple[array, array]
+        Midpoints of the parts in units (m) and current vectors, the current
+        times the vectors along the parts, in units (A*m), each of shape
+        (m, 3), as inputs of ``force_torque``.
+
+    Notes
+    -----
+    With JAX or PyTorch arrays the mesh is computed in that library and can be
+    differentiated with respect to the inputs. The number of parts of each
+    segment is taken from the values of ``vertices``, which have to be known:
+    the mesh cannot be created under ``jax.jit``.
+
+    Examples
+    --------
+    >>> import magpylib as magpy
+    >>> points, current_vectors = magpy.func.polyline_mesh(
+    ...     vertices=[(0, 0, 0), (2, 0, 0), (2, 1, 0)],
+    ...     current=1.0,
+    ...     meshing=3,
+    ... )
+    >>> print(points)
+    [[0.5 0.  0. ]
+     [1.5 0.  0. ]
+     [2.  0.5 0. ]]
+    >>> print(current_vectors)
+    [[1. 0. 0.]
+     [1. 0. 0.]
+     [0. 1. 0.]]
+    """
+    meshing = check_meshing_count(meshing, "polyline_mesh")
+    _, (vertices, current, position) = _to_namespace(vertices, current, position)
+    _check_shapes(
+        "polyline_mesh",
+        (("n", 3), (), (3,)),
+        vertices=vertices,
+        current=current,
+        position=position,
+    )
+    if vertices.shape[0] < 2:
+        msg = (
+            "Input vertices of polyline_mesh must be at least 2 vertices; "
+            f"instead received {vertices.shape[0]}."
+        )
+        raise ValueError(msg)
+    counts = _polyline_counts(concrete(vertices, "vertices")[np.newaxis], meshing)[0]
+    points, cvecs = _polyline_segments(vertices, current, counts)
+    return _place(points, cvecs, position, orientation)
+
+
+def _triangle_mesh(triangles, current_densities, meshing, position, orientation, func):
+    """Return the placed cell centroids and current vectors of triangles with
+    current densities, cut into at least ``meshing`` cells."""
+    n_faces = triangles.shape[0]
+    what = f"an integer >= the number of faces ({n_faces})"
+    meshing = check_meshing_count(meshing, func, minimum=n_faces, what=what)
+    xp = array_namespace(triangles)
+    points, areas, parent = _triangle_cells(triangles, meshing)
+    cvecs = xp.take(current_densities, constant(parent, triangles), axis=0)
+    return _place(points, cvecs * areas[:, xp.newaxis], position, orientation)
+
+
+def triangle_sheet_mesh(
+    vertices,
+    faces,
+    current_densities,
+    meshing,
+    position=(0, 0, 0),
+    orientation=None,
+):
+    """Return the cells of a triangular current sheet for the force computation.
+
+    The triangles are cut into triangle cells by bisection of their longest
+    edges, the largest triangle first. With ``position=(0, 0, 0)`` and
+    ``orientation=None`` local and global coordinates coincide.
+
+    Parameters
+    ----------
+    vertices : array-like, shape (n, 3)
+        Vertices of the sheet in units (m).
+    faces : array-like, shape (m, 3)
+        Indices of the three vertices of each triangle.
+    current_densities : array-like, shape (m, 3)
+        Current density of each triangle in units (A/m).
+    meshing : int
+        Target number of cells, at least the number of triangles.
+    position : array-like, shape (3,), default (0, 0, 0)
+        Local coordinate origin in units (m).
+    orientation : None | Rotation, default None
+        Local coordinate orientation. If ``None``, the unit rotation is
+        applied.
+
+    Returns
+    -------
+    tuple[array, array]
+        Cell centroids in units (m) and current vectors, the current
+        densities times the cell areas, in units (A*m), each of shape (k, 3),
+        as inputs of ``force_torque``.
+
+    Notes
+    -----
+    With JAX or PyTorch arrays the mesh is computed in that library and can be
+    differentiated with respect to the inputs. The bisections are chosen from
+    the values of ``vertices``, which have to be known: the mesh cannot be
+    created under ``jax.jit``.
+
+    Examples
+    --------
+    >>> import magpylib as magpy
+    >>> points, current_vectors = magpy.func.triangle_sheet_mesh(
+    ...     vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (1, 1, 0)],
+    ...     faces=[(0, 1, 2), (1, 3, 2)],
+    ...     current_densities=[(1.0, 0.0, 0.0), (1.0, 0.0, 0.0)],
+    ...     meshing=4,
+    ... )
+    >>> print(points.round(3))
+    [[0.5   0.167 0.   ]
+     [0.167 0.5   0.   ]
+     [0.5   0.833 0.   ]
+     [0.833 0.5   0.   ]]
+    >>> print(current_vectors)
+    [[0.25 0.   0.  ]
+     [0.25 0.   0.  ]
+     [0.25 0.   0.  ]
+     [0.25 0.   0.  ]]
+    """
+    xp, (vertices, current_densities, position) = _to_namespace(
+        vertices, current_densities, position
+    )
+    try:
+        faces = np.array(faces, dtype=int)
+    except (TypeError, ValueError) as err:
+        msg = f"Input faces of triangle_sheet_mesh must be integers; instead received {faces!r}."
+        raise ValueError(msg) from err
+    _check_shapes(
+        "triangle_sheet_mesh",
+        (("n", 3), ("n", 3), (3,)),
+        vertices=vertices,
+        faces=faces,
+        position=position,
+    )
+    _check_shapes(
+        "triangle_sheet_mesh",
+        ((len(faces), 3),),
+        current_densities=current_densities,
+    )
+    n_vertices = vertices.shape[0]
+    if not faces.size or faces.min() < 0 or faces.max() >= n_vertices:
+        msg = (
+            "Input faces of triangle_sheet_mesh must be indices of the vertices, "
+            f"from 0 to {n_vertices - 1}; instead received {faces.tolist()!r}."
+        )
+        raise ValueError(msg)
+    triangles = xp.reshape(
+        xp.take(vertices, constant(faces.ravel(), vertices), axis=0), (-1, 3, 3)
+    )
+    return _triangle_mesh(
+        triangles,
+        current_densities,
+        meshing,
+        position,
+        orientation,
+        "triangle_sheet_mesh",
+    )
+
+
+def triangle_strip_mesh(
+    vertices, current, meshing, position=(0, 0, 0), orientation=None
+):
+    """Return the cells of a triangle strip current for the force computation.
+
+    The triangles of the strip are cut into triangle cells by bisection of
+    their longest edges, the largest triangle first. With
+    ``position=(0, 0, 0)`` and ``orientation=None`` local and global
+    coordinates coincide.
+
+    Parameters
+    ----------
+    vertices : array-like, shape (n, 3)
+        Vertices of the strip in units (m). Each vertex makes a triangle
+        with the two before it, and the current flows along the strip from
+        the first two vertices to the last two.
+    current : float | array-like, shape ()
+        Electric current in units (A).
+    meshing : int
+        Target number of cells, at least the number n-2 of triangles.
+    position : array-like, shape (3,), default (0, 0, 0)
+        Local coordinate origin in units (m).
+    orientation : None | Rotation, default None
+        Local coordinate orientation. If ``None``, the unit rotation is
+        applied.
+
+    Returns
+    -------
+    tuple[array, array]
+        Cell centroids in units (m) and current vectors, the current
+        densities times the cell areas, in units (A*m), each of shape (k, 3),
+        as inputs of ``force_torque``.
+
+    Notes
+    -----
+    With JAX or PyTorch arrays the mesh is computed in that library and can be
+    differentiated with respect to the inputs. The bisections are chosen from
+    the values of ``vertices``, which have to be known: the mesh cannot be
+    created under ``jax.jit``.
+
+    Examples
+    --------
+    >>> import magpylib as magpy
+    >>> points, current_vectors = magpy.func.triangle_strip_mesh(
+    ...     vertices=[(0, 0, 0), (0, 1, 0), (1, 0, 0), (1, 1, 0)],
+    ...     current=1.0,
+    ...     meshing=2,
+    ... )
+    >>> print(points.round(3))
+    [[0.333 0.333 0.   ]
+     [0.667 0.667 0.   ]]
+    >>> print(current_vectors)
+    [[0.5 0.  0. ]
+     [0.5 0.  0. ]]
+    """
+    _, (vertices, current, position) = _to_namespace(vertices, current, position)
+    _check_shapes(
+        "triangle_strip_mesh",
+        (("n", 3), (), (3,)),
+        vertices=vertices,
+        current=current,
+        position=position,
+    )
+    if vertices.shape[0] < 3:
+        msg = (
+            "Input vertices of triangle_strip_mesh must be at least 3 vertices; "
+            f"instead received {vertices.shape[0]}."
+        )
+        raise ValueError(msg)
+    triangles, cds = _strip_triangles(vertices, current)
+    return _triangle_mesh(
+        triangles, cds, meshing, position, orientation, "triangle_strip_mesh"
+    )

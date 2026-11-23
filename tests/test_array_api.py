@@ -360,6 +360,44 @@ MESHES = {
         [30],
     ),
     "circle_mesh": (magpy.current.Circle, {"diameter": 1.2, "current": 2.0}, [31]),
+    "polyline_mesh": (
+        magpy.current.Polyline,
+        {
+            "vertices": [
+                (0, 0, 0),
+                (1, 0, 0),
+                (1, 1, 0.5),
+                (0, 1.5, 0),
+                (-0.3, 0.2, 0.1),
+            ],
+            "current": 2.0,
+        },
+        [4, 30],
+    ),
+    "triangle_sheet_mesh": (
+        magpy.current.TriangleSheet,
+        {
+            "vertices": [(0, 0, 0), (1, 0, 0), (0, 1, 0), (1, 1, 0.4), (2, 0.5, 0)],
+            "faces": [(0, 1, 2), (1, 2, 3), (1, 3, 4)],
+            "current_densities": [(1.0, 0, 0), (0.5, 0.5, 0), (0.2, 1, 0)],
+        },
+        [3, 30],
+    ),
+    "triangle_strip_mesh": (
+        magpy.current.TriangleStrip,
+        {
+            "vertices": [
+                (0, 0, 0),
+                (0, 1, 0),
+                (1, 0, 0.2),
+                (1, 1, 0),
+                (2, 0.1, 0),
+                (2, 1, 0.3),
+            ],
+            "current": 2.0,
+        },
+        [4, 30],
+    ),
 }
 
 
@@ -430,6 +468,20 @@ def test_mesh_bad_input():
         magpy.func.cuboid_mesh((1, 1, 1), 1.0, meshing=8)
     with pytest.raises(ValueError, match="position of circle_mesh"):
         magpy.func.circle_mesh(1.0, 1.0, meshing=8, position=1.0)
+    with pytest.raises(ValueError, match=r"vertices of polyline_mesh .* \(n, 3\)"):
+        magpy.func.polyline_mesh([(0, 0), (1, 1)], 1.0, meshing=8)
+    with pytest.raises(ValueError, match="number of faces"):
+        magpy.func.triangle_strip_mesh(np.eye(3)[[0, 1, 2, 0]], 1.0, meshing=1)
+    with pytest.raises(ValueError, match="at least 3 vertices"):
+        magpy.func.triangle_strip_mesh(np.eye(3)[:2], 1.0, meshing=1)
+    with pytest.raises(ValueError, match="faces of triangle_sheet_mesh"):
+        magpy.func.triangle_sheet_mesh(np.eye(3), [(0, 1)], [(1, 0, 0)], meshing=1)
+    with pytest.raises(ValueError, match="indices of the vertices"):
+        magpy.func.triangle_sheet_mesh(np.eye(3), [(0, 1, 3)], [(1, 0, 0)], meshing=1)
+    with pytest.raises(ValueError, match="at least 2 vertices"):
+        magpy.func.polyline_mesh(np.eye(3)[:1], 1.0, meshing=1)
+    with pytest.raises(ValueError, match="must be integers"):
+        magpy.func.triangle_sheet_mesh(np.eye(3), "abc", [(1, 0, 0)], meshing=1)
     with pytest.raises(ValueError, match="0 <= r1 < r2"):
         magpy.func.cylinder_segment_mesh((2, 1, 1, 0, 90), POL, meshing=8)
 
@@ -555,3 +607,24 @@ def test_force_coaxial(source, target, xp):
     out = [np.asarray(val) for val in force_torque(xp.asarray(np.array(dimension)))]
     scale = np.abs(expected[0]).max()
     np.testing.assert_allclose(out, expected, rtol=1e-7, atol=1e-9 * scale)
+
+
+def test_strip_gradient_degenerate(xp):
+    """A triangle of zero area, here from a repeated vertex, carries no
+    current and leaves the gradient of the mesh finite."""
+    vertices = np.array(
+        [(0, 0, 0), (0, 1, 0), (1, 0, 0), (1, 0, 0), (1, 1, 0), (2, 0, 0)], dtype=float
+    )
+
+    def scalar(vertices):
+        points, vectors = magpy.func.triangle_strip_mesh(vertices, 1.0, 8)
+        return (points**2).sum() + (vectors**2).sum()
+
+    if xp.__name__ == "torch":
+        arg = xp.asarray(vertices).requires_grad_()
+        (grad,) = xp.autograd.grad(scalar(arg), arg)
+    else:
+        import jax  # noqa: PLC0415
+
+        grad = jax.grad(scalar)(xp.asarray(vertices))
+    assert np.isfinite(np.asarray(grad)).all()

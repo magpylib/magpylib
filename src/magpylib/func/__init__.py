@@ -12,11 +12,14 @@ __all__ = [
     "dipole_field",
     "force_torque",
     "polyline_field",
+    "polyline_mesh",
     "sphere_field",
     "tetrahedron_field",
     "tetrahedron_mesh",
     "triangle_charge_field",
     "triangle_current_field",
+    "triangle_sheet_mesh",
+    "triangle_strip_mesh",
 ]
 
 from magpylib._src.fields.field_BHfunc import (
@@ -37,5 +40,8 @@ from magpylib._src.fields.field_FT_func import (
     cylinder_mesh,
     cylinder_segment_mesh,
     force_torque,
+    polyline_mesh,
     tetrahedron_mesh,
+    triangle_sheet_mesh,
+    triangle_strip_mesh,
 )

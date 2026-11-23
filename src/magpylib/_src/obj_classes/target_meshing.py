@@ -677,7 +677,7 @@ def _split_counts(areas, n_target):
     return np.bincount(tria[order[:n_bisections]], minlength=n)
 
 
-def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
+def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
     Subdivides the given triangles based on the specified number of splits
     using bisection along longest edge.
@@ -686,7 +686,10 @@ def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
     Loop over maximal number of splits. In each step select triangles to be split
     from TRIA, split them and store them back into TRIA.
 
-    Returns: triangles np.ndarray shape (n, 3, 3)
+    Returns: triangles np.ndarray shape (n, 3, 3), and their vertices as weights of
+    the vertices of the input triangle they are cut from, np.ndarray shape (n, 3, 3)
+    with the vertices along axis 1: bisection only takes midpoints, so every vertex
+    is an affine combination of the three input vertices.
     """
     n_sub = 2**splits  # subdivisions per tria
     n_tot = np.sum(n_sub)  # total number of trias
@@ -698,6 +701,8 @@ def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
     # Store triangles only here
     TRIA = np.empty((n_tot, 3, 3))
     TRIA[starts] = triangles  # store input
+    WEIGHTS = np.empty((n_tot, 3, 3))
+    WEIGHTS[starts] = np.eye(3)
 
     # Masking TRIA for selection and broadcasting
     MASK = np.zeros((n_tot), dtype=bool)
@@ -713,6 +718,7 @@ def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
 
         # Select all triangles that should be split
         triangles = TRIA[MASK]
+        weights = WEIGHTS[MASK]
 
         # Create broadcasting mask
         mask_split = (
@@ -737,38 +743,110 @@ def _subdiv(triangles: np.ndarray, splits: np.ndarray) -> np.ndarray:
         d2_tie = np.maximum(np.maximum(d2_AB, d2_BC), d2_CA) * (1 - _TIE_RTOL)
         case1 = d2_AB >= d2_tie
         case2 = ~case1 & (d2_BC >= d2_tie)
-        case3 = ~(case1 | case2)
 
-        # instead of creating this array, we could direvctly use TRIA
-        new_triangles = np.empty((len(triangles), 2, 3, 3), dtype=float)
+        # the split edge runs from vertex ``first`` to the next one: AB, BC or CA
+        first = np.where(case1, 0, np.where(case2, 1, 2))
+        order = (first[:, np.newaxis] + np.arange(3)) % 3
+        for store, values in ((TRIA, triangles), (WEIGHTS, weights)):
+            P, Q, S = np.take_along_axis(
+                values, order[:, :, np.newaxis], axis=1
+            ).swapaxes(0, 1)
+            mid = (P + Q) / 2.0
+            store[MASK] = np.stack([P, mid, S, mid, Q, S], axis=1).reshape(-1, 3, 3)
 
-        if np.any(case1):
-            new_triangles[case1, 0, 0] = A[case1]
-            new_triangles[case1, 0, 1] = (A[case1] + B[case1]) / 2.0
-            new_triangles[case1, 0, 2] = C[case1]
-            new_triangles[case1, 1, 0] = (A[case1] + B[case1]) / 2.0
-            new_triangles[case1, 1, 1] = B[case1]
-            new_triangles[case1, 1, 2] = C[case1]
+    return TRIA, WEIGHTS
 
-        if np.any(case2):
-            new_triangles[case2, 0, 0] = B[case2]
-            new_triangles[case2, 0, 1] = (B[case2] + C[case2]) / 2.0
-            new_triangles[case2, 0, 2] = A[case2]
-            new_triangles[case2, 1, 0] = (B[case2] + C[case2]) / 2.0
-            new_triangles[case2, 1, 1] = C[case2]
-            new_triangles[case2, 1, 2] = A[case2]
 
-        if np.any(case3):
-            new_triangles[case3, 0, 0] = C[case3]
-            new_triangles[case3, 0, 1] = (C[case3] + A[case3]) / 2.0
-            new_triangles[case3, 0, 2] = B[case3]
-            new_triangles[case3, 1, 0] = (C[case3] + A[case3]) / 2.0
-            new_triangles[case3, 1, 1] = A[case3]
-            new_triangles[case3, 1, 2] = B[case3]
+def _triangle_cells(triangles, n_target):
+    """Cut triangles into at least n_target triangles by bisection.
 
-        TRIA[MASK] = new_triangles.reshape(-1, 3, 3)
+    Follows the array API standard: the bisections are chosen from the values
+    of the triangles, and the cells are computed from the triangles in their
+    library.
 
-    return TRIA
+    Parameters
+    ----------
+    triangles : array, shape (n, 3, 3)
+        Triangle vertices.
+    n_target : int
+        Target number of cells.
+
+    Returns
+    -------
+    tuple[array, array, ndarray]
+        Centroids, shape (m, 3), and areas, shape (m,), of the cells, and the
+        index of the triangle each cell is cut from, shape (m,).
+    """
+    triangles = _floats(triangles)
+    xp = array_namespace(triangles)
+    normal = xp.linalg.cross(
+        triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0]
+    )
+    # the root has no derivative at the zero area of a degenerate triangle
+    normal2 = xp.sum(normal * normal, axis=-1)
+    flat = normal2 == 0
+    areas = 0.5 * xp.where(flat, 0.0, xp.sqrt(xp.where(flat, 1.0, normal2)))
+    splits = _split_counts(concrete(areas, "vertices"), n_target)
+    repeats = 2**splits
+    parent = np.repeat(np.arange(len(repeats)), repeats)
+    _, weights = _subdiv(concrete(triangles, "vertices"), splits)
+
+    # the centroid of a cell, as weights of the vertices of its triangle
+    weights = constant(weights.mean(axis=1)[:, np.newaxis, :], triangles)
+    index = constant(parent, triangles)
+    centroids = xp.matmul(weights, xp.take(triangles, index, axis=0))[:, 0, :]
+    cell_areas = xp.take(areas / constant(repeats.astype(float), areas), index)
+    return centroids, cell_areas, parent
+
+
+def _strip_triangles(vertices, current):
+    """Triangles and current densities of triangle strips.
+
+    Follows the array API standard.
+
+    Parameters
+    ----------
+    vertices : array, shape (..., n, 3)
+        Strip vertices.
+    current : array, shape (...)
+        Electric current along the strip.
+
+    Returns
+    -------
+    tuple[array, array]
+        Triangles, shape (..., n-2, 3, 3), and their current densities, shape
+        (..., n-2, 3).
+    """
+    xp = array_namespace(vertices)
+    triangles = xp.stack(
+        [vertices[..., :-2, :], vertices[..., 1:-1, :], vertices[..., 2:, :]],
+        axis=-2,
+    )
+
+    sideA = triangles[..., 1, :] - triangles[..., 0, :]
+    sideB = triangles[..., 2, :] - triangles[..., 0, :]
+    sideAA = xp.sum(sideA * sideA, axis=-1)
+    sideBB = xp.sum(sideB * sideB, axis=-1)
+    sideAB = xp.sum(sideA * sideB, axis=-1)
+    area2 = sideAA * sideBB - sideAB * sideAB
+
+    # Suppress degenerate triangles: a triangle whose area is < 1e-19 of the
+    # total strip area contributes zero current density.
+    area2_total = xp.sum(area2, axis=-1, keepdims=True)
+    area2_rel = area2 / xp.where(area2_total > 0, area2_total, 1.0)
+    good = (area2_total > 0) & (area2_rel >= 1e-19)
+
+    # base length and height of the good triangles, 1 for the others
+    base = xp.sqrt(xp.where(good, sideBB, 1.0))
+    height = xp.sqrt(xp.where(good, area2, 1.0)) / base
+
+    cds = (
+        sideB
+        / base[..., xp.newaxis]
+        * current[..., xp.newaxis, xp.newaxis]
+        / height[..., xp.newaxis]
+    )
+    return triangles, xp.where(good[..., xp.newaxis], cds, 0.0)
 
 
 def generate_mesh_triangle_current(
@@ -807,38 +885,20 @@ def generate_mesh_triangle_current(
     triangles_varying = unique_trias.shape[0] > 1
     has_path_varying = triangles_varying or (np.unique(cds, axis=0).shape[0] > 1)
 
-    # Compute areas and subdivision counts independently for each unique geometry.
-    surfaces = 0.5 * np.linalg.norm(
-        np.cross(
-            unique_trias[:, :, 1] - unique_trias[:, :, 0],
-            unique_trias[:, :, 2] - unique_trias[:, :, 0],
-        ),
-        axis=2,
-    )
-    refined_unique = []
-    repeats_unique = []
-    areas_unique = []
-    for tria, areas in zip(unique_trias, surfaces, strict=True):
-        splits = _split_counts(areas, n_target)
-        repeats = 2**splits
-        refined_unique.append(np.mean(_subdiv(tria, splits), axis=1))
-        repeats_unique.append(repeats)
-        areas_unique.append(np.repeat(areas / repeats, repeats))
+    # Cut each unique geometry on its own.
+    cells_unique = [_triangle_cells(tria, n_target) for tria in unique_trias]
 
     # Different area ratios can produce different mesh sizes. Pad current vectors
     # with zero and reuse a real centroid to avoid sampling an unrelated singularity.
-    max_points = max(len(refined) for refined in refined_unique)
+    max_points = max(len(parent) for _, _, parent in cells_unique)
     pts = np.empty((p_len, max_points, 3))
     cvecs = np.zeros_like(pts)
     for p_idx, k in enumerate(tria_inv):
-        refined = refined_unique[k]
+        refined, areas, parent = cells_unique[k]
         n_points = len(refined)
         pts[p_idx, :n_points] = refined
         pts[p_idx, n_points:] = refined[-1]
-        cvecs[p_idx, :n_points] = (
-            np.repeat(cds[p_idx], repeats_unique[k], axis=0)
-            * areas_unique[k][:, np.newaxis]
-        )
+        cvecs[p_idx, :n_points] = cds[p_idx][parent] * areas[:, np.newaxis]
 
     # If no path variation, return squeezed arrays
     if not has_path_varying:
@@ -879,7 +939,49 @@ def generate_mesh_polyline(vertices, current, target_elems):
         np.unique(current).shape[0] > 1
     )
 
-    n_vertices = vertices.shape[1]
+    points_per_segment = _polyline_counts(vertices, target_elems)
+    max_n_points = np.max(np.sum(points_per_segment, axis=1))
+
+    # Convert to arrays with consistent shapes
+    # Pad shorter meshes with zero current vectors at a real point: padding at the
+    # local origin would sample a source sitting there and give NaN.
+    pts = np.zeros((p_len, max_n_points, 3))
+    cvecs = np.zeros((p_len, max_n_points, 3))
+
+    for p_idx in range(p_len):
+        pts_path, cvecs_path = _polyline_segments(
+            vertices[p_idx], current[p_idx], points_per_segment[p_idx]
+        )
+        n_pts = len(pts_path)
+        pts[p_idx, :n_pts] = pts_path
+        pts[p_idx, n_pts:] = pts_path[-1]
+        cvecs[p_idx, :n_pts] = cvecs_path
+
+    # If no path variation, return squeezed arrays
+    if not has_path_varying:
+        pts, cvecs = pts[0], cvecs[0]
+
+    return {"pts": pts, "cvecs": cvecs}
+
+
+def _polyline_counts(vertices, target_elems):
+    """Number of mesh points on each segment of polylines.
+
+    Distributes target_elems along polyline segments proportionally to segment
+    lengths, with at least one point per segment.
+
+    Parameters
+    ----------
+    vertices : ndarray, shape (p, n, 3)
+        Polyline vertices per path position.
+    target_elems : int
+        Total number of mesh elements.
+
+    Returns
+    -------
+    ndarray, shape (p, n-1), dtype int
+    """
+    p_len, n_vertices = vertices.shape[:2]
     n_segments = n_vertices - 1
 
     # Calculate segment lengths for all path positions
@@ -887,7 +989,6 @@ def generate_mesh_polyline(vertices, current, target_elems):
     segment_lengths = np.linalg.norm(segment_vectors, axis=2)  # Shape: (p, n_segments)
     total_lengths = np.sum(segment_lengths, axis=1)  # Shape: (p,)
 
-    # DISTRIBUTE POINTS OVER SEGMENTS #######################################
     # 1. one point per segment for all path positions
     points_per_segment = np.ones((p_len, n_segments), dtype=int)
 
@@ -912,57 +1013,36 @@ def generate_mesh_polyline(vertices, current, target_elems):
         tied = np.isclose(proportional_extra, half, rtol=_TIE_RTOL, atol=0)
         extra_points = np.round(np.where(tied, half, proportional_extra)).astype(int)
         points_per_segment += extra_points
+    return points_per_segment
 
-    # Update target_elems to actual distributed points for each path position
-    actual_n_points = np.sum(points_per_segment, axis=1)
-    max_n_points = np.max(actual_n_points)
 
-    # GENERATE MESH AND CVEC ##########################################
-    pts_list = []
-    cvecs_list = []
+def _polyline_segments(vertices, current, counts):
+    """Cut the segments of a polyline into equal parts.
 
-    for p_idx in range(p_len):
-        n_pts_path = actual_n_points[p_idx]
-        parts = np.empty(n_pts_path)
-        idx = 0
+    Follows the array API standard.
 
-        for _, n_pts in enumerate(points_per_segment[p_idx]):
-            parts[idx : idx + n_pts] = [(2 * j + 1) / (2 * n_pts) for j in range(n_pts)]
-            idx += n_pts
+    Parameters
+    ----------
+    vertices : array, shape (n, 3)
+        Polyline vertices.
+    current : array, shape ()
+        Electric current.
+    counts : ndarray, shape (n-1,), dtype int
+        Number of parts of each segment.
 
-        # Generate points for this path position
-        pts_path = np.repeat(segment_vectors[p_idx], points_per_segment[p_idx], axis=0)
-        pts_path = pts_path * parts[:, np.newaxis]
-        pts_path += np.repeat(
-            vertices[p_idx, :-1], points_per_segment[p_idx], axis=0
-        )  # add starting point of each segment
+    Returns
+    -------
+    tuple[array, array]
+        Midpoints and current vectors of the parts, each of shape (m, 3).
+    """
+    xp = array_namespace(vertices)
+    segment_vectors = vertices[1:] - vertices[:-1]
+    index = constant(np.repeat(np.arange(len(counts)), counts), vertices)
+    # position of each midpoint along its segment
+    parts = np.array([(2 * j + 1) / (2 * n) for n in counts.tolist() for j in range(n)])
+    parts = constant(parts, vertices)[:, xp.newaxis]
 
-        cvecs_path = (
-            np.repeat(
-                segment_vectors[p_idx] / points_per_segment[p_idx, :, np.newaxis],
-                points_per_segment[p_idx],
-                axis=0,
-            )
-            * current[p_idx]
-        )
-
-        pts_list.append(pts_path)
-        cvecs_list.append(cvecs_path)
-
-    # Convert to arrays with consistent shapes
-    # Pad shorter meshes with zero current vectors at a real point: padding at the
-    # local origin would sample a source sitting there and give NaN.
-    pts = np.zeros((p_len, max_n_points, 3))
-    cvecs = np.zeros((p_len, max_n_points, 3))
-
-    for p_idx in range(p_len):
-        n_pts = len(pts_list[p_idx])
-        pts[p_idx, :n_pts] = pts_list[p_idx]
-        pts[p_idx, n_pts:] = pts_list[p_idx][-1]
-        cvecs[p_idx, :n_pts] = cvecs_list[p_idx]
-
-    # If no path variation, return squeezed arrays
-    if not has_path_varying:
-        pts, cvecs = pts[0], cvecs[0]
-
-    return {"pts": pts, "cvecs": cvecs}
+    pts = xp.take(segment_vectors, index, axis=0) * parts
+    pts = pts + xp.take(vertices[:-1], index, axis=0)
+    per_part = segment_vectors / constant(counts, vertices)[:, xp.newaxis]
+    return pts, xp.take(per_part, index, axis=0) * current
