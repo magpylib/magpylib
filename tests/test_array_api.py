@@ -79,6 +79,9 @@ def test_backend_float32_warns(xp):
     np.testing.assert_allclose(np.asarray(out)[0], expected, rtol=1e-5)
 
 
+# torch looks for a Metal GPU on its first backward pass and warns on the
+# virtual macOS machines of CI, which have none
+@pytest.mark.filterwarnings("ignore:Skipping device Apple Paravirtual:UserWarning")
 def test_backend_gradient(xp):
     """The field can be differentiated with respect to the observer."""
     position = [0.3, 0.4, 0.5]
