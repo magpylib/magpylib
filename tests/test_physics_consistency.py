@@ -33,12 +33,12 @@ def test_dipole_approximation():
     # Circle loop vs Dipole
     dia = 2
     i0 = 234
-    m0 = dia**2 * np.pi**2 / 10 * i0
+    m0 = np.pi * (dia / 2) ** 2 * i0
     src1 = magpy.current.Circle(current=i0, diameter=dia)
     src2 = magpy.misc.Dipole(moment=(0, 0, m0))
     H1 = src1.getH(pos)
     H2 = src2.getH(pos)
-    np.testing.assert_allclose(H1, H2, rtol=1e-05, atol=1e-08)
+    np.testing.assert_allclose(H1, H2, rtol=1e-05)
 
 
 def test_Circle_vs_Cylinder_field():
