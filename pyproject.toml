@@ -61,7 +61,8 @@ test = [
   "ipywidgets",  # for FigureWidget (plotly v5)
   "anywidget", # for FigureWidget (plotly v6)
   "jax",  # the core and the functional interface are tested on JAX and
-  "torch",  # PyTorch arrays
+  "torch",  # PyTorch arrays, and on
+  "array-api-strict",  # which has nothing beyond the array API standard
 ]
 
 dev = [

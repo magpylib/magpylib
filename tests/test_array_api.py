@@ -21,18 +21,18 @@ def reference():
         return dict(data)
 
 
-@pytest.fixture(scope="module", params=["jax", "torch"])
+@pytest.fixture(scope="module", params=["jax", "torch", "array_api_strict"])
 def xp(request):
     """The array namespace of the library, computing in float64."""
     if request.param == "jax":
         jax = pytest.importorskip("jax")
         jax.config.update("jax_enable_x64", True)
         return jax.numpy
-    return pytest.importorskip("torch")
+    return pytest.importorskip(request.param)
 
 
 def _is_array(xp, val):
-    return isinstance(val, xp.Tensor if xp.__name__ == "torch" else xp.ndarray)
+    return isinstance(val, type(xp.asarray(0.0)))
 
 
 @pytest.mark.parametrize(
@@ -85,6 +85,8 @@ def test_backend_float32_warns(xp):
 @pytest.mark.filterwarnings("ignore:Skipping device Apple Paravirtual:UserWarning")
 def test_backend_gradient(xp):
     """The field can be differentiated with respect to the observer."""
+    if xp.__name__ == "array_api_strict":
+        pytest.skip("array_api_strict has no automatic differentiation")
     position = [0.3, 0.4, 0.5]
 
     def field_z(observer):

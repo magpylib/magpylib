@@ -92,9 +92,9 @@ def magnet_cuboid_Bfield(
 
     # sign flips for position changes: a field component changes sign with
     # every flipped axis that is either its own or that of the polarization
-    sign_x = xp.where(maskx, -1.0, 1.0)
-    sign_y = xp.where(masky, -1.0, 1.0)
-    sign_z = xp.where(maskz, -1.0, 1.0)
+    sign_x = 1.0 - 2.0 * xp.astype(maskx, observers.dtype)
+    sign_y = 1.0 - 2.0 * xp.astype(masky, observers.dtype)
+    sign_z = 1.0 - 2.0 * xp.astype(maskz, observers.dtype)
     sign_xy = sign_x * sign_y
     sign_xz = sign_x * sign_z
     sign_yz = sign_y * sign_z

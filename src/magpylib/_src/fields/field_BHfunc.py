@@ -813,7 +813,8 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
 
     if not is_numpy_namespace(xp):
         arrays = [val for val in params.values() if not isinstance(val, np.ndarray)]
-        dtype = xp_promote(arrays[0], *arrays[1:], xp=xp)[0].dtype
+        # arrays[0] twice, as xp_promote returns a tuple for two arrays or more
+        dtype = xp_promote(arrays[0], *arrays, xp=xp)[0].dtype
         if dtype != xp.float64:
             msg = (
                 f"Field computation in {dtype} instead of float64, as given by "
@@ -873,10 +874,12 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
             out = _getBH_level1(field_func=field_func, field=field, **kwargs)
             BH[chunk] = cut_rows(out, nmax, xp)
             return
-        rows = slice(starts[chunk], starts[chunk] + step)
-        n = len(range(nmax)[rows])
+        # the array API standard has no slices past the end and wants an
+        # index for every axis
+        rows = slice(starts[chunk], min(starts[chunk] + step, nmax))
+        n = rows.stop - rows.start
         kwargs = {
-            key: val[rows]
+            key: val[rows, ...]
             if val.shape[0] == nmax
             else xp.tile(val, (n,) + (1,) * (val.ndim - 1))
             for key, val in params.items()
@@ -890,7 +893,7 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
     BH = BH[0] if len(BH) == 1 else xp.concat(BH)
 
     if squeeze and nmax == 1:
-        return BH[0]
+        return BH[0, ...]
     return BH
 
 

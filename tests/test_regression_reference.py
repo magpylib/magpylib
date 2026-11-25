@@ -1121,14 +1121,14 @@ def test_regression(name, reference):
     )
 
 
-@pytest.fixture(scope="module", params=["jax", "torch"])
+@pytest.fixture(scope="module", params=["jax", "torch", "array_api_strict"])
 def xp(request):
     """The array namespace of another library, computing in float64."""
     if request.param == "jax":
         jax = pytest.importorskip("jax")
         jax.config.update("jax_enable_x64", True)
         return jax.numpy
-    return pytest.importorskip("torch")
+    return pytest.importorskip(request.param)
 
 
 @pytest.mark.parametrize("name", [n for n in CASES if n.startswith(("core/", "func/"))])

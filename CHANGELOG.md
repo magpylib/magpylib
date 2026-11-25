@@ -9,7 +9,8 @@
   and return its arrays, so that fields can be differentiated. Precision follows
   the input arrays, with a warning when it is not float64. The cylinder segment
   needs SciPy's incomplete elliptic integrals and takes NumPy input only.
-  `array-api-compat` and `array-api-extra` are new dependencies.
+  `array-api-compat` and `array-api-extra` are new dependencies. The tests also
+  run on `array-api-strict`, which has nothing beyond the standard.
 - With JAX arrays the functions of `magpylib.core` and `magpylib.func` can be
   transformed by the user with `jax.jit`, `jax.grad` and `jax.vmap`.
 - JAX compiles every operation once per array shape, so each new number of

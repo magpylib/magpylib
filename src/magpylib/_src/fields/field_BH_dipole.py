@@ -60,7 +60,8 @@ def dipole_Hfield(
 
     # at r=0 return inf in the direction of all non-zero moment components
     mask_origin = r == 0
-    H_origin = xp.where(moments > 0, xp.inf, xp.where(moments < 0, -xp.inf, 0.0))
+    zero = xp.zeros_like(moments)  # where of the array API needs an array
+    H_origin = xp.where(moments > 0, xp.inf, xp.where(moments < 0, -xp.inf, zero))
 
     r = xp.where(mask_origin, 1.0, r)  # avoid 0/0
     dotprod = xp.sum(moments * observers, axis=-1, keepdims=True)
