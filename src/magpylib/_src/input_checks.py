@@ -21,7 +21,7 @@ from magpylib._src.exceptions import (
     MagpylibInternalError,
     MagpylibMissingInput,
 )
-from magpylib._src.utility import format_obj_input, wrong_obj_msg
+from magpylib._src.utility import format_obj_input, has_units, units_msg, wrong_obj_msg
 
 # Tolerance in deg on the section angles of a CylinderSegment. Above the rounding
 # of phi2 - phi1 (1e-13) and of what _close takes for a face at 360 (4e-10).
@@ -353,6 +353,9 @@ def check_format_input_numeric(
 
     # build name for error messages
     msg_name = "Input" + (f" {name}" if name is not None else "")
+
+    if has_units(inp):
+        raise MagpylibBadUserInput(units_msg(msg_name, inp))
 
     dims, shapes, exact_shapes, wildcard_shapes = _parse_shape_specs(
         _normalize_shape_specs(shapes)
@@ -704,6 +707,9 @@ def check_format_input_observers(inp, pixel_agg=None):
     if not isinstance(inp, list | tuple | np.ndarray):
         raise MagpylibBadUserInput(wrong_obj_msg(inp, allow="observers"))
 
+    if has_units(inp):
+        raise MagpylibBadUserInput(units_msg("Input observers", inp))
+
     # empty list
     if len(inp) == 0:
         raise MagpylibBadUserInput(wrong_obj_msg(inp, allow="observers"))
@@ -730,6 +736,10 @@ def check_format_input_observers(inp, pixel_agg=None):
                     ) from err
                 sensors.extend(child_sensors)
             else:  # if its not a Sensor or a Collection it can only be a pos_vec
+                if has_units(obj):
+                    raise MagpylibBadUserInput(
+                        units_msg("Input observers", obj)
+                    ) from err
                 try:
                     obj = np.array(obj, dtype=float)
                     sensors.append(_src.obj_classes.class_Sensor.Sensor(pixel=obj))

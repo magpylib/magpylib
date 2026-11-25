@@ -428,6 +428,30 @@ def _own_parameter_names(func: Callable) -> frozenset:
     return frozenset(signature(func, follow_wrapped=False).parameters)
 
 
+def has_units(val):
+    """True for a quantity of a units package, or a list of them, as np.array
+    would silently drop its units. Tables can name a column "units", so they
+    are not asked."""
+    while isinstance(val, list | tuple) and val:
+        val = val[0]
+    if hasattr(val, "to_numpy"):
+        return False
+    return (
+        getattr(val, "unit", None) is not None
+        or getattr(val, "units", None) is not None
+    )
+
+
+def units_msg(name, val):
+    """Error message for an input whose units np.array would drop"""
+    return (
+        f"{name} carries units (type {type(val).__name__}), which "
+        "would be dropped; Magpylib takes plain values in SI units. "
+        "Convert it first, e.g. with .to('m').magnitude for pint or "
+        ".to_value('m') for astropy."
+    )
+
+
 def merge_dicts_with_conflict_check(objs, *, target, identifiers, unique_fields):
     """
     Merge dictionaries ensuring unique identifier fields don't lead to conflict.
