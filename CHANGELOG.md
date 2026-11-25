@@ -16,6 +16,9 @@
 - Cylinder and CylinderSegment fields no longer hang forever or raise ValueError
   for NaN, infinite or very large observers, or close to CylinderSegment corners
   ([#1094](https://github.com/magpylib/magpylib/pull/1094)).
+- Circle fields no longer hang for observers at the wire's radius with a height
+  so small that its square underflows; they return 0 as on the wire
+  ([#1100](https://github.com/magpylib/magpylib/issues/1100)).
 
 ## [6.3.0] 2026-11-07
 
