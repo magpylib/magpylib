@@ -13,7 +13,7 @@
 - Object parameters, `move` and `rotate` inputs, sensor pixels and observers
   that carry units, such as astropy quantities, raise an error instead of being
   read as values in SI units
-  ([#1084](https://github.com/magpylib/magpylib/issues/1084)).
+  ([#1106](https://github.com/magpylib/magpylib/pull/1106)).
 - Cuboid fields close to edges remain finite and accurate, preventing NaN fields
   in collections of cuboid cells
   ([#1066](https://github.com/magpylib/magpylib/pull/1066)).
