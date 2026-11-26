@@ -72,6 +72,11 @@ def current_circle_Hfield(
     k2 = 4 * r / x0
     q2 = (z2 + (r - 1) ** 2) / x0
 
+    # q2 is 0 on the wire, and next to it where z**2 underflows. The cel iteration
+    # never converges there, so compute with q2 = 1 and return the wire value, 0.
+    on_wire = q2 == 0
+    q2 = np.where(on_wire, 1.0, q2)
+
     q = np.sqrt(q2)
     p = 1 + q
     pf = i0 / (4 * np.pi * r0 * np.sqrt(x0) * q2)
@@ -88,7 +93,7 @@ def current_circle_Hfield(
     Hz = -pf * _cel_iter(q, p, np.ones(n5), cc, ss, p, q)
     # Hz = -_cel_iter(q, p, np.ones(n5), pf*cc, pf*ss, p, q)
 
-    return np.vstack((Hr, np.zeros(n5), Hz))
+    return np.where(on_wire, 0.0, np.vstack((Hr, np.zeros(n5), Hz)))
 
 
 def _BHJM_circle(
