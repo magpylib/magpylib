@@ -36,6 +36,9 @@
   ([#1094](https://github.com/magpylib/magpylib/pull/1094)).
 - Circle fields return NaN instead of computing forever for an observer on the
   loop that is closer to its plane than 1e-162.
+- Sphere and dipole fields keep the precision of float32 input at every length
+  scale. Powers of the distance underflowed at nanometres and overflowed at
+  1e8 m, which gave NaN or fields that were off by a third.
 - Polyline fields keep their precision beside the extension of a segment, where
   they lost digits with the distance along the line: 1e-5 of the field at 1000
   segment lengths, and all of it very close to the line

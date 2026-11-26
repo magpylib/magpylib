@@ -48,9 +48,9 @@ def dipole_Hfield(
     ...    moments=np.array([(1e5, 0.0, 0.0), (0.0, 0.0, 1e5)]),
     ... )
     >>> with np.printoptions(precision=3):
-    ...     print(H)
-    [[2.895e-13 1.531e+03 1.531e+03]
-     [1.914e+02 1.914e+02 3.619e-14]]
+    ...     print(H)  # doctest: +ELLIPSIS
+    [[... 1.531e+03 1.531e+03]
+     [1.914e+02 1.914e+02 ...]]
     """
 
     xp = array_namespace(observers, moments)
@@ -63,9 +63,12 @@ def dipole_Hfield(
     zero = xp.zeros_like(moments)  # where of the array API needs an array
     H_origin = xp.where(moments > 0, xp.inf, xp.where(moments < 0, -xp.inf, zero))
 
+    # with the unit vector to the observer, as a power of r above the third
+    # underflows in float32 already at nanometres
     r = xp.where(mask_origin, 1.0, r)  # avoid 0/0
-    dotprod = xp.sum(moments * observers, axis=-1, keepdims=True)
-    H = (3 * dotprod * observers / r**5 - moments / r**3) / 4 / xp.pi
+    unit = observers / r
+    dotprod = xp.sum(moments * unit, axis=-1, keepdims=True)
+    H = (3 * dotprod * unit - moments) / (r * r * r) / (4 * xp.pi)
 
     return xp.where(mask_origin, H_origin, H)
 

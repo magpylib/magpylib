@@ -49,8 +49,8 @@ def magnet_sphere_Bfield(
     ...     polarizations=np.array([(1.0, 0.0, 0.0), (1.0, 1.0, 0.0)]),
     ... )
     >>> with np.printoptions(precision=3):
-    ...     print(B)
-    [[1.187e-18 8.019e-03 8.019e-03]
+    ...     print(B)  # doctest: +ELLIPSIS
+    [[... 8.019e-03 8.019e-03]
      [8.019e-03 8.019e-03 1.604e-02]]
     """
     return _BHJM_magnet_sphere(
@@ -91,9 +91,14 @@ def _BHJM_magnet_sphere(
         return xp.where(mask_out, 0.0, polarization) / MU0
 
     # dipole field outside, 2/3 of the polarization inside
+    # with the unit vector to the observer and the ratio of the radii, which
+    # do not depend on the length unit: powers of r underflow in float32
+    # already at nanometres
     r = xp.where(mask_out, r, 1.0)  # avoid 0/0 in the center
-    dotprod = xp.sum(polarization * observers, axis=-1, keepdims=True)
-    B_out = (3 * dotprod * observers - polarization * r**2) / r**5 * r_sphere**3 / 3
+    unit = observers / r
+    dotprod = xp.sum(polarization * unit, axis=-1, keepdims=True)
+    ratio = r_sphere / r
+    B_out = (3 * dotprod * unit - polarization) * (ratio * ratio * ratio / 3)
     BHJM = xp.where(mask_out, B_out, polarization * (2 / 3))
 
     if field == "B":

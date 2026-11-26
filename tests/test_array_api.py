@@ -208,6 +208,27 @@ def test_backend_float32_elliptic(xp):
     np.testing.assert_allclose(np.asarray(out), expected, atol=1e-6)
 
 
+@pytest.mark.parametrize("scale", [1e-10, 1e-9, 1.0, 1e9])
+@pytest.mark.filterwarnings("ignore:Field computation in:UserWarning")
+def test_backend_float32_scale(xp, scale):
+    """Sphere and dipole keep the precision of float32 from atoms to
+    planets: no power of the distance underflows or overflows."""
+    observers = np.array([(0.6, 0.7, 0.4)]) * scale
+    moments = np.array([(1.0, 2.0, 3.0)]) * scale**3
+    diameters = np.array([1.0]) * scale
+    polarizations = np.array([(0.3, 0.2, 1.0)])
+
+    def single(*arrays):
+        return (xp.asarray(val, dtype=xp.float32) for val in arrays)
+
+    out = magpy.func.dipole_field("B", *single(observers, moments))
+    expected = magpy.func.dipole_field("B", observers, moments)
+    np.testing.assert_allclose(np.asarray(out), expected, rtol=1e-5)
+    out = magpy.func.sphere_field("B", *single(observers, diameters, polarizations))
+    expected = magpy.func.sphere_field("B", observers, diameters, polarizations)
+    np.testing.assert_allclose(np.asarray(out), expected, rtol=1e-5)
+
+
 def test_elliptic_iteration_ends():
     """Input that never converges gets NaN instead of an endless loop: NaN
     itself, and an observer on a current loop that is not caught as one."""
