@@ -16,7 +16,7 @@ from magpylib._src.fields.field_BH_polyline import _BHJM_current_polyline
 from magpylib._src.fields.field_BH_sphere import _BHJM_magnet_sphere
 from magpylib._src.fields.field_BH_tetrahedron import _BHJM_magnet_tetrahedron
 from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
-from magpylib._src.utility import has_parameter
+from magpylib._src.utility import has_parameter, has_units, units_msg
 
 _IDENTITY = np.eye(3)
 _UNIT_QUAT = np.array([0, 0, 0, 1.0])  # scalar last, as scipy
@@ -731,20 +731,6 @@ SHAPE = {
 }
 
 
-def _has_units(val):
-    """True for a quantity of a units package, or a list of them, as np.array
-    would silently drop its units. Tables can name a column "units", so they
-    are not asked."""
-    while isinstance(val, list | tuple) and val:
-        val = val[0]
-    if hasattr(val, "to_numpy"):
-        return False
-    return (
-        getattr(val, "unit", None) is not None
-        or getattr(val, "units", None) is not None
-    )
-
-
 def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
     """Functional interface for magnetic field computation
 
@@ -780,14 +766,8 @@ def _getBH_func(field_func, field, params, squeeze, shapes=None, kernel_rows=1):
 
     # Transform all inputs to ndarray
     for key, val in params.items():
-        if _has_units(val):
-            msg = (
-                f"Input {key} carries units (type {type(val).__name__}), which "
-                "would be dropped; Magpylib takes plain values in SI units. "
-                "Convert it first, e.g. with .to('m').magnitude for pint or "
-                ".to_value('m') for astropy."
-            )
-            raise TypeError(msg)
+        if has_units(val):
+            raise TypeError(units_msg(f"Input {key}", val))
         try:
             if not isinstance(val, np.ndarray):
                 params[key] = np.array(val, dtype=float)

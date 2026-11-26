@@ -1175,3 +1175,59 @@ def test_input_errors_are_value_errors(call):
     """Magpylib's input errors are ValueErrors, so a standard except catches them."""
     with pytest.raises(ValueError):  # noqa: PT011
         call()
+
+
+class _UnitArray(np.ndarray):
+    """an ndarray subclass with units, as an astropy Quantity"""
+
+    unit = "mm"
+
+
+class _NoUnitArray(np.ndarray):
+    """an ndarray subclass without units, as an astropy Column"""
+
+    unit = None
+
+
+def _with_units(values, cls=_UnitArray):
+    return np.array(values, dtype=float).view(cls)
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        lambda: magpy.magnet.Cuboid(dimension=_with_units((2, 2, 2))),
+        lambda: magpy.magnet.Cuboid(position=_with_units((0, 0, 1))),
+        lambda: magpy.magnet.Cuboid().move(_with_units((0, 0, 1))),
+        lambda: magpy.current.Circle(current=_with_units(2)),
+        lambda: magpy.Sensor(pixel=_with_units((0, 0, 1))),
+        lambda: magpy.misc.Dipole(moment=(0, 0, 1)).getB(_with_units((0, 0, 1))),
+        lambda: magpy.misc.Dipole(moment=(0, 0, 1)).getB(
+            [magpy.Sensor(), _with_units((0, 0, 1))]
+        ),
+    ],
+    ids=[
+        "dimension",
+        "position",
+        "move",
+        "scalar current",
+        "pixel",
+        "observers",
+        "observers with a Sensor",
+    ],
+)
+def test_inputs_with_units_raise(call):
+    """An astropy Quantity is an ndarray, so np.array would drop its units."""
+    with pytest.raises(MagpylibBadUserInput, match="carries units"):
+        call()
+
+
+def test_ndarray_subclass_without_units_is_accepted():
+    """An ndarray subclass without units, as an astropy Column, keeps working."""
+    dipole = magpy.misc.Dipole(
+        moment=(0, 0, 1), position=_with_units((0, 0, 0), _NoUnitArray)
+    )
+    np.testing.assert_array_equal(dipole.position, (0, 0, 0))
+    np.testing.assert_array_equal(
+        dipole.getB(_with_units((0, 0, 1), _NoUnitArray)), dipole.getB((0, 0, 1))
+    )
