@@ -3,9 +3,11 @@
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
+from magpylib._src.array_api_utils import array_namespace, dot, jax_padded, xp_promote
 from magpylib._src.input_checks import check_field_input
 
 
+@jax_padded()
 def magnet_sphere_Bfield(
     observers: np.ndarray,
     diameters: np.ndarray,
@@ -46,8 +48,8 @@ def magnet_sphere_Bfield(
     ...     polarizations=np.array([(1.0, 0.0, 0.0), (1.0, 1.0, 0.0)]),
     ... )
     >>> with np.printoptions(precision=3):
-    ...     print(B)
-    [[1.187e-18 8.019e-03 8.019e-03]
+    ...     print(B)  # doctest: +ELLIPSIS
+    [[... 8.019e-03 8.019e-03]
      [8.019e-03 8.019e-03 1.604e-02]]
     """
     return _BHJM_magnet_sphere(
@@ -72,40 +74,37 @@ def _BHJM_magnet_sphere(
     """
     check_field_input(field)
 
-    x, y, z = np.copy(observers.T)
-    r = np.sqrt(x**2 + y**2 + z**2)  # faster than np.linalg.norm
-    r_sphere = abs(diameter) / 2
+    xp = array_namespace(observers, diameter, polarization)
+    observers, diameter, polarization = xp_promote(
+        observers, diameter, polarization, xp=xp
+    )
 
-    # inside field & allocate
-    BHJM = polarization.astype(float)
-    out = r > r_sphere
+    r = xp.linalg.vector_norm(observers, axis=-1, keepdims=True)
+    r_sphere = xp.abs(diameter)[:, xp.newaxis] / 2
+    mask_out = r > r_sphere
 
     if field == "J":
-        BHJM[out] = 0.0
-        return BHJM
+        return xp.where(mask_out, 0.0, polarization)
 
     if field == "M":
-        BHJM[out] = 0.0
-        return BHJM / MU0
+        return xp.where(mask_out, 0.0, polarization) / MU0
 
-    BHJM *= 2 / 3
-
-    BHJM[out] = (
-        (
-            3 * np.sum(polarization[out] * observers[out], axis=1) * observers[out].T
-            - polarization[out].T * r[out] ** 2
-        )
-        / r[out] ** 5
-        * r_sphere[out] ** 3
-        / 3
-    ).T
+    # dipole field outside, 2/3 of the polarization inside
+    # with the unit vector to the observer and the ratio of the radii, which
+    # do not depend on the length unit: powers of r underflow in float32
+    # already at nanometres
+    r = xp.where(mask_out, r, 1.0)  # avoid 0/0 in the center
+    unit = observers / r
+    dotprod = dot(polarization, unit)[:, xp.newaxis]
+    ratio = r_sphere / r
+    B_out = (3 * dotprod * unit - polarization) * (ratio * ratio * ratio / 3)
+    BHJM = xp.where(mask_out, B_out, polarization * (2 / 3))
 
     if field == "B":
         return BHJM
 
     if field == "H":
-        BHJM[~out] -= polarization[~out]
-        return BHJM / MU0
+        return (BHJM - xp.where(mask_out, 0.0, polarization)) / MU0
 
     msg = (
         "Input output_field_type must be one of {'B', 'H', 'M', 'J'}; "

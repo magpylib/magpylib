@@ -38,6 +38,8 @@ dependencies = [
     "scipy>=1.17.1",
     "matplotlib>=3.6",
     "plotly>=5.16",
+    "array-api-compat>=1.12",
+    "array-api-extra>=0.8",
 ]
 
 [project.urls]
@@ -58,6 +60,9 @@ test = [
   "jupyterlab",
   "ipywidgets",  # for FigureWidget (plotly v5)
   "anywidget", # for FigureWidget (plotly v6)
+  "jax",  # the core and the functional interface are tested on JAX and
+  "torch",  # PyTorch arrays, and on
+  "array-api-strict",  # which has nothing beyond the array API standard
 ]
 
 dev = [
@@ -118,6 +123,9 @@ filterwarnings = [
   # vtk's numpy_support is not NumPy 2.5 compatible (uses `arr.shape = ...`);
   # remove once VTK ships a fix (surfaces through pyvista)
   "ignore:Setting the shape on a NumPy array has been deprecated:DeprecationWarning",
+  # JAX, once imported by the array API tests, warns when the animation tests
+  # start ffmpeg in a subprocess
+  "ignore:os.fork\\(\\) was called:RuntimeWarning",
 ]
 log_level = "INFO"
 testpaths = [

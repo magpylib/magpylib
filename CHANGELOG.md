@@ -2,8 +2,26 @@
 
 ## [Unreleased]
 
+### Added
+
+- The functions of `magpylib.core` and `magpylib.func` follow the Python array
+  API standard: with JAX or PyTorch arrays as input they compute in that library
+  and return its arrays, so that fields can be differentiated. Precision follows
+  the input arrays, with a warning when it is not float64. The cylinder segment
+  needs SciPy's incomplete elliptic integrals and takes NumPy input only.
+  `array-api-compat` and `array-api-extra` are new dependencies. The tests also
+  run on `array-api-strict`, which has nothing beyond the standard.
+- With JAX arrays the functions of `magpylib.core` and `magpylib.func` can be
+  transformed by the user with `jax.jit`, `jax.grad` and `jax.vmap`.
+- JAX compiles every operation once per array shape, so each new number of
+  instances used to cost a compilation of the whole computation. The inputs are
+  now padded to one of four sizes per power of two, at most a quarter more
+  instances, so that only those sizes are compiled.
+
 ### Changed
 
+- `triangle_Bfield` returns (0, 0, 0) at the corners of every triangle, as
+  documented, where triangles in a general position gave infinite components.
 - Small field computations are up to 1.3x faster: unrotated sources no longer
   build scipy rotations
   ([#1091](https://github.com/magpylib/magpylib/pull/1091)).
@@ -16,6 +34,15 @@
 - Cylinder and CylinderSegment fields no longer hang forever or raise ValueError
   for NaN, infinite or very large observers, or close to CylinderSegment corners
   ([#1094](https://github.com/magpylib/magpylib/pull/1094)).
+- Circle fields return NaN instead of computing forever for an observer on the
+  loop that is closer to its plane than 1e-162.
+- Sphere and dipole fields keep the precision of float32 input at every length
+  scale. Powers of the distance underflowed at nanometres and overflowed at 1e8
+  m, which gave NaN or fields that were off by a third.
+- Polyline fields keep their precision beside the extension of a segment, where
+  they lost digits with the distance along the line: 1e-5 of the field at 1000
+  segment lengths, and all of it very close to the line
+  ([#1097](https://github.com/magpylib/magpylib/issues/1097)).
 
 ## [6.3.0] 2026-11-07
 

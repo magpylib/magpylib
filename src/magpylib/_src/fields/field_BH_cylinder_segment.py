@@ -11,6 +11,7 @@ import numpy as np
 from scipy.constants import mu_0 as MU0
 from scipy.special import ellipeinc, ellipkinc
 
+from magpylib._src.array_api_utils import array_namespace, require_numpy
 from magpylib._src.fields.field_BH_cylinder import _BHJM_magnet_cylinder
 from magpylib._src.fields.special_el3 import _el3_angle
 from magpylib._src.input_checks import ANGLE_TOLERANCE, check_field_input
@@ -2161,6 +2162,11 @@ def magnet_cylinder_segment_Hfield(
      [14167.65   1419.941 17921.646]]
     """
 
+    require_numpy(
+        array_namespace(observers, dimensions, magnetizations),
+        "The cylinder segment field",
+    )
+
     # tile inputs into 8-stacks (boundary cases)
     r, phi, z = np.repeat(observers, 8, axis=0).T
     r_i = np.repeat(dimensions[:, :2], 4)
@@ -2359,6 +2365,10 @@ def _BHJM_cylinder_segment(
     - special cases catching
     """
     check_field_input(field)
+    require_numpy(
+        array_namespace(observers, dimension, polarization),
+        "The cylinder segment field",
+    )
 
     BHJM = polarization.astype(float)
 

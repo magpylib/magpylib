@@ -76,10 +76,12 @@ def test_force_analytic_dipole():
         F1, T1 = getFT(src1, tgt1, pivot=piv[i])
         F2, T2 = getFT(src1, tgt2, pivot=piv[i])
 
-        assert np.linalg.norm(F0 - F1) / np.linalg.norm(F0 + F1) < 1e-10
-        assert np.linalg.norm(F0 - F2) / np.linalg.norm(F0 + F2) < 1e-10
-        assert np.linalg.norm(T0 - T1) / np.linalg.norm(T0 + T1) < 1e-10
-        assert np.linalg.norm(T0 - T2) / np.linalg.norm(T0 + T2) < 1e-10
+        # the finite difference of step 1e-5 amplifies the rounding of the
+        # field, 1e-16, to 1e-10 of the force at these distances
+        assert np.linalg.norm(F0 - F1) / np.linalg.norm(F0 + F1) < 1e-9
+        assert np.linalg.norm(F0 - F2) / np.linalg.norm(F0 + F2) < 1e-9
+        assert np.linalg.norm(T0 - T1) / np.linalg.norm(T0 + T1) < 1e-9
+        assert np.linalg.norm(T0 - T2) / np.linalg.norm(T0 + T2) < 1e-9
 
 
 def test_force_analytic_cocentric_loops():

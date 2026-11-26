@@ -6,12 +6,32 @@ from __future__ import annotations
 
 import numpy as np
 from scipy.constants import mu_0 as MU0
-from scipy.spatial.transform import Rotation as R
 
+from magpylib._src.array_api_utils import array_namespace, jax_padded, some, xp_promote
 from magpylib._src.input_checks import check_field_input
 
 
-def _coordinate_transformation(vertices):
+def _rotation_matrix(axis, angle, xp):
+    """Rotation matrices, shape (n, 3, 3), about the x- or z-axis by angle, shape (n,)"""
+    # Entries as SciPy's Rotation.from_euler(axis, angle).as_matrix() computes
+    # them from the quaternion, to the last bit: whether a collinear triangle
+    # counts as degenerate in current_sheet_Hfield depends on the rounding.
+    sh, ch = xp.sin(angle / 2), xp.cos(angle / 2)
+    c, s = ch * ch - sh * sh, 2 * sh * ch
+    one, zero = sh * sh + ch * ch, xp.zeros_like(angle)
+    if axis == "x":
+        rows = ((one, zero, zero), (zero, c, -s), (zero, s, c))
+    else:
+        rows = ((c, -s, zero), (s, c, zero), (zero, zero, one))
+    return xp.stack([xp.stack(row, axis=-1) for row in rows], axis=-2)
+
+
+def _apply(rotation, vectors, xp):
+    """Rotate vectors, shape (n, 3), by rotation matrices, shape (n, 3, 3)"""
+    return xp.matmul(rotation, vectors[..., xp.newaxis])[..., 0]
+
+
+def _coordinate_transformation(vertices, xp):
     """
     Function that transforms the triangle to elementar current sheet
 
@@ -31,68 +51,71 @@ def _coordinate_transformation(vertices):
         Translation done for the coordinate transformation.
         Sign so that elementar vertices + translation = real vertices
 
-    rotation: scipy.rotation object
-        Rotation done for the coordinate transformation.
+    rotation: ndarray, shape (n, 3, 3)
+        Rotation matrices of the coordinate transformation.
     """
-
-    n = len(vertices)
 
     # step 1
     # translate so that Pi1 -> (0, 0, 0)
-    translation = np.copy(vertices[:, 0, :])
-    vertices[:, 1, :] = vertices[:, 1, :] - translation
-    vertices[:, 2, :] = vertices[:, 2, :] - translation
-    vertices[:, 0, :] = 0
+    translation = vertices[:, 0, :]
+    p2 = vertices[:, 1, :] - translation
+    p3 = vertices[:, 2, :] - translation
 
     # step 2
     # apply two rotations so that Pi2 -> (u1, 0, 0)
 
     # step 2.1: first rotation around x-axis so that Pi2 -> xy-plane
-    theta = -np.arctan2(vertices[:, 1, 2], vertices[:, 1, 1])
+    theta = -xp.atan2(p2[:, 2], p2[:, 1])
 
-    r21 = R.from_euler("x", theta[:, np.newaxis])
+    r21 = _rotation_matrix("x", theta, xp)
 
-    vertices[:, 1, :] = r21.apply(vertices[:, 1, :])
-    vertices[:, 2, :] = r21.apply(vertices[:, 2, :])
+    p2 = _apply(r21, p2, xp)
+    p3 = _apply(r21, p3, xp)
 
     # step 2.2: second rotation around z-axis so that Pi2 -> x-axis
-    alpha = -np.arctan2(vertices[:, 1, 1], vertices[:, 1, 0])
+    alpha = -xp.atan2(p2[:, 1], p2[:, 0])
 
-    r22 = R.from_euler("z", alpha[:, np.newaxis])
+    r22 = _rotation_matrix("z", alpha, xp)
 
-    vertices[:, 1, :] = r22.apply(vertices[:, 1, :])
-    vertices[:, 2, :] = r22.apply(vertices[:, 2, :])
+    p2 = _apply(r22, p2, xp)
+    p3 = _apply(r22, p3, xp)
 
     # step 3
     # apply rotation around x-axis so that Pi3 -> (u2, v2, 0)
-    psi = -np.arctan2(vertices[:, 2, 2], vertices[:, 2, 1])
+    psi = -xp.atan2(p3[:, 2], p3[:, 1])
 
-    r3 = R.from_euler("x", psi[:, np.newaxis])
+    r3 = _rotation_matrix("x", psi, xp)
 
     # can this not be done in one "xzx" rotation?
 
-    vertices[:, 2, :] = r3.apply(vertices[:, 2, :])
+    p3 = _apply(r3, p3, xp)
 
-    rotation = r3 * r22 * r21
+    rotation = xp.matmul(r3, xp.matmul(r22, r21))
 
-    elementar_coordinates = np.zeros((n, 3))
-    elementar_coordinates[:, 0] = vertices[:, 1, 0]
-    elementar_coordinates[:, 1:] = vertices[:, 2, :2]
+    elementar_coordinates = xp.stack((p2[:, 0], p3[:, 0], p3[:, 1]), axis=-1)
 
     return (elementar_coordinates, translation, rotation)
 
 
-def _assign_masks(observers, coordinates, current_densities, mask):
-    """helpfunction that renames input"""
+def _assign_masks(observers, coordinates, mask, point, xp):
+    """helpfunction that renames input
+
+    Rows outside of mask are replaced by the observer ``point`` and the
+    triangle (0, 0, 0), (1, 0, 0), (0, 1, 0), for which the formulas of the
+    case that mask selects are regular.
+    """
+    x, y, z = xp.unstack(observers, axis=-1)
+    u1, u2, v2 = xp.unstack(coordinates, axis=-1)
     if mask is None:
-        x, y, z = observers.T
-        u1, u2, v2 = coordinates.T
-        ju, jv = current_densities.T
-    else:
-        x, y, z = observers[mask, :].T
-        u1, u2, v2 = coordinates[mask, :].T
-        ju, jv = current_densities[mask, :].T
-    return (x, y, z, u1, u2, v2, ju, jv)
+        return (x, y, z, u1, u2, v2)
+    return (
+        xp.where(mask, x, point[0]),
+        xp.where(mask, y, point[1]),
+        xp.where(mask, z, point[2]),
+        xp.where(mask, u1, 1.0),
+        xp.where(mask, u2, 0.0),
+        xp.where(mask, v2, 1.0),
+    )
 
 
 def _elementar_current_sheet_Hfield(
@@ -130,23 +153,24 @@ def _elementar_current_sheet_Hfield(
     Field computation via law of Biot Savart. See also countless online resources.
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
     """
+    xp = array_namespace(observers, coordinates, current_densities)
+
     # tolerance for numerical errors
     num_tol = 1e-10
 
     # rename
-    x, y, z, u1, u2, v2, ju, jv = _assign_masks(
-        observers, coordinates, current_densities, None
-    )
+    x, y, z, u1, u2, v2 = _assign_masks(observers, coordinates, None, None, xp)
+    ju, jv = xp.unstack(current_densities, axis=-1)
 
     # in-plane with triangle
-    in_plane = np.abs(z) < num_tol
+    in_plane = xp.abs(z) < num_tol
 
     # critical value for condition, if observer within triangle or on the edges
     critical_value01 = (x * v2 - y * u2) / (u1 * v2)  # within triangle
     critical_value02 = y / v2  # within triangle
-    critical_value1 = np.abs(y)  # edge1
-    critical_value2 = np.abs(u2 * y - v2 * x)  # edge2
-    critical_value3 = np.abs(v2 * (x - u1) + y * (u1 - u2))  # edge3
+    critical_value1 = xp.abs(y)  # edge1
+    critical_value2 = xp.abs(u2 * y - v2 * x)  # edge2
+    critical_value3 = xp.abs(v2 * (x - u1) + y * (u1 - u2))  # edge3
 
     # separate on-sheet cases (-> B=0)
     mask0 = (
@@ -164,30 +188,30 @@ def _elementar_current_sheet_Hfield(
     mask_plane = ~(mask0 | mask1 | mask2 | mask3) & in_plane
     mask_general = ~in_plane
 
-    special_cases = not all(mask_general)
-
-    # allocate
-    H = np.zeros_like(observers, dtype=float)
+    # The cases in the plane of the triangle are skipped if no observer is
+    # there. Otherwise all cases are computed for all rows and selected. For
+    # each case, the rows of the other cases are replaced by a regular point
+    # of that case.
+    planar = some(in_plane)
 
     # CASE: GENERAL ###############################################################
-    if special_cases:
-        x, y, z, u1, u2, v2, ju, jv = _assign_masks(
-            observers, coordinates, current_densities, mask_general
-        )
+    x, y, z, u1, u2, v2 = _assign_masks(
+        observers, coordinates, mask_general if planar else None, (1.0, 1.0, 1.0), xp
+    )
 
-    sqrt1 = np.sqrt(x**2 + y**2 + z**2)
-    sqrt2 = np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2 + z**2)
-    sqrt3 = np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2 + z**2)
-    sqrt4 = np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-    sqrt5 = np.sqrt(u2**2 + v2**2)
+    sqrt1 = xp.sqrt(x**2 + y**2 + z**2)
+    sqrt2 = xp.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2 + z**2)
+    sqrt3 = xp.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2 + z**2)
+    sqrt4 = xp.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+    sqrt5 = xp.sqrt(u2**2 + v2**2)
 
-    H[mask_general, 0] = (
-        np.arctan((-u2 * (y**2 + z**2) + v2 * x * y) / (v2 * z * sqrt1))
-        + np.arctan((v2 * y * (u1 - x) - (u1 - u2) * (y**2 + z**2)) / (v2 * z * sqrt2))
-        - np.arctan(
+    Hx = (
+        xp.atan((-u2 * (y**2 + z**2) + v2 * x * y) / (v2 * z * sqrt1))
+        + xp.atan((v2 * y * (u1 - x) - (u1 - u2) * (y**2 + z**2)) / (v2 * z * sqrt2))
+        - xp.atan(
             (-u2 * (y**2 + z**2) - v2**2 * x + v2 * y * (u2 + x)) / (v2 * z * sqrt3)
         )
-        - np.arctan(
+        - xp.atan(
             (
                 -u1 * (v2**2 - 2 * v2 * y + y**2 + z**2)
                 + u2 * (y**2 + z**2)
@@ -197,243 +221,257 @@ def _elementar_current_sheet_Hfield(
             / (v2 * z * sqrt3)
         )
     ) / (u1 * v2 * z)
-    H[mask_general, 2] = -(
-        ju * np.arctanh(x / sqrt1)
-        + ju * np.arctanh((u1 - x) / sqrt2)
+    Hz_general = -(
+        ju * xp.atanh(x / sqrt1)
+        + ju * xp.atanh((u1 - x) / sqrt2)
         - (ju * (u1 - u2) - jv * v2)
-        * np.arctanh((u1**2 - u1 * (u2 + x) + u2 * x + v2 * y) / (sqrt4 * sqrt2))
+        * xp.atanh((u1**2 - u1 * (u2 + x) + u2 * x + v2 * y) / (sqrt4 * sqrt2))
         / sqrt4
         + (ju * (u1 - u2) - jv * v2)
-        * np.arctanh(
-            (u1 * (u2 - x) - u2**2 + u2 * x + v2 * (-v2 + y)) / (sqrt4 * sqrt3)
-        )
+        * xp.atanh((u1 * (u2 - x) - u2**2 + u2 * x + v2 * (-v2 + y)) / (sqrt4 * sqrt3))
         / sqrt4
-        + (ju * u2 + jv * v2) * np.arctanh((-u2 * x - v2 * y) / (sqrt5 * sqrt1)) / sqrt5
+        + (ju * u2 + jv * v2) * xp.atanh((-u2 * x - v2 * y) / (sqrt5 * sqrt1)) / sqrt5
         - (ju * u2 + jv * v2)
-        * np.arctanh((u2**2 - u2 * x + v2 * (v2 - y)) / (sqrt5 * sqrt3))
+        * xp.atanh((u2**2 - u2 * x + v2 * (v2 - y)) / (sqrt5 * sqrt3))
         / sqrt5
     ) / (u1 * v2)
 
-    if special_cases:
-        # CASE: Observer in plane ################################################################
-        x, y, z, u1, u2, v2, ju, jv = _assign_masks(
-            observers, coordinates, current_densities, mask_plane
+    Hz = Hz_general
+    if planar:
+        # Hx and Hy are zero in the plane of the triangle
+        Hx = xp.where(mask_general, Hx, 0.0)
+        Hz = _elementar_current_sheet_Hz_in_plane(
+            observers,
+            coordinates,
+            current_densities,
+            xp.where(mask_general, Hz_general, 0.0),
+            (mask_plane, mask1, mask2, mask3),
         )
-        H[mask_plane, 2] = -(
-            ju * np.arctanh(x / np.sqrt(x**2 + y**2))
-            + ju * np.arctanh((u1 - x) / np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2))
-            - (ju * (u1 - u2) - jv * v2)
-            * np.arctanh(
-                (u1**2 - u1 * (u2 + x) + u2 * x + v2 * y)
-                / (
-                    np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-                    * np.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2)
-                )
-            )
-            / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-            + (ju * (u1 - u2) - jv * v2)
-            * np.arctanh(
-                (u1 * (u2 - x) - u2**2 + u2 * x + v2 * (-v2 + y))
-                / (
-                    np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-                    * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2)
-                )
-            )
-            / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-            + (ju * u2 + jv * v2)
-            * np.arctanh(
-                (-u2 * x - v2 * y) / (np.sqrt(u2**2 + v2**2) * np.sqrt(x**2 + y**2))
-            )
-            / np.sqrt(u2**2 + v2**2)
-            - (ju * u2 + jv * v2)
-            * np.arctanh(
-                (u2**2 - u2 * x + v2 * (v2 - y))
-                / (
-                    np.sqrt(u2**2 + v2**2)
-                    * np.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2)
-                )
-            )
-            / np.sqrt(u2**2 + v2**2)
-        ) / (u1 * v2)
-
-        # CASE: Observer on edge1 ##############################################################
-
-        x, y, z, u1, u2, v2, ju, jv = _assign_masks(
-            observers, coordinates, current_densities, mask1
-        )
-        H[mask1, 2] = (
-            -ju * x * np.log(np.abs(x)) / np.sqrt(x**2)
-            - ju * (u1 - x) * np.log(np.abs(-u1 + x)) / np.sqrt((u1 - x) ** 2)
-            + (ju * (u1 - u2) - jv * v2)
-            * np.arctanh(
-                (u1 * (-u2 + x) + u2**2 - u2 * x + v2**2)
-                / (
-                    np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-                    * np.sqrt(u2**2 - 2 * u2 * x + v2**2 + x**2)
-                )
-            )
-            / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-            + (ju * (u1 - u2) - jv * v2)
-            * np.arctanh(
-                (u1 - u2)
-                * (u1 - x)
-                / (
-                    np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-                    * np.sqrt((u1 - x) ** 2)
-                )
-            )
-            / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-            + (ju * u2 + jv * v2)
-            * np.arctanh(
-                (u2**2 - u2 * x + v2**2)
-                / (np.sqrt(u2**2 + v2**2) * np.sqrt(u2**2 - 2 * u2 * x + v2**2 + x**2))
-            )
-            / np.sqrt(u2**2 + v2**2)
-            - (ju * u2 + jv * v2)
-            * np.arctanh(
-                u2 * (u1 - x) / (np.sqrt(u2**2 + v2**2) * np.sqrt((u1 - x) ** 2))
-            )
-            / np.sqrt(u2**2 + v2**2)
-        ) / (u1 * v2)
-
-        # CASE: Observer on edges 2 ##############################################################
-
-        x, y, z, u1, u2, v2, ju, jv = _assign_masks(
-            observers, coordinates, current_densities, mask2
-        )
-        H[mask2, 2] = (
-            -ju
-            * np.arctanh(
-                (u1 * v2 - u2 * y)
-                / (
-                    v2
-                    * np.sqrt(u1**2 - 2 * u1 * u2 * y / v2 + y**2 * (u2**2 / v2**2 + 1))
-                )
-            )
-            + ju
-            * np.arctanh(
-                u2 * (v2 - y) / (v2 * np.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2))
-            )
-            + (ju * (u1 - u2) - jv * v2)
-            * np.arctanh(
-                (u1**2 * v2 - u1 * u2 * (v2 + y) + y * (u2**2 + v2**2))
-                / (
-                    v2
-                    * np.sqrt(u1**2 - 2 * u1 * u2 * y / v2 + y**2 * (u2**2 / v2**2 + 1))
-                    * np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-                )
-            )
-            / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-            + (ju * (u1 - u2) - jv * v2)
-            * np.arctanh(
-                (v2 - y)
-                * (-u1 * u2 + u2**2 + v2**2)
-                / (
-                    v2
-                    * np.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2)
-                    * np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-                )
-            )
-            / np.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
-            + y
-            * (ju * u2 + jv * v2)
-            * np.log(np.abs(y * (-(u2**2) - v2**2)))
-            / (v2 * np.sqrt(y**2 * (u2**2 + v2**2) / v2**2))
-            + (v2 - y)
-            * (ju * u2 + jv * v2)
-            * np.log(np.abs((u2**2 + v2**2) * (v2 - y)))
-            / (v2 * np.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2))
-        ) / (u1 * v2)
-
-        # CASE: Observer on edges 3 ##############################################################
-
-        x, y, z, u1, u2, v2, ju, jv = _assign_masks(
-            observers, coordinates, current_densities, mask3
-        )
-        H[mask3, 2] = (
-            ju
-            * v2
-            * np.arctanh(
-                (u1 * (-v2 + y) - u2 * y)
-                / (
-                    v2
-                    * np.sqrt(
-                        (
-                            u1**2 * (v2 - y) ** 2
-                            + 2 * u1 * u2 * y * (v2 - y)
-                            + y**2 * (u2**2 + v2**2)
-                        )
-                        / v2**2
-                    )
-                )
-            )
-            + ju
-            * v2
-            * np.arctanh(
-                (u1 - u2)
-                * (v2 - y)
-                / (
-                    v2
-                    * np.sqrt(
-                        (v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2
-                    )
-                )
-            )
-            - v2
-            * (ju * u2 + jv * v2)
-            * np.arctanh(
-                (u1 * u2 * (-v2 + y) + y * (-(u2**2) - v2**2))
-                / (
-                    v2
-                    * np.sqrt(
-                        (
-                            u1**2 * (v2 - y) ** 2
-                            + 2 * u1 * u2 * y * (v2 - y)
-                            + y**2 * (u2**2 + v2**2)
-                        )
-                        / v2**2
-                    )
-                    * np.sqrt(u2**2 + v2**2)
-                )
-            )
-            / np.sqrt(u2**2 + v2**2)
-            + v2
-            * (ju * u2 + jv * v2)
-            * np.arctanh(
-                (v2 - y)
-                * (-u1 * u2 + u2**2 + v2**2)
-                / (
-                    v2
-                    * np.sqrt(
-                        (v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2
-                    )
-                    * np.sqrt(u2**2 + v2**2)
-                )
-            )
-            / np.sqrt(u2**2 + v2**2)
-            - y
-            * (ju * (-u1 + u2) + jv * v2)
-            * np.log(np.abs(y * (-(u1**2) + 2 * u1 * u2 - u2**2 - v2**2)))
-            / np.sqrt(y**2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
-            - (v2 - y)
-            * (ju * (-u1 + u2) + jv * v2)
-            * np.log(np.abs((v2 - y) * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2)))
-            / np.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
-        ) / (u1 * v2**2)
-
-    H[:, 1] = H[:, 0]  # copy?
 
     # All cases again
-    x, y, z, u1, u2, v2, ju, jv = _assign_masks(
-        observers, coordinates, current_densities, None
+    x, y, z, u1, u2, v2 = _assign_masks(observers, coordinates, None, None, xp)
+
+    return xp.stack(
+        (
+            Hx * (jv * z * u1 * v2 / (4 * xp.pi)),
+            Hx * (-ju * z * u1 * v2 / (4 * xp.pi)),
+            Hz * (u1 * v2 / (4 * xp.pi)),
+        ),
+        axis=-1,
     )
-    H[:, 0] *= jv * z * u1 * v2 / (4 * np.pi)
-    H[:, 1] *= -ju * z * u1 * v2 / (4 * np.pi)
-    H[:, 2] *= u1 * v2 / (4 * np.pi)
-
-    return H
 
 
+def _elementar_current_sheet_Hz_in_plane(
+    observers, coordinates, current_densities, Hz, masks
+):
+    """Hz of ``_elementar_current_sheet_Hfield`` with the cases of observers
+    in the plane of the triangle, but not on it: beside the triangle
+    (``mask_plane``) and on the extensions of its three edges. ``Hz`` holds
+    the other cases."""
+    xp = array_namespace(observers, coordinates, current_densities)
+    mask_plane, mask1, mask2, mask3 = masks
+    ju, jv = xp.unstack(current_densities, axis=-1)
+
+    # CASE: Observer in plane ################################################################
+    x, y, _, u1, u2, v2 = _assign_masks(
+        observers, coordinates, mask_plane, (2.0, 3.0, 0.0), xp
+    )
+    Hz_plane = -(
+        ju * xp.atanh(x / xp.sqrt(x**2 + y**2))
+        + ju * xp.atanh((u1 - x) / xp.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2))
+        - (ju * (u1 - u2) - jv * v2)
+        * xp.atanh(
+            (u1**2 - u1 * (u2 + x) + u2 * x + v2 * y)
+            / (
+                xp.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+                * xp.sqrt(u1**2 - 2 * u1 * x + x**2 + y**2)
+            )
+        )
+        / xp.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+        + (ju * (u1 - u2) - jv * v2)
+        * xp.atanh(
+            (u1 * (u2 - x) - u2**2 + u2 * x + v2 * (-v2 + y))
+            / (
+                xp.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+                * xp.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2)
+            )
+        )
+        / xp.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+        + (ju * u2 + jv * v2)
+        * xp.atanh((-u2 * x - v2 * y) / (xp.sqrt(u2**2 + v2**2) * xp.sqrt(x**2 + y**2)))
+        / xp.sqrt(u2**2 + v2**2)
+        - (ju * u2 + jv * v2)
+        * xp.atanh(
+            (u2**2 - u2 * x + v2 * (v2 - y))
+            / (
+                xp.sqrt(u2**2 + v2**2)
+                * xp.sqrt(u2**2 - 2 * u2 * x + v2**2 - 2 * v2 * y + x**2 + y**2)
+            )
+        )
+        / xp.sqrt(u2**2 + v2**2)
+    ) / (u1 * v2)
+
+    # CASE: Observer on edge1 ##############################################################
+
+    x, y, _, u1, u2, v2 = _assign_masks(
+        observers, coordinates, mask1, (2.0, 0.0, 0.0), xp
+    )
+    Hz_edge1 = (
+        -ju * x * xp.log(xp.abs(x)) / xp.sqrt(x**2)
+        - ju * (u1 - x) * xp.log(xp.abs(-u1 + x)) / xp.sqrt((u1 - x) ** 2)
+        + (ju * (u1 - u2) - jv * v2)
+        * xp.atanh(
+            (u1 * (-u2 + x) + u2**2 - u2 * x + v2**2)
+            / (
+                xp.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+                * xp.sqrt(u2**2 - 2 * u2 * x + v2**2 + x**2)
+            )
+        )
+        / xp.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+        + (ju * (u1 - u2) - jv * v2)
+        * xp.atanh(
+            (u1 - u2)
+            * (u1 - x)
+            / (xp.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2) * xp.sqrt((u1 - x) ** 2))
+        )
+        / xp.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+        + (ju * u2 + jv * v2)
+        * xp.atanh(
+            (u2**2 - u2 * x + v2**2)
+            / (xp.sqrt(u2**2 + v2**2) * xp.sqrt(u2**2 - 2 * u2 * x + v2**2 + x**2))
+        )
+        / xp.sqrt(u2**2 + v2**2)
+        - (ju * u2 + jv * v2)
+        * xp.atanh(u2 * (u1 - x) / (xp.sqrt(u2**2 + v2**2) * xp.sqrt((u1 - x) ** 2)))
+        / xp.sqrt(u2**2 + v2**2)
+    ) / (u1 * v2)
+
+    # CASE: Observer on edges 2 ##############################################################
+
+    x, y, _, u1, u2, v2 = _assign_masks(
+        observers, coordinates, mask2, (0.0, 2.0, 0.0), xp
+    )
+    Hz_edge2 = (
+        -ju
+        * xp.atanh(
+            (u1 * v2 - u2 * y)
+            / (v2 * xp.sqrt(u1**2 - 2 * u1 * u2 * y / v2 + y**2 * (u2**2 / v2**2 + 1)))
+        )
+        + ju
+        * xp.atanh(
+            u2 * (v2 - y) / (v2 * xp.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2))
+        )
+        + (ju * (u1 - u2) - jv * v2)
+        * xp.atanh(
+            (u1**2 * v2 - u1 * u2 * (v2 + y) + y * (u2**2 + v2**2))
+            / (
+                v2
+                * xp.sqrt(u1**2 - 2 * u1 * u2 * y / v2 + y**2 * (u2**2 / v2**2 + 1))
+                * xp.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+            )
+        )
+        / xp.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+        + (ju * (u1 - u2) - jv * v2)
+        * xp.atanh(
+            (v2 - y)
+            * (-u1 * u2 + u2**2 + v2**2)
+            / (
+                v2
+                * xp.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2)
+                * xp.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+            )
+        )
+        / xp.sqrt(u1**2 - 2 * u1 * u2 + u2**2 + v2**2)
+        + y
+        * (ju * u2 + jv * v2)
+        * xp.log(xp.abs(y * (-(u2**2) - v2**2)))
+        / (v2 * xp.sqrt(y**2 * (u2**2 + v2**2) / v2**2))
+        + (v2 - y)
+        * (ju * u2 + jv * v2)
+        * xp.log(xp.abs((u2**2 + v2**2) * (v2 - y)))
+        / (v2 * xp.sqrt((u2**2 + v2**2) * (v2 - y) ** 2 / v2**2))
+    ) / (u1 * v2)
+
+    # CASE: Observer on edges 3 ##############################################################
+
+    x, y, _, u1, u2, v2 = _assign_masks(
+        observers, coordinates, mask3, (-1.0, 2.0, 0.0), xp
+    )
+    Hz_edge3 = (
+        ju
+        * v2
+        * xp.atanh(
+            (u1 * (-v2 + y) - u2 * y)
+            / (
+                v2
+                * xp.sqrt(
+                    (
+                        u1**2 * (v2 - y) ** 2
+                        + 2 * u1 * u2 * y * (v2 - y)
+                        + y**2 * (u2**2 + v2**2)
+                    )
+                    / v2**2
+                )
+            )
+        )
+        + ju
+        * v2
+        * xp.atanh(
+            (u1 - u2)
+            * (v2 - y)
+            / (
+                v2
+                * xp.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
+            )
+        )
+        - v2
+        * (ju * u2 + jv * v2)
+        * xp.atanh(
+            (u1 * u2 * (-v2 + y) + y * (-(u2**2) - v2**2))
+            / (
+                v2
+                * xp.sqrt(
+                    (
+                        u1**2 * (v2 - y) ** 2
+                        + 2 * u1 * u2 * y * (v2 - y)
+                        + y**2 * (u2**2 + v2**2)
+                    )
+                    / v2**2
+                )
+                * xp.sqrt(u2**2 + v2**2)
+            )
+        )
+        / xp.sqrt(u2**2 + v2**2)
+        + v2
+        * (ju * u2 + jv * v2)
+        * xp.atanh(
+            (v2 - y)
+            * (-u1 * u2 + u2**2 + v2**2)
+            / (
+                v2
+                * xp.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
+                * xp.sqrt(u2**2 + v2**2)
+            )
+        )
+        / xp.sqrt(u2**2 + v2**2)
+        - y
+        * (ju * (-u1 + u2) + jv * v2)
+        * xp.log(xp.abs(y * (-(u1**2) + 2 * u1 * u2 - u2**2 - v2**2)))
+        / xp.sqrt(y**2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
+        - (v2 - y)
+        * (ju * (-u1 + u2) + jv * v2)
+        * xp.log(xp.abs((v2 - y) * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2)))
+        / xp.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
+    ) / (u1 * v2**2)
+
+    # select the cases
+    Hz = xp.where(mask_plane, Hz_plane, Hz)
+    Hz = xp.where(mask1, Hz_edge1, Hz)
+    Hz = xp.where(mask2, Hz_edge2, Hz)
+    return xp.where(mask3, Hz_edge3, Hz)
+
+
+@jax_padded()
 def current_sheet_Hfield(
     observers: np.ndarray,
     vertices: np.ndarray,
@@ -480,42 +518,37 @@ def current_sheet_Hfield(
     ...     print(H)
     [[0.00e+00 -2.70e-02 -8.32e-03]]
     """
-    # pylint: disable=too-many-statements
-
-    coordinates, t, r = _coordinate_transformation(vertices.astype(float))
-
-    observers = np.copy(r.apply(observers - t))
-    current_densities = np.copy(r.apply(current_densities)[:, :2])
-
-    H = np.zeros_like(observers, dtype=float)
-
-    # just renaming
-    u1, u2, v2 = coordinates.T
-
-    # Check for zero-length segments (or discontinuous)
-    mask_nan_u1 = np.isnan(u1)
-    mask_nan_u2 = np.isnan(u2)
-    mask_nan_v2 = np.isnan(v2)
-    mask_degenerated = (np.abs(u1) < 1e-15) | (np.abs(v2) < 1e-15)
-    mask0 = mask_nan_u1 | mask_nan_u2 | mask_nan_v2 | mask_degenerated
-    not_mask0 = ~mask0  # avoid multiple computation of ~mask
-
-    if np.all(mask0):
-        return H
-
-    # continue only with non-zero segments
-    if np.any(mask0):
-        observers = observers[not_mask0]
-        coordinates = coordinates[not_mask0]
-        current_densities = current_densities[not_mask0]
-
-    H[not_mask0] = _elementar_current_sheet_Hfield(
-        observers=observers,
-        coordinates=coordinates,
-        current_densities=current_densities,
+    xp = array_namespace(observers, vertices, current_densities)
+    observers, vertices, current_densities = xp_promote(
+        observers, vertices, current_densities, xp=xp
     )
 
-    return r.apply(H, inverse=True)
+    coordinates, t, r = _coordinate_transformation(vertices, xp)
+
+    observers = _apply(r, observers - t, xp)
+    current_densities = _apply(r, current_densities, xp)[:, :2]
+
+    # just renaming
+    u1, u2, v2 = xp.unstack(coordinates, axis=-1)
+
+    # Check for zero-length segments (or discontinuous)
+    mask_nan_u1 = xp.isnan(u1)
+    mask_nan_u2 = xp.isnan(u2)
+    mask_nan_v2 = xp.isnan(v2)
+    mask_degenerated = (xp.abs(u1) < 1e-15) | (xp.abs(v2) < 1e-15)
+    mask0 = (mask_nan_u1 | mask_nan_u2 | mask_nan_v2 | mask_degenerated)[:, xp.newaxis]
+
+    # continue only with non-zero segments, the others are computed as the
+    # triangle (0, 0, 0), (1, 0, 0), (0, 1, 0) with observer (1, 1, 1)
+    unit_triangle = xp.asarray([1.0, 0.0, 1.0], dtype=coordinates.dtype)
+    H = _elementar_current_sheet_Hfield(
+        observers=xp.where(mask0, 1.0, observers),
+        coordinates=xp.where(mask0, unit_triangle, coordinates),
+        current_densities=current_densities,
+    )
+    H = xp.where(mask0, 0.0, H)
+
+    return _apply(xp.matrix_transpose(r), H, xp)
 
 
 def _BHJM_current_sheet(
@@ -530,6 +563,11 @@ def _BHJM_current_sheet(
     # pylint: disable=too-many-statements
 
     check_field_input(field)
+
+    xp = array_namespace(observers, vertices, current_densities)
+    observers, vertices, current_densities = xp_promote(
+        observers, vertices, current_densities, xp=xp
+    )
 
     BHJM = current_sheet_Hfield(observers, vertices, current_densities)
 

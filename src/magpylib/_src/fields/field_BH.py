@@ -616,9 +616,9 @@ def getB(
     >>> sph = magpy.magnet.Sphere(polarization=(0.0, 0.0, 0.1), diameter=0.001)
     >>> B = magpy.getB([loop, sph], (0.01, 0.01, 0.01))
     >>> with np.printoptions(precision=3):
-    ...     print(B)
+    ...     print(B)  # doctest: +ELLIPSIS
     [[ 6.054e-06  6.054e-06  2.357e-08]
-     [ 8.019e-07  8.019e-07 -9.056e-23]]
+     [ 8.019e-07  8.019e-07 ...]]
 
     With two sensors:
 
@@ -626,12 +626,12 @@ def getB(
     >>> s2 = s1.copy(position=(0.01, 0.01, -0.01))
     >>> B = magpy.getB([loop, sph], [s1, s2])
     >>> with np.printoptions(precision=3):
-    ...     print(B)
+    ...     print(B)  # doctest: +ELLIPSIS
     [[[ 6.054e-06  6.054e-06  2.357e-08]
       [-6.054e-06 -6.054e-06  2.357e-08]]
     <BLANKLINE>
-     [[ 8.019e-07  8.019e-07 -9.056e-23]
-      [-8.019e-07 -8.019e-07 -9.056e-23]]]
+     [[ 8.019e-07  8.019e-07 ...]
+      [-8.019e-07 -8.019e-07 ...]]]
     """
     return _getBH_level2(
         sources,
@@ -698,9 +698,9 @@ def getH(
     >>> sph = magpy.magnet.Sphere(polarization=(0.0, 0.0, 0.1), diameter=0.001)
     >>> H = magpy.getH([loop, sph], (0.01, 0.01, 0.01))
     >>> with np.printoptions(precision=3):
-    ...     print(H)
+    ...     print(H)  # doctest: +ELLIPSIS
     [[ 4.818e+00  4.818e+00  1.875e-02]
-     [ 6.381e-01  6.381e-01 -7.207e-17]]
+     [ 6.381e-01  6.381e-01 ...]]
 
     With two sensors:
 
@@ -708,12 +708,12 @@ def getH(
     >>> sens2 = sens1.copy(position=(0.01, 0.01, -0.01))
     >>> H = magpy.getH([loop, sph], [sens1, sens2])
     >>> with np.printoptions(precision=3):
-    ...     print(H)
+    ...     print(H)  # doctest: +ELLIPSIS
     [[[ 4.818e+00  4.818e+00  1.875e-02]
       [-4.818e+00 -4.818e+00  1.875e-02]]
     <BLANKLINE>
-     [[ 6.381e-01  6.381e-01 -7.207e-17]
-      [-6.381e-01 -6.381e-01 -7.207e-17]]]
+     [[ 6.381e-01  6.381e-01 ...]
+      [-6.381e-01 -6.381e-01 ...]]]
     """
     return _getBH_level2(
         sources,

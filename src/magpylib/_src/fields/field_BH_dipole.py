@@ -3,9 +3,17 @@
 import numpy as np
 from scipy.constants import mu_0 as MU0
 
+from magpylib._src.array_api_utils import (
+    array_namespace,
+    dot,
+    jax_padded,
+    some,
+    xp_promote,
+)
 from magpylib._src.input_checks import check_field_input
 
 
+@jax_padded()
 def dipole_Hfield(
     observers: np.ndarray,
     moments: np.ndarray,
@@ -45,33 +53,32 @@ def dipole_Hfield(
     ...    moments=np.array([(1e5, 0.0, 0.0), (0.0, 0.0, 1e5)]),
     ... )
     >>> with np.printoptions(precision=3):
-    ...     print(H)
-    [[2.895e-13 1.531e+03 1.531e+03]
-     [1.914e+02 1.914e+02 3.619e-14]]
+    ...     print(H)  # doctest: +ELLIPSIS
+    [[... 1.531e+03 1.531e+03]
+     [1.914e+02 1.914e+02 ...]]
     """
 
-    x, y, z = observers.T
-    r = np.sqrt(x**2 + y**2 + z**2)  # faster than np.linalg.norm
-    with np.errstate(divide="ignore", invalid="ignore"):
-        # 0/0 produces invalid warn and results in np.nan
-        # x/0 produces divide warn and results in np.inf
-        H = (
-            (
-                3 * np.sum(moments * observers, axis=1) * observers.T / r**5
-                - moments.T / r**3
-            ).T
-            / 4
-            / np.pi
-        )
+    xp = array_namespace(observers, moments)
+    observers, moments = xp_promote(observers, moments, xp=xp)
 
-    # when r=0 return np.inf in all non-zero moments directions
-    mask1 = r == 0
-    if np.any(mask1):
-        with np.errstate(divide="ignore", invalid="ignore"):
-            H[mask1] = moments[mask1] / 0.0
-            np.nan_to_num(H, copy=False, posinf=np.inf, neginf=-np.inf)
+    r = xp.linalg.vector_norm(observers, axis=-1, keepdims=True)
 
-    return H
+    # with the unit vector to the observer, as a power of r above the third
+    # underflows in float32 already at nanometres
+    mask_origin = r == 0
+    at_origin = some(mask_origin)
+    if at_origin:
+        r = xp.where(mask_origin, 1.0, r)  # avoid 0/0
+    unit = observers / r
+    dotprod = dot(moments, unit)[:, xp.newaxis]
+    H = (3 * dotprod * unit - moments) / (r * r * r) / (4 * xp.pi)
+    if not at_origin:
+        return H
+
+    # at r=0 return inf in the direction of all non-zero moment components
+    zero = xp.zeros_like(moments)  # where of the array API needs an array
+    H_origin = xp.where(moments > 0, xp.inf, xp.where(moments < 0, -xp.inf, zero))
+    return xp.where(mask_origin, H_origin, H)
 
 
 def _BHJM_dipole(
@@ -85,7 +92,8 @@ def _BHJM_dipole(
     check_field_input(field)
 
     if field in "MJ":
-        return np.zeros_like(observers, dtype=float)
+        xp = array_namespace(observers, moment)
+        return xp.zeros_like(xp_promote(observers, xp=xp))
 
     BHJM = dipole_Hfield(
         observers=observers,

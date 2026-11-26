@@ -3,6 +3,7 @@
 import numpy as np
 
 from magpylib._src.fields.field_BH_current_sheet import _BHJM_current_sheet
+from magpylib._src.fields.field_BH_polyline import current_polyline_Hfield
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_Bfield
 
 
@@ -398,3 +399,43 @@ def test_current_sheet_Bfield():
     )
 
     np.testing.assert_allclose(B_BEM, B_field_current_sheet, rtol=5e-2)
+
+
+def test_polyline_beyond_end():
+    """Beside the extension of a segment, 1000 lengths beyond its end and
+    before its start, the field keeps its digits (#1097). The values are
+    computed with 50 digits (magpylib-material-response, current.json)."""
+    observers = np.array(
+        [
+            (3.00485749292571, 5.00248550424457, -1.501),
+            (-2.99912817964068, -5.00221363273446, 1.49953153160378),
+        ]
+    )
+    H = current_polyline_Hfield(
+        observers=observers,
+        segments_start=np.tile((0.001, -0.002, 0.0005), (2, 1)),
+        segments_end=np.tile((0.004, 0.003, -0.001), (2, 1)),
+        currents=np.array([2.5, 2.5]),
+    )
+    expected = [
+        (-7.024090582843308e-10, -1.170681763798513e-09, -5.307090662563705e-09),
+        (-4.698958393479985e-09, 2.819375036093536e-09, 1.8483081292560035e-20),
+    ]
+    np.testing.assert_allclose(H, expected, rtol=1e-12, atol=1e-19)
+
+
+def test_polyline_far_beside():
+    """A million lengths beside a segment the field keeps its digits: the
+    positions of the observer along the line, from the start and from the
+    end, are large numbers there that must differ by exactly one length.
+    The value is computed with 50 digits."""
+    H = current_polyline_Hfield(
+        observers=np.array([(2000000.5, -999999.0, 1.5)]),
+        segments_start=np.array([(0.0, 0.0, 0.0)]),
+        segments_end=np.array([(1.0, 2.0, 3.0)]),
+        currents=np.array([1.0]),
+    )
+    expected = [
+        (2.1352876302507838e-14, 4.2705752605015676e-14, -3.5588127170846397e-14)
+    ]
+    np.testing.assert_allclose(H, expected, rtol=1e-13)
