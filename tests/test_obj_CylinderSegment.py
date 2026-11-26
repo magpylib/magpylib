@@ -44,6 +44,25 @@ def test_section_angles_wrap_in_a_batch():
         np.testing.assert_allclose(row, single, atol=1e-12)
 
 
+@pytest.mark.parametrize("field", ["B", "H"])
+def test_full_turn_has_no_azimuthal_face(field):
+    """A full ring's seam is inside the material; a partial sector has a face."""
+    obs = (0.75, 0, 0.3)
+    pol = (0.6, 0.0, 0.8)
+    dims = [
+        (0, 1, 2, 0, 360),
+        (0.5, 1, 2, -360, 0),
+        (0.5, 1, 2, 0, 270),  # azimuthal face of the partial sector
+        (0.5, 0.75, 2, 0, 360),  # outer wall of the full ring
+    ]
+    actual = cylinder_segment_field(field, obs, dims, pol)
+    outer = magpy.func.cylinder_field(field, obs, (2, 2), pol)
+    inner = magpy.func.cylinder_field(field, obs, (1, 2), pol)
+
+    np.testing.assert_allclose(actual[:2], [outer, outer - inner], rtol=1e-8, atol=1e-9)
+    np.testing.assert_array_equal(actual[2:], 0)
+
+
 @pytest.mark.parametrize(
     ("dimension", "observer"),
     [

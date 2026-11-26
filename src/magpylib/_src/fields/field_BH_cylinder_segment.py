@@ -2372,6 +2372,8 @@ def _BHJM_cylinder_segment(
         msg = "Input dimensions of cylinder_segment_field must have phi2 - phi1 <= 360."
         raise ValueError(msg)
 
+    full_turn = phi2 - phi1 >= 360
+
     # the checks below need angles within +-360 deg and no face at +-360, so a
     # section reaching that far shifts by full turns
     reach = 360 - ANGLE_TOLERANCE
@@ -2404,8 +2406,8 @@ def _BHJM_cylinder_segment(
     mask_phi_in = (np.sign(phio1 - phi1) != np.sign(phio1 - phi2)) | (
         np.sign(phio2 - phi1) != np.sign(phio2 - phi2)
     )
-    # with r1=0 the axis belongs to every section, whatever its phi is
-    mask_phi_in |= (r1 < 1e-12) & (r < 1e-12)
+    # A full turn contains every angle. A solid section also contains its axis.
+    mask_phi_in |= full_turn | ((r1 < 1e-12) & (r < 1e-12))
     mask_z_in = (z1 - 1e-14 < z) & (z < z2 + 1e-14)
 
     # inside
@@ -2428,7 +2430,7 @@ def _BHJM_cylinder_segment(
         (_close(z, z1) | _close(z, z2)) & mask_phi_in & mask_r_in
     )  # top / bottom
     mask_surf_r = (_close(r, r1) | _close(r, r2)) & mask_phi_in & mask_z_in  # in / out
-    mask_surf_phi = (mask_phi1 | mask_phi2) & mask_r_in & mask_z_in  # in / out
+    mask_surf_phi = ~full_turn & (mask_phi1 | mask_phi2) & mask_r_in & mask_z_in
     mask_not_on_surf = ~(mask_surf_z | mask_surf_r | mask_surf_phi)
 
     # return 0 when all points are on surface
