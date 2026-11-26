@@ -29,27 +29,27 @@ def _cel_scalar(kc, p, c, s):
         c = (c - s) / g
         s = -q / (g * g * p) + c * p
 
-    em = 1.0
-    qc = abs(kc)
-    kk = qc
+    mu = 1.0
+    nu = abs(kc)
+    munu = nu
 
     while True:
-        g = kk / p
+        g = munu / p
         c, s = c + s / p, 2 * (s + c * g)
         p += g
 
-        g = em
-        em += qc
+        g = mu
+        mu += nu
 
         # written as `not >` so that NaN (from NaN, inf or overflowing input) stops
         # the loop and returns NaN instead of iterating forever
-        if not abs(g - qc) > g * _CEL_ERRORTOL:
+        if not abs(g - nu) > g * _CEL_ERRORTOL:
             break
 
-        qc = 2 * m.sqrt(kk)
-        kk = em * qc
+        nu = 2 * m.sqrt(munu)
+        munu = mu * nu
 
-    return (m.pi / 2) * (s + c * em) / (em * (em + p))
+    return (m.pi / 2) * (s + c * mu) / (mu * (mu + p))
 
 
 def _cel_vector(kc, p, c, s):
@@ -80,30 +80,28 @@ def _cel_vector(kc, p, c, s):
         c[mask] = (c[mask] - s[mask]) / g
         s[mask] = -q / (g * g * p[mask]) + c[mask] * p[mask]
 
-    em = np.ones(n)
     kc_zero = kc == 0
-
-    qc = np.abs(kc)
-    qc[kc_zero] = 1.0
-
-    kk = qc.copy()
+    mu = np.ones(n)
+    nu = np.abs(kc)
+    nu[kc_zero] = 1.0
+    munu = nu.copy()
 
     while True:
-        g = kk / p
+        g = munu / p
         c, s = c + s / p, 2 * (s + c * g)
         p += g
 
-        g = em.copy()
-        em += qc
+        g = mu.copy()
+        mu += nu
 
         # NaN entries count as converged, see _cel_scalar
-        if not np.any(np.abs(g - qc) > g * _CEL_ERRORTOL):
+        if not np.any(np.abs(g - nu) > g * _CEL_ERRORTOL):
             break
 
-        qc = 2 * np.sqrt(kk)
-        kk = em * qc
+        nu = 2 * np.sqrt(munu)
+        munu = mu * nu
 
-    result = (np.pi / 2) * (s + c * em) / (em * (em + p))
+    result = (np.pi / 2) * (s + c * mu) / (mu * (mu + p))
     result[kc_zero] = np.nan
 
     return result
@@ -131,15 +129,14 @@ def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndar
     """
 
     if kc.size < _CEL_SCALAR_THRESHOLD:
-        return np.array([_cel_scalar(*args)
-                         for args in zip(kc, p, c, s, strict=False)])  # fmt: skip
+        return np.array([_cel_scalar(*args) for args in zip(kc, p, c, s, strict=False)])
     return _cel_vector(kc, p, c, s)
 
 
 # pylint: disable=too-many-positional-arguments
 
 
-def _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=m, any_=lambda b: b):
+def _cel_iter_scalarvector(nu, p, g, cc, ss, xp=m, any_=lambda b: b):
     """
     Iterative part of the Bulirsch cel algorithm.
     This routine continues the iteration from an already prepared state.
@@ -148,28 +145,29 @@ def _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=m, any_=lambda b: b):
     Does not modify input arrays in-place.
     """
 
-    while any_(abs(g - qc) > g * _CEL_ERRORTOL):
-        qc = 2 * xp.sqrt(kk)
-        kk = em * qc
+    mu = p
+    munu = nu
 
-        g = kk / p
+    while any_(abs(g - nu) > g * _CEL_ERRORTOL):
+        nu = 2 * xp.sqrt(munu)
+        munu = mu * nu
+
+        g = munu / p
         cc, ss = cc + ss / p, 2 * (ss + cc * g)
         p = p + g
 
-        g = em
-        em = em + qc
+        g = mu
+        mu = mu + nu
 
-    return (xp.pi / 2) * (ss + cc * em) / (em * (em + p))
+    return (xp.pi / 2) * (ss + cc * mu) / (mu * (mu + p))
 
 
 def _cel_iter(
-    qc: np.ndarray,
+    nu: np.ndarray,
     p: np.ndarray,
     g: np.ndarray,
     cc: np.ndarray,
     ss: np.ndarray,
-    em: np.ndarray,
-    kk: np.ndarray,
 ) -> np.ndarray:
     """
     Iterative part of Bulirsch cel algorithm where the first iteration was already performed.
@@ -177,10 +175,14 @@ def _cel_iter(
     implementation above.
     """
 
-    if qc.size < _CEL_SCALAR_THRESHOLD:
-        return np.array([_cel_iter_scalarvector(*args)
-                         for args in zip(qc, p, g, cc, ss, em, kk, strict=False)])  # fmt: skip
-    return _cel_iter_scalarvector(qc, p, g, cc, ss, em, kk, xp=np, any_=np.any)
+    if nu.size < _CEL_SCALAR_THRESHOLD:
+        return np.array(
+            [
+                _cel_iter_scalarvector(*args)
+                for args in zip(nu, p, g, cc, ss, strict=False)
+            ]
+        )
+    return _cel_iter_scalarvector(nu, p, g, cc, ss, xp=np, any_=np.any)
 
 
 # import math as m
