@@ -139,56 +139,46 @@ def current_polyline_Hfield(
     def norm(vectors):
         return xp.linalg.vector_norm(vectors, axis=-1, keepdims=True)
 
-    # rename
-    p1, p2, po = segments_start, segments_end, observers
+    def dot(vectors, others):
+        return xp.sum(vectors * others, axis=-1, keepdims=True)
 
     # make dimensionless (avoid all large/small input problems) by introducing
     # the segment length as characteristic length scale.
-    norm_12 = norm(p1 - p2)
-    p1 = p1 / norm_12
-    p2 = p2 / norm_12
-    po = po / norm_12
+    segment = segments_end - segments_start
+    length = norm(segment)
+    e = segment / length
+    r1 = (observers - segments_start) / length
+    r2 = (observers - segments_end) / length
 
-    # p4 = projection of pos_obs onto line p1-p2
-    t = xp.sum((po - p1) * (p1 - p2), axis=-1, keepdims=True)
-    p4 = p1 + t * (p1 - p2)
-
-    # distance of observers from line
-    norm_o4 = norm(po - p4)
+    # field direction, and squared distance of the observers from the line
+    cros_ = xp.linalg.cross(e, r1)
+    d2 = dot(cros_, cros_)
 
     # separate on-line cases (-> H=0), which are computed with harmless
     # values in place of the distances that are zero there
-    mask1 = norm_o4 < 1e-15  # account for numerical issues
+    on_line = d2 < 1e-30  # account for numerical issues
+    one = xp.ones_like(d2)
+    d2 = xp.where(on_line, one, d2)
+    R1 = xp.sqrt(xp.where(on_line, one, dot(r1, r1)))
+    R2 = xp.sqrt(xp.where(on_line, one, dot(r2, r2)))
 
-    # determine field direction
-    cros_ = xp.linalg.cross(p2 - p1, po - p4)
-    eB = cros_ / xp.where(mask1, 1.0, norm(cros_))
+    # positions of the observers along the line, from start and from end
+    t1 = dot(e, r1)
+    t2 = dot(e, r2)
 
-    # compute angles
-    norm_o1 = norm(po - p1)
-    norm_o2 = norm(po - p2)
-    norm_41 = norm(p4 - p1)
-    norm_42 = norm(p4 - p2)
-    sinTh1 = norm_41 / xp.where(mask1, 1.0, norm_o1)
-    sinTh2 = norm_42 / xp.where(mask1, 1.0, norm_o2)
-
-    # determine how p1, p2, p4 are sorted on the line (to get sinTH signs)
-    # both points below
-    mask2 = (norm_41 > 1) & (norm_41 > norm_42)
-    # both points above
-    mask3 = (norm_42 > 1) & (norm_42 > norm_41)
-    # else: one above one below or one equals p4
-    deltaSin = xp.where(mask2 | mask3, xp.abs(sinTh1 - sinTh2), xp.abs(sinTh1 + sinTh2))
-
-    H = (
-        deltaSin
-        / xp.where(mask1, 1.0, norm_o4)
-        * eB
-        / norm_12
-        * currents[:, xp.newaxis]
-        / (4 * xp.pi)
+    # Biot-Savart: H = I / (4 pi) * k * (e x r1), k = (t1/R1 - t2/R2) / d2.
+    # Beyond an end of the segment the two cosines have one sign and cancel,
+    # the more the farther along the line (#1097). There k is rationalized
+    # to a sum of terms of one sign, with t1 - t2 = 1.
+    beyond = t1 * t2 > 0
+    k = xp.where(
+        beyond,
+        (t1 + t2) / (R1 * R2 * xp.where(beyond, t1 * R2 + t2 * R1, one)),
+        (t1 / R1 - t2 / R2) / d2,
     )
-    return xp.where(mask1, 0.0, H)
+
+    H = k * cros_ / length * currents[:, xp.newaxis] / (4 * xp.pi)
+    return xp.where(on_line, 0.0, H)
 
 
 def _BHJM_current_polyline(

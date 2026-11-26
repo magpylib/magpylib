@@ -60,6 +60,14 @@ ATOL_AXES = {
     "*/near": (0,),
     "*/far": (0,),
 }
+# Rows of a case where the reference is off and the code was fixed on purpose:
+# they are not compared.
+FIXED_ROWS = {
+    # beside the extension of a segment the sines of the old formula cancelled
+    # to exactly zero (#1097); test_core.py::test_polyline_beyond_end has the
+    # true values of such points
+    "func/polyline_field/*/near": [37, 38, 50, 51, 64, 65, 78, 79],
+}
 # These return the components along the first axis, shape (3, i).
 COMPONENTS_FIRST = (
     "core/current_circle_Hfield",
@@ -1110,6 +1118,10 @@ def test_regression(name, reference):
     out = np.asarray(run(**inputs))
     assert out.shape == ref.shape
     assert out.dtype == ref.dtype
+    for pattern, rows in FIXED_ROWS.items():
+        if fnmatchcase(name, pattern):
+            out = out.copy()
+            out[rows] = ref[rows]
     special = ~np.isfinite(ref)
     np.testing.assert_array_equal(~np.isfinite(out), special)
     np.testing.assert_array_equal(out[special], ref[special])

@@ -36,6 +36,10 @@
   ([#1094](https://github.com/magpylib/magpylib/pull/1094)).
 - Circle fields return NaN instead of computing forever for an observer on the
   loop that is closer to its plane than 1e-162.
+- Polyline fields keep their precision beside the extension of a segment, where
+  they lost digits with the distance along the line: 1e-5 of the field at 1000
+  segment lengths, and all of it very close to the line
+  ([#1097](https://github.com/magpylib/magpylib/issues/1097)).
 
 ## [6.3.0] 2026-11-07
 
