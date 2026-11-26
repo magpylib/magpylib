@@ -15,8 +15,8 @@ from math import log10
 from pathlib import Path
 
 import numpy as np
-from array_api_compat import array_namespace
 
+from magpylib._src.array_api_utils import array_namespace
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 

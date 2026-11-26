@@ -3,10 +3,15 @@
 # pylint: disable=too-many-positional-arguments
 
 import numpy as np
-from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.array_api_utils import jax_padded, xp_promote
+from magpylib._src.array_api_utils import (
+    array_namespace,
+    cross,
+    jax_padded,
+    xp_promote,
+)
+from magpylib._src.array_api_utils import dot as dot3
 from magpylib._src.input_checks import check_field_input
 
 
@@ -136,22 +141,19 @@ def current_polyline_Hfield(
         observers, segments_start, segments_end, currents, xp=xp
     )
 
-    def norm(vectors):
-        return xp.linalg.vector_norm(vectors, axis=-1, keepdims=True)
-
     def dot(vectors, others):
-        return xp.sum(vectors * others, axis=-1, keepdims=True)
+        return dot3(vectors, others)[:, xp.newaxis]
 
     # make dimensionless (avoid all large/small input problems) by introducing
     # the segment length as characteristic length scale.
     segment = segments_end - segments_start
-    length = norm(segment)
+    length = xp.sqrt(dot(segment, segment))
     e = segment / length
     r1 = (observers - segments_start) / length
     r2 = (observers - segments_end) / length
 
     # field direction, and squared distance of the observers from the line
-    cros_ = xp.linalg.cross(e, r1)
+    cros_ = cross(e, r1)
     d2 = dot(cros_, cros_)
 
     # separate on-line cases (-> H=0), which are computed with harmless
@@ -162,18 +164,26 @@ def current_polyline_Hfield(
     R1 = xp.sqrt(xp.where(on_line, one, dot(r1, r1)))
     R2 = xp.sqrt(xp.where(on_line, one, dot(r2, r2)))
 
-    # positions of the observers along the line, from start and from end
+    # Positions of the observers along the line, from start and from end.
+    # They differ by the length, 1. Rounded independently they do not, by
+    # more the farther the observer: the smaller one is kept and gives the
+    # other.
     t1 = dot(e, r1)
     t2 = dot(e, r2)
+    nearer_end = xp.abs(t2) < xp.abs(t1)
+    t1 = xp.where(nearer_end, t2 + 1, t1)
+    t2 = xp.where(nearer_end, t2, t1 - 1)
 
     # Biot-Savart: H = I / (4 pi) * k * (e x r1), k = (t1/R1 - t2/R2) / d2.
     # Beyond an end of the segment the two cosines have one sign and cancel,
     # the more the farther along the line (#1097). There k is rationalized
-    # to a sum of terms of one sign, with t1 - t2 = 1.
+    # to a sum of terms of one sign, with t1 - t2 = 1. Its denominator is
+    # divided by in two steps, as the product overflows in float32 from 1e9
+    # lengths.
     beyond = t1 * t2 > 0
     k = xp.where(
         beyond,
-        (t1 + t2) / (R1 * R2 * xp.where(beyond, t1 * R2 + t2 * R1, one)),
+        (t1 + t2) / (R1 * R2) / xp.where(beyond, t1 * R2 + t2 * R1, one),
         (t1 / R1 - t2 / R2) / d2,
     )
 

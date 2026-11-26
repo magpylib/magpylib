@@ -422,3 +422,20 @@ def test_polyline_beyond_end():
         (-4.698958393479985e-09, 2.819375036093536e-09, 1.8483081292560035e-20),
     ]
     np.testing.assert_allclose(H, expected, rtol=1e-12, atol=1e-19)
+
+
+def test_polyline_far_beside():
+    """A million lengths beside a segment the field keeps its digits: the
+    positions of the observer along the line, from the start and from the
+    end, are large numbers there that must differ by exactly one length.
+    The value is computed with 50 digits."""
+    H = current_polyline_Hfield(
+        observers=np.array([(2000000.5, -999999.0, 1.5)]),
+        segments_start=np.array([(0.0, 0.0, 0.0)]),
+        segments_end=np.array([(1.0, 2.0, 3.0)]),
+        currents=np.array([1.0]),
+    )
+    expected = [
+        (2.1352876302507838e-14, 4.2705752605015676e-14, -3.5588127170846397e-14)
+    ]
+    np.testing.assert_allclose(H, expected, rtol=1e-13)

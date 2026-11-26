@@ -1,10 +1,9 @@
 """Homogeneously magnetized tetrahedron field implementation."""
 
 import numpy as np
-from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.array_api_utils import xp_promote
+from magpylib._src.array_api_utils import array_namespace, xp_promote
 from magpylib._src.fields.field_BH_triangle import _BHJM_triangle
 from magpylib._src.input_checks import check_field_input
 

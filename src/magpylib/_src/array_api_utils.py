@@ -2,14 +2,32 @@
 
 import functools
 import inspect
+import sys
 
+import array_api_compat
 import numpy as np
 from array_api_compat import (
-    array_namespace,
     is_array_api_obj,
     is_jax_namespace,
     is_numpy_namespace,
+    is_torch_namespace,
 )
+
+_NUMPY = array_api_compat.array_namespace(np.empty(0))
+_FLOAT64 = np.dtype(float)
+
+
+def array_namespace(*arrays):
+    """Return the array namespace of the arrays, as ``array_api_compat``
+    does, which takes 2 microseconds per call. NumPy arrays are recognized
+    without it: a kernel asks for the namespace in each of its functions,
+    which adds up to much of the time of a call with few observers.
+    """
+    for array in arrays:
+        # not isinstance: subclasses like masked arrays are left to the lookup
+        if type(array) is not np.ndarray:  # pylint: disable=unidiomatic-typecheck
+            return array_api_compat.array_namespace(*arrays)
+    return _NUMPY
 
 
 def input_namespace(*args):
@@ -32,10 +50,62 @@ def xp_promote(*args, xp):
     Integer arrays become the default floating dtype of the namespace, so
     that a kernel can divide and take roots of its inputs.
     """
+    if xp is _NUMPY and all(arg.dtype == _FLOAT64 for arg in args):
+        return args[0] if len(args) == 1 else args  # nothing to promote
     floats = [arg.dtype for arg in args if xp.isdtype(arg.dtype, "real floating")]
     dtype = xp.result_type(*floats) if floats else xp.asarray(1.0).dtype
     out = tuple(xp.astype(arg, dtype, copy=False) for arg in args)
     return out[0] if len(out) == 1 else out
+
+
+def some(mask):
+    """Whether any element of a mask is true, to skip a branch of a kernel
+    that no instance needs.
+
+    Also true when that cannot be known, because JAX or PyTorch is tracing:
+    the branch is then computed for all instances and selected with
+    ``where``, as tracing requires.
+    """
+    if type(mask) is np.ndarray:  # pylint: disable=unidiomatic-typecheck
+        return bool(mask.any())
+    xp = array_namespace(mask)
+    # torch.jit.trace would record the branch that its example input takes
+    if is_torch_namespace(xp) and sys.modules["torch"].jit.is_tracing():
+        return True
+    try:
+        return bool(xp.any(mask))
+    except (TypeError, RuntimeError):  # of JAX and of torch.func
+        return True
+
+
+def dot(vectors, others):
+    """Inner product of vectors of three components along the last axis.
+
+    For NumPy it is written out, which is about three times faster there
+    than a sum over a short axis. Other libraries are faster with the sum.
+    """
+    xp = array_namespace(vectors, others)
+    if xp is not _NUMPY:
+        return xp.sum(vectors * others, axis=-1)
+    return (
+        vectors[..., 0] * others[..., 0]
+        + vectors[..., 1] * others[..., 1]
+        + vectors[..., 2] * others[..., 2]
+    )
+
+
+def cross(vectors, others):
+    """Cross product of vectors of three components along the last axis.
+
+    For NumPy it is written out, which is twice as fast for few vectors as
+    its own cross product.
+    """
+    xp = array_namespace(vectors, others)
+    if xp is not _NUMPY:
+        return xp.linalg.cross(vectors, others)
+    a0, a1, a2 = vectors[..., 0], vectors[..., 1], vectors[..., 2]
+    b0, b1, b2 = others[..., 0], others[..., 1], others[..., 2]
+    return xp.stack((a1 * b2 - a2 * b1, a2 * b0 - a0 * b2, a0 * b1 - a1 * b0), axis=-1)
 
 
 def require_numpy(xp, name):
@@ -145,6 +215,8 @@ def jax_padded(out_axis=0):  # 0 or 1
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
+            if array_namespace(*args, *kwargs.values()) is _NUMPY:
+                return func(*args, **kwargs)
             arrays = signature.bind(*args, **kwargs).arguments
             xp = input_namespace(*arrays.values())
             sizes = {

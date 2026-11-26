@@ -1,10 +1,9 @@
 """Homogeneously magnetized sphere field implementation."""
 
 import numpy as np
-from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.array_api_utils import jax_padded, xp_promote
+from magpylib._src.array_api_utils import array_namespace, dot, jax_padded, xp_promote
 from magpylib._src.input_checks import check_field_input
 
 
@@ -96,7 +95,7 @@ def _BHJM_magnet_sphere(
     # already at nanometres
     r = xp.where(mask_out, r, 1.0)  # avoid 0/0 in the center
     unit = observers / r
-    dotprod = xp.sum(polarization * unit, axis=-1, keepdims=True)
+    dotprod = dot(polarization, unit)[:, xp.newaxis]
     ratio = r_sphere / r
     B_out = (3 * dotprod * unit - polarization) * (ratio * ratio * ratio / 3)
     BHJM = xp.where(mask_out, B_out, polarization * (2 / 3))

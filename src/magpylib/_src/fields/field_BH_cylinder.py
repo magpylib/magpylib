@@ -1,10 +1,14 @@
 """Homogeneously magnetized cylinder field implementation."""
 
 import numpy as np
-from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.array_api_utils import jax_padded, xp_promote
+from magpylib._src.array_api_utils import (
+    array_namespace,
+    jax_padded,
+    some,
+    xp_promote,
+)
 from magpylib._src.fields.special_cel import _cel
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
@@ -70,19 +74,19 @@ def magnet_cylinder_axial_Bfield(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -
     gamma = dmr / dpr
     one = xp.ones_like(z0)
 
+    # the integrals of the radial and of the axial field in one call each for
+    # k1 and k0, which shares the square roots of the iteration
+    p = xp.stack((one, gamma**2))
+    s = xp.stack((-one, gamma))
+    c = xp.ones_like(p)
+    cel1 = _cel(k1, p, c, s)
+    cel0 = _cel(k0, p, c, s)
+
     # radial field (unit polarization)
-    Br = (_cel(k1, one, one, -one) / sq1 - _cel(k0, one, one, -one) / sq0) / xp.pi
+    Br = (cel1[0, :] / sq1 - cel0[0, :] / sq0) / xp.pi
 
     # axial field (unit polarization)
-    Bz = (
-        1
-        / dpr
-        * (
-            zph * _cel(k1, gamma**2, one, gamma) / sq1
-            - zmh * _cel(k0, gamma**2, one, gamma) / sq0
-        )
-        / xp.pi
-    )
+    Bz = 1 / dpr * (zph * cel1[1, :] / sq1 - zmh * cel0[1, :] / sq0) / xp.pi
 
     return xp.stack((Br, xp.zeros_like(Br), Bz))
 
@@ -156,50 +160,57 @@ def magnet_cylinder_diametral_Hfield(
     # case small_r: numerical instability of general solution
     mask_small_r = r < 0.05
 
-    # both cases are computed for all instances: with r=0 in the small_r case
-    # and r=2 in the general case where they do not apply
-    rX = xp.where(mask_small_r, r, 0.0)
-    r2X = rX**2
+    # A case that no instance is in is skipped. Otherwise both are computed
+    # for all instances: with r=0 in the small_r case and r=2 in the general
+    # case where they do not apply.
+    small_r = some(mask_small_r)
+    if small_r:
+        rX = xp.where(mask_small_r, r, 0.0)
+        r2X = rX**2
 
-    # taylor series for small r
-    zpp = zp2 + 1
-    zmm = zm2 + 1
-    sqrt_p = xp.sqrt(zpp)
-    sqrt_m = xp.sqrt(zmm)
+        # taylor series for small r
+        zpp = zp2 + 1
+        zmm = zm2 + 1
+        sqrt_p = xp.sqrt(zpp)
+        sqrt_m = xp.sqrt(zmm)
 
-    frac1 = zp / sqrt_p
-    frac2 = zm / sqrt_m
+        frac1 = zp / sqrt_p
+        frac2 = zm / sqrt_m
 
-    r3X = r2X * rX
-    r4X = r3X * rX
-    r5X = r4X * rX
+        r3X = r2X * rX
+        r4X = r3X * rX
+        r5X = r4X * rX
 
-    term1 = frac1 - frac2
-    term2 = (frac1 / zpp**2 - frac2 / zmm**2) * r2X / 8
-    term3 = ((3 - 4 * zp2) * frac1 / zpp**4 - (3 - 4 * zm2) * frac2 / zmm**4) / 64 * r4X
+        term1 = frac1 - frac2
+        term2 = (frac1 / zpp**2 - frac2 / zmm**2) * r2X / 8
+        term3 = (
+            ((3 - 4 * zp2) * frac1 / zpp**4 - (3 - 4 * zm2) * frac2 / zmm**4) / 64 * r4X
+        )
 
-    Hr_small = -xp.cos(phi) / 4 * (term1 + 9 * term2 + 25 * term3)
+        Hr_small = -xp.cos(phi) / 4 * (term1 + 9 * term2 + 25 * term3)
 
-    Hphi_small = xp.sin(phi) / 4 * (term1 + 3 * term2 + 5 * term3)
+        Hphi_small = xp.sin(phi) / 4 * (term1 + 3 * term2 + 5 * term3)
 
-    Hz_small = (
-        -xp.cos(phi)
-        / 4
-        * (
-            rX * (1 / zpp / sqrt_p - 1 / zmm / sqrt_m)
-            + 3
-            / 8
-            * r3X
-            * ((1 - 4 * zp2) / zpp**3 / sqrt_p - (1 - 4 * zm2) / zmm**3 / sqrt_m)
-            + 15
-            / 64
-            * r5X
+        Hz_small = (
+            -xp.cos(phi)
+            / 4
             * (
-                (1 - 12 * zp2 + 8 * zp2**2) / zpp**5 / sqrt_p
-                - (1 - 12 * zm2 + 8 * zm2**2) / zmm**5 / sqrt_m
+                rX * (1 / zpp / sqrt_p - 1 / zmm / sqrt_m)
+                + 3
+                / 8
+                * r3X
+                * ((1 - 4 * zp2) / zpp**3 / sqrt_p - (1 - 4 * zm2) / zmm**3 / sqrt_m)
+                + 15
+                / 64
+                * r5X
+                * (
+                    (1 - 12 * zp2 + 8 * zp2**2) / zpp**5 / sqrt_p
+                    - (1 - 12 * zm2 + 8 * zm2**2) / zmm**5 / sqrt_m
+                )
             )
         )
-    )
+        if not some(~mask_small_r):
+            return xp.stack((Hr_small, Hphi_small, Hz_small))
 
     # general case
     r = xp.where(mask_small_r, 2.0, r)
@@ -231,12 +242,14 @@ def magnet_cylinder_diametral_Hfield(
     onez = xp.ones_like(r)
     kcp = xp.sqrt(1 - argp)
     kcm = xp.sqrt(1 - argm)
-    elle_p = _cel(kcp, onez, onez, 1 - argp)
-    elle_m = _cel(kcm, onez, onez, 1 - argm)
-    ellk_p = _cel(kcp, onez, onez, onez)
-    ellk_m = _cel(kcm, onez, onez, onez)
-    ellpi_p = _cel(kcp, 1 - argc, onez, onez)  # elliptic_Pi
-    ellpi_m = _cel(kcm, 1 - argc, onez, onez)  # elliptic_Pi
+    # in one call each for kcp and kcm, which shares the square roots of the
+    # iteration
+    p = xp.stack((onez, onez, 1 - argc))
+    c = xp.ones_like(p)
+    cel_p = _cel(kcp, p, c, xp.stack((1 - argp, onez, onez)))
+    cel_m = _cel(kcm, p, c, xp.stack((1 - argm, onez, onez)))
+    elle_p, ellk_p, ellpi_p = cel_p[0, :], cel_p[1, :], cel_p[2, :]
+    elle_m, ellk_m, ellpi_m = cel_m[0, :], cel_m[1, :], cel_m[2, :]
 
     # compute fields
     Hr = (
@@ -275,6 +288,8 @@ def magnet_cylinder_diametral_Hfield(
         )
     )
 
+    if not small_r:
+        return xp.stack((Hr, Hphi, Hz))
     return xp.stack(
         (
             xp.where(mask_small_r, Hr_small, Hr),
@@ -348,34 +363,38 @@ def _BHJM_magnet_cylinder(
     # cylinder with z0=1 where they do not apply, to stay clear of the
     # singularities
 
+    # A contribution that no instance has is skipped, like the diametral one
+    # of axially polarized cylinders.
+    BHJM = None
+
     # transversal polarization contributions -----------------------
-    pol_xy = xp.sqrt(pol_x**2 + pol_y**2)
-    tetta = xp.atan2(pol_y, pol_x)
-    H_tv = xp.where(
-        mask_pol_tv,
-        magnet_cylinder_diametral_Hfield(
+    # not skipped when PyTorch differentiates with respect to the
+    # polarization: its gradient is then NaN instead of a wrong zero
+    if some(mask_pol_tv) or getattr(polarization, "requires_grad", False):
+        pol_xy = xp.sqrt(pol_x**2 + pol_y**2)
+        tetta = xp.atan2(pol_y, pol_x)
+        H_tv = magnet_cylinder_diametral_Hfield(
             z0=xp.where(mask_pol_tv, z0, 1.0),
             r=xp.where(mask_pol_tv, r, 0.0),
             z=xp.where(mask_pol_tv, z, 0.0),
             phi=phi - tetta,
         )
-        * pol_xy,
-        0.0,
-    )
+        BHJM = xp.where(mask_pol_tv, H_tv * pol_xy, 0.0)
 
     # axial polarization contributions ----------------------------
-    B_ax = xp.where(
-        mask_pol_ax,
-        magnet_cylinder_axial_Bfield(
+    if some(mask_pol_ax):
+        B_ax = magnet_cylinder_axial_Bfield(
             z0=xp.where(mask_pol_ax, z0, 1.0),
             r=xp.where(mask_pol_ax, r, 0.0),
             z=xp.where(mask_pol_ax, z, 0.0),
         )
-        * pol_z,
-        0.0,
-    )
+        B_ax = xp.where(mask_pol_ax, B_ax * pol_z, 0.0)
+        BHJM = B_ax if BHJM is None else BHJM + B_ax
 
-    Br, Bphi, Bz = xp.unstack(H_tv + B_ax)
+    if BHJM is None:
+        zero = xp.zeros_like(r)
+        BHJM = xp.stack((zero, zero, zero))
+    Br, Bphi, Bz = BHJM[0, :], BHJM[1, :], BHJM[2, :]
     Bx, By = cyl_field_to_cart(phi, Br, Bphi)
 
     # add/subtract Mag when inside for B/H

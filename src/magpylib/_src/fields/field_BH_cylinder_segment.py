@@ -8,11 +8,10 @@
 # pylint: disable=too-many-positional-arguments
 
 import numpy as np
-from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 from scipy.special import ellipeinc, ellipkinc
 
-from magpylib._src.array_api_utils import require_numpy
+from magpylib._src.array_api_utils import array_namespace, require_numpy
 from magpylib._src.fields.field_BH_cylinder import _BHJM_magnet_cylinder
 from magpylib._src.fields.special_el3 import _el3_angle
 from magpylib._src.input_checks import ANGLE_TOLERANCE, check_field_input

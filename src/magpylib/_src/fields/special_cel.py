@@ -4,9 +4,14 @@ import math as m
 import sys
 
 import numpy as np
-from array_api_compat import array_namespace, is_numpy_namespace
+from array_api_compat import is_numpy_namespace
 
-from magpylib._src.array_api_utils import while_loop, xp_promote
+from magpylib._src.array_api_utils import (
+    array_namespace,
+    some,
+    while_loop,
+    xp_promote,
+)
 
 _CEL_SCALAR_THRESHOLD = 10
 _CEL_ERRORTOL = 1e-8  # for float64, the root of its precision
@@ -70,31 +75,34 @@ def _cel_vector(kc, p, c, s):
     kc_zero = kc == 0
     kc = xp.where(kc_zero, 1.0, kc)  # NaN is returned for these in the end
 
-    # case p > 0, computed with p=1 where it does not apply
-    p_pos = xp.sqrt(xp.where(mask, 1.0, p))
-    s_pos = s / p_pos
+    if some(mask):
+        # case p > 0, computed with p=1 where it does not apply
+        p_pos = xp.sqrt(xp.where(mask, 1.0, p))
+        s_pos = s / p_pos
 
-    # case p <= 0, computed with p=-1 where it does not apply
-    p_neg = xp.where(mask, p, -1.0)
-    f = kc * kc
-    q = 1 - f
-    g = 1 - p_neg
-    f = f - p_neg
-    q = q * (s - c * p_neg)
+        # case p <= 0, computed with p=-1 where it does not apply
+        p_neg = xp.where(mask, p, -1.0)
+        f = kc * kc
+        q = 1 - f
+        g = 1 - p_neg
+        f = f - p_neg
+        q = q * (s - c * p_neg)
 
-    p_neg = xp.sqrt(f / g)
-    c_neg = (c - s) / g
-    s_neg = -q / (g * g * p_neg) + c_neg * p_neg
+        p_neg = xp.sqrt(f / g)
+        c_neg = (c - s) / g
+        s_neg = -q / (g * g * p_neg) + c_neg * p_neg
 
-    p = xp.where(mask, p_neg, p_pos)
-    c = xp.where(mask, c_neg, c)
-    s = xp.where(mask, s_neg, s_pos)
+        p = xp.where(mask, p_neg, p_pos)
+        c = xp.where(mask, c_neg, c)
+        s = xp.where(mask, s_neg, s_pos)
+    else:
+        p = xp.sqrt(p)
+        s = s / p
 
     em = xp.ones_like(kc)
     qc = xp.abs(kc)
     kk = qc
 
-    # first half of the first iteration, the rest is shared with _cel_iter
     # first half of the first iteration, the rest is shared with _cel_iter
     g = kk / p
     c, s = c + s / p, 2 * (s + c * g)
@@ -114,6 +122,10 @@ def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndar
     Combines vectorized and non-vectorized implementations for improved performance:
     small NumPy arrays are computed element by element, all other input vectorized.
 
+    kc has shape (n,). p, c and s have its shape too, or all three have shape
+    (m, n) for m integrals of the same kc, which then share the square roots
+    of the iteration: the result has the shape of p, c and s.
+
     See also:
     R. Bulirsch, Numerical Calculation of Elliptic Integrals and Elliptic Functions. III
     Numerische Mathematik 13, 305-315 (1969).
@@ -127,6 +139,9 @@ def _cel(kc: np.ndarray, p: np.ndarray, c: np.ndarray, s: np.ndarray) -> np.ndar
 
     xp = array_namespace(kc, p, c, s)
     if is_numpy_namespace(xp) and kc.size < _CEL_SCALAR_THRESHOLD and kc.dtype == float:
+        if p.ndim == 2:
+            return np.array([[_cel_scalar(*args) for args in zip(kc, *rows, strict=True)]
+                             for rows in zip(p, c, s, strict=True)])  # fmt: skip
         return np.array([_cel_scalar(*args)
                          for args in zip(kc, p, c, s, strict=False)])  # fmt: skip
     return _cel_vector(kc, p, c, s)

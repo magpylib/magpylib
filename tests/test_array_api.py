@@ -10,7 +10,8 @@ import numpy as np
 import pytest
 
 import magpylib as magpy
-from magpylib._src.array_api_utils import padded_size
+from magpylib._src.array_api_utils import cross, dot, padded_size
+from magpylib._src.fields.special_cel import _cel
 
 DATA = Path(__file__).parent / "testdata" / ("regression_reference" + ".npz")
 
@@ -268,3 +269,103 @@ def test_jax_padded_rows(name, n, reference):
     out = func(**{key: jax.numpy.asarray(val) for key, val in inputs.items()})
     assert isinstance(out, jax.Array)
     np.testing.assert_allclose(out, expected, rtol=1e-9, atol=1e-12)
+
+
+# Rows that take a special branch of their kernel, next to a row that takes
+# the general one: (function, inputs of the rows).
+BRANCH_ROWS = {
+    "cylinder_field": {
+        "observers": [(0.3, 0.2, 0.4), (0.01, 0.0, 0.4), (2.0, 0.1, 0.3), (0, 0, 3.0)],
+        "dimensions": [(1.0, 2.0)] * 4,
+        "polarizations": [(0, 0, 1.0), (1.0, 0, 0), (0.3, 0.2, 1.0), (0, 0, 0)],
+    },
+    "circle_field": {
+        "observers": [(0.3, 0.2, 0.4), (1.0, 0.0, 0.0), (0.0, 0.0, 0.5)],
+        "diameters": [2.0, 2.0, 0.0],
+        "currents": [1.0, 2.0, 3.0],
+    },
+    "dipole_field": {
+        "observers": [(0.3, 0.2, 0.4), (0.0, 0.0, 0.0)],
+        "moments": [(1.0, 2.0, 3.0), (1.0, 0.0, -3.0)],
+    },
+    "triangle_charge_field": {
+        # the second observer lies on the extension of an edge
+        "observers": [(0.3, 0.2, 0.4), (2.0, 0.0, 0.0), (0.0, 0.0, 0.0)],
+        "vertices": [[(0, 0, 0), (1, 0, 0), (0, 1, 0)]] * 3,
+        "polarizations": [(0.1, 0.2, 1.0)] * 3,
+    },
+    "triangle_current_field": {
+        # in the plane of the triangle: beside it, and beside each edge
+        "observers": [
+            (0.3, 0.2, 0.4),
+            (2.0, 3.0, 0.0),
+            (2.0, 0.0, 0.0),
+            (0.0, 2.0, 0.0),
+            (-1.0, 2.0, 0.0),
+        ],
+        "vertices": [[(0, 0, 0), (1, 0, 0), (0, 1, 0)]] * 5,
+        "current_densities": [(1.0, 2.0, 0.0)] * 5,
+    },
+}
+
+
+@pytest.mark.parametrize("name", BRANCH_ROWS)
+def test_branches_skipped_or_selected(name):
+    """A branch of a kernel that no row needs is skipped, and one that some
+    rows need is computed for all rows and selected. Both give the same
+    field: every row alone, all rows together, and all rows under jax.jit,
+    where nothing can be skipped."""
+    func = getattr(magpy.func, name)
+    inputs = {key: np.array(val, dtype=float) for key, val in BRANCH_ROWS[name].items()}
+    with np.errstate(all="ignore"):
+        together = func("B", **inputs)
+        alone = [
+            func("B", **{key: val[i : i + 1] for key, val in inputs.items()})
+            for i in range(len(together))
+        ]
+    assert np.isfinite(together[0]).all()
+    assert np.abs(together[0]).max() > 0
+    np.testing.assert_allclose(together, alone, rtol=1e-12, atol=1e-20)
+
+    jax = pytest.importorskip("jax")
+    jax.config.update("jax_enable_x64", True)
+    arrays = {key: jax.numpy.asarray(val) for key, val in inputs.items()}
+    compiled = jax.jit(lambda arrays: func("B", **arrays))(arrays)
+    np.testing.assert_allclose(compiled, together, rtol=1e-10, atol=1e-20)
+
+
+def test_cel_shared_iteration(xp):
+    """Several integrals of one kc are computed in one call, below and above
+    the size where NumPy switches from scalars to arrays."""
+    for n in (3, 40):
+        rng = np.random.default_rng(n)
+        kc = rng.uniform(0.05, 2, n)
+        p = np.stack((np.ones(n), rng.uniform(0.1, 3, n), rng.uniform(-3, 0, n)))
+        c = rng.uniform(-1, 1, (3, n))
+        s = rng.uniform(-1, 1, (3, n))
+        expected = [_cel(kc, p[i], c[i], s[i]) for i in range(3)]
+        np.testing.assert_allclose(_cel(kc, p, c, s), expected, rtol=1e-12)
+        out = _cel(*(xp.asarray(val) for val in (kc, p, c, s)))
+        np.testing.assert_allclose(np.asarray(out), expected, rtol=1e-12)
+
+
+def test_dot_cross(xp):
+    """The products of 3-vectors that NumPy gets written out."""
+    a, b = np.random.default_rng(0).uniform(-1, 1, (2, 5, 4, 3))
+    np.testing.assert_allclose(dot(a, b), np.sum(a * b, axis=-1), rtol=1e-14)
+    np.testing.assert_allclose(cross(a, b), np.cross(a, b), rtol=1e-14, atol=1e-16)
+    out = dot(xp.asarray(a), xp.asarray(b)), cross(xp.asarray(a), xp.asarray(b))
+    np.testing.assert_allclose(np.asarray(out[0]), dot(a, b), rtol=1e-14)
+    np.testing.assert_allclose(np.asarray(out[1]), cross(a, b), rtol=1e-14, atol=1e-16)
+
+
+@pytest.mark.filterwarnings("ignore:`torch.jit.trace` is deprecated:FutureWarning")
+def test_torch_trace_keeps_branches():
+    """torch.jit.trace records the operations of its example input. A branch
+    that this input does not need is still recorded, for other input."""
+    torch = pytest.importorskip("torch")
+    observers = torch.tensor([(0.3, 0.2, 0.4), (1.0, 2.0, 3.0)], dtype=torch.float64)
+    moments = torch.tensor([(1.0, 0.0, -3.0)] * 2, dtype=torch.float64)
+    traced = torch.jit.trace(magpy.core.dipole_Hfield, (observers, moments))
+    at_origin = traced(torch.zeros_like(observers), moments)
+    np.testing.assert_array_equal(at_origin, [(np.inf, 0.0, -np.inf)] * 2)

@@ -5,10 +5,9 @@
 from __future__ import annotations
 
 import numpy as np
-from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.array_api_utils import jax_padded, xp_promote
+from magpylib._src.array_api_utils import array_namespace, jax_padded, some, xp_promote
 from magpylib._src.input_checks import check_field_input
 
 
@@ -189,12 +188,15 @@ def _elementar_current_sheet_Hfield(
     mask_plane = ~(mask0 | mask1 | mask2 | mask3) & in_plane
     mask_general = ~in_plane
 
-    # All cases are computed for all rows and selected below. For each case,
-    # the rows of the other cases are replaced by a regular point of that case.
+    # The cases in the plane of the triangle are skipped if no observer is
+    # there. Otherwise all cases are computed for all rows and selected. For
+    # each case, the rows of the other cases are replaced by a regular point
+    # of that case.
+    planar = some(in_plane)
 
     # CASE: GENERAL ###############################################################
     x, y, z, u1, u2, v2 = _assign_masks(
-        observers, coordinates, mask_general, (1.0, 1.0, 1.0), xp
+        observers, coordinates, mask_general if planar else None, (1.0, 1.0, 1.0), xp
     )
 
     sqrt1 = xp.sqrt(x**2 + y**2 + z**2)
@@ -234,8 +236,44 @@ def _elementar_current_sheet_Hfield(
         / sqrt5
     ) / (u1 * v2)
 
+    Hz = Hz_general
+    if planar:
+        # Hx and Hy are zero in the plane of the triangle
+        Hx = xp.where(mask_general, Hx, 0.0)
+        Hz = _elementar_current_sheet_Hz_in_plane(
+            observers,
+            coordinates,
+            current_densities,
+            xp.where(mask_general, Hz_general, 0.0),
+            (mask_plane, mask1, mask2, mask3),
+        )
+
+    # All cases again
+    x, y, z, u1, u2, v2 = _assign_masks(observers, coordinates, None, None, xp)
+
+    return xp.stack(
+        (
+            Hx * (jv * z * u1 * v2 / (4 * xp.pi)),
+            Hx * (-ju * z * u1 * v2 / (4 * xp.pi)),
+            Hz * (u1 * v2 / (4 * xp.pi)),
+        ),
+        axis=-1,
+    )
+
+
+def _elementar_current_sheet_Hz_in_plane(
+    observers, coordinates, current_densities, Hz, masks
+):
+    """Hz of ``_elementar_current_sheet_Hfield`` with the cases of observers
+    in the plane of the triangle, but not on it: beside the triangle
+    (``mask_plane``) and on the extensions of its three edges. ``Hz`` holds
+    the other cases."""
+    xp = array_namespace(observers, coordinates, current_densities)
+    mask_plane, mask1, mask2, mask3 = masks
+    ju, jv = xp.unstack(current_densities, axis=-1)
+
     # CASE: Observer in plane ################################################################
-    x, y, z, u1, u2, v2 = _assign_masks(
+    x, y, _, u1, u2, v2 = _assign_masks(
         observers, coordinates, mask_plane, (2.0, 3.0, 0.0), xp
     )
     Hz_plane = -(
@@ -275,7 +313,7 @@ def _elementar_current_sheet_Hfield(
 
     # CASE: Observer on edge1 ##############################################################
 
-    x, y, z, u1, u2, v2 = _assign_masks(
+    x, y, _, u1, u2, v2 = _assign_masks(
         observers, coordinates, mask1, (2.0, 0.0, 0.0), xp
     )
     Hz_edge1 = (
@@ -310,7 +348,7 @@ def _elementar_current_sheet_Hfield(
 
     # CASE: Observer on edges 2 ##############################################################
 
-    x, y, z, u1, u2, v2 = _assign_masks(
+    x, y, _, u1, u2, v2 = _assign_masks(
         observers, coordinates, mask2, (0.0, 2.0, 0.0), xp
     )
     Hz_edge2 = (
@@ -356,7 +394,7 @@ def _elementar_current_sheet_Hfield(
 
     # CASE: Observer on edges 3 ##############################################################
 
-    x, y, z, u1, u2, v2 = _assign_masks(
+    x, y, _, u1, u2, v2 = _assign_masks(
         observers, coordinates, mask3, (-1.0, 2.0, 0.0), xp
     )
     Hz_edge3 = (
@@ -426,25 +464,11 @@ def _elementar_current_sheet_Hfield(
         / xp.sqrt((v2 - y) ** 2 * (u1**2 - 2 * u1 * u2 + u2**2 + v2**2) / v2**2)
     ) / (u1 * v2**2)
 
-    # select the cases; Hx and Hy are zero in the plane of the triangle
-    Hx = xp.where(mask_general, Hx, 0.0)
-    Hz = xp.where(mask_general, Hz_general, 0.0)
+    # select the cases
     Hz = xp.where(mask_plane, Hz_plane, Hz)
     Hz = xp.where(mask1, Hz_edge1, Hz)
     Hz = xp.where(mask2, Hz_edge2, Hz)
-    Hz = xp.where(mask3, Hz_edge3, Hz)
-
-    # All cases again
-    x, y, z, u1, u2, v2 = _assign_masks(observers, coordinates, None, None, xp)
-
-    return xp.stack(
-        (
-            Hx * (jv * z * u1 * v2 / (4 * xp.pi)),
-            Hx * (-ju * z * u1 * v2 / (4 * xp.pi)),
-            Hz * (u1 * v2 / (4 * xp.pi)),
-        ),
-        axis=-1,
-    )
+    return xp.where(mask3, Hz_edge3, Hz)
 
 
 @jax_padded()

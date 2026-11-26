@@ -3,10 +3,16 @@
 # pylance: disable=Code is unreachable
 
 import numpy as np
-from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.array_api_utils import jax_padded, xp_promote
+from magpylib._src.array_api_utils import (
+    array_namespace,
+    cross,
+    dot,
+    jax_padded,
+    some,
+    xp_promote,
+)
 from magpylib._src.input_checks import check_field_input
 
 
@@ -16,8 +22,8 @@ def _norm_vector(v) -> np.ndarray:
     v: shape (n, 3, 3), returns: shape (n, 3)
     """
     xp = array_namespace(v)
-    n = xp.linalg.cross(v[:, 1, :] - v[:, 0, :], v[:, 2, :] - v[:, 0, :])
-    return n / xp.linalg.vector_norm(n, axis=-1, keepdims=True)
+    n = cross(v[:, 1, :] - v[:, 0, :], v[:, 2, :] - v[:, 0, :])
+    return n / xp.sqrt(dot(n, n))[:, xp.newaxis]
 
 
 def _solid_angle(R: np.ndarray, r: np.ndarray) -> np.ndarray:
@@ -35,14 +41,9 @@ def _solid_angle(R: np.ndarray, r: np.ndarray) -> np.ndarray:
     r0, r1, r2 = r[:, 0], r[:, 1], r[:, 2]
 
     # Calculates (oriented) volume of the parallelepiped in vectorized form.
-    N = xp.sum(R2 * xp.linalg.cross(R1, R0), axis=-1)
+    N = dot(R2, cross(R1, R0))
 
-    D = (
-        r0 * r1 * r2
-        + xp.sum(R2 * R1, axis=-1) * r0
-        + xp.sum(R2 * R0, axis=-1) * r1
-        + xp.sum(R1 * R0, axis=-1) * r2
-    )
+    D = r0 * r1 * r2 + dot(R2, R1) * r0 + dot(R2, R0) * r1 + dot(R1, R0) * r2
     result = 2.0 * xp.atan2(N, D)
 
     # modulus 2pi to avoid jumps on edges in line
@@ -116,20 +117,20 @@ def triangle_Bfield(
     )
 
     n = _norm_vector(vertices)
-    sigma = xp.sum(n * polarizations, axis=-1, keepdims=True)  # inner product
+    sigma = dot(n, polarizations)[:, xp.newaxis]
 
     # vertex <-> observer, shape (i, 3 vertices, 3)
     R = vertices - observers[:, xp.newaxis, :]
-    r2 = xp.sum(R * R, axis=-1)
+    r2 = dot(R, R)
     r = xp.sqrt(r2)
 
     # vertex <-> vertex
     L = xp.roll(vertices, -1, axis=1) - vertices
-    l2 = xp.sum(L * L, axis=-1)
+    l2 = dot(L, L)
     l1 = xp.sqrt(l2)
 
     # vert-vert -- vert-obs
-    b = xp.sum(R * L, axis=-1)
+    b = dot(R, L)
     bl = b / l1
     ind = xp.abs(r + bl)  # closeness measure to corner and edge
 
@@ -143,23 +144,24 @@ def triangle_Bfield(
     #    be used. This problem is solved in the following lines.
     mask_gen = ind > 1.0e-12
 
-    # the other evaluation is singular at the two ends of an edge: the corners
-    mask_end = (r == 0) | (r == l1)
-    mask_corner = xp.any(~mask_gen & mask_end, axis=-1, keepdims=True)
-
-    # both evaluations are computed for all edges, with harmless arguments
-    # where they are not used or singular
+    # both evaluations are computed with harmless arguments where they are
+    # not used or singular
     arg_gen = xp.sqrt(xp.where(mask_gen, l2 + 2 * b + r2, 1.0)) + l1 + bl
     arg_gen = arg_gen / xp.where(mask_gen, ind, 1.0)
-    arg_ext = xp.abs(l1 - r) / xp.where(mask_end, 1.0, r)
-    integral = xp.where(
-        mask_gen,
-        xp.log(xp.where(mask_gen, arg_gen, 1.0)),
-        -xp.log(xp.where(mask_end, 1.0, arg_ext)),
-    )
+    integral = xp.log(xp.where(mask_gen, arg_gen, 1.0))
+    mask_corner = False
+    if some(~mask_gen):
+        # the other evaluation is singular at the two ends of an edge: the
+        # corners
+        mask_end = (r == 0) | (r == l1)
+        mask_corner = xp.any(~mask_gen & mask_end, axis=-1, keepdims=True)
+        arg_ext = xp.abs(l1 - r) / xp.where(mask_end, 1.0, r)
+        integral = xp.where(
+            mask_gen, integral, -xp.log(xp.where(mask_end, 1.0, arg_ext))
+        )
 
     PQR = xp.sum((integral / l1)[:, :, xp.newaxis] * L, axis=1)
-    B = sigma * (n * _solid_angle(R, r)[:, xp.newaxis] - xp.linalg.cross(n, PQR))
+    B = sigma * (n * _solid_angle(R, r)[:, xp.newaxis] - cross(n, PQR))
     B = B / xp.pi / 4.0
 
     # return (0, 0, 0) at corners

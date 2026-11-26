@@ -1,10 +1,14 @@
 """Circular current loop field implementation."""
 
 import numpy as np
-from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.array_api_utils import jax_padded, xp_promote
+from magpylib._src.array_api_utils import (
+    array_namespace,
+    jax_padded,
+    some,
+    xp_promote,
+)
 from magpylib._src.fields.special_cel import _cel_iter
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
@@ -127,18 +131,18 @@ def _BHJM_circle(
     # general case
     mask3 = ~(mask1 | mask2)
 
-    # the special cases are computed as the center of a unit loop to stay
-    # clear of the singularities
-    Hr, _, Hz = xp.unstack(
-        current_circle_Hfield(
-            r0=xp.where(mask3, r0, 1.0),
-            r=xp.where(mask3, r, 0.0),
-            z=xp.where(mask3, z, 0.0),
-            i0=current,
-        )
-    )
-    Hr = xp.where(mask3, Hr, 0.0)
-    Hz = xp.where(mask3, Hz, 0.0)
+    # the special cases, if there are any, are computed as the center of a
+    # unit loop to stay clear of the singularities
+    special = some(~mask3)
+    if special:
+        r0 = xp.where(mask3, r0, 1.0)
+        r = xp.where(mask3, r, 0.0)
+        z = xp.where(mask3, z, 0.0)
+    H = current_circle_Hfield(r0=r0, r=r, z=z, i0=current)
+    Hr, Hz = H[0, :], H[2, :]
+    if special:
+        Hr = xp.where(mask3, Hr, 0.0)
+        Hz = xp.where(mask3, Hz, 0.0)
 
     Hx, Hy = cyl_field_to_cart(phi, Hr)
     BHJM = xp.stack((Hx, Hy, Hz), axis=-1)

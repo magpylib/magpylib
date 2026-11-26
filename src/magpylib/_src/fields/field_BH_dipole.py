@@ -1,10 +1,15 @@
 """Dipole field implementation."""
 
 import numpy as np
-from array_api_compat import array_namespace
 from scipy.constants import mu_0 as MU0
 
-from magpylib._src.array_api_utils import jax_padded, xp_promote
+from magpylib._src.array_api_utils import (
+    array_namespace,
+    dot,
+    jax_padded,
+    some,
+    xp_promote,
+)
 from magpylib._src.input_checks import check_field_input
 
 
@@ -58,18 +63,21 @@ def dipole_Hfield(
 
     r = xp.linalg.vector_norm(observers, axis=-1, keepdims=True)
 
-    # at r=0 return inf in the direction of all non-zero moment components
-    mask_origin = r == 0
-    zero = xp.zeros_like(moments)  # where of the array API needs an array
-    H_origin = xp.where(moments > 0, xp.inf, xp.where(moments < 0, -xp.inf, zero))
-
     # with the unit vector to the observer, as a power of r above the third
     # underflows in float32 already at nanometres
-    r = xp.where(mask_origin, 1.0, r)  # avoid 0/0
+    mask_origin = r == 0
+    at_origin = some(mask_origin)
+    if at_origin:
+        r = xp.where(mask_origin, 1.0, r)  # avoid 0/0
     unit = observers / r
-    dotprod = xp.sum(moments * unit, axis=-1, keepdims=True)
+    dotprod = dot(moments, unit)[:, xp.newaxis]
     H = (3 * dotprod * unit - moments) / (r * r * r) / (4 * xp.pi)
+    if not at_origin:
+        return H
 
+    # at r=0 return inf in the direction of all non-zero moment components
+    zero = xp.zeros_like(moments)  # where of the array API needs an array
+    H_origin = xp.where(moments > 0, xp.inf, xp.where(moments < 0, -xp.inf, zero))
     return xp.where(mask_origin, H_origin, H)
 
 
