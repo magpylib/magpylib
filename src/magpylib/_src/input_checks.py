@@ -762,7 +762,7 @@ def check_format_input_obj(
     Returns a flat list of all wanted objects in input.
     Parameters
     ----------
-    input: can be
+    inp: can be
         - objects
     allow: str
         Specify which object types are wanted, separate by +,
